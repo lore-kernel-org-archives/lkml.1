@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbYIALem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYIALkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759150AbYIALem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 07:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYIALed
+	id S1758051AbYIALkc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 07:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYIALkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 07:34:33 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:34935 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbYIALec (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 07:34:32 -0400
-Date: Mon, 1 Sep 2008 12:34:25 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Tomas Carnecky <tom@dbservice.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Steven King <sfking@fdwdc.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume after	undocking
-Message-ID: <20080901113425.GA15118@srcf.ucam.org>
-References: <200808301535.22419.sfking@fdwdc.com> <1220239048.24775.152.camel@rzhang-dt> <48BBC8FC.1020809@dbservice.com>
+	Mon, 1 Sep 2008 07:40:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54577 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbYIALkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 07:40:22 -0400
+Message-ID: <48BBD429.50907@kernel.org>
+Date: Mon, 01 Sep 2008 13:38:17 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       dm-devel@redhat.com
+Subject: Re: [PATCH #blk-for-2.8] init: DEBUG_BLOCK_EXT_DEVT requires explicit
+   root= param
+References: <20080827183453.eb651f50.sfr@canb.auug.org.au> <200808292123.07246.bzolnier@gmail.com> <48B90E81.5060905@kernel.org> <200808311538.38918.bzolnier@gmail.com> <48BBCB62.4040309@kernel.org> <20080901111635.GN20055@kernel.dk> <48BBD01A.7000603@kernel.org> <20080901113059.GO20055@kernel.dk>
+In-Reply-To: <20080901113059.GO20055@kernel.dk>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BBC8FC.1020809@dbservice.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Sep 2008 11:39:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 12:50:36PM +0200, Tomas Carnecky wrote:
-> There is one question though that was never answered: Is there any
-> interaction needed from the userspace when docking/undocking? Something
-> that the acpi daemon would have to do in response to a dock/undock
-> event? I'm thinking about
->  $ echo 1 > /sys/bus/scsi/devices/3\:0\:0\:0/rescan
-> or something like that. To tell the kernel that some devices may have
-> disappeared and that it shouldn't try to bring them up when resuming
-> from sleep. I would expect that ACPI would take care of that (it
-> certainly removes all USB devices and detaches ata4 (which is the bay in
-> the docking station).
+DEBUG_BLOCK_EXT_DEVT shuffles SCSI and IDE device numbers and root
+device number set using rdev become meaningless.  Root devices should
+be explicitly specified using textual names.  Warn about it if root
+can't be found and DEBUG_BLOCK_EXT_DEVT is enabled.  Also, add warning
+to the help text.
 
-There's no interaction required, but userspace can optionally take 
-responsibility for the docking control. Assuming lack of bugs, anyway.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+I think distros should enable it for early alpha/betas to catch odd
+problems.  Well, anyways, here's the updated version.  Thanks.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ init/do_mounts.c  |    4 ++++
+ lib/Kconfig.debug |    6 ++++++
+ 2 files changed, 10 insertions(+)
+
+Index: work/init/do_mounts.c
+===================================================================
+--- work.orig/init/do_mounts.c
++++ work/init/do_mounts.c
+@@ -263,6 +263,10 @@ retry:
+ 		printk("Please append a correct \"root=\" boot option; here are the available partitions:\n");
+ 
+ 		printk_all_partitions();
++#ifdef CONFIG_DEBUG_BLOCK_EXT_DEVT
++		printk("DEBUG_BLOCK_EXT_DEVT is enabled, you need to specify "
++		       "explicit textual name for \"root=\" boot option.\n");
++#endif
+ 		panic("VFS: Unable to mount root fs on %s", b);
+ 	}
+ 
+Index: work/lib/Kconfig.debug
+===================================================================
+--- work.orig/lib/Kconfig.debug
++++ work/lib/Kconfig.debug
+@@ -638,6 +638,12 @@ config DEBUG_BLOCK_EXT_DEVT
+ 	  userland code paths which assume predetermined contiguous
+ 	  device number allocation.
+ 
++	  Note that turning on this debug option shuffles all the
++	  device numbers for all IDE and SCSI devices including libata
++	  ones, so root partition specified using device number
++	  directly (via rdev or root=MAJ:MIN) won't work anymore.
++	  Textual device names (root=/dev/sdXn) will continue to work.
++
+ 	  Say N if you are unsure.
+ 
+ config LKDTM
