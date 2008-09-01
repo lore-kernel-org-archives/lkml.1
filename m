@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbYIAWc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbYIAWd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752373AbYIAWc2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 18:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbYIAWcU
+	id S1752718AbYIAWd4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 18:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbYIAWds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 18:32:20 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45375 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056AbYIAWcT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 18:32:19 -0400
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Misc fixes for 2.6.27
-From: Andi Kleen <andi@firstfloor.org>
-References: <1220300084.2982.139.camel@pmac.infradead.org>
-Date: Tue, 02 Sep 2008 00:32:16 +0200
-In-Reply-To: <1220300084.2982.139.camel@pmac.infradead.org> (David Woodhouse's message of "Mon, 01 Sep 2008 21:14:44 +0100")
-Message-ID: <87wshvwl8v.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 1 Sep 2008 18:33:48 -0400
+Received: from www.tglx.de ([62.245.132.106]:55157 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbYIAWdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 18:33:47 -0400
+Date: Tue, 2 Sep 2008 00:33:35 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+In-Reply-To: <alpine.LFD.1.10.0809011500460.12958@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809020033060.3243@apollo.tec.linutronix.de>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
+ <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011500460.12958@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse <dwmw2@infradead.org> writes:
-> +
-> +static struct dmi_system_id __initdata intel_iommu_dmi_table[] = {
-> +	{	/* Some DG33BU BIOS revisions advertised non-existent VT-d */
+On Mon, 1 Sep 2008, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 1 Sep 2008, Thomas Gleixner wrote:
+> > 
+> > The CPU calibration of < 2.6.27 is against PIT and does _NOT_ give me a
+> > pretty good estimation for TSC.
+> 
+> Umm. Which one. The 32-bit or the 64-bit?
 
-Are you sure it's non existent? A G33 chipset should have it in
-hardware I thought.
-
-I'm not sure this is really the right way to handle this anyways.
-If there's ever a working BIOS it will be blacklisted too. And
-normally BIOS bugs don't come in one board alone, but in a range
-of them and then adding more and more identifiers is quite painful.
-
-Better would be to add some generic sanity checks that catches
-the issues these BIOS revisions are having.
-
-> +		.callback = blacklist_iommu,
-> +		.ident = "Intel DG33BU",
-> +		{	DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
-> +			DMI_MATCH(DMI_BOARD_NAME, "DG33BU"),
-> +		}
-> +	},
-
--Andi
-
--- 
-ak@linux.intel.com
+The 32 bit version.
+ 
+	tglx
