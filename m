@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYIAOcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYIAOf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbYIAOcW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 10:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYIAOcO
+	id S1754011AbYIAOf2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 10:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYIAOfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 10:32:14 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:13692 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbYIAOcN (ORCPT
+	Mon, 1 Sep 2008 10:35:19 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:26751 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751408AbYIAOfS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 10:32:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=qMh4fmjTPhxer0O8bHAsRu8u1FjkgOytvQp7tZlO0iWbspRzzMlcU+ynUulDX75KHd
-         oI11GT2Qjqs8OwlcQEHq3oIKsV+xJC34UZCZnr1RYoNx0oItpjNWwAd9Me91MdHrh+9t
-         K8vv1+XaC7JoTklVlVv7D+dzTF5UHN0ctIrJQ=
-Date: Mon, 1 Sep 2008 18:29:50 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-Cc: axboe@kernel.dk, dwmw2@infradead.org
-Subject: warning during mtd registration in 2.6.27-rc5
-Message-ID: <20080901142949.GA18081@doriath.ww600.siemens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Sep 2008 10:35:18 -0400
+Message-Id: <48BC1A10.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Mon, 01 Sep 2008 15:36:32 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Boaz Harrosh" <bharrosh@panasas.com>
+Cc: "David S. Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Ivo van Doorn" <IvDoorn@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Theodore Tso" <tytso@mit.edu>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] debug: BUILD_BUG_ON: error on non-const	
+	 expressions
+References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com>
+ <48BC1065.76E4.0078.0@novell.com> <48BBFA67.9070305@panasas.com>
+In-Reply-To: <48BBFA67.9070305@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 16:21 >>>
+>> I have to admit that I'm surprise this compiles: You replace an expression
+>> with a statement, and hence you reduce the places where BUILD_BUG_ON()
+>> can validly be used. 
+>
+>it is only an expression because of the (void)() cast, which is what
+>I'm trying to avoid.
 
-Since commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-I'm seeing this problem:
+No, sizeof() alone is an expression, too. Also, by using a statement you'll
+have more problems with fixing BUILD_BUG_ON_ZERO(), which must be
+an expression.
 
-kobject (c3abad68): tried to init an initialized object, something is seriously wrong.
-[<c0027ff0>] (dump_stack+0x0/0x14) from [<c013c484>] (kobject_init+0x40/0x78)
-[<c013c444>] (kobject_init+0x0/0x78) from [<c013ca24>] (kobject_init_and_add+0x20/0x44)
- r5:c3abad68 r4:c3ac2520
-[<c013ca08>] (kobject_init_and_add+0x4/0x44) from [<c0137c6c>] (blk_register_filter+0x48/0x60)
- r5:c3ab4060 r4:c3aba880
-[<c0137c24>] (blk_register_filter+0x0/0x60) from [<c01366c4>] (add_disk+0x60/0xb8)
- r4:c3ac2400
-[<c0136664>] (add_disk+0x0/0xb8) from [<c01a6994>] (add_mtd_blktrans_dev+0x210/0x244)
- r5:c3ab4060 r4:00000001
-[<c01a6784>] (add_mtd_blktrans_dev+0x0/0x244) from [<c01a6bbc>] (mtdblock_add_mtd+0x58/0x64)
- r8:c03c7910 r7:c3ab6100 r6:c03c6bd4 r5:c03c6c04 r4:c3ab6100
-[<c01a6b64>] (mtdblock_add_mtd+0x0/0x64) from [<c01a6144>] (blktrans_notify_add+0x3c/0x68)
- r5:c3ab6100 r4:c03c6c04
-[<c01a6108>] (blktrans_notify_add+0x0/0x68) from [<c01a3a20>] (add_mtd_device+0xc0/0x120)
- r6:c03c6b80 r5:c3ab6100 r4:c03c6bc4
-[<c01a3960>] (add_mtd_device+0x0/0x120) from [<c01a4e50>] (add_one_partition+0x468/0x500)
- r6:c3ac2000 r5:00700000 r4:c3ab6100
-[<c01a49e8>] (add_one_partition+0x0/0x500) from [<c01a4f20>] (add_mtd_partitions+0x38/0x7c)
-[<c01a4ee8>] (add_mtd_partitions+0x0/0x7c) from [<c0016a48>] (sharpsl_nand_init+0x1dc/0x238)
-....
+>> Of course you could wrap the whole thing in ({}),
+>
+>"do{}while(0)" is effectively an "{}" plus the added bonus
+>of demanding an ";" ;-)
 
-This happens when adding mtd partitions. I've traced it to the fact that
-mtd partition devices share the genhd queue with the whole chip block device.
-Thus blk_register_filter receives the same pointer for the chip and for each
-registered partition.
+An expression likewise demands a terminating ; (or a continuation of the
+expression, i.e. by using an operator)
 
--- 
-With best wishes
-Dmitry
+>> Also, are you sure the compiler will eliminate the dead variable in all
+>> cases?
+>> 
+>> Finally, using as common a variable as 'x' here seems dangerous, too:
+>> What if somewhere x is #define-d to something more complex than a
+>> simple identifier?
+>
+>No it is scoped in a dead do{}while(0). What gets optimized out most
+>is the do nothing do{}while(0). The inside is just ignored.
+
+I don't think compilers in general and gcc in particular work this way
+(i.e. automatically throwing away everything included in a dead block).
+
+Jan
 
