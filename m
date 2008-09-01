@@ -1,58 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbYIASnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758880AbYIASqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758820AbYIASnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYIASnK
+	id S1758880AbYIASqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 14:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbYIASqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:43:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750738AbYIASnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:43:09 -0400
-Date: Mon, 1 Sep 2008 11:42:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Alok Kataria <akataria@vmware.com>,
-       Michael Buesch <mb@bu3sch.de>
-Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
-In-Reply-To: <48BC2A03.9000104@lwfinger.net>
-Message-ID: <alpine.LFD.1.10.0809011136340.12958@nehalem.linux-foundation.org>
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 1 Sep 2008 14:46:16 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:43820 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbYIASqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 14:46:15 -0400
+Date: Mon, 1 Sep 2008 14:46:13 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: nfsd fixes for 2.6.27
+Message-ID: <20080901184613.GB8598@fieldses.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following nfsd bugfixes are available in for-2.6.27 branch at:
 
+  git://linux-nfs.org/~bfields/linux.git for-2.6.27
 
-On Mon, 1 Sep 2008, Larry Finger wrote:
->
-> TSC calibrated against PIT
-> Detected 428.823 MHz processor.
+--b.
 
-Ok, Thomas, that means that the PIT is reliable (not surprising), and the 
-PM_TIMER isn't (again, I'm not horribly surprised). And HPET isn't 
-available, of course.
+Andy Adamson (1):
+      nfsd: fix compound state allocation error handling
 
-The old x86-32 code never even bothered with the PM_TIMER for calibration. 
-I don't understand why the x86-64 code bothers with it either. Why not 
-just drop that whole broken thing, and just depend on the PIT if there is 
-no HPET?
+Cyrill Gorcunov (1):
+      sunrpc: fix possible overrun on read of /proc/sys/sunrpc/transports
 
-I would also like to point out that the 32-bit code actually had a much 
-nicer PIT setup, using the much better documented mach_prepare_counter() 
-and mach_countup() helper functions. I'm unhappy to note that the new 
-"common" code uses what appears to be the inferior code.
+J. Bruce Fields (1):
+      nfsd: fix buffer overrun decoding NFSv4 acl
 
-Also, note that this is _not_ a new issue. See "verify_pmtmr_rate()" in 
-drivers/clocksource/acpi_pm.c, along with all the code to check that the 
-reads are stable in "init_acpi_pm_clocksource()".
+Tom Tucker (1):
+      svcrdma: Fix race between svc_rdma_recvfrom thread and the dto_tasklet
 
-IOW, the PM_TIMER has been found to be broken before. Depending on it for 
-calibration is broken.
+ fs/nfsd/nfs4acl.c                        |    2 +-
+ fs/nfsd/nfs4proc.c                       |   12 ++++++------
+ include/linux/sunrpc/svc_rdma.h          |    1 -
+ net/sunrpc/sysctl.c                      |   18 ++++--------------
+ net/sunrpc/xprtrdma/svc_rdma_recvfrom.c  |    8 ++++----
+ net/sunrpc/xprtrdma/svc_rdma_transport.c |    5 ++---
+ 6 files changed, 17 insertions(+), 29 deletions(-)
 
-			Linus
+diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
+index b6ed383..54b8b41 100644
+--- a/fs/nfsd/nfs4acl.c
++++ b/fs/nfsd/nfs4acl.c
+@@ -443,7 +443,7 @@ init_state(struct posix_acl_state *state, int cnt)
+ 	 * enough space for either:
+ 	 */
+ 	alloc = sizeof(struct posix_ace_state_array)
+-		+ cnt*sizeof(struct posix_ace_state);
++		+ cnt*sizeof(struct posix_user_ace_state);
+ 	state->users = kzalloc(alloc, GFP_KERNEL);
+ 	if (!state->users)
+ 		return -ENOMEM;
+diff --git a/fs/nfsd/nfs4proc.c b/fs/nfsd/nfs4proc.c
+index 2e51ada..e5b51ff 100644
+--- a/fs/nfsd/nfs4proc.c
++++ b/fs/nfsd/nfs4proc.c
+@@ -867,11 +867,6 @@ nfsd4_proc_compound(struct svc_rqst *rqstp,
+ 	int		slack_bytes;
+ 	__be32		status;
+ 
+-	status = nfserr_resource;
+-	cstate = cstate_alloc();
+-	if (cstate == NULL)
+-		goto out;
+-
+ 	resp->xbuf = &rqstp->rq_res;
+ 	resp->p = rqstp->rq_res.head[0].iov_base + rqstp->rq_res.head[0].iov_len;
+ 	resp->tagp = resp->p;
+@@ -890,6 +885,11 @@ nfsd4_proc_compound(struct svc_rqst *rqstp,
+ 	if (args->minorversion > NFSD_SUPPORTED_MINOR_VERSION)
+ 		goto out;
+ 
++	status = nfserr_resource;
++	cstate = cstate_alloc();
++	if (cstate == NULL)
++		goto out;
++
+ 	status = nfs_ok;
+ 	while (!status && resp->opcnt < args->opcnt) {
+ 		op = &args->ops[resp->opcnt++];
+@@ -957,9 +957,9 @@ encode_op:
+ 		nfsd4_increment_op_stats(op->opnum);
+ 	}
+ 
++	cstate_free(cstate);
+ out:
+ 	nfsd4_release_compoundargs(args);
+-	cstate_free(cstate);
+ 	dprintk("nfsv4 compound returned %d\n", ntohl(status));
+ 	return status;
+ }
+diff --git a/include/linux/sunrpc/svc_rdma.h b/include/linux/sunrpc/svc_rdma.h
+index ef2e3a2..dc05b54 100644
+--- a/include/linux/sunrpc/svc_rdma.h
++++ b/include/linux/sunrpc/svc_rdma.h
+@@ -143,7 +143,6 @@ struct svcxprt_rdma {
+ 	unsigned long	     sc_flags;
+ 	struct list_head     sc_dto_q;		/* DTO tasklet I/O pending Q */
+ 	struct list_head     sc_read_complete_q;
+-	spinlock_t           sc_read_complete_lock;
+ 	struct work_struct   sc_work;
+ };
+ /* sc_flags */
+diff --git a/net/sunrpc/sysctl.c b/net/sunrpc/sysctl.c
+index 0f8c439..5231f7a 100644
+--- a/net/sunrpc/sysctl.c
++++ b/net/sunrpc/sysctl.c
+@@ -60,24 +60,14 @@ static int proc_do_xprt(ctl_table *table, int write, struct file *file,
+ 			void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	char tmpbuf[256];
+-	int len;
++	size_t len;
++
+ 	if ((*ppos && !write) || !*lenp) {
+ 		*lenp = 0;
+ 		return 0;
+ 	}
+-	if (write)
+-		return -EINVAL;
+-	else {
+-		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
+-		if (!access_ok(VERIFY_WRITE, buffer, len))
+-			return -EFAULT;
+-
+-		if (__copy_to_user(buffer, tmpbuf, len))
+-			return -EFAULT;
+-	}
+-	*lenp -= len;
+-	*ppos += len;
+-	return 0;
++	len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
++	return simple_read_from_buffer(buffer, *lenp, ppos, tmpbuf, len);
+ }
+ 
+ static int
+diff --git a/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c b/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
+index b4b17f4..74de31a 100644
+--- a/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
++++ b/net/sunrpc/xprtrdma/svc_rdma_recvfrom.c
+@@ -443,18 +443,18 @@ int svc_rdma_recvfrom(struct svc_rqst *rqstp)
+ 
+ 	dprintk("svcrdma: rqstp=%p\n", rqstp);
+ 
+-	spin_lock_bh(&rdma_xprt->sc_read_complete_lock);
++	spin_lock_bh(&rdma_xprt->sc_rq_dto_lock);
+ 	if (!list_empty(&rdma_xprt->sc_read_complete_q)) {
+ 		ctxt = list_entry(rdma_xprt->sc_read_complete_q.next,
+ 				  struct svc_rdma_op_ctxt,
+ 				  dto_q);
+ 		list_del_init(&ctxt->dto_q);
+ 	}
+-	spin_unlock_bh(&rdma_xprt->sc_read_complete_lock);
+-	if (ctxt)
++	if (ctxt) {
++		spin_unlock_bh(&rdma_xprt->sc_rq_dto_lock);
+ 		return rdma_read_complete(rqstp, ctxt);
++	}
+ 
+-	spin_lock_bh(&rdma_xprt->sc_rq_dto_lock);
+ 	if (!list_empty(&rdma_xprt->sc_rq_dto_q)) {
+ 		ctxt = list_entry(rdma_xprt->sc_rq_dto_q.next,
+ 				  struct svc_rdma_op_ctxt,
+diff --git a/net/sunrpc/xprtrdma/svc_rdma_transport.c b/net/sunrpc/xprtrdma/svc_rdma_transport.c
+index 19ddc38..900cb69 100644
+--- a/net/sunrpc/xprtrdma/svc_rdma_transport.c
++++ b/net/sunrpc/xprtrdma/svc_rdma_transport.c
+@@ -359,11 +359,11 @@ static void sq_cq_reap(struct svcxprt_rdma *xprt)
+ 			if (test_bit(RDMACTXT_F_LAST_CTXT, &ctxt->flags)) {
+ 				struct svc_rdma_op_ctxt *read_hdr = ctxt->read_hdr;
+ 				BUG_ON(!read_hdr);
++				spin_lock_bh(&xprt->sc_rq_dto_lock);
+ 				set_bit(XPT_DATA, &xprt->sc_xprt.xpt_flags);
+-				spin_lock_bh(&xprt->sc_read_complete_lock);
+ 				list_add_tail(&read_hdr->dto_q,
+ 					      &xprt->sc_read_complete_q);
+-				spin_unlock_bh(&xprt->sc_read_complete_lock);
++				spin_unlock_bh(&xprt->sc_rq_dto_lock);
+ 				svc_xprt_enqueue(&xprt->sc_xprt);
+ 			}
+ 			svc_rdma_put_context(ctxt, 0);
+@@ -428,7 +428,6 @@ static struct svcxprt_rdma *rdma_create_xprt(struct svc_serv *serv,
+ 	init_waitqueue_head(&cma_xprt->sc_send_wait);
+ 
+ 	spin_lock_init(&cma_xprt->sc_lock);
+-	spin_lock_init(&cma_xprt->sc_read_complete_lock);
+ 	spin_lock_init(&cma_xprt->sc_rq_dto_lock);
+ 
+ 	cma_xprt->sc_ord = svcrdma_ord;
