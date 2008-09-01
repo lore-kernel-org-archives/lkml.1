@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYIAHU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbYIAHUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756411AbYIAHU2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 03:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYIAHUQ
+	id S1757319AbYIAHUm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 03:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbYIAHUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 03:20:16 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54726 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbYIAHUO (ORCPT
+	Mon, 1 Sep 2008 03:20:23 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:46202 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbYIAHUV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 03:20:14 -0400
-Message-ID: <48BB96E1.8080002@cs.helsinki.fi>
-Date: Mon, 01 Sep 2008 10:16:49 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Mon, 1 Sep 2008 03:20:21 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Mike Hommey <mh@glandium.org>
+Cc: Tejun Heo <tj@kernel.org>, fuse-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org, miklos@szeredi.hu
+Subject: Re: [fuse-devel] [PATCHSET] CUSE: implement CUSE
+References: <1219947544-666-1-git-send-email-tj@kernel.org>
+	<20080829055000.GB18930@glandium.org> <48B78EBA.609@kernel.org>
+	<3bc8237c0808291150t2f18ba64vf445bdf4c2c8360c@mail.gmail.com>
+	<48B93D68.6040506@kernel.org> <20080830185613.GC12546@glandium.org>
+Date: Mon, 01 Sep 2008 09:20:19 +0200
+In-Reply-To: <20080830185613.GC12546@glandium.org> (Mike Hommey's message of
+	"Sat, 30 Aug 2008 20:56:13 +0200")
+Message-ID: <87iqtggwng.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
-       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
-       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       tzanussi@gmail.com
-Subject: Re: [PATCH] kmemtrace: SLUB hooks for caller-tracking functions.
-References: <1219600175-5253-1-git-send-email-eduard.munteanu@linux360.ro> <48BAAC3C.4050309@cs.helsinki.fi> <20080831183652.GA5220@localhost>
-In-Reply-To: <20080831183652.GA5220@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1+B1luDDY5HTyQBo3pIMYIa1pLO7a4dvBvoEX0c
+	kDdWoSM06lXFWzaruaI2fr+YlUFgZDYWFvkmy8w23n0oHCT6So
+	1R9swaXw8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduard - Gabriel Munteanu wrote:
-> On Sun, Aug 31, 2008 at 05:35:40PM +0300, Pekka Enberg wrote:
->> Eduard - Gabriel Munteanu wrote:
->>> This patch adds kmemtrace hooks for __kmalloc_track_caller() and
->>> __kmalloc_node_track_caller(). Currently, they set the call site pointer
->>> to the value recieved as a parameter. (This could change if we implement
->>> stack trace exporting in kmemtrace.)
->>> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
->> Applied. I had to do some manual tweaking, so can you please double-check 
->> the result:
->>
->> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=b9f1ecc6428f0ba391845b2ac7df8618da287e4f
->>
->> Thanks!
-> 
-> Looks fine to me. However, you can now remove the casts to unsigned long
-> from 'caller', i.e. "s/(unsigned long) caller/caller/g"
+Mike Hommey <mh@glandium.org> writes:
 
-Fixed, thanks!
+> On Sat, Aug 30, 2008 at 02:30:32PM +0200, Tejun Heo wrote:
+>> Yeah, compared to loopback over FUSE, anything would have less
+>> problem. :-) I don't know much about nbd but it's pretty much solving
+>> the same problem so I think it's logical to extend nbd including
+>> giving it a new transport if necessary?  Or is there something
+>> fundamentally better when it's done via FUSE?
+>
+> My gutt feeling is that it would have less overhead when done via FUSE
+> than through nbd, but that could be wrong.
+>
+> Mike
 
-http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=0fae99540ebb53e0507f2bd6e119bede94e84f77
+What I would hope is that BUSE would add some zero copy transport in
+there. A way to just redirect the BIOs from the BUSE device to other
+block devices without copying the data around.
+
+But maybe BUSE is a bad name for that. That would be more a DUSE -
+Device mapper in USEr space.
+
+MfG
+        Goswin.
