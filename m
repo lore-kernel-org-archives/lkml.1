@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYIAIrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYIAItc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754864AbYIAIrv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 04:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYIAIrn
+	id S1755351AbYIAItc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 04:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYIAItY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 04:47:43 -0400
-Received: from s200aog13.obsmtp.com ([207.126.144.127]:47677 "EHLO
-	s200aog13.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750840AbYIAIrn (ORCPT
+	Mon, 1 Sep 2008 04:49:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44736 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbYIAItX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 04:47:43 -0400
-Subject: Re: [PATCH] genirq: irq_chip->startup() usage in setup_irq and
-	set_irq_chained handler
-From: Pawel MOLL <pawel.moll@st.com>
-To: benh@kernel.crashing.org
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1219795619.13162.166.camel@pasglop>
-References: <1219313656.31630.89.camel@bri1004.bri.st.com>
-	 <1219416584.31630.639.camel@bri1004.bri.st.com>
-	 <20080823160859.GE27974@elte.hu>  <1219531395.21386.200.camel@pasglop>
-	 <1219745676.16078.219.camel@bri1004.bri.st.com>
-	 <1219795619.13162.166.camel@pasglop>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 01 Sep 2008 09:47:18 +0100
-Message-Id: <1220258838.3299.1107.camel@bri1004.bri.st.com>
+	Mon, 1 Sep 2008 04:49:23 -0400
+Date: Mon, 1 Sep 2008 10:52:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, paulmck@us.ibm.com,
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] Remove stop_machine during module load
+Message-ID: <20080901085217.GA18288@one.firstfloor.org>
+References: <20080829191734.GA28329@basil.nowhere.org> <200809011702.00956.rusty@rustcorp.com.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809011702.00956.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Mon, Sep 01, 2008 at 05:02:00PM +1000, Rusty Russell wrote:
+> On Saturday 30 August 2008 05:17:34 Andi Kleen wrote:
+> > Remove stop_machine during module load
+> >
+> > module loading currently does a stop_machine on each module load to insert
+> > the module into the global module lists.  Especially on larger systems this
+> > can be quite expensive.
+> 
+> Thanks Andi, but doesn't this mean that we should be doing list_for_each_rcu 
+> in all the kallsyms readers?
 
-Great, thanks ;-)
+Yes I did that in v2. But only for the ones that don't hold modules_mutex
+anyways. Also I found that print_modules() does not always disable 
+preemption.
 
-Ingo, I will send you an acked patch.
+-Andi
 
-Cheers
-
-Paweł
-
+-- 
+ak@linux.intel.com
