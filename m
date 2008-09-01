@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbYIARyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbYIAR5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbYIARyp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 13:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYIARyg
+	id S1756186AbYIAR5B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 13:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751263AbYIAR4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 13:54:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52249 "EHLO
+	Mon, 1 Sep 2008 13:56:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43461 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751163AbYIARyf (ORCPT
+	by vger.kernel.org with ESMTP id S1751018AbYIAR4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 13:54:35 -0400
-Date: Mon, 1 Sep 2008 10:53:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers <kernel-testers@vger.kernel.org>
-Subject: Re: Linux 2.6.27-rc5: System boot regression caused by commit
- a2bd7274b47124d2fc4dfdb8c0591f545ba749dd
-In-Reply-To: <86802c440808311403y57ba050q223fbe370d2c7675@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0809011047530.12958@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org>  <200808302334.29156.rjw@sisk.pl>  <86802c440808301810r17657f3fnb3c8af5496955e0d@mail.gmail.com>  <200808311427.19369.rjw@sisk.pl>  <alpine.LFD.1.10.0808311039330.12958@nehalem.linux-foundation.org>
-  <86802c440808311054q4b8e8921qa9f090527b456e34@mail.gmail.com>  <alpine.LFD.1.10.0808311100520.12958@nehalem.linux-foundation.org> <86802c440808311403y57ba050q223fbe370d2c7675@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 1 Sep 2008 13:56:52 -0400
+Date: Mon, 1 Sep 2008 10:56:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Will Newton" <will.newton@gmail.com>
+Cc: "David Brownell" <david-b@pacbell.net>, linux-kernel@vger.kernel.org,
+       alex.williamson@hp.com
+Subject: Re: [PATCH] serial 8250: tighten test for using backup timer
+Message-Id: <20080901105641.4f4d9509.akpm@linux-foundation.org>
+In-Reply-To: <87a5b0800809010636m227bce15y59d8bb988a601802@mail.gmail.com>
+References: <200808261045.34699.david-b@pacbell.net>
+	<20080826105845.6ddf1107.akpm@linux-foundation.org>
+	<87a5b0800809010636m227bce15y59d8bb988a601802@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 1 Sep 2008 14:36:56 +0100 "Will Newton" <will.newton@gmail.com> wrote:
 
-
-On Sun, 31 Aug 2008, Yinghai Lu wrote:
+> On Tue, Aug 26, 2008 at 6:58 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Tue, 26 Aug 2008 10:45:34 -0700
+> > David Brownell <david-b@pacbell.net> wrote:
+> >
+> >> > > Also, how serious is the problem which is being fixed here?  It
+> >> > > _sounds_ like it's of the "fatal for people who have that hardware"
+> >> > > variety, in which case we should get this into 2.6.27 and probably
+> >> > > 2.6.26.x.  Not sure about 2.5.26.x though - the patch doesn't apply
+> >> > > there, but I didn't check whether this is due to functional changes.
+> >> >
+> >> > For users of this version of this particular UART IP it is fatal. From
+> >> > looking at the git history it looks like the original patch went into
+> >> > 2.6.26 so it might also affect that kernel.
+> >>
+> >> Second that:  serial-8250-tighten-test-for-using-backup-timer.patch
+> >> (from MMOTM) in mainline sooner-not-later seems right.
+> >
+> > ok, if you think so...
+> >
+> > I still have an unanswered question out there about the init_timer()
+> > handling in that area of the driver but afaict this patch didn't make any
+> > of it worse than it already is.
 > 
-> how about
-> 
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index cce2f4c..3b5269a 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -240,6 +240,11 @@ static int __pci_read_base(struct pci_dev *dev,
-> enum pci_bar_type type,
->         pci_read_config_dword(dev, pos, &l);
->         pci_write_config_dword(dev, pos, mask);
->         pci_read_config_dword(dev, pos, &sz);
-> +
-> +       /* sticky and non changable */
-> +       if (sz == l)
-> +               goto fail;
+> Any update on this situation? I'd really like this patch to get into 2.6.27.
 
-No, because a resource really _can_ be at the end. It's perfectly ok to 
-have something like a memory resource at 0xff000000-0xffffffff, and then 
-the BAR register would always read 0xff000000 (or 0x...4 for a 64-bit 
-resource).
-
-So calling that a failure case would be wrong.
-
-		Linus
+yup, I plan to include the patch in my next batch for 2.6.27.
