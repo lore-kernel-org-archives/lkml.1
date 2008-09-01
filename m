@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbYIAS3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbYIASb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbYIAS3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYIAS3r
+	id S1758426AbYIASb4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 14:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIASbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:29:47 -0400
-Received: from puma.cosy.sbg.ac.at ([141.201.2.23]:37098 "EHLO
-	puma.cosy.sbg.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbYIAS3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:29:46 -0400
-Message-ID: <48BC346E.1060108@cosy.sbg.ac.at>
-Date: Mon, 01 Sep 2008 20:29:02 +0200
-From: Michael Noisternig <mnoist@cosy.sbg.ac.at>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Mon, 1 Sep 2008 14:31:48 -0400
+Received: from www.tglx.de ([62.245.132.106]:37144 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751289AbYIASbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 14:31:48 -0400
+Date: Mon, 1 Sep 2008 20:31:07 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+In-Reply-To: <48BC2A03.9000104@lwfinger.net>
+Message-ID: <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: (more) epoll troubles
-References: <fa.zt4K08zThcs3bS6QJSiWmdw4amQ@ifi.uio.no> <48BC26D9.1040300@shaw.ca> <48BC2746.1090006@shaw.ca>
-In-Reply-To: <48BC2746.1090006@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock schrieb:
-> Robert Hancock wrote:
->> Michael Noisternig wrote:
->>> Hello,
->>>
->>> and sorry again if this is the wrong place to ask (again, please hint 
->>> to me to an appropriate place to ask in that case).
->>>
->>> After experimenting with epoll edge-triggered mode I am clueless why 
->>> on a few occassions I seem to not get any input notification despite 
->>> data is available.
->>>
->>> In detail: I have set up sockets with epoll events 
->>> EPOLLET|EPOLLRDHUP|EPOLLIN. When I get EPOLLIN for a socket, I read() 
->>> as long as I get what I asked for, i.e. whenever read() returns 
->>> either EAGAIN or less data than I asked for I take this as indication 
->>> that I must wait for another EPOLLIN notification. However, this does 
->>> not seem to work always.
->>>
->>> Here is some log from my program:
->>>
->>> 0x9e6b8a8: read not avail (1460/2048 read)
->>> i.e. tried to read 2048 bytes, got 1460 -> assume must wait for 
->>> EPOLLIN for more data to read
->>> (note that the fd is always in the epoll set with 
->>> EPOLLET|EPOLLRDHUP|EPOLLIN)
->>
->> It would likely be better to always continue trying to read until 
->> EAGAIN is returned, even if the read returned less than the requested 
->> amount, as implied here:
->>
->> http://linux.die.net/man/7/epoll
->>
->> "The function do_use_fd() uses the new ready file descriptor until 
->> EAGAIN is returned by either read(2) or write(2). An event driven 
->> state machine application should, after having received EAGAIN, record 
->> its current state so that at the next call to do_use_fd() it will 
->> continue to read(2) or write(2) from where it stopped before. "
+On Mon, 1 Sep 2008, Larry Finger wrote:
+> Thomas Gleixner wrote:
+> > > The critical differences in the dmesg output between the "good" and "bad"
+> > > results indicate a factor of 2 difference in the clock speed, and are
+> > > shown
+> > > below:
+> > 
+> > > +Clocksource tsc unstable (delta = 500037272 ns)
+> > 
+> > > -Clocksource tsc unstable (delta = 83950402 ns)
+> > 
+> > In both cases the TSC is ahead of the pm_timer, which looks like the
+> > pm_timer is behaving strange.
+> > 
+> > Can you please disable the pm_timer (in the kernel config,
+> > unfortunately there is no command line option for that) for a test and
+> > provide the relevant output of demsg ?
 > 
-> Though, this is somewhat contradicted by the FAQ section:
+> It took a while to figure out how to kill the pm_timer. I finally did it by
+> changing the default to no rather than yes. I also reset the bisection and
+> compiled a full -rc4 kernel.
 > 
-> "the condition that the read/write I/O space is exhausted can be 
-> detected by checking the amount of data read/write from/to the target 
-> file descriptor. For example, if you call read(2) by asking to read a 
-> certain amount of data and read(2) returns a lower number of bytes, you 
-> can be sure to have exhausted the read I/O space for such file descriptor."
+> What I hope is the relevant output of dmesg is below. The clock rate is
+> correctly determined, and the b43legacy errors are gone.
 
-Yes, exactly. I don't know what is causing the problem I'm experiencing. 
-Especially as it happens rather infrequently.
+Hmm. Haven't seen that before, but if confirms what I guessed from
+your previous dmesg information. I wonder why you did not observe
+strange behaviour with older kernel versions. I don't mean the
+b43legacy errors, which might be caused by the wrong calibrated TSC,
+but those even should show strange behaviour vs. time.
+
+Can you please provide the output of an older "working" kernel version
+from:
+
+# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+
+after the TSC was set to unstable. It should say acpi_pm.
+
+If that's the case please run
+ 
+# time sleep 60
+
+on a shell and provide the output and verify it against a knwn to be
+halfways correct stopwatch.
+
+Then do the same on the current mainline with pm_timer
+disabled. current clocksource should be either jiffies or tsc.
+
+Thanks,
+
+	tglx
