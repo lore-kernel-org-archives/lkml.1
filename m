@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752471AbYIAW5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752557AbYIAXB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752471AbYIAW5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 18:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYIAW5N
+	id S1752557AbYIAXB3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 19:01:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYIAXBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 18:57:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50201 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750722AbYIAW5M (ORCPT
+	Mon, 1 Sep 2008 19:01:21 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44370 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbYIAXBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 18:57:12 -0400
-Date: Mon, 1 Sep 2008 15:56:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
-In-Reply-To: <alpine.LFD.1.10.0809020033060.3243@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0809011545020.12958@nehalem.linux-foundation.org>
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011500460.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033060.3243@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 1 Sep 2008 19:01:21 -0400
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Misc fixes for 2.6.27
+From: Andi Kleen <andi@firstfloor.org>
+References: <1220300084.2982.139.camel@pmac.infradead.org>
+	<87wshvwl8v.fsf@basil.nowhere.org>
+	<20080901153517.2f8b1ef8@infradead.org>
+Date: Tue, 02 Sep 2008 01:01:19 +0200
+In-Reply-To: <20080901153517.2f8b1ef8@infradead.org> (Arjan van de Ven's message of "Mon, 1 Sep 2008 15:35:17 -0700")
+Message-ID: <87sksjwjwg.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arjan van de Ven <arjan@infradead.org> writes:
 
+> On Tue, 02 Sep 2008 00:32:16 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+>
+>> David Woodhouse <dwmw2@infradead.org> writes:
+>> > +
+>> > +static struct dmi_system_id __initdata intel_iommu_dmi_table[] = {
+>> > +	{	/* Some DG33BU BIOS revisions advertised
+>> > non-existent VT-d */
+>> 
+>> Are you sure it's non existent? A G33 chipset should have it in
+>> hardware I thought.
+>
+> nope they don't/
+> later ones and some other models do though, but not the G33
 
-On Tue, 2 Sep 2008, Thomas Gleixner wrote:
-> > 
-> > Umm. Which one. The 32-bit or the 64-bit?
-> 
-> The 32 bit version.
+I see. But presumably that chipset will be in other motherboards
+too and that BIOS bug might be also wider spread. So it would be still 
+better to key off an PCI-ID or similar.
 
-So then the PIT isn't going to work on that machine. Do you have HPET?
+-Andi
 
-Because if so, the most obvious choice would be to say:
-
- - on old machines, the PIT is likely more reliable than PM_TIMER
-
- - on new machines, the HPET is likely more reliable than PIT
-
-and there's actually a fairly obvious place to distinguish between old and 
-new: if ti has a HPET, consider it a new one.
-
-But that just means that there's never any reason to use PM_TIMER anyway, 
-and the proper patch would probably be to just ignore it. No?
-
-		Linus
+-- 
+ak@linux.intel.com
