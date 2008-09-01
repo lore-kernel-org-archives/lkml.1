@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYIAIxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYIAI4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYIAIxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 04:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYIAIxj
+	id S1756229AbYIAI4F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 04:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYIAIzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 04:53:39 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:51286 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbYIAIxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 04:53:38 -0400
-From: Julien Brunel <brunel@diku.dk>
-To: davem@davemloft.net, kuznet@ms2.inr.ac.ru, pekkas@netcore.fi,
-       jmorris@namei.org, yoshfuji@linux-ipv6.org, kaber@trash.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] net/xfrm: Use an IS_ERR test rather than a NULL test
-Date: Mon, 1 Sep 2008 10:53:33 +0200
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 1 Sep 2008 04:55:50 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55279 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751877AbYIAIzt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 04:55:49 -0400
+Date: Mon, 1 Sep 2008 09:38:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Hemminger <stephen.hemminger@vyatta.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       David Miller <davem@davemloft.net>, Dushan Tcholich <dusanc@gmail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, bridge@lists.linux-foundation.org
+Subject: Re: [RFC] bridge: STP timer management range checking
+Message-ID: <20080901093827.24eec86f@lxorguk.ukuu.org.uk>
+In-Reply-To: <48BB295A.6050200@vyatta.com>
+References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
+	<48975BD3.6040709@shaw.ca>
+	<a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
+	<20080807185802.GA16327@electric-eye.fr.zoreil.com>
+	<a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
+	<a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
+	<a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
+	<a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
+	<20080831100537.6929c51e@extreme>
+	<20080831104309.780cc01f@extreme>
+	<20080831230247.76b5a193@lxorguk.ukuu.org.uk>
+	<48BB295A.6050200@vyatta.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809011053.34028.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julien Brunel <brunel@diku.dk>
+> > Seems bogus extra code to me - stops things working that should be
+> > allowed too.
+> >   
+> The timer configuration is propagated in network protocol, so 
+> misconfigured Linux box
+> could survive but effect other devices on the network that are less 
+> robust. Maybe the
 
-In case of error, the function xfrm_bundle_create returns an ERR
-pointer, but never returns a NULL pointer. So a NULL test that comes
-after an IS_ERR test should be deleted.
+That would be irrelevant. CAP_NET_ADMIN lets you make that size mess
+anyway.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+> small values would cause some other bridge to crash, go infinite loop, ...
+> More likely robust devices might ignore our packets (because values out 
+> of range), leading to
+> routing loops and other disasters.
 
-// <smpl>
-@match_bad_null_test@
-expression x, E;
-statement S1,S2;
-@@
-x =  xfrm_bundle_create(...)
-... when != x = E
-*  if (x != NULL) 
-S1 else S2
-// </smpl>
+Spamming tree isn't secure, news at 11.
 
-Signed-off-by:  Julien Brunel <brunel@diku.dk>
-Signed-off-by:  Julia Lawall <julia@diku.dk>
+> The kernel does need to stop administrative settings from taking out a 
+> network. 
 
----
- net/xfrm/xfrm_policy.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+If you have CAP_NET_ADMIN you can trivially take out the network unless
+it is properly switched.
 
-diff -u -p a/net/xfrm/xfrm_policy.c b/net/xfrm/xfrm_policy.c
---- a/net/xfrm/xfrm_policy.c
-+++ b/net/xfrm/xfrm_policy.c
-@@ -1731,8 +1731,7 @@ restart:
- 			 * We can't enlist stable bundles either.
- 			 */
- 			write_unlock_bh(&policy->lock);
--			if (dst)
--				dst_free(dst);
-+			dst_free(dst);
- 
- 			if (pol_dead)
- 				XFRM_INC_STATS(LINUX_MIB_XFRMOUTPOLDEAD);
-@@ -1748,8 +1747,7 @@ restart:
- 			err = xfrm_dst_update_origin(dst, fl);
- 		if (unlikely(err)) {
- 			write_unlock_bh(&policy->lock);
--			if (dst)
--				dst_free(dst);
-+			dst_free(dst);
- 			XFRM_INC_STATS(LINUX_MIB_XFRMOUTBUNDLECHECKERROR);
- 			goto error;
- 		}
+Now you might want your pretty little GUI and/or config tools to warn
+people that their configuration is outside 802 specs but that is a
+different matter altogether
+
+Alan
