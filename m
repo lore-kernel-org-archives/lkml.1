@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYIAItc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYIAIvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbYIAItc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 04:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbYIAItY
+	id S1755451AbYIAIvi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 04:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYIAIva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 04:49:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44736 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750840AbYIAItX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 04:49:23 -0400
-Date: Mon, 1 Sep 2008 10:52:17 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andi Kleen <andi@firstfloor.org>, paulmck@us.ibm.com,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] Remove stop_machine during module load
-Message-ID: <20080901085217.GA18288@one.firstfloor.org>
-References: <20080829191734.GA28329@basil.nowhere.org> <200809011702.00956.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Sep 2008 04:51:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:39012 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751728AbYIAIv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 04:51:29 -0400
+From: Julien Brunel <brunel@diku.dk>
+To: swhiteho@redhat.com, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH] fs/gfs2: Use an IS_ERR test rather than a NULL test
+Date: Mon, 1 Sep 2008 10:51:22 +0200
+User-Agent: KMail/1.9.9
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200809011702.00956.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200809011051.22862.brunel@diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 05:02:00PM +1000, Rusty Russell wrote:
-> On Saturday 30 August 2008 05:17:34 Andi Kleen wrote:
-> > Remove stop_machine during module load
-> >
-> > module loading currently does a stop_machine on each module load to insert
-> > the module into the global module lists.  Especially on larger systems this
-> > can be quite expensive.
-> 
-> Thanks Andi, but doesn't this mean that we should be doing list_for_each_rcu 
-> in all the kallsyms readers?
+From: Julien Brunel <brunel@diku.dk>
 
-Yes I did that in v2. But only for the ones that don't hold modules_mutex
-anyways. Also I found that print_modules() does not always disable 
-preemption.
+In case of error, the function gfs2_inode_lookup returns an
+ERR pointer, but never returns a NULL pointer. So a NULL test that
+necessarily comes after an IS_ERR test should be deleted, and a NULL
+test that may come after a call to this function should be
+strengthened by an IS_ERR test.
 
--Andi
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
--- 
-ak@linux.intel.com
+// <smpl>
+@match_bad_null_test@
+expression x, E;
+statement S1,S2;
+@@
+x = gfs2_inode_lookup(...)
+... when != x = E
+* if (x != NULL) 
+S1 else S2
+// </smpl>
+
+Signed-off-by:  Julien Brunel <brunel@diku.dk>
+Signed-off-by:  Julia Lawall <julia@diku.dk>
+
+---
+ fs/gfs2/inode.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff -u -p a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+--- a/fs/gfs2/inode.c
++++ b/fs/gfs2/inode.c
+@@ -1033,13 +1033,11 @@ struct inode *gfs2_createi(struct gfs2_h
+ 
+ 	if (bh)
+ 		brelse(bh);
+-	if (!inode)
+-		return ERR_PTR(-ENOMEM);
+ 	return inode;
+ 
+ fail_gunlock2:
+ 	gfs2_glock_dq_uninit(ghs + 1);
+-	if (inode)
++	if (inode && !IS_ERR(inode))
+ 		iput(inode);
+ fail_gunlock:
+ 	gfs2_glock_dq(ghs);
