@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbYIADS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753986AbYIADVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbYIADS2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 23:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYIADSR
+	id S1753986AbYIADVf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 23:21:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIADV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 23:18:17 -0400
-Received: from mga02.intel.com ([134.134.136.20]:63870 "EHLO mga02.intel.com"
+	Sun, 31 Aug 2008 23:21:27 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45641 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbYIADSQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 23:18:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,304,1217833200"; 
-   d="scan'208";a="434118732"
-Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume after
-	undocking
-From: Zhang Rui <rui.zhang@intel.com>
-To: Steven King <sfking@fdwdc.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ibm-acpi-devel@lists.sourceforge.net
-In-Reply-To: <200808301535.22419.sfking@fdwdc.com>
-References: <200808301535.22419.sfking@fdwdc.com>
+	id S1750878AbYIADV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 Aug 2008 23:21:27 -0400
+Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline
+	CPUs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, jwboyer@linux.vnet.ibm.com,
+       tnt@246tNt.com, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       manfred@colorfullife.com, akpm@linux-foundation.org
+In-Reply-To: <20080901020640.GM7015@linux.vnet.ibm.com>
+References: <20080831173127.GA15296@linux.vnet.ibm.com>
+	 <1220229284.13162.411.camel@pasglop>
+	 <20080901020640.GM7015@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Mon, 01 Sep 2008 11:17:28 +0800
-Message-Id: <1220239048.24775.152.camel@rzhang-dt>
+Date: Mon, 01 Sep 2008 13:14:40 +1000
+Message-Id: <1220238880.13010.4.camel@pasglop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-08-30 at 15:35 -0700, Steven King wrote:
-> While 2.6.26 made my x61t work with the x6ultrabase, I find that once I have 
-> docked the x61t, I can only resume after a suspend2ram if the x61t is docked.  
-> That is:
+On Sun, 2008-08-31 at 19:06 -0700, Paul E. McKenney wrote:
+> On Mon, Sep 01, 2008 at 10:34:44AM +1000, Benjamin Herrenschmidt wrote:
+> > On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
+> > > Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
+> > > cpu_online_mask until it has processed pending irqs.  This change
+> > > prevents other CPUs from being blindsided by an apparently offline CPU
+> > > nevertheless changing globally visible state.
+> > > 
+> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > ---
+> > 
+> > Sounds reasonable... the only possible worry here is if somebody tries
+> > an IPI ... The IPI code will and the target CPU mask with the online
+> > map, so it may try to send to the to-be-offlined CPU and timeout, no ?
 > 
-> Never have been docked: suspend & resume works fine.
-> Docked: suspend & resume works fine.
-> Docked, undocked, re-docked: suspend & resume works fine.
-> 
-> Docked, then undocked: never finishes resuming (the disk seems to spin up and 
-> the sleep led goes off, but the system doesnt seem to get any further).
-> 
-> Any suggestions?
-> 
-I have an acpidump of a X61, and it may also send notifications in _STA
-method.
-Please please try the following patch and see if it helps.
-and it would be great if you can attach the acpidump of your laptop.
+> OK.  Do we need separate IPI and online masks?
 
-In some BIOSes, every _STA method call will send a notification again,
-this cause freeze. And in some BIOSes, it appears _STA should be called
-after _DCK. This tries to avoid calls _STA, and still keep the device
-present check.
-http://bugzilla.kernel.org/show_bug.cgi?id=10431
+Shouldn't we already have routed all interrupts to other CPUs anyway ?
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com> 
----
- drivers/acpi/dock.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+IE. The affinity of all interrupts should have been updated. So the
+only thing we're going to get here are possibly IPIs and decrementer, 
+I don't see it being a big deal making sure we test we are online when
+receiving it.
 
-Index: linux/drivers/acpi/dock.c
-===================================================================
---- linux.orig/drivers/acpi/dock.c	2008-08-27 14:38:44.000000000 +0800
-+++ linux/drivers/acpi/dock.c	2008-08-28 09:33:02.000000000 +0800
-@@ -604,14 +604,17 @@ static int handle_eject_request(struct d
- static void dock_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct dock_station *ds = data;
-+	struct acpi_device *tmp;
- 
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
--		if (!dock_in_progress(ds) && dock_present(ds)) {
-+		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
-+		   &tmp)) {
- 			begin_dock(ds);
- 			dock(ds);
- 			if (!dock_present(ds)) {
- 				printk(KERN_ERR PREFIX "Unable to dock!\n");
-+				complete_dock(ds);
- 				break;
- 			}
- 			atomic_notifier_call_chain(&dock_notifier_list,
-
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Ben.
 
 
