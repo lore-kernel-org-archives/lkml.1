@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYIALue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759743AbYIALzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759896AbYIALue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 07:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbYIALuK
+	id S1759743AbYIALzN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 07:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYIALy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 07:50:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35288 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757215AbYIALuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 07:50:08 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: David Woodhouse <dwmw2@infradead.org>
-To: dedekind@infradead.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-In-Reply-To: <1220269436.4036.29.camel@sauron>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-	 <1220262187.2982.58.camel@pmac.infradead.org>
-	 <1220267810.4036.24.camel@sauron>
-	 <1220268480.2982.68.camel@pmac.infradead.org>
-	 <1220269436.4036.29.camel@sauron>
-Content-Type: text/plain
-Date: Mon, 01 Sep 2008 12:50:04 +0100
-Message-Id: <1220269804.2982.72.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 1 Sep 2008 07:54:59 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:47803 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753380AbYIALy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 07:54:59 -0400
+Message-ID: <48BBD7C8.4070005@sgi.com>
+Date: Mon, 01 Sep 2008 13:53:44 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, travis@sgi.com, mingo@elte.hu,
+       Alan.Brunelle@hp.com, tglx@linutronix.de, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       akpm@linux-foundation.org, arjan@linux.intel.com, rusty@rustcorp.com.au
+Subject: Re: [Bug #11342] Linux 2.6.27-rc3: kernel BUG at mm/vmalloc.c - bisected
+References: <20080826072220.GB31876@elte.hu> <20080826.004607.253712060.davem@davemloft.net> <48B4542A.1050004@sgi.com> <20080826.134535.193703558.davem@davemloft.net> <48B7EEA2.7090300@sgi.com> <alpine.LFD.1.10.0808290909020.3300@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0808290909020.3300@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-01 at 14:43 +0300, Artem Bityutskiy wrote:
-> May be, but there are only 5 bytes left. 
+Linus Torvalds wrote:
+> 
+> On Fri, 29 Aug 2008, Jes Sorensen wrote:
+>> I have only tested this on ia64, but it boots, so it's obviously
+>> perfect<tm> :-)
+> 
+> Well, it probably boots because it doesn't really seem to _change_ much of 
+> anything.
 
-There are 5 uint32_ts left. And then there would be 3.
+Hi Linus,
 
-> But why would you need more UUID bytes?
+I realize that, but as I have been doing this work on ia64, I didn't
+want to mess too much with the x86 code. The ia64 part of the patch does
+change things :-)
 
-People are mostly using 16-byte UUIDs. We only have space to expose 8
-bytes. It just seems to make sense to expose all 16.
+If someone with more x86 knowledge would want to try and make that part
+of the patch better, and more importantly test it, I'd be quite keen on
+helping out.
 
-But there's no overriding reason to do it, really.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Cheers,
+Jes
 
 
+> Things like this:
+> 
+> 	-static inline void arch_send_call_function_ipi(cpumask_t mask)
+> 	+static inline void arch_send_call_function_ipi(cpumask_t *mask)
+> 	 {
+> 	-       smp_ops.send_call_func_ipi(mask);
+> 	+       smp_ops.send_call_func_ipi(*mask);
+> 	 }
+> 
+> will still do that stack allocation at the time of the call. You'd have to 
+> pass the thing all the way down as a pointer..
+> 
+> 			Linus
+> 
 
