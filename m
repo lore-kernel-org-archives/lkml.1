@@ -1,225 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbYIAO3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYIAOcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbYIAO3v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 10:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbYIAO3n
+	id S1753798AbYIAOcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 10:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYIAOcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 10:29:43 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:6215 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751457AbYIAO3m convert rfc822-to-8bit (ORCPT
+	Mon, 1 Sep 2008 10:32:14 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:13692 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbYIAOcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 10:29:42 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 1 Sep 2008 10:32:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=qMh4fmjTPhxer0O8bHAsRu8u1FjkgOytvQp7tZlO0iWbspRzzMlcU+ynUulDX75KHd
+         oI11GT2Qjqs8OwlcQEHq3oIKsV+xJC34UZCZnr1RYoNx0oItpjNWwAd9Me91MdHrh+9t
+         K8vv1+XaC7JoTklVlVv7D+dzTF5UHN0ctIrJQ=
+Date: Mon, 1 Sep 2008 18:29:50 +0400
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Cc: axboe@kernel.dk, dwmw2@infradead.org
+Subject: warning during mtd registration in 2.6.27-rc5
+Message-ID: <20080901142949.GA18081@doriath.ww600.siemens.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 2.6.27-rc5 1/29] mdb: export ioapic read routines and      detected ioapic count
-Date: Mon, 1 Sep 2008 10:25:11 -0400
-Message-ID: <7225594ED4A1304C9E43D030A886D2215522AE@daytona.int.panasas.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.27-rc5 1/29] mdb: export ioapic read routines and      detected ioapic count
-Thread-Index: AckMO/+9roP3DVdGTUSrWEkyBpjL2gAAot7G
-References: <200808290547.m7T5leOa016106@wolfmountaingroup.com>    <48BAA364.7080503@panasas.com> <59911.166.70.238.45.1220276384.squirrel@webmail.wolfmountaingroup.com>
-From: "Halevy, Benny" <bhalevy@panasas.com>
-To: <jmerkey@wolfmountaingroup.com>
-Cc: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cool.  If you find git-send-email too low-level, feel
-free to use my convenience script, git-send-patch:
-http://git.bhalevy.com/git/gitweb.cgi?p=git-tools.git;a=blob_plain;f=git-send-patch;hb=HEAD
-that helps automate the patch sending process even further
-in particular it knows to wait between each email
-so that they arrive to the list (approx.) in order.
-(Otherwise I found that Thundermail might get confused
-when trying to thread them together)
-Note: don't forget to keep the angle brackets surrounding
-the message-id for the in-reply-to parmaeter...
+Hi,
 
-Benny
+Since commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
+I'm seeing this problem:
 
------Original Message-----
-From: jmerkey@wolfmountaingroup.com [mailto:jmerkey@wolfmountaingroup.com]
-Sent: Mon 2008-09-01 16:39
-To: Halevy, Benny
-Cc: jmerkey@wolfmountaingroup.com; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc5 1/29] mdb: export ioapic read routines and      detected ioapic count
- 
-> Jeff, general comment: can you please send your patches as replies
-> to a leading message so they all be linked as a single thread?
-> Threading them together is helpful for maintaining several
-> versions of your patchset and it's simpler to ignore if one's
-> not really interested in this topic at all.
->
-> Benny
->
+kobject (c3abad68): tried to init an initialized object, something is seriously wrong.
+[<c0027ff0>] (dump_stack+0x0/0x14) from [<c013c484>] (kobject_init+0x40/0x78)
+[<c013c444>] (kobject_init+0x0/0x78) from [<c013ca24>] (kobject_init_and_add+0x20/0x44)
+ r5:c3abad68 r4:c3ac2520
+[<c013ca08>] (kobject_init_and_add+0x4/0x44) from [<c0137c6c>] (blk_register_filter+0x48/0x60)
+ r5:c3ab4060 r4:c3aba880
+[<c0137c24>] (blk_register_filter+0x0/0x60) from [<c01366c4>] (add_disk+0x60/0xb8)
+ r4:c3ac2400
+[<c0136664>] (add_disk+0x0/0xb8) from [<c01a6994>] (add_mtd_blktrans_dev+0x210/0x244)
+ r5:c3ab4060 r4:00000001
+[<c01a6784>] (add_mtd_blktrans_dev+0x0/0x244) from [<c01a6bbc>] (mtdblock_add_mtd+0x58/0x64)
+ r8:c03c7910 r7:c3ab6100 r6:c03c6bd4 r5:c03c6c04 r4:c3ab6100
+[<c01a6b64>] (mtdblock_add_mtd+0x0/0x64) from [<c01a6144>] (blktrans_notify_add+0x3c/0x68)
+ r5:c3ab6100 r4:c03c6c04
+[<c01a6108>] (blktrans_notify_add+0x0/0x68) from [<c01a3a20>] (add_mtd_device+0xc0/0x120)
+ r6:c03c6b80 r5:c3ab6100 r4:c03c6bc4
+[<c01a3960>] (add_mtd_device+0x0/0x120) from [<c01a4e50>] (add_one_partition+0x468/0x500)
+ r6:c3ac2000 r5:00700000 r4:c3ab6100
+[<c01a49e8>] (add_one_partition+0x0/0x500) from [<c01a4f20>] (add_mtd_partitions+0x38/0x7c)
+[<c01a4ee8>] (add_mtd_partitions+0x0/0x7c) from [<c0016a48>] (sharpsl_nand_init+0x1dc/0x238)
+....
 
-Hi Benny,
+This happens when adding mtd partitions. I've traced it to the fact that
+mtd partition devices share the genhd queue with the whole chip block device.
+Thus blk_register_filter receives the same pointer for the chip and for each
+registered partition.
 
-I was already scolded about this by a few folks.  I had not located the
-git email programs when I submitted this project and I wrote something
-myself to submit them.  (see attached).  I have thrown the program in the
-trash I wrote to do this and moved to git.
-
-Now I have reviewed the git clients and patch tools and I understand and
-will use git and I see now why git works this way with the reply chain. I
-will not be submitting patch series on this list for every release unless
-the code has had major additions or changes in the future.   I will
-instead post the patches to the project site with a single post on this
-list to point to the patches.
-
-I will post patch series when x86_64 is finished and I have completed my
-rewrite of traps_32.c and traps_64.c -- Linux needs nested TSS gates over
-all the exceptions so the system can handle nested exceptions and switch
-to a known good stack during faults.  At present, what's there is ok but
-not as resilient as it could be.
-
-Jeff
-
-
-
-#include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-
-#define TESTING 1
-
-unsigned char buffer[8192];
-unsigned char filename[64];
-
-int output_comments(FILE *fl, int j)
-{
-    fprintf(fl, "\n");
-    return 0;
-}
-
-int main(int argc, char *argv[])
-{
-    register int i = 1, j;
-    register FILE *fp = NULL, *fl, *fs;
-    char *s, *p;
-
-    while (s = fgets(buffer, 8192, stdin))
-    {
-       if (!strncmp(s, "diff", 4))
-         continue;
-
-       if (!strncmp(s, "---", 3))
-       {
-          if (fp)
-          {
-             i++;
-             fclose(fp);
-          }
-
-          sprintf(filename, "%i.patch", i);
-          fp = fopen(filename, "wb");
-          if (!fp)
-          {
-             printf("file open error [%s]\n", filename);
-             return 1;
-          }
-
-          p = strchr(s, '/');
-          if (p)
-          {
-             fprintf(fp, "--- a");
-             fprintf(fp, "%s", p);
-          }
-          else
-             fprintf(fp, "%s", s);
-          continue;
-       }
-
-       if (!strncmp(s, "+++", 3))
-       {
-          p = strchr(s, '/');
-          if (p)
-          {
-             fprintf(fp, "+++ b");
-             fprintf(fp, "%s", p);
-          }
-          else
-             fprintf(fp, "%s", s);
-          continue;
-       }
-
-       if (fp);
-          fprintf(fp, "%s", s);
-    }
-    if (fp)
-       fclose(fp);
-
-    fs = fopen("mailer", "wb");
-    if (!fs)
-    {
-       printf("file open error [mailer]\n");
-       return 1;
-    }
-
-    for (j=1; j <= i; j++)
-    {
-       sprintf(filename, "%i.patch", j);
-       fp = fopen(filename, "rb");
-       if (!fp)
-       {
-          printf("file open error [%s]\n", filename);
-          return 1;
-       }
-
-       sprintf(filename, "%i.final", j);
-       fl = fopen(filename, "wb");
-       if (!fl)
-       {
-          printf("file open error [%s]\n", filename);
-          return 1;
-       }
-       fprintf(fs, "sendmail -f jmerkey@wolfmountaingroup.com -t < %s\n",
-               filename);
-
-#if TESTING
-       fprintf(fl, "To:jeff@wolfmountaingroup.com\n");
-#else
-       fprintf(fl, "To:linux-kernel@vger.kernel.org\n");
-#endif
-       fprintf(fl, "From:jmerkey@wolfmountaingroup.com\n");
-       fprintf(fl, "Subject:[PATCH %s %i/%i] mdb: ",
-               argv[1] ? argv[1] : "", j, i);
-
-       output_comments(fl, j);
-
-       fprintf(fl, "Signed-off-by: Jeffrey Vernon Merkey "
-                   "(jmerkey@wolfmountaingroup.com)\n\n");
-
-       while (s = fgets(buffer, 8192, fp))
-          fprintf(fl, "%s", s);
-
-       fclose(fp);
-       sprintf(filename, "%i.patch", j);
-       unlink(filename);
-
-       fclose(fl);
-    }
-    fclose(fs);
-    chmod("mailer", 755);
-    return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- 
+With best wishes
+Dmitry
 
