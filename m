@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbYIAXTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYIAXTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbYIAXTR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 19:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbYIAXQG
+	id S1753457AbYIAXTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 19:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYIAXQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 19:16:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45053 "EHLO
+	Mon, 1 Sep 2008 19:16:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45060 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752327AbYIAXQF (ORCPT
+	with ESMTP id S1751539AbYIAXQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 19:16:05 -0400
-Date: Mon, 1 Sep 2008 16:10:27 -0700
+	Mon, 1 Sep 2008 19:16:10 -0400
+Date: Mon, 1 Sep 2008 16:11:12 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, torvalds@linux-foundation.org,
        dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
-Subject: [PATCH 8/13] hrtimer: convert s390 to the new hrtimer apis
-Message-ID: <20080901161027.560c5814@infradead.org>
+Subject: [PATCH 9/13] hrtimer: convert sound/ to the new hrtimer apis
+Message-ID: <20080901161112.33ababcb@infradead.org>
 In-Reply-To: <20080901160343.75a89ec9@infradead.org>
 References: <20080901160343.75a89ec9@infradead.org>
 Organization: Intel
@@ -33,34 +33,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] hrtimer: convert s390 to the new hrtimer apis
+Subject: [PATCH] hrtimer: convert sound/ to the new hrtimer apis
 
 In order to be able to do range hrtimers we need to use accessor functions
 to the "expire" member of the hrtimer struct.
-This patch converts s390 to these accessors.
+This patch converts sound/ to these accessors.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- drivers/s390/crypto/ap_bus.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ sound/drivers/pcsp/pcsp_lib.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/s390/crypto/ap_bus.c b/drivers/s390/crypto/ap_bus.c
-index 62b6b55..6f02f1e 100644
---- a/drivers/s390/crypto/ap_bus.c
-+++ b/drivers/s390/crypto/ap_bus.c
-@@ -659,9 +659,9 @@ static ssize_t poll_timeout_store(struct bus_type *bus, const char *buf,
- 	hr_time = ktime_set(0, poll_timeout);
- 
- 	if (!hrtimer_is_queued(&ap_poll_timer) ||
--	    !hrtimer_forward(&ap_poll_timer, ap_poll_timer.expires, hr_time)) {
--		ap_poll_timer.expires = hr_time;
--		hrtimer_start(&ap_poll_timer, hr_time, HRTIMER_MODE_ABS);
-+	    !hrtimer_forward(&ap_poll_timer, hrtimer_get_expires(&ap_poll_timer), hr_time)) {
-+		hrtimer_set_expires(&ap_poll_timer, hr_time);
-+		hrtimer_start_expires(&ap_poll_timer, HRTIMER_MODE_ABS);
+diff --git a/sound/drivers/pcsp/pcsp_lib.c b/sound/drivers/pcsp/pcsp_lib.c
+index e341f3f..1f42e40 100644
+--- a/sound/drivers/pcsp/pcsp_lib.c
++++ b/sound/drivers/pcsp/pcsp_lib.c
+@@ -34,7 +34,7 @@ enum hrtimer_restart pcsp_do_timer(struct hrtimer *handle)
+ 		chip->thalf = 0;
+ 		if (!atomic_read(&chip->timer_active))
+ 			return HRTIMER_NORESTART;
+-		hrtimer_forward(&chip->timer, chip->timer.expires,
++		hrtimer_forward(&chip->timer, hrtimer_get_expires(&chip->timer),
+ 				ktime_set(0, chip->ns_rem));
+ 		return HRTIMER_RESTART;
  	}
- 	return count;
- }
+@@ -118,7 +118,8 @@ enum hrtimer_restart pcsp_do_timer(struct hrtimer *handle)
+ 	chip->ns_rem = PCSP_PERIOD_NS();
+ 	ns = (chip->thalf ? PCSP_CALC_NS(timer_cnt) : chip->ns_rem);
+ 	chip->ns_rem -= ns;
+-	hrtimer_forward(&chip->timer, chip->timer.expires, ktime_set(0, ns));
++	hrtimer_forward(&chip->timer, hrtimer_get_expires(&chip->timer),
++							ktime_set(0, ns));
+ 	return HRTIMER_RESTART;
+ 
+ exit_nr_unlock2:
 -- 
 1.5.5.1
 
