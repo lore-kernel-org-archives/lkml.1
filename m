@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbYIAW2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbYIAWc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbYIAW2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 18:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYIAW2Z
+	id S1752373AbYIAWc2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 18:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbYIAWcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 18:28:25 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51415 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751235AbYIAW2Y (ORCPT
+	Mon, 1 Sep 2008 18:32:20 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45375 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbYIAWcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 18:28:24 -0400
-Date: Mon, 1 Sep 2008 23:28:23 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: Linux 2.6.27-rc5
-Message-ID: <20080901222823.GK28946@ZenIV.linux.org.uk>
-References: <alpine.LFD.1.10.0808281555230.3300@nehalem.linux-foundation.org> <g9b7oa$g8l$1@ger.gmane.org>
+	Mon, 1 Sep 2008 18:32:19 -0400
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Misc fixes for 2.6.27
+From: Andi Kleen <andi@firstfloor.org>
+References: <1220300084.2982.139.camel@pmac.infradead.org>
+Date: Tue, 02 Sep 2008 00:32:16 +0200
+In-Reply-To: <1220300084.2982.139.camel@pmac.infradead.org> (David Woodhouse's message of "Mon, 01 Sep 2008 21:14:44 +0100")
+Message-ID: <87wshvwl8v.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <g9b7oa$g8l$1@ger.gmane.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 30, 2008 at 12:34:51PM +0200, Helge Deller wrote:
-> commit da574983de9f9283ba35662c8723627096e160de
-> Author: Al Viro <viro@zeniv.linux.org.uk>
-> [PATCH] fix hpux_getdents() - Missing checks for -EFAULT, broken handling of
-> overflow.
-> 
-> introduced a build breakage:
->   CC      arch/parisc/hpux/fs.o
-> arch/parisc/hpux/fs.c: In function `filldir':
-> arch/parisc/hpux/fs.c:107: error: `buffer' undeclared (first use in this
-> function)
-> make[1]: *** [arch/parisc/hpux/fs.o] Error 1
-> 
-> 
-> This patch fixes it.
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
+David Woodhouse <dwmw2@infradead.org> writes:
+> +
+> +static struct dmi_system_id __initdata intel_iommu_dmi_table[] = {
+> +	{	/* Some DG33BU BIOS revisions advertised non-existent VT-d */
 
-Applied after fixing cut'n'paste damage.
+Are you sure it's non existent? A G33 chipset should have it in
+hardware I thought.
+
+I'm not sure this is really the right way to handle this anyways.
+If there's ever a working BIOS it will be blacklisted too. And
+normally BIOS bugs don't come in one board alone, but in a range
+of them and then adding more and more identifiers is quite painful.
+
+Better would be to add some generic sanity checks that catches
+the issues these BIOS revisions are having.
+
+> +		.callback = blacklist_iommu,
+> +		.ident = "Intel DG33BU",
+> +		{	DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
+> +			DMI_MATCH(DMI_BOARD_NAME, "DG33BU"),
+> +		}
+> +	},
+
+-Andi
+
+-- 
+ak@linux.intel.com
