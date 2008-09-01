@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYIAHTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYIAHU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYIAHTX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 03:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYIAHTK
+	id S1756411AbYIAHU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 03:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYIAHUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 03:19:10 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:13315 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752114AbYIAHTG (ORCPT
+	Mon, 1 Sep 2008 03:20:16 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:54726 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbYIAHUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 03:19:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=StmCwzEEA6Px/csbUBqFNYNji9WELFZo6nIPZktMttWsTJR8kG2ubEr7oULWIlEO/b
-         zlQLbKKNP0MRu9B69/kEtk8LN3bi1V9jiiqQn7vOsNEjiOYm0zfSCBrBXLJZLNYK15mn
-         DNjvdCqzWbpyz/wCZi3/21pla8skMsgPw4lvE=
-Message-ID: <40f31dec0809010019x54d14f43ub614f98ec6420ad7@mail.gmail.com>
-Date: Mon, 1 Sep 2008 10:19:05 +0300
-From: "Nick Kossifidis" <mickflemm@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [GIT]: Networking
-Cc: "Rui Santos" <rsantos@grupopie.com>, "Ivo van Doorn" <ivdoorn@gmail.com>,
-       "David Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0808311313260.12958@nehalem.linux-foundation.org>
+	Mon, 1 Sep 2008 03:20:14 -0400
+Message-ID: <48BB96E1.8080002@cs.helsinki.fi>
+Date: Mon, 01 Sep 2008 10:16:49 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, rdunlap@xenotime.net,
+       mpm@selenic.com, tglx@linutronix.de, rostedt@goodmis.org,
+       cl@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       tzanussi@gmail.com
+Subject: Re: [PATCH] kmemtrace: SLUB hooks for caller-tracking functions.
+References: <1219600175-5253-1-git-send-email-eduard.munteanu@linux360.ro> <48BAAC3C.4050309@cs.helsinki.fi> <20080831183652.GA5220@localhost>
+In-Reply-To: <20080831183652.GA5220@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080805.190020.244441681.davem@davemloft.net>
-	 <alpine.LFD.1.10.0808051937410.15995@nehalem.linux-foundation.org>
-	 <200808061021.56150.IvDoorn@gmail.com> <48B7CBA7.4060107@grupopie.com>
-	 <40f31dec0808311258q7598dfe3he81b7575375faff5@mail.gmail.com>
-	 <alpine.LFD.1.10.0808311313260.12958@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/8/31 Linus Torvalds <torvalds@linux-foundation.org>:
->
->
-> On Sun, 31 Aug 2008, Nick Kossifidis wrote:
+Eduard - Gabriel Munteanu wrote:
+> On Sun, Aug 31, 2008 at 05:35:40PM +0300, Pekka Enberg wrote:
+>> Eduard - Gabriel Munteanu wrote:
+>>> This patch adds kmemtrace hooks for __kmalloc_track_caller() and
+>>> __kmalloc_node_track_caller(). Currently, they set the call site pointer
+>>> to the value recieved as a parameter. (This could change if we implement
+>>> stack trace exporting in kmemtrace.)
+>>> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+>> Applied. I had to do some manual tweaking, so can you please double-check 
+>> the result:
 >>
->> EeePC is working, the patch series i submitted adds support for RF2425
->> chip which is included on EeePCs as far as i know (i have tested it on
->> an EeePC 900 surf, i think EeePC 901 has the same card) ;-)
->
-> I think the EeePC 900 has a ath5k chip, and the 901/1000 has some totally
-> different RaLink chip afaik.
->
-> I think the design change came when moving from Celeron to Atom.
->
->                Linus
->
+>> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=b9f1ecc6428f0ba391845b2ac7df8618da287e4f
+>>
+>> Thanks!
+> 
+> Looks fine to me. However, you can now remove the casts to unsigned long
+> from 'caller', i.e. "s/(unsigned long) caller/caller/g"
 
-Hmm i missed that part, sorry for the spam...
+Fixed, thanks!
 
-01:00.0 Network controller: RaLink Unknown device 0781
-
--- 
-GPG ID: 0xD21DB2DB
-As you read this post global entropy rises. Have Fun ;-)
-Nick
+http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=0fae99540ebb53e0507f2bd6e119bede94e84f77
