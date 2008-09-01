@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYIAG5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYIAHBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYIAG5K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 02:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYIAG45
+	id S1753400AbYIAHBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 03:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYIAHBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 02:56:57 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:30478 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750977AbYIAG44 (ORCPT
+	Mon, 1 Sep 2008 03:01:11 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60674 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbYIAHBK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 02:56:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gZ022FaiYgYdmiAFmX9+pBjhY8M4c9QzJVTvRxsBohTHRasHEoB7m5XtsuNeYLk5d1PwdvB/5CGoPCS3yUN1F+Xip9sdiK67EiECppzZjKQX/MjCZkUFQBOZF27i2WuS85JnE20TQjJHm/h6ztBY/lN1khp16phzFeuBH23L5YA=  ;
-X-YMail-OSG: b7IOvLUVM1kIiCHsuX954b3EPqa47LymE7ApLWlF5xQAyRwY4BpK_2COFxwRts4VvQaegDslm4.Up.2ggs7_weeqQNIh997nl4Y7nIRStLxszzVndo1d68JyPZtQNiJCnKkBCwTNfp1hBtMd7La54opE
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 1 Sep 2008 03:01:10 -0400
+Date: Mon, 1 Sep 2008 15:59:30 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>
 Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
-Date: Mon, 1 Sep 2008 16:56:44 +1000
-User-Agent: KMail/1.9.5
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       hugh@veritas.com, menage@google.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20080831174756.GA25790@balbir.in.ibm.com> <20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Message-Id: <20080901155930.e45a36c8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48BB8AE3.7070704@linux.vnet.ibm.com>
+References: <20080831174756.GA25790@balbir.in.ibm.com>
+	<20080901090102.46b75141.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BB6160.4070904@linux.vnet.ibm.com>
+	<20080901130351.f005d5b6.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BB8716.5090805@linux.vnet.ibm.com>
+	<20080901152424.d9adfe47.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BB8AE3.7070704@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809011656.45190.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 September 2008 10:01, KAMEZAWA Hiroyuki wrote:
-> On Sun, 31 Aug 2008 23:17:56 +0530
->
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > This is a rewrite of a patch I had written long back to remove struct
-> > page (I shared the patches with Kamezawa, but never posted them anywhere
-> > else). I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug
-> > 2008).
->
-> It's just because I think there is no strong requirements for 64bit
-> count/mapcount. There is no ZERO_PAGE() for ANON (by Nick Piggin. I add him
-> to CC.) (shmem still use it but impact is not big.)
+On Mon, 01 Sep 2008 11:55:39 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-I think it would be nice to reduce the impact when it is not configured
-anyway. Normally I would not mind so much, but this is something that
-many distros will want to enable but fewer users will make use of it.
+> KAMEZAWA Hiroyuki wrote:
+> > On Mon, 01 Sep 2008 11:39:26 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > 
+> >>> The development of lockless-page_cgroup is not stalled. I'm just waiting for
+> >>> my 8cpu box comes back from maintainance...
+> >>> If you want to see, I'll post v3 with brief result on small (2cpu) box.
+> >>>
+> >> I understand and I am not pushing you to completing it, but at the same time I
+> >> don't want to queue up behind it for long. I suspect the cost of porting
+> >> lockless page cache on top of my patches should not be high, but I'll never know
+> >> till I try :)
+> >>
+> > My point is, your patch adds big lock. Then, I don't have to do meaningless effort
+> > to reduce lock.
+> 
+> My patch does not add a big lock, it moves the lock from struct
+> page->page_cgroup to struct page_cgroup. The other locking added is the locking
+> overhead associated with inserting entries into the radix tree, true. I ran
+> oprofile along with lockdep and lockstats enabled on my patches. I don't see the
+> radix_tree or page_cgroup->lock showing up, I see __slab_free and __slab_alloc
+> showing up. I'll poke a little further.
+> 
+Hmm, one concern I have now is I don't see any contention on  res_counter->lock in
+recent lock_stat test....which was usually on the top of list in past.
+Did you see it ?
 
-I think it is always a very good idea to try to reduce struct page size.
-When looking at the performance impact though, just be careful with the
-alignment of struct page... I actually think it is going to be a
-performance win in many cases to make struct page 64 bytes.
+> Please don't let my patch stop you, we'll integrate the best of both worlds and
+> what is good for memcg.
+> 
+Thank you.
 
+To be honest, I wonder control via page_cgroup may be too rich for 32bit archs ;(.
 
-> > I've tested the patches on an x86_64 box, I've run a simple test running
-> > under the memory control group and the same test running concurrently
-> > under two different groups (and creating pressure within their groups).
-> > I've also compiled the patch with CGROUP_MEM_RES_CTLR turned off.
-> >
-> > Advantages of the patch
-> >
-> > 1. It removes the extra pointer in struct page
-> >
-> > Disadvantages
-> >
-> > 1. It adds an additional lock structure to struct page_cgroup
-> > 2. Radix tree lookup is not an O(1) operation, once the page is known
-> >    getting to the page_cgroup (pc) is a little more expensive now.
-> >
-> > This is an initial RFC for comments
-> >
-> > TODOs
-> >
-> > 1. Test the page migration changes
-> > 2. Test the performance impact of the patch/approach
-> >
-> > Comments/Reviews?
->
-> plz wait until lockless page cgroup....
->
-> And If you don't support radix-tree-delete(), pre-allocating all at boot is
-> better.
+Regards,
+-Kame
 
-If you do that, it might even be an idea to allocate flat arrays with
-bootmem. It would just be slightly more tricky more tricky to fit this
-in with the memory model. But that's not a requirement, just an idea
-for a small optimisation.
-
-Thanks,
-Nick
