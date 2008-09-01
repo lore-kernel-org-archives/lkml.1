@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYIABm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbYIACGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYIABm7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Aug 2008 21:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYIABmt
+	id S1755848AbYIACGw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 Aug 2008 22:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbYIACGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 Aug 2008 21:42:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58609 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbYIABmt (ORCPT
+	Sun, 31 Aug 2008 22:06:43 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58400 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751733AbYIACGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Aug 2008 21:42:49 -0400
-Date: Sun, 31 Aug 2008 21:42:45 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] x86: kill sys32_pause
-Message-ID: <20080901014245.GA11445@infradead.org>
-References: <20080901013924.GA7947@lst.de>
+	Sun, 31 Aug 2008 22:06:42 -0400
+Date: Sun, 31 Aug 2008 19:06:40 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, jwboyer@linux.vnet.ibm.com,
+       tnt@246tNt.com, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
+       manfred@colorfullife.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] prevent powerpc from invoking irq handlers on offline
+	CPUs
+Message-ID: <20080901020640.GM7015@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080831173127.GA15296@linux.vnet.ibm.com> <1220229284.13162.411.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080901013924.GA7947@lst.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <1220229284.13162.411.camel@pasglop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 03:39:24AM +0200, Christoph Hellwig wrote:
-> It's just a duplicate of the native sys_pause.
+On Mon, Sep 01, 2008 at 10:34:44AM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2008-08-31 at 10:31 -0700, Paul E. McKenney wrote:
+> > Make powerpc refrain from clearing a given to-be-offlined CPU's bit in the
+> > cpu_online_mask until it has processed pending irqs.  This change
+> > prevents other CPUs from being blindsided by an apparently offline CPU
+> > nevertheless changing globally visible state.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> 
+> Sounds reasonable... the only possible worry here is if somebody tries
+> an IPI ... The IPI code will and the target CPU mask with the online
+> map, so it may try to send to the to-be-offlined CPU and timeout, no ?
 
-Oops, this also includes ia64.  Should be safe anyway :)
+OK.  Do we need separate IPI and online masks?
 
+							Thanx, Paul
+
+> Cheers,
+> Ben.
 > 
+> >  smp.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> > index 5337ca7..1fedd7d 100644
+> > --- a/arch/powerpc/kernel/smp.c
+> > +++ b/arch/powerpc/kernel/smp.c
+> > @@ -250,11 +250,11 @@ int generic_cpu_disable(void)
+> >  	if (cpu == boot_cpuid)
+> >  		return -EBUSY;
+> >  
+> > -	cpu_clear(cpu, cpu_online_map);
+> >  #ifdef CONFIG_PPC64
+> >  	vdso_data->processorCount--;
+> >  	fixup_irqs(cpu_online_map);
+> >  #endif
+> > +	cpu_clear(cpu, cpu_online_map);
+> >  	return 0;
+> >  }
+> >  
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-> Index: linux-2.6/arch/x86/ia32/sys_ia32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/ia32/sys_ia32.c	2008-08-22 12:48:34.000000000 -0300
-> +++ linux-2.6/arch/x86/ia32/sys_ia32.c	2008-08-22 12:48:40.000000000 -0300
-> @@ -556,15 +556,6 @@ asmlinkage long sys32_rt_sigqueueinfo(in
->  	return ret;
->  }
->  
-> -/* These are here just in case some old ia32 binary calls it. */
-> -asmlinkage long sys32_pause(void)
-> -{
-> -	current->state = TASK_INTERRUPTIBLE;
-> -	schedule();
-> -	return -ERESTARTNOHAND;
-> -}
-> -
-> -
->  #ifdef CONFIG_SYSCTL_SYSCALL
->  struct sysctl_ia32 {
->  	unsigned int	name;
-> Index: linux-2.6/arch/ia64/ia32/ia32_entry.S
-> ===================================================================
-> --- linux-2.6.orig/arch/ia64/ia32/ia32_entry.S	2008-08-22 12:49:25.000000000 -0300
-> +++ linux-2.6/arch/ia64/ia32/ia32_entry.S	2008-08-22 12:49:29.000000000 -0300
-> @@ -202,7 +202,7 @@ ia32_syscall_table:
->  	data8 sys32_ptrace
->  	data8 sys32_alarm
->  	data8 sys_ni_syscall
-> -	data8 sys32_pause
-> +	data8 sys_pause
->  	data8 compat_sys_utime	  /* 30 */
->  	data8 sys_ni_syscall	  /* old stty syscall holder */
->  	data8 sys_ni_syscall	  /* old gtty syscall holder */
-> Index: linux-2.6/arch/ia64/ia32/sys_ia32.c
-> ===================================================================
-> --- linux-2.6.orig/arch/ia64/ia32/sys_ia32.c	2008-08-22 12:49:33.000000000 -0300
-> +++ linux-2.6/arch/ia64/ia32/sys_ia32.c	2008-08-22 12:49:37.000000000 -0300
-> @@ -1795,14 +1795,6 @@ out:
->  }
->  
->  asmlinkage int
-> -sys32_pause (void)
-> -{
-> -	current->state = TASK_INTERRUPTIBLE;
-> -	schedule();
-> -	return -ERESTARTNOHAND;
-> -}
-> -
-> -asmlinkage int
->  sys32_msync (unsigned int start, unsigned int len, int flags)
->  {
->  	unsigned int addr;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
----end quoted text---
