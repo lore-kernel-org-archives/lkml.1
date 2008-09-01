@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbYIAInc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYIAIrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbYIAInc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 04:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbYIAInY
+	id S1754864AbYIAIrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 04:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYIAIrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 04:43:24 -0400
-Received: from mga09.intel.com ([134.134.136.24]:2820 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbYIAInX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 04:43:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,306,1217833200"; 
-   d="scan'208";a="331140696"
-Message-ID: <48BBAB2D.3070706@linux.intel.com>
-Date: Mon, 01 Sep 2008 10:43:25 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] softlockup: minor cleanup, don't check task->state twice
-References: <20080830170840.GA7884@tv-sign.ru>
-In-Reply-To: <20080830170840.GA7884@tv-sign.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Sep 2008 04:47:43 -0400
+Received: from s200aog13.obsmtp.com ([207.126.144.127]:47677 "EHLO
+	s200aog13.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbYIAIrn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 04:47:43 -0400
+Subject: Re: [PATCH] genirq: irq_chip->startup() usage in setup_irq and
+	set_irq_chained handler
+From: Pawel MOLL <pawel.moll@st.com>
+To: benh@kernel.crashing.org
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1219795619.13162.166.camel@pasglop>
+References: <1219313656.31630.89.camel@bri1004.bri.st.com>
+	 <1219416584.31630.639.camel@bri1004.bri.st.com>
+	 <20080823160859.GE27974@elte.hu>  <1219531395.21386.200.camel@pasglop>
+	 <1219745676.16078.219.camel@bri1004.bri.st.com>
+	 <1219795619.13162.166.camel@pasglop>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 01 Sep 2008 09:47:18 +0100
+Message-Id: <1220258838.3299.1107.camel@bri1004.bri.st.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
+> So Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Hi Oleg,
+Great, thanks ;-)
 
-> The recent commit 16d9679f33caf7e683471647d1472bfe133d858 changed
-> check_hung_task() to filter out the TASK_KILLABLE tasks. We can
-> move this check to the caller which has to test t->state anyway.
+Ingo, I will send you an acked patch.
 
-Yes makes sense to do it this way. Thanks.
+Cheers
 
--Andi
+Paweł
+
