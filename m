@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbYIARZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbYIAR1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746AbYIARZq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 13:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbYIARZf
+	id S1753803AbYIAR1U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 13:27:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYIAR1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 13:25:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:42508 "EHLO
+	Mon, 1 Sep 2008 13:27:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:41555 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbYIARZe (ORCPT
+	with ESMTP id S1751036AbYIAR1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 13:25:34 -0400
+	Mon, 1 Sep 2008 13:27:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=QhSobdEd43qsF4A78bW4wS5y0wIwmpu0QScoR6Bmqq33JXxUIJyj1IMdC41fMG5C8P
-         eit1ruzpgCyUlhj624GFVJD4e49MyL8qoT9mlqvfxNl/O58B08FWD6/EJoskjluGVEva
-         NGPCnI0DApOWzRMvOTy+4xeGC46vDTggZZL5o=
-Message-ID: <86802c440809011025ue34800w179ee03d2cf214d1@mail.gmail.com>
-Date: Mon, 1 Sep 2008 10:25:33 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: mtrr madness
-Cc: "Lukas Hejtmanek" <xhejtman@ics.muni.cz>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <48BC2405.9070403@shaw.ca>
+        b=rZq56OG0Uar55daV88fLeJISONAzZj4fOUvwGv/bqAQ1ap3GDA1epjn99Zk4u2fHL8
+         0bL3spX68zFwYiX64Vu+R/PwAcTWdTHhpEkoj/9EmPgdtVGCZ97b6rFxgz+2JormIvlw
+         M0toUNHGIGSwYo7qR4DGN3eBl1fAaHT2T8QgM=
+Message-ID: <3f9a31f40809011027o34dbfccfh9ed82228938cb572@mail.gmail.com>
+Date: Mon, 1 Sep 2008 13:27:08 -0400
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [Bug #11271] BUG: fealnx in 2.6.27-rc1
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Francois Romieu" <romieu@fr.zoreil.com>
+In-Reply-To: <20080901100649.59c1ab1f@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <fa.oAfJTOqZ/UBF74k5hFotOE73/z4@ifi.uio.no>
-	 <48BC2405.9070403@shaw.ca>
+References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik>
+	 <N8SeMoDzuxC.A.xIG.OkbuIB@albercik>
+	 <3f9a31f40809011002k572450ffg90654912f3e1fa2a@mail.gmail.com>
+	 <20080901100649.59c1ab1f@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 1, 2008 at 10:19 AM, Robert Hancock <hancockr@shaw.ca> wrote:
-> Lukas Hejtmanek wrote:
+Hello Arjan,
+
+On Mon, Sep 1, 2008 at 1:06 PM, Arjan van de Ven <arjan@infradead.org> wrote:
 >>
->> Hello,
+>> Still exists in 2.6.27-rc5 :
 >>
->> it seems that all linux kernels contain a bug with mtrr:
->>
->>  cat /proc/mtrr reg00: base=0x00000000 (   0MB), size=198656MB:
->> write-back, count=1
->> reg01: base=0x80000000 (2048MB), size=197120MB: write-back, count=1
->> reg02: base=0x9fc00000 (2556MB), size=196612MB: uncachable, count=1
->> reg03: base=0x100000000 (4096MB), size=200704MB: write-back, count=1
->> reg04: base=0x200000000 (8192MB), size=204800MB: write-back, count=1
->>
->> (watch the size)
->>
->> it is definitely  present in the kernels 2.6.16, 2.6.24, 2.6.25, 2.6.26.
->>
->> 198656 is 0x3080000000, the correct value would be 0x80000000, similarly
->> 197120 is 0x3020000000, the correct would be 0x20000000.
+>> NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
 >
-> Those are set up by the BIOS, so it would be what's at fault. I think we may
-> be adding something to fix this up though?
+>
+> did you ever get transmit timeouts before 2.6.27 ?
+> (I would suspect you did)
+>
 
-the fix is in mainline already...,
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Thu Aug 21 20:24:24 2008 -0700
+may be you are right, I have never noticed it earlier. But currently
+this is soo serious that it has totally screwed up my networking when
+I use fealnx based NICs.
 
-    x86: work around MTRR mask setting
+Thank you,
 
-please try 2.6.27-rc5...
-
-YH
+Jaswinder Singh.
