@@ -1,106 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbYIAJAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbYIAJH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbYIAJAP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 05:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYIAJAA
+	id S1755338AbYIAJH3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 05:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbYIAJHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 05:00:00 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:35285 "EHLO mgw2.diku.dk"
+	Mon, 1 Sep 2008 05:07:17 -0400
+Received: from sacred.ru ([62.205.161.221]:34367 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751424AbYIAI77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 04:59:59 -0400
-From: Julien Brunel <brunel@diku.dk>
-To: perex@perex.cz, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] sound/arm: Bad NULL test
-Date: Mon, 1 Sep 2008 10:59:54 +0200
-User-Agent: KMail/1.9.9
+	id S1751877AbYIAJHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 05:07:16 -0400
+Message-ID: <48BBAFDD.1000902@openvz.org>
+Date: Mon, 01 Sep 2008 13:03:25 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+References: <20080831174756.GA25790@balbir.in.ibm.com>
+In-Reply-To: <20080831174756.GA25790@balbir.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809011059.54939.brunel@diku.dk>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 01 Sep 2008 13:04:06 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julien Brunel <brunel@diku.dk>
+Balbir Singh wrote:
+> This is a rewrite of a patch I had written long back to remove struct page
+> (I shared the patches with Kamezawa, but never posted them anywhere else).
+> I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
+> 
+> I've tested the patches on an x86_64 box, I've run a simple test running
+> under the memory control group and the same test running concurrently under
+> two different groups (and creating pressure within their groups). I've also
+> compiled the patch with CGROUP_MEM_RES_CTLR turned off.
+> 
+> Advantages of the patch
+> 
+> 1. It removes the extra pointer in struct page
+> 
+> Disadvantages
+> 
+> 1. It adds an additional lock structure to struct page_cgroup
+> 2. Radix tree lookup is not an O(1) operation, once the page is known
+>    getting to the page_cgroup (pc) is a little more expensive now.
 
-In case of error, the function aaci_init_card returns an ERR pointer,
-but never returns a NULL pointer. We have noticed a bad NULL test,
-which comes after a call to this function. Rather than doing an IS_ERR
-test, we suggest to duplicate the label out: one label for the case where
-aaci_init_card returns a valid pointer, and another for the case where
-aaci_init_card returns an ERR pointer.
+And besides, we also have a global lock, that protects even lookup
+from this structure. Won't this affect us too much on bug-smp nodes?
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@match_bad_null_test@
-expression x, E;
-statement S1,S2;
-@@
-x =  aaci_init_card(...)
-... when != x = E
-*  if (x != NULL) 
-S1 else S2
-// </smpl>
-
-Signed-off-by:  Julien Brunel <brunel@diku.dk>
-Signed-off-by:  Julia Lawall <julia@diku.dk>
-
----
- sound/arm/aaci.c |    13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-diff -u -p a/sound/arm/aaci.c b/sound/arm/aaci.c
---- a/sound/arm/aaci.c
-+++ b/sound/arm/aaci.c
-@@ -1091,7 +1091,7 @@ static int __devinit aaci_probe(struct a
- 	aaci->base = ioremap(dev->res.start, SZ_4K);
- 	if (!aaci->base) {
- 		ret = -ENOMEM;
--		goto out;
-+		goto out_free_aaci;
- 	}
- 
- 	/*
-@@ -1119,7 +1119,7 @@ static int __devinit aaci_probe(struct a
- 
- 	ret = aaci_probe_ac97(aaci);
- 	if (ret)
--		goto out;
-+		goto out_free_aaci;
- 
- 	/*
- 	 * Size the FIFOs (must be multiple of 16).
-@@ -1129,12 +1129,12 @@ static int __devinit aaci_probe(struct a
- 		printk(KERN_WARNING "AACI: fifosize = %d not supported\n",
- 		       aaci->fifosize);
- 		ret = -ENODEV;
--		goto out;
-+		goto out_free_aaci;
- 	}
- 
- 	ret = aaci_init_pcm(aaci);
- 	if (ret)
--		goto out;
-+		goto out_free_aaci;
- 
- 	snd_card_set_dev(aaci->card, &dev->dev);
- 
-@@ -1145,10 +1145,9 @@ static int __devinit aaci_probe(struct a
- 		amba_set_drvdata(dev, aaci->card);
- 		return ret;
- 	}
--
-+ out_free_aaci:
-+	snd_card_free(aaci->card);
-  out:
--	if (aaci)
--		snd_card_free(aaci->card);
- 	amba_release_regions(dev);
- 	return ret;
- }
+> This is an initial RFC for comments
+> 
+> TODOs
+> 
+> 1. Test the page migration changes
+> 2. Test the performance impact of the patch/approach
+> 
+> Comments/Reviews?
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
