@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759599AbYIASvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYIATFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759599AbYIASvc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 14:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYIASvO
+	id S1756169AbYIATFZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 15:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYIATFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 14:51:14 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:57159 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752034AbYIASvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 14:51:13 -0400
-From: "J. Bruce Fields" <bfields@citi.umich.edu>
-To: stable@kernel.org
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Oeser <ioe-lkml@rameria.de>,
-       Neil Brown <neilb@suse.de>, Chuck Lever <chuck.lever@oracle.com>,
-       Greg Banks <gnb@sgi.com>, Tom Tucker <tom@opengridcomputing.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [PATCH] sunrpc: fix possible overrun on read of /proc/sys/sunrpc/transports
-Date: Mon,  1 Sep 2008 14:51:01 -0400
-Message-Id: <1220295062-10957-1-git-send-email-bfields@citi.umich.edu>
-X-Mailer: git-send-email 1.5.6.5
+	Mon, 1 Sep 2008 15:05:11 -0400
+Received: from smtp100.biz.mail.mud.yahoo.com ([68.142.201.176]:26784 "HELO
+	smtp100.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750831AbYIATFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Sep 2008 15:05:10 -0400
+X-YMail-OSG: YZV.NG8VM1nOW9tiOQDj5S4Be8KNKQV8SehIbKUl4obCNDb6vonYHUztWxANQj3tj9ByuY04ckFR7ChWHKwsFqTGHITp46C6RTBuZ0EWiT5bVUzzaC0xMYF6H75yW_HrrwQ-
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: Tomas Carnecky <tom@dbservice.com>
+Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume =?utf-8?q?after=09undocking?=
+Date: Mon, 1 Sep 2008 12:05:04 -0700
+User-Agent: KMail/1.9.9
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net
+References: <200808301535.22419.sfking@fdwdc.com> <20080901112816.GA21970@khazad-dum.debian.net> <48BBDD2C.5020804@dbservice.com>
+In-Reply-To: <48BBDD2C.5020804@dbservice.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809011205.05253.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+On Monday 01 September 2008 5:16:44 Tomas Carnecky wrote:
 
-Vegard Nossum reported
-----------------------
-> I noticed that something weird is going on with /proc/sys/sunrpc/transports.
-> This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
-> I "cat" this file, I get the expected output:
->    $ cat /proc/sys/sunrpc/transports
->    tcp 1048576
->    udp 32768
+> I just tested suspend/resume with the CDROM drive removed (an empty
+> bay). Suspend/resume now works just fine, regardless how I dock/undock
+> the laptop.
 
-> But I think that it does not check the length of the buffer supplied by
-> userspace to read(). With my original program, I found that the stack was
-> being overwritten by the characters above, even when the length given to
-> read() was just 1.
+I'm seeing the exact same things as Tom.  Also, in my dmesg I see:
 
-David Wagner added (among other things) that copy_to_user could be
-probably used here.
+ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: found ejectable bay
+ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: Adding notify handler
+ACPI: Error installing bay notify handler
 
-Ingo Oeser suggested to use simple_read_from_buffer() here.
+is this significant?
 
-The conclusion is that proc_do_xprt doesn't check for userside buffer
-size indeed so fix this by using Ingo's suggestion.
 
-Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Neil Brown <neilb@suse.de>
-Cc: Chuck Lever <chuck.lever@oracle.com>
-Cc: Greg Banks <gnb@sgi.com>
-Cc: Tom Tucker <tom@opengridcomputing.com>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
----
- net/sunrpc/sysctl.c |   18 ++++--------------
- 1 files changed, 4 insertions(+), 14 deletions(-)
-
-diff --git a/net/sunrpc/sysctl.c b/net/sunrpc/sysctl.c
-index 0f8c439..5231f7a 100644
---- a/net/sunrpc/sysctl.c
-+++ b/net/sunrpc/sysctl.c
-@@ -60,24 +60,14 @@ static int proc_do_xprt(ctl_table *table, int write, struct file *file,
- 			void __user *buffer, size_t *lenp, loff_t *ppos)
- {
- 	char tmpbuf[256];
--	int len;
-+	size_t len;
-+
- 	if ((*ppos && !write) || !*lenp) {
- 		*lenp = 0;
- 		return 0;
- 	}
--	if (write)
--		return -EINVAL;
--	else {
--		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
--		if (!access_ok(VERIFY_WRITE, buffer, len))
--			return -EFAULT;
--
--		if (__copy_to_user(buffer, tmpbuf, len))
--			return -EFAULT;
--	}
--	*lenp -= len;
--	*ppos += len;
--	return 0;
-+	len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-+	return simple_read_from_buffer(buffer, *lenp, ppos, tmpbuf, len);
- }
- 
- static int
 -- 
-1.5.5.rc1
-
+Steven King -- sfking at fdwdc dot com
