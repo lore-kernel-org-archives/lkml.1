@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYIARP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbYIARTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbYIARP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 13:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYIARPT
+	id S1754767AbYIARTP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 13:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751036AbYIARS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 13:15:19 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:11639 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbYIARPS (ORCPT
+	Mon, 1 Sep 2008 13:18:59 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:53766 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbYIARS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 13:15:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vpOv1tEL6bkeKyx3PXPOHOlVHVIluYNdjKrjN9F80Nma4E3+tHLgiUK5omybLsOIfe
-         eLh5/zAEvTysuscBCV/DR4Ed4S1ciQaiVv8SUzFVd4I1KN+zc4uCI0mQyjmRssySceSl
-         7i1a7WDkOQT8TrniPUCeFjWCs27KCfJUXmWSI=
-Message-ID: <3f9a31f40809011015s2e3a2a02ja26ca45092f88667@mail.gmail.com>
-Date: Mon, 1 Sep 2008 13:15:17 -0400
-From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-Cc: "Gene Heskett" <gene.heskett@verizon.net>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org
-In-Reply-To: <20080830122242.32d73b32@infradead.org>
+	Mon, 1 Sep 2008 13:18:59 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=sS3GAUUIs2MqLpdRdCMA:9 a=brx8iGYHZR89iB5QLLX_tYtvkd0A:4
+Message-ID: <48BC2405.9070403@shaw.ca>
+Date: Mon, 01 Sep 2008 11:19:01 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: mtrr madness
+References: <fa.oAfJTOqZ/UBF74k5hFotOE73/z4@ifi.uio.no>
+In-Reply-To: <fa.oAfJTOqZ/UBF74k5hFotOE73/z4@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200808301452.04634.gene.heskett@verizon.net>
-	 <20080830122242.32d73b32@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Arjan,
+Lukas Hejtmanek wrote:
+> Hello,
+> 
+> it seems that all linux kernels contain a bug with mtrr:
+> 
+>  cat /proc/mtrr 
+> reg00: base=0x00000000 (   0MB), size=198656MB: write-back, count=1
+> reg01: base=0x80000000 (2048MB), size=197120MB: write-back, count=1
+> reg02: base=0x9fc00000 (2556MB), size=196612MB: uncachable, count=1
+> reg03: base=0x100000000 (4096MB), size=200704MB: write-back, count=1
+> reg04: base=0x200000000 (8192MB), size=204800MB: write-back, count=1
+> 
+> (watch the size)
+> 
+> it is definitely  present in the kernels 2.6.16, 2.6.24, 2.6.25, 2.6.26.
+> 
+> 198656 is 0x3080000000, the correct value would be 0x80000000, similarly
+> 197120 is 0x3020000000, the correct would be 0x20000000. 
 
-On Sat, Aug 30, 2008 at 3:22 PM, Arjan van de Ven <arjan@infradead.org> wrote:
->
-> since half this sort of driver is in userspace it helps if you also add
-> the version of the userspace driver you are using (and if you changed
-> it recently)
->
-
-AFAIK, only thing which is changed in linux kernel. firmware and
-userspace is same.
-
-Thank you,
-
-Jaswinder Singh.
+Those are set up by the BIOS, so it would be what's at fault. I think we 
+may be adding something to fix this up though?
