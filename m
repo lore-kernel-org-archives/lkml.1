@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYIBOzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYIBO5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbYIBOzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 10:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYIBOza
+	id S1753373AbYIBO5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 10:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYIBO5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 10:55:30 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:41452 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbYIBOza (ORCPT
+	Tue, 2 Sep 2008 10:57:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46670 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbYIBO5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 10:55:30 -0400
-Date: Tue, 2 Sep 2008 07:55:12 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, manfred@colorfullife.com,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
-       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org
-Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU
-	implementation
-Message-ID: <20080902145512.GA6748@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <1220088780.8426.1.camel@twins> <20080830141001.GD7107@linux.vnet.ibm.com> <1220110858.14894.46.camel@lappy.programming.kicks-ass.net> <20080902132608.GA7751@Krystal> <1220362914.8609.51.camel@twins>
-MIME-Version: 1.0
+	Tue, 2 Sep 2008 10:57:30 -0400
+Date: Tue, 2 Sep 2008 17:00:31 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, torvalds@osdl.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] [2/2] Don't complain about disabled irqs when the system has paniced
+Message-ID: <20080902150031.GN18288@one.firstfloor.org>
+References: <20080902349.573187695@firstfloor.org> <20080902134923.9A7EF3E6A01@basil.firstfloor.org> <1220365683.8609.58.camel@twins> <20080902144051.GM18288@one.firstfloor.org> <1220366717.8609.65.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220362914.8609.51.camel@twins>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1220366717.8609.65.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 03:41:54PM +0200, Peter Zijlstra wrote:
-> On Tue, 2008-09-02 at 09:26 -0400, Mathieu Desnoyers wrote:
-> > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
-> > > On Sat, 2008-08-30 at 07:10 -0700, Paul E. McKenney wrote:
-> > > > On Sat, Aug 30, 2008 at 11:33:00AM +0200, Peter Zijlstra wrote:
-> > > > > On Fri, 2008-08-29 at 17:49 -0700, Paul E. McKenney wrote:
-> > > > > 
-> > > > > > Some shortcomings:
-> > > > > > 
-> > > > > > o	Entering and leaving dynticks idle mode is a quiescent state,
-> > > > > > 	but the current patch doesn't take advantage of this (noted
-> > > > > > 	by Manfred).  It appears that it should be possible to make
-> > > > > > 	nmi_enter() and nmi_exit() provide an in_nmi(), which would make
-> > > > > > 	it possible for rcu_irq_enter() and rcu_irq_exit() to figure
-> > > > > > 	out whether it is safe to tell RCU about the quiescent state --
-> > > > > > 	and also greatly simplify the code.
-> > > > > 
-> > > > > Already done and available in the -tip tree, curtesy of Mathieu.
-> > > > 
-> > > > Very cool!!!  I see one of his patches at http://lkml.org/lkml/2008/4/17/342,
-> > > > but how do I find out which branch of -tip this is on?  (I am learning
-> > > > git, but it is a slow process...)
-> > > > 
-> > > > This would also simplify preemptable RCU's dyntick interface, removing
-> > > > the need for proofs.
+On Tue, Sep 02, 2008 at 04:45:17PM +0200, Peter Zijlstra wrote:
+> On Tue, 2008-09-02 at 16:40 +0200, Andi Kleen wrote:
+> > On Tue, Sep 02, 2008 at 04:28:03PM +0200, Peter Zijlstra wrote:
+> > > On Tue, 2008-09-02 at 15:49 +0200, Andi Kleen wrote:
+> > > > panic calls smp_send_stop which eventually calls smp_call_function_*.
+> > > > smp_call_function warns about disabled interrupts. But it's legal
+> > > > to call panic in this case. When this happens panic() prints
+> > > > several ugly backtraces. So don't check for disabled interrupts
+> > > > in panic state.
 > > > 
-> > > Not sure - my git-foo isn't good enough either :-(
+> > > While it might be legal for panic to be called from such contexts, I
+> > > understand those warnings are there to warn of deadlocks.
 > > > 
-> > > All I can offer is that its available in tip/master (the collective
-> > > merge of all of tip's branches) as commit:
-> > > 0d84b78a606f1562532cd576ee8733caf5a4aed3, which I found using
-> > > git-annotate include/linux/hardirq.h
-> > > 
-> > > How to find from which particular topic branch it came from, I too am
-> > > clueless.
-> > > 
+> > > So with the below patch you allow panic to deadlock if I understand
+> > > things correctly.
 > > 
-> > If you're interested in knowing the topic it came from : it's required
-> > so a following patch can use a "popf; ret" instead of iret to return
-> > from trap handlers executed in NMI context. There is an architectural
-> > problem on x86 causing NMIs to be reactivated after the first iret
-> > encountered, which leads to NMI handler races if nmi handlers trap. This
-> > works around the problem by returning from the trap handlers without
-> > using the iret instruction.
-> > 
-> > It's useful to Immediate Values which put a temporary breakpoint in the
-> > instruction stream when proceeding to code modification and also useful
-> > to LTTng (available in the -lttng tree) which writes tracing data to
-> > vmap'd memory buffers (which can cause a minor page fault).
-> > 
-> > I'm glad to see NMI context detection is useful to others too !
+> > Please describe the deadlock exactly.  I don't think it can deadlock 
+> > in this case. 
 > 
-> While an interesting detail, its not the answer to the question.
+> Then why are those warnings there? The deadlock is for the CSD_FLAG_WAIT
+> case, which can always happen due to the static csd data fallback.
 > 
-> Given a bunch of topic branches, and a branch that has all those topic
-> merged, how, for any particular commit from the merge branch, do you
-> find from which topic branch it originiated?
+> The deadlock scenario is long the lines of two such smp_call_function*()
+> both under irq disabled calling each other with CSD_FLAG_WAIT set.
+> Neither remote cpu will handle the IPI due to irqs being disabled, so
+> we'll wait at-infinitum for completion.
+
+First smp_send_stop does not wait (or at least not pass the 
+wait flag, it will still wait for the first ack like everyone else)
+
+I don't claim to understand the new kernel/smp.c code (it seems to me quite
+overdesigned and complicated and I admit I got lost in it somewhere), 
+but I think your scenario would rely on a global lock and presumably there 
+is none in the new code? 
+
 > 
-> IOW, the answer to the above question would have been a series of git
-> commands that would have resulted in something like tip/tracing/nmisafe
+> > Besides do you prefer to not allow panic from interrupts/machine
+> > checks etc. anymore? 
+> 
+> However did I imply that, I just said your fix looked iffy.
 
-I guess that it turned out that there was a series of mutt commands that
-eventually got the answer.  That said, a series of git commands would
-be quite nice.  ;-)
+Well it would be the only alternative. Or have a timeout (I had
+such a hack a long time ago) but that has also other issues.
 
-But it would appear that the series of git commands would need to come
-from someone with better git-foo than either Mathieu or myself.  :-/
+In fact for smp_send_stop() it would be far better to just use an NMI,
+but we unfortunately have a few BIOS that do not support NMI properly.
 
-							Thanx, Paul
+I think for 2.6.27 at least this is the best fix. At least keeping
+panic that broken is no option I would say.
+
+-Andi
