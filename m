@@ -1,163 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbYIBTnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYIBTt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753600AbYIBTnc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 15:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYIBTnX
+	id S1753867AbYIBTt3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 15:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYIBTtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 15:43:23 -0400
-Received: from smtp-vbr5.xs4all.nl ([194.109.24.25]:2206 "EHLO
-	smtp-vbr5.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYIBTnW (ORCPT
+	Tue, 2 Sep 2008 15:49:18 -0400
+Received: from mu-out-0910.google.com ([209.85.134.187]:9758 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbYIBTtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 15:43:22 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [BUILDFIX] byteorder: remove direct byteorder includes
-Date: Tue, 2 Sep 2008 21:42:04 +0200
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, v4l <video4linux-list@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <1218324197.24441.20.camel@brick> <1220380552.2137.3.camel@brick> <1220381401.2137.6.camel@brick>
-In-Reply-To: <1220381401.2137.6.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809022142.04578.hverkuil@xs4all.nl>
+	Tue, 2 Sep 2008 15:49:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=YcDSus5wtDLTnXmhtd5XpRlX50ggAV9FESSGoDV24rTws4J31bUN6X0qxv/0nTw3Mg
+         n7Nx84bU3H9NdBdJz/N6u4ODKPJJKp+WECbWhSiVcXMts4JhbM+J8QGkBYbCaUTLT5Je
+         WLgxJZkDz+X7zAJmLa5JtMtkpmP71d4p2ueAE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 02 Sep 2008 21:47:11 +0200
+Message-Id: <20080902194711.14564.63625.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/8] ide: __ide_dma_end() -> ide_dma_end()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Harvey,
+While at it:
+- use EXPORT_SYMBOL_GPL() to match the rest of SFF DMA functions
 
-On Tuesday 02 September 2008 20:50:00 Harvey Harrison wrote:
-> All of the functionality has been collected in linux/swab.h
-> 
-> Needed to prevent build brakage as arches start moving over
-> to the new byteorder implementation.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-dma.c          |    7 +++----
+ drivers/ide/pci/alim15x3.c     |    2 +-
+ drivers/ide/pci/cmd64x.c       |    4 ++--
+ drivers/ide/pci/hpt366.c       |    6 +++---
+ drivers/ide/pci/it821x.c       |    2 +-
+ drivers/ide/pci/pdc202xx_old.c |    4 ++--
+ drivers/ide/pci/siimage.c      |    2 +-
+ drivers/ide/pci/sl82c105.c     |    2 +-
+ drivers/ide/pci/tc86c001.c     |    2 +-
+ include/linux/ide.h            |    2 +-
+ 10 files changed, 16 insertions(+), 17 deletions(-)
 
-1) With this patch the i686, x86_64 and powerpc64 build fail on 
-av7110.c, as I said in my original mail. Do you have additional patches 
-that address this?
-
-2) For the cx18, ivtv and vpx3220 please just remove the swabb.h 
-include: it's either not really needed or included through another 
-include. The v4l-dvb master repository has been updated to just remove 
-these linux/byteorder/swabb.h includes in these three sources.
-
-Regards,
-
-	Hans
-
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Sorry, I only sent you half-a-patch in my last message, this is the
-> full patch needed.
-> 
->  drivers/media/dvb/ttpci/av7110.c       |    2 +-
->  drivers/media/video/cx18/cx18-driver.h |    2 +-
->  drivers/media/video/ivtv/ivtv-driver.h |    2 +-
->  drivers/media/video/vpx3220.c          |    2 +-
->  kernel/rcupreempt.c                    |    2 +-
->  tests/rcutorture.c                     |    2 +-
->  6 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/media/dvb/ttpci/av7110.c
-> b/drivers/media/dvb/ttpci/av7110.c
-> index c0a1746..792a175 100644
-> --- a/drivers/media/dvb/ttpci/av7110.c
-> +++ b/drivers/media/dvb/ttpci/av7110.c
-> @@ -36,7 +36,7 @@
->  #include <linux/fs.h>
->  #include <linux/timer.h>
->  #include <linux/poll.h>
-> -#include <linux/byteorder/swabb.h>
-> +#include <linux/swab.h>
->  #include <linux/smp_lock.h>
->  
->  #include <linux/kernel.h>
-> diff --git a/drivers/media/video/cx18/cx18-driver.h
-> b/drivers/media/video/cx18/cx18-driver.h
-> index 2635989..8787a5f 100644
-> --- a/drivers/media/video/cx18/cx18-driver.h
-> +++ b/drivers/media/video/cx18/cx18-driver.h
-> @@ -38,7 +38,7 @@
->  #include <linux/i2c-algo-bit.h>
->  #include <linux/list.h>
->  #include <linux/unistd.h>
-> -#include <linux/byteorder/swab.h>
-> +#include <linux/swab.h>
->  #include <linux/pagemap.h>
->  #include <linux/workqueue.h>
->  #include <linux/mutex.h>
-> diff --git a/drivers/media/video/ivtv/ivtv-driver.h
-> b/drivers/media/video/ivtv/ivtv-driver.h
-> index 2ceb522..2213473 100644
-> --- a/drivers/media/video/ivtv/ivtv-driver.h
-> +++ b/drivers/media/video/ivtv/ivtv-driver.h
-> @@ -49,7 +49,7 @@
->  #include <linux/i2c-algo-bit.h>
->  #include <linux/list.h>
->  #include <linux/unistd.h>
-> -#include <linux/byteorder/swab.h>
-> +#include <linux/swab.h>
->  #include <linux/pagemap.h>
->  #include <linux/scatterlist.h>
->  #include <linux/workqueue.h>
-> diff --git a/drivers/media/video/vpx3220.c
-> b/drivers/media/video/vpx3220.c
-> index 3529302..6828411 100644
-> --- a/drivers/media/video/vpx3220.c
-> +++ b/drivers/media/video/vpx3220.c
-> @@ -24,7 +24,7 @@
->  #include <linux/types.h>
->  #include <linux/slab.h>
->  
-> -#include <linux/byteorder/swab.h>
-> +#include <linux/swab.h>
->  
->  #include <asm/io.h>
->  #include <asm/uaccess.h>
-> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-> index ca4bbbe..494d0e8 100644
-> --- a/kernel/rcupreempt.c
-> +++ b/kernel/rcupreempt.c
-> @@ -54,7 +54,7 @@
->  #include <linux/cpu.h>
->  #include <linux/random.h>
->  #include <linux/delay.h>
-> -#include <linux/byteorder/swabb.h>
-> +#include <linux/swab.h>
->  #include <linux/cpumask.h>
->  #include <linux/rcupreempt_trace.h>
->  
-> diff --git a/tests/rcutorture.c b/tests/rcutorture.c
-> index 90b5b12..67856af 100644
-> --- a/tests/rcutorture.c
-> +++ b/tests/rcutorture.c
-> @@ -42,7 +42,7 @@
->  #include <linux/freezer.h>
->  #include <linux/cpu.h>
->  #include <linux/delay.h>
-> -#include <linux/byteorder/swabb.h>
-> +#include <linux/swab.h>
->  #include <linux/stat.h>
->  #include <linux/srcu.h>
->  #include <linux/slab.h>
-> -- 
-> 1.6.0.1.400.ga23d3
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
-
+Index: b/drivers/ide/ide-dma.c
+===================================================================
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -531,7 +531,7 @@ void ide_dma_start(ide_drive_t *drive)
+ EXPORT_SYMBOL_GPL(ide_dma_start);
+ 
+ /* returns 1 on error, 0 otherwise */
+-int __ide_dma_end (ide_drive_t *drive)
++int ide_dma_end(ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
+@@ -566,8 +566,7 @@ int __ide_dma_end (ide_drive_t *drive)
+ 	wmb();
+ 	return (dma_stat & 7) != 4 ? (0x10 | dma_stat) : 0;
+ }
+-
+-EXPORT_SYMBOL(__ide_dma_end);
++EXPORT_SYMBOL_GPL(ide_dma_end);
+ 
+ /* returns 1 if dma irq issued, 0 otherwise */
+ int ide_dma_test_irq(ide_drive_t *drive)
+@@ -880,7 +879,7 @@ const struct ide_dma_ops sff_dma_ops = {
+ 	.dma_setup		= ide_dma_setup,
+ 	.dma_exec_cmd		= ide_dma_exec_cmd,
+ 	.dma_start		= ide_dma_start,
+-	.dma_end		= __ide_dma_end,
++	.dma_end		= ide_dma_end,
+ 	.dma_test_irq		= ide_dma_test_irq,
+ 	.dma_timeout		= ide_dma_timeout,
+ 	.dma_lost_irq		= ide_dma_lost_irq,
+Index: b/drivers/ide/pci/alim15x3.c
+===================================================================
+--- a/drivers/ide/pci/alim15x3.c
++++ b/drivers/ide/pci/alim15x3.c
+@@ -507,7 +507,7 @@ static const struct ide_dma_ops ali_dma_
+ 	.dma_setup		= ali15x3_dma_setup,
+ 	.dma_exec_cmd		= ide_dma_exec_cmd,
+ 	.dma_start		= ide_dma_start,
+-	.dma_end		= __ide_dma_end,
++	.dma_end		= ide_dma_end,
+ 	.dma_test_irq		= ide_dma_test_irq,
+ 	.dma_lost_irq		= ide_dma_lost_irq,
+ 	.dma_timeout		= ide_dma_timeout,
+Index: b/drivers/ide/pci/cmd64x.c
+===================================================================
+--- a/drivers/ide/pci/cmd64x.c
++++ b/drivers/ide/pci/cmd64x.c
+@@ -228,7 +228,7 @@ static int cmd648_dma_end(ide_drive_t *d
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+ 	unsigned long base	= hwif->dma_base - (hwif->channel * 8);
+-	int err			= __ide_dma_end(drive);
++	int err			= ide_dma_end(drive);
+ 	u8  irq_mask		= hwif->channel ? MRDMODE_INTR_CH1 :
+ 						  MRDMODE_INTR_CH0;
+ 	u8  mrdmode		= inb(base + 1);
+@@ -248,7 +248,7 @@ static int cmd64x_dma_end(ide_drive_t *d
+ 	u8  irq_mask		= hwif->channel ? ARTTIM23_INTR_CH1 :
+ 						  CFR_INTR_CH0;
+ 	u8  irq_stat		= 0;
+-	int err			= __ide_dma_end(drive);
++	int err			= ide_dma_end(drive);
+ 
+ 	(void) pci_read_config_byte(dev, irq_reg, &irq_stat);
+ 	/* clear the interrupt bit */
+Index: b/drivers/ide/pci/hpt366.c
+===================================================================
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -833,7 +833,7 @@ static int hpt370_dma_end(ide_drive_t *d
+ 		if (dma_stat & 0x01)
+ 			hpt370_irq_timeout(drive);
+ 	}
+-	return __ide_dma_end(drive);
++	return ide_dma_end(drive);
+ }
+ 
+ static void hpt370_dma_timeout(ide_drive_t *drive)
+@@ -875,7 +875,7 @@ static int hpt374_dma_end(ide_drive_t *d
+ 	pci_read_config_byte(dev, mcr_addr, &mcr);
+ 	if (bwsr & mask)
+ 		pci_write_config_byte(dev, mcr_addr, mcr | 0x30);
+-	return __ide_dma_end(drive);
++	return ide_dma_end(drive);
+ }
+ 
+ /**
+@@ -1454,7 +1454,7 @@ static const struct ide_dma_ops hpt36x_d
+ 	.dma_setup		= ide_dma_setup,
+ 	.dma_exec_cmd		= ide_dma_exec_cmd,
+ 	.dma_start		= ide_dma_start,
+-	.dma_end		= __ide_dma_end,
++	.dma_end		= ide_dma_end,
+ 	.dma_test_irq		= ide_dma_test_irq,
+ 	.dma_lost_irq		= hpt366_dma_lost_irq,
+ 	.dma_timeout		= ide_dma_timeout,
+Index: b/drivers/ide/pci/it821x.c
+===================================================================
+--- a/drivers/ide/pci/it821x.c
++++ b/drivers/ide/pci/it821x.c
+@@ -385,7 +385,7 @@ static int it821x_dma_end(ide_drive_t *d
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+ 	struct it821x_dev *itdev = ide_get_hwifdata(hwif);
+-	int ret = __ide_dma_end(drive);
++	int ret = ide_dma_end(drive);
+ 	u8 unit = drive->dn & 1;
+ 
+ 	if(itdev->mwdma[unit] != MWDMA_OFF)
+Index: b/drivers/ide/pci/pdc202xx_old.c
+===================================================================
+--- a/drivers/ide/pci/pdc202xx_old.c
++++ b/drivers/ide/pci/pdc202xx_old.c
+@@ -200,7 +200,7 @@ static int pdc202xx_dma_end(ide_drive_t 
+ 	}
+ 	if (drive->current_speed > XFER_UDMA_2)
+ 		pdc_old_disable_66MHz_clock(drive->hwif);
+-	return __ide_dma_end(drive);
++	return ide_dma_end(drive);
+ }
+ 
+ static int pdc202xx_dma_test_irq(ide_drive_t *drive)
+@@ -333,7 +333,7 @@ static const struct ide_dma_ops pdc20246
+ 	.dma_setup		= ide_dma_setup,
+ 	.dma_exec_cmd		= ide_dma_exec_cmd,
+ 	.dma_start		= ide_dma_start,
+-	.dma_end		= __ide_dma_end,
++	.dma_end		= ide_dma_end,
+ 	.dma_test_irq		= pdc202xx_dma_test_irq,
+ 	.dma_lost_irq		= pdc202xx_dma_lost_irq,
+ 	.dma_timeout		= pdc202xx_dma_timeout,
+Index: b/drivers/ide/pci/siimage.c
+===================================================================
+--- a/drivers/ide/pci/siimage.c
++++ b/drivers/ide/pci/siimage.c
+@@ -713,7 +713,7 @@ static const struct ide_dma_ops sil_dma_
+ 	.dma_setup		= ide_dma_setup,
+ 	.dma_exec_cmd		= ide_dma_exec_cmd,
+ 	.dma_start		= ide_dma_start,
+-	.dma_end		= __ide_dma_end,
++	.dma_end		= ide_dma_end,
+ 	.dma_test_irq		= siimage_dma_test_irq,
+ 	.dma_timeout		= ide_dma_timeout,
+ 	.dma_lost_irq		= ide_dma_lost_irq,
+Index: b/drivers/ide/pci/sl82c105.c
+===================================================================
+--- a/drivers/ide/pci/sl82c105.c
++++ b/drivers/ide/pci/sl82c105.c
+@@ -207,7 +207,7 @@ static int sl82c105_dma_end(ide_drive_t 
+ 
+ 	DBG(("%s(drive:%s)\n", __func__, drive->name));
+ 
+-	ret = __ide_dma_end(drive);
++	ret = ide_dma_end(drive);
+ 
+ 	pci_write_config_word(dev, reg, drive->drive_data);
+ 
+Index: b/drivers/ide/pci/tc86c001.c
+===================================================================
+--- a/drivers/ide/pci/tc86c001.c
++++ b/drivers/ide/pci/tc86c001.c
+@@ -186,7 +186,7 @@ static const struct ide_dma_ops tc86c001
+ 	.dma_setup		= ide_dma_setup,
+ 	.dma_exec_cmd		= ide_dma_exec_cmd,
+ 	.dma_start		= tc86c001_dma_start,
+-	.dma_end		= __ide_dma_end,
++	.dma_end		= ide_dma_end,
+ 	.dma_test_irq		= ide_dma_test_irq,
+ 	.dma_lost_irq		= ide_dma_lost_irq,
+ 	.dma_timeout		= ide_dma_timeout,
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1430,7 +1430,7 @@ void ide_dma_host_set(ide_drive_t *, int
+ extern int ide_dma_setup(ide_drive_t *);
+ void ide_dma_exec_cmd(ide_drive_t *, u8);
+ extern void ide_dma_start(ide_drive_t *);
+-extern int __ide_dma_end(ide_drive_t *);
++int ide_dma_end(ide_drive_t *);
+ int ide_dma_test_irq(ide_drive_t *);
+ extern void ide_dma_lost_irq(ide_drive_t *);
+ extern void ide_dma_timeout(ide_drive_t *);
