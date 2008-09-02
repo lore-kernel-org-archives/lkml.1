@@ -1,212 +1,563 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbYIBNbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbYIBNfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbYIBNbv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 09:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYIBNbn
+	id S1752262AbYIBNfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 09:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYIBNfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 09:31:43 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:39313
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751000AbYIBNbm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 09:31:42 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RT PATCH v4] seqlock: serialize against writers
-To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       gregory.haskins@gmail.com, andi@firstfloor.org, shemminger@vyatta.com
-Date: Tue, 02 Sep 2008 09:29:18 -0400
-Message-ID: <20080902132825.23160.35234.stgit@dev.haskins.net>
-In-Reply-To: <20080829154237.1196.66825.stgit@dev.haskins.net>
-References: <20080829154237.1196.66825.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Sep 2008 09:35:14 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55915 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223AbYIBNfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 09:35:11 -0400
+To: serge@hallyn.com, viro@ZenIV.linux.org.uk
+Cc: linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
+       akpm@linux-foundation.org, haradats@nttdata.co.jp,
+       takedakn@nttdata.co.jp
+Subject: Re: (repost) Confirmation of methods for calculating requested pathname.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <48AA49DE.6000006@nttdata.co.jp>
+	<48BCC1B6.5030901@nttdata.co.jp>
+	<20080902131127.GA5951@hallyn.com>
+In-Reply-To: <20080902131127.GA5951@hallyn.com>
+Message-Id: <200809022235.JEI35948.LSOFVQFHJFMtOO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Tue, 2 Sep 2008 22:35:03 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ here is the updated prologue rebased against the proper tree (26.3-rt3) ]
+Hello.
 
---------------------------
+Serge E. Hallyn wrote:
+> I thought Al and others (Stephen?) had made it clear that the thing to do was
+> add new lsm hooks there.
+Thank you for a hint.
+I have a question to Al Viro: Is it acceptable for you to introduce
+new LSM hooks (i.e. security_path_*()) where struct vfsmount is available?
+If it is acceptable, I'd like to start from the following patch.
 
-seqlock: serialize against writers
+Regards.
+-----
+Subject: Introduce new LSM hooks.
 
-There are currently several problems in -rt w.r.t. seqlock objects. RT
-moves mainline seqlock_t to "raw_seqlock_t", and creates a new seqlock_t
-object that is fully preemptible.  Being preemptible is a great step
-towards deterministic behavior, but there are a few areas that need
-additional measures to protect new vulnerabilities created by the
-preemptible code. For the purposes of demonstration, consider three tasks
-of different priority: A, B, and C.  A is the logically highest, and C is
-the lowest.  A is trying to acquire a seqlock read critical section, while
-C is involved in write locks.
+This patch allows LSM to check permission using "struct vfsmount"
+without passing "struct vfsmount" to VFS helper functions.
 
-Problem 1) If A spins in seqbegin due to writer contention retries, it may
-prevent C from running even if C currently holds the write lock.  This
-is a deadlock.
-
-Problem 2) B may preempt C, preventing it from releasing the write
-critical section.  In this case, A becomes inverted behind B.
-
-Problem 3) Lower priority tasks such as C may continually acquire the write
-section which subsequently causes A to continually retry and thus fail to
-make forward progress.  Since C is lower priority it ideally should not
-cause delays in A. E.g. C should block if A is in a read-lock and C is <= A.
-
-This patch addresses Problems 1 & 2, and leaves 3 for a later time.
-
-This patch changes the internal seqlock_t implementation to substitute
-a rwlock for the basic spinlock previously used, and forces the readers
-to serialize with the writers under contention.  Blocking on the read_lock
-simultaneously sleeps A (preventing problem 1), while boosting C to A's
-priority (preventing problem 2).  Non reader-to-writer contended
-acquisitions, which are the predominant mode, remain free of atomic
-operations.  Therefore the fast path should not be perturbed by this
-change.
-
-This fixes a real-world deadlock discovered under testing where all
-high priority readers were hogging the cpus and preventing a writer
-from releasing the lock (i.e. problem 1).
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
+ fs/namei.c               |   37 ++++++++++++
+ fs/open.c                |    5 +
+ include/linux/security.h |  135 +++++++++++++++++++++++++++++++++++++++++++++++
+ net/unix/af_unix.c       |    4 +
+ security/capability.c    |   53 ++++++++++++++++++
+ security/security.c      |   63 +++++++++++++++++++++
+ 6 files changed, 297 insertions(+)
 
- include/linux/seqlock.h |   51 +++++++++++++++++++++++------------------------
- 1 files changed, 25 insertions(+), 26 deletions(-)
-
-diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
-index 345d726..605fcdb 100644
---- a/include/linux/seqlock.h
-+++ b/include/linux/seqlock.h
-@@ -3,9 +3,11 @@
- /*
-  * Reader/writer consistent mechanism without starving writers. This type of
-  * lock for data where the reader wants a consistent set of information
-- * and is willing to retry if the information changes.  Readers never
-- * block but they may have to retry if a writer is in
-- * progress. Writers do not wait for readers. 
-+ * and is willing to retry if the information changes. Readers block
-+ * on write contention (and where applicable, pi-boost the writer).
-+ * Readers without contention on entry acquire the critical section
-+ * without any atomic operations, but they may have to retry if a writer
-+ * enters before the critical section ends. Writers do not wait for readers.
-  *
-  * This is not as cache friendly as brlock. Also, this will not work
-  * for data that contains pointers, because any writer could
-@@ -24,6 +26,8 @@
-  *
-  * Based on x86_64 vsyscall gettimeofday 
-  * by Keith Owens and Andrea Arcangeli
-+ *
-+ * Priority inheritance and live-lock avoidance by Gregory Haskins
-  */
+--- linux-2.6.27-rc5.orig/fs/namei.c
++++ linux-2.6.27-rc5/fs/namei.c
+@@ -1585,6 +1585,10 @@ int may_open(struct nameidata *nd, int a
+ 		 * Refuse to truncate files with mandatory locks held on them.
+ 		 */
+ 		error = locks_verify_locked(inode);
++		if (!error)
++			error = security_path_truncate(&nd->path, 0,
++					       ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
++						       NULL);
+ 		if (!error) {
+ 			DQUOT_INIT(inode);
  
- #include <linux/spinlock.h>
-@@ -31,7 +35,7 @@
+@@ -1615,7 +1619,11 @@ static int __open_namei_create(struct na
  
- typedef struct {
- 	unsigned sequence;
--	spinlock_t lock;
-+	rwlock_t lock;
- } __seqlock_t;
- 
- typedef struct {
-@@ -57,7 +61,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
- 		{ 0, RAW_SPIN_LOCK_UNLOCKED(lockname) }
- 
- #ifdef CONFIG_PREEMPT_RT
--# define __SEQLOCK_UNLOCKED(lockname) { 0, __SPIN_LOCK_UNLOCKED(lockname) }
-+# define __SEQLOCK_UNLOCKED(lockname) { 0, __RW_LOCK_UNLOCKED(lockname) }
- #else
- # define __SEQLOCK_UNLOCKED(lockname) __RAW_SEQLOCK_UNLOCKED(lockname)
- #endif
-@@ -69,7 +73,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
- 	do { *(x) = (raw_seqlock_t) __RAW_SEQLOCK_UNLOCKED(x); spin_lock_init(&(x)->lock); } while (0)
- 
- #define seqlock_init(x) \
--		do { *(x) = (seqlock_t) __SEQLOCK_UNLOCKED(x); spin_lock_init(&(x)->lock); } while (0)
-+		do { *(x) = (seqlock_t) __SEQLOCK_UNLOCKED(x); rwlock_init(&(x)->lock); } while (0)
- 
- #define DEFINE_SEQLOCK(x) \
- 		seqlock_t x = __SEQLOCK_UNLOCKED(x)
-@@ -85,7 +89,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
-  */
- static inline void __write_seqlock(seqlock_t *sl)
- {
--	spin_lock(&sl->lock);
-+	write_lock(&sl->lock);
- 	++sl->sequence;
- 	smp_wmb();
- }
-@@ -103,14 +107,14 @@ static inline void __write_sequnlock(seqlock_t *sl)
- {
- 	smp_wmb();
- 	sl->sequence++;
--	spin_unlock(&sl->lock);
-+	write_unlock(&sl->lock);
- }
- 
- #define __write_sequnlock_irqrestore(sl, flags)	__write_sequnlock(sl)
- 
- static inline int __write_tryseqlock(seqlock_t *sl)
- {
--	int ret = spin_trylock(&sl->lock);
-+	int ret = write_trylock(&sl->lock);
- 
- 	if (ret) {
- 		++sl->sequence;
-@@ -120,18 +124,25 @@ static inline int __write_tryseqlock(seqlock_t *sl)
- }
- 
- /* Start of read calculation -- fetch last complete writer token */
--static __always_inline unsigned __read_seqbegin(const seqlock_t *sl)
-+static __always_inline unsigned __read_seqbegin(seqlock_t *sl)
- {
- 	unsigned ret;
- 
--repeat:
- 	ret = sl->sequence;
- 	smp_rmb();
- 	if (unlikely(ret & 1)) {
--		cpu_relax();
--		goto repeat;
-+		/*
-+		 * Serialze with the writer which will ensure they are
-+		 * pi-boosted if necessary and prevent us from starving
-+		 * them.
-+		 */
-+		read_lock(&sl->lock);
-+		ret = sl->sequence;
-+		read_unlock(&sl->lock);
+ 	if (!IS_POSIXACL(dir->d_inode))
+ 		mode &= ~current->fs->umask;
++	error = security_path_mknod(&nd->path, path->dentry, mode, 0);
++	if (error)
++		goto out_unlock;
+ 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
++out_unlock:
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 	dput(nd->path.dentry);
+ 	nd->path.dentry = path->dentry;
+@@ -2018,6 +2026,9 @@ asmlinkage long sys_mknodat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_mknod(&nd.path, dentry, mode, dev);
++	if (error)
++		goto out_drop_write;
+ 	switch (mode & S_IFMT) {
+ 		case 0: case S_IFREG:
+ 			error = vfs_create(nd.path.dentry->d_inode,dentry,mode,&nd);
+@@ -2030,6 +2041,7 @@ asmlinkage long sys_mknodat(int dfd, con
+ 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
+ 			break;
  	}
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2089,7 +2101,11 @@ asmlinkage long sys_mkdirat(int dfd, con
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_mkdir(&nd.path, dentry, mode);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2196,7 +2212,11 @@ static long do_rmdir(int dfd, const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto exit3;
++	error = security_path_rmdir(&nd.path, dentry);
++	if (error)
++		goto exit4;
+ 	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++exit4:
+ 	mnt_drop_write(nd.path.mnt);
+ exit3:
+ 	dput(dentry);
+@@ -2278,7 +2298,11 @@ static long do_unlinkat(int dfd, const c
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
++		error = security_path_unlink(&nd.path, dentry);
++		if (error)
++			goto exit3;
+ 		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
++exit3:
+ 		mnt_drop_write(nd.path.mnt);
+ 	exit2:
+ 		dput(dentry);
+@@ -2359,7 +2383,11 @@ asmlinkage long sys_symlinkat(const char
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_symlink(&nd.path, dentry, from);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from);
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(dentry);
+@@ -2456,7 +2484,11 @@ asmlinkage long sys_linkat(int olddfd, c
+ 	error = mnt_want_write(nd.path.mnt);
+ 	if (error)
+ 		goto out_dput;
++	error = security_path_link(old_path.dentry, &nd.path, new_dentry);
++	if (error)
++		goto out_drop_write;
+ 	error = vfs_link(old_path.dentry, nd.path.dentry->d_inode, new_dentry);
++out_drop_write:
+ 	mnt_drop_write(nd.path.mnt);
+ out_dput:
+ 	dput(new_dentry);
+@@ -2688,8 +2720,13 @@ asmlinkage long sys_renameat(int olddfd,
+ 	error = mnt_want_write(oldnd.path.mnt);
+ 	if (error)
+ 		goto exit5;
++	error = security_path_rename(&oldnd.path, old_dentry,
++				     &newnd.path, new_dentry);
++	if (error)
++		goto exit6;
+ 	error = vfs_rename(old_dir->d_inode, old_dentry,
+ 				   new_dir->d_inode, new_dentry);
++exit6:
+ 	mnt_drop_write(oldnd.path.mnt);
+ exit5:
+ 	dput(new_dentry);
+--- linux-2.6.27-rc5.orig/fs/open.c
++++ linux-2.6.27-rc5/fs/open.c
+@@ -272,6 +272,8 @@ static long do_sys_truncate(const char _
+ 		goto put_write_and_out;
  
-+	BUG_ON(ret & 1);
+ 	error = locks_verify_truncate(inode, NULL, length);
++	if (!error)
++		error = security_path_truncate(&path, length, 0, NULL);
+ 	if (!error) {
+ 		DQUOT_INIT(inode);
+ 		error = do_truncate(path.dentry, length, 0, NULL);
+@@ -329,6 +331,9 @@ static long do_sys_ftruncate(unsigned in
+ 
+ 	error = locks_verify_truncate(inode, file, length);
+ 	if (!error)
++		error = security_path_truncate(&file->f_path, length,
++					       ATTR_MTIME|ATTR_CTIME, file);
++	if (!error)
+ 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
+ out_putf:
+ 	fput(file);
+--- linux-2.6.27-rc5.orig/include/linux/security.h
++++ linux-2.6.27-rc5/include/linux/security.h
+@@ -345,17 +345,37 @@ static inline void security_free_mnt_opt
+  *	@dir contains the inode structure of the parent directory of the new link.
+  *	@new_dentry contains the dentry structure for the new link.
+  *	Return 0 if permission is granted.
++ * @path_link:
++ *	Check permission before creating a new hard link to a file.
++ *	@old_dentry contains the dentry structure for an existing link
++ *	to the file.
++ *	@new_dir contains the path structure of the parent directory of
++ *	the new link.
++ *	@new_dentry contains the dentry structure for the new link.
++ *	Return 0 if permission is granted.
+  * @inode_unlink:
+  *	Check the permission to remove a hard link to a file.
+  *	@dir contains the inode structure of parent directory of the file.
+  *	@dentry contains the dentry structure for file to be unlinked.
+  *	Return 0 if permission is granted.
++ * @path_unlink:
++ *	Check the permission to remove a hard link to a file.
++ *	@dir contains the path structure of parent directory of the file.
++ *	@dentry contains the dentry structure for file to be unlinked.
++ *	Return 0 if permission is granted.
+  * @inode_symlink:
+  *	Check the permission to create a symbolic link to a file.
+  *	@dir contains the inode structure of parent directory of the symbolic link.
+  *	@dentry contains the dentry structure of the symbolic link.
+  *	@old_name contains the pathname of file.
+  *	Return 0 if permission is granted.
++ * @path_symlink:
++ *	Check the permission to create a symbolic link to a file.
++ *	@dir contains the path structure of parent directory of
++ *	the symbolic link.
++ *	@dentry contains the dentry structure of the symbolic link.
++ *	@old_name contains the pathname of file.
++ *	Return 0 if permission is granted.
+  * @inode_mkdir:
+  *	Check permissions to create a new directory in the existing directory
+  *	associated with inode strcture @dir.
+@@ -363,11 +383,25 @@ static inline void security_free_mnt_opt
+  *	@dentry contains the dentry structure of new directory.
+  *	@mode contains the mode of new directory.
+  *	Return 0 if permission is granted.
++ * @path_mkdir:
++ *	Check permissions to create a new directory in the existing directory
++ *	associated with path strcture @path.
++ *	@dir containst the path structure of parent of the directory
++ *	to be created.
++ *	@dentry contains the dentry structure of new directory.
++ *	@mode contains the mode of new directory.
++ *	Return 0 if permission is granted.
+  * @inode_rmdir:
+  *	Check the permission to remove a directory.
+  *	@dir contains the inode structure of parent of the directory to be removed.
+  *	@dentry contains the dentry structure of directory to be removed.
+  *	Return 0 if permission is granted.
++ * @path_rmdir:
++ *	Check the permission to remove a directory.
++ *	@dir contains the path structure of parent of the directory to be
++ *	removed.
++ *	@dentry contains the dentry structure of directory to be removed.
++ *	Return 0 if permission is granted.
+  * @inode_mknod:
+  *	Check permissions when creating a special file (or a socket or a fifo
+  *	file created via the mknod system call).  Note that if mknod operation
+@@ -378,6 +412,15 @@ static inline void security_free_mnt_opt
+  *	@mode contains the mode of the new file.
+  *	@dev contains the device number.
+  *	Return 0 if permission is granted.
++ * @path_mknod:
++ *	Check permissions when creating a file. Note that this hook is called
++ *	even if mknod operation is being done for a regular file.
++ *	@dir contains the path structure of parent of the new file.
++ *	@dentry contains the dentry structure of the new file.
++ *	@mode contains the mode of the new file.
++ *	@dev contains the undecoded device number. Use new_decode_dev() to get
++ *	the decoded device number.
++ *	Return 0 if permission is granted.
+  * @inode_rename:
+  *	Check for permission to rename a file or directory.
+  *	@old_dir contains the inode structure for parent of the old link.
+@@ -385,6 +428,13 @@ static inline void security_free_mnt_opt
+  *	@new_dir contains the inode structure for parent of the new link.
+  *	@new_dentry contains the dentry structure of the new link.
+  *	Return 0 if permission is granted.
++ * @path_rename:
++ *	Check for permission to rename a file or directory.
++ *	@old_dir contains the path structure for parent of the old link.
++ *	@old_dentry contains the dentry structure of the old link.
++ *	@new_dir contains the path structure for parent of the new link.
++ *	@new_dentry contains the dentry structure of the new link.
++ *	Return 0 if permission is granted.
+  * @inode_readlink:
+  *	Check the permission to read the symbolic link.
+  *	@dentry contains the dentry structure for the file link.
+@@ -413,6 +463,13 @@ static inline void security_free_mnt_opt
+  *	@dentry contains the dentry structure for the file.
+  *	@attr is the iattr structure containing the new file attributes.
+  *	Return 0 if permission is granted.
++ * @path_truncate:
++ *	Check permission before truncating a file.
++ *	@path contains the path structure for the file.
++ *	@length is the new length of the file.
++ *	@time_attrs is the flags passed to do_truncate().
++ *	@filp is the file structure (may be NULL).
++ *	Return 0 if permission is granted.
+  * @inode_getattr:
+  *	Check permission before obtaining file attributes.
+  *	@mnt is the vfsmount where the dentry was looked up
+@@ -1350,6 +1407,20 @@ struct security_operations {
+ 				   struct super_block *newsb);
+ 	int (*sb_parse_opts_str) (char *options, struct security_mnt_opts *opts);
+ 
++	int (*path_unlink) (struct path *dir, struct dentry *dentry);
++	int (*path_mkdir) (struct path *dir, struct dentry *dentry, int mode);
++	int (*path_rmdir) (struct path *dir, struct dentry *dentry);
++	int (*path_mknod) (struct path *dir, struct dentry *dentry, int mode,
++			   unsigned int dev);
++	int (*path_truncate) (struct path *path, loff_t length,
++			      unsigned int time_attrs, struct file *filp);
++	int (*path_symlink) (struct path *dir, struct dentry *dentry,
++			     const char *old_name);
++	int (*path_link) (struct dentry *old_dentry, struct path *new_dir,
++			  struct dentry *new_dentry);
++	int (*path_rename) (struct path *old_dir, struct dentry *old_dentry,
++			    struct path *new_dir, struct dentry *new_dentry);
 +
- 	return ret;
+ 	int (*inode_alloc_security) (struct inode *inode);
+ 	void (*inode_free_security) (struct inode *inode);
+ 	int (*inode_init_security) (struct inode *inode, struct inode *dir,
+@@ -1618,6 +1689,20 @@ void security_sb_clone_mnt_opts(const st
+ 				struct super_block *newsb);
+ int security_sb_parse_opts_str(char *options, struct security_mnt_opts *opts);
+ 
++int security_path_unlink(struct path *dir, struct dentry *dentry);
++int security_path_mkdir(struct path *dir, struct dentry *dentry, int mode);
++int security_path_rmdir(struct path *dir, struct dentry *dentry);
++int security_path_mknod(struct path *dir, struct dentry *dentry, int mode,
++			unsigned int dev);
++int security_path_truncate(struct path *path, loff_t length,
++			   unsigned int time_attrs, struct file *filp);
++int security_path_symlink(struct path *dir, struct dentry *dentry,
++			  const char *old_name);
++int security_path_link(struct dentry *old_dentry, struct path *new_dir,
++		       struct dentry *new_dentry);
++int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
++			 struct path *new_dir, struct dentry *new_dentry);
++
+ int security_inode_alloc(struct inode *inode);
+ void security_inode_free(struct inode *inode);
+ int security_inode_init_security(struct inode *inode, struct inode *dir,
+@@ -1949,6 +2034,56 @@ static inline int security_sb_parse_opts
+ 	return 0;
  }
  
-@@ -142,20 +153,8 @@ repeat:
-  */
- static inline int __read_seqretry(seqlock_t *sl, unsigned iv)
++static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static inline int security_path_mkdir(struct path *dir, struct dentry *dentry,
++				      int mode)
++{
++	return 0;
++}
++
++static inline int security_path_rmdir(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static inline int security_path_mknod(struct path *dir, struct dentry *dentry,
++				      int mode, unsigned int dev)
++{
++	return 0;
++}
++
++static inline int security_path_truncate(struct path *path, loff_t length,
++					 unsigned int time_attrs,
++					 struct file *filp)
++{
++	return 0;
++}
++
++static inline int security_path_symlink(struct path *dir, struct dentry *dentry,
++					const char *old_name)
++{
++	return 0;
++}
++
++static inline int security_path_link(struct dentry *old_dentry,
++				     struct path *new_dir,
++				     struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static inline int security_path_rename(struct path *old_dir,
++				       struct dentry *old_dentry,
++				       struct path *new_dir,
++				       struct dentry *new_dentry)
++{
++	return 0;
++}
++
+ static inline int security_inode_alloc(struct inode *inode)
  {
--	int ret;
--
- 	smp_rmb();
--	ret = (sl->sequence != iv);
--	/*
--	 * If invalid then serialize with the writer, to make sure we
--	 * are not livelocking it:
--	 */
--	if (unlikely(ret)) {
--		unsigned long flags;
--		spin_lock_irqsave(&sl->lock, flags);
--		spin_unlock_irqrestore(&sl->lock, flags);
--	}
--	return ret;
-+	return (sl->sequence != iv);
+ 	return 0;
+--- linux-2.6.27-rc5.orig/net/unix/af_unix.c
++++ linux-2.6.27-rc5/net/unix/af_unix.c
+@@ -827,7 +827,11 @@ static int unix_bind(struct socket *sock
+ 		err = mnt_want_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
++		err = security_path_mknod(&nd.path, dentry, mode, 0);
++		if (err)
++			goto out_mknod_drop_write;
+ 		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
++out_mknod_drop_write:
+ 		mnt_drop_write(nd.path.mnt);
+ 		if (err)
+ 			goto out_mknod_dput;
+--- linux-2.6.27-rc5.orig/security/capability.c
++++ linux-2.6.27-rc5/security/capability.c
+@@ -268,6 +268,51 @@ static void cap_inode_getsecid(const str
+ 	*secid = 0;
  }
  
- static __always_inline void __write_seqlock_raw(raw_seqlock_t *sl)
-
++static int cap_path_mknod(struct path *dir, struct dentry *dentry, int mode,
++			  unsigned int dev)
++{
++	return 0;
++}
++
++static int cap_path_mkdir(struct path *dir, struct dentry *dentry, int mode)
++{
++	return 0;
++}
++
++static int cap_path_rmdir(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static int cap_path_unlink(struct path *dir, struct dentry *dentry)
++{
++	return 0;
++}
++
++static int cap_path_symlink(struct path *dir, struct dentry *dentry,
++			    const char *old_name)
++{
++	return 0;
++}
++
++static int cap_path_link(struct dentry *old_dentry, struct path *new_dir,
++			 struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static int cap_path_rename(struct path *old_path, struct dentry *old_dentry,
++			   struct path *new_path, struct dentry *new_dentry)
++{
++	return 0;
++}
++
++static int cap_path_truncate(struct path *path, loff_t length,
++			     unsigned int time_attrs, struct file *filp)
++{
++	return 0;
++}
++
+ static int cap_file_permission(struct file *file, int mask)
+ {
+ 	return 0;
+@@ -877,6 +922,14 @@ void security_fixup_ops(struct security_
+ 	set_to_cap_if_null(ops, inode_setsecurity);
+ 	set_to_cap_if_null(ops, inode_listsecurity);
+ 	set_to_cap_if_null(ops, inode_getsecid);
++	set_to_cap_if_null(ops, path_mknod);
++	set_to_cap_if_null(ops, path_mkdir);
++	set_to_cap_if_null(ops, path_rmdir);
++	set_to_cap_if_null(ops, path_unlink);
++	set_to_cap_if_null(ops, path_symlink);
++	set_to_cap_if_null(ops, path_link);
++	set_to_cap_if_null(ops, path_rename);
++	set_to_cap_if_null(ops, path_truncate);
+ 	set_to_cap_if_null(ops, file_permission);
+ 	set_to_cap_if_null(ops, file_alloc_security);
+ 	set_to_cap_if_null(ops, file_free_security);
+--- linux-2.6.27-rc5.orig/security/security.c
++++ linux-2.6.27-rc5/security/security.c
+@@ -358,6 +358,69 @@ int security_inode_init_security(struct 
+ }
+ EXPORT_SYMBOL(security_inode_init_security);
+ 
++int security_path_mknod(struct path *path, struct dentry *dentry, int mode,
++			unsigned int dev)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_mknod(path, dentry, mode, dev);
++}
++
++int security_path_mkdir(struct path *path, struct dentry *dentry, int mode)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_mkdir(path, dentry, mode);
++}
++
++int security_path_rmdir(struct path *path, struct dentry *dentry)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_rmdir(path, dentry);
++}
++
++int security_path_unlink(struct path *path, struct dentry *dentry)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_unlink(path, dentry);
++}
++
++int security_path_symlink(struct path *path, struct dentry *dentry,
++			  const char *old_name)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_symlink(path, dentry, old_name);
++}
++
++int security_path_link(struct dentry *old_dentry, struct path *new_dir,
++		       struct dentry *new_dentry)
++{
++	if (unlikely(IS_PRIVATE(old_dentry->d_inode)))
++		return 0;
++	return security_ops->path_link(old_dentry, new_dir, new_dentry);
++}
++
++int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
++			 struct path *new_dir, struct dentry *new_dentry)
++{
++	if (unlikely(IS_PRIVATE(old_dentry->d_inode) ||
++		     (new_dentry->d_inode && IS_PRIVATE(new_dentry->d_inode))))
++		return 0;
++	return security_ops->path_rename(old_dir, old_dentry, new_dir,
++					 new_dentry);
++}
++
++int security_path_truncate(struct path *path, loff_t length,
++			   unsigned int time_attrs, struct file *filp)
++{
++	if (unlikely(IS_PRIVATE(path->dentry->d_inode)))
++		return 0;
++	return security_ops->path_truncate(path, length, time_attrs, filp);
++}
++
+ int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
+ {
+ 	if (unlikely(IS_PRIVATE(dir)))
