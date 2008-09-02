@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbYIBHg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYIBHq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbYIBHg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 03:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbYIBHgu
+	id S1753748AbYIBHq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 03:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYIBHqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 03:36:50 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:33665 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752449AbYIBHgt (ORCPT
+	Tue, 2 Sep 2008 03:46:18 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:54993 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbYIBHqS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 03:36:49 -0400
-Message-ID: <48BCECF9.5060104@linux.vnet.ibm.com>
-Date: Tue, 02 Sep 2008 13:06:25 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Spencer Candland <spencer@bluehost.com>, dmitry.adamushko@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Still seeing decreasing stime/utime
-References: <48B5C4C7.8040509@bluehost.com> <48B66BCC.8030207@linux.vnet.ibm.com> <48B702FA.8060308@bluehost.com> <20080828224502.GA1540@balbir.in.ibm.com> <48B859C8.5000001@bluehost.com> <48B8E102.5050503@linux.vnet.ibm.com> <1220095656.8426.23.camel@twins> <20080830135557.GA24039@balbir.in.ibm.com> <1220110327.14894.40.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1220110327.14894.40.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Sep 2008 03:46:18 -0400
+Message-Id: <48BD0BB5.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Tue, 02 Sep 2008 08:47:33 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Boaz Harrosh" <bharrosh@panasas.com>
+Cc: "David S. Miller" <davem@davemloft.net>, "Ingo Molnar" <mingo@elte.hu>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Ivo van Doorn" <IvDoorn@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Theodore Tso" <tytso@mit.edu>, "Rusty Russell" <rusty@rustcorp.com.au>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] debug: BUILD_BUG_ON: error on non-const
+	 expressions
+References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com>
+ <48BC1065.76E4.0078.0@novell.com> <48BBFA67.9070305@panasas.com>
+ <48BC1A10.76E4.0078.0@novell.com> <48BC037F.5010305@panasas.com>
+ <48BC267E.76E4.0078.0@novell.com> <48BC1B31.1050306@panasas.com>
+In-Reply-To: <48BC1B31.1050306@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Sat, 2008-08-30 at 19:25 +0530, Balbir Singh wrote:
->> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-08-30 13:27:36]:
->>
->>> On Sat, 2008-08-30 at 11:26 +0530, Balbir Singh wrote:
->>>> Spencer Candland wrote:
->>>>>> Here is an experimental patch (I've just compiled and booted a machine
->>>>>> with it, I am unable to reproduce your problem), could you please test
->>>>>> it for me and see if it helps solve the problem
->>>>> Looks like this fixed it.  I have been testing this for the last 16
->>>>> hours and everything is looking good.
->>>>>
->>>> Excellent! Ingo, Peter, do you like the patch? If so, could you please pick it
->>>> up Ingo. I think we should even push the fix to stable releases.
->>> Looks good, except for the issue you yourself earlier raised, a few of
->>> those functions looks too large to be inlined.
->>>
->> Here's the updated revision with task_*time functions moved to sched.c
->> and inlining removed, except for task_gtime(). I've compiled and
->> booted a machine (x86_64) with this patch applied.
->>
->> Reported-by: spencer@bluehost.com
->>
->> Spencer reported a problem where utime and stime were going negative despite
->> the fixes in commit b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa. The suspected
->> reason for the problem is that signal_struct maintains it's own utime and
->> stime (of exited tasks), these are not updated using the new task_utime()
->> routine, hence sig->utime can go backwards and cause the same problem
->> to occur (sig->utime, adds tsk->utime and not task_utime()). This patch
->> fixes the problem
->>
->> TODO: using max(task->prev_utime, derived utime) works for now, but a more
->> generic solution is to implement cputime_max() and use the cputime_gt()
->> function for comparison.
->>
->> Comments?
->>
->> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Thanks Balbir!
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 18:41 >>>
+>Jan Beulich wrote:
+>>>>> Boaz Harrosh <bharrosh@panasas.com> 01.09.08 17:00 >>>
+>>> What is broken with my BUILD_BUG_ON_ZERO(). I tried all tests and
+>>> it works fine. Do you have a test with unwanted results?
+>>> (Actually it's the original one I have not touched it).
+>> 
+>> That's the problem - it uses the same sizeof(char[]) approach, and hence
+>> has the same problems that you just try to fix for BUILD_BUG_ON().
+>> 
+>
+>No it does not have this problem. Have you tested it? 
+>I have! It works fine. (Complains on non-const expressions)
 
-Ingo, could you please pick this one.
+For static variables, yes. But not for automatic variables and the like:
 
--- 
-	Thanks,
-	Balbir
+#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
+
+int test(int i) {
+	int x = BUILD_BUG_ON_ZERO(i);
+
+	return x;
+}
+
+You could argue that I could place a simple BUILD_BUG_ON() later in
+the code, but that easily defeats the documentation purposes the
+construct also has (my general position on this is that the check should
+be in or immediately before the statement that depends on the
+enforced restriction).
+
+Jan
+
