@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751137AbYIBFHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbYIBFNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751137AbYIBFHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 01:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYIBFHc
+	id S1753887AbYIBFNr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 01:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYIBFNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 01:07:32 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:34116 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752117AbYIBFHb (ORCPT
+	Tue, 2 Sep 2008 01:13:39 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:53846 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbYIBFNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 01:07:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=xSLwPCcH0IVCkz1YUmEocRVB62ptFE/VTLvCJa+nsVj92TIz85ZitaluKuuZwLBKnh
-         ZDJu5zBkguaNY/BO8CFxeA3Ig9yQgPZbQ9yL5+y9qkmV0d/7ndl2J0b2JNtp2FCsoY1u
-         y2RQDuZxbjL8U0E1K76H9E2WSOoz+sFIJH0dM=
-Message-ID: <cfd18e0f0809012207g58b81a20ib6a871cdf3bb0909@mail.gmail.com>
-Date: Mon, 1 Sep 2008 22:07:30 -0700
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Ulrich Drepper" <drepper@gmail.com>
-Subject: Re: No NONBLOCK flag for dup3() or epoll_create1()?
-Cc: "Ulrich Drepper" <drepper@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Davide Libenzi" <davidel@xmailserver.org>
-In-Reply-To: <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AC4B19.6000206@gmail.com>
-	 <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
+	Tue, 2 Sep 2008 01:13:38 -0400
+Date: Tue, 02 Sep 2008 01:13:23 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+In-reply-to: <3f9a31f40809010951p15ed7359w48d2b18adf0ca20f@mail.gmail.com>
+To: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+Cc: "Dave Airlie" <airlied@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Message-id: <200809020113.24058.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <898503EB1E15BA4F944D1BE69D55AAC8AB540A@storexmb1.amd.com>
+ <200808310655.45464.gene.heskett@gmail.com>
+ <3f9a31f40809010951p15ed7359w48d2b18adf0ca20f@mail.gmail.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 1, 2008 at 5:34 PM, Ulrich Drepper <drepper@gmail.com> wrote:
-> On Wed, Aug 20, 2008 at 9:49 AM, Michael Kerrisk
-> <mtk.manpages@googlemail.com> wrote:
->> I've been doing some testing (2.6.27-rc3) of your new
->> file-descriptor-creating syscalls that accept flags.  According to
+On Monday 01 September 2008, Jaswinder Singh wrote:
+>Hello Gene,
+>
+>On Sun, Aug 31, 2008 at 6:55 AM, Gene Heskett <gene.heskett@gmail.com> wrote:
+>> Yes I can, but how do I get that specific patch?  Or is that the git # for
+>> the patch I first applied to -rc2, which added the firmware/radeon stuff? 
+>> I'm familiar with patch, but not on a first name basis with git, sorry.
 >>
->> http://udrepper.livejournal.com/20407.html
->>
->> all of the system calls should accept a *_NONBLOCK flag.
+>> So I'm going to do a bisect, my style.  I will rebuild, starting with
+>> -rc3, using only the -rcX patch and the firmware addition patch, which
+>> applied to -rc3 as follows:
+>> now applying [PATCH]radeon_cp-use-request_firmware
 >
-> This was never the intention.
-
-All of the below makes some sense, but is at odds with what you posted
-on your blog entry, which documents *_NONBLOCK for both
-epoll_create1() and dup3().  Thus, I needed to check with you since
-the "intention" stated in the blog post differs from the actual
-implementation.
-
->> For epoll_create1() this certainly appears to be an oversight, since I can't
->> think of a reason not to support *_NONBLOCK.
+>This patch is not included in 2.6.27-rc5. Please do not mix this patch
+>now, first resolve your problem and if you want then you can add this
+>patch above of it.
 >
-> I can.  There is already a method to not block (zero timeout).  We
-> should not provide multiple ways to get the same functionality.
+I see.  However, since the stuff in /lib/firmware is already there from 
+previous builds that did include this patch, and I didn't delete it, I noted 
+that the 2.6.27-rc5 I built last night, without that patch, still loaded the 
+r200 microcode according to the messages log, and dmesg.  From dmesg:
 
-Though, one reason to do so would be consistency with the other
-changed APIs.  (There are many cases where *ix API provides more than
-one way of getting the same functionality.)
+[root@coyote /]# dmesg|grep drm
+[    1.389274] [drm] Initialized drm 1.1.0 20060810
+[    1.389707] [drm] Initialized radeon 1.29.0 20080528 on minor 0
+[   85.920881] [drm] Setting GART location based on new memory map
+[   85.920894] [drm] Loading R200 Microcode
+[   85.920944] [drm] writeback test succeeded in 1 usecs
 
-> It
-> would require changes in the epoll code as well.  That's not worth it.
+>Thank you,
 >
->
->>  (Furthermore, given a open file description for which O_NONBLOCK is
->> already enabled, it is not possible to make a dup3() call that disables
->> O_NONBLOCK, which is an odd asymmetry in the API.)
->
-> That's why I didn't add support for the flag.  It's hardly useful to
-> add this support.
+>Jaswinder Singh.
 
-Cheers,
-
-Michael
-
+Thank you!
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Good leaders being scarce, following yourself is allowed.
