@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbYIBKAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYIBKBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbYIBKAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 06:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYIBJ7y
+	id S1753543AbYIBKBn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 06:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYIBKBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 05:59:54 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:10965 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753354AbYIBJ7w (ORCPT
+	Tue, 2 Sep 2008 06:01:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33813 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYIBKBf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 05:59:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=iqJM/cHznAdwVQbJ2pZgB/2VgdwoRks/c1OgqPeyLVSTc26cVA3jNZYsczMTbU0Prb
-         bP8faljEFuOas0a+pHytkKqJT+Fz81vRmXdHo5G4ZY7AKQArOQzKcF7Kt3wdtaACZ1VI
-         cKSxd4lEHp1x9DvYxpocZmrWe7lt2dRJeMh8g=
-Message-ID: <8db1092f0809020259i91bb979i32ef11ac86e34f1d@mail.gmail.com>
-Date: Tue, 2 Sep 2008 11:59:50 +0200
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [SOLVED] Re: [2.6.26.*] boot problem (ahci/irq related?)
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>,
-       tj@kernel.org, andi@firstfloor.org,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-In-Reply-To: <200808242327.26863.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 2 Sep 2008 06:01:35 -0400
+Date: Tue, 2 Sep 2008 19:07:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+Message-Id: <20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48BD0E4A.5040502@linux.vnet.ibm.com>
+References: <20080831174756.GA25790@balbir.in.ibm.com>
+	<200809011656.45190.nickpiggin@yahoo.com.au>
+	<20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com>
+	<200809011743.42658.nickpiggin@yahoo.com.au>
+	<48BD0641.4040705@linux.vnet.ibm.com>
+	<20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BD0E4A.5040502@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8db1092f0808111312x3baf819bxbb05030c05693065@mail.gmail.com>
-	 <200808221210.59560.rjw@sisk.pl>
-	 <8db1092f0808220350wc56af7di5c5e1c2eb2421249@mail.gmail.com>
-	 <200808242327.26863.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I change CONFIG_HZ*. Previous I had CONFIG_HZ=1000, already I have 300:
+On Tue, 02 Sep 2008 15:28:34 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-maciek@gumis:~$ cat /boot/config-2.6.26.2 | grep CONFIG_HZ
-# CONFIG_HZ_100 is not set
-# CONFIG_HZ_250 is not set
-CONFIG_HZ_300=y
-# CONFIG_HZ_1000 is not set
-CONFIG_HZ=300
+> KAMEZAWA Hiroyuki wrote:
+> > On Tue, 02 Sep 2008 14:54:17 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> >> Nick Piggin wrote:
+> >>> That could be a reasonable solution.  Balbir has other concerns about
+> >>> this... so I think it is OK to try the radix tree approach first.
+> >> Thanks, Nick!
+> >>
+> >> Kamezawa-San, I would like to integrate the radix tree patches after review and
+> >> some more testing then integrate your patchset on top of it. Do you have any
+> >> objections/concerns with the suggested approach?
+> >>
+> > please show performance number first.
+> 
+> Yes, that is why said some more testing. I am running lmbench and kernbench on
+> it and some other tests, I'll get back with numbers.
+> 
+A test which is not suffer much from I/O is better.
+And please don't worry about my patches. I'll reschedule if yours goes first.
 
-If ealier I had boot problem in 2.6.26.2 than now I haven't any
-problem with it. Change timer frequency to lower solves problem, but I
-don't understand why.
+Thanks,
+-Kame
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
