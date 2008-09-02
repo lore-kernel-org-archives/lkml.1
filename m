@@ -1,97 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYIBP5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbYIBQCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbYIBP5p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 11:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYIBP5i
+	id S1752597AbYIBQCX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 12:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYIBQCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 11:57:38 -0400
-Received: from qb-out-0506.google.com ([72.14.204.227]:41742 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbYIBP5h (ORCPT
+	Tue, 2 Sep 2008 12:02:16 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37726 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbYIBQCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 11:57:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=jNeAmI3C3U0yANRz3y02Rag20F+3yy+r1f4QwY7cQ4P8YqKj4dwXIaSsGO2mlLjMqn
-         HUXU+YdUy4rVKVE7lCHfOKLZJ7jfqtp6siC5y0doOj0FSJkZYusWI2PBhawbavhJVYQK
-         Z6BsrIyuxwDvCHzajkr4ejCrbxM6Q8Q0fUdQM=
-Message-ID: <48BD626B.6070705@panasas.com>
-Date: Tue, 02 Sep 2008 18:57:31 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/5 ver2] debug: BUILD_BUG_ON: error on non-const expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com>
-In-Reply-To: <48BBEE04.30903@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 2 Sep 2008 12:02:15 -0400
+Date: Tue, 2 Sep 2008 09:02:11 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 11/13] hrtimer: turn hrtimers into range timers
+Message-ID: <20080902090211.31ebced7@infradead.org>
+In-Reply-To: <1220363227.8609.56.camel@twins>
+References: <20080901160343.75a89ec9@infradead.org>
+	<20080901161336.10a71c9f@infradead.org>
+	<1220343732.8609.19.camel@twins>
+	<20080902060517.60dca448@infradead.org>
+	<1220363227.8609.56.camel@twins>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 02 Sep 2008 15:47:07 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Fix BUILD_BUG_ON to not silently drop non-compile-time
-visible expressions. It will now produce a compilation
-error if so.
+> > (it's not perfect by any means but it works ;-)
+> 
+> Gah, right. How about adding the following:
+> 
+> /*
+>  * The immediate goal is minimizing wakeups, not running
+>  * timers at the earliest interrupt after their soft expiration.
+>  * This allows us to avoid using a Priority Search Tree,
+>  * which can answer a stabbing querry for overlapping
+>  * intervals and instead use the simple BST we already have.
+>  * We don't add extra wakeups by delaying timers that are
+>  * right-of a not yet expired timer, because that timer will
+>  * have to trigger a wakeup anyway.
+>  */
 
-The code to BUILD_BUG_ON_ZERO was done by:
-Jan Beulich <jbeulich@novell.com>
+fair enough; I'll merge this in (I'm not going to resend the whole
+series just for this redo though... maybe when there's more feedback
+I'll roll it all up)
+thanks!
 
-The code to BUILD_BUG_ON is a small variation to Jan's
-code inspired by Rusty Russell. Which gives me better
-compilation semantics, and makes BUILD_BUG_ON behave
-more like BUG_ON.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-TO: Jan Beulich <jbeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Theodore Tso <tytso@mit.edu>
-CC: David S. Miller <davem@davemloft.net>
----
- include/linux/compiler.h |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 90fa975..23dc269 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -194,14 +194,15 @@ extern void __chk_io_ptr(const volatile void __iomem *);
-  */
- #define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
- 
--/* Force a compilation error if condition is true */
--#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
--
- /* Force a compilation error if condition is true, but also produce a
-    result (of value 0 and type size_t), so the expression can be used
--   e.g. in a structure initializer (or where-ever else comma expressions
-+   e.g. in a structure initializer (or where-ever full statements
-    aren't permitted). */
--#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
-+#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
-+
-+/* Force a compilation error if condition is true */
-+#define BUILD_BUG_ON(e) \
-+	do { struct {int:-!!(e); } x __maybe_unused;} while(0)
- 
- /* Trap pasters of __FUNCTION__ at compile-time */
- #define __FUNCTION__ (__func__)
 -- 
-1.5.6.rc1.5.gadf6
-
-
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
