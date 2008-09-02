@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYIBUze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYIBVCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYIBUze (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 16:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYIBUz1
+	id S1753888AbYIBVCd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 17:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYIBVCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 16:55:27 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:38715 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYIBUz0 (ORCPT
+	Tue, 2 Sep 2008 17:02:23 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50653 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbYIBVCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 16:55:26 -0400
-Date: Tue, 2 Sep 2008 17:55:44 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: herton@mandriva.com.br, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
-Message-ID: <20080902175544.131bc54e@doriath.conectiva>
-In-Reply-To: <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
-References: <20080902163532.436f8fbd@doriath.conectiva>
-	<alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Sep 2008 17:02:22 -0400
+Date: Tue, 2 Sep 2008 17:02:20 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       David Woodhouse <dwmw2@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+Message-ID: <20080902210219.GA9856@infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org> <1220194366-12731-13-git-send-email-dedekind@infradead.org> <1220262187.2982.58.camel@pmac.infradead.org> <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron> <20080902170954.GE3086@webber.adilger.int>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080902170954.GE3086@webber.adilger.int>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 2 Sep 2008 22:18:25 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> escreveu:
+On Tue, Sep 02, 2008 at 11:09:54AM -0600, Andreas Dilger wrote:
+> The fsid is supposed to be a persistent, unique identifier for the
+> filesystem, used by NFS in file handles.  Using st_dev is unsafe,
+> because that may change from one server boot to the next, because
+> of device probing order, driver changes, etc.  Also, not all filesystems
+> HAVE a valid st_dev in the first place, which is the whole reason
+> for this thread.
+> 
+> I think a ->get_fsid() export method would be preferable.
 
-| On Tue, 2 Sep 2008, Luiz Fernando N. Capitulino wrote:
-| > 
-| >  I have a HP Pavilion dv6000 laptop here which doesn't boot with
-| > latest Linus tree (2.6.27-rc5).
-| > 
-| >  The last lines I see on the screen are:
-| > 
-| > """
-| > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
-| > hpet0: 3 32-bit timers, 25 000000 Hz
-| > """
-| 
-| Sigh. I'm getting sick of that :)
+Umm, different things.  f_fsid in stat(v)fs is just a cookie exported to
+userspac that has never really been documented.
 
- I can imagine... Will do my best to help, but I don't know anything
-about hpet. :(
+We also called the filesystem part of the NFS filehandle in a few
+places, and for those it's correct that it should be stable.  Currently
+the fsid is either created from the dev_t in kernelspace or from
+uuids extracted through libuuid in userspace.
 
-| >  I would try to revert it from current Linus' tree to see if it
-| > really fix the problem but turns out that it will take some time
-| > to work on the conflicts.
-| 
-| Don't do that. We really need to find out what the root cause of this
-| HPET wreckage on those AMD machine is. The commit in question _IS_ the
-| alleged culprit, but the root cause is something different.
-
- Okay, and thanks for the others explanations.
-
-| >  I'm attaching the 2.6.26.3 (Mandriva kernel) and 2.6.27-rc5 (with
-| > hpet=disable) dmesg files.
-| > 
-| >  Also, this _seems_ to be the same as reported in:
-| > 
-| > http://bugzilla.kernel.org/show_bug.cgi?id=11191
-| 
-| Yup.
-|  
-| >  But I'm still compiling the kernel with the appropriate config
-| > options to confirm this.
-| > 
-| >  Please, let me know if there's anything else I can do to
-| > help you debug this.
-| 
-| Can you please disable CONFIG_HPET ?
-
- It still hangs but at a different point, the last two messages are:
-
-"""
-PCI: Using ACPI for IRQ routing
-DMAR:parse DMAR table failure.
-"""
-
- Also, after about 10 minutes I get the same backtrace as reported in
-the ticket above... It's the same bug then.
-
--- 
-Luiz Fernando N. Capitulino
+I can't see anything in the message that started this thread that
+mentions NFS, btw.
