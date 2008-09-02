@@ -1,70 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752206AbYIBNaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbYIBNbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752206AbYIBNaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 09:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbYIBNaM
+	id S1752759AbYIBNbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 09:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYIBNbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 09:30:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47173 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751121AbYIBNaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 09:30:11 -0400
-Subject: Re: new: regression iwl3945/mac80211 endless after suspend
-	associate/deassociate loop
-From: Dan Williams <dcbw@redhat.com>
-To: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Zhu Yi <yi.zhu@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
-       Jan-Espen Pettersen <sigsegv@radiotube.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <20080902130429.GB19172@google.com>
-References: <20080901160658.GA11063@google.com>
-	 <1220319536.28282.128.camel@debian.sh.intel.com>
-	 <4b0be9b641de902cb7de4ad50686f6e1.squirrel@secure.sipsolutions.net>
-	 <20080902130429.GB19172@google.com>
-Content-Type: text/plain
-Date: Tue, 02 Sep 2008 09:30:01 -0400
-Message-Id: <1220362201.3176.4.camel@borkbork.foobar.com>
-Mime-Version: 1.0
+	Tue, 2 Sep 2008 09:31:43 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:39313
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751000AbYIBNbm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 09:31:42 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RT PATCH v4] seqlock: serialize against writers
+To: mingo@elte.hu, rostedt@goodmis.org, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       gregory.haskins@gmail.com, andi@firstfloor.org, shemminger@vyatta.com
+Date: Tue, 02 Sep 2008 09:29:18 -0400
+Message-ID: <20080902132825.23160.35234.stgit@dev.haskins.net>
+In-Reply-To: <20080829154237.1196.66825.stgit@dev.haskins.net>
+References: <20080829154237.1196.66825.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 16:04 +0300, Michael S. Tsirkin wrote:
-> On Tue, Sep 02, 2008 at 08:10:09AM +0200, Johannes Berg wrote:
-> > Zhu Yi wrote:
-> > > On Mon, 2008-09-01 at 19:07 +0300, Michael S. Tsirkin wrote:
-> > >> [16482.909453] eth1: associate with AP XX:XX:XX:XX:XX:XX
-> > >> [16482.918553] eth1: RX ReassocResp from XX:XX:XX:XX:XX:XX
-> > >> (capab=0x411 status=0 aid=1)
-> > >> [16482.918564] eth1: associated
-> > >> [16492.920224] eth1: disassociating by local choice (reason=3)
-> > >> [16492.920986] eth1: disassociating by local choice (reason=3)
-> > >
-> > > It is exactly 10 seconds the local STA sends the deauth_leaving frame
-> > > before associated everytime. I wonder if it is the timeout for some
-> > > wireless config tools. NM?
-> > 
-> > "by local choice" means wext requested this, not a kernel bug.
-> > 
-> > johannes
-> 
-> Sure, it's wpa_supplicant in ubuntu gutsy doing it.
-> 
-> $wpa_supplicant -version
->  wpa_supplicant v0.5.8
->  Copyright (c) 2003-2007, Jouni Malinen <j@w1.fi> and contributors
-> 
-> But it happens to work fine without 8ab65b03b7893da4a49009e7e356e36e27b0c407.
+[ here is the updated prologue rebased against the proper tree (26.3-rt3) ]
 
-That's really odd; that patch (the don't-send-empty-extended-rates-IE
-patch) shouldn't have anything to do with this behavior, if it did you
-wouldn't get associated to the AP in the first place I think.  You're
-100% sure that this patch is causing the problem?  Can you post the
-output of running wpa_supplicant with the "-dddt" flags and also post
-the 'iwlist scan' output for your AP?
+--------------------------
 
-Dan
+seqlock: serialize against writers
+
+There are currently several problems in -rt w.r.t. seqlock objects. RT
+moves mainline seqlock_t to "raw_seqlock_t", and creates a new seqlock_t
+object that is fully preemptible.  Being preemptible is a great step
+towards deterministic behavior, but there are a few areas that need
+additional measures to protect new vulnerabilities created by the
+preemptible code. For the purposes of demonstration, consider three tasks
+of different priority: A, B, and C.  A is the logically highest, and C is
+the lowest.  A is trying to acquire a seqlock read critical section, while
+C is involved in write locks.
+
+Problem 1) If A spins in seqbegin due to writer contention retries, it may
+prevent C from running even if C currently holds the write lock.  This
+is a deadlock.
+
+Problem 2) B may preempt C, preventing it from releasing the write
+critical section.  In this case, A becomes inverted behind B.
+
+Problem 3) Lower priority tasks such as C may continually acquire the write
+section which subsequently causes A to continually retry and thus fail to
+make forward progress.  Since C is lower priority it ideally should not
+cause delays in A. E.g. C should block if A is in a read-lock and C is <= A.
+
+This patch addresses Problems 1 & 2, and leaves 3 for a later time.
+
+This patch changes the internal seqlock_t implementation to substitute
+a rwlock for the basic spinlock previously used, and forces the readers
+to serialize with the writers under contention.  Blocking on the read_lock
+simultaneously sleeps A (preventing problem 1), while boosting C to A's
+priority (preventing problem 2).  Non reader-to-writer contended
+acquisitions, which are the predominant mode, remain free of atomic
+operations.  Therefore the fast path should not be perturbed by this
+change.
+
+This fixes a real-world deadlock discovered under testing where all
+high priority readers were hogging the cpus and preventing a writer
+from releasing the lock (i.e. problem 1).
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
+
+ include/linux/seqlock.h |   51 +++++++++++++++++++++++------------------------
+ 1 files changed, 25 insertions(+), 26 deletions(-)
+
+diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
+index 345d726..605fcdb 100644
+--- a/include/linux/seqlock.h
++++ b/include/linux/seqlock.h
+@@ -3,9 +3,11 @@
+ /*
+  * Reader/writer consistent mechanism without starving writers. This type of
+  * lock for data where the reader wants a consistent set of information
+- * and is willing to retry if the information changes.  Readers never
+- * block but they may have to retry if a writer is in
+- * progress. Writers do not wait for readers. 
++ * and is willing to retry if the information changes. Readers block
++ * on write contention (and where applicable, pi-boost the writer).
++ * Readers without contention on entry acquire the critical section
++ * without any atomic operations, but they may have to retry if a writer
++ * enters before the critical section ends. Writers do not wait for readers.
+  *
+  * This is not as cache friendly as brlock. Also, this will not work
+  * for data that contains pointers, because any writer could
+@@ -24,6 +26,8 @@
+  *
+  * Based on x86_64 vsyscall gettimeofday 
+  * by Keith Owens and Andrea Arcangeli
++ *
++ * Priority inheritance and live-lock avoidance by Gregory Haskins
+  */
+ 
+ #include <linux/spinlock.h>
+@@ -31,7 +35,7 @@
+ 
+ typedef struct {
+ 	unsigned sequence;
+-	spinlock_t lock;
++	rwlock_t lock;
+ } __seqlock_t;
+ 
+ typedef struct {
+@@ -57,7 +61,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
+ 		{ 0, RAW_SPIN_LOCK_UNLOCKED(lockname) }
+ 
+ #ifdef CONFIG_PREEMPT_RT
+-# define __SEQLOCK_UNLOCKED(lockname) { 0, __SPIN_LOCK_UNLOCKED(lockname) }
++# define __SEQLOCK_UNLOCKED(lockname) { 0, __RW_LOCK_UNLOCKED(lockname) }
+ #else
+ # define __SEQLOCK_UNLOCKED(lockname) __RAW_SEQLOCK_UNLOCKED(lockname)
+ #endif
+@@ -69,7 +73,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
+ 	do { *(x) = (raw_seqlock_t) __RAW_SEQLOCK_UNLOCKED(x); spin_lock_init(&(x)->lock); } while (0)
+ 
+ #define seqlock_init(x) \
+-		do { *(x) = (seqlock_t) __SEQLOCK_UNLOCKED(x); spin_lock_init(&(x)->lock); } while (0)
++		do { *(x) = (seqlock_t) __SEQLOCK_UNLOCKED(x); rwlock_init(&(x)->lock); } while (0)
+ 
+ #define DEFINE_SEQLOCK(x) \
+ 		seqlock_t x = __SEQLOCK_UNLOCKED(x)
+@@ -85,7 +89,7 @@ typedef __raw_seqlock_t raw_seqlock_t;
+  */
+ static inline void __write_seqlock(seqlock_t *sl)
+ {
+-	spin_lock(&sl->lock);
++	write_lock(&sl->lock);
+ 	++sl->sequence;
+ 	smp_wmb();
+ }
+@@ -103,14 +107,14 @@ static inline void __write_sequnlock(seqlock_t *sl)
+ {
+ 	smp_wmb();
+ 	sl->sequence++;
+-	spin_unlock(&sl->lock);
++	write_unlock(&sl->lock);
+ }
+ 
+ #define __write_sequnlock_irqrestore(sl, flags)	__write_sequnlock(sl)
+ 
+ static inline int __write_tryseqlock(seqlock_t *sl)
+ {
+-	int ret = spin_trylock(&sl->lock);
++	int ret = write_trylock(&sl->lock);
+ 
+ 	if (ret) {
+ 		++sl->sequence;
+@@ -120,18 +124,25 @@ static inline int __write_tryseqlock(seqlock_t *sl)
+ }
+ 
+ /* Start of read calculation -- fetch last complete writer token */
+-static __always_inline unsigned __read_seqbegin(const seqlock_t *sl)
++static __always_inline unsigned __read_seqbegin(seqlock_t *sl)
+ {
+ 	unsigned ret;
+ 
+-repeat:
+ 	ret = sl->sequence;
+ 	smp_rmb();
+ 	if (unlikely(ret & 1)) {
+-		cpu_relax();
+-		goto repeat;
++		/*
++		 * Serialze with the writer which will ensure they are
++		 * pi-boosted if necessary and prevent us from starving
++		 * them.
++		 */
++		read_lock(&sl->lock);
++		ret = sl->sequence;
++		read_unlock(&sl->lock);
+ 	}
+ 
++	BUG_ON(ret & 1);
++
+ 	return ret;
+ }
+ 
+@@ -142,20 +153,8 @@ repeat:
+  */
+ static inline int __read_seqretry(seqlock_t *sl, unsigned iv)
+ {
+-	int ret;
+-
+ 	smp_rmb();
+-	ret = (sl->sequence != iv);
+-	/*
+-	 * If invalid then serialize with the writer, to make sure we
+-	 * are not livelocking it:
+-	 */
+-	if (unlikely(ret)) {
+-		unsigned long flags;
+-		spin_lock_irqsave(&sl->lock, flags);
+-		spin_unlock_irqrestore(&sl->lock, flags);
+-	}
+-	return ret;
++	return (sl->sequence != iv);
+ }
+ 
+ static __always_inline void __write_seqlock_raw(raw_seqlock_t *sl)
 
