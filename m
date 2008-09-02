@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYIBFEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYIBFGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYIBFEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 01:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbYIBFE1
+	id S1753852AbYIBFGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 01:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYIBFGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 01:04:27 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:55790 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbYIBFEZ (ORCPT
+	Tue, 2 Sep 2008 01:06:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:29019 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbYIBFGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 01:04:25 -0400
+	Tue, 2 Sep 2008 01:06:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FDyeFOH/cFdU5IeNaItE1eNDgnBMDGD1ce0aW64CI1MsdGHKHUUO+a+Md7Hs0Hg2HM
-         XqCzQAj9a9pO3ewviNc0C2codWg8zAS1gxWy8lUITlEY8S+9gVM2wyIPqJFjjR1/I3fj
-         ZrGGks+5ex9aNlpjaZBp+06hXNYyG0ncaQeaU=
-Date: Tue, 2 Sep 2008 09:06:01 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Kentaro Takeda <takedakn@nttdata.co.jp>
-Cc: viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
-       Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: Re: (repost) Confirmation of methods for calculating requested
-	pathname.
-Message-ID: <20080902050601.GA4149@x200.localdomain>
-References: <48AA49DE.6000006@nttdata.co.jp> <48BCC1B6.5030901@nttdata.co.jp>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=h25SAlSL9CVIAaZn66mS65CSLNapsGaRwFN9lFskwjMSrK5OOvk0yOqkxjPb2OYVxY
+         cc4xH1jcnYXWYJRmb3GfAXWnx5pA7sO12TG41n2UoYbW5cj3QHETVr5bJMxNdjuIfrxX
+         xzCq53Y3sMvIDgp6LnFIduVr63K/3KMJNv9JY=
+Message-ID: <cfd18e0f0809012206i4e39bbaeg6b6788325b664087@mail.gmail.com>
+Date: Mon, 1 Sep 2008 22:06:06 -0700
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Ulrich Drepper" <drepper@gmail.com>
+Subject: Re: No NONBLOCK flag for dup3() or epoll_create1()?
+Cc: "Ulrich Drepper" <drepper@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Davide Libenzi" <davidel@xmailserver.org>
+In-Reply-To: <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48BCC1B6.5030901@nttdata.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <48AC4B19.6000206@gmail.com>
+	 <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 01:31:50PM +0900, Kentaro Takeda wrote:
-> Al, could you answer the following question?
-> 
-> 
-> The current Linux kernel is not designed to pass vfsmount parameter
-> that is crucial for pathname-based security including AppArmor and
-> TOMOYO Linux, to LSM. Though both projects have been proposing
-> patches to calculate pathname, none of them have been accepted as
-> you know.
-> 
-> To find the reason for NACK, we examined past proposals and the
-> threads. And we came to understand that you oppose accessing vfsmount
-> inside vfs helper functions. Is our understanding correct?
-> 
-> If our understanding is correct, we would like to propose a new
-> method that does not require modifications to vfs helper functions.
-> Attached patch is a trial of this method.
-> 
-> vfs helper functions are surrounded by mnt_want_write() and
-> mnt_drop_write() pairs which receive "struct vfsmount" parameter
-> since 2.6.26. So, by remembering the absolute pathname of "struct
-> vfsmount" of the moment, LSM module can calculate an absolute
-> pathname of the given "struct dentry" parameter inside vfs_*
-> functions, without passing "struct vfsmount" parameter to vfs_*
-> functions.
-> 
-> This approach doesn't access vfsmount inside vfs helper functions,
-> and modification of existing kernel is only in task_struct and
-> mnt_want/drop_write().
+On Mon, Sep 1, 2008 at 5:34 PM, Ulrich Drepper <drepper@gmail.com> wrote:
+> On Wed, Aug 20, 2008 at 9:49 AM, Michael Kerrisk
+> <mtk.manpages@googlemail.com> wrote:
+>> I've been doing some testing (2.6.27-rc3) of your new
+>> file-descriptor-creating syscalls that accept flags.  According to
+>>
+>> http://udrepper.livejournal.com/20407.html
+>>
+>> all of the system calls should accept a *_NONBLOCK flag.
+>
+> This was never the intention.
 
-I don't know what Al Viro will say, but this is incredibly ugly.
-Even more ugly than previous patches.
+All of the below makes some sense, but is at odds with what you posted
+on your blog entry, which documents *_NONBLOCK for both
+epoll_create1() and dup3().  Thus, I needed to check with you since
+the "intention" stated in the blog post differs from the actual
+implementation.
 
+>> For epoll_create1() this certainly appears to be an oversight, since I can't
+>> think of a reason not to support *_NONBLOCK.
+>
+> I can.  There is already a method to not block (zero timeout).  We
+> should not provide multiple ways to get the same functionality.
+
+Though, one reason to do so would be consistency with the other
+changed APIs.  (There are many cases where *ix API provides more than
+one way of getting the same functionality.)
+
+> It
+> would require changes in the epoll code as well.  That's not worth it.
+>
+>
+>>  (Furthermore, given a open file description for which O_NONBLOCK is
+>> already enabled, it is not possible to make a dup3() call that disables
+>> O_NONBLOCK, which is an odd asymmetry in the API.)
+>
+> That's why I didn't add support for the flag.  It's hardly useful to
+> add this support.
+
+Cheers,
+
+Michael
+
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
