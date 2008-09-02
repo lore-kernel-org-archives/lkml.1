@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYIBV7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbYIBWM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYIBV7A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 17:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYIBV6l
+	id S1754540AbYIBWM5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 18:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYIBWMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 17:58:41 -0400
-Received: from ns.firmix.at ([62.141.48.66]:5682 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbYIBV6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 17:58:40 -0400
-Subject: Re: Request: Remove duplicate file names in the kernel source
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Peter Hallberg <hallberg68@hotmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <BLU122-W542897329D9AB74E77D73DA5F0@phx.gbl>
-References: <BLU122-W542897329D9AB74E77D73DA5F0@phx.gbl>
+	Tue, 2 Sep 2008 18:12:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59857 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753112AbYIBWMs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 18:12:48 -0400
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+From: David Woodhouse <dwmw2@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andreas Dilger <adilger@sun.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-nfs@vger.kernel.org
+In-Reply-To: <20080902214841.GA9204@infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
+	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+	 <1220262187.2982.58.camel@pmac.infradead.org>
+	 <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron>
+	 <20080902170954.GE3086@webber.adilger.int>
+	 <20080902210219.GA9856@infradead.org>
+	 <1220390769.2985.6.camel@pmac.infradead.org>
+	 <20080902214841.GA9204@infradead.org>
 Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Tue, 02 Sep 2008 23:58:20 +0200
-Message-Id: <1220392700.9322.32.camel@gimli.at.home>
+Date: Tue, 02 Sep 2008 23:12:41 +0100
+Message-Id: <1220393561.2985.19.camel@pmac.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.345 required=5
-X-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Die, 2008-09-02 at 23:53 +0200, Peter Hallberg wrote:
-[...]
->  to ask you to change it, below is a list of the files:
+On Tue, 2008-09-02 at 17:48 -0400, Christoph Hellwig wrote:
+> On Tue, Sep 02, 2008 at 10:26:09PM +0100, David Woodhouse wrote:
+> > > We also called the filesystem part of the NFS filehandle in a few
+> > > places, and for those it's correct that it should be stable.  Currently
+> > > the fsid is either created from the dev_t in kernelspace or from
+> > > uuids extracted through libuuid in userspace.
+> > 
+> > Or from the f_fsid returned in statfs(), as of a week or so ago.
+> 
+> I think that's a rather bad idea.  As mentioned before f_fsid is
+> basically random.
 
--ENOPATCH
+It's not that bad. Of the file systems which actually fill it in...
 
-	Bernd
+For NTFS it's the volume serial number.
+
+For ext[234] it's the UUID xor-folded into 64 bits.
+For btrfs the same, but with the root object ID xor'd in too.
+
+For bfs and xfs it's the block device -- which isn't ideal, as Andreas
+points out, but is what we'd fall back to anyway.
+
+BFS seems to have a s_volume field which perhaps we could use, but we
+should check for it being all spaces and leave f_fsid as zero in that
+case. Presumably XFS could be using sb_uuid?
+
+For efs, it'll be either EFS_MAGIC or EFS_NEWMAGIC, which is probably a
+bad thing if you want to export multiple EFS file systems. I'll send a
+patch to fix that (by leaving it zero) shortly.
+
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
 
