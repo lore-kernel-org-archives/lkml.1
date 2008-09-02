@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbYIBNhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbYIBNia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753011AbYIBNhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 09:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYIBNhE
+	id S1753228AbYIBNia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 09:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYIBNiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 09:37:04 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:8134 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbYIBNhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 09:37:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gEe0b6qbwixFVPritn7tgoA56ZqT80NA/V+KDHcw61O/ntZoGJH4/EUyTQ8P7yjvvZ
-         FT7NL1WGMPhDtmj1iND5ZNys38tfXlkYM7fGYHfHb1w+vgTnr4fobKTBLTlEClf09uhM
-         gM11QcqLsFGJq2JD3v5YbaNyHzP9oXHB44u7o=
-Message-ID: <8bd0f97a0809020637n2c7e29bexe87bd3dca50cee88@mail.gmail.com>
-Date: Tue, 2 Sep 2008 09:37:01 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <cooloney@kernel.org>
-Subject: Re: [PATCH 1/1] ALSA: add dummy function to support shared mmap in nommu Blackfin arch (v2)
-Cc: tiwai@suse.de, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       "Cliff Cai" <cliff.cai@analog.com>
-In-Reply-To: <1220349522-17995-1-git-send-email-cooloney@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Sep 2008 09:38:19 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:34931 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751390AbYIBNiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 09:38:18 -0400
+Subject: Re: (repost) Confirmation of methods for calculating requested
+	pathname.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Kentaro Takeda <takedakn@nttdata.co.jp>, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
+       akpm@linux-foundation.org, Toshiharu Harada <haradats@nttdata.co.jp>
+In-Reply-To: <20080902131127.GA5951@hallyn.com>
+References: <48AA49DE.6000006@nttdata.co.jp>
+	 <48BCC1B6.5030901@nttdata.co.jp>  <20080902131127.GA5951@hallyn.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 02 Sep 2008 09:37:20 -0400
+Message-Id: <1220362640.26711.69.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220349522-17995-1-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 2, 2008 at 5:58 AM, Bryan Wu wrote:
-> From: Cliff Cai <cliff.cai@analog.com>
->
-> v1-v2:
->  - only adding this dummy function in nommu arch
->
-> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  sound/core/pcm_native.c |   14 ++++++++++++++
->  1 files changed, 14 insertions(+), 0 deletions(-)
->
-> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-> index c49b9d9..1e88cde 100644
-> --- a/sound/core/pcm_native.c
-> +++ b/sound/core/pcm_native.c
-> @@ -3391,6 +3391,14 @@ out:
->  }
->  #endif /* CONFIG_SND_SUPPORT_OLD_API */
->
-> +#ifndef CONFIG_MMU
-> +unsigned long dummy_get_unmapped_area(struct file *file, unsigned long addr,
-> +                                     unsigned long len, unsigned long pgoff, unsigned long flags)
-> +{
-> +       return 0;
-> +}
-> +#endif
 
-if you had:
-#else
-# define dummy_get_unmapped_area NULL
-#endif
-then you could avoid #ifdef in the rest of the file ...
--mike
+On Tue, 2008-09-02 at 08:11 -0500, Serge E. Hallyn wrote:
+> Quoting Kentaro Takeda (takedakn@nttdata.co.jp):
+> > Al, could you answer the following question?
+> > 
+> > 
+> > The current Linux kernel is not designed to pass vfsmount parameter
+> > that is crucial for pathname-based security including AppArmor and
+> > TOMOYO Linux, to LSM. Though both projects have been proposing
+> > patches to calculate pathname, none of them have been accepted as
+> > you know.
+> > 
+> > To find the reason for NACK, we examined past proposals and the
+> > threads. And we came to understand that you oppose accessing vfsmount
+> > inside vfs helper functions. Is our understanding correct?
+> > 
+> > If our understanding is correct, we would like to propose a new
+> > method that does not require modifications to vfs helper functions.
+> > Attached patch is a trial of this method.
+> > 
+> > vfs helper functions are surrounded by mnt_want_write() and
+> > mnt_drop_write() pairs which receive "struct vfsmount" parameter
+> 
+> I thought Al and others (Stephen?) had made it clear that the thing to do was
+> add new lsm hooks there.  So whereas inode_permission takes only an inode and
+> ends up calling security_inode_permission, you would add a
+> security_path_permission() or somesuch before or after the call to
+> inode_permission(), where as you've noted the path is available.  You're
+> *close* to doing the right thing by having a helper who is called at the right
+> place catch the vfsmount, but you refuse to send a patch doing exactly what
+> has been suggested.
+
+No, that idea seemingly died because both Al and Miklos thought it was
+wrong to add new security hooks to the same code path (vs. moving the
+existing ones to the callers), but I was opposed to moving the existing
+hooks as they are presently exactly where SELinux needs them, and moving
+them to the callers raises concerns both with ensuring invocation on all
+code paths (possible, but an ongoing maintenance concern) and with
+performing DAC checks first where possible (which I think is also a
+concern for TOMOYO et al).  Miklos' vfs path API showed more promise but
+was rejected.
+
+-- 
+Stephen Smalley
+National Security Agency
+
