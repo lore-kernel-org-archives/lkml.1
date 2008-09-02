@@ -1,175 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbYIBOyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYIBOzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbYIBOyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 10:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYIBOx7
+	id S1752181AbYIBOzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 10:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYIBOza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 10:53:59 -0400
-Received: from smtp-out1.iol.cz ([194.228.2.86]:44641 "EHLO smtp-out1.iol.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbYIBOx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 10:53:59 -0400
-Message-ID: <48BD5348.6080708@quick.cz>
-Date: Tue, 02 Sep 2008 16:52:56 +0200
-From: Martin Doucha <next_ghost@quick.cz>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
+	Tue, 2 Sep 2008 10:55:30 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:41452 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbYIBOza (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 10:55:30 -0400
+Date: Tue, 2 Sep 2008 07:55:12 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, manfred@colorfullife.com,
+       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, schamp@sgi.com,
+       niv@us.ibm.com, dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org
+Subject: Re: [PATCH, RFC, tip/core/rcu] v3 scalable classic RCU
+	implementation
+Message-ID: <20080902145512.GA6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <1220088780.8426.1.camel@twins> <20080830141001.GD7107@linux.vnet.ibm.com> <1220110858.14894.46.camel@lappy.programming.kicks-ass.net> <20080902132608.GA7751@Krystal> <1220362914.8609.51.camel@twins>
 MIME-Version: 1.0
-To: matthieu castet <castet.matthieu@free.fr>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: re : ACPI PnP on Intel MU440EX
-References: <48BAD734.305@free.fr> <48BC5080.2040607@free.fr>
-In-Reply-To: <48BC5080.2040607@free.fr>
-Content-Type: multipart/mixed;
- boundary="------------090903020609090409050709"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220362914.8609.51.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090903020609090409050709
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Sep 02, 2008 at 03:41:54PM +0200, Peter Zijlstra wrote:
+> On Tue, 2008-09-02 at 09:26 -0400, Mathieu Desnoyers wrote:
+> > * Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> > > On Sat, 2008-08-30 at 07:10 -0700, Paul E. McKenney wrote:
+> > > > On Sat, Aug 30, 2008 at 11:33:00AM +0200, Peter Zijlstra wrote:
+> > > > > On Fri, 2008-08-29 at 17:49 -0700, Paul E. McKenney wrote:
+> > > > > 
+> > > > > > Some shortcomings:
+> > > > > > 
+> > > > > > o	Entering and leaving dynticks idle mode is a quiescent state,
+> > > > > > 	but the current patch doesn't take advantage of this (noted
+> > > > > > 	by Manfred).  It appears that it should be possible to make
+> > > > > > 	nmi_enter() and nmi_exit() provide an in_nmi(), which would make
+> > > > > > 	it possible for rcu_irq_enter() and rcu_irq_exit() to figure
+> > > > > > 	out whether it is safe to tell RCU about the quiescent state --
+> > > > > > 	and also greatly simplify the code.
+> > > > > 
+> > > > > Already done and available in the -tip tree, curtesy of Mathieu.
+> > > > 
+> > > > Very cool!!!  I see one of his patches at http://lkml.org/lkml/2008/4/17/342,
+> > > > but how do I find out which branch of -tip this is on?  (I am learning
+> > > > git, but it is a slow process...)
+> > > > 
+> > > > This would also simplify preemptable RCU's dyntick interface, removing
+> > > > the need for proofs.
+> > > 
+> > > Not sure - my git-foo isn't good enough either :-(
+> > > 
+> > > All I can offer is that its available in tip/master (the collective
+> > > merge of all of tip's branches) as commit:
+> > > 0d84b78a606f1562532cd576ee8733caf5a4aed3, which I found using
+> > > git-annotate include/linux/hardirq.h
+> > > 
+> > > How to find from which particular topic branch it came from, I too am
+> > > clueless.
+> > > 
+> > 
+> > If you're interested in knowing the topic it came from : it's required
+> > so a following patch can use a "popf; ret" instead of iret to return
+> > from trap handlers executed in NMI context. There is an architectural
+> > problem on x86 causing NMIs to be reactivated after the first iret
+> > encountered, which leads to NMI handler races if nmi handlers trap. This
+> > works around the problem by returning from the trap handlers without
+> > using the iret instruction.
+> > 
+> > It's useful to Immediate Values which put a temporary breakpoint in the
+> > instruction stream when proceeding to code modification and also useful
+> > to LTTng (available in the -lttng tree) which writes tracing data to
+> > vmap'd memory buffers (which can cause a minor page fault).
+> > 
+> > I'm glad to see NMI context detection is useful to others too !
+> 
+> While an interesting detail, its not the answer to the question.
+> 
+> Given a bunch of topic branches, and a branch that has all those topic
+> merged, how, for any particular commit from the merge branch, do you
+> find from which topic branch it originiated?
+> 
+> IOW, the answer to the above question would have been a series of git
+> commands that would have resulted in something like tip/tracing/nmisafe
 
-matthieu castet wrote:
-> Hi,
-> Please keep CC.
->> What should I do to get lspnp work with pnpacpi?
->
-> Use a newer version of lspnp.
-> An alternative is to do a for i in /sys/bus/pnp/devices/*; do echo $i; 
-> cat $i/*; done
-> Matthieu
+I guess that it turned out that there was a series of mutt commands that
+eventually got the answer.  That said, a series of git commands would
+be quite nice.  ;-)
 
-Looking for any version of lspnp seems harder than finding a needle in 
-barn full of hay... Here're the contents of /sys/bus/pnp/devices, the 
-parallel port seems to be detected as device 00:08 (line 81) but there's 
-no mention of it in dmesg, /dev or /proc/sys/dev/parport
+But it would appear that the series of git commands would need to come
+from someone with better git-foo than either Mathieu or myself.  :-/
 
-Regards,
-Martin Doucha
-
---------------090903020609090409050709
-Content-Type: text/plain;
- name="pnpacpi.out"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="pnpacpi.out"
-
-/sys/bus/pnp/devices/00:0a
-PNP8294
-Dependent: 01 - Priority preferred
-   port 0x2f8-0x2f8, align 0x0, size 0x8, 16-bit address decoding
-   irq 3 High-Edge
-Dependent: 02 - Priority preferred
-   port 0x2e8-0x2e8, align 0x0, size 0x8, 16-bit address decoding
-   irq 3 High-Edge
-Dependent: 03 - Priority preferred
-   port 0x3f8-0x3f8, align 0x0, size 0x8, 16-bit address decoding
-   irq 4 High-Edge
-Dependent: 04 - Priority preferred
-   port 0x3e8-0x3e8, align 0x0, size 0x8, 16-bit address decoding
-   irq 4 High-Edge
-Dependent: 05 - Priority functional
-   port 0x100-0x3f8, align 0x7, size 0x8, 16-bit address decoding
-   irq 1,3,4,5,6,7,8,10,11,12,13,14,15 High-Edge
-state = disabled
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:00
-PNP0a03
-state = active
-io 0xcf8-0xcff
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:01
-PNP0303
-state = active
-io 0x60-0x60
-io 0x64-0x64
-irq 1
-DRIVER=i8042 kbd
-PHYSDEVBUS=pnp
-PHYSDEVDRIVER=i8042 kbd
-/sys/bus/pnp/devices/00:02
-PNP0f13
-state = active
-irq 12
-DRIVER=i8042 aux
-PHYSDEVBUS=pnp
-PHYSDEVDRIVER=i8042 aux
-/sys/bus/pnp/devices/00:03
-PNP0201
-state = active
-io 0x0-0xf
-io 0x80-0x91
-io 0x94-0x9f
-io 0xc0-0xdf
-io 0x40b-0x40b
-io 0x410-0x43f
-io 0x481-0x483
-io 0x487-0x487
-io 0x489-0x489
-io 0x4d6-0x4d6
-dma 4
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:04
-PNP0b00
-state = active
-io 0x70-0x71
-irq 8
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:05
-PNP0c04
-state = active
-io 0xf0-0xff
-irq 13
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:06
-PNP0800
-state = active
-io 0x61-0x61
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:07
-PNP0c02
-state = active
-io 0x7000-0x700f
-io 0x8000-0x803f
-DRIVER=system
-PHYSDEVBUS=pnp
-PHYSDEVDRIVER=system
-/sys/bus/pnp/devices/00:08
-PNP0700
-Dependent: 01 - Priority preferred
-   port 0x3f0-0x3f0, align 0x0, size 0x6, 16-bit address decoding
-   port 0x3f7-0x3f7, align 0x0, size 0x1, 16-bit address decoding
-   irq 6 High-Edge
-   dma 2 8-bit compatible
-state = active
-io 0x3f0-0x3f5
-io 0x3f7-0x3f7
-irq 6
-dma 2
-PHYSDEVBUS=pnp
-/sys/bus/pnp/devices/00:09
-PNP0501
-Dependent: 01 - Priority preferred
-   port 0x3f8-0x3f8, align 0x0, size 0x8, 16-bit address decoding
-   irq 4 High-Edge
-Dependent: 02 - Priority preferred
-   port 0x3e8-0x3e8, align 0x0, size 0x8, 16-bit address decoding
-   irq 4 High-Edge
-Dependent: 03 - Priority preferred
-   port 0x2f8-0x2f8, align 0x0, size 0x8, 16-bit address decoding
-   irq 3 High-Edge
-Dependent: 04 - Priority preferred
-   port 0x2e8-0x2e8, align 0x0, size 0x8, 16-bit address decoding
-   irq 3 High-Edge
-Dependent: 05 - Priority functional
-   port 0x100-0x3f8, align 0x7, size 0x8, 16-bit address decoding
-   irq 1,3,4,5,6,7,8,10,11,12,13,14,15 High-Edge
-state = active
-io 0x3f8-0x3ff
-irq 4
-DRIVER=serial
-PHYSDEVBUS=pnp
-PHYSDEVDRIVER=serial
-
---------------090903020609090409050709--
+							Thanx, Paul
