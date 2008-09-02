@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbYIBEzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYIBFE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231AbYIBEzJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 00:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYIBEy5
+	id S1753483AbYIBFE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 01:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYIBFET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 00:54:57 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:41398 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751137AbYIBEy4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 00:54:56 -0400
-Message-ID: <48BCC723.3090007@lwfinger.net>
-Date: Mon, 01 Sep 2008 23:54:59 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Alok Kataria <akataria@vmware.com>,
-       Michael Buesch <mb@bu3sch.de>
-Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 2 Sep 2008 01:04:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55415 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750821AbYIBFES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 01:04:18 -0400
+Date: Tue, 2 Sep 2008 15:04:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       David Woodhouse <dwmw2@infradead.org>, Milton Miller <miltonm@bga.com>
+Subject: [PATCH] powerpc: make sure all kernel text is before _etext
+Message-Id: <20080902150409.5aca2198.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On the machine you have trouble with the PIT on, does this thing trigger?
-> 
-> If it does, that could be a simple way to say whether you prefer PM_TIMER 
-> over PIT.
-> 
-> For me, even on a modern machine, I get a pit_count of 46321, which 
-> matches the "about one microsecond for an ISA/LPC read" timing pretty 
-> well. What do you get? 
+This makes core_kernel_text() (and therefore kernel_text_address())
+return the correct result.  Currently all the __devinit routines (at
+least) will not be considered to be kernel text.
 
-On the problem AMD K6, the count is 29411. On my almost new AMD Turion 
-64 X2 that runs at 2.0 GHz, the value was 31401. A cutoff value of 
-25000 may be a bit close. That machine says that it calibrates against 
-the PM_TIMER, but cat /sys/devices/...../current_clocksource returns 
-hpet.
+This is just a quick fix for 2.6.27 - hopefully we will be able to fix
+this better in 2.6.28.
 
-Larry
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/vmlinux.lds.S |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 4a8ce62..9f6c1ca 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -66,11 +66,12 @@ SECTIONS
+ 		__got2_end = .;
+ #endif /* CONFIG_PPC32 */
+ 
+-		. = ALIGN(PAGE_SIZE);
+-		_etext = .;
+-		PROVIDE32 (etext = .);
+ 	} :kernel
+ 
++	. = ALIGN(PAGE_SIZE);
++	_etext = .;
++	PROVIDE32 (etext = .);
++
+ 	/* Read-only data */
+ 	RODATA
+ 
+-- 
+1.5.6.5
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
