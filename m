@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbYIBAKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYIBANZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752950AbYIBAKt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 20:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYIBAKm
+	id S1753222AbYIBANZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 20:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIBANS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 20:10:42 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:54486 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751383AbYIBAKl (ORCPT
+	Mon, 1 Sep 2008 20:13:18 -0400
+Received: from smtp2.ono.com ([62.42.230.20]:56414 "EHLO resmaa03.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751383AbYIBANR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 20:10:41 -0400
-Date: Mon, 1 Sep 2008 18:10:01 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alex Chiang <achiang@hp.com>, "Zhao, Yu" <yu.zhao@intel.com>,
-       jbarnes@virtuousgeek.org, Greg KH <gregkh@suse.de>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI Hotplug: fakephp: fix deadlock... again
-Message-ID: <20080902000951.GM1239@parisc-linux.org>
-References: <20080821201918.GA24411@ldl.fc.hp.com> <20080821202504.GU8318@parisc-linux.org> <20080821204758.GB31543@suse.de> <20080821221438.GC20014@ldl.fc.hp.com> <7A25B56E4BE99C4283EB931CD1A40E110177E488@pdsmsx414.ccr.corp.intel.com> <20080830053755.GA16219@suse.de> <7A25B56E4BE99C4283EB931CD1A40E110177E490@pdsmsx414.ccr.corp.intel.com> <7A25B56E4BE99C4283EB931CD1A40E110177E4DA@pdsmsx414.ccr.corp.intel.com> <20080901184018.GA14492@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080901184018.GA14492@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 1 Sep 2008 20:13:17 -0400
+Date: Tue, 2 Sep 2008 02:12:57 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Finding what is stuck...
+Message-ID: <20080902021257.74344596@one.home>
+In-Reply-To: <20080901170812.2c3b041b@infradead.org>
+References: <20080902020447.5b48b083@one.home>
+	<20080901170812.2c3b041b@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 01, 2008 at 12:40:18PM -0600, Alex Chiang wrote:
-> We get the "slot already scheduled for removal" because that
-> particular device has 2 functions, and we're creating slots on a
-> per-slot basis now, not a per-function basis.
-> 
-> Although, I wonder, Willy -- is that really the right thing to
-> do? Seems like fakephp would be more useful if we did operate on
-> a per-function basis, and not per-slot. Especially given Yu's
-> work with SR-IOV, where we can apparently have lots of functions
-> per a physical device.
+On Mon, 1 Sep 2008 17:08:12 -0700, Arjan van de Ven <arjan@infradead.org> wrote:
 
-I suspect it depends on what you believe the point of fakephp is.
-My assumption was that it was a way to fake what would happen if you had
-a hotplug controller for a particular slot.  In that context, the change
-I made was clearly correct.  If you want to use it for hot-removing
-individual functions from a Linux guest running under a hypervisor
-(for example), that's much less useful.
+> On Tue, 2 Sep 2008 02:04:47 +0200
+> "J.A. Magallón" <jamagallon@ono.com> wrote:
+> 
+> > Hi all...
+> > 
+> > I'm running 2.6.27-rc5-git2 on an Aspire One.
+> > The system is in general pretty responsive, but sometimes it just gets
+> > totally stuck. Even the mouse stops. 
+> > 
+> > It looks related to disk (SSD) access, but I'm not totally sure.
+> > Is there any way to find what is getting stuck ? I know that SSDs can
+> > be slow on write, I don't mind if the system is faster or slower
+> > (it's small :))), but if the speed is constant. That occasional
+> > pauses are strange, like if SSD flushing gets stuck on BKL
+> > (I know, no idea about what I talk...).
+> > 
+> > I'm using ext3 fs, noop iosched. But as I say, I'm not sure that the
+> > disk writes are the culprit.
+> > 
+> > Any idea about how to find this ?
+> 
+> Have you tried to run "latencytop"?
+> (you need to enable this in the kernel config as well)
+> 
+> it tends to (for me at least) point out very well where stalls happen,
+> or at least, what the system is doing when they happen.
+> 
+> (hint: make sure you do "make install" before running it)
+> 
+
+Thanks, I'm a bit limited to distro kernels 'cause I don't want to build
+my own kernel on the One, but I have just looked and Mandriva kernel is
+built with LATENCYTOP=y. I will try that and report...
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+J.A. Magallon                       \                     Software is like sex:
+                                     \               It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux kernel 2.6.23-jam01,  gcc version 4.2.2 20070909
