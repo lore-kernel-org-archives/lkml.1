@@ -1,87 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbYIBMQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYIBMQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752076AbYIBMQZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 08:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYIBMQS
+	id S1752733AbYIBMQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 08:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYIBMQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 08:16:18 -0400
-Received: from www.tglx.de ([62.245.132.106]:32832 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751325AbYIBMQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 08:16:17 -0400
-Date: Tue, 2 Sep 2008 14:15:43 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
-In-Reply-To: <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de>
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 2 Sep 2008 08:16:49 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:45625 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbYIBMQs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 08:16:48 -0400
+Message-ID: <48BD2E81.2030406@hp.com>
+Date: Tue, 02 Sep 2008 08:16:01 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: device-mapper development <dm-devel@redhat.com>
+CC: Alasdair G Kergon <agk@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, lvm-devel@redhat.com,
+       Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [dm-devel] Re: 2.6.27-rc5-mmotm0829 - lvm issues at boot,	possible
+ disk_devt() related?
+References: <4963.1220240176@turing-police.cc.vt.edu>	<48BBA0B0.5070309@kernel.org>	<7045.1220260558@turing-police.cc.vt.edu>	<20080901095651.GI15123@agk.fab.redhat.com> <20080901101543.GL20055@kernel.dk>
+In-Reply-To: <20080901101543.GL20055@kernel.dk>
+Content-Type: multipart/mixed;
+ boundary="------------040000010509070000010300"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008, Linus Torvalds wrote:
-> > 
-> > Well, the biggest problem is actually _detection_.
-> > 
-> > We have three different timers, and they all have their own problems. How 
-> > do you reliably detect which one to use? The PM_TIMER clearly is _not_ 
-> > always the answer here, but the code just assumes it is!
+This is a multi-part message in MIME format.
+--------------040000010509070000010300
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Jens Axboe wrote:
+> On Mon, Sep 01 2008, Alasdair G Kergon wrote:
+>> On Mon, Sep 01, 2008 at 05:15:58AM -0400, Valdis.Kletnieks@vt.edu wrote:
+>>> On Mon, 01 Sep 2008 09:58:40 +0200, Tejun Heo said:
+>>>> Yeah, I made a mistake converting two of them and devt lookup fails when
+>>>> the disk is zero sized.  Bartlomiej debugged the problem and posted a
+>>>> patch and I followed up with an updated patch.  It should be fine in the
+>>>> next round.
+>>>>   http://article.gmane.org/gmane.linux.kernel.next/2663
+>>>>   http://article.gmane.org/gmane.linux.kernel.next/2676
+>>>> If you're seeing other problems, please let me know.
+>>> Confirming - 2.6.27-rc5-mmotm0829 plus the merge of the 2 above patches
+>>> does find the LVM volumes and come up.  Thanks for the clue.. :)
+>> I expect we'll need some patches to userspace lvm2 to support these extended
+>> device numbers properly too...
+>>
+>> Alasdair (back from holiday)
 > 
-> On the machine you have trouble with the PIT on, does this thing trigger?
+> They'll be defaulting to off from now on, so it should not be a big
+> worry. But Alan Brunelle did find that the "10-character limit
+> in dm/lib/libdm-deptree is too small".
 > 
-> If it does, that could be a simple way to say whether you prefer PM_TIMER 
-> over PIT.
-> 
-> For me, even on a modern machine, I get a pit_count of 46321, which 
-> matches the "about one microsecond for an ISA/LPC read" timing pretty 
-> well. What do you get? 
 
-About anything between 0 and useful, but still I had cases where the
-pit_count was way above the 25000 but the TSC was off by factor 2.
+Tejun pointed out:
 
-Went down the road and instrumented the code:
+"dev_t is 32bits and MINORBITS is 20.  So, major 12 bits, minor 20
+bits, so 4 characters for major, 7 characters for minor."
 
-   unsinged long tsc_deltas[50000];
+That would mean: 4+':'+7+'\0' = 13 characters at a minimum, so attached
+patch seems to work...
 
-   start_pit();
-   tsc1 = tsc = read_tsc_start();
-   while (!pit_ready()) {
-   	 tsc2 = read_tsc();
- 	 tsc_deltas[pit_count++] = tsc2 - tsc;
-	 tsc = tsc2;
-   }
+--------------040000010509070000010300
+Content-Type: text/x-diff;
+ name="0001-Set-major-minor-buffers-to-13-character-to-hold-larg.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-Set-major-minor-buffers-to-13-character-to-hold-larg.pa";
+ filename*1="tch"
 
-Analysing the tsc_deltas gave interesting insight. On the affected
-laptop I had several entries where the delta between two reads was
-from 1msec up to 120msec maximum. 
+[PATCH] Set major,minor buffers to 13 character to hold largest values
 
-As the code does nothing else and has interrupts disabled there is
-only one explanation: the SMM/SMI black hole.
+Need 4 for major, 7 for minor, 1 for the separator plus 1 for the
+terminator.
 
-If this high delta hits after the pit_count reached 25000 we still
-believe that our calibration against pit is fine :(
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
+---
+ lib/libdm-deptree.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-So what I'm working on is an algorithm, which is similar to the checks
-in the tsc_read_refs() function. That should allow us to detect
-whether one of the reads is way off by doing a min/max detection. In
-such a case we can either repeat the calibration or try to figure out
-whether the pmtimer / hpet can provide us with some useful reference.
+diff --git a/lib/libdm-deptree.c b/lib/libdm-deptree.c
+index c73ed50..a437311 100644
+--- a/lib/libdm-deptree.c
++++ b/lib/libdm-deptree.c
+@@ -1243,7 +1243,7 @@ static int _emit_areas_line(struct dm_task *dmt __attribute((unused)),
+ 			    size_t paramsize, int *pos)
+ {
+ 	struct seg_area *area;
+-	char devbuf[10];
++	char devbuf[13];
+ 	int tw;
+ 	const char *prefix = "";
+ 
+@@ -1270,7 +1270,7 @@ static int _emit_segment_line(struct dm_task *dmt, struct load_segment *seg, uin
+         int pos = 0;
+ 	int tw;
+         int r;
+-	char originbuf[10], cowbuf[10], logbuf[10];
++	char originbuf[13], cowbuf[13], logbuf[13];
+ 	const char *logtype;
+ 
+ 	switch(seg->type) {
+-- 
+1.5.4.3
 
-Thanks,
 
-	tglx
-
-
-
-
-
-
+--------------040000010509070000010300--
