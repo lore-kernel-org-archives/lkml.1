@@ -1,111 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbYIBXGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYIBXIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbYIBXGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 19:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYIBXGn
+	id S1754823AbYIBXIR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 19:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYIBXID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 19:06:43 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37690 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753407AbYIBXGl (ORCPT
+	Tue, 2 Sep 2008 19:08:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:58993 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbYIBXIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 19:06:41 -0400
-Date: Wed, 3 Sep 2008 00:05:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: jeff@garzik.org, torvalds@osdl.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] ahci: Fix long standing Marvell regressions
-Message-ID: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Sep 2008 19:08:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ac0Asn5mErhgp7BATm53DLk06Akp6f1WoC4EEIdx98bXRlAkq4uH5Qs8BvTwxyuYt9
+         pojcu5y/V3vOLEp2taKFEst1wzBta6I5bbApHGMzLxoxNOSfVpAzhwPK7i5aJRCYtCni
+         hA8jivRel0tj7Yaki31VbkiJduf9ODqOq6teM=
+Message-ID: <86802c440809021608s54725294t5629255bb1f0c9@mail.gmail.com>
+Date: Tue, 2 Sep 2008 16:08:00 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [BUG] /proc/mtrr I/O error
+Cc: "Bob Tracy" <rct@gherkin.frus.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080902154620.314ad5c2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080829213824.GA2281@gherkin.frus.com>
+	 <20080902154620.314ad5c2.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pata_marvell: Undo the regressions Jeff caused
+On Tue, Sep 2, 2008 at 3:46 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 29 Aug 2008 16:38:24 -0500
+> Bob Tracy <rct@gherkin.frus.com> wrote:
+>
+>> With 2.6.27-rc4 and possibly earlier kernels, I see the following:
+>>
+>> $ cat /proc/mtrr
+>> cat: /proc/mtrr: Input/output error
+>>
+>> Processor is an AMD K6-III/450.
+>>
+>
+> static int mtrr_open(struct inode *inode, struct file *file)
+> {
+>        if (!mtrr_if)
+>                return -EIO;
+>
+>
+>
+> Beats me.  Perhaps something broke in mtrr_bp_init().
+>
+> It would be useful to know if 2.6.26 worked OK.
+>
 
-From: Alan Cox <alan@redhat.com>
+two patches needed..
 
-I've been chasing Jeff about this for months so am now giving up and sending
-it directly. Jeff added the Marvell device identifiers to the ahci driver
-without making the AHCI driver handle the PATA port. This means a lot of users
-can't use current kernels and in most distro cases can't even install. This has
-been going on since March 2008 for the 6121 Marvell, and late 2007 for the 6145.
+http://lkml.org/lkml/2008/9/1/307
+   [PATCH 4/6] x86: delay early cpu initialization until cpuid is done
+http://lkml.org/lkml/2008/9/1/308
+  [PATCH 5/6] x86: move mtrr cpu cap setting early in early_init_xxxx
 
-This was all pointed out at the time and repeatedly ignored. Bugs assigned
-to Jeff about this are ignored also.
-
-To quote Jeff in email
-
-"Just switch the order of 'ahci' and 'pata_marvell' in
-/etc/modprobe.conf, then use Fedora's tools regenerate the initrd.
-
-See?  It's not rocket science, and the current configuration can be
-easily made to work for Fedora users."
-
-(Which isn't trivial, isn't end user, shouldn't be needed, and as it usually
-breaks at install time is in fact impossible)
-
-To quote Jeff in August 2007
-
-"   mv-ahci-pata
-Marvell 6121/6141 PATA support.  Needs fixing in the 'PATA controller
-command' area before it is usable, and can go upstream."
-
-Only he applied it all anyway later and broke everything.
-
-The actual fix for the moment is very simple. If the user has included
-the pata_marvell driver let it drive the ports. If they've only selected
-for SATA support give them the AHCI driver which will run the port a fraction
-faster.
-
-
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/ata/Kconfig |    6 ++++--
- drivers/ata/ahci.c  |    5 +++++
- 2 files changed, 9 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index ae84949..11c8c19 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -448,8 +448,10 @@ config PATA_MARVELL
- 	tristate "Marvell PATA support via legacy mode"
- 	depends on PCI
- 	help
--	  This option enables limited support for the Marvell 88SE6145 ATA
--	  controller.
-+	  This option enables limited support for the Marvell 88SE61xx ATA
-+	  controllers. If you wish to use only the SATA ports then select
-+	  the AHCI driver alone. If you wish to the use the PATA port or
-+	  both SATA and PATA include this driver.
- 
- 	  If unsure, say N.
- 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index c729e69..546865a 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -581,9 +581,14 @@ static const struct pci_device_id ahci_pci_tbl[] = {
- 	{ PCI_VDEVICE(SI, 0x1185), board_ahci },		/* SiS 968 */
- 	{ PCI_VDEVICE(SI, 0x0186), board_ahci },		/* SiS 968 */
- 
-+#if  !defined(CONFIG_PATA_MARVELL) && !defined(CONFIG_PATA_MARVELL_MODULE)
- 	/* Marvell */
-+	/* The AHCI driver can only drive the SATA ports, the PATA driver
-+	   can drive them all so if both drivers are selected make sure
-+	   AHCI stays out of the way */
- 	{ PCI_VDEVICE(MARVELL, 0x6145), board_ahci_mv },	/* 6145 */
- 	{ PCI_VDEVICE(MARVELL, 0x6121), board_ahci_mv },	/* 6121 */
-+#endif
- 
- 	/* Generic, PCI class code for AHCI */
- 	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+YH
