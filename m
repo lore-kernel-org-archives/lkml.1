@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYIBRRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIBRZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbYIBRRK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 13:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbYIBRQz
+	id S1753521AbYIBRZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 13:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYIBRZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 13:16:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51573 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751990AbYIBRQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 13:16:54 -0400
-Date: Tue, 2 Sep 2008 10:12:36 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Brian G. Merrell" <bgmerrell@novell.com>
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Takahiro Hirofuchi <hirofuchi@users.sourceforge.net>
-Subject: Re: [patch 00/03] USB-IP patches
-Message-ID: <20080902171236.GC9524@suse.de>
-References: <20080828230016.GA15014@kroah.com> <20080830055007.GB3422@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080830055007.GB3422@novell.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 2 Sep 2008 13:25:19 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:36115 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751657AbYIBRZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 13:25:18 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Joel Schopp <jschopp@austin.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 5/7] checkpatch: suspect indent count condition lines correctly
+Date: Tue,  2 Sep 2008 18:25:12 +0100
+Message-Id: <1220376314-15180-6-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <1220376314-15180-1-git-send-email-apw@shadowen.org>
+References: <1220376314-15180-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 11:50:08PM -0600, Brian G. Merrell wrote:
-> On Thu, Aug 28, 2008 at 04:00:16PM -0700, greg@kroah.com wrote:
-> > Here's 3 patches that adds USB-IP functionality code to the kernel tree.
-> > 
-> > It is against 2.6.27-rc4, and has been added to the -staging tree.  If
-> > there are no major objections, I'll also queue it up in the usb tree for
-> > submission into 2.6.28.
-> > 
-> > The code is based on Takahiro's great work that has been sitting outside
-> > of the kernel for many many years now.  Brian Merrell took the most
-> > recent version of the code, cleaned it up and sent it to me.  I did more
-> > cleanup and split the patch into 3 pieces, making it a bit easier to
-> > work with.
-> > 
-> > There are still a number of checkpatch.pl warnings/errors emitted, and
-> > Brian said he would work on them in the upcoming weeks, but they don't
-> > distract from the basic functionality and a good review would be nice to
-> > have.
-> 
-> I will indeed continue to work on getting rid of the checkpatch.pl
-> warnings/errors during the upcoming weeks.  I already eliminated the
-> ones I could figure out without too much effort;  I am sure the
-> remaining ones are trivial to many of you out there, so I welcome
-> any suggestions.
+Correct calculation of the number of lines of condition where we have
+suspect indent.
 
-The kthread one looks like you will have to change a bit of the code,
-all of the other remaining ones should be self-explanatory.  If not,
-please let us know and we'll be glad to help out.
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ scripts/checkpatch.pl |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Can you also work to address all of the review comments made on the code
-so far as well?  I don't know how much time you have to work on this,
-but for now I'll let you send me changes and not do anything on the code
-myself.  Sound good?
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index a2e4a3d..2e513fd 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1417,7 +1417,8 @@ sub process {
+ 			$s =~ s/\n./\n/gs;
+ 
+ 			# Find out how long the conditional actually is.
+-			my $cond_lines = 0 + $c =~ /\n/gs;
++			my @newlines = ($c =~ /\n/gs);
++			my $cond_lines = 1 + $#newlines;
+ 
+ 			# We want to check the first line inside the block
+ 			# starting at the end of the conditional, so remove:
+-- 
+1.6.0.rc1.258.g80295
 
-thanks,
-
-greg k-h
