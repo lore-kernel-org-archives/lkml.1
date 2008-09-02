@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYIBEjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbYIBEzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753487AbYIBEjU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 00:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYIBEjM
+	id S1753231AbYIBEzJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 00:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYIBEy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 00:39:12 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:31079 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750982AbYIBEjL (ORCPT
+	Tue, 2 Sep 2008 00:54:57 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:41398 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751137AbYIBEy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 00:39:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=dx3JArnhbbFq2bXZSPhV9GlmXhYxAtZozmYK6q5DvdFapAq9OS3RZYLHUKNsFS1lyje/ggGLm0IMIUBqRSRWOjqcqkYclhqIguEGm4fkie59VLx8grBqQIYM4GIe8/vQ8VOq//i3gmZM1CMzE2vSBbxUKYqscc116eHCVBBnIzU=  ;
-X-YMail-OSG: XaFTcYUVM1kHOUFzVCuO0xoLdBRced93EH94UwN19LrChPBetpHbA_YnPHjdcIaTqhiysfGX1WUbxi8XJn.0bOI3tG8o3iH2ofeg6NIX8uosnZL7MD88wRSJqyTsfLQDVmw-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: "CHADHA,VINEET" <vineet@ufl.edu>
-Subject: Re: TLB evaluation for Linux
-Date: Tue, 2 Sep 2008 14:39:00 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <1942732773.182121220328723728.JavaMail.osg@osgjas04.cns.ufl.edu>
-In-Reply-To: <1942732773.182121220328723728.JavaMail.osg@osgjas04.cns.ufl.edu>
+	Tue, 2 Sep 2008 00:54:56 -0400
+Message-ID: <48BCC723.3090007@lwfinger.net>
+Date: Mon, 01 Sep 2008 23:54:59 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Alok Kataria <akataria@vmware.com>,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809021439.00484.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 September 2008 14:12, CHADHA,VINEET wrote:
-> Hi,
->
-> I have been working to evaluate TLB performance for Linux O/S and
-> virtualized workloads(such as Xen) in a Full system simulator(e.g.
-> simics). While my evaluation is in nascent stage, I do notice that
-> most of the IPIs in multi-core environments cause complete TLB
-> Flush.
->
-> I want to evaluate cost of TLB shootdown including re-population
-> vs. each entry shootdown (invlpg). While a similar study has been
-> done in other kernels (e.g. L4 kernel), I am not aware if it has
-> been done for Linux O/S.
+Linus Torvalds wrote:
+> 
+> On the machine you have trouble with the PIT on, does this thing trigger?
+> 
+> If it does, that could be a simple way to say whether you prefer PM_TIMER 
+> over PIT.
+> 
+> For me, even on a modern machine, I get a pit_count of 46321, which 
+> matches the "about one microsecond for an ISA/LPC read" timing pretty 
+> well. What do you get? 
 
-This is a very interesting area to investigate. Do you have a link to
-any of the existing studies?
+On the problem AMD K6, the count is 29411. On my almost new AMD Turion 
+64 X2 that runs at 2.0 GHz, the value was 31401. A cutoff value of 
+25000 may be a bit close. That machine says that it calibrates against 
+the PM_TIMER, but cat /sys/devices/...../current_clocksource returns 
+hpet.
 
-
-> Are there hooks or patches to test or evaluate TLB performance.
-> Specifically, I would like to know where to make changes in Linux
-> kernel to support each entry shootdown.
-
-The main thing I guess is to look at tlb_flush(), called by tlb_flush_mmu
-when unmapping user virtual memory, which on x86 is going to call
-flush_tlb_mm, which flushes the entire tlb.
-
-It would need a bit of reworking of things in order to store the virtual
-address corresponding to each page in the struct mmu_gather, and then
-deciding to branch off to do multiple invlpg if you have only a small
-number of pages to be flushed. I'd suggest the easiest way to get
-something working on x86 would be to modify the asm-generic infrastructure
-(ignore other architectures for the time being).
-
-You will also have to rework the IPI flushing scheme so that it can handle
-more than one flush_va for invlpg invalidations.
-
-After you get all this done, you could also look at applying similar
-heuristics to flush_tlb_range. This one should be much easier at this point,
-but it is used in fewer places (eg. mprotect).
+Larry
