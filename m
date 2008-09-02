@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbYIBJXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbYIBJXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbYIBJXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 05:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYIBJW4
+	id S1754502AbYIBJXl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 05:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYIBJX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 05:22:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47070 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754038AbYIBJWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 05:22:54 -0400
-Date: Tue, 2 Sep 2008 10:07:28 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Tyan S2923-E suspend to ram fails to resume
-Message-ID: <20080902080728.GD15399@elf.ucw.cz>
-References: <48977AF7.2070300@simon.arlott.org.uk> <20080808071430.GA10370@ucw.cz> <21f16315cade48d9ecdc87a25b769b9f310fa112@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid> <489DACCE.7050000@simon.arlott.org.uk> <20080812103143.GD2641@elf.ucw.cz> <48B03F0E.9060605@simon.arlott.org.uk>
+	Tue, 2 Sep 2008 05:23:29 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36292 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752340AbYIBJX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 05:23:28 -0400
+Date: Tue, 2 Sep 2008 11:23:25 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Daniel Barkalow <barkalow@iabervon.org>
+cc: linux-kernel@vger.kernel.org,
+       Christopher Desjardins <cddesjardins@gmail.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: Lenovo 3000 N100 i8042 problems
+In-Reply-To: <alpine.LNX.1.00.0809012014280.19665@iabervon.org>
+Message-ID: <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz>
+References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48B03F0E.9060605@simon.arlott.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-08-23 17:47:10, Simon Arlott wrote:
-> On 12/08/08 11:31, Pavel Machek wrote:
->> On Sat 2008-08-09 15:42:22, Simon Arlott wrote:
->>> On 08/08/08 12:20, Simon Arlott wrote:
->>>> On Fri, August 8, 2008 08:14, Pavel Machek wrote:
->>>>> On Mon 2008-08-04 22:56:07, Simon Arlott wrote:
->>>>>> My system (Tyan S2923-E, dmesg attached) suspends ok in
->>>>>> all pm_test modes, but it won't resume with pm_test
->>>>>> "none".
->>>>>>
->>>>>> [    6.423515] mem full: hash matches
->>>>>>
->>>>>> When I press the power button, the port 80 display shows:
->>>>>> FF D0 23 01 D0 ... DE
->>>>>> (and again each time I press it)
->>>>>>
->>>>>> If I force it to turn off, then on again:
->>>>>> FF D0 23 01 D0 ... FF D0 23 01 D0 ... (D2?) D3 00 01 D5
->>>>>> D6 <normal boot>
->>>>>>
->>>>>> Any ideas? (onboard SAS is disabled, watchdog is
->>>>>> disabled, everything else is enabled, PCI-E graphics
->>>>>> card)
->>>>>
->>>>> Try verifying if it reaches assembly code under realmode/ ...
->>>
->>> I've tried acpi_sleep=s3_beep, and this:
->>> diff --git a/arch/x86/kernel/acpi/realmode/wakeup.S b/arch/x86/kernel/acpi/realmode/wakeup.S
->>> Which doesn't work either.
->>
->> Yep, that should work. When it does not, it means BIOS is not
->> returning to our real mode code :-(. You may want to try disabling
->> APIC and similar stuff, in hope of working around BIOS bug you are
->> hitting, but ...
->
-> I've tried the simplest possible 32-bit UP kernel I could come up with 
-> (.config attached) and it still doesn't work.
->
-> (I modified post_init() to call pm_suspend(PM_SUSPEND_MEM).)
->
-> Disassembly of the BIOS shows that DE is indeed part of 0xDEAD, but I 
-> haven't been able to tell what it's doing between D0 and there... not all 
-> of the port 80 codes that are displayed are easily visible.
->
-> I've tried disabling all the CPU options in the BIOS, e.g. microcode 
-> update, VM, NMI but it doesn't help. I'm wondering if D0 is the right start 
-> point for the system - there's a DC code for S3 resume:
+On Mon, 1 Sep 2008, Daniel Barkalow wrote:
 
-...you did a lot of work, but these issues are hard.
+> > Could you please send a dmidecode output from your system, so that we can 
+> > compare it to the one provided by Christopher, as he as the system that 
+> > apparently needs the nomux quirk to work correctly? It's indeed possible 
+> > that there are various systems out there, and the DMI match has to be made 
+> > more strict.
+> Attached.
 
-Do Windows suspend/resume on same hardware? BSD?
-									Pavel
+Hmm, so you have
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: LENOVO
+        Product Name: 076836U
+        Version: 3000 N100
+        Serial Number: L3H0536
+        UUID: 6747DA31-D471-11DA-901B-000FB0C9A0C9
+        Wake-up Type: Power Switch
+        SKU Number: Not Specified
+        Family: Not Specified
+
+Handle 0x0002, DMI type 2, 8 bytes
+Base Board Information
+        Manufacturer: LENOVO
+        Product Name: MPAD-MSAE Customer Reference Boards
+        Version: Not Applicable
+        Serial Number: 41W1220Z1ZBUA6551DK
+
+and the system on which Christopher reported originally this bug to me was
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+        Manufacturer: LENOVO
+        Product Name: 076804U
+        Version: 3000 N100
+        Serial Number: L3HX754
+        UUID: DA02FA2F-A0AC-11DB-A093-000FB0D2560C
+        Wake-up Type: Power Switch
+        SKU Number: Intel
+        Family: Lenovo
+
+Handle 0x0002, DMI type 2, 8 bytes
+Base Board Information
+        Manufacturer: LENOVO
+        Product Name: CAPELL VALLEY(NAPA) CRB
+        Version: Not Applicable
+        Serial Number: 41W8025Z1ZCZ971N36R                                      
+
+
+so the product name both of System and Base Board are different, and 
+apparently the systems differ. Dmitry, what fields would you propose to be 
+put in the DMI matching here? I will do the patch then.
+
+Thanks,
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jiri Kosina
+SUSE Labs
