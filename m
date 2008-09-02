@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbYIBMLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbYIBMQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbYIBMLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 08:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYIBMLF
+	id S1752076AbYIBMQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 08:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbYIBMQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 08:11:05 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:40598 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYIBMLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 08:11:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=W8mFbXPW8QYGfBicr+s3ycYdK+J+3tVV2clWLdshCMpOOVIrmroRQsCokgZrbN23QC
-         +nbEL5XSmD+yf1kZxpIzPJbbsoBoeEE0K+OR1neMN/y9p7//3DZ+5phns1r3qSKSkB42
-         0m1v5zRzEEPWHQ6CjoYh7aMR/KO1/C5dbziZA=
-Message-ID: <82ecf08e0809020510s2b752d18i6a1901e87effc07a@mail.gmail.com>
-Date: Tue, 2 Sep 2008 09:10:59 -0300
-From: "Thiago Galesi" <thiagogalesi@gmail.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device 152d:2338
-Cc: "Alex Buell" <alex.buell@munted.org.uk>, linux-kernel@vger.kernel.org,
-       "Robert Hancock" <hancockr@shaw.ca>, "Tomas Styblo" <tripie@cpan.org>,
-       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
-In-Reply-To: <Pine.LNX.4.44L0.0808041644240.2152-100000@iolanthe.rowland.org>
+	Tue, 2 Sep 2008 08:16:18 -0400
+Received: from www.tglx.de ([62.245.132.106]:32832 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbYIBMQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 08:16:17 -0400
+Date: Tue, 2 Sep 2008 14:15:43 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+In-Reply-To: <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
+ <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
+ <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080804211706.81d4aafa.alex.buell@munted.org.uk>
-	 <Pine.LNX.4.44L0.0808041644240.2152-100000@iolanthe.rowland.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On Mon, 1 Sep 2008, Linus Torvalds wrote:
+> > 
+> > Well, the biggest problem is actually _detection_.
+> > 
+> > We have three different timers, and they all have their own problems. How 
+> > do you reliably detect which one to use? The PM_TIMER clearly is _not_ 
+> > always the answer here, but the code just assumes it is!
+> 
+> On the machine you have trouble with the PIT on, does this thing trigger?
+> 
+> If it does, that could be a simple way to say whether you prefer PM_TIMER 
+> over PIT.
+> 
+> For me, even on a modern machine, I get a pit_count of 46321, which 
+> matches the "about one microsecond for an ISA/LPC read" timing pretty 
+> well. What do you get? 
 
-Does anyone knows of problems concerning 152d:2338 attached to DVD recorders??
+About anything between 0 and useful, but still I had cases where the
+pit_count was way above the 25000 but the TSC was off by factor 2.
 
-I have one of those here connected to a DVD-RW, it works fine for
-reading, but I can't make it work for recording. K3B produce errors
-while probing, newer cdrecords go as far as burning a CD halfway.
+Went down the road and instrumented the code:
 
-Here's a bug I opened a couple of months ago
-https://bugzilla.redhat.com/show_bug.cgi?id=440289
+   unsinged long tsc_deltas[50000];
 
-(It really doesn't seem to matter which kernel I'm using - fedora,
-ubuntu or plain vanilla)
+   start_pit();
+   tsc1 = tsc = read_tsc_start();
+   while (!pit_ready()) {
+   	 tsc2 = read_tsc();
+ 	 tsc_deltas[pit_count++] = tsc2 - tsc;
+	 tsc = tsc2;
+   }
 
-I'll take a closer look at these patches here (and in kernel bug
-9638), see if they make any difference
+Analysing the tsc_deltas gave interesting insight. On the affected
+laptop I had several entries where the delta between two reads was
+from 1msec up to 120msec maximum. 
 
--- 
--
-Thiago Galesi
+As the code does nothing else and has interrupts disabled there is
+only one explanation: the SMM/SMI black hole.
+
+If this high delta hits after the pit_count reached 25000 we still
+believe that our calibration against pit is fine :(
+
+So what I'm working on is an algorithm, which is similar to the checks
+in the tsc_read_refs() function. That should allow us to detect
+whether one of the reads is way off by doing a min/max detection. In
+such a case we can either repeat the calibration or try to figure out
+whether the pmtimer / hpet can provide us with some useful reference.
+
+Thanks,
+
+	tglx
+
+
+
+
+
+
