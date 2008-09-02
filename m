@@ -1,91 +1,507 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYIBFGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYIBFGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYIBFGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 01:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYIBFGJ
+	id S1754076AbYIBFGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 01:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYIBFGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 01:06:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:29019 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751518AbYIBFGH (ORCPT
+	Tue, 2 Sep 2008 01:06:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:23520 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751578AbYIBFGp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 01:06:07 -0400
+	Tue, 2 Sep 2008 01:06:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=h25SAlSL9CVIAaZn66mS65CSLNapsGaRwFN9lFskwjMSrK5OOvk0yOqkxjPb2OYVxY
-         cc4xH1jcnYXWYJRmb3GfAXWnx5pA7sO12TG41n2UoYbW5cj3QHETVr5bJMxNdjuIfrxX
-         xzCq53Y3sMvIDgp6LnFIduVr63K/3KMJNv9JY=
-Message-ID: <cfd18e0f0809012206i4e39bbaeg6b6788325b664087@mail.gmail.com>
-Date: Mon, 1 Sep 2008 22:06:06 -0700
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Ulrich Drepper" <drepper@gmail.com>
-Subject: Re: No NONBLOCK flag for dup3() or epoll_create1()?
-Cc: "Ulrich Drepper" <drepper@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Al Viro" <viro@zeniv.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Davide Libenzi" <davidel@xmailserver.org>
-In-Reply-To: <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AC4B19.6000206@gmail.com>
-	 <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=mFCF6zQ/fs552PIInWpRwFpMJCsWJlx5EXwVfk/b0GLwR5ReAbs861SvDo6CKJeAoC
+         OBxt3i+TJJwlu6Msrp9mqZROulqvxCf8TWiLgtKf+e9ECAk3pkutJe7I97hyRhv6LgVK
+         E97g5aPkknz2NaamCxCqGKFPGFYWiq9+PrYAQ=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: order functions in cpu/common.c and cpu/common_64.c
+Date: Mon,  1 Sep 2008 22:05:36 -0700
+Message-Id: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 1, 2008 at 5:34 PM, Ulrich Drepper <drepper@gmail.com> wrote:
-> On Wed, Aug 20, 2008 at 9:49 AM, Michael Kerrisk
-> <mtk.manpages@googlemail.com> wrote:
->> I've been doing some testing (2.6.27-rc3) of your new
->> file-descriptor-creating syscalls that accept flags.  According to
->>
->> http://udrepper.livejournal.com/20407.html
->>
->> all of the system calls should accept a *_NONBLOCK flag.
->
-> This was never the intention.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+---
+ arch/x86/kernel/cpu/common.c    |  188 ++++++++++++++++++++++------------------
+ arch/x86/kernel/cpu/common_64.c |  102 ++++++++++-----------
+ 2 files changed, 152 insertions(+), 138 deletions(-)
 
-All of the below makes some sense, but is at odds with what you posted
-on your blog entry, which documents *_NONBLOCK for both
-epoll_create1() and dup3().  Thus, I needed to check with you since
-the "intention" stated in the blog post differs from the actual
-implementation.
-
->> For epoll_create1() this certainly appears to be an oversight, since I can't
->> think of a reason not to support *_NONBLOCK.
->
-> I can.  There is already a method to not block (zero timeout).  We
-> should not provide multiple ways to get the same functionality.
-
-Though, one reason to do so would be consistency with the other
-changed APIs.  (There are many cases where *ix API provides more than
-one way of getting the same functionality.)
-
-> It
-> would require changes in the epoll code as well.  That's not worth it.
->
->
->>  (Furthermore, given a open file description for which O_NONBLOCK is
->> already enabled, it is not possible to make a dup3() call that disables
->> O_NONBLOCK, which is an odd asymmetry in the API.)
->
-> That's why I didn't add support for the flag.  It's hardly useful to
-> add this support.
-
-Cheers,
-
-Michael
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -60,6 +60,18 @@ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
+ 
+ __u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
+ 
++/* Current gdt points %fs at the "master" per-cpu area: after this,
++ * it's on the real one. */
++void switch_to_new_gdt(void)
++{
++	struct desc_ptr gdt_descr;
++
++	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
++	gdt_descr.size = GDT_SIZE - 1;
++	load_gdt(&gdt_descr);
++	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
++}
++
+ static int cachesize_override __cpuinitdata = -1;
+ static int disable_x86_serial_nr __cpuinitdata = 1;
+ 
+@@ -123,15 +135,15 @@ int __cpuinit get_model_name(struct cpui
+ 
+ void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
+ {
+-	unsigned int n, dummy, ecx, edx, l2size;
++	unsigned int n, dummy, ebx, ecx, edx, l2size;
+ 
+ 	n = c->extended_cpuid_level;
+ 
+ 	if (n >= 0x80000005) {
+-		cpuid(0x80000005, &dummy, &dummy, &ecx, &edx);
++		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
+ 		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), D cache %dK (%d bytes/line)\n",
+-			edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
+-		c->x86_cache_size = (ecx>>24)+(edx>>24);
++				edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
++		c->x86_cache_size = (ecx>>24) + (edx>>24);
+ 	}
+ 
+ 	if (n < 0x80000006)	/* Some chips just has a large L1. */
+@@ -185,6 +197,51 @@ static char __cpuinit *table_lookup_mode
+ 	return NULL;		/* Not found */
+ }
+ 
++#ifdef CONFIG_X86_HT
++void __cpuinit detect_ht(struct cpuinfo_x86 *c)
++{
++	u32 	eax, ebx, ecx, edx;
++	int 	index_msb, core_bits;
++
++	cpuid(1, &eax, &ebx, &ecx, &edx);
++
++	if (!cpu_has(c, X86_FEATURE_HT) || cpu_has(c, X86_FEATURE_CMP_LEGACY))
++		return;
++
++	smp_num_siblings = (ebx & 0xff0000) >> 16;
++
++	if (smp_num_siblings == 1) {
++		printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
++	} else if (smp_num_siblings > 1) {
++
++		if (smp_num_siblings > NR_CPUS) {
++			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
++					smp_num_siblings);
++			smp_num_siblings = 1;
++			return;
++		}
++
++		index_msb = get_count_order(smp_num_siblings);
++		c->phys_proc_id = phys_pkg_id(c->initial_apicid, index_msb);
++
++		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
++		       c->phys_proc_id);
++
++		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
++
++		index_msb = get_count_order(smp_num_siblings);
++
++		core_bits = get_count_order(c->x86_max_cores);
++
++		c->cpu_core_id = phys_pkg_id(c->initial_apicid, index_msb) &
++					       ((1 << core_bits) - 1);
++
++		if (c->x86_max_cores > 1)
++			printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
++			       c->cpu_core_id);
++	}
++}
++#endif
+ 
+ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
+ {
+@@ -258,7 +315,26 @@ static int __cpuinit have_cpuid_p(void)
+ 	return flag_is_changeable_p(X86_EFLAGS_ID);
+ }
+ 
+-void __init cpu_detect(struct cpuinfo_x86 *c)
++static void __init early_cpu_support_print(void)
++{
++	int i,j;
++	struct cpu_dev *cpu_devx;
++
++	printk("KERNEL supported cpus:\n");
++	for (i = 0; i < X86_VENDOR_NUM; i++) {
++		cpu_devx = cpu_devs[i];
++		if (!cpu_devx)
++			continue;
++		for (j = 0; j < 2; j++) {
++			if (!cpu_devx->c_ident[j])
++				continue;
++			printk("  %s %s\n", cpu_devx->c_vendor,
++				cpu_devx->c_ident[j]);
++		}
++	}
++}
++
++void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
+ {
+ 	/* Get vendor name */
+ 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
+@@ -267,16 +343,17 @@ void __init cpu_detect(struct cpuinfo_x8
+ 	      (unsigned int *)&c->x86_vendor_id[4]);
+ 
+ 	c->x86 = 4;
++	/* Intel-defined flags: level 0x00000001 */
+ 	if (c->cpuid_level >= 0x00000001) {
+ 		u32 junk, tfms, cap0, misc;
+ 		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
+-		c->x86 = (tfms >> 8) & 15;
+-		c->x86_model = (tfms >> 4) & 15;
++		c->x86 = (tfms >> 8) & 0xf;
++		c->x86_model = (tfms >> 4) & 0xf;
++		c->x86_mask = tfms & 0xf;
+ 		if (c->x86 == 0xf)
+ 			c->x86 += (tfms >> 20) & 0xff;
+ 		if (c->x86 >= 0x6)
+-			c->x86_model += ((tfms >> 16) & 0xF) << 4;
+-		c->x86_mask = tfms & 15;
++			c->x86_model += ((tfms >> 16) & 0xf) << 4;
+ 		if (cap0 & (1<<19)) {
+ 			c->x86_cache_alignment = ((misc >> 8) & 0xff) * 8;
+ 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
+@@ -341,6 +418,17 @@ static void __init early_identify_cpu(st
+ 	validate_pat_support(c);
+ }
+ 
++void __init early_cpu_init(void)
++{
++	struct cpu_vendor_dev *cvdev;
++
++	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
++		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
++
++	early_cpu_support_print();
++	early_identify_cpu(&boot_cpu_data);
++}
++
+ /*
+  * The NOPL instruction is supposed to exist on all CPUs with
+  * family >= 6, unfortunately, that's not true in practice because
+@@ -500,7 +588,7 @@ static void __cpuinit identify_cpu(struc
+ 	 */
+ 	if (c != &boot_cpu_data) {
+ 		/* AND the already accumulated flags with these */
+-		for (i = 0 ; i < NCAPINTS ; i++)
++		for (i = 0; i < NCAPINTS; i++)
+ 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
+ 	}
+ 
+@@ -529,52 +617,6 @@ void __cpuinit identify_secondary_cpu(st
+ 	mtrr_ap_init();
+ }
+ 
+-#ifdef CONFIG_X86_HT
+-void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+-{
+-	u32 	eax, ebx, ecx, edx;
+-	int 	index_msb, core_bits;
+-
+-	cpuid(1, &eax, &ebx, &ecx, &edx);
+-
+-	if (!cpu_has(c, X86_FEATURE_HT) || cpu_has(c, X86_FEATURE_CMP_LEGACY))
+-		return;
+-
+-	smp_num_siblings = (ebx & 0xff0000) >> 16;
+-
+-	if (smp_num_siblings == 1) {
+-		printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
+-	} else if (smp_num_siblings > 1) {
+-
+-		if (smp_num_siblings > NR_CPUS) {
+-			printk(KERN_WARNING "CPU: Unsupported number of the "
+-					"siblings %d", smp_num_siblings);
+-			smp_num_siblings = 1;
+-			return;
+-		}
+-
+-		index_msb = get_count_order(smp_num_siblings);
+-		c->phys_proc_id = phys_pkg_id(c->initial_apicid, index_msb);
+-
+-		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
+-		       c->phys_proc_id);
+-
+-		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
+-
+-		index_msb = get_count_order(smp_num_siblings) ;
+-
+-		core_bits = get_count_order(c->x86_max_cores);
+-
+-		c->cpu_core_id = phys_pkg_id(c->initial_apicid, index_msb) &
+-					       ((1 << core_bits) - 1);
+-
+-		if (c->x86_max_cores > 1)
+-			printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
+-			       c->cpu_core_id);
+-	}
+-}
+-#endif
+-
+ static __init int setup_noclflush(char *arg)
+ {
+ 	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
+@@ -592,17 +634,17 @@ void __cpuinit print_cpu_info(struct cpu
+ 		vendor = c->x86_vendor_id;
+ 
+ 	if (vendor && strncmp(c->x86_model_id, vendor, strlen(vendor)))
+-		printk("%s ", vendor);
++		printk(KERN_CONT "%s ", vendor);
+ 
+-	if (!c->x86_model_id[0])
+-		printk("%d86", c->x86);
++	if (c->x86_model_id[0])
++		printk(KERN_CONT "%s", c->x86_model_id);
+ 	else
+-		printk("%s", c->x86_model_id);
++		printk(KERN_CONT "%d86", c->x86);
+ 
+ 	if (c->x86_mask || c->cpuid_level >= 0)
+-		printk(" stepping %02x\n", c->x86_mask);
++		printk(KERN_CONT " stepping %02x\n", c->x86_mask);
+ 	else
+-		printk("\n");
++		printk(KERN_CONT "\n");
+ }
+ 
+ static __init int setup_disablecpuid(char *arg)
+@@ -618,16 +660,6 @@ __setup("clearcpuid=", setup_disablecpui
+ 
+ cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
+ 
+-void __init early_cpu_init(void)
+-{
+-	struct cpu_vendor_dev *cvdev;
+-
+-	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
+-		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
+-
+-	early_identify_cpu(&boot_cpu_data);
+-}
+-
+ /* Make sure %fs is initialized properly in idle threads */
+ struct pt_regs * __cpuinit idle_regs(struct pt_regs *regs)
+ {
+@@ -636,18 +668,6 @@ struct pt_regs * __cpuinit idle_regs(str
+ 	return regs;
+ }
+ 
+-/* Current gdt points %fs at the "master" per-cpu area: after this,
+- * it's on the real one. */
+-void switch_to_new_gdt(void)
+-{
+-	struct desc_ptr gdt_descr;
+-
+-	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
+-	gdt_descr.size = GDT_SIZE - 1;
+-	load_gdt(&gdt_descr);
+-	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
+-}
+-
+ /*
+  * cpu_init() initializes state that is per-CPU. Some data is already
+  * initialized (naturally) in the bootstrap process, such as the GDT
+Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
++++ linux-2.6/arch/x86/kernel/cpu/common_64.c
+@@ -103,9 +103,8 @@ void __cpuinit display_cacheinfo(struct
+ 
+ 	if (n >= 0x80000005) {
+ 		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
+-		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), "
+-		       "D cache %dK (%d bytes/line)\n",
+-		       edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
++		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), D cache %dK (%d bytes/line)\n",
++				edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
+ 		c->x86_cache_size = (ecx>>24) + (edx>>24);
+ 		/* On K8 L1 TLB is inclusive, so don't count it */
+ 		c->x86_tlbsize = 0;
+@@ -146,8 +145,8 @@ void __cpuinit detect_ht(struct cpuinfo_
+ 	} else if (smp_num_siblings > 1) {
+ 
+ 		if (smp_num_siblings > NR_CPUS) {
+-			printk(KERN_WARNING "CPU: Unsupported number of "
+-			       "siblings %d", smp_num_siblings);
++			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
++					smp_num_siblings);
+ 			smp_num_siblings = 1;
+ 			return;
+ 		}
+@@ -185,7 +184,7 @@ static void __cpuinit get_cpu_vendor(str
+ 		if (cpu_devs[i]) {
+ 			if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
+ 			    (cpu_devs[i]->c_ident[1] &&
+-			    !strcmp(v, cpu_devs[i]->c_ident[1]))) {
++			     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
+ 				c->x86_vendor = i;
+ 				this_cpu = cpu_devs[i];
+ 				return;
+@@ -220,39 +219,6 @@ static void __init early_cpu_support_pri
+ 	}
+ }
+ 
+-/*
+- * The NOPL instruction is supposed to exist on all CPUs with
+- * family >= 6, unfortunately, that's not true in practice because
+- * of early VIA chips and (more importantly) broken virtualizers that
+- * are not easy to detect.  Hence, probe for it based on first
+- * principles.
+- *
+- * Note: no 64-bit chip is known to lack these, but put the code here
+- * for consistency with 32 bits, and to make it utterly trivial to
+- * diagnose the problem should it ever surface.
+- */
+-static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
+-{
+-	const u32 nopl_signature = 0x888c53b1; /* Random number */
+-	u32 has_nopl = nopl_signature;
+-
+-	clear_cpu_cap(c, X86_FEATURE_NOPL);
+-	if (c->x86 >= 6) {
+-		asm volatile("\n"
+-			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
+-			     "2:\n"
+-			     "        .section .fixup,\"ax\"\n"
+-			     "3:      xor %0,%0\n"
+-			     "        jmp 2b\n"
+-			     "        .previous\n"
+-			     _ASM_EXTABLE(1b,3b)
+-			     : "+a" (has_nopl));
+-
+-		if (has_nopl == nopl_signature)
+-			set_cpu_cap(c, X86_FEATURE_NOPL);
+-	}
+-}
+-
+ void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
+ {
+ 	/* Get vendor name */
+@@ -261,6 +227,7 @@ void __cpuinit cpu_detect(struct cpuinfo
+ 	      (unsigned int *)&c->x86_vendor_id[8],
+ 	      (unsigned int *)&c->x86_vendor_id[4]);
+ 
++	c->x86 = 4;
+ 	/* Intel-defined flags: level 0x00000001 */
+ 	if (c->cpuid_level >= 0x00000001) {
+ 		u32 junk, tfms, cap0, misc;
+@@ -271,12 +238,9 @@ void __cpuinit cpu_detect(struct cpuinfo
+ 		if (c->x86 == 0xf)
+ 			c->x86 += (tfms >> 20) & 0xff;
+ 		if (c->x86 >= 0x6)
+-			c->x86_model += ((tfms >> 16) & 0xF) << 4;
++			c->x86_model += ((tfms >> 16) & 0xf) << 4;
+ 		if (cap0 & (1<<19))
+ 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
+-	} else {
+-		/* Have CPUID level 0 only - unheard of */
+-		c->x86 = 4;
+ 	}
+ }
+ 
+@@ -286,9 +250,6 @@ static void __cpuinit get_cpu_cap(struct
+ 	u32 tfms, xlvl;
+ 	u32 ebx;
+ 
+-	/* Initialize the standard set of capabilities */
+-	/* Note that the vendor-specific code below might override */
+-
+ 	/* Intel-defined flags: level 0x00000001 */
+ 	if (c->cpuid_level >= 0x00000001) {
+ 		u32 capability, excap;
+@@ -364,6 +325,39 @@ void __init early_cpu_init(void)
+ 	early_identify_cpu(&boot_cpu_data);
+ }
+ 
++/*
++ * The NOPL instruction is supposed to exist on all CPUs with
++ * family >= 6, unfortunately, that's not true in practice because
++ * of early VIA chips and (more importantly) broken virtualizers that
++ * are not easy to detect.  Hence, probe for it based on first
++ * principles.
++ *
++ * Note: no 64-bit chip is known to lack these, but put the code here
++ * for consistency with 32 bits, and to make it utterly trivial to
++ * diagnose the problem should it ever surface.
++ */
++static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
++{
++	const u32 nopl_signature = 0x888c53b1; /* Random number */
++	u32 has_nopl = nopl_signature;
++
++	clear_cpu_cap(c, X86_FEATURE_NOPL);
++	if (c->x86 >= 6) {
++		asm volatile("\n"
++			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
++			     "2:\n"
++			     "        .section .fixup,\"ax\"\n"
++			     "3:      xor %0,%0\n"
++			     "        jmp 2b\n"
++			     "        .previous\n"
++			     _ASM_EXTABLE(1b,3b)
++			     : "+a" (has_nopl));
++
++		if (has_nopl == nopl_signature)
++			set_cpu_cap(c, X86_FEATURE_NOPL);
++	}
++}
++
+ static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
+ {
+ 	c->extended_cpuid_level = 0;
+@@ -451,7 +445,7 @@ static void __cpuinit identify_cpu(struc
+ 
+ }
+ 
+-void __cpuinit identify_boot_cpu(void)
++void __init identify_boot_cpu(void)
+ {
+ 	identify_cpu(&boot_cpu_data);
+ }
+@@ -463,13 +457,6 @@ void __cpuinit identify_secondary_cpu(st
+ 	mtrr_ap_init();
+ }
+ 
+-static __init int setup_noclflush(char *arg)
+-{
+-	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
+-	return 1;
+-}
+-__setup("noclflush", setup_noclflush);
+-
+ struct msr_range {
+ 	unsigned min;
+ 	unsigned max;
+@@ -513,6 +500,13 @@ static __init int setup_show_msr(char *a
+ }
+ __setup("show_msr=", setup_show_msr);
+ 
++static __init int setup_noclflush(char *arg)
++{
++	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
++	return 1;
++}
++__setup("noclflush", setup_noclflush);
++
+ void __cpuinit print_cpu_info(struct cpuinfo_x86 *c)
+ {
+ 	if (c->x86_model_id[0])
