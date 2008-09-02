@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYIBANZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbYIBATC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222AbYIBANZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 20:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIBANS
+	id S1753076AbYIBATC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 20:19:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYIBASx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 20:13:18 -0400
-Received: from smtp2.ono.com ([62.42.230.20]:56414 "EHLO resmaa03.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751383AbYIBANR convert rfc822-to-8bit (ORCPT
+	Mon, 1 Sep 2008 20:18:53 -0400
+Received: from mail-in-07.arcor-online.net ([151.189.21.47]:56618 "EHLO
+	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751776AbYIBASw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 20:13:17 -0400
-Date: Tue, 2 Sep 2008 02:12:57 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Finding what is stuck...
-Message-ID: <20080902021257.74344596@one.home>
-In-Reply-To: <20080901170812.2c3b041b@infradead.org>
-References: <20080902020447.5b48b083@one.home>
-	<20080901170812.2c3b041b@infradead.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+	Mon, 1 Sep 2008 20:18:52 -0400
+Subject: Re: [v4l-dvb-maintainer] Merge multiproto tree
+From: hermann pitton <hermann-pitton@arcor.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Manu Abraham <abraham.manu@gmail.com>, v4l-dvb-maintainer@linuxtv.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       mchehab@infradead.org
+In-Reply-To: <1220242090.8426.49.camel@twins>
+References: <48B9360D.7030303@gmail.com>  <1220099043.8426.25.camel@twins>
+	 <1220100034.8426.38.camel@twins>
+	 <1220231286.2669.97.camel@pc10.localdom.local>
+	 <1220242090.8426.49.camel@twins>
+Content-Type: text/plain
+Date: Tue, 02 Sep 2008 02:16:13 +0200
+Message-Id: <1220314573.2690.16.camel@pc10.localdom.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008 17:08:12 -0700, Arjan van de Ven <arjan@infradead.org> wrote:
 
-> On Tue, 2 Sep 2008 02:04:47 +0200
-> "J.A. Magallón" <jamagallon@ono.com> wrote:
-> 
-> > Hi all...
+Am Montag, den 01.09.2008, 06:08 +0200 schrieb Peter Zijlstra:
+> On Mon, 2008-09-01 at 03:08 +0200, hermann pitton wrote:
+> > Hi,
 > > 
-> > I'm running 2.6.27-rc5-git2 on an Aspire One.
-> > The system is in general pretty responsive, but sometimes it just gets
-> > totally stuck. Even the mouse stops. 
+> > Am Samstag, den 30.08.2008, 14:40 +0200 schrieb Peter Zijlstra:
+> > > [dropped linux-dvb]
+> > > 
+> > > On Sat, 2008-08-30 at 14:24 +0200, Peter Zijlstra wrote:
+> > > > On Sat, 2008-08-30 at 15:59 +0400, Manu Abraham wrote:
+> > > > > Hello Mauro,
+> > > > > 
+> > > > > Please pull from http://jusst.de/hg/multiproto_api_merge/
+> > > > > to merge the following Changesets from the multiproto tree.
+> > > 
+> > > > > The tree is being pushed out, it might take a little while for the
+> > > > > repository to be populated due to the slow connect.
+> > > > 
+> > > > This must absolutely be the least informative pull request ever!
+> > > 
+> > > Also, this:
+> > > 
+> > > On Sat, 2008-08-30 at 14:24 +0200, linux-dvb-owner@linuxtv.org wrote:
+> > > > You are not allowed to post to this mailing list, and your message has
+> > > > been automatically rejected.  If you think that your messages are
+> > > > being rejected in error, contact the mailing list owner at
+> > > > linux-dvb-owner@linuxtv.org.
+> > > 
+> > > Don't do that!
+> > > 
 > > 
-> > It looks related to disk (SSD) access, but I'm not totally sure.
-> > Is there any way to find what is getting stuck ? I know that SSDs can
-> > be slow on write, I don't mind if the system is faster or slower
-> > (it's small :))), but if the speed is constant. That occasional
-> > pauses are strange, like if SSD flushing gets stuck on BKL
-> > (I know, no idea about what I talk...).
+> > I still try to understand it until today too,
 > > 
-> > I'm using ext3 fs, noop iosched. But as I say, I'm not sure that the
-> > disk writes are the culprit.
-> > 
-> > Any idea about how to find this ?
+> > but the latter is only a simple notifier, that you are not subscribed
+> > and has no further meanings.
 > 
-> Have you tried to run "latencytop"?
-> (you need to enable this in the kernel config as well)
+> I know full well what that is. However,
 > 
-> it tends to (for me at least) point out very well where stalls happen,
-> or at least, what the system is doing when they happen.
-> 
-> (hint: make sure you do "make install" before running it)
+> Its rude to cross-post with a subscriber only list. Imagine everybody
+> doing it - you'd go mad with these stupid bounces.
 > 
 
-Thanks, I'm a bit limited to distro kernels 'cause I don't want to build
-my own kernel on the One, but I have just looked and Mandriva kernel is
-built with LATENCYTOP=y. I will try that and report...
+Why not going one step further then?
 
--- 
-J.A. Magallon                       \                     Software is like sex:
-                                     \               It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux kernel 2.6.23-jam01,  gcc version 4.2.2 20070909
+Every in kernel driver should have an open list.
+
+I believe it can avoid a lot of troubles.
+
+People can still decide to go private, but might think twice before
+doing so.
+
+Hermann
+
+
