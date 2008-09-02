@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYIBKNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbYIBKX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbYIBKNG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 06:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYIBKMx
+	id S1752524AbYIBKX3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 06:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYIBKXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 06:12:53 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:39838 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751567AbYIBKMw (ORCPT
+	Tue, 2 Sep 2008 06:23:20 -0400
+Received: from NAT-170.Local.iNES.RO ([80.86.100.170]:46430 "EHLO
+	blade.ines.ro" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751033AbYIBKXT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 06:12:52 -0400
-Message-ID: <48BD119B.8020605@linux.vnet.ibm.com>
-Date: Tue, 02 Sep 2008 15:42:43 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
-References: <20080831174756.GA25790@balbir.in.ibm.com> <200809011656.45190.nickpiggin@yahoo.com.au> <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com> <200809011743.42658.nickpiggin@yahoo.com.au> <48BD0641.4040705@linux.vnet.ibm.com> <20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com> <48BD0E4A.5040502@linux.vnet.ibm.com> <20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Sep 2008 06:23:19 -0400
+Subject: Re: IRQ routing / assignment issue
+From: Radu Rendec <radu.rendec@ines.ro>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48BC248E.702@shaw.ca>
+References: <fa.Ayf504otegg3VVbRsozI1UFd/6Y@ifi.uio.no>
+	 <48BC248E.702@shaw.ca>
+Content-Type: text/plain
+Date: Tue, 02 Sep 2008 13:23:13 +0300
+Message-Id: <1220350993.16764.27.camel@blade.ines.ro>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 02 Sep 2008 15:28:34 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> KAMEZAWA Hiroyuki wrote:
->>> On Tue, 02 Sep 2008 14:54:17 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>> Nick Piggin wrote:
->>>>> That could be a reasonable solution.  Balbir has other concerns about
->>>>> this... so I think it is OK to try the radix tree approach first.
->>>> Thanks, Nick!
->>>>
->>>> Kamezawa-San, I would like to integrate the radix tree patches after review and
->>>> some more testing then integrate your patchset on top of it. Do you have any
->>>> objections/concerns with the suggested approach?
->>>>
->>> please show performance number first.
->> Yes, that is why said some more testing. I am running lmbench and kernbench on
->> it and some other tests, I'll get back with numbers.
->>
-> A test which is not suffer much from I/O is better.
-> And please don't worry about my patches. I'll reschedule if yours goes first.
-> 
-Thanks, I'll try and find the right set of tests.
--- 
-	Balbir
+On Mon, 2008-09-01 at 11:21 -0600, Robert Hancock wrote:
+> The kernel doesn't really have any way to change the physical 
+> device/slot to IRQ mapping. In some cases there are BIOS settings which 
+> might influence this, but in most cases it's impossible to change (i.e. 
+> devices physically wired to the same IRQ line).
+
+Thanks for your quick reply. I know there are 4 physical interrupt
+lines, interleaved for the many devices connected to a bus, so that, if
+most of the devices issue INTA, the interrupts are actually asserted on
+different pins of the apic (an almost uniform distribution of the
+interrupts, but still, two devices can share the same physical line). I
+also know that it's possible to change the (logical) irq levels assigned
+to physical INTA-INTD (perhaps using the pirq= parameter).
+
+As I have limited knowledge of hardware implementations, I'm asking you
+if it's usual/possible for a dual-processor system to have the same
+physical irq pin connected to the same irq line of _different_ pci
+buses. To put it in other words, is it possible for two devices on
+_separate_ pci buses to physically share the same irq pin?
+
+Thanks,
+
+Radu Rendec
+
+
