@@ -1,127 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYIBFHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751137AbYIBFHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbYIBFHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 01:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYIBFG7
+	id S1751137AbYIBFHm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 01:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYIBFHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 01:06:59 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:51555 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751890AbYIBFG6 (ORCPT
+	Tue, 2 Sep 2008 01:07:32 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:34116 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752117AbYIBFHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 01:06:58 -0400
-Date: Tue, 02 Sep 2008 01:06:22 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: Linux-2.6.27-rc5, drm errors in log
-In-reply-to: <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
-To: "Jaswinder Singh" <jaswinderlinux@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org,
-       davem@davemloft.net, torvalds@linux-foundation.org, nhaehnle@gmail.com,
-       airlied@linux.ie, glisse@freedesktop.org, khali@linux-fr.org,
-       tony@bakeyournoodle.com
-Message-id: <200809020106.22494.gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200808301452.04634.gene.heskett@verizon.net>
- <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
-User-Agent: KMail/1.9.9
+	Tue, 2 Sep 2008 01:07:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=xSLwPCcH0IVCkz1YUmEocRVB62ptFE/VTLvCJa+nsVj92TIz85ZitaluKuuZwLBKnh
+         ZDJu5zBkguaNY/BO8CFxeA3Ig9yQgPZbQ9yL5+y9qkmV0d/7ndl2J0b2JNtp2FCsoY1u
+         y2RQDuZxbjL8U0E1K76H9E2WSOoz+sFIJH0dM=
+Message-ID: <cfd18e0f0809012207g58b81a20ib6a871cdf3bb0909@mail.gmail.com>
+Date: Mon, 1 Sep 2008 22:07:30 -0700
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Ulrich Drepper" <drepper@gmail.com>
+Subject: Re: No NONBLOCK flag for dup3() or epoll_create1()?
+Cc: "Ulrich Drepper" <drepper@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Davide Libenzi" <davidel@xmailserver.org>
+In-Reply-To: <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AC4B19.6000206@gmail.com>
+	 <a36005b50809011734w73f48dc1l68853e4e73309c2a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 September 2008, Jaswinder Singh wrote:
->Hello Gene,
->
->On Sat, Aug 30, 2008 at 2:52 PM, Gene Heskett <gene.heskett@verizon.net> 
-wrote:
->> A re-repeat of a previous posting which has not drawn a comment. With
->> added content, added CC to a patch author, and some new questions.
->
->This is not because of my radeon firmware patch, my patch is still in
->pipeline. Here is the list of developers who played with radeon :-
->
->1. 4 days ago 	Linus Torvalds 	Merge branch 'drm-patches' of
->git://git.kernel.org ...
->2. 7 days ago 	Nicolai Haehnle 	drm/radeon: r300_cmdbuf: Always emit
->INDX_BUFFER immediately ...
->3. 7 days ago 	Jerome Glisse 	radeon: fix some hard lockups on r3/4/500s
->4. 2008-08-12 	David Miller 	radeonfb: fix accel engine hangs
->5. 2008-08-05 	Jean Delvare 	radeonfb: give i2c buses nicer names
->6. 2008-08-05 	David Miller 	radeon: misc corrections
->7. 2008-07-24 	Tony Breeds 	drivers/video/aty/radeon_base.c: notify
->user if sysfs ...
->
->> Machine is an F8 install, Athlon xp-2800 on an nforce2 motherboard,
->> running an older radeon 9200SE (RV280 based) video card.  No problems if I
->> reboot to 2.6.27-rc4.
+On Mon, Sep 1, 2008 at 5:34 PM, Ulrich Drepper <drepper@gmail.com> wrote:
+> On Wed, Aug 20, 2008 at 9:49 AM, Michael Kerrisk
+> <mtk.manpages@googlemail.com> wrote:
+>> I've been doing some testing (2.6.27-rc3) of your new
+>> file-descriptor-creating syscalls that accept flags.  According to
 >>
->> I'm drowning in these errors:
+>> http://udrepper.livejournal.com/20407.html
 >>
->> Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed
->> status : 0x80076100 0x00000000 Aug 30 13:21:05 coyote kernel:
->> [14927.861335] [drm] wait for fifo failed status : 0x80076100 0x00000000
->> Aug 30 13:21:05 coyote kernel: [14928.060233] [drm] wait idle failed
->> status : 0x80076100 0x00000000 Aug 30 13:21:07 coyote kernel:
->> [14929.557075] [drm] wait for fifo failed status : 0x80076100 0x00000000
->> Aug 30 13:21:07 coyote kernel: [14929.568869] [drm] wait for fifo failed
->> status : 0x80076100 0x00000000 Aug 30 13:21:08 coyote kernel:
->> [14931.028882] [drm] wait for fifo failed status : 0x80036100 0x00000000
->> Aug 30 13:21:08 coyote kernel: [14931.039896] [drm] wait for fifo failed
->> status : 0x80076100 0x00000000 Aug 30 13:21:18 coyote kernel:
->> [14940.515114] [drm] wait for fifo failed status : 0x80076100 0x00000000
->> Aug 30 13:27:27 coyote kernel: [15310.125656] [drm] wait for fifo failed
->> status : 0x80066107 0x00000000
+>> all of the system calls should accept a *_NONBLOCK flag.
 >
->On F8 machine with radeon 9200SE with 2.6.27-rc5, I am also getting
->similar messages :
->
->[drm] Loading R200 Microcode
->[drm] writeback test succeeded in 1 usecs
->[drm] wait idle failed status : 0x83E8C13D 0x00000000
->[drm] wait idle failed status : 0x83E8C13D 0x00000000
->[drm] wait idle failed status : 0x83E8C13D 0x00000000
->[drm] wait idle failed status : 0x83E8C13D 0x00000000
->[drm] wait for fifo failed status : 0x8006613B 0x00000000
->[drm] wait for fifo failed status : 0x80066121 0x00000000
->[drm] wait for fifo failed status : 0x8006613B 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->[drm] wait for fifo failed status : 0x80076100 0x00000000
->
->
->Thank you,
->
->Jaswinder Singh.
+> This was never the intention.
 
-Dave Arlie has a patch that converts the DRM_INFO to DRM_DEBUG, which sticks a 
-muffler on that.  Posted on lkml yesterday, it doesn't fix the problem but 
-does shut it up.  The actual statement that causes that I put in every kernel 
-back to 2.6.27-rc1, and they all do similar reports, so this is a long 
-standing, and apparently mostly harmless bug.  I have seen zero screen 
-corruption other than the terminals scrolling leaving trash '_' behind and 
-has been for at least a year.
+All of the below makes some sense, but is at odds with what you posted
+on your blog entry, which documents *_NONBLOCK for both
+epoll_create1() and dup3().  Thus, I needed to check with you since
+the "intention" stated in the blog post differs from the actual
+implementation.
 
-Thanks Jaswinder.
+>> For epoll_create1() this certainly appears to be an oversight, since I can't
+>> think of a reason not to support *_NONBLOCK.
+>
+> I can.  There is already a method to not block (zero timeout).  We
+> should not provide multiple ways to get the same functionality.
+
+Though, one reason to do so would be consistency with the other
+changed APIs.  (There are many cases where *ix API provides more than
+one way of getting the same functionality.)
+
+> It
+> would require changes in the epoll code as well.  That's not worth it.
+>
+>
+>>  (Furthermore, given a open file description for which O_NONBLOCK is
+>> already enabled, it is not possible to make a dup3() call that disables
+>> O_NONBLOCK, which is an odd asymmetry in the API.)
+>
+> That's why I didn't add support for the flag.  It's hardly useful to
+> add this support.
+
+Cheers,
+
+Michael
+
+
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Winning isn't everything.  It's the only thing.
-		-- Vince Lombardi
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
