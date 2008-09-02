@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYIBVyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbYIBVzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYIBVyj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 17:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYIBVy3
+	id S1754676AbYIBVzt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 17:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYIBVzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 17:54:29 -0400
-Received: from h155.mvista.com ([63.81.120.155]:16324 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751675AbYIBVy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 17:54:28 -0400
-Message-ID: <48BDB60F.1070806@ru.mvista.com>
-Date: Wed, 03 Sep 2008 01:54:23 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 2 Sep 2008 17:55:40 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:59207 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751360AbYIBVzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 17:55:40 -0400
+Message-ID: <1254.69.2.248.210.1220390835.squirrel@webmail.wolfmountaingroup.com>
+Date: Tue, 2 Sep 2008 15:27:15 -0600 (MDT)
+Subject: 2.6.27-rc5 acpi: EC Storm error message on bootup
+From: jmerkey@wolfmountaingroup.com
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/8] ide: make ide_dma_timeout() available also for CONFIG_BLK_DEV_IDEDMA_SFF=n
-References: <20080902194711.14564.63625.sendpatchset@localhost.localdomain> <20080902194726.14564.348.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080902194726.14564.348.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
 
-> Make ide_dma_timeout() available also for CONFIG_BLK_DEV_IDEDMA_SFF=n
-> and convert {ics,au1xxx-}ide.c to use it.
->
-> While at it:
-> - dump ATA Status register content on error
-> - use EXPORT_SYMBOL_GPL() to match the rest of SFF DMA functions
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->   
+See an ACPI: EC storm detected message, disabling EC
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+On both a compaq presario 2200 laptop and an Acer 9410 laptop.  Looks like
+a brain dead error message not actually reporting any genuine errors.
 
-MBR, Sergei
-
+Jeff
 
