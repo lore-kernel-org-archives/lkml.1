@@ -1,507 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYIBFGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbYIBFHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbYIBFGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 01:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYIBFGq
+	id S1754221AbYIBFHP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 01:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYIBFG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 01:06:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:23520 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751578AbYIBFGp (ORCPT
+	Tue, 2 Sep 2008 01:06:59 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:51555 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbYIBFG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 01:06:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=mFCF6zQ/fs552PIInWpRwFpMJCsWJlx5EXwVfk/b0GLwR5ReAbs861SvDo6CKJeAoC
-         OBxt3i+TJJwlu6Msrp9mqZROulqvxCf8TWiLgtKf+e9ECAk3pkutJe7I97hyRhv6LgVK
-         E97g5aPkknz2NaamCxCqGKFPGFYWiq9+PrYAQ=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: order functions in cpu/common.c and cpu/common_64.c
-Date: Mon,  1 Sep 2008 22:05:36 -0700
-Message-Id: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Tue, 2 Sep 2008 01:06:58 -0400
+Date: Tue, 02 Sep 2008 01:06:22 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Subject: Re: Linux-2.6.27-rc5, drm errors in log
+In-reply-to: <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
+To: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Jaswinder Singh" <jaswinder@infradead.org>, xorg@lists.freedesktop.org,
+       davem@davemloft.net, torvalds@linux-foundation.org, nhaehnle@gmail.com,
+       airlied@linux.ie, glisse@freedesktop.org, khali@linux-fr.org,
+       tony@bakeyournoodle.com
+Message-id: <200809020106.22494.gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200808301452.04634.gene.heskett@verizon.net>
+ <3f9a31f40809010934k468914d8sc43f323e9f32e9e7@mail.gmail.com>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/cpu/common.c    |  188 ++++++++++++++++++++++------------------
- arch/x86/kernel/cpu/common_64.c |  102 ++++++++++-----------
- 2 files changed, 152 insertions(+), 138 deletions(-)
+On Monday 01 September 2008, Jaswinder Singh wrote:
+>Hello Gene,
+>
+>On Sat, Aug 30, 2008 at 2:52 PM, Gene Heskett <gene.heskett@verizon.net> 
+wrote:
+>> A re-repeat of a previous posting which has not drawn a comment. With
+>> added content, added CC to a patch author, and some new questions.
+>
+>This is not because of my radeon firmware patch, my patch is still in
+>pipeline. Here is the list of developers who played with radeon :-
+>
+>1. 4 days ago 	Linus Torvalds 	Merge branch 'drm-patches' of
+>git://git.kernel.org ...
+>2. 7 days ago 	Nicolai Haehnle 	drm/radeon: r300_cmdbuf: Always emit
+>INDX_BUFFER immediately ...
+>3. 7 days ago 	Jerome Glisse 	radeon: fix some hard lockups on r3/4/500s
+>4. 2008-08-12 	David Miller 	radeonfb: fix accel engine hangs
+>5. 2008-08-05 	Jean Delvare 	radeonfb: give i2c buses nicer names
+>6. 2008-08-05 	David Miller 	radeon: misc corrections
+>7. 2008-07-24 	Tony Breeds 	drivers/video/aty/radeon_base.c: notify
+>user if sysfs ...
+>
+>> Machine is an F8 install, Athlon xp-2800 on an nforce2 motherboard,
+>> running an older radeon 9200SE (RV280 based) video card.  No problems if I
+>> reboot to 2.6.27-rc4.
+>>
+>> I'm drowning in these errors:
+>>
+>> Aug 30 13:21:05 coyote kernel: [14927.850078] [drm] wait for fifo failed
+>> status : 0x80076100 0x00000000 Aug 30 13:21:05 coyote kernel:
+>> [14927.861335] [drm] wait for fifo failed status : 0x80076100 0x00000000
+>> Aug 30 13:21:05 coyote kernel: [14928.060233] [drm] wait idle failed
+>> status : 0x80076100 0x00000000 Aug 30 13:21:07 coyote kernel:
+>> [14929.557075] [drm] wait for fifo failed status : 0x80076100 0x00000000
+>> Aug 30 13:21:07 coyote kernel: [14929.568869] [drm] wait for fifo failed
+>> status : 0x80076100 0x00000000 Aug 30 13:21:08 coyote kernel:
+>> [14931.028882] [drm] wait for fifo failed status : 0x80036100 0x00000000
+>> Aug 30 13:21:08 coyote kernel: [14931.039896] [drm] wait for fifo failed
+>> status : 0x80076100 0x00000000 Aug 30 13:21:18 coyote kernel:
+>> [14940.515114] [drm] wait for fifo failed status : 0x80076100 0x00000000
+>> Aug 30 13:27:27 coyote kernel: [15310.125656] [drm] wait for fifo failed
+>> status : 0x80066107 0x00000000
+>
+>On F8 machine with radeon 9200SE with 2.6.27-rc5, I am also getting
+>similar messages :
+>
+>[drm] Loading R200 Microcode
+>[drm] writeback test succeeded in 1 usecs
+>[drm] wait idle failed status : 0x83E8C13D 0x00000000
+>[drm] wait idle failed status : 0x83E8C13D 0x00000000
+>[drm] wait idle failed status : 0x83E8C13D 0x00000000
+>[drm] wait idle failed status : 0x83E8C13D 0x00000000
+>[drm] wait for fifo failed status : 0x8006613B 0x00000000
+>[drm] wait for fifo failed status : 0x80066121 0x00000000
+>[drm] wait for fifo failed status : 0x8006613B 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>[drm] wait for fifo failed status : 0x80076100 0x00000000
+>
+>
+>Thank you,
+>
+>Jaswinder Singh.
 
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -60,6 +60,18 @@ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
- 
- __u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
- 
-+/* Current gdt points %fs at the "master" per-cpu area: after this,
-+ * it's on the real one. */
-+void switch_to_new_gdt(void)
-+{
-+	struct desc_ptr gdt_descr;
-+
-+	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
-+	gdt_descr.size = GDT_SIZE - 1;
-+	load_gdt(&gdt_descr);
-+	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
-+}
-+
- static int cachesize_override __cpuinitdata = -1;
- static int disable_x86_serial_nr __cpuinitdata = 1;
- 
-@@ -123,15 +135,15 @@ int __cpuinit get_model_name(struct cpui
- 
- void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
- {
--	unsigned int n, dummy, ecx, edx, l2size;
-+	unsigned int n, dummy, ebx, ecx, edx, l2size;
- 
- 	n = c->extended_cpuid_level;
- 
- 	if (n >= 0x80000005) {
--		cpuid(0x80000005, &dummy, &dummy, &ecx, &edx);
-+		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
- 		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), D cache %dK (%d bytes/line)\n",
--			edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
--		c->x86_cache_size = (ecx>>24)+(edx>>24);
-+				edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
-+		c->x86_cache_size = (ecx>>24) + (edx>>24);
- 	}
- 
- 	if (n < 0x80000006)	/* Some chips just has a large L1. */
-@@ -185,6 +197,51 @@ static char __cpuinit *table_lookup_mode
- 	return NULL;		/* Not found */
- }
- 
-+#ifdef CONFIG_X86_HT
-+void __cpuinit detect_ht(struct cpuinfo_x86 *c)
-+{
-+	u32 	eax, ebx, ecx, edx;
-+	int 	index_msb, core_bits;
-+
-+	cpuid(1, &eax, &ebx, &ecx, &edx);
-+
-+	if (!cpu_has(c, X86_FEATURE_HT) || cpu_has(c, X86_FEATURE_CMP_LEGACY))
-+		return;
-+
-+	smp_num_siblings = (ebx & 0xff0000) >> 16;
-+
-+	if (smp_num_siblings == 1) {
-+		printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
-+	} else if (smp_num_siblings > 1) {
-+
-+		if (smp_num_siblings > NR_CPUS) {
-+			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
-+					smp_num_siblings);
-+			smp_num_siblings = 1;
-+			return;
-+		}
-+
-+		index_msb = get_count_order(smp_num_siblings);
-+		c->phys_proc_id = phys_pkg_id(c->initial_apicid, index_msb);
-+
-+		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
-+		       c->phys_proc_id);
-+
-+		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
-+
-+		index_msb = get_count_order(smp_num_siblings);
-+
-+		core_bits = get_count_order(c->x86_max_cores);
-+
-+		c->cpu_core_id = phys_pkg_id(c->initial_apicid, index_msb) &
-+					       ((1 << core_bits) - 1);
-+
-+		if (c->x86_max_cores > 1)
-+			printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
-+			       c->cpu_core_id);
-+	}
-+}
-+#endif
- 
- static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
- {
-@@ -258,7 +315,26 @@ static int __cpuinit have_cpuid_p(void)
- 	return flag_is_changeable_p(X86_EFLAGS_ID);
- }
- 
--void __init cpu_detect(struct cpuinfo_x86 *c)
-+static void __init early_cpu_support_print(void)
-+{
-+	int i,j;
-+	struct cpu_dev *cpu_devx;
-+
-+	printk("KERNEL supported cpus:\n");
-+	for (i = 0; i < X86_VENDOR_NUM; i++) {
-+		cpu_devx = cpu_devs[i];
-+		if (!cpu_devx)
-+			continue;
-+		for (j = 0; j < 2; j++) {
-+			if (!cpu_devx->c_ident[j])
-+				continue;
-+			printk("  %s %s\n", cpu_devx->c_vendor,
-+				cpu_devx->c_ident[j]);
-+		}
-+	}
-+}
-+
-+void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
- {
- 	/* Get vendor name */
- 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
-@@ -267,16 +343,17 @@ void __init cpu_detect(struct cpuinfo_x8
- 	      (unsigned int *)&c->x86_vendor_id[4]);
- 
- 	c->x86 = 4;
-+	/* Intel-defined flags: level 0x00000001 */
- 	if (c->cpuid_level >= 0x00000001) {
- 		u32 junk, tfms, cap0, misc;
- 		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
--		c->x86 = (tfms >> 8) & 15;
--		c->x86_model = (tfms >> 4) & 15;
-+		c->x86 = (tfms >> 8) & 0xf;
-+		c->x86_model = (tfms >> 4) & 0xf;
-+		c->x86_mask = tfms & 0xf;
- 		if (c->x86 == 0xf)
- 			c->x86 += (tfms >> 20) & 0xff;
- 		if (c->x86 >= 0x6)
--			c->x86_model += ((tfms >> 16) & 0xF) << 4;
--		c->x86_mask = tfms & 15;
-+			c->x86_model += ((tfms >> 16) & 0xf) << 4;
- 		if (cap0 & (1<<19)) {
- 			c->x86_cache_alignment = ((misc >> 8) & 0xff) * 8;
- 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-@@ -341,6 +418,17 @@ static void __init early_identify_cpu(st
- 	validate_pat_support(c);
- }
- 
-+void __init early_cpu_init(void)
-+{
-+	struct cpu_vendor_dev *cvdev;
-+
-+	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
-+		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
-+
-+	early_cpu_support_print();
-+	early_identify_cpu(&boot_cpu_data);
-+}
-+
- /*
-  * The NOPL instruction is supposed to exist on all CPUs with
-  * family >= 6, unfortunately, that's not true in practice because
-@@ -500,7 +588,7 @@ static void __cpuinit identify_cpu(struc
- 	 */
- 	if (c != &boot_cpu_data) {
- 		/* AND the already accumulated flags with these */
--		for (i = 0 ; i < NCAPINTS ; i++)
-+		for (i = 0; i < NCAPINTS; i++)
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
- 
-@@ -529,52 +617,6 @@ void __cpuinit identify_secondary_cpu(st
- 	mtrr_ap_init();
- }
- 
--#ifdef CONFIG_X86_HT
--void __cpuinit detect_ht(struct cpuinfo_x86 *c)
--{
--	u32 	eax, ebx, ecx, edx;
--	int 	index_msb, core_bits;
--
--	cpuid(1, &eax, &ebx, &ecx, &edx);
--
--	if (!cpu_has(c, X86_FEATURE_HT) || cpu_has(c, X86_FEATURE_CMP_LEGACY))
--		return;
--
--	smp_num_siblings = (ebx & 0xff0000) >> 16;
--
--	if (smp_num_siblings == 1) {
--		printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
--	} else if (smp_num_siblings > 1) {
--
--		if (smp_num_siblings > NR_CPUS) {
--			printk(KERN_WARNING "CPU: Unsupported number of the "
--					"siblings %d", smp_num_siblings);
--			smp_num_siblings = 1;
--			return;
--		}
--
--		index_msb = get_count_order(smp_num_siblings);
--		c->phys_proc_id = phys_pkg_id(c->initial_apicid, index_msb);
--
--		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
--		       c->phys_proc_id);
--
--		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
--
--		index_msb = get_count_order(smp_num_siblings) ;
--
--		core_bits = get_count_order(c->x86_max_cores);
--
--		c->cpu_core_id = phys_pkg_id(c->initial_apicid, index_msb) &
--					       ((1 << core_bits) - 1);
--
--		if (c->x86_max_cores > 1)
--			printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
--			       c->cpu_core_id);
--	}
--}
--#endif
--
- static __init int setup_noclflush(char *arg)
- {
- 	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
-@@ -592,17 +634,17 @@ void __cpuinit print_cpu_info(struct cpu
- 		vendor = c->x86_vendor_id;
- 
- 	if (vendor && strncmp(c->x86_model_id, vendor, strlen(vendor)))
--		printk("%s ", vendor);
-+		printk(KERN_CONT "%s ", vendor);
- 
--	if (!c->x86_model_id[0])
--		printk("%d86", c->x86);
-+	if (c->x86_model_id[0])
-+		printk(KERN_CONT "%s", c->x86_model_id);
- 	else
--		printk("%s", c->x86_model_id);
-+		printk(KERN_CONT "%d86", c->x86);
- 
- 	if (c->x86_mask || c->cpuid_level >= 0)
--		printk(" stepping %02x\n", c->x86_mask);
-+		printk(KERN_CONT " stepping %02x\n", c->x86_mask);
- 	else
--		printk("\n");
-+		printk(KERN_CONT "\n");
- }
- 
- static __init int setup_disablecpuid(char *arg)
-@@ -618,16 +660,6 @@ __setup("clearcpuid=", setup_disablecpui
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
--void __init early_cpu_init(void)
--{
--	struct cpu_vendor_dev *cvdev;
--
--	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
--		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
--
--	early_identify_cpu(&boot_cpu_data);
--}
--
- /* Make sure %fs is initialized properly in idle threads */
- struct pt_regs * __cpuinit idle_regs(struct pt_regs *regs)
- {
-@@ -636,18 +668,6 @@ struct pt_regs * __cpuinit idle_regs(str
- 	return regs;
- }
- 
--/* Current gdt points %fs at the "master" per-cpu area: after this,
-- * it's on the real one. */
--void switch_to_new_gdt(void)
--{
--	struct desc_ptr gdt_descr;
--
--	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
--	gdt_descr.size = GDT_SIZE - 1;
--	load_gdt(&gdt_descr);
--	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
--}
--
- /*
-  * cpu_init() initializes state that is per-CPU. Some data is already
-  * initialized (naturally) in the bootstrap process, such as the GDT
-Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/common_64.c
-@@ -103,9 +103,8 @@ void __cpuinit display_cacheinfo(struct
- 
- 	if (n >= 0x80000005) {
- 		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
--		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), "
--		       "D cache %dK (%d bytes/line)\n",
--		       edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
-+		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), D cache %dK (%d bytes/line)\n",
-+				edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
- 		c->x86_cache_size = (ecx>>24) + (edx>>24);
- 		/* On K8 L1 TLB is inclusive, so don't count it */
- 		c->x86_tlbsize = 0;
-@@ -146,8 +145,8 @@ void __cpuinit detect_ht(struct cpuinfo_
- 	} else if (smp_num_siblings > 1) {
- 
- 		if (smp_num_siblings > NR_CPUS) {
--			printk(KERN_WARNING "CPU: Unsupported number of "
--			       "siblings %d", smp_num_siblings);
-+			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
-+					smp_num_siblings);
- 			smp_num_siblings = 1;
- 			return;
- 		}
-@@ -185,7 +184,7 @@ static void __cpuinit get_cpu_vendor(str
- 		if (cpu_devs[i]) {
- 			if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
- 			    (cpu_devs[i]->c_ident[1] &&
--			    !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-+			     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
- 				c->x86_vendor = i;
- 				this_cpu = cpu_devs[i];
- 				return;
-@@ -220,39 +219,6 @@ static void __init early_cpu_support_pri
- 	}
- }
- 
--/*
-- * The NOPL instruction is supposed to exist on all CPUs with
-- * family >= 6, unfortunately, that's not true in practice because
-- * of early VIA chips and (more importantly) broken virtualizers that
-- * are not easy to detect.  Hence, probe for it based on first
-- * principles.
-- *
-- * Note: no 64-bit chip is known to lack these, but put the code here
-- * for consistency with 32 bits, and to make it utterly trivial to
-- * diagnose the problem should it ever surface.
-- */
--static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
--{
--	const u32 nopl_signature = 0x888c53b1; /* Random number */
--	u32 has_nopl = nopl_signature;
--
--	clear_cpu_cap(c, X86_FEATURE_NOPL);
--	if (c->x86 >= 6) {
--		asm volatile("\n"
--			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
--			     "2:\n"
--			     "        .section .fixup,\"ax\"\n"
--			     "3:      xor %0,%0\n"
--			     "        jmp 2b\n"
--			     "        .previous\n"
--			     _ASM_EXTABLE(1b,3b)
--			     : "+a" (has_nopl));
--
--		if (has_nopl == nopl_signature)
--			set_cpu_cap(c, X86_FEATURE_NOPL);
--	}
--}
--
- void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
- {
- 	/* Get vendor name */
-@@ -261,6 +227,7 @@ void __cpuinit cpu_detect(struct cpuinfo
- 	      (unsigned int *)&c->x86_vendor_id[8],
- 	      (unsigned int *)&c->x86_vendor_id[4]);
- 
-+	c->x86 = 4;
- 	/* Intel-defined flags: level 0x00000001 */
- 	if (c->cpuid_level >= 0x00000001) {
- 		u32 junk, tfms, cap0, misc;
-@@ -271,12 +238,9 @@ void __cpuinit cpu_detect(struct cpuinfo
- 		if (c->x86 == 0xf)
- 			c->x86 += (tfms >> 20) & 0xff;
- 		if (c->x86 >= 0x6)
--			c->x86_model += ((tfms >> 16) & 0xF) << 4;
-+			c->x86_model += ((tfms >> 16) & 0xf) << 4;
- 		if (cap0 & (1<<19))
- 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
--	} else {
--		/* Have CPUID level 0 only - unheard of */
--		c->x86 = 4;
- 	}
- }
- 
-@@ -286,9 +250,6 @@ static void __cpuinit get_cpu_cap(struct
- 	u32 tfms, xlvl;
- 	u32 ebx;
- 
--	/* Initialize the standard set of capabilities */
--	/* Note that the vendor-specific code below might override */
--
- 	/* Intel-defined flags: level 0x00000001 */
- 	if (c->cpuid_level >= 0x00000001) {
- 		u32 capability, excap;
-@@ -364,6 +325,39 @@ void __init early_cpu_init(void)
- 	early_identify_cpu(&boot_cpu_data);
- }
- 
-+/*
-+ * The NOPL instruction is supposed to exist on all CPUs with
-+ * family >= 6, unfortunately, that's not true in practice because
-+ * of early VIA chips and (more importantly) broken virtualizers that
-+ * are not easy to detect.  Hence, probe for it based on first
-+ * principles.
-+ *
-+ * Note: no 64-bit chip is known to lack these, but put the code here
-+ * for consistency with 32 bits, and to make it utterly trivial to
-+ * diagnose the problem should it ever surface.
-+ */
-+static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
-+{
-+	const u32 nopl_signature = 0x888c53b1; /* Random number */
-+	u32 has_nopl = nopl_signature;
-+
-+	clear_cpu_cap(c, X86_FEATURE_NOPL);
-+	if (c->x86 >= 6) {
-+		asm volatile("\n"
-+			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
-+			     "2:\n"
-+			     "        .section .fixup,\"ax\"\n"
-+			     "3:      xor %0,%0\n"
-+			     "        jmp 2b\n"
-+			     "        .previous\n"
-+			     _ASM_EXTABLE(1b,3b)
-+			     : "+a" (has_nopl));
-+
-+		if (has_nopl == nopl_signature)
-+			set_cpu_cap(c, X86_FEATURE_NOPL);
-+	}
-+}
-+
- static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
- {
- 	c->extended_cpuid_level = 0;
-@@ -451,7 +445,7 @@ static void __cpuinit identify_cpu(struc
- 
- }
- 
--void __cpuinit identify_boot_cpu(void)
-+void __init identify_boot_cpu(void)
- {
- 	identify_cpu(&boot_cpu_data);
- }
-@@ -463,13 +457,6 @@ void __cpuinit identify_secondary_cpu(st
- 	mtrr_ap_init();
- }
- 
--static __init int setup_noclflush(char *arg)
--{
--	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
--	return 1;
--}
--__setup("noclflush", setup_noclflush);
--
- struct msr_range {
- 	unsigned min;
- 	unsigned max;
-@@ -513,6 +500,13 @@ static __init int setup_show_msr(char *a
- }
- __setup("show_msr=", setup_show_msr);
- 
-+static __init int setup_noclflush(char *arg)
-+{
-+	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
-+	return 1;
-+}
-+__setup("noclflush", setup_noclflush);
-+
- void __cpuinit print_cpu_info(struct cpuinfo_x86 *c)
- {
- 	if (c->x86_model_id[0])
+Dave Arlie has a patch that converts the DRM_INFO to DRM_DEBUG, which sticks a 
+muffler on that.  Posted on lkml yesterday, it doesn't fix the problem but 
+does shut it up.  The actual statement that causes that I put in every kernel 
+back to 2.6.27-rc1, and they all do similar reports, so this is a long 
+standing, and apparently mostly harmless bug.  I have seen zero screen 
+corruption other than the terminals scrolling leaving trash '_' behind and 
+has been for at least a year.
+
+Thanks Jaswinder.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Winning isn't everything.  It's the only thing.
+		-- Vince Lombardi
