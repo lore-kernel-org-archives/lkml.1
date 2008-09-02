@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679AbYIBTN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbYIBTT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753679AbYIBTN7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 15:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYIBTNu
+	id S1753629AbYIBTT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 15:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYIBTTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 15:13:50 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:49697 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbYIBTNt (ORCPT
+	Tue, 2 Sep 2008 15:19:49 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:59365 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751554AbYIBTTt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 15:13:49 -0400
-Date: Tue, 02 Sep 2008 13:13:33 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-In-reply-to: <1220376569.2982.225.camel@pmac.infradead.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Message-id: <20080902191333.GL3086@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
- <1220194366-12731-13-git-send-email-dedekind@infradead.org>
- <1220262187.2982.58.camel@pmac.infradead.org>
- <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron>
- <20080902170954.GE3086@webber.adilger.int>
- <1220376569.2982.225.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 2 Sep 2008 15:19:49 -0400
+Date: Tue, 2 Sep 2008 15:19:47 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Thiago Galesi <thiagogalesi@gmail.com>
+cc: Alex Buell <alex.buell@munted.org.uk>, <linux-kernel@vger.kernel.org>,
+       Robert Hancock <hancockr@shaw.ca>, Tomas Styblo <tripie@cpan.org>,
+       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
+ 152d:2338
+In-Reply-To: <82ecf08e0809020907x102179b6ld0d372547759a143@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809021508480.5583-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 02, 2008  18:29 +0100, David Woodhouse wrote:
-> Yes, putting st_dev in f_fsid probably isn't a good thing to do.
+On Tue, 2 Sep 2008, Thiago Galesi wrote:
+
+> Ok, I've created a USBMON log, here it is here:
+> http://duskblue.org/jmicron_log_k3b.log
 > 
-> I realised that we already have the
-> f_fsid field in struct statfs, and we might as well just use that. That
-> does seem to be what it was _designed_ for, after all.
+> (I guess it is a little too big - 70k -  to be placed in the message directly)
+> 
+> Using k3b, since it seems it is the program which causes more errors.
+> DVD is completely unusable after I did this, dmesg has sr 4:0:0:0:
+> rejecting I/O to offline device
+> 
+> If I reload the drivers manually I have the reader back without
+> rebooting the machine.
 
-My bad - I had looked back in email archives about this issue and got
-the export operation solution stuck in my head...
+I can't tell exactly what's happening, but your device is sending back 
+a lot of error messages (Not Ready - Medium not present).  Maybe it 
+doesn't recognize the type of disc you have loaded.
 
-Yes, using f_fsid is the right way to do this, assuming NFSD plays along.
+Also, there appears to be some program querying the state of your
+device 7 or 8 times every two seconds.  I can't tell what that is; it 
+might be hal or it might be your k3b program.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+However what finally caused the failure was a command (0xAC) which I 
+don't recognize and apparently your drive doesn't recognize either.
+
+Alan Stern
 
