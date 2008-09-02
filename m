@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbYIBRr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbYIBR7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbYIBRr7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 13:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYIBRrt
+	id S1753315AbYIBR7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 13:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYIBR7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 13:47:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:23174 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbYIBRrs (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 13:47:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=q7y+GAPTX79Eetp4C+UBStWeXemvvmmM01M4OMPDxgtro3eoK4HnFf5ilgS3t0jzb0
-         rXVLXOsMi+o7E18wiVJU557QO5DWFN0LgAA+VK5CzppCtcxoG9DNZCTHtbwdCX74Ks2+
-         RJv+zwC5FPnsbImj3PfudZgmr9BZDMEWB/WNA=
-Message-ID: <6934efce0809021047h40127b72u5d35f457e0546635@mail.gmail.com>
-Date: Tue, 2 Sep 2008 10:47:45 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-Cc: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
-       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-In-Reply-To: <20080902171500.GC19618@logfs.org>
+	Tue, 2 Sep 2008 13:59:34 -0400
+Received: from hostap.isc.org ([149.20.54.63]:55580 "EHLO hostap.isc.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751763AbYIBR7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 13:59:34 -0400
+X-Greylist: delayed 2046 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Sep 2008 13:59:34 EDT
+Date: Tue, 2 Sep 2008 20:24:09 +0300
+From: Jouni Malinen <j@w1.fi>
+To: Dan Williams <dcbw@redhat.com>
+Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>, Zhu Yi <yi.zhu@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
+       Jan-Espen Pettersen <sigsegv@radiotube.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: new: regression iwl3945/mac80211 endless after suspend
+	associate/deassociate loop
+Message-ID: <20080902172409.GJ17345@jm.kir.nu>
+References: <20080901160658.GA11063@google.com> <1220319536.28282.128.camel@debian.sh.intel.com> <4b0be9b641de902cb7de4ad50686f6e1.squirrel@secure.sipsolutions.net> <20080902130429.GB19172@google.com> <1220362201.3176.4.camel@borkbork.foobar.com> <20080902145840.GE19172@google.com> <1220368238.8041.4.camel@borkbork.foobar.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48AD00C4.6060302@gmail.com>
-	 <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
-	 <6934efce0808220951i5a2cd6f9t70f9c522eae6f1d6@mail.gmail.com>
-	 <Pine.LNX.4.64.0808281737150.28552@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0809021725480.3986@vixen.sonytel.be>
-	 <6934efce0809020944s36dd7f82wec77c4189ef1b114@mail.gmail.com>
-	 <20080902171500.GC19618@logfs.org>
+In-Reply-To: <1220368238.8041.4.camel@borkbork.foobar.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam-Score: -3.9
+X-Spam-Bar: ---
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> How is one expected to read those last 4 bytes of a loopbacked file?
->> Are they unreadable?  We can add the padding.   I am just wondering if
->> this is a bug or a known limitation in the loopback handling or if
->> there is a different safer way of reading block devs with truncated
->> last blocks.
->
-> Can't you just include the final magic into the last block, thereby
-> making the size a clean multiple of 4k?  It looks as if you have some
-> padding before the magic anyway.  So you just have to make sure the
-> padding is at least 4 bytes and write the magic to the end of it.  Apart
-> from solving this bug, it should also save you some space. ;)
+On Tue, Sep 02, 2008 at 11:10:38AM -0400, Dan Williams wrote:
+> On Tue, 2008-09-02 at 17:58 +0300, Michael S. Tsirkin wrote:
+> > On Tue, Sep 02, 2008 at 09:30:01AM -0400, Dan Williams wrote:
+> > > On Tue, 2008-09-02 at 16:04 +0300, Michael S. Tsirkin wrote:
 
-I'm going to have to look into this n*4K thing.  The image doesn't
-need to be aligned.  There shouldn't be any last block to put the
-magic in.  But I haven't messed with the mkfs.axfs code for a while.
+> > > > On Tue, Sep 02, 2008 at 08:10:09AM +0200, Johannes Berg wrote:
+> > > > > "by local choice" means wext requested this, not a kernel bug.
+
+Well.. The disassociation part not, but what is trickering that
+(association/authentication timeout) may still be ;-).
+
+
+> > I put up a (sanitized) -dd output here
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11476
+
+Would it be possible to get unsanitized version and with -t (i.e.,
+timestamps)? If you don't want to post it publicly, feel free to send
+one directly to me. The one attached to that bug removed quite a bit of
+information that would have been useful in figuring out what happened.
+
+> Logs seem to indicate a normal failure of the 4 way handshake; are you
+> sure your PSK is correct?  It actually looks like the AP doesn't ever
+> get message #2 from your machine, and just retransmits message #1 of the
+> handshake.  I'm pretty sure that if
+> 8ab65b03b7893da4a49009e7e356e36e27b0c407 had anything to do with it, you
+> wouldn't be getting this far and the AP would have denied association in
+> the first place.
+
+There are more than one different types of issues shown in the log. I'm
+not sure which one would be the key one here. Anyway, I would agree that
+the commit that removed an empty ext. supp rates IE has nothing to do
+with this.
+
+
+As far as suspend is concerned, which distro is used here? Does it
+unload the driver (i.e., remove the netdev) on suspend? If yes, you will
+need to update wpa_supplicant 0.6.4 which handles that disappearing and
+reappearing interface. If this is something else, I would need to get
+more complete debug log from wpa_supplicant..
+
+-- 
+Jouni Malinen                                            PGP id EFC895FA
