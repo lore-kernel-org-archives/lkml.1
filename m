@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbYIBQlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYIBQob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752733AbYIBQlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 12:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIBQk5
+	id S1753227AbYIBQob (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 12:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIBQoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 12:40:57 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:7818 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYIBQk4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 12:40:56 -0400
-Message-ID: <48BD6C8E.5060704@hp.com>
-Date: Tue, 02 Sep 2008 09:40:46 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Tue, 2 Sep 2008 12:44:22 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:5548 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259AbYIBQoV (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 12:44:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=m6zc9P8JLey7W0s24SmYnvWHeyNIS6MhKXDG1dgZaa5mw4a9qD7hnLKGT8RaAtp4bp
+         tDNrF4LEL+Pmub/9oH5ODixLkCGHmOmPFucYXYaO+Eu7xwAqxM8zLG5Ay500NeqbZ2Bg
+         dqv7G7RCg7dM6lylGM9pT3hqcOmrZaE0/LdiE=
+Message-ID: <6934efce0809020944s36dd7f82wec77c4189ef1b114@mail.gmail.com>
+Date: Tue, 2 Sep 2008 09:44:19 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <Pine.LNX.4.64.0809021725480.3986@vixen.sonytel.be>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Stephen Hemminger <stephen.hemminger@vyatta.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       David Miller <davem@davemloft.net>, Dushan Tcholich <dusanc@gmail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Robert Hancock <hancockr@shaw.ca>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, bridge@lists.linux-foundation.org
-Subject: Re: [RFC] bridge: STP timer management range checking
-References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>	<48975BD3.6040709@shaw.ca>	<a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>	<20080807185802.GA16327@electric-eye.fr.zoreil.com>	<a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>	<a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>	<a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>	<a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>	<20080831100537.6929c51e@extreme> <20080831104309.780cc01f@extreme>	<20080831230247.76b5a193@lxorguk.ukuu.org.uk>	<48BB295A.6050200@vyatta.com> <20080901093827.24eec86f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080901093827.24eec86f@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <48AD00C4.6060302@gmail.com>
+	 <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
+	 <6934efce0808220951i5a2cd6f9t70f9c522eae6f1d6@mail.gmail.com>
+	 <Pine.LNX.4.64.0808281737150.28552@vixen.sonytel.be>
+	 <Pine.LNX.4.64.0809021725480.3986@vixen.sonytel.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Can one change the TCP maximum RTO to be smaller than specified in the 
-specs?
+> I found what's wrong.
+>
+> The size of an AxFS image created by mkfs.axfs is always n*4096+4 bytes large.
+> So when it wants to check the magic value in the last 4 bytes, the block layer
+> tries to read a whole 512-byte sector, which fails for loop-mounted images.
+>
+> If you test on real FLASH, additional bytes after the end of the AxFS image can
+> be read, hence it works.
+>
+> By padding the image with 508 zero bytes, I can mount it, on both PS3 (ppc64)
+> and UML (ai32). I can even read images created on PS3.
 
-rick jones
+Right.  We haven't tested loopback since we added the magic end value.
+
+How is one expected to read those last 4 bytes of a loopbacked file?
+Are they unreadable?  We can add the padding.   I am just wondering if
+this is a bug or a known limitation in the loopback handling or if
+there is a different safer way of reading block devs with truncated
+last blocks.
+
+> However, there still are weird things going on, like `find' not seeing all
+> files and directories, or just aborting, and `ls -lR' showing actual file
+> contents in its output.
+
+Do you see this behavior for all builds for just the PS3?
