@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbYIBO2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYIBO2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752327AbYIBO2F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 10:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYIBO1y
+	id S1754049AbYIBO2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 10:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753943AbYIBO2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 10:27:54 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:42880 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbYIBO1w (ORCPT
+	Tue, 2 Sep 2008 10:28:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39073 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbYIBO2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 10:27:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=dFOcotfWXafozFwRPNDu2ZLODxvv5O0x+adol7bIWIwQOXXyvaADfXpjTlf0KhFkvr
-         kUePtH3pxH8J8l4k9vDZzi/mp6T6XdkdylO4Hk2zt6VaXWN6YX20eRd93jKtsgKjXnGr
-         +u+Uozu3sguas9JGBp6I2HWtLJXLCQj5Q0ixI=
-To: Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: [PATCH 4/5 ver2] rt2x00: Compiler warning unmasked by fix of BUILD_BUG_ON
-Date: Tue, 2 Sep 2008 16:27:47 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <48BBE77D.7070007@panasas.com> <200809011834.45856.IvDoorn@gmail.com> <48BD4BB3.7040808@panasas.com>
-In-Reply-To: <48BD4BB3.7040808@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 2 Sep 2008 10:28:09 -0400
+Subject: Re: [PATCH] [2/2] Don't complain about disabled irqs when the
+	system has paniced
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: torvalds@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080902134923.9A7EF3E6A01@basil.firstfloor.org>
+References: <20080902349.573187695@firstfloor.org>
+	 <20080902134923.9A7EF3E6A01@basil.firstfloor.org>
+Content-Type: text/plain
+Date: Tue, 02 Sep 2008 16:28:03 +0200
+Message-Id: <1220365683.8609.58.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809021627.47977.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Boaz Harrosh <bharrosh@panasas.com>
-> Date: Mon, 1 Sep 2008 14:47:19 +0300
-> Subject: [PATCH] rt2x00: Compiler warning unmasked by fix of BUILD_BUG_ON
-> 
-> A "Set" to a sign-bit in an "&" operation causes a compiler warning.
-> Make calculations unsigned.
-> 
-> [ The warning was masked by the old definition of BUILD_BUG_ON() ]
-> 
-> Also remove __builtin_constant_p from FIELD_CHECK since BUILD_BUG_ON
-> no longer permits non-const values.
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> TO: Ivo van Doorn <IvDoorn@gmail.com>
-> TO: John W. Linville <linville@tuxdriver.com>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Rusty Russell <rusty@rustcorp.com.au>
+On Tue, 2008-09-02 at 15:49 +0200, Andi Kleen wrote:
+> panic calls smp_send_stop which eventually calls smp_call_function_*.
+> smp_call_function warns about disabled interrupts. But it's legal
+> to call panic in this case. When this happens panic() prints
+> several ugly backtraces. So don't check for disabled interrupts
+> in panic state.
 
-Thanks.
+While it might be legal for panic to be called from such contexts, I
+understand those warnings are there to warn of deadlocks.
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+So with the below patch you allow panic to deadlock if I understand
+things correctly.
 
-> ---
->  drivers/net/wireless/rt2x00/rt2x00reg.h |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 > 
-> diff --git a/drivers/net/wireless/rt2x00/rt2x00reg.h b/drivers/net/wireless/rt2x00/rt2x00reg.h
-> index 7e88ce5..2ea7866 100644
-> --- a/drivers/net/wireless/rt2x00/rt2x00reg.h
-> +++ b/drivers/net/wireless/rt2x00/rt2x00reg.h
-> @@ -136,7 +136,7 @@ struct rt2x00_field32 {
->   */
->  #define is_power_of_two(x)	( !((x) & ((x)-1)) )
->  #define low_bit_mask(x)		( ((x)-1) & ~(x) )
-> -#define is_valid_mask(x)	is_power_of_two(1 + (x) + low_bit_mask(x))
-> +#define is_valid_mask(x)	is_power_of_two(1LU + (x) + low_bit_mask(x))
+> Index: linux/kernel/smp.c
+> ===================================================================
+> --- linux.orig/kernel/smp.c
+> +++ linux/kernel/smp.c
+> @@ -216,7 +216,7 @@ int smp_call_function_single(int cpu, vo
+>  	int err = 0;
 >  
->  /*
->   * Macro's to find first set bit in a variable.
-> @@ -173,8 +173,7 @@ struct rt2x00_field32 {
->   * does not exceed the given typelimit.
->   */
->  #define FIELD_CHECK(__mask, __type)			\
-> -	BUILD_BUG_ON(!__builtin_constant_p(__mask) ||	\
-> -		     !(__mask) ||			\
-> +	BUILD_BUG_ON(!(__mask) ||			\
->  		     !is_valid_mask(__mask) ||		\
->  		     (__mask) != (__type)(__mask))	\
+>  	/* Can deadlock when called with interrupts disabled */
+> -	WARN_ON(irqs_disabled());
+> +	WARN_ON(system_state < SYSTEM_PANIC && irqs_disabled());
 >  
-
+>  	if (cpu == me) {
+>  		local_irq_save(flags);
+> @@ -260,7 +260,8 @@ EXPORT_SYMBOL(smp_call_function_single);
+>  void __smp_call_function_single(int cpu, struct call_single_data *data)
+>  {
+>  	/* Can deadlock when called with interrupts disabled */
+> -	WARN_ON((data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+> +	WARN_ON(system_state < SYSTEM_PANIC &&
+> +		(data->flags & CSD_FLAG_WAIT) && irqs_disabled());
+>  
+>  	generic_exec_single(cpu, data);
+>  }
+> @@ -329,7 +330,7 @@ int smp_call_function_mask(cpumask_t mas
+>  	int slowpath = 0;
+>  
+>  	/* Can deadlock when called with interrupts disabled */
+> -	WARN_ON(irqs_disabled());
+> +	WARN_ON(system_state < SYSTEM_PANIC && irqs_disabled());
+>  
+>  	cpu = smp_processor_id();
+>  	allbutself = cpu_online_map;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
