@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYIBR3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbYIBRr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYIBR3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 13:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbYIBR3g
+	id S1753315AbYIBRr7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 13:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYIBRrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 13:29:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44719 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbYIBR3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 13:29:35 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-In-Reply-To: <20080902170954.GE3086@webber.adilger.int>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-	 <1220262187.2982.58.camel@pmac.infradead.org>
-	 <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron>
-	 <20080902170954.GE3086@webber.adilger.int>
-Content-Type: text/plain
-Date: Tue, 02 Sep 2008 18:29:29 +0100
-Message-Id: <1220376569.2982.225.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 2 Sep 2008 13:47:49 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:23174 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbYIBRrs (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 13:47:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=q7y+GAPTX79Eetp4C+UBStWeXemvvmmM01M4OMPDxgtro3eoK4HnFf5ilgS3t0jzb0
+         rXVLXOsMi+o7E18wiVJU557QO5DWFN0LgAA+VK5CzppCtcxoG9DNZCTHtbwdCX74Ks2+
+         RJv+zwC5FPnsbImj3PfudZgmr9BZDMEWB/WNA=
+Message-ID: <6934efce0809021047h40127b72u5d35f457e0546635@mail.gmail.com>
+Date: Tue, 2 Sep 2008 10:47:45 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>,
+       Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+In-Reply-To: <20080902171500.GC19618@logfs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <48AD00C4.6060302@gmail.com>
+	 <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
+	 <6934efce0808220951i5a2cd6f9t70f9c522eae6f1d6@mail.gmail.com>
+	 <Pine.LNX.4.64.0808281737150.28552@vixen.sonytel.be>
+	 <Pine.LNX.4.64.0809021725480.3986@vixen.sonytel.be>
+	 <6934efce0809020944s36dd7f82wec77c4189ef1b114@mail.gmail.com>
+	 <20080902171500.GC19618@logfs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 11:09 -0600, Andreas Dilger wrote:
-> The fsid is supposed to be a persistent, unique identifier for the
-> filesystem, used by NFS in file handles.  Using st_dev is unsafe,
-> because that may change from one server boot to the next, because
-> of device probing order, driver changes, etc.  Also, not all
-> filesystems
-> HAVE a valid st_dev in the first place, which is the whole reason
-> for this thread.
+>> How is one expected to read those last 4 bytes of a loopbacked file?
+>> Are they unreadable?  We can add the padding.   I am just wondering if
+>> this is a bug or a known limitation in the loopback handling or if
+>> there is a different safer way of reading block devs with truncated
+>> last blocks.
+>
+> Can't you just include the final magic into the last block, thereby
+> making the size a clean multiple of 4k?  It looks as if you have some
+> padding before the magic anyway.  So you just have to make sure the
+> padding is at least 4 bytes and write the magic to the end of it.  Apart
+> from solving this bug, it should also save you some space. ;)
 
-Yes, putting st_dev in f_fsid probably isn't a good thing to do.
-
-> I think a ->get_fsid() export method would be preferable.
-
-I implemented that, but it doesn't really work. The fsid->export mapping
-happens in userspace, so mountd needs access to the fsid. So the mount
-would work fine and return a FH with the appropriate fsid, and then
-mountd would have no knowledge of how to handle that FH, and mount(8) on
-the client would eventually time out and fail.
-
-It worked if I prepopulated the nfsd.fh cache in expkey_parse() so we
-didn't end up asking userspace to resolve that FH for us -- but that was
-just a quick hack. It wouldn't have worked after a server reboot, for
-example -- we'd have asked userspace again.
-
-We'd need to export that fsid to userspace somehow. I did briefly think
-about adding something like ',uuid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' to
-each line in /proc/mounts, as if it was a file system option -- but I
-don't like that much.
-
-When looking for other options, I realised that we already have the
-f_fsid field in struct statfs, and we might as well just use that. That
-does seem to be what it was _designed_ for, after all.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+I'm going to have to look into this n*4K thing.  The image doesn't
+need to be aligned.  There shouldn't be any last block to put the
+magic in.  But I haven't messed with the mkfs.axfs code for a while.
