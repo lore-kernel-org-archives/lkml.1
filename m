@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbYIBJfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYIBJgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752619AbYIBJfE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 05:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYIBJey
+	id S1753047AbYIBJgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 05:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYIBJgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 05:34:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:20925 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbYIBJew (ORCPT
+	Tue, 2 Sep 2008 05:36:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48087 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750894AbYIBJgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 05:34:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding:sender;
-        b=E+ldwjtW3PQKiaP7k0v/zIBXtYDXdPacv4Fqubyl/qDKDaiNdBt8UcQCss/6Pzxoky
-         KT26OXDvTIYk+A6DW3DZ+Uzgzufc/ALcoKKt7OOWKN5xugCrhetnDcftm8+dJqEFHkRq
-         Yffk/qMoUcxOQUWJnqYhiM53ePdZMbJBlyLVk=
-Message-ID: <48BD08B6.4040707@tuffmail.co.uk>
-Date: Tue, 02 Sep 2008 10:34:46 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Jan Knutar <jknutar@nic.fi>
-CC: jamagallon@ono.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Finding what is stuck...
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Tue, 2 Sep 2008 05:36:08 -0400
+Date: Tue, 2 Sep 2008 10:17:49 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+Message-ID: <20080902101749.3056197a@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+References: <48BB2116.1060904@lwfinger.net>
+	<alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de>
+	<48BC2A03.9000104@lwfinger.net>
+	<alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de>
+	<alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
+	<alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de>
+	<alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org>
+	<alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de>
+	<alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
+	<alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Knutar wrote:
+> On the machine you have trouble with the PIT on, does this thing trigger?
+> 
+> If it does, that could be a simple way to say whether you prefer PM_TIMER 
+> over PIT.
 
-> On Tuesday 02 September 2008, J.A. Magallón wrote:
->
->> I'm running 2.6.27-rc5-git2 on an Aspire One.
->> The system is in general pretty responsive, but sometimes it just
->> gets totally stuck. Even the mouse stops.
->>
->> It looks related to disk (SSD) access, but I'm not totally sure.
->
-> Are you hitting swap at all? Does it have swap?
->
-> On my N810 tablet there can be a huge slowdown if it starts swapping.
-> The first time it dips into swap is relatively painless when stuff gets
-> written out sequentially, but after that when writes are mostly random
-> the throughput drops to a few kilobytes per second, causing massive
-> slowdown... The MMC/SD cards hate random write, and I expect SSDs are
-> no better.
->
-> iostat -x -k 10
-> in a terminal is useful. Check the iowait and util% numbers after/during
-> slowdown...
+You'll get funny answers on the Geode doing that. It will also randomly
+mistrigger on some laptops - they don't use SMI for PIC but their power
+handling SMIs will trigger that randomly.
 
-My experience on the EeePC is similar.  I didn't look into it much but I
-think it helped a lot switching to the "noop" ioscheduler
-
-(echo noop > /sys/block/sda/queue/scheduler)
-
-as opposed to the default CFQ, if you haven't already done so.
+PMTimer may also be an SMI too btw.
 
 Alan
