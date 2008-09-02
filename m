@@ -1,62 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbYIBH0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYIBHfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753633AbYIBH0z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 03:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYIBH0r
+	id S1753743AbYIBHfs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 03:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYIBHfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 03:26:47 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48188 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbYIBH0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 03:26:46 -0400
-Date: Tue, 2 Sep 2008 09:26:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Osterlund <petero2@telia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Cox <alan@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       viro@zeniv.linux.org.uk
-Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
-Message-ID: <20080902072642.GX20055@kernel.dk>
-References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org> <m3k5e2qkk2.fsf@telia.com> <alpine.LFD.1.10.0808271335260.3363@nehalem.linux-foundation.org> <20080828135245.GA12410@infradead.org>
+	Tue, 2 Sep 2008 03:35:39 -0400
+Received: from ag-out-0708.google.com ([72.14.246.246]:57140 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541AbYIBHfi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 03:35:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=kXe6U2boDOvmxlNSYohlZxtWubxM3/cyhUpDqjkGuazakPrHe7/0/KuXZzoso2WO7j
+         O0BvGUahSPBR4Oti9SzzU1/x32KpX/cd1Mlb66JHMGeGUZ5k+owUjlEmnG7XHTDPPnJk
+         vQBgOInbmnlFuNT8UCkM2aY64L4wBVekG7xbk=
+Message-ID: <2a27d3730809020035o52d1feepcde60516c607dac6@mail.gmail.com>
+Date: Tue, 2 Sep 2008 15:35:36 +0800
+From: "Li Yang" <leoli@freescale.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] usb: add Freescale QE/CPM USB peripheral controller driver
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080901171106.GA13447@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080828135245.GA12410@infradead.org>
+References: <1219916613-28827-1-git-send-email-leoli@freescale.com>
+	 <20080901171106.GA13447@oksana.dev.rtsoft.ru>
+X-Google-Sender-Auth: 6f3ab48d2c57f6e1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 28 2008, Christoph Hellwig wrote:
-> On Wed, Aug 27, 2008 at 01:40:10PM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Wed, 27 Aug 2008, Peter Osterlund wrote:
-> > > 
-> > > Why not just revert the offending change and try again during the next
-> > > merge window, assuming someone has figured out an acceptable way to
-> > > handle this mess by then?
-> > 
-> > Well,, for 2.6.27 that's what we'll have to do. But there's actually a 
-> > real problem here - the unlocked ioctl's (which we _should_ prefer) have a 
-> > strictly weaker and worse interface. I also wonder if any other 
-> > block_ioctl users were converted..
-> 
-> Actually both interfaces are a fscking disaster.  The right things to
-> pass is neither and inode nor a file but a struct block_device.  Al had
-> all this work done a while and it just needs rebasing to a current tree:
-> 
-> 	http://git.kernel.org/?p=linux/kernel/git/viro/bdev.git;a=summary
+On Tue, Sep 2, 2008 at 1:11 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Thu, Aug 28, 2008 at 05:43:33PM +0800, Li Yang wrote:
+>> Some of Freescale SoC chips have a QE or CPM co-processor which
+>> supports full speed USB.  The driver adds device mode support
+>> of both QE and CPM USB controller to Linux USB gadget.  The
+>> driver is tested with MPC8360 and MPC8272, and should work with
+>> other models having QE/CPM given minor tweaks.
+>>
+>> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> This is the second submission of the driver.  This version addressed:
+>> Comments from Anton Vorontsov.
+>> A lot of cosmetic problem.
+>> Sparse and various kernel DEBUG warnings.
+>
+> Just caught this:
+>
+> g_ether gadget: high speed config #1: CDC Ethernet (ECM)
+> BUG: sleeping function called from invalid context at mm/page_alloc.c:1450
+> in_atomic():1, irqs_disabled():1
+> Call Trace:
+> [c03a9c30] [c0008a90] show_stack+0x4c/0x16c (unreliable)
+> [c03a9c70] [c002cd28] __might_sleep+0xe4/0x114
+> [c03a9c80] [c006e550] __alloc_pages_internal+0x328/0x42c
+> [c03a9d00] [c006e67c] __get_free_pages+0x28/0x68
+> [c03a9d10] [c0090efc] __kmalloc+0xc0/0xe4
+> [c03a9d30] [c01d8efc] qe_ep_rxbd_update+0x98/0x1e0
+> [c03a9d50] [c01d90f0] qe_ep_init+0xac/0x37c
+> [c03a9d70] [c01d9458] qe_ep_enable+0x98/0xb8
+> [c03a9d80] [c01db268] gether_connect+0xa0/0x178
+> [c03a9da0] [c01dbba8] ecm_set_alt+0x108/0x12c
+> [c03a9db0] [c01dc988] composite_setup+0x2ec/0x3a8
+> [c03a9de0] [c01d8bec] setup_received_handle+0x1e4/0x26c
+> [c03a9e00] [c01d8ce0] ep0_setup_handle+0x6c/0x74
+> [c03a9e10] [c01d8e54] qe_ep0_rx+0x16c/0x17c
+> [c03a9e30] [c01d9db8] rx_irq+0x88/0xc0
+> [c03a9e40] [c01da32c] qe_udc_irq+0x10c/0x134
+> [c03a9e60] [c00631f4] handle_IRQ_event+0x5c/0xb0
+> [c03a9e80] [c006526c] handle_level_irq+0xa8/0x144
+> [c03a9ea0] [c002a5d0] qe_ic_cascade_low_ipic+0x58/0x70
+> [c03a9eb0] [c0006820] do_IRQ+0xa4/0xc8
+> [c03a9ec0] [c0013e14] ret_from_except+0x0/0x14
+> --- Exception: 501 at cpu_idle+0xa0/0x104
+>    LR = cpu_idle+0xa0/0x104
+> [c03a9f80] [c0009d88] cpu_idle+0x50/0x104 (unreliable)
+> [c03a9fa0] [c029307c] _etext+0x7c/0x90
+> [c03a9fc0] [c035491c] start_kernel+0x1ac/0x230
+> [c03a9ff0] [00003438] 0x3438
+>
+> The workaround is obvious (below), but should we really allocate
+> things in interrupts? Can we just allocate everything in probe()
+> and free in remove()?
 
-Completely agreed. Al, I remember talking to you about this at the
-storage summit back in february. What are your current plans wrt moving
-this forward?
+It's possible but wasteful.  We don't know which ep will be used and
+what's the buffer size needed at probe time.
 
--- 
-Jens Axboe
+>
+>
+> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+> index c1a0beb..c54863b 100644
+> --- a/drivers/usb/gadget/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/fsl_qe_udc.c
+> @@ -433,7 +433,7 @@ static int qe_ep_rxbd_update(struct qe_ep *ep)
+>
+>        bd = ep->rxbase;
+>
+> -       ep->rxframe = kmalloc(sizeof(*ep->rxframe), GFP_KERNEL);
+> +       ep->rxframe = kmalloc(sizeof(*ep->rxframe), GFP_ATOMIC);
+>        if (ep->rxframe == NULL) {
+>                dev_err(ep->udc->dev, "malloc rxframe failed\n");
+>                return -ENOMEM;
+> @@ -447,7 +447,7 @@ static int qe_ep_rxbd_update(struct qe_ep *ep)
+>                bdring_len = USB_BDRING_LEN;
+>
+>        size = (ep->ep.maxpacket + USB_CRC_SIZE + 2) * (bdring_len + 1);
+> -       ep->rxbuffer = kzalloc(size, GFP_KERNEL);
+> +       ep->rxbuffer = kzalloc(size, GFP_ATOMIC);
+>        if (ep->rxbuffer == NULL) {
+>                dev_err(ep->udc->dev, "malloc rxbuffer failed,size=%d\n",
+>                                size);
+> @@ -680,7 +680,7 @@ static int qe_ep_init(struct qe_udc *udc,
+>        }
+>
+>        if ((ep->tm == USBP_TM_CTL) || (ep->dir == USB_DIR_IN)) {
+> -               ep->txframe = kmalloc(sizeof(*ep->txframe), GFP_KERNEL);
+> +               ep->txframe = kmalloc(sizeof(*ep->txframe), GFP_ATOMIC);
+>                if (ep->txframe == NULL) {
+>                        dev_err(udc->dev, "malloc txframe failed\n");
+>                        goto en_done;
+> @@ -1930,7 +1930,9 @@ static int reset_queues(struct qe_udc *udc)
+>                udc_reset_ep_queue(udc, pipe);
+>
+>        /* report disconnect; the driver is already quiesced */
+> +       spin_unlock(&udc->lock);
+>        udc->driver->disconnect(&udc->gadget);
+> +       spin_lock(&udc->lock);
 
+Good catch.
+
+>
+>        return 0;
+>  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
