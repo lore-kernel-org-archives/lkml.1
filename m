@@ -1,164 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbYIBLGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751835AbYIBLIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbYIBLGl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 07:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbYIBLGd
+	id S1751835AbYIBLIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 07:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYIBLI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 07:06:33 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:15604 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbYIBLGc (ORCPT
+	Tue, 2 Sep 2008 07:08:27 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52676 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751178AbYIBLI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 07:06:32 -0400
-Date: Tue, 2 Sep 2008 14:06:52 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Richard Henderson <rth@twiddle.net>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [RFC] Allow recursion in binfmt_script and binfmt_misc
-Message-ID: <20080902110648.GA5027@localhost.localdomain>
+	Tue, 2 Sep 2008 07:08:26 -0400
+Date: Tue, 2 Sep 2008 12:04:39 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the
+	task struct
+Message-ID: <20080902100439.GA11383@elf.ucw.cz>
+References: <20080901160343.75a89ec9@infradead.org> <20080901161423.59ebf2fc@infradead.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-29)
+In-Reply-To: <20080901161423.59ebf2fc@infradead.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: [PATCH] hrtimer: create a "timer_slack" field in the task struct
+> 
+> We want to be able to control the default "rounding" that is used by
+> select() and poll() and friends. This is a per process property
+> (so that we can have a "nice" like program to start certain programs with
+> a looser or stricter rounding) that can be set/get via a prctl().
+> 
+> For this purpose, a field called "timer_slack_ns" is added to the task
+> struct. In addition, a field called "default_timer_slack"ns" is added
+> so that tasks easily can temporarily to a more/less accurate slack and then
+> back to the default.
 
-binfmt_script and binfmt_misc disallow recursion to avoid stack overflow
-using sh_bang and misc_bang. It causes problem in some cases:
+Is this a good idea? IMO it should be per-syscall, not per
+application. Threads would certainly like private values... and this
+makes really ugly interface.
 
-$ echo '#!/bin/ls' > /tmp/t0
-$ echo '#!/tmp/t0' > /tmp/t1
-$ echo '#!/tmp/t1' > /tmp/t2
-$ chmod +x /tmp/t*
-$ /tmp/t2
-zsh: exec format error: /tmp/t2
+...plus it bloats task struct.
 
-Similar problem with binfmt_misc.=20
+...where did the sys_indirect proposals go? We created new syscalls,
+right?
 
-I propose allow recursion, but limit its deep.
+IMO we should create new syscalls here, too.
 
-There is one more problem: on Alpha sh_bang used to remember if the=20
-application is TASO. I have no experience with Alpha. Is it possible to
-use separate flag in struct linux_binprm for it?
+								Pavel
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  include/linux/init_task.h |    1 +
+>  include/linux/prctl.h     |    7 +++++++
+>  include/linux/sched.h     |    6 ++++++
+>  kernel/fork.c             |    2 ++
+>  kernel/sys.c              |   10 ++++++++++
+>  5 files changed, 26 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+> index 021d8e7..23fd890 100644
+> --- a/include/linux/init_task.h
+> +++ b/include/linux/init_task.h
+> @@ -170,6 +170,7 @@ extern struct group_info init_groups;
+>  	.cpu_timers	= INIT_CPU_TIMERS(tsk.cpu_timers),		\
+>  	.fs_excl	= ATOMIC_INIT(0),				\
+>  	.pi_lock	= __SPIN_LOCK_UNLOCKED(tsk.pi_lock),		\
+> +	.timer_slack_ns = 50000, /* 50 usec default slack */		\
+>  	.pids = {							\
+>  		[PIDTYPE_PID]  = INIT_PID_LINK(PIDTYPE_PID),		\
+>  		[PIDTYPE_PGID] = INIT_PID_LINK(PIDTYPE_PGID),		\
+> diff --git a/include/linux/prctl.h b/include/linux/prctl.h
+> index 5ad7919..48d887e 100644
+> --- a/include/linux/prctl.h
+> +++ b/include/linux/prctl.h
+> @@ -78,4 +78,11 @@
+>  #define PR_GET_SECUREBITS 27
+>  #define PR_SET_SECUREBITS 28
+>  
+> +/*
+> + * Get/set the timerslack as used by poll/select/nanosleep
+> + * A value of 0 means "use default"
+> + */
+> +#define PR_SET_TIMERSLACK 29
+> +#define PR_GET_TIMERSLACK 30
+> +
+>  #endif /* _LINUX_PRCTL_H */
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index cfb0d87..f357780 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1301,6 +1301,12 @@ struct task_struct {
+>  	int latency_record_count;
+>  	struct latency_record latency_record[LT_SAVECOUNT];
+>  #endif
+> +	/*
+> +	 * time slack values; these are used to round up poll() and
+> +	 * select() etc timeout values. These are in nanoseconds.
+> +	 */
+> +	unsigned long timer_slack_ns;
+> +	unsigned long default_timer_slack_ns;
+>  };
+>  
+>  /*
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 7ce2ebe..4308d75 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -987,6 +987,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  	p->prev_utime = cputime_zero;
+>  	p->prev_stime = cputime_zero;
+>  
+> +	p->default_timer_slack_ns = current->timer_slack_ns;
+> +
+>  #ifdef CONFIG_DETECT_SOFTLOCKUP
+>  	p->last_switch_count = 0;
+>  	p->last_switch_timestamp = 0;
+> diff --git a/kernel/sys.c b/kernel/sys.c
+> index 038a7bc..1b96401 100644
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -1727,6 +1727,16 @@ asmlinkage long sys_prctl(int option, unsigned long arg2, unsigned long arg3,
+>  		case PR_SET_TSC:
+>  			error = SET_TSC_CTL(arg2);
+>  			break;
+> +		case PR_GET_TIMERSLACK:
+> +			error = current->timer_slack_ns;
+> +			break;
+> +		case PR_SET_TIMERSLACK:
+> +			if (arg2 <= 0)
+> +				current->timer_slack_ns =
+> +					current->default_timer_slack_ns;
+> +			else
+> +				current->timer_slack_ns = arg2;
+> +			break;
+>  		default:
+>  			error = -EINVAL;
+>  			break;
 
-diff --git a/fs/binfmt_em86.c b/fs/binfmt_em86.c
-index f9c88d0..f95ae97 100644
---- a/fs/binfmt_em86.c
-+++ b/fs/binfmt_em86.c
-@@ -43,7 +43,7 @@ static int load_em86(struct linux_binprm *bprm,struct pt_=
-regs *regs)
- 			return -ENOEXEC;
- 	}
-=20
--	bprm->sh_bang =3D 1;	/* Well, the bang-shell is implicit... */
-+	bprm->sh_bang++;	/* Well, the bang-shell is implicit... */
- 	allow_write_access(bprm->file);
- 	fput(bprm->file);
- 	bprm->file =3D NULL;
-diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
-index 8d7e88e..50c665f 100644
---- a/fs/binfmt_misc.c
-+++ b/fs/binfmt_misc.c
-@@ -43,6 +43,8 @@ enum {Enabled, Magic};
- #define MISC_FMT_OPEN_BINARY (1<<30)
- #define MISC_FMT_CREDENTIALS (1<<29)
-=20
-+#define MISC_FMT_MAX_RECURSION 4
-+
- typedef struct {
- 	struct list_head list;
- 	unsigned long flags;		/* type, status, etc. */
-@@ -117,7 +119,7 @@ static int load_misc_binary(struct linux_binprm *bprm, =
-struct pt_regs *regs)
- 		goto _ret;
-=20
- 	retval =3D -ENOEXEC;
--	if (bprm->misc_bang)
-+	if (bprm->misc_bang >=3D MISC_FMT_MAX_RECURSION)
- 		goto _ret;
-=20
- 	/* to keep locking time low, we copy the interpreter string */
-@@ -197,7 +199,7 @@ static int load_misc_binary(struct linux_binprm *bprm, =
-struct pt_regs *regs)
- 	if (retval < 0)
- 		goto _error;
-=20
--	bprm->misc_bang =3D 1;
-+	bprm->misc_bang++;
-=20
- 	retval =3D search_binary_handler (bprm, regs);
- 	if (retval < 0)
-diff --git a/fs/binfmt_script.c b/fs/binfmt_script.c
-index 9e3963f..172c954 100644
---- a/fs/binfmt_script.c
-+++ b/fs/binfmt_script.c
-@@ -15,6 +15,8 @@
- #include <linux/err.h>
- #include <linux/fs.h>
-=20
-+#define SCRIPT_FMT_MAX_RECURSION 4
-+
- static int load_script(struct linux_binprm *bprm,struct pt_regs *regs)
- {
- 	char *cp, *i_name, *i_arg;
-@@ -22,14 +24,15 @@ static int load_script(struct linux_binprm *bprm,struct=
- pt_regs *regs)
- 	char interp[BINPRM_BUF_SIZE];
- 	int retval;
-=20
--	if ((bprm->buf[0] !=3D '#') || (bprm->buf[1] !=3D '!') || (bprm->sh_bang)=
-)=20
-+	if ((bprm->buf[0] !=3D '#') || (bprm->buf[1] !=3D '!') ||
-+	    (bprm->sh_bang >=3D SCRIPT_FMT_MAX_RECURSION))
- 		return -ENOEXEC;
- 	/*
- 	 * This section does the #! interpretation.
- 	 * Sorta complicated, but hopefully it will work.  -TYT
- 	 */
-=20
--	bprm->sh_bang =3D 1;
-+	bprm->sh_bang++;
- 	allow_write_access(bprm->file);
- 	fput(bprm->file);
- 	bprm->file =3D NULL;
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 826f623..1e21ff0 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -34,8 +34,8 @@ struct linux_binprm{
- #endif
- 	struct mm_struct *mm;
- 	unsigned long p; /* current top of mem */
--	unsigned int sh_bang:1,
--		     misc_bang:1;
-+	unsigned char sh_bang;
-+	unsigned char misc_bang;
- 	struct file * file;
- 	int e_uid, e_gid;
- 	kernel_cap_t cap_post_exec_permitted;
-
---a8Wt8u1KmwUX3Y2C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAki9HkgACgkQbWYnhzC5v6pcOwCfbWJchM7L5Ds7DybEpe2U6C1W
-j3UAmwSbgBviyiEGSZKqdjaaCuGoiwqw
-=sA+S
------END PGP SIGNATURE-----
-
---a8Wt8u1KmwUX3Y2C--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
