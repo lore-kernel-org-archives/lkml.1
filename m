@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYIBFqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYIBGLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbYIBFqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 01:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYIBFqW
+	id S1753526AbYIBGLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 02:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYIBGK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 01:46:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44875 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbYIBFqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 01:46:22 -0400
-Message-ID: <48BCD2DD.3040209@kernel.org>
-Date: Tue, 02 Sep 2008 07:45:01 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 2 Sep 2008 02:10:58 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:33267 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbYIBGK5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 02:10:57 -0400
+Message-ID: <4b0be9b641de902cb7de4ad50686f6e1.squirrel@secure.sipsolutions.net>
+In-Reply-To: <1220319536.28282.128.camel@debian.sh.intel.com>
+References: <20080901160658.GA11063@google.com>
+    <1220319536.28282.128.camel@debian.sh.intel.com>
+Date: Tue, 2 Sep 2008 08:10:09 +0200 (CEST)
+Subject: Re: new: regression iwl3945/mac80211 endless after suspend 
+     associate/deassociate loop
+From: "Johannes Berg" <johannes@sipsolutions.net>
+To: "Zhu Yi" <yi.zhu@intel.com>
+Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "LKML" <linux-kernel@vger.kernel.org>, reinette.chatre@intel.com,
+       linux-wireless@vger.kernel.org,
+       "Jan-Espen Pettersen" <sigsegv@radiotube.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
-References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <20080830205143.GA9726@anita> <48BBCF98.4070003@kernel.org> <20080901174657.GA2114@anita> <48BCC28E.5030009@kernel.org> <20080902054322.GA7154@anita>
-In-Reply-To: <20080902054322.GA7154@anita>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Sep 2008 05:46:21 +0000 (UTC)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-sips-origin: local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Konstantin Kletschke wrote:
-> Am 2008-09-02 06:35 +0200 schrieb Tejun Heo:
-> 
->>> Seems this stuff is kinda new since 2.6.25?
->> I think it's more circa 2.6.22 but in my memory terms, which sucks,
->> that's a lifetime before so I don't really remember.  :-)
-> 
-> Okay :-)
-> 
->> Hmm... someone is scheduling EH incessantly without any error or action
->> set.  Can you please try the attached patch?
-> 
-> I did and put here all dmesg gave me. Do you want to get the whole stuff
-> from the beginning? /var/log/messages has ist, but it is 416k, I put it
-> on a ftp server somewhere out there then. Or is something else
-> recommended?
+Zhu Yi wrote:
+> On Mon, 2008-09-01 at 19:07 +0300, Michael S. Tsirkin wrote:
+>> [16482.909453] eth1: associate with AP XX:XX:XX:XX:XX:XX
+>> [16482.918553] eth1: RX ReassocResp from XX:XX:XX:XX:XX:XX
+>> (capab=0x411 status=0 aid=1)
+>> [16482.918564] eth1: associated
+>> [16492.920224] eth1: disassociating by local choice (reason=3)
+>> [16492.920986] eth1: disassociating by local choice (reason=3)
+>
+> It is exactly 10 seconds the local STA sends the deauth_leaving frame
+> before associated everytime. I wonder if it is the timeout for some
+> wireless config tools. NM?
 
-The excerpt is fine but please turn on CONFIG_KALLSYMS.  The stack dump
-is pretty much meaningless without it.
+"by local choice" means wext requested this, not a kernel bug.
 
-Thanks.
+johannes
 
--- 
-tejun
