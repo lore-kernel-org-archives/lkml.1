@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752399AbYIBMkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbYIBMn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752399AbYIBMkB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 08:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYIBMjw
+	id S1752144AbYIBMn2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 08:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYIBMnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 08:39:52 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:54724 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbYIBMjw (ORCPT
+	Tue, 2 Sep 2008 08:43:21 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:45301 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751121AbYIBMnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 08:39:52 -0400
-Message-ID: <48BD337E.40001@linux.vnet.ibm.com>
-Date: Tue, 02 Sep 2008 18:07:18 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
+	Tue, 2 Sep 2008 08:43:20 -0400
+X-Sasl-enc: +ZEYf0MBWzi+k7Ed0oUpp019miTowflMoDVFi1Ubm7nW 1220359398
+Date: Tue, 2 Sep 2008 09:43:13 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Daniel Barkalow <barkalow@iabervon.org>, linux-kernel@vger.kernel.org,
+       Christopher Desjardins <cddesjardins@gmail.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: Lenovo 3000 N100 i8042 problems
+Message-ID: <20080902124313.GA24358@khazad-dum.debian.net>
+References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
-References: <20080831174756.GA25790@balbir.in.ibm.com> <200809011656.45190.nickpiggin@yahoo.com.au> <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com> <200809011743.42658.nickpiggin@yahoo.com.au> <48BD0641.4040705@linux.vnet.ibm.com> <20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com> <48BD0E4A.5040502@linux.vnet.ibm.com> <20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com> <48BD119B.8020605@linux.vnet.ibm.com> <20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Tue, 02 Sep 2008 15:42:43 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>>>> Kamezawa-San, I would like to integrate the radix tree patches after review and
->>>>>> some more testing then integrate your patchset on top of it. Do you have any
->>>>>> objections/concerns with the suggested approach?
->>>>>>
->>>>> please show performance number first.
->>>> Yes, that is why said some more testing. I am running lmbench and kernbench on
->>>> it and some other tests, I'll get back with numbers.
->>>>
->>> A test which is not suffer much from I/O is better.
->>> And please don't worry about my patches. I'll reschedule if yours goes first.
->>>
->> Thanks, I'll try and find the right set of tests.
-> 
-> Maybe it's good time to share my concerns.
-> 
-> IMHO, the memory resource controller is for dividing memory into groups.
-> 
-> We have following choices to divide memory into groups, now.
->   - cpuset(+ fake NUMA)
->   - VM (kvm, Xen, etc...)
->   - memory resource controller. (memcg)
-> 
-> Considering 3 aspects peformance, flexibility, isolation(security).
-> My expectaion is
-> 
-> peroformance   : cpuset > memcg >> VMs
-> flexibility    : memcg  > VMs >> cpuset.
-> isolation      : VMs >> cpuset >= memcg
-> 
-> The word 'flexibility' sounds sweet *but* it's just one of aspects.
-> If the peformance is cpuset > VMs > memcg, I'll advise users to use VMs.
-> 
-> I think VMs are getting faster and faster. memcg will be slower when we add new
-> 'fancy' feature more. (I think we need some more features.)
-> So, I want to keep memcg fast as much as possible at this stage.
-> 
-> But yes, memory usage overhead of page->page_cgroup, struct page_cgroup is big
-> on 32bit arch. I'll say users to use VMs, maybe ;)
+On Tue, 02 Sep 2008, Jiri Kosina wrote:
+> so the product name both of System and Base Board are different, and 
+> apparently the systems differ. Dmitry, what fields would you propose to be 
+> put in the DMI matching here? I will do the patch then.
 
-I understand your concern and I am not trying to reduce memcg's performance - or
-add a fancy feature. I am trying to make memcg more friendly for distros. I see
-your point about the overhead. I just got back my results - I see a 4% overhead
-with the patches. Let me see if I can rework them for better performance.
+Are you sure you shouldn't be looking at BIOS version, instead? I don't know
+how the Lenovo N100 series is, but chances are their i8042 is emulated
+inside the ACPI EC, i.e. a firmware upgrade can change the i8042 behaviour.
 
+I'd check BIOS versions, and ask people to upgrade to the latest, to see if
+the problem goes away (or changes).  Then you will know for sure the best
+approach.
 
 -- 
-	Balbir
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
