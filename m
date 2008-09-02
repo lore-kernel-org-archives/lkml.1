@@ -1,188 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbYIBXL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYIBXUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755010AbYIBXL1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 19:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYIBXLT
+	id S1754618AbYIBXUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 19:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYIBXU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 19:11:19 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:38270 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbYIBXLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 19:11:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Z8+w8QaTPCFcp02F65fgsYDzaHXX5tbGIwvqV14f3qF88CfDnsDdx7RT5sq4G8gySz
-         +sOSjp9+3tha+/3XMHCHn+7VJi8P58xlrVD+cC/S1TnjSBE8IHRSBzCTfMNYak/D8woH
-         c1kofL3Y1Xo2hZHdBM5oGtPTIK+mog2TLML/k=
-Subject: [BUILDFIX] byteorder: remove direct byteorder includes
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, v4l <video4linux-list@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>
-In-Reply-To: <200809022142.04578.hverkuil@xs4all.nl>
-References: <1218324197.24441.20.camel@brick>
-	 <1220380552.2137.3.camel@brick> <1220381401.2137.6.camel@brick>
-	 <200809022142.04578.hverkuil@xs4all.nl>
-Content-Type: text/plain
-Date: Tue, 02 Sep 2008 16:11:15 -0700
-Message-Id: <1220397075.2137.13.camel@brick>
+	Tue, 2 Sep 2008 19:20:28 -0400
+Received: from mga02.intel.com ([134.134.136.20]:51672 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751764AbYIBXU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 19:20:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
+   d="scan'208";a="434893656"
+Date: Tue, 2 Sep 2008 16:20:15 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, shaohua.li@intel.com
+Subject: [PATCH] Prevent clockevent event_handler ending up handler_noop
+Message-ID: <20080902232015.GA3180@linux-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All of the functionality has been collected in linux/swab.h
 
-Needed to prevent build breakage as arches start moving over
-to the new byteorder implementation. Ensure that each implementation
-offers all byte-swapping methods to avoid build breakage when only
-some arches are converted.
+There is a ordering related problem with clockevents code, due to which
+clockevents_register_device() called after tickless/highres switch
+will not work. The new clockevent ends up with clockevents_handle_noop as
+event handler, resulting in no timer activity.
 
-Acked-by: Hans Verkuil <hverkuil@xs4all.nl>
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+The problematic path seems to be
+
+* old device already has hrtimer_interrupt as the event_handler
+* new clockevent device registers with a higher rating
+* tick_check_new_device() is called
+  * clockevents_exchange_device() gets called
+    * old->event_handler is set to clockevents_handle_noop
+  * tick_setup_device() is called for the new device
+    * which sets new->event_handler using the old->event_handler which is noop.
+
+Change the ordering so that new device inherits the proper handler.
+
+This does not have any issue in normal case as most likely all the clockevent
+devices are setup before the highres switch. But, can potentially be affecting
+some corner case where HPET force detect happens after the highres switch.
+This was a problem with HPET in MSI mode code that we have been experimenting
+with.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+
 ---
-Tested on a converted(ARM) and an unconverted(x86) arch.
+ include/linux/clockchips.h |    2 ++
+ kernel/time/clockevents.c  |    3 +--
+ kernel/time/tick-common.c  |    1 +
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
- drivers/media/dvb/ttpci/av7110.c        |    2 +-
- drivers/media/video/cx18/cx18-driver.h  |    2 +-
- drivers/media/video/ivtv/ivtv-driver.h  |    2 +-
- drivers/media/video/vpx3220.c           |    3 +--
- include/linux/byteorder/big_endian.h    |    1 +
- include/linux/byteorder/little_endian.h |    1 +
- kernel/rcupreempt.c                     |    2 +-
- tests/rcutorture.c                      |    2 +-
- 8 files changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
-index c0a1746..deb3829 100644
---- a/drivers/media/dvb/ttpci/av7110.c
-+++ b/drivers/media/dvb/ttpci/av7110.c
-@@ -36,7 +36,6 @@
- #include <linux/fs.h>
- #include <linux/timer.h>
- #include <linux/poll.h>
--#include <linux/byteorder/swabb.h>
- #include <linux/smp_lock.h>
- 
- #include <linux/kernel.h>
-@@ -52,6 +51,7 @@
- #include <linux/i2c.h>
- #include <linux/kthread.h>
- #include <asm/unaligned.h>
-+#include <asm/byteorder.h>
- 
- #include <asm/system.h>
- 
-diff --git a/drivers/media/video/cx18/cx18-driver.h b/drivers/media/video/cx18/cx18-driver.h
-index 2635989..bd94d77 100644
---- a/drivers/media/video/cx18/cx18-driver.h
-+++ b/drivers/media/video/cx18/cx18-driver.h
-@@ -38,10 +38,10 @@
- #include <linux/i2c-algo-bit.h>
- #include <linux/list.h>
- #include <linux/unistd.h>
--#include <linux/byteorder/swab.h>
- #include <linux/pagemap.h>
- #include <linux/workqueue.h>
- #include <linux/mutex.h>
-+#include <asm/byteorder.h>
- 
- #include <linux/dvb/video.h>
- #include <linux/dvb/audio.h>
-diff --git a/drivers/media/video/ivtv/ivtv-driver.h b/drivers/media/video/ivtv/ivtv-driver.h
-index 2ceb522..99c3e7a 100644
---- a/drivers/media/video/ivtv/ivtv-driver.h
-+++ b/drivers/media/video/ivtv/ivtv-driver.h
-@@ -49,11 +49,11 @@
- #include <linux/i2c-algo-bit.h>
- #include <linux/list.h>
- #include <linux/unistd.h>
--#include <linux/byteorder/swab.h>
- #include <linux/pagemap.h>
- #include <linux/scatterlist.h>
- #include <linux/workqueue.h>
- #include <linux/mutex.h>
-+#include <asm/byteorder.h>
- #include <asm/uaccess.h>
- #include <asm/system.h>
- 
-diff --git a/drivers/media/video/vpx3220.c b/drivers/media/video/vpx3220.c
-index 3529302..256f77c 100644
---- a/drivers/media/video/vpx3220.c
-+++ b/drivers/media/video/vpx3220.c
-@@ -24,8 +24,7 @@
- #include <linux/types.h>
- #include <linux/slab.h>
- 
--#include <linux/byteorder/swab.h>
--
-+#include <asm/byteorder.h>
- #include <asm/io.h>
- #include <asm/uaccess.h>
- 
-diff --git a/include/linux/byteorder/big_endian.h b/include/linux/byteorder/big_endian.h
-index 44f95b9..1cba3f3 100644
---- a/include/linux/byteorder/big_endian.h
-+++ b/include/linux/byteorder/big_endian.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/types.h>
- #include <linux/byteorder/swab.h>
-+#include <linux/byteorder/swabb.h>
- 
- #define __constant_htonl(x) ((__force __be32)(__u32)(x))
- #define __constant_ntohl(x) ((__force __u32)(__be32)(x))
-diff --git a/include/linux/byteorder/little_endian.h b/include/linux/byteorder/little_endian.h
-index 4cc170a..cedc1b5 100644
---- a/include/linux/byteorder/little_endian.h
-+++ b/include/linux/byteorder/little_endian.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/types.h>
- #include <linux/byteorder/swab.h>
-+#include <linux/byteorder/swabb.h>
- 
- #define __constant_htonl(x) ((__force __be32)___constant_swab32((x)))
- #define __constant_ntohl(x) ___constant_swab32((__force __be32)(x))
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index ca4bbbe..59236e8 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -54,9 +54,9 @@
- #include <linux/cpu.h>
- #include <linux/random.h>
- #include <linux/delay.h>
--#include <linux/byteorder/swabb.h>
- #include <linux/cpumask.h>
- #include <linux/rcupreempt_trace.h>
-+#include <asm/byteorder.h>
- 
+Index: tip/kernel/time/clockevents.c
+===================================================================
+--- tip.orig/kernel/time/clockevents.c	2008-09-02 13:26:35.000000000 -0700
++++ tip/kernel/time/clockevents.c	2008-09-02 15:24:13.000000000 -0700
+@@ -177,7 +177,7 @@ void clockevents_register_device(struct 
  /*
-  * PREEMPT_RCU data structures.
-diff --git a/tests/rcutorture.c b/tests/rcutorture.c
-index 90b5b12..85cb905 100644
---- a/tests/rcutorture.c
-+++ b/tests/rcutorture.c
-@@ -42,10 +42,10 @@
- #include <linux/freezer.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
--#include <linux/byteorder/swabb.h>
- #include <linux/stat.h>
- #include <linux/srcu.h>
- #include <linux/slab.h>
-+#include <asm/byteorder.h>
+  * Noop handler when we shut down an event device
+  */
+-static void clockevents_handle_noop(struct clock_event_device *dev)
++void clockevents_handle_noop(struct clock_event_device *dev)
+ {
+ }
  
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Paul E. McKenney <paulmck@us.ibm.com> and "
--- 
-1.6.0.1.400.ga23d3
-
-
-
+@@ -199,7 +199,6 @@ void clockevents_exchange_device(struct 
+ 	 * released list and do a notify add later.
+ 	 */
+ 	if (old) {
+-		old->event_handler = clockevents_handle_noop;
+ 		clockevents_set_mode(old, CLOCK_EVT_MODE_UNUSED);
+ 		list_del(&old->list);
+ 		list_add(&old->list, &clockevents_released);
+Index: tip/kernel/time/tick-common.c
+===================================================================
+--- tip.orig/kernel/time/tick-common.c	2008-09-02 13:26:35.000000000 -0700
++++ tip/kernel/time/tick-common.c	2008-09-02 15:24:13.000000000 -0700
+@@ -161,6 +161,7 @@ static void tick_setup_device(struct tic
+ 	} else {
+ 		handler = td->evtdev->event_handler;
+ 		next_event = td->evtdev->next_event;
++		td->evtdev->event_handler = clockevents_handle_noop;
+ 	}
+ 
+ 	td->evtdev = newdev;
+Index: tip/include/linux/clockchips.h
+===================================================================
+--- tip.orig/include/linux/clockchips.h	2008-09-02 13:26:34.000000000 -0700
++++ tip/include/linux/clockchips.h	2008-09-02 15:24:13.000000000 -0700
+@@ -127,6 +127,8 @@ extern int clockevents_register_notifier
+ extern int clockevents_program_event(struct clock_event_device *dev,
+ 				     ktime_t expires, ktime_t now);
+ 
++extern void clockevents_handle_noop(struct clock_event_device *dev);
++
+ #ifdef CONFIG_GENERIC_CLOCKEVENTS
+ extern void clockevents_notify(unsigned long reason, void *arg);
+ #else
