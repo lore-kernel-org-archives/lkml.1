@@ -1,231 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbYIBEcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbYIBEhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbYIBEcS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 00:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYIBEcG
+	id S1753189AbYIBEhF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 00:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYIBEgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 00:32:06 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:58019 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbYIBEcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 00:32:04 -0400
-Message-ID: <48BCC1B6.5030901@nttdata.co.jp>
-Date: Tue, 02 Sep 2008 13:31:50 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.16) Gecko/20080708 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
+	Tue, 2 Sep 2008 00:36:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38213 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750867AbYIBEgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 00:36:53 -0400
+Message-ID: <48BCC28E.5030009@kernel.org>
+Date: Tue, 02 Sep 2008 06:35:26 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: viro@ZenIV.linux.org.uk
-CC: linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu, hch@infradead.org,
-       akpm@linux-foundation.org, Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: (repost) Confirmation of methods for calculating requested pathname.
-References: <48AA49DE.6000006@nttdata.co.jp>
-In-Reply-To: <48AA49DE.6000006@nttdata.co.jp>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Sep 2008 04:31:51.0400 (UTC) FILETIME=[D2059E80:01C90CB4]
+To: linux-kernel@vger.kernel.org, lists@ku-gbr.de,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: SATA Cold Boot problems on >2.6.25 with NV
+References: <fa.CVrJhjm3R8sjl5Z+EEIzYm7QtW0@ifi.uio.no> <48B80B40.5060002@shaw.ca> <48B80D33.5050806@gmail.com> <20080829212146.GA4321@anita> <48B90F7F.8040308@kernel.org> <20080830205143.GA9726@anita> <48BBCF98.4070003@kernel.org> <20080901174657.GA2114@anita>
+In-Reply-To: <20080901174657.GA2114@anita>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------050905010105010201080406"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Sep 2008 04:36:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al, could you answer the following question?
+This is a multi-part message in MIME format.
+--------------050905010105010201080406
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+(cc'ing linux-ide)
 
-The current Linux kernel is not designed to pass vfsmount parameter
-that is crucial for pathname-based security including AppArmor and
-TOMOYO Linux, to LSM. Though both projects have been proposing
-patches to calculate pathname, none of them have been accepted as
-you know.
+Konstantin Kletschke wrote:
+> Am 2008-09-01 13:18 +0200 schrieb Tejun Heo:
+> 
+>>> Hmn, to take my pants down entirely: What is this "EH"?
+>> libata EH == libatata exception handling.
+> 
+> Seems this stuff is kinda new since 2.6.25?
 
-To find the reason for NACK, we examined past proposals and the
-threads. And we came to understand that you oppose accessing vfsmount
-inside vfs helper functions. Is our understanding correct?
+I think it's more circa 2.6.22 but in my memory terms, which sucks,
+that's a lifetime before so I don't really remember.  :-)
 
-If our understanding is correct, we would like to propose a new
-method that does not require modifications to vfs helper functions.
-Attached patch is a trial of this method.
+>> Can you please apply the attached patch and post the resulting dmesg?
+> 
+> Of course. Patch applied, here is dmesg output, looks interesting now -
+> but anything works fine so far.
 
-vfs helper functions are surrounded by mnt_want_write() and
-mnt_drop_write() pairs which receive "struct vfsmount" parameter
-since 2.6.26. So, by remembering the absolute pathname of "struct
-vfsmount" of the moment, LSM module can calculate an absolute
-pathname of the given "struct dentry" parameter inside vfs_*
-functions, without passing "struct vfsmount" parameter to vfs_*
-functions.
+Hmm... someone is scheduling EH incessantly without any error or action
+set.  Can you please try the attached patch?
 
-This approach doesn't access vfsmount inside vfs helper functions,
-and modification of existing kernel is only in task_struct and
-mnt_want/drop_write().
+-- 
+tejun
 
-We would like to hear your comments as fs maintainer.
+--------------050905010105010201080406
+Content-Type: text/plain;
+ name="debug"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="debug"
 
-Regards,
-
----
-Subject: Remembering previously referenced vfsmount's pathname.
-
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- fs/Kconfig                |   18 ++++++++++++++++++
- fs/namespace.c            |   46 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/init_task.h |    7 +++++++
- include/linux/sched.h     |    3 +++
- kernel/fork.c             |    8 ++++++++
- 5 files changed, 82 insertions(+)
-
---- linux-2.6.27-rc5.orig/fs/Kconfig
-+++ linux-2.6.27-rc5/fs/Kconfig
-@@ -2093,4 +2093,22 @@ endif
- source "fs/nls/Kconfig"
- source "fs/dlm/Kconfig"
- 
-+config REMEMBER_VFSMOUNT_PATH
-+	bool "Remember previously referenced vfsmount's pathname."
-+	help
-+	  The vfs_* functions (e.g. vfs_mkdir) don't receive "struct vfsmount"
-+	  parameter, making it impossible to calculate an absolute pathname of
-+	  the given "struct dentry" parameter inside vfs_* functions.
-+	
-+	  If someone wants to get an absolute pathname of the given
-+	  "struct dentry" parameter, he/she must calculate it outside
-+	  vfs_* functions.
-+	
-+	  However, vfs_* functions are surrounded by mnt_want_write() and
-+	  mnt_drop_write() pairs which receive "struct vfsmount" parameter.
-+	  So, by remembering the absolute pathname of "struct vfsmount" of
-+	  the moment, he/she can calculate an absolute pathname of the given
-+	  "struct dentry" parameter inside vfs_* functions, without passing
-+	  "struct vfsmount" parameter to vfs_* functions.
-+
- endmenu
---- linux-2.6.27-rc5.orig/fs/namespace.c
-+++ linux-2.6.27-rc5/fs/namespace.c
-@@ -231,6 +231,41 @@ static inline void use_cpu_writer_for_mo
- 	cpu_writer->mnt = mnt;
- }
- 
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+static void forget_vfsmount_path(void)
-+{
-+	struct task_struct *task = current;
-+	kfree(task->current_vfsmount_path);
-+	task->current_vfsmount_path = NULL;
-+}
-+
-+static bool remember_vfsmount_path(struct vfsmount *mnt)
-+{
-+	struct task_struct *task = current;
-+	struct path path = { mnt, mnt->mnt_root };
-+	char *page;
-+	char *ret;
-+	if (task->current_vfsmount_path)
-+		forget_vfsmount_path();
-+	page = kmalloc(PAGE_SIZE, GFP_KERNEL);
-+	if (!page)
-+		goto out;
-+	ret = d_path(&path, page, PAGE_SIZE);
-+	if (IS_ERR(ret))
-+		goto out_free;
-+	ret = kstrdup(ret, GFP_KERNEL);
-+	if (!ret)
-+		goto out_free;
-+	kfree(page);
-+	task->current_vfsmount_path = ret;
-+	return 1;
-+ out_free:
-+	kfree(page);
-+ out:
-+	return 0;
-+}
-+#endif
-+
- /*
-  * Most r/o checks on a fs are for operations that take
-  * discrete amounts of time, like a write() or unlink().
-@@ -253,6 +288,10 @@ int mnt_want_write(struct vfsmount *mnt)
- {
- 	int ret = 0;
- 	struct mnt_writer *cpu_writer;
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+	if (!remember_vfsmount_path(mnt))
-+		return -ENOMEM;
-+#endif
- 
- 	cpu_writer = &get_cpu_var(mnt_writers);
- 	spin_lock(&cpu_writer->lock);
-@@ -265,6 +304,10 @@ int mnt_want_write(struct vfsmount *mnt)
- out:
- 	spin_unlock(&cpu_writer->lock);
- 	put_cpu_var(mnt_writers);
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+	if (ret)
-+		forget_vfsmount_path();
-+#endif
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(mnt_want_write);
-@@ -362,6 +405,9 @@ void mnt_drop_write(struct vfsmount *mnt
- 	 * we could theoretically wrap __mnt_writers.
- 	 */
- 	put_cpu_var(mnt_writers);
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+	forget_vfsmount_path();
-+#endif
- }
- EXPORT_SYMBOL_GPL(mnt_drop_write);
- 
---- linux-2.6.27-rc5.orig/include/linux/init_task.h
-+++ linux-2.6.27-rc5/include/linux/init_task.h
-@@ -113,6 +113,12 @@ extern struct group_info init_groups;
- # define CAP_INIT_BSET  CAP_INIT_EFF_SET
- #endif
- 
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+#define INIT_VFSMOUNT_PATH .current_vfsmount_path = NULL,
-+#else
-+#define INIT_VFSMOUNT_PATH
-+#endif
-+
- /*
-  *  INIT_TASK is used to set up the first task table, touch at
-  * your own risk!. Base=0, limit=0x1fffff (=2MB)
-@@ -179,6 +185,7 @@ extern struct group_info init_groups;
- 	INIT_IDS							\
- 	INIT_TRACE_IRQFLAGS						\
- 	INIT_LOCKDEP							\
-+	INIT_VFSMOUNT_PATH                                              \
- }
- 
- 
---- linux-2.6.27-rc5.orig/include/linux/sched.h
-+++ linux-2.6.27-rc5/include/linux/sched.h
-@@ -1301,6 +1301,9 @@ struct task_struct {
- 	int latency_record_count;
- 	struct latency_record latency_record[LT_SAVECOUNT];
- #endif
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+	const char *current_vfsmount_path;
-+#endif
- };
- 
- /*
---- linux-2.6.27-rc5.orig/kernel/fork.c
-+++ linux-2.6.27-rc5/kernel/fork.c
-@@ -1051,6 +1051,14 @@ static struct task_struct *copy_process(
- 	p->blocked_on = NULL; /* not blocked yet */
- #endif
- 
-+#ifdef CONFIG_REMEMBER_VFSMOUNT_PATH
-+	/*
-+	 * It seems to me that this function is called between mnt_want_write()
-+	 * and mnt_drop_write(). I don't know why.
-+	 */
-+	p->current_vfsmount_path = NULL;
-+#endif
-+
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
-
-
+LS0tCiBkcml2ZXJzL2F0YS9saWJhdGEtZWguYyB8ICAgMTIgKysrKysrKysrKy0tCiAxIGZp
+bGUgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCkluZGV4OiB0
+cmVlMC9kcml2ZXJzL2F0YS9saWJhdGEtZWguYwo9PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSB0cmVlMC5v
+cmlnL2RyaXZlcnMvYXRhL2xpYmF0YS1laC5jCisrKyB0cmVlMC9kcml2ZXJzL2F0YS9saWJh
+dGEtZWguYwpAQCAtNjcxLDYgKzY3MSw5IEBAIHN0YXRpYyB2b2lkIGF0YV9laF9zZXRfcGVu
+ZGluZyhzdHJ1Y3QgYXQKIAogCWFwLT5wZmxhZ3MgfD0gQVRBX1BGTEFHX0VIX1BFTkRJTkc7
+CiAKKwlhdGFfcG9ydF9wcmludGsoYXAsIEtFUk5fSU5GTywgIlhYWCBFSF9TRVRfUEVORElO
+R1xuIik7CisJZHVtcF9zdGFjaygpOworCiAJaWYgKCFmYXN0ZHJhaW4pCiAJCXJldHVybjsK
+IApAQCAtMTA3Nyw2ICsxMDgwLDExIEBAIHZvaWQgYXRhX2VoX2Fib3V0X3RvX2RvKHN0cnVj
+dCBhdGFfbGluawogCXN0cnVjdCBhdGFfZWhfY29udGV4dCAqZWhjID0gJmxpbmstPmVoX2Nv
+bnRleHQ7CiAJdW5zaWduZWQgbG9uZyBmbGFnczsKIAorCWlmIChsaW5rKQorCQlhdGFfbGlu
+a19wcmludGsobGluaywgS0VSTl9JTkZPLCAiWFhYIGFib3V0X3RvX2RvICV4XG4iLCBhY3Rp
+b24pOworCWVsc2UgaWYgKGRldikKKwkJYXRhX2Rldl9wcmludGsoZGV2LCBLRVJOX0lORk8s
+ICJYWFggYWJvdXRfdG9fZG8gJXhcbiIsIGFjdGlvbik7CisKIAlzcGluX2xvY2tfaXJxc2F2
+ZShhcC0+bG9jaywgZmxhZ3MpOwogCiAJYXRhX2VoX2NsZWFyX2FjdGlvbihsaW5rLCBkZXYs
+IGVoaSwgYWN0aW9uKTsKQEAgLTE4OTAsOCArMTg5OCw4IEBAIHN0YXRpYyB2b2lkIGF0YV9l
+aF9saW5rX3JlcG9ydChzdHJ1Y3QgYXQKIAkJbnJfZmFpbGVkKys7CiAJfQogCi0JaWYgKCFu
+cl9mYWlsZWQgJiYgIWVoYy0+aS5lcnJfbWFzaykKLQkJcmV0dXJuOworCS8vaWYgKCFucl9m
+YWlsZWQgJiYgIWVoYy0+aS5lcnJfbWFzaykKKwkvLwlyZXR1cm47CiAKIAlmcm96ZW4gPSAi
+IjsKIAlpZiAoYXAtPnBmbGFncyAmIEFUQV9QRkxBR19GUk9aRU4pCg==
+--------------050905010105010201080406--
