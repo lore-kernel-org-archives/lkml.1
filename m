@@ -1,67 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYIBGmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbYIBGuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbYIBGmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 02:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYIBGmK
+	id S1753853AbYIBGuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 02:50:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbYIBGuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 02:42:10 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:52230 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752037AbYIBGmJ (ORCPT
+	Tue, 2 Sep 2008 02:50:44 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:56800 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751325AbYIBGun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 02:42:09 -0400
-Date: Tue, 2 Sep 2008 07:42:01 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Kentaro Takeda <takedakn@nttdata.co.jp>
-Cc: viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
-       Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: Re: (repost) Confirmation of methods for calculating requested pathname.
-Message-ID: <20080902064201.GA1327@shareable.org>
-References: <48AA49DE.6000006@nttdata.co.jp> <48BCC1B6.5030901@nttdata.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BCC1B6.5030901@nttdata.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 2 Sep 2008 02:50:43 -0400
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>
+Message-Id: <26128d31856e93dc769ca1fc1bfda34c2fdad6d7.1220338208.git.tony@bakeyournoodle.com>
+In-Reply-To: <1219617472.21386.226.camel@pasglop>
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH 1/1] Work around the fomit-frame-pointer bug
+Date: Tue,  2 Sep 2008 16:50:38 +1000 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kentaro Takeda wrote:
-> If our understanding is correct, we would like to propose a new
-> method that does not require modifications to vfs helper functions.
-> Attached patch is a trial of this method.
-> 
-> vfs helper functions are surrounded by mnt_want_write() and
-> mnt_drop_write() pairs which receive "struct vfsmount" parameter
-> since 2.6.26. So, by remembering the absolute pathname of "struct
-> vfsmount" of the moment, LSM module can calculate an absolute
-> pathname of the given "struct dentry" parameter inside vfs_*
-> functions, without passing "struct vfsmount" parameter to vfs_*
-> functions.
-> 
-> This approach doesn't access vfsmount inside vfs helper functions,
-> and modification of existing kernel is only in task_struct and
-> mnt_want/drop_write().
+This bug is causing random crashes
+(http://bugzilla.kernel.org/show_bug.cgi?id=11414).  -fomit-frame-pointer is
+only needed on powerpc when -pg is also supplied.  This patch ensures that
+CONFIG_FRAME_POINTER is only selected by ftrace.  When CONFIG_FTRACE is enabled
+we also pass -mno-sched-epilog to work around the codegen bug
 
-This is exactly the same as passing vfsmount through vfs helper functions,
-except the parameter is "hidden" inside struct task.
+Patch based on work by:
+	Andreas Schwab <schwab@suse.de>
+	Segher Boessenkool <segher@kernel.crashing.org>
 
-Although this seems to violate the idea that the vfs helper call
-chains (including functions they call) aren't affected by the mount
-point, to be frank they are affected by the mount point _already_ - by
-virtue of mnt_get_write()/mnt_drop_write() existing.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/Makefile                    |    5 +++++
+ arch/powerpc/kernel/Makefile             |    7 ++++---
+ arch/powerpc/platforms/powermac/Makefile |    2 +-
+ lib/Kconfig.debug                        |    6 +++---
+ 4 files changed, 13 insertions(+), 7 deletions(-)
 
-Ironically, the _current_ way that vfs helper call chains are affected
-by mount point is for security: read-only mount points are basic security.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 9155c93..c6be19e 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -116,6 +116,11 @@ ifeq ($(CONFIG_6xx),y)
+ KBUILD_CFLAGS		+= -mcpu=powerpc
+ endif
+ 
++# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
++ifeq ($(CONFIG_FTRACE),y)
++KBUILD_CFLAGS		+= -mno-sched-epilog
++endif
++
+ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+ cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
+ cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 64f5948..946daea 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -14,12 +14,13 @@ endif
+ 
+ ifdef CONFIG_FTRACE
+ # Do not trace early boot code
+-CFLAGS_REMOVE_cputable.o = -pg
+-CFLAGS_REMOVE_prom_init.o = -pg
++CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
++CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
+ 
+ ifdef CONFIG_DYNAMIC_FTRACE
+ # dynamic ftrace setup.
+-CFLAGS_REMOVE_ftrace.o = -pg
++CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
+ endif
+ 
+ endif
+diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
+index 58ecdd7..be60d64 100644
+--- a/arch/powerpc/platforms/powermac/Makefile
++++ b/arch/powerpc/platforms/powermac/Makefile
+@@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
+ 
+ ifdef CONFIG_FTRACE
+ # Do not trace early boot code
+-CFLAGS_REMOVE_bootx_init.o = -pg
++CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
+ endif
+ 
+ obj-y				+= pic.o setup.o time.o feature.o pci.o \
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 800ac84..413eaca 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -394,7 +394,7 @@ config LOCKDEP
+ 	bool
+ 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+ 	select STACKTRACE
+-	select FRAME_POINTER if !X86 && !MIPS
++	select FRAME_POINTER if !X86 && !MIPS && !PPC
+ 	select KALLSYMS
+ 	select KALLSYMS_ALL
+ 
+@@ -676,13 +676,13 @@ config FAULT_INJECTION_STACKTRACE_FILTER
+ 	depends on FAULT_INJECTION_DEBUG_FS && STACKTRACE_SUPPORT
+ 	depends on !X86_64
+ 	select STACKTRACE
+-	select FRAME_POINTER
++	select FRAME_POINTER if !PPC
+ 	help
+ 	  Provide stacktrace filter for fault-injection capabilities
+ 
+ config LATENCYTOP
+ 	bool "Latency measuring infrastructure"
+-	select FRAME_POINTER if !MIPS
++	select FRAME_POINTER if !MIPS && !PPC
+ 	select KALLSYMS
+ 	select KALLSYMS_ALL
+ 	select STACKTRACE
+-- 
+1.5.6.5
 
-So I don't understand the objection to using path mount point in
-security decisions, given that it already is to some extent.
-
-This patch seems ugly at first because of hidden parameters in struct
-task.  On the other hand, mnt_get_write() already does a similar thing
-(and the implementation is uglier imho, though clever), and it is accepted.
-
--- Jamie
