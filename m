@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYIBNG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbYIBNLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbYIBNG5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 09:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYIBNGt
+	id S1752347AbYIBNLt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 09:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbYIBNLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 09:06:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58834 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbYIBNGs (ORCPT
+	Tue, 2 Sep 2008 09:11:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59825 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYIBNLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 09:06:48 -0400
-Date: Tue, 2 Sep 2008 06:06:45 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de,
-       Fabio Checconi <fabio@gandalf.sssup.it>
-Subject: Re: [PATCH 11/13] hrtimer: turn hrtimers into range timers
-Message-ID: <20080902060645.338b54a2@infradead.org>
-In-Reply-To: <1220353725.8609.32.camel@twins>
-References: <20080901160343.75a89ec9@infradead.org>
-	<20080901161336.10a71c9f@infradead.org>
-	<1220343732.8609.19.camel@twins>
-	<1220353725.8609.32.camel@twins>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 2 Sep 2008 09:11:38 -0400
+Date: Tue, 2 Sep 2008 08:11:27 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Kentaro Takeda <takedakn@nttdata.co.jp>
+Cc: viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       miklos@szeredi.hu, hch@infradead.org, akpm@linux-foundation.org,
+       Toshiharu Harada <haradats@nttdata.co.jp>
+Subject: Re: (repost) Confirmation of methods for calculating requested pathname.
+Message-ID: <20080902131127.GA5951@hallyn.com>
+References: <48AA49DE.6000006@nttdata.co.jp> <48BCC1B6.5030901@nttdata.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48BCC1B6.5030901@nttdata.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Sep 2008 13:08:45 +0200
+Quoting Kentaro Takeda (takedakn@nttdata.co.jp):
+> Al, could you answer the following question?
 > 
-> What you need is a data structure that supports stabbing queries on
-> overlapping intervals, such like a Priority Search Tree.
 > 
+> The current Linux kernel is not designed to pass vfsmount parameter
+> that is crucial for pathname-based security including AppArmor and
+> TOMOYO Linux, to LSM. Though both projects have been proposing
+> patches to calculate pathname, none of them have been accepted as
+> you know.
+> 
+> To find the reason for NACK, we examined past proposals and the
+> threads. And we came to understand that you oppose accessing vfsmount
+> inside vfs helper functions. Is our understanding correct?
+> 
+> If our understanding is correct, we would like to propose a new
+> method that does not require modifications to vfs helper functions.
+> Attached patch is a trial of this method.
+> 
+> vfs helper functions are surrounded by mnt_want_write() and
+> mnt_drop_write() pairs which receive "struct vfsmount" parameter
 
+I thought Al and others (Stephen?) had made it clear that the thing to do was
+add new lsm hooks there.  So whereas inode_permission takes only an inode and
+ends up calling security_inode_permission, you would add a
+security_path_permission() or somesuch before or after the call to
+inode_permission(), where as you've noted the path is available.  You're
+*close* to doing the right thing by having a helper who is called at the right
+place catch the vfsmount, but you refuse to send a patch doing exactly what
+has been suggested.
 
-for perfection we'd need that, for a simple good we don't; timers are
-also performance critical so whatever we do can't be expensive in any
-way... the current method isn't any more expensive.
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+-serge
