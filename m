@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYIBVCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYIBVDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbYIBVCd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 17:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbYIBVCX
+	id S1754353AbYIBVDE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 17:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYIBVCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 17:02:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50653 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbYIBVCW (ORCPT
+	Tue, 2 Sep 2008 17:02:50 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:21470 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbYIBVCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 17:02:22 -0400
-Date: Tue, 2 Sep 2008 17:02:20 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       David Woodhouse <dwmw2@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-Message-ID: <20080902210219.GA9856@infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org> <1220194366-12731-13-git-send-email-dedekind@infradead.org> <1220262187.2982.58.camel@pmac.infradead.org> <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron> <20080902170954.GE3086@webber.adilger.int>
+	Tue, 2 Sep 2008 17:02:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=CT/RS325FWXpGUSYKPWFCo3KTPlf3TKdtAy3k4mcG4tnoPTsJq3l2qLPa5ZY0CsRq4
+         fkhxgesopeAxk5GfAPQgU1bQZEsqnI4rFP1IwriF6CMNmdzG1W/pdFtt3ywvEIirtwtQ
+         oBOyECsv/H4lKTR+D6pae6Xl2PCt1/04v2YUM=
+Message-ID: <48BDA9F2.7000203@gmail.com>
+Date: Tue, 02 Sep 2008 23:02:42 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080902170954.GE3086@webber.adilger.int>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc5-mmotm0829 - CONFIG_HID_COMPAT causes hangs at boot
+References: <7419.1220261347@turing-police.cc.vt.edu>            <48BD4D20.5020704@gmail.com> <13476.1220371878@turing-police.cc.vt.edu>
+In-Reply-To: <13476.1220371878@turing-police.cc.vt.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 11:09:54AM -0600, Andreas Dilger wrote:
-> The fsid is supposed to be a persistent, unique identifier for the
-> filesystem, used by NFS in file handles.  Using st_dev is unsafe,
-> because that may change from one server boot to the next, because
-> of device probing order, driver changes, etc.  Also, not all filesystems
-> HAVE a valid st_dev in the first place, which is the whole reason
-> for this thread.
+On 09/02/2008 06:11 PM, Valdis.Kletnieks@vt.edu wrote:
+> The following 3 lines don't go to console by default due to loglevel setting.
+> So I'm not sure exactly where it hangs. But it's somewhere in here.
+
+You may use `ignore_loglevel', `debug' or `loglevel=7' kernel parameter.
+
+>>> [    1.945217] generic-usb 0003:045E:0023.0001: input,hidraw0: USB HID v1.00 Mouse [Microsoft Microsoft Trackball Optical®] on usb-0000:00:1d.7-8.1/input0
+>>> [    1.959193] usbcore: registered new interface driver usbhid
+>>> [    1.973037] usbhid: v2.6:USB HID core driver
 > 
-> I think a ->get_fsid() export method would be preferable.
+> This line *should* make it to the console, but doesn't. So the failure is
+> before this point.
+>>> [    1.987014] Advanced Linux Sound Architecture Driver Version 1.0.18rc1.
+> 
+> I'll go back and instrument it more heavily so there's more info available.
 
-Umm, different things.  f_fsid in stat(v)fs is just a cookie exported to
-userspac that has never really been documented.
-
-We also called the filesystem part of the NFS filehandle in a few
-places, and for those it's correct that it should be stable.  Currently
-the fsid is either created from the dev_t in kernelspace or from
-uuids extracted through libuuid in userspace.
-
-I can't see anything in the message that started this thread that
-mentions NFS, btw.
+Ok, thanks.
