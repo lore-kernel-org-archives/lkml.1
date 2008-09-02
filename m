@@ -1,124 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYIBLJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbYIBLOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbYIBLJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 07:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYIBLIy
+	id S1752111AbYIBLOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 07:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYIBLOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 07:08:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:33459 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276AbYIBLIw (ORCPT
+	Tue, 2 Sep 2008 07:14:04 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:55040 "EHLO
+	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbYIBLOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 07:08:52 -0400
-Subject: Re: [PATCH 11/13] hrtimer: turn hrtimers into range timers
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de,
-       Fabio Checconi <fabio@gandalf.sssup.it>
-In-Reply-To: <1220343732.8609.19.camel@twins>
-References: <20080901160343.75a89ec9@infradead.org>
-	 <20080901161336.10a71c9f@infradead.org>  <1220343732.8609.19.camel@twins>
+	Tue, 2 Sep 2008 07:14:03 -0400
+X-BigFish: VPS2(zba6iz3117Kzz10d3izzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K6KF6T-04-A5O-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
+CC: linux-kernel@vger.kernel.org
+Subject: x86: add northbridge detection for AMD family 0x11 cpus
+Date: Tue, 2 Sep 2008 13:13:38 +0200
+Message-ID: <1220354020-4883-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.3.7
+X-OriginalArrivalTime: 02 Sep 2008 11:13:40.0630 (UTC) FILETIME=[F43E2B60:01C90CEC]
+MIME-Version: 1.0
 Content-Type: text/plain
-Date: Tue, 02 Sep 2008 13:08:45 +0200
-Message-Id: <1220353725.8609.32.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 10:22 +0200, Peter Zijlstra wrote:
-> On Mon, 2008-09-01 at 16:08 -0700, Arjan van de Ven wrote:
-> 
-> > @@ -847,7 +847,8 @@ static void enqueue_hrtimer(struct hrtimer *timer,
-> >                  * We dont care about collisions. Nodes with
-> >                  * the same expiry time stay together.
-> >                  */
-> > -               if (timer->expires.tv64 < entry->expires.tv64) {
-> > +               if (hrtimer_get_expires_tv64(timer) <
-> > +                               hrtimer_get_expires_tv64(entry)) {
-> >                         link = &(*link)->rb_left;
-> >                 } else {
-> >                         link = &(*link)->rb_right;
-> 
-> On Mon, 2008-09-01 at 16:13 -0700, Arjan van de Ven wrote:
-> 
-> > +static inline void hrtimer_set_expires_range(struct hrtimer *timer, ktime_t time, ktime_t delta)
-> > +{
-> > +       timer->_softexpires = time;
-> > +       timer->_expires = ktime_add_safe(time, delta);
-> > +}
-> 
-> > @@ -241,10 +259,19 @@ static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
-> >  	return timer->_expires;
-> >  }
-> >  
-> > +static inline ktime_t hrtimer_get_softexpires(const struct hrtimer *timer)
-> > +{
-> > +	return timer->_expires;
-> > +}
-> 
-> Somehow the function is called softexpires, but returns the hard expire
-> time...
-> 
-> >  static inline s64 hrtimer_get_expires_tv64(const struct hrtimer *timer)
-> >  {
-> >  	return timer->_expires.tv64;
-> >  }
-> > +static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
-> > +{
-> > +	return timer->_softexpires.tv64;
-> > +}
-> >  
-> >  static inline s64 hrtimer_get_expires_ns(const struct hrtimer *timer)
-> >  {
-> 
-> > @@ -1309,7 +1309,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
-> >  
-> >  			timer = rb_entry(node, struct hrtimer, node);
-> >  
-> > -			if (basenow.tv64 < hrtimer_get_expires_tv64(timer)) {
-> > +			if (basenow.tv64 < hrtimer_get_softexpires_tv64(timer)) {
-> >  				ktime_t expires;
-> >  
-> >  				expires = ktime_sub(hrtimer_get_expires(timer),
-> 
-> I might be missing something, but this code only looks at the leftmost
-> timer, and we're indexed on the hard expire time, which might be rather
-> far to the right of here.
-> 
-> This means that esp for those timers for which we can save most we're
-> least likely to do so because we'll plain not see them.
+Hi,
 
-What you need is a data structure that supports stabbing queries on
-overlapping intervals, such like a Priority Search Tree.
+this small patch series adds PCI device ids for the northbridge in AMD family
+0x11 processors and adds the ids to the detection code. With this patches the
+GART in these processors is found by the kernel.
 
-If I'm not mistaken, then the augmented Red-Black tree from the EEVDF
-paper is identical to PST [*].
+Regards,
 
-This data-structure adds a Heap property to each RB-node, allowing one
-to search the tree on a different property.
+Joerg
 
-So what you can do in this case, is index the RB-tree on the soft
-expire, and index the heap on the hard expire.
+git diff --stat tip/master.. :
 
-Then you can find the leftmost hard expire by traversing the tree using
-the heap property - and program the clock-event using that time.
-
-And you can search for soft expired entries using the RB-tree like we do
-now.
-
-
-[*] Fabio implemented it on top of the linux RB-tree for their wf2q+
-implementation that they used for their BFQ I/O scheduler:
-
-http://feanor.sssup.it/~fabio/linux/wfq/
-
-And I borrowed their implementation for my scheduler work:
-
-http://programming.kicks-ass.net/kernel-patches/sched-eevdf/sched-eedf.patch
+ arch/x86/kernel/k8.c    |    5 +++--
+ include/linux/pci_ids.h |    5 +++++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
 
 
