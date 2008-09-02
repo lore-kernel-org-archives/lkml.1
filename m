@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbYIBWWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYIBW2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754267AbYIBWWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 18:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYIBWWZ
+	id S1754586AbYIBW2s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 18:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbYIBW2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 18:22:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33424 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753189AbYIBWWY (ORCPT
+	Tue, 2 Sep 2008 18:28:40 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44855 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbYIBW2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 18:22:24 -0400
-Date: Tue, 2 Sep 2008 15:21:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
-In-Reply-To: <alpine.LFD.1.10.0809022239220.3243@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0809021446360.3160@nehalem.linux-foundation.org>
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de>
- <alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809022239220.3243@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 2 Sep 2008 18:28:40 -0400
+Date: Tue, 2 Sep 2008 17:28:36 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: viro@ZinIV.linux.org.uk, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] eCryptfs: Remove retry loop in ecryptfs_readdir()
+Message-ID: <20080902222836.GD10186@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The retry block in ecryptfs_readdir() has been in the eCryptfs code
+base for a while, apparently for no good reason. This loop could
+potentially run without terminating. This patch removes the loop,
+instead erroring out if vfs_readdir() on the lower file fails.
 
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+Reported-by: Al Viro <viro@ZinIV.linux.org.uk>
+---
+ fs/ecryptfs/file.c |   17 ++++++++---------
+ 1 files changed, 8 insertions(+), 9 deletions(-)
 
-On Tue, 2 Sep 2008, Thomas Gleixner wrote:
-> 
-> On that box, the PIT is probably real hardware or a damned good
-> emulation. When you look at the 10 loop values you see that it does
-> 50% perfectly fine calibration loops. The others are just SMI
-> interruptions caused by random unknown crap in the BIOS.
+diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
+index 9244d65..eb3dc4c 100644
+--- a/fs/ecryptfs/file.c
++++ b/fs/ecryptfs/file.c
+@@ -71,12 +71,11 @@ struct ecryptfs_getdents_callback {
+ 	void *dirent;
+ 	struct dentry *dentry;
+ 	filldir_t filldir;
+-	int err;
+ 	int filldir_called;
+ 	int entries_written;
+ };
+ 
+-/* Inspired by generic filldir in fs/readir.c */
++/* Inspired by generic filldir in fs/readdir.c */
+ static int
+ ecryptfs_filldir(void *dirent, const char *name, int namelen, loff_t offset,
+ 		 u64 ino, unsigned int d_type)
+@@ -125,18 +124,18 @@ static int ecryptfs_readdir(struct file *file, void *dirent, filldir_t filldir)
+ 	buf.dirent = dirent;
+ 	buf.dentry = file->f_path.dentry;
+ 	buf.filldir = filldir;
+-retry:
+ 	buf.filldir_called = 0;
+ 	buf.entries_written = 0;
+-	buf.err = 0;
+ 	rc = vfs_readdir(lower_file, ecryptfs_filldir, (void *)&buf);
+-	if (buf.err)
+-		rc = buf.err;
+-	if (buf.filldir_called && !buf.entries_written)
+-		goto retry;
+ 	file->f_pos = lower_file->f_pos;
++	if (rc < 0)
++		goto out;
++	if (buf.filldir_called && !buf.entries_written)
++		goto out;
+ 	if (rc >= 0)
+-		fsstack_copy_attr_atime(inode, lower_file->f_path.dentry->d_inode);
++		fsstack_copy_attr_atime(inode,
++					lower_file->f_path.dentry->d_inode);
++out:
+ 	return rc;
+ }
+ 
+-- 
+1.5.3.6
 
-Ok, so I actually think I know how to resolve the problem once and for 
-all.
-
-The solution is actually fairly simple: we use the HPET algorithm. The 
-reason the HPET algorithm is so robust is that
-
- - we can actually read the frequency from the HPET itself
-
- - we also simply just read the counter values from the HPET, and so it 
-   doesn't really matter how much time has passed between the two reads, 
-   it only matters that _some_ time has passed, and that we pick _one_ 
-   stable read that we can associate with a TSC value.
-
-But the thing is, the exact same thing is actually true of the old PIT 
-timer too - except we simply don't take advantage of it. The PIT timer has 
-a very well known frequency value (PIT_TICK_RATE: 1193180 Hz), and we can 
-trivially read the counter value too.
-
-But the thing is, that for some forgotten reason, that's not actually what 
-we do. Instead of reading the counter value, we wait until it counts down 
-to zero, and read the output value instead. So instead of having a nice 
-and dependable counter that ticks down (16 bits of precision), we actually 
-use a _single_ bit of result, and depend on reading the TSC at the same 
-time.
-
-That's kind of sad. 
-
-I'll try to whip up a test-patch to do this in a smarter way.
-
-		Linus
