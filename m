@@ -1,95 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYIBSgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbYIBSl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbYIBSgN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 14:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYIBSf6
+	id S1753877AbYIBSl5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 14:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYIBSlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 14:35:58 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:54482 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751134AbYIBSf5 (ORCPT
+	Tue, 2 Sep 2008 14:41:49 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53868 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751121AbYIBSls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 14:35:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Jt/a8MZmehbqTGMfz8MQeDkVPNPkSEPnxkVOvI/fWPzYFZDJGf39ZmEupL4XMrJU97
-         GJuBjBurL5I3Eu7TlcPt10wmi7zkU0r4d/Pnf2Q5+BNARFxx5xh3dUtI37hl+7ff++cz
-         Bx0NV1YBOQte6D7zUX8srcvz3Dj3jkdLRHN2M=
-Subject: Re: [PATCH 1/2] byteorder: add a new include/linux/swab.h to
-	define byteswapping functions
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Hans Verkuil <hverkuil@xs4all.nl>
+	Tue, 2 Sep 2008 14:41:48 -0400
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, v4l <video4linux-list@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <200808301436.22322.hverkuil@xs4all.nl>
-References: <1218324197.24441.20.camel@brick>
-	 <200808301436.22322.hverkuil@xs4all.nl>
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Michael Buesch <mb@bu3sch.de>
+In-Reply-To: <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de>
+References: <48BB2116.1060904@lwfinger.net>
+	 <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de>
+	 <48BC2A03.9000104@lwfinger.net>
+	 <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
+	 <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org>
+	 <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
+	 <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
+	 <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org>
+	 <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de>
 Content-Type: text/plain
-Date: Tue, 02 Sep 2008 11:35:52 -0700
-Message-Id: <1220380552.2137.3.camel@brick>
+Organization: VMware INC.
+Date: Tue, 02 Sep 2008 11:41:47 -0700
+Message-Id: <1220380907.3929.10.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [buildfix-PATCH] byteorder: remove direct includes of linux/byteorder/swabb.h
+On Tue, 2008-09-02 at 11:14 -0700, Thomas Gleixner wrote:
+> On Tue, 2 Sep 2008, Linus Torvalds wrote:
+> > > So what I'm working on is an algorithm, which is similar to the checks
+> > > in the tsc_read_refs() function. That should allow us to detect
+> > > whether one of the reads is way off by doing a min/max detection. In
+> > > such a case we can either repeat the calibration or try to figure out
+> > > whether the pmtimer / hpet can provide us with some useful reference.
+> >
+> > I think the most trivial approach would be to
+> >
+> >  - just keep track of the max TSC difference for each loop iteration.
+> >
+> >  - if the max TSC is bigger than 1% of the total TSC, then something is
+> >    already seriously wrong (either we had very few loops indeed, or some
+> >    of them were very expensive)
+> 
+> I went for summing up the deltas and build an average at the
+> end. That's from a loop of 10 consecutive runs:
+> 
+> [    0.000000] TSC min 2160 max       3732 avg  3266 pitcnt 30614
+> [    0.000000] TSC min 2160 max    1036164 avg  3299 pitcnt 30310
+> [    0.000000] TSC min 2160 max    1032360 avg  3303 pitcnt 30277
+> 
+> [    0.000000] TSC min 2160 max  210453018 avg 69509 pitcnt 30260
+> 
+> Hit very late in the loop, as pitcnt is close to the others
+> 
+> [    0.000000] TSC min 2160 max       3708 avg  3265 pitcnt 30624
+> [    0.000000] TSC min 2160 max       3720 avg  3265 pitcnt 30622
+> [    0.000000] TSC min 2160 max    1062252 avg  3301 pitcnt 30287
+> [    0.000000] TSC min 2160 max       3756 avg  3267 pitcnt 30605
+> [    0.000000] TSC min 2160 max       3732 avg  3267 pitcnt 30605
+> [    0.000000] TSC min 2136 max     989292 avg  3297 pitcnt 30324
+> [    0.000000] TSC min 2136 max       3744 avg  3266 pitcnt 30612
+> 
+> [    0.000000] TSC min 2160 max   78042006 avg 78045 pitcnt  1001
+> 
+> This one hit early in the loop as pitcnt is pretty low.
+> 
+> The min value is pretty constant.
+> 
+> The max value for sane loops is in the range of 3708 - 3756, the
+> average is between 3266 and 3267.
+> 
+> For those which have a ~500us maximum the average is still in a sane
+> range. That seems to be a single glitch, which pushs the maximum, but
+> does not really influence the average result.
+> 
+> The outstanding one is the 100ms (210 453 018 ticks), where the average
+> is also off by factor 20.
+> 
+> I think that information is enough to give us a pretty precice idea
+> when to discard the result. I'm currently looking at the hpet/pmtimer
+> values for comparison and I should have a patch for testing ready
+> later tonight.
+> 
+Sorry for joining the party this late...am still going through all my
+mails.
 
-All of the functionality has been collected in linux/swab.h
+Ok, so from what I understand until now, we will calibrate TSC against
+PIT as was done in 32bit code and use that as default. If that fails to
+give any sane results we will fall back to calibrating against PM_timer
+or HPET ?
+Thomas has already explained the problem with 32bit calibration ( i.e.
+just against PIT and no checks for SMI's and all) but would like to
+point that this problem is lot more worse in virtualized environment,
+because we may fail to get sane values even from multiple loops of
+calibrating against PIT. 
+If we have a fall back mechanism to detect this SMI event, and then try
+calibrating against PM timer or HPET we should be good. 
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/media/dvb/ttpci/av7110.c |    2 +-
- kernel/rcupreempt.c              |    2 +-
- tests/rcutorture.c               |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Anyways I will wait to see the patch.
 
-diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
-index c0a1746..792a175 100644
---- a/drivers/media/dvb/ttpci/av7110.c
-+++ b/drivers/media/dvb/ttpci/av7110.c
-@@ -36,7 +36,7 @@
- #include <linux/fs.h>
- #include <linux/timer.h>
- #include <linux/poll.h>
--#include <linux/byteorder/swabb.h>
-+#include <linux/swab.h>
- #include <linux/smp_lock.h>
- 
- #include <linux/kernel.h>
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index ca4bbbe..494d0e8 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -54,7 +54,7 @@
- #include <linux/cpu.h>
- #include <linux/random.h>
- #include <linux/delay.h>
--#include <linux/byteorder/swabb.h>
-+#include <linux/swab.h>
- #include <linux/cpumask.h>
- #include <linux/rcupreempt_trace.h>
- 
-diff --git a/tests/rcutorture.c b/tests/rcutorture.c
-index 90b5b12..67856af 100644
---- a/tests/rcutorture.c
-+++ b/tests/rcutorture.c
-@@ -42,7 +42,7 @@
- #include <linux/freezer.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
--#include <linux/byteorder/swabb.h>
-+#include <linux/swab.h>
- #include <linux/stat.h>
- #include <linux/srcu.h>
- #include <linux/slab.h>
--- 
-1.6.0.1.400.ga23d3
+Thanks,
+Alok
 
 
 
