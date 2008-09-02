@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYIBCk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbYIBCmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbYIBCk7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 22:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbYIBCkv
+	id S1753875AbYIBCmI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 22:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYIBCl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 22:40:51 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41439 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbYIBCku (ORCPT
+	Mon, 1 Sep 2008 22:41:56 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:4743 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbYIBClz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 22:40:50 -0400
-Date: Mon, 1 Sep 2008 19:40:31 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Matt LaPlante <kernel1@cyberdogtech.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] Kconfig cleanup including spelling and grammar
- touchups.
-Message-Id: <20080901194031.67b08ef6.randy.dunlap@oracle.com>
-In-Reply-To: <20080901211431.767e20af.kernel1@cyberdogtech.com>
-References: <1220239702-15688-1-git-send-email-kernel1@cyberdogtech.com>
-	<20080831212445.22af3250.randy.dunlap@oracle.com>
-	<20080901211431.767e20af.kernel1@cyberdogtech.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Sep 2008 22:41:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=ivA9p5nJMQ9h7ItLwPRITJQbYyfACtojEZ/Pyez7TQlfSeK95Djy9Y7CU+NoY1g6bF
+         ew32zhEaatfU5JfWM2PaoA9Bk1eVtCUxrGeDAoJldx1ACeqyosWodp8LyovwXyaYnf9u
+         mFhDuVG+SuG6ngUPB2rz0d+eQPwHoTWyJjN2c=
+Message-ID: <dd18b0c30809011941v1c79db21ra140f5c9c19dde59@mail.gmail.com>
+Date: Mon, 1 Sep 2008 19:41:54 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: WARNING: at net/sched/sch_generic.c:221 dev_watchdog+0x125/0x19e()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008 21:14:31 -0500 Matt LaPlante wrote:
+This is probably not a kernel issue but a madwifi
+issue, but figured I might as well post in both areas.
+I am running a small test of having one computer act as a shoutcast
+server with SELinux and ipsec(total lockdown), then another computer
+act as a costumer
+with SELinux and ipsec both with AH and ESP encryption;
+Everything looks good both boxes are sending and receiving
+AH and ESP encryption without any problems, except for a warning:(below)
 
-> +fixes for randy
-> 
-> Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
-> ---
->  arch/arm/mach-omap1/Kconfig          |    2 +-
->  arch/arm/mach-pxa/Kconfig            |    2 +-
->  arch/blackfin/Kconfig                |    6 +++---
->  arch/cris/Kconfig                    |    6 +++---
->  arch/cris/arch-v32/Kconfig           |    2 +-
->  arch/cris/arch-v32/drivers/Kconfig   |    2 +-
->  arch/cris/arch-v32/mach-fs/Kconfig   |    2 +-
->  arch/mips/Kconfig                    |    2 +-
->  arch/powerpc/Kconfig                 |    2 +-
->  arch/powerpc/platforms/Kconfig       |    2 +-
->  arch/powerpc/sysdev/bestcomm/Kconfig |    4 ++--
->  arch/sh/Kconfig                      |    4 ++--
->  arch/x86/Kconfig                     |    4 ++--
->  drivers/ata/Kconfig                  |    2 +-
->  drivers/base/Kconfig                 |    2 +-
->  drivers/gpio/Kconfig                 |    6 +++---
->  drivers/hwmon/Kconfig                |    2 +-
->  drivers/i2c/chips/Kconfig            |    4 ++--
->  drivers/input/Kconfig                |    2 +-
->  drivers/leds/Kconfig                 |    6 +++---
->  drivers/media/dvb/frontends/Kconfig  |    2 +-
->  drivers/misc/Kconfig                 |    8 ++++----
->  drivers/mmc/host/Kconfig             |    2 +-
->  drivers/serial/Kconfig               |    2 +-
->  drivers/usb/core/Kconfig             |    2 +-
->  drivers/usb/serial/Kconfig           |    4 ++--
->  fs/Kconfig                           |    2 +-
->  init/Kconfig                         |    4 ++--
->  net/Kconfig                          |    2 +-
->  net/ipv6/Kconfig                     |   18 +++++++++---------
->  net/mac80211/Kconfig                 |    2 +-
->  net/netfilter/Kconfig                |    2 +-
->  32 files changed, 57 insertions(+), 57 deletions(-)
+[  748.994148] NETDEV WATCHDOG: wifi0 (ath_pci): transmit timed out
+[  749.000092] ------------[ cut here ]------------
+[  749.000097] WARNING: at net/sched/sch_generic.c:221
+dev_watchdog+0x125/0x19e()
+[  749.000101] Modules linked in: ipcomp xfrm_ipcomp btusb
+cpufreq_ondemand cpufreq_performance cpufreq_powersave rfcomm hidp
+l2cap bluetooth fan battery authenc esp4 aead ah4 xfrm4_mode_transport
+des_generic cbc sha1_generic hmac crypto_hash crypto_null
+ipmi_watchdog ipmi_msghandler uvcvideo uinput wlan_tkip
+ieee80211_crypt_tkip ieee80211 ieee80211_crypt arpt_mangle
+arptable_filter arp_tables nf_conntrack_ipv4 nf_conntrack
+iptable_mangle iptable_filter ip_tables x_tables coretemp eeprom
+acpi_cpufreq applesmc joydev isight_firmware firewire_ohci
+firewire_core wlan_scan_sta snd_hda_intel appletouch ath_rate_sample
+fglrx(P) snd_pcm ohci1394 video ath_pci snd_timer thermal wlan
+snd_page_alloc ieee1394 snd_hwdep processor ac ath_hal(P) agpgart
+ehci_hcd uhci_hcd pata_acpi sbshc button evdev
+[  749.000220] Pid: 4, comm: ksoftirqd/0 Tainted: P
+2.6.27-rc5-00006-gbef69ea #14
+[  749.000226]  [<c0123842>] warn_on_slowpath+0x41/0x65
+[  749.000237]  [<c021bfc1>] ? _raw_spin_lock+0x53/0xd8
+[  749.000246]  [<c021bf6a>] ? _raw_spin_unlock+0x74/0x78
+[  749.000256]  [<f8d27e7e>] ? ath_reset+0x335/0x392 [ath_pci]
+[  749.000277]  [<f8d2841b>] ? ath_tx_timeout+0xbc/0xd5 [ath_pci]
+[  749.000295]  [<c012422c>] ? printk+0x15/0x17
+[  749.000303]  [<c0320c25>] dev_watchdog+0x125/0x19e
+[  749.000310]  [<c021bf6a>] ? _raw_spin_unlock+0x74/0x78
+[  749.000318]  [<c039bd37>] ? _spin_unlock_irq+0x8/0x14
+[  749.000327]  [<c011e41d>] ? finish_task_switch+0x32/0x81
+[  749.000335]  [<c021bf6a>] ? _raw_spin_unlock+0x74/0x78
+[  749.000342]  [<c012aad8>] run_timer_softirq+0x11e/0x180
+[  749.000349]  [<c0320b00>] ? dev_watchdog+0x0/0x19e
+[  749.000357]  [<c0320b00>] ? dev_watchdog+0x0/0x19e
+[  749.000365]  [<c01273c4>] __do_softirq+0x6d/0xdf
+[  749.000372]  [<c01275bf>] ? ksoftirqd+0x0/0xaa
+[  749.000379]  [<c012747e>] do_softirq+0x48/0x57
+[  749.000386]  [<c0127605>] ksoftirqd+0x46/0xaa
+[  749.000392]  [<c0133453>] kthread+0x3b/0x64
+[  749.000399]  [<c0133418>] ? kthread+0x0/0x64
+[  749.000406]  [<c0103cbf>] kernel_thread_helper+0x7/0x10
+[  749.000414]  =======================
+[  749.000418] ---[ end trace 3da383d73b29b600 ]---
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+At first I was having internet connection, and then a few minutes
+later nothing, but realized it was ipcomp that I didn't load.
+When this error occurs the music is streaming, then cuts out
+for a few seconds, and then back to streaming music.
 
-
-Thanks.
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+In any case could be madwifi, could be the kernel,
+better to send a post, than ignore it.
+regards;
+-- 
+Justin P. Mattock
