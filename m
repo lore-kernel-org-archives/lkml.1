@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYIBUyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYIBUze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbYIBUyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 16:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYIBUyA
+	id S1754154AbYIBUze (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 16:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYIBUz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 16:54:00 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:59375 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbYIBUx7 (ORCPT
+	Tue, 2 Sep 2008 16:55:27 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:38715 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbYIBUz0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 16:53:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Qaio3AICy+DJU2Ij5mHevdFuOzj2eTWbquY1KbCdvRONS0dQcL2yDRaLR2R1DmHZRA
-         zwfyuX7YDQRrIn61euWLkDq1w9zIRDpIcGMvM3O+0T7V8NBO3ahJKpU5L7d8fdaDvFbE
-         IV+pbgyjcCPr8kohDReoZe1cER8gDVtGJ6Gxk=
-Date: Tue, 2 Sep 2008 23:53:52 +0300
-From: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Dan Williams <dcbw@redhat.com>, Johannes Berg <johannes@sipsolutions.net>,
-       Zhu Yi <yi.zhu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       LKML <linux-kernel@vger.kernel.org>, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org,
-       Jan-Espen Pettersen <sigsegv@radiotube.org>
-Subject: Re: new: regression iwl3945/mac80211 endless after suspend
-	associate/deassociate loop
-Message-ID: <20080902205351.GB8230@google.com>
-References: <20080901160658.GA11063@google.com> <1220319536.28282.128.camel@debian.sh.intel.com> <4b0be9b641de902cb7de4ad50686f6e1.squirrel@secure.sipsolutions.net> <20080902130429.GB19172@google.com> <1220362201.3176.4.camel@borkbork.foobar.com> <20080902145840.GE19172@google.com> <20080902150625.GC3050@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080902150625.GC3050@tuxdriver.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 2 Sep 2008 16:55:26 -0400
+Date: Tue, 2 Sep 2008 17:55:44 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: herton@mandriva.com.br, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
+Message-ID: <20080902175544.131bc54e@doriath.conectiva>
+In-Reply-To: <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
+References: <20080902163532.436f8fbd@doriath.conectiva>
+	<alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
+Organization: Mandriva
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 11:06:25AM -0400, John W. Linville wrote:
-> On Tue, Sep 02, 2008 at 05:58:41PM +0300, Michael S. Tsirkin wrote:
-> > On Tue, Sep 02, 2008 at 09:30:01AM -0400, Dan Williams wrote:
-> > > On Tue, 2008-09-02 at 16:04 +0300, Michael S. Tsirkin wrote:
-> 
-> > > > But it happens to work fine without 8ab65b03b7893da4a49009e7e356e36e27b0c407.
-> > > 
-> > > That's really odd; that patch (the don't-send-empty-extended-rates-IE
-> > > patch) shouldn't have anything to do with this behavior, if it did you
-> > > wouldn't get associated to the AP in the first place I think.  You're
-> > > 100% sure that this patch is causing the problem?
-> > 
-> > No, not sure. But reverting it seems to have helped.
-> > And there does not seem to be anything else relevant between rc4 and
-> > rc5.
-> 
-> So you determined that commit by eye rather than by git bisect?
+Em Tue, 2 Sep 2008 22:18:25 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> escreveu:
 
-Yes.
+| On Tue, 2 Sep 2008, Luiz Fernando N. Capitulino wrote:
+| > 
+| >  I have a HP Pavilion dv6000 laptop here which doesn't boot with
+| > latest Linus tree (2.6.27-rc5).
+| > 
+| >  The last lines I see on the screen are:
+| > 
+| > """
+| > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+| > hpet0: 3 32-bit timers, 25 000000 Hz
+| > """
+| 
+| Sigh. I'm getting sick of that :)
 
-> Any chance I could talk you into confirming that using git bisect?
+ I can imagine... Will do my best to help, but I don't know anything
+about hpet. :(
 
-It's a bit time consuming because the bug triggers often, but not in
-100% of suspends. So you need to fiddle with it a bit after each
-bisect to figure out whether it's there.
+| >  I would try to revert it from current Linus' tree to see if it
+| > really fix the problem but turns out that it will take some time
+| > to work on the conflicts.
+| 
+| Don't do that. We really need to find out what the root cause of this
+| HPET wreckage on those AMD machine is. The commit in question _IS_ the
+| alleged culprit, but the root cause is something different.
 
-> Thanks,
-> 
-> John
-> -- 
-> John W. Linville
-> linville@tuxdriver.com
+ Okay, and thanks for the others explanations.
+
+| >  I'm attaching the 2.6.26.3 (Mandriva kernel) and 2.6.27-rc5 (with
+| > hpet=disable) dmesg files.
+| > 
+| >  Also, this _seems_ to be the same as reported in:
+| > 
+| > http://bugzilla.kernel.org/show_bug.cgi?id=11191
+| 
+| Yup.
+|  
+| >  But I'm still compiling the kernel with the appropriate config
+| > options to confirm this.
+| > 
+| >  Please, let me know if there's anything else I can do to
+| > help you debug this.
+| 
+| Can you please disable CONFIG_HPET ?
+
+ It still hangs but at a different point, the last two messages are:
+
+"""
+PCI: Using ACPI for IRQ routing
+DMAR:parse DMAR table failure.
+"""
+
+ Also, after about 10 minutes I get the same backtrace as reported in
+the ticket above... It's the same bug then.
+
+-- 
+Luiz Fernando N. Capitulino
