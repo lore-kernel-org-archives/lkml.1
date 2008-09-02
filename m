@@ -1,43 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752716AbYIBLIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYIBLJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752716AbYIBLIx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 07:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYIBLIn
+	id S1753494AbYIBLJK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 07:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYIBLIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 07:08:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60374 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751211AbYIBLIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 07:08:42 -0400
-Message-ID: <48BD1E30.8040602@kernel.org>
-Date: Tue, 02 Sep 2008 13:06:24 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-CC: device-mapper development <dm-devel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Problem w/ CONFIG_DEBUG_BLOCK_EXT_DEVT
-References: <48BD173B.3090600@hp.com> <48BD19B1.9040207@kernel.org> <48BD1BA5.1020604@hp.com>
-In-Reply-To: <48BD1BA5.1020604@hp.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Sep 2008 07:08:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:33459 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbYIBLIw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 07:08:52 -0400
+Subject: Re: [PATCH 11/13] hrtimer: turn hrtimers into range timers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de,
+       Fabio Checconi <fabio@gandalf.sssup.it>
+In-Reply-To: <1220343732.8609.19.camel@twins>
+References: <20080901160343.75a89ec9@infradead.org>
+	 <20080901161336.10a71c9f@infradead.org>  <1220343732.8609.19.camel@twins>
+Content-Type: text/plain
+Date: Tue, 02 Sep 2008 13:08:45 +0200
+Message-Id: <1220353725.8609.32.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Sep 2008 11:07:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan D. Brunelle wrote:
->>> (2) Device minor numbers can be quite large, and the 10-character limits
->>> in dm/lib/libdm-deptree.c are too small.
->> Would it be difficult to increase that?
+On Tue, 2008-09-02 at 10:22 +0200, Peter Zijlstra wrote:
+> On Mon, 2008-09-01 at 16:08 -0700, Arjan van de Ven wrote:
 > 
-> No, but knowing the upper bound would be helpful.
+> > @@ -847,7 +847,8 @@ static void enqueue_hrtimer(struct hrtimer *timer,
+> >                  * We dont care about collisions. Nodes with
+> >                  * the same expiry time stay together.
+> >                  */
+> > -               if (timer->expires.tv64 < entry->expires.tv64) {
+> > +               if (hrtimer_get_expires_tv64(timer) <
+> > +                               hrtimer_get_expires_tv64(entry)) {
+> >                         link = &(*link)->rb_left;
+> >                 } else {
+> >                         link = &(*link)->rb_right;
+> 
+> On Mon, 2008-09-01 at 16:13 -0700, Arjan van de Ven wrote:
+> 
+> > +static inline void hrtimer_set_expires_range(struct hrtimer *timer, ktime_t time, ktime_t delta)
+> > +{
+> > +       timer->_softexpires = time;
+> > +       timer->_expires = ktime_add_safe(time, delta);
+> > +}
+> 
+> > @@ -241,10 +259,19 @@ static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
+> >  	return timer->_expires;
+> >  }
+> >  
+> > +static inline ktime_t hrtimer_get_softexpires(const struct hrtimer *timer)
+> > +{
+> > +	return timer->_expires;
+> > +}
+> 
+> Somehow the function is called softexpires, but returns the hard expire
+> time...
+> 
+> >  static inline s64 hrtimer_get_expires_tv64(const struct hrtimer *timer)
+> >  {
+> >  	return timer->_expires.tv64;
+> >  }
+> > +static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
+> > +{
+> > +	return timer->_softexpires.tv64;
+> > +}
+> >  
+> >  static inline s64 hrtimer_get_expires_ns(const struct hrtimer *timer)
+> >  {
+> 
+> > @@ -1309,7 +1309,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+> >  
+> >  			timer = rb_entry(node, struct hrtimer, node);
+> >  
+> > -			if (basenow.tv64 < hrtimer_get_expires_tv64(timer)) {
+> > +			if (basenow.tv64 < hrtimer_get_softexpires_tv64(timer)) {
+> >  				ktime_t expires;
+> >  
+> >  				expires = ktime_sub(hrtimer_get_expires(timer),
+> 
+> I might be missing something, but this code only looks at the leftmost
+> timer, and we're indexed on the hard expire time, which might be rather
+> far to the right of here.
+> 
+> This means that esp for those timers for which we can save most we're
+> least likely to do so because we'll plain not see them.
 
-Well, dev_t is 32bits and MINORBITS is 20.  So, major 12 bits, minor 20
-bits, so 4 characters for major, 7 characters for minor.
+What you need is a data structure that supports stabbing queries on
+overlapping intervals, such like a Priority Search Tree.
 
--- 
-tejun
+If I'm not mistaken, then the augmented Red-Black tree from the EEVDF
+paper is identical to PST [*].
+
+This data-structure adds a Heap property to each RB-node, allowing one
+to search the tree on a different property.
+
+So what you can do in this case, is index the RB-tree on the soft
+expire, and index the heap on the hard expire.
+
+Then you can find the leftmost hard expire by traversing the tree using
+the heap property - and program the clock-event using that time.
+
+And you can search for soft expired entries using the RB-tree like we do
+now.
+
+
+[*] Fabio implemented it on top of the linux RB-tree for their wf2q+
+implementation that they used for their BFQ I/O scheduler:
+
+http://feanor.sssup.it/~fabio/linux/wfq/
+
+And I borrowed their implementation for my scheduler work:
+
+http://programming.kicks-ass.net/kernel-patches/sched-eevdf/sched-eedf.patch
+
+
+
