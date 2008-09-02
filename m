@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYIBQob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYIBRDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYIBQob (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 12:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbYIBQoW
+	id S1752724AbYIBRDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 13:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYIBRDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 12:44:22 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:5548 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbYIBQoV (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 12:44:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=m6zc9P8JLey7W0s24SmYnvWHeyNIS6MhKXDG1dgZaa5mw4a9qD7hnLKGT8RaAtp4bp
-         tDNrF4LEL+Pmub/9oH5ODixLkCGHmOmPFucYXYaO+Eu7xwAqxM8zLG5Ay500NeqbZ2Bg
-         dqv7G7RCg7dM6lylGM9pT3hqcOmrZaE0/LdiE=
-Message-ID: <6934efce0809020944s36dd7f82wec77c4189ef1b114@mail.gmail.com>
-Date: Tue, 2 Sep 2008 09:44:19 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-Cc: Linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>, tim.bird@am.sony.com,
-       cotte@de.ibm.com, nickpiggin@yahoo.com.au
-In-Reply-To: <Pine.LNX.4.64.0809021725480.3986@vixen.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 2 Sep 2008 13:03:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:50727 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751489AbYIBRDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 13:03:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Regression in 2.6.27 caused by commit bfc0f59
+Date: Tue, 02 Sep 2008 13:17:34 -0400
+Message-ID: <48BD752E.2000402@tmr.com>
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AD00C4.6060302@gmail.com>
-	 <Pine.LNX.4.64.0808221650500.17105@vixen.sonytel.be>
-	 <6934efce0808220951i5a2cd6f9t70f9c522eae6f1d6@mail.gmail.com>
-	 <Pine.LNX.4.64.0808281737150.28552@vixen.sonytel.be>
-	 <Pine.LNX.4.64.0809021725480.3986@vixen.sonytel.be>
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
+X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I found what's wrong.
->
-> The size of an AxFS image created by mkfs.axfs is always n*4096+4 bytes large.
-> So when it wants to check the magic value in the last 4 bytes, the block layer
-> tries to read a whole 512-byte sector, which fails for loop-mounted images.
->
-> If you test on real FLASH, additional bytes after the end of the AxFS image can
-> be read, hence it works.
->
-> By padding the image with 508 zero bytes, I can mount it, on both PS3 (ppc64)
-> and UML (ai32). I can even read images created on PS3.
+Linus Torvalds wrote:
+> 
+> On Tue, 2 Sep 2008, Thomas Gleixner wrote:
+>> We had the same problem versus the local APIC timer calibration, which
+>> had basically the same algorithm as the TSC one and we changed it to
+>> look at the PMTimer as well in the days where we debugged the initial
+>> wreckage caused by the nohz/highres changes.
+> 
+> Hmm.
+> 
+> So then how would you discover when it's reliable and when it's not? Just 
+> hardcode it for certain machines?
 
-Right.  We haven't tested loopback since we added the magic end value.
+Looking at values for old K6 machines, I would suspect that doing the 
+test three times and checking the deviation would be enough. If the 
+timer is emulated the value will jump around and if it is stable it 
+could be used. Considering that this is one use code you could increase 
+the number of trials to five or so, keeping the high and low. If 
+changing values are part of the problem, make them part of the solution.
+> 
+> One alternative might be to do the same "detect if it's SMM code by seeing 
+> how long the read takes" for the PIT reads themselves. Right now the code 
+> does it for the HPET timer read and for the PM_TIMER reads, but _not_ for 
+> the PIT status register reads.
+> 
+>> How do you prevent the SMM brain damage, when it hits 3 times in a row ? 
+> 
+> Well, the biggest problem is actually _detection_.
+> 
+> We have three different timers, and they all have their own problems. How 
+> do you reliably detect which one to use? The PM_TIMER clearly is _not_ 
+> always the answer here, but the code just assumes it is!
+> 
+> 			Linus
 
-How is one expected to read those last 4 bytes of a loopbacked file?
-Are they unreadable?  We can add the padding.   I am just wondering if
-this is a bug or a known limitation in the loopback handling or if
-there is a different safer way of reading block devs with truncated
-last blocks.
 
-> However, there still are weird things going on, like `find' not seeing all
-> files and directories, or just aborting, and `ls -lR' showing actual file
-> contents in its output.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-Do you see this behavior for all builds for just the PS3?
