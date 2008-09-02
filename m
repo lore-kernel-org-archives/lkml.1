@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbYIBWM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbYIBWNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754540AbYIBWM5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 18:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYIBWMt
+	id S1754745AbYIBWNV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 18:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYIBWNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 18:12:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59857 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753112AbYIBWMs (ORCPT
+	Tue, 2 Sep 2008 18:13:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53659 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754161AbYIBWNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 18:12:48 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: David Woodhouse <dwmw2@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andreas Dilger <adilger@sun.com>,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>, linux-nfs@vger.kernel.org
-In-Reply-To: <20080902214841.GA9204@infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-	 <1220262187.2982.58.camel@pmac.infradead.org>
-	 <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron>
-	 <20080902170954.GE3086@webber.adilger.int>
-	 <20080902210219.GA9856@infradead.org>
-	 <1220390769.2985.6.camel@pmac.infradead.org>
-	 <20080902214841.GA9204@infradead.org>
-Content-Type: text/plain
-Date: Tue, 02 Sep 2008 23:12:41 +0100
-Message-Id: <1220393561.2985.19.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 2 Sep 2008 18:13:05 -0400
+Message-ID: <48BDBA56.8050208@zytor.com>
+Date: Tue, 02 Sep 2008 15:12:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, resend] x86: x86_{phys,virt}_bits field also for i386
+References: <48B7FF46.76E4.0078.0@novell.com>
+In-Reply-To: <48B7FF46.76E4.0078.0@novell.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 17:48 -0400, Christoph Hellwig wrote:
-> On Tue, Sep 02, 2008 at 10:26:09PM +0100, David Woodhouse wrote:
-> > > We also called the filesystem part of the NFS filehandle in a few
-> > > places, and for those it's correct that it should be stable.  Currently
-> > > the fsid is either created from the dev_t in kernelspace or from
-> > > uuids extracted through libuuid in userspace.
-> > 
-> > Or from the f_fsid returned in statfs(), as of a week or so ago.
+Jan Beulich wrote:
+> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
+> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
 > 
-> I think that's a rather bad idea.  As mentioned before f_fsid is
-> basically random.
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>  
+>  	c->x86_cache_alignment = 32;
+>  	c->x86_clflush_size = 32;
+> +#ifdef CONFIG_X86_PAE
+> +	c->x86_phys_bits = 36;
+> +#else
+> +	c->x86_phys_bits = 32;
+> +#endif
+> +	c->x86_virt_bits = 32;
+>  
 
-It's not that bad. Of the file systems which actually fill it in...
+This is logical but wrong.  This is supposed to be about the CPU, not 
+about the kernel.
 
-For NTFS it's the volume serial number.
+That would mean using the physbit information if it is present, 
+otherwise (pae_feature_bit ? 36 : 32).
 
-For ext[234] it's the UUID xor-folded into 64 bits.
-For btrfs the same, but with the root object ID xor'd in too.
-
-For bfs and xfs it's the block device -- which isn't ideal, as Andreas
-points out, but is what we'd fall back to anyway.
-
-BFS seems to have a s_volume field which perhaps we could use, but we
-should check for it being all spaces and leave f_fsid as zero in that
-case. Presumably XFS could be using sb_uuid?
-
-For efs, it'll be either EFS_MAGIC or EFS_NEWMAGIC, which is probably a
-bad thing if you want to export multiple EFS file systems. I'll send a
-patch to fix that (by leaving it zero) shortly.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+	-hpa
