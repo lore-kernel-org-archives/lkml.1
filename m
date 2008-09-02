@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYIBA6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbYIBBES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbYIBA6S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Sep 2008 20:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYIBA6G
+	id S1753385AbYIBBES (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Sep 2008 21:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYIBBED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Sep 2008 20:58:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56592 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751276AbYIBA6G (ORCPT
+	Mon, 1 Sep 2008 21:04:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:11180 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYIBBEB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Sep 2008 20:58:06 -0400
-Date: Tue, 2 Sep 2008 01:40:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: forcedeth: option to disable 100Hz timer
-Message-ID: <20080902014058.0253cae2@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080902024748.5528d1bb@gmail.com>
-References: <20080902024748.5528d1bb@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Sep 2008 21:04:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=x8JEKNbY1ljqyEuz7j2jMw6n1Azj1sxMSk2UkDdYFwJv0J0lhfSmQX+epf0yErmMJJ
+         hW+iFWpEcyf6MbYwMpCnNnaObwlQT+3V47v9ssABd5DAWzTAZKtKCeBgAIxHbfoKtWcK
+         GCEfGwbglcWn64PDTtZrm+CbHQhsUv65FD4wI=
+Message-ID: <21d7e9970809011803w775a66c5t5f77db5c4761dc0a@mail.gmail.com>
+Date: Tue, 2 Sep 2008 11:03:58 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "David Howells" <dhowells@redhat.com>
+Subject: Re: [PATCH 09/59] CRED: Wrap task credential accesses in the DRM driver
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       "Serge Hallyn" <serue@us.ibm.com>
+In-Reply-To: <20080827134628.19980.80653.stgit@warthog.procyon.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080827134541.19980.61042.stgit@warthog.procyon.org.uk>
+	 <20080827134628.19980.80653.stgit@warthog.procyon.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Sep 2008 02:47:48 +0400
-Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com> wrote:
+On Wed, Aug 27, 2008 at 11:46 PM, David Howells <dhowells@redhat.com> wrote:
+> Wrap access to task credentials so that they can be separated more easily from
+> the task_struct during the introduction of COW creds.
+>
+> Change most current->(|e|s|fs)[ug]id to current_(|e|s|fs)[ug]id().
+>
+> Change some task->e?[ug]id to task_e?[ug]id().  In some places it makes more
+> sense to use RCU directly rather than a convenient wrapper; these will be
+> addressed by later patches.
+>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> Reviewed-by: James Morris <jmorris@namei.org>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Cc: David Airlie <airlied@linux.ie>
+> Cc: dri-devel@lists.sourceforge.net
+> ---
 
-> On some hardware no TX done interrupts are generated, thus special
-> 100Hz timer interrupt is required to handle this situation properly.
-> Other device do not require that timer interrupt feature.
-> 
-> Patch add a "disable_timerirq" option to disable interrupt timer 
-> mentioned above. This may be extremely usefull for laptop users.
+Acked, and queued in drm-next tree.
 
-Is it not possible to detect this case. Do the problem devices just miss
-some TX interrupts or generate most but not all ?
-
-Alan
+Dave.
