@@ -1,168 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYIBVEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbYIBVGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYIBVEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 17:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbYIBVEX
+	id S1754333AbYIBVGz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 17:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbYIBVGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 17:04:23 -0400
-Received: from mail.xtech.com.ar ([216.75.63.130]:48899 "EHLO
-	mail.xtech.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751489AbYIBVEW (ORCPT
+	Tue, 2 Sep 2008 17:06:47 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:61038 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYIBVGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 17:04:22 -0400
-X-Greylist: delayed 1399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Sep 2008 17:04:21 EDT
-Date: Tue, 2 Sep 2008 17:40:58 -0300
-From: Diego Woitasen <diego@woitasen.com.ar>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       herton@mandriva.com.br, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
-Message-ID: <20080902204058.GB17488@motherbox.xtech.com.ar>
-References: <20080902163532.436f8fbd@doriath.conectiva> <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
+	Tue, 2 Sep 2008 17:06:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Kj6uipv0z9r7NgaU01p30JUyWdn3hKCOE0YH0Gycu45K7nFPQ6lbJDqhnk9LJgtwY7
+         WYRRXymF9bdQ/+w+QXGv24C4So6jTHnTmKFRIRfQpHOk6SiKXeW5CgsQkO9D1d3C1Wzg
+         GtcREInuPHdCIwL8LcoL7OZq6BE1ieY+GKS1A=
+Date: Tue, 2 Sep 2008 23:06:46 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: peterz@infradead.org, mingo@redhat.com
+Subject: [2.6.27] early exception - lockdep related?
+Message-ID: <20080902210646.GA10925@dreamland.darkstar.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.0.2
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 10:18:25PM +0200, Thomas Gleixner wrote:
-> Luiz,
-> 
-> On Tue, 2 Sep 2008, Luiz Fernando N. Capitulino wrote:
-> > 
-> >  I have a HP Pavilion dv6000 laptop here which doesn't boot with
-> > latest Linus tree (2.6.27-rc5).
-> > 
-> >  The last lines I see on the screen are:
-> > 
-> > """
-> > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
-> > hpet0: 3 32-bit timers, 25 000000 Hz
-> > """
-> 
-> Sigh. I'm getting sick of that :)
->  
-> 
-> >  Then I bisected and git says that the culprit is:
-> > 
-> > """
-> > commit aa276e1cafb3ce9d01d1e837bcd67e92616013ac
-> > Author: Thomas Gleixner <tglx@linutronix.de>
-> > Date:   Mon Jun 9 19:15:00 2008 +0200
-> > 
-> >     x86, clockevents: add C1E aware idle function
-> 
-> Not surprising :)
-> 
-> >  Now, what puzzles me though is that if you do:
-> > 
-> > $ git checkout -b bla aa276e1cafb3ce9d01d1e837bcd67e92616013ac
-> > 
-> >  and edit the Makefile you will see that it is a 2.6.26-rc4
-> > kernel! When I saw this I thought 'wth? git bisect went backwards?'
-> > (I specified 2.6.26 as good and 2.6.27-rc1 as bad).
-> 
-> That's because the commit happened in the x86 git tree after
-> 2.6.26-rc4. In fact you checked out the branch of the x86 git tree
-> where the commit happened.
-> 
-> >  I don't know if this is known (it should be) but it seems that you
-> > have changed the Makefile during the merge of that commit... But
-> > I'm quite sure that this commit has been introduced in 2.6.27-rc1.
-> 
-> Yes, it was merged into Linus tree after 2.6.26 and before
-> 2.6.27-rc1. That's how git works. It keeps track from which point a
-> particular commit descended. If you look at the git tree with gitk,
-> then you will see the various points where a particular branch was
-> split off from Linus tree and when it was merged back.
-> 
-> Nothing to worry about.
->  
-> >  I would try to revert it from current Linus' tree to see if it
-> > really fix the problem but turns out that it will take some time
-> > to work on the conflicts.
-> 
-> Don't do that. We really need to find out what the root cause of this
-> HPET wreckage on those AMD machine is. The commit in question _IS_ the
-> alleged culprit, but the root cause is something different.
-> 
-> >  I'm attaching the 2.6.26.3 (Mandriva kernel) and 2.6.27-rc5 (with
-> > hpet=disable) dmesg files.
-> > 
-> >  Also, this _seems_ to be the same as reported in:
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11191
-> 
-> Yup.
->  
-> >  But I'm still compiling the kernel with the appropriate config
-> > options to confirm this.
-> > 
-> >  Please, let me know if there's anything else I can do to
-> > help you debug this.
-> 
-> Can you please disable CONFIG_HPET ?
-> 
-> Thanks,
-> 
-> 	tglx
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Hello,
+I'm seeing an early exception (0e) - which seems related to lockdep - at
+boot with many 2.6.27 kernels and I'm having troubles to track it down.
+The strange thing is that it comes and goes with different kernel
+versions, but a "bad" kernel consistently fails across reboots. It also
+seems to be sensitive to the configuration (attached), at least in one
+case the difference between a non-working kernel and a working one is
+CONFIG_DEBUG enabled in the latter.
 
-I'm not sure if it's related, but I have similar problems with
-CONFIG_NO_HZ and CONFIG_HIGH_RES_TIMERS. With the second one, the kernel
-shoot a kernel panic during the boot and with both enabled or with
-CONFIG_NO_HZ only crash after a while.
+The address printed is inside the function __lock_acqurie:
 
-I have this bug from 2.5.25 and works if I boot with hpet=disable. If I
-have some time this week will try a bisect.
+in __lock_acquire (/home/kronos/src/linux-2.6.git/kernel/lockdep.c:727).
+722
+723             /*
+724              * We can walk the hash lockfree, because the hash only
+725              * grows, and we are careful when adding entries to the end:
+726              */
+727             list_for_each_entry(class, hash_head, hash_entry) {
+728                     if (class->key == key) {
+729                             WARN_ON_ONCE(class->name != lock->name);
+730                             return class;
+731                     }
 
-Crash attached. I've got it with netconsole (with both optiones
-enabled):
+And the disassembly (faulting address is 0xffffffff80253b66)
 
-BUG: NMI Watchdog detected LOCKUP on CPU0, ip ffffffff8024af62, registers:
-CPU 0 
-Modules linked in: netconsole nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs dm_mod loop arc4 ecb crypto_blkcipher cryptomgr b43 rng_core mac80211 cfg80211 crc32 led_class bitrev snd_hda_intel snd_pcm_oss snd_pcm snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_timer snd_seq_device ohci1394 ohci_hcd ehci_hcd k8temp ieee1394 snd soundcore snd_page_alloc usbcore pcspkr i2c_nforce2 i2c_core psmouse ssb evdev
-Pid: 0, comm: swapper Not tainted 2.6.27-rc5-porti-00016-gcc08102-dirty #9
-RIP: 0010:[<ffffffff8024af62>]  [<ffffffff8024af62>] getnstimeofday+0x52/0xc0
-RSP: 0018:ffffffff80659e08  EFLAGS: 00000086
-RAX: ffffffff8061e800 RBX: 000000000011a78c RCX: 000000007f176538
-RDX: 00000000ffffffc2 RSI: 000000007f176570 RDI: ffffffff80659e48
-RBP: ffffffff80659e48 R08: ffffffff8061e780 R09: 00000000ffffffff
-R10: 0000000000000000 R11: ffffffff8021db70 R12: ffffffff8061e780
-R13: ffff88001b82700c R14: 0000000000000004 R15: 0000000000000000
-FS:  000000004128b950(0000) GS:ffffffff80650e80(0000) knlGS:00000000f7471720
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 00007f7bf13a8000 CR3: 000000000fc40000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 0, threadinfo ffffffff80658000, task ffffffff80615360)
-Stack:  ffffffff8021b490 000000000011a78c ffffffff80659e48 ffffffff80249270
- ffffffff80659e58 0000000000000000 000000dbd2b6d6b8 ffffffff802492ac
- 0000000048bae65f 0000000032e10398 0000000000000046 ffffffff8024e85d
-Call Trace:
- [<ffffffff8021b490>] ? lapic_next_event+0x0/0x10
- [<ffffffff80249270>] ? ktime_get_ts+0x30/0x60
- [<ffffffff802492ac>] ? ktime_get+0xc/0x50
- [<ffffffff8024e85d>] ? tick_broadcast_set_event+0x4d/0x60
- [<ffffffff8024ea92>] ? tick_broadcast_oneshot_control+0x102/0x130
- [<ffffffff8024e31d>] ? tick_notify+0x2ed/0x400
- [<ffffffff80249e07>] ? notifier_call_chain+0x37/0x70
- [<ffffffff8024dc55>] ? clockevents_notify+0x25/0xa0
- [<ffffffff803fa8d7>] ? acpi_idle_enter_bm+0x138/0x386
- [<ffffffff8048e4b8>] ? cpuidle_idle_call+0xd8/0x130
- [<ffffffff8020a859>] ? cpu_idle+0x49/0xa0
+0xffffffff80253b00 <__lock_acquire+299>:        shr    $0x34,%rax
+0xffffffff80253b04 <__lock_acquire+303>:        shl    $0x4,%rax
+0xffffffff80253b08 <__lock_acquire+307>:        lea    -0x7f57e9b0(%rax),%rdx
+0xffffffff80253b0f <__lock_acquire+314>:        mov    -0x7f57e9b0(%rax),%r13
+0xffffffff80253b16 <__lock_acquire+321>:        jmp    0xffffffff80253b66 <__lock_acquire+401>
+0xffffffff80253b18 <__lock_acquire+323>:        cmp    %r8,0x20(%r13)
+0xffffffff80253b1c <__lock_acquire+327>:        jne    0xffffffff80253b63 <__lock_acquire+398>
+0xffffffff80253b1e <__lock_acquire+329>:        mov    -0x90(%rbp),%r10
+0xffffffff80253b25 <__lock_acquire+336>:        mov    0x10(%r10),%r10
+0xffffffff80253b29 <__lock_acquire+340>:        cmp    %r10,0x140(%r13)
+0xffffffff80253b30 <__lock_acquire+347>:        je     0xffffffff80253ea0 <__lock_acquire+1227>
+0xffffffff80253b36 <__lock_acquire+353>:        cmpl   $0x0,0x51dc4f(%rip)
+  # 0xffffffff8077178c <__warned.16970>
+0xffffffff80253b3d <__lock_acquire+360>:        jne    0xffffffff80253ea0 <__lock_acquire+1227>
+0xffffffff80253b43 <__lock_acquire+366>:        mov    $0x2d9,%esi
+0xffffffff80253b48 <__lock_acquire+371>:        mov    $0xffffffff805691c7,%rdi
+0xffffffff80253b4f <__lock_acquire+378>:        callq  0xffffffff80232bae <warn_on_slowpath>
+0xffffffff80253b54 <__lock_acquire+383>:        movl   $0x1,0x51dc2e(%rip)
+  # 0xffffffff8077178c <__warned.16970>
+0xffffffff80253b5e <__lock_acquire+393>:        jmpq   0xffffffff80253ea0 <__lock_acquire+1227>
+0xffffffff80253b63 <__lock_acquire+398>:        mov    %rax,%r13 
+0xffffffff80253b66 <__lock_acquire+401>:        mov    0x0(%r13),%rax <-- HERE
+0xffffffff80253b6a <__lock_acquire+405>:        cmp    %rdx,%r13
+0xffffffff80253b6d <__lock_acquire+408>:        prefetcht0 (%rax)
+0xffffffff80253b70 <__lock_acquire+411>:        jne    0xffffffff80253b18 <__lock_acquire+323>
+0xffffffff80253b72 <__lock_acquire+413>:        callq  0xffffffff802513ba <static_obj>
+0xffffffff80253b77 <__lock_acquire+418>:        test   %eax,%eax
+0xffffffff80253b79 <__lock_acquire+420>:        jne    0xffffffff80253ba8 <__lock_acquire+467>
+0xffffffff80253b7b <__lock_acquire+422>:        callq  0xffffffff8031db50 <debug_locks_off>
+0xffffffff80253b80 <__lock_acquire+427>:        mov    $0xffffffff80569212,%rdi
+0xffffffff80253b87 <__lock_acquire+434>:        xor    %eax,%eax
+0xffffffff80253b89 <__lock_acquire+436>:        callq  0xffffffff80487bd3 <printk>
+0xffffffff80253b8e <__lock_acquire+441>:        mov    $0xffffffff8056923c,%rdi
+0xffffffff80253b95 <__lock_acquire+448>:        xor    %eax,%eax
+0xffffffff80253b97 <__lock_acquire+450>:        callq  0xffffffff80487bd3 <printk>
+0xffffffff80253b9c <__lock_acquire+455>:        mov    $0xffffffff8056926c,%rdi
+0xffffffff80253ba3 <__lock_acquire+462>:        jmpq   0xffffffff8025477c <__lock_acquire+3495>
+0xffffffff80253ba8 <__lock_acquire+467>:        mov    -0x90(%rbp),%rdx
+0xffffffff80253baf <__lock_acquire+474>:        mov    (%rdx),%rax
+0xffffffff80253bb2 <__lock_acquire+477>:        pushfq
+0xffffffff80253bb3 <__lock_acquire+478>:        popq   -0x68(%rbp)
+0xffffffff80253bb6 <__lock_acquire+481>:        cli
+0xffffffff80253bb7 <__lock_acquire+482>:        mov    $0x100,%ebx
+0xffffffff80253bbc <__lock_acquire+487>:        lock xadd %bx,0x51dbcb(%rip)
+    # 0xffffffff80771790 <lockdep_lock>
+0xffffffff80253bc5 <__lock_acquire+496>:        cmp    %bh,%bl
+0xffffffff80253bc7 <__lock_acquire+498>:        je     0xffffffff80253bd3 <__lock_acquire+510>
+0xffffffff80253bc9 <__lock_acquire+500>:        pause
+0xffffffff80253bcb <__lock_acquire+502>:        mov    0x51dbbf(%rip),%bl
+ # 0xffffffff80771790 <lockdep_lock>
+0xffffffff80253bd1 <__lock_acquire+508>:        jmp    0xffffffff80253bc5 <__lock_acquire+496>
+0xffffffff80253bd3 <__lock_acquire+510>:        cmpl   $0x0,0x397676(%rip)
+  # 0xffffffff805eb250 <debug_locks>
+0xffffffff80253bda <__lock_acquire+517>:        jne    0xffffffff80253beb <__lock_acquire+534>
+0xffffffff80253bdc <__lock_acquire+519>:        incb   0x51dbae(%rip)        # 0xffffffff80771790 <lockdep_lock>
+0xffffffff80253be2 <__lock_acquire+525>:        pushq  -0x68(%rbp)
+0xffffffff80253be5 <__lock_acquire+528>:        popfq
 
-00 48 f1 00 89 45 8b ee e6 48 45 8b 05 47 ff 50 48 48 8b e6 <48> 70 60 30 23 8b 48 0f f2 ee ---[ end trace 47710009e5854d1c ]---
-Kernel panic - not syncing: Attempted to kill the idle task!
+I actually tried to bisect it using an early working kernel and this first
+(read: the first pull from Linus' tree that gave me a broken kernel). The
+result is inconclusive, the commit pointed out was:
 
---------------
-Diego Woitasen
---------------
+e5f363e358cf16e4ad13a6826e15088c5495efe9 is first bad commit
+commit e5f363e358cf16e4ad13a6826e15088c5495efe9
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Mon Aug 11 12:37:27 2008 +0200
+
+    lockdep: increase MAX_LOCKDEP_KEYS
+
+    certain configs produce:
+
+     [   70.076229] BUG: MAX_LOCKDEP_KEYS too low!
+     [   70.080230] turning off the locking correctness validator.
+
+    tune them up.
+
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+but reverting it didn't make any difference.
+
+Is there any other action that I can take to debug this issue? Btw, do you
+think that kgdb can be usefull? I can give it a try in the weekend...
+
+Luca
+-- 
+Carpe diem, quam minimum credula postero. (Q. Horatius Flaccus)
