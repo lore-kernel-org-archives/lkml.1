@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbYIBKte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbYIBKyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468AbYIBKte (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 06:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYIBKt0
+	id S1752505AbYIBKyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 06:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYIBKyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 06:49:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60612 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbYIBKtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 06:49:25 -0400
-Message-ID: <48BD19B1.9040207@kernel.org>
-Date: Tue, 02 Sep 2008 12:47:13 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-CC: device-mapper development <dm-devel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Problem w/ CONFIG_DEBUG_BLOCK_EXT_DEVT
-References: <48BD173B.3090600@hp.com>
-In-Reply-To: <48BD173B.3090600@hp.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 2 Sep 2008 06:54:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56961 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbYIBKyL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 06:54:11 -0400
+Date: Tue, 2 Sep 2008 19:57:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+Message-Id: <20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48BD119B.8020605@linux.vnet.ibm.com>
+References: <20080831174756.GA25790@balbir.in.ibm.com>
+	<200809011656.45190.nickpiggin@yahoo.com.au>
+	<20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com>
+	<200809011743.42658.nickpiggin@yahoo.com.au>
+	<48BD0641.4040705@linux.vnet.ibm.com>
+	<20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BD0E4A.5040502@linux.vnet.ibm.com>
+	<20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BD119B.8020605@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Sep 2008 10:48:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 02 Sep 2008 15:42:43 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >>>> Kamezawa-San, I would like to integrate the radix tree patches after review and
+> >>>> some more testing then integrate your patchset on top of it. Do you have any
+> >>>> objections/concerns with the suggested approach?
+> >>>>
+> >>> please show performance number first.
+> >> Yes, that is why said some more testing. I am running lmbench and kernbench on
+> >> it and some other tests, I'll get back with numbers.
+> >>
+> > A test which is not suffer much from I/O is better.
+> > And please don't worry about my patches. I'll reschedule if yours goes first.
+> > 
+> Thanks, I'll try and find the right set of tests.
 
-Alan D. Brunelle wrote:
-> I have found two problems in LVM2/DM w/ a potential new "experimental
-> feature" in 2.6.28: CONFIG_DEBUG_BLOCK_EXT_DEVT (this is from Jens
-> Axboe's origin/for-2.6.28 git branch)
+Maybe it's good time to share my concerns.
 
-It's a debug option and I don't expect it to be enabled in any
-production kernel.
+IMHO, the memory resource controller is for dividing memory into groups.
 
-> "Conventionally, block device numbers are allocated from predetermined
-> contiguous area.  However, extended block area may introduce
-> non-contiguous block device numbers.  This option forces most block
-> device numbers to be allocated from the extended space and spreads them
-> to discover kernel or userland code paths which assume predetermined
-> contiguous device number allocation."
-> 
-> W/ LVM2 & DM there are (at least) two issues:
-> 
-> (1) Device major numbers for some reason are /not/ being entered
-> correctly into /proc/devices -- w/ CONFIG_DEBUG_BLOCK_EXT_DEVT=y I am
-> seeing some devices w/ major "259" (a SATA controller) but no entry in
-> /proc/devices. LVM2/DM will not find the entry in /proc/devices, and not
-> allow any device w/ that major to be used with LVM commands.
+We have following choices to divide memory into groups, now.
+  - cpuset(+ fake NUMA)
+  - VM (kvm, Xen, etc...)
+  - memory resource controller. (memcg)
 
-Hmmm.. Adding a call to register_blkdev(), which will create the
-corresponding entry in /proc/devices, isn't difficult at all but which
-name would it use?  It'll be mix of block devices (hd and sds
-currently).  If we introduce a new name there, say, ext-block, would
-that work?  BTW, is there any specific reason why LVM2/DM can't use
-/sys/block/* ?
+Considering 3 aspects peformance, flexibility, isolation(security).
+My expectaion is
 
-> (2) Device minor numbers can be quite large, and the 10-character limits
-> in dm/lib/libdm-deptree.c are too small.
+peroformance   : cpuset > memcg >> VMs
+flexibility    : memcg  > VMs >> cpuset.
+isolation      : VMs >> cpuset >= memcg
 
-Would it be difficult to increase that?
+The word 'flexibility' sounds sweet *but* it's just one of aspects.
+If the peformance is cpuset > VMs > memcg, I'll advise users to use VMs.
 
-Thanks.
+I think VMs are getting faster and faster. memcg will be slower when we add new
+'fancy' feature more. (I think we need some more features.)
+So, I want to keep memcg fast as much as possible at this stage.
 
--- 
-tejun
+But yes, memory usage overhead of page->page_cgroup, struct page_cgroup is big
+on 32bit arch. I'll say users to use VMs, maybe ;)
+
+Thanks,
+-Kame
+
