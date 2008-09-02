@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYIBV00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYIBV1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbYIBV00 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 17:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYIBV0P
+	id S1754442AbYIBV1c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 17:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYIBV1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 17:26:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:46102 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbYIBV0O (ORCPT
+	Tue, 2 Sep 2008 17:27:24 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:58488 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbYIBV1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 17:26:14 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: David Woodhouse <dwmw2@infradead.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andreas Dilger <adilger@sun.com>,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-In-Reply-To: <20080902210219.GA9856@infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-	 <1220262187.2982.58.camel@pmac.infradead.org>
-	 <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron>
-	 <20080902170954.GE3086@webber.adilger.int>
-	 <20080902210219.GA9856@infradead.org>
-Content-Type: text/plain
-Date: Tue, 02 Sep 2008 22:26:09 +0100
-Message-Id: <1220390769.2985.6.camel@pmac.infradead.org>
+	Tue, 2 Sep 2008 17:27:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=xQGGasZYh/KGA+oXVm2H5ahqnuxNDF8hm/cotbgmNqc12+LfQMgHyyUtIu7s1KmRBD
+         1sdzqF/qrfqBlYrDPgzbbiz05ZgIs+On+y4gFlgdjag6wtjrrhQ6MLSxDNtAcA0fGWWY
+         zPSimpJi1gwY8kWtqx5ZLJy3HQC0USVVKfDdM=
+Subject: [PATCH] tty: remove unused variable canon_change
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 02 Sep 2008 14:27:21 -0700
+Message-Id: <1220390841.2137.10.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 17:02 -0400, Christoph Hellwig wrote:
-> On Tue, Sep 02, 2008 at 11:09:54AM -0600, Andreas Dilger wrote:
-> > The fsid is supposed to be a persistent, unique identifier for the
-> > filesystem, used by NFS in file handles.  Using st_dev is unsafe,
-> > because that may change from one server boot to the next, because
-> > of device probing order, driver changes, etc.  Also, not all filesystems
-> > HAVE a valid st_dev in the first place, which is the whole reason
-> > for this thread.
-> > 
-> > I think a ->get_fsid() export method would be preferable.
-> 
-> Umm, different things.  f_fsid in stat(v)fs is just a cookie exported to
-> userspac that has never really been documented.
-> 
-> We also called the filesystem part of the NFS filehandle in a few
-> places, and for those it's correct that it should be stable.  Currently
-> the fsid is either created from the dev_t in kernelspace or from
-> uuids extracted through libuuid in userspace.
+drivers/char/tty_ioctl.c: In function ‘change_termios’:
+drivers/char/tty_ioctl.c:492: warning: unused variable ‘canon_change’
 
-Or from the f_fsid returned in statfs(), as of a week or so ago.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+new warning in next-20080902
 
-> I can't see anything in the message that started this thread that
-> mentions NFS, btw.
+ drivers/char/tty_ioctl.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-That was Artem's motivation for filling in f_fsid in the first place.
-Does anything else even _care_ about f_fsid? 
-
+diff --git a/drivers/char/tty_ioctl.c b/drivers/char/tty_ioctl.c
+index 17e6a98..a408c8e 100644
+--- a/drivers/char/tty_ioctl.c
++++ b/drivers/char/tty_ioctl.c
+@@ -489,7 +489,6 @@ EXPORT_SYMBOL(tty_termios_hw_change);
+ 
+ static void change_termios(struct tty_struct *tty, struct ktermios *new_termios)
+ {
+-	int canon_change;
+ 	struct ktermios old_termios;
+ 	struct tty_ldisc *ld;
+ 	unsigned long flags;
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+1.6.0.1.400.ga23d3
 
 
 
