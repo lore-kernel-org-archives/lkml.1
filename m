@@ -1,59 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbYIBLOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752950AbYIBLPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbYIBLOo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 07:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYIBLOI
+	id S1752950AbYIBLPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 07:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbYIBLPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 07:14:08 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:30937 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248AbYIBLOG (ORCPT
+	Tue, 2 Sep 2008 07:15:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56519 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbYIBLPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 07:14:06 -0400
-X-BigFish: VPS13(z329epba6izzz10d3izzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K6KF6V-04-A5Q-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-CC: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/2] x86, gart: add detection of AMD family 0x11 northbridges
-Date: Tue, 2 Sep 2008 13:13:40 +0200
-Message-ID: <1220354020-4883-3-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1220354020-4883-1-git-send-email-joerg.roedel@amd.com>
-References: <1220354020-4883-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 02 Sep 2008 11:13:40.0661 (UTC) FILETIME=[F442E650:01C90CEC]
-MIME-Version: 1.0
+	Tue, 2 Sep 2008 07:15:33 -0400
+Subject: Re: [PATCH 11/13] hrtimer: turn hrtimers into range timers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de,
+       Fabio Checconi <fabio@gandalf.sssup.it>
+In-Reply-To: <1220353725.8609.32.camel@twins>
+References: <20080901160343.75a89ec9@infradead.org>
+	 <20080901161336.10a71c9f@infradead.org>  <1220343732.8609.19.camel@twins>
+	 <1220353725.8609.32.camel@twins>
 Content-Type: text/plain
+Date: Tue, 02 Sep 2008 13:15:29 +0200
+Message-Id: <1220354129.8609.36.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the detection of the northbridges in the AMD family 0x11
-processors. It also fixes the magic numbers there while changing this code.
+On Tue, 2008-09-02 at 13:08 +0200, Peter Zijlstra wrote:
+> On Tue, 2008-09-02 at 10:22 +0200, Peter Zijlstra wrote:
+> > On Mon, 2008-09-01 at 16:08 -0700, Arjan van de Ven wrote:
+> > 
+> > > @@ -847,7 +847,8 @@ static void enqueue_hrtimer(struct hrtimer *timer,
+> > >                  * We dont care about collisions. Nodes with
+> > >                  * the same expiry time stay together.
+> > >                  */
+> > > -               if (timer->expires.tv64 < entry->expires.tv64) {
+> > > +               if (hrtimer_get_expires_tv64(timer) <
+> > > +                               hrtimer_get_expires_tv64(entry)) {
+> > >                         link = &(*link)->rb_left;
+> > >                 } else {
+> > >                         link = &(*link)->rb_right;
+> > 
+> > On Mon, 2008-09-01 at 16:13 -0700, Arjan van de Ven wrote:
+> > 
+> > > +static inline void hrtimer_set_expires_range(struct hrtimer *timer, ktime_t time, ktime_t delta)
+> > > +{
+> > > +       timer->_softexpires = time;
+> > > +       timer->_expires = ktime_add_safe(time, delta);
+> > > +}
+> > 
+> > > @@ -241,10 +259,19 @@ static inline ktime_t hrtimer_get_expires(const struct hrtimer *timer)
+> > >  	return timer->_expires;
+> > >  }
+> > >  
+> > > +static inline ktime_t hrtimer_get_softexpires(const struct hrtimer *timer)
+> > > +{
+> > > +	return timer->_expires;
+> > > +}
+> > 
+> > Somehow the function is called softexpires, but returns the hard expire
+> > time...
+> > 
+> > >  static inline s64 hrtimer_get_expires_tv64(const struct hrtimer *timer)
+> > >  {
+> > >  	return timer->_expires.tv64;
+> > >  }
+> > > +static inline s64 hrtimer_get_softexpires_tv64(const struct hrtimer *timer)
+> > > +{
+> > > +	return timer->_softexpires.tv64;
+> > > +}
+> > >  
+> > >  static inline s64 hrtimer_get_expires_ns(const struct hrtimer *timer)
+> > >  {
+> > 
+> > > @@ -1309,7 +1309,7 @@ void hrtimer_interrupt(struct clock_event_device *dev)
+> > >  
+> > >  			timer = rb_entry(node, struct hrtimer, node);
+> > >  
+> > > -			if (basenow.tv64 < hrtimer_get_expires_tv64(timer)) {
+> > > +			if (basenow.tv64 < hrtimer_get_softexpires_tv64(timer)) {
+> > >  				ktime_t expires;
+> > >  
+> > >  				expires = ktime_sub(hrtimer_get_expires(timer),
+> > 
+> > I might be missing something, but this code only looks at the leftmost
+> > timer, and we're indexed on the hard expire time, which might be rather
+> > far to the right of here.
+> > 
+> > This means that esp for those timers for which we can save most we're
+> > least likely to do so because we'll plain not see them.
+> 
+> What you need is a data structure that supports stabbing queries on
+> overlapping intervals, such like a Priority Search Tree.
+> 
+> If I'm not mistaken, then the augmented Red-Black tree from the EEVDF
+> paper is identical to PST [*].
+> 
+> This data-structure adds a Heap property to each RB-node, allowing one
+> to search the tree on a different property.
+> 
+> So what you can do in this case, is index the RB-tree on the soft
+> expire, and index the heap on the hard expire.
+> 
+> Then you can find the leftmost hard expire by traversing the tree using
+> the heap property - and program the clock-event using that time.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/k8.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Even better, in the implementations below, the leftmost heap propery can
+be read from the root node, so if, as with the clock event, you don't
+actually need the entry itself, but just the time, you can find it by
+reading the heap propery of the root node.
 
-diff --git a/arch/x86/kernel/k8.c b/arch/x86/kernel/k8.c
-index 7377ccb..304d8ba 100644
---- a/arch/x86/kernel/k8.c
-+++ b/arch/x86/kernel/k8.c
-@@ -16,8 +16,9 @@ EXPORT_SYMBOL(num_k8_northbridges);
- static u32 *flush_words;
- 
- struct pci_device_id k8_nb_ids[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1103) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x1203) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MISC) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
- 	{}
- };
- EXPORT_SYMBOL(k8_nb_ids);
--- 
-1.5.3.7
+Which saves a whole log(n) tree traversal ;-)
 
+Same goes for reprogramming the clock event on insert and delete, just
+check the root heap property for change.
+
+> And you can search for soft expired entries using the RB-tree like we do
+> now.
+> 
+> 
+> [*] Fabio implemented it on top of the linux RB-tree for their wf2q+
+> implementation that they used for their BFQ I/O scheduler:
+> 
+> http://feanor.sssup.it/~fabio/linux/wfq/
+> 
+> And I borrowed their implementation for my scheduler work:
+> 
+> http://programming.kicks-ass.net/kernel-patches/sched-eevdf/sched-eedf.patch
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
