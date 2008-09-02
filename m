@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751890AbYIBMEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbYIBMIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751890AbYIBMEW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 08:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYIBMEO
+	id S1752056AbYIBMIg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 08:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYIBMI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 08:04:14 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:63309 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751200AbYIBMEN (ORCPT
+	Tue, 2 Sep 2008 08:08:29 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:14019 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbYIBMI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 08:04:13 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v3] usb: add Freescale QE/CPM USB peripheral controller driver
-Date: Tue, 2 Sep 2008 14:01:24 +0200
-User-Agent: KMail/1.9.9
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, dbrownell@users.sourceforge.net,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       avorontsov@ru.mvista.com
-References: <1220356690-8028-1-git-send-email-leoli@freescale.com>
-In-Reply-To: <1220356690-8028-1-git-send-email-leoli@freescale.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 2 Sep 2008 08:08:28 -0400
+From: David Sanders <linux@sandersweb.net>
+Reply-To: linux@sandersweb.net
+To: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+Date: Tue, 2 Sep 2008 08:08:22 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <andi-suse@firstfloor.org>
+References: <200808311422.12525.linux@sandersweb.net> <200809011623.12518.linux@sandersweb.net> <alpine.LFD.1.10.0809011521270.12958@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809011521270.12958@nehalem.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809021401.25506.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+ps6YcVnzZfPpcjjj0zuLvsnOeZZ2fJOG0LQO
- 1feKBD6YkAn7/QPkLeHW1+MDAb1SyQNE0QuRTAJnQFNoIRb6QI
- 3zo83sa0u8Fruma6COOOg==
+Message-Id: <200809020808.23131.linux@sandersweb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 September 2008, Li Yang wrote:
-> Some of Freescale SoC chips have a QE or CPM co-processor which
-> supports full speed USB.  The driver adds device mode support
-> of both QE and CPM USB controller to Linux USB gadget.  The
-> driver is tested with MPC8360 and MPC8272, and should work with
-> other models having QE/CPM given minor tweaks.
-> 
-> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
+On Monday 01 September 2008 18:22, Linus Torvalds wrote:
+> On Mon, 1 Sep 2008, David Sanders wrote:
+> > OK, below is my patch.  The problem is I just built with it and the boot
+> > problem still exists.  Either the patch is flawed or git-bisect gave me
+> > the wrong commit.  Any help would be appreciated.
+>
+> Try just reverting the commit that you bisected to, and double-check. If
+> your bisect was flawed, there's no point even staring at the nop code ;)
+>
+> 		Linus
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
-
-All my previous review comments have been addressed.
-
-> +	udc_controller->soc_type = (unsigned long)np->data;
-
-I'm not sure about this line, shouldn't that be
-	udc_controller->soc_type = (unsigned long)match->data; ?
-
-	Arnd <><
+Thanks Linus.
+I reverted the commit and the problem persits, so nops are definitely not the 
+problem.  I started an new bisection but am now in a state that won't compile 
+due to errors.  What do I do in that case?
+David
