@@ -1,52 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYIBPZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbYIBP1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbYIBPZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 11:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYIBPZe
+	id S1753016AbYIBP1t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 11:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYIBP1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 11:25:34 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3169 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751267AbYIBPZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 11:25:34 -0400
-Date: Tue, 2 Sep 2008 17:25:18 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Tejun Heo <tj@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       Takashi Iwai <tiwai@suse.de>, fuse-devel@lists.sourceforge.net
-Subject: Re: [ANNOUNCE] OSS Proxy using CUSE
-Message-ID: <20080902152517.GA4758@ucw.cz>
-References: <48B6F711.1040604@kernel.org> <20080828200120.GA16462@cs181140183.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080828200120.GA16462@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.9i
+	Tue, 2 Sep 2008 11:27:42 -0400
+Received: from smtp-out2.iol.cz ([194.228.2.87]:40713 "EHLO smtp-out2.iol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbYIBP1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 11:27:42 -0400
+X-Greylist: delayed 1389 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Sep 2008 11:27:41 EDT
+Message-ID: <48BD55C3.1000807@quick.cz>
+Date: Tue, 02 Sep 2008 17:03:31 +0200
+From: Martin Doucha <next_ghost@quick.cz>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080620)
+MIME-Version: 1.0
+To: matthieu castet <castet.matthieu@free.fr>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: re : ACPI PnP on Intel MU440EX
+References: <48BAD734.305@free.fr> <48BC5080.2040607@free.fr>
+In-Reply-To: <48BC5080.2040607@free.fr>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > So, after all the fuss, here's the state-of-the-art standard-compliant
-> > cloud-computing web-3.0-beta web page for OSS emulation using CUSE.
-> > 
-> >   http://userweb.kernel.org/~tj/ossp/
-> > 
-> > It works pretty well here.  :-)
-> 
-> Sorry for being destructive, but 6 years after ALSA went into the
-> kernel we are slightly approaching the point where all applications 
-> support ALSA.
-
-Did ALSA reach a point where you can support new cards by just
-updating the kernel?
-
-I kind of like /dev/dsp interface... and don't see why simple sound
-apps should be linked to libalsa... I used to record and play sounds
-from shell by cat /dev/dsp...
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Uhh, no, it's device 00:0a on line 1 and kernel says it's disabled?! 
+It's enabled in BIOS and dmesg doesn't mention it so why is it disabled?
