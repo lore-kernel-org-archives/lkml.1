@@ -1,123 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIBO3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYIBOgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbYIBO3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 10:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYIBO3h
+	id S1753004AbYIBOgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 10:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYIBOgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 10:29:37 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40842 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbYIBO3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 10:29:36 -0400
-Message-ID: <48BD4DCE.9020507@s5r6.in-berlin.de>
-Date: Tue, 02 Sep 2008 16:29:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Tue, 2 Sep 2008 10:36:07 -0400
+Received: from smtp03.osg.ufl.edu ([128.227.74.70]:43236 "EHLO smtp.ufl.edu"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751351AbYIBOgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 10:36:06 -0400
+Message-ID: <1147742858.207301220366162943.JavaMail.osg@osgjas01.cns.ufl.edu>
+Date: Tue, 2 Sep 2008 10:36:02 -0400 (EDT)
+From: "CHADHA,VINEET" <vineet@ufl.edu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>, "CHADHA,VINEET" <vineet@ufl.edu>
+Subject: Re: TLB evaluation for Linux
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Michael Krufky <mkrufky@linuxtv.org>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Mike Isely <isely@pobox.com>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [v4l-dvb-maintainer] [PULL]	http://linuxtv.org/hg/~mcisely/pvrusb2
-References: <Pine.LNX.4.64.0808312020060.16986@cnc.isely.net>	<20080902061821.4df5cba4@mchehab.chehab.org> <Pine.LNX.4.64.0809020815060.16986@cnc.isely.net> <48BD3FCC.2030206@linuxtv.org>
-In-Reply-To: <48BD3FCC.2030206@linuxtv.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; format=flowed; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Mailer: GatorMail WebMail (http://GatorMail.sf.net/)
+X-Originating-IP: 10.5.153.246 [10.5.153.246]
+X-UFL-Spam-Status: hits=-2.5, required=5, tests=ALL_TRUSTED,TW_VL
+X-UFL-Scanned-By: CNS Open Systems Group (http://open-systems.ufl.edu/services/smtp-relay/)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Krufky wrote:
-> Mike Isely wrote:
->> On Tue, 2 Sep 2008, Mauro Carvalho Chehab wrote:
->>> Please: don't do tricks like this to cheat with checkpatch.pl. The error is
->>> there to point to a Coding Style violation.
->>>
->>> +	if (ret < 0) {
->>> +		/* Keep checkpatch.pl quiet */
->>> +		return ret;
->>> +	}
-[...]
->> Forcing this style:
->>
->> 	if (a)
->> 		b;
->>
->> As opposed to the much safer
->>
->> 	if (a) {
->> 		b;
->> 	}
->>
->> is a huge mistake.  Both generate the same code; the second form is 
->> robust against someone later inserting a printk
-[...]
+Thanks Nick.
 
-If you need this kind of safety measures against errors in future code
-changes, could it be that you have some general QA problems?
+A PhD dissertation to study scalability of micro-kernels can be 
+found :
 
-(However, why waste time arguing over braces or not?)
+http://l4ka.org/publications/2005/uhlig_phd-thesis_scalability.pdf
 
-> I understand that kernel codingstyle forbids single line bracketing,
+An example of study I would like to do through Full system 
+simulator is in Figure 4.11.
 
-CodingStyle currently says that braces are not to be used there, *but*
-it does not give any explanation for it (other than hinting that the
-braces are unnecessary).
+Regarding TLB flushing modifications, I will get back to you (and 
+mailing list) after I get a better understanding of source code.
 
-It is important to remember that many rules in CodingStyle are _not_
-hard rules but just widely (though not universally) accepted
-conventions.  And more importantly, checkpatch is even less
-authoritative than CodingStyle.  It only gives hints and
-recommendations, even if it reports an "error".
+Regards,
+Vineet
 
-If a driver author/maintainer has been using
-	if (a) {
-		b;
-	}
-consistently in his driver all the time, why not leave it this way?  It
-arguably does not hurt readability.
 
-> but
-> codingstyle does not forbid adding comments anywhere in the c source.
+On Tue Sep 02 00:39:00 EDT 2008, Nick Piggin 
+<nickpiggin@yahoo.com.au> wrote:
 
-Reread the section on commenting.  One very important rule in the Linux
-kernel coding style is that we comment sparingly.  We comment with the
-goal to keep code readable.
-
-This /* I'll trick checkpatch */ comment is only distracting the reader.
-It serves no purpose whatsoever, except to manipulate the output of some
-random code submission checking tool.
-
-> Mike added a comment, to create a compromise between kernel codingstyle
-> and his own.
-
-The coding style does not contain a rule that says "you may use braces
-around single statement blocks if you add a silly, useless, distracting
-comment as compensation, because coding style is all about what
-checkpatch reports, not about writing well maintainable code".
-
-> This code comes from Mike's svn repository, where he uses
-> #ifdefs and various other compat code within his own build environment
-> to stay compatible with the v4l-dvb hg tree and the upstream kernel alike.
+> On Tuesday 02 September 2008 14:12, CHADHA,VINEET wrote:
+>> Hi,
+>> 
+>> I have been working to evaluate TLB performance for Linux O/S and
+>> virtualized workloads(such as Xen) in a Full system 
+>> simulator(e.g.
+>> simics). While my evaluation is in nascent stage, I do notice 
+>> that
+>> most of the IPIs in multi-core environments cause complete TLB
+>> Flush.
+>> 
+>> I want to evaluate cost of TLB shootdown including re-population
+>> vs. each entry shootdown (invlpg). While a similar study has been
+>> done in other kernels (e.g. L4 kernel), I am not aware if it has
+>> been done for Linux O/S.
 > 
-> Mike is using brackets to ensure that all builds work properly, and to
-> ensure that there is no breakage when creating patches for mercurial, or
-> when building directly from his svn repository.
+> This is a very interesting area to investigate. Do you have a 
+> link to
+> any of the existing studies?
+> 
+> 
+>> Are there hooks or patches to test or evaluate TLB performance.
+>> Specifically, I would like to know where to make changes in Linux
+>> kernel to support each entry shootdown.
+> 
+> The main thing I guess is to look at tlb_flush(), called by 
+> tlb_flush_mmu
+> when unmapping user virtual memory, which on x86 is going to call
+> flush_tlb_mm, which flushes the entire tlb.
+> 
+> It would need a bit of reworking of things in order to store the 
+> virtual
+> address corresponding to each page in the struct mmu_gather, and 
+> then
+> deciding to branch off to do multiple invlpg if you have only a 
+> small
+> number of pages to be flushed. I'd suggest the easiest way to get
+> something working on x86 would be to modify the asm-generic 
+> infrastructure
+> (ignore other architectures for the time being).
+> 
+> You will also have to rework the IPI flushing scheme so that it 
+> can handle
+> more than one flush_va for invlpg invalidations.
+> 
+> After you get all this done, you could also look at applying 
+> similar
+> heuristics to flush_tlb_range. This one should be much easier at 
+> this point,
+> but it is used in fewer places (eg. mprotect).
+> 
+> 
 
-Doesn't matter for a mainline release branch.
 
-> There is nothing wrong with the comments that Mike has in his code --
-> you should not hold up his merge request for that reason.
 
-There /is/ something wrong with the comment, see above.
 
-> Not only is this another example of checkpatch.pl thwarting development
-[...]
-
-With this I agree.
--- 
-Stefan Richter
--=====-==--- =--= ---=-
-http://arcgraph.de/sr/
