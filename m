@@ -1,176 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbYICU36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYICUcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbYICU36 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 16:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYICU3p
+	id S1756061AbYICUcr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 16:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYICUcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 16:29:45 -0400
-Received: from curtis.curtisfong.org ([66.43.110.51]:52897 "EHLO
-	curtis.curtisfong.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755890AbYICU3o (ORCPT
+	Wed, 3 Sep 2008 16:32:39 -0400
+Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:2184
+	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751784AbYICUci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 16:29:44 -0400
-Date: Wed, 3 Sep 2008 13:29:38 -0700
-From: Nye Liu <nyet@nyet.org>
-To: linux-kernel@vger.kernel.org
-Cc: nyet@mrv.com
-Subject: [PATCH] INITRAMFS: Add option to preserve mtime from INITRAMFS
-	cpio images
-Message-ID: <20080903202938.GA9065@curtisfong.org>
-References: <20080805195232.GA5183@curtisfong.org>
+	Wed, 3 Sep 2008 16:32:38 -0400
+X-Trace: 165637211/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-NILDRAM-ACCEPTED/f2s-nildram-customers/195.149.44.6
+X-SBRS: None
+X-RemoteIP: 195.149.44.6
+X-IP-MAIL-FROM: alistair@devzero.co.uk
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtoEAMSRvkjDlSwG/2dsb2JhbACBZbZmgWc
+X-IronPort-AV: E=Sophos;i="4.32,320,1217804400"; 
+   d="scan'208";a="165637211"
+X-IP-Direction: IN
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: How to add the Asus R1F to asus-laptop.c?
+Date: Wed, 3 Sep 2008 21:32:34 +0100
+User-Agent: KMail/1.10.0 (Linux/2.6.27-rc5-damocles; KDE/4.1.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Corentin CHARY <corentincj@iksaif.net>
+References: <20080903170649.GF12476@csclub.uwaterloo.ca> <200809031859.28203.alistair@devzero.co.uk> <20080903201620.GS12474@csclub.uwaterloo.ca>
+In-Reply-To: <20080903201620.GS12474@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080805195232.GA5183@curtisfong.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200809032132.34967.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resubmission of initramfs preserve mtime patch following Andrew Morton's
-suggestions.
+On Wednesday 03 September 2008 21:16:20 Lennart Sorensen wrote:
+> On Wed, Sep 03, 2008 at 06:59:28PM +0100, Alistair John Strachan wrote:
+> > Unless I'm mistaken, the current asus-laptop maintainer is Corentin
+> > Chary, who I've added to CC on your behalf.
+>
+> Excellent.  Now where do I find such info?
 
-From: Nye Liu <nyet@nyet.org>
+MAINTAINERS, though admittedly the section is dubiously named. His name's also 
+present in the copyright in the source file (drivers/misc/asus-laptop.c). It's 
+also present in the source code log for this file (git log drivers/misc/asus-
+laptop.c) if you discount people who have made only janitorial or API changes.
 
-When unpacking the cpio into the initramfs, mtimes are not preserved by
-default. This patch adds an INITRAMFS_PRESERVE_MTIME option that allows mtimes
-stored in the cpio image to be used when constructing the initramfs. For
-embedded applications that run exclusively out of the initramfs, this is
-invaluable.
+Either way, he's CC'ed, and hopefully more responsive than the sourceforge 
+project :-) If not, pester Andrew Morton with the patch (and Andi Kleen, since 
+it's ACPI territory).
 
-Signed-off-by: Nye Liu <nyet@nyet.org>
-
-diff --git a/init/initramfs.c b/init/initramfs.c
-index 644fc01..ebfc049 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -6,6 +6,7 @@
- #include <linux/delay.h>
- #include <linux/string.h>
- #include <linux/syscalls.h>
-+#include <linux/utime.h>
- 
- static __initdata char *message;
- static void __init error(char *x)
-@@ -72,6 +73,38 @@ static void __init free_hash(void)
- 	}
- }
- 
-+static __initdata LIST_HEAD(dir_list);
-+struct dir_entry {
-+	struct list_head list;
-+	char *name;
-+	struct utimbuf mtime;
-+};
-+
-+static void __init dir_add(const char *name, struct utimbuf mtime)
-+{
-+	struct dir_entry *de = kmalloc(sizeof(struct dir_entry), GFP_KERNEL);
-+	if (!de)
-+		panic("can't allocate dir_entry buffer");
-+	INIT_LIST_HEAD(&de->list);
-+	de->name = kstrdup(name, GFP_KERNEL);
-+	de->mtime = mtime;
-+	list_add(&de->list, &dir_list);
-+}
-+
-+static void __init dir_utime(void)
-+{
-+	struct list_head *e, *tmp;
-+	list_for_each_safe(e, tmp, &dir_list) {
-+		struct dir_entry *de = list_entry(e, struct dir_entry, list);
-+		list_del(e);
-+		sys_utime(de->name, &de->mtime);
-+		kfree(de->name);
-+		kfree(de);
-+	}
-+}
-+
-+static __initdata struct utimbuf mtime;
-+
- /* cpio header parsing */
- 
- static __initdata unsigned long ino, major, minor, nlink;
-@@ -97,6 +130,7 @@ static void __init parse_header(char *s)
- 	uid = parsed[2];
- 	gid = parsed[3];
- 	nlink = parsed[4];
-+	mtime.actime = mtime.modtime = parsed[5];
- 	body_len = parsed[6];
- 	major = parsed[7];
- 	minor = parsed[8];
-@@ -130,6 +164,7 @@ static inline void __init eat(unsigned n)
- 	count -= n;
- }
- 
-+static __initdata char *vcollected;
- static __initdata char *collected;
- static __initdata int remains;
- static __initdata char *collect;
-@@ -271,6 +306,7 @@ static int __init do_name(void)
- 			if (wfd >= 0) {
- 				sys_fchown(wfd, uid, gid);
- 				sys_fchmod(wfd, mode);
-+				vcollected = kstrdup(collected, GFP_KERNEL);
- 				state = CopyFile;
- 			}
- 		}
-@@ -278,12 +314,14 @@ static int __init do_name(void)
- 		sys_mkdir(collected, mode);
- 		sys_chown(collected, uid, gid);
- 		sys_chmod(collected, mode);
-+		dir_add(collected, mtime);
- 	} else if (S_ISBLK(mode) || S_ISCHR(mode) ||
- 		   S_ISFIFO(mode) || S_ISSOCK(mode)) {
- 		if (maybe_link() == 0) {
- 			sys_mknod(collected, mode, rdev);
- 			sys_chown(collected, uid, gid);
- 			sys_chmod(collected, mode);
-+			sys_utime(collected, &mtime);
- 		}
- 	}
- 	return 0;
-@@ -294,6 +332,8 @@ static int __init do_copy(void)
- 	if (count >= body_len) {
- 		sys_write(wfd, victim, body_len);
- 		sys_close(wfd);
-+		sys_utime(vcollected, &mtime);
-+		kfree(vcollected);
- 		eat(body_len);
- 		state = SkipIt;
- 		return 0;
-@@ -305,12 +345,26 @@ static int __init do_copy(void)
- 	}
- }
- 
-+static long __init do_lutime(char __user *filename,
-+	struct utimbuf __user *times)
-+{
-+	struct timespec t[2];
-+
-+	t[0].tv_sec = times->actime;
-+	t[0].tv_nsec = 0;
-+	t[1].tv_sec = times->modtime;
-+	t[1].tv_nsec = 0;
-+
-+	return do_utimes(AT_FDCWD, filename, t, AT_SYMLINK_NOFOLLOW);
-+}
-+
- static int __init do_symlink(void)
- {
- 	collected[N_ALIGN(name_len) + body_len] = '\0';
- 	clean_path(collected, 0);
- 	sys_symlink(collected + N_ALIGN(name_len), collected);
- 	sys_lchown(collected, uid, gid);
-+	do_lutime(collected, &mtime);
- 	state = SkipIt;
- 	next_state = Reset;
- 	return 0;
-@@ -466,6 +520,7 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
- 		buf += inptr;
- 		len -= inptr;
- 	}
-+	dir_utime();
- 	kfree(window);
- 	kfree(name_buf);
- 	kfree(symlink_buf);
+-- 
+Cheers,
+Alistair.
