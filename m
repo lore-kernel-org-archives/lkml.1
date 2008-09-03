@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYICAQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYICAR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYICAQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 20:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbYICAQh
+	id S1755211AbYICAR0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 20:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbYICARO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 20:16:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51364
+	Tue, 2 Sep 2008 20:17:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51371
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751246AbYICAQg (ORCPT
+	by vger.kernel.org with ESMTP id S1751599AbYICARM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 20:16:36 -0400
-Date: Tue, 02 Sep 2008 17:16:30 -0700 (PDT)
-Message-Id: <20080902.171630.193505044.davem@davemloft.net>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       sparclinux@vger.kernel.org, manfred@colorfullife.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] prevent sparc64 from invoking irq handlers on offline
- CPUs
+	Tue, 2 Sep 2008 20:17:12 -0400
+Date: Tue, 02 Sep 2008 17:17:06 -0700 (PDT)
+Message-Id: <20080902.171706.135252299.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-09-02
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080831173349.GA15393@linux.vnet.ibm.com>
-References: <20080831173349.GA15393@linux.vnet.ibm.com>
+In-Reply-To: <20080902221511.GH3050@tuxdriver.com>
+References: <20080902221511.GH3050@tuxdriver.com>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,33 +27,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Date: Sun, 31 Aug 2008 10:33:49 -0700
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 2 Sep 2008 18:15:11 -0400
 
-> Make sparc64 refrain from clearing a given to-be-offlined CPU's bit in the
-> cpu_online_mask until it has processed pending irqs.  This change
-> prevents other CPUs from being blindsided by an apparently offline CPU
-> nevertheless changing globally visible state.
+> Here is this week's round of fixes.  Admittedly not all of them are
+> regressions with entries at bugzilla.kernel.org -- hopefully that is not
+> a hard and fast requirement. :-)
 > 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> I think everything here is suitable for 2.6.27.  Please let me know if
+> there are problems.
 
-I wonder what the 'call_lock' thing protects :-)
-
-That lock is a cobweb from the sparc64 code before I switched it over
-to use the generic smp_call_function() code in kernel/smp.c
-
-So this lock doesn't protect anything any more.
-
-kernel/smp.c has a call_function_lock, which isn't marked static
-but isn't declared in any header file.
-
-My instinct is that the intention is that I could use this lock
-for the synchronization previously provided by sparc64's local
-"call_lock", and it even seems the author of kernel/smp.c intended
-this kind of usage.
-
-Anyways, if this code is still using the worthless call_lock, it
-isn't protecting against anything.
-
-So I'd like to hold off on this patch until this locking issue is
-resolved.
+Pulled and I'll push back out to kernel.org after my build tests complete.
