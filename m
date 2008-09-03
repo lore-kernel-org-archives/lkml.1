@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYICNcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYICNee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbYICNcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 09:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYICNca
+	id S1755277AbYICNee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 09:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYICNe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 09:32:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55634 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751778AbYICNc3 (ORCPT
+	Wed, 3 Sep 2008 09:34:26 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:59588 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbYICNeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 09:32:29 -0400
-Date: Wed, 3 Sep 2008 14:29:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: torvalds@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ahci: Fix long standing Marvell regressions
-Message-ID: <20080903142941.3f25d235@lxorguk.ukuu.org.uk>
-In-Reply-To: <48BDCF09.7000603@garzik.org>
-References: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk>
-	<48BDCF09.7000603@garzik.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 3 Sep 2008 09:34:24 -0400
+Date: Wed, 3 Sep 2008 15:34:12 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, paulus@samba.org,
+       michael@ellerman.id.au, jean-pierre.dion@bull.net,
+       gilles.carry@ext.bull.net, tinytim@us.ibm.com, tglx@linutronix.de,
+       rostedt@goodmis.org, dwalker@mvista.com
+Subject: Re: [PATCH 1/2] powerpc - Separate the irq radix tree insertion and
+ lookup
+Message-ID: <20080903153412.6f5f0f5a@bull.net>
+In-Reply-To: <1219209684.21386.21.camel@pasglop>
+References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+	<1218029429-21114-2-git-send-email-sebastien.dugue@bull.net>
+	<1219209684.21386.21.camel@pasglop>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,129 +33,285 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1) Applying my attached patch
 
-This is another way of doing it that again unlike your joke 'patch'
-actually isn't a pointless no-op. Push the decision into a config
-variable with module option. Also document that the PATA port is being
-disabled so the end user knows who screwed up their machine and how to
-undo it.
+  Hi Benjamin,
 
-Default is pata_marvell = use this driver, no pata_marvell use AHCI, but
-the default can be reversed in either direction using
-ahci.marvell_enable=0/1.
+  sorry for the (long) delay, just came back from vacation.
 
---
+On Wed, 20 Aug 2008 15:21:24 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-pata_marvell: Undo multiple ahci caused regressions
+> On Wed, 2008-08-06 at 15:30 +0200, Sebastien Dugue wrote:
+> > irq_radix_revmap() currently serves 2 purposes, irq mapping lookup
+> > and insertion which happen in interrupt and process context respectively.
+> 
+> Sounds good, a few nits and it should be good to go.
 
-From: Alan Cox <alan@redhat.com>
+  Cool 8)
 
-I've been chasing Jeff about this for months so am now giving up and sending
-it directly. Jeff added the Marvell device identifiers to the ahci driver
-without making the AHCI driver handle the PATA port. This means a lot of users
-can't use current kernels and in most distro cases can't even install.
+> 
+> >   Separate the function into its 2 components, one for lookup only and one
+> > for insertion only.
+> > 
+> >   Fix the only user of the revmap tree (XICS) to use the new functions.
+> > 
+> >   Also, move the insertion into the radix tree of those irqs that were
+> > requested before it was initialized at said tree initialization.
+> > 
+> >   Mutual exclusion between the tree initialization and readers/writers is
+> > handled via an atomic variable (revmap_trees_allocated) set when the tree
+> > has been initialized and checked before any reader or writer access just
+> > like we used to check for tree.gfp_mask != 0 before.
+> 
+> The atomic doesn't need to be such. Could just be a global. In fact, I
+> don't like your synchronization too much between the init and _insert. 
 
-This has been going on since March 2008 for the 6121 Marvell, and late 2007
-for the 6145!!!
+  Yep, it mainly relies on some (hidden) assumptions about stuff ordering
+during kernel init.
 
-This was all pointed out at the time and repeatedly ignored. Bugs assigned
-to Jeff about this are ignored also.
+> 
+> What I'd do is, turn your atomic into a simple int
+> 
+>  - do smp_wmb() and set it to 1 after the tree is initialized, then
+>    smb_wmb() again and set it to 2 after the tree has been filled
+>    by the init code 
+>  - in the revmap_lookup path just test that it's >1, no need for a
+> barrier. At worst you'll use the slow path instead of the fast path some
+> time during boot, no big deal.
+>  - in the insert path, do an smp_rb() and if it's >0 do the insert with
+> the lock
+>  - in the init pre-insert path, use the lock inside the loop for each
+> insertion.
 
-To quote Jeff in email
+  Just tried that, it's running equally well
 
-"Just switch the order of 'ahci' and 'pata_marvell' in
-/etc/modprobe.conf, then use Fedora's tools regenerate the initrd.
+> 
+> that means you may get concurrent attempt to insert but the lock will
+> help there and turn them into 2 insertions of the same translation. Is
+> that a big deal ? If it is, make it be a lookup+insert.
 
-See?  It's not rocket science, and the current configuration can be
-easily made to work for Fedora users."
+  No problem with that, radix_tree_insert() will return EEXIST.
 
-(Which isn't trivial, isn't end user, shouldn't be needed, and as it usually
-breaks at install time is in fact impossible)
+  Thanks,
 
-To quote Jeff in August 2007
+  Sebastien.
 
-"   mv-ahci-pata
-Marvell 6121/6141 PATA support.  Needs fixing in the 'PATA controller
-command' area before it is usable, and can go upstream."
-
-Only he add the ids anyway later and caused regressions, adding a further
-id in March causing more regresions.
-
-The actual fix for the moment is very simple. If the user has included
-the pata_marvell driver let it drive the ports. If they've only selected
-for SATA support give them the AHCI driver which will run the port a fraction
-faster. Allow the user to control this decision via ahci.marvell_enable as
-a module parameter so that distributions can ship 'it works' defaults and
-smarter users (or config tools) can then flip it over it desired.
-
-
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/ata/Kconfig |    6 ++++--
- drivers/ata/ahci.c  |   19 +++++++++++++++++++
- 2 files changed, 23 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index ae84949..11c8c19 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -448,8 +448,10 @@ config PATA_MARVELL
- 	tristate "Marvell PATA support via legacy mode"
- 	depends on PCI
- 	help
--	  This option enables limited support for the Marvell 88SE6145 ATA
--	  controller.
-+	  This option enables limited support for the Marvell 88SE61xx ATA
-+	  controllers. If you wish to use only the SATA ports then select
-+	  the AHCI driver alone. If you wish to the use the PATA port or
-+	  both SATA and PATA include this driver.
- 
- 	  If unsure, say N.
- 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index c729e69..91d2a47 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -610,6 +610,15 @@ module_param(ahci_em_messages, int, 0444);
- MODULE_PARM_DESC(ahci_em_messages,
- 	"Set AHCI Enclosure Management Message type (0 = disabled, 1 = LED");
- 
-+#if defined(CONFIG_PATA_MARVELL) || defined(CONFIG_PATA_MARVELL_MODULE)
-+static int marvell_enable;
-+#else
-+static int marvell_enable = 1;
-+#endif
-+module_param(marvell_enable, int, 0644);
-+MODULE_PARM_DESC(marvell_enable, "Marvell SATA via AHCI (1 = enabled)");
-+
-+
- static inline int ahci_nr_ports(u32 cap)
- {
- 	return (cap & 0x1f) + 1;
-@@ -732,6 +741,8 @@ static void ahci_save_initial_config(struct pci_dev *pdev,
- 			   "MV_AHCI HACK: port_map %x -> %x\n",
- 			   port_map,
- 			   port_map & mv);
-+		dev_printk(KERN_ERR, &pdev->dev,
-+			  "Disabling your PATA port. Use the boot option 'ahci.marvell_enable=0' to avoid this.\n");
- 
- 		port_map &= mv;
- 	}
-@@ -2533,6 +2544,14 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (!printed_version++)
- 		dev_printk(KERN_DEBUG, &pdev->dev, "version " DRV_VERSION "\n");
- 
-+#if  !defined(CONFIG_PATA_MARVELL) && !defined(CONFIG_PATA_MARVELL_MODULE)
-+	/* The AHCI driver can only drive the SATA ports, the PATA driver
-+	   can drive them all so if both drivers are selected make sure
-+	   AHCI stays out of the way */
-+	if (pdev->vendor == PCI_VENDOR_ID_MARVELL && !marvell_enable)
-+		return -ENODEV;
-+#endif
-+
- 	/* acquire resources */
- 	rc = pcim_enable_device(pdev);
- 	if (rc)
+> 
+> Ben.
+> 
+> > 
+> > Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >  arch/powerpc/include/asm/irq.h        |   18 ++++++-
+> >  arch/powerpc/kernel/irq.c             |   76 ++++++++++++++++++++++++---------
+> >  arch/powerpc/platforms/pseries/xics.c |   11 ++---
+> >  3 files changed, 74 insertions(+), 31 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+> > index a372f76..0a51376 100644
+> > --- a/arch/powerpc/include/asm/irq.h
+> > +++ b/arch/powerpc/include/asm/irq.h
+> > @@ -236,15 +236,27 @@ extern unsigned int irq_find_mapping(struct irq_host *host,
+> >  extern unsigned int irq_create_direct_mapping(struct irq_host *host);
+> >  
+> >  /**
+> > - * irq_radix_revmap - Find a linux virq from a hw irq number.
+> > + * irq_radix_revmap_insert - Insert a hw irq to linux virq number mapping.
+> > + * @host: host owning this hardware interrupt
+> > + * @virq: linux irq number
+> > + * @hwirq: hardware irq number in that host space
+> > + *
+> > + * This is for use by irq controllers that use a radix tree reverse
+> > + * mapping for fast lookup.
+> > + */
+> > +extern void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
+> > +				    irq_hw_number_t hwirq);
+> > +
+> > +/**
+> > + * irq_radix_revmap_lookup - Find a linux virq from a hw irq number.
+> >   * @host: host owning this hardware interrupt
+> >   * @hwirq: hardware irq number in that host space
+> >   *
+> >   * This is a fast path, for use by irq controller code that uses radix tree
+> >   * revmaps
+> >   */
+> > -extern unsigned int irq_radix_revmap(struct irq_host *host,
+> > -				     irq_hw_number_t hwirq);
+> > +extern unsigned int irq_radix_revmap_lookup(struct irq_host *host,
+> > +					    irq_hw_number_t hwirq);
+> >  
+> >  /**
+> >   * irq_linear_revmap - Find a linux virq from a hw irq number.
+> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> > index d972dec..dc8663a 100644
+> > --- a/arch/powerpc/kernel/irq.c
+> > +++ b/arch/powerpc/kernel/irq.c
+> > @@ -441,6 +441,7 @@ static LIST_HEAD(irq_hosts);
+> >  static DEFINE_SPINLOCK(irq_big_lock);
+> >  static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+> >  static unsigned int irq_radix_writer;
+> > +static atomic_t revmap_trees_allocated = ATOMIC_INIT(0);
+> >  struct irq_map_entry irq_map[NR_IRQS];
+> >  static unsigned int irq_virq_count = NR_IRQS;
+> >  static struct irq_host *irq_default_host;
+> > @@ -822,7 +823,7 @@ void irq_dispose_mapping(unsigned int virq)
+> >  		break;
+> >  	case IRQ_HOST_MAP_TREE:
+> >  		/* Check if radix tree allocated yet */
+> > -		if (host->revmap_data.tree.gfp_mask == 0)
+> > +		if (atomic_read(&revmap_trees_allocated) == 0)
+> >  			break;
+> >  		irq_radix_wrlock(&flags);
+> >  		radix_tree_delete(&host->revmap_data.tree, hwirq);
+> > @@ -875,43 +876,55 @@ unsigned int irq_find_mapping(struct irq_host *host,
+> >  EXPORT_SYMBOL_GPL(irq_find_mapping);
+> >  
+> > 
+> > -unsigned int irq_radix_revmap(struct irq_host *host,
+> > -			      irq_hw_number_t hwirq)
+> > +unsigned int irq_radix_revmap_lookup(struct irq_host *host,
+> > +				     irq_hw_number_t hwirq)
+> >  {
+> > -	struct radix_tree_root *tree;
+> >  	struct irq_map_entry *ptr;
+> > -	unsigned int virq;
+> > +	unsigned int virq = NO_IRQ;
+> >  	unsigned long flags;
+> >  
+> >  	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
+> >  
+> > -	/* Check if the radix tree exist yet. We test the value of
+> > -	 * the gfp_mask for that. Sneaky but saves another int in the
+> > -	 * structure. If not, we fallback to slow mode
+> > +	/*
+> > +	 * Check if the radix tree exist yet.
+> > +	 * If not, we fallback to slow mode
+> >  	 */
+> > -	tree = &host->revmap_data.tree;
+> > -	if (tree->gfp_mask == 0)
+> > +	if (atomic_read(&revmap_trees_allocated) == 0)
+> >  		return irq_find_mapping(host, hwirq);
+> >  
+> >  	/* Now try to resolve */
+> >  	irq_radix_rdlock(&flags);
+> > -	ptr = radix_tree_lookup(tree, hwirq);
+> > +	ptr = radix_tree_lookup(&host->revmap_data.tree, hwirq);
+> >  	irq_radix_rdunlock(flags);
+> >  
+> >  	/* Found it, return */
+> > -	if (ptr) {
+> > +	if (ptr)
+> >  		virq = ptr - irq_map;
+> > -		return virq;
+> > -	}
+> >  
+> > -	/* If not there, try to insert it */
+> > -	virq = irq_find_mapping(host, hwirq);
+> > +	return virq;
+> > +}
+> > +
+> > +void irq_radix_revmap_insert(struct irq_host *host, unsigned int virq,
+> > +			     irq_hw_number_t hwirq)
+> > +{
+> > +	unsigned long flags;
+> > +
+> > +	WARN_ON(host->revmap_type != IRQ_HOST_MAP_TREE);
+> > +
+> > +	/*
+> > +	 * Check if the radix tree exist yet.
+> > +	 * If not, then the irq will be inserted into the tree when it gets
+> > +	 * initialized.
+> > +	 */
+> > +	if (atomic_read(&revmap_trees_allocated) == 0)
+> > +		return;
+> > +
+> >  	if (virq != NO_IRQ) {
+> >  		irq_radix_wrlock(&flags);
+> > -		radix_tree_insert(tree, hwirq, &irq_map[virq]);
+> > +		radix_tree_insert(&host->revmap_data.tree, hwirq,
+> > +				  &irq_map[virq]);
+> >  		irq_radix_wrunlock(flags);
+> >  	}
+> > -	return virq;
+> >  }
+> >  
+> >  unsigned int irq_linear_revmap(struct irq_host *host,
+> > @@ -1020,14 +1033,35 @@ void irq_early_init(void)
+> >  static int irq_late_init(void)
+> >  {
+> >  	struct irq_host *h;
+> > -	unsigned long flags;
+> > +	unsigned int i;
+> >  
+> > -	irq_radix_wrlock(&flags);
+> > +	/*
+> > +	 * No mutual exclusion with respect to accessors of the tree is needed
+> > +	 * here as the synchronization is done via the atomic variable
+> > +	 * revmap_trees_allocated.
+> > +	 */
+> >  	list_for_each_entry(h, &irq_hosts, link) {
+> >  		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+> >  			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+> >  	}
+> > -	irq_radix_wrunlock(flags);
+> > +
+> > +	/*
+> > +	 * Insert the reverse mapping for those interrupts already present
+> > +	 * in irq_map[].
+> > +	 */
+> > +	for (i = 0; i < irq_virq_count; i++) {
+> > +		if (irq_map[i].host &&
+> > +		    (irq_map[i].host->revmap_type == IRQ_HOST_MAP_TREE))
+> > +			radix_tree_insert(&irq_map[i].host->revmap_data.tree,
+> > +					  irq_map[i].hwirq, &irq_map[i]);
+> > +	}
+> > +
+> > +	/*
+> > +	 * Make sure the radix trees inits are visible before setting
+> > +	 * the flag
+> > +	 */
+> > +	smp_mb();
+> > +	atomic_set(&revmap_trees_allocated, 1);
+> >  
+> >  	return 0;
+> >  }
+> > diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/pseries/xics.c
+> > index 0fc830f..6b1a005 100644
+> > --- a/arch/powerpc/platforms/pseries/xics.c
+> > +++ b/arch/powerpc/platforms/pseries/xics.c
+> > @@ -310,12 +310,6 @@ static void xics_mask_irq(unsigned int virq)
+> >  
+> >  static unsigned int xics_startup(unsigned int virq)
+> >  {
+> > -	unsigned int irq;
+> > -
+> > -	/* force a reverse mapping of the interrupt so it gets in the cache */
+> > -	irq = (unsigned int)irq_map[virq].hwirq;
+> > -	irq_radix_revmap(xics_host, irq);
+> > -
+> >  	/* unmask it */
+> >  	xics_unmask_irq(virq);
+> >  	return 0;
+> > @@ -346,7 +340,7 @@ static inline unsigned int xics_remap_irq(unsigned int vec)
+> >  
+> >  	if (vec == XICS_IRQ_SPURIOUS)
+> >  		return NO_IRQ;
+> > -	irq = irq_radix_revmap(xics_host, vec);
+> > +	irq = irq_radix_revmap_lookup(xics_host, vec);
+> >  	if (likely(irq != NO_IRQ))
+> >  		return irq;
+> >  
+> > @@ -530,6 +524,9 @@ static int xics_host_map(struct irq_host *h, unsigned int virq,
+> >  {
+> >  	pr_debug("xics: map virq %d, hwirq 0x%lx\n", virq, hw);
+> >  
+> > +	/* Insert the interrupt mapping into the radix tree for fast lookup */
+> > +	irq_radix_revmap_insert(xics_host, virq, hw);
+> > +
+> >  	get_irq_desc(virq)->status |= IRQ_LEVEL;
+> >  	set_irq_chip_and_handler(virq, xics_irq_chip, handle_fasteoi_irq);
+> >  	return 0;
+> 
+> 
