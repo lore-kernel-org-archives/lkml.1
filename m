@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbYICK0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbYICKjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbYICK0S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYICK0H
+	id S1754180AbYICKjO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYICKi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:26:07 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46896 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752111AbYICK0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:26:06 -0400
-Date: Wed, 3 Sep 2008 12:26:01 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       torvalds@osdl.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [2/2] Don't complain about disabled irqs when the system has paniced
-Message-ID: <20080903102600.GP20055@kernel.dk>
-References: <20080902349.573187695@firstfloor.org> <200809031937.46328.nickpiggin@yahoo.com.au> <20080903094815.GQ18288@one.firstfloor.org> <200809032017.42237.nickpiggin@yahoo.com.au>
+	Wed, 3 Sep 2008 06:38:58 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2661 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbYICKi5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 06:38:57 -0400
+Date: Wed, 3 Sep 2008 11:38:52 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: "Cai, Cliff" <Cliff.Cai@analog.com>
+Cc: Bryan Wu <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] ASOC: Blackfin driver for ALSA SoC framework
+Message-ID: <20080903103850.GA20438@sirena.org.uk>
+Mail-Followup-To: "Cai, Cliff" <Cliff.Cai@analog.com>,
+	Bryan Wu <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
+	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-2-git-send-email-cooloney@kernel.org> <20080827134830.GC10834@sirena.org.uk> <0F1B54C89D5F954D8535DB252AF412FA02A26AC0@chinexm1.ad.analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200809032017.42237.nickpiggin@yahoo.com.au>
+In-Reply-To: <0F1B54C89D5F954D8535DB252AF412FA02A26AC0@chinexm1.ad.analog.com>
+X-Cookie: Ducks?  What ducks??
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03 2008, Nick Piggin wrote:
-> > > For call_function_single, queueing could really help with high interrupt
-> > > loads like the block completion migration that Jens has been looking at.
-> >
-> > But does it or not?
-> 
-> Well yes. It was basically impossible to implement without this IIRC,
-> due to performance problems. And that code itself also showed some
-> improvements in cases. I think it may need more tuning and testing.
+On Wed, Sep 03, 2008 at 12:09:49PM +0800, Cai, Cliff wrote:
 
-The old code was useless for this, far too slow. With the new code I've
-been able to demonstrate VERY good benefits from migrating interrupts,
-both in synthetic cache locality benchmarks but also from something as
-general as the compilebench test app (where reductions in system time
-are as huge as 20-40%!). I hope to be able to share these results soon.
-I have a rough profile from last week on XFS.
+Cliff, please fix your mail client configuration - the formatting of
+your reply makes little (if any) distinction between the text of my
+original mail which makes your message difficult to read.
 
-http://brick.kernel.dk/lock_rq0
+> -----Original Message-----
+> From: Mark Brown [mailto:broonie@sirena.org.uk] 
+> Sent: Wednesday, August 27, 2008 9:49 PM
+> To: Bryan Wu
+> Cc: perex@perex.cz; lrg@kernel.org; alsa-devel@alsa-project.org;
+> linux-kernel@vger.kernel.org; Cliff Cai
+> Subject: Re: [PATCH 1/4] ASOC: Blackfin driver for ALSA SoC framework
 
-vs
+> On Wed, Aug 27, 2008 at 05:39:25PM +0800, Bryan Wu wrote:
+> > From: Cliff Cai <cliff.cai@analog.com>
 
-http://brick.kernel.dk/lock_rq1
+> >Again, odd blank lines and presumably there needs to be something to
+> undo things on error?
 
-rq0 is normal interrupt handling, rq1 is with rq_affinity set to 1 for
-that block device queue. With that set, request completions are migrated
-to the CPU that submitted them.
+> t's not necessary to do anything else on error, these functions only set
+> registers.
 
-That is the whole reason why I got into generalizing the IPI function
-call handling.
+And none of these settings will leave things so that the port looks busy
+or anything like that?
 
--- 
-Jens Axboe
+> TX and RX Clocks are also not independent,currently,in order to
+> implement full duplex,we have to enable both RX and TX side even if
+> there is only a steam is opened,
+> And make the other side running on a dummy buffer,so all registers
+> cann't be configured any more. when the second stream is opened we just
+> switch the DMA form dummy buffer to the normal data buffer.
 
+Right, in that case your driver should use constraints to stop
+applications trying to configure the capture and playback sides
+differently.
+
+> >I'm also not seeing the code that configures the sample rate anywhere -
+> but then it looks like the driver only support slave mode ATM?  That's
+> what the machine driver is
+>  >using.  There should still be a set_fmt() to document what's supported
+> if nothing else.
+
+> Yes ,the codec runs in master mode and provides bit clock..Do you mean
+> just implement a dummy set_fmt() with comments for CPU DAI,
+
+It shouldn't just be a dummy - it should reject DAI formats other than
+CBS_CFM if that is the only configuration that's supported.
+
+> Refer to my description above,it's not possible to configure anything
+> for CPU DAI after a stream is opened ,that why we have to configure CPU
+> DAI before any stream is opened.
+
+This is normal (and generally trying would result in audio artifacts if
+you try), but normally there is at least some configuration that can be
+done before the stream actually starts running.
