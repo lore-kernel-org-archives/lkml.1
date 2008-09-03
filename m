@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYICUZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYICU3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYICUZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 16:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYICUZo
+	id S1755694AbYICU3n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 16:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbYICU3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 16:25:44 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:57004 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756259AbYICUZn (ORCPT
+	Wed, 3 Sep 2008 16:29:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:39652 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753047AbYICU3f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 16:25:43 -0400
-Message-ID: <48BEF2C4.70105@euromail.se>
-Date: Wed, 03 Sep 2008 22:25:40 +0200
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, akpm@osdl.org,
-       linux-input@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] bcm5974-0.64: BTN_TOUCH event added for mousedev
+	Wed, 3 Sep 2008 16:29:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=lbV694PETNKN2A7sg3eD0+Aj8Qr97C0hB2J/kpfvcacp/z7nVKbxdNgAxvNUglcK+E
+         dfBd3rkdwEnK0xlNu2OFKJLeKEhj8mgP0nx27+0WYSjPmr4E2Jnbv6Ck9Is9KQkwbbl4
+         YnR0jlHmvwxQTuARAGBiF7JpiGLUWhW4bIY6Y=
+Date: Wed, 3 Sep 2008 22:29:27 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Nir Tzachar <nir@tzachar.com>
+Subject: Re: [PATCH] ncurses based config
+Message-ID: <20080903222927.7d191458@Varda>
+In-Reply-To: <Pine.LNX.4.64.0809031259110.20541@shark.he.net>
+References: <1220469076-16487-1-git-send-email-nir@tzachar.com>
+	<200809032138.14651.bzolnier@gmail.com>
+	<Pine.LNX.4.64.0809031259110.20541@shark.he.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.39.57
-X-Scan-Result: No virus found in message 1Kayv7-0001mJ-82.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Kayv7-0001mJ-82 0b5568c4091f300beb2d430d546d9d93
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mousedev driver requires the use of BTN_TOUCH events to process
-ABS_X and ABS_Y events properly, which is what is needed for the
-bcm5974-based apple computers to have a functional pointer out-of-the-box.
-This patch adds the BTN_TOUCH events to bcm5974.
+El Wed, 3 Sep 2008 13:02:42 -0700 (PDT)
+"Randy.Dunlap" <rdunlap@xenotime.net> escribió:
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- drivers/input/mouse/bcm5974.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> On Wed, 3 Sep 2008, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > 
+> > Hi,
+> > 
+> > On Wednesday 03 September 2008, Nir Tzachar wrote:
+> > > This patch was inspired by the kernel projects page, where an ncurses
+> > > replacement for menuconfig was mentioned (by Sam Ravnborg).
+> > > 
+> > > Building on menuconfig, this patch implements a more modern look interface using
+> > > ncurses and ncurses' satellite libraries (menu, panel, form). The implementation
+> > > does not depend on lxdialog, which is currently distributed with the kernel.
+> > > 
+> > > The only change outside of nconf.c is due to a name clash: both ncurses and
+> > > lkc.h define a fucntion named menu_init(). I changed the internal version's
+> > > name. 
+> > > 
+> > > Please consider the patch for merging. Comments are appreciated.
+> > 
+> > Could you please tell what kernel version is it against?
+> 
+> It applies cleanly to 2.6.27-rc5-git4 FWIW.
+> 
+> > I'm getting the following error on make nconfig (and also on make menuconfig
+> > which works fine without this patch) with the current Linus' tree:
+> > 
+> >   HOSTCC  scripts/kconfig/conf.o
+> >   HOSTCC  scripts/kconfig/kxgettext.o
+> >   HOSTCC  scripts/kconfig/nconf.o
+> >   HOSTCC  scripts/kconfig/zconf.tab.o
+> > scripts/kconfig/zconf.tab.c: In function ÿÿconf_parseÿÿ:
+> > scripts/kconfig/zconf.tab.c:2258: warning: implicit declaration of function ÿÿmenu_initÿÿ
+> >   HOSTLD  scripts/kconfig/nconf
+> > scripts/kconfig/nconf arch/x86/Kconfig
+> > make[1]: *** [nconfig] Segmentation fault
+> > make: *** [nconfig] Error 2
+> 
+> Need to change all /menu_init/ in zconf.tab.c* to /_menu_init/.
 
-diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
-index 8568211..18f4d7f 100644
---- a/drivers/input/mouse/bcm5974.c
-+++ b/drivers/input/mouse/bcm5974.c
-@@ -253,6 +253,7 @@ static void setup_events_to_report(struct input_dev *input_dev,
- 				0, cfg->y.dim, cfg->y.fuzz, 0);
+ Tried it
 
- 	__set_bit(EV_KEY, input_dev->evbit);
-+	__set_bit(BTN_TOUCH, input_dev->keybit);
- 	__set_bit(BTN_TOOL_FINGER, input_dev->keybit);
- 	__set_bit(BTN_TOOL_DOUBLETAP, input_dev->keybit);
- 	__set_bit(BTN_TOOL_TRIPLETAP, input_dev->keybit);
-@@ -320,6 +321,7 @@ static int report_tp_state(struct bcm5974 *dev, int size)
- 	if (dev->fingers > nmax)
- 		dev->fingers = nmax;
+> 
+> Need to strip trailing whitespace on new source code lines.
+> 
+> I'm seeing cyan (?) foreground on black background.  Is that the colors
+> that were planned?
+  
+ much nicer colors here (ubuntu) 
+ http://img177.imageshack.us/my.php?image=pantallazonm7.png
 
-+	input_report_key(input, BTN_TOUCH, dev->fingers > 0);
- 	input_report_key(input, BTN_TOOL_FINGER, dev->fingers == 1);
- 	input_report_key(input, BTN_TOOL_DOUBLETAP, dev->fingers == 2);
- 	input_report_key(input, BTN_TOOL_TRIPLETAP, dev->fingers > 2);
--- 
-1.5.4.3
+> 
+> Instructions are dark blue on black -- cannot read them.
+> 
 
-Diff is against v2.6.27-rc5-103-g0a7574e
+ 
