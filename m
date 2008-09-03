@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYICMjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbYICM6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbYICMjy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 08:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYICMjq
+	id S1754441AbYICM6j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 08:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbYICM6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 08:39:46 -0400
-Received: from tundra.namei.org ([65.99.196.166]:38911 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751703AbYICMjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 08:39:46 -0400
-Date: Wed, 3 Sep 2008 22:39:18 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [GIT] Fix SELinux memory leak regression for 2.6.27
-In-Reply-To: <alpine.LRH.1.10.0809031015260.17746@tundra.namei.org>
-Message-ID: <alpine.LRH.1.10.0809032238080.21379@tundra.namei.org>
-References: <alpine.LRH.1.10.0809031015260.17746@tundra.namei.org>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Sep 2008 08:58:30 -0400
+Received: from styx.suse.cz ([82.119.242.94]:59360 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751632AbYICM63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 08:58:29 -0400
+Subject: Re: [PATCH 1/2] utrace core
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080826220157.397C7154233@magilla.localdomain>
+References: <20080826220102.89635154233@magilla.localdomain>
+	 <20080826220157.397C7154233@magilla.localdomain>
+Content-Type: text/plain
+Organization: SUSE LINUX
+Date: Wed, 03 Sep 2008 14:58:27 +0200
+Message-Id: <1220446707.6041.27.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008, James Morris wrote:
+On Tue, 2008-08-26 at 15:01 -0700, Roland McGrath wrote: 
+> [...]
+> +menuconfig UTRACE
+> +	bool "Infrastructure for tracing and debugging user processes"
+> +	depends on EXPERIMENTAL
+> +	depends on HAVE_ARCH_TRACEHOOK
+> +	depends on MODULES
 
-> This is causing recent Fedora systems to die a slow and painful death.  
-> Please pull.
+Why does it depend on MODULES? Does this mean that when ptrace is
+switched to using the utrace engines, non-modular kernels will have to
+lack ptrace(2)?
 
-Further review has raised an issue with this patch, an updated version 
-should be available soon.
+Is there anything in the code that actually breaks without
+CONFIG_MODULES?
+
+Regards,
+Petr Tesarik
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
