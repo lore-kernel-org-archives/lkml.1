@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYICRn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYICRnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbYICRn2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYICRnJ
+	id S1755046AbYICRnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYICRnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:43:09 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57375 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:43:33 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57443 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755469AbYICRnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:43:07 -0400
-Date: Wed, 3 Sep 2008 10:26:26 -0700
+	id S1757865AbYICRnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:43:31 -0400
+Date: Wed, 3 Sep 2008 10:26:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 30/42] sctp: correct bounds check in
-	sctp_setsockopt_auth_key
-Message-ID: <20080903172626.GE7731@suse.de>
+Subject: [patch 31/42] sctp: fix random memory dereference with
+	SCTP_HMAC_IDENT option.
+Message-ID: <20080903172628.GF7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0011-sctp-correct-bounds-check-in-sctp_setsockopt_auth_k.patch"
+Content-Disposition: inline; filename="0012-sctp-fix-random-memory-dereference-with-SCTP_HMAC_I.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,32 +43,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-[ Upstream commit 328fc47ea0bcc27d9afa69c3ad6e52431cadd76c ]
+[ Upstream commit d97240552cd98c4b07322f30f66fd9c3ba4171de ]
 
-The bonds check to prevent buffer overlflow was not exactly
-right.  It still allowed overflow of up to 8 bytes which is
-sizeof(struct sctp_authkey).
-
-Since optlen is already checked against the size of that struct,
-we are guaranteed not to cause interger overflow either.
+The number of identifiers needs to be checked against the option
+length.  Also, the identifier index provided needs to be verified
+to make sure that it doesn't exceed the bounds of the array.
 
 Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sctp/socket.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sctp/auth.c   |    3 +++
+ net/sctp/socket.c |    6 ++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
+--- a/net/sctp/auth.c
++++ b/net/sctp/auth.c
+@@ -786,6 +786,9 @@ int sctp_auth_ep_set_hmacs(struct sctp_e
+ 	for (i = 0; i < hmacs->shmac_num_idents; i++) {
+ 		id = hmacs->shmac_idents[i];
+ 
++		if (id > SCTP_AUTH_HMAC_ID_MAX)
++			return -EOPNOTSUPP;
++
+ 		if (SCTP_AUTH_HMAC_ID_SHA1 == id)
+ 			has_sha1 = 1;
+ 
 --- a/net/sctp/socket.c
 +++ b/net/sctp/socket.c
-@@ -3054,7 +3054,7 @@ static int sctp_setsockopt_auth_key(stru
+@@ -2996,6 +2996,7 @@ static int sctp_setsockopt_hmac_ident(st
+ 				    int optlen)
+ {
+ 	struct sctp_hmacalgo *hmacs;
++	u32 idents;
+ 	int err;
+ 
+ 	if (!sctp_auth_enable)
+@@ -3013,8 +3014,9 @@ static int sctp_setsockopt_hmac_ident(st
  		goto out;
  	}
  
--	if (authkey->sca_keylength > optlen) {
-+	if (authkey->sca_keylength > optlen - sizeof(struct sctp_authkey)) {
- 		ret = -EINVAL;
+-	if (hmacs->shmac_num_idents == 0 ||
+-	    hmacs->shmac_num_idents > SCTP_AUTH_NUM_HMACS) {
++	idents = hmacs->shmac_num_idents;
++	if (idents == 0 || idents > SCTP_AUTH_NUM_HMACS ||
++	    (idents * sizeof(u16)) > (optlen - sizeof(struct sctp_hmacalgo))) {
+ 		err = -EINVAL;
  		goto out;
  	}
 
