@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbYICVdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYICVfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbYICVdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 17:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYICVdK
+	id S1754543AbYICVfQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 17:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYICVfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 17:33:10 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:60505 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752581AbYICVdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 17:33:09 -0400
-X-Sasl-enc: 5kZWON2Z1A9EWujpxTYd/ESgN/aIn5KuKs/H0G+k8n2t 1220477587
-Date: Wed, 3 Sep 2008 18:32:58 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Daniel Barkalow <barkalow@iabervon.org>,
-       linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-Message-ID: <20080903213258.GC14620@khazad-dum.debian.net>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz> <20080903101947.ZZRA012@mailhub.coreip.homeip.net>
+	Wed, 3 Sep 2008 17:35:03 -0400
+Received: from nebensachen.de ([195.34.83.29]:46138 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751769AbYICVfB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 17:35:01 -0400
+X-Hashcash: 1:20:080903:bzolnier@gmail.com::vHhaOEHURQde1Nop:00000000000000000000000000000000000000000000PaT
+X-Hashcash: 1:20:080903:alan@lxorguk.ukuu.org.uk::uwpyfIrF2nYpUAAM:00000000000000000000000000000000000000XMf
+X-Hashcash: 1:20:080903:akpm@linux-foundation.org::hLvW6/iSMIyYILQd:0000000000000000000000000000000000001uwz
+X-Hashcash: 1:20:080903:jeff@garzik.org::SfNTy70y0Kn9SjZq:00Ise9
+X-Hashcash: 1:20:080903:randy.dunlap@oracle.com::0a8ImyiAEA110u6I:0000000000000000000000000000000000000037CV
+X-Hashcash: 1:20:080903:htejun@gmail.com::lP5ZNsvv9U63ZQYB:003xd
+X-Hashcash: 1:20:080903:linux-ide@vger.kernel.org::Hcvhb97tkKZuiqt8:0000000000000000000000000000000000003m7J
+X-Hashcash: 1:20:080903:linux-kernel@vger.kernel.org::DhFN4GUWoaU7TSf3:00000000000000000000000000000000062bA
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ide: Implement disk shock protection support
+References: <87wshzplvk.fsf@denkblock.local>
+	<20080829211345.4355.93873.stgit@denkblock.local>
+	<200809012129.14979.bzolnier@gmail.com>
+	<87ljy90zin.fsf@denkblock.local>
+Date: Wed, 03 Sep 2008 23:33:39 +0200
+In-Reply-To: <87ljy90zin.fsf@denkblock.local> (Elias Oltmanns's message of
+	"Wed, 03 Sep 2008 22:01:52 +0200")
+Message-ID: <8763pc29u4.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080903101947.ZZRA012@mailhub.coreip.homeip.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Sep 2008, Dmitry Torokhov wrote:
-> On Wed, Sep 03, 2008 at 01:50:35PM +0200, Jiri Kosina wrote:
-> > On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
-> > > I guess we could use System's product name to differentiate between 
-> > > Cristopher's and Daniel's boards. Although I must admit it is the very 
-> > > first time when I see a box that behaves better with active mux. DOes 
-> > > Vista use active mux nowadays? Because if it is not then I bet there is 
-> > > (or shortly will be) a BIOS update fixing legacy mode on Daniel's box.
-> > 
-> > I guess so, yes.
-> > 
-> > On the other hand, this might also be viewed as regression (we made 
-> > Daniel's hardware behave worse with recent kernel than it did before), so 
-> > I think we still would like to have this fixed. What about the patch 
-> > below, adding the match on System's product name, as you suggested? 
-> > Thanks.
-> > 
-> 
-> I agree. Daniel, could you please try the patch to make sure it
-> restores the previous behavior for you and I will push it through.
+Elias Oltmanns <eo@nebensachen.de> wrote:
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+[...]
+>> Also could you please move the new code to a separate file (i.e.
+>> ide-park.c) instead of stuffing it all in ide.c?
+>
+> This is probably a sensible idea especially since there may be more once
+> we go ahead with the in-kernel solution.
 
-I fell I need to warn you guys that you are likely breaking machines that
-match that DMI info but have a newer BIOS, unless they use different BIOSes
-(not enough data without a full dmidecode output from the other machine).
+Sorry, I forgot to mention that I haven't a clue as to what headers to
+include explicitly in such a file. Actually, ide-park.c compiles on my
+system just with ide.h included. This would, however, be an unsuitably
+minimal approach, I fear. Some advice would be most welcome.
 
-But I really don't care either way, since this is not about ThinkPads :)
+Regards,
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Elias
