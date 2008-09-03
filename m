@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbYICRw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbYICRx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756380AbYICRw7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756295AbYICRwr
+	id S1759439AbYICRx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754853AbYICRxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:52:47 -0400
-Received: from ns1.suse.de ([195.135.220.2]:54197 "EHLO mx1.suse.de"
+	Wed, 3 Sep 2008 13:53:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58985 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754222AbYICRwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:52:46 -0400
-Date: Wed, 3 Sep 2008 10:33:05 -0700
+	id S1754879AbYICRxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:53:11 -0400
+Date: Wed, 3 Sep 2008 10:33:07 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
-       Steve French <sfrench@us.ibm.com>
-Subject: [patch 11/16] cifs: fix O_APPEND on directio mounts
-Message-ID: <20080903173305.GL10429@suse.de>
+       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 12/16] sctp: fix potential panics in the SCTP-AUTH API.
+Message-ID: <20080903173307.GM10429@suse.de>
 References: <20080903172849.927077124@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cifs-fix-o_append-on-directio-mounts.patch"
+Content-Disposition: inline; filename="0007-sctp-fix-potential-panics-in-the-SCTP-AUTH-API.patch"
 In-Reply-To: <20080903173218.GA10429@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,55 +39,251 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jeff Layton <jlayton@redhat.com>
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-commit 838726c4756813576078203eb7e1e219db0da870 upstream
+[ Upstream commit 5e739d1752aca4e8f3e794d431503bfca3162df4 ]
 
-The direct I/O write codepath for CIFS is done through
-cifs_user_write(). That function does not currently call
-generic_write_checks() so the file position isn't being properly set
-when the file is opened with O_APPEND.  It's also not doing the other
-"normal" checks that should be done for a write call.
+All of the SCTP-AUTH socket options could cause a panic
+if the extension is disabled and the API is envoked.
 
-The problem is currently that when you open a file with O_APPEND on a
-mount with the directio mount option, the file position is set to the
-beginning of the file. This makes any subsequent writes clobber the data
-in the file starting at the beginning.
+Additionally, there were some additional assumptions that
+certain pointers would always be valid which may not
+always be the case.
 
-This seems to fix the problem in cursory testing. It is, however
-important to note that NFS disallows the combination of
-(O_DIRECT|O_APPEND). If my understanding is correct, the concern is
-races with multiple clients appending to a file clobbering each others'
-data. Since the write model for CIFS and NFS is pretty similar in this
-regard, CIFS is probably subject to the same sort of races. What's
-unclear to me is why this is a particular problem with O_DIRECT and not
-with buffered writes...
+This patch hardens the API and address all of the crash
+scenarios.
 
-Regardless, disallowing O_APPEND on an entire mount is probably not
-reasonable, so we'll probably just have to deal with it and reevaluate
-this flag combination when we get proper support for O_DIRECT. In the
-meantime this patch at least fixes the existing problem.
-
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/file.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ net/sctp/endpointola.c |    4 +-
+ net/sctp/socket.c      |   85 +++++++++++++++++++++++++++++++++++++------------
+ 2 files changed, 67 insertions(+), 22 deletions(-)
 
---- a/fs/cifs/file.c
-+++ b/fs/cifs/file.c
-@@ -835,6 +835,10 @@ ssize_t cifs_user_write(struct file *fil
- 		return -EBADF;
- 	open_file = (struct cifsFileInfo *) file->private_data;
+--- a/net/sctp/endpointola.c
++++ b/net/sctp/endpointola.c
+@@ -103,6 +103,7 @@ static struct sctp_endpoint *sctp_endpoi
  
-+	rc = generic_write_checks(file, poffset, &write_size, 0);
-+	if (rc)
-+		return rc;
+ 		/* Initialize the CHUNKS parameter */
+ 		auth_chunks->param_hdr.type = SCTP_PARAM_CHUNKS;
++		auth_chunks->param_hdr.length = htons(sizeof(sctp_paramhdr_t));
+ 
+ 		/* If the Add-IP functionality is enabled, we must
+ 		 * authenticate, ASCONF and ASCONF-ACK chunks
+@@ -110,8 +111,7 @@ static struct sctp_endpoint *sctp_endpoi
+ 		if (sctp_addip_enable) {
+ 			auth_chunks->chunks[0] = SCTP_CID_ASCONF;
+ 			auth_chunks->chunks[1] = SCTP_CID_ASCONF_ACK;
+-			auth_chunks->param_hdr.length =
+-					htons(sizeof(sctp_paramhdr_t) + 2);
++			auth_chunks->param_hdr.length += htons(2);
+ 		}
+ 	}
+ 
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -2983,6 +2983,9 @@ static int sctp_setsockopt_auth_chunk(st
+ {
+ 	struct sctp_authchunk val;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
 +
- 	xid = GetXid();
+ 	if (optlen != sizeof(struct sctp_authchunk))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, optlen))
+@@ -3013,6 +3016,9 @@ static int sctp_setsockopt_hmac_ident(st
+ 	struct sctp_hmacalgo *hmacs;
+ 	int err;
  
- 	if (*poffset > file->f_path.dentry->d_inode->i_size)
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen < sizeof(struct sctp_hmacalgo))
+ 		return -EINVAL;
+ 
+@@ -3051,6 +3057,9 @@ static int sctp_setsockopt_auth_key(stru
+ 	struct sctp_association *asoc;
+ 	int ret;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen <= sizeof(struct sctp_authkey))
+ 		return -EINVAL;
+ 
+@@ -3088,6 +3097,9 @@ static int sctp_setsockopt_active_key(st
+ 	struct sctp_authkeyid val;
+ 	struct sctp_association *asoc;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen != sizeof(struct sctp_authkeyid))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, optlen))
+@@ -3113,6 +3125,9 @@ static int sctp_setsockopt_del_key(struc
+ 	struct sctp_authkeyid val;
+ 	struct sctp_association *asoc;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen != sizeof(struct sctp_authkeyid))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, optlen))
+@@ -5073,19 +5088,29 @@ static int sctp_getsockopt_maxburst(stru
+ static int sctp_getsockopt_hmac_ident(struct sock *sk, int len,
+ 				    char __user *optval, int __user *optlen)
+ {
++	struct sctp_hmacalgo  __user *p = (void __user *)optval;
+ 	struct sctp_hmac_algo_param *hmacs;
+-	__u16 param_len;
++	__u16 data_len = 0;
++	u32 num_idents;
++
++	if (!sctp_auth_enable)
++		return -EACCES;
+ 
+ 	hmacs = sctp_sk(sk)->ep->auth_hmacs_list;
+-	param_len = ntohs(hmacs->param_hdr.length);
++	data_len = ntohs(hmacs->param_hdr.length) - sizeof(sctp_paramhdr_t);
+ 
+-	if (len < param_len)
++	if (len < sizeof(struct sctp_hmacalgo) + data_len)
+ 		return -EINVAL;
++
++	len = sizeof(struct sctp_hmacalgo) + data_len;
++	num_idents = data_len / sizeof(u16);
++
+ 	if (put_user(len, optlen))
+ 		return -EFAULT;
+-	if (copy_to_user(optval, hmacs->hmac_ids, len))
++	if (put_user(num_idents, &p->shmac_num_idents))
++		return -EFAULT;
++	if (copy_to_user(p->shmac_idents, hmacs->hmac_ids, data_len))
+ 		return -EFAULT;
+-
+ 	return 0;
+ }
+ 
+@@ -5095,6 +5120,9 @@ static int sctp_getsockopt_active_key(st
+ 	struct sctp_authkeyid val;
+ 	struct sctp_association *asoc;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (len < sizeof(struct sctp_authkeyid))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, sizeof(struct sctp_authkeyid)))
+@@ -5109,6 +5137,12 @@ static int sctp_getsockopt_active_key(st
+ 	else
+ 		val.scact_keynumber = sctp_sk(sk)->ep->active_key_id;
+ 
++	len = sizeof(struct sctp_authkeyid);
++	if (put_user(len, optlen))
++		return -EFAULT;
++	if (copy_to_user(optval, &val, len))
++		return -EFAULT;
++
+ 	return 0;
+ }
+ 
+@@ -5119,13 +5153,16 @@ static int sctp_getsockopt_peer_auth_chu
+ 	struct sctp_authchunks val;
+ 	struct sctp_association *asoc;
+ 	struct sctp_chunks_param *ch;
+-	u32    num_chunks;
++	u32    num_chunks = 0;
+ 	char __user *to;
+ 
+-	if (len <= sizeof(struct sctp_authchunks))
++	if (!sctp_auth_enable)
++		return -EACCES;
++
++	if (len < sizeof(struct sctp_authchunks))
+ 		return -EINVAL;
+ 
+-	if (copy_from_user(&val, p, sizeof(struct sctp_authchunks)))
++	if (copy_from_user(&val, optval, sizeof(struct sctp_authchunks)))
+ 		return -EFAULT;
+ 
+ 	to = p->gauth_chunks;
+@@ -5134,20 +5171,21 @@ static int sctp_getsockopt_peer_auth_chu
+ 		return -EINVAL;
+ 
+ 	ch = asoc->peer.peer_chunks;
++	if (!ch)
++		goto num;
+ 
+ 	/* See if the user provided enough room for all the data */
+ 	num_chunks = ntohs(ch->param_hdr.length) - sizeof(sctp_paramhdr_t);
+ 	if (len < num_chunks)
+ 		return -EINVAL;
+ 
+-	len = num_chunks;
+-	if (put_user(len, optlen))
++	if (copy_to_user(to, ch->chunks, num_chunks))
+ 		return -EFAULT;
++num:
++	len = sizeof(struct sctp_authchunks) + num_chunks;
++	if (put_user(len, optlen)) return -EFAULT;
+ 	if (put_user(num_chunks, &p->gauth_number_of_chunks))
+ 		return -EFAULT;
+-	if (copy_to_user(to, ch->chunks, len))
+-		return -EFAULT;
+-
+ 	return 0;
+ }
+ 
+@@ -5158,13 +5196,16 @@ static int sctp_getsockopt_local_auth_ch
+ 	struct sctp_authchunks val;
+ 	struct sctp_association *asoc;
+ 	struct sctp_chunks_param *ch;
+-	u32    num_chunks;
++	u32    num_chunks = 0;
+ 	char __user *to;
+ 
+-	if (len <= sizeof(struct sctp_authchunks))
++	if (!sctp_auth_enable)
++		return -EACCES;
++
++	if (len < sizeof(struct sctp_authchunks))
+ 		return -EINVAL;
+ 
+-	if (copy_from_user(&val, p, sizeof(struct sctp_authchunks)))
++	if (copy_from_user(&val, optval, sizeof(struct sctp_authchunks)))
+ 		return -EFAULT;
+ 
+ 	to = p->gauth_chunks;
+@@ -5177,17 +5218,21 @@ static int sctp_getsockopt_local_auth_ch
+ 	else
+ 		ch = sctp_sk(sk)->ep->auth_chunk_list;
+ 
++	if (!ch)
++		goto num;
++
+ 	num_chunks = ntohs(ch->param_hdr.length) - sizeof(sctp_paramhdr_t);
+-	if (len < num_chunks)
++	if (len < sizeof(struct sctp_authchunks) + num_chunks)
+ 		return -EINVAL;
+ 
+-	len = num_chunks;
++	if (copy_to_user(to, ch->chunks, num_chunks))
++		return -EFAULT;
++num:
++	len = sizeof(struct sctp_authchunks) + num_chunks;
+ 	if (put_user(len, optlen))
+ 		return -EFAULT;
+ 	if (put_user(num_chunks, &p->gauth_number_of_chunks))
+ 		return -EFAULT;
+-	if (copy_to_user(to, ch->chunks, len))
+-		return -EFAULT;
+ 
+ 	return 0;
+ }
 
 -- 
