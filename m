@@ -1,113 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781AbYICPkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbYICPnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752781AbYICPkd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 11:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYICPkX
+	id S1752881AbYICPnD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 11:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYICPmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 11:40:23 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33277 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751047AbYICPkX (ORCPT
+	Wed, 3 Sep 2008 11:42:54 -0400
+Received: from abydos.nerdbox.net ([216.151.149.55]:49874 "EHLO
+	abydos.NerdBox.Net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbYICPmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 11:40:23 -0400
-Date: Wed, 3 Sep 2008 11:40:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Greg KH <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <bgmerrell@novell.com>, <hirofuchi@users.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, <usbip-devel@lists.sourceforge.net>
-Subject: Re: USBIP protocol
-In-Reply-To: <20080903042539.GB2772@parisc-linux.org>
-Message-ID: <Pine.LNX.4.44L0.0809031043430.2594-100000@iolanthe.rowland.org>
+	Wed, 3 Sep 2008 11:42:54 -0400
+Date: Wed, 3 Sep 2008 08:42:49 -0700 (PDT)
+From: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       dkegel@google.com, jiayingz@google.com
+Subject: Re: [uml-devel] [PATCH 5/6] slab: Annotate slab
+In-Reply-To: <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
+Message-ID: <alpine.DEB.1.00.0809030833050.15543@abydos.NerdBox.Net>
+References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net> <alpine.DEB.1.00.0808291616560.15543@abydos.NerdBox.Net> <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com> <alpine.DEB.1.00.0809022036560.15543@abydos.NerdBox.Net>
+ <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Sep 2008, Matthew Wilcox wrote:
+Hello Pekka,
 
-> Here's a document for discussion.  No code yet, though I'm quite willing
-> to modify the current usbip code to follow this new protocol.  Just a
-> matter of time.
-> 
-> http://www.kernel.org/pub/linux/kernel/people/willy/usbip/usbip-protocol-draft-1
+On Wed, 3 Sep 2008, Pekka Enberg wrote:
 
-Most of your decisions look good to me.
+> On Wed, Sep 3, 2008 at 8:08 AM, Steve VanDeBogart
+> <vandebo-lkml@nerdbox.net> wrote:
+>> It is true that code above the allocator should not be touching free'd
+>> slab objects.  However, it is also true that objects from slabs that
+>> have a constructor should retain their per byte un/initialized state
+>> through allocation and free cycles (just the semantic of slabs with
+>> constructors AFAICT).
+>
+> Sorry for being unclear, sure, object should be marked as initialized
+> when they're returned from kmem_cache_alloc(). However, what I
+> disagree with is *where* you're marking them as initialized. Surely
+> they're not semantically initialized when the slabs are allocated
+> (although technically they are).
 
-> 'get version' is now a call rather than including a version field in
-> every request.
+But which bits of a slab object should be marked as initialized at
+kmem_cache_alloc() time?  We can't mark all of them as initialized
+because the constructor may not initialize all of them (in fact, I've
+programmatically confirmed that there are constructors that don't
+initialize all the bytes of an object).  The only place to get the
+information of interest is to mark all bytes uninitialized and then
+run the constructor on the memory region.
 
-Have you given any thought to forward compatibility?  I imagine it's 
-too early to worry about that yet.
+>
+> On Wed, Sep 3, 2008 at 8:08 AM, Steve VanDeBogart
+> <vandebo-lkml@nerdbox.net> wrote:
+>> Ideally, we'd tell Valgrind that the bytes of a free'd slab object are
+>> no longer accessible, but the initialized state should remain the same
+>> until the object is made accessible again by the next allocation of
+>> the object.  Unfortunately, the compression method for A & V bits in
+>> Valgrind doesn't allow a region to be inaccessible and retain validness
+>> bits.
+>
+> I don't see why you should mark them initialized all the time. Just
+> mark them as uninitialized on kmem_cache_free() and again as
+> initialized when they're about to be returned from kmem_cache_alloc()
+> like we do in kmemcheck.
 
-> Devices are now referred to as an ascii string rather than an encoded
-> 4-byte quantity.  This helps userspace configure the device and lets us
-> interoperate with other OSes that might want to implement this protocol.
+This question has the same answer as above.
 
-Is this string intended to be meaningful to a human?  Or could it be 
-nothing more than an ASCII version of the device structure's address?
-
-> I've split 'cmd_submit' into four commands (control, data, isoc, irq).
-> That gives us the ability to make 'data' very small.
-
-A number of important commands are missing.  Clear-Halt springs to
-mind, as do Reset-Device, Set-Configuration, and Set-Interface.
-
-> Instead of transmitting the device number in every command, we now bind
-> each socket to a particular device.  This was already what happened,
-> so it was just overhead.
-
-This isn't mentioned in your document.  There are "claim device" and 
-"release device" calls, but it doesn't say anywhere that only one 
-device can be claimed at a time.  Nor is there a status code for "No 
-device claimed".
-
-> There's no need to respond with the call number to each call -- the
-> caller should be using the call identifier to find out what type of
-> call it was.  Often the implementation will issue a command and then
-> wait for the response, so even that is unnecessary.
-
-What happens when your protocol is used with a non-reliable transport?  
-Who is responsible for retransmissions/acknowledgements?
-
-> Replying with the status is vital.
-
-The reply to a submit call will be sent when the USB transfer is
-complete.  Suppose the transfer takes a long time.  How does the client
-tell the difference between a long-running transfer and an unreceived
-submit?  Do you essentially assume that all protocol transfers are
-reliable?
-
-There isn't any field in the submit reply to report the status of the 
-transfer (as opposed to the status of the submission).  How do errors 
-like -EILSEQ get reported back to the client?
-
-> I decided to make the 'call' value 32-bit (instead of 8-bit) to make
-> everything align nicely.  Then I wanted to slim down the data command
-> call, so I tucked the endpoint and direction in there too.
-
-What about the extra flags that go with URB submissions?  
-URB_NO_INTERRUPT and URB_SHORT_NOT_OK might well be useful, 
-URB_ZERO_PACKET is certain to be needed, and even URB_ISO_ASAP might 
-come in handy.
-
-> I have no experience with isosynchronous transactions, nor interrupt
-> transactions, so I decline to define them at this moment.
-
-It will not be possible to support all the features of Linux's USB 
-stack for these types of transfers (I'm referring to the way the 
-bandwidth isn't released if a new URB is submitted during the 
-completion callback).
-
-Both types will require an additional "interval" field for submission,
-and Isochronous will require "start_frame", "number_of_packets", and a
-list of packet descriptors as well.  It also will require a status and
-length for each component packet in the reply.
-
-In the unlink call, what is the "seqnum" field?  Is it supposed to be 
-the call identifier of the corresponding submit call?
-
-Alan Stern
-
+--
+Steve
