@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbYICRbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYICRbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224AbYICRbT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYICRbG
+	id S1754131AbYICRbe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:31:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYICRbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:31:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54627 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:31:12 -0400
+Received: from inhex.net ([193.33.178.145]:51212 "EHLO inhex.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751332AbYICRbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:31:03 -0400
-Date: Wed, 3 Sep 2008 10:24:47 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/42] 2.6.26-stable review
-Message-ID: <20080903172447.GA7731@suse.de>
+	id S1752493AbYICRbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:31:11 -0400
+X-Greylist: delayed 2795 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Sep 2008 13:31:11 EDT
+Date: Wed, 3 Sep 2008 19:44:15 +0300
+From: Dmitry Nezhevenko <dion@inhex.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       herton@mandriva.com.br,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
+Message-ID: <20080903164415.GA24442@laptop.local>
+References: <20080902163532.436f8fbd@doriath.conectiva> <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de> <20080902175544.131bc54e@doriath.conectiva> <alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de> <20080903104132.7a736282@doriath.conectiva> <alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.26.4 release.
-There are 42 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+On Wed, Sep 03, 2008 at 05:15:40PM +0200, Thomas Gleixner wrote:
+> On Wed, 3 Sep 2008, Thomas Gleixner wrote:
+> > Dont think so. Your dmesg outputs do not show any sign of that
+> > disease.
+> > 
+> > Can you try the patch below please ?
 
-These patches are sent out with a number of different people on the
-Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
-to add your name to the list.  If you want to be off the reviewer list,
-also email us.
+I'm not original problem reporter. However I'm experiencing possible same
+problem with MSI M673 laptop. Here is link to bugzilla report (with
+dmesgs and other info):
+http://bugzilla.kernel.org/show_bug.cgi?id=11101
 
-Responses should be made by September 6 10:00:00 UTC.  Anything received
-after that time might be too late.
+2.6.27-rc4 on this machine freezes with exactly same messages:
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.26.4-rc1.gz
-and the diffstat can be found below.
+hpet0: at MMIO 0xfed00000, IRQ 2, 8, 31
+hpet0: 3 32-bit timers, 25000000 Hz
+ACPI: RTC can wake from S4
 
+This patch do not help me
 
-thanks,
+> @@ -228,6 +228,8 @@ static void tick_do_broadcast_on_off(voi
+>  	if (!tick_device_is_functional(dev))
+>  		goto out;
+>  
+> +	bc_stoppped = cpus_empty(tick_broadcast_mask);
 
-the -stable release team
+btw little type here, should be "bc_stopped"
 
- Makefile                           |    2 
- arch/sparc64/mm/init.c             |   30 ++++++++---
- arch/x86/kernel/cpu/cyrix.c        |   18 ------
- arch/x86/kernel/cpu/mtrr/generic.c |   20 ++++++-
- arch/x86/kvm/paging_tmpl.h         |    2 
- crypto/authenc.c                   |   10 ++-
- drivers/ata/sata_mv.c              |   34 +++----------
- drivers/char/random.c              |   19 +++----
- drivers/misc/eeepc-laptop.c        |    2 
- drivers/net/atlx/atl1.c            |    1 
- drivers/net/forcedeth.c            |    4 -
- drivers/net/r8169.c                |    2 
- drivers/net/tg3.c                  |   53 ++++++++++++++------
- drivers/net/tg3.h                  |    3 +
- drivers/pci/search.c               |    2 
- drivers/rtc/rtc-lib.c              |    5 +
- drivers/s390/block/dasd_eckd.h     |    2 
- drivers/serial/8250.c              |   16 ++++--
- drivers/serial/8250.h              |    1 
- drivers/usb/class/cdc-acm.c        |    2 
- drivers/video/fb_defio.c           |   19 +++++++
- drivers/video/fbmem.c              |    4 +
- fs/binfmt_misc.c                   |    4 -
- fs/bio.c                           |   48 ++++++++++++------
- fs/cifs/file.c                     |    4 +
- fs/cramfs/inode.c                  |   84 ++++++++++++++------------------
- fs/nfsd/nfs4acl.c                  |    2 
- include/linux/Kbuild               |    1 
- include/linux/fb.h                 |    3 +
- include/linux/mroute.h             |   25 ++++++++-
- include/linux/pim.h                |   45 -----------------
- include/net/addrconf.h             |    3 -
- include/net/ip6_route.h            |    1 
- mm/page_alloc.c                    |    7 ++
- net/ax25/sysctl_net_ax25.c         |   14 +----
- net/ipv4/udp.c                     |    6 +-
- net/ipv6/addrconf.c                |    3 -
- net/ipv6/fib6_rules.c              |    3 -
- net/ipv6/ip6_fib.c                 |    1 
- net/ipv6/ip6_output.c              |    2 
- net/ipv6/ndisc.c                   |    2 
- net/ipv6/route.c                   |   13 +++--
- net/ipv6/udp.c                     |    6 +-
- net/ipv6/xfrm6_policy.c            |    4 +
- net/sched/act_api.c                |    5 -
- net/sched/sch_htb.c                |   20 ++++---
- net/sched/sch_prio.c               |   16 ++++--
- net/sched/sch_tbf.c                |   11 ----
- net/sctp/auth.c                    |    7 ++
- net/sctp/endpointola.c             |    4 -
- net/sctp/ipv6.c                    |    3 -
- net/sctp/socket.c                  |   96 ++++++++++++++++++++++++++++---------
- net/sunrpc/sysctl.c                |   18 +-----
- net/xfrm/xfrm_state.c              |   32 ++++++++----
- sound/pci/oxygen/oxygen_mixer.c    |    5 +
- 55 files changed, 438 insertions(+), 311 deletions(-)
+> +
+>  	switch (*reason) {
+>  	case CLOCK_EVT_NOTIFY_BROADCAST_ON:
+>  	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
+ 
+-- 
+WBR, Dmitry
