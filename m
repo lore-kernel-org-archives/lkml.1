@@ -1,516 +1,535 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYICGxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYICGxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYICGxV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 02:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYICGxJ
+	id S1755567AbYICGxg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 02:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYICGxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 02:53:09 -0400
+	Wed, 3 Sep 2008 02:53:16 -0400
 Received: from wa-out-1112.google.com ([209.85.146.180]:52651 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbYICGxH (ORCPT
+	with ESMTP id S1754301AbYICGxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 02:53:07 -0400
+	Wed, 3 Sep 2008 02:53:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=heLmZi8C/Kg6sEUCjtQ6XVTlqddbWqlgzGsJ9ygT69reDB8+TUdmimDArHy4fdyWzO
-         wbP4t+fhYJj+Okl9fya8yypOIDxzMCdyhRpwy9XPCUKiIKEjVbIEg4sjekJfh7HBVsaX
-         H8NnigYPKq8tLXeMUtCdaYgp00FjTG3dlBqwI=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=TfqLUrxd/ua2eewt2d/RKt9oIBJ6Wh2Yv74A1poEfoHCrB8NKVkfARynnmz8DDFFN7
+         OrP97QCDeyXZw5vat7MA62EgWbNZDcmHiRYsFL9lkj1S8nZczAIPyHYwOWn1Kklo56Ow
+         v4iR4tqATzxVyzAGdqrHBJMVW10m9XIfZTNxA=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 1/5] x86: order functions in cpu/common.c and cpu/common_64.c v2
-Date: Tue,  2 Sep 2008 23:52:57 -0700
-Message-Id: <1220424781-17752-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 2/5] x86: remove cpu_vendor_dev
+Date: Tue,  2 Sep 2008 23:52:58 -0700
+Message-Id: <1220424781-17752-2-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1220424781-17752-1-git-send-email-yhlu.kernel@gmail.com>
+References: <1220424781-17752-1-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: make 64 bit get c->x86_cache_alignment = c->x86_clfush_size
+1. add c_x86_vendor into cpu_dev
+2. change cpu_devs to static
+3. check c_x86_vendor before put that cpu_dev into array
+4. remove alignment for 64bit
+5. order the sequence in cpu_devs according to link sequence...
+   so could put intel at first, then amd...
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/cpu/common.c    |  190 ++++++++++++++++++++++------------------
- arch/x86/kernel/cpu/common_64.c |  106 ++++++++++------------
- 2 files changed, 156 insertions(+), 140 deletions(-)
 
+---
+ arch/x86/kernel/cpu/Makefile     |    4 +-
+ arch/x86/kernel/cpu/amd.c        |    3 +
+ arch/x86/kernel/cpu/amd_64.c     |    4 +-
+ arch/x86/kernel/cpu/centaur.c    |    3 +
+ arch/x86/kernel/cpu/centaur_64.c |    3 +
+ arch/x86/kernel/cpu/common.c     |   71 +++++++++++++++++++--------------------
+ arch/x86/kernel/cpu/common_64.c  |   71 +++++++++++++++++++--------------------
+ arch/x86/kernel/cpu/cpu.h        |   18 +++------
+ arch/x86/kernel/cpu/cyrix.c      |    6 ++-
+ arch/x86/kernel/cpu/intel.c      |    3 +
+ arch/x86/kernel/cpu/intel_64.c   |    3 +
+ arch/x86/kernel/cpu/transmeta.c  |    3 +
+ arch/x86/kernel/cpu/umc.c        |    3 +
+ arch/x86/kernel/vmlinux_32.lds.S |    8 ++--
+ arch/x86/kernel/vmlinux_64.lds.S |    9 ++--
+ 15 files changed, 106 insertions(+), 106 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/amd.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
++++ linux-2.6/arch/x86/kernel/cpu/amd.c
+@@ -298,6 +298,7 @@ static struct cpu_dev amd_cpu_dev __cpui
+ 	.c_early_init   = early_init_amd,
+ 	.c_init		= init_amd,
+ 	.c_size_cache	= amd_size_cache,
++	.c_x86_vendor	= X86_VENDOR_AMD,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_AMD, &amd_cpu_dev);
++cpu_dev_register(amd_cpu_dev);
+Index: linux-2.6/arch/x86/kernel/cpu/amd_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd_64.c
++++ linux-2.6/arch/x86/kernel/cpu/amd_64.c
+@@ -218,7 +218,7 @@ static struct cpu_dev amd_cpu_dev __cpui
+ 	.c_ident	= { "AuthenticAMD" },
+ 	.c_early_init   = early_init_amd,
+ 	.c_init		= init_amd,
++	.c_x86_vendor	= X86_VENDOR_AMD,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_AMD, &amd_cpu_dev);
+-
++cpu_dev_register(amd_cpu_dev);
+Index: linux-2.6/arch/x86/kernel/cpu/centaur.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/centaur.c
++++ linux-2.6/arch/x86/kernel/cpu/centaur.c
+@@ -475,6 +475,7 @@ static struct cpu_dev centaur_cpu_dev __
+ 	.c_early_init	= early_init_centaur,
+ 	.c_init		= init_centaur,
+ 	.c_size_cache	= centaur_size_cache,
++	.c_x86_vendor	= X86_VENDOR_CENTAUR,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_CENTAUR, &centaur_cpu_dev);
++cpu_dev_register(centaur_cpu_dev);
+Index: linux-2.6/arch/x86/kernel/cpu/centaur_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/centaur_64.c
++++ linux-2.6/arch/x86/kernel/cpu/centaur_64.c
+@@ -29,7 +29,8 @@ static struct cpu_dev centaur_cpu_dev __
+ 	.c_ident	= { "CentaurHauls" },
+ 	.c_early_init	= early_init_centaur,
+ 	.c_init		= init_centaur,
++	.c_x86_vendor	= X86_VENDOR_CENTAUR,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_CENTAUR, &centaur_cpu_dev);
++cpu_dev_register(centaur_cpu_dev);
+ 
 Index: linux-2.6/arch/x86/kernel/cpu/common.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/common.c
 +++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -60,6 +60,18 @@ EXPORT_PER_CPU_SYMBOL_GPL(gdt_page);
- 
- __u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
- 
-+/* Current gdt points %fs at the "master" per-cpu area: after this,
-+ * it's on the real one. */
-+void switch_to_new_gdt(void)
-+{
-+	struct desc_ptr gdt_descr;
-+
-+	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
-+	gdt_descr.size = GDT_SIZE - 1;
-+	load_gdt(&gdt_descr);
-+	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
-+}
-+
+@@ -75,7 +75,7 @@ void switch_to_new_gdt(void)
  static int cachesize_override __cpuinitdata = -1;
  static int disable_x86_serial_nr __cpuinitdata = 1;
  
-@@ -123,15 +135,15 @@ int __cpuinit get_model_name(struct cpui
+-struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
++static struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
  
- void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
+ static void __cpuinit default_init(struct cpuinfo_x86 *c)
  {
--	unsigned int n, dummy, ecx, edx, l2size;
-+	unsigned int n, dummy, ebx, ecx, edx, l2size;
+@@ -93,8 +93,9 @@ static void __cpuinit default_init(struc
+ static struct cpu_dev __cpuinitdata default_cpu = {
+ 	.c_init	= default_init,
+ 	.c_vendor = "Unknown",
++	.c_x86_vendor = X86_VENDOR_UNKNOWN,
+ };
+-static struct cpu_dev *this_cpu __cpuinitdata = &default_cpu;
++static struct cpu_dev *this_cpu __cpuinitdata;
  
- 	n = c->extended_cpuid_level;
+ static int __init cachesize_setup(char *str)
+ {
+@@ -250,21 +251,24 @@ static void __cpuinit get_cpu_vendor(str
+ 	static int printed;
  
- 	if (n >= 0x80000005) {
--		cpuid(0x80000005, &dummy, &dummy, &ecx, &edx);
-+		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
- 		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), D cache %dK (%d bytes/line)\n",
--			edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
--		c->x86_cache_size = (ecx>>24)+(edx>>24);
-+				edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
-+		c->x86_cache_size = (ecx>>24) + (edx>>24);
- 	}
- 
- 	if (n < 0x80000006)	/* Some chips just has a large L1. */
-@@ -185,6 +197,51 @@ static char __cpuinit *table_lookup_mode
- 	return NULL;		/* Not found */
- }
- 
-+#ifdef CONFIG_X86_HT
-+void __cpuinit detect_ht(struct cpuinfo_x86 *c)
-+{
-+	u32 	eax, ebx, ecx, edx;
-+	int 	index_msb, core_bits;
+ 	for (i = 0; i < X86_VENDOR_NUM; i++) {
+-		if (cpu_devs[i]) {
+-			if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
+-			    (cpu_devs[i]->c_ident[1] &&
+-			     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
+-				c->x86_vendor = i;
+-				this_cpu = cpu_devs[i];
+-				return;
+-			}
++		if (!cpu_devs[i])
++			break;
 +
-+	cpuid(1, &eax, &ebx, &ecx, &edx);
-+
-+	if (!cpu_has(c, X86_FEATURE_HT) || cpu_has(c, X86_FEATURE_CMP_LEGACY))
-+		return;
-+
-+	smp_num_siblings = (ebx & 0xff0000) >> 16;
-+
-+	if (smp_num_siblings == 1) {
-+		printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
-+	} else if (smp_num_siblings > 1) {
-+
-+		if (smp_num_siblings > NR_CPUS) {
-+			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
-+					smp_num_siblings);
-+			smp_num_siblings = 1;
++		if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
++		    (cpu_devs[i]->c_ident[1] &&
++		     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
++			this_cpu = cpu_devs[i];
++			c->x86_vendor = this_cpu->c_x86_vendor;
 +			return;
-+		}
+ 		}
+ 	}
 +
-+		index_msb = get_count_order(smp_num_siblings);
-+		c->phys_proc_id = phys_pkg_id(c->initial_apicid, index_msb);
+ 	if (!printed) {
+ 		printed++;
+ 		printk(KERN_ERR "CPU: Vendor unknown, using generic init.\n");
+ 		printk(KERN_ERR "CPU: Your system may be unstable.\n");
+ 	}
 +
-+		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
-+		       c->phys_proc_id);
-+
-+		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
-+
-+		index_msb = get_count_order(smp_num_siblings);
-+
-+		core_bits = get_count_order(c->x86_max_cores);
-+
-+		c->cpu_core_id = phys_pkg_id(c->initial_apicid, index_msb) &
-+					       ((1 << core_bits) - 1);
-+
-+		if (c->x86_max_cores > 1)
-+			printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
-+			       c->cpu_core_id);
-+	}
-+}
-+#endif
- 
- static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c)
- {
-@@ -258,7 +315,26 @@ static int __cpuinit have_cpuid_p(void)
+ 	c->x86_vendor = X86_VENDOR_UNKNOWN;
+ 	this_cpu = &default_cpu;
+ }
+@@ -315,25 +319,6 @@ static int __cpuinit have_cpuid_p(void)
  	return flag_is_changeable_p(X86_EFLAGS_ID);
  }
  
--void __init cpu_detect(struct cpuinfo_x86 *c)
-+static void __init early_cpu_support_print(void)
-+{
-+	int i,j;
-+	struct cpu_dev *cpu_devx;
-+
-+	printk("KERNEL supported cpus:\n");
-+	for (i = 0; i < X86_VENDOR_NUM; i++) {
-+		cpu_devx = cpu_devs[i];
-+		if (!cpu_devx)
-+			continue;
-+		for (j = 0; j < 2; j++) {
-+			if (!cpu_devx->c_ident[j])
-+				continue;
-+			printk("  %s %s\n", cpu_devx->c_vendor,
-+				cpu_devx->c_ident[j]);
-+		}
-+	}
-+}
-+
-+void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
- {
- 	/* Get vendor name */
- 	cpuid(0x00000000, (unsigned int *)&c->cpuid_level,
-@@ -267,19 +343,20 @@ void __init cpu_detect(struct cpuinfo_x8
- 	      (unsigned int *)&c->x86_vendor_id[4]);
- 
- 	c->x86 = 4;
-+	/* Intel-defined flags: level 0x00000001 */
- 	if (c->cpuid_level >= 0x00000001) {
- 		u32 junk, tfms, cap0, misc;
- 		cpuid(0x00000001, &tfms, &misc, &junk, &cap0);
--		c->x86 = (tfms >> 8) & 15;
--		c->x86_model = (tfms >> 4) & 15;
-+		c->x86 = (tfms >> 8) & 0xf;
-+		c->x86_model = (tfms >> 4) & 0xf;
-+		c->x86_mask = tfms & 0xf;
- 		if (c->x86 == 0xf)
- 			c->x86 += (tfms >> 20) & 0xff;
- 		if (c->x86 >= 0x6)
--			c->x86_model += ((tfms >> 16) & 0xF) << 4;
--		c->x86_mask = tfms & 15;
-+			c->x86_model += ((tfms >> 16) & 0xf) << 4;
- 		if (cap0 & (1<<19)) {
--			c->x86_cache_alignment = ((misc >> 8) & 0xff) * 8;
- 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
-+			c->x86_cache_alignment = c->x86_clflush_size;
- 		}
- 	}
- }
-@@ -341,6 +418,17 @@ static void __init early_identify_cpu(st
- 	validate_pat_support(c);
- }
- 
-+void __init early_cpu_init(void)
-+{
-+	struct cpu_vendor_dev *cvdev;
-+
-+	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
-+		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
-+
-+	early_cpu_support_print();
-+	early_identify_cpu(&boot_cpu_data);
-+}
-+
- /*
-  * The NOPL instruction is supposed to exist on all CPUs with
-  * family >= 6, unfortunately, that's not true in practice because
-@@ -500,7 +588,7 @@ static void __cpuinit identify_cpu(struc
- 	 */
- 	if (c != &boot_cpu_data) {
- 		/* AND the already accumulated flags with these */
--		for (i = 0 ; i < NCAPINTS ; i++)
-+		for (i = 0; i < NCAPINTS; i++)
- 			boot_cpu_data.x86_capability[i] &= c->x86_capability[i];
- 	}
- 
-@@ -529,52 +617,6 @@ void __cpuinit identify_secondary_cpu(st
- 	mtrr_ap_init();
- }
- 
--#ifdef CONFIG_X86_HT
--void __cpuinit detect_ht(struct cpuinfo_x86 *c)
+-static void __init early_cpu_support_print(void)
 -{
--	u32 	eax, ebx, ecx, edx;
--	int 	index_msb, core_bits;
+-	int i,j;
+-	struct cpu_dev *cpu_devx;
 -
--	cpuid(1, &eax, &ebx, &ecx, &edx);
--
--	if (!cpu_has(c, X86_FEATURE_HT) || cpu_has(c, X86_FEATURE_CMP_LEGACY))
--		return;
--
--	smp_num_siblings = (ebx & 0xff0000) >> 16;
--
--	if (smp_num_siblings == 1) {
--		printk(KERN_INFO  "CPU: Hyper-Threading is disabled\n");
--	} else if (smp_num_siblings > 1) {
--
--		if (smp_num_siblings > NR_CPUS) {
--			printk(KERN_WARNING "CPU: Unsupported number of the "
--					"siblings %d", smp_num_siblings);
--			smp_num_siblings = 1;
--			return;
+-	printk("KERNEL supported cpus:\n");
+-	for (i = 0; i < X86_VENDOR_NUM; i++) {
+-		cpu_devx = cpu_devs[i];
+-		if (!cpu_devx)
+-			continue;
+-		for (j = 0; j < 2; j++) {
+-			if (!cpu_devx->c_ident[j])
+-				continue;
+-			printk("  %s %s\n", cpu_devx->c_vendor,
+-				cpu_devx->c_ident[j]);
 -		}
--
--		index_msb = get_count_order(smp_num_siblings);
--		c->phys_proc_id = phys_pkg_id(c->initial_apicid, index_msb);
--
--		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
--		       c->phys_proc_id);
--
--		smp_num_siblings = smp_num_siblings / c->x86_max_cores;
--
--		index_msb = get_count_order(smp_num_siblings) ;
--
--		core_bits = get_count_order(c->x86_max_cores);
--
--		c->cpu_core_id = phys_pkg_id(c->initial_apicid, index_msb) &
--					       ((1 << core_bits) - 1);
--
--		if (c->x86_max_cores > 1)
--			printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
--			       c->cpu_core_id);
--	}
--}
--#endif
--
- static __init int setup_noclflush(char *arg)
- {
- 	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
-@@ -592,17 +634,17 @@ void __cpuinit print_cpu_info(struct cpu
- 		vendor = c->x86_vendor_id;
- 
- 	if (vendor && strncmp(c->x86_model_id, vendor, strlen(vendor)))
--		printk("%s ", vendor);
-+		printk(KERN_CONT "%s ", vendor);
- 
--	if (!c->x86_model_id[0])
--		printk("%d86", c->x86);
-+	if (c->x86_model_id[0])
-+		printk(KERN_CONT "%s", c->x86_model_id);
- 	else
--		printk("%s", c->x86_model_id);
-+		printk(KERN_CONT "%d86", c->x86);
- 
- 	if (c->x86_mask || c->cpuid_level >= 0)
--		printk(" stepping %02x\n", c->x86_mask);
-+		printk(KERN_CONT " stepping %02x\n", c->x86_mask);
- 	else
--		printk("\n");
-+		printk(KERN_CONT "\n");
- }
- 
- static __init int setup_disablecpuid(char *arg)
-@@ -618,16 +660,6 @@ __setup("clearcpuid=", setup_disablecpui
- 
- cpumask_t cpu_initialized __cpuinitdata = CPU_MASK_NONE;
- 
--void __init early_cpu_init(void)
--{
--	struct cpu_vendor_dev *cvdev;
--
--	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
--		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
--
--	early_identify_cpu(&boot_cpu_data);
--}
--
- /* Make sure %fs is initialized properly in idle threads */
- struct pt_regs * __cpuinit idle_regs(struct pt_regs *regs)
- {
-@@ -636,18 +668,6 @@ struct pt_regs * __cpuinit idle_regs(str
- 	return regs;
- }
- 
--/* Current gdt points %fs at the "master" per-cpu area: after this,
-- * it's on the real one. */
--void switch_to_new_gdt(void)
--{
--	struct desc_ptr gdt_descr;
--
--	gdt_descr.address = (long)get_cpu_gdt_table(smp_processor_id());
--	gdt_descr.size = GDT_SIZE - 1;
--	load_gdt(&gdt_descr);
--	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
--}
--
- /*
-  * cpu_init() initializes state that is per-CPU. Some data is already
-  * initialized (naturally) in the bootstrap process, such as the GDT
-Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/common_64.c
-@@ -103,9 +103,8 @@ void __cpuinit display_cacheinfo(struct
- 
- 	if (n >= 0x80000005) {
- 		cpuid(0x80000005, &dummy, &ebx, &ecx, &edx);
--		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), "
--		       "D cache %dK (%d bytes/line)\n",
--		       edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
-+		printk(KERN_INFO "CPU: L1 I Cache: %dK (%d bytes/line), D cache %dK (%d bytes/line)\n",
-+				edx>>24, edx&0xFF, ecx>>24, ecx&0xFF);
- 		c->x86_cache_size = (ecx>>24) + (edx>>24);
- 		/* On K8 L1 TLB is inclusive, so don't count it */
- 		c->x86_tlbsize = 0;
-@@ -146,8 +145,8 @@ void __cpuinit detect_ht(struct cpuinfo_
- 	} else if (smp_num_siblings > 1) {
- 
- 		if (smp_num_siblings > NR_CPUS) {
--			printk(KERN_WARNING "CPU: Unsupported number of "
--			       "siblings %d", smp_num_siblings);
-+			printk(KERN_WARNING "CPU: Unsupported number of siblings %d",
-+					smp_num_siblings);
- 			smp_num_siblings = 1;
- 			return;
- 		}
-@@ -185,7 +184,7 @@ static void __cpuinit get_cpu_vendor(str
- 		if (cpu_devs[i]) {
- 			if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
- 			    (cpu_devs[i]->c_ident[1] &&
--			    !strcmp(v, cpu_devs[i]->c_ident[1]))) {
-+			     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
- 				c->x86_vendor = i;
- 				this_cpu = cpu_devs[i];
- 				return;
-@@ -220,39 +219,6 @@ static void __init early_cpu_support_pri
- 	}
- }
- 
--/*
-- * The NOPL instruction is supposed to exist on all CPUs with
-- * family >= 6, unfortunately, that's not true in practice because
-- * of early VIA chips and (more importantly) broken virtualizers that
-- * are not easy to detect.  Hence, probe for it based on first
-- * principles.
-- *
-- * Note: no 64-bit chip is known to lack these, but put the code here
-- * for consistency with 32 bits, and to make it utterly trivial to
-- * diagnose the problem should it ever surface.
-- */
--static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
--{
--	const u32 nopl_signature = 0x888c53b1; /* Random number */
--	u32 has_nopl = nopl_signature;
--
--	clear_cpu_cap(c, X86_FEATURE_NOPL);
--	if (c->x86 >= 6) {
--		asm volatile("\n"
--			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
--			     "2:\n"
--			     "        .section .fixup,\"ax\"\n"
--			     "3:      xor %0,%0\n"
--			     "        jmp 2b\n"
--			     "        .previous\n"
--			     _ASM_EXTABLE(1b,3b)
--			     : "+a" (has_nopl));
--
--		if (has_nopl == nopl_signature)
--			set_cpu_cap(c, X86_FEATURE_NOPL);
 -	}
 -}
 -
  void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
  {
  	/* Get vendor name */
-@@ -261,6 +227,7 @@ void __cpuinit cpu_detect(struct cpuinfo
- 	      (unsigned int *)&c->x86_vendor_id[8],
- 	      (unsigned int *)&c->x86_vendor_id[4]);
+@@ -411,21 +396,35 @@ static void __init early_identify_cpu(st
  
-+	c->x86 = 4;
- 	/* Intel-defined flags: level 0x00000001 */
- 	if (c->cpuid_level >= 0x00000001) {
- 		u32 junk, tfms, cap0, misc;
-@@ -271,12 +238,11 @@ void __cpuinit cpu_detect(struct cpuinfo
- 		if (c->x86 == 0xf)
- 			c->x86 += (tfms >> 20) & 0xff;
- 		if (c->x86 >= 0x6)
--			c->x86_model += ((tfms >> 16) & 0xF) << 4;
--		if (cap0 & (1<<19))
-+			c->x86_model += ((tfms >> 16) & 0xf) << 4;
-+		if (cap0 & (1<<19)) {
- 			c->x86_clflush_size = ((misc >> 8) & 0xff) * 8;
--	} else {
--		/* Have CPUID level 0 only - unheard of */
--		c->x86 = 4;
-+			c->x86_cache_alignment = c->x86_clflush_size;
-+		}
- 	}
+ 	get_cpu_cap(c);
+ 
+-	if (c->x86_vendor != X86_VENDOR_UNKNOWN &&
+-	    cpu_devs[c->x86_vendor]->c_early_init)
+-		cpu_devs[c->x86_vendor]->c_early_init(c);
++	if (this_cpu->c_early_init)
++		this_cpu->c_early_init(c);
+ 
+ 	validate_pat_support(c);
  }
  
-@@ -286,9 +252,6 @@ static void __cpuinit get_cpu_cap(struct
- 	u32 tfms, xlvl;
- 	u32 ebx;
+ void __init early_cpu_init(void)
+ {
+-	struct cpu_vendor_dev *cvdev;
++	struct cpu_dev **cdev;
++	int count = 0;
++
++	printk("KERNEL supported cpus:\n");
++	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
++		struct cpu_dev *cpudev = *cdev;
++		unsigned int j;
++
++		if (count >= X86_VENDOR_NUM)
++			break;
++		cpu_devs[count] = cpudev;
++		count++;
  
--	/* Initialize the standard set of capabilities */
--	/* Note that the vendor-specific code below might override */
--
- 	/* Intel-defined flags: level 0x00000001 */
- 	if (c->cpuid_level >= 0x00000001) {
- 		u32 capability, excap;
-@@ -364,6 +327,39 @@ void __init early_cpu_init(void)
+-	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
+-		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
++		for (j = 0; j < 2; j++) {
++			if (!cpudev->c_ident[j])
++				continue;
++			printk("  %s %s\n", cpudev->c_vendor,
++				cpudev->c_ident[j]);
++		}
++	}
+ 
+-	early_cpu_support_print();
  	early_identify_cpu(&boot_cpu_data);
  }
  
-+/*
-+ * The NOPL instruction is supposed to exist on all CPUs with
-+ * family >= 6, unfortunately, that's not true in practice because
-+ * of early VIA chips and (more importantly) broken virtualizers that
-+ * are not easy to detect.  Hence, probe for it based on first
-+ * principles.
-+ *
-+ * Note: no 64-bit chip is known to lack these, but put the code here
-+ * for consistency with 32 bits, and to make it utterly trivial to
-+ * diagnose the problem should it ever surface.
-+ */
-+static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
-+{
-+	const u32 nopl_signature = 0x888c53b1; /* Random number */
-+	u32 has_nopl = nopl_signature;
-+
-+	clear_cpu_cap(c, X86_FEATURE_NOPL);
-+	if (c->x86 >= 6) {
-+		asm volatile("\n"
-+			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
-+			     "2:\n"
-+			     "        .section .fixup,\"ax\"\n"
-+			     "3:      xor %0,%0\n"
-+			     "        jmp 2b\n"
-+			     "        .previous\n"
-+			     _ASM_EXTABLE(1b,3b)
-+			     : "+a" (has_nopl));
-+
-+		if (has_nopl == nopl_signature)
-+			set_cpu_cap(c, X86_FEATURE_NOPL);
-+	}
-+}
-+
- static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
+Index: linux-2.6/arch/x86/kernel/cpu/common_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common_64.c
++++ linux-2.6/arch/x86/kernel/cpu/common_64.c
+@@ -66,7 +66,7 @@ void switch_to_new_gdt(void)
+ 	load_gdt(&gdt_descr);
+ }
+ 
+-struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
++static struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
+ 
+ static void __cpuinit default_init(struct cpuinfo_x86 *c)
  {
- 	c->extended_cpuid_level = 0;
-@@ -451,7 +447,7 @@ static void __cpuinit identify_cpu(struc
+@@ -76,8 +76,9 @@ static void __cpuinit default_init(struc
+ static struct cpu_dev __cpuinitdata default_cpu = {
+ 	.c_init	= default_init,
+ 	.c_vendor = "Unknown",
++	.c_x86_vendor = X86_VENDOR_UNKNOWN,
+ };
+-static struct cpu_dev *this_cpu __cpuinitdata = &default_cpu;
++static struct cpu_dev *this_cpu __cpuinitdata;
  
- }
- 
--void __cpuinit identify_boot_cpu(void)
-+void __init identify_boot_cpu(void)
+ int __cpuinit get_model_name(struct cpuinfo_x86 *c)
  {
- 	identify_cpu(&boot_cpu_data);
- }
-@@ -463,13 +459,6 @@ void __cpuinit identify_secondary_cpu(st
- 	mtrr_ap_init();
+@@ -181,44 +182,28 @@ static void __cpuinit get_cpu_vendor(str
+ 	static int printed;
+ 
+ 	for (i = 0; i < X86_VENDOR_NUM; i++) {
+-		if (cpu_devs[i]) {
+-			if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
+-			    (cpu_devs[i]->c_ident[1] &&
+-			     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
+-				c->x86_vendor = i;
+-				this_cpu = cpu_devs[i];
+-				return;
+-			}
++		if (!cpu_devs[i])
++			break;
++
++		if (!strcmp(v, cpu_devs[i]->c_ident[0]) ||
++		    (cpu_devs[i]->c_ident[1] &&
++		     !strcmp(v, cpu_devs[i]->c_ident[1]))) {
++			this_cpu = cpu_devs[i];
++			c->x86_vendor = this_cpu->c_x86_vendor;
++			return;
+ 		}
+ 	}
++
+ 	if (!printed) {
+ 		printed++;
+ 		printk(KERN_ERR "CPU: Vendor unknown, using generic init.\n");
+ 		printk(KERN_ERR "CPU: Your system may be unstable.\n");
+ 	}
++
+ 	c->x86_vendor = X86_VENDOR_UNKNOWN;
+ 	this_cpu = &default_cpu;
  }
  
--static __init int setup_noclflush(char *arg)
+-static void __init early_cpu_support_print(void)
 -{
--	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
--	return 1;
--}
--__setup("noclflush", setup_noclflush);
+-	int i,j;
+-	struct cpu_dev *cpu_devx;
 -
- struct msr_range {
- 	unsigned min;
- 	unsigned max;
-@@ -513,6 +502,13 @@ static __init int setup_show_msr(char *a
- }
- __setup("show_msr=", setup_show_msr);
- 
-+static __init int setup_noclflush(char *arg)
-+{
-+	setup_clear_cpu_cap(X86_FEATURE_CLFLSH);
-+	return 1;
-+}
-+__setup("noclflush", setup_noclflush);
-+
- void __cpuinit print_cpu_info(struct cpuinfo_x86 *c)
+-	printk("KERNEL supported cpus:\n");
+-	for (i = 0; i < X86_VENDOR_NUM; i++) {
+-		cpu_devx = cpu_devs[i];
+-		if (!cpu_devx)
+-			continue;
+-		for (j = 0; j < 2; j++) {
+-			if (!cpu_devx->c_ident[j])
+-				continue;
+-			printk("  %s %s\n", cpu_devx->c_vendor,
+-				cpu_devx->c_ident[j]);
+-		}
+-	}
+-}
+-
+ void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
  {
- 	if (c->x86_model_id[0])
+ 	/* Get vendor name */
+@@ -309,21 +294,35 @@ static void __init early_identify_cpu(st
+ 
+ 	get_cpu_cap(c);
+ 
+-	if (c->x86_vendor != X86_VENDOR_UNKNOWN &&
+-	    cpu_devs[c->x86_vendor]->c_early_init)
+-		cpu_devs[c->x86_vendor]->c_early_init(c);
++	if (this_cpu->c_early_init)
++		this_cpu->c_early_init(c);
+ 
+ 	validate_pat_support(c);
+ }
+ 
+ void __init early_cpu_init(void)
+ {
+-	struct cpu_vendor_dev *cvdev;
++	struct cpu_dev **cdev;
++	int count = 0;
++
++	printk("KERNEL supported cpus:\n");
++	for (cdev = __x86_cpu_dev_start; cdev < __x86_cpu_dev_end; cdev++) {
++		struct cpu_dev *cpudev = *cdev;
++		unsigned int j;
++
++		if (count >= X86_VENDOR_NUM)
++			break;
++		cpu_devs[count] = cpudev;
++		count++;
+ 
+-	for (cvdev = __x86cpuvendor_start; cvdev < __x86cpuvendor_end; cvdev++)
+-		cpu_devs[cvdev->vendor] = cvdev->cpu_dev;
++		for (j = 0; j < 2; j++) {
++			if (!cpudev->c_ident[j])
++				continue;
++			printk("  %s %s\n", cpudev->c_vendor,
++				cpudev->c_ident[j]);
++		}
++	}
+ 
+-	early_cpu_support_print();
+ 	early_identify_cpu(&boot_cpu_data);
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/cpu.h
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/cpu.h
++++ linux-2.6/arch/x86/kernel/cpu/cpu.h
+@@ -21,21 +21,15 @@ struct cpu_dev {
+ 	void		(*c_init)(struct cpuinfo_x86 * c);
+ 	void		(*c_identify)(struct cpuinfo_x86 * c);
+ 	unsigned int	(*c_size_cache)(struct cpuinfo_x86 * c, unsigned int size);
++	int	c_x86_vendor;
+ };
+ 
+-extern struct cpu_dev * cpu_devs [X86_VENDOR_NUM];
++#define cpu_dev_register(cpu_devX) \
++	static struct cpu_dev *__cpu_dev_##cpu_devX __used \
++	__attribute__((__section__(".x86_cpu_dev.init"))) = \
++	&cpu_devX;
+ 
+-struct cpu_vendor_dev {
+-	int vendor;
+-	struct cpu_dev *cpu_dev;
+-};
+-
+-#define cpu_vendor_dev_register(cpu_vendor_id, cpu_dev) \
+-	static struct cpu_vendor_dev __cpu_vendor_dev_##cpu_vendor_id __used \
+-	__attribute__((__section__(".x86cpuvendor.init"))) = \
+-	{ cpu_vendor_id, cpu_dev }
+-
+-extern struct cpu_vendor_dev __x86cpuvendor_start[], __x86cpuvendor_end[];
++extern struct cpu_dev *__x86_cpu_dev_start[], *__x86_cpu_dev_end[];
+ 
+ extern int get_model_name(struct cpuinfo_x86 *c);
+ extern void display_cacheinfo(struct cpuinfo_x86 *c);
+Index: linux-2.6/arch/x86/kernel/cpu/cyrix.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/cyrix.c
++++ linux-2.6/arch/x86/kernel/cpu/cyrix.c
+@@ -442,14 +442,16 @@ static struct cpu_dev cyrix_cpu_dev __cp
+ 	.c_early_init	= early_init_cyrix,
+ 	.c_init		= init_cyrix,
+ 	.c_identify	= cyrix_identify,
++	.c_x86_vendor	= X86_VENDOR_CYRIX,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_CYRIX, &cyrix_cpu_dev);
++cpu_dev_register(cyrix_cpu_dev);
+ 
+ static struct cpu_dev nsc_cpu_dev __cpuinitdata = {
+ 	.c_vendor	= "NSC",
+ 	.c_ident	= { "Geode by NSC" },
+ 	.c_init		= init_nsc,
++	.c_x86_vendor	= X86_VENDOR_NSC,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_NSC, &nsc_cpu_dev);
++cpu_dev_register(nsc_cpu_dev);
+Index: linux-2.6/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/intel.c
++++ linux-2.6/arch/x86/kernel/cpu/intel.c
+@@ -311,9 +311,10 @@ static struct cpu_dev intel_cpu_dev __cp
+ 	.c_early_init   = early_init_intel,
+ 	.c_init		= init_intel,
+ 	.c_size_cache	= intel_size_cache,
++	.c_x86_vendor	= X86_VENDOR_INTEL,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_INTEL, &intel_cpu_dev);
++cpu_dev_register(intel_cpu_dev);
+ 
+ /* arch_initcall(intel_cpu_init); */
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/intel_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/intel_64.c
++++ linux-2.6/arch/x86/kernel/cpu/intel_64.c
+@@ -93,6 +93,7 @@ static struct cpu_dev intel_cpu_dev __cp
+ 	.c_ident	= { "GenuineIntel" },
+ 	.c_early_init   = early_init_intel,
+ 	.c_init		= init_intel,
++	.c_x86_vendor	= X86_VENDOR_INTEL,
+ };
+-cpu_vendor_dev_register(X86_VENDOR_INTEL, &intel_cpu_dev);
+ 
++cpu_dev_register(intel_cpu_dev);
+Index: linux-2.6/arch/x86/kernel/cpu/transmeta.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/transmeta.c
++++ linux-2.6/arch/x86/kernel/cpu/transmeta.c
+@@ -102,6 +102,7 @@ static struct cpu_dev transmeta_cpu_dev
+ 	.c_ident	= { "GenuineTMx86", "TransmetaCPU" },
+ 	.c_init		= init_transmeta,
+ 	.c_identify	= transmeta_identify,
++	.c_x86_vendor	= X86_VENDOR_TRANSMETA,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_TRANSMETA, &transmeta_cpu_dev);
++cpu_dev_register(transmeta_cpu_dev);
+Index: linux-2.6/arch/x86/kernel/cpu/umc.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/umc.c
++++ linux-2.6/arch/x86/kernel/cpu/umc.c
+@@ -19,7 +19,8 @@ static struct cpu_dev umc_cpu_dev __cpui
+ 		  }
+ 		},
+ 	},
++	.c_x86_vendor	= X86_VENDOR_UMC,
+ };
+ 
+-cpu_vendor_dev_register(X86_VENDOR_UMC, &umc_cpu_dev);
++cpu_dev_register(umc_cpu_dev);
+ 
+Index: linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmlinux_32.lds.S
++++ linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+@@ -140,10 +140,10 @@ SECTIONS
+ 	*(.con_initcall.init)
+   	__con_initcall_end = .;
+   }
+-  .x86cpuvendor.init : AT(ADDR(.x86cpuvendor.init) - LOAD_OFFSET) {
+-	__x86cpuvendor_start = .;
+-	*(.x86cpuvendor.init)
+-	__x86cpuvendor_end = .;
++  .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
++	__x86_cpu_dev_start = .;
++	*(.x86_cpu_dev.init)
++	__x86_cpu_dev_end = .;
+   }
+   DYN_ARRAY_INIT(8)
+   SECURITY_INIT
+Index: linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
++++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+@@ -168,12 +168,11 @@ SECTIONS
+ 	*(.con_initcall.init)
+   }
+   __con_initcall_end = .;
+-  . = ALIGN(16);
+-  __x86cpuvendor_start = .;
+-  .x86cpuvendor.init : AT(ADDR(.x86cpuvendor.init) - LOAD_OFFSET) {
+-	*(.x86cpuvendor.init)
++  __x86_cpu_dev_start = .;
++  .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
++	*(.x86_cpu_dev.init)
+   }
+-  __x86cpuvendor_end = .;
++  __x86_cpu_dev_end = .;
+ 
+   DYN_ARRAY_INIT(8)
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/Makefile
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/Makefile
++++ linux-2.6/arch/x86/kernel/cpu/Makefile
+@@ -8,14 +8,14 @@ obj-y			+= proc.o capflags.o powerflags.
+ obj-$(CONFIG_X86_32)	+= common.o bugs.o cmpxchg.o
+ obj-$(CONFIG_X86_64)	+= common_64.o bugs_64.o
+ 
++obj-$(CONFIG_CPU_SUP_INTEL_32)		+= intel.o
++obj-$(CONFIG_CPU_SUP_INTEL_64)		+= intel_64.o
+ obj-$(CONFIG_CPU_SUP_AMD_32)		+= amd.o
+ obj-$(CONFIG_CPU_SUP_AMD_64)		+= amd_64.o
+ obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o
+ obj-$(CONFIG_CPU_SUP_CENTAUR_32)	+= centaur.o
+ obj-$(CONFIG_CPU_SUP_CENTAUR_64)	+= centaur_64.o
+ obj-$(CONFIG_CPU_SUP_TRANSMETA_32)	+= transmeta.o
+-obj-$(CONFIG_CPU_SUP_INTEL_32)		+= intel.o
+-obj-$(CONFIG_CPU_SUP_INTEL_64)		+= intel_64.o
+ obj-$(CONFIG_CPU_SUP_UMC_32)		+= umc.o
+ 
+ obj-$(CONFIG_X86_MCE)	+= mcheck/
