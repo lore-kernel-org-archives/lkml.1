@@ -1,98 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYICCvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYICCzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754680AbYICCvm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 22:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYICCvd
+	id S1755250AbYICCzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 22:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYICCza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 22:51:33 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:64973 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751239AbYICCvc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 22:51:32 -0400
-Message-ID: <48BDFBB6.3010106@lwfinger.net>
-Date: Tue, 02 Sep 2008 21:51:34 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 2 Sep 2008 22:55:30 -0400
+Received: from jade.aracnet.com ([216.99.193.136]:59337 "EHLO jade.aracnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751239AbYICCz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 22:55:29 -0400
+Message-ID: <48BDFC77.4060909@BitWagon.com>
+Date: Tue, 02 Sep 2008 19:54:47 -0700
+From: John Reiser <jreiser@BitWagon.com>
+Organization: -
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
-Subject: Re: [PATCH] Fix TSC calibration issues
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, dkegel@google.com, jiayingz@google.com
+Subject: Re: [uml-devel] [PATCH 5/6] slab: Annotate slab
+References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net>	<alpine.DEB.1.00.0808291616560.15543@abydos.NerdBox.Net> <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com>
+In-Reply-To: <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> Larry Finger reported at http://lkml.org/lkml/2008/9/1/90:
-> An ancient laptop of mine started throwing errors from b43legacy when
-> I started using 2.6.27 on it. This has been bisected to commit bfc0f59
-> "x86: merge tsc calibration".
-> 
-> The unification of the TSC code adopted mostly the 64bit code, which
-> prefers PMTIMER/HPET over the PIT calibration.
-> 
-> Larrys system has an AMD K6 CPU. Such systems are known to have
-> PMTIMER incarnations which run at double speed. This results in a
-> miscalibration of the TSC by factor 0.5. So the resulting calibrated
-> CPU/TSC speed is half of the real CPU speed, which means that the TSC
-> based delay loop will run half the time it should run. That might
-> explain why the b43legacy driver went berserk.
-> 
-> On the other hand we know about systems, where the PIT based
-> calibration results in random crap due to heavy SMI/SMM
-> disturbance. On those systems the PMTIMER/HPET based calibration logic
-> with SMI detection shows better results.
-> 
-> According to Alok also virtualized systems suffer from the PIT
-> calibration method.
-> 
-> The solution is to use a more wreckage aware aproach than the current
-> either/or decision.
-> 
-> 1) reimplement the retry loop which was dropped from the 32bit code
-> during the merge. It repeats the calibration and selects the lowest
-> frequency value as this is probably the closest estimate to the real
-> frequency
-> 
-> 2) Monitor the delta of the TSC values in the delay loop which waits
-> for the PIT counter to reach zero. If the maximum value is
-> significantly different from the minimum, then we have a pretty safe
-> indicator that the loop was disturbed by an SMI.
-> 
-> 3) keep the pmtimer/hpet reference as a backup solution for systems
-> where the SMI disturbance is a permanent point of failure for PIT
-> based calibration
-> 
-> 4) do the loop iteration for both methods, record the lowest value and
-> decide after all iterations finished.
-> 
-> 5) Set a clear preference to PIT based calibration when the result
-> makes sense.
-> 
-> The implementation does the reference calibration based on
-> HPET/PMTIMER around the delay, which is necessary for the PIT anyway,
-> but keeps separate TSC values to ensure the "independency" of the
-> resulting calibration values.
-> 
-> Tested on various 32bit/64bit machines including Geode 266Mhz, AMD K6
-> (affected machine with a double speed pmtimer which I grabbed out of
-> the dump), Pentium class machines and AMD/Intel 64 bit boxen.
-> 
-> Bisected-by:  Larry Finger <Larry.Finger@lwfinger.net>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
+Pekka Enberg wrote:
+> Steve VanDeBogart proposed
+   [snip]
+>> Index: linux-2.6.27-rc5/mm/slab.c
+>> ===================================================================
+>> --- linux-2.6.27-rc5.orig/mm/slab.c     2008-08-29 14:24:25.000000000 -0700
+>> +++ linux-2.6.27-rc5/mm/slab.c  2008-08-29 14:24:42.000000000 -0700
+   [snip]
+> @@ -3466,6 +3481,8 @@
+>>        objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
+>>        prefetchw(objp);
+>>
+>> +       if (!cachep->ctor)
+>> +               VALGRIND_MALLOCLIKE_BLOCK(objp, cachep->buffer_size, 0, 0);
+>>        if (unlikely((flags & __GFP_ZERO) && objp))
+>>                memset(objp, 0, obj_size(cachep));
+>>
+   [snip]
+> I'm not sure why you want to treat caches with constructor
+> differently. Sure, the memory regions *are* initialized but from
+> programmer's point of view you're not supposed to be touching the
+> memory unless you got it from kmalloc() or kmem_cache_alloc(). Same
+> goes for kfree() and kmem_cache_free() -- no touchy touchy after you
+> pass a pointer to either of the functions (unless you're RCU, of
+> course).
 
-I know that Linus has some problems with this patch, but FWIW it 
-worked on my K6. The dmesg output is
+Hi, I developed the predecessor to Steve's patches.  The patch treats
+a cache with a constructor differently because the semantics of kmalloc
+are different in that case.  If a cache has a constructor then the
+object returned by kmalloc has been initialized for certain.  Namely,
+the constructor initialized the object before it was kmalloc'ed the first
+time, and each corresponding caller [re-]initialized the object before
+calling kfree.  This is emphasized by comments in mm/slab.c:
+ * This means, that your constructor is used only for newly allocated
+ * slabs and you must pass objects with the same initializations to
+ * kmem_cache_free.
 
-TSC: PIT calibration deviates from PMTIMER: 428809 214401.
-TSC: Using PIT calibration value
-Detected 428.809 MHz processor.
+The slab allocator has the property that the contents of a block [object]
+that is returned by kmalloc are identical to the contents that were passed
+to kfree (or back as result from the constructor) unless something special
+happens, such as SLAB_POISON.  A block [object] which is handed back and
+forth between kfree and kmalloc builds and retains history throughout the
+lifetime of the cache.  This property is directly contrary to the semantics
+of libc malloc.  The contents of the result of libc malloc must be considered
+to be *un*initialized always.
 
-Larry
+Yes, there is at least one kmalloc+kfree slab object cache that depends on
+retaining state from kfree to kmalloc.  My first attempt treated kmalloc+kfree
+like libc malloc+free, but I soon learned that was not the actual semantics.
+
+Because the slab allocator deals in objects that persist through kfree
+and kmalloc, then there are only two indications that objects ever become
+uninitialized: SLAB_POISON, and not having a constructor.  Obviously the
+application of SLAB_POISON means that the object becomes [logically] uninit.
+Not having a constructor *tends* to indicate that kmalloc() implies uninit,
+by chain of reasoning based on the comment quoted above from mm/slab.c.
+If the object was uninit upon first kmalloc, and if kfree is supposed to
+receive objects that are "ready for kmalloc", and because a caller cannot
+discern the first-ever return of an object by kmalloc, then the caller
+must treat each result of kmalloc (from that particular cache) as uninit.
+It would be helpful if each cache had a documenting comment such as "This
+cache depends on objects whose contents persist from kfree() to kmalloc()"
+or a comment such as "An object in this cache is considered to become
+uninitialized when the object is passed to kfree."
+
+With regard to Read-Copy-Update, I anticipate that RCU will require
+special annotations because of the deliberate references after kfree
+and before the next corresponding kmalloc.  These special annotations
+will require great care, because bugs in this area have high value.
+
+-- 
+John Reiser, jreiser@BitWagon.com
