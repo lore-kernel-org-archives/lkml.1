@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbYICVjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYICVom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbYICVjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 17:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbYICViD
+	id S1754278AbYICVom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 17:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbYICVoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 17:38:03 -0400
-Received: from www.tglx.de ([62.245.132.106]:41443 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756449AbYICVh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 17:37:59 -0400
-Message-Id: <20080903212753.398727327@linutronix.de>
-References: <20080903212735.713411776@linutronix.de>
-User-Agent: quilt/0.46-1
-Date: Wed, 03 Sep 2008 21:37:24 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Dmitry Nezhevenko <dion@inhex.net>
-Subject: [patch 6/6] HPET: make minimum reprogramming delta useful
-Content-Disposition: inline; filename=hpet-make-minimum-delta-useful.patch
+	Wed, 3 Sep 2008 17:44:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47167
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752392AbYICVod (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 17:44:33 -0400
+Date: Wed, 03 Sep 2008 14:44:26 -0700 (PDT)
+Message-Id: <20080903.144426.10910373.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes for .26
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080903143824.GA29184@havoc.gtf.org>
+References: <20080903143716.GA29026@havoc.gtf.org>
+	<20080903143824.GA29184@havoc.gtf.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The minimum reprogramming delta was hardcoded in HPET ticks,
-which is stupid as it does not work with faster running HPETs.
-The C1E idle patches made this prominent on AMD/RS690 chipsets,
-where the HPET runs with 25MHz. Set it to 5us which seems to be
-a reasonable value and fixes the problems on the bug reporters
-machines. We have a further sanity check now in the clock events,
-which increases the delta when it is not sufficient.
+From: Jeff Garzik <jeff@garzik.org>
+Date: Wed, 3 Sep 2008 10:38:24 -0400
 
-Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
-Tested-by: Dmitry Nezhevenko <dion@inhex.net>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> On Wed, Sep 03, 2008 at 10:37:16AM -0400, Jeff Garzik wrote:
+> > 
+> > Please pull from 'davem-fixes' branch of
+> > master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
+> 
+> The subject line should say "for .27" obviously...
+> 
+> Gonna go back in time... </BTTF song>
 
----
- arch/x86/kernel/hpet.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/hpet.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/hpet.c
-+++ linux-2.6/arch/x86/kernel/hpet.c
-@@ -210,8 +210,8 @@ static void hpet_legacy_clockevent_regis
- 	/* Calculate the min / max delta */
- 	hpet_clockevent.max_delta_ns = clockevent_delta2ns(0x7FFFFFFF,
- 							   &hpet_clockevent);
--	hpet_clockevent.min_delta_ns = clockevent_delta2ns(0x30,
--							   &hpet_clockevent);
-+	/* 5 usec minimum reprogramming delta. */
-+	hpet_clockevent.min_delta_ns = 5000;
- 
- 	/*
- 	 * Start hpet with the boot cpu mask and make it
-
--- 
-
+:-)  Pulled, thanks a lot Jeff.
