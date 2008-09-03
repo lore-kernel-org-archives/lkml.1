@@ -1,75 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbYICPnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYICPnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbYICPnD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 11:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYICPmy
+	id S1753394AbYICPnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 11:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYICPnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 11:42:54 -0400
-Received: from abydos.nerdbox.net ([216.151.149.55]:49874 "EHLO
-	abydos.NerdBox.Net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbYICPmy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 11:42:54 -0400
-Date: Wed, 3 Sep 2008 08:42:49 -0700 (PDT)
-From: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       dkegel@google.com, jiayingz@google.com
-Subject: Re: [uml-devel] [PATCH 5/6] slab: Annotate slab
-In-Reply-To: <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
-Message-ID: <alpine.DEB.1.00.0809030833050.15543@abydos.NerdBox.Net>
-References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net> <alpine.DEB.1.00.0808291616560.15543@abydos.NerdBox.Net> <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com> <alpine.DEB.1.00.0809022036560.15543@abydos.NerdBox.Net>
- <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 3 Sep 2008 11:43:42 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:60902 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751962AbYICPnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 11:43:41 -0400
+Date: Wed, 3 Sep 2008 08:42:17 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
+       sparclinux@vger.kernel.org, manfred@colorfullife.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] prevent sparc64 from invoking irq handlers on offline
+	CPUs
+Message-ID: <20080903154217.GA6807@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080831173349.GA15393@linux.vnet.ibm.com> <20080902.171630.193505044.davem@davemloft.net> <20080903004211.GD6748@linux.vnet.ibm.com> <20080903.022138.31681256.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080903.022138.31681256.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Pekka,
+On Wed, Sep 03, 2008 at 02:21:38AM -0700, David Miller wrote:
+> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Date: Tue, 2 Sep 2008 17:42:11 -0700
+> 
+> > On Tue, Sep 02, 2008 at 05:16:30PM -0700, David Miller wrote:
+> > > So I'd like to hold off on this patch until this locking issue is
+> > > resolved.
+> > 
+> > OK, it is your architecture.  But in the meantime, sparc64 can take
+> > interrupts on CPUs whose cpu_online_map bits have been cleared.
+> 
+> Paul, here is how I resolved this in my tree.
+> 
+> First, I applied a patch that killed that 'call_lock' and replaced
+> the accesses with ipi_call_lock() and ipi_call_unlock().
+> 
+> Then I sed'd up your patch so that it applies properly after that
+> change.
+> 
+> I still think there will be a problem here on sparc64.  I had the
+> online map clearing there happening first because the fixup_irqs()
+> thing doesn't drain interrupts.  It just makes sure that "device"
+> interrupts no longer point at the cpu.  So all new device interrupts
+> after fixup_irqs() will not go to the cpu.
+> 
+> Then we do the:
+> 
+> 	local_irq_enable();
+> 	mdelay(1);
+> 	local_irq_disable();
+> 
+> thing to process any interrupts which were sent while we were
+> retargetting the device IRQs.
+> 
+> I also intended this to drain the cross-call interrupts too, that's
+> why I cleared the cpu_online_map() bit before fixup_irqs() and
+> the above "enable/disable" sequence runs.
+> 
+> With your change in there now, IPIs won't get drained and the system
+> might get stuck as a result.
+> 
+> I wonder if it would work if we cleared the cpu_online_map right
+> before the "enable/disable" sequence, but after fixup_irqs()?
+> 
+> Paul, what do you think?
 
-On Wed, 3 Sep 2008, Pekka Enberg wrote:
+Given that __cpu_disable runs in the context of __stop_machine(), the only
+new IPIs will be from irqs being drained out of the current CPU, correct?
 
-> On Wed, Sep 3, 2008 at 8:08 AM, Steve VanDeBogart
-> <vandebo-lkml@nerdbox.net> wrote:
->> It is true that code above the allocator should not be touching free'd
->> slab objects.  However, it is also true that objects from slabs that
->> have a constructor should retain their per byte un/initialized state
->> through allocation and free cycles (just the semantic of slabs with
->> constructors AFAICT).
->
-> Sorry for being unclear, sure, object should be marked as initialized
-> when they're returned from kmem_cache_alloc(). However, what I
-> disagree with is *where* you're marking them as initialized. Surely
-> they're not semantically initialized when the slabs are allocated
-> (although technically they are).
+Here are the situations I can think of (no doubt betraying my ignorance
+of modern processor irq hardware in general and of sparc64 in particular):
 
-But which bits of a slab object should be marked as initialized at
-kmem_cache_alloc() time?  We can't mark all of them as initialized
-because the constructor may not initialize all of them (in fact, I've
-programmatically confirmed that there are constructors that don't
-initialize all the bytes of an object).  The only place to get the
-information of interest is to mark all bytes uninitialized and then
-run the constructor on the memory region.
+o	Pending device irq.  There should be a limited number of these,
+	and the fixup_irqs() call prevents any more from appearing.
 
->
-> On Wed, Sep 3, 2008 at 8:08 AM, Steve VanDeBogart
-> <vandebo-lkml@nerdbox.net> wrote:
->> Ideally, we'd tell Valgrind that the bytes of a free'd slab object are
->> no longer accessible, but the initialized state should remain the same
->> until the object is made accessible again by the next allocation of
->> the object.  Unfortunately, the compression method for A & V bits in
->> Valgrind doesn't allow a region to be inaccessible and retain validness
->> bits.
->
-> I don't see why you should mark them initialized all the time. Just
-> mark them as uninitialized on kmem_cache_free() and again as
-> initialized when they're about to be returned from kmem_cache_alloc()
-> like we do in kmemcheck.
+o	Pending scheduling-clock interrupts.  Does fixup_irqs() turn
+	these off as well?  (It does if the scheduling-clock interrupt
+	is one of the 0..NR_IRQS irqs.)  On the other hand, leaving
+	one of these pending should not be a problem (famous last
+	words).
 
-This question has the same answer as above.
+o	Pending IPIs.  There should again be a limited number of these.
+	Except that an IPI handler could possibly IPI this CPU, as could
+	a device irq handler, I suppose.  (We cannot receive additional
+	IPIs from other CPUs, as they are spinning with irqs disabled.)
 
---
-Steve
+o	Timer irqs.  Not sure what happens to add_timer() calls from
+	a CPU that is going offline.  The hope would be that they get
+	queued to some other CPU?
+
+Now, an IPI handler cannot be allowed to send a synchronous IPI to
+anyone, because the other CPUs are spinning with irqs disabled until
+__cpu_disable() returns.  And in any context, a handler for a synchronous
+IPI cannot be allowed to send a synchronous IPI to any set of CPUs that
+might include the sender of the currently running handler, as doing so
+would result in deadlock.
+
+Therefore, one approach would be for the IPI subsystem to use a
+cpu_ipi_map rather than the current cpu_online_map.  The cpu_ipi_map
+could be cleared before re-enabling irqs, and then the cpu_online_map
+could be cleared after the final disabling of irqs.  Yes, this would
+mean that sending IPIs to an online CPU would be disallowed when that
+CPU is going offline, but then again you have to be careful when sending
+IPIs anyway, especially synchronous IPIs where you spin waiting for a
+response.
+
+Another approach would be to assume that any chain of IPI-myself
+handlers is finite, and to assume that base-level execution will be
+blocked by the resulting irqs until the chain terminates.  Given this
+finite-IPI-myself-chain assumption, you by definition would have no IPI
+irqs pending when the mdelay(1) returned.
+
+Yes, I can imagine irq hardware that would have many nanoseconds of delay
+built in, which would allow the loop to exit with IPIs still pending.
+One way of resolving this would be to have a per-CPU IPI-received counter,
+and to spin as follows:
+
+	local_irq_enable();
+	for (;;) {
+		tmp = __get_cpu_var(ipi_received_counter);
+		mdelay(1);
+		if (tmp == __get_cpu_var(ipi_received_counter)
+			break;
+	}
+	local_irq_disable();
+	cpu_clear(cpu, cpu_online_map);
+
+This assumes that the hardware IPI-pending latency is no longer than
+however long mdelay(1) spins.
+
+Seem reasonable, or are these cures worse than the disease?
+
+							Thanx, Paul
