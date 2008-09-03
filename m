@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYICKHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYICKJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754181AbYICKHU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYICKHI
+	id S1754184AbYICKJz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYICKJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:07:08 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:36683 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbYICKHF (ORCPT
+	Wed, 3 Sep 2008 06:09:47 -0400
+Received: from mailer1.option.com ([81.246.70.162]:44969 "EHLO
+	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbYICKJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:07:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=wnV+KrljLT/W/x1zeITxsTfvURoYvnD2oEC1w866z371IBpGMqVbwNRl9ltKSzySxl
-         OVQfnvlDWnv2hMdSZdZig1BIav+sdH5wIqLUSLd5gax6kUJlEkc54pcjxxY/x2qQbl4H
-         ufiOiGrzwQWbJwYt72votxUBerTnZl2V2KCa4=
-Message-ID: <386072610809030307q30ccdbacv2fb4d88db3242a2d@mail.gmail.com>
-Date: Wed, 3 Sep 2008 18:07:03 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: [alsa-devel] [PATCH 1/1] ALSA: add dummy function to support shared mmap in nommu Blackfin arch (v3)
-Cc: "Cliff Cai" <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, "Mike Frysinger" <vapier.adi@gmail.com>
-In-Reply-To: <s5hd4jlpol8.wl%tiwai@suse.de>
+	Wed, 3 Sep 2008 06:09:46 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlgBAFf/vUgKAAAZ/2dsb2JhbAAItg2BaQ
+Message-ID: <48BE5903.1040207@option.com>
+Date: Wed, 03 Sep 2008 11:29:39 +0200
+From: Denis Joseph Barrow <D.Barow@option.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, Andrew Bird <ajb@spheresystems.co.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Jeff Garzik <jgarzik@pobox.com>
+Subject: re /drivers/char/n_tty.c drops characters
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220431134-7797-1-git-send-email-cooloney@kernel.org>
-	 <s5hd4jlpol8.wl%tiwai@suse.de>
-X-Google-Sender-Auth: aa8546a5ff46ba4a
+X-OriginalArrivalTime: 03 Sep 2008 10:09:44.0588 (UTC) FILETIME=[30325CC0:01C90DAD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 3, 2008 at 5:26 PM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Wed,  3 Sep 2008 16:38:54 +0800,
-> Bryan Wu wrote:
->>
->> From: Cliff Cai <cliff.cai@analog.com>
->>
->> v2-v3:
->>  - when it is mmu arch, we define the dummy function to NULL
->>
->> v1-v2:
->>  - only adding this dummy function in nommu arch
->>
->> Cc: Mike Frysinger <vapier.adi@gmail.com>
->> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->
-> Thanks, applied now with a slight fix of coding style.
->
->
+Hi all,
+It looks like the it was the intention that n_tty.c
+would not drop characters in older kernels around 2.6.15 in the
+n_tty layer if N_TTY_BUF_SIZE was 4096 bytes
+as TTY_FLIPBUF_SIZE was only 512 bytes.
 
-Thanks a lot. But I found the author of this patch was me not Cliff in
-the sound-2.6.git.
-Could you please change the author to Cliff, cause he is the original bug fixer.
+Now since 2.6.15 or so tty_buffer_alloc in tty_io.c is capible
+of allocating a tty buffer of over 64k I believe this
+means that the n_tty_receive_buf will overflow if tty_buffer_alloc 
+throws a buffer of over 4k to n_tty_receive_buf.
 
--Bryan
+Any comments?
+
+-- 
+best regards,
+D.J. Barrow
