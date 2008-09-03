@@ -1,92 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbYICKjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYICKki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbYICKjO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYICKi6
+	id S1754446AbYICKki (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbYICKka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:38:58 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2661 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYICKi5 (ORCPT
+	Wed, 3 Sep 2008 06:40:30 -0400
+Received: from mailer2.option.com ([81.246.70.163]:15752 "EHLO
+	mailer2.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbYICKk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:38:57 -0400
-Date: Wed, 3 Sep 2008 11:38:52 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: "Cai, Cliff" <Cliff.Cai@analog.com>
-Cc: Bryan Wu <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] ASOC: Blackfin driver for ALSA SoC framework
-Message-ID: <20080903103850.GA20438@sirena.org.uk>
-Mail-Followup-To: "Cai, Cliff" <Cliff.Cai@analog.com>,
-	Bryan Wu <cooloney@kernel.org>, perex@perex.cz, lrg@kernel.org,
-	alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-References: <1219829968-6431-1-git-send-email-cooloney@kernel.org> <1219829968-6431-2-git-send-email-cooloney@kernel.org> <20080827134830.GC10834@sirena.org.uk> <0F1B54C89D5F954D8535DB252AF412FA02A26AC0@chinexm1.ad.analog.com>
+	Wed, 3 Sep 2008 06:40:29 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlgBAKwFvkgKAAAZ/2dsb2JhbAAItXSBaQ
+Message-ID: <48BE603A.4040502@option.com>
+Date: Wed, 03 Sep 2008 12:00:26 +0200
+From: Denis Joseph Barrow <D.Barow@option.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0F1B54C89D5F954D8535DB252AF412FA02A26AC0@chinexm1.ad.analog.com>
-X-Cookie: Ducks?  What ducks??
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: /drivers/char/n_tty.c drops characters
+References: <48BE3FD9.6070303@option.com> <20080903112458.0be25714@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080903112458.0be25714@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Sep 2008 10:40:27.0424 (UTC) FILETIME=[7A9CD200:01C90DB1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 12:09:49PM +0800, Cai, Cliff wrote:
+Hi Alan,
+Sorry for wasting your valuable time.
+There are tty_throttle & tty_unthrottle functions
+should if working properly do everything I want.
 
-Cliff, please fix your mail client configuration - the formatting of
-your reply makes little (if any) distinction between the text of my
-original mail which makes your message difficult to read.
+Alan Cox wrote:
+>> Maybe my interpretation of this statement is incorrect but
+>> is Alan implying that ttys will no longer drop charaters ? 
+>> if this is what Alan is saying it is simply not true but it can be implemented.
+> 
+> The current queue code will not drop characters queued to the line
+> discipline unless we are in extreme circumstances [64K queued on this
+> tty, out of memory]
+> 
+>> My understanding of this code might be imperfect but this really looks
+>> likes this blindly copies into a ring buffer of N_TTY_BUF_SIZE &
+>> doesn't return any indication an attempt to copy a tty buffer of larger than N_TTY_BUF_SIZE
+>> & overflows the buffer before the task activated by the code at the bottom of n_tty_receive_buf
+> 
+> There is no check needed. See flush_to_ldisc
+> 
+>             if (count > tty->receive_room)
+>                     count = tty->receive_room;
+> 
+> So if we are dropping characters on this path it means
+> tty->receive_room is either getting set too large or the n_tty driver is
+> shrinking it by more than the bytes it gets a some point.
+> 
+> Most of the network drivers actually just set it to "send everything" as
+> they want overruns on the serial side to drop bytes to get proper TCP
+> queueing but n_tty does try to manage the value.
+> 
+>> My main complaints are
+>> 1) there is no mechanism for informing the tty layer that not all the
+>> characters are copied from the tty layer to the line discipline.
+> 
+> The tty layer doesn't need to know. What will the tty driver do if it
+> finds this - queue bytes ? We already queue bytes in the core code now
+> for up to 64K. Flow control ? - it is late for flow control at that point,
+> and the core code already provides flow control callbacks.
+> 
+>> 2) The use of a a ring buffer in the line discipline,
+>> we are memcpying at least twice in the kernel before passing the
+>> buffer back to userland.
+> 
+> For n_tty this really does not worry me. n_tty is not a performance
+> critical path for any use I know of. For the ppp layer we do a copy from
+> the tty buffers to the socket buffers and we have to do that to unpack
+> the async padding. That one is the one that bothers me more. I'm willing
+> to be enlightened however.
+> 
+> We do try to keep all the transfers cache-hot. In theory you could tweak
+> the ldisc code so that the tty_buffer object ownership is transferred to
+> the ldisc which then frees the buffer back when it is done. That may have
+> possibilities.
+> 
+>> 3) There is no mechanism for tty_io.c of informing the
+>> char driver which is feeding the tty that it can
+>> release flow control & start feeding read buffers
+>> to the device hardware again to restart io. 
+> 
+> driver->ops->unthrottle()
+> 
+> I am not 100% certain we call throttle early enough and unthrottle
+> at times appropriate for devices with large internal buffers like some of
+> the USB hardware but those are points that can be adjusted.
 
-> -----Original Message-----
-> From: Mark Brown [mailto:broonie@sirena.org.uk] 
-> Sent: Wednesday, August 27, 2008 9:49 PM
-> To: Bryan Wu
-> Cc: perex@perex.cz; lrg@kernel.org; alsa-devel@alsa-project.org;
-> linux-kernel@vger.kernel.org; Cliff Cai
-> Subject: Re: [PATCH 1/4] ASOC: Blackfin driver for ALSA SoC framework
 
-> On Wed, Aug 27, 2008 at 05:39:25PM +0800, Bryan Wu wrote:
-> > From: Cliff Cai <cliff.cai@analog.com>
-
-> >Again, odd blank lines and presumably there needs to be something to
-> undo things on error?
-
-> t's not necessary to do anything else on error, these functions only set
-> registers.
-
-And none of these settings will leave things so that the port looks busy
-or anything like that?
-
-> TX and RX Clocks are also not independent,currently,in order to
-> implement full duplex,we have to enable both RX and TX side even if
-> there is only a steam is opened,
-> And make the other side running on a dummy buffer,so all registers
-> cann't be configured any more. when the second stream is opened we just
-> switch the DMA form dummy buffer to the normal data buffer.
-
-Right, in that case your driver should use constraints to stop
-applications trying to configure the capture and playback sides
-differently.
-
-> >I'm also not seeing the code that configures the sample rate anywhere -
-> but then it looks like the driver only support slave mode ATM?  That's
-> what the machine driver is
->  >using.  There should still be a set_fmt() to document what's supported
-> if nothing else.
-
-> Yes ,the codec runs in master mode and provides bit clock..Do you mean
-> just implement a dummy set_fmt() with comments for CPU DAI,
-
-It shouldn't just be a dummy - it should reject DAI formats other than
-CBS_CFM if that is the only configuration that's supported.
-
-> Refer to my description above,it's not possible to configure anything
-> for CPU DAI after a stream is opened ,that why we have to configure CPU
-> DAI before any stream is opened.
-
-This is normal (and generally trying would result in audio artifacts if
-you try), but normally there is at least some configuration that can be
-done before the stream actually starts running.
+-- 
+best regards,
+D.J. Barrow
