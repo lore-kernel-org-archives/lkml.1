@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYICWZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbYICWdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755215AbYICWZq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 18:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYICWZh
+	id S1754030AbYICWdA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 18:33:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbYICWcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 18:25:37 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:47425 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751898AbYICWZh (ORCPT
+	Wed, 3 Sep 2008 18:32:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59050 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751886AbYICWcv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 18:25:37 -0400
-To: serue@us.ibm.com
-CC: miklos@szeredi.hu, ebiederm@xmission.com, akpm@linux-foundation.org,
-       hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080903220215.GA27705@us.ibm.com> (serue@us.ibm.com)
-Subject: Re: unprivileged mounts git tree
-References: <E1JtiOX-0004Qg-1z@pomaz-ex.szeredi.hu> <20080807222751.GA28412@us.ibm.com> <m1prokgyje.fsf@frodo.ebiederm.org> <20080808002537.GA5364@us.ibm.com> <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu> <20080827153628.GA11242@us.ibm.com> <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu> <20080827184600.GA8069@us.ibm.com> <E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu> <20080903220215.GA27705@us.ibm.com>
-Message-Id: <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 04 Sep 2008 00:25:11 +0200
+	Wed, 3 Sep 2008 18:32:51 -0400
+Date: Wed, 3 Sep 2008 15:32:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: aaron@merfinllc.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       stable@kernel.org
+Subject: Re: drivers/char/random.c line 728 BUG
+Message-Id: <20080903153206.24dc88c3.akpm@linux-foundation.org>
+In-Reply-To: <1220479920.17608.62.camel@calx>
+References: <20080826225918.GC5452@merfinllc.com>
+	<20080828225924.GD6432@merfinllc.com>
+	<20080829124807.54293904.akpm@linux-foundation.org>
+	<1220465901.17608.55.camel@calx>
+	<20080903182845.GM17899@merfinllc.com>
+	<1220479920.17608.62.camel@calx>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008, Serge E. Hallyn wrote:
-> Ooh.
-> 
-> You predicate the turning of shared mount to a slave mount on
-> !capable(CAP_SYS_ADMIN).  But in fact it's the mount by a privileged
-> user, turning the mount into a user mount, which you want to convert.
-> So my series of steps was:
-> 
-> 	as root:
-> 		(1) mount --bind /mnt /mnt
-> 		(2) mount --make-rshared /mnt
-> 		(3) /usr/src/mmount-0.3/mmount --bind -o user=hallyn /mnt \
-> 			/home/hallyn/etc/mnt
-> 	as hallyn:
-> 		(4) mount --bind /usr /home/hallyn/etc/mnt/usr
-> 
-> You are turning mounts from shared->slave at step 4, but in fact we need
-> to do it at step 3, where we do have CAP_SYS_ADMIN.
+On Wed, 03 Sep 2008 17:12:00 -0500
+Matt Mackall <mpm@selenic.com> wrote:
 
-Well, that's arguable: I think root should be able to shoot itself in
-the foot by doing step 3.  Generally we don't restrict what root can
-do.  OTOH I agree that current behavior is ugly in that it provides
-different semantics for privileged/non-privileged callers.
+> > Could we still apply his patch for the upcoming stable tree and fix it
+> > the "right" way at some point in the future?
+> 
+> I'm not sure what the current state of play is here in terms of the
+> original patch being pushed to stable and mainline, but my patch is both
+> simpler and more correct. If it's not too late, it's the one that should
+> go to both places.
 
-Perhaps it would be cleaner to simply not allow step 4, instead of
-playing tricks with changing the propagation type.
+It's a fairly minor thing.  The post-this-patch code takes care to
+ensure that ->entropy_count never has an illegal value, so it's OK but
+aesthetially unpleasing to check its value outside the lock.
 
-Miklos
+And the post-this-patch code generates less .text, so it's a desirable
+thing from that POV too.
+
+We could/should do both, I guess.  I kinda ducked your move-the-BUG
+patch because I wasn't in a write-yet-another-changelog mood.
+
