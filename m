@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYICRea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYICRfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYICRea (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYICRd6
+	id S1755131AbYICRfY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYICRel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:33:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50097 "EHLO hera.kernel.org"
+	Wed, 3 Sep 2008 13:34:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55084 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755442AbYICRd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:33:58 -0400
-Message-ID: <48BECA2D.8000400@kernel.org>
-Date: Wed, 03 Sep 2008 19:32:29 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	id S1755788AbYICRek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:34:40 -0400
+Date: Wed, 3 Sep 2008 10:25:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Stefan Weinhuber <wein@de.ibm.com>
+Subject: [patch 09/42] S390 dasd: fix data size for PSF/PRSSD command
+Message-ID: <20080903172534.GJ7731@suse.de>
+References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH linux-2.6-block#for-2.6.28] block: fix duplicate headers for
- /proc/partitions
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Sep 2008 17:33:47 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="s390-dasd-fix-data-size-for-psf-prssd-command.patch"
+In-Reply-To: <20080903172447.GA7731@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-seqf can be started multiple times for a read and the header should be
-printed only for the initial one.  Fix it.
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
+------------------
+
+From: Stefan Weinhuber <wein@de.ibm.com>
+
+commit 49fd38bdaa96f093fcad3176a781a4d0de8f8602 upstream
+
+The Perform Subsystem Function/Prepare for Read Subsystem Data
+command requires 12 bytes of parameter data, but the respective data
+structure dasd_psf_prssd_data has a length of 16 bytes.
+Current storage servers ignore the obsolete bytes, but older models
+fail to execute the command and report an incorrect length error.
+This causes the device initilization for these devices to fail.
+To fix this problem we need to correct the dasd_psf_prssd_data
+structure and shorten it to the correct length.
+
+Reported-by: Ivan Warren <ivan@vmfacility.fr>
+Reviewed-by: Ivan Warren <ivan@vmfacility.fr>
+Tested-by: Ivan Warren <ivan@vmfacility.fr>
+Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- block/genhd.c |    2 +-
+ drivers/s390/block/dasd_eckd.h |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index ed926b7..8acaff0 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -697,7 +697,7 @@ static void *show_partition_start(struct seq_file *seqf, loff_t *pos)
- 	static void *p;
+--- a/drivers/s390/block/dasd_eckd.h
++++ b/drivers/s390/block/dasd_eckd.h
+@@ -379,7 +379,7 @@ struct dasd_psf_prssd_data {
+ 	unsigned char flags;
+ 	unsigned char reserved[4];
+ 	unsigned char suborder;
+-	unsigned char varies[9];
++	unsigned char varies[5];
+ } __attribute__ ((packed));
  
- 	p = disk_seqf_start(seqf, pos);
--	if (!IS_ERR(p) && p)
-+	if (!IS_ERR(p) && p && !*pos)
- 		seq_puts(seqf, "major minor  #blocks  name\n\n");
- 	return p;
- }
+ /*
 
+-- 
