@@ -1,105 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYICWxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYICWyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbYICWxS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 18:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbYICWxG
+	id S1755929AbYICWyU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 18:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYICWyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 18:53:06 -0400
-Received: from webmail.mrv.com ([66.43.110.11]:24563 "EHLO
-	chmailsrv.int.mrv.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751834AbYICWxF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 18:53:05 -0400
-Date: Wed, 3 Sep 2008 15:53:02 -0700
-From: Nye Liu <nyet@mrv.com>
+	Wed, 3 Sep 2008 18:54:11 -0400
+Received: from waste.org ([66.93.16.53]:41243 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbYICWyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 18:54:10 -0400
+Subject: Re: drivers/char/random.c line 728 BUG
+From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nye Liu <nyet@nyet.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] INITRAMFS: Add option to preserve mtime from INITRAMFS
-	cpio images
-Message-ID: <20080903225302.GA9893@mrv.com>
-References: <20080805195232.GA5183@curtisfong.org> <20080903202938.GA9065@curtisfong.org> <20080903152231.6b82d9bf.akpm@linux-foundation.org> <20080903224130.GA16630@curtisfong.org> <20080903154840.69c049cf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080903154840.69c049cf.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 03 Sep 2008 22:54:57.0582 (UTC) FILETIME=[167944E0:01C90E18]
+Cc: aaron@merfinllc.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       stable@kernel.org
+In-Reply-To: <20080903153206.24dc88c3.akpm@linux-foundation.org>
+References: <20080826225918.GC5452@merfinllc.com>
+	 <20080828225924.GD6432@merfinllc.com>
+	 <20080829124807.54293904.akpm@linux-foundation.org>
+	 <1220465901.17608.55.camel@calx> <20080903182845.GM17899@merfinllc.com>
+	 <1220479920.17608.62.camel@calx>
+	 <20080903153206.24dc88c3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 03 Sep 2008 17:51:37 -0500
+Message-Id: <1220482297.17608.84.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 03:48:40PM -0700, Andrew Morton wrote:
-> On Wed, 3 Sep 2008 15:41:31 -0700
-> Nye Liu <nyet@nyet.org> wrote:
+
+On Wed, 2008-09-03 at 15:32 -0700, Andrew Morton wrote:
+> On Wed, 03 Sep 2008 17:12:00 -0500
+> Matt Mackall <mpm@selenic.com> wrote:
 > 
-> > > >  	collected[N_ALIGN(name_len) + body_len] = '\0';
-> > > >  	clean_path(collected, 0);
-> > > >  	sys_symlink(collected + N_ALIGN(name_len), collected);
-> > > >  	sys_lchown(collected, uid, gid);
-> > > > +	do_lutime(collected, &mtime);
-> > > >  	state = SkipIt;
-> > > >  	next_state = Reset;
-> > > >  	return 0;
-> > > > @@ -466,6 +520,7 @@ static char * __init unpack_to_rootfs(char *buf, unsigned len, int check_only)
-> > > >  		buf += inptr;
-> > > >  		len -= inptr;
-> > > >  	}
-> > > > +	dir_utime();
-> > > 
-> > > Perhaps this is the simplest implementation - I didn't check the fine
-> > > details.  What's your thinking here?  
-> > > 
+> > > Could we still apply his patch for the upcoming stable tree and fix it
+> > > the "right" way at some point in the future?
 > > 
-> > The main problem is that i need to save off the entire list for later
-> > processing of the directory mtimes... if i process the directory mtimes
-> > in the same pass as the file/link mtimes, touching the directory inode
-> > when creating/modifying the file/links updates the directory mtime, and
-> > overwrites whatever mtime i set the directory to when i created it.
-> > 
-> > The only solution is to do a two pass, which is why the list is
-> > necessary. If there is a better way, i did not find it :(
-> > 
-> > It could be that i misunderstood your question though :)
+> > I'm not sure what the current state of play is here in terms of the
+> > original patch being pushed to stable and mainline, but my patch is both
+> > simpler and more correct. If it's not too late, it's the one that should
+> > go to both places.
 > 
-> I'm wondering whether this code need to use `struct utimbuf' at all. 
-> Or at least, as much as it does.  utimbuf is more a userspace-facing
-> thing whereas in-kernel timespecs and timevals are more common.
+> It's a fairly minor thing.  The post-this-patch code takes care to
+> ensure that ->entropy_count never has an illegal value, so it's OK but
+> aesthetially unpleasing to check its value outside the lock.
 > 
-> The code as you have it does a fair few conversions into utimbuf format
-> (both directly and via the existing functions which it calls).  Would
-> it be simpler if it dealt in terms of timespecs?
+> And the post-this-patch code generates less .text, so it's a desirable
+> thing from that POV too.
 > 
+> We could/should do both, I guess.
 
-It could be. Heck, it would be even simpler to just use a single time_t (since
-cpio doesn't have timespecs OR seperate atime/mtimes):
+Sure, adding a local variable is fine. Though really, this shouldn't
+actually improve things, that's just our compiler being sucky. And I
+think it's a wash in terms of readability.
 
-static __initdata LIST_HEAD(dir_list);
-struct dir_entry {
-        struct list_head list;
-        char *name;
-        time_t mtime;
-};
+> I kinda ducked your move-the-BUG
+> patch because I wasn't in a write-yet-another-changelog mood.
 
-then make a simple wrapper for sys_utime() to convert the time_t into a the
-utimbuf:
+I included one, but it was terse:
 
-static void __init do_utime(char *name, time_t mtime)
-{
-        struct utimbuf time;
-        time.actime=time.modtime=mtime;
-        sys_utime(name, &time);
-}
+ Avoid checking lock-protected entropy_count when lock isn't held.
 
-I can try it that way and resubmit. Gimme a bit to compose a patch
+Here's a more expansive version:
 
-ALSO it disturbs me about the alloc problem you mentioned, especially since
-i did NOT TEST on anything but our embedded (ppc/powerpc) target.
+﻿Avoid checking lock-protected entropy_count when lock isn't held. This
+fixes a bug reported by and diagnosed by Aaron Straus.
+
+This fixes a regression introduced into 2.6.26 by
+ 
+     commit adc782dae6c4c0f6fb679a48a544cfbcd79ae3dc
+     Author: Matt Mackall <mpm@selenic.com>
+     Date:   Tue Apr 29 01:03:07 2008 -0700
+ 
+         random: simplify and rename credit_entropy_store
+
+Signed-off-by: Matt Mackall <mpm@selenic.com>
+ 
+diff -r ddae8a8d3c6f drivers/char/random.c
+--- a/drivers/char/random.c	Tue Jul 29 03:07:11 2008 +0000
++++ b/drivers/char/random.c	Wed Sep 03 17:43:18 2008 -0500
+@@ -726,11 +726,10 @@
+ {
+ 	unsigned long flags;
+ 
+-	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
+-
+ 	/* Hold lock while accounting */
+ 	spin_lock_irqsave(&r->lock, flags);
+ 
++	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
+ 	DEBUG_ENT("trying to extract %d bits from %s\n",
+ 		  nbytes * 8, r->name);
 
 -- 
-Nye Liu
-nliu@mrv.com
-(818) 772-6235x248
-(818) 772-0576 fax
+Mathematics is the supreme nostalgia of our time.
 
-"Who would be stupid enough to quote a fictitious character?"
-	-- Don Quixote
