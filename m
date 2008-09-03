@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYICG5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYICHGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbYICG5r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 02:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbYICG5j
+	id S1755095AbYICHGa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 03:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbYICHGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 02:57:39 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:28785 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752823AbYICG5i (ORCPT
+	Wed, 3 Sep 2008 03:06:21 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:22752 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbYICHGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 02:57:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vEBrxUpbnywBfbX+TQEc9EnmBX0wkfFkBloj7KViOANeZf7jekEik+ST38TNt4yXhX
-         aiknxApyeWwIFLe4tz04pIwmGugn1CtO7RbIiZcMhlvC964N7Dzn09yxtQZoQwF3ojpy
-         /Xej+xbH4Ia+ODEWeJe5y8SOYUQ6DDJY/Y0Yk=
-Message-ID: <ac9c93b10809022357l79d014d3ybb40271b2ae806fd@mail.gmail.com>
-Date: Wed, 3 Sep 2008 08:57:35 +0200
-From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
-To: "Hans Verkuil" <hverkuil@xs4all.nl>
-Subject: Re: CodingStyle question: multiple statements on a single line
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>
-In-Reply-To: <200809030021.00122.hverkuil@xs4all.nl>
+	Wed, 3 Sep 2008 03:06:20 -0400
+X-BigFish: VPS-50(zz1432R98dR14ffO148cM1805M179dR936fQ8c8ajzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K6LYED-03-9Z5-01
+Date: Wed, 3 Sep 2008 09:06:10 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       mingo@elte.hu
+Subject: Re: linux-next: Tree for September 2
+Message-ID: <20080903070610.GA17919@amd.com>
+References: <20080902190207.7bcd06dc.sfr@canb.auug.org.au> <20080903093011.a5cc6887.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-References: <200809030021.00122.hverkuil@xs4all.nl>
+In-Reply-To: <20080903093011.a5cc6887.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 03 Sep 2008 07:06:10.0402 (UTC) FILETIME=[8B3AF420:01C90D93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/3 Hans Verkuil <hverkuil@xs4all.nl>:
-[...]
->
-> "Don't put multiple statements on a single line unless you have
-> something to hide:
->
->        if (condition) do_this;
->          do_something_everytime;
->
-> Don't put multiple assignments on a single line either.  Kernel coding
-> style is super simple.  Avoid tricky expressions."
->
-> Does this mean:
->
-> 1) Yes, after an 'if' you can put a single statement like this:
->
->        if (a) b;
->
-> 2) No, never use the 'if (a) b;' construction. Put 'b;' on the next line
-> instead.
->
+On Wed, Sep 03, 2008 at 09:30:11AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Tue, 2 Sep 2008 19:02:07 +1000
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > Hi all,
+> > 
+> > Changes since next-20080901:
+> > 
+> > The x86 tree gained a conflict against the dwmw2 tree for which I
+> > reverted a commit from the dwmw2 tree.
+> > 
+> > The sound tree lost its conflict.
+> > 
+> > The block tree gained a conflict against the device-mapper tree but lost
+> > its build fix patch.
+> > 
+> > The ttydev tree lost a conflict but gained a build fix patch.
+> > 
+> > I have also applied the following patches for known problems:
+> > 
+> > 	ftrace: protect the definition of ftrace_release
+> > 	revert BUILD_BUG_ON change
+> > 	Revert "debug: add notifier chain debugging"
+> > 	debug: add notifier chain debugging (different version)
+> > 	sparc: qlogicpti fallout from sbus removal
+> > 	powerpc: make sure all kernel test is before _etext
+> > 
+> From patch (not tested yet), it seems dma_alloc_coherent() on x86_64
+> is still broken as I reported to August 29's linux-next.
+> It easily goes down to swiotlb routine, which uses __GFP_DMA, and show
+> "page allocation failure" at boot. Old code used __GFP_DMA32 as much as
+> possible, I think.
 
-It means 2. The example is definitely tricky. At first sight the
-indentation suggests that the 'do_something-everytime" belongs to the
-if, so it might put people on the wrong foot.
-Suggest the text to be revised though. Some of us are better in
-English than others. No need to cause confusion...
+Hmm, SWIOTLB unconditionally allocates from the DMA zone. Thats bad but
+should be easy to change. I prepare a patch.
 
-just my two eurocents :-)
+> Just a notification.
 
-Frans
+Thanks for pointing that out.
 
-[...]
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
