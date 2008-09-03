@@ -1,75 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbYICLuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751575AbYICMCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753758AbYICLuq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 07:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYICLui
+	id S1751575AbYICMCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 08:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYICMCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 07:50:38 -0400
-Received: from styx.suse.cz ([82.119.242.94]:56756 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751332AbYICLuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 07:50:37 -0400
-Date: Wed, 3 Sep 2008 13:50:35 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Daniel Barkalow <barkalow@iabervon.org>, linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-In-Reply-To: <20080902083940.ZZRA012@mailhub.coreip.homeip.net>
-Message-ID: <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz>
- <20080902083940.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 3 Sep 2008 08:02:04 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:49640 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751568AbYICMCB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 08:02:01 -0400
+Message-ID: <48BE7CB0.7090201@euromail.se>
+Date: Wed, 03 Sep 2008 14:01:52 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@osdl.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] bcm5974-0.63: Finger counting improved
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.39.57
+X-Scan-Result: No virus found in message 1Kar3e-00051X-9N.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Kar3e-00051X-9N f9bfad5a17fceded6cbad49ae17e680a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
+A finger counting method based on pressure information from all fingers is introduced. Together
+with a pressure hysteresis window, this yields a more stable counting of the number of fingers
+on the trackpad.
 
-> I guess we could use System's product name to differentiate between 
-> Cristopher's and Daniel's boards. Although I must admit it is the very 
-> first time when I see a box that behaves better with active mux. DOes 
-> Vista use active mux nowadays? Because if it is not then I bet there is 
-> (or shortly will be) a BIOS update fixing legacy mode on Daniel's box.
-
-I guess so, yes.
-
-On the other hand, this might also be viewed as regression (we made 
-Daniel's hardware behave worse with recent kernel than it did before), so 
-I think we still would like to have this fixed. What about the patch 
-below, adding the match on System's product name, as you suggested? 
-Thanks.
-
-
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] Input: i8042 - make Lenovo 3000 N100 blacklist entry more specific
-
-Apparently, there are more different versions of Lenovo 3000 N100, some
-of them working properly with active mux, and some of them requiring it
-being switched off.
-
-This patch applies 'nomux' only to the specific product name that is
-reported to behave badly unless 'nomux' is specified.
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 ---
- drivers/input/serio/i8042-x86ia64io.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/input/mouse/bcm5974.c |   54 ++++++++++++++++++++++++++++-------------
+ 1 files changed, 37 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/input/serio/i8042-x86ia64io.h b/drivers/input/serio/i8042-x86ia64io.h
-index 3282b74..5aafe24 100644
---- a/drivers/input/serio/i8042-x86ia64io.h
-+++ b/drivers/input/serio/i8042-x86ia64io.h
-@@ -305,7 +305,7 @@ static struct dmi_system_id __initdata i8042_dmi_nomux_table[] = {
- 		.ident = "Lenovo 3000 n100",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
--			DMI_MATCH(DMI_PRODUCT_VERSION, "3000 N100"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "076804U"),
- 		},
- 	},
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+index ae78bb8..acc401d 100644
+--- a/drivers/input/mouse/bcm5974.c
++++ b/drivers/input/mouse/bcm5974.c
+@@ -159,6 +159,7 @@ struct bcm5974 {
+ 	struct bt_data *bt_data;	/* button transferred data */
+ 	struct urb *tp_urb;		/* trackpad usb request block */
+ 	struct tp_data *tp_data;	/* trackpad transferred data */
++	int fingers;			/* number of fingers on trackpad */
+ };
+
+ /* logical dimensions */
+@@ -172,6 +173,10 @@ struct bcm5974 {
+ #define SN_WIDTH	100		/* width signal-to-noise ratio */
+ #define SN_COORD	250		/* coordinate signal-to-noise ratio */
+
++/* pressure thresholds */
++#define PRESSURE_LOW	(2 * DIM_PRESSURE / SN_PRESSURE)
++#define PRESSURE_HIGH	(3 * PRESSURE_LOW)
++
+ /* device constants */
+ static const struct bcm5974_config bcm5974_config_table[] = {
  	{
+@@ -273,32 +278,47 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 	const struct tp_finger *f = dev->tp_data->finger;
+ 	struct input_dev *input = dev->input;
+ 	const int fingers = (size - 26) / 28;
+-	int p = 0, w, x, y, n = 0;
++	int nmin = 0, nmax = 0, p = 0, w = 0, x = 0, y = 0;
+
+ 	if (size < 26 || (size - 26) % 28 != 0)
+ 		return -EIO;
+
+-	if (fingers) {
+-		p = raw2int(f->force_major);
+-		w = raw2int(f->size_major);
+-		x = raw2int(f->abs_x);
+-		y = raw2int(f->abs_y);
+-		n = p > 0 ? fingers : 0;
+-
+-		dprintk(9,
+-			"bcm5974: p: %+05d w: %+05d x: %+05d y: %+05d n: %d\n",
+-			p, w, x, y, n);
++	for (; f != dev->tp_data->finger + fingers; f++) {
++		int ptest = raw2int(f->force_major);
++		if (ptest > PRESSURE_LOW) {
++			if (!nmax++) {
++				p = ptest;
++				w = raw2int(f->size_major);
++				x = raw2int(f->abs_x) - c->x.devmin;
++				y = c->y.devmax - raw2int(f->abs_y);
++			}
++		}
++		if (ptest > PRESSURE_HIGH)
++			nmin++;
+
+-		input_report_abs(input, ABS_TOOL_WIDTH, int2bound(&c->w, w));
+-		input_report_abs(input, ABS_X, int2bound(&c->x, x - c->x.devmin));
+-		input_report_abs(input, ABS_Y, int2bound(&c->y, c->y.devmax - y));
+ 	}
+
++	if (dev->fingers < nmin)
++		dev->fingers = nmin;
++	if (dev->fingers > nmax)
++		dev->fingers = nmax;
++
++	input_report_key(input, BTN_TOOL_FINGER, dev->fingers == 1);
++	input_report_key(input, BTN_TOOL_DOUBLETAP, dev->fingers == 2);
++	input_report_key(input, BTN_TOOL_TRIPLETAP, dev->fingers > 2);
++
+ 	input_report_abs(input, ABS_PRESSURE, int2bound(&c->p, p));
++	input_report_abs(input, ABS_TOOL_WIDTH, int2bound(&c->w, w));
++
++	if (nmax > 0) {
++		dprintk(9,
++			"bcm5974: p: %+05d w: %+05d x: %+05d y: %+05d "
++			"nmin: %d nmax: %d\n",
++			p, w, x, y, nmin, nmax);
+
+-	input_report_key(input, BTN_TOOL_FINGER, n == 1);
+-	input_report_key(input, BTN_TOOL_DOUBLETAP, n == 2);
+-	input_report_key(input, BTN_TOOL_TRIPLETAP, n > 2);
++		input_report_abs(input, ABS_X, int2bound(&c->x, x));
++		input_report_abs(input, ABS_Y, int2bound(&c->y, y));
++	}
+
+ 	input_sync(input);
+
 -- 
-1.5.4.5
+1.5.4.3
+
