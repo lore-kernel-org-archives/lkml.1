@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYICN6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYICN7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbYICN6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 09:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYICN6D
+	id S1755309AbYICN7Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 09:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYICN7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 09:58:03 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:42634 "EHLO relay.sw.ru"
+	Wed, 3 Sep 2008 09:59:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43505 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751686AbYICN6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 09:58:00 -0400
-From: Andrey Mirkin <major@openvz.org>
-To: devel@openvz.org
-Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-Date: Wed, 3 Sep 2008 17:59:27 +0400
-User-Agent: KMail/1.8.2
-Cc: Cedric Le Goater <clg@fr.ibm.com>, Andrey Mirkin <major@openvz.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <48BE82F9.4020808@fr.ibm.com>
-In-Reply-To: <48BE82F9.4020808@fr.ibm.com>
+	id S1752032AbYICN7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 09:59:14 -0400
+Message-ID: <48BE982C.20705@garzik.org>
+Date: Wed, 03 Sep 2008 09:59:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: mingo@elte.hu, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, akpm@linux-foundation.org,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: [NET-NEXT PATCH] e1000: remove unused Kconfig option for disabling
+ packet split
+References: <20080827081956.11114.152.stgit@jtkirshe-mobile.jf.intel.com>
+In-Reply-To: <20080827081956.11114.152.stgit@jtkirshe-mobile.jf.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809031759.29132.major@openvz.org>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 September 2008 16:28 Cedric Le Goater wrote:
-> Andrey Mirkin wrote:
-> > This patchset introduces kernel based checkpointing/restart as it is
-> > implemented in OpenVZ project. This patchset has limited functionality
-> > and are able to checkpoint/restart only single process. Recently Oren
-> > Laaden sent another kernel based implementation of checkpoint/restart.
-> > The main differences between this patchset and Oren's patchset are:
-> >
-> > * In this patchset checkpointing initiated not from the process
-> > (right now we do not have a container, only namespaces), Oren's patchset
-> > performs checkpointing from the process context.
-> >
-> > * Restart in this patchset is initiated from process, which restarts a
-> > new process (in new namespaces) with saved state. Oren's patchset uses
-> > the same process from which restart was initiated and restore saved state
-> > over it.
-> >
-> > * Checkpoint/restart functionality in this patchset is implemented as a
-> > kernel module
->
-> why ? Do we really think that C/R implementations will be so different that
-> we will need C/R ops to support all of them ? I imagine that there could be
-> different models :
->
-> 	1. brute force : dump it all and kill
-> 	2. incremental
-> 	3. live migration
-> 	...
->
-> But I see all of them really tied to the kernel internals.
->
-> The first issues I see with this direction are some EXPORT_SYMBOL() that
-> would be useless without a module.
+Jeff Kirsher wrote:
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> Since the e1000/e1000e split, no hardware supported by e1000
+> supports packet split, just remove the Kconfig option and associated
+> code from arch/* and the driver.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+> 
+>  arch/arm/configs/iop13xx_defconfig              |    1 
+>  arch/arm/configs/iop32x_defconfig               |    1 
+>  arch/arm/configs/iop33x_defconfig               |    1 
+>  arch/arm/configs/ixp23xx_defconfig              |    1 
+>  arch/arm/configs/kirkwood_defconfig             |    1 
+>  arch/ia64/configs/generic_defconfig             |    1 
+>  arch/ia64/configs/gensparse_defconfig           |    1 
+>  arch/ia64/configs/tiger_defconfig               |    1 
+>  arch/ia64/configs/zx1_defconfig                 |    1 
+>  arch/mips/configs/mtx1_defconfig                |    1 
+>  arch/parisc/configs/a500_defconfig              |    1 
+>  arch/parisc/configs/c3000_defconfig             |    1 
+>  arch/powerpc/configs/83xx/mpc832x_rdb_defconfig |    1 
+>  arch/powerpc/configs/85xx/mpc8560_ads_defconfig |    1 
+>  arch/powerpc/configs/85xx/mpc85xx_cds_defconfig |    1 
+>  arch/powerpc/configs/85xx/tqm8548_defconfig     |    1 
+>  arch/powerpc/configs/cell_defconfig             |    1 
+>  arch/powerpc/configs/g5_defconfig               |    1 
+>  arch/powerpc/configs/iseries_defconfig          |    1 
+>  arch/powerpc/configs/maple_defconfig            |    1 
+>  arch/powerpc/configs/pasemi_defconfig           |    1 
+>  arch/powerpc/configs/ppc64_defconfig            |    1 
+>  arch/powerpc/configs/ppc6xx_defconfig           |    1 
+>  arch/powerpc/configs/prpmc2800_defconfig        |    1 
+>  arch/powerpc/configs/pseries_defconfig          |    1 
+>  arch/sh/configs/r7780mp_defconfig               |    1 
+>  arch/sparc64/defconfig                          |    1 
+>  arch/x86/configs/i386_defconfig                 |    1 
+>  arch/x86/configs/x86_64_defconfig               |    1 
+>  drivers/net/Kconfig                             |    9 
+>  drivers/net/e1000/e1000.h                       |   17 -
+>  drivers/net/e1000/e1000_main.c                  |  416 -----------------------
+>  32 files changed, 9 insertions(+), 462 deletions(-)
 
-Checkpoint/restart functionality is implemented as a kernel module to provide 
-more flexibility during development process - you can easily unload module, 
-fix what you need and load module again, you do not need to reboot you server 
-in this case. We have discussed this question during Container's mini summit 
-on OLS-2008 and we have found out that it will be convenient to have such an 
-ability.
+ACK, except for the defconfig changes.  arch maintainers usually prefer 
+to do that themselves.
 
->
-> > As checkpointing is initiated not from the process which state should be
-> > saved we should freeze a process before saving its state. Right now
-> > Container Freezer from Matt Helsley can be used for this.
->
-> OK that's integrated and Daniel's tools :
->
-> http://lxc.cvs.sourceforge.net/lxc/
->
-> one more reason to work on integration :)
+We'd be continually patch defconfig files, if we did so every time it 
+was likely one would be updated by a Kconfig patch.
 
-Yes, you're right :)
 
-Regards,
-Andrey
-
->
-> > This patchset introduce only a concept how kernel based
-> > checkpointing/restart can be implemented and are able to
-> > checkpoint/restart only a single process with simple VMAs.
-> >
-> > I've tried to split my patchset in small patches to make review more
-> > easier. _______________________________________________
-> > Containers mailing list
-> > Containers@lists.linux-foundation.org
-> > https://lists.linux-foundation.org/mailman/listinfo/containers
->
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
->
-> _______________________________________________
-> Devel mailing list
-> Devel@openvz.org
-> https://openvz.org/mailman/listinfo/devel
