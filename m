@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYICRvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbYICRwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759273AbYICRvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbYICRvf
+	id S1753557AbYICRwS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYICRv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:51:35 -0400
-Received: from mail.suse.de ([195.135.220.2]:53997 "EHLO mx1.suse.de"
+	Wed, 3 Sep 2008 13:51:57 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54072 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755348AbYICRvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:51:33 -0400
-Date: Wed, 3 Sep 2008 10:32:58 -0700
+	id S1753551AbYICRv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:51:56 -0400
+Date: Wed, 3 Sep 2008 10:33:00 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,19 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ian Campbell <ijc@hellion.org.uk>,
-       Jaya Kumar <jayakumar.lkml@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@saeurebad.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Kel Modderman <kel@otaku42.de>,
-       Markus Armbruster <armbru@redhat.com>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: [patch 08/16] fbdefio: add set_page_dirty handler to deferred IO FB
-Message-ID: <20080903173258.GI10429@suse.de>
+       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 09/16] crypto: authenc - Avoid using clobbered request
+	pointer
+Message-ID: <20080903173300.GJ10429@suse.de>
 References: <20080903172849.927077124@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fbdefio-add-set_page_dirty-handler-to-deferred-io-fb.patch"
+Content-Disposition: inline; filename="crypto-authenc-avoid-using-clobbered-request-pointer.patch"
 In-Reply-To: <20080903173218.GA10429@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,106 +39,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ian Campbell <ijc@hellion.org.uk>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-commit d847471d063663b9f36927d265c66a270c0cfaab upstream
+crypto: authenc - Avoid using clobbered request pointer
 
-Fixes kernel BUG at lib/radix-tree.c:473.
+[ Upstream commit: a697690bece75d4ba424c1318eb25c37d41d5829 ]
 
-Previously the handler was incidentally provided by tmpfs but this was
-removed with:
+Authenc works in two stages for encryption, it first encrypts and
+then computes an ICV.  The context memory of the request is used
+by both operations.  The problem is that when an asynchronous
+encryption completes, we will compute the ICV and then reread the
+context memory of the encryption to get the original request.
 
-  commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1
-  Author: Hugh Dickins <hugh@veritas.com>
-  Date:   Mon Jul 28 15:46:19 2008 -0700
+It just happens that we have a buffer of 16 bytes in front of the
+request pointer, so ICVs of 16 bytes (such as SHA1) do not trigger
+the bug.  However, any attempt to uses a larger ICV instantly kills
+the machine when the first asynchronous encryption is completed.
 
-    tmpfs: fix kernel BUG in shmem_delete_inode
+This patch fixes this by saving the request pointer before we start
+the ICV computation.
 
-relying on this behaviour was incorrect in any case and the BUG also
-appeared when the device node was on an ext3 filesystem.
-
-v2: override a_ops at open() time rather than mmap() time to minimise
-races per AKPM's concerns.
-
-Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: Johannes Weiner <hannes@saeurebad.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Kel Modderman <kel@otaku42.de>
-Cc: Markus Armbruster <armbru@redhat.com>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/fb_defio.c |   19 +++++++++++++++++++
- drivers/video/fbmem.c    |    4 ++++
- include/linux/fb.h       |    3 +++
- 3 files changed, 26 insertions(+)
+ crypto/authenc.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -114,6 +114,17 @@ static struct vm_operations_struct fb_de
- 	.page_mkwrite	= fb_deferred_io_mkwrite,
- };
- 
-+static int fb_deferred_io_set_page_dirty(struct page *page)
-+{
-+	if (!PageDirty(page))
-+		SetPageDirty(page);
-+	return 0;
-+}
-+
-+static const struct address_space_operations fb_deferred_io_aops = {
-+	.set_page_dirty = fb_deferred_io_set_page_dirty,
-+};
-+
- static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+--- a/crypto/authenc.c
++++ b/crypto/authenc.c
+@@ -174,8 +174,9 @@ static int crypto_authenc_genicv(struct 
+ static void crypto_authenc_encrypt_done(struct crypto_async_request *req,
+ 					int err)
  {
- 	vma->vm_ops = &fb_deferred_io_vm_ops;
-@@ -163,6 +174,14 @@ void fb_deferred_io_init(struct fb_info 
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_init);
- 
-+void fb_deferred_io_open(struct fb_info *info,
-+			 struct inode *inode,
-+			 struct file *file)
-+{
-+	file->f_mapping->a_ops = &fb_deferred_io_aops;
-+}
-+EXPORT_SYMBOL_GPL(fb_deferred_io_open);
++	struct aead_request *areq = req->data;
 +
- void fb_deferred_io_cleanup(struct fb_info *info)
- {
- 	void *screen_base = (void __force *) info->screen_base;
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1315,6 +1315,10 @@ fb_open(struct inode *inode, struct file
- 		if (res)
- 			module_put(info->fbops->owner);
+ 	if (!err) {
+-		struct aead_request *areq = req->data;
+ 		struct crypto_aead *authenc = crypto_aead_reqtfm(areq);
+ 		struct crypto_authenc_ctx *ctx = crypto_aead_ctx(authenc);
+ 		struct ablkcipher_request *abreq = aead_request_ctx(areq);
+@@ -185,7 +186,7 @@ static void crypto_authenc_encrypt_done(
+ 		err = crypto_authenc_genicv(areq, iv, 0);
  	}
-+#ifdef CONFIG_FB_DEFERRED_IO
-+	if (info->fbdefio)
-+		fb_deferred_io_open(info, inode, file);
-+#endif
- 	return res;
+ 
+-	aead_request_complete(req->data, err);
++	aead_request_complete(areq, err);
  }
  
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -966,6 +966,9 @@ static inline void __fb_pad_aligned_buff
+ static int crypto_authenc_encrypt(struct aead_request *req)
+@@ -216,14 +217,15 @@ static int crypto_authenc_encrypt(struct
+ static void crypto_authenc_givencrypt_done(struct crypto_async_request *req,
+ 					   int err)
+ {
++	struct aead_request *areq = req->data;
++
+ 	if (!err) {
+-		struct aead_request *areq = req->data;
+ 		struct skcipher_givcrypt_request *greq = aead_request_ctx(areq);
  
- /* drivers/video/fb_defio.c */
- extern void fb_deferred_io_init(struct fb_info *info);
-+extern void fb_deferred_io_open(struct fb_info *info,
-+				struct inode *inode,
-+				struct file *file);
- extern void fb_deferred_io_cleanup(struct fb_info *info);
- extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
- 				int datasync);
+ 		err = crypto_authenc_genicv(areq, greq->giv, 0);
+ 	}
+ 
+-	aead_request_complete(req->data, err);
++	aead_request_complete(areq, err);
+ }
+ 
+ static int crypto_authenc_givencrypt(struct aead_givcrypt_request *req)
 
 -- 
