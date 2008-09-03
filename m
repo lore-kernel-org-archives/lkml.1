@@ -1,159 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYICCPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbYICCvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYICCPW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 22:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbYICCPJ
+	id S1754680AbYICCvm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 22:51:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYICCvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 22:15:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60949 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751530AbYICCPH (ORCPT
+	Tue, 2 Sep 2008 22:51:33 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:64973 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751239AbYICCvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 22:15:07 -0400
-Date: Tue, 2 Sep 2008 19:14:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Tue, 2 Sep 2008 22:51:32 -0400
+Message-ID: <48BDFBB6.3010106@lwfinger.net>
+Date: Tue, 02 Sep 2008 21:51:34 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
 To: Thomas Gleixner <tglx@linutronix.de>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Alok Kataria <akataria@vmware.com>, Michael Buesch <mb@bu3sch.de>
 Subject: Re: [PATCH] Fix TSC calibration issues
+References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
 In-Reply-To: <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0809021906250.3259@nehalem.linux-foundation.org>
-References: <48BB2116.1060904@lwfinger.net> <alpine.LFD.1.10.0809011311210.3243@apollo.tec.linutronix.de> <48BC2A03.9000104@lwfinger.net> <alpine.LFD.1.10.0809012018000.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011142520.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012114050.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de>
- <alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Gleixner wrote:
+> Larry Finger reported at http://lkml.org/lkml/2008/9/1/90:
+> An ancient laptop of mine started throwing errors from b43legacy when
+> I started using 2.6.27 on it. This has been bisected to commit bfc0f59
+> "x86: merge tsc calibration".
+> 
+> The unification of the TSC code adopted mostly the 64bit code, which
+> prefers PMTIMER/HPET over the PIT calibration.
+> 
+> Larrys system has an AMD K6 CPU. Such systems are known to have
+> PMTIMER incarnations which run at double speed. This results in a
+> miscalibration of the TSC by factor 0.5. So the resulting calibrated
+> CPU/TSC speed is half of the real CPU speed, which means that the TSC
+> based delay loop will run half the time it should run. That might
+> explain why the b43legacy driver went berserk.
+> 
+> On the other hand we know about systems, where the PIT based
+> calibration results in random crap due to heavy SMI/SMM
+> disturbance. On those systems the PMTIMER/HPET based calibration logic
+> with SMI detection shows better results.
+> 
+> According to Alok also virtualized systems suffer from the PIT
+> calibration method.
+> 
+> The solution is to use a more wreckage aware aproach than the current
+> either/or decision.
+> 
+> 1) reimplement the retry loop which was dropped from the 32bit code
+> during the merge. It repeats the calibration and selects the lowest
+> frequency value as this is probably the closest estimate to the real
+> frequency
+> 
+> 2) Monitor the delta of the TSC values in the delay loop which waits
+> for the PIT counter to reach zero. If the maximum value is
+> significantly different from the minimum, then we have a pretty safe
+> indicator that the loop was disturbed by an SMI.
+> 
+> 3) keep the pmtimer/hpet reference as a backup solution for systems
+> where the SMI disturbance is a permanent point of failure for PIT
+> based calibration
+> 
+> 4) do the loop iteration for both methods, record the lowest value and
+> decide after all iterations finished.
+> 
+> 5) Set a clear preference to PIT based calibration when the result
+> makes sense.
+> 
+> The implementation does the reference calibration based on
+> HPET/PMTIMER around the delay, which is necessary for the PIT anyway,
+> but keeps separate TSC values to ensure the "independency" of the
+> resulting calibration values.
+> 
+> Tested on various 32bit/64bit machines including Geode 266Mhz, AMD K6
+> (affected machine with a double speed pmtimer which I grabbed out of
+> the dump), Pentium class machines and AMD/Intel 64 bit boxen.
+> 
+> Bisected-by:  Larry Finger <Larry.Finger@lwfinger.net>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
 
+I know that Linus has some problems with this patch, but FWIW it 
+worked on my K6. The dmesg output is
 
-On Wed, 3 Sep 2008, Thomas Gleixner wrote:
->
-> +	/*
-> +	 * Run 5 calibration loops to get the lowest frequency value
-> +	 * (the best estimate). We use two different calibration modes
-> +	 * here:
-> +	 *
-> +	 * 1) PIT loop. We set the PIT Channel 2 to oneshot mode and
-> +	 * load a timeout of 50ms. We read the time right after we
-> +	 * started the timer and wait until the PIT count down reaches
-> +	 * zero. In each wait loop iteration we read the TSC and check
-> +	 * the delta to the previous read. We keep track of the min
-> +	 * and max values of that delta. The delta is mostly defined
-> +	 * by the IO time of the PIT access, so we can detect when a
-> +	 * SMI/SMM disturbance happend between the two reads. If the
-> +	 * maximum time is significantly larger than the minimum time,
-> +	 * then we discard the result and have another try.
-> +	 *
-> +	 * 2) Reference counter. If available we use the HPET or the
-> +	 * PMTIMER as a reference to check the sanity of that value.
-> +	 * We use separate TSC readouts and check inside of the
-> +	 * reference read for a SMI/SMM disturbance. We dicard
-> +	 * disturbed values here as well. We do that around the PIT
-> +	 * calibration delay loop as we have to wait for a certain
-> +	 * amount of time anyway.
-> +	 */
-> +	for (i = 0; i < 5; i++) {
-> +		tscmin = ULONG_MAX;
-> +		tscmax = 0;
-> +		pitcnt = 0;
-> +
-> +		local_irq_save(flags);
-> +
-> +		/*
-> +		 * Read the start value and the reference count of
-> +		 * hpet/pmtimer when available:
-> +		 */
-> +		tsc1 = tsc_read_refs(&pm1, hpet ? &hpet1 : NULL);
+TSC: PIT calibration deviates from PMTIMER: 428809 214401.
+TSC: Using PIT calibration value
+Detected 428.809 MHz processor.
 
-This is "wrongish".
-
-You really should do the
-
-	tsc1 = tsc_read_refs(&pm1, hpet ? &hpet1 : NULL);   
-	...
-	tsc2 = tsc_read_refs(&pm2, hpet ? &hpet2 : NULL);
-
-around the whole loop, because they get more exact with more time inside, 
-and they don't improve from looping around.
-
-Also, that code is already _too_ unreadable. How about starting by just 
-moving the PIT calibration into a function of its own, like the appended 
-patch. And then as a separate patch, improving the heuristics for just the 
-PIT calibration.
-
-The others are independent of this issue..
-
-		Linus
-
----
- arch/x86/kernel/tsc.c |   37 ++++++++++++++++++++-----------------
- 1 files changed, 20 insertions(+), 17 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 8e786b0..bf7ff5a 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -122,19 +122,9 @@ static u64 tsc_read_refs(u64 *pm, u64 *hpet)
- 	return ULLONG_MAX;
- }
- 
--/**
-- * native_calibrate_tsc - calibrate the tsc on boot
-- */
--unsigned long native_calibrate_tsc(void)
-+static unsigned long PIT_calibrate_tsc(void)
- {
--	unsigned long flags;
--	u64 tsc1, tsc2, tr1, tr2, delta, pm1, pm2, hpet1, hpet2;
--	int hpet = is_hpet_enabled();
--	unsigned int tsc_khz_val = 0;
--
--	local_irq_save(flags);
--
--	tsc1 = tsc_read_refs(&pm1, hpet ? &hpet1 : NULL);
-+	u64 tr1, tr2, delta;
- 
- 	outb((inb(0x61) & ~0x02) | 0x01, 0x61);
- 
-@@ -145,17 +135,30 @@ unsigned long native_calibrate_tsc(void)
- 	while ((inb(0x61) & 0x20) == 0);
- 	tr2 = get_cycles();
- 
--	tsc2 = tsc_read_refs(&pm2, hpet ? &hpet2 : NULL);
--
--	local_irq_restore(flags);
--
- 	/*
- 	 * Preset the result with the raw and inaccurate PIT
- 	 * calibration value
- 	 */
- 	delta = (tr2 - tr1);
- 	do_div(delta, 50);
--	tsc_khz_val = delta;
-+	return delta;
-+}
-+
-+/**
-+ * native_calibrate_tsc - calibrate the tsc on boot
-+ */
-+unsigned long native_calibrate_tsc(void)
-+{
-+	unsigned long flags;
-+	u64 tsc1, tsc2, pm1, pm2, hpet1, hpet2;
-+	int hpet = is_hpet_enabled();
-+	unsigned int tsc_khz_val;
-+
-+	local_irq_save(flags);
-+	tsc1 = tsc_read_refs(&pm1, hpet ? &hpet1 : NULL);
-+	tsc_khz_val = PIT_calibrate_tsc();
-+	tsc2 = tsc_read_refs(&pm2, hpet ? &hpet2 : NULL);
-+	local_irq_restore(flags);
- 
- 	/* hpet or pmtimer available ? */
- 	if (!hpet && !pm1 && !pm2) {
+Larry
