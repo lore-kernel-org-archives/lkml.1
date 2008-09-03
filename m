@@ -1,58 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbYICHgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYICHzP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbYICHgk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 03:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYICHgb
+	id S1752702AbYICHzP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 03:55:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbYICHzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 03:36:31 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:59898 "EHLO smtp5.pp.htv.fi"
+	Wed, 3 Sep 2008 03:55:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:58134 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750913AbYICHgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 03:36:31 -0400
-Date: Wed, 3 Sep 2008 10:36:29 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] m68k: Reverse platform MMU logic so Sun 3 is last
-Message-ID: <20080903073629.GD4104@cs181140183.pp.htv.fi>
-References: <20080903071542.615137611@mail.of.borg> <20080903071741.424551678@mail.of.borg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080903071741.424551678@mail.of.borg>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750890AbYICHzB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 03:55:01 -0400
+Date: Wed, 3 Sep 2008 17:54:44 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tty: remove unused variable canon_change
+Message-Id: <20080903175444.954d9651.sfr@canb.auug.org.au>
+In-Reply-To: <20080902233738.a5509cad.akpm@linux-foundation.org>
+References: <1220390841.2137.10.camel@brick>
+	<20080902233738.a5509cad.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Sep_2008_17_54_44_+1000_QTeVxMThIBEbiU=3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 09:15:44AM +0200, Geert Uytterhoeven wrote:
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> Currently Sun 3 support is the first platform option, as the Sun 3 MMU is
-> incompatible with standard Motorola MMUs. However, this means that
-> `allmodconfig' enables support for Sun 3, and thus disables support for all
-> other platforms.
->...
+--Signature=_Wed__3_Sep_2008_17_54_44_+1000_QTeVxMThIBEbiU=3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I hope it isn't too heretical to ask whether Sun 3 support actually has 
-users and works?
+Hi Andrew,
 
-Apollo support was broken for over 7 years without anyone noticing, and 
-it might not be the only m68k platform that is long unused.
+On Tue, 2 Sep 2008 23:37:38 -0700 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> On Tue, 02 Sep 2008 14:27:21 -0700 Harvey Harrison <harvey.harrison@gmail=
+.com> wrote:
+>=20
+> I cannot find the patch which added the canon_change stuff on a mailing
+> list.  If I could, I'd reply to that.
 
-Do you have any overview of which m68k platforms still have users?
+Hmm.
 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
+> It goes oops.  config is at http://userweb.kernel.org/~akpm/config-vmm.txt
 
-cu
-Adrian
+This is fixed (I haven't tested, but the patch looks better) in linux-next
+today with a revised patch from Alan Cox.
 
--- 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--Signature=_Wed__3_Sep_2008_17_54_44_+1000_QTeVxMThIBEbiU=3
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAki+QsQACgkQjjKRsyhoI8yQugCeJNVUXSKV42GSZydo540uwBMR
+8gwAoLavQlkQWxEnv72N3J0jiTLa8dFW
+=TVpe
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Sep_2008_17_54_44_+1000_QTeVxMThIBEbiU=3--
