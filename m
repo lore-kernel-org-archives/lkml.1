@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYICNle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYICNnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYICNle (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 09:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbYICNlQ
+	id S1754647AbYICNnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 09:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYICNnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 09:41:16 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60083 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754676AbYICNlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 09:41:15 -0400
-Date: Wed, 3 Sep 2008 15:41:05 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, paulus@samba.org,
-       michael@ellerman.id.au, jean-pierre.dion@bull.net,
-       gilles.carry@ext.bull.net, tinytim@us.ibm.com, tglx@linutronix.de,
-       rostedt@goodmis.org, dwalker@mvista.com
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
- lockless
-Message-ID: <20080903154105.7dff49db@bull.net>
-In-Reply-To: <1219209781.21386.25.camel@pasglop>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	<1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-	<1219209781.21386.25.camel@pasglop>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Sep 2008 09:43:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46485 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751686AbYICNnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 09:43:04 -0400
+Message-ID: <48BE945E.4090106@garzik.org>
+Date: Wed, 03 Sep 2008 09:42:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: torvalds@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ahci: Fix long standing Marvell regressions
+References: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk>	<48BDCF09.7000603@garzik.org> <20080903142941.3f25d235@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080903142941.3f25d235@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 15:23:01 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Alan Cox wrote:
+> The actual fix for the moment is very simple. If the user has included
+> the pata_marvell driver let it drive the ports. If they've only selected
+> for SATA support give them the AHCI driver which will run the port a fraction
+> faster. Allow the user to control this decision via ahci.marvell_enable as
+> a module parameter so that distributions can ship 'it works' defaults and
+> smarter users (or config tools) can then flip it over it desired.
+> 
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> ---
+> 
+>  drivers/ata/Kconfig |    6 ++++--
+>  drivers/ata/ahci.c  |   19 +++++++++++++++++++
+>  2 files changed, 23 insertions(+), 2 deletions(-)
 
-> BTW. It would be good to try to turn the GFP_ATOMIC into GFP_KERNEL,
+[snip]
 
-  That would be nice indeed
+That's far more reasonable, and I'd be happy to queue that with your 
+full email text...
 
-> maybe using a semaphore instead of a lock to protect insertion vs.
-> initialisation.
+Unless you object, I'll roll this up with a couple other libata fixes 
+for 2.6.27-rc.
 
-  a semaphore? are you meaning a mutex? If not, I fail to understand what you're
-implying.
+	Jeff
 
-> The old scheme was fine because if the atomic allocation
-> failed, it could fallback to the linear search and try again on the next
-> interrupt. Not anymore.
 
-  Right, that's the problem with this new scheme and I'm still trying
-to find a way to handle memory allocation failures be it for GFP_ATOMIC or
-GFP_KERNEL.
-
-  I could not think of anything simple so far and I'm open for suggestions.
-
-  Thanks,
-
-  Sebastien.
 
