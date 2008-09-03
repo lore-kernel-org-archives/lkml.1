@@ -1,92 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYICQZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbYICQ0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbYICQZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 12:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYICQZZ
+	id S1753528AbYICQ0z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 12:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbYICQ0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 12:25:25 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:40618 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbYICQZZ (ORCPT
+	Wed, 3 Sep 2008 12:26:47 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:61956 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYICQ0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 12:25:25 -0400
-Date: Wed, 3 Sep 2008 17:25:02 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Tejun Heo <tj@kernel.org>
-cc: linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH #2.6.27-rc5] mmap: fix petty bug in anonymous shared mmap
- offset handling
-In-Reply-To: <48BE9AAB.9070303@kernel.org>
-Message-ID: <Pine.LNX.4.64.0809031713250.6250@blonde.site>
-References: <48BE9AAB.9070303@kernel.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Sep 2008 12:26:46 -0400
+Date: Wed, 3 Sep 2008 18:26:37 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg K-H <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [Patch 0/2] Driver core: device_register() and put_device()
+Message-ID: <20080903182637.50bec6fd@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008, Tejun Heo wrote:
+Hi Greg,
 
-> Anonymous mappings should ignore offset but shared anonymous mapping
-> forgot to clear it and makes the following legit test program trigger
-> SIGBUS.
-> 
->  #include <sys/mman.h>
->  #include <stdio.h>
->  #include <errno.h>
-> 
->  #define PAGE_SIZE	4096
-> 
->  int main(void)
->  {
-> 	 char *p;
-> 	 int i;
-> 
-> 	 p = mmap(NULL, 2 * PAGE_SIZE, PROT_READ|PROT_WRITE,
-> 		  MAP_SHARED|MAP_ANONYMOUS, -1, PAGE_SIZE);
-> 	 if (p == MAP_FAILED) {
-> 		 perror("mmap");
-> 		 return 1;
-> 	 }
-> 
-> 	 for (i = 0; i < 2; i++) {
-> 		 printf("page %d\n", i);
-> 		 p[i * 4096] = i;
-> 	 }
-> 	 return 0;
->  }
-> 
-> Fix it.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
+recently I stumbled over a bug in my code where I called kfree() on a
+device after device_register() had been called (instead of using
+put_device()). This seems to be a trap that is easily hit, so I added
+some clarifications to the docbook comments for the device registration
+functions. Looking further at the driver core code, I found that
+device_create_vargs() contains the same bug.
 
-Fair enough.  The current behaviour has (almost) never bothered us,
-so I'm uncertain if your test is legit, but I can't see any reason
-to object to the change.  Particularly since (just out of sight below
-the context of your patch) we force pgoff in the MAP_PRIVATE case.
+The patches are on top of the driver core quilt.
 
-Acked-by: Hugh Dickins <hugh@veritas.com>
-
-> ---
->  mm/mmap.c |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 339cf5c..e7a5a68 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1030,6 +1030,10 @@ unsigned long do_mmap_pgoff(struct file * file, unsigned long addr,
->  	} else {
->  		switch (flags & MAP_TYPE) {
->  		case MAP_SHARED:
-> +			/*
-> +			 * Ignore pgoff.
-> +			 */
-> +			pgoff = 0;
->  			vm_flags |= VM_SHARED | VM_MAYSHARE;
->  			break;
->  		case MAP_PRIVATE:
+[Patch 1/2] Driver core: Clarify device cleanup.
+[Patch 2/2] Driver core: Fix cleanup in device_create_vargs().
