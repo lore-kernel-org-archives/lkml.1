@@ -1,81 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYICQu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbYICQy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYICQu0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 12:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbYICQuP
+	id S1753144AbYICQy4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 12:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbYICQyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 12:50:15 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:55502 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752005AbYICQuO (ORCPT
+	Wed, 3 Sep 2008 12:54:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:52331 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751255AbYICQys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 12:50:14 -0400
-Date: Wed, 3 Sep 2008 18:50:11 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [MMC] Multiple cards on one host
-Message-ID: <20080903165011.GG4941@pengutronix.de>
-References: <20080903084343.GF4941@pengutronix.de> <20080903161102.004f6f9e@mjolnir.drzeus.cx>
+	Wed, 3 Sep 2008 12:54:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=g7LHdQ6/wiCGcKfg0lmeTzVh+r5GCcSPi21WPbJqTzukSfmkTDYwPqTtMP3P5gFLeV
+         /qWtAkjtF4Fzk0wAQYJKJCwYKgaksToTYq+luWuHNAt4JD291lJ9jPaNgu8QzUyZliHy
+         0kvoDbkceTUpgU1tSLYWHT6E5FduTXbOZdplM=
+Message-ID: <86802c440809030954s32ac76e3m3f6a17b89d0fc073@mail.gmail.com>
+Date: Wed, 3 Sep 2008 09:54:46 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [Bugme-new] [Bug 11490] New: Old mtrr bug comeback
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       ak@axet.ru
+In-Reply-To: <20080903091842.dc0982ee.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080903161102.004f6f9e@mjolnir.drzeus.cx>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
-	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 16:42:57 up 78 days, 17 min, 53 users,  load average: 0.07, 0.04,
-	0.07
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 10.1.1.3
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
+References: <bug-11490-10286@http.bugzilla.kernel.org/>
+	 <20080903091842.dc0982ee.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 04:11:02PM +0200, Pierre Ossman wrote:
-> On Wed, 3 Sep 2008 10:43:43 +0200
-> Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> 
-> > Hi,
-> > 
-> > I have a board (PXA based) which has two SD slots. It uses a gpio to
-> > switch between the slots. In times when the MMC subsystem implemented
-> > the bus topology our customer used this fact to connect the two slots on
-> > a single host (although it was never intended to work with SD cards, it
-> > seemed to work). Any idea how to implement this on recent kernels? I
-> > thought about registering two hosts in pxamci.c, but this seems quite
-> > hacky and I suppose I'll run into locking trouble.
-> > 
-> 
-> To be honest, I don't think you can sanely support it. The OMAP guys
-> have been playing with some kind of multiplexer in front of the
-> controller, but it just seems like a world of hurt to me.
+On Wed, Sep 3, 2008 at 9:18 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+>
+> On Wed,  3 Sep 2008 08:44:27 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=11490
+>>
+>>            Summary: Old mtrr bug comeback
+>>            Product: Memory Management
+>>            Version: 2.5
+>>      KernelVersion: v2.6.27-rc5
+>>           Platform: All
+>>         OS/Version: Linux
+>>               Tree: Mainline
+>>             Status: NEW
+>>           Severity: normal
+>>           Priority: P1
+>>          Component: MTTR
+>>         AssignedTo: akpm@osdl.org
+>>         ReportedBy: ak@axet.ru
+>>
+>>
+>> Latest working kernel version:v2.6.26.3
+>>
+>> Old mtrr bug comeback, when i boot my notebook with last kerenl they going to
+>> work really slow as turttle. to boot on normal speed i need use kernel param
+>> mem=1000M
+>>
+>> when i use 2.6.26.3 everyting going fine. as i remember that bug fixed in
+>> 2.6.26 stable release and was in 2.6.25 and earlier.
+>>
+>> probably you can find more details in bugzilla.redhat.com or
+>> bugzilla.mozilla.com i do no remember where is exactly i have been posted that
+>> old bug.
+>>
+>> here the point (warning on 2.6.26.3 kernel):
+>>
+>> WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 7MB of RAM.
+>> ------------[ cut here ]------------
+>> WARNING: at arch/x86/kernel/cpu/mtrr/main.c:706
+>> mtrr_trim_uncached_memory+0x103/0x168()
+>> Modules linked in:
+>> Pid: 0, comm: swapper Not tainted 2.6.26.3 #1
+>>  [<c06260e9>] ? printk+0xf/0x16
+>>  [<c0427749>] warn_on_slowpath+0x41/0x7b
+>>  [<c0628171>] ? _spin_unlock_irqrestore+0x10/0x14
+>>  [<c0628171>] ? _spin_unlock_irqrestore+0x10/0x14
+>>  [<c0427e4f>] ? release_console_sem+0x181/0x189
+>>  [<c04282d3>] ? vprintk+0x2e6/0x30b
+>>  [<c04282d3>] ? vprintk+0x2e6/0x30b
+>>  [<c040dbfd>] ? generic_get_mtrr+0x53/0x8a
+>>  [<c0756177>] mtrr_trim_uncached_memory+0x103/0x168
+>>  [<c075606c>] ? mtrr_bp_init+0x204/0x20c
+>>  [<c07539a9>] setup_arch+0x27b/0x6ce
+>>  [<c06260e9>] ? printk+0xf/0x16
+>>  [<c074d5c0>] start_kernel+0x64/0x2da
+>>  [<c074d008>] __init_begin+0x8/0xa
+>>  =======================
+>> ---[ end trace 4eaa2a86a8e2da22 ]---
+>> update e820 for mtrr
+>> modified physical RAM map:
+>>
+>
+> A post-2.6.26 regression.
+>
+> We have a couple of mtrr fixes pending:
+>
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/x86-delay-early-cpu-initialization-until-cpuid-is-done.patch
+>
+> http://userweb.kernel.org/~akpm/mmotm/broken-out/x86-move-mtrr-cpu-cap-setting-early-in-early_init_xxxx.patch
+>
+> but I don't know if they'll fix this regression?
+>
 
-That's what I was afraid of. Lets see what our customer says (I hope I
-won't find myself in this world of hurt)
+cpu?
 
-> 
-> Perhaps you can convert to using SPI for the second slot if the
-> customer really needs a design with two slots?
+dmesg  with debug and initcall_debug
 
-Might be an option.
+cat /proc/mtrr
 
-Thanks for your answer.
-
-Sascha
-
-
--- 
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+YH
