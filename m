@@ -1,100 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYICOUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbYICOU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYICOUO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 10:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754429AbYICOUB
+	id S1754888AbYICOU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 10:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYICOUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 10:20:01 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:45459 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754276AbYICOUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 10:20:00 -0400
-Date: Wed, 3 Sep 2008 09:18:41 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrey Mirkin <major@openvz.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-Message-ID: <20080903141841.GA13425@us.ibm.com>
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <48BE82F9.4020808@fr.ibm.com>
+	Wed, 3 Sep 2008 10:20:51 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:38992 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbYICOUu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 10:20:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dtAEYAAq5wHGQwdcZqgyA/0oRO8czi7CIjGMlb0/Jdg14IFu2rv/xcI6PQQY15xw+p
+         L7UeKsBoGo9HnSvYQ/0Vm9PIR4/4P33IHUTBojcJB5d0UdhPj1fvkM7c0SEtFNWzKJc4
+         AiepikrtqNndahunIb51esRYIgknoAMwsuRkI=
+Date: Wed, 3 Sep 2008 10:20:41 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Daniel Barkalow <barkalow@iabervon.org>, linux-kernel@vger.kernel.org,
+       Christopher Desjardins <cddesjardins@gmail.com>
+Subject: Re: Lenovo 3000 N100 i8042 problems
+Message-ID: <20080903101947.ZZRA012@mailhub.coreip.homeip.net>
+References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48BE82F9.4020808@fr.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Cedric Le Goater (clg@fr.ibm.com):
-> Andrey Mirkin wrote:
-> > This patchset introduces kernel based checkpointing/restart as it is
-> > implemented in OpenVZ project. This patchset has limited functionality and
-> > are able to checkpoint/restart only single process. Recently Oren Laaden
-> > sent another kernel based implementation of checkpoint/restart. The main
-> > differences between this patchset and Oren's patchset are:
-> > 
-> > * In this patchset checkpointing initiated not from the process
-> > (right now we do not have a container, only namespaces), Oren's patchset
-> > performs checkpointing from the process context.
-> > 
-> > * Restart in this patchset is initiated from process, which restarts a new
-> > process (in new namespaces) with saved state. Oren's patchset uses the same
-> > process from which restart was initiated and restore saved state over it.
-> > 
-> > * Checkpoint/restart functionality in this patchset is implemented as a kernel
-> > module
+On Wed, Sep 03, 2008 at 01:50:35PM +0200, Jiri Kosina wrote:
+> On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
 > 
-> why ? Do we really think that C/R implementations will be so different that
-> we will need C/R ops to support all of them ? I imagine that there could be 
-> different models :
+> > I guess we could use System's product name to differentiate between 
+> > Cristopher's and Daniel's boards. Although I must admit it is the very 
+> > first time when I see a box that behaves better with active mux. DOes 
+> > Vista use active mux nowadays? Because if it is not then I bet there is 
+> > (or shortly will be) a BIOS update fixing legacy mode on Daniel's box.
+> 
+> I guess so, yes.
+> 
+> On the other hand, this might also be viewed as regression (we made 
+> Daniel's hardware behave worse with recent kernel than it did before), so 
+> I think we still would like to have this fixed. What about the patch 
+> below, adding the match on System's product name, as you suggested? 
+> Thanks.
+> 
 
-At the mini-summit two reasons were brought up to make it a module:
+I agree. Daniel, could you please try the patch to make sure it
+restores the previous behavior for you and I will push it through.
 
-	1. So sysadmins worried about security implications can
-	completely unload the module
+Thanks!
 
-	2. So developers can unload and reload the module while
-	testing.
-
-> 	1. brute force : dump it all and kill
-> 	2. incremental
-> 	3. live migration 
-> 	...
-
-Actually I don't think we expected to use different implementations for
-those.
-
-> But I see all of them really tied to the kernel internals.
-> 
-> The first issues I see with this direction are some EXPORT_SYMBOL() that would 
-> be useless without a module.
->
-> > As checkpointing is initiated not from the process which state should be saved
-> > we should freeze a process before saving its state. Right now Container Freezer
-> > from Matt Helsley can be used for this.
-> 
-> OK that's integrated and Daniel's tools :
-> 
-> http://lxc.cvs.sourceforge.net/lxc/
-> 
-> one more reason to work on integration :)
-> 
-> C. 
-> 
-> 
-> > This patchset introduce only a concept how kernel based checkpointing/restart
-> > can be implemented and are able to checkpoint/restart only a single process
-> > with simple VMAs. 
-> > 
-> > I've tried to split my patchset in small patches to make review more easier.
-> > _______________________________________________
-> > Containers mailing list
-> > Containers@lists.linux-foundation.org
-> > https://lists.linux-foundation.org/mailman/listinfo/containers
-> > 
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+Dmitry
