@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbYICRuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbYICRul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbYICRuR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbYICRt7
+	id S1758988AbYICRul (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbYICRuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:49:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58439 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:50:22 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58514 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753521AbYICRt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:49:58 -0400
-Date: Wed, 3 Sep 2008 10:32:49 -0700
+	id S1758912AbYICRuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:50:20 -0400
+Date: Wed, 3 Sep 2008 10:32:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Marcus Sundberg <marcus@ingate.com>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Edward Hsu <edward_hsu@realtek.com.tw>
-Subject: [patch 04/16] r8169: balance pci_map / pci_unmap pair
-Message-ID: <20080903173249.GE10429@suse.de>
+       alan@lxorguk.ukuu.org.uk, linux-nfs@vger.kernel.org,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       David Richter <richterd@citi.umich.edu>
+Subject: [patch 05/16] nfsd: fix buffer overrun decoding NFSv4 acl
+Message-ID: <20080903173252.GF10429@suse.de>
 References: <20080903172849.927077124@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="r8169-balance-pci_map-pci_unmap-pair.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="nfsd-fix-buffer-overrun-decoding-nfsv4-acl.patch"
 In-Reply-To: <20080903173218.GA10429@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,37 +40,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Francois Romieu <romieu@fr.zoreil.com>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-commit a866bbf6aacf95f849810079442a20be118ce905 upstream
+commit 91b80969ba466ba4b915a4a1d03add8c297add3f upstream
 
-The leak hurts with swiotlb and jumbo frames.
+The array we kmalloc() here is not large enough.
 
-Fix http://bugzilla.kernel.org/show_bug.cgi?id=9468.
+Thanks to Johann Dahm and David Richter for bug report and testing.
 
-Heavily hinted by Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>.
-
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
-Tested-by: Alistair John Strachan <alistair@devzero.co.uk>
-Tested-by: Timothy J Fontaine <tjfontaine@atxconsulting.com>
-Cc: Edward Hsu <edward_hsu@realtek.com.tw>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Cc: David Richter <richterd@citi.umich.edu>
+Tested-by: Johann Dahm <jdahm@umich.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/r8169.c |    2 +-
+ fs/nfsd/nfs4acl.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -2822,7 +2822,7 @@ static int rtl8169_rx_interrupt(struct n
- 					pkt_size, PCI_DMA_FROMDEVICE);
- 				rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
- 			} else {
--				pci_unmap_single(pdev, addr, pkt_size,
-+				pci_unmap_single(pdev, addr, tp->rx_buf_sz,
- 						 PCI_DMA_FROMDEVICE);
- 				tp->Rx_skbuff[entry] = NULL;
- 			}
+--- a/fs/nfsd/nfs4acl.c
++++ b/fs/nfsd/nfs4acl.c
+@@ -443,7 +443,7 @@ init_state(struct posix_acl_state *state
+ 	 * enough space for either:
+ 	 */
+ 	alloc = sizeof(struct posix_ace_state_array)
+-		+ cnt*sizeof(struct posix_ace_state);
++		+ cnt*sizeof(struct posix_user_ace_state);
+ 	state->users = kzalloc(alloc, GFP_KERNEL);
+ 	if (!state->users)
+ 		return -ENOMEM;
 
 -- 
