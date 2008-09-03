@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYICNTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbYICN0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYICNTg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 09:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYICNT1
+	id S1754997AbYICN0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 09:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYICN0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 09:19:27 -0400
-Received: from h155.mvista.com ([63.81.120.155]:23457 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751687AbYICNT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 09:19:26 -0400
-Message-ID: <48BE8EFD.70103@ru.mvista.com>
-Date: Wed, 03 Sep 2008 17:19:57 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Wed, 3 Sep 2008 09:26:18 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:30394 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024AbYICN0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 09:26:17 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [Devel] Re: [RFC v2][PATCH 4/9] Memory management - dump state
+Date: Wed, 3 Sep 2008 17:29:11 +0400
+User-Agent: KMail/1.8.2
+Cc: devel@openvz.org, Oren Laadan <orenl@cs.columbia.edu>,
+       containers@lists.linux-foundation.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org, jeremy@goop.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <200809031543.24001.amirkin@parallels.com> <48BE7FDF.3080202@fr.ibm.com>
+In-Reply-To: <48BE7FDF.3080202@fr.ibm.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/18] ide: add ->read_sff_dma_status method
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080620213323.13202.71450.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809031729.14548.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Wednesday 03 September 2008 16:15 Cedric Le Goater wrote:
+> Andrey Mirkin wrote:
+> > On Sunday 31 August 2008 21:34 Cedric Le Goater wrote:
+> >> Oren Laadan wrote:
+> >>> Dave, Serge:
+> >>>
+> >>> I'm currently away so I must keep this short. I think we have so far
+> >>> more discussion than an actual problem. I'm happy to coordinate with
+> >>> every interested party to eventually see this work go into main stream.
+> >>
+> >> thanks. We do need a moderator and federator.
+> >>
+> >>> My only concerns are twofold: first, to get more feedback I believe we
+> >>> need to get the code a bit more usable; including FDs is an excellent
+> >>> way to actually do that. That will add significant value to the patch.
+> >>
+> >> hmm, yes and no.
+> >>
+> >> fd's are a must have but I would be more interested to see an external
+> >> checkpoint/restart and signal support first. why ? because it would be
+> >> already usable for most computational programs in HPC, like this stupid
+> >> one :
+> >>
+> >> 	https://www.ccs.uky.edu/~bmadhu/pi/pi1.c
+> >>
+> >> signals are required because it's how 'load' and/or 'system' managers
+> >> interact with the jobs they spawn. external checkpoint/restart for the
+> >> same reason.
+> >
+> > I'm sorry for being out of discussion for so long time.
+> > I've just sent a patchset with external checkpoint/restart as it is
+> > implemented in OpenVZ.
+> > External checkpoint/restart also is very usefull if we will have
+> > container's infrastructure in mainstream.
+> > It won't be very hard to add support for signals in my patchset. I'll
+> > wait for some time for comments and will add support for signals in next
+> > version.
+>
+> OK.
+>
+> Then, we should be able to have a simple C/R framework (user and kernel) if
+> we integrate your patchset or Oren's with Daniel's user tools :
+>
+> 	http://lxc.cvs.sourceforge.net/lxc/
+>
+> I was just starting to work on Oren's patchset when you sent yours :)
 
-> Add ->read_sff_dma_status method for reading DMA Status register
-> and use it instead of ->INB.
+I will take a look on Daniel's user tools.
 
-> While at it:
-
-> * Use inb() directly in ns87415.c::ns87415_dma_end().
-
-> There should be no functional changes caused by this patch.
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-> Index: b/drivers/ide/ide-iops.c
-> ===================================================================
-> --- a/drivers/ide/ide-iops.c
-> +++ b/drivers/ide/ide-iops.c
-> @@ -103,6 +103,14 @@ void SELECT_MASK(ide_drive_t *drive, int
->  		port_ops->maskproc(drive, mask);
->  }
->  
-> +static u8 ide_read_sff_dma_status(ide_hwif_t *hwif)
-> +{
-> +	if (hwif->host_flags & IDE_HFLAG_MMIO)
-> +		return readb((void __iomem *)hwif->dma_status);
-> +	else
-> +		return inb(hwif->dma_status);
-> +}
-> +
-
-    It's probably too late to object now (and I've been busy before) but I 
-don't understand how reading DMA status ended up here ISO ide-dma.c...
-
->  static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
->  {
->  	ide_hwif_t *hwif = drive->hwif;
-> @@ -323,6 +331,8 @@ static void ata_output_data(ide_drive_t 
->  
->  void default_hwif_transport(ide_hwif_t *hwif)
->  {
-> +	hwif->read_sff_dma_status = ide_read_sff_dma_status;
-> +
->  	hwif->tf_load	  = ide_tf_load;
->  	hwif->tf_read	  = ide_tf_read;
-
-    I also didn't understand the motivation behind putting this method 
-together with the transport operations... IMO, DMA programming interface 
-hardly has anything to do with transporting the data over IDE bus.
-
-MBR, Sergei
+Thanks,
+Andrey
