@@ -1,149 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbYIDAJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYIDAKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163AbYIDAJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 20:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYIDAJO
+	id S1755252AbYIDAKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 20:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYIDAJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 20:09:14 -0400
-Received: from mga01.intel.com ([192.55.52.88]:48995 "EHLO mga01.intel.com"
+	Wed, 3 Sep 2008 20:09:16 -0400
+Received: from mga03.intel.com ([143.182.124.21]:34249 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752024AbYIDAJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752114AbYIDAJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Sep 2008 20:09:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="376477010"
-Message-Id: <20080904000237.895621000@linux-os.sc.intel.com>
-References: <20080904000237.746216000@linux-os.sc.intel.com>
+   d="scan'208";a="41316117"
+Message-Id: <20080904000237.746216000@linux-os.sc.intel.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Sep 2008 16:58:32 -0700
+Date: Wed, 03 Sep 2008 16:58:31 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 2/5] dmar: fix using early fixmap mapping for DMAR table parsing
-Content-Disposition: inline; filename=dmar_fix_fixmap_mapping.patch
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [patch 1/5] x2apic: fix reserved APIC register accesses in print_local_APIC()
+Content-Disposition: inline; filename=fix_reserved_apic_reg_access.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: dmar: fix using early fixmap mapping for DMAR table parsing
+Subject: x2apic: fix reserved APIC register accesses in print_local_APIC()
 
-Very early detection of the DMAR tables will setup fixmap mapping. For
-parsing these tables later (while enabling dma and/or interrupt remapping),
-early fixmap mapping shouldn't be used. Fix it by calling table detection
-routines again, which will call generic apci_get_table() for setting up
-the correct mapping.
+APIC_ARBPRI is a reserved register for XAPIC and beyond.
+APIC_RRR is a reserved register except for 82489DX, APIC for Pentium processors.
+APIC_EOI is a write only register.
+APIC_DFR is reserved in x2apic mode.
+
+Access to these registers in x2apic will result in #GP fault. Fix these
+apic register accesses.
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Maciej W. Rozycki <macro@linux-mips.org>
 ---
 
-Index: tip/drivers/pci/dmar.c
+Index: tip/arch/x86/kernel/io_apic.c
 ===================================================================
---- tip.orig/drivers/pci/dmar.c	2008-09-02 16:04:04.000000000 -0700
-+++ tip/drivers/pci/dmar.c	2008-09-02 16:41:31.000000000 -0700
-@@ -289,6 +289,24 @@
- 	}
- }
+--- tip.orig/arch/x86/kernel/io_apic.c	2008-09-03 14:02:56.000000000 -0700
++++ tip/arch/x86/kernel/io_apic.c	2008-09-03 14:51:24.000000000 -0700
+@@ -1751,21 +1751,30 @@
+ 	printk(KERN_DEBUG "... APIC TASKPRI: %08x (%02x)\n", v, v & APIC_TPRI_MASK);
  
-+/**
-+ * dmar_table_detect - checks to see if the platform supports DMAR devices
-+ */
-+static int __init dmar_table_detect(void)
-+{
-+	acpi_status status = AE_OK;
-+
-+	/* if we could find DMAR table, then there are DMAR devices */
-+	status = acpi_get_table(ACPI_SIG_DMAR, 0,
-+				(struct acpi_table_header **)&dmar_tbl);
-+
-+	if (ACPI_SUCCESS(status) && !dmar_tbl) {
-+		printk (KERN_WARNING PREFIX "Unable to map DMAR\n");
-+		status = AE_NOT_FOUND;
+ 	if (APIC_INTEGRATED(ver)) {                     /* !82489DX */
+-		v = apic_read(APIC_ARBPRI);
+-		printk(KERN_DEBUG "... APIC ARBPRI: %08x (%02x)\n", v,
+-			v & APIC_ARBPRI_MASK);
++		if (!APIC_XAPIC(ver)) {
++			v = apic_read(APIC_ARBPRI);
++			printk(KERN_DEBUG "... APIC ARBPRI: %08x (%02x)\n", v,
++			       v & APIC_ARBPRI_MASK);
++		}
+ 		v = apic_read(APIC_PROCPRI);
+ 		printk(KERN_DEBUG "... APIC PROCPRI: %08x\n", v);
+ 	}
+ 
+-	v = apic_read(APIC_EOI);
+-	printk(KERN_DEBUG "... APIC EOI: %08x\n", v);
+-	v = apic_read(APIC_RRR);
+-	printk(KERN_DEBUG "... APIC RRR: %08x\n", v);
++	/*
++	 * Remote read supported only in the 82489DX and local APIC for
++	 * Pentium processors.
++	 */
++	if (!APIC_INTEGRATED(ver) || maxlvt == 3) {
++		v = apic_read(APIC_RRR);
++		printk(KERN_DEBUG "... APIC RRR: %08x\n", v);
 +	}
 +
-+	return (ACPI_SUCCESS(status) ? 1 : 0);
-+}
+ 	v = apic_read(APIC_LDR);
+ 	printk(KERN_DEBUG "... APIC LDR: %08x\n", v);
+-	v = apic_read(APIC_DFR);
+-	printk(KERN_DEBUG "... APIC DFR: %08x\n", v);
++	if (!x2apic_enabled()) {
++		v = apic_read(APIC_DFR);
++		printk(KERN_DEBUG "... APIC DFR: %08x\n", v);
++	}
+ 	v = apic_read(APIC_SPIV);
+ 	printk(KERN_DEBUG "... APIC SPIV: %08x\n", v);
  
- /**
-  * parse_dmar_table - parses the DMA reporting table
-@@ -300,6 +318,12 @@
- 	struct acpi_dmar_header *entry_header;
- 	int ret = 0;
- 
-+	/*
-+	 * Do it again, earlier dmar_tbl mapping could be mapped with
-+	 * fixed map.
-+	 */
-+	dmar_table_detect();
-+
- 	dmar = (struct acpi_table_dmar *)dmar_tbl;
- 	if (!dmar)
- 		return -ENODEV;
-@@ -430,30 +454,11 @@
- 	return 0;
- }
- 
--/**
-- * early_dmar_detect - checks to see if the platform supports DMAR devices
-- */
--int __init early_dmar_detect(void)
--{
--	acpi_status status = AE_OK;
--
--	/* if we could find DMAR table, then there are DMAR devices */
--	status = acpi_get_table(ACPI_SIG_DMAR, 0,
--				(struct acpi_table_header **)&dmar_tbl);
--
--	if (ACPI_SUCCESS(status) && !dmar_tbl) {
--		printk (KERN_WARNING PREFIX "Unable to map DMAR\n");
--		status = AE_NOT_FOUND;
--	}
--
--	return (ACPI_SUCCESS(status) ? 1 : 0);
--}
--
- void __init detect_intel_iommu(void)
- {
- 	int ret;
- 
--	ret = early_dmar_detect();
-+	ret = dmar_table_detect();
- 
- #ifdef CONFIG_DMAR
- 	{
-@@ -479,14 +484,16 @@
- 			       " x2apic support\n");
- 
- 			dmar_disabled = 1;
--			return;
-+			goto end;
- 		}
- 
- 		if (ret && !no_iommu && !iommu_detected && !swiotlb &&
- 		    !dmar_disabled)
- 			iommu_detected = 1;
- 	}
-+end:
- #endif
-+	dmar_tbl = NULL;
- }
- 
- 
-Index: tip/include/linux/dmar.h
+Index: tip/include/asm-x86/apic.h
 ===================================================================
---- tip.orig/include/linux/dmar.h	2008-09-02 16:04:04.000000000 -0700
-+++ tip/include/linux/dmar.h	2008-09-02 16:40:40.000000000 -0700
-@@ -45,7 +45,6 @@
- 	list_for_each_entry(drhd, &dmar_drhd_units, list)
+--- tip.orig/include/asm-x86/apic.h	2008-09-03 14:02:56.000000000 -0700
++++ tip/include/asm-x86/apic.h	2008-09-03 14:43:02.000000000 -0700
+@@ -98,6 +98,20 @@
+ extern void enable_x2apic(void);
+ extern void enable_IR_x2apic(void);
+ extern void x2apic_icr_write(u32 low, u32 id);
++static inline int x2apic_enabled(void)
++{
++	int msr, msr2;
++
++	if (!cpu_has_x2apic)
++		return 0;
++
++	rdmsr(MSR_IA32_APICBASE, msr, msr2);
++	if (msr & X2APIC_ENABLE)
++		return 1;
++	return 0;
++}
++#else
++#define x2apic_enabled()	0
+ #endif
  
- extern int dmar_table_init(void);
--extern int early_dmar_detect(void);
- extern int dmar_dev_scope_init(void);
- 
- /* Intel IOMMU detection */
+ struct apic_ops {
 
 -- 
 
