@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbYICQAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbYICQMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbYICQAB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 12:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYICP7w
+	id S1752894AbYICQMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 12:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbYICQMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 11:59:52 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48080 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092AbYICP7v (ORCPT
+	Wed, 3 Sep 2008 12:12:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59576 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbYICQMi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 11:59:51 -0400
-Date: Wed, 3 Sep 2008 08:57:06 -0700
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: linux-usb@vger.kernel.org, bgmerrell@novell.com,
-       hirofuchi@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       usbip-devel@lists.sourceforge.net
-Subject: Re: USBIP protocol
-Message-ID: <20080903155706.GA26052@kroah.com>
-References: <20080829140224.GC1968@parisc-linux.org> <20080829143017.GB18086@kroah.com> <20080829144354.GD1968@parisc-linux.org> <20080829145407.GB18423@kroah.com> <20080903042539.GB2772@parisc-linux.org>
+	Wed, 3 Sep 2008 12:12:38 -0400
+Message-ID: <48BEB759.4050503@zytor.com>
+Date: Wed, 03 Sep 2008 09:12:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080903042539.GB2772@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Tejun Heo <tj@kernel.org>
+CC: device@lanana.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: regarding major number of block extended devt
+References: <48BD30F9.6080108@kernel.org> <48BD3313.7090906@kernel.org> <48BD9F36.8000704@zytor.com> <48BE0EDB.20107@kernel.org>
+In-Reply-To: <48BE0EDB.20107@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 10:25:43PM -0600, Matthew Wilcox wrote:
-> On Fri, Aug 29, 2008 at 07:54:07AM -0700, Greg KH wrote:
-> > Fair enough, patches welcome :)
+Tejun Heo wrote:
+>>>
+>> It would seem better to simply use the high minors on the
+>> already-existing ide and scsi majors?
 > 
-> Here's a document for discussion.  No code yet, though I'm quite willing
-> to modify the current usbip code to follow this new protocol.  Just a
-> matter of time.
+> I thought it would be better to break from those majors to make it clear
+> that the traditional minor allocation scheme isn't followed anymore.
+> Programs which expect certain majors are likely to need update for how
+> it deals with minors, so....
 > 
-> http://www.kernel.org/pub/linux/kernel/people/willy/usbip/usbip-protocol-draft-1
 
-You should post this in the message itself, I think it is shorter than
-your other comments :)
+But just allocating a big bucket of device numbers and throw it all into 
+a pot semirandomly is likely to cause more damage, not less.
 
-> To save some time for reviewers, here's a list of decisions I took while
-> working on the document.  I appreciate that some of the decisions I made
-> were not necessarily those another designer might have made, so I ask
-> that any comments along the lines of "I would have done it differently"
-> include a really good reason.
-
-I agree with Alan's very good comments, and have one more:
-
-> I have no experience with isosynchronous transactions, nor interrupt
-> transactions, so I decline to define them at this moment.
-
-Both of those are necessary, so you are going to have to define them
-(mice/keyboards use interrupt and audio uses iso, so it is very common,
-and easy to test for.)
-
-> I've given up on the big/little endian thing.  Network protocols are
-> traditionally BE, USB is LE and it can encapsulate SCSI which is BE again.
-
-What do you mean, you are just going to stick with BE?
-
-thanks,
-
-greg k-h
+	-hpa
