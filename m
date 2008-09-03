@@ -1,130 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751575AbYICMCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYICMDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751575AbYICMCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 08:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbYICMCE
+	id S1754855AbYICMDR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 08:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYICMDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 08:02:04 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:49640 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751568AbYICMCB (ORCPT
+	Wed, 3 Sep 2008 08:03:04 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:34033 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751575AbYICMDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 08:02:01 -0400
-Message-ID: <48BE7CB0.7090201@euromail.se>
-Date: Wed, 03 Sep 2008 14:01:52 +0200
+	Wed, 3 Sep 2008 08:03:03 -0400
+Message-ID: <48BE7CEE.1030000@euromail.se>
+Date: Wed, 03 Sep 2008 14:02:54 +0200
 From: Henrik Rydberg <rydberg@euromail.se>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
 To: akpm@osdl.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
        linux-input@vger.kernel.org
 CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] bcm5974-0.63: Finger counting improved
+Subject: [PATCH 2/2] bcm5974-0.63: BTN_TOUCH event added for mousedev
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Originating-IP: 83.248.39.57
-X-Scan-Result: No virus found in message 1Kar3e-00051X-9N.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Kar3e-00051X-9N f9bfad5a17fceded6cbad49ae17e680a
+X-Scan-Result: No virus found in message 1Kar4d-0001MM-6B.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1Kar4d-0001MM-6B 96717e7287da49498df7889a4921016c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A finger counting method based on pressure information from all fingers is introduced. Together
-with a pressure hysteresis window, this yields a more stable counting of the number of fingers
-on the trackpad.
+The mousedev driver requires the use of BTN_TOUCH events to process
+ABS_X and ABS_Y events properly, which is what is needed for the
+bcm5974-based apple computers to have a functional pointer out-of-the-box.
+This patch adds the BTN_TOUCH events to bcm5974.
 
 Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 ---
- drivers/input/mouse/bcm5974.c |   54 ++++++++++++++++++++++++++++-------------
- 1 files changed, 37 insertions(+), 17 deletions(-)
+ drivers/input/mouse/bcm5974.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
-index ae78bb8..acc401d 100644
+index acc401d..5132775 100644
 --- a/drivers/input/mouse/bcm5974.c
 +++ b/drivers/input/mouse/bcm5974.c
-@@ -159,6 +159,7 @@ struct bcm5974 {
- 	struct bt_data *bt_data;	/* button transferred data */
- 	struct urb *tp_urb;		/* trackpad usb request block */
- 	struct tp_data *tp_data;	/* trackpad transferred data */
-+	int fingers;			/* number of fingers on trackpad */
- };
+@@ -253,6 +253,7 @@ static void setup_events_to_report(struct input_dev *input_dev,
+ 				0, cfg->y.dim, cfg->y.fuzz, 0);
 
- /* logical dimensions */
-@@ -172,6 +173,10 @@ struct bcm5974 {
- #define SN_WIDTH	100		/* width signal-to-noise ratio */
- #define SN_COORD	250		/* coordinate signal-to-noise ratio */
+ 	__set_bit(EV_KEY, input_dev->evbit);
++	__set_bit(BTN_TOUCH, input_dev->keybit);
+ 	__set_bit(BTN_TOOL_FINGER, input_dev->keybit);
+ 	__set_bit(BTN_TOOL_DOUBLETAP, input_dev->keybit);
+ 	__set_bit(BTN_TOOL_TRIPLETAP, input_dev->keybit);
+@@ -303,6 +304,7 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 	if (dev->fingers > nmax)
+ 		dev->fingers = nmax;
 
-+/* pressure thresholds */
-+#define PRESSURE_LOW	(2 * DIM_PRESSURE / SN_PRESSURE)
-+#define PRESSURE_HIGH	(3 * PRESSURE_LOW)
-+
- /* device constants */
- static const struct bcm5974_config bcm5974_config_table[] = {
- 	{
-@@ -273,32 +278,47 @@ static int report_tp_state(struct bcm5974 *dev, int size)
- 	const struct tp_finger *f = dev->tp_data->finger;
- 	struct input_dev *input = dev->input;
- 	const int fingers = (size - 26) / 28;
--	int p = 0, w, x, y, n = 0;
-+	int nmin = 0, nmax = 0, p = 0, w = 0, x = 0, y = 0;
-
- 	if (size < 26 || (size - 26) % 28 != 0)
- 		return -EIO;
-
--	if (fingers) {
--		p = raw2int(f->force_major);
--		w = raw2int(f->size_major);
--		x = raw2int(f->abs_x);
--		y = raw2int(f->abs_y);
--		n = p > 0 ? fingers : 0;
--
--		dprintk(9,
--			"bcm5974: p: %+05d w: %+05d x: %+05d y: %+05d n: %d\n",
--			p, w, x, y, n);
-+	for (; f != dev->tp_data->finger + fingers; f++) {
-+		int ptest = raw2int(f->force_major);
-+		if (ptest > PRESSURE_LOW) {
-+			if (!nmax++) {
-+				p = ptest;
-+				w = raw2int(f->size_major);
-+				x = raw2int(f->abs_x) - c->x.devmin;
-+				y = c->y.devmax - raw2int(f->abs_y);
-+			}
-+		}
-+		if (ptest > PRESSURE_HIGH)
-+			nmin++;
-
--		input_report_abs(input, ABS_TOOL_WIDTH, int2bound(&c->w, w));
--		input_report_abs(input, ABS_X, int2bound(&c->x, x - c->x.devmin));
--		input_report_abs(input, ABS_Y, int2bound(&c->y, c->y.devmax - y));
- 	}
-
-+	if (dev->fingers < nmin)
-+		dev->fingers = nmin;
-+	if (dev->fingers > nmax)
-+		dev->fingers = nmax;
-+
-+	input_report_key(input, BTN_TOOL_FINGER, dev->fingers == 1);
-+	input_report_key(input, BTN_TOOL_DOUBLETAP, dev->fingers == 2);
-+	input_report_key(input, BTN_TOOL_TRIPLETAP, dev->fingers > 2);
-+
- 	input_report_abs(input, ABS_PRESSURE, int2bound(&c->p, p));
-+	input_report_abs(input, ABS_TOOL_WIDTH, int2bound(&c->w, w));
-+
-+	if (nmax > 0) {
-+		dprintk(9,
-+			"bcm5974: p: %+05d w: %+05d x: %+05d y: %+05d "
-+			"nmin: %d nmax: %d\n",
-+			p, w, x, y, nmin, nmax);
-
--	input_report_key(input, BTN_TOOL_FINGER, n == 1);
--	input_report_key(input, BTN_TOOL_DOUBLETAP, n == 2);
--	input_report_key(input, BTN_TOOL_TRIPLETAP, n > 2);
-+		input_report_abs(input, ABS_X, int2bound(&c->x, x));
-+		input_report_abs(input, ABS_Y, int2bound(&c->y, y));
-+	}
-
- 	input_sync(input);
-
++	input_report_key(input, BTN_TOUCH, dev->fingers > 0);
+ 	input_report_key(input, BTN_TOOL_FINGER, dev->fingers == 1);
+ 	input_report_key(input, BTN_TOOL_DOUBLETAP, dev->fingers == 2);
+ 	input_report_key(input, BTN_TOOL_TRIPLETAP, dev->fingers > 2);
 -- 
 1.5.4.3
 
