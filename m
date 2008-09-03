@@ -1,62 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYICSne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYICSoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYICSne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 14:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397AbYICSnY
+	id S1755015AbYICSoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 14:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYICSoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 14:43:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49575 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905AbYICSnX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 14:43:23 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
-       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com
-Subject: Re: [PATCH 5/6] Added flush_disk to factor out common buffer cache flushing code.
-References: <20080829231254.25065.66052.stgit@bluto.andrew>
-	<20080829231320.25065.44013.stgit@bluto.andrew>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 03 Sep 2008 14:19:43 -0400
-In-Reply-To: <20080829231320.25065.44013.stgit@bluto.andrew> (Andrew
-	Patterson's message of "Fri, 29 Aug 2008 17:13:20 -0600")
-Message-ID: <x4963pd9jnk.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 3 Sep 2008 14:44:08 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:54494 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753397AbYICSoH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 14:44:07 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/4] pull out the page pre-release and sanity check logic for reuse
+Date: Wed,  3 Sep 2008 19:44:09 +0100
+Message-Id: <1220467452-15794-2-git-send-email-apw@shadowen.org>
+X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <1220467452-15794-1-git-send-email-apw@shadowen.org>
+References: <1220467452-15794-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Patterson <andrew.patterson@hp.com> writes:
+When we are about to release a page we perform a number of actions
+on that page.  We clear down any anonymous mappings, confirm that
+the page is safe to release, check for freeing locks, before mapping
+the page should that be required.  Pull this processing out into a
+helper function for reuse in a later patch.
 
-> Added flush_disk to factor out common buffer cache flushing code.
->
-> We need to be able to flush the buffer cache for for more than
-> just when a disk is changed, so we factor out common cache flush code
-> in check_disk_change() to an internal flush_disk() routine.  This
-> routine will then be used for both disk changes and disk resizes (in a
-> later patch).
->
-> Include the disk name in the text indicating that there are busy
-> inodes on the device and increase the KERN severity of the message.
->
-> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+Note that we do not convert the similar cleardown in free_hot_cold_page()
+as the optimiser is unable to squash the loops during the inline.
 
-> +static void flush_disk(struct block_device *bdev)
-> +{
-> +	if (__invalidate_device(bdev)) {
-> +		char name[BDEVNAME_SIZE] = "";
-> +
-> +		if (bdev->bd_disk)
-> +			disk_name(bdev->bd_disk, 0, name);
-> +		printk(KERN_WARNING "VFS: busy inodes on changed media %s\n",
-> +		       name);
-> +	}
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ mm/page_alloc.c |   43 ++++++++++++++++++++++++++++++-------------
+ 1 files changed, 30 insertions(+), 13 deletions(-)
 
-This message will scare folks growing their devices online.  Can you
-think of some better verbiage for this?
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index f52fcf1..b2a2c2b 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -489,6 +489,35 @@ static inline int free_pages_check(struct page *page)
+ }
+ 
+ /*
++ * Prepare this page for release to the buddy.  Sanity check the page.
++ * Returns 1 if the page is safe to free.
++ */
++static inline int free_page_prepare(struct page *page, int order)
++{
++	int i;
++	int reserved = 0;
++
++	if (PageAnon(page))
++		page->mapping = NULL;
++
++	for (i = 0 ; i < (1 << order) ; ++i)
++		reserved += free_pages_check(page + i);
++	if (reserved)
++		return 0;
++
++	if (!PageHighMem(page)) {
++		debug_check_no_locks_freed(page_address(page),
++							PAGE_SIZE << order);
++		debug_check_no_obj_freed(page_address(page),
++					   PAGE_SIZE << order);
++	}
++	arch_free_page(page, order);
++	kernel_map_pages(page, 1 << order, 0);
++
++	return 1;
++}
++
++/*
+  * Frees a list of pages. 
+  * Assumes all pages on list are in same zone, and of same order.
+  * count is the number of pages to free.
+@@ -529,22 +558,10 @@ static void free_one_page(struct zone *zone, struct page *page, int order)
+ static void __free_pages_ok(struct page *page, unsigned int order)
+ {
+ 	unsigned long flags;
+-	int i;
+-	int reserved = 0;
+ 
+-	for (i = 0 ; i < (1 << order) ; ++i)
+-		reserved += free_pages_check(page + i);
+-	if (reserved)
++	if (!free_page_prepare(page, order))
+ 		return;
+ 
+-	if (!PageHighMem(page)) {
+-		debug_check_no_locks_freed(page_address(page),PAGE_SIZE<<order);
+-		debug_check_no_obj_freed(page_address(page),
+-					   PAGE_SIZE << order);
+-	}
+-	arch_free_page(page, order);
+-	kernel_map_pages(page, 1 << order, 0);
+-
+ 	local_irq_save(flags);
+ 	__count_vm_events(PGFREE, 1 << order);
+ 	free_one_page(page_zone(page), page, order);
+-- 
+1.6.0.rc1.258.g80295
+
