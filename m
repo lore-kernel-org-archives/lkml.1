@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYICNnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYICNuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbYICNnQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 09:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYICNnG
+	id S1754509AbYICNuE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 09:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbYICNty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 09:43:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46485 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751686AbYICNnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 09:43:04 -0400
-Message-ID: <48BE945E.4090106@garzik.org>
-Date: Wed, 03 Sep 2008 09:42:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: torvalds@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ahci: Fix long standing Marvell regressions
-References: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk>	<48BDCF09.7000603@garzik.org> <20080903142941.3f25d235@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080903142941.3f25d235@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Wed, 3 Sep 2008 09:49:54 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:52222 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751764AbYICNtx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 09:49:53 -0400
+Date: Wed, 3 Sep 2008 15:49:51 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Andrey Mirkin <major@openvz.org>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
+Message-ID: <20080903134951.GQ14473@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1220439476-16465-1-git-send-email-major@openvz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-23037-1220449658-0001-2"
+Content-Disposition: inline
+In-Reply-To: <1220439476-16465-1-git-send-email-major@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> The actual fix for the moment is very simple. If the user has included
-> the pata_marvell driver let it drive the ports. If they've only selected
-> for SATA support give them the AHCI driver which will run the port a fraction
-> faster. Allow the user to control this decision via ahci.marvell_enable as
-> a module parameter so that distributions can ship 'it works' defaults and
-> smarter users (or config tools) can then flip it over it desired.
-> 
-> 
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> ---
-> 
->  drivers/ata/Kconfig |    6 ++++--
->  drivers/ata/ahci.c  |   19 +++++++++++++++++++
->  2 files changed, 23 insertions(+), 2 deletions(-)
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-[snip]
+--=_bohort-23037-1220449658-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's far more reasonable, and I'd be happy to queue that with your 
-full email text...
+On Wed, Sep 03, 2008 at 02:57:47PM +0400, Andrey Mirkin wrote:
+> This patchset introduces kernel based checkpointing/restart as it is
+> implemented in OpenVZ project. This patchset has limited functionality and
+> are able to checkpoint/restart only single process. Recently Oren Laaden
+> sent another kernel based implementation of checkpoint/restart. The main
+> differences between this patchset and Oren's patchset are:
+>=20
+> * In this patchset checkpointing initiated not from the process
+> (right now we do not have a container, only namespaces), Oren's patchset
+> performs checkpointing from the process context.
+>=20
+> * Restart in this patchset is initiated from process, which restarts a new
+> process (in new namespaces) with saved state. Oren's patchset uses the sa=
+me
+> process from which restart was initiated and restore saved state over it.
+>=20
+> * Checkpoint/restart functionality in this patchset is implemented as a k=
+ernel
+> module
+>=20
+>=20
+> As checkpointing is initiated not from the process which state should be =
+saved
+> we should freeze a process before saving its state. Right now Container F=
+reezer
+> from Matt Helsley can be used for this.
+>=20
+> This patchset introduce only a concept how kernel based checkpointing/res=
+tart
+> can be implemented and are able to checkpoint/restart only a single proce=
+ss
+> with simple VMAs.=20
+>=20
+> I've tried to split my patchset in small patches to make review more easi=
+er.
 
-Unless you object, I'll roll this up with a couple other libata fixes 
-for 2.6.27-rc.
+Thank you Andrey for having highlighted the differences with Oren's approac=
+h,
+and for having split this patchset. Few remarks in reply to the patches.
 
-	Jeff
+Louis
 
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
+--=_bohort-23037-1220449658-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIvpX/VKcRuvQ9Q1QRAqf2AJ0VtUg37q4dN4gcTOBJO7Owrq3oKACeLd9g
+kW6MglnaunEwEotimKewEwQ=
+=38Wz
+-----END PGP SIGNATURE-----
+
+--=_bohort-23037-1220449658-0001-2--
