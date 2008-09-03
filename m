@@ -1,232 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYICO1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbYICO1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYICO1g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 10:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbYICO11
+	id S1755037AbYICO1z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 10:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbYICO1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 10:27:27 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:51795 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754879AbYICO10 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 10:27:26 -0400
-Date: Wed, 3 Sep 2008 09:27:20 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrey Mirkin <major@openvz.org>
+	Wed, 3 Sep 2008 10:27:46 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:14936 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754884AbYICO1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 10:27:46 -0400
+From: Andrey Mirkin <major@openvz.org>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Subject: Re: [PATCH 3/9] Introduce context structure needed =?iso-8859-1?q?during=09checkpointing/restart?=
+Date: Wed, 3 Sep 2008 18:29:52 +0400
+User-Agent: KMail/1.8.2
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [PATCH 2/9] Make checkpoint/restart functionality modular
-Message-ID: <20080903142720.GC13425@us.ibm.com>
-References: <1220439476-16465-1-git-send-email-major@openvz.org> <1220439476-16465-2-git-send-email-major@openvz.org> <1220439476-16465-3-git-send-email-major@openvz.org>
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <1220439476-16465-4-git-send-email-major@openvz.org> <48BE9B74.7010600@fr.ibm.com>
+In-Reply-To: <48BE9B74.7010600@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1220439476-16465-3-git-send-email-major@openvz.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200809031829.53266.major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrey Mirkin (major@openvz.org):
-> A config option CONFIG_CHECKPOINT is introduced.
-> New structure cpt_operations is introduced to store pointers to
-> checkpoint/restart functions from module.
+On Wednesday 03 September 2008 18:13 Cedric Le Goater wrote:
+> > +void context_release(struct cpt_context *ctx)
+> > +{
+> > +	ctx->ctx_state = CPT_CTX_ERROR;
+> > +
+> > +	if (ctx->file)
+> > +		fput(ctx->file);
+> > +	kfree(ctx);
+> > +}
+> > +
+> > +static void context_put(struct cpt_context *ctx)
+> > +{
+> > +	if (!--ctx->refcount)
+> > +		context_release(ctx);
+> > +}
+> > +
+> >  static int checkpoint(pid_t pid, int fd, unsigned long flags)
+> >  {
+> > -	return -ENOSYS;
+> > +	struct file *file;
+> > +	struct cpt_context *ctx;
+> > +	int err;
+> > +
+> > +	err = -EBADF;
+> > +	file = fget(fd);
+> > +	if (!file)
+> > +		goto out;
+> > +
+> > +	err = -ENOMEM;
+> > +	ctx = context_alloc();
+> > +	if (!ctx)
+> > +		goto out_file;
+> > +
+> > +	ctx->file = file;
+> > +	ctx->ctx_state = CPT_CTX_DUMPING;
+> > +
+> > +	/* checkpoint */
+> > +	err = -ENOSYS;
+> > +
+> > +	context_put(ctx);
+> > +
+> > +out_file:
+> > +	fput(file);
+> > +out:
+> > +	return err;
+> >  }
+>
+> it looks like fput(file) is done twice in checkpoint() and
+> context_release() ?
 
-Thanks Andrey.  The structure of this patchset is very nice, and I'm
-finding it very easy to read, at least the first half.
+Oh, you are right. I'm sorry, I was in rush and sent an outdated version.
+Will resend correct patch shortly.
 
-The differences (in yours and Oren's) between checkpointing and
-restarting yourself or another task should probably not be important
-as people will want to be able to do both in the end, and I'm sure
-both patchsets can do both.  And you have things like your own
-printk helpers in patch 3 that, just as in Oren's set, will have to
-go away.  But I'm not yet able to see what the real differences are.
-
-Keeping on looking...
-
-> Signed-off-by: Andrey Mirkin <major@openvz.org>
-> ---
->  cpt/Kconfig    |    7 +++++++
->  cpt/Makefile   |    4 ++++
->  cpt/cpt.h      |   19 +++++++++++++++++++
->  cpt/sys.c      |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
->  cpt/sys_core.c |   29 +++++++++++++++++++++++++++--
->  init/Kconfig   |    2 ++
->  6 files changed, 107 insertions(+), 2 deletions(-)
->  create mode 100644 cpt/Kconfig
->  create mode 100644 cpt/cpt.h
->  create mode 100644 cpt/sys.c
-> 
-> diff --git a/cpt/Kconfig b/cpt/Kconfig
-> new file mode 100644
-> index 0000000..b9bc72d
-> --- /dev/null
-> +++ b/cpt/Kconfig
-> @@ -0,0 +1,7 @@
-> +config CHECKPOINT
-> +	tristate "Checkpoint & restart for containers"
-> +	depends on EXPERIMENTAL
-> +	default n
-> +	help
-> +	  This option adds module "cptrst", which allow to save a running
-> +	  container to a file and restart it later using this image file.
-> diff --git a/cpt/Makefile b/cpt/Makefile
-> index 2276fb1..bfe75d5 100644
-> --- a/cpt/Makefile
-> +++ b/cpt/Makefile
-> @@ -1 +1,5 @@
->  obj-y += sys_core.o
-> +
-> +obj-$(CONFIG_CHECKPOINT) += cptrst.o
-> +
-> +cptrst-objs := sys.o
-> diff --git a/cpt/cpt.h b/cpt/cpt.h
-> new file mode 100644
-> index 0000000..381a9bf
-> --- /dev/null
-> +++ b/cpt/cpt.h
-> @@ -0,0 +1,19 @@
-> +/*
-> + *  Copyright (C) 2008 Parallels, Inc.
-> + *
-> + *  Author: Andrey Mirkin <major@openvz.org>
-> + *
-> + *  This program is free software; you can redistribute it and/or
-> + *  modify it under the terms of the GNU General Public License as
-> + *  published by the Free Software Foundation, version 2 of the
-> + *  License.
-> + *
-> + */
-> +
-> +struct cpt_operations
-> +{
-> +	struct module * owner;
-> +	int (*checkpoint)(pid_t pid, int fd, unsigned long flags);
-> +	int (*restart)(int ctid, int fd, unsigned long flags);
-> +};
-> +extern struct cpt_operations cpt_ops;
-> diff --git a/cpt/sys.c b/cpt/sys.c
-> new file mode 100644
-> index 0000000..4051286
-> --- /dev/null
-> +++ b/cpt/sys.c
-> @@ -0,0 +1,48 @@
-> +/*
-> + *  Copyright (C) 2008 Parallels, Inc.
-> + *
-> + *  Author: Andrey Mirkin <major@openvz.org>
-> + *
-> + *  This program is free software; you can redistribute it and/or
-> + *  modify it under the terms of the GNU General Public License as
-> + *  published by the Free Software Foundation, version 2 of the
-> + *  License.
-> + *
-> + */
-> +
-> +#include <linux/sched.h>
-> +#include <linux/fs.h>
-> +#include <linux/file.h>
-> +#include <linux/notifier.h>
-> +#include <linux/module.h>
-> +
-> +#include "cpt.h"
-> +
-> +MODULE_LICENSE("GPL");
-> +
-> +static int checkpoint(pid_t pid, int fd, unsigned long flags)
-> +{
-> +	return -ENOSYS; 
-> +}
-> +
-> +static int restart(int ctid, int fd, unsigned long flags)
-> +{
-> +	return -ENOSYS; 
-> +}
-> +
-> +static int __init init_cptrst(void)
-> +{
-> +	cpt_ops.owner = THIS_MODULE;
-> +	cpt_ops.checkpoint = checkpoint;
-> +	cpt_ops.restart = restart;
-> +	return 0;
-> +}
-> +module_init(init_cptrst);
-> +
-> +static void __exit exit_cptrst(void)
-> +{
-> +	cpt_ops.checkpoint = NULL;
-> +	cpt_ops.restart = NULL;
-> +	cpt_ops.owner = NULL;
-> +}
-> +module_exit(exit_cptrst);
-> diff --git a/cpt/sys_core.c b/cpt/sys_core.c
-> index 1a97fb6..5dd1191 100644
-> --- a/cpt/sys_core.c
-> +++ b/cpt/sys_core.c
-> @@ -13,6 +13,13 @@
->  #include <linux/sched.h>
->  #include <linux/fs.h>
->  #include <linux/file.h>
-> +#include <linux/notifier.h>
-> +#include <linux/module.h>
-> +
-> +#include "cpt.h"
-> +
-> +struct cpt_operations cpt_ops = { NULL, NULL, NULL };
-> +EXPORT_SYMBOL(cpt_ops);
-> 
->  /**
->   * sys_checkpoint - checkpoint a container from outside
-> @@ -23,7 +30,16 @@
->   */
->  asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
->  {
-> -	return -ENOSYS;
-> +	int ret;
-> +
-> +	ret = -ENOSYS;
-> +
-> +	if (try_module_get(cpt_ops.owner)) {
-> +		if (cpt_ops.checkpoint)
-> +			ret = cpt_ops.checkpoint(pid, fd, flags);
-> +		module_put(cpt_ops.owner);
-> +	}
-> +	return ret;
->  }
-> 
->  /**
-> @@ -34,5 +50,14 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
->   */
->  asmlinkage long sys_restart(int ctid, int fd, unsigned long flags)
->  {
-> -	return -ENOSYS;
-> +	int ret;
-> +
-> +	ret = -ENOSYS;
-> +
-> +	if (try_module_get(cpt_ops.owner)) {
-> +		if (cpt_ops.restart)
-> +			ret = cpt_ops.restart(ctid, fd, flags);
-> +		module_put(cpt_ops.owner);
-> +	}
-> +	return ret;
->  }
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 4bd4b0c..d29ed21 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -344,6 +344,8 @@ config CGROUP_FREEZER
->            Provides a way to freeze and unfreeze all tasks in a
->  	  cgroup
-> 
-> +source "cpt/Kconfig"
-> +	  
->  config FAIR_GROUP_SCHED
->  	bool "Group scheduling for SCHED_OTHER"
->  	depends on GROUP_SCHED
-> -- 
-> 1.5.6
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+Thanks,
+Andrey
