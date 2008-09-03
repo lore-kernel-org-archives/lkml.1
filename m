@@ -1,74 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYICFCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYICFJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYICFCx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 01:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYICFCq
+	id S1755453AbYICFJK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 01:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYICFI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 01:02:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40901 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751702AbYICFCp (ORCPT
+	Wed, 3 Sep 2008 01:08:57 -0400
+Received: from abydos.nerdbox.net ([216.151.149.55]:55450 "EHLO
+	abydos.NerdBox.Net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbYICFI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 01:02:45 -0400
-Date: Tue, 2 Sep 2008 22:02:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [genksyms patch 3/4] Track symbol checksum changes
-Message-Id: <20080902220231.0197237e.akpm@linux-foundation.org>
-In-Reply-To: <20080721025913.063165574@suse.de>
-References: <20080721022823.896799736@suse.de>
-	<20080721025913.063165574@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Sep 2008 01:08:56 -0400
+Date: Tue, 2 Sep 2008 22:08:48 -0700 (PDT)
+From: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       dkegel@google.com, jiayingz@google.com,
+       John Reiser <jreiser@BitWagon.com>
+Subject: Re: [uml-devel] [PATCH 5/6] slab: Annotate slab
+In-Reply-To: <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com>
+Message-ID: <alpine.DEB.1.00.0809022036560.15543@abydos.NerdBox.Net>
+References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net> <alpine.DEB.1.00.0808291616560.15543@abydos.NerdBox.Net> <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Jul 2008 04:28:26 +0200 Andreas Gruenbacher <agruen@suse.de> wrote:
+On Sat, 30 Aug 2008, Pekka Enberg wrote:
 
-> Sometimes it is preferable to avoid changes of exported symbol checksums (to
-> avoid breaking externally provided modules).  When a checksum change occurs, it
-> can be hard to figure out what caused this change: underlying types may have
-> changed, or additional type information may simply have become available at the
-> point where a symbol is exported.
-> 
-> Add a new --reference option to genksyms which allows it to report why
-> checksums change, based on the type information dumps it creates with
-> the --dump-types flag.  Genksyms will read in such a dump from a previous run,
-> and report which symbols have changed (and why).
-> 
-> The behavior can be controlled for an entire build as follows: If
-> KBUILD_SYMTYPES is set, genksyms uses --dump-types to produce *.symtypes dump
-> files.  If any *.symref files exist, those will be used as the reference to
-> check against.  If KBUILD_PRESERVE is set, checksum changes will fail the
-> build.
+> Hi Steve,
+>
+> On Sat, Aug 30, 2008 at 2:17 AM, Steve VanDeBogart
+> <vandebo-lkml@nerdbox.net> wrote:
+>> Valgrind annotations for the slab allocator:  Malloc-like and free-like
+>> for cache_alloc and free.  Telling Valgrind a region is free-like clears
+>> all the valid bits, so slabs with constructors need different treatment;
+>> tell Valgrind about slab objects when first constructed and free them
+>> when the slab is destroyed.
+>
+> OK, I'm biased (I'm one of the kmemcheck developers) but these hooks
+> to SLAB are too ugly to live with. My preferred solution is that you
+> reuse the kmemcheck annotations
+> kmemcheck_slab_alloc()/kmemcheck_slab_free() we have:
+>
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commitdiff;h=30532cb3c49a2a9fed94127aab26003c52398a51
 
-This breaks `make M=...'
+Thank you for pointing out the location of the kmemcheck code.  I looked
+around briefly but didn't find the latest version.  It does seem that
+kmemcheck and Valgrind annotations want to live in the same places so it
+makes perfect sense to combine them where possible.  I'm not exactly sure
+what you find so ugly about the Valgrind annotations, please elaborate.
 
-With i386 allmodconfig,
+>> @@ -3578,6 +3595,9 @@
+>>  {
+>>        struct array_cache *ac = cpu_cache_get(cachep);
+>>
+>> +       if (!cachep->ctor)
+>> +               VALGRIND_FREELIKE_BLOCK(objp, 0);
+>> +
+>>        check_irq_off();
+>>        objp = cache_free_debugcheck(cachep, objp,
+>> __builtin_return_address(0));
+>
+> I'm not sure why you want to treat caches with constructor
+> differently. Sure, the memory regions *are* initialized but from
+> programmer's point of view you're not supposed to be touching the
+> memory unless you got it from kmalloc() or kmem_cache_alloc(). Same
+> goes for kfree() and kmem_cache_free() -- no touchy touchy after you
+> pass a pointer to either of the functions (unless you're RCU, of
+> course).
 
+It is true that code above the allocator should not be touching free'd
+slab objects.  However, it is also true that objects from slabs that
+have a constructor should retain their per byte un/initialized state
+through allocation and free cycles (just the semantic of slabs with
+constructors AFAICT).
 
-akpm2:/usr/src/25> make M=drivers/rtc               
+Ideally, we'd tell Valgrind that the bytes of a free'd slab object are
+no longer accessible, but the initialized state should remain the same
+until the object is made accessible again by the next allocation of
+the object.  Unfortunately, the compression method for A & V bits in
+Valgrind doesn't allow a region to be inaccessible and retain validness
+bits.
 
-  WARNING: Symbol version dump /usr/src/devel/Module.symvers
-           is missing; modules will have no dependencies and modversions.
+The best we can do without spending extra space or extra cycles it to
+leave the memory accessible while it is free in a slab.
 
-  LD      drivers/rtc/built-in.o
-  CC [M]  drivers/rtc/rtc-lib.o
-scripts/genksyms/genksyms: invalid option -- r
-Usage:
-genksyms [-adDTwqhV] > /path/to/.tmp_obj.ver
-
-  -a, --arch            Select architecture
-  -d, --debug           Increment the debug level (repeatable)
-  -D, --dump            Dump expanded symbol defs (for debugging only)
-  -T, --dump-types file Dump expanded types into file (for debugging only)
-  -w, --warnings        Enable warnings
-  -q, --quiet           Disable warnings (default)
-  -h, --help            Print this message
-  -V, --version         Print the release version
-make[1]: *** [drivers/rtc/rtc-lib.o] Error 1
-make: *** [_module_drivers/rtc] Error 2
+--
+Steve
