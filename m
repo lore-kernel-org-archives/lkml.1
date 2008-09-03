@@ -1,102 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbYICQTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbYICQXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753165AbYICQTY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 12:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYICQTR
+	id S1753267AbYICQXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 12:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbYICQXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 12:19:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34632 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751351AbYICQTQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 12:19:16 -0400
-Date: Wed, 3 Sep 2008 09:18:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org, ak@axet.ru
-Subject: Re: [Bugme-new] [Bug 11490] New: Old mtrr bug comeback
-Message-Id: <20080903091842.dc0982ee.akpm@linux-foundation.org>
-In-Reply-To: <bug-11490-10286@http.bugzilla.kernel.org/>
-References: <bug-11490-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Sep 2008 12:23:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50103 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752056AbYICQXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 12:23:04 -0400
+Message-ID: <48BEB98C.8030303@kernel.org>
+Date: Wed, 03 Sep 2008 18:21:32 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: device@lanana.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: regarding major number of block extended devt
+References: <48BD30F9.6080108@kernel.org> <48BD3313.7090906@kernel.org> <48BD9F36.8000704@zytor.com> <48BE0EDB.20107@kernel.org> <48BEB759.4050503@zytor.com>
+In-Reply-To: <48BEB759.4050503@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Sep 2008 16:22:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> But just allocating a big bucket of device numbers and throw it all into
+> a pot semirandomly is likely to cause more damage, not less.
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+To use ext devt, the system has to use udev for device numbers.  As long
+as udev is used, the major number doesn't matter.  In addition, breaking
+drastically (e.g. can't find the device) seems better than subtle
+failure (e.g. weird partition number calculation based on the
+traditional minor number scheme) and CONFIG_DEBUG_BLOCK_EXT_DEVT is
+exactly aimed at making breakages obvious.
 
-On Wed,  3 Sep 2008 08:44:27 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+I don't really see there's much to gain by sharing the original major
+numbers.
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=11490
-> 
->            Summary: Old mtrr bug comeback
->            Product: Memory Management
->            Version: 2.5
->      KernelVersion: v2.6.27-rc5
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: MTTR
->         AssignedTo: akpm@osdl.org
->         ReportedBy: ak@axet.ru
-> 
-> 
-> Latest working kernel version:v2.6.26.3
-> 
-> Old mtrr bug comeback, when i boot my notebook with last kerenl they going to
-> work really slow as turttle. to boot on normal speed i need use kernel param
-> mem=1000M
-> 
-> when i use 2.6.26.3 everyting going fine. as i remember that bug fixed in
-> 2.6.26 stable release and was in 2.6.25 and earlier.
-> 
-> probably you can find more details in bugzilla.redhat.com or
-> bugzilla.mozilla.com i do no remember where is exactly i have been posted that
-> old bug.
-> 
-> here the point (warning on 2.6.26.3 kernel):
-> 
-> WARNING: BIOS bug: CPU MTRRs don't cover all of memory, losing 7MB of RAM.
-> ------------[ cut here ]------------
-> WARNING: at arch/x86/kernel/cpu/mtrr/main.c:706
-> mtrr_trim_uncached_memory+0x103/0x168()
-> Modules linked in:
-> Pid: 0, comm: swapper Not tainted 2.6.26.3 #1
->  [<c06260e9>] ? printk+0xf/0x16
->  [<c0427749>] warn_on_slowpath+0x41/0x7b
->  [<c0628171>] ? _spin_unlock_irqrestore+0x10/0x14
->  [<c0628171>] ? _spin_unlock_irqrestore+0x10/0x14
->  [<c0427e4f>] ? release_console_sem+0x181/0x189
->  [<c04282d3>] ? vprintk+0x2e6/0x30b
->  [<c04282d3>] ? vprintk+0x2e6/0x30b
->  [<c040dbfd>] ? generic_get_mtrr+0x53/0x8a
->  [<c0756177>] mtrr_trim_uncached_memory+0x103/0x168
->  [<c075606c>] ? mtrr_bp_init+0x204/0x20c
->  [<c07539a9>] setup_arch+0x27b/0x6ce
->  [<c06260e9>] ? printk+0xf/0x16
->  [<c074d5c0>] start_kernel+0x64/0x2da
->  [<c074d008>] __init_begin+0x8/0xa
->  =======================
-> ---[ end trace 4eaa2a86a8e2da22 ]---
-> update e820 for mtrr
-> modified physical RAM map:
-> 
+Thanks.
 
-A post-2.6.26 regression.
-
-We have a couple of mtrr fixes pending:
-
-http://userweb.kernel.org/~akpm/mmotm/broken-out/x86-delay-early-cpu-initialization-until-cpuid-is-done.patch
-
-http://userweb.kernel.org/~akpm/mmotm/broken-out/x86-move-mtrr-cpu-cap-setting-early-in-early_init_xxxx.patch
-
-but I don't know if they'll fix this regression?
+-- 
+tejun
