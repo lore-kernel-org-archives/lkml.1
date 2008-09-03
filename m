@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYICMNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbYICMPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbYICMNW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 08:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYICMMu
+	id S1755122AbYICMPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 08:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbYICMPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 08:12:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47336 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbYICMMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 08:12:49 -0400
+	Wed, 3 Sep 2008 08:15:37 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:60277 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbYICMPh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 08:15:37 -0400
+Message-ID: <48BE7FDF.3080202@fr.ibm.com>
+Date: Wed, 03 Sep 2008 14:15:27 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-From: Roland McGrath <roland@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-X-Fcc: ~/Mail/linus
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] utrace
-In-Reply-To: Christoph Hellwig's message of  Saturday, 30 August 2008 09:40:57 -0400 <20080830134057.GB17566@infradead.org>
-References: <20080826220102.89635154233@magilla.localdomain>
-	<20080826223402.GB27724@x200.localdomain>
-	<y0m7ia3xqev.fsf@ton.toronto.redhat.com>
-	<20080827135453.GA31240@infradead.org>
-	<20080827164055.GA22236@in.ibm.com>
-	<20080830134057.GB17566@infradead.org>
-Emacs: because idle RAM is the Devil's playground.
-Message-Id: <20080903120927.3C1FF154228@magilla.localdomain>
-Date: Wed,  3 Sep 2008 05:09:27 -0700 (PDT)
+To: Andrey Mirkin <amirkin@parallels.com>
+CC: devel@openvz.org, Oren Laadan <orenl@cs.columbia.edu>,
+       containers@lists.linux-foundation.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org, jeremy@goop.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [Devel] Re: [RFC v2][PATCH 4/9] Memory management - dump state
+References: <Pine.LNX.4.64.0808202251500.17436@takamine.ncl.cs.columbia.edu> <48BA454F.7050308@cs.columbia.edu> <48BAD637.2050505@fr.ibm.com> <200809031543.24001.amirkin@parallels.com>
+In-Reply-To: <200809031543.24001.amirkin@parallels.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I hope my original mail was clear that I'm not principially against
-> utrace.  I think having a generic trace even dispatcher is a good thing
-> if it is a) not overly complicated (see Alexeyús mails for that) and b)
-> actually has a user.  A better debugger interface as the ntrace idea
-> would be the prime candidate for that.
+Andrey Mirkin wrote:
+> On Sunday 31 August 2008 21:34 Cedric Le Goater wrote:
+>> Oren Laadan wrote:
+>>> Dave, Serge:
+>>>
+>>> I'm currently away so I must keep this short. I think we have so far
+>>> more discussion than an actual problem. I'm happy to coordinate with
+>>> every interested party to eventually see this work go into main stream.
+>> thanks. We do need a moderator and federator.
+>>
+>>> My only concerns are twofold: first, to get more feedback I believe we
+>>> need to get the code a bit more usable; including FDs is an excellent
+>>> way to actually do that. That will add significant value to the patch.
+>> hmm, yes and no.
+>>
+>> fd's are a must have but I would be more interested to see an external
+>> checkpoint/restart and signal support first. why ? because it would be
+>> already usable for most computational programs in HPC, like this stupid
+>> one :
+>>
+>> 	https://www.ccs.uky.edu/~bmadhu/pi/pi1.c
+>>
+>> signals are required because it's how 'load' and/or 'system' managers
+>> interact with the jobs they spawn. external checkpoint/restart for the
+>> same reason.
+> 
+> I'm sorry for being out of discussion for so long time.
+> I've just sent a patchset with external checkpoint/restart as it is 
+> implemented in OpenVZ.
+> External checkpoint/restart also is very usefull if we will have container's 
+> infrastructure in mainstream.
+> It won't be very hard to add support for signals in my patchset. I'll wait for 
+> some time for comments and will add support for signals in next version.
 
-Thanks for that clarification.  From what you've said in many of your
-postings, it has been easy to get the impression that you are against
-everything.
+OK.
 
-I sympathize with caution about a new API that needs users to iron out
-its kinks.  Here is the difficulty I've been having.
+Then, we should be able to have a simple C/R framework (user and kernel) if we
+integrate your patchset or Oren's with Daniel's user tools :
 
-I have spent a lot of time keeping the patch series up to date,
-rebasing, etc.  This has sunk all the time that I'd like to have been
-spending working on higher-level pieces such as the ntrace idea.
+	http://lxc.cvs.sourceforge.net/lxc/
 
-(This will be much better now that all the tracehook work is in 2.6.27.
-I know you don't buy the rationale I've explained for that work.  But I
-am confident that having this in is a substantial and immediate boon to
-the ease and efficiency of getting more work done sooner in this area.)
-
-At the same time, many of the people who have asked me about the state
-of the effort say things to the effect that they would like to try
-writing some features based on such an API once it's been merged in.
-
-It was my hope that having it merged in and available as a non-default
-option for those who select CONFIG_EXPERIMENTAL would encourage more
-people to actually get going on experiments with new features.  Several
-actual users beating on it is of course what's necessary to iron out
-the API and the low-level code.
-
-Since I finally no longer expect to spend much more time myself on arch
-code or rebasing hassles given what's already merged, I look forward to
-soon having time to work on some higher-level stuff that makes this all
-get interesting.  Whatever I produce won't be all things to all people,
-and it might not be to your taste at all.  It's certain that others who
-tried could come up with some other things faster.  Having the schedule
-of merging utrace contingent on having some things using it that people
-consider ready to be merged won't delay me working on such a thing, but
-I get the impression it might deter others.
-
-The motivating principle of utrace is that it is the lowest level and
-least overhead at which multiple disparate things can be tried, without
-clobbering each other, and easily enough that many kernel hackers can
-find it easier to whip up something useful than to write horrible bugs
-while trying.  The idea of merging it after review and revision on its
-own merits is to get more of us active in making and disagreeing about
-concrete things using it and whether they merit being merged.
-
+I was just starting to work on Oren's patchset when you sent yours :) 
 
 Thanks,
-Roland
+
+C.
