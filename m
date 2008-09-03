@@ -1,42 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbYICXAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYICXAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755633AbYICXAe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 19:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYICXAU
+	id S1756521AbYICXAu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 19:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYICXAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 19:00:20 -0400
-Received: from inhex.net ([193.33.178.145]:49101 "EHLO inhex.net"
+	Wed, 3 Sep 2008 19:00:22 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:38538 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbYICXAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 19:00:19 -0400
-Date: Thu, 4 Sep 2008 02:00:03 +0300
-From: Dmitry Nezhevenko <dion@inhex.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Subject: Re: [patch 0/6] final clockevents/hpet fixes
-Message-ID: <20080903230003.GA1958@laptop.local>
-References: <20080903212735.713411776@linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080903212735.713411776@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751760AbYICXAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 19:00:20 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.595
+Date: Wed, 3 Sep 2008 16:00:17 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Ben Hutchings <bhutchings@solarflare.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: [PATCH 3/3] sky2: use pci_read_vpd to read info during boot
+Message-ID: <20080903160017.299831b0@extreme>
+In-Reply-To: <20080903155700.7517d8d9@extreme>
+References: <20080827204626.4b65862f@extreme>
+	<20080828111323.GI7908@solarflare.com>
+	<20080903155316.1a0a5698@extreme>
+	<20080903155700.7517d8d9@extreme>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 09:36:25PM -0000, Thomas Gleixner wrote:
-> This is the final version of the various clockevents fixes, which I will
-> send to Linus. Can you please give it a try on your machines, so we can
-> be sure that I did not mess up anything again.
-> 
+Change sky2 driver (in netdev next tree) to use vpd access routines.
 
-Applied full patchset on top of 2.6.27-rc5. Works great on my affected system.
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
-Tested-by: Dmitry Nezhevenko <dion@inhex.net>
+Note: other usage of vpd internal access routines will go away in later patches.
+
+---
+Patch against netdev-2.6#upstream-next assumes the previous PCI API change.
+
+--- a/drivers/net/sky2.c	2008-09-03 11:35:47.000000000 -0700
++++ b/drivers/net/sky2.c	2008-09-03 11:44:06.000000000 -0700
+@@ -4199,10 +4199,9 @@ static int __devinit pci_wake_enabled(st
  
--- 
-WBR, Dmitry
+ static void __devinit sky2_vpd_info(struct sky2_hw *hw)
+ {
+-	int cap = pci_find_capability(hw->pdev, PCI_CAP_ID_VPD);
+-	const u8 *p;
+-	u8 *vpd_buf = NULL;
+-	u16 len;
++	loff_t offs;
++	u8 len;
++	u8 tag[3];
+ 	static struct vpd_tag {
+ 		char tag[2];
+ 		char *label;
+@@ -4211,47 +4210,48 @@ static void __devinit sky2_vpd_info(stru
+ 		{ "EC", "Engineering Level" },
+ 		{ "MN", "Manufacturer" },
+ 	};
++	char str[128];
+ 
+-	if (!cap)
+-		goto out;
+-
+-	vpd_buf = kmalloc(VPD_SIZE, GFP_KERNEL);
+-	if (!vpd_buf)
+-		goto out;
++	if (pci_read_vpd(hw->pdev, 0, sizeof(tag), tag) < 0)
++		return;
++	if (tag[0] != VPD_MAGIC)
++		return;
++	len = tag[1];
++	if (len == 0 || len > sizeof(str))
++		return;
+ 
+-	if (sky2_vpd_read(hw, cap, vpd_buf, 0, VPD_SIZE))
+-		goto out;
++	offs = 3;
++	if (pci_read_vpd(hw->pdev, offs, len, str) < 0)
++		return;
+ 
+-	if (vpd_buf[0] != VPD_MAGIC)
+-		goto out;
+-	len = vpd_buf[1];
+-	if (len == 0 || len > VPD_SIZE - 4)
+-		goto out;
+-	p = vpd_buf + 3;
+-	dev_info(&hw->pdev->dev, "%.*s\n", len, p);
+-	p += len;
++	dev_info(&hw->pdev->dev, "%.*s\n", len, str);
+ 
+-	while (p < vpd_buf + VPD_SIZE - 4) {
++	for(;;) {
+ 		int i;
+ 
+-		if (!memcmp("RW", p, 2))	/* end marker */
++		offs += len;
++		if (pci_read_vpd(hw->pdev, offs, sizeof(tag), tag) < 0)
+ 			break;
+ 
+-		len = p[2];
+-		if (len > (p - vpd_buf) - 4)
++		if (!memcmp("RW", tag, 2))	/* end marker */
++			break;
++
++		offs += sizeof(tag);
++		len = tag[2];
++		if (len > sizeof(str))
+ 			break;
+ 
+ 		for (i = 0; i < ARRAY_SIZE(vpd_tags); i++) {
+-			if (!memcmp(vpd_tags[i].tag, p, 2)) {
++			if (!memcmp(vpd_tags[i].tag, tag, 2)) {
++				if (pci_read_vpd(hw->pdev, offs, len, str) < 0)
++					return;
++
+ 				printk(KERN_DEBUG " %s: %.*s\n",
+-				       vpd_tags[i].label, len, p + 3);
++				       vpd_tags[i].label, len, str);
+ 				break;
+ 			}
+ 		}
+-		p += len + 3;
+ 	}
+-out:
+-	kfree(vpd_buf);
+ }
+ 
+ /* This driver supports yukon2 chipset only */
+
