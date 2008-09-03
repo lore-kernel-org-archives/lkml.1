@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYICRjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755001AbYICRju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756024AbYICRjJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbYICRiT
+	id S1755001AbYICRju (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbYICRjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:38:19 -0400
-Received: from mail.suse.de ([195.135.220.2]:51640 "EHLO mx1.suse.de"
+	Wed, 3 Sep 2008 13:39:07 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56647 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755937AbYICRiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:38:18 -0400
-Date: Wed, 3 Sep 2008 10:25:54 -0700
+	id S1755432AbYICRjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:39:05 -0400
+Date: Wed, 3 Sep 2008 10:25:59 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Will Newton <will.newton@gmail.com>,
-       Alex Williamson <alex.williamson@hp.com>,
-       David Brownell <david-b@pacbell.net>
-Subject: [patch 18/42] 8250: improve workaround for UARTs that dont
-	re-assert THRE correctly
-Message-ID: <20080903172554.GS7731@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ralf Baechle <ralf@linux-mips.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 20/42] AX.25: Fix sysctl registration if
+	!CONFIG_AX25_DAMA_SLAVE
+Message-ID: <20080903172559.GU7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="8250-improve-workaround-for-uarts-that-don-t-re-assert-thre-correctly.patch"
+Content-Disposition: inline; filename="0001-AX.25-Fix-sysctl-registration-if-CONFIG_AX25_DAMA_.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,79 +41,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Will Newton <will.newton@gmail.com>
+From: Ralf Baechle <ralf@linux-mips.org>
 
-commit 363f66fe06c75270b669c88e321e6b354ba0201e upstream
+[ Upstream commit ffb208479bd62ab26c29a242faeb1de1c6d5fcdc ]
 
-Recent changes to tighten the check for UARTs that don't correctly
-re-assert THRE (01c194d9278efc15d4785ff205643e9c0bdcef53: "serial 8250:
-tighten test for using backup timer") caused problems when such a UART was
-opened for the second time - the bug could only successfully be detected
-at first initialization.  For users of this version of this particular
-UART IP it is fatal.
+Since 49ffcf8f99e8d33ec8afb450956804af518fd788 ("sysctl: update
+sysctl_check_table") setting struct ctl_table.procname = NULL does no
+longer work as it used to the way the AX.25 code is expecting it to
+resulting in the AX.25 sysctl registration code to break if
+CONFIG_AX25_DAMA_SLAVE was not set as in some distribution kernels.
+Kernel releases from 2.6.24 are affected.
 
-This patch stores the information about the bug in the bugs field of the
-port structure when the port is first started up so subsequent opens can
-check this bit even if the test for the bug fails.
-
-David Brownell: "My own exposure to this is that the UART on DaVinci
-hardware, which TI allegedly derived from its original 16550 logic, has
-periodically gone from working to unusable with the mainline 8250.c ...
-and back and forth a bunch.  Currently it's "unusable", a regression from
-some previous versions.  With this patch from Will, it's usable."
-
-Signed-off-by: Will Newton <will.newton@gmail.com>
-Acked-by: Alex Williamson <alex.williamson@hp.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: David Brownell <david-b@pacbell.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250.c |   16 ++++++++++++----
- drivers/serial/8250.h |    1 +
- 2 files changed, 13 insertions(+), 4 deletions(-)
+ net/ax25/sysctl_net_ax25.c |   14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1895,15 +1895,23 @@ static int serial8250_startup(struct uar
- 		 * kick the UART on a regular basis.
- 		 */
- 		if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
-+			up->bugs |= UART_BUG_THRE;
- 			pr_debug("ttyS%d - using backup timer\n", port->line);
--			up->timer.function = serial8250_backup_timeout;
--			up->timer.data = (unsigned long)up;
--			mod_timer(&up->timer, jiffies +
--				poll_timeout(up->port.timeout) + HZ / 5);
- 		}
- 	}
- 
- 	/*
-+	 * The above check will only give an accurate result the first time
-+	 * the port is opened so this value needs to be preserved.
-+	 */
-+	if (up->bugs & UART_BUG_THRE) {
-+		up->timer.function = serial8250_backup_timeout;
-+		up->timer.data = (unsigned long)up;
-+		mod_timer(&up->timer, jiffies +
-+			  poll_timeout(up->port.timeout) + HZ / 5);
-+	}
+--- a/net/ax25/sysctl_net_ax25.c
++++ b/net/ax25/sysctl_net_ax25.c
+@@ -36,6 +36,7 @@ static struct ctl_path ax25_path[] = {
+ 	{ .procname = "ax25", .ctl_name = NET_AX25, },
+ 	{ }
+ };
 +
-+	/*
- 	 * If the "interrupt" for this port doesn't correspond with any
- 	 * hardware interrupt, we use a timer-based system.  The original
- 	 * driver used to do this with IRQ0.
---- a/drivers/serial/8250.h
-+++ b/drivers/serial/8250.h
-@@ -49,6 +49,7 @@ struct serial8250_config {
- #define UART_BUG_QUOT	(1 << 0)	/* UART has buggy quot LSB */
- #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
- #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
-+#define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
+ static const ctl_table ax25_param_table[] = {
+ 	{
+ 		.ctl_name	= NET_AX25_IP_DEFAULT_MODE,
+@@ -167,6 +168,7 @@ static const ctl_table ax25_param_table[
+ 		.extra1		= &min_proto,
+ 		.extra2		= &max_proto
+ 	},
++#ifdef CONFIG_AX25_DAMA_SLAVE
+ 	{
+ 		.ctl_name	= NET_AX25_DAMA_SLAVE_TIMEOUT,
+ 		.procname	= "dama_slave_timeout",
+@@ -177,6 +179,8 @@ static const ctl_table ax25_param_table[
+ 		.extra1		= &min_ds_timeout,
+ 		.extra2		= &max_ds_timeout
+ 	},
++#endif
++
+ 	{ .ctl_name = 0 }	/* that's all, folks! */
+ };
  
- #define PROBE_RSA	(1 << 0)
- #define PROBE_ANY	(~0)
+@@ -210,16 +214,6 @@ void ax25_register_sysctl(void)
+ 		ax25_table[n].procname     = ax25_dev->dev->name;
+ 		ax25_table[n].mode         = 0555;
+ 
+-#ifndef CONFIG_AX25_DAMA_SLAVE
+-		/*
+-		 * We do not wish to have a representation of this parameter
+-		 * in /proc/sys/ when configured *not* to include the
+-		 * AX.25 DAMA slave code, do we?
+-		 */
+-
+-		child[AX25_VALUES_DS_TIMEOUT].procname = NULL;
+-#endif
+-
+ 		child[AX25_MAX_VALUES].ctl_name = 0;	/* just in case... */
+ 
+ 		for (k = 0; k < AX25_MAX_VALUES; k++)
 
 -- 
