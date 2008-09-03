@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYICDvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbYICD6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbYICDvw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 23:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755334AbYICDvn
+	id S1755418AbYICD6c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 23:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYICD6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 23:51:43 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:16741 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755257AbYICDvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 23:51:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=p4ktrKKhEye0OPTaGQzVmLJPrghM/LaZ/kICk5PpPdesXYAemLOBaomnTwQZ8tDzOx
-         4kmwJ0StWrMolvPh+7ZO5NNhARYJZgGTAb81INttKI6O8fuySZd8HrvHM5F7AGpRkZ3E
-         66UMZJyyXkU9EXKA8mMdMh11nS8aiZL4c/l5o=
-Message-ID: <2a27d3730809022051p73cdfe92sde02996c6f22db9b@mail.gmail.com>
-Date: Wed, 3 Sep 2008 11:51:39 +0800
-From: "Li Yang" <leoli@freescale.com>
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH v3] usb: add Freescale QE/CPM USB peripheral controller driver
-Cc: greg@kroah.com, linux-usb@vger.kernel.org, dbrownell@users.sourceforge.net,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       avorontsov@ru.mvista.com
-In-Reply-To: <200809021401.25506.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Sep 2008 23:58:24 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:44242 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752747AbYICD6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 23:58:24 -0400
+Date: Tue, 2 Sep 2008 22:58:22 -0500
+From: Bob Tracy <rct@gherkin.frus.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] /proc/mtrr I/O error
+Message-ID: <20080903035821.GA2293@gherkin.frus.com>
+References: <20080829213824.GA2281@gherkin.frus.com> <20080902154620.314ad5c2.akpm@linux-foundation.org> <86802c440809021608s54725294t5629255bb1f0c9@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1220356690-8028-1-git-send-email-leoli@freescale.com>
-	 <200809021401.25506.arnd@arndb.de>
-X-Google-Sender-Auth: 9e4cb44f63684d8b
+In-Reply-To: <86802c440809021608s54725294t5629255bb1f0c9@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 2, 2008 at 8:01 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tuesday 02 September 2008, Li Yang wrote:
->> Some of Freescale SoC chips have a QE or CPM co-processor which
->> supports full speed USB.  The driver adds device mode support
->> of both QE and CPM USB controller to Linux USB gadget.  The
->> driver is tested with MPC8360 and MPC8272, and should work with
->> other models having QE/CPM given minor tweaks.
->>
->> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
->> Signed-off-by: Li Yang <leoli@freescale.com>
->
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
->
-> All my previous review comments have been addressed.
->
->> +     udc_controller->soc_type = (unsigned long)np->data;
->
-> I'm not sure about this line, shouldn't that be
->        udc_controller->soc_type = (unsigned long)match->data; ?
+On Tue, Sep 02, 2008 at 04:08:00PM -0700, Yinghai Lu wrote:
+> On Tue, Sep 2, 2008 at 3:46 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Fri, 29 Aug 2008 16:38:24 -0500
+> > Bob Tracy <rct@gherkin.frus.com> wrote:
+> >
+> >> With 2.6.27-rc4 and possibly earlier kernels, I see the following:
+> >>
+> >> $ cat /proc/mtrr
+> >> cat: /proc/mtrr: Input/output error
+> >>
+> >> Processor is an AMD K6-III/450.
+> >>
+> >
+> > static int mtrr_open(struct inode *inode, struct file *file)
+> > {
+> >        if (!mtrr_if)
+> >                return -EIO;
+> >
+> >
+> >
+> > Beats me.  Perhaps something broke in mtrr_bp_init().
+> >
+> > It would be useful to know if 2.6.26 worked OK.
+> >
+> 
+> two patches needed..
+> 
+> http://lkml.org/lkml/2008/9/1/307
+>    [PATCH 4/6] x86: delay early cpu initialization until cpuid is done
+> http://lkml.org/lkml/2008/9/1/308
+>   [PATCH 5/6] x86: move mtrr cpu cap setting early in early_init_xxxx
 
-Oops.  You are right.
+Krzysztof Helt's quick-and-dirty patch posted a few days ago did the
+trick, but from the descriptions of the above patches, they address the
+problem properly.  Here's what "cat /proc/mtrr" shows with Helt's patch
+and the "nv" driver active for my GeForce2 MX 400 card:
 
-- Leo
+$ cat /proc/mtrr
+reg00: base=0xd0000000 (3328MB), size=  64MB: write-combining, count=1
+
+MTRR sanitization seems to be working properly: the same command shows
+nothing when X isn't running.
+
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
