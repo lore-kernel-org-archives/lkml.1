@@ -1,58 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYICD3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYICDgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYICD3S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Sep 2008 23:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYICD3D
+	id S1755513AbYICDgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Sep 2008 23:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309AbYICDg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Sep 2008 23:29:03 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52949 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754160AbYICD3B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Sep 2008 23:29:01 -0400
-Date: Wed, 3 Sep 2008 12:33:06 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
-Message-Id: <20080903123306.316beb9d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48BD337E.40001@linux.vnet.ibm.com>
-References: <20080831174756.GA25790@balbir.in.ibm.com>
-	<200809011656.45190.nickpiggin@yahoo.com.au>
-	<20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com>
-	<200809011743.42658.nickpiggin@yahoo.com.au>
-	<48BD0641.4040705@linux.vnet.ibm.com>
-	<20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com>
-	<48BD0E4A.5040502@linux.vnet.ibm.com>
-	<20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com>
-	<48BD119B.8020605@linux.vnet.ibm.com>
-	<20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com>
-	<48BD337E.40001@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Sep 2008 23:36:28 -0400
+Received: from mx1.suse.de ([195.135.220.2]:53299 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755257AbYICDg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Sep 2008 23:36:27 -0400
+Date: Tue, 2 Sep 2008 20:27:06 -0700
+From: Greg KH <gregkh@suse.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: mingo@elte.hu, stable@kernel.org, stable-commits@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: patch x86-work-around-mtrr-mask-setting.patch added to
+	2.6.26-stable tree
+Message-ID: <20080903032706.GA13044@suse.de>
+References: <200808221740.m7MHe5ud013727@hera.kernel.org> <20080903003208.7682214543E0@imap.suse.de> <86802c440809021754s7cd5ad5dy30a46ff65f9f2e5c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809021754s7cd5ad5dy30a46ff65f9f2e5c@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Sep 2008 18:07:18 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> I understand your concern and I am not trying to reduce memcg's performance - or
-> add a fancy feature. I am trying to make memcg more friendly for distros. I see
-> your point about the overhead. I just got back my results - I see a 4% overhead
-> with the patches. Let me see if I can rework them for better performance.
+On Tue, Sep 02, 2008 at 05:54:10PM -0700, Yinghai Lu wrote:
+> On Tue, Sep 2, 2008 at 5:26 PM,  <gregkh@suse.de> wrote:
+> >
+> > This is a note to let you know that we have just queued up the patch titled
+> >
+> >    Subject: x86: work around MTRR mask setting
+> >
+> > to the 2.6.26-stable tree.  Its filename is
+> >
+> >    x86-work-around-mtrr-mask-setting.patch
+> >
+> > A git repo of this tree can be found at
+> >    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> >
+> >
+> > From jejb@kernel.org  Tue Sep  2 17:14:12 2008
+> > From: Yinghai Lu <yhlu.kernel@gmail.com>
+> > Date: Fri, 22 Aug 2008 17:40:05 GMT
+> > Subject: x86: work around MTRR mask setting
+> > To: jejb@kernel.org, stable@kernel.org
+> > Message-ID: <200808221740.m7MHe5ud013727@hera.kernel.org>
+> >
+> > From: Yinghai Lu <yhlu.kernel@gmail.com>
+> >
+> > commit 38cc1c3df77c1bb739a4766788eb9fa49f16ffdf upstream
+> >
+> > Joshua Hoblitt reported that only 3 GB of his 16 GB of RAM is
+> > usable. Booting with mtrr_show showed us the BIOS-initialized
+> > MTRR settings - which are all wrong.
+> >
+> > So the root cause is that the BIOS has not set the mask correctly:
+> >
+> >>               [    0.429971]  MSR00000200: 00000000d0000000
+> >>               [    0.433305]  MSR00000201: 0000000ff0000800
+> >> should be ==> [    0.433305]  MSR00000201: 0000003ff0000800
+> >>
+> >>               [    0.436638]  MSR00000202: 00000000e0000000
+> >>               [    0.439971]  MSR00000203: 0000000fe0000800
+> >> should be ==> [    0.439971]  MSR00000203: 0000003fe0000800
+> >>
+> >>               [    0.443304]  MSR00000204: 0000000000000006
+> >>               [    0.446637]  MSR00000205: 0000000c00000800
+> >> should be ==> [    0.446637]  MSR00000205: 0000003c00000800
+> >>
+> >>               [    0.449970]  MSR00000206: 0000000400000006
+> >>               [    0.453303]  MSR00000207: 0000000fe0000800
+> >> should be ==> [    0.453303]  MSR00000207: 0000003fe0000800
+> >>
+> >>               [    0.456636]  MSR00000208: 0000000420000006
+> >>               [    0.459970]  MSR00000209: 0000000ff0000800
+> >> should be ==> [    0.459970]  MSR00000209: 0000003ff0000800
+> >
+> > So detect this borkage and add the prefix 111.
+> >
+> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > ---
+> >  arch/x86/kernel/cpu/mtrr/generic.c |   15 +++++++++++++--
+> >  1 file changed, 13 insertions(+), 2 deletions(-)
+> >
+> > --- a/arch/x86/kernel/cpu/mtrr/generic.c
+> > +++ b/arch/x86/kernel/cpu/mtrr/generic.c
+> > @@ -365,6 +365,7 @@ static void generic_get_mtrr(unsigned in
+> >                             unsigned long *size, mtrr_type *type)
+> >  {
+> >        unsigned int mask_lo, mask_hi, base_lo, base_hi;
+> > +       unsigned int tmp, hi;
+> >
+> >        rdmsr(MTRRphysMask_MSR(reg), mask_lo, mask_hi);
+> >        if ((mask_lo & 0x800) == 0) {
+> > @@ -378,8 +379,18 @@ static void generic_get_mtrr(unsigned in
+> >        rdmsr(MTRRphysBase_MSR(reg), base_lo, base_hi);
+> >
+> >        /* Work out the shifted address mask. */
+> > -       mask_lo = size_or_mask | mask_hi << (32 - PAGE_SHIFT)
+> > -           | mask_lo >> PAGE_SHIFT;
+> > +       tmp = mask_hi << (32 - PAGE_SHIFT) | mask_lo >> PAGE_SHIFT;
+> > +       mask_lo = size_or_mask | tmp;
+> > +       /* Expand tmp with high bits to all 1s*/
+> > +       hi = fls(tmp);
+> > +       if (hi > 0) {
+> > +               tmp |= ~((1<<(hi - 1)) - 1);
+> > +
+> > +               if (tmp != mask_lo) {
+> > +                       WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
+> > +                       mask_lo = tmp;
+> > +               }
+> > +       }
+> >
+> >        /* This works correctly if size is a power of two, i.e. a
+> >           contiguous range. */
+> >
+> >
+> > Patches currently in stable-queue which might be from yhlu.kernel@gmail.com are
+> >
+> > queue-2.6.26/x86-work-around-mtrr-mask-setting.patch
 > 
-Just an idea, by using atomic_ops page_cgroup patch, you can encode page_cgroup->lock
-to page_cgroup->flags and use bit_spinlock(), I think.
-(my new patch set use bit_spinlock on page_cgroup->flags for avoiding some race.)
+> 
+> please put
+> 
+> commit 9754a5b840a209bc1f192d59f63e81b698a55ac8
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Fri Aug 22 08:22:23 2008 +0200
+> 
+>     x86: work around MTRR mask setting, v2
+> 
+>     improve the debug printout:
+> 
+>     - make it actually display something
+>     - print it only once
+> 
+>     would be nice to have a WARN_ONCE() facility, to feed such things to
+>     kerneloops.org.
+> 
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> diff --git a/arch/x86/kernel/cpu/mtrr/generic.c
+> b/arch/x86/kernel/cpu/mtrr/generic.c
+> index 43102e0..cb7d3b6 100644
+> --- a/arch/x86/kernel/cpu/mtrr/generic.c
+> +++ b/arch/x86/kernel/cpu/mtrr/generic.c
+> @@ -401,7 +401,12 @@ static void generic_get_mtrr(unsigned int reg,
+> unsigned long *base,
+>                 tmp |= ~((1<<(hi - 1)) - 1);
+> 
+>                 if (tmp != mask_lo) {
+> -                       WARN_ON("mtrr: your BIOS has set up an
+> incorrect mask, fixing it up.\n");
+> +                       static int once = 1;
+> +
+> +                       if (once) {
+> +                               printk(KERN_INFO "mtrr: your BIOS has
+> set up an incorrect mask, fixing it up.\n");
+> +                               once = 0;
+> +                       }
+>                         mask_lo = tmp;
+>                 }
+>         }
+> 
+> into stable too....
+> otherwise WARN_ON will keep dump calling stack..
 
-This will save extra 4 bytes.
+Ok, will add it to the queue.
 
-Thanks,
--Kame
+thanks,
 
+greg k-h
