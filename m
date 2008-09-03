@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756801AbYICRiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756024AbYICRjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756801AbYICRiu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbYICRhz
+	id S1756024AbYICRjJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbYICRiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:37:55 -0400
-Received: from mx2.suse.de ([195.135.220.15]:55916 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:38:19 -0400
+Received: from mail.suse.de ([195.135.220.2]:51640 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756603AbYICRhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:37:53 -0400
-Date: Wed, 3 Sep 2008 10:25:52 -0700
+	id S1755937AbYICRiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:38:18 -0400
+Date: Wed, 3 Sep 2008 10:25:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Altenberg <jan.altenberg@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <david-b@pacbell.net>,
-       Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Subject: [patch 17/42] rtc_time_to_tm: fix signed/unsigned arithmetic
-Message-ID: <20080903172552.GR7731@suse.de>
+       alan@lxorguk.ukuu.org.uk, Will Newton <will.newton@gmail.com>,
+       Alex Williamson <alex.williamson@hp.com>,
+       David Brownell <david-b@pacbell.net>
+Subject: [patch 18/42] 8250: improve workaround for UARTs that dont
+	re-assert THRE correctly
+Message-ID: <20080903172554.GS7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtc_time_to_tm-fix-signed-unsigned-arithmetic.patch"
+Content-Disposition: inline; filename="8250-improve-workaround-for-uarts-that-don-t-re-assert-thre-correctly.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,58 +42,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Altenberg <jan.altenberg@linutronix.de>
+From: Will Newton <will.newton@gmail.com>
 
-commit 73442daf2ea85e2a779396b76b1a39b10188ecb5 upstream
+commit 363f66fe06c75270b669c88e321e6b354ba0201e upstream
 
-commit 945185a69daa457c4c5e46e47f4afad7dcea734f ("rtc: rtc_time_to_tm: use
-unsigned arithmetic") changed the some types in rtc_time_to_tm() to
-unsigned:
+Recent changes to tighten the check for UARTs that don't correctly
+re-assert THRE (01c194d9278efc15d4785ff205643e9c0bdcef53: "serial 8250:
+tighten test for using backup timer") caused problems when such a UART was
+opened for the second time - the bug could only successfully be detected
+at first initialization.  For users of this version of this particular
+UART IP it is fatal.
 
- void rtc_time_to_tm(unsigned long time, struct rtc_time *tm)
- {
--       register int days, month, year;
-+       unsigned int days, month, year;
+This patch stores the information about the bug in the bugs field of the
+port structure when the port is first started up so subsequent opens can
+check this bit even if the test for the bug fails.
 
-This doesn't work for all cases, because days is checked for < 0 later
-on:
+David Brownell: "My own exposure to this is that the UART on DaVinci
+hardware, which TI allegedly derived from its original 16550 logic, has
+periodically gone from working to unusable with the mainline 8250.c ...
+and back and forth a bunch.  Currently it's "unusable", a regression from
+some previous versions.  With this patch from Will, it's usable."
 
-if (days < 0) {
-	year -= 1;
-	days += 365 + LEAP_YEAR(year);
-}
-
-I think the correct fix would be to keep days signed and do an appropriate
-cast later on.
-
-Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
-Cc: Maciej W. Rozycki <macro@linux-mips.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
+Signed-off-by: Will Newton <will.newton@gmail.com>
+Acked-by: Alex Williamson <alex.williamson@hp.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: David Brownell <david-b@pacbell.net>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/rtc/rtc-lib.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/serial/8250.c |   16 ++++++++++++----
+ drivers/serial/8250.h |    1 +
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
---- a/drivers/rtc/rtc-lib.c
-+++ b/drivers/rtc/rtc-lib.c
-@@ -51,10 +51,11 @@ EXPORT_SYMBOL(rtc_year_days);
-  */
- void rtc_time_to_tm(unsigned long time, struct rtc_time *tm)
- {
--	unsigned int days, month, year;
-+	unsigned int month, year;
-+	int days;
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1895,15 +1895,23 @@ static int serial8250_startup(struct uar
+ 		 * kick the UART on a regular basis.
+ 		 */
+ 		if (!(iir1 & UART_IIR_NO_INT) && (iir & UART_IIR_NO_INT)) {
++			up->bugs |= UART_BUG_THRE;
+ 			pr_debug("ttyS%d - using backup timer\n", port->line);
+-			up->timer.function = serial8250_backup_timeout;
+-			up->timer.data = (unsigned long)up;
+-			mod_timer(&up->timer, jiffies +
+-				poll_timeout(up->port.timeout) + HZ / 5);
+ 		}
+ 	}
  
- 	days = time / 86400;
--	time -= days * 86400;
-+	time -= (unsigned int) days * 86400;
+ 	/*
++	 * The above check will only give an accurate result the first time
++	 * the port is opened so this value needs to be preserved.
++	 */
++	if (up->bugs & UART_BUG_THRE) {
++		up->timer.function = serial8250_backup_timeout;
++		up->timer.data = (unsigned long)up;
++		mod_timer(&up->timer, jiffies +
++			  poll_timeout(up->port.timeout) + HZ / 5);
++	}
++
++	/*
+ 	 * If the "interrupt" for this port doesn't correspond with any
+ 	 * hardware interrupt, we use a timer-based system.  The original
+ 	 * driver used to do this with IRQ0.
+--- a/drivers/serial/8250.h
++++ b/drivers/serial/8250.h
+@@ -49,6 +49,7 @@ struct serial8250_config {
+ #define UART_BUG_QUOT	(1 << 0)	/* UART has buggy quot LSB */
+ #define UART_BUG_TXEN	(1 << 1)	/* UART has buggy TX IIR status */
+ #define UART_BUG_NOMSR	(1 << 2)	/* UART has buggy MSR status bits (Au1x00) */
++#define UART_BUG_THRE	(1 << 3)	/* UART has buggy THRE reassertion */
  
- 	/* day of the week, 1970-01-01 was a Thursday */
- 	tm->tm_wday = (days + 4) % 7;
+ #define PROBE_RSA	(1 << 0)
+ #define PROBE_ANY	(~0)
 
 -- 
