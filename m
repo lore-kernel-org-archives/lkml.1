@@ -1,98 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYICSi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbYICSl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbYICSi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 14:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbYICSiF
+	id S1755844AbYICSl1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 14:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbYICSlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 14:38:05 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:55700 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbYICSiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 14:38:03 -0400
-X-IronPort-AV: E=Sophos;i="4.32,320,1217808000"; 
-   d="scan'208";a="152017565"
-From: Roland Dreier <rdreier@cisco.com>
-To: Mike Isely <isely@pobox.com>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, LKML <linux-kernel@vger.kernel.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>
-Subject: Re: CodingStyle question: multiple statements on a single line
-References: <200809030021.00122.hverkuil@xs4all.nl>
-	<ada7i9ufa7x.fsf@cisco.com>
-	<Pine.LNX.4.64.0809021830400.17907@cnc.isely.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 03 Sep 2008 11:38:01 -0700
-In-Reply-To: <Pine.LNX.4.64.0809021830400.17907@cnc.isely.net> (Mike Isely's
-	message of "Tue, 2 Sep 2008 18:50:44 -0500 (CDT)")
-Message-ID: <adaskshvzw6.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 3 Sep 2008 14:41:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:37189 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753635AbYICSlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 14:41:18 -0400
+Date: Wed, 3 Sep 2008 20:40:55 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+cc: Dmitry Nezhevenko <dion@inhex.net>, herton@mandriva.com.br,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
+In-Reply-To: <20080903143653.68bb58df@doriath.conectiva>
+Message-ID: <alpine.LFD.1.10.0809032030271.3243@apollo.tec.linutronix.de>
+References: <20080902163532.436f8fbd@doriath.conectiva> <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de> <20080902175544.131bc54e@doriath.conectiva> <alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de> <20080903104132.7a736282@doriath.conectiva>
+ <alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de> <20080903164415.GA24442@laptop.local> <alpine.LFD.1.10.0809031857020.3243@apollo.tec.linutronix.de>
+ <20080903143653.68bb58df@doriath.conectiva>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Sep 2008 18:38:01.0943 (UTC) FILETIME=[32096E70:01C90DF4]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > <quote>
- > Don't put multiple statements on a single line unless you have
- > something to hide:
- > </quote>
- > 
- > Then what does "unless you have something to hide" refer to exactly?
+On Wed, 3 Sep 2008, Luiz Fernando N. Capitulino wrote:
+> | Find a debug patch below, which looks at the two functions which might
+> | loop forver under certain conditions. Does one of the checks hit ?
+> 
+>  I can actually boot with this patch. Was this intended?
 
-I think it's a tongue-in-cheek way of saying "unless you're trying to
-make your code hard to read."  In other words, don't do it.
+Yes. That was the only point, where a hard hang could happen.
+ 
+>  As the dmesg has various WARN_ON() outputs I'm attaching it, this is
+> the first one:
+> 
+> """
+> PCI: Using ACPI for IRQ routing
+> DMAR:parse DMAR table failure.
+> hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+> hpet0: 3 32-bit timers, 25000000 Hz
+> Switched to high resolution mode on CPU 0
+>
+> tick_broadcast_set_event is stuck f09fa64 f0a01e4
 
- > So by that reasoning "if (a) b;" - provided it stays under 80 columns - 
- > should be even better.  It occupies less space so that more code can fit 
- > on the screen.
+Hmm, so we fail to force program that HPET with the standard minimum
+delta.
 
-But it is visually hard to distinguish between the condition (a) and the
-statement (b) that follows it.  And the arbitrary kernel rule is that we
-don't use that style.
+I now see why this is happening and it is happening only on systems
+with a fast HPET. Your's running 25MHz, so the delta is only 1.92
+usec. I was staring at lots of those bugreports without noticing the
+frequency.
 
- > > And uniformity counts for a lot: most coding style rules are completely
- > > arbitrary, but having a uniform kernel style makes reading kernel code
- > > much easier.
+Sigh. The idea to take a fixed number of HPET cycles as the minimum
+was not really brilliant it seems.
 
- > What about drivers?  The statement has been made by others that there is 
- > a strong desire for outside drivers to be brought into mainline rather 
- > than being out-of-tree.  So must every chunk of code brought in this way 
- > be sanitized to this level of detail?  In many cases that can be a large 
- > (and some might say arbitrary) hurdle.
+Does the patch below help ? Keep the debug patch applied, as we can
+see whether the check triggers or not.
 
-Of course having a uniform coding style is important for drivers too.
-There are many cases where someone other than the original author is
-debugging a driver and needs to read and understand the code, or where
-someone is updating all in-tree drivers to cope with an API change and
-must read and correctly change lots of driver code.
+Thanks,
 
-In general we are pretty lenient about driver code, as long as it pretty
-much looks like kernel code.  But really, how much work is it to make a
-one-time sweep over a driver and change
+	tglx
+---
+ arch/x86/kernel/hpet.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-	if (a) {
-		b;
-	}
+Index: linux-2.6/arch/x86/kernel/hpet.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/hpet.c
++++ linux-2.6/arch/x86/kernel/hpet.c
+@@ -210,8 +210,8 @@ static void hpet_legacy_clockevent_regis
+ 	/* Calculate the min / max delta */
+ 	hpet_clockevent.max_delta_ns = clockevent_delta2ns(0x7FFFFFFF,
+ 							   &hpet_clockevent);
+-	hpet_clockevent.min_delta_ns = clockevent_delta2ns(0x30,
+-							   &hpet_clockevent);
++	/* 5 usec minimum reprogramming delta. */
++	hpet_clockevent.min_delta_ns = 5000;
+ 
+ 	/*
+ 	 * Start hpet with the boot cpu mask and make it
 
-to
-
-	if (a)
-		b;
-
-especially when you have an automated tool (checkpatch.pl) that can help
-you find the places that would change?
-
- > That's great.  How does one reconcile this statement with subsystem 
- > maintainers who treat checkpatch.pl - which is the epitome of 
- > "mechanical rule" and has no notion of common sense - as the gatekeeper 
- > for all incoming changesets?
-
-I don't know of any such maintainers.  In general if someone submitted a
-patch that only triggered a few checkpatch warnings and gave a rationale
-about why the remaining warnings shouldn't be worried about, then that
-would be fine with me.
-
- - R.
