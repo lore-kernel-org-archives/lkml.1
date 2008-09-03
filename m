@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYICUWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYICUWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYICUWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 16:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbYICUWG
+	id S1756412AbYICUWg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 16:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224AbYICUWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 16:22:06 -0400
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:38384 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752602AbYICUWG (ORCPT
+	Wed, 3 Sep 2008 16:22:13 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:48731 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754161AbYICUWM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 16:22:06 -0400
-Message-ID: <48BEF1E7.1040708@euromail.se>
-Date: Wed, 03 Sep 2008 22:21:59 +0200
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 3 Sep 2008 16:22:12 -0400
+Date: Wed, 3 Sep 2008 16:22:12 -0400
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Mike Isely <isely@pobox.com>, Hans Verkuil <hverkuil@xs4all.nl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>
+Subject: Re: CodingStyle question: multiple statements on a single line
+Message-ID: <20080903202211.GG12476@csclub.uwaterloo.ca>
+References: <200809030021.00122.hverkuil@xs4all.nl> <ada7i9ufa7x.fsf@cisco.com> <Pine.LNX.4.64.0809021830400.17907@cnc.isely.net> <adaskshvzw6.fsf@cisco.com>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, akpm@osdl.org,
-       linux-input@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] bcm5974-0.64: minor cleanups for scripts/checkpatch.pl
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.39.57
-X-Scan-Result: No virus found in message 1KayrY-0006Xt-6Q.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KayrY-0006Xt-6Q 4bfb21dddee85adcbb2a64cb4a8beb61
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adaskshvzw6.fsf@cisco.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- drivers/input/mouse/bcm5974.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Wed, Sep 03, 2008 at 11:38:01AM -0700, Roland Dreier wrote:
+> 	if (a) {
+> 		b;
+> 	}
+> 
+> to
+> 
+> 	if (a)
+> 		b;
+> 
 
-diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
-index 2ec921b..ae78bb8 100644
---- a/drivers/input/mouse/bcm5974.c
-+++ b/drivers/input/mouse/bcm5974.c
-@@ -63,7 +63,7 @@
- }
+Why oh why the kernel do this stupid style?
 
- /* table of devices that work with this driver */
--static const struct usb_device_id bcm5974_table [] = {
-+static const struct usb_device_id bcm5974_table[] = {
- 	/* MacbookAir1.1 */
- 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
- 	BCM5974_DEVICE(USB_DEVICE_ID_APPLE_WELLSPRING_ISO),
+I hate that.  It makes debuging such a pain in the @#$@#$.  Anytime you
+want to do anything in that area you have to add back the missing '{}'
+around the statement, so that you can add debug statements to the
+condition.
+
+Stupid stupid stupid!!!
+
+It is so annoying when you accidentally break the code by trying to
+debug it by doing:
+
+	if (a)
+		printk("Trying to do b\n");
+		b;
+
+Usually kernel style makes sense, but this part is stupid, inconsistend
+with how any condition with multiple statements is done, and error
+prone, especially when trying to debug.
+
+Who's stupid idea was this anyhow?
+
 -- 
-1.5.4.3
-
-Diff is against v2.6.27-rc5-103-g0a7574e
+Len Sorensen
