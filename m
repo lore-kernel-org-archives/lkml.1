@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbYICHXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYICHbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbYICHXK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 03:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbYICHW4
+	id S1754260AbYICHbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 03:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYICHbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 03:22:56 -0400
-Received: from wilson.telenet-ops.be ([195.130.132.42]:53603 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751489AbYICHWz (ORCPT
+	Wed, 3 Sep 2008 03:31:22 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:41173 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYICHbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 03:22:55 -0400
-Date: Wed, 3 Sep 2008 09:22:52 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [2.6 patch] m68k: remove the dead PCI code
-In-Reply-To: <20080831161016.GE3695@cs181140183.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0809030922280.17860@anakin>
-References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com>
- <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com>
- <20080829070103.GD16462@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808290929280.22326@anakin>
- <20080831161016.GE3695@cs181140183.pp.htv.fi>
+	Wed, 3 Sep 2008 03:31:22 -0400
+Message-ID: <48BE3D43.7090903@linux.vnet.ibm.com>
+Date: Wed, 03 Sep 2008 13:01:15 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.14 (X11/20080515)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+References: <20080831174756.GA25790@balbir.in.ibm.com> <200809011656.45190.nickpiggin@yahoo.com.au> <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com> <200809011743.42658.nickpiggin@yahoo.com.au> <48BD0641.4040705@linux.vnet.ibm.com> <20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com> <48BD0E4A.5040502@linux.vnet.ibm.com> <20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com> <48BD119B.8020605@linux.vnet.ibm.com> <20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com> <48BD337E.40001@linux.vnet.ibm.com> <20080903123306.316beb9d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080903123306.316beb9d.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 Aug 2008, Adrian Bunk wrote:
-> On Fri, Aug 29, 2008 at 09:31:43AM +0200, Geert Uytterhoeven wrote:
-> > On Fri, 29 Aug 2008, Adrian Bunk wrote:
-> > > On Fri, Aug 29, 2008 at 02:13:24PM +1000, Greg Ungerer wrote:
-> > > > Adrian Bunk wrote:
-> > > >> A patch for removing the comempci code is below.
-> > > >>
-> > > >> It's a bit suspicious that asm/elia.h is now removed since comempci.c  
-> > > >> was the only user. What's the sttus of the eLIA platform?
-> > > >
-> > > > Only ever a handful where made, and that was in 1999.
-> > > > I doubt anyone could ever use the PCI interface on it
-> > > > in any useful way.
-> > > 
-> > > So I can send a patch to remove the platform?
-> > > 
-> > > >> But COMEMPCI fails with a different error - this init/main.o build 
-> > > >> error is present for CONFIG_PCI=y, CONFIG_COMEMPCI=n, so the dependency 
-> > > >> of PCI on BROKEN is still required (unless it gets fixed).
-> > > >
-> > > > Unless I am mistaken there is now no need for the CONFIG_PCI option
-> > > > if selecting m68knommu. The only m68knommu platforms that had PCI
-> > > > as far as I know where those that use the comempci part.
-> > > 
-> > > That implies I can also kill the m68k PCI code since m68knommu will 
-> > > never use it?
-> > 
-> > Sure. If the FreeScale guys ever forward-port their ColdFire/MMU code to
-> > current mainline, we can readd it.
+KAMEZAWA Hiroyuki wrote:
+> On Tue, 02 Sep 2008 18:07:18 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> I understand your concern and I am not trying to reduce memcg's performance - or
+>> add a fancy feature. I am trying to make memcg more friendly for distros. I see
+>> your point about the overhead. I just got back my results - I see a 4% overhead
+>> with the patches. Let me see if I can rework them for better performance.
+>>
+> Just an idea, by using atomic_ops page_cgroup patch, you can encode page_cgroup->lock
+> to page_cgroup->flags and use bit_spinlock(), I think.
+> (my new patch set use bit_spinlock on page_cgroup->flags for avoiding some race.)
 > 
-> Patch (on top of my Hades removal patch) is below.
-> 
-> cu
-> Adrian
-> 
-> 
-> <--  snip    -->
-> 
-> 
-> This patch removes the no longer used m68k PCI code.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> This will save extra 4 bytes.
 
-Thanks! Will queue for 2.6.28, too.
+Exactly the next step I was thinking about (since we already use it, in the
+current form). Thanks for the suggestion!
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+	Balbir
