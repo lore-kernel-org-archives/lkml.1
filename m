@@ -1,125 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbYICIWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYICI2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbYICIWa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 04:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYICIWV
+	id S1753494AbYICI2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 04:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYICI21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 04:22:21 -0400
-Received: from mailer1.option.com ([81.246.70.162]:45041 "EHLO
-	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751170AbYICIWU (ORCPT
+	Wed, 3 Sep 2008 04:28:27 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:62776 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751170AbYICI20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 04:22:20 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlgBAMvlvUgKAAAZ/2dsb2JhbAAItgSBaQ
-Message-ID: <48BE3FD9.6070303@option.com>
-Date: Wed, 03 Sep 2008 09:42:17 +0200
-From: Denis Joseph Barrow <D.Barow@option.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 3 Sep 2008 04:28:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WG4ranLJeMr05DZgOL77/fmfv+t3DcHwt4/sryauYL4pinvBPe+8RbPPFEQC9VajIP
+         OFuwlMT7CVP9+7BT8kgztk1QGYzxmT+YIGcJCXFz6h1KzskbVykJ0dD1am1h1aG/da7x
+         8rs58K6kBdj30s0IjgxFtQxFGNR5MI5XVEPAo=
+Message-ID: <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
+Date: Wed, 3 Sep 2008 10:28:25 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [2.6.27] early exception - lockdep related?
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <1220424721.8609.74.camel@twins>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: /drivers/char/n_tty.c drops characters
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Sep 2008 08:22:18.0717 (UTC) FILETIME=[2E2880D0:01C90D9E]
+Content-Disposition: inline
+References: <20080902210646.GA10925@dreamland.darkstar.lan>
+	 <1220424721.8609.74.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-While I may be taking this out of context but
-from a git log on include/linux/tty_ldisc.c Alan Cox says. 
+On Wed, Sep 3, 2008 at 8:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, 2008-09-02 at 23:06 +0200, Luca Tettamanti wrote:
+>> Hello,
+>> I'm seeing an early exception (0e) - which seems related to lockdep - at
+>> boot with many 2.6.27 kernels and I'm having troubles to track it down.
+>
+> Does it print one of these nice stack traces?
 
->  Finally many drivers had invalid and unsafe attempts to avoid buffer
->     overflows by directly invoking tty methods extracted out of the innards
->     of work queue structs. These are no longer needed and all go away. That
->     fixes various random hangs with serial ports on overflow.
+Of course not ;-) It dies before dumping the stack trace (or at least
+it doesn't make to the console - that machine has a serial port, but
+my notebook does not... I've ordered a usb-to-serial adapter).
 
-Maybe my interpretation of this statement is incorrect but
-is Alan implying that ttys will no longer drop charaters ? 
-if this is what Alan is saying it is simply not true but it can be implemented.
+>> The strange thing is that it comes and goes with different kernel
+>> versions
+>
+> What kernel version did you generate the below with - and what config.
 
-If tty's use the /drivers/char/n_tty.c line discipline.
-a quick look at drivers/char/tty_io.c sees that
-tty_flip_buffer_push calls directly or indirectly flush_to_ldisc
-which in turns copies to disc->ops->receive_buf normally n_tty_receive_buf
-which normally is the ntty line discipline ( the default )
+-rc2 is working, after that it's intermittent. The last kernel that I
+tried is -git from a couple of days ago.
 
-The simplest code path to follow in n_tty_receive_buf if tty->real_raw is set is
-below
-	if (tty->real_raw) {
-		spin_lock_irqsave(&tty->read_lock, cpuflags);
-		i = min(N_TTY_BUF_SIZE - tty->read_cnt,
-			N_TTY_BUF_SIZE - tty->read_head);
-		i = min(count, i);
-		memcpy(tty->read_buf + tty->read_head, cp, i);
-		tty->read_head = (tty->read_head + i) & (N_TTY_BUF_SIZE-1);
-		tty->read_cnt += i;
-		cp += i;
-		count -= i;
+>> , but a "bad" kernel consistently fails across reboots. It also
+>> seems to be sensitive to the configuration (attached)
+>
+> you seem to have forgotten that attachment.
 
-		i = min(N_TTY_BUF_SIZE - tty->read_cnt,
-			N_TTY_BUF_SIZE - tty->read_head);
-		i = min(count, i);
-		memcpy(tty->read_buf + tty->read_head, cp, i);
-		tty->read_head = (tty->read_head + i) & (N_TTY_BUF_SIZE-1);
-		tty->read_cnt += i;
-		spin_unlock_irqrestore(&tty->read_lock, cpuflags);
-	}
+Ops, will send as soon as I get home.
 
-My understanding of this code might be imperfect but this really looks
-likes this blindly copies into a ring buffer of N_TTY_BUF_SIZE &
-doesn't return any indication an attempt to copy a tty buffer of larger than N_TTY_BUF_SIZE
-& overflows the buffer before the task activated by the code at the bottom of n_tty_receive_buf
-
-i.e.
-if (waitqueue_active(&tty->read_wait))
-			wake_up_interruptible(&tty->read_wait);
-which typically wakes up the read_chan function in the same file.
-
-The main things I see wrong with this code is performance
-& dropping characters from serial devices, this which might be quite
-acceptable for reading keystrokes but is not for high speed modems.
-
-My main complaints are
-1) there is no mechanism for informing the tty layer that not all the
-characters are copied from the tty layer to the line discipline.
-
-2) The use of a a ring buffer in the line discipline,
-we are memcpying at least twice in the kernel before passing the
-buffer back to userland.
-
-3) There is no mechanism for tty_io.c of informing the
-char driver which is feeding the tty that it can
-release flow control & start feeding read buffers
-to the device hardware again to restart io. 
-
-Less important points in point 3.
-In my attempts I gave up on
-I wrapped disc->ops->receive_buf with my own receive_buf
-callback but this would break if the line discipline changed.
-
-I also accidently made my code recursive because I was
-calling calling tty_flip_buf calling disc->ops_receive buf
-again & stealing a lock again as the tty->low_latency
-flag was set in the driver, so the developer should be
-warned not to use this flag if we put the callback to
-start flow control in flush_to_line_disc.
-
-Maybe it might be an idea to have a user settable minimum
-characters available in the tty_layer before the callback
-gets done.
-
-4) Maybe the tty_io layer should be using a ring buffer
-but this is just a silly & probably plain wrong opinion of mine.
-
-I currently don't know this code & all the line disciplines
-well enough to fix this code reliably & I think for all the
-line discipline be a patch of over 300 lines. I don't think
-I have the street cred to get a patch like this into such a critical part
-of the mainstream kernel & probably rightly so.
-
-
--- 
-best regards,
-D.J. Barrow
+Luca
