@@ -1,74 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYICXfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYICXoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYICXfa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 19:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYICXfW
+	id S1753547AbYICXoL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 19:44:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYICXn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 19:35:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34279 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbYICXfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 19:35:21 -0400
-Date: Wed, 3 Sep 2008 19:34:59 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: stable@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [stable][patch 2.6.26] x86-32: AMD c1e force timer broadcast late
-Message-ID: <20080903193459.67d9eb87@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Sep 2008 19:43:57 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59355 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbYICXn5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 19:43:57 -0400
+Message-ID: <48BF2131.2050306@zytor.com>
+Date: Wed, 03 Sep 2008 16:43:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: add io delay quirk for Presario F700
+References: <20080903193314.0c3cae84@redhat.com>
+In-Reply-To: <20080903193314.0c3cae84@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86-32: AMD c1e force timer broadcast late
+Chuck Ebbert wrote:
+> x86: add io delay quirk for Presario F700
 
-This patch is not needed in 2.6.27 because it has new c1e-aware idle code.
+About to be applied to tip:x86/urgent, thanks.
 
-In kernel 2.6.26 the 32-bit x86 timers are started earlier than before.
-This breaks AMD c1e detection trying to force timer broadcast for the
-local apic timer. Copy the code from the 64-bit kernel to force timer
-broadcast late.
-
-Reference:
-http://bugzilla.kernel.org/show_bug.cgi?id=11427
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-
---- linux-2.6.26.noarch.orig/arch/x86/kernel/apic_32.c
-+++ linux-2.6.26.noarch/arch/x86/kernel/apic_32.c
-@@ -552,8 +552,31 @@ void __init setup_boot_APIC_clock(void)
- 	setup_APIC_timer();
- }
- 
--void __devinit setup_secondary_APIC_clock(void)
-+/*
-+ * AMD C1E enabled CPUs have a real nasty problem: Some BIOSes set the
-+ * C1E flag only in the secondary CPU, so when we detect the wreckage
-+ * we already have enabled the boot CPU local apic timer. Check, if
-+ * disable_apic_timer is set and the DUMMY flag is cleared. If yes,
-+ * set the DUMMY flag again and force the broadcast mode in the
-+ * clockevents layer.
-+ */
-+static void __cpuinit check_boot_apic_timer_broadcast(void)
-+{
-+	if (!local_apic_timer_disabled ||
-+	    (lapic_clockevent.features & CLOCK_EVT_FEAT_DUMMY))
-+		return;
-+
-+	lapic_clockevent.features |= CLOCK_EVT_FEAT_DUMMY;
-+
-+	local_irq_enable();
-+	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
-+			   &boot_cpu_physical_apicid);
-+	local_irq_disable();
-+}
-+
-+void __cpuinit setup_secondary_APIC_clock(void)
- {
-+	check_boot_apic_timer_broadcast();
- 	setup_APIC_timer();
- }
- 
+	-hpa
