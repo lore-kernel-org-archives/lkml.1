@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbYICWOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbYICWPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755089AbYICWOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 18:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYICWOf
+	id S1753067AbYICWPD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 18:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYICWOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 18:14:35 -0400
-Received: from waste.org ([66.93.16.53]:40683 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbYICWOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 18:14:35 -0400
-Subject: Re: drivers/char/random.c line 728 BUG
-From: Matt Mackall <mpm@selenic.com>
-To: Aaron Straus <aaron@merfinllc.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>, stable@kernel.org
-In-Reply-To: <20080903182845.GM17899@merfinllc.com>
-References: <20080826225918.GC5452@merfinllc.com>
-	 <20080828225924.GD6432@merfinllc.com>
-	 <20080829124807.54293904.akpm@linux-foundation.org>
-	 <1220465901.17608.55.camel@calx>  <20080903182845.GM17899@merfinllc.com>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 17:12:00 -0500
-Message-Id: <1220479920.17608.62.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Sep 2008 18:14:40 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:37780 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753365AbYICWOi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 18:14:38 -0400
+X-Greylist: delayed 1805 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Sep 2008 18:14:38 EDT
+From: Ilya Yanok <yanok@emcraft.com>
+To: linux-raid@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, wd@denx.de, Yuri Tikhonov <yur@emcraft.com>
+Subject: [PATCH] ASYNC_TX: fix the bug in async_tx_run_dependencies
+Date: Thu,  4 Sep 2008 01:43:51 +0400
+Message-Id: <1220478231-8725-1-git-send-email-yanok@emcraft.com>
+X-Mailer: git-send-email 1.5.6.3
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: Spam detection software, running on the system "ocean.emcraft.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  From: Yuri Tikhonov <yur@emcraft.com> Should clear the
+	next pointer of the TX if we are sure that the next TX (say NXT) will be
+	submitted to the channel too. Overwise, we break the chain of
+	descriptors, because we lose the information about the next descriptor
+	to run. So next time, when invoke async_tx_run_dependencies() with TX,
+	it's TX->next will be NULL, and NXT will be never submitted. [...] 
+	Content analysis details:   (-4.4 points, 2.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Yuri Tikhonov <yur@emcraft.com>
 
-On Wed, 2008-09-03 at 11:28 -0700, Aaron Straus wrote:
-> Hi Matt,
-> 
-> On Sep 03 01:18 PM, Matt Mackall wrote:
-> > This fix is bogus - it assumes that r->entropy_count has atomic
-> > assignment which is not universally true (witness the existence of
-> > atomic_t). So we can still observe partial updates to entropy_count on
-> > some architectures. Now it's probably the case that we'll never see a
-> > partial update that actually triggers the BUG_ON, but it's still
-> > conceptually wrong to do things this way.
-> 
-> I think Andrew was just being safe by reverting to the old behavior.
+Should clear the next pointer of the TX if we are sure that the
+next TX (say NXT) will be submitted to the channel too. Overwise,
+we break the chain of descriptors, because we lose the information
+about the next descriptor to run. So next time, when invoke
+async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
+NXT will be never submitted.
 
-Indeed. I've no doubt that his fix works and I'm certainly glad you guys
-took the time to fix things while I was away. I just think the resulting
-fix is a little silly.
+Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+---
+ crypto/async_tx/async_tx.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> Could we still apply his patch for the upcoming stable tree and fix it
-> the "right" way at some point in the future?
-
-I'm not sure what the current state of play is here in terms of the
-original patch being pushed to stable and mainline, but my patch is both
-simpler and more correct. If it's not too late, it's the one that should
-go to both places.
-
+diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
+index 85eaf7b..e8362c1 100644
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -137,7 +137,8 @@ async_tx_run_dependencies(struct dma_async_tx_descriptor *tx)
+ 		spin_lock_bh(&next->lock);
+ 		next->parent = NULL;
+ 		_next = next->next;
+-		next->next = NULL;
++		if (_next && _next->chan == chan)
++			next->next = NULL;
+ 		spin_unlock_bh(&next->lock);
+ 
+ 		next->tx_submit(next);
 -- 
-Mathematics is the supreme nostalgia of our time.
+1.5.6.3
 
