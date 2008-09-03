@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYICJkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYICJl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbYICJkp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 05:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYICJij
+	id S1755989AbYICJl0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 05:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbYICJky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 05:38:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44252 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754859AbYICJii (ORCPT
+	Wed, 3 Sep 2008 05:40:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:44842 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755899AbYICJkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 05:38:38 -0400
-Subject: [PATCH 8/8] S390: Update comments about why we don't use
-	<asm-generic/statfs.h>
-From: David Woodhouse <dwmw2@infradead.org>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-In-Reply-To: <1220275314.2982.83.camel@pmac.infradead.org>
-References: <1220275314.2982.83.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 10:38:35 +0100
-Message-Id: <1220434715.2985.68.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 3 Sep 2008 05:40:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=DdqaZBr2Z6H1K52N+Rx8st1/hv6rWYyzKV+AXa4/wpqsdtvjaVzt6zVOCC910Z3bD4
+         yTyuHWNy/AuTO+zOKY6uomU2RgJVSn9cCVreiKA6YBSViQTl/YAJ/nCOjKNnWw9ZNr5F
+         eAKfpRaIuetOmlHLWSXv31LYhGjjXtb2q2Syw=
+Message-ID: <84144f020809030240l265891e8gad5a2a9fced6880f@mail.gmail.com>
+Date: Wed, 3 Sep 2008 12:40:51 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Steve VanDeBogart" <vandebo-lkml@nerdbox.net>
+Subject: Re: [uml-devel] [PATCH 5/6] slab: Annotate slab
+Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       dkegel@google.com, jiayingz@google.com,
+       "John Reiser" <jreiser@bitwagon.com>
+In-Reply-To: <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net>
+	 <alpine.DEB.1.00.0808291616560.15543@abydos.NerdBox.Net>
+	 <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com>
+	 <alpine.DEB.1.00.0809022036560.15543@abydos.NerdBox.Net>
+	 <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
+X-Google-Sender-Auth: 5070bebb57002279
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
----
- arch/s390/include/asm/statfs.h |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+On Wed, Sep 3, 2008 at 12:27 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> On Wed, Sep 3, 2008 at 8:08 AM, Steve VanDeBogart
+> <vandebo-lkml@nerdbox.net> wrote:
+>> Ideally, we'd tell Valgrind that the bytes of a free'd slab object are
+>> no longer accessible, but the initialized state should remain the same
+>> until the object is made accessible again by the next allocation of
+>> the object.  Unfortunately, the compression method for A & V bits in
+>> Valgrind doesn't allow a region to be inaccessible and retain validness
+>> bits.
+>
+> I don't see why you should mark them initialized all the time. Just
+> mark them as uninitialized on kmem_cache_free() and again as
+> initialized when they're about to be returned from kmem_cache_alloc()
+> like we do in kmemcheck.
 
-diff --git a/arch/s390/include/asm/statfs.h b/arch/s390/include/asm/statfs.h
-index 099a455..06cc703 100644
---- a/arch/s390/include/asm/statfs.h
-+++ b/arch/s390/include/asm/statfs.h
-@@ -12,19 +12,16 @@
- #ifndef __s390x__
- #include <asm-generic/statfs.h>
- #else
-+/*
-+ * We can't use <asm-generic/statfs.h> because in 64-bit mode
-+ * we mix ints of different sizes in our struct statfs.
-+ */
- 
- #ifndef __KERNEL_STRICT_NAMES
--
- #include <linux/types.h>
--
- typedef __kernel_fsid_t	fsid_t;
--
- #endif
- 
--/*
-- * This is ugly -- we're already 64-bit clean, so just duplicate the 
-- * definitions.
-- */
- struct statfs {
- 	int  f_type;
- 	int  f_bsize;
--- 
-1.5.5.1
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
-
+Btw, actually, we don't mark them as uninitialized at the moment, but
+that's a bug in kmemcheck.
