@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYICWyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179AbYICWyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYICWyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 18:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYICWyL
+	id S1756179AbYICWyw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 18:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYICWyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 18:54:11 -0400
-Received: from waste.org ([66.93.16.53]:41243 "EHLO waste.org"
+	Wed, 3 Sep 2008 18:54:43 -0400
+Received: from tundra.namei.org ([65.99.196.166]:40384 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbYICWyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 18:54:10 -0400
-Subject: Re: drivers/char/random.c line 728 BUG
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: aaron@merfinllc.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       stable@kernel.org
-In-Reply-To: <20080903153206.24dc88c3.akpm@linux-foundation.org>
-References: <20080826225918.GC5452@merfinllc.com>
-	 <20080828225924.GD6432@merfinllc.com>
-	 <20080829124807.54293904.akpm@linux-foundation.org>
-	 <1220465901.17608.55.camel@calx> <20080903182845.GM17899@merfinllc.com>
-	 <1220479920.17608.62.camel@calx>
-	 <20080903153206.24dc88c3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 03 Sep 2008 17:51:37 -0500
-Message-Id: <1220482297.17608.84.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 8bit
+	id S1752024AbYICWym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 18:54:42 -0400
+Date: Thu, 4 Sep 2008 08:53:50 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: [GIT] Fix SELinux memory leak regression for 2.6.27
+In-Reply-To: <alpine.LFD.1.10.0809030843310.3259@nehalem.linux-foundation.org>
+Message-ID: <alpine.LRH.1.10.0809040853060.24576@tundra.namei.org>
+References: <alpine.LRH.1.10.0809031015260.17746@tundra.namei.org> <alpine.LRH.1.10.0809032238080.21379@tundra.namei.org> <alpine.LFD.1.10.0809030843310.3259@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Sep 2008, Linus Torvalds wrote:
 
-On Wed, 2008-09-03 at 15:32 -0700, Andrew Morton wrote:
-> On Wed, 03 Sep 2008 17:12:00 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
 > 
-> > > Could we still apply his patch for the upcoming stable tree and fix it
-> > > the "right" way at some point in the future?
+> 
+> On Wed, 3 Sep 2008, James Morris wrote:
+> > On Wed, 3 Sep 2008, James Morris wrote:
 > > 
-> > I'm not sure what the current state of play is here in terms of the
-> > original patch being pushed to stable and mainline, but my patch is both
-> > simpler and more correct. If it's not too late, it's the one that should
-> > go to both places.
+> > > This is causing recent Fedora systems to die a slow and painful death.  
+> > > Please pull.
+> > 
+> > Further review has raised an issue with this patch, an updated version 
+> > should be available soon.
 > 
-> It's a fairly minor thing.  The post-this-patch code takes care to
-> ensure that ->entropy_count never has an illegal value, so it's OK but
-> aesthetially unpleasing to check its value outside the lock.
-> 
-> And the post-this-patch code generates less .text, so it's a desirable
-> thing from that POV too.
-> 
-> We could/should do both, I guess.
+> Ahh, that also explains why the branch isn't there any more. Thanks,
 
-Sure, adding a local variable is fine. Though really, this shouldn't
-actually improve things, that's just our compiler being sucky. And I
-think it's a wash in terms of readability.
+A more correct version of the patch is now up, please pull:
 
-> I kinda ducked your move-the-BUG
-> patch because I wasn't in a write-yet-another-changelog mood.
+The following changes since commit ec0c15afb41fd9ad45b53468b60db50170e22346:
+  Linus Torvalds (1):
+        Split up PIT part of TSC calibration from native_calibrate_tsc
 
-I included one, but it was terse:
+are available in the git repository at:
 
- Avoid checking lock-protected entropy_count when lock isn't held.
+  
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
 
-Here's a more expansive version:
+Eric Paris (1):
+      SELinux: memory leak in security_context_to_sid_core
 
-﻿Avoid checking lock-protected entropy_count when lock isn't held. This
-fixes a bug reported by and diagnosed by Aaron Straus.
+ security/selinux/ss/services.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-This fixes a regression introduced into 2.6.26 by
- 
-     commit adc782dae6c4c0f6fb679a48a544cfbcd79ae3dc
-     Author: Matt Mackall <mpm@selenic.com>
-     Date:   Tue Apr 29 01:03:07 2008 -0700
- 
-         random: simplify and rename credit_entropy_store
 
-Signed-off-by: Matt Mackall <mpm@selenic.com>
- 
-diff -r ddae8a8d3c6f drivers/char/random.c
---- a/drivers/char/random.c	Tue Jul 29 03:07:11 2008 +0000
-+++ b/drivers/char/random.c	Wed Sep 03 17:43:18 2008 -0500
-@@ -726,11 +726,10 @@
- {
- 	unsigned long flags;
- 
--	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
--
- 	/* Hold lock while accounting */
- 	spin_lock_irqsave(&r->lock, flags);
- 
-+	BUG_ON(r->entropy_count > r->poolinfo->POOLBITS);
- 	DEBUG_ENT("trying to extract %d bits from %s\n",
- 		  nbytes * 8, r->name);
+
+
 
 -- 
-Mathematics is the supreme nostalgia of our time.
-
+James Morris
+<jmorris@namei.org>
