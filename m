@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYICJCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbYICJDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbYICJCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 05:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYICJB7
+	id S1754310AbYICJDw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 05:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYICJDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 05:01:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40067 "EHLO
+	Wed, 3 Sep 2008 05:03:44 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40083 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbYICJB7 (ORCPT
+	with ESMTP id S1751350AbYICJDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 05:01:59 -0400
+	Wed, 3 Sep 2008 05:03:44 -0400
 Subject: Re: [2.6.27] early exception - lockdep related?
 From: Peter Zijlstra <peterz@infradead.org>
 To: Luca Tettamanti <kronos.it@gmail.com>
@@ -21,8 +21,8 @@ References: <20080902210646.GA10925@dreamland.darkstar.lan>
 	 <1220431061.8609.87.camel@twins>
 	 <68676e00809030154i7470b08o770198bbefe00924@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 03 Sep 2008 11:01:58 +0200
-Message-Id: <1220432518.8609.89.camel@twins>
+Date: Wed, 03 Sep 2008 11:03:44 +0200
+Message-Id: <1220432624.8609.92.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -56,6 +56,9 @@ On Wed, 2008-09-03 at 10:54 +0200, Luca Tettamanti wrote:
 > 
 > Is netconsole already up at that point?
 
-Good question, I suppose not, that only happens after the device probing
-has found the eth card.
+Another thing you could try is booting this kernel in qemu and try
+attaching to its gdb stub.
+
+I've had varying levels of success doing that, you need a very recent
+(might still be svn snapshot) of qemu to get x86_64 gdb to work iirc.
 
