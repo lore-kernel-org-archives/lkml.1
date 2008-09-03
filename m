@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYIDGuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYIDGvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbYIDGuF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 02:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYIDGtw
+	id S1754893AbYIDGvt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 02:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYIDGvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 02:49:52 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:50044 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbYIDGtv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 02:49:51 -0400
-Message-ID: <48BF83E1.5040000@bull.net>
-Date: Thu, 04 Sep 2008 08:44:49 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 4 Sep 2008 02:51:41 -0400
+Received: from cable.insite.cz ([84.242.84.93]:35689 "EHLO server.insite.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750870AbYIDGvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 02:51:40 -0400
+X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Sep 2008 02:51:40 EDT
+Message-ID: <48BE7EE4.8020800@insite.cz>
+Date: Wed, 03 Sep 2008 14:11:16 +0200
+From: Pavel Hofman <pavel.hofman@insite.cz>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: David Shwatrz <dshwatrz@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, Greg KH <greg@kroah.com>,
-       Mark Ryden <markryde@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <htejun@gmail.com>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ftp.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
-References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>	 <m1zloyh2mb.fsf_-_@frodo.ebiederm.org>	 <m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>	 <20080820021754.GA25182@kroah.com>	 <m1od3m282j.fsf_-_@frodo.ebiederm.org>	 <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net>	 <dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com>	 <48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de> <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
-In-Reply-To: <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+CC: Wei Ni <wni@nvidia.com>, Peer Chen <pchen@nvidia.com>,
+       alsa-devel <alsa-devel@alsa-project.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [alsa-devel] [PATCH] add the nvidia HDMI codec driver for	MCP77/79
+References: <200809031558156739794@gmail.com> <s5hhc8xpq6z.wl%tiwai@suse.de>	<15F501D1A78BD343BE8F4D8DB854566B31F8F744@hkemmail01.nvidia.com> <s5h4p4xph6x.wl%tiwai@suse.de>
+In-Reply-To: <s5h4p4xph6x.wl%tiwai@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Shwatrz wrote:
-> Hi,
->> go into my tree this week,
-> 
-> I am also interested in this patch; may I ask  - what do you mean by
-> "my  tree" ?I am a little newbie in the kernel, as you might understand.
-> I looked into http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-> for candidates for this git tree you are talking about.
-> 
->  May I ask: what is the **exact** URL for this git tree you are talking about ?
 
-Greg's tree is there:
-http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=summary
-
-You can clone it from here:
-git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/patches.git
-
-It contains the patches serie to be applied on top of
-linux-2.6 (with 'quilt' for example).
-
-Benjamin
-
+>> ......
+>> According to these codes, It only can get the realtek codec and can not
+>> get hdmi codec, if just change azx_max_codecs[AZX_DRIVER_NVIDIA] to 4
+>> I think if remove "if (!audio_codecs)", it will be better, and I only
+>> need to chang azx_max_codecs[AZX_DRIVER_NVIDIA] to 4
 > 
-> Thanks,
+> Well, the check is there for a good reason.
 > 
-> Regards,
-> DS
+> There are many machines with broken BIOS reporting the 4th slot
+> available although it isn't actually.  It's a workaround to skip such
+> a bogus information.  So, it cannot be changed so easily.
 > 
-> 
-> On Tue, Sep 2, 2008 at 8:01 PM, Greg KH <gregkh@suse.de> wrote:
->> On Tue, Sep 02, 2008 at 04:03:20PM +0200, Benjamin Thery wrote:
->>> Mark Ryden wrote:
->>>> Hello,
->>>>  I hope that this patch (from 4.7.08) was not forgetten... I don't see
->>>> it for example in linux-net (I have an up-to-date linux-next git
->>>> tree).
->>> I was about to ask the same thing.
->>>
->>> Greg, what is the plan with these remaining patches for sysfs tagged
->>> dirs? Will you have some time to merge them in your tree soon?
->> Yes, they should go into my tree this week, sorry been busy with 2.6.27
->> work and Novell's Hackweek.
->>
->> thanks,
->>
->> greg k-h
->> --
->> To unsubscribe from this list: send the line "unsubscribe netdev" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> 
+> We need to sort out this in a better way...  Oh well.
 
 
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+Please, please, put the above information as a comment to the respective 
+place. These "hacks" should be commented :)
 
-    http://www.bull.com
+Thanks a lot,
+
+Pavel.
+
