@@ -1,60 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYICHVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbYICHUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYICHVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 03:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYICHSX
+	id S1755909AbYICHUp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 03:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbYICHSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 03:18:23 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:55309 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbYICHSN (ORCPT
+	Wed, 3 Sep 2008 03:18:22 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:49089 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbYICHSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Sep 2008 03:18:13 -0400
-Message-Id: <20080903071742.326285837@mail.of.borg>
+Message-Id: <20080903071742.932797091@mail.of.borg>
 References: <20080903071542.615137611@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Sep 2008 09:15:47 +0200
+Date: Wed, 03 Sep 2008 09:15:49 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: linux-m68k@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 5/8] m68k: Remove unused atari_kbd_translate()
-Content-Disposition: inline; filename=atari-kill-unused-atari_kbd_translate.diff
+Subject: [patch 7/8] m68k: Add missing dma_sync_single_range_for_{cpu,device}()
+Content-Disposition: inline; filename=m68k-add-dma_sync_single_range_for_cpu-device.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-If CONFIG_VT=n, I get:
+| include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_cpu':
+| include/linux/ssb/ssb.h:517: error: implicit declaration of function 'dma_sync_single_range_for_cpu'
+| include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_device':
+| include/linux/ssb/ssb.h:538: error: implicit declaration of function 'dma_sync_single_range_for_device'
 
-| arch/m68k/atari/built-in.o: In function `atari_kbd_translate':
-| arch/m68k/atari/atakeyb.c:640: undefined reference to `shift_state'
-
-Just remove atari_kbd_translate(), as it's unused.
+Add the missing dma_sync_single_range_for_{cpu,device}(), and remove the bogus
+`inline' for the non-static function dma_sync_single_for_device().
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/atari/atakeyb.c |   12 ------------
- 1 file changed, 12 deletions(-)
 
---- a/arch/m68k/atari/atakeyb.c
-+++ b/arch/m68k/atari/atakeyb.c
-@@ -635,15 +635,3 @@ int atari_keyb_init(void)
- 	return 0;
+---
+ arch/m68k/kernel/dma.c         |    4 ++--
+ include/asm-m68k/dma-mapping.h |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+
+--- a/arch/m68k/kernel/dma.c
++++ b/arch/m68k/kernel/dma.c
+@@ -66,8 +66,8 @@ void dma_free_coherent(struct device *de
  }
- EXPORT_SYMBOL_GPL(atari_keyb_init);
--
--int atari_kbd_translate(unsigned char keycode, unsigned char *keycodep, char raw_mode)
--{
--#ifdef CONFIG_MAGIC_SYSRQ
--	/* ALT+HELP pressed? */
--	if ((keycode == 98) && ((shift_state & 0xff) == 8))
--		*keycodep = 0xff;
--	else
--#endif
--		*keycodep = keycode;
--	return 1;
--}
+ EXPORT_SYMBOL(dma_free_coherent);
+ 
+-inline void dma_sync_single_for_device(struct device *dev, dma_addr_t handle, size_t size,
+-				       enum dma_data_direction dir)
++void dma_sync_single_for_device(struct device *dev, dma_addr_t handle,
++				size_t size, enum dma_data_direction dir)
+ {
+ 	switch (dir) {
+ 	case DMA_TO_DEVICE:
+--- a/include/asm-m68k/dma-mapping.h
++++ b/include/asm-m68k/dma-mapping.h
+@@ -74,6 +74,14 @@ extern void dma_sync_single_for_device(s
+ extern void dma_sync_sg_for_device(struct device *, struct scatterlist *, int,
+ 				   enum dma_data_direction);
+ 
++static inline void dma_sync_single_range_for_device(struct device *dev,
++		dma_addr_t dma_handle, unsigned long offset, size_t size,
++		enum dma_data_direction direction)
++{
++	/* just sync everything for now */
++	dma_sync_single_for_device(dev, dma_handle, offset + size, direction);
++}
++
+ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t handle,
+ 					   size_t size, enum dma_data_direction dir)
+ {
+@@ -84,6 +92,14 @@ static inline void dma_sync_sg_for_cpu(s
+ {
+ }
+ 
++static inline void dma_sync_single_range_for_cpu(struct device *dev,
++		dma_addr_t dma_handle, unsigned long offset, size_t size,
++		enum dma_data_direction direction)
++{
++	/* just sync everything for now */
++	dma_sync_single_for_cpu(dev, dma_handle, offset + size, direction);
++}
++
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t handle)
+ {
+ 	return 0;
 
 -- 
 Gr{oetje,eeting}s,
