@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYICKJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYICKOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYICKJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYICKJr
+	id S1754270AbYICKOv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYICKOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:09:47 -0400
-Received: from mailer1.option.com ([81.246.70.162]:44969 "EHLO
-	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbYICKJq (ORCPT
+	Wed, 3 Sep 2008 06:14:41 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47511 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbYICKOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:09:46 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlgBAFf/vUgKAAAZ/2dsb2JhbAAItg2BaQ
-Message-ID: <48BE5903.1040207@option.com>
-Date: Wed, 03 Sep 2008 11:29:39 +0200
-From: Denis Joseph Barrow <D.Barow@option.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Andrew Bird <ajb@spheresystems.co.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Jeff Garzik <jgarzik@pobox.com>
-Subject: re /drivers/char/n_tty.c drops characters
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 3 Sep 2008 06:14:40 -0400
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+From: David Woodhouse <dwmw2@infradead.org>
+To: dedekind@infradead.org
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1220435073.4036.41.camel@sauron>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
+	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+	 <1220262187.2982.58.camel@pmac.infradead.org>
+	 <1220435073.4036.41.camel@sauron>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 11:14:36 +0100
+Message-Id: <1220436876.2985.82.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Sep 2008 10:09:44.0588 (UTC) FILETIME=[30325CC0:01C90DAD]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-It looks like the it was the intention that n_tty.c
-would not drop characters in older kernels around 2.6.15 in the
-n_tty layer if N_TTY_BUF_SIZE was 4096 bytes
-as TTY_FLIPBUF_SIZE was only 512 bytes.
+On Wed, 2008-09-03 at 12:44 +0300, Artem Bityutskiy wrote:
+> On Mon, 2008-09-01 at 10:43 +0100, David Woodhouse wrote:
+> > For btrfs I xor the first 64 bits with the second 64 bits, and put
+> > _that_ into f_fsid. You're just putting the first 64 bits in and
+> > ignoring the second 64 bits. Neither is really _better_ than the
+> other;
+> > you just alter the circumstances in which you get collisions. But I
+> > suppose we might as well be consistent about how we do it?
+>
+> Like this?
 
-Now since 2.6.15 or so tty_buffer_alloc in tty_io.c is capible
-of allocating a tty buffer of over 64k I believe this
-means that the n_tty_receive_buf will overflow if tty_buffer_alloc 
-throws a buffer of over 4k to n_tty_receive_buf.
-
-Any comments?
+Yeah, that's what ext[234] and btrfs do.
 
 -- 
-best regards,
-D.J. Barrow
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
