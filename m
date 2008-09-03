@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYICRk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYICRl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbYICRk5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbYICRkT
+	id S1755906AbYICRl7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYICRla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:40:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56929 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:41:30 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57116 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756316AbYICRkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:40:16 -0400
-Date: Wed, 3 Sep 2008 10:26:05 -0700
+	id S1757391AbYICRl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:41:29 -0400
+Date: Wed, 3 Sep 2008 10:26:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 23/42] pkt_sched: Fix return value corruption in HTB and
-	TBF.
-Message-ID: <20080903172605.GX7731@suse.de>
+       alan@lxorguk.ukuu.org.uk, Vlad Yasevich <vladislav.yasevich@hp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 26/42] sctp: fix potential panics in the SCTP-AUTH API.
+Message-ID: <20080903172617.GA7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0004-pkt_sched-Fix-return-value-corruption-in-HTB-and-TB.patch"
+Content-Disposition: inline; filename="0007-sctp-fix-potential-panics-in-the-SCTP-AUTH-API.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,83 +40,251 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
 
-[ Upstream commit 69747650c814a8a79fef412c7416adf823293a3e ]
+[ Upstream commit 5e739d1752aca4e8f3e794d431503bfca3162df4 ]
 
-Based upon a bug report by Josip Rodin.
+All of the SCTP-AUTH socket options could cause a panic
+if the extension is disabled and the API is envoked.
 
-Packet schedulers should only return NET_XMIT_DROP iff
-the packet really was dropped.  If the packet does reach
-the device after we return NET_XMIT_DROP then TCP can
-crash because it depends upon the enqueue path return
-values being accurate.
+Additionally, there were some additional assumptions that
+certain pointers would always be valid which may not
+always be the case.
 
+This patch hardens the API and address all of the crash
+scenarios.
+
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/sch_htb.c |   20 ++++++++++++--------
- net/sched/sch_tbf.c |   11 ++---------
- 2 files changed, 14 insertions(+), 17 deletions(-)
+ net/sctp/endpointola.c |    4 +-
+ net/sctp/socket.c      |   85 +++++++++++++++++++++++++++++++++++++------------
+ 2 files changed, 67 insertions(+), 22 deletions(-)
 
---- a/net/sched/sch_htb.c
-+++ b/net/sched/sch_htb.c
-@@ -595,11 +595,13 @@ static int htb_enqueue(struct sk_buff *s
- 		kfree_skb(skb);
- 		return ret;
- #endif
--	} else if (cl->un.leaf.q->enqueue(skb, cl->un.leaf.q) !=
-+	} else if ((ret = cl->un.leaf.q->enqueue(skb, cl->un.leaf.q)) !=
- 		   NET_XMIT_SUCCESS) {
--		sch->qstats.drops++;
--		cl->qstats.drops++;
--		return NET_XMIT_DROP;
-+		if (ret == NET_XMIT_DROP) {
-+			sch->qstats.drops++;
-+			cl->qstats.drops++;
-+		}
-+		return ret;
- 	} else {
- 		cl->bstats.packets +=
- 			skb_is_gso(skb)?skb_shinfo(skb)->gso_segs:1;
-@@ -639,11 +641,13 @@ static int htb_requeue(struct sk_buff *s
- 		kfree_skb(skb);
- 		return ret;
- #endif
--	} else if (cl->un.leaf.q->ops->requeue(skb, cl->un.leaf.q) !=
-+	} else if ((ret = cl->un.leaf.q->ops->requeue(skb, cl->un.leaf.q)) !=
- 		   NET_XMIT_SUCCESS) {
--		sch->qstats.drops++;
--		cl->qstats.drops++;
--		return NET_XMIT_DROP;
-+		if (ret == NET_XMIT_DROP) {
-+			sch->qstats.drops++;
-+			cl->qstats.drops++;
-+		}
-+		return ret;
- 	} else
- 		htb_activate(q, cl);
+--- a/net/sctp/endpointola.c
++++ b/net/sctp/endpointola.c
+@@ -103,6 +103,7 @@ static struct sctp_endpoint *sctp_endpoi
  
---- a/net/sched/sch_tbf.c
-+++ b/net/sched/sch_tbf.c
-@@ -123,15 +123,8 @@ static int tbf_enqueue(struct sk_buff *s
- 	struct tbf_sched_data *q = qdisc_priv(sch);
+ 		/* Initialize the CHUNKS parameter */
+ 		auth_chunks->param_hdr.type = SCTP_PARAM_CHUNKS;
++		auth_chunks->param_hdr.length = htons(sizeof(sctp_paramhdr_t));
+ 
+ 		/* If the Add-IP functionality is enabled, we must
+ 		 * authenticate, ASCONF and ASCONF-ACK chunks
+@@ -110,8 +111,7 @@ static struct sctp_endpoint *sctp_endpoi
+ 		if (sctp_addip_enable) {
+ 			auth_chunks->chunks[0] = SCTP_CID_ASCONF;
+ 			auth_chunks->chunks[1] = SCTP_CID_ASCONF_ACK;
+-			auth_chunks->param_hdr.length =
+-					htons(sizeof(sctp_paramhdr_t) + 2);
++			auth_chunks->param_hdr.length += htons(2);
+ 		}
+ 	}
+ 
+--- a/net/sctp/socket.c
++++ b/net/sctp/socket.c
+@@ -2965,6 +2965,9 @@ static int sctp_setsockopt_auth_chunk(st
+ {
+ 	struct sctp_authchunk val;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen != sizeof(struct sctp_authchunk))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, optlen))
+@@ -2995,6 +2998,9 @@ static int sctp_setsockopt_hmac_ident(st
+ 	struct sctp_hmacalgo *hmacs;
+ 	int err;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen < sizeof(struct sctp_hmacalgo))
+ 		return -EINVAL;
+ 
+@@ -3033,6 +3039,9 @@ static int sctp_setsockopt_auth_key(stru
+ 	struct sctp_association *asoc;
  	int ret;
  
--	if (skb->len > q->max_size) {
--		sch->qstats.drops++;
--#ifdef CONFIG_NET_CLS_ACT
--		if (sch->reshape_fail == NULL || sch->reshape_fail(skb, sch))
--#endif
--			kfree_skb(skb);
--
--		return NET_XMIT_DROP;
--	}
-+	if (skb->len > q->max_size)
-+		return qdisc_reshape_fail(skb, sch);
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen <= sizeof(struct sctp_authkey))
+ 		return -EINVAL;
  
- 	if ((ret = q->qdisc->enqueue(skb, q->qdisc)) != 0) {
- 		sch->qstats.drops++;
+@@ -3070,6 +3079,9 @@ static int sctp_setsockopt_active_key(st
+ 	struct sctp_authkeyid val;
+ 	struct sctp_association *asoc;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen != sizeof(struct sctp_authkeyid))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, optlen))
+@@ -3095,6 +3107,9 @@ static int sctp_setsockopt_del_key(struc
+ 	struct sctp_authkeyid val;
+ 	struct sctp_association *asoc;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (optlen != sizeof(struct sctp_authkeyid))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, optlen))
+@@ -5053,19 +5068,29 @@ static int sctp_getsockopt_maxburst(stru
+ static int sctp_getsockopt_hmac_ident(struct sock *sk, int len,
+ 				    char __user *optval, int __user *optlen)
+ {
++	struct sctp_hmacalgo  __user *p = (void __user *)optval;
+ 	struct sctp_hmac_algo_param *hmacs;
+-	__u16 param_len;
++	__u16 data_len = 0;
++	u32 num_idents;
++
++	if (!sctp_auth_enable)
++		return -EACCES;
+ 
+ 	hmacs = sctp_sk(sk)->ep->auth_hmacs_list;
+-	param_len = ntohs(hmacs->param_hdr.length);
++	data_len = ntohs(hmacs->param_hdr.length) - sizeof(sctp_paramhdr_t);
+ 
+-	if (len < param_len)
++	if (len < sizeof(struct sctp_hmacalgo) + data_len)
+ 		return -EINVAL;
++
++	len = sizeof(struct sctp_hmacalgo) + data_len;
++	num_idents = data_len / sizeof(u16);
++
+ 	if (put_user(len, optlen))
+ 		return -EFAULT;
+-	if (copy_to_user(optval, hmacs->hmac_ids, len))
++	if (put_user(num_idents, &p->shmac_num_idents))
++		return -EFAULT;
++	if (copy_to_user(p->shmac_idents, hmacs->hmac_ids, data_len))
+ 		return -EFAULT;
+-
+ 	return 0;
+ }
+ 
+@@ -5075,6 +5100,9 @@ static int sctp_getsockopt_active_key(st
+ 	struct sctp_authkeyid val;
+ 	struct sctp_association *asoc;
+ 
++	if (!sctp_auth_enable)
++		return -EACCES;
++
+ 	if (len < sizeof(struct sctp_authkeyid))
+ 		return -EINVAL;
+ 	if (copy_from_user(&val, optval, sizeof(struct sctp_authkeyid)))
+@@ -5089,6 +5117,12 @@ static int sctp_getsockopt_active_key(st
+ 	else
+ 		val.scact_keynumber = sctp_sk(sk)->ep->active_key_id;
+ 
++	len = sizeof(struct sctp_authkeyid);
++	if (put_user(len, optlen))
++		return -EFAULT;
++	if (copy_to_user(optval, &val, len))
++		return -EFAULT;
++
+ 	return 0;
+ }
+ 
+@@ -5099,13 +5133,16 @@ static int sctp_getsockopt_peer_auth_chu
+ 	struct sctp_authchunks val;
+ 	struct sctp_association *asoc;
+ 	struct sctp_chunks_param *ch;
+-	u32    num_chunks;
++	u32    num_chunks = 0;
+ 	char __user *to;
+ 
+-	if (len <= sizeof(struct sctp_authchunks))
++	if (!sctp_auth_enable)
++		return -EACCES;
++
++	if (len < sizeof(struct sctp_authchunks))
+ 		return -EINVAL;
+ 
+-	if (copy_from_user(&val, p, sizeof(struct sctp_authchunks)))
++	if (copy_from_user(&val, optval, sizeof(struct sctp_authchunks)))
+ 		return -EFAULT;
+ 
+ 	to = p->gauth_chunks;
+@@ -5114,20 +5151,21 @@ static int sctp_getsockopt_peer_auth_chu
+ 		return -EINVAL;
+ 
+ 	ch = asoc->peer.peer_chunks;
++	if (!ch)
++		goto num;
+ 
+ 	/* See if the user provided enough room for all the data */
+ 	num_chunks = ntohs(ch->param_hdr.length) - sizeof(sctp_paramhdr_t);
+ 	if (len < num_chunks)
+ 		return -EINVAL;
+ 
+-	len = num_chunks;
+-	if (put_user(len, optlen))
++	if (copy_to_user(to, ch->chunks, num_chunks))
+ 		return -EFAULT;
++num:
++	len = sizeof(struct sctp_authchunks) + num_chunks;
++	if (put_user(len, optlen)) return -EFAULT;
+ 	if (put_user(num_chunks, &p->gauth_number_of_chunks))
+ 		return -EFAULT;
+-	if (copy_to_user(to, ch->chunks, len))
+-		return -EFAULT;
+-
+ 	return 0;
+ }
+ 
+@@ -5138,13 +5176,16 @@ static int sctp_getsockopt_local_auth_ch
+ 	struct sctp_authchunks val;
+ 	struct sctp_association *asoc;
+ 	struct sctp_chunks_param *ch;
+-	u32    num_chunks;
++	u32    num_chunks = 0;
+ 	char __user *to;
+ 
+-	if (len <= sizeof(struct sctp_authchunks))
++	if (!sctp_auth_enable)
++		return -EACCES;
++
++	if (len < sizeof(struct sctp_authchunks))
+ 		return -EINVAL;
+ 
+-	if (copy_from_user(&val, p, sizeof(struct sctp_authchunks)))
++	if (copy_from_user(&val, optval, sizeof(struct sctp_authchunks)))
+ 		return -EFAULT;
+ 
+ 	to = p->gauth_chunks;
+@@ -5157,17 +5198,21 @@ static int sctp_getsockopt_local_auth_ch
+ 	else
+ 		ch = sctp_sk(sk)->ep->auth_chunk_list;
+ 
++	if (!ch)
++		goto num;
++
+ 	num_chunks = ntohs(ch->param_hdr.length) - sizeof(sctp_paramhdr_t);
+-	if (len < num_chunks)
++	if (len < sizeof(struct sctp_authchunks) + num_chunks)
+ 		return -EINVAL;
+ 
+-	len = num_chunks;
++	if (copy_to_user(to, ch->chunks, num_chunks))
++		return -EFAULT;
++num:
++	len = sizeof(struct sctp_authchunks) + num_chunks;
+ 	if (put_user(len, optlen))
+ 		return -EFAULT;
+ 	if (put_user(num_chunks, &p->gauth_number_of_chunks))
+ 		return -EFAULT;
+-	if (copy_to_user(to, ch->chunks, len))
+-		return -EFAULT;
+ 
+ 	return 0;
+ }
 
 -- 
