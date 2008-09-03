@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYICTls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYICTm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYICTls (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 15:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYICTlk
+	id S1755723AbYICTm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 15:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYICTmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 15:41:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46251 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYICTlk (ORCPT
+	Wed, 3 Sep 2008 15:42:18 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:19523 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbYICTmQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 15:41:40 -0400
-Date: Wed, 3 Sep 2008 21:44:49 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/2] Add a SYSTEM_PANIC state
-Message-ID: <20080903194449.GW18288@one.firstfloor.org>
-References: <20080902349.573187695@firstfloor.org> <20080902134922.9401F3E6A00@basil.firstfloor.org> <20080903120423.9e00557c.akpm@linux-foundation.org> <20080903191650.GV18288@one.firstfloor.org> <20080903123202.91e8ce4d.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 3 Sep 2008 15:42:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=NIn8dlOAePlD9YTh6WbR8JCm0uIgzJrzw/w/ou/eFoetj5V0qY3bMJy1qOzYb8sCzR
+         VZVzV1+r2kaEt7g2B1DuO2UcG0hBXW10pf/Bx63r1VlTahtNJlpwXkc0cEYq8ldZ/RR/
+         coIxqV9JEiGnZxfvEL2/tNnaLLKRudOVR2Gr8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Nir Tzachar" <tzachar@grad120a.cs.bgu.ac.il>
+Subject: Re: [PATCH] ncurses based config
+Date: Wed, 3 Sep 2008 21:38:14 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Nir Tzachar <nir@tzachar.com>
+References: <1220469076-16487-1-git-send-email-nir@tzachar.com>
+In-Reply-To: <1220469076-16487-1-git-send-email-nir@tzachar.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080903123202.91e8ce4d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200809032138.14651.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 12:32:02PM -0700, Andrew Morton wrote:
-> On Wed, 3 Sep 2008 21:16:51 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+
+Hi,
+
+On Wednesday 03 September 2008, Nir Tzachar wrote:
+> This patch was inspired by the kernel projects page, where an ncurses
+> replacement for menuconfig was mentioned (by Sam Ravnborg).
 > 
-> > On Wed, Sep 03, 2008 at 12:04:23PM -0700, Andrew Morton wrote:
-> > > On Tue,  2 Sep 2008 15:49:22 +0200 (CEST)
-> > > Andi Kleen <andi@firstfloor.org> wrote:
-> > > 
-> > > > --- linux.orig/include/linux/kernel.h
-> > > > +++ linux/include/linux/kernel.h
-> > > > @@ -248,6 +248,7 @@ extern enum system_states {
-> > > >  	SYSTEM_POWER_OFF,
-> > > >  	SYSTEM_RESTART,
-> > > >  	SYSTEM_SUSPEND_DISK,
-> > > > +	SYSTEM_PANIC,
-> > > >  } system_state;
-> > > 
-> > > system_state is such a crock.  I wonder what other random code all over
-> > > the place is looking at system_state and will get unexpectedly broken
-> > > by other "unrelated" changes such as this..
-> > 
-> > >From a quick grep none.
-> > 
-> > Also I think it's a natural extension.
-> > 
-> > > 
-> > > 
-> > > It's not a heck of a lot nicer, but we could do this:
-> > 
-> > Sorry but I think it's far worse. How do you think it's
-> > better?
-> > 
+> Building on menuconfig, this patch implements a more modern look interface using
+> ncurses and ncurses' satellite libraries (menu, panel, form). The implementation
+> does not depend on lxdialog, which is currently distributed with the kernel.
 > 
-> For the reason which I stated and which you carefully deleted prior to
-> asking my reason.
+> The only change outside of nconf.c is due to a name clash: both ncurses and
+> lkc.h define a fucntion named menu_init(). I changed the internal version's
+> name. 
+> 
+> Please consider the patch for merging. Comments are appreciated.
 
-You mean " This has the
-advantage of not introducing any additional global states and is a bit
-more logical, I think." ?
+Could you please tell what kernel version is it against?
 
-Seems dodgy to me but ok. Also I think personally SYSTEM_PANIC 
-is more logical than making oops_in_progress stand for panic too.
+I'm getting the following error on make nconfig (and also on make menuconfig
+which works fine without this patch) with the current Linus' tree:
 
-Anyways it's moot because it looks like smp_call_function is not
-easily salavagable for panic anyways.
-
--Andi
-
--- 
-ak@linux.intel.com
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  HOSTCC  scripts/kconfig/nconf.o
+  HOSTCC  scripts/kconfig/zconf.tab.o
+scripts/kconfig/zconf.tab.c: In function ‘conf_parse’:
+scripts/kconfig/zconf.tab.c:2258: warning: implicit declaration of function ‘menu_init’
+  HOSTLD  scripts/kconfig/nconf
+scripts/kconfig/nconf arch/x86/Kconfig
+make[1]: *** [nconfig] Segmentation fault
+make: *** [nconfig] Error 2
