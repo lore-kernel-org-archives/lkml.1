@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbYICRu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbYICRvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759143AbYICRu7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbYICRuq
+	id S1759273AbYICRvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbYICRvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:50:46 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58590 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:51:35 -0400
+Received: from mail.suse.de ([195.135.220.2]:53997 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756928AbYICRuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:50:44 -0400
-Date: Wed, 3 Sep 2008 10:32:54 -0700
+	id S1755348AbYICRvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:51:33 -0400
+Date: Wed, 3 Sep 2008 10:32:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,19 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Litke <agl@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [patch 06/16] mm: make setup_zone_migrate_reserve() aware of
-	overlapping nodes
-Message-ID: <20080903173254.GG10429@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ian Campbell <ijc@hellion.org.uk>,
+       Jaya Kumar <jayakumar.lkml@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh@veritas.com>, Johannes Weiner <hannes@saeurebad.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Kel Modderman <kel@otaku42.de>,
+       Markus Armbruster <armbru@redhat.com>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [patch 08/16] fbdefio: add set_page_dirty handler to deferred IO FB
+Message-ID: <20080903173258.GI10429@suse.de>
 References: <20080903172849.927077124@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-make-setup_zone_migrate_reserve-aware-of-overlapping-nodes.patch"
+Content-Disposition: inline; filename="fbdefio-add-set_page_dirty-handler-to-deferred-io-fb.patch"
 In-Reply-To: <20080903173218.GA10429@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,60 +44,106 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Adam Litke <agl@us.ibm.com>
+From: Ian Campbell <ijc@hellion.org.uk>
 
-commit 344c790e3821dac37eb742ddd0b611a300f78b9a upstream
+commit d847471d063663b9f36927d265c66a270c0cfaab upstream
 
-I have gotten to the root cause of the hugetlb badness I reported back on
-August 15th.  My system has the following memory topology (note the
-overlapping node):
+Fixes kernel BUG at lib/radix-tree.c:473.
 
-            Node 0 Memory: 0x8000000-0x44000000
-            Node 1 Memory: 0x0-0x8000000 0x44000000-0x80000000
+Previously the handler was incidentally provided by tmpfs but this was
+removed with:
 
-setup_zone_migrate_reserve() scans the address range 0x0-0x8000000 looking
-for a pageblock to move onto the MIGRATE_RESERVE list.  Finding no
-candidates, it happily continues the scan into 0x8000000-0x44000000.  When
-a pageblock is found, the pages are moved to the MIGRATE_RESERVE list on
-the wrong zone.  Oops.
+  commit 14fcc23fdc78e9d32372553ccf21758a9bd56fa1
+  Author: Hugh Dickins <hugh@veritas.com>
+  Date:   Mon Jul 28 15:46:19 2008 -0700
 
-setup_zone_migrate_reserve() should skip pageblocks in overlapping nodes.
+    tmpfs: fix kernel BUG in shmem_delete_inode
 
-Signed-off-by: Adam Litke <agl@us.ibm.com>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Nishanth Aravamudan <nacc@us.ibm.com>
-Cc: Andy Whitcroft <apw@shadowen.org>
+relying on this behaviour was incorrect in any case and the BUG also
+appeared when the device node was on an ext3 filesystem.
+
+v2: override a_ops at open() time rather than mmap() time to minimise
+races per AKPM's concerns.
+
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Hugh Dickins <hugh@veritas.com>
+Cc: Johannes Weiner <hannes@saeurebad.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Kel Modderman <kel@otaku42.de>
+Cc: Markus Armbruster <armbru@redhat.com>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page_alloc.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/video/fb_defio.c |   19 +++++++++++++++++++
+ drivers/video/fbmem.c    |    4 ++++
+ include/linux/fb.h       |    3 +++
+ 3 files changed, 26 insertions(+)
 
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -717,6 +717,9 @@ int move_freepages(struct zone *zone,
- #endif
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -114,6 +114,17 @@ static struct vm_operations_struct fb_de
+ 	.page_mkwrite	= fb_deferred_io_mkwrite,
+ };
  
- 	for (page = start_page; page <= end_page;) {
-+		/* Make sure we are not inadvertently changing nodes */
-+		VM_BUG_ON(page_to_nid(page) != zone_to_nid(zone));
++static int fb_deferred_io_set_page_dirty(struct page *page)
++{
++	if (!PageDirty(page))
++		SetPageDirty(page);
++	return 0;
++}
 +
- 		if (!pfn_valid_within(page_to_pfn(page))) {
- 			page++;
- 			continue;
-@@ -2476,6 +2479,10 @@ static void setup_zone_migrate_reserve(s
- 			continue;
- 		page = pfn_to_page(pfn);
++static const struct address_space_operations fb_deferred_io_aops = {
++	.set_page_dirty = fb_deferred_io_set_page_dirty,
++};
++
+ static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	vma->vm_ops = &fb_deferred_io_vm_ops;
+@@ -163,6 +174,14 @@ void fb_deferred_io_init(struct fb_info 
+ }
+ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
  
-+		/* Watch out for overlapping nodes */
-+		if (page_to_nid(page) != zone_to_nid(zone))
-+			continue;
++void fb_deferred_io_open(struct fb_info *info,
++			 struct inode *inode,
++			 struct file *file)
++{
++	file->f_mapping->a_ops = &fb_deferred_io_aops;
++}
++EXPORT_SYMBOL_GPL(fb_deferred_io_open);
 +
- 		/* Blocks with reserved pages will never free, skip them. */
- 		if (PageReserved(page))
- 			continue;
+ void fb_deferred_io_cleanup(struct fb_info *info)
+ {
+ 	void *screen_base = (void __force *) info->screen_base;
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1315,6 +1315,10 @@ fb_open(struct inode *inode, struct file
+ 		if (res)
+ 			module_put(info->fbops->owner);
+ 	}
++#ifdef CONFIG_FB_DEFERRED_IO
++	if (info->fbdefio)
++		fb_deferred_io_open(info, inode, file);
++#endif
+ 	return res;
+ }
+ 
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -966,6 +966,9 @@ static inline void __fb_pad_aligned_buff
+ 
+ /* drivers/video/fb_defio.c */
+ extern void fb_deferred_io_init(struct fb_info *info);
++extern void fb_deferred_io_open(struct fb_info *info,
++				struct inode *inode,
++				struct file *file);
+ extern void fb_deferred_io_cleanup(struct fb_info *info);
+ extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
+ 				int datasync);
 
 -- 
