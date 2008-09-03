@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYICPEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbYICPE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYICPEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 11:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbYICPEY
+	id S1756426AbYICPE7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 11:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755169AbYICPEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 11:04:24 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:29810 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755968AbYICPEX (ORCPT
+	Wed, 3 Sep 2008 11:04:49 -0400
+Received: from dbservice.com ([213.239.204.14]:48830 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754030AbYICPEr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 11:04:23 -0400
-X-BigFish: VPS7(zz853kzz10d3izzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0K6MKIJ-04-FN8-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, tony.luck@intel.com
-Subject: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures with swiotlb
-Date: Wed, 3 Sep 2008 17:03:44 +0200
-Message-ID: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-X-OriginalArrivalTime: 03 Sep 2008 15:03:44.0553 (UTC) FILETIME=[426F6990:01C90DD6]
+	Wed, 3 Sep 2008 11:04:47 -0400
+Message-ID: <48BEA77A.5050104@dbservice.com>
+Date: Wed, 03 Sep 2008 17:04:26 +0200
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080731)
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Steven King <sfking@fdwdc.com>, Tomas Carnecky <tom@dbservice.com>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net
+Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume	after?undocking
+References: <200808301535.22419.sfking@fdwdc.com> <20080901112816.GA21970@khazad-dum.debian.net> <48BBDD2C.5020804@dbservice.com> <200809011205.05253.sfking@fdwdc.com> <20080903144541.GA10978@homac>
+In-Reply-To: <20080903144541.GA10978@homac>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-MailScanner-ID: 27F6C20BB3CA.8147C
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=0.1, required 5, RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SWIOTLB version of dma_alloc_coherent allocates all memory with
-GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
-failures. This patch makes the allocation strategy to use the DMA32 zone
-first if this is possible. The changes are boot tested on AMD64 and
-compile tested for i386 and IA64.
+Holger Macht wrote:
+> On Mon 01. Sep - 12:05:04, Steven King wrote:
+>> On Monday 01 September 2008 5:16:44 Tomas Carnecky wrote:
+>>
+>>> I just tested suspend/resume with the CDROM drive removed (an empty
+>>> bay). Suspend/resume now works just fine, regardless how I dock/undock
+>>> the laptop.
+>> I'm seeing the exact same things as Tom.  Also, in my dmesg I see:
+>>
+>> ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: found ejectable bay
+>> ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: Adding notify handler
+>> ACPI: Error installing bay notify handler
+>>
+>> is this significant?
+> 
+> No, it's not. Bay driver is obsolete with 2.6.26's libata hotplug code.
+> 
 
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: tony.luck@intel.com
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- lib/swiotlb.c |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
+I don't know whether I should ROFL or be sad, but: In the 2.6.26 stable
+tree the bay driver (ACPI_BAY) is marked as EXPERIMENTAL, and now you're
+saying that it's obsolete. Do features go right from experimental to
+obsolete now?
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 977edbd..6ba077f 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -466,13 +466,24 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 	dma_addr_t dev_addr;
- 	void *ret;
- 	int order = get_order(size);
-+	unsigned long dma_mask;
- 
--	/*
--	 * XXX fix me: the DMA API should pass us an explicit DMA mask
--	 * instead, or use ZONE_DMA32 (ia64 overloads ZONE_DMA to be a ~32
--	 * bit range instead of a 16MB one).
--	 */
--	flags |= GFP_DMA;
-+	if (hwdev->dma_mask == NULL)
-+		return NULL;
-+
-+	flags &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
-+	flags |= __GFP_ZERO;
-+
-+	dma_mask = hwdev->coherent_dma_mask;
-+	if (!dma_mask)
-+		dma_mask = *(hwdev->dma_mask);
-+
-+	if (dma_mask <= ISA_DMA_THRESHOLD)
-+		flags |= GFP_DMA;
-+#ifdef CONFIG_X86_64
-+	else if (dma_mask <= DMA_32BIT_MASK)
-+		flags |= GFP_DMA32;
-+#endif
- 
- 	ret = (void *)__get_free_pages(flags, order);
- 	if (ret && address_needs_mapping(hwdev, virt_to_bus(ret))) {
--- 
-1.5.3.7
+I'll try to disable the bay driver, let's see if that helps any.
 
-
+tom
