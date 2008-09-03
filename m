@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYICTHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbYICTIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYICTHI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 15:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbYICTGo
+	id S1756488AbYICTIL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 15:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYICTH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 15:06:44 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:45839 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbYICTGn (ORCPT
+	Wed, 3 Sep 2008 15:07:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:29532 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbYICTH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 15:06:43 -0400
-Date: Wed, 3 Sep 2008 16:07:05 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Dmitry Nezhevenko <dion@inhex.net>, herton@mandriva.com.br,
-       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
-Message-ID: <20080903160705.0efd7308@doriath.conectiva>
-In-Reply-To: <alpine.LFD.1.10.0809032030271.3243@apollo.tec.linutronix.de>
-References: <20080902163532.436f8fbd@doriath.conectiva>
-	<alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de>
-	<20080902175544.131bc54e@doriath.conectiva>
-	<alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de>
-	<20080903104132.7a736282@doriath.conectiva>
-	<alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de>
-	<20080903164415.GA24442@laptop.local>
-	<alpine.LFD.1.10.0809031857020.3243@apollo.tec.linutronix.de>
-	<20080903143653.68bb58df@doriath.conectiva>
-	<alpine.LFD.1.10.0809032030271.3243@apollo.tec.linutronix.de>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Sep 2008 15:07:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tvYOiId00jkfn6cnJVICGoTSFdeG0fl4Z3AFJrcHYPXRVP/qmAmtocmaid5cvP43xG
+         D+6ZthE5L17Xn83DNO4x6Aoj/u476THimqVfgmTdB+iYqfyV8zQfj12MVcfC9wIQJthD
+         eW45zACoZdthLD9qSqBskF5yi8zAlD7HcNoCM=
+Date: Wed, 3 Sep 2008 15:07:50 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       Christopher Desjardins <cddesjardins@gmail.com>
+Subject: Re: Lenovo 3000 N100 i8042 problems
+Message-ID: <20080903150649.ZZRA012@mailhub.coreip.homeip.net>
+References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz> <20080903101947.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.00.0809031317080.19665@iabervon.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.00.0809031317080.19665@iabervon.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, 3 Sep 2008 20:40:55 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> escreveu:
+On Wed, Sep 03, 2008 at 01:18:23PM -0400, Daniel Barkalow wrote:
+> On Wed, 3 Sep 2008, Dmitry Torokhov wrote:
+> 
+> > On Wed, Sep 03, 2008 at 01:50:35PM +0200, Jiri Kosina wrote:
+> > > On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
+> > > 
+> > > > I guess we could use System's product name to differentiate between 
+> > > > Cristopher's and Daniel's boards. Although I must admit it is the very 
+> > > > first time when I see a box that behaves better with active mux. DOes 
+> > > > Vista use active mux nowadays? Because if it is not then I bet there is 
+> > > > (or shortly will be) a BIOS update fixing legacy mode on Daniel's box.
+> > > 
+> > > I guess so, yes.
+> > > 
+> > > On the other hand, this might also be viewed as regression (we made 
+> > > Daniel's hardware behave worse with recent kernel than it did before), so 
+> > > I think we still would like to have this fixed. What about the patch 
+> > > below, adding the match on System's product name, as you suggested? 
+> > > Thanks.
+> > > 
+> > 
+> > I agree. Daniel, could you please try the patch to make sure it
+> > restores the previous behavior for you and I will push it through.
+> > 
+> > Thanks!
+> 
+> I'll test that Thursday as well; is there some quick way to determine 
+> whether you're using active mux or not?
 
-| >  As the dmesg has various WARN_ON() outputs I'm attaching it, this is
-| > the first one:
-| > 
-| > """
-| > PCI: Using ACPI for IRQ routing
-| > DMAR:parse DMAR table failure.
-| > hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
-| > hpet0: 3 32-bit timers, 25000000 Hz
-| > Switched to high resolution mode on CPU 0
-| >
-| > tick_broadcast_set_event is stuck f09fa64 f0a01e4
-| 
-| Hmm, so we fail to force program that HPET with the standard minimum
-| delta.
-| 
-| I now see why this is happening and it is happening only on systems
-| with a fast HPET. Your's running 25MHz, so the delta is only 1.92
-| usec. I was staring at lots of those bugreports without noticing the
-| frequency.
-| 
-| Sigh. The idea to take a fixed number of HPET cycles as the minimum
-| was not really brilliant it seems.
-| 
-| Does the patch below help ? Keep the debug patch applied, as we can
-| see whether the check triggers or not.
-
- Yeah, it works. I have booted three times with no warnings.
-
- I will revert the debug patch and test again just to be sure, if
-this is of any help:
-
-Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
-
- By the way, is this the definitive fix?
+Do "dmesg | grep serio".. If you see 4 AUX ports being created then
+KBC is in active multiplexing mode.
 
 -- 
-Luiz Fernando N. Capitulino
+Dmitry
