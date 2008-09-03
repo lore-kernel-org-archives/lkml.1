@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbYICJDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbYICJJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754310AbYICJDw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 05:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYICJDo
+	id S1753985AbYICJJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 05:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYICJJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 05:03:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40083 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYICJDo (ORCPT
+	Wed, 3 Sep 2008 05:09:51 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:23860 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYICJJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 05:03:44 -0400
-Subject: Re: [2.6.27] early exception - lockdep related?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <68676e00809030154i7470b08o770198bbefe00924@mail.gmail.com>
-References: <20080902210646.GA10925@dreamland.darkstar.lan>
-	 <1220424721.8609.74.camel@twins>
-	 <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
-	 <1220431061.8609.87.camel@twins>
-	 <68676e00809030154i7470b08o770198bbefe00924@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 11:03:44 +0200
-Message-Id: <1220432624.8609.92.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 3 Sep 2008 05:09:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id:from
+         :sender;
+        b=uCPLKBo+qXMwpSp9nLMAlqYCA9zBfvFS6yFqWj4Z6gbfN9Nb9BWSpI1WDle0rcRqOd
+         gJ6oIYilnKwqIcdbORTJ826AAodg04FkbqKui0XGQjX8v0wNAKhmJBkBy+P24/v4PKgG
+         +IfQJtlSUjvU53iAfojQ/9/xwLja31ZVwwuwg=
+To: linux-kernel@vger.kernel.org
+Subject: [x86] fs, gs purpose & multicore prog
+Date: Wed, 3 Sep 2008 11:09:45 +0200
+User-Agent: KMail/1.9.9
+Cc: goretux@gmail.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809031109.45660.goretux@gmail.com>
+From: Eric Lacombe <tuxiko@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-03 at 10:54 +0200, Luca Tettamanti wrote:
-> On Wed, Sep 3, 2008 at 10:37 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Wed, 2008-09-03 at 10:28 +0200, Luca Tettamanti wrote:
-> >> On Wed, Sep 3, 2008 at 8:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >> > On Tue, 2008-09-02 at 23:06 +0200, Luca Tettamanti wrote:
-> >> >> Hello,
-> >> >> I'm seeing an early exception (0e) - which seems related to lockdep - at
-> >> >> boot with many 2.6.27 kernels and I'm having troubles to track it down.
-> >> >
-> >> > Does it print one of these nice stack traces?
-> >>
-> >> Of course not ;-) It dies before dumping the stack trace (or at least
-> >> it doesn't make to the console - that machine has a serial port, but
-> >> my notebook does not... I've ordered a usb-to-serial adapter).
-> >
-> > Until it arrives, you could try poking at netconsole..
-> 
-> Hum, I forgot to mention that it dies very early, just after:
-> 
-> Kernel is alive
-> Kernel is really alive
-> <exception>
-> <dead>
-> 
-> Is netconsole already up at that point?
+Hello,
 
-Another thing you could try is booting this kernel in qemu and try
-attaching to its gdb stub.
+I've some questions about IA-32e in Linux.
 
-I've had varying levels of success doing that, you need a very recent
-(might still be svn snapshot) of qemu to get x86_64 gdb to work iirc.
+- What is the FS and GS segments role inside the kernel ?
+(I was thinking about thread local storage)
 
+- When I do a "mov %fs ..." instruction (in a module), it seems that %fs is 
+equal to 0 (idem for %gs). Are these registers not always filled ?
+
+- What is the purpose of MSR_FS_BASE and MSR_GS_BASE ? 
+(I thought they were filled with "gdt[fs_entry].base")
+
+- My last question is about the kernel programation of multi-core (or 
+multiprocessor)
+architecture. I don't see a lot of documentation about that on Internet.
+Do you have some docs/urls about this topic.
+Maybe someone can briefly explain how the execution flow are given to the 
+different cores.
+
+Thanks in advance.
+
+        Eric
