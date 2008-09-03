@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbYICX0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYICX2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbYICX0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 19:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYICX0L
+	id S1756076AbYICX2H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 19:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbYICX14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 19:26:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53776
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751760AbYICX0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 19:26:10 -0400
-Date: Wed, 03 Sep 2008 16:26:03 -0700 (PDT)
-Message-Id: <20080903.162603.27086959.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       tomasw@gmail.com, yi.zhu@intel.com, linville@tuxdriver.com
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0809031621160.3515@nehalem.linux-foundation.org>
-References: <20080903.161341.239039051.davem@davemloft.net>
-	<alpine.LFD.1.10.0809031615450.3515@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809031621160.3515@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Sep 2008 19:27:56 -0400
+Received: from inhex.net ([193.33.178.145]:41770 "EHLO inhex.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752502AbYICX1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 19:27:55 -0400
+Date: Thu, 4 Sep 2008 02:27:48 +0300
+From: Dmitry Nezhevenko <dion@inhex.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Subject: Re: [patch 0/6] final clockevents/hpet fixes
+Message-ID: <20080903232748.GA2408@laptop.local>
+References: <20080903212735.713411776@linutronix.de> <20080903230003.GA1958@laptop.local> <alpine.LFD.1.10.0809040102560.3243@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809040102560.3243@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 3 Sep 2008 16:24:16 -0700 (PDT)
-
-> On Wed, 3 Sep 2008, Linus Torvalds wrote:
-> > 
-> > What's so hard to understand about this?
+On Thu, Sep 04, 2008 at 01:04:00AM +0200, Thomas Gleixner wrote:
+> Dimitry, thanks for testing.
 > 
-> Here's a simple rule of thumb:
->  - if it's not on the regression list
->  - if it's not a reported security hole
->  - if it's not on the reported oopses list
-> then why are people sending it to me?
+> Are you up for another debug session in the next days to figure out
+> why the x86 tree exposes this IPI warning ?
 > 
-> IOW, if it's just another random improvement, and you send it to me 
-> outside of the merge window, then what is the point of the merge window? 
 
-This is exactly what I've been trying to tell the Intel wireless folks
-but they refuse to listen.
+Sure. I'm subscribed to LKML however don't read it often. So please CC me
 
-I just won't take their stuff until they get their act in gear.
-
-No problem.
+-- 
+WBR, Dmitry
