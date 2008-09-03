@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYICOet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655AbYICOhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbYICOet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 10:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYICOem
+	id S1755655AbYICOhB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 10:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYICOgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 10:34:42 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:50048 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752010AbYICOel (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 10:34:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <tj@kernel.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com, greg@kroah.com,
-       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <1219945263-21074-1-git-send-email-tj@kernel.org>
-	<1219945263-21074-6-git-send-email-tj@kernel.org>
-	<20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org>
-	<48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu>
-	<48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>
-	<48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>
-	<48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu>
-	<48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>
-	<48B7AF60.8040709@kernel.org> <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
-	<48B7BB4C.4060907@kernel.org> <m163pjr5qf.fsf@frodo.ebiederm.org>
-	<E1Ka82g-0003NU-4D@pomaz-ex.szeredi.hu> <48BBD9F5.8060906@kernel.org>
-Date: Wed, 03 Sep 2008 07:32:22 -0700
-In-Reply-To: <48BBD9F5.8060906@kernel.org> (Tejun Heo's message of "Mon, 01
-	Sep 2008 14:03:01 +0200")
-Message-ID: <m163pdb8qx.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 3 Sep 2008 10:36:53 -0400
+Received: from www.tglx.de ([62.245.132.106]:43827 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753072AbYICOgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 10:36:53 -0400
+Date: Wed, 3 Sep 2008 16:36:32 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+cc: herton@mandriva.com.br,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
+In-Reply-To: <20080903104132.7a736282@doriath.conectiva>
+Message-ID: <alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de>
+References: <20080902163532.436f8fbd@doriath.conectiva> <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de> <20080902175544.131bc54e@doriath.conectiva> <alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de>
+ <20080903104132.7a736282@doriath.conectiva>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0962]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+On Wed, 3 Sep 2008, Luiz Fernando N. Capitulino wrote:
 
-> Hello,
->
-> Miklos Szeredi wrote:
->>> So why not just only support well defined ioctls and serialize them
->>> in the kernel and allow the receiving process to deserialize them?
->> 
->> I'd like the idea of limiting to well behaved ioctls, but Tejun
->> doesn't...
->
-> I'm not dead against it.  I'm just a bit more inclined to my
-> implementation (naturally), which means if you're dead against the
-> current implementation, supporting only the proper ones definitely is
-> an option, but comparing the pros and cons, I'm not quite convinced
-> yet.
+> Em Wed, 3 Sep 2008 12:04:58 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> escreveu:
+> 
+> | On Tue, 2 Sep 2008, Luiz Fernando N. Capitulino wrote:
+> | > """
+> | > PCI: Using ACPI for IRQ routing
+> | > DMAR:parse DMAR table failure.
+> | > """
+> | > 
+> | >  Also, after about 10 minutes I get the same backtrace as reported in
+> | > the ticket above... It's the same bug then.
+> | 
+> | Venki found a nasty bug in the clock events code which might be
+> | related to this. I found one as well. Can you please apply the combo
+> | of those fixes to current mainline and test it ?
+> 
+>  Same problem, with or without CONFIG_HPET enabled.
+> 
+>  You think the problem you are discussing with Linus - the TSC
+> calibration issue - may have anything to do with this?
 
-I really think that if an ioctl is passing through the kernel we
-should know how to parse and understand it's options.  Otherwise
-we won't have the option of doing backwards compatibility when something
-changes, like we can with the 32->64bit ioctls.
+Dont think so. Your dmesg outputs do not show any sign of that
+disease.
 
-That seems to imply that you need a stub in the kernel to handle 
-really weird ioctls.
+Can you try the patch below please ?
 
-The upside is that because you know what the inputs and outputs are
-and where the inputs and output are you can support that ioctl well
-into the future, and you can do it with an unprivileged file
-system server.
+Thanks,
+	tglx
+---
+ kernel/time/tick-broadcast.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Eric
+Index: linux-2.6/kernel/time/tick-broadcast.c
+===================================================================
+--- linux-2.6.orig/kernel/time/tick-broadcast.c
++++ linux-2.6/kernel/time/tick-broadcast.c
+@@ -501,9 +501,12 @@ static void tick_broadcast_clear_oneshot
+  */
+ void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
+ {
+-	bc->event_handler = tick_handle_oneshot_broadcast;
+-	clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
+-	bc->next_event.tv64 = KTIME_MAX;
++	/* Set it up only once ! */
++	if (bc->event_handler != tick_handle_oneshot_broadcast) {
++		bc->event_handler = tick_handle_oneshot_broadcast;
++		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
++		bc->next_event.tv64 = KTIME_MAX;
++	}
+ }
+ 
+ /*
+
+
