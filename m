@@ -1,84 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYICM2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbYICMgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbYICM2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 08:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYICM2p
+	id S1755252AbYICMgT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 08:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbYICMgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 08:28:45 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:35332 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYICM2p (ORCPT
+	Wed, 3 Sep 2008 08:36:11 -0400
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:4757 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbYICMgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 08:28:45 -0400
-Message-ID: <48BE82F9.4020808@fr.ibm.com>
-Date: Wed, 03 Sep 2008 14:28:41 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 3 Sep 2008 08:36:11 -0400
+Date: Wed, 3 Sep 2008 14:36:00 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@localhost.localdomain
+To: Adrian Bunk <bunk@kernel.org>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 7/8] m68k: Add missing dma_sync_single_range_for_{cpu,device}()
+In-Reply-To: <20080903121220.GF4104@cs181140183.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0809031429520.7824@localhost.localdomain>
+References: <20080903071542.615137611@mail.of.borg> <20080903071742.932797091@mail.of.borg>
+ <Pine.LNX.4.64.0809031257080.25157@localhost.localdomain>
+ <20080903121220.GF4104@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: Andrey Mirkin <major@openvz.org>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-References: <1220439476-16465-1-git-send-email-major@openvz.org>
-In-Reply-To: <1220439476-16465-1-git-send-email-major@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrey Mirkin wrote:
-> This patchset introduces kernel based checkpointing/restart as it is
-> implemented in OpenVZ project. This patchset has limited functionality and
-> are able to checkpoint/restart only single process. Recently Oren Laaden
-> sent another kernel based implementation of checkpoint/restart. The main
-> differences between this patchset and Oren's patchset are:
-> 
-> * In this patchset checkpointing initiated not from the process
-> (right now we do not have a container, only namespaces), Oren's patchset
-> performs checkpointing from the process context.
-> 
-> * Restart in this patchset is initiated from process, which restarts a new
-> process (in new namespaces) with saved state. Oren's patchset uses the same
-> process from which restart was initiated and restore saved state over it.
-> 
-> * Checkpoint/restart functionality in this patchset is implemented as a kernel
-> module
+Hi,
 
-why ? Do we really think that C/R implementations will be so different that
-we will need C/R ops to support all of them ? I imagine that there could be 
-different models :
+On Wed, 3 Sep 2008, Adrian Bunk wrote:
 
-	1. brute force : dump it all and kill
-	2. incremental
-	3. live migration 
-	...
+> either we want it inlined into all callers or we want one external copy.
+> Doing both is suboptimal.
 
-But I see all of them really tied to the kernel internals.
+Not so much in this case, usually only a subset of these functions is 
+used, so the actual worker functions have the expanded version, but they
+aren't inlined themselves.
+You could create a separate "static inline" function and use that there, 
+but the result should be the same.
 
-The first issues I see with this direction are some EXPORT_SYMBOL() that would 
-be useless without a module.
-
-> As checkpointing is initiated not from the process which state should be saved
-> we should freeze a process before saving its state. Right now Container Freezer
-> from Matt Helsley can be used for this.
-
-OK that's integrated and Daniel's tools :
-
-http://lxc.cvs.sourceforge.net/lxc/
-
-one more reason to work on integration :)
-
-C. 
-
-
-> This patchset introduce only a concept how kernel based checkpointing/restart
-> can be implemented and are able to checkpoint/restart only a single process
-> with simple VMAs. 
-> 
-> I've tried to split my patchset in small patches to make review more easier.
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
-> 
-
+bye, Roman
