@@ -1,103 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYICK4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751332AbYICK5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYICK4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbYICKzP
+	id S1751332AbYICK5Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYICKzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:55:15 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:47544 "EHLO relay.sw.ru"
+	Wed, 3 Sep 2008 06:55:18 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:18720 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193AbYICKzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:55:09 -0400
+	id S1751840AbYICKzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 06:55:12 -0400
 From: Andrey Mirkin <major@openvz.org>
 To: linux-kernel@vger.kernel.org
 Cc: containers@lists.linux-foundation.org, Andrey Mirkin <major@openvz.org>
-Subject: [PATCH 2/9] Make checkpoint/restart functionality modular
-Date: Wed,  3 Sep 2008 14:57:49 +0400
-Message-Id: <1220439476-16465-3-git-send-email-major@openvz.org>
+Subject: [PATCH 6/9] Introduce functions to dump mm
+Date: Wed,  3 Sep 2008 14:57:53 +0400
+Message-Id: <1220439476-16465-7-git-send-email-major@openvz.org>
 X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1220439476-16465-2-git-send-email-major@openvz.org>
+In-Reply-To: <1220439476-16465-6-git-send-email-major@openvz.org>
 References: <1220439476-16465-1-git-send-email-major@openvz.org>
  <1220439476-16465-2-git-send-email-major@openvz.org>
+ <1220439476-16465-3-git-send-email-major@openvz.org>
+ <1220439476-16465-4-git-send-email-major@openvz.org>
+ <1220439476-16465-5-git-send-email-major@openvz.org>
+ <1220439476-16465-6-git-send-email-major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A config option CONFIG_CHECKPOINT is introduced.
-New structure cpt_operations is introduced to store pointers to
-checkpoint/restart functions from module.
+Functions to dump mm struct, VMAs and mm context are added.
 
 Signed-off-by: Andrey Mirkin <major@openvz.org>
 ---
- cpt/Kconfig    |    7 +++++++
- cpt/Makefile   |    4 ++++
- cpt/cpt.h      |   19 +++++++++++++++++++
- cpt/sys.c      |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- cpt/sys_core.c |   29 +++++++++++++++++++++++++++--
- init/Kconfig   |    2 ++
- 6 files changed, 107 insertions(+), 2 deletions(-)
- create mode 100644 cpt/Kconfig
- create mode 100644 cpt/cpt.h
- create mode 100644 cpt/sys.c
+ arch/x86/mm/hugetlbpage.c |    2 +
+ cpt/Makefile              |    2 +-
+ cpt/cpt.h                 |    1 +
+ cpt/cpt_image.h           |   61 +++++++
+ cpt/cpt_mm.c              |  431 +++++++++++++++++++++++++++++++++++++++++++++
+ cpt/cpt_process.c         |    8 +-
+ mm/memory.c               |    1 +
+ 7 files changed, 497 insertions(+), 5 deletions(-)
+ create mode 100644 cpt/cpt_mm.c
 
-diff --git a/cpt/Kconfig b/cpt/Kconfig
-new file mode 100644
-index 0000000..b9bc72d
---- /dev/null
-+++ b/cpt/Kconfig
-@@ -0,0 +1,7 @@
-+config CHECKPOINT
-+	tristate "Checkpoint & restart for containers"
-+	depends on EXPERIMENTAL
-+	default n
-+	help
-+	  This option adds module "cptrst", which allow to save a running
-+	  container to a file and restart it later using this image file.
+diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
+index 8f307d9..63028e7 100644
+--- a/arch/x86/mm/hugetlbpage.c
++++ b/arch/x86/mm/hugetlbpage.c
+@@ -12,6 +12,7 @@
+ #include <linux/slab.h>
+ #include <linux/err.h>
+ #include <linux/sysctl.h>
++#include <linux/module.h>
+ #include <asm/mman.h>
+ #include <asm/tlb.h>
+ #include <asm/tlbflush.h>
+@@ -221,6 +222,7 @@ int pmd_huge(pmd_t pmd)
+ {
+ 	return !!(pmd_val(pmd) & _PAGE_PSE);
+ }
++EXPORT_SYMBOL(pmd_huge);
+ 
+ int pud_huge(pud_t pud)
+ {
 diff --git a/cpt/Makefile b/cpt/Makefile
-index 2276fb1..bfe75d5 100644
+index 457cc96..bbb0e37 100644
 --- a/cpt/Makefile
 +++ b/cpt/Makefile
-@@ -1 +1,5 @@
- obj-y += sys_core.o
-+
-+obj-$(CONFIG_CHECKPOINT) += cptrst.o
-+
-+cptrst-objs := sys.o
+@@ -2,4 +2,4 @@ obj-y += sys_core.o
+ 
+ obj-$(CONFIG_CHECKPOINT) += cptrst.o
+ 
+-cptrst-objs := sys.o checkpoint.o cpt_process.o
++cptrst-objs := sys.o checkpoint.o cpt_process.o cpt_mm.o
 diff --git a/cpt/cpt.h b/cpt/cpt.h
-new file mode 100644
-index 0000000..381a9bf
---- /dev/null
+index 1bb483d..73ae296 100644
+--- a/cpt/cpt.h
 +++ b/cpt/cpt.h
-@@ -0,0 +1,19 @@
-+/*
-+ *  Copyright (C) 2008 Parallels, Inc.
-+ *
-+ *  Author: Andrey Mirkin <major@openvz.org>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License as
-+ *  published by the Free Software Foundation, version 2 of the
-+ *  License.
-+ *
-+ */
+@@ -58,3 +58,4 @@ extern int debug_level;
+ 
+ int dump_container(struct cpt_context *ctx);
+ int cpt_dump_task(struct task_struct *tsk, struct cpt_context *ctx);
++int cpt_dump_mm(struct task_struct *tsk, struct cpt_context *ctx);
+diff --git a/cpt/cpt_image.h b/cpt/cpt_image.h
+index b7b68e1..ae019e7 100644
+--- a/cpt/cpt_image.h
++++ b/cpt/cpt_image.h
+@@ -16,13 +16,19 @@
+ #include <linux/sched.h>
+ #include <asm/segment.h>
+ 
++#define CPT_NULL (~0ULL)
 +
-+struct cpt_operations
+ enum _cpt_object_type
+ {
+ 	CPT_OBJ_TASK = 0,
++	CPT_OBJ_MM,
+ 	CPT_OBJ_MAX,
+ 	/* The objects above are stored in memory while checkpointing */
+ 
+ 	CPT_OBJ_HEAD = 1024,
++	CPT_OBJ_VMA,
++	CPT_OBJ_PAGES,
++	CPT_OBJ_NAME,
+ 	CPT_OBJ_X86_REGS,
+ 	CPT_OBJ_BITS,
+ };
+@@ -35,6 +41,7 @@ enum _cpt_content_type {
+ 	CPT_CONTENT_REF,
+ 	CPT_CONTENT_X86_FPUSTATE,
+ 	CPT_CONTENT_X86_FPUSTATE_OLD,
++	CPT_CONTENT_MM_CONTEXT,
+ 	CPT_CONTENT_MAX
+ };
+ 
+@@ -123,6 +130,60 @@ struct cpt_task_image {
+ 	__u64	cpt_maj_flt;
+ } __attribute__ ((aligned (8)));
+ 
++struct cpt_mm_image {
++	__u64	cpt_len;
++	__u16	cpt_type;
++	__u32	cpt_hdrlen;
++	__u16	cpt_content;
++
++	__u64	cpt_start_code;
++	__u64	cpt_end_code;
++	__u64	cpt_start_data;
++	__u64	cpt_end_data;
++	__u64	cpt_start_brk;
++	__u64	cpt_brk;
++	__u64	cpt_start_stack;
++	__u64	cpt_start_arg;
++	__u64	cpt_end_arg;
++	__u64	cpt_start_env;
++	__u64	cpt_end_env;
++	__u64	cpt_def_flags;
++	__u64	cpt_flags;
++	__u64	cpt_map_count;
++} __attribute__ ((aligned (8)));
++
++struct cpt_vma_image
 +{
-+	struct module * owner;
-+	int (*checkpoint)(pid_t pid, int fd, unsigned long flags);
-+	int (*restart)(int ctid, int fd, unsigned long flags);
-+};
-+extern struct cpt_operations cpt_ops;
-diff --git a/cpt/sys.c b/cpt/sys.c
++	__u64	cpt_len;
++	__u16	cpt_type;
++	__u32	cpt_hdrlen;
++	__u16	cpt_content;
++
++	__u64	cpt_file;
++	__u32	cpt_vma_type;
++#define CPT_VMA_TYPE_0		0
++#define CPT_VMA_FILE		1
++	__u32	cpt_pad;
++
++	__u64	cpt_start;
++	__u64	cpt_end;
++	__u64	cpt_flags;
++	__u64	cpt_pgprot;
++	__u64	cpt_pgoff;
++	__u64	cpt_page_num;
++} __attribute__ ((aligned (8)));
++
++struct cpt_page_block
++{
++	__u64	cpt_len;
++	__u16	cpt_type;
++	__u32	cpt_hdrlen;
++	__u16	cpt_content;
++
++	__u64	cpt_start;
++	__u64	cpt_end;
++} __attribute__ ((aligned (8)));
++
+ struct cpt_obj_bits
+ {
+ 	__u64	cpt_len;
+diff --git a/cpt/cpt_mm.c b/cpt/cpt_mm.c
 new file mode 100644
-index 0000000..4051286
+index 0000000..6e025cc
 --- /dev/null
-+++ b/cpt/sys.c
-@@ -0,0 +1,48 @@
++++ b/cpt/cpt_mm.c
+@@ -0,0 +1,431 @@
 +/*
 + *  Copyright (C) 2008 Parallels, Inc.
 + *
-+ *  Author: Andrey Mirkin <major@openvz.org>
++ *  Authors:	Andrey Mirkin <major@openvz.org>
 + *
 + *  This program is free software; you can redistribute it and/or
 + *  modify it under the terms of the GNU General Public License as
@@ -107,106 +192,457 @@ index 0000000..4051286
 + */
 +
 +#include <linux/sched.h>
-+#include <linux/fs.h>
++#include <linux/slab.h>
 +#include <linux/file.h>
-+#include <linux/notifier.h>
-+#include <linux/module.h>
++#include <linux/mm.h>
++#include <linux/errno.h>
++#include <linux/major.h>
++#include <linux/mman.h>
++#include <linux/mnt_namespace.h>
++#include <linux/mount.h>
++#include <linux/namei.h>
++#include <linux/pagemap.h>
++#include <linux/hugetlb.h>
++#include <asm/ldt.h>
 +
 +#include "cpt.h"
++#include "cpt_image.h"
 +
-+MODULE_LICENSE("GPL");
-+
-+static int checkpoint(pid_t pid, int fd, unsigned long flags)
++struct page_area
 +{
-+	return -ENOSYS; 
++	int type;
++	unsigned long start;
++	unsigned long end;
++	pgoff_t pgoff;
++	loff_t mm;
++	__u64 list[16];
++};
++
++struct page_desc
++{
++	int	type;
++	pgoff_t	index;
++	loff_t	mm;
++	int	shared;
++};
++
++enum {
++	PD_ABSENT,
++	PD_COPY,
++	PD_FUNKEY,
++};
++
++/* 0: page can be obtained from backstore, or still not mapped anonymous  page,
++      or something else, which does not requre copy.
++   1: page requires copy
++   2: page requres copy but its content is zero. Quite useless.
++   3: wp page is shared after fork(). It is to be COWed when modified.
++   4: page is something unsupported... We copy it right now.
++ */
++
++static void page_get_desc(struct vm_area_struct *vma, unsigned long addr,
++			  struct page_desc *pdesc, cpt_context_t * ctx)
++{
++	struct mm_struct *mm = vma->vm_mm;
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *ptep, pte;
++	spinlock_t *ptl;
++	struct page *pg = NULL;
++	pgoff_t linear_index = (addr - vma->vm_start)/PAGE_SIZE + vma->vm_pgoff;
++
++	pdesc->index = linear_index;
++	pdesc->shared = 0;
++	pdesc->mm = CPT_NULL;
++
++	if (vma->vm_flags & VM_IO) {
++		pdesc->type = PD_ABSENT;
++		return;
++	}
++
++	pgd = pgd_offset(mm, addr);
++	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
++		goto out_absent;
++	pud = pud_offset(pgd, addr);
++	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
++		goto out_absent;
++	pmd = pmd_offset(pud, addr);
++	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
++		goto out_absent;
++#ifdef CONFIG_X86
++	if (pmd_huge(*pmd)) {
++		eprintk("page_huge\n");
++		goto out_unsupported;
++	}
++#endif
++	ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
++	pte = *ptep;
++	pte_unmap(ptep);
++
++	if (pte_none(pte))
++		goto out_absent_unlock;
++
++	if ((pg = vm_normal_page(vma, addr, pte)) == NULL) {
++		pdesc->type = PD_COPY;
++		goto out_unlock;
++	}
++
++	get_page(pg);
++	spin_unlock(ptl);
++
++	if (pg->mapping && !PageAnon(pg)) {
++		if (vma->vm_file == NULL) {
++			eprintk("pg->mapping!=NULL for fileless vma: %08lx\n", addr);
++			goto out_unsupported;
++		}
++		if (vma->vm_file->f_mapping != pg->mapping) {
++			eprintk("pg->mapping!=f_mapping: %08lx %p %p\n",
++				    addr, vma->vm_file->f_mapping, pg->mapping);
++			goto out_unsupported;
++		}
++		pdesc->index = (pg->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT));
++		/* Page is in backstore. For us it is like
++		 * it is not present.
++		 */
++		goto out_absent;
++	}
++
++	if (PageReserved(pg)) {
++		/* Special case: ZERO_PAGE is used, when an
++		 * anonymous page is accessed but not written. */
++		if (pg == ZERO_PAGE(addr)) {
++			if (pte_write(pte)) {
++				eprintk("not funny already, writable ZERO_PAGE\n");
++				goto out_unsupported;
++			}
++			goto out_absent;
++		}
++		eprintk("reserved page %lu at %08lx\n", pg->index, addr);
++		goto out_unsupported;
++	}
++
++	if (!pg->mapping) {
++		eprintk("page without mapping at %08lx\n", addr);
++		goto out_unsupported;
++	}
++
++	pdesc->type = PD_COPY;
++
++out_put:
++	if (pg)
++		put_page(pg);
++	return;
++
++out_unlock:
++	spin_unlock(ptl);
++	goto out_put;
++
++out_absent_unlock:
++	spin_unlock(ptl);
++
++out_absent:
++	pdesc->type = PD_ABSENT;
++	goto out_put;
++
++out_unsupported:
++	pdesc->type = PD_FUNKEY;
++	goto out_put;
 +}
 +
-+static int restart(int ctid, int fd, unsigned long flags)
++static int count_vma_pages(struct vm_area_struct *vma, struct cpt_context *ctx)
 +{
-+	return -ENOSYS; 
++	unsigned long addr;
++	int page_num = 0;
++
++	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
++		struct page_desc pd;
++
++		page_get_desc(vma, addr, &pd, ctx);
++
++		if (pd.type != PD_COPY) {
++			return -EINVAL;
++		} else {
++			page_num += 1;
++		}
++		
++	}
++	return page_num;
 +}
 +
-+static int __init init_cptrst(void)
++/* ATTN: We give "current" to get_user_pages(). This is wrong, but get_user_pages()
++ * does not really need this thing. It just stores some page fault stats there.
++ *
++ * BUG: some archs (f.e. sparc64, but not Intel*) require flush cache pages
++ * before accessing vma.
++ */
++static int dump_pages(struct vm_area_struct *vma, unsigned long start,
++		unsigned long end, struct cpt_context *ctx)
 +{
-+	cpt_ops.owner = THIS_MODULE;
-+	cpt_ops.checkpoint = checkpoint;
-+	cpt_ops.restart = restart;
++#define MAX_PAGE_BATCH 16
++	struct page *pg[MAX_PAGE_BATCH];
++	int npages = (end - start)/PAGE_SIZE;
++	int count = 0;
++
++	while (count < npages) {
++		int copy = npages - count;
++		int n;
++
++		if (copy > MAX_PAGE_BATCH)
++			copy = MAX_PAGE_BATCH;
++		n = get_user_pages(current, vma->vm_mm, start, copy,
++				   0, 1, pg, NULL);
++		if (n == copy) {
++			int i;
++			for (i=0; i<n; i++) {
++				char *maddr = kmap(pg[i]);
++				ctx->write(maddr, PAGE_SIZE, ctx);
++				kunmap(pg[i]);
++			}
++		} else {
++			eprintk("get_user_pages fault");
++			for ( ; n > 0; n--)
++				page_cache_release(pg[n-1]);
++			return -EFAULT;
++		}
++		start += n*PAGE_SIZE;
++		count += n;
++		for ( ; n > 0; n--)
++			page_cache_release(pg[n-1]);
++	}
 +	return 0;
 +}
-+module_init(init_cptrst);
 +
-+static void __exit exit_cptrst(void)
++static int dump_page_block(struct vm_area_struct *vma,
++			   struct cpt_page_block *pgb,
++			   struct cpt_context *ctx)
 +{
-+	cpt_ops.checkpoint = NULL;
-+	cpt_ops.restart = NULL;
-+	cpt_ops.owner = NULL;
++	int err;
++	pgb->cpt_len = sizeof(*pgb) + pgb->cpt_end - pgb->cpt_start;
++	pgb->cpt_type = CPT_OBJ_PAGES;
++	pgb->cpt_hdrlen = sizeof(*pgb);
++	pgb->cpt_content = CPT_CONTENT_DATA;
++
++	err = ctx->write(pgb, sizeof(*pgb), ctx);
++	if (!err)
++		err = dump_pages(vma, pgb->cpt_start, pgb->cpt_end, ctx);
++
++	return err;
 +}
-+module_exit(exit_cptrst);
-diff --git a/cpt/sys_core.c b/cpt/sys_core.c
-index 1a97fb6..5dd1191 100644
---- a/cpt/sys_core.c
-+++ b/cpt/sys_core.c
-@@ -13,6 +13,13 @@
- #include <linux/sched.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-+#include <linux/notifier.h>
-+#include <linux/module.h>
 +
-+#include "cpt.h"
++static int cpt_dump_dentry(struct path *p, cpt_context_t *ctx)
++{
++	int len;
++	char *path;
++	char *buf;
++	struct cpt_object_hdr o;
 +
-+struct cpt_operations cpt_ops = { NULL, NULL, NULL };
-+EXPORT_SYMBOL(cpt_ops);
- 
- /**
-  * sys_checkpoint - checkpoint a container from outside
-@@ -23,7 +30,16 @@
-  */
- asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
- {
--	return -ENOSYS;
-+	int ret;
++	buf = (char *)__get_free_page(GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
 +
-+	ret = -ENOSYS;
++	path = d_path(p, buf, PAGE_SIZE);
 +
-+	if (try_module_get(cpt_ops.owner)) {
-+		if (cpt_ops.checkpoint)
-+			ret = cpt_ops.checkpoint(pid, fd, flags);
-+		module_put(cpt_ops.owner);
++	if (IS_ERR(path)) {
++		free_page((unsigned long)buf);
++		return PTR_ERR(path);
 +	}
-+	return ret;
- }
- 
- /**
-@@ -34,5 +50,14 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
-  */
- asmlinkage long sys_restart(int ctid, int fd, unsigned long flags)
- {
--	return -ENOSYS;
-+	int ret;
 +
-+	ret = -ENOSYS;
++	len = buf + PAGE_SIZE - 1 - path;
++	o.cpt_len = sizeof(o) + len + 1;
++	o.cpt_type = CPT_OBJ_NAME;
++	o.cpt_hdrlen = sizeof(o);
++	o.cpt_content = CPT_CONTENT_NAME;
++	path[len] = 0;
 +
-+	if (try_module_get(cpt_ops.owner)) {
-+		if (cpt_ops.restart)
-+			ret = cpt_ops.restart(ctid, fd, flags);
-+		module_put(cpt_ops.owner);
++	ctx->write(&o, sizeof(o), ctx);
++	ctx->write(path, len + 1, ctx);
++	free_page((unsigned long)buf);
++
++	return 0;
++}
++
++static int dump_one_vma(struct mm_struct *mm,
++			struct vm_area_struct *vma, struct cpt_context *ctx)
++{
++	struct cpt_vma_image *v;
++	unsigned long addr;
++	int page_num;
++	int err;
++
++	v = kzalloc(sizeof(*v), GFP_KERNEL);
++	if (!v)
++		return -ENOMEM;
++
++	v->cpt_len = sizeof(*v);
++	v->cpt_type = CPT_OBJ_VMA;
++	v->cpt_hdrlen = sizeof(*v);
++	v->cpt_content = CPT_CONTENT_ARRAY;
++
++	v->cpt_start = vma->vm_start;
++	v->cpt_end = vma->vm_end;
++	v->cpt_flags = vma->vm_flags;
++	if (vma->vm_flags & VM_HUGETLB) {
++		eprintk("huge TLB VMAs are still not supported\n");
++		kfree(v);
++		return -EINVAL;
 +	}
-+	return ret;
- }
-diff --git a/init/Kconfig b/init/Kconfig
-index 4bd4b0c..d29ed21 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -344,6 +344,8 @@ config CGROUP_FREEZER
-           Provides a way to freeze and unfreeze all tasks in a
- 	  cgroup
++	v->cpt_pgprot = vma->vm_page_prot.pgprot;
++	v->cpt_pgoff = vma->vm_pgoff;
++	v->cpt_file = CPT_NULL;
++	v->cpt_vma_type = CPT_VMA_TYPE_0;
++
++	page_num = count_vma_pages(vma, ctx);
++	if (page_num < 0) {
++		kfree(v);
++		return -EINVAL;
++	}
++	v->cpt_page_num = page_num;
++
++	if (vma->vm_file) {
++		v->cpt_file = 0;
++		v->cpt_vma_type = CPT_VMA_FILE;
++	}
++
++	ctx->write(v, sizeof(*v), ctx);
++	kfree(v);
++
++	if (vma->vm_file) {
++		err = cpt_dump_dentry(&vma->vm_file->f_path, ctx);
++		if (err < 0)
++			return err;
++	}
++
++	for (addr = vma->vm_start; addr < vma->vm_end; addr += PAGE_SIZE) {
++		struct page_desc pd;
++		struct cpt_page_block pgb;
++
++		page_get_desc(vma, addr, &pd, ctx);
++
++		if (pd.type == PD_FUNKEY || pd.type == PD_ABSENT) {
++			eprintk("dump_one_vma: funkey page\n");
++			return -EINVAL;
++		}
++
++		pgb.cpt_start = addr;
++		pgb.cpt_end = addr + PAGE_SIZE;
++		dump_page_block(vma, &pgb, ctx);
++	}
++
++	return 0;
++}
++
++static int cpt_dump_mm_context(struct mm_struct *mm, struct cpt_context *ctx)
++{
++#ifdef CONFIG_X86
++	if (mm->context.size) {
++		struct cpt_obj_bits b;
++		int size;
++
++		mutex_lock(&mm->context.lock);
++
++		b.cpt_type = CPT_OBJ_BITS;
++		b.cpt_len = sizeof(b);
++		b.cpt_content = CPT_CONTENT_MM_CONTEXT;
++		b.cpt_size = mm->context.size * LDT_ENTRY_SIZE;
++
++		ctx->write(&b, sizeof(b), ctx);
++
++		size = mm->context.size * LDT_ENTRY_SIZE;
++
++		ctx->write(mm->context.ldt, size, ctx);
++
++		mutex_unlock(&mm->context.lock);
++	}
++#endif
++	return 0;
++}
++
++int cpt_dump_mm(struct task_struct *tsk, struct cpt_context *ctx)
++{
++	struct mm_struct *mm = tsk->mm;
++	struct cpt_mm_image *v;
++	struct vm_area_struct *vma;
++	int err;
++
++	v = kzalloc(sizeof(*v), GFP_KERNEL);
++	if (!v)
++		return -ENOMEM;
++
++	v->cpt_len = sizeof(*v);
++	v->cpt_type = CPT_OBJ_MM;
++	v->cpt_hdrlen = sizeof(*v);
++	v->cpt_content = CPT_CONTENT_ARRAY;
++
++	v->cpt_start_code = mm->start_code;
++	v->cpt_end_code = mm->end_code;
++	v->cpt_start_data = mm->start_data;
++	v->cpt_end_data = mm->end_data;
++	v->cpt_start_brk = mm->start_brk;
++	v->cpt_brk = mm->brk;
++	v->cpt_start_stack = mm->start_stack;
++	v->cpt_start_arg = mm->arg_start;
++	v->cpt_end_arg = mm->arg_end;
++	v->cpt_start_env = mm->env_start;
++	v->cpt_end_env = mm->env_end;
++	v->cpt_def_flags = mm->def_flags;
++	v->cpt_flags = mm->flags;
++	v->cpt_map_count = mm->map_count;
++
++	err = ctx->write(v, sizeof(*v), ctx);
++	kfree(v);
++	
++	if (err) {
++		eprintk("error during writing mm\n");
++		return err;
++	}
++	
++	for (vma = mm->mmap; vma; vma = vma->vm_next) {
++		int err;
++
++		if ((err = dump_one_vma(mm, vma, ctx)) != 0)
++			return err;
++	}
++
++	if (!err)
++		err = cpt_dump_mm_context(mm, ctx);
++
++	return err;
++}
++
+diff --git a/cpt/cpt_process.c b/cpt/cpt_process.c
+index af4f319..7c4b981 100644
+--- a/cpt/cpt_process.c
++++ b/cpt/cpt_process.c
+@@ -225,12 +225,12 @@ int cpt_dump_task(struct task_struct *tsk, struct cpt_context *ctx)
  
-+source "cpt/Kconfig"
-+	  
- config FAIR_GROUP_SCHED
- 	bool "Group scheduling for SCHED_OTHER"
- 	depends on GROUP_SCHED
+ 	err = cpt_dump_task_struct(tsk, ctx);
+ 
+-	/* Dump task mm */
+-
+ 	if (!err)
+-		cpt_dump_fpustate(tsk, ctx);
++		err = cpt_dump_mm(tsk, ctx);
++	if (!err)
++		err = cpt_dump_fpustate(tsk, ctx);
+ 	if (!err)
+-		cpt_dump_registers(tsk, ctx);
++		err = cpt_dump_registers(tsk, ctx);
+ 
+ 	return err;
+ }
+diff --git a/mm/memory.c b/mm/memory.c
+index 1002f47..479a294 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -481,6 +481,7 @@ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ out:
+ 	return pfn_to_page(pfn);
+ }
++EXPORT_SYMBOL(vm_normal_page);
+ 
+ /*
+  * copy one vm_area from one task to the other. Assumes the page tables
 -- 
 1.5.6
 
