@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbYICTRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYICTVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbYICTRS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 15:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYICTRI
+	id S1755711AbYICTVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 15:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYICTVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 15:17:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:56908 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753286AbYICTRH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 15:17:07 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1/q9lcSMHjqch+RP2W1hrsO1XkfKa5AcUDzStBT5I
-	6tKqoNu/ah/BjT
-From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 29/42] net: Unbreak userspace which includes linux/mroute.h
-Date: Wed, 3 Sep 2008 21:16:56 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-References: <20080903171927.534216229@mini.kroah.org> <20080903172624.GD7731@suse.de>
-In-Reply-To: <20080903172624.GD7731@suse.de>
+	Wed, 3 Sep 2008 15:21:12 -0400
+Received: from inhex.net ([193.33.178.145]:45065 "EHLO inhex.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752243AbYICTVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 15:21:12 -0400
+Date: Wed, 3 Sep 2008 22:21:00 +0300
+From: Dmitry Nezhevenko <dion@inhex.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       herton@mandriva.com.br,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Glauber Costa <gcosta@redhat.com>
+Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
+Message-ID: <20080903192100.GA9643@laptop.local>
+References: <alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de> <20080903104132.7a736282@doriath.conectiva> <alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de> <20080903164415.GA24442@laptop.local> <alpine.LFD.1.10.0809031857020.3243@apollo.tec.linutronix.de> <20080903143653.68bb58df@doriath.conectiva> <alpine.LFD.1.10.0809032030271.3243@apollo.tec.linutronix.de> <20080903190105.GA3660@laptop.local> <alpine.LFD.1.10.0809032105160.3243@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809032117.00425.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+In-Reply-To: <alpine.LFD.1.10.0809032105160.3243@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Wed, Sep 03, 2008 at 09:08:41PM +0200, Thomas Gleixner wrote:
+> > > Does the patch below help ? Keep the debug patch applied, as we can
+> > > see whether the check triggers or not.
+> > 
+> > Works for me... I'm just got only second backtrace after mounting rootfs.
+> > Looks like something is broken with  git tree. 
+> 
+> Is the box continuing to work after that warning/backtrace ? This is
+> still on the x86 git tree, right ? Please verify whether mainline
+> (linus git tree) has the same problem.
+> 
 
-On Mittwoch, 3. September 2008, Greg KH wrote:
-> 2.6.26-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: David S. Miller <davem@davemloft.net>
-> 
-> [ Upstream commit 7c19a3d280297d43ef5ff7c6b205dc208a16d3d1 ]
-> 
-> This essentially reverts two commits:
-> 
-> 1) 2e8046271f68198dd37451017c1a4a2432e4ec68 ("[IPV4] MROUTE: Move PIM
->    definitions to <linux/pim.h>.")
-> 
-> and
-> 
-> 2) 80a9492a33dd7d852465625022d56ff76d62174d ("[IPV4] MROUTE: Adjust
->    include files for user-space.")
-> 
-> which broke userpsace, in particular the XORP build as reported by
-> Jose Calhariz, the debain package maintainer for XORP.
-> 
-> Nothing originally in linux/mroute.h was exported to userspace
-> ever, but some of this stuff started to be when it was moved into
-> this new linux/pim.h, and that was wrong.  If we didn't provide these
-> definitions for 10 years we can reasonable expect that applications
-> defined this stuff locally or used GLIBC headers providing the
-> protocol definitions.  And as such the only result of this can
-> be conflict and userland build breakage.
-> 
-> The commit #1 had such a short and terse commit message, that we
-> cannot even know why such a move and set of new userland exports were
-> even made.
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  include/linux/Kbuild   |    1 -
->  include/linux/mroute.h |   25 +++++++++++++++++++++----
->  include/linux/pim.h    |   45 ---------------------------------------------
->  3 files changed, 21 insertions(+), 50 deletions(-)
+I've just tried 2.6.27-rc5 vanilla with two your patches. It works as
+expected without any kind of warnings/backtraces. 
 
-This patch is missing to remove the include for linux/pim.h in 
-net/ipv6/ip6mr.c, leading to the following build failure:
+Not attaching dmesg, because it's just clean. If you need it, please
+download from:
+http://inhex.net/dion/lkml/dmesg_hpet_fix.txt
 
-  CC [M]  net/ipv6/ip6mr.o
-net/ipv6/ip6mr.c:48:23: error: linux/pim.h: Datei oder Verzeichnis nicht gefunden
-net/ipv6/ip6mr.c: In function ‘pim6_rcv’:
-net/ipv6/ip6mr.c:354: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:358: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:358: error: ‘PIM_VERSION’ undeclared (first use in this function)
-net/ipv6/ip6mr.c:358: error: (Each undeclared identifier is reported only once
-net/ipv6/ip6mr.c:358: error: for each function it appears in.)
-net/ipv6/ip6mr.c:358: error: ‘PIM_REGISTER’ undeclared (first use in this function)
-net/ipv6/ip6mr.c:359: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:359: error: ‘PIM_NULL_REGISTER’ undeclared (first use in this function)
-net/ipv6/ip6mr.c:360: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:366: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:370: error: dereferencing pointer to incomplete type
-make[2]: *** [net/ipv6/ip6mr.o] Fehler 1
-make[1]: *** [net/ipv6] Fehler 2
-make: *** [net] Fehler 2
+If this patch will be commited to mainline, bug #11101 can be closed as
+fixed.
 
-Regards
-	Stefan Lippers-Hollmann
+PS. CC-ed Glauber, because #11101 is assigned to him.
+
+-- 
+WBR, Dmitry
