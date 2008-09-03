@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbYICTJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYICTKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbYICTJe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 15:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYICTJK
+	id S1756617AbYICTKj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 15:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbYICTKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 15:09:10 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56848 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756242AbYICTJJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 15:09:09 -0400
-Date: Wed, 3 Sep 2008 20:06:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Richard A Nelson <cowboy@cavein.org>
-Cc: Jeff Garzik <jeff@garzik.org>, torvalds@osdl.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ahci: Fix long standing Marvell regressions
-Message-ID: <20080903200649.71eb6bfb@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.1.10.0809031151200.742@hygvzn-guhyr.pnirva.bet>
-References: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk>
-	<48BDCF09.7000603@garzik.org>
-	<20080903142941.3f25d235@lxorguk.ukuu.org.uk>
-	<20080903144834.35276de7@lxorguk.ukuu.org.uk>
-	<alpine.DEB.1.10.0809031151200.742@hygvzn-guhyr.pnirva.bet>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Sep 2008 15:10:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:55815 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754236AbYICTKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 15:10:30 -0400
+Date: Wed, 3 Sep 2008 21:10:15 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+cc: Dmitry Nezhevenko <dion@inhex.net>, herton@mandriva.com.br,
+       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
+In-Reply-To: <20080903160705.0efd7308@doriath.conectiva>
+Message-ID: <alpine.LFD.1.10.0809032109070.3243@apollo.tec.linutronix.de>
+References: <20080902163532.436f8fbd@doriath.conectiva> <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de> <20080902175544.131bc54e@doriath.conectiva> <alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de> <20080903104132.7a736282@doriath.conectiva>
+ <alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de> <20080903164415.GA24442@laptop.local> <alpine.LFD.1.10.0809031857020.3243@apollo.tec.linutronix.de> <20080903143653.68bb58df@doriath.conectiva>
+ <alpine.LFD.1.10.0809032030271.3243@apollo.tec.linutronix.de> <20080903160705.0efd7308@doriath.conectiva>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008 11:54:36 -0700 (PDT)
-Richard A Nelson <cowboy@cavein.org> wrote:
+On Wed, 3 Sep 2008, Luiz Fernando N. Capitulino wrote:
+>  Yeah, it works. I have booted three times with no warnings.
+> 
+>  I will revert the debug patch and test again just to be sure, if
+> this is of any help:
+> 
+> Tested-by: Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br>
+> 
+>  By the way, is this the definitive fix?
 
-> On Wed, 3 Sep 2008, Alan Cox wrote:
-> 
-> > We can't automate that for the other devices as we don't actually know
-> > how to check the PATA port on them.
-> 
-> I happen to have one of the others:
->  	Marvell Technology Group Ltd. 88SE6121 SATA II Controller (rev b1)
-> 
-> It is not in use, likely as a result of the issues at hand, I don't
-> recall exactly what transpired at the time.
-> 
-> I have no specs, but would be happy to run any software diagnostics
-> if they'd be of help
+Part of it. I will keep a more clever force exit from the program
+loops to avoid that once and forever.
 
-Load the pata_marvell driver and it dumps out BAR5: .... lists of values
+Thanks,
 
-Can you do that with a PATA device attached and with no PATA device
-attached and see what changes.
+	tglx
