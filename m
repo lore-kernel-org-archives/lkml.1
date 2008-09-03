@@ -1,85 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYICRhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbYICRgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbYICRhB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756171AbYICRga
+	id S1755778AbYICRgs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbYICRgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:36:30 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:50860 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756165AbYICRg3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:36:29 -0400
-Date: Wed, 3 Sep 2008 19:36:27 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andreas Mohr <andi@lisas.de>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, shaohua.li@intel.com
-Subject: Re: [PATCH] Prevent clockevent event_handler ending up handler_noop
-Message-ID: <20080903173627.GA7767@rhlx01.hs-esslingen.de>
-References: <20080903164356.GA31969@rhlx01.hs-esslingen.de> <alpine.LFD.1.10.0809031908270.3243@apollo.tec.linutronix.de>
+	Wed, 3 Sep 2008 13:36:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51125 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756057AbYICRgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:36:21 -0400
+Date: Wed, 3 Sep 2008 10:25:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Ayaz Abdulla <aabdulla@nvidia.com>,
+       Jeff Garzik <jgarzik@pobox.com>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 13/42] forcedeth: fix checksum flag
+Message-ID: <20080903172542.GN7731@suse.de>
+References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809031908270.3243@apollo.tec.linutronix.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Disposition: inline; filename="forcedeth-fix-checksum-flag.patch"
+In-Reply-To: <20080903172447.GA7731@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
-On Wed, Sep 03, 2008 at 07:15:16PM +0200, Thomas Gleixner wrote:
-> On Wed, 3 Sep 2008, Andreas Mohr wrote:
-> > See what such highres-deprived people as myself (PIT, acpi_pm,
-> > _no_ HPET and thus no IRQed highres timer) are doing now,
-> 
-> Err. PIT + acpi_pm works with highres. acpi_pm is a stable clocksource
-> and PIT is not a good, but a usable oneshot timer.
+------------------
 
-Hmm. What I'm interested in is longer wakeup timeouts (ACPI C2/C3
-stuff), which would be a problem with PIT (~20 forced wakeups per second)
-but with my new timer that would work.
-Oh, side question: it _is_ easily possible to then disable PIT IRQs
-once my event device is registered, right? Otherwise I could forget
-about power management benefits...
+From: Ayaz Abdulla <aabdulla@nvidia.com>
 
-And of course I'm interested in very short delays as well ("highres"),
-which my timer could provide.
+commit edcfe5f7e307846e578fb88d69fa27051fded0ab upstream
 
-> > And any hints on how to possibly (reliably!) provide both clock_event_device
-> > (oneshot) _and_ clocksource for a _single_ IRQed countdown timer?
-> 
-> No. For a reliable clocksource you need an ever increasing /
-> decreasing counter, which just wraps around when the max. count is
-> reached.
-> 
-> If you use a single shot timer, which is reprogrammed after every
-> interrupt, then you will deviate from the time line as you have no
-> idea how long it took from the counter reaching zero to the point
-> where you reload the timer. Simply wont work.
+Fix the checksum feature advertised in device flags.  The hardware support
+TCP/UDP over IPv4 and TCP/UDP over IPv6 (without IPv6 extension headers).
+However, the kernel feature flags do not distinguish IPv6 with/without
+extension headers.
 
-Yup, that's exactly what I thought, slowly deviating from the timing
-that it actually should have been, due to reprogramming...
+Therefore, the driver needs to use NETIF_F_IP_CSUM instead of
+NETIF_F_HW_CSUM since the latter includes all IPv6 packets.
 
+A future patch can be created to check for extension headers and perform
+software checksum calculation.
 
-So as I see it, the most beneficial thing I can do is to provide
-a clock_event_device only.
+Signed-off-by: Ayaz Abdulla <aabdulla@nvidia.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: Manfred Spraul <manfred@colorfullife.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Reasoning being that acpi_pm already is an easily accessible (fast)
-reliable clocksource,
-yet PIT is a _very_ slow (ISA timing) relatively coarse and
-force-wakeupping event device.
+---
+ drivers/net/forcedeth.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Then additionally upgrade my driver to do mmapped access to this
-PCI-MEM-capable sound card, and there we go with a fast and fine-grained
-event device.
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -5420,7 +5420,7 @@ static int __devinit nv_probe(struct pci
+ 	if (id->driver_data & DEV_HAS_CHECKSUM) {
+ 		np->rx_csum = 1;
+ 		np->txrxctl_bits |= NVREG_TXRXCTL_RXCHECK;
+-		dev->features |= NETIF_F_HW_CSUM | NETIF_F_SG;
++		dev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+ 		dev->features |= NETIF_F_TSO;
+ 	}
+ 
+@@ -5728,7 +5728,7 @@ static int __devinit nv_probe(struct pci
+ 
+ 	dev_printk(KERN_INFO, &pci_dev->dev, "%s%s%s%s%s%s%s%s%s%sdesc-v%u\n",
+ 		   dev->features & NETIF_F_HIGHDMA ? "highdma " : "",
+-		   dev->features & (NETIF_F_HW_CSUM | NETIF_F_SG) ?
++		   dev->features & (NETIF_F_IP_CSUM | NETIF_F_SG) ?
+ 		   	"csum " : "",
+ 		   dev->features & (NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_TX) ?
+ 		   	"vlan " : "",
 
-Out of interest: how big would you believe the benefit to be?
-(overall system performance gains and ACPI PM benefits)
-
-Thanks,
-
-Andreas Mohr
+-- 
