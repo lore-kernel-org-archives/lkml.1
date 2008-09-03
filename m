@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbYICTIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYICTIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbYICTIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 15:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYICTH5
+	id S1756733AbYICTIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 15:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYICTIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 15:07:57 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:29532 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbYICTH4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 15:07:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tvYOiId00jkfn6cnJVICGoTSFdeG0fl4Z3AFJrcHYPXRVP/qmAmtocmaid5cvP43xG
-         D+6ZthE5L17Xn83DNO4x6Aoj/u476THimqVfgmTdB+iYqfyV8zQfj12MVcfC9wIQJthD
-         eW45zACoZdthLD9qSqBskF5yi8zAlD7HcNoCM=
-Date: Wed, 3 Sep 2008 15:07:50 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-Message-ID: <20080903150649.ZZRA012@mailhub.coreip.homeip.net>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz> <20080903101947.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.00.0809031317080.19665@iabervon.org>
+	Wed, 3 Sep 2008 15:08:39 -0400
+Received: from mail.cavein.org ([66.245.249.51]:56180 "EHLO mail.cavein.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753819AbYICTIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 15:08:38 -0400
+X-Greylist: delayed 787 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Sep 2008 15:08:37 EDT
+X-DKIM: Sendmail DKIM Filter v2.6.0 smtp.cavein.org m83IsaJ5026451
+X-DomainKeys: Sendmail DomainKeys Filter v1.0.0 smtp.cavein.org m83IsaJ5026451
+DomainKey-Signature: a=rsa-sha1; s=2008; d=cavein.org; c=nofws; q=dns;
+	h=date:from:to:cc:subject:in-reply-to:message-id:references:
+	user-agent:mime-version:content-type;
+	b=eMHuf1704Q6DFosfMm6ybs42goM2GnvAxI2MeCGY05uHss+GB37vhBpr7bd0WE0Ni
+	kNPxHgQBOsG8XvIllQnnyicMwiSewHek9aXhhSCbOKTlJKpamc8fh7TKNzd9wkW3Obn
+	5ORxup5i/vdJS/d8g/7CaJUHljeSePiWYzGRHEE=
+Date: Wed, 3 Sep 2008 11:54:36 -0700 (PDT)
+From: Richard A Nelson <cowboy@cavein.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Jeff Garzik <jeff@garzik.org>, torvalds@osdl.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ahci: Fix long standing Marvell regressions
+In-Reply-To: <20080903144834.35276de7@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.1.10.0809031151200.742@hygvzn-guhyr.pnirva.bet>
+References: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk> <48BDCF09.7000603@garzik.org> <20080903142941.3f25d235@lxorguk.ukuu.org.uk> <20080903144834.35276de7@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.00.0809031317080.19665@iabervon.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (smtp.cavein.org [127.0.0.1]); Wed, 03 Sep 2008 18:54:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 01:18:23PM -0400, Daniel Barkalow wrote:
-> On Wed, 3 Sep 2008, Dmitry Torokhov wrote:
-> 
-> > On Wed, Sep 03, 2008 at 01:50:35PM +0200, Jiri Kosina wrote:
-> > > On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
-> > > 
-> > > > I guess we could use System's product name to differentiate between 
-> > > > Cristopher's and Daniel's boards. Although I must admit it is the very 
-> > > > first time when I see a box that behaves better with active mux. DOes 
-> > > > Vista use active mux nowadays? Because if it is not then I bet there is 
-> > > > (or shortly will be) a BIOS update fixing legacy mode on Daniel's box.
-> > > 
-> > > I guess so, yes.
-> > > 
-> > > On the other hand, this might also be viewed as regression (we made 
-> > > Daniel's hardware behave worse with recent kernel than it did before), so 
-> > > I think we still would like to have this fixed. What about the patch 
-> > > below, adding the match on System's product name, as you suggested? 
-> > > Thanks.
-> > > 
-> > 
-> > I agree. Daniel, could you please try the patch to make sure it
-> > restores the previous behavior for you and I will push it through.
-> > 
-> > Thanks!
-> 
-> I'll test that Thursday as well; is there some quick way to determine 
-> whether you're using active mux or not?
+On Wed, 3 Sep 2008, Alan Cox wrote:
 
-Do "dmesg | grep serio".. If you see 4 AUX ports being created then
-KBC is in active multiplexing mode.
+> We can't automate that for the other devices as we don't actually know
+> how to check the PATA port on them.
 
+I happen to have one of the others:
+ 	Marvell Technology Group Ltd. 88SE6121 SATA II Controller (rev b1)
+
+It is not in use, likely as a result of the issues at hand, I don't
+recall exactly what transpired at the time.
+
+I have no specs, but would be happy to run any software diagnostics
+if they'd be of help
 -- 
-Dmitry
+Rick Nelson
+"I would rather spend 10 hours reading someone else's source code than
+10 minutes listening to Musak waiting for technical support which isn't."
+(By Dr. Greg Wettstein, Roger Maris Cancer Center)
