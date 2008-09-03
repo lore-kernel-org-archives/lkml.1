@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbYICSoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbYICSou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756624AbYICSoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 14:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYICSoJ
+	id S1756752AbYICSou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 14:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYICSoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 14:44:09 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:54506 "EHLO
+	Wed, 3 Sep 2008 14:44:10 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:54490 "EHLO
 	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbYICSoH (ORCPT
+	with ESMTP id S1753413AbYICSoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Sep 2008 14:44:07 -0400
 From: Andy Whitcroft <apw@shadowen.org>
@@ -15,40 +15,72 @@ To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 4/4] capture pages freed during direct reclaim for allocation by the reclaimer
-Date: Wed,  3 Sep 2008 19:44:12 +0100
-Message-Id: <1220467452-15794-5-git-send-email-apw@shadowen.org>
+Subject: [RFC PATCH 0/4] Reclaim page capture v2
+Date: Wed,  3 Sep 2008 19:44:08 +0100
+Message-Id: <1220467452-15794-1-git-send-email-apw@shadowen.org>
 X-Mailer: git-send-email 1.6.0.rc1.258.g80295
-In-Reply-To: <1220467452-15794-1-git-send-email-apw@shadowen.org>
-References: <1220467452-15794-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a process enters direct reclaim it will expend effort identifying
-and releasing pages in the hope of obtaining a page.  However as these
-pages are released asynchronously there is every possibility that the
-pages will have been consumed by other allocators before the reclaimer
-gets a look in.  This is particularly problematic where the reclaimer is
-attempting to allocate a higher order page.  It is highly likely that
-a parallel allocation will consume lower order constituent pages as we
-release them preventing them coelescing into the higher order page the
-reclaimer desires.
+For sometime we have been looking at mechanisms for improving the availability
+of larger allocations under load.  One of the options we have explored is
+the capturing of pages freed under direct reclaim in order to increase the
+chances of free pages coelescing before they are subject to reallocation
+by racing allocators.
 
-This patch set attempts to address this for allocations above
-ALLOC_COSTLY_ORDER by temporarily collecting the pages we are releasing
-onto a local free list.  Instead of freeing them to the main buddy lists,
-pages are collected and coelesced on this per direct reclaimer free list.
-Pages which are freed by other processes are also considered, where they
-coelesce with a page already under capture they will be moved to the
-capture list.  When pressure has been applied to a zone we then consult
-the capture list and if there is an appropriatly sized page available
-it is taken immediatly and the remainder returned to the free pool.
-Capture is only enabled when the reclaimer's allocation order exceeds
-ALLOC_COSTLY_ORDER as free pages below this order should naturally occur
-in large numbers following regular reclaim.
+Following this email is a patch stack implementing page capture during
+direct reclaim.  It consits of four patches.  The first two simply pull
+out existing code into helpers for reuse.  The third makes buddy's use
+of struct page explicit.  The fourth contains the meat of the changes,
+and its leader contains a much fuller description of the feature.
 
-Thanks go to Mel Gorman for numerous discussions during the development
-of this patch and for his repeated reviews.
+This update represents a rebase to -mm and incorporates feedback from
+KOSAKI Motohiro.  It also incorporates an accounting fix which was
+preventing some captures.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+I have done a lot of comparitive testing with and without this patch
+set and in broad brush I am seeing improvements in hugepage allocations
+(worst case size) success on all of my test systems.  These tests consist
+of placing a constant stream of high order allocations on the system,
+at varying rates.  The results for these various runs are then averaged
+to give an overall improvement.
+
+		Absolute	Effective
+x86-64		2.48%		 4.58%
+powerpc		5.55%		25.22%
+
+x86-64 has a relatively small huge page size and so is always much more
+effective at allocating huge pages.  Even there we get a measurable
+improvement.  On powerpc the huge pages are much larger and much harder
+to recover.  Here we see a full 25% increase in page recovery.
+
+It should be noted that these are worst case testing, and very agressive
+taking every possible page in the system.
+
+Against: 2.6.27-rc1-mm1
+
+Comments?
+
+-apw
+
+Changes since V1:
+ - Incorporates review feedback from KOSAKI Motohiro,
+ - fixes up accounting when checking watermarks for captured pages,
+ - rebase 2.6.27-rc1-mm1,
+ - Incorporates review feedback from Mel.
+
+Andy Whitcroft (4):
+  pull out the page pre-release and sanity check logic for reuse
+  pull out zone cpuset and watermark checks for reuse
+  buddy: explicitly identify buddy field use in struct page
+  capture pages freed during direct reclaim for allocation by the
+    reclaimer
+
+ include/linux/mm_types.h   |    4 +
+ include/linux/page-flags.h |    6 +
+ mm/internal.h              |    8 ++-
+ mm/page_alloc.c            |  255 ++++++++++++++++++++++++++++++++++++++------
+ mm/vmscan.c                |  115 ++++++++++++++++----
+ 5 files changed, 332 insertions(+), 56 deletions(-)
+
