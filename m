@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYICRbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbYICRcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbYICRbe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYICRbM
+	id S1754736AbYICRcJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYICRby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:31:12 -0400
-Received: from inhex.net ([193.33.178.145]:51212 "EHLO inhex.net"
+	Wed, 3 Sep 2008 13:31:54 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50123 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493AbYICRbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:31:11 -0400
-X-Greylist: delayed 2795 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Sep 2008 13:31:11 EDT
-Date: Wed, 3 Sep 2008 19:44:15 +0300
-From: Dmitry Nezhevenko <dion@inhex.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       herton@mandriva.com.br,
-       Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27-rc5 doesn't boot on a Pavilion laptop
-Message-ID: <20080903164415.GA24442@laptop.local>
-References: <20080902163532.436f8fbd@doriath.conectiva> <alpine.LFD.1.10.0809022208320.3243@apollo.tec.linutronix.de> <20080902175544.131bc54e@doriath.conectiva> <alpine.LFD.1.10.0809031202290.3243@apollo.tec.linutronix.de> <20080903104132.7a736282@doriath.conectiva> <alpine.LFD.1.10.0809031635260.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de>
+	id S1754575AbYICRbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:31:52 -0400
+Date: Wed, 3 Sep 2008 10:25:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Matthew Wilcox <matthew@wil.cx>,
+       Alex Chiang <achiang@hp.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 02/42] PCI: fix reference leak in pci_get_dev_by_id()
+Message-ID: <20080903172518.GC7731@suse.de>
+References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809031713040.3243@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Disposition: inline; filename="pci-fix-reference-leak-in-pci_get_dev_by_id.patch"
+In-Reply-To: <20080903172447.GA7731@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 05:15:40PM +0200, Thomas Gleixner wrote:
-> On Wed, 3 Sep 2008, Thomas Gleixner wrote:
-> > Dont think so. Your dmesg outputs do not show any sign of that
-> > disease.
-> > 
-> > Can you try the patch below please ?
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
-I'm not original problem reporter. However I'm experiencing possible same
-problem with MSI M673 laptop. Here is link to bugzilla report (with
-dmesgs and other info):
-http://bugzilla.kernel.org/show_bug.cgi?id=11101
+------------------
 
-2.6.27-rc4 on this machine freezes with exactly same messages:
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-hpet0: at MMIO 0xfed00000, IRQ 2, 8, 31
-hpet0: 3 32-bit timers, 25000000 Hz
-ACPI: RTC can wake from S4
+commit ebca4f1bce1eb7b91a63c515db66316db9391221 upstream
 
-This patch do not help me
+Alex Chiang and Matthew Wilcox pointed out that pci_get_dev_by_id() does
+not properly decrement the reference on the from pointer if it is
+present, like the documentation for the function states it will.
 
-> @@ -228,6 +228,8 @@ static void tick_do_broadcast_on_off(voi
->  	if (!tick_device_is_functional(dev))
->  		goto out;
->  
-> +	bc_stoppped = cpus_empty(tick_broadcast_mask);
+It fixes a pretty bad leak in the hotplug core (we were leaking an
+entire struct pci_dev for each function of each offlined card, the first
+time around; subsequent onlines/offlines were ok).
 
-btw little type here, should be "bc_stopped"
+Cc: Matthew Wilcox <matthew@wil.cx>
+Tested-by: Alex Chiang <achiang@hp.com>
+Acked-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-> +
->  	switch (*reason) {
->  	case CLOCK_EVT_NOTIFY_BROADCAST_ON:
->  	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
+---
+ drivers/pci/search.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/drivers/pci/search.c
++++ b/drivers/pci/search.c
+@@ -280,6 +280,8 @@ static struct pci_dev *pci_get_dev_by_id
+ 			      match_pci_dev_by_id);
+ 	if (dev)
+ 		pdev = to_pci_dev(dev);
++	if (from)
++		pci_dev_put(from);
+ 	return pdev;
+ }
  
+
 -- 
-WBR, Dmitry
