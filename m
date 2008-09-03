@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbYICI5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYICJCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbYICI5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 04:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYICI5P
+	id S1754174AbYICJCS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 05:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYICJB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 04:57:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:23162 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbYICI5O (ORCPT
+	Wed, 3 Sep 2008 05:01:59 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40067 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751888AbYICJB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 04:57:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=gfaGPx1XzlvrKo3nVKe4CT7IvX0sDg7ENBEU0k9rBHpsoMel7y/0LmX4hEUU8puYaQ
-         eTbNh5fZPXRyuY5NSBso3DTpuajDujYg250+BM+T+rLYY8iKBbn6hXenWKnRghq9iSIe
-         W2iz+SPus1arzUzY2YgSsk6Gey5cglfiunwWw=
-Message-ID: <48BE5163.2090101@panasas.com>
-Date: Wed, 03 Sep 2008 11:57:07 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5 ver2] debug: BUILD_BUG_ON: error on non-const	 expressions
-References: <48BBE77D.7070007@panasas.com> <48BBEE04.30903@panasas.com> <48BD626B.6070705@panasas.com> <48BD81B4.76E4.0078.0@novell.com>
-In-Reply-To: <48BD81B4.76E4.0078.0@novell.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 3 Sep 2008 05:01:59 -0400
+Subject: Re: [2.6.27] early exception - lockdep related?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <68676e00809030154i7470b08o770198bbefe00924@mail.gmail.com>
+References: <20080902210646.GA10925@dreamland.darkstar.lan>
+	 <1220424721.8609.74.camel@twins>
+	 <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
+	 <1220431061.8609.87.camel@twins>
+	 <68676e00809030154i7470b08o770198bbefe00924@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 11:01:58 +0200
+Message-Id: <1220432518.8609.89.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Boaz Harrosh <bharrosh@panasas.com> 02.09.08 17:57 >>>
->> -#define BUILD_BUG_ON_ZERO(e) (sizeof(char[1 - 2 * !!(e)]) - 1)
->> +#define BUILD_BUG_ON_ZERO(e) (sizeof(struct { int:-!!(e); }))
->> +
->> +/* Force a compilation error if condition is true */
->> +#define BUILD_BUG_ON(e) \
->> +	do { struct {int:-!!(e); } x __maybe_unused;} while(0)
->  
-> As indicated before, you should at the very least use __x as the variable
-> name.
+On Wed, 2008-09-03 at 10:54 +0200, Luca Tettamanti wrote:
+> On Wed, Sep 3, 2008 at 10:37 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Wed, 2008-09-03 at 10:28 +0200, Luca Tettamanti wrote:
+> >> On Wed, Sep 3, 2008 at 8:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> >> > On Tue, 2008-09-02 at 23:06 +0200, Luca Tettamanti wrote:
+> >> >> Hello,
+> >> >> I'm seeing an early exception (0e) - which seems related to lockdep - at
+> >> >> boot with many 2.6.27 kernels and I'm having troubles to track it down.
+> >> >
+> >> > Does it print one of these nice stack traces?
+> >>
+> >> Of course not ;-) It dies before dumping the stack trace (or at least
+> >> it doesn't make to the console - that machine has a serial port, but
+> >> my notebook does not... I've ordered a usb-to-serial adapter).
+> >
+> > Until it arrives, you could try poking at netconsole..
 > 
-
-The name does not matter. The scope of x is confined to the do {} while()
-and will not interfere with any local or global name.  
-
-> But didn't you have reservations against using a bitfield here? Or was it
-> really just the void cast on the sizeof() that you disliked?
+> Hum, I forgot to mention that it dies very early, just after:
 > 
-
-I like it it's fine. Also an added bonus is that on the good case it compiles
-to a size-less structure in a code-less block so even the most stupid 
-non-optimizing compiler will get it right. OK that could be done with 0-length
-array too. But for consistency's sake I like it that both macros are the same.
-
-> Jan
+> Kernel is alive
+> Kernel is really alive
+> <exception>
+> <dead>
 > 
+> Is netconsole already up at that point?
 
-I would like it if you sent your Signed-off-by: (or something) on this patch.
-Thanks for your help
-Boaz
+Good question, I suppose not, that only happens after the device probing
+has found the eth card.
+
