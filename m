@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYICSGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYICSLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbYICSGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 14:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYICSGi
+	id S1754685AbYICSLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 14:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbYICSLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 14:06:38 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33235 "EHLO sh.osrg.net"
+	Wed, 3 Sep 2008 14:11:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39263 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962AbYICSGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 14:06:37 -0400
-Date: Thu, 4 Sep 2008 03:05:21 +0900
-To: joerg.roedel@amd.com
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com, tony.luck@intel.com
-Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures
- with swiotlb
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com>
-References: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1752392AbYICSLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 14:11:01 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080904024842J.fujita.tomonori@lab.ntt.co.jp>
+From: Roland McGrath <roland@redhat.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+X-Fcc: ~/Mail/linus
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] utrace core
+In-Reply-To: Petr Tesarik's message of  Wednesday, 3 September 2008 14:58:27 +0200 <1220446707.6041.27.camel@elijah.suse.cz>
+References: <20080826220102.89635154233@magilla.localdomain>
+	<20080826220157.397C7154233@magilla.localdomain>
+	<1220446707.6041.27.camel@elijah.suse.cz>
+X-Zippy-Says: I want to dress you up as TALLULAH BANKHEAD and cover you with
+    VASELINE and WHEAT THINS..
+Message-Id: <20080903180854.61207154228@magilla.localdomain>
+Date: Wed,  3 Sep 2008 11:08:54 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008 17:03:44 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+> Why does it depend on MODULES? 
 
-> The SWIOTLB version of dma_alloc_coherent allocates all memory with
-> GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
-> failures. This patch makes the allocation strategy to use the DMA32 zone
-> first if this is possible. The changes are boot tested on AMD64 and
-> compile tested for i386 and IA64.
-> 
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: tony.luck@intel.com
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  lib/swiotlb.c |   23 +++++++++++++++++------
->  1 files changed, 17 insertions(+), 6 deletions(-)
+Because otherwise it's not adding anything new anyone can use.
 
-This doesn't look correct since IA64 doesn't need this flag hack.
+> Does this mean that when ptrace is switched to using the utrace engines,
+> non-modular kernels will have to lack ptrace(2)?
 
-Another problem about this patch is that swiotlb doesn't use GFP_DMA
-for the fallback_dev.
+No.  If that were done, then it would be:
+	depends on MODULE || PTRACE
+or suchlike.
 
-I'll send patches to fix this problem differently.
+> Is there anything in the code that actually breaks without
+> CONFIG_MODULES?
+
+No.
+
+
+Thanks,
+Roland
