@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYICIhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbYICIi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYICIhx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 04:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYICIhn
+	id S1752702AbYICIi5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 04:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYICIit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 04:37:43 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42801 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbYICIhm (ORCPT
+	Wed, 3 Sep 2008 04:38:49 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:60520 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbYICIit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 04:37:42 -0400
-Subject: Re: [2.6.27] early exception - lockdep related?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
-References: <20080902210646.GA10925@dreamland.darkstar.lan>
-	 <1220424721.8609.74.camel@twins>
-	 <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 10:37:41 +0200
-Message-Id: <1220431061.8609.87.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Sep 2008 04:38:49 -0400
+X-IronPort-AV: E=Sophos;i="4.32,320,1217822400"; 
+   d="scan'208";a="74501216"
+From: Bryan Wu <cooloney@kernel.org>
+To: tiwai@suse.de
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Cliff Cai <cliff.cai@analog.com>, Mike Frysinger <vapier.adi@gmail.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] ALSA: add dummy function to support shared mmap in nommu Blackfin arch (v3)
+Date: Wed,  3 Sep 2008 16:38:54 +0800
+Message-Id: <1220431134-7797-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-03 at 10:28 +0200, Luca Tettamanti wrote:
-> On Wed, Sep 3, 2008 at 8:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, 2008-09-02 at 23:06 +0200, Luca Tettamanti wrote:
-> >> Hello,
-> >> I'm seeing an early exception (0e) - which seems related to lockdep - at
-> >> boot with many 2.6.27 kernels and I'm having troubles to track it down.
-> >
-> > Does it print one of these nice stack traces?
-> 
-> Of course not ;-) It dies before dumping the stack trace (or at least
-> it doesn't make to the console - that machine has a serial port, but
-> my notebook does not... I've ordered a usb-to-serial adapter).
+From: Cliff Cai <cliff.cai@analog.com>
 
-Until it arrives, you could try poking at netconsole.. 
+v2-v3:
+ - when it is mmu arch, we define the dummy function to NULL
 
-> >> The strange thing is that it comes and goes with different kernel
-> >> versions
-> >
-> > What kernel version did you generate the below with - and what config.
-> 
-> -rc2 is working, after that it's intermittent. The last kernel that I
-> tried is -git from a couple of days ago.
+v1-v2:
+ - only adding this dummy function in nommu arch
 
-OK, once you send you .config, I'll try and reproduce on one of my
-machine. Perhaps you can also provide the git-describe output of a known
-bad one.
+Cc: Mike Frysinger <vapier.adi@gmail.com>
+Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ sound/core/pcm_native.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-> >> , but a "bad" kernel consistently fails across reboots. It also
-> >> seems to be sensitive to the configuration (attached)
-> >
-> > you seem to have forgotten that attachment.
-> 
-> Ops, will send as soon as I get home.
-
-Sure thing..
-
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index c49b9d9..e2068a4 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3391,6 +3391,16 @@ out:
+ }
+ #endif /* CONFIG_SND_SUPPORT_OLD_API */
+ 
++#ifndef CONFIG_MMU
++unsigned long dummy_get_unmapped_area(struct file *file, unsigned long addr,
++				      unsigned long len, unsigned long pgoff, unsigned long flags)
++{
++	return 0;
++}
++#else
++# define dummy_get_unmapped_area NULL
++#endif
++
+ /*
+  *  Register section
+  */
+@@ -3407,6 +3417,7 @@ const struct file_operations snd_pcm_f_ops[2] = {
+ 		.compat_ioctl = 	snd_pcm_ioctl_compat,
+ 		.mmap =			snd_pcm_mmap,
+ 		.fasync =		snd_pcm_fasync,
++		.get_unmapped_area =	dummy_get_unmapped_area,
+ 	},
+ 	{
+ 		.owner =		THIS_MODULE,
+@@ -3419,5 +3430,6 @@ const struct file_operations snd_pcm_f_ops[2] = {
+ 		.compat_ioctl = 	snd_pcm_ioctl_compat,
+ 		.mmap =			snd_pcm_mmap,
+ 		.fasync =		snd_pcm_fasync,
++		.get_unmapped_area =	dummy_get_unmapped_area,
+ 	}
+ };
+-- 
+1.5.6
