@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbYICGYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYICG1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbYICGYy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 02:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYICGYp
+	id S1755247AbYICG1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 02:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbYICG07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 02:24:45 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:34695 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753888AbYICGYo convert rfc822-to-8bit (ORCPT
+	Wed, 3 Sep 2008 02:26:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60154 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754019AbYICG07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 02:24:44 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Andreas Dilger <adilger@sun.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-In-Reply-To: <1220390769.2985.6.camel@pmac.infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-	 <1220262187.2982.58.camel@pmac.infradead.org>
-	 <20080901150147.GA20323@infradead.org> <1220339032.4036.31.camel@sauron>
-	 <20080902170954.GE3086@webber.adilger.int>
-	 <20080902210219.GA9856@infradead.org>
-	 <1220390769.2985.6.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 03 Sep 2008 09:20:30 +0300
-Message-Id: <1220422830.4036.38.camel@sauron>
+	Wed, 3 Sep 2008 02:26:59 -0400
+Date: Tue, 2 Sep 2008 23:26:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for September 1 (recordmcount.pl)
+Message-Id: <20080902232639.255efb4f.akpm@linux-foundation.org>
+In-Reply-To: <20080901112549.9849ab39.randy.dunlap@oracle.com>
+References: <20080901191946.4c35ffc9.sfr@canb.auug.org.au>
+	<20080901112549.9849ab39.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 03 Sep 2008 06:23:59.0749 (UTC) FILETIME=[A6D7F350:01C90D8D]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 22:26 +0100, David Woodhouse wrote:
-> That was Artem's motivation for filling in f_fsid in the first place.
+On Mon, 1 Sep 2008 11:25:49 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Yes, right. I am planning NFS support and would like to have UBIFS
-filling f_fsid.
+> On Mon, 1 Sep 2008 19:19:46 +1000 Stephen Rothwell wrote:
+> 
+> > Hi all,
+> > 
+> > Changes since next-20080829:
+> 
+> When using patch tarballs and applying that to kernel bases,
+> scripts/recordmcount.pl fails because it is not executable.
+> (Yes, I know, using the git would/should fix this.)
+> 
+> Is there any way to make (new) scripts executable when using
+> tarballs?
+> 
+> I'll handle it on a case-by-case basis for now.
+> 
 
-> Does anything else even _care_ about f_fsid? 
+I did this:
 
-I do not know anything but NFS.
+From: Andrew Morton <akpm@linux-foundation.org>
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CC      scripts/mod/empty.o
+/bin/sh: /usr/src/25/scripts/recordmcount.pl: Permission denied
+
+We shouldn't assume that files have their `x' bits set.  There are various
+ways in which file permissions get lost, including use of patch(1).
+
+It might not be correct to assume that perl lives in $PATH?
+
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ scripts/Makefile.build |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff -puN scripts/Makefile.build~kbuild-ftrace-dont-assume-that-scripts-recordmcountpl-is-executable scripts/Makefile.build
+--- a/scripts/Makefile.build~kbuild-ftrace-dont-assume-that-scripts-recordmcountpl-is-executable
++++ a/scripts/Makefile.build
+@@ -199,8 +199,9 @@ cmd_modversions =							\
+ endif
+ 
+ ifdef CONFIG_FTRACE_MCOUNT_RECORD
+-cmd_record_mcount = $(srctree)/scripts/recordmcount.pl "$(ARCH)" \
+-	"$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" "$(MV)" "$(@)";
++cmd_record_mcount = perl $(srctree)/scripts/recordmcount.pl \
++	"$(ARCH)" "$(OBJDUMP)" "$(OBJCOPY)" "$(CC)" "$(LD)" "$(NM)" "$(RM)" \
++	"$(MV)" "$(@)";
+ endif
+ 
+ define rule_cc_o_c
+_
+
+
+but I haven't been able to interest anyone in the patch yet.
 
