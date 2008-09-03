@@ -1,118 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYICKVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYICKXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbYICKVV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYICKVH
+	id S1754709AbYICKXe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbYICKX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:21:07 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:3659 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYICKVF (ORCPT
+	Wed, 3 Sep 2008 06:23:26 -0400
+Received: from mailer1.option.com ([81.246.70.162]:39489 "EHLO
+	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751598AbYICKX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:21:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=T7CvukRFNrLO7+JWL/R/5VHgmKKbziMYLP/pi99o9assOXfZLH46vqUlFapa1iUntF
-         TwASyGn34HfUgWg8VELcqtxFCld5uLjX+wBxO2PLvorr8XGW9WAMOoecfmsGezy71op1
-         f6H0aCy+bkWqGxaQp8oyhLbVHA7NJ+cPF6jU8=
-Message-ID: <91b13c310809030321t143579b9l2364cfac6608da43@mail.gmail.com>
-Date: Wed, 3 Sep 2008 18:21:02 +0800
-From: "rae l" <crquan@gmail.com>
-To: "Dan Williams" <dan.j.williams@intel.com>, jmm@users.sourceforge.net,
-       mhydra@users.sourceforge.net, miku@users.sourceforge.net
-Subject: Re: from raid456 patch, about the tiotest tool
-Cc: linux-raid@vger.kernel.org,
-       "James W. Laferriere" <babydr@baby-dragons.com>,
-       "Neil Brown" <neilb@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <91b13c310809020102j42e91ba2q65dd2f2f60bfde35@mail.gmail.com>
+	Wed, 3 Sep 2008 06:23:26 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlgBAOsBvkgKAAAZ/2dsb2JhbAAItXyBaQ
+Message-ID: <48BE5C37.3070907@option.com>
+Date: Wed, 03 Sep 2008 11:43:19 +0200
+From: Denis Joseph Barrow <D.Barow@option.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Filip Aben <f.aben@option.com>, linux-kernel@vger.kernel.org,
+       Andrew Bird <ajb@spheresystems.co.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Jeff Garzik <jgarzik@pobox.com>
+Subject: re /drivers/char/n_tty.c dropping characters
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <91b13c310808261103y326d57e8q737647b88d925daa@mail.gmail.com>
-	 <91b13c310809020102j42e91ba2q65dd2f2f60bfde35@mail.gmail.com>
+X-OriginalArrivalTime: 03 Sep 2008 10:23:23.0437 (UTC) FILETIME=[1844CDD0:01C90DAF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 2, 2008 at 4:02 PM, rae l <crquan@gmail.com> wrote:
-> On Wed, Aug 27, 2008 at 2:03 AM, rae l <crquan@gmail.com> wrote:
->> Hello, Dan:
->>  I've known your md(raid456) patch just before v2.6.26,
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8b3e6cdc53b7f29f7026955d6cb6902a49322a15
->>
->> your md patch referred to tiobench, which is the multi-thread
->> benchmark tool, I'm interested on this tool and I found I ran it
->> differently with your results, so I want to know more about it,
->>
->> from its home page, it only released v0.3.3 on Mar 2002,
->>
->> http://sourceforge.net/projects/tiobench/
->>
->> but from its cvs repository, it has released v0.4.1,
->>
->> http://tiobench.cvs.sourceforge.net/tiobench/tiobench/
->>
->> Could you tell me what version of tiobench did you use? I want to see
->> if that's my configuration fault or I have used wrong program version.
->>
->> And when using v0.4.1 of tiobench from its cvs repository, I found its
->> multiple threads random IO statistics code reported wrong results, and
->> have resolved it by this patch,
->>
->> http://sourceforge.net/tracker/index.php?func=detail&aid=2047536&group_id=3857&atid=303857
->>
->> But its upstream seems have not noticed it yet, so I want to if
->> someone on this mailling-list know tiobench upstream and be able to
->> take this message?
->
-> Hope someone can wake up the tiobench developer?
->
-
-Regretfully, the tiotest v0.4.1 still have bugs that I haven't
-resolved, even applied my previous patch,
-
-such as this reported on a single SATA disk, simple dd benchmark
-report its bandwidth is 70MB/s, do you believe it has 1489.8 MB/s
-random read performance?
-
-But it's weird when I'm using systemtap on it,
-
-# stap -ve 'probe kernel.function("vfs_read@fs/read_write.c") { ... }'
-
-it reports all pread successfully return fast,
-
-# ./tiotest -R -d /dev/sdb5 -f 1 -r 1024000 -t 1
-Tiotest results for 1 concurrent io threads:
-,----------------------------------------------------------------------.
-| Item                  | Time     | Rate         | Usr CPU  | Sys CPU |
-+-----------------------+----------+--------------+----------+---------+
-| Write           1 MBs |    0.1 s |   8.814 MB/s |   0.0 %  |   8.8 % |
-| Random Write 4000 MBs |    5.1 s | 785.431 MB/s |  11.2 %  |  86.8 % |
-| Read            1 MBs |    0.0 s | 1037.344 MB/s |   0.0 %  |   0.0 % |
-| Random Read  4000 MBs |    2.7 s | 1489.866 MB/s |  27.6 %  |  72.2 % |
-`----------------------------------------------------------------------'
-Tiotest latency results:
-,-------------------------------------------------------------------------.
-| Item         | Average latency | Maximum latency | % >2 sec | % >10 sec |
-+--------------+-----------------+-----------------+----------+-----------+
-| Write        |        0.007 ms |        0.028 ms |  0.00000 |   0.00000 |
-| Random Write |        0.004 ms |        0.229 ms |  0.00000 |   0.00000 |
-| Read         |        0.003 ms |        0.058 ms |  0.00000 |   0.00000 |
-| Random Read  |        0.002 ms |        0.222 ms |  0.00000 |   0.00000 |
-|--------------+-----------------+-----------------+----------+-----------|
-| Total        |        0.003 ms |        0.229 ms |  0.00000 |   0.00000 |
-`--------------+-----------------+-----------------+----------+-----------'
-
-
-
+Hi,
+I'm getting a better understanding of how the tty/ntty layer works
+& I'm getting increasingly confident that it works properly.
+Sorry for wasting your time.
 -- 
-Denis Cheng
-Linux Application Developer
-
-"One of my most productive days was throwing away 1000 lines of code."
- - Ken Thompson.
+best regards,
+D.J. Barrow
