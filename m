@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYICJl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYICJop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbYICJl0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 05:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbYICJky
+	id S1754623AbYICJop (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 05:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYICJog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 05:40:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:44842 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755899AbYICJkw (ORCPT
+	Wed, 3 Sep 2008 05:44:36 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:35097 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751533AbYICJof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 05:40:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=DdqaZBr2Z6H1K52N+Rx8st1/hv6rWYyzKV+AXa4/wpqsdtvjaVzt6zVOCC910Z3bD4
-         yTyuHWNy/AuTO+zOKY6uomU2RgJVSn9cCVreiKA6YBSViQTl/YAJ/nCOjKNnWw9ZNr5F
-         eAKfpRaIuetOmlHLWSXv31LYhGjjXtb2q2Syw=
-Message-ID: <84144f020809030240l265891e8gad5a2a9fced6880f@mail.gmail.com>
-Date: Wed, 3 Sep 2008 12:40:51 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Steve VanDeBogart" <vandebo-lkml@nerdbox.net>
-Subject: Re: [uml-devel] [PATCH 5/6] slab: Annotate slab
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@us.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
-       dkegel@google.com, jiayingz@google.com,
-       "John Reiser" <jreiser@bitwagon.com>
-In-Reply-To: <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 3 Sep 2008 05:44:35 -0400
+Subject: Re: [PATCH] UBIFS: fill f_fsid
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+In-Reply-To: <1220262187.2982.58.camel@pmac.infradead.org>
+References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
+	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
+	 <1220262187.2982.58.camel@pmac.infradead.org>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 12:44:33 +0300
+Message-Id: <1220435073.4036.41.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net>
-	 <alpine.DEB.1.00.0808291616560.15543@abydos.NerdBox.Net>
-	 <84144f020808300350i7cb2d23aj6d1ffcbeceaf7e9c@mail.gmail.com>
-	 <alpine.DEB.1.00.0809022036560.15543@abydos.NerdBox.Net>
-	 <84144f020809030227jce7d3c2wab9e9c00b2fcdfe5@mail.gmail.com>
-X-Google-Sender-Auth: 5070bebb57002279
+X-OriginalArrivalTime: 03 Sep 2008 09:44:04.0159 (UTC) FILETIME=[9A078CF0:01C90DA9]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 3, 2008 at 12:27 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Wed, Sep 3, 2008 at 8:08 AM, Steve VanDeBogart
-> <vandebo-lkml@nerdbox.net> wrote:
->> Ideally, we'd tell Valgrind that the bytes of a free'd slab object are
->> no longer accessible, but the initialized state should remain the same
->> until the object is made accessible again by the next allocation of
->> the object.  Unfortunately, the compression method for A & V bits in
->> Valgrind doesn't allow a region to be inaccessible and retain validness
->> bits.
->
-> I don't see why you should mark them initialized all the time. Just
-> mark them as uninitialized on kmem_cache_free() and again as
-> initialized when they're about to be returned from kmem_cache_alloc()
-> like we do in kmemcheck.
+On Mon, 2008-09-01 at 10:43 +0100, David Woodhouse wrote:
+> For btrfs I xor the first 64 bits with the second 64 bits, and put
+> _that_ into f_fsid. You're just putting the first 64 bits in and
+> ignoring the second 64 bits. Neither is really _better_ than the other;
+> you just alter the circumstances in which you get collisions. But I
+> suppose we might as well be consistent about how we do it?
+Like this?
 
-Btw, actually, we don't mark them as uninitialized at the moment, but
-that's a bug in kmemcheck.
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Wed, 3 Sep 2008 14:16:42 +0300
+Subject: [PATCH] UBIFS: amend f_fsid
+
+David Woodhouse suggested to be consistent with other FSes
+and xor the beginning and the end of the UUID.
+
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ fs/ubifs/super.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+index ab9b5cb..83fe0a5 100644
+--- a/fs/ubifs/super.c
++++ b/fs/ubifs/super.c
+@@ -370,6 +370,7 @@ static int ubifs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+ 	struct ubifs_info *c = dentry->d_sb->s_fs_info;
+ 	unsigned long long free;
++	__le32 *uuid = (__le32 *)c->uuid;
+ 
+ 	free = ubifs_get_free_space(c);
+ 	dbg_gen("free space %lld bytes (%lld blocks)",
+@@ -386,8 +387,8 @@ static int ubifs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ 	buf->f_files = 0;
+ 	buf->f_ffree = 0;
+ 	buf->f_namelen = UBIFS_MAX_NLEN;
+-	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
+-
++	buf->f_fsid.val[0] = le32_to_cpu(uuid[0]) ^ le32_to_cpu(uuid[2]);
++	buf->f_fsid.val[1] = le32_to_cpu(uuid[1]) ^ le32_to_cpu(uuid[3]);
+ 	return 0;
+ }
+ 
+-- 
+1.5.4.1
+
+
