@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYICIfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYICIhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYICIfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 04:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbYICIff
+	id S1753882AbYICIhx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 04:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYICIhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 04:35:35 -0400
-Received: from mail-gx0-f29.google.com ([209.85.217.29]:50045 "EHLO
-	mail-gx0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751239AbYICIfe (ORCPT
+	Wed, 3 Sep 2008 04:37:43 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42801 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbYICIhm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 04:35:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=V8R9I8bU+lciDE7xsaMFVASjhwSOu5Ku/14Aaom+59Ow7x1VQjSQvGk5Ru7PT2NUzQ
-         7ETKl1gAZHdKLJ8lUqGC+SsmIFgdJeECwhKysBZvURVOK7TsMsjIODDRh62JGHhMUxZF
-         T+1cu4JWh5/CI/1k3wezrn/LPGucqW8dWLt6U=
-Message-ID: <386072610809030135y7d8762dg713897101b3242bd@mail.gmail.com>
-Date: Wed, 3 Sep 2008 16:35:32 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH 1/1] ALSA: add dummy function to support shared mmap in nommu Blackfin arch (v2)
-Cc: tiwai@suse.de, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       "Cliff Cai" <cliff.cai@analog.com>
-In-Reply-To: <8bd0f97a0809020637n2c7e29bexe87bd3dca50cee88@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 3 Sep 2008 04:37:42 -0400
+Subject: Re: [2.6.27] early exception - lockdep related?
+From: Peter Zijlstra <peterz@infradead.org>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+In-Reply-To: <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
+References: <20080902210646.GA10925@dreamland.darkstar.lan>
+	 <1220424721.8609.74.camel@twins>
+	 <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 10:37:41 +0200
+Message-Id: <1220431061.8609.87.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220349522-17995-1-git-send-email-cooloney@kernel.org>
-	 <8bd0f97a0809020637n2c7e29bexe87bd3dca50cee88@mail.gmail.com>
-X-Google-Sender-Auth: 88fcaa8ddabbee10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 2, 2008 at 9:37 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Tue, Sep 2, 2008 at 5:58 AM, Bryan Wu wrote:
->> From: Cliff Cai <cliff.cai@analog.com>
->>
->> v1-v2:
->>  - only adding this dummy function in nommu arch
->>
->> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->> ---
->>  sound/core/pcm_native.c |   14 ++++++++++++++
->>  1 files changed, 14 insertions(+), 0 deletions(-)
->>
->> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
->> index c49b9d9..1e88cde 100644
->> --- a/sound/core/pcm_native.c
->> +++ b/sound/core/pcm_native.c
->> @@ -3391,6 +3391,14 @@ out:
->>  }
->>  #endif /* CONFIG_SND_SUPPORT_OLD_API */
->>
->> +#ifndef CONFIG_MMU
->> +unsigned long dummy_get_unmapped_area(struct file *file, unsigned long addr,
->> +                                     unsigned long len, unsigned long pgoff, unsigned long flags)
->> +{
->> +       return 0;
->> +}
->> +#endif
->
-> if you had:
-> #else
-> # define dummy_get_unmapped_area NULL
-> #endif
-> then you could avoid #ifdef in the rest of the file ...
-> -mike
->
+On Wed, 2008-09-03 at 10:28 +0200, Luca Tettamanti wrote:
+> On Wed, Sep 3, 2008 at 8:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Tue, 2008-09-02 at 23:06 +0200, Luca Tettamanti wrote:
+> >> Hello,
+> >> I'm seeing an early exception (0e) - which seems related to lockdep - at
+> >> boot with many 2.6.27 kernels and I'm having troubles to track it down.
+> >
+> > Does it print one of these nice stack traces?
+> 
+> Of course not ;-) It dies before dumping the stack trace (or at least
+> it doesn't make to the console - that machine has a serial port, but
+> my notebook does not... I've ordered a usb-to-serial adapter).
 
-Right, I will refresh this patch.
+Until it arrives, you could try poking at netconsole.. 
 
--Bryan
+> >> The strange thing is that it comes and goes with different kernel
+> >> versions
+> >
+> > What kernel version did you generate the below with - and what config.
+> 
+> -rc2 is working, after that it's intermittent. The last kernel that I
+> tried is -git from a couple of days ago.
+
+OK, once you send you .config, I'll try and reproduce on one of my
+machine. Perhaps you can also provide the git-describe output of a known
+bad one.
+
+> >> , but a "bad" kernel consistently fails across reboots. It also
+> >> seems to be sensitive to the configuration (attached)
+> >
+> > you seem to have forgotten that attachment.
+> 
+> Ops, will send as soon as I get home.
+
+Sure thing..
+
