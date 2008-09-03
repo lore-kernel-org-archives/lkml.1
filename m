@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYICRdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbYICReK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbYICRdp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYICRda
+	id S1754322AbYICReK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYICRdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:33:30 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54949 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:33:54 -0400
+Received: from mx1.suse.de ([195.135.220.2]:50388 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754621AbYICRd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:33:28 -0400
-Date: Wed, 3 Sep 2008 10:25:27 -0700
+	id S1753382AbYICRdx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:33:53 -0400
+Date: Wed, 3 Sep 2008 10:25:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [patch 06/42] USB: cdc-acm: dont unlock acm->mutex on error path
-Message-ID: <20080903172527.GG7731@suse.de>
+       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 07/42] x86: work around MTRR mask setting
+Message-ID: <20080903172529.GH7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-cdc-acm-don-t-unlock-acm-mutex-on-error-path.patch"
+Content-Disposition: inline; filename="x86-work-around-mtrr-mask-setting.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,38 +40,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexey Dobriyan <adobriyan@gmail.com>
+From: Yinghai Lu <yhlu.kernel@gmail.com>
 
-commit 74573ee7096a4ffc2f098108d21c85801b9c7434 upstream
+commit 38cc1c3df77c1bb739a4766788eb9fa49f16ffdf upstream
 
-On Wed, Jul 23, 2008 at 03:52:36PM +0300, Andrei Popa wrote:
-> I installed gnokii-0.6.22-r2 and gave the command "gnokii --identify"
-> and the kernel oopsed:
+Joshua Hoblitt reported that only 3 GB of his 16 GB of RAM is
+usable. Booting with mtrr_show showed us the BIOS-initialized
+MTRR settings - which are all wrong.
+
+So the root cause is that the BIOS has not set the mask correctly:
+
+>               [    0.429971]  MSR00000200: 00000000d0000000
+>               [    0.433305]  MSR00000201: 0000000ff0000800
+> should be ==> [    0.433305]  MSR00000201: 0000003ff0000800
 >
-> BUG: unable to handle kernel NULL pointer dereference at 00000458
-> IP: [<c0444b52>] mutex_unlock+0x0/0xb
->  [<c03830ae>] acm_tty_open+0x4c/0x214
+>               [    0.436638]  MSR00000202: 00000000e0000000
+>               [    0.439971]  MSR00000203: 0000000fe0000800
+> should be ==> [    0.439971]  MSR00000203: 0000003fe0000800
+>
+>               [    0.443304]  MSR00000204: 0000000000000006
+>               [    0.446637]  MSR00000205: 0000000c00000800
+> should be ==> [    0.446637]  MSR00000205: 0000003c00000800
+>
+>               [    0.449970]  MSR00000206: 0000000400000006
+>               [    0.453303]  MSR00000207: 0000000fe0000800
+> should be ==> [    0.453303]  MSR00000207: 0000003fe0000800
+>
+>               [    0.456636]  MSR00000208: 0000000420000006
+>               [    0.459970]  MSR00000209: 0000000ff0000800
+> should be ==> [    0.459970]  MSR00000209: 0000003ff0000800
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Tested-by: Andrei Popa <andrei.popa@i-neo.ro>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+So detect this borkage and add the prefix 111.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/class/cdc-acm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/cpu/mtrr/generic.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -525,8 +525,8 @@ static int acm_tty_open(struct tty_struc
- 	tasklet_schedule(&acm->urb_task);
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -365,6 +365,7 @@ static void generic_get_mtrr(unsigned in
+ 			     unsigned long *size, mtrr_type *type)
+ {
+ 	unsigned int mask_lo, mask_hi, base_lo, base_hi;
++	unsigned int tmp, hi;
  
- done:
--err_out:
- 	mutex_unlock(&acm->mutex);
-+err_out:
- 	mutex_unlock(&open_mutex);
- 	return rv;
+ 	rdmsr(MTRRphysMask_MSR(reg), mask_lo, mask_hi);
+ 	if ((mask_lo & 0x800) == 0) {
+@@ -378,8 +379,18 @@ static void generic_get_mtrr(unsigned in
+ 	rdmsr(MTRRphysBase_MSR(reg), base_lo, base_hi);
  
+ 	/* Work out the shifted address mask. */
+-	mask_lo = size_or_mask | mask_hi << (32 - PAGE_SHIFT)
+-	    | mask_lo >> PAGE_SHIFT;
++	tmp = mask_hi << (32 - PAGE_SHIFT) | mask_lo >> PAGE_SHIFT;
++	mask_lo = size_or_mask | tmp;
++	/* Expand tmp with high bits to all 1s*/
++	hi = fls(tmp);
++	if (hi > 0) {
++		tmp |= ~((1<<(hi - 1)) - 1);
++
++		if (tmp != mask_lo) {
++			WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++			mask_lo = tmp;
++		}
++	}
+ 
+ 	/* This works correctly if size is a power of two, i.e. a
+ 	   contiguous range. */
 
 -- 
