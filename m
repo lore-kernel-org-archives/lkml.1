@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbYICLmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYICLoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbYICLmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 07:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYICLmn
+	id S1754151AbYICLoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 07:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751219AbYICLoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 07:42:43 -0400
-Received: from ns.firmix.at ([62.141.48.66]:2073 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbYICLmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 07:42:42 -0400
-Subject: RE: Request: Remove duplicate file names in the kernel source
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Peter Hallberg <hallberg68@hotmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <BLU122-W53394124DC17062A5A86FDDA5E0@phx.gbl>
-References: <BLU122-W542897329D9AB74E77D73DA5F0@phx.gbl>
-	 <alpine.LFD.1.10.0809030123220.3243@apollo.tec.linutronix.de>
-	 <BLU122-W53394124DC17062A5A86FDDA5E0@phx.gbl>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Wed, 03 Sep 2008 13:42:14 +0200
-Message-Id: <1220442134.16852.7.camel@spike.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+	Wed, 3 Sep 2008 07:44:12 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:59070 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751199AbYICLoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 07:44:11 -0400
+Message-ID: <48BE7885.3070609@fr.ibm.com>
+Date: Wed, 03 Sep 2008 13:44:05 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Andrey Mirkin <major@openvz.org>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 1/9] Introduce trivial sys_checkpoint and sys_restore
+ system	calls
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <1220439476-16465-2-git-send-email-major@openvz.org>
+In-Reply-To: <1220439476-16465-2-git-send-email-major@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.345 required=5
-X-Spam-Score: -2.345 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-03 at 13:22 +0200, Peter Hallberg wrote:
+Andrey Mirkin wrote:
+> Right now they just return -ENOSYS. Later they will provide functionality
+> to checkpoint and restart a container.
 > 
-> > # include\linux\netfilter\xt_connmark.h: No such file or directory
-> >
-> > Nothing to fix here.
+> Both syscalls take as arguments a file descriptor and flags.
+> Also sys_checkpoint take as the first argument a PID of container's init
+> (later it will be container ID); sys_restart takes as the first argument
+> a container ID (right now it will not be used).
 > 
-> That file do exist so you are doing something wrong.
+> Signed-off-by: Andrey Mirkin <major@openvz.org>
+> ---
+>  Makefile                           |    2 +-
+>  arch/x86/kernel/syscall_table_32.S |    2 +
+>  cpt/Makefile                       |    1 +
+>  cpt/sys_core.c                     |   38 ++++++++++++++++++++++++++++++++++++
+>  include/asm-x86/unistd_32.h        |    2 +
+>  5 files changed, 44 insertions(+), 1 deletions(-)
+>  create mode 100644 cpt/Makefile
+>  create mode 100644 cpt/sys_core.c
+> 
+> diff --git a/Makefile b/Makefile
+> index ea413fa..1dee5c0 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -619,7 +619,7 @@ export mod_strip_cmd
+>  
+>  
+>  ifeq ($(KBUILD_EXTMOD),)
+> -core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+> +core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ cpt/
+>  
+>  vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+>  		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+> diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+> index fd9d4f4..4a0d7fb 100644
+> --- a/arch/x86/kernel/syscall_table_32.S
+> +++ b/arch/x86/kernel/syscall_table_32.S
+> @@ -333,3 +333,5 @@ ENTRY(sys_call_table)
+>  	.long sys_pipe2
+>  	.long sys_inotify_init1
+>  	.long sys_hijack
+> +	.long sys_checkpoint
+> +	.long sys_restart		/* 335 */
 
-Why don't you simply install CygWin (and use it to study the kernel
-sources) which solves your problem?
-Otherwise the next "request" is perhaps to rename all files to 8+3 so
-that people on pure MSDOS-6.22 can study the kernel sources.
+this patchset is based on top of :
 
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
+git://git.kernel.org/pub/scm/linux/kernel/git/daveh/linux-2.6-lxc.git
 
+right ?
 
+C.
