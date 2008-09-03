@@ -1,194 +1,437 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYICOct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYICOdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYICOct (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 10:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbYICOcj
+	id S1756081AbYICOdG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 10:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbYICOcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 10:32:39 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53750 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752169AbYICOci (ORCPT
+	Wed, 3 Sep 2008 10:32:52 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:47240 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755476AbYICOcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 10:32:38 -0400
-Subject: Re: [PATCH 1/2] lib: add generic helper to print sizes rounded to
-	the correct SI range
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080902203914.4ddf3735.akpm@linux-foundation.org>
-References: <48B9546B.4010004@simon.arlott.org.uk>
-	 <1220117091.3615.3.camel@localhost.localdomain>
-	 <20080830174516.GD1239@parisc-linux.org>
-	 <48B9B552.8060406@simon.arlott.org.uk>
-	 <48B9B588.7060709@simon.arlott.org.uk>
-	 <1220147947.3615.18.camel@localhost.localdomain>
-	 <20080831025412.GJ1239@parisc-linux.org>
-	 <1220195310.4021.4.camel@localhost.localdomain>
-	 <1220195634.4021.9.camel@localhost.localdomain>
-	 <20080902203914.4ddf3735.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 09:32:34 -0500
-Message-Id: <1220452354.3254.11.camel@localhost.localdomain>
+	Wed, 3 Sep 2008 10:32:50 -0400
+Date: Wed, 3 Sep 2008 16:32:48 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Andrey Mirkin <major@openvz.org>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 8/9] Introduce functions to restart a process
+Message-ID: <20080903143248.GU14473@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <1220439476-16465-2-git-send-email-major@openvz.org> <1220439476-16465-3-git-send-email-major@openvz.org> <1220439476-16465-4-git-send-email-major@openvz.org> <1220439476-16465-5-git-send-email-major@openvz.org> <1220439476-16465-6-git-send-email-major@openvz.org> <1220439476-16465-7-git-send-email-major@openvz.org> <1220439476-16465-8-git-send-email-major@openvz.org> <1220439476-16465-9-git-send-email-major@openvz.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-24101-1220452235-0001-2"
+Content-Disposition: inline
+In-Reply-To: <1220439476-16465-9-git-send-email-major@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-02 at 20:39 -0700, Andrew Morton wrote:
-> On Sun, 31 Aug 2008 10:13:54 -0500 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > This patch adds the ability to print sizes in either units of 10^3 (SI)
-> > or 2^10 (Binary) units.  It rounds up to three significant figures and
-> > can be used for either memory or storage capacities.
-> > 
-> > Oh, and I'm fully aware that 64 bits is only 16EiB ... the Zetta and
-> > Yotta units are added for future proofing against the day we have 128
-> > bit computers ...
-> > 
-> 
-> As Matthew said - a new %p thingy might be appropriate.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Yes ... I thought about that.  Two things I don't like about the
-approach are:
+--=_bohort-24101-1220452235-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-     1. It adds to the confetti of letters vsnprintf already accepts ...
-        it's becoming like ls, and we're soon going to run out of
-        alphabet
-     2. I'd probably have to plumb in precision and things, which make
-        the code a bit nastier.
+On Wed, Sep 03, 2008 at 02:57:55PM +0400, Andrey Mirkin wrote:
+> Functions to restart process, restore its state, fpu and registers are ad=
+ded.
+>=20
+> Signed-off-by: Andrey Mirkin <major@openvz.org>
+> ---
+>  arch/x86/kernel/entry_32.S   |   21 +++
+>  arch/x86/kernel/process_32.c |    3 +
+>  cpt/Makefile                 |    3 +-
+>  cpt/cpt.h                    |    2 +
+>  cpt/restart.c                |    2 +-
+>  cpt/rst_process.c            |  277 ++++++++++++++++++++++++++++++++++++=
+++++++
+>  kernel/sched.c               |    1 +
+>  7 files changed, 307 insertions(+), 2 deletions(-)
+>  create mode 100644 cpt/rst_process.c
+>=20
+> diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+> index 109792b..a4848a3 100644
+> --- a/arch/x86/kernel/entry_32.S
+> +++ b/arch/x86/kernel/entry_32.S
+> @@ -225,6 +225,7 @@ ENTRY(ret_from_fork)
+>  	GET_THREAD_INFO(%ebp)
+>  	popl %eax
+>  	CFI_ADJUST_CFA_OFFSET -4
+> +ret_from_fork_tail:
+>  	pushl $0x0202			# Reset kernel eflags
+>  	CFI_ADJUST_CFA_OFFSET 4
+>  	popfl
+> @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
+>  	CFI_ENDPROC
+>  END(ret_from_fork)
+> =20
+> +ENTRY(i386_ret_from_resume)
+> +	CFI_STARTPROC
+> +	pushl %eax
+> +	CFI_ADJUST_CFA_OFFSET 4
+> +	call schedule_tail
+> +	GET_THREAD_INFO(%ebp)
+> +	popl %eax
+> +	CFI_ADJUST_CFA_OFFSET -4
+> +	movl (%esp), %eax
+> +	testl %eax, %eax
+> +	jz    1f
+> +	pushl %esp
+> +	call  *%eax
+> +	addl  $4, %esp
+> +1:
+> +	addl  $256, %esp
 
-I'm not sure the advantages (use in all our prints) outweighs this.
+This space reserved for hooks deserves some explanations IMO. I partly know=
+ the
+reasons, since I have looked at OpenVZ code with you, but I'm sure that alm=
+ost
+nobody knows...
 
-> > 
-> > ---
-> >  include/linux/string_helpers.h |   10 ++++++
-> >  lib/Makefile                   |    3 +-
-> >  lib/string_helpers.c           |   62 ++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 74 insertions(+), 1 deletions(-)
-> >  create mode 100644 include/linux/string_helpers.h
-> >  create mode 100644 lib/string_helpers.c
-> > 
-> > diff --git a/include/linux/string_helpers.h b/include/linux/string_helpers.h
-> > new file mode 100644
-> > index 0000000..6b827fb
-> > --- /dev/null
-> > +++ b/include/linux/string_helpers.h
-> > @@ -0,0 +1,10 @@
-> > +#include <linux/types.h>
-> > +
-> > +enum string_size_units {
-> > +	STRING_UNITS_10,
-> > +	STRING_UNITS_2,
-> > +};
-> 
-> Could do with some comments.
+Btw, the constant HOOK_RESERVE should be defined in a common place for asse=
+mbly
+and C as well.
 
-Sure, will add.
+> +	jmp   ret_from_fork_tail
+> +	CFI_ENDPROC
+> +END(i386_ret_from_resume)
+> +
+>  /*
+>   * Return to user mode is not as complex as all this looks,
+>   * but we want the default path for a system call return to
 
-> > +int string_get_size(u64 size, enum string_size_units units,
-> > +		    char *buf, int len);
-> > +
-> > diff --git a/lib/Makefile b/lib/Makefile
-> > index 3b1f94b..44001af 100644
-> > --- a/lib/Makefile
-> > +++ b/lib/Makefile
-> > @@ -19,7 +19,8 @@ lib-$(CONFIG_SMP) += cpumask.o
-> >  lib-y	+= kobject.o kref.o klist.o
-> >  
-> >  obj-y += bcd.o div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
-> > -	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o
-> > +	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o \
-> > +	 string_helpers.o
-> >  
-> >  ifeq ($(CONFIG_DEBUG_KOBJECT),y)
-> >  CFLAGS_kobject.o += -DDEBUG
-> > diff --git a/lib/string_helpers.c b/lib/string_helpers.c
-> > new file mode 100644
-> > index 0000000..3675eaa
-> > --- /dev/null
-> > +++ b/lib/string_helpers.c
-> > @@ -0,0 +1,62 @@
-> > +/*
-> > + * Helpers for formatting and printing strings
-> > + *
-> > + * Copyright 31 August 2008 James Bottomley
-> > + */
-> > +#include <linux/kernel.h>
-> > +#include <linux/math64.h>
-> > +#include <linux/module.h>
-> > +#include <linux/string_helpers.h>
-> > +
-> > +/**
-> > + * string_get_size - get the size in the specified units
-> > + * @size:	The size to be converted
-> > + * @units:	units to use (powers of 1000 or 1024)
-> > + * @buf:	buffer to format to
-> > + * @len:	length of buffer
-> > + *
-> > + * This function returns a string formatted to 3 significant figures
-> > + * giving the size in the required units.  Returns 0 on success or
-> > + * error on failure.  @buf is always zero terminated.
-> > + *
-> > + */
-> > +int string_get_size(u64 size, const enum string_size_units units,
-> > +		    char *buf, int len)
-> > +{
-> > +	const char *units_10[] = { "B", "KB", "MB", "GB", "TB", "PB",
-> > +				   "EB", "ZB", "YB", NULL};
-> > +	const char *units_2[] = {"B", "Kib", "MiB", "GiB", "TiB", "PiB",
-> > +				 "EiB", "ZiB", "YiB", NULL };
-> > +	const char **units_str[] = {
-> > +		[STRING_UNITS_10] =  units_10,
-> > +		[STRING_UNITS_2] = units_2,
-> > +	};
-> > +	const int divisor[] = {
-> > +		[STRING_UNITS_10] = 1000,
-> > +		[STRING_UNITS_2] = 1024,
-> > +	};
-> 
-> Formally these should be static, but I expect the compiler will work it out.
+[...]
 
-As long as I have everything correctly const'd, the optimisations
-available should be similar, yes.
+> diff --git a/cpt/rst_process.c b/cpt/rst_process.c
+> new file mode 100644
+> index 0000000..6d47f3c
+> --- /dev/null
+> +++ b/cpt/rst_process.c
+> @@ -0,0 +1,277 @@
+> +/*
+> + *  Copyright (C) 2008 Parallels, Inc.
+> + *
+> + *  Author: Andrey Mirkin <major@openvz.org>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License as
+> + *  published by the Free Software Foundation, version 2 of the
+> + *  License.
+> + *
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/fs.h>
+> +#include <linux/file.h>
+> +#include <linux/version.h>
+> +#include <linux/module.h>
+> +
+> +#include "cpt.h"
+> +#include "cpt_image.h"
+> +
+> +#define HOOK_RESERVE	256
+> +
+> +struct thr_context {
+> +	struct completion complete;
+> +	int error;
+> +	struct cpt_context *ctx;
+> +	struct task_struct *tsk;
+> +};
+> +
+> +int local_kernel_thread(int (*fn)(void *), void * arg, unsigned long fla=
+gs, pid_t pid)
+> +{
+> +	pid_t ret;
+> +
+> +	if (current->fs =3D=3D NULL) {
+> +		/* do_fork_pid() hates processes without fs, oopses. */
+> +		eprintk("local_kernel_thread: current->fs=3D=3DNULL\n");
+> +		return -EINVAL;
+> +	}
+> +	if (!try_module_get(THIS_MODULE))
+> +		return -EBUSY;
 
-> 
-> > +	int i,j;
-> > +	u64 remainder = 0, sf_cap;
-> > +	char tmp[8];
-> > +
-> > +	tmp[0] = '\0';
-> > +
-> > +	for (i = 0; size > divisor[units] && units_str[units][i]; i++)
-> > +		remainder = do_div(size, divisor[units]);
-> > +
-> > +	sf_cap = size;
-> > +	for (j = 0; sf_cap*10 < 1000; j++)
-> > +		sf_cap *= 10;
-> > +
-> > +	if (j) {
-> > +		remainder *= 1000;
-> > +		do_div(remainder, divisor[units]);
-> > +		snprintf(tmp, sizeof(tmp), ".%03lld", remainder);
-> > +		tmp[j+1] = '\0';
-> > +	}
-> > +
-> > +	snprintf(buf, len, "%lld%s%s", size, tmp, units_str[units][i]);
-> 
-> Can't print a u64 - we don't know what type it has.  It must be cast to
-> something, usually unsigned long long.
+Doing try_module_get(THIS_MODULE) and checking its result is almost always =
+the
+symptom of a BUG. I explain myself:
+If it is possible that THIS_MODULE is currently unloading, its memory
+(especially its text section) can be freed at any time during the call to
+local_kernel_thread(), which leads to a beautiful OOPS.
 
-I thought there was a patch from Matthew to move u64 to unsigned long
-long on all architectures, thus obviating this annoying conversion ...
-is that still wandering upstream, or has it been dropped?
+So, either the code is buggy, or this check is useless. I agree however tha=
+t the
+module ref count must be incremented, since the new thread will run code fr=
+om
+it.
 
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL(string_get_size);
+> +	ret =3D kernel_thread(fn, arg, flags);
+> +	if (ret < 0)
+> +		module_put(THIS_MODULE);
+> +	return ret;
+> +}
+> +
+> +static unsigned int decode_task_flags(unsigned int task_flags)
+> +{
+> +	unsigned int flags =3D 0;
+> +
+> +	if (task_flags & (1 << CPT_PF_EXITING))
+> +		flags |=3D PF_EXITING;
+> +	if (task_flags & (1 << CPT_PF_FORKNOEXEC))
+> +		flags |=3D PF_FORKNOEXEC;
+> +	if (task_flags & (1 << CPT_PF_SUPERPRIV))
+> +		flags |=3D PF_SUPERPRIV;
+> +	if (task_flags & (1 << CPT_PF_DUMPCORE))
+> +		flags |=3D PF_DUMPCORE;
+> +	if (task_flags & (1 << CPT_PF_SIGNALED))
+> +		flags |=3D PF_SIGNALED;
+> +=09
+> +	return flags;
+> +	=09
+> +}
+> +
+> +int rst_restore_task_struct(struct task_struct *tsk, struct cpt_task_ima=
+ge *ti,
+> +			    struct cpt_context *ctx)
+> +{
+> +	int i;
+> +
+> +	/* Restore only saved flags, comm and tls for now */
+> +	tsk->flags =3D decode_task_flags(ti->cpt_flags);
+> +	clear_tsk_thread_flag(tsk, TIF_FREEZE);
+> +	memcpy(tsk->comm, ti->cpt_comm, TASK_COMM_LEN);
+> +	for (i =3D 0; i < GDT_ENTRY_TLS_ENTRIES; i++) {
+> +		tsk->thread.tls_array[i].a =3D ti->cpt_tls[i] & 0xFFFFFFFF;
+> +		tsk->thread.tls_array[i].b =3D ti->cpt_tls[i] >> 32;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int rst_restore_fpustate(struct task_struct *tsk, struct cpt_task=
+_image *ti,
+> +				struct cpt_context *ctx)
+> +{
+> +	struct cpt_obj_bits hdr;
+> +	int err;
+> +	char *buf;
+> +
+> +	clear_stopped_child_used_math(tsk);
+> +
+> +	err =3D rst_get_object(CPT_OBJ_BITS, &hdr, sizeof(hdr), ctx);
+> +	if (err < 0)
+> +		return err;
+> +
+> +	buf =3D kmalloc(hdr.cpt_size, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	err =3D ctx->read(buf, hdr.cpt_size, ctx);
+> +	if (err)
+> +		goto out;
+> +
+> +	if (hdr.cpt_content =3D=3D CPT_CONTENT_X86_FPUSTATE && cpu_has_fxsr) {
+> +		memcpy(&tsk->thread.xstate, buf,
+> +				sizeof(struct i387_fxsave_struct));
+> +		if (ti->cpt_flags & CPT_PF_USED_MATH)
+> +			set_stopped_child_used_math(tsk);
+> +	}
+> +#ifndef CONFIG_X86_64
+> +	else if (hdr.cpt_content =3D=3D CPT_CONTENT_X86_FPUSTATE_OLD &&
+> +			!cpu_has_fxsr) {	=09
+> +		memcpy(&tsk->thread.xstate, buf,
+> +				sizeof(struct i387_fsave_struct));
+> +		if (ti->cpt_flags & CPT_PF_USED_MATH)
+> +			set_stopped_child_used_math(tsk);
+> +	}
+> +#endif
+> +
+> +out:
+> +	kfree(buf);
+> +	return err;
+> +}
+> +
+> +static u32 decode_segment(u32 segid)
+> +{
+> +	if (segid =3D=3D CPT_SEG_ZERO)
+> +		return 0;
+> +
+> +	/* TLS descriptors */
+> +	if (segid <=3D CPT_SEG_TLS3)
+> +		return ((GDT_ENTRY_TLS_MIN + segid - CPT_SEG_TLS1) << 3) + 3;
+> +
+> +	/* LDT descriptor, it is just an index to LDT array */
+> +	if (segid >=3D CPT_SEG_LDT)
+> +		return ((segid - CPT_SEG_LDT) << 3) | 7;
+> +
+> +	/* Check for one of standard descriptors */
+> +	if (segid =3D=3D CPT_SEG_USER32_DS)
+> +		return __USER_DS;
+> +	if (segid =3D=3D CPT_SEG_USER32_CS)
+> +		return __USER_CS;
+> +
+> +	eprintk("Invalid segment reg %d\n", segid);
+> +	return 0;
+> +}
+> +
+> +static int rst_restore_registers(struct task_struct *tsk, struct cpt_con=
+text *ctx)
+> +{
+> +	struct cpt_x86_regs ri;
+> +	struct pt_regs *regs =3D task_pt_regs(tsk);
+> +	extern char i386_ret_from_resume;
+> +	int err;
+> +
+> +	err =3D rst_get_object(CPT_OBJ_X86_REGS, &ri, sizeof(ri), ctx);
+> +	if (err < 0)
+> +		return err;
+> +
+> +	tsk->thread.sp =3D (unsigned long) regs;
+> +	tsk->thread.sp0 =3D (unsigned long) (regs+1);
+> +	tsk->thread.ip =3D (unsigned long) &i386_ret_from_resume;
+> +
+> +	tsk->thread.gs =3D decode_segment(ri.cpt_gs);
+> +	tsk->thread.debugreg0 =3D ri.cpt_debugreg[0];
+> +	tsk->thread.debugreg1 =3D ri.cpt_debugreg[1];
+> +	tsk->thread.debugreg2 =3D ri.cpt_debugreg[2];
+> +	tsk->thread.debugreg3 =3D ri.cpt_debugreg[3];
+> +	tsk->thread.debugreg6 =3D ri.cpt_debugreg[6];
+> +	tsk->thread.debugreg7 =3D ri.cpt_debugreg[7];
+> +
+> +	regs->bx =3D ri.cpt_bx;
+> +	regs->cx =3D ri.cpt_cx;
+> +	regs->dx =3D ri.cpt_dx;
+> +	regs->si =3D ri.cpt_si;
+> +	regs->di =3D ri.cpt_di;
+> +	regs->bp =3D ri.cpt_bp;
+> +	regs->ax =3D ri.cpt_ax;
+> +	regs->orig_ax =3D ri.cpt_orig_ax;
+> +	regs->ip =3D ri.cpt_ip;
+> +	regs->flags =3D ri.cpt_flags;
+> +	regs->sp =3D ri.cpt_sp;
+> +
+> +	regs->cs =3D decode_segment(ri.cpt_cs);
+> +	regs->ss =3D decode_segment(ri.cpt_ss);
+> +	regs->ds =3D decode_segment(ri.cpt_ds);
+> +	regs->es =3D decode_segment(ri.cpt_es);
+> +	regs->fs =3D decode_segment(ri.cpt_fs);
+> +
+> +	tsk->thread.sp -=3D HOOK_RESERVE;
+> +	memset((void*)tsk->thread.sp, 0, HOOK_RESERVE);
+> +
+> +	return 0;
+> +}
+> +
+> +static int restart_thread(void *arg)
+> +{
+> +	struct thr_context *thr_ctx =3D arg;
+> +	struct cpt_context *ctx;
+> +	struct cpt_task_image *ti;
+> +	int err;
+> +
+> +	current->state =3D TASK_UNINTERRUPTIBLE;
+> +
+> +	ctx =3D thr_ctx->ctx;
+> +	ti =3D kmalloc(sizeof(*ti), GFP_KERNEL);
+> +	if (!ti)
+> +		return -ENOMEM;
+> +
+> +	err =3D rst_get_object(CPT_OBJ_TASK, ti, sizeof(*ti), ctx);
+> +	if (!err)
+> +		err =3D rst_restore_task_struct(current, ti, ctx);
+> +	/* Restore mm here */
+> +	if (!err)
+> +		err =3D rst_restore_fpustate(current, ti, ctx);
+> +	if (!err)
+> +		err =3D rst_restore_registers(current, ctx);
+> +
+> +	thr_ctx->error =3D err;
+> +	complete(&thr_ctx->complete);
+> +
+> +	if (!err && (ti->cpt_state & (EXIT_ZOMBIE|EXIT_DEAD))) {
+> +		do_exit(ti->cpt_exit_code);
+> +	} else {
+> +		__set_current_state(TASK_UNINTERRUPTIBLE);
+> +	}
+> +
+> +	kfree(ti);
+> +	schedule();
+> +
+> +	eprintk("leaked %d/%d %p\n", task_pid_nr(current), task_pid_vnr(current=
+), current->mm);
+> +
+> +	module_put(THIS_MODULE);
 
-James
+Where is the module ref count dropped in case of success?
 
+> +	complete_and_exit(NULL, 0);
+> +	return 0;
+> +}
+> +static int create_root_task(struct cpt_context *ctx,
+> +			    struct thr_context *thr_ctx)
+> +{
+> +	struct task_struct *tsk;
+> +	int pid;
+> +
+> +	thr_ctx->ctx =3D ctx;
+> +	thr_ctx->error =3D 0;
+> +	init_completion(&thr_ctx->complete);
+> +
+> +	/* We should also create container here */=20
+> +	pid =3D local_kernel_thread(restart_thread, thr_ctx,
+> +			CLONE_NEWNS | CLONE_NEWUTS | CLONE_NEWIPC |=20
+> +			CLONE_NEWUSER | CLONE_NEWPID | CLONE_NEWNET, 0);
+> +	if (pid < 0)
+> +		return pid;
+> +	read_lock(&tasklist_lock);
+> +	tsk =3D find_task_by_vpid(pid);
+> +	if (tsk)
+> +		get_task_struct(tsk);
+> +	read_unlock(&tasklist_lock);
+> +	if (tsk =3D=3D NULL)
+> +		return -ESRCH;
+> +	thr_ctx->tsk =3D tsk;
+> +	return 0;
+> +}
+> +
+> +int rst_restart_process(struct cpt_context *ctx)
+> +{
+> +	struct thr_context thr_ctx_root;
+> +	int err;
+> +
+> +	err =3D create_root_task(ctx, &thr_ctx_root);
+> +	if (err)
+> +		return err;
+> +
+> +	wait_for_completion(&thr_ctx_root.complete);
+> +	wait_task_inactive(thr_ctx_root.tsk, 0);
 
+I don't see the point of this two-steps completion. Could you explain?
+
+Thanks,
+
+Louis
+
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-24101-1220452235-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIvqAQVKcRuvQ9Q1QRAjZoAKCYJ2PheaasiqN1xifJWs21k0pPmgCgwd+D
+9qOE346PimWKuoWDoKi+dnw=
+=VuG+
+-----END PGP SIGNATURE-----
+
+--=_bohort-24101-1220452235-0001-2--
