@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbYICLDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYICLJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754742AbYICLDT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 07:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYICLDJ
+	id S1754509AbYICLJw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 07:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYICLJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 07:03:09 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:62604 "EHLO bagnes.atmel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521AbYICLDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 07:03:08 -0400
-Date: Wed, 3 Sep 2008 13:02:24 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: "Voss, Nikolaus" <N.Voss@weinmann.de>
-Cc: <kernel@avr32linux.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add kernel support for oprofile callgraphs on AVR32
-Message-ID: <20080903130224.251cd97c@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <4A01BA1129E3AD489AA4409A99D9076775A42C@wm020.weinmann.com>
-References: <20080903112930.56ebac51@hskinnemo-gx745.norway.atmel.com>
-	<4A01BA1129E3AD489AA4409A99D9076775A42C@wm020.weinmann.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+	Wed, 3 Sep 2008 07:09:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45146 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332AbYICLJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 07:09:43 -0400
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+From: Peter Zijlstra <peterz@infradead.org>
+To: linux@sandersweb.net
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <andi-suse@firstfloor.org>
+In-Reply-To: <200809021444.17153.linux@sandersweb.net>
+References: <200808311422.12525.linux@sandersweb.net>
+	 <200809020808.23131.linux@sandersweb.net>
+	 <alpine.LFD.1.10.0809021109330.3210@nehalem.linux-foundation.org>
+	 <200809021444.17153.linux@sandersweb.net>
+Content-Type: text/plain
+Date: Wed, 03 Sep 2008 13:09:39 +0200
+Message-Id: <1220440179.8609.100.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Sep 2008 11:02:20.0357 (UTC) FILETIME=[892E7F50:01C90DB4]
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Voss, Nikolaus" <N.Voss@weinmann.de> wrote:
-> Hi,
+On Tue, 2008-09-02 at 14:44 -0400, David Sanders wrote:
+> On Tuesday 02 September 2008 14:12, Linus Torvalds wrote:
+> > On Tue, 2 Sep 2008, David Sanders wrote:
+> > > I reverted the commit and the problem persits, so nops are definitely not
+> > > the problem.  I started an new bisection but am now in a state that won't
+> > > compile due to errors.  What do I do in that case?
+> >
+> > You can try "git bisect skip", but in general the better choice is to just
+> > do
+> >
+> > 	git bisect visualize
+> >
+> > to open up gitk with the current set of possible targets, and then just
+> > pick a likely point by hand, and do
+> >
+> > 	git reset --hard <sha1-of-the-thing-you-picked>
+> >
+> > and try that one instead. There's some talk about this in "man git-bisect"
+> > but maybe it's not very good.
+> >
+> > 			Linus
 > 
-> > Hmm. This appears to be the third backtracer added to avr32, the first
-> > two being dump_stack() and friends in arch/avr32/kernel/process.c, and
-> > save_stack_trace() in arch/avr32/kernel/stacktrace.c.
-> > 
-> > Would be nice if some of this could be consolidated.
-> 
-> I considered using one of them, in fact I also have a version with an
-> extended stacktrace.c. But due to the small size of the kernel stacktracer
-> (only a few lines), I found it cleaner to create a separate version. The
-> overall size is smaller and it cannot potentially mess up other things.
-> Cf. e.g. the x86 tracer which is of the generic type, but comparatively big
-> and hard to follow through the places.
+> OK thanks, I had to build a new version of git because the one installed with 
+> my distribution was too old to have git bisect skip.  I am trying to use the 
+> gitk method you mentioned but it is going slow and on my screen gitk's fonts 
+> are very hard to read.
 
-Good point.
+Yeah - gitk's default fonts are a nightmare, I get a semi readable
+interface by adding this to ~/.gitk
 
-> > > +		/* Assume we have frame pointers in user mode process */
-> > 
-> > What happens if we don't? I assume it will stop when it detects that
-> > the frame pointer isn't monotonically increasing or when it gets a
-> > fault?
-> 
-> Right. This might lead to false information in oprofile, this case is
-> described in the oprofile docs. 
+set mainfont {{dejavu sans mono} 10}
+set textfont {{dejavu sans mono} 9}
+set uifont {{dejavu sans mono} 10 bold}
 
-Ok.
+But it seems the tcl/tk font rendering is pretty horrible all-round. I
+generally prefer to use qgit for this reason.
 
-I've applied it to the avr32 tree along with a couple of trivial
-checkpatch fixes. There's one remaining warning:
-
-WARNING: externs should be avoided in .c files
-#125: FILE: arch/avr32/oprofile/op_model_avr32.c:25:
-+void avr32_backtrace(struct pt_regs * const regs, unsigned int depth);
-
-total: 0 errors, 1 warnings, 102 lines checked
-
-We should probably add a header file somewhere, but I'm too lazy to do
-it right now.
-
-Haavard
