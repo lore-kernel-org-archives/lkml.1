@@ -1,358 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756765AbYICXBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYICXB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756765AbYICXBj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 19:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbYICXAf
+	id S1756891AbYICXB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 19:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYICXBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 19:00:35 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:38555 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbYICXA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 19:00:27 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.584
-Date: Wed, 3 Sep 2008 15:57:00 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Ben Hutchings <bhutchings@solarflare.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: [PATCH 2/3] pci: revise VPD access interface
-Message-ID: <20080903155700.7517d8d9@extreme>
-In-Reply-To: <20080903155316.1a0a5698@extreme>
-References: <20080827204626.4b65862f@extreme>
-	<20080828111323.GI7908@solarflare.com>
-	<20080903155316.1a0a5698@extreme>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 3 Sep 2008 19:01:13 -0400
+Received: from smtp.ono.com ([62.42.230.12]:51665 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753543AbYICXBL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 19:01:11 -0400
+Date: Thu, 4 Sep 2008 01:00:43 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Finding what is stuck...
+Message-ID: <20080904010043.408b3f03@one.home>
+In-Reply-To: <20080901170812.2c3b041b@infradead.org>
+References: <20080902020447.5b48b083@one.home>
+ <20080901170812.2c3b041b@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change PCI VPD API which was only used by sysfs to something usable
-in drivers. 
-   * move iteration over multiple words to the low level
-   * cleanup types of arguments
-   * add exportable wrapper
+On Mon, 1 Sep 2008 17:08:12 -0700, Arjan van de Ven <arjan@infradead.org> wrote:
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> On Tue, 2 Sep 2008 02:04:47 +0200
+> "J.A. Magallón" <jamagallon@ono.com> wrote:
+> 
+> > Hi all...
+> > 
+> > I'm running 2.6.27-rc5-git2 on an Aspire One.
+> > The system is in general pretty responsive, but sometimes it just gets
+> > totally stuck. Even the mouse stops. 
+> > 
+> > It looks related to disk (SSD) access, but I'm not totally sure.
+> > Is there any way to find what is getting stuck ? I know that SSDs can
+> > be slow on write, I don't mind if the system is faster or slower
+> > (it's small :))), but if the speed is constant. That occasional
+> > pauses are strange, like if SSD flushing gets stuck on BKL
+> > (I know, no idea about what I talk...).
+> > 
+> > I'm using ext3 fs, noop iosched. But as I say, I'm not sure that the
+> > disk writes are the culprit.
+> > 
+> > Any idea about how to find this ?
+> 
+> Have you tried to run "latencytop"?
+> (you need to enable this in the kernel config as well)
+> 
+> it tends to (for me at least) point out very well where stalls happen,
+> or at least, what the system is doing when they happen.
+> 
+> (hint: make sure you do "make install" before running it)
+> 
 
---- a/drivers/pci/access.c	2008-09-03 09:01:53.000000000 -0700
-+++ b/drivers/pci/access.c	2008-09-03 11:47:41.000000000 -0700
-@@ -66,6 +66,39 @@ EXPORT_SYMBOL(pci_bus_write_config_byte)
- EXPORT_SYMBOL(pci_bus_write_config_word);
- EXPORT_SYMBOL(pci_bus_write_config_dword);
- 
-+
-+/**
-+ * pci_read_vpd - Read one entry from Vital Product Data
-+ * @dev:	pci device struct
-+ * @pos:	offset in vpd space
-+ * @count:	number of bytes to read
-+ * @buf:	pointer to where to store result
-+ *
-+ */
-+int pci_read_vpd(struct pci_dev *dev, loff_t pos, size_t count, void *buf)
-+{
-+	if (!dev->vpd || !dev->vpd->ops)
-+		return -ENODEV;
-+	return dev->vpd->ops->read(dev, pos, count, buf);
-+}
-+EXPORT_SYMBOL(pci_read_vpd);
-+
-+/**
-+ * pci_write_vpd - Write entry to Vital Product Data
-+ * @dev:	pci device struct
-+ * @pos:	offset in vpd space
-+ * @count:	number of bytes to read
-+ * @val:	value to write
-+ *
-+ */
-+int pci_write_vpd(struct pci_dev *dev, loff_t pos, size_t count, const void *buf)
-+{
-+	if (!dev->vpd || !dev->vpd->ops)
-+		return -ENODEV;
-+	return dev->vpd->ops->write(dev, pos, count, buf);
-+}
-+EXPORT_SYMBOL(pci_write_vpd);
-+
- /*
-  * The following routines are to prevent the user from accessing PCI config
-  * space when it's unsafe to do so.  Some devices require this during BIST and
-@@ -170,89 +203,93 @@ static int pci_vpd_pci22_wait(struct pci
- 	return ret;
- }
- 
--static int pci_vpd_pci22_read(struct pci_dev *dev, int pos, int size,
--			      char *buf)
-+static int pci_vpd_pci22_read(struct pci_dev *dev, loff_t pos, size_t count,
-+			      void *buf)
- {
- 	struct pci_vpd_pci22 *vpd =
- 		container_of(dev->vpd, struct pci_vpd_pci22, base);
--	u32 val;
--	int ret;
--	int begin, end, i;
-+	int ret = 0;
-+	loff_t end = pos + count;
-+	unsigned char *p = buf;
- 
--	if (pos < 0 || pos > vpd->base.len || size > vpd->base.len  - pos)
-+	if (pos < 0 || pos > vpd->base.len || count > vpd->base.len - pos)
- 		return -EINVAL;
--	if (size == 0)
--		return 0;
- 
- 	mutex_lock(&vpd->lock);
--	ret = pci_vpd_pci22_wait(dev);
--	if (ret < 0)
--		goto out;
--	ret = pci_user_write_config_word(dev, vpd->cap + PCI_VPD_ADDR,
--					 pos & ~3);
--	if (ret < 0)
--		goto out;
--	vpd->busy = true;
--	vpd->flag = 1;
--	ret = pci_vpd_pci22_wait(dev);
--	if (ret < 0)
--		goto out;
--	ret = pci_user_read_config_dword(dev, vpd->cap + PCI_VPD_DATA,
--					 &val);
-+	while (pos < end) {
-+		u32 val;
-+		unsigned int i, skip;
-+
-+		ret = pci_vpd_pci22_wait(dev);
-+		if (ret < 0)
-+			goto out;
-+
-+		ret = pci_user_write_config_word(dev, vpd->cap + PCI_VPD_ADDR,
-+						 pos & ~3);
-+		if (ret < 0)
-+			goto out;
-+		vpd->busy = true;
-+		vpd->flag = 1;
-+		ret = pci_vpd_pci22_wait(dev);
-+		if (ret < 0)
-+			goto out;
-+
-+		ret = pci_user_read_config_dword(dev, vpd->cap + PCI_VPD_DATA, &val);
-+		if (ret < 0)
-+			goto out;
-+
-+		skip = pos & 3;
-+		for (i = 0;  i < sizeof(u32); i++) {
-+			if (i >= skip) {
-+				*p++ = val;
-+				if (++pos == end)
-+					break;
-+			}
-+			val >>= 8;
-+		}
-+	}
- out:
- 	mutex_unlock(&vpd->lock);
--	if (ret < 0)
--		return ret;
--
--	/* Convert to bytes */
--	begin = pos & 3;
--	end = min(4, begin + size);
--	for (i = 0; i < end; ++i) {
--		if (i >= begin)
--			*buf++ = val;
--		val >>= 8;
--	}
--	return end - begin;
-+	return ret ? ret : count;
- }
- 
--static int pci_vpd_pci22_write(struct pci_dev *dev, int pos, int size,
--			       const char *buf)
-+static int pci_vpd_pci22_write(struct pci_dev *dev, loff_t pos, size_t count,
-+			       const void *buf)
- {
- 	struct pci_vpd_pci22 *vpd =
- 		container_of(dev->vpd, struct pci_vpd_pci22, base);
--	u32 val;
--	int ret;
-+	loff_t end = pos + count;
-+	int ret = 0;
- 
--	if (pos < 0 || pos > vpd->base.len || pos & 3 ||
--	    size > vpd->base.len - pos || size < 4)
-+	if (pos > vpd->base.len || pos & 3)
- 		return -EINVAL;
- 
--	val = (u8) *buf++;
--	val |= ((u8) *buf++) << 8;
--	val |= ((u8) *buf++) << 16;
--	val |= ((u32)(u8) *buf++) << 24;
--
- 	mutex_lock(&vpd->lock);
--	ret = pci_vpd_pci22_wait(dev);
--	if (ret < 0)
--		goto out;
--	ret = pci_user_write_config_dword(dev, vpd->cap + PCI_VPD_DATA,
--					  val);
--	if (ret < 0)
--		goto out;
--	ret = pci_user_write_config_word(dev, vpd->cap + PCI_VPD_ADDR,
--					 pos | PCI_VPD_ADDR_F);
--	if (ret < 0)
--		goto out;
--	vpd->busy = true;
--	vpd->flag = 0;
--	ret = pci_vpd_pci22_wait(dev);
-+	while (pos < end) {
-+		u32 val;
-+
-+		ret = pci_vpd_pci22_wait(dev);
-+		if (ret < 0)
-+			goto out;
-+		memcpy(&val, buf, sizeof(u32));
-+
-+		ret = pci_user_write_config_dword(dev, vpd->cap + PCI_VPD_DATA, val);
-+		if (ret < 0)
-+			goto out;
-+		ret = pci_user_write_config_word(dev, vpd->cap + PCI_VPD_ADDR,
-+						 pos | PCI_VPD_ADDR_F);
-+		if (ret < 0)
-+			goto out;
-+		vpd->busy = true;
-+		vpd->flag = 0;
-+		ret = pci_vpd_pci22_wait(dev);
-+
-+		buf += sizeof(u32);
-+		pos += sizeof(u32);
-+	}
- out:
- 	mutex_unlock(&vpd->lock);
--	if (ret < 0)
--		return ret;
--
--	return 4;
-+	return ret ? ret : count;
- }
- 
- static void pci_vpd_pci22_release(struct pci_dev *dev)
-@@ -260,7 +297,7 @@ static void pci_vpd_pci22_release(struct
- 	kfree(container_of(dev->vpd, struct pci_vpd_pci22, base));
- }
- 
--static struct pci_vpd_ops pci_vpd_pci22_ops = {
-+static const struct pci_vpd_ops pci_vpd_pci22_ops = {
- 	.read = pci_vpd_pci22_read,
- 	.write = pci_vpd_pci22_write,
- 	.release = pci_vpd_pci22_release,
---- a/drivers/pci/pci.h	2008-09-03 08:58:03.000000000 -0700
-+++ b/drivers/pci/pci.h	2008-09-03 10:47:52.000000000 -0700
-@@ -44,14 +44,14 @@ extern int pci_user_write_config_word(st
- extern int pci_user_write_config_dword(struct pci_dev *dev, int where, u32 val);
- 
- struct pci_vpd_ops {
--	int (*read)(struct pci_dev *dev, int pos, int size, char *buf);
--	int (*write)(struct pci_dev *dev, int pos, int size, const char *buf);
-+	int (*read)(struct pci_dev *dev, loff_t pos, size_t count, void *buf);
-+	int (*write)(struct pci_dev *dev, loff_t pos, size_t count, const void *buf);
- 	void (*release)(struct pci_dev *dev);
- };
- 
- struct pci_vpd {
- 	unsigned int len;
--	struct pci_vpd_ops *ops;
-+	const struct pci_vpd_ops *ops;
- 	struct bin_attribute *attr; /* descriptor for sysfs VPD entry */
- };
- 
---- a/drivers/pci/pci-sysfs.c	2008-09-03 09:17:19.000000000 -0700
-+++ b/drivers/pci/pci-sysfs.c	2008-09-03 10:48:25.000000000 -0700
-@@ -360,55 +360,33 @@ pci_write_config(struct kobject *kobj, s
- }
- 
- static ssize_t
--pci_read_vpd(struct kobject *kobj, struct bin_attribute *bin_attr,
--	     char *buf, loff_t off, size_t count)
-+read_vpd_attr(struct kobject *kobj, struct bin_attribute *bin_attr,
-+	      char *buf, loff_t off, size_t count)
- {
- 	struct pci_dev *dev =
- 		to_pci_dev(container_of(kobj, struct device, kobj));
--	int end;
--	int ret;
- 
- 	if (off > bin_attr->size)
- 		count = 0;
- 	else if (count > bin_attr->size - off)
- 		count = bin_attr->size - off;
--	end = off + count;
- 
--	while (off < end) {
--		ret = dev->vpd->ops->read(dev, off, end - off, buf);
--		if (ret < 0)
--			return ret;
--		buf += ret;
--		off += ret;
--	}
--
--	return count;
-+	return pci_read_vpd(dev, off, count, buf);
- }
- 
- static ssize_t
--pci_write_vpd(struct kobject *kobj, struct bin_attribute *bin_attr,
--	      char *buf, loff_t off, size_t count)
-+write_vpd_attr(struct kobject *kobj, struct bin_attribute *bin_attr,
-+	       char *buf, loff_t off, size_t count)
- {
- 	struct pci_dev *dev =
- 		to_pci_dev(container_of(kobj, struct device, kobj));
--	int end;
--	int ret;
- 
- 	if (off > bin_attr->size)
- 		count = 0;
- 	else if (count > bin_attr->size - off)
- 		count = bin_attr->size - off;
--	end = off + count;
--
--	while (off < end) {
--		ret = dev->vpd->ops->write(dev, off, end - off, buf);
--		if (ret < 0)
--			return ret;
--		buf += ret;
--		off += ret;
--	}
- 
--	return count;
-+	return pci_write_vpd(dev, off, count, buf);
- }
- 
- #ifdef HAVE_PCI_LEGACY
-@@ -739,8 +717,8 @@ int __must_check pci_create_sysfs_dev_fi
- 			attr->size = pdev->vpd->len;
- 			attr->attr.name = "vpd";
- 			attr->attr.mode = S_IRUSR | S_IWUSR;
--			attr->read = pci_read_vpd;
--			attr->write = pci_write_vpd;
-+			attr->read = read_vpd_attr;
-+			attr->write = write_vpd_attr;
- 			retval = sysfs_create_bin_file(&pdev->dev.kobj, attr);
- 			if (retval)
- 				goto err_vpd;
---- a/include/linux/pci.h	2008-09-03 09:12:51.000000000 -0700
-+++ b/include/linux/pci.h	2008-09-03 10:38:52.000000000 -0700
-@@ -650,6 +650,10 @@ int pci_back_from_sleep(struct pci_dev *
- /* Functions for PCI Hotplug drivers to use */
- int pci_bus_find_capability(struct pci_bus *bus, unsigned int devfn, int cap);
- 
-+/* Vital product data routines */
-+int pci_read_vpd(struct pci_dev *dev, loff_t pos, size_t count, void *buf);
-+int pci_write_vpd(struct pci_dev *dev, loff_t pos, size_t count, const void *buf);
-+
- /* Helper functions for low-level code (drivers/pci/setup-[bus,res].c) */
- void pci_bus_assign_resources(struct pci_bus *bus);
- void pci_bus_size_bridges(struct pci_bus *bus);
+These are some shots of latencytop while working. I copied the screen
+when I saw any very high timing...
+
+Cause                                                Maximum     Percentage
+Walking directory tree                            790.2 msec         10.6 %
+Scheduler: waiting for cpu                         40.5 msec         38.5 %
+
+fsync() on a file                                 3191.6 msec         36.7 %
+Reading EXT3 directory                            1553.3 msec          3.9 %
+EXT3: Waiting for journal access                  1518.7 msec          3.8 %
+Deleting an inode                                 657.5 msec          1.7 %
+EXT3: Looking for file                            576.3 msec          1.4 %
+Writing a page to disk                            363.0 msec          6.1 %
+call_usermodehelper_exec request_module __sock_cre 69.4 msec          0.2 %
+Scheduler: waiting for cpull                       28.0 msec         18.9 %
+Page fault                                          7.9 msec          0.3 %
+
+fsync() on a file                                 8843.7 msec         81.8 %
+Writing a page to disk                            1548.6 msec          2.9 %
+EXT3: Waiting for journal access                  356.5 msec          1.1 %
+Scheduler: waiting for cpu                         40.6 msec          6.0 %
+
+EXT3: Waiting for journal access                  6153.6 msec         17.2 %
+fsync() on a file                                 4902.7 msec         53.5 %
+Writing a page to disk                            3487.2 msec          9.8 %
+Writing buffer to disk (synchronous)              2288.7 msec          4.6 %
+synchronous write                                 1320.6 msec          2.6 %
+Truncating file                                   302.6 msec          0.6 %
+Page fault                                        290.5 msec          0.6 %
+Scheduler: waiting for cpu                         13.4 msec          4.5 %
+Waiting for event (select)                          5.0 msec          5.0 %
+
+Deleting an inode                                 5584.7 msec         27.5 %
+Writing a page to disk                            829.2 msec          5.4 %
+fsync() on a file                                 265.1 msec         11.2 %
+Scheduler: waiting for cpu                         37.2 msec         11.5 %
+stat() operation                                    5.6 msec          0.1 %
+Page fault                                          5.5 msec          0.2 %
+Waiting for event (select)                          5.0 msec         39.8 %
+Waiting for event (poll)                            5.0 msec          2.5 %
+synchronous write                                   4.2 msec          0.0 %
+
+All look fs access:
+
+one:~# df
+Filesystem    Type    Size  Used Avail Use% Mounted on
+/dev/sda1     ext3    6.9G  3.7G  3.2G  55% /
+tmpfs        tmpfs    246M   12K  246M   1% /tmp
+/dev/mmcblk0p1
+              ext3    1.9G   35M  1.8G   2% /store
+
+I will try mounting root as ext2, to rule out jorunaling...
+
+TIA
+
+-- 
+J.A. Magallon                       \                     Software is like sex:
+                                     \               It's better when it's free
+Mandriva Linux release 2008.1 (Cooker) for i586
+Linux kernel 2.6.23-jam01,  gcc version 4.2.2 20070909
