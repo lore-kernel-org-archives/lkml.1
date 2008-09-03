@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYICSLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYICSPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbYICSLu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 14:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbYICSLY
+	id S1755171AbYICSPD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 14:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYICSOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 14:11:24 -0400
-Received: from [76.245.85.235] ([76.245.85.235]:52119 "EHLO cynthia.pants.nu"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754888AbYICSLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 14:11:22 -0400
-Date: Wed, 3 Sep 2008 11:10:34 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Laurent Vivier <Laurent.Vivier@bull.net>
-Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/8] m68k: Reverse platform MMU logic so Sun 3 is last
-Message-ID: <20080903181034.GA30167@cynthia.pants.nu>
-References: <20080903071542.615137611@mail.of.borg> <20080903071741.424551678@mail.of.borg> <20080903073629.GD4104@cs181140183.pp.htv.fi> <1220440421.4159.22.camel@frecb07144>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1220440421.4159.22.camel@frecb07144>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 3 Sep 2008 14:14:53 -0400
+Received: from mfo11.iij4u.or.jp ([210.138.174.81]:36064 "EHLO
+	mfo11.iij4u.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbYICSOw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 14:14:52 -0400
+X-Greylist: delayed 507 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Sep 2008 14:14:52 EDT
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: joerg.roedel@amd.com, mingo@redhat.com, tony.luck@intel.com,
+       kamezawa.hiroyu@jp.fujitsu.com, iommu@lists.linux-foundation.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 1/3] x86: remove the NULL device hack in dma-mapping.h
+Date: Thu,  4 Sep 2008 03:04:23 +0900
+Message-Id: <1220465065-10533-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.4.2
+In-Reply-To: <1220465065-10533-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com>
+ <1220465065-10533-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 01:13:41PM +0200, Laurent Vivier wrote:
-> Le mercredi 03 septembre 2008 à 10:36 +0300, Adrian Bunk a écrit :
-> > Do you have any overview of which m68k platforms still have users?
-> 
-> At least 4 users for amiga and 2 for mac :-P
-> 
-> #rank name                            inst  vote   old recent no-files
-> 42014 linux-image-2.6-amiga              4     0     0     0     4
-> 53844 linux-image-2.6-mac                2     0     0     0     2
-> 
-> from http://popcon.debian.org/by_inst
-> 
-> I'm a mac m68k user (who is the other one ???)
+dma_alloc_coherent in dma-mapping.h has a hack to use
+x86_dma_fallback_dev if a pointer to a device is NULL. Some of IOMMUs
+don't need such hack. The hack also makes it difficult for IOMMUs to
+make a proper decision because the hack hides the information.
 
-I have only Macs, but I still haven't gotten any of them updated
-properly to etch-m68k. My Mac IIfx has bad enough disk performance
-with the current SCSI driver that I don't do anything more than
-try out kernels with a simple root filesystem. My other older
-systems are mostly packed away.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-swiotlb_64.c |   15 ++++++++++++++-
+ include/asm-x86/dma-mapping.h    |    9 +--------
+ 2 files changed, 15 insertions(+), 9 deletions(-)
 
-It seems like Mac, Amiga, and Atari are the only ones regularly
-discussed on the mailing list.
-
-	Brad Boyer
-	flar@allandria.com
+diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+index c4ce033..f3d8d0e 100644
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -11,6 +11,8 @@
+ 
+ int swiotlb __read_mostly;
+ 
++extern struct device x86_dma_fallback_dev;
++
+ static dma_addr_t
+ swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
+ 			int direction)
+@@ -18,9 +20,20 @@ swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
+ 	return swiotlb_map_single(hwdev, phys_to_virt(paddr), size, direction);
+ }
+ 
++static void *x86_swiotlb_alloc_coherent(struct device *dev, size_t size,
++					dma_addr_t *dma_handle, gfp_t gfp)
++{
++	if (!dev) {
++		dev = &x86_dma_fallback_dev;
++		gfp |= GFP_DMA;
++	}
++
++	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
++}
++
+ struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.mapping_error = swiotlb_dma_mapping_error,
+-	.alloc_coherent = swiotlb_alloc_coherent,
++	.alloc_coherent = x86_swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
+ 	.map_single = swiotlb_map_single_phys,
+ 	.unmap_single = swiotlb_unmap_single,
+diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
+index bc6c8df..3463702 100644
+--- a/include/asm-x86/dma-mapping.h
++++ b/include/asm-x86/dma-mapping.h
+@@ -14,7 +14,6 @@
+ 
+ extern dma_addr_t bad_dma_address;
+ extern int iommu_merge;
+-extern struct device x86_dma_fallback_dev;
+ extern int panic_on_overflow;
+ extern int force_iommu;
+ 
+@@ -251,14 +250,8 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
+ 	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
+ 		return memory;
+ 
+-	if (!dev) {
+-		dev = &x86_dma_fallback_dev;
+-		gfp |= GFP_DMA;
+-	}
+-
+ 	if (ops->alloc_coherent)
+-		return ops->alloc_coherent(dev, size,
+-				dma_handle, gfp);
++		return ops->alloc_coherent(dev, size, dma_handle, gfp);
+ 	return NULL;
+ }
+ 
+-- 
+1.5.5.GIT
 
