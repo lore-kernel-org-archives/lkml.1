@@ -1,89 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYICO0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYICO1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYICO0z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 10:26:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYICO0l
+	id S1756183AbYICO1g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 10:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbYICO11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 10:26:41 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:45140 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755431AbYICO0k (ORCPT
+	Wed, 3 Sep 2008 10:27:27 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51795 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754879AbYICO10 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 10:26:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=dd4Hgk4wlWe7NG1uBFvNqoRx47Y9vmOUGN7uaqP2ysa7RjX0hZKxUAsl5HtoLzMBlj
-         Lf9g9tZ80/z9nuiesGm/mNxYBGiqPhYXaD5SfVC0SbbQO82bwCt/SUl8+c7kMCCtfOTe
-         OjdORtyBigDcX/dlbLX8uzcC5oviERScZIotE=
-Date: Wed, 3 Sep 2008 10:26:30 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-Message-ID: <20080903102047.ZZRA012@mailhub.coreip.homeip.net>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.00.0809021200470.19665@iabervon.org>
+	Wed, 3 Sep 2008 10:27:26 -0400
+Date: Wed, 3 Sep 2008 09:27:20 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrey Mirkin <major@openvz.org>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 2/9] Make checkpoint/restart functionality modular
+Message-ID: <20080903142720.GC13425@us.ibm.com>
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <1220439476-16465-2-git-send-email-major@openvz.org> <1220439476-16465-3-git-send-email-major@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.00.0809021200470.19665@iabervon.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1220439476-16465-3-git-send-email-major@openvz.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 02, 2008 at 12:16:15PM -0400, Daniel Barkalow wrote:
-> On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
+Quoting Andrey Mirkin (major@openvz.org):
+> A config option CONFIG_CHECKPOINT is introduced.
+> New structure cpt_operations is introduced to store pointers to
+> checkpoint/restart functions from module.
+
+Thanks Andrey.  The structure of this patchset is very nice, and I'm
+finding it very easy to read, at least the first half.
+
+The differences (in yours and Oren's) between checkpointing and
+restarting yourself or another task should probably not be important
+as people will want to be able to do both in the end, and I'm sure
+both patchsets can do both.  And you have things like your own
+printk helpers in patch 3 that, just as in Oren's set, will have to
+go away.  But I'm not yet able to see what the real differences are.
+
+Keeping on looking...
+
+> Signed-off-by: Andrey Mirkin <major@openvz.org>
+> ---
+>  cpt/Kconfig    |    7 +++++++
+>  cpt/Makefile   |    4 ++++
+>  cpt/cpt.h      |   19 +++++++++++++++++++
+>  cpt/sys.c      |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  cpt/sys_core.c |   29 +++++++++++++++++++++++++++--
+>  init/Kconfig   |    2 ++
+>  6 files changed, 107 insertions(+), 2 deletions(-)
+>  create mode 100644 cpt/Kconfig
+>  create mode 100644 cpt/cpt.h
+>  create mode 100644 cpt/sys.c
 > 
-> > On Tue, Sep 02, 2008 at 11:23:25AM +0200, Jiri Kosina wrote:
-> > > 
-> > > so the product name both of System and Base Board are different, and 
-> > > apparently the systems differ. Dmitry, what fields would you propose to be 
-> > > put in the DMI matching here? I will do the patch then.
-> > > 
-> > 
-> > I guess we could use System's product name to differentiate between
-> > Cristopher's and Daniel's boards. Although I must admit it is the very
-> > first time when I see a box that behaves better with active mux. DOes
-> > Vista use active mux nowadays? Because if it is not then I bet there
-> > is (or shortly will be) a BIOS update fixing legacy mode on Daniel's
-> > box.
+> diff --git a/cpt/Kconfig b/cpt/Kconfig
+> new file mode 100644
+> index 0000000..b9bc72d
+> --- /dev/null
+> +++ b/cpt/Kconfig
+> @@ -0,0 +1,7 @@
+> +config CHECKPOINT
+> +	tristate "Checkpoint & restart for containers"
+> +	depends on EXPERIMENTAL
+> +	default n
+> +	help
+> +	  This option adds module "cptrst", which allow to save a running
+> +	  container to a file and restart it later using this image file.
+> diff --git a/cpt/Makefile b/cpt/Makefile
+> index 2276fb1..bfe75d5 100644
+> --- a/cpt/Makefile
+> +++ b/cpt/Makefile
+> @@ -1 +1,5 @@
+>  obj-y += sys_core.o
+> +
+> +obj-$(CONFIG_CHECKPOINT) += cptrst.o
+> +
+> +cptrst-objs := sys.o
+> diff --git a/cpt/cpt.h b/cpt/cpt.h
+> new file mode 100644
+> index 0000000..381a9bf
+> --- /dev/null
+> +++ b/cpt/cpt.h
+> @@ -0,0 +1,19 @@
+> +/*
+> + *  Copyright (C) 2008 Parallels, Inc.
+> + *
+> + *  Author: Andrey Mirkin <major@openvz.org>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License as
+> + *  published by the Free Software Foundation, version 2 of the
+> + *  License.
+> + *
+> + */
+> +
+> +struct cpt_operations
+> +{
+> +	struct module * owner;
+> +	int (*checkpoint)(pid_t pid, int fd, unsigned long flags);
+> +	int (*restart)(int ctid, int fd, unsigned long flags);
+> +};
+> +extern struct cpt_operations cpt_ops;
+> diff --git a/cpt/sys.c b/cpt/sys.c
+> new file mode 100644
+> index 0000000..4051286
+> --- /dev/null
+> +++ b/cpt/sys.c
+> @@ -0,0 +1,48 @@
+> +/*
+> + *  Copyright (C) 2008 Parallels, Inc.
+> + *
+> + *  Author: Andrey Mirkin <major@openvz.org>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License as
+> + *  published by the Free Software Foundation, version 2 of the
+> + *  License.
+> + *
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/fs.h>
+> +#include <linux/file.h>
+> +#include <linux/notifier.h>
+> +#include <linux/module.h>
+> +
+> +#include "cpt.h"
+> +
+> +MODULE_LICENSE("GPL");
+> +
+> +static int checkpoint(pid_t pid, int fd, unsigned long flags)
+> +{
+> +	return -ENOSYS; 
+> +}
+> +
+> +static int restart(int ctid, int fd, unsigned long flags)
+> +{
+> +	return -ENOSYS; 
+> +}
+> +
+> +static int __init init_cptrst(void)
+> +{
+> +	cpt_ops.owner = THIS_MODULE;
+> +	cpt_ops.checkpoint = checkpoint;
+> +	cpt_ops.restart = restart;
+> +	return 0;
+> +}
+> +module_init(init_cptrst);
+> +
+> +static void __exit exit_cptrst(void)
+> +{
+> +	cpt_ops.checkpoint = NULL;
+> +	cpt_ops.restart = NULL;
+> +	cpt_ops.owner = NULL;
+> +}
+> +module_exit(exit_cptrst);
+> diff --git a/cpt/sys_core.c b/cpt/sys_core.c
+> index 1a97fb6..5dd1191 100644
+> --- a/cpt/sys_core.c
+> +++ b/cpt/sys_core.c
+> @@ -13,6 +13,13 @@
+>  #include <linux/sched.h>
+>  #include <linux/fs.h>
+>  #include <linux/file.h>
+> +#include <linux/notifier.h>
+> +#include <linux/module.h>
+> +
+> +#include "cpt.h"
+> +
+> +struct cpt_operations cpt_ops = { NULL, NULL, NULL };
+> +EXPORT_SYMBOL(cpt_ops);
 > 
-> Mine's actually old (came with XP). It's still got the original BIOS 
-> (because I haven't found a way to upgrade the BIOS without reformatting my 
-> hard drive to include Windows), and I remember there being an upgrade 
-> available, but I don't think it had anything to do with keyboard/trackpad 
-> stuff.
+>  /**
+>   * sys_checkpoint - checkpoint a container from outside
+> @@ -23,7 +30,16 @@
+>   */
+>  asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+>  {
+> -	return -ENOSYS;
+> +	int ret;
+> +
+> +	ret = -ENOSYS;
+> +
+> +	if (try_module_get(cpt_ops.owner)) {
+> +		if (cpt_ops.checkpoint)
+> +			ret = cpt_ops.checkpoint(pid, fd, flags);
+> +		module_put(cpt_ops.owner);
+> +	}
+> +	return ret;
+>  }
 > 
-> In what way does active mux usually behave badly? It's possible that 
-
-It usually manifests with a touchpad/mouse missing because they don't
-responf to kernel's queries. Quite a few Fujitsus exibit this
-behavior.
-
-> legacy mode only has a bug that doesn't matter to Windows, and active mux 
-> may have some of the usual problems but nothing I particularly noticed.
+>  /**
+> @@ -34,5 +50,14 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+>   */
+>  asmlinkage long sys_restart(int ctid, int fd, unsigned long flags)
+>  {
+> -	return -ENOSYS;
+> +	int ret;
+> +
+> +	ret = -ENOSYS;
+> +
+> +	if (try_module_get(cpt_ops.owner)) {
+> +		if (cpt_ops.restart)
+> +			ret = cpt_ops.restart(ctid, fd, flags);
+> +		module_put(cpt_ops.owner);
+> +	}
+> +	return ret;
+>  }
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 4bd4b0c..d29ed21 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -344,6 +344,8 @@ config CGROUP_FREEZER
+>            Provides a way to freeze and unfreeze all tasks in a
+>  	  cgroup
 > 
-> I noticed that, when my i8042 would stop working, it would generally have 
-> just delivered one mouse interrupt to CPU1 after never previously doing 
-> so. Perhaps there's some sort of deadlock in the Linux i8042 driver when 
-> both cores are unexpectedly getting interrupts from the two devices at 
-> once? I could understand there being a Linux bug only triggered by quirky 
-> hardware that only applies to legacy mode, which was just uncovered by 
-> this patch.
->
-
-I am not sure, internally we the kernel still deals with 2 interrupt
-sources (KBD and AUX) regardless whether it is in legacy or active
-multiplexing mode...
-
-Does it take long to trigger the bug? You coudl try doing "echo 1 >
-/sys/modules/i8042/parameters/debug" and thend me dmesg or
-/var/log/messages after the bug was triggered - I might see something
-there. But please be aware that if you send me such a log I can decode
-everything that you have been typing...
-
--- 
-Dmitry
+> +source "cpt/Kconfig"
+> +	  
+>  config FAIR_GROUP_SCHED
+>  	bool "Group scheduling for SCHED_OTHER"
+>  	depends on GROUP_SCHED
+> -- 
+> 1.5.6
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
