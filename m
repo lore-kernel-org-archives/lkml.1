@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752AbYICSou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYICSpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756752AbYICSou (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 14:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYICSoK
+	id S1756834AbYICSpK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 14:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbYICSoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 14:44:10 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:54490 "EHLO
+	Wed, 3 Sep 2008 14:44:11 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:54497 "EHLO
 	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbYICSoH (ORCPT
+	with ESMTP id S1753521AbYICSoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Sep 2008 14:44:07 -0400
 From: Andy Whitcroft <apw@shadowen.org>
@@ -15,72 +15,106 @@ To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
-Subject: [RFC PATCH 0/4] Reclaim page capture v2
-Date: Wed,  3 Sep 2008 19:44:08 +0100
-Message-Id: <1220467452-15794-1-git-send-email-apw@shadowen.org>
+Subject: [PATCH 2/4] pull out zone cpuset and watermark checks for reuse
+Date: Wed,  3 Sep 2008 19:44:10 +0100
+Message-Id: <1220467452-15794-3-git-send-email-apw@shadowen.org>
 X-Mailer: git-send-email 1.6.0.rc1.258.g80295
+In-Reply-To: <1220467452-15794-1-git-send-email-apw@shadowen.org>
+References: <1220467452-15794-1-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For sometime we have been looking at mechanisms for improving the availability
-of larger allocations under load.  One of the options we have explored is
-the capturing of pages freed under direct reclaim in order to increase the
-chances of free pages coelescing before they are subject to reallocation
-by racing allocators.
+When allocating we need to confirm that the zone we are about to allocate
+from is acceptable to the CPUSET we are in, and that it does not violate
+the zone watermarks.  Pull these checks out so we can reuse them in a
+later patch.
 
-Following this email is a patch stack implementing page capture during
-direct reclaim.  It consits of four patches.  The first two simply pull
-out existing code into helpers for reuse.  The third makes buddy's use
-of struct page explicit.  The fourth contains the meat of the changes,
-and its leader contains a much fuller description of the feature.
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ mm/page_alloc.c |   62 ++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 43 insertions(+), 19 deletions(-)
 
-This update represents a rebase to -mm and incorporates feedback from
-KOSAKI Motohiro.  It also incorporates an accounting fix which was
-preventing some captures.
-
-I have done a lot of comparitive testing with and without this patch
-set and in broad brush I am seeing improvements in hugepage allocations
-(worst case size) success on all of my test systems.  These tests consist
-of placing a constant stream of high order allocations on the system,
-at varying rates.  The results for these various runs are then averaged
-to give an overall improvement.
-
-		Absolute	Effective
-x86-64		2.48%		 4.58%
-powerpc		5.55%		25.22%
-
-x86-64 has a relatively small huge page size and so is always much more
-effective at allocating huge pages.  Even there we get a measurable
-improvement.  On powerpc the huge pages are much larger and much harder
-to recover.  Here we see a full 25% increase in page recovery.
-
-It should be noted that these are worst case testing, and very agressive
-taking every possible page in the system.
-
-Against: 2.6.27-rc1-mm1
-
-Comments?
-
--apw
-
-Changes since V1:
- - Incorporates review feedback from KOSAKI Motohiro,
- - fixes up accounting when checking watermarks for captured pages,
- - rebase 2.6.27-rc1-mm1,
- - Incorporates review feedback from Mel.
-
-Andy Whitcroft (4):
-  pull out the page pre-release and sanity check logic for reuse
-  pull out zone cpuset and watermark checks for reuse
-  buddy: explicitly identify buddy field use in struct page
-  capture pages freed during direct reclaim for allocation by the
-    reclaimer
-
- include/linux/mm_types.h   |    4 +
- include/linux/page-flags.h |    6 +
- mm/internal.h              |    8 ++-
- mm/page_alloc.c            |  255 ++++++++++++++++++++++++++++++++++++++------
- mm/vmscan.c                |  115 ++++++++++++++++----
- 5 files changed, 332 insertions(+), 56 deletions(-)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index b2a2c2b..2c3874e 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1274,6 +1274,44 @@ int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
+ 	return 1;
+ }
+ 
++/*
++ * Return 1 if this zone is an acceptable source given the cpuset
++ * constraints.
++ */
++static inline int zone_cpuset_permits(struct zone *zone,
++					int alloc_flags, gfp_t gfp_mask)
++{
++	if ((alloc_flags & ALLOC_CPUSET) &&
++	    !cpuset_zone_allowed_softwall(zone, gfp_mask))
++		return 0;
++	return 1;
++}
++
++/*
++ * Return 1 if this zone is within the watermarks specified by the
++ * allocation flags.
++ */
++static inline int zone_watermark_permits(struct zone *zone, int order,
++			int classzone_idx, int alloc_flags, gfp_t gfp_mask)
++{
++	if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
++		unsigned long mark;
++		if (alloc_flags & ALLOC_WMARK_MIN)
++			mark = zone->pages_min;
++		else if (alloc_flags & ALLOC_WMARK_LOW)
++			mark = zone->pages_low;
++		else
++			mark = zone->pages_high;
++		if (!zone_watermark_ok(zone, order, mark,
++			    classzone_idx, alloc_flags)) {
++			if (!zone_reclaim_mode ||
++					!zone_reclaim(zone, gfp_mask, order))
++				return 0;
++		}
++	}
++	return 1;
++}
++
+ #ifdef CONFIG_NUMA
+ /*
+  * zlc_setup - Setup for "zonelist cache".  Uses cached zone data to
+@@ -1427,25 +1465,11 @@ zonelist_scan:
+ 		if (NUMA_BUILD && zlc_active &&
+ 			!zlc_zone_worth_trying(zonelist, z, allowednodes))
+ 				continue;
+-		if ((alloc_flags & ALLOC_CPUSET) &&
+-			!cpuset_zone_allowed_softwall(zone, gfp_mask))
+-				goto try_next_zone;
+-
+-		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+-			unsigned long mark;
+-			if (alloc_flags & ALLOC_WMARK_MIN)
+-				mark = zone->pages_min;
+-			else if (alloc_flags & ALLOC_WMARK_LOW)
+-				mark = zone->pages_low;
+-			else
+-				mark = zone->pages_high;
+-			if (!zone_watermark_ok(zone, order, mark,
+-				    classzone_idx, alloc_flags)) {
+-				if (!zone_reclaim_mode ||
+-				    !zone_reclaim(zone, gfp_mask, order))
+-					goto this_zone_full;
+-			}
+-		}
++		if (!zone_cpuset_permits(zone, alloc_flags, gfp_mask))
++			goto try_next_zone;
++		if (!zone_watermark_permits(zone, order, classzone_idx,
++							alloc_flags, gfp_mask))
++			goto this_zone_full;
+ 
+ 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
+ 		if (page)
+-- 
+1.6.0.rc1.258.g80295
 
