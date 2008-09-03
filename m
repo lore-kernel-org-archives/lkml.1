@@ -1,111 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbYICVh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbYICViY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbYICVh5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 17:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbYICVhc
+	id S1753673AbYICViY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 17:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYICVhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 17:37:32 -0400
-Received: from www.tglx.de ([62.245.132.106]:41381 "EHLO www.tglx.de"
+	Wed, 3 Sep 2008 17:37:38 -0400
+Received: from www.tglx.de ([62.245.132.106]:41393 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbYICVhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 17:37:31 -0400
-Message-Id: <20080903212753.124357845@linutronix.de>
+	id S1755877AbYICVhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 17:37:36 -0400
+Message-Id: <20080903212753.233424002@linutronix.de>
 References: <20080903212735.713411776@linutronix.de>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Sep 2008 21:36:50 -0000
+Date: Wed, 03 Sep 2008 21:37:03 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Shaohua Li <shaohua.li@intel.com>,
        "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
        Dmitry Nezhevenko <dion@inhex.net>
-Subject: [patch 1/6] clockevents: Prevent clockevent event_handler ending up
-	handler_noop
-Content-Disposition: inline; filename=cev.patch
+Subject: [patch 3/6] clockevents: enforce reprogram in oneshot setup
+Content-Disposition: inline;
+	filename=clockevents-enforce-reprogram-in-oneshot-setup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a ordering related problem with clockevents code, due to which
-clockevents_register_device() called after tickless/highres switch
-will not work. The new clockevent ends up with clockevents_handle_noop as
-event handler, resulting in no timer activity.
+In tick_oneshot_setup we program the device to the given next_event,
+but we do not check the return value. We need to make sure that the
+device is programmed enforced so the interrupt handler engine starts
+working. Split out the reprogramming function from tick_program_event()
+and call it with the device, which was handed in to tick_setup_oneshot().
+Set the force argument, so the devices is firing an interrupt.
 
-The problematic path seems to be
-
-* old device already has hrtimer_interrupt as the event_handler
-* new clockevent device registers with a higher rating
-* tick_check_new_device() is called
-  * clockevents_exchange_device() gets called
-    * old->event_handler is set to clockevents_handle_noop
-  * tick_setup_device() is called for the new device
-    * which sets new->event_handler using the old->event_handler which is noop.
-
-Change the ordering so that new device inherits the proper handler.
-
-This does not have any issue in normal case as most likely all the clockevent
-devices are setup before the highres switch. But, can potentially be affecting
-some corner case where HPET force detect happens after the highres switch.
-This was a problem with HPET in MSI mode code that we have been experimenting
-with.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
 ---
- include/linux/clockchips.h |    2 ++
- kernel/time/clockevents.c  |    3 +--
- kernel/time/tick-common.c  |    1 +
- 3 files changed, 4 insertions(+), 2 deletions(-)
+ kernel/time/tick-oneshot.c |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/include/linux/clockchips.h
+Index: linux-2.6/kernel/time/tick-oneshot.c
 ===================================================================
---- linux-2.6.orig/include/linux/clockchips.h
-+++ linux-2.6/include/linux/clockchips.h
-@@ -127,6 +127,8 @@ extern int clockevents_register_notifier
- extern int clockevents_program_event(struct clock_event_device *dev,
- 				     ktime_t expires, ktime_t now);
+--- linux-2.6.orig/kernel/time/tick-oneshot.c
++++ linux-2.6/kernel/time/tick-oneshot.c
+@@ -23,11 +23,11 @@
+ #include "tick-internal.h"
  
-+extern void clockevents_handle_noop(struct clock_event_device *dev);
-+
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
- extern void clockevents_notify(unsigned long reason, void *arg);
- #else
-Index: linux-2.6/kernel/time/clockevents.c
-===================================================================
---- linux-2.6.orig/kernel/time/clockevents.c
-+++ linux-2.6/kernel/time/clockevents.c
-@@ -177,7 +177,7 @@ void clockevents_register_device(struct 
- /*
-  * Noop handler when we shut down an event device
+ /**
+- * tick_program_event
++ * tick_program_event internal worker function
   */
--static void clockevents_handle_noop(struct clock_event_device *dev)
-+void clockevents_handle_noop(struct clock_event_device *dev)
+-int tick_program_event(ktime_t expires, int force)
++static int __tick_program_event(struct clock_event_device *dev,
++				ktime_t expires, int force)
  {
+-	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+ 	ktime_t now = ktime_get();
+ 
+ 	while (1) {
+@@ -41,6 +41,16 @@ int tick_program_event(ktime_t expires, 
  }
  
-@@ -199,7 +199,6 @@ void clockevents_exchange_device(struct 
- 	 * released list and do a notify add later.
- 	 */
- 	if (old) {
--		old->event_handler = clockevents_handle_noop;
- 		clockevents_set_mode(old, CLOCK_EVT_MODE_UNUSED);
- 		list_del(&old->list);
- 		list_add(&old->list, &clockevents_released);
-Index: linux-2.6/kernel/time/tick-common.c
-===================================================================
---- linux-2.6.orig/kernel/time/tick-common.c
-+++ linux-2.6/kernel/time/tick-common.c
-@@ -161,6 +161,7 @@ static void tick_setup_device(struct tic
- 	} else {
- 		handler = td->evtdev->event_handler;
- 		next_event = td->evtdev->next_event;
-+		td->evtdev->event_handler = clockevents_handle_noop;
- 	}
+ /**
++ * tick_program_event
++ */
++int tick_program_event(ktime_t expires, int force)
++{
++	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
++
++	return __tick_program_event(dev, expires, force);
++}
++
++/**
+  * tick_resume_onshot - resume oneshot mode
+  */
+ void tick_resume_oneshot(void)
+@@ -61,7 +71,7 @@ void tick_setup_oneshot(struct clock_eve
+ {
+ 	newdev->event_handler = handler;
+ 	clockevents_set_mode(newdev, CLOCK_EVT_MODE_ONESHOT);
+-	clockevents_program_event(newdev, next_event, ktime_get());
++	__tick_program_event(newdev, next_event, 1);
+ }
  
- 	td->evtdev = newdev;
+ /**
 
 -- 
 
