@@ -1,92 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYICRz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752458AbYICR7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbYICRz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbYICRyq
+	id S1752458AbYICR7K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbYICR64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:54:46 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59266 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759586AbYICRyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:54:45 -0400
-Date: Wed, 3 Sep 2008 10:33:16 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Graf <tgraf@suug.ch>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 16/16] sch_prio: Fix nla_parse_nested_compat() regression
-Message-ID: <20080903173316.GQ10429@suse.de>
-References: <20080903172849.927077124@mini.kroah.org>
+	Wed, 3 Sep 2008 13:58:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:19856 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbYICR6z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QZugV8Pbz2t7GGaONhVDeHj0cmUJ2eILm8a09T25J7Tcjw3eEUYJThC8W8/xZmwstK
+         BrDaxEmCK4NDxVhuyL5zSzM65d2LfiIyasRDoQdWoXulFzAo3/Z6LVb1cyI9vlk0O0ar
+         tWYeTKW4B6mGU/Q7Nn8aI7g/9wL3Djwj2jt7M=
+Message-ID: <86802c440809031058g6cbeb697w7d5b2b2f15d01625@mail.gmail.com>
+Date: Wed, 3 Sep 2008 10:58:54 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alexey Kuznetsov" <ak@axet.ru>
+Subject: Re: [Bugme-new] [Bug 11490] New: Old mtrr bug comeback
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <b38773640809031008o1b5f5417idbc6f0519e25a8d7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sch_prio_2625.patch"
-In-Reply-To: <20080903173218.GA10429@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <bug-11490-10286@http.bugzilla.kernel.org/>
+	 <20080903091842.dc0982ee.akpm@linux-foundation.org>
+	 <86802c440809030954s32ac76e3m3f6a17b89d0fc073@mail.gmail.com>
+	 <b38773640809031008o1b5f5417idbc6f0519e25a8d7@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us know.
+On Wed, Sep 3, 2008 at 10:08 AM, Alexey Kuznetsov <ak@axet.ru> wrote:
+> Can you explain what mean debug and initcall_debug?
 
-------------------
-From: Thomas Graf <tgraf@suug.ch>
+put "debug initcall_debug" in to grub.conf or pxe conf.
 
-[ No upstream commit, this is fixing code no longer in 2.6.27 ]
-
-nla_parse_nested_compat() was used to parse two different message
-formats in the netem and prio qdisc, when it was "fixed" to work
-with netem, it broke the multi queue support in the prio qdisc.
-Since the prio qdisc code in question is already removed in the
-development tree, this patch only fixes the regression in the
-stable tree.
-
-Based on original patch from Alexander H Duyck <alexander.h.duyck@intel.com>
-
-Signed-off-by: Thomas Graf <tgraf@suug.ch>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/sched/sch_prio.c |   16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
---- a/net/sched/sch_prio.c
-+++ b/net/sched/sch_prio.c
-@@ -228,14 +228,20 @@ static int prio_tune(struct Qdisc *sch, 
- {
- 	struct prio_sched_data *q = qdisc_priv(sch);
- 	struct tc_prio_qopt *qopt;
--	struct nlattr *tb[TCA_PRIO_MAX + 1];
-+	struct nlattr *tb[TCA_PRIO_MAX + 1] = {0};
- 	int err;
- 	int i;
- 
--	err = nla_parse_nested_compat(tb, TCA_PRIO_MAX, opt, NULL, qopt,
--				      sizeof(*qopt));
--	if (err < 0)
--		return err;
-+	qopt = nla_data(opt);
-+	if (nla_len(opt) < sizeof(*qopt))
-+		return -1;
-+
-+	if (nla_len(opt) >= sizeof(*qopt) + sizeof(struct nlattr)) {
-+		err = nla_parse_nested(tb, TCA_PRIO_MAX,
-+				       (struct nlattr *) (qopt + 1), NULL);
-+		if (err < 0)
-+			return err;
-+	}
- 
- 	q->bands = qopt->bands;
- 	/* If we're multiqueue, make sure the number of incoming bands
-
--- 
+YH
