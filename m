@@ -1,88 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYICKyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYICKz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYICKyM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 06:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbYICKx4
+	id S1754692AbYICKz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 06:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYICKzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 06:53:56 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40705 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751082AbYICKxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 06:53:55 -0400
-Subject: Blacklist DMAR on Intel G31/G33 chipsets
-From: David Woodhouse <dwmw2@infradead.org>
+	Wed, 3 Sep 2008 06:55:10 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:17151 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751082AbYICKzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 06:55:09 -0400
+From: Andrey Mirkin <major@openvz.org>
 To: linux-kernel@vger.kernel.org
-Cc: andi@firstfloor.org, arjan@infradead.org
-In-Reply-To: <20080902061920.GK18288@one.firstfloor.org>
-References: <20080902061920.GK18288@one.firstfloor.org>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 11:53:51 +0100
-Message-Id: <1220439231.2985.103.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Cc: containers@lists.linux-foundation.org, Andrey Mirkin <major@openvz.org>
+Subject: [PATCH 3/9] Introduce context structure needed during checkpointing/restart
+Date: Wed,  3 Sep 2008 14:57:50 +0400
+Message-Id: <1220439476-16465-4-git-send-email-major@openvz.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1220439476-16465-3-git-send-email-major@openvz.org>
+References: <1220439476-16465-1-git-send-email-major@openvz.org>
+ <1220439476-16465-2-git-send-email-major@openvz.org>
+ <1220439476-16465-3-git-send-email-major@openvz.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some BIOSes (the Intel DG33BU, for example) wrongly claim to have DMAR
-when they don't. Avoid the resulting crashes when it doesn't work as
-expected.
+Add functions for context allocation/destroy.
+Introduce functions to read/write image.
+Introduce image header and object header.
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Signed-off-by: Andrey Mirkin <major@openvz.org>
 ---
-Using early-quirks this time, at Andi's suggestion. I haven't been able 
-to test this version though, since I killed my board when trying to reflash 
-the BIOS too many times. Arjan, did you say we have a pile of these?
+ cpt/cpt.h       |   37 ++++++++++++++++
+ cpt/cpt_image.h |   63 +++++++++++++++++++++++++++
+ cpt/sys.c       |  127 +++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 224 insertions(+), 3 deletions(-)
+ create mode 100644 cpt/cpt_image.h
 
- arch/x86/kernel/early-quirks.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/early-quirks.c b/arch/x86/kernel/early-quirks.c
-index 4353cf5..f51f61b 100644
---- a/arch/x86/kernel/early-quirks.c
-+++ b/arch/x86/kernel/early-quirks.c
-@@ -95,6 +95,20 @@ static void __init nvidia_bugs(int num, int slot, int func)
+diff --git a/cpt/cpt.h b/cpt/cpt.h
+index 381a9bf..607ac1b 100644
+--- a/cpt/cpt.h
++++ b/cpt/cpt.h
+@@ -10,6 +10,8 @@
+  *
+  */
  
++#include "cpt_image.h"
++
+ struct cpt_operations
+ {
+ 	struct module * owner;
+@@ -17,3 +19,38 @@ struct cpt_operations
+ 	int (*restart)(int ctid, int fd, unsigned long flags);
+ };
+ extern struct cpt_operations cpt_ops;
++
++#define CPT_CTX_ERROR           -1
++#define CPT_CTX_IDLE            0
++#define CPT_CTX_DUMPING         1
++#define CPT_CTX_UNDUMPING       2
++
++typedef struct cpt_context
++{
++	pid_t		pid;		/* should be changed to ctid later */
++	int		ctx_id;		/* context id */
++	struct list_head ctx_list;
++	int		refcount;
++	int		ctx_state;
++	struct semaphore main_sem;
++
++	int		errno;
++
++	struct file	*file;
++	loff_t		current_object;
++
++	struct list_head object_array[CPT_OBJ_MAX];
++
++	int		(*write)(const void *addr, size_t count, struct cpt_context *ctx);
++	int		(*read)(void *addr, size_t count, struct cpt_context *ctx);
++} cpt_context_t;
++
++extern int debug_level;
++
++#define cpt_printk(lvl, fmt, args...)	do {	\
++		if (lvl <= debug_level)		\
++			printk(fmt, ##args);	\
++	} while (0)
++
++#define eprintk(a...) cpt_printk(1, "CPT ERR: " a)
++#define dprintk(a...) cpt_printk(1, "CPT DBG: " a)
+diff --git a/cpt/cpt_image.h b/cpt/cpt_image.h
+new file mode 100644
+index 0000000..3d26229
+--- /dev/null
++++ b/cpt/cpt_image.h
+@@ -0,0 +1,63 @@
++/*
++ *  Copyright (C) 2008 Parallels, Inc.
++ *
++ *  Author: Andrey Mirkin <major@openvz.org>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License as
++ *  published by the Free Software Foundation, version 2 of the
++ *  License.
++ *
++ */
++
++#ifndef __CPT_IMAGE_H_
++#define __CPT_IMAGE_H_ 1
++
++enum _cpt_object_type
++{
++	CPT_OBJ_TASK = 0,
++	CPT_OBJ_MAX,
++	/* The objects above are stored in memory while checkpointing */
++
++	CPT_OBJ_HEAD = 1024,
++};
++
++enum _cpt_content_type {
++	CPT_CONTENT_VOID,
++	CPT_CONTENT_ARRAY,
++	CPT_CONTENT_DATA,
++	CPT_CONTENT_NAME,
++	CPT_CONTENT_REF,
++	CPT_CONTENT_MAX
++};
++
++#define CPT_SIGNATURE0 0x79
++#define CPT_SIGNATURE1 0x1c
++#define CPT_SIGNATURE2 0x01
++#define CPT_SIGNATURE3 0x63
++
++struct cpt_head
++{
++	__u8	cpt_signature[4];	/* Magic number */
++	__u32	cpt_hdrlen;		/* Header length */
++	__u16	cpt_image_major;	/* Format of this file */
++	__u16	cpt_image_minor;	/* Format of this file */
++	__u16	cpt_image_sublevel;	/* Format of this file */
++	__u16	cpt_image_extra;	/* Format of this file */
++	__u16	cpt_arch;		/* Architecture */
++	__u16	cpt_pad1;
++	__u32	cpt_pad2;
++#define CPT_ARCH_I386		0
++	__u64	cpt_time;		/* Time */
++} __attribute__ ((aligned (8)));
++
++/* Common object header. */
++struct cpt_object_hdr
++{
++	__u64	cpt_len;		/* Size of current chunk of data */
++	__u16	cpt_type;		/* Type of object */
++	__u32	cpt_hdrlen;		/* Size of header */
++	__u16	cpt_content;		/* Content type: array, reference... */
++} __attribute__ ((aligned (8)));
++
++#endif /* __CPT_IMAGE_H_ */
+diff --git a/cpt/sys.c b/cpt/sys.c
+index 4051286..8334c4c 100644
+--- a/cpt/sys.c
++++ b/cpt/sys.c
+@@ -13,21 +13,142 @@
+ #include <linux/sched.h>
+ #include <linux/fs.h>
+ #include <linux/file.h>
+-#include <linux/notifier.h>
++#include <linux/uaccess.h>
+ #include <linux/module.h>
+ 
+ #include "cpt.h"
++#include "cpt_image.h"
+ 
+ MODULE_LICENSE("GPL");
+ 
++/* Debug level, constant for now */
++int debug_level = 1;
++
++static int file_write(const void *addr, size_t count, struct cpt_context *ctx)
++{
++	mm_segment_t oldfs;
++	ssize_t err = -EBADF;
++	struct file *file = ctx->file;
++
++	oldfs = get_fs(); set_fs(KERNEL_DS);
++	if (file)
++		err = file->f_op->write(file, addr, count, &file->f_pos);
++	set_fs(oldfs);
++	if (err != count)
++		return err >= 0 ? -EIO : err;
++	return 0;
++}
++
++static int file_read(void *addr, size_t count, struct cpt_context *ctx)
++{
++	mm_segment_t oldfs;
++	ssize_t err = -EBADF;
++	struct file *file = ctx->file;
++
++	oldfs = get_fs(); set_fs(KERNEL_DS);
++	if (file)
++		err = file->f_op->read(file, addr, count, &file->f_pos);
++	set_fs(oldfs);
++	if (err != count)
++		return err >= 0 ? -EIO : err;
++	return 0;
++}
++
++struct cpt_context * context_alloc(void)
++{
++	struct cpt_context *ctx;
++	int i;
++
++	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
++	if (!ctx)
++		return NULL;
++
++	init_MUTEX(&ctx->main_sem);
++	ctx->refcount = 1;
++
++	ctx->current_object = -1;
++	ctx->write = file_write;
++	ctx->read = file_read;
++	for (i = 0; i < CPT_OBJ_MAX; i++) {
++		INIT_LIST_HEAD(&ctx->object_array[i]);
++	}
++
++	return ctx;
++}
++
++void context_release(struct cpt_context *ctx)
++{
++	ctx->ctx_state = CPT_CTX_ERROR;
++
++	if (ctx->file)
++		fput(ctx->file);
++	kfree(ctx);
++}
++
++static void context_put(struct cpt_context *ctx)
++{
++	if (!--ctx->refcount)
++		context_release(ctx);
++}
++
+ static int checkpoint(pid_t pid, int fd, unsigned long flags)
+ {
+-	return -ENOSYS; 
++	struct file *file;
++	struct cpt_context *ctx;
++	int err;
++
++	err = -EBADF;
++	file = fget(fd);
++	if (!file)
++		goto out;
++
++	err = -ENOMEM;
++	ctx = context_alloc();
++	if (!ctx)
++		goto out_file;
++
++	ctx->file = file;
++	ctx->ctx_state = CPT_CTX_DUMPING;
++
++	/* checkpoint */
++	err = -ENOSYS;
++
++	context_put(ctx);
++
++out_file:
++	fput(file);
++out:
++	return err; 
  }
  
-+#ifdef CONFIG_DMAR
-+static void __init intel_g33_dmar(int num, int slot, int func)
-+{
-+	struct acpi_table_header *dmar_tbl;
-+	acpi_status = status;
+ static int restart(int ctid, int fd, unsigned long flags)
+ {
+-	return -ENOSYS; 
++	struct file *file;
++	struct cpt_context *ctx;
++	int err;
 +
-+	status = acpi_get_table(ACPI_SIG_DMAR, 0, &dmar_tbl);
-+	if (ACPI_SUCCESS(status)) {
-+		printk(KERN_INFO "BIOS BUG: DMAR advertised on Intel G31/G33 chipset -- ignoring\n");
-+		dmar_disabled = 1;
-+	}
-+}
-+#endif
++	err = -EBADF;
++	file = fget(fd);
++	if (!file)
++		goto out;
 +
- #define QFLAG_APPLY_ONCE 	0x1
- #define QFLAG_APPLIED		0x2
- #define QFLAG_DONE		(QFLAG_APPLY_ONCE|QFLAG_APPLIED)
-@@ -114,6 +128,10 @@ static struct chipset early_qrk[] __initdata = {
- 	  PCI_CLASS_BRIDGE_PCI, PCI_ANY_ID, QFLAG_APPLY_ONCE, via_bugs },
- 	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB,
- 	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, fix_hypertransport_config },
-+#ifdef CONFIG_DMAR
-+	{ PCI_VENDOR_ID_INTEL, 0x29c0,
-+	  PCI_CLASS_BRIDGE_HOST, PCI_ANY_ID, 0, intel_g33_dmar },
-+#endif
- 	{}
- };
++	err = -ENOMEM;
++	ctx = context_alloc();
++	if (!ctx)
++		goto out_file;
++
++	ctx->file = file;
++	ctx->ctx_state = CPT_CTX_UNDUMPING;
++
++	/* restart */
++	err = -ENOSYS;
++
++	context_put(ctx);
++
++out_file:
++	fput(file);
++out:
++	return err; 
+ }
  
+ static int __init init_cptrst(void)
 -- 
-1.5.5.1
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
+1.5.6
 
