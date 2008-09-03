@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbYICRtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbYICRtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757720AbYICRtX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbYICRtJ
+	id S1755467AbYICRtu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbYICRtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:49:09 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53632 "EHLO mx1.suse.de"
+	Wed, 3 Sep 2008 13:49:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58364 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754033AbYICRtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:49:07 -0400
-Date: Wed, 3 Sep 2008 10:32:45 -0700
+	id S1753893AbYICRtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:49:31 -0400
+Date: Wed, 3 Sep 2008 10:32:47 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,54 +22,99 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [patch 02/16] USB: cdc-acm: dont unlock acm->mutex on error path
-Message-ID: <20080903173245.GC10429@suse.de>
+       alan@lxorguk.ukuu.org.uk, linux-nfs@vger.kernel.org,
+       Greg Banks <gnb@sgi.com>, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>,
+       Tom Tucker <tom@opengridcomputing.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Chuck Lever <chuck.lever@oracle.com>
+Subject: [patch 03/16] sunrpc: fix possible overrun on read of
+	/proc/sys/sunrpc/transports
+Message-ID: <20080903173247.GD10429@suse.de>
 References: <20080903172849.927077124@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-cdc-acm-don-t-unlock-acm-mutex-on-error-path.patch"
+Content-Disposition: inline; filename="sunrpc-fix-possible-overrun-on-read-of-proc-sys-sunrpc-transports.patch"
 In-Reply-To: <20080903173218.GA10429@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alexey Dobriyan <adobriyan@gmail.com>
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-commit 74573ee7096a4ffc2f098108d21c85801b9c7434 upstream
+commit 27df6f25ff218072e0e879a96beeb398a79cdbc8 upstream
 
-On Wed, Jul 23, 2008 at 03:52:36PM +0300, Andrei Popa wrote:
-> I installed gnokii-0.6.22-r2 and gave the command "gnokii --identify"
-> and the kernel oopsed:
->
-> BUG: unable to handle kernel NULL pointer dereference at 00000458
-> IP: [<c0444b52>] mutex_unlock+0x0/0xb
->  [<c03830ae>] acm_tty_open+0x4c/0x214
+Vegard Nossum reported
+----------------------
+> I noticed that something weird is going on with /proc/sys/sunrpc/transports.
+> This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
+> I "cat" this file, I get the expected output:
+>    $ cat /proc/sys/sunrpc/transports
+>    tcp 1048576
+>    udp 32768
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Tested-by: Andrei Popa <andrei.popa@i-neo.ro>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> But I think that it does not check the length of the buffer supplied by
+> userspace to read(). With my original program, I found that the stack was
+> being overwritten by the characters above, even when the length given to
+> read() was just 1.
+
+David Wagner added (among other things) that copy_to_user could be
+probably used here.
+
+Ingo Oeser suggested to use simple_read_from_buffer() here.
+
+The conclusion is that proc_do_xprt doesn't check for userside buffer
+size indeed so fix this by using Ingo's suggestion.
+
+Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Ingo Oeser <ioe-lkml@rameria.de>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Chuck Lever <chuck.lever@oracle.com>
+Cc: Greg Banks <gnb@sgi.com>
+Cc: Tom Tucker <tom@opengridcomputing.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/class/cdc-acm.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sunrpc/sysctl.c |   18 ++++--------------
+ 1 file changed, 4 insertions(+), 14 deletions(-)
 
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -531,8 +531,8 @@ static int acm_tty_open(struct tty_struc
- 	tasklet_schedule(&acm->urb_task);
+--- a/net/sunrpc/sysctl.c
++++ b/net/sunrpc/sysctl.c
+@@ -60,24 +60,14 @@ static int proc_do_xprt(ctl_table *table
+ 			void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+ 	char tmpbuf[256];
+-	int len;
++	size_t len;
++
+ 	if ((*ppos && !write) || !*lenp) {
+ 		*lenp = 0;
+ 		return 0;
+ 	}
+-	if (write)
+-		return -EINVAL;
+-	else {
+-		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
+-		if (!access_ok(VERIFY_WRITE, buffer, len))
+-			return -EFAULT;
+-
+-		if (__copy_to_user(buffer, tmpbuf, len))
+-			return -EFAULT;
+-	}
+-	*lenp -= len;
+-	*ppos += len;
+-	return 0;
++	len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
++	return simple_read_from_buffer(buffer, *lenp, ppos, tmpbuf, len);
+ }
  
- done:
--err_out:
- 	mutex_unlock(&acm->mutex);
-+err_out:
- 	mutex_unlock(&open_mutex);
- 	return rv;
- 
+ static int
 
 -- 
