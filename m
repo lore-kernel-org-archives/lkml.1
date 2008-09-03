@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYICRhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYICRiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbYICRhe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:37:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbYICRgm
+	id S1756638AbYICRiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbYICRhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:36:42 -0400
-Received: from ns2.suse.de ([195.135.220.15]:55627 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:37:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55681 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754318AbYICRgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:36:41 -0400
-Date: Wed, 3 Sep 2008 10:25:44 -0700
+	id S1756442AbYICRhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:37:05 -0400
+Date: Wed, 3 Sep 2008 10:25:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jay Cliburn <jacliburn@bellsouth.net>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 14/42] atl1: disable TSO by default
-Message-ID: <20080903172544.GO7731@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 15/42] cifs: fix O_APPEND on directio mounts
+Message-ID: <20080903172548.GP7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="atl1-disable-tso-by-default.patch"
+Content-Disposition: inline; filename="cifs-fix-o_append-on-directio-mounts.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +40,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jay Cliburn <jacliburn@bellsouth.net>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit 82c26a9d117f0178b8c1b33429014b6d99c470f6 upstream
+commit 838726c4756813576078203eb7e1e219db0da870 upstream
 
-The atl1 driver is causing stalled connections and file corruption
-whenever TSO is enabled.  Two examples are here:
+The direct I/O write codepath for CIFS is done through
+cifs_user_write(). That function does not currently call
+generic_write_checks() so the file position isn't being properly set
+when the file is opened with O_APPEND.  It's also not doing the other
+"normal" checks that should be done for a write call.
 
-http://lkml.org/lkml/2008/7/15/325
-http://lkml.org/lkml/2008/8/18/543
+The problem is currently that when you open a file with O_APPEND on a
+mount with the directio mount option, the file position is set to the
+beginning of the file. This makes any subsequent writes clobber the data
+in the file starting at the beginning.
 
-Disable TSO by default until we can determine the source of the
-problem.
+This seems to fix the problem in cursory testing. It is, however
+important to note that NFS disallows the combination of
+(O_DIRECT|O_APPEND). If my understanding is correct, the concern is
+races with multiple clients appending to a file clobbering each others'
+data. Since the write model for CIFS and NFS is pretty similar in this
+regard, CIFS is probably subject to the same sort of races. What's
+unclear to me is why this is a particular problem with O_DIRECT and not
+with buffered writes...
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Regardless, disallowing O_APPEND on an entire mount is probably not
+reasonable, so we'll probably just have to deal with it and reevaluate
+this flag combination when we get proper support for O_DIRECT. In the
+meantime this patch at least fixes the existing problem.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/atlx/atl1.c |    1 -
- 1 file changed, 1 deletion(-)
+ fs/cifs/file.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -3019,7 +3019,6 @@ static int __devinit atl1_probe(struct p
- 	netdev->features = NETIF_F_HW_CSUM;
- 	netdev->features |= NETIF_F_SG;
- 	netdev->features |= (NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX);
--	netdev->features |= NETIF_F_TSO;
- 	netdev->features |= NETIF_F_LLTX;
+--- a/fs/cifs/file.c
++++ b/fs/cifs/file.c
+@@ -832,6 +832,10 @@ ssize_t cifs_user_write(struct file *fil
+ 		return -EBADF;
+ 	open_file = (struct cifsFileInfo *) file->private_data;
  
- 	/*
++	rc = generic_write_checks(file, poffset, &write_size, 0);
++	if (rc)
++		return rc;
++
+ 	xid = GetXid();
+ 
+ 	if (*poffset > file->f_path.dentry->d_inode->i_size)
 
 -- 
