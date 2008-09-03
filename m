@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYICRqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbYICRr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbYICRqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 13:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbYICRqW
+	id S1757472AbYICRr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 13:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYICRrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 13:46:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57802 "EHLO mx2.suse.de"
+	Wed, 3 Sep 2008 13:47:10 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53328 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758205AbYICRqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 13:46:20 -0400
-Date: Wed, 3 Sep 2008 10:26:45 -0700
+	id S1752968AbYICRrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 13:47:08 -0400
+Date: Wed, 3 Sep 2008 10:26:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,100 +22,61 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-nfs@vger.kernel.org,
-       Greg Banks <gnb@sgi.com>, Neil Brown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       Tom Tucker <tom@opengridcomputing.com>,
-       Ingo Oeser <ioe-lkml@rameria.de>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Chuck Lever <chuck.lever@oracle.com>
-Subject: [patch 38/42] sunrpc: fix possible overrun on read of
-	/proc/sys/sunrpc/transports
-Message-ID: <20080903172645.GM7731@suse.de>
+       alan@lxorguk.ukuu.org.uk, mingo@elte.hu,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [patch 40/42] x86: work around MTRR mask setting, v2
+Message-ID: <20080903172650.GO7731@suse.de>
 References: <20080903171927.534216229@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sunrpc-fix-possible-overrun-on-read-of-proc-sys-sunrpc-transports.patch"
+Content-Disposition: inline; filename="x86-work-around-mtrr-mask-setting-v2.patch"
 In-Reply-To: <20080903172447.GA7731@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-commit 27df6f25ff218072e0e879a96beeb398a79cdbc8 upstream
+commit 9754a5b840a209bc1f192d59f63e81b698a55ac8 upstream
 
-Vegard Nossum reported
-----------------------
-> I noticed that something weird is going on with /proc/sys/sunrpc/transports.
-> This file is generated in net/sunrpc/sysctl.c, function proc_do_xprt(). When
-> I "cat" this file, I get the expected output:
->    $ cat /proc/sys/sunrpc/transports
->    tcp 1048576
->    udp 32768
+x86: work around MTRR mask setting, v2
 
-> But I think that it does not check the length of the buffer supplied by
-> userspace to read(). With my original program, I found that the stack was
-> being overwritten by the characters above, even when the length given to
-> read() was just 1.
+improve the debug printout:
 
-David Wagner added (among other things) that copy_to_user could be
-probably used here.
+- make it actually display something
+- print it only once
 
-Ingo Oeser suggested to use simple_read_from_buffer() here.
+would be nice to have a WARN_ONCE() facility, to feed such things to
+kerneloops.org.
 
-The conclusion is that proc_do_xprt doesn't check for userside buffer
-size indeed so fix this by using Ingo's suggestion.
-
-Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Neil Brown <neilb@suse.de>
-Cc: Chuck Lever <chuck.lever@oracle.com>
-Cc: Greg Banks <gnb@sgi.com>
-Cc: Tom Tucker <tom@opengridcomputing.com>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sunrpc/sysctl.c |   18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
+ arch/x86/kernel/cpu/mtrr/generic.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/net/sunrpc/sysctl.c
-+++ b/net/sunrpc/sysctl.c
-@@ -60,24 +60,14 @@ static int proc_do_xprt(ctl_table *table
- 			void __user *buffer, size_t *lenp, loff_t *ppos)
- {
- 	char tmpbuf[256];
--	int len;
-+	size_t len;
-+
- 	if ((*ppos && !write) || !*lenp) {
- 		*lenp = 0;
- 		return 0;
- 	}
--	if (write)
--		return -EINVAL;
--	else {
--		len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
--		if (!access_ok(VERIFY_WRITE, buffer, len))
--			return -EFAULT;
--
--		if (__copy_to_user(buffer, tmpbuf, len))
--			return -EFAULT;
--	}
--	*lenp -= len;
--	*ppos += len;
--	return 0;
-+	len = svc_print_xprts(tmpbuf, sizeof(tmpbuf));
-+	return simple_read_from_buffer(buffer, *lenp, ppos, tmpbuf, len);
- }
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -387,7 +387,12 @@ static void generic_get_mtrr(unsigned in
+ 		tmp |= ~((1<<(hi - 1)) - 1);
  
- static int
+ 		if (tmp != mask_lo) {
+-			WARN_ON("mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++			static int once = 1;
++
++			if (once) {
++				printk(KERN_INFO "mtrr: your BIOS has set up an incorrect mask, fixing it up.\n");
++				once = 0;
++			}
+ 			mask_lo = tmp;
+ 		}
+ 	}
 
 -- 
