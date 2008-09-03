@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbYICUhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYICUkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbYICUhU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 16:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYICUhI
+	id S1755542AbYICUkG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 16:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYICUjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 16:37:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50497 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753397AbYICUhH (ORCPT
+	Wed, 3 Sep 2008 16:39:55 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:43688 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751962AbYICUjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 16:37:07 -0400
-Message-ID: <48BEF55E.700@linux-foundation.org>
-Date: Wed, 03 Sep 2008 15:36:46 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 3 Sep 2008 16:39:54 -0400
+Date: Wed, 3 Sep 2008 16:39:54 -0400
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: linux-kernel@vger.kernel.org, Corentin CHARY <corentincj@iksaif.net>
+Subject: Re: How to add the Asus R1F to asus-laptop.c?
+Message-ID: <20080903203954.GT12474@csclub.uwaterloo.ca>
+References: <20080903170649.GF12476@csclub.uwaterloo.ca> <200809031859.28203.alistair@devzero.co.uk> <20080903201620.GS12474@csclub.uwaterloo.ca> <200809032132.34967.alistair@devzero.co.uk>
 MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/4] buddy: explicitly identify buddy field use in struct
- page
-References: <1220467452-15794-1-git-send-email-apw@shadowen.org> <1220467452-15794-4-git-send-email-apw@shadowen.org>
-In-Reply-To: <1220467452-15794-4-git-send-email-apw@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809032132.34967.alistair@devzero.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> Explicitly define the struct page fields which buddy uses when it owns
-> pages.  Defines a new anonymous struct to allow additional fields to
-> be defined in a later patch.
+On Wed, Sep 03, 2008 at 09:32:34PM +0100, Alistair John Strachan wrote:
+> On Wednesday 03 September 2008 21:16:20 Lennart Sorensen wrote:
+> > On Wed, Sep 03, 2008 at 06:59:28PM +0100, Alistair John Strachan wrote:
+> > > Unless I'm mistaken, the current asus-laptop maintainer is Corentin
+> > > Chary, who I've added to CC on your behalf.
+> >
+> > Excellent.  Now where do I find such info?
+> 
+> MAINTAINERS, though admittedly the section is dubiously named. His name's also 
+> present in the copyright in the source file (drivers/misc/asus-laptop.c). It's 
+> also present in the source code log for this file (git log drivers/misc/asus-
+> laptop.c) if you discount people who have made only janitorial or API changes.
+> 
+> Either way, he's CC'ed, and hopefully more responsive than the sourceforge 
+> project :-) If not, pester Andrew Morton with the patch (and Andi Kleen, since 
+> it's ACPI territory).
 
-Good. I have a similar patch floating around.
+OK.  I will go test the patch out and see if it still works.
 
-Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+-- 
+Len Sorensen
