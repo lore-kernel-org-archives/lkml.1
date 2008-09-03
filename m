@@ -1,100 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbYICVsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbYICVyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbYICVsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 17:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYICVr6
+	id S1755518AbYICVyu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 17:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYICVyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 17:47:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:32902 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbYICVr4 (ORCPT
+	Wed, 3 Sep 2008 17:54:40 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35854 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751773AbYICVyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 17:47:56 -0400
-Message-Id: <20080903214754.309026929@goodmis.org>
-References: <20080903214249.661170580@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 03 Sep 2008 17:42:51 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/2] ftrace: print continue index fix
-Content-Disposition: inline; filename=ftrace-trace-cont-index-fix.patch
+	Wed, 3 Sep 2008 17:54:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <tj@kernel.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com, greg@kroah.com,
+       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <1219945263-21074-1-git-send-email-tj@kernel.org>
+	<20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org>
+	<48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu>
+	<48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>
+	<48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>
+	<48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu>
+	<48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>
+	<48B7AF60.8040709@kernel.org> <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>
+	<48B7BB4C.4060907@kernel.org> <m163pjr5qf.fsf@frodo.ebiederm.org>
+	<E1Ka82g-0003NU-4D@pomaz-ex.szeredi.hu> <48BBD9F5.8060906@kernel.org>
+	<m163pdb8qx.fsf@frodo.ebiederm.org> <48BEA1D8.9040208@kernel.org>
+Date: Wed, 03 Sep 2008 14:51:10 -0700
+In-Reply-To: <48BEA1D8.9040208@kernel.org> (Tejun Heo's message of "Wed, 03
+	Sep 2008 16:40:24 +0200")
+Message-ID: <m1sksg6gq9.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0251]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An item in the trace buffer that is bigger than one entry may be split
-up using the TRACE_CONT entry. This makes it a virtual single entry.
-The current code increments the iterator index even while traversing
-TRACE_CONT entries, making it look like the iterator is further than
-it actually is.
+Tejun Heo <tj@kernel.org> writes:
 
-This patch adds code to not increment the iterator index while skipping
-over TRACE_CONT entries.
+> Eric W. Biederman wrote:
+>> I really think that if an ioctl is passing through the kernel we
+>> should know how to parse and understand it's options.  Otherwise
+>> we won't have the option of doing backwards compatibility when something
+>> changes, like we can with the 32->64bit ioctls.
+>
+> There's no reason 32->64bit can't be handled in userland?  What's the
+> difference?
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+Maintenance.  What happens if I go 128bit, if I have some processes
+that are big endian and some that are little endian.  Or if I have
+some processes that are running a completely different instruction
+set with a completely different ABI than other processes.  Or
+perhaps different perhaps the processes is in a different network
+namespace than your filesystem and so it's arguments refer
+to something different entirely.  Is it a userspace bug if userspace
+does not anticipate how the kernel will change in the future?
 
-Index: linux-tip.git/kernel/trace/trace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/trace.c	2008-09-03 16:46:30.000000000 -0400
-+++ linux-tip.git/kernel/trace/trace.c	2008-09-03 16:50:03.000000000 -0400
-@@ -1117,9 +1117,8 @@ trace_entry_idx(struct trace_array *tr, 
- }
- 
- /* Increment the index counter of an iterator by one */
--static void trace_iterator_increment(struct trace_iterator *iter, int cpu)
-+static void __trace_iterator_increment(struct trace_iterator *iter, int cpu)
- {
--	iter->idx++;
- 	iter->next_idx[cpu]++;
- 	iter->next_page_idx[cpu]++;
- 
-@@ -1132,6 +1131,12 @@ static void trace_iterator_increment(str
- 	}
- }
- 
-+static void trace_iterator_increment(struct trace_iterator *iter, int cpu)
-+{
-+	iter->idx++;
-+	__trace_iterator_increment(iter, cpu);
-+}
-+
- static struct trace_entry *
- trace_entry_next(struct trace_array *tr, struct trace_array_cpu *data,
- 		 struct trace_iterator *iter, int cpu)
-@@ -1153,7 +1158,7 @@ trace_entry_next(struct trace_array *tr,
- 
- 	/* find a real entry */
- 	do {
--		trace_iterator_increment(iter, cpu);
-+		__trace_iterator_increment(iter, cpu);
- 		ent = trace_entry_idx(tr, tr->data[cpu], iter, cpu);
- 	} while (ent && ent->type != TRACE_CONT);
- 
-@@ -1187,7 +1192,7 @@ __find_next_entry(struct trace_iterator 
- 				ent = trace_entry_next(tr, data, iter, cpu);
- 			else {
- 				while (ent && ent->type == TRACE_CONT) {
--					trace_iterator_increment(iter, cpu);
-+					__trace_iterator_increment(iter, cpu);
- 					ent = trace_entry_idx(tr, tr->data[cpu],
- 							      iter, cpu);
- 				}
-@@ -1566,7 +1571,7 @@ trace_seq_print_cont(struct trace_seq *s
- 
- 	do {
- 		trace_seq_printf(s, "%s", ent->cont.buf);
--		trace_iterator_increment(iter, iter->cpu);
-+		__trace_iterator_increment(iter, iter->cpu);
- 		ent = trace_entry_idx(tr, data, iter, iter->cpu);
- 	} while (ent && ent->type == TRACE_CONT);
- }
+If we don't look at ioctl as a set of system calls that should
+be put into an appropriate format for a filesystem we have
+a maintenance problem.
 
--- 
+If we don't have an interface clean enough we can push data
+out to a server on a remote machine have it processes the
+arguments and send the data back.  We actually have failed
+to properly abstract the interface.
+
+>> That seems to imply that you need a stub in the kernel to handle 
+>> really weird ioctls.
+>> 
+>> The upside is that because you know what the inputs and outputs are
+>> and where the inputs and output are you can support that ioctl well
+>> into the future, and you can do it with an unprivileged file
+>> system server.
+>
+> Well, kernel stub kind of beats a lot of benefits of FUSE - no
+> specific kernel dependencies, easy development and distribution,
+> etc...
+
+Of course FUSE has specific kernel dependencies.  It depends
+on the implementation of fusefs in the kernel to talk to it.
+The reason you don't need a specific kernel today is that
+the kernel dependencies are well defined.  You are talking
+about using a very poorly defined interface to talk to the
+filesystem.  At which point it would be better to open
+a separate channel and talk to the filsystem directly.
+
+Being able to add a kernel system call (ioctl) with no review is a
+total maintenance disaster.  It is impossible to maintain because
+there is not a process to even discover what is going on.
+
+We have to have a kernel stub to support other system calls
+and I don't see why individual ioctls should be different.
+
+If you want to support forwards compatibility reserving
+some ioctl numbers and saying these numbers will always
+be parsed this way.  Which would allow you to write
+a common stub that can be implemented before the ioctls
+are implemented.
+
+If you really don't want new kernel dependencies you can hook up to
+the process via ptrace and intercept the ioctls before they even get
+to the kernel.  If you can open /proc/<pid>/mem you have the rights
+to ptrace the process.
+
+Eric
