@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYICJop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbYICJp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbYICJop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 05:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYICJog
+	id S1754923AbYICJp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 05:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYICJpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 05:44:36 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:35097 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751533AbYICJof (ORCPT
+	Wed, 3 Sep 2008 05:45:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56359 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbYICJpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 05:44:35 -0400
-Subject: Re: [PATCH] UBIFS: fill f_fsid
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-In-Reply-To: <1220262187.2982.58.camel@pmac.infradead.org>
-References: <1220194366-12731-1-git-send-email-dedekind@infradead.org>
-	 <1220194366-12731-13-git-send-email-dedekind@infradead.org>
-	 <1220262187.2982.58.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Wed, 03 Sep 2008 12:44:33 +0300
-Message-Id: <1220435073.4036.41.camel@sauron>
+	Wed, 3 Sep 2008 05:45:11 -0400
+Date: Wed, 3 Sep 2008 11:48:15 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       torvalds@osdl.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] [2/2] Don't complain about disabled irqs when the system has paniced
+Message-ID: <20080903094815.GQ18288@one.firstfloor.org>
+References: <20080902349.573187695@firstfloor.org> <200809031602.37658.nickpiggin@yahoo.com.au> <20080903065924.GO18288@one.firstfloor.org> <200809031937.46328.nickpiggin@yahoo.com.au>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Sep 2008 09:44:04.0159 (UTC) FILETIME=[9A078CF0:01C90DA9]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809031937.46328.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-01 at 10:43 +0100, David Woodhouse wrote:
-> For btrfs I xor the first 64 bits with the second 64 bits, and put
-> _that_ into f_fsid. You're just putting the first 64 bits in and
-> ignoring the second 64 bits. Neither is really _better_ than the other;
-> you just alter the circumstances in which you get collisions. But I
-> suppose we might as well be consistent about how we do it?
-Like this?
+> Hmm... that does pull in significantly more code yes...
+> 
+> It should be fixed. I guess a quickfix is to add a new call in
+> kernel/smp.c for use by panic code.
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Date: Wed, 3 Sep 2008 14:16:42 +0300
-Subject: [PATCH] UBIFS: amend f_fsid
+Or just a new vector.  I'll take a look later.
+> 
+> > an IPI?
+> 
+> Oh. I thought the actual function call structure itself should be the
+> nice cleanup part that everyone would like...
 
-David Woodhouse suggested to be consistent with other FSes
-and xor the beginning and the end of the UUID.
+I fail to see how much more complex code is a cleanup to be honest.
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
----
- fs/ubifs/super.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+> > And are there really benchmarks that show the 
+> > queueing does actually improve something significantly?
+> 
+> For the call_function_mask case, I did see a benefit of queueing when
+> testing vmap scalability on a bigish system, yes. I had since done
 
-diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-index ab9b5cb..83fe0a5 100644
---- a/fs/ubifs/super.c
-+++ b/fs/ubifs/super.c
-@@ -370,6 +370,7 @@ static int ubifs_statfs(struct dentry *dentry, struct kstatfs *buf)
- {
- 	struct ubifs_info *c = dentry->d_sb->s_fs_info;
- 	unsigned long long free;
-+	__le32 *uuid = (__le32 *)c->uuid;
- 
- 	free = ubifs_get_free_space(c);
- 	dbg_gen("free space %lld bytes (%lld blocks)",
-@@ -386,8 +387,8 @@ static int ubifs_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	buf->f_files = 0;
- 	buf->f_ffree = 0;
- 	buf->f_namelen = UBIFS_MAX_NLEN;
--	memcpy(&buf->f_fsid, c->uuid, sizeof(__kernel_fsid_t));
--
-+	buf->f_fsid.val[0] = le32_to_cpu(uuid[0]) ^ le32_to_cpu(uuid[2]);
-+	buf->f_fsid.val[1] = le32_to_cpu(uuid[1]) ^ le32_to_cpu(uuid[3]);
- 	return 0;
- }
- 
+Does that improve anything real-world?
+
+> For call_function_single, queueing could really help with high interrupt
+> loads like the block completion migration that Jens has been looking at.
+
+But does it or not?
+
+> In that case, queueing will act like interrupt mitigation when the target
+> CPU becomes saturated so it will help keep performance from degrading,
+> and it also allows multiple source CPUs to target a single destination
+> without losing too much scalability.
+> 
+> Also there was some straight-line benefit of queueing due to the source
+> CPU not having to wait for an ack from the destination before continuing.
+> Basically that would previously put a hard upper limit of remote function
+> call to the interrupt latency.
+> 
+> Benchmarks for "real" things unfortunately not easy to come by yet,
+> simply because it was so crap before that it was unusable for anything
+> remotely performance oriented. After the rewrite, I hope to see some
+
+At least the "industry standard benchmark" Intel spends a lot of time
+one used IPIs and iirc didn't run into too big issues. It was far
+less a problem than the endless sl[au]b regressions at least.
+
+
+> It was certianly tried. It's not a simple problem to do this with any
+> reasonable scalability, however.
+
+Well just not having a big lock is a big step forward. But that 
+doesn't need that much code, it's ~10-20 lines of new code
+as you can see in the scalable tlb flush.
+
+The queueing seems to add all the complexity and so far I haven't
+seen much evidence that the queueing actually helps enough
+to pay for its costs in complexity and maintenance overhead
+(and bugginess as the panic case and the earlier crash issue shows) 
+
+> > > It is reasonable I think, but I don't like testing symbolic constants
+> > > with inequalities like in your patch 2/2. Can you just make it
+> > > system_state != SYSTEM_PANIC ?
+> >
+> > Well I like it.
+> 
+> How is it better than system_state != SYSTEM_PANIC? It breaks if
+> SYSTEM_PANIC gets something in front of it, and even when it is
+
+No it will not break in that case.
+
+> correct it makes you double check the definition of SYSTEM_PANIC
+> to see what it does (is there any state above SYSTEM_PANIC?)
+
+The system states are already ordered and it would make
+a lot of sense to keep it that way. 
+
+Anyways the code will go anyways I guess because we have 
+established that it's not enough to fix panic.
+
+-Andi
+
 -- 
-1.5.4.1
-
-
+ak@linux.intel.com
