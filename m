@@ -1,42 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYIDXcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYIDXdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886AbYIDXcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 19:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYIDXck
+	id S1756557AbYIDXdJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 19:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYIDXcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 19:32:40 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:39735 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751927AbYIDXcj (ORCPT
+	Thu, 4 Sep 2008 19:32:43 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46911 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbYIDXcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 19:32:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SkFIbSOUkKNbmmVqqrBa98W8lUvcY8WR3e7ZW2XdsK3Rl4yaTszgEUvFL9a+5YYSc6
-         R2fhSG/gX0B9WVxcwq/1f1eQ9qPB3yP92QWqqm5HbhO/5IWM5IAJYhSN8zxAgGxq+RBW
-         gFlhUsfRpKEJ00d2R91Cy2/BcMKsl/sxjcNqM=
-Message-ID: <1df1788c0809041632h726fff6cq2eacd86076215017@mail.gmail.com>
-Date: Thu, 4 Sep 2008 20:32:37 -0300
-From: "=?UTF-8?Q?Br=C3=A1ulio_Barros_de_Oliveira?=" <brauliobo@gmail.com>
-To: Mat <jackdachef@gmail.com>
-Subject: Re: Re: reiserfs do_journal_end unnecessary hd wake up?
-Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1df1788c0809041628m269f13c3l27d9f9dd59a42fef@mail.gmail.com>
+	Thu, 4 Sep 2008 19:32:41 -0400
+Date: Thu, 4 Sep 2008 18:32:40 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: unprivileged mounts git tree
+Message-ID: <20080904233240.GB9995@us.ibm.com>
+References: <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu> <20080904161729.GA26579@us.ibm.com> <E1KbIqL-0003QO-34@pomaz-ex.szeredi.hu> <20080904174851.GA13693@hallyn.com> <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu> <20080904184916.GA19328@us.ibm.com> <E1KbNHX-0004mH-Fw@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <loom.20080904T211127-782@post.gmane.org>
-	 <1df1788c0809041538x8d41eb8s80966f25aa2ade21@mail.gmail.com>
-	 <1df1788c0809041628m269f13c3l27d9f9dd59a42fef@mail.gmail.com>
+In-Reply-To: <E1KbNHX-0004mH-Fw@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m84NWudq014812
 
-but (as always there is), the situation is not good yet when using kde4.with it, i can't find out which process is accessing the hd, causeiotop only shows a pdflush access.i've tried to kill some apps, but it didn't help. any other trace technic?
-regards,br√°ulio
-On Thu, Sep 4, 2008 at 8:28 PM, Br√°ulio Barros de Oliveira<brauliobo@gmail.com> wrote:> hello mat, here comes the results of each action.> in all the process i've used the iotop (what a great utility you> pointed!), and always saw only the pdflush process acessing the hd. no> user interface were used.> the apm is set to 128 with hdparm>> ok, then try the following:>> you at least should have noatime,nodiratime,commit=600>> :) that did the job! also, i've tested without the commit option,> which didn't changed the result.>> enabled for the reiserfs or >=ext3 filesystems>> you can also try data=writeback (but beware this might put your data at risk !)>> * can't try>> select the anticipatory i/o scheduler> and set following stuff>> :( no change.>> echo "16" > /proc/sys/vm/page-cluster> # default: 3> #>> :( no change.>> echo "60" > /proc/sys/vm/swappiness> # default: 60> # By default, Linux will aggressively swap processes out of physical memory onto> disk in order to keep the disk cache as large as possible.> # This means that pages that haven't been used recently will be pushed into swap> long before the system even comes close to running out of memory, which is an> unexpected behavior compared to some operating systems.> # The /proc/sys/vm/swappiness parameter controls how aggressive Linux is in this> area.>> :( no change.>> echo "3000" > /proc/sys/vm/dirty_expire_centisecs> # default: 3000 (30 seconds)> #2 how long data can be in the page cache before it is considered expired and> must be written at the next opportunity. Note that this default is very long: a> full 30 seconds. That means that under normal circumstances, unless you write> enough to trigger the other pdflush method, Linux won't actually commit anything> you write until 30 seconds later.>> :( no change.>> echo "6000"  > /proc/sys/vm/dirty_writeback_centisecs> # default: 500 (5 seconds)> #1 how often pdflush wakes up to write data to disk. The default wakes up the> two (or more) active threads every five seconds.> # suggestion: 6000 (every 60 seconds)>> :( no change.>> echo "15" > /proc/sys/vm/dirty_background_ratio> # default: 10> #3 Maximum percentage of active memory that can be filled with dirty pages> before pdflush begins to write them>> echo "50"   > /proc/sys/vm/dirty_ratio #modified> # default: 40> #4 Maximum percentage of total memory that can be filled with dirty pages before> processes are forced to write dirty buffers themselves during their time slice> instead of being allowed to do more writes.> # modified: 50>> echo "25" > /proc/sys/vm/vfs_cache_pressure>> for i in /sys/block/sd*; do>        /bin/echo "anticipatory" >  $i/queue/scheduler> done>> for i in /sys/block/sd*; do>        /bin/echo "0" >  $i/queue/iosched/antic_expire> done>> for i in /sys/block/sd*; do>        /bin/echo "150" >  $i/queue/iosched/read_expire> done>> for i in /sys/block/sd*; do>        /bin/echo "750" >  $i/queue/iosched/read_batch_expire> done>> for i in /sys/block/sd*; do>        /bin/echo "1200" >  $i/queue/iosched/write_batch_expire> done>> for i in /sys/block/sd*; do>        /bin/echo "1024" >  $i/queue/nr_requests> done>> for i in /sys/block/sd*; do>        /bin/echo "256" >  $i/queue/read_ahead_kb> done>> for i in /sys/block/sd*; do>        /bin/echo "256" >  $i/queue/max_sectors_kb> done>> for i in /sys/class/scsi_host/host*; do>        /bin/echo "min_power" >  $i/link_power_management_policy> done>>>>> try to disable each and every unneeded daemon or applets, programs, etc.>> by using:>> * powertop> * iotop> * htop> * top> * lsof | grep /home> * ...>ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
+> > We still have the original problem.
+> > 
+> > When root does
+> > 
+> > 	mount -bind /mnt /mnt
+> > 	mount --make-rshared /mnt
+> > 	mount --bind -o user=hallyn /mnt /home/hallyn/mnt
+> > 
+> > and hallyn does
+> > 
+> > 	mount --bind /usr /home/hallyn/mnt/usr
+> > 
+> > then the kernel happily propagates the mount to /mnt/usr.
+> 
+> Obviously, and that's exactly what root _instructed_ in the last step.
+> If it's a security problem, root shouldn't do that.
+> 
+> Your original bug report correctly pointed out the real security
+> problem:
+> 
+> |  as root:
+> |  	mmount --bind -o user=500 /home/hallyn/etc/ /home/hallyn/etc/
+> |  	mount --bind /mnt /mnt
+> |  	mount --make-rshared /mnt
+> |  	mount --bind /dev /mnt/dev
+> | 
+> |  as hallyn:
+> |  	mmount --bind /mnt /home/hallyn/etc/mnt
+> |  	/usr/src/mmount-0.3/mmount --bind mnt/dev mnt/src
+> 
+> Here root does nothing "unsafe", yet the user can get propagation back
+> into /mnt, due to the fact that a bind mount makes the new mount part
+> of the old peer group.  This is the security hole that is fixed, and
+> AFAICS the only security hole related to propagation vs. user mounts.
+> 
+> (I'm going to be offline tomorrow and the weekend, but will hopefully
+> have email access next week).
+> 
+> Thanks,
+> Miklos
+
+(&(*$&%, you're right, of course.
+
+Ok, will play with it a bit more, but I think it'd be *great* to see
+this show up in -mm again.
+
+-serge
