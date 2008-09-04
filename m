@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYIDNhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbYIDNls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbYIDNhw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 09:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYIDNho
+	id S1754202AbYIDNls (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 09:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYIDNlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 09:37:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40617 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbYIDNhn (ORCPT
+	Thu, 4 Sep 2008 09:41:40 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:58240 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751312AbYIDNlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 09:37:43 -0400
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-From: Peter Zijlstra <peterz@infradead.org>
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-kernel@vger.kernel.org, arozansk@redhat.com, dzickus@redhat.com,
-       Thomas.Mingarelli@hp.com, ak@linux.intel.com, mingo@elte.hu
-In-Reply-To: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 15:37:43 +0200
-Message-Id: <1220535463.8609.223.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 09:41:39 -0400
+Date: Thu, 4 Sep 2008 09:41:39 -0400
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: Alistair John Strachan <alistair@devzero.co.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: How to add the Asus R1F to asus-laptop.c?
+Message-ID: <20080904134139.GU12474@csclub.uwaterloo.ca>
+References: <20080903170649.GF12476@csclub.uwaterloo.ca> <200809031859.28203.alistair@devzero.co.uk> <20080903201620.GS12474@csclub.uwaterloo.ca> <200809032132.34967.alistair@devzero.co.uk> <20080903203954.GT12474@csclub.uwaterloo.ca> <71cd59b00809032348h7874167ckae1ea3d1ddab1e1c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <71cd59b00809032348h7874167ckae1ea3d1ddab1e1c@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-04 at 09:07 -0400, Prarit Bhargava wrote:
-> Andi and Ingo,
-> 
-> This patch is an RFC for the following changes.  If I get a positive review,
-> changes to the HP Watchdog timer (currently in the kernel) will also be
-> submitted along with this patch.
-> 
-> Thanks,
-> 
-> P.
-> 
-> The drivers/watchdog/hpwdt.c driver requires that all NMIs are processed
-> by the driver.  Currently the driver does not do this.  The first
-> step is to implement code to allow the default NMI handler to be replaced
-> by a custom NMI handler.
+On Thu, Sep 04, 2008 at 08:48:03AM +0200, Corentin Chary wrote:
+> Hi,
+> Currently I've no internet connection, so I'm depend off the hotspot I
+> can found when I'm close to my windows
+> Anyway, my connection will be activated soon, so please poke me again monday.
+> I'ts true that I should take a look at sf.net patchs ...
+> Anyway, this laptop should work with asus-laptop oO.
+> modprobe asus-laptop gives you "No such device" ?
 
-Why is the DIE_NMIWATCHDOG notifier not sufficient for this driver?
+Using 2.6.26, I get no such device and the driver refuses to load.
+asus-acpi loads fine and does its job.
 
+I will try the patch and see if that helps.  I was rather surprised that
+it didn't load, so I started doing acpi dumps and looking at the driver
+to see if I could figure out what it used to determine things.  It
+looked to me like it checks if the hotkey registration works, which by
+the looks of it it isn't doing at the moment.
+
+-- 
+Len Sorensen
