@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbYIDUfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbYIDUgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760492AbYIDUfz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758722AbYIDU1s
+	id S1758864AbYIDUgh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbYIDU1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:27:48 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:39971 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758717AbYIDU1q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:27:46 -0400
-From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 6/6] Call flush_disk() after detecting an online resize.
-To: linux-scsi@vger.kernel.org
-Cc: andrew.patterson@hp.com, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
-       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
-       jmoyer@redhat.com
-Date: Thu, 04 Sep 2008 14:27:45 -0600
-Message-ID: <20080904202745.10456.20803.stgit@bob.kio>
-In-Reply-To: <20080904202714.10456.88061.stgit@bob.kio>
-References: <20080904202714.10456.88061.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Thu, 4 Sep 2008 16:27:54 -0400
+Received: from mail.work.de ([212.12.32.20]:42175 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758131AbYIDU1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:27:53 -0400
+Message-ID: <48C044C4.8000908@gmail.com>
+Date: Fri, 05 Sep 2008 00:27:48 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+CC: anssi.hannula@gmail.com
+Subject: DVB Update [PATCH 31/31] fix broken translation for ATSC
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------010909030007080202040401"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call flush_disk() after detecting an online resize.
+This is a multi-part message in MIME format.
+--------------010909030007080202040401
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-We call flush_disk() to make sure the buffer cache for the disk is
-flushed after a disk resize. There are two resize cases, growing and
-shrinking. Given that users can shrink/then grow a disk before
-revalidate_disk() is called, we treat the grow case identically to
-shrinking. We need to flush the buffer cache after an online shrink
-because, as James Bottomley puts it,
+>From 76f0d0929582d49a0c4a0aa4aefe4e5dea0c1267 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 15:01:36 +0200
+Subject: [PATCH] DVB fix broken translation for ATSC in olddrv_to_newapi
 
-     The two use cases for shrinking I can see are
+In olddrv_to_newapi(), the ATSC modulation conversion used
+newmod_to_oldmod() instead of the correct oldmod_to_newmod().
+Fix it.
 
-     1. planned: the fs is already shrunk to within the new boundaries
-        and all data is relocated, so invalidate is fine (any dirty
-        buffers that might exist in the shrunk region are there only
-        because they were relocated but not yet written to their
-        original location).
-     2. unplanned:  In this case, the fs is probably toast, so whether
-        we invalidate or not isn't going to make a whole lot of
-        difference; it's still going to try to read or write from
-        sectors beyond the new size and get I/O errors.
+From: Anssi Hannula <anssi.hannula@gmail.com>
+Signed-off-by: Anssi Hannula <anssi.hannula@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
-Immediately invalidating shrunk disks will cause errors for outstanding
-I/Os for reads/write beyond the new end of the disk to be generated
-earlier then if we waited for the normal buffer cache operation. It also
-removes a potential security hole where we might keep old data around
-from beyond the end of the shrunk disk if the disk was not invalidated.
-
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
-
- fs/block_dev.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ dvb_frontend.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 33650fc..57e2786 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -902,6 +902,7 @@ void check_disk_size_change(struct gendisk *disk, struct block_device *bdev)
- 		       "%s: detected capacity change from %lld to %lld\n",
- 		       name, bdev_size, disk_size);
- 		i_size_write(bdev->bd_inode, disk_size);
-+		flush_disk(bdev);
- 	}
- }
- EXPORT_SYMBOL(check_disk_size_change);
+--------------010909030007080202040401
+Content-Type: text/x-patch;
+ name="31.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="31.patch"
 
+>From 76f0d0929582d49a0c4a0aa4aefe4e5dea0c1267 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 15:01:36 +0200
+Subject: [PATCH] DVB fix broken translation for ATSC in olddrv_to_newapi
+
+In olddrv_to_newapi(), the ATSC modulation conversion used
+newmod_to_oldmod() instead of the correct oldmod_to_newmod().
+Fix it.
+
+From: Anssi Hannula <anssi.hannula@gmail.com>
+Signed-off-by: Anssi Hannula <anssi.hannula@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
+index a8005ef..fcafcfc 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
+@@ -557,7 +557,7 @@ int olddrv_to_newapi(struct dvb_frontend *fe,
+ 		}
+ 		break;
+ 	case FE_ATSC:
+-		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
++		oldmod_to_newmod(vsb->modulation, &atsc->modulation);
+ 		break;
+ 	default:
+ 		dprintk("%s: Unsupported delivery system %x\n", __func__, fe_type);
+
+
+--------------010909030007080202040401--
