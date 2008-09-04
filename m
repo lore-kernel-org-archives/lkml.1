@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYIDHll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYIDHmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755791AbYIDHll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 03:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIDHle
+	id S1754016AbYIDHmF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 03:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIDHlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 03:41:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46146 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbYIDHld (ORCPT
+	Thu, 4 Sep 2008 03:41:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48979 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbYIDHlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 03:41:33 -0400
-Date: Thu, 4 Sep 2008 09:44:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: andi@firstfloor.org, joerg.roedel@amd.com, mingo@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures with swiotlb
-Message-ID: <20080904074441.GY18288@one.firstfloor.org>
-References: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com> <877i9sx4nk.fsf@basil.nowhere.org> <20080904131130E.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 4 Sep 2008 03:41:52 -0400
+Subject: Re: [PATCH 0/2] ftrace: ftrace_printk fixes
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080903214249.661170580@goodmis.org>
+References: <20080903214249.661170580@goodmis.org>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 09:41:52 +0200
+Message-Id: <1220514112.8609.185.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080904131130E.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 01:11:47PM +0900, FUJITA Tomonori wrote:
-> On Thu, 04 Sep 2008 00:09:51 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+On Wed, 2008-09-03 at 17:42 -0400, Steven Rostedt wrote:
+> Peter Zijlstra is starting to use ftrace_printk to debug the scheduler.
+> He quickly came across a few issues.
 > 
-> > Joerg Roedel <joerg.roedel@amd.com> writes:
-> > 
-> > > The SWIOTLB version of dma_alloc_coherent allocates all memory with
-> > > GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
-> > > failures. This patch makes the allocation strategy to use the DMA32 zone
-> > > first if this is possible. The changes are boot tested on AMD64 and
-> > > compile tested for i386 and IA64.
-> > 
-> > The high level dma_alloc_coherent() does that anyways.
-> 
-> The high level dma_alloc_coherent means the tricks in
-> arch/x86/pci-dma.c? If so, all the tricks has gone in tip/master.
+> These two patches address some of the things he has concerns about.
 
-Seems wrong -- that is something that is needed by multiple
-IOMMUs. Pretty much all which work with real memory instead
-of virtual mappings.
+Yay - works now!
 
-I also have an older swiotlb rewrite in the pipeline based on the DMA
-allocator. The project got a little sidelined, but I hope to eventually 
-forward port it again.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
--Andi
+> I'm expecting that Peter will be sending some more patches to help with
+> the interface.
 
--- 
-ak@linux.intel.com
+Yep, I will.. let me extract that from the massive diff I have
+here.. :-)
+
+
+
