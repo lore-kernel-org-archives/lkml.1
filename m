@@ -1,280 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbYIDSgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYIDSgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbYIDSgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbYIDSfb
+	id S1756315AbYIDSgf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756493AbYIDSfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:35:31 -0400
-Received: from mail.work.de ([212.12.32.20]:54803 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754469AbYIDSf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:35:26 -0400
-Message-ID: <48C02A6A.7020501@gmail.com>
-Date: Thu, 04 Sep 2008 22:35:22 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
-       akpm@linux-foundation.org
-Subject: DVB Update [PATCH 2/31] multiproto tree
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------000402060805090707090208"
+	Thu, 4 Sep 2008 14:35:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47478 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754169AbYIDSf2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:35:28 -0400
+Date: Thu, 4 Sep 2008 11:34:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       David Woodhouse <dwmw2@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       john stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: Tree for September 3
+Message-Id: <20080904113408.d47c65f6.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+	<20080903214634.ea17ff53.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>
+	<20080903223318.84b6ce8b.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org>
+	<20080904012544.cabed847.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org>
+	<20080904015701.5959623a.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org>
+	<20080904104554.32ffebea.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000402060805090707090208
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Thu, 4 Sep 2008 11:05:21 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
->From 1d7134c1f2c34eade3ab5526ff301e98e97346a8 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 11:55:41 +0200
-Subject: [PATCH] DVB Frontend driver API overhaul
+> > This is a pull of your tree from yesterday, ending at commit 
+> > fbb16e243887332dd5754e48ffe5b963378f3cd2
+> 
+> There's been various suggested patches by Al/Eric (added to cc) for 
+> /proc/net handling, but none of them have actually even been merged yet. 
+> So I don't think this code has changed in a while. 
+> 
+> Al, Eric, ideas?
 
-* Add support for different frontend driver tuning algorithms
-* Add support for tuning algorithms required by sophisticated
-silicon tuners
-* Add new callbacks for use with multistandard drivers
+I don't think I saw it on any other test machines.
 
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+This machine runs SELinux.  Distro is FC5.
+
+> > config: http://userweb.kernel.org/~akpm/config-sony.txt
+> > dmesg: http://userweb.kernel.org/~akpm/dmesg-sony-without.txt
+> 
+> That whole thing should just be a simple symlink:
+> 
+> 	fs/proc/proc_net.c:     proc_symlink("net", NULL, "self/net");
+
+/proc/self/net looks fine.
+
+> are you sure it's a plain tree of mine, without any of the patches 
+> floating around between Eric/Al?
+
+yup, it's yesterday's mainline.
 
 
- dvb_frontend.h |  151
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 146 insertions(+), 5 deletions(-)
 
---------------000402060805090707090208
-Content-Type: text/x-patch;
- name="2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.patch"
+Found another problem.
 
->From 1d7134c1f2c34eade3ab5526ff301e98e97346a8 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 11:55:41 +0200
-Subject: [PATCH] DVB Frontend driver API overhaul
+The way I install kernels on machine `sony' is:
 
-* Add support for different frontend driver tuning algorithms
-* Add support for tuning algorithms required by sophisticated
-silicon tuners
-* Add new callbacks for use with multistandard drivers
+- Build the kernel on machine `y', in /usr/src/25
 
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+- On machine sony, NFS mount y:/usr/src at /mnt/y/usr/src
 
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.h b/drivers/media/dvb/dvb-core/dvb_frontend.h
-index aa4133f..0621287 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.h
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.h
-@@ -8,6 +8,9 @@
-  * Overhauled by Holger Waechtler
-  * Kernel I2C stuff by Michael Hunold <hunold@convergence.de>
-  *
-+ * Overhauled for Silicon Tuners, Search Algorithms and multiprotocol
-+ * support by Manu Abraham <abraham.manu@gmail.com>
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU Lesser General Public License
-  * as published by the Free Software Foundation; either version 2.1
-@@ -46,6 +49,7 @@ struct dvb_frontend_tune_settings {
- 	int step_size;
- 	int max_drift;
- 	struct dvb_frontend_parameters parameters;
-+	struct dvbfe_params fe_params;
- };
+- On sony, `cd /mnt/y/usr/src/25'
 
- struct dvb_frontend;
-@@ -69,6 +73,124 @@ struct analog_parameters {
- 	u64 std;
- };
+- <copy stuff>
 
-+enum dvbfe_modcod {
-+	DVBFE_MODCOD_DUMMY_PLFRAME	= 0,
-+	DVBFE_MODCOD_QPSK_1_4,
-+	DVBFE_MODCOD_QPSK_1_3,
-+	DVBFE_MODCOD_QPSK_2_5,
-+	DVBFE_MODCOD_QPSK_1_2,
-+	DVBFE_MODCOD_QPSK_3_5,
-+	DVBFE_MODCOD_QPSK_2_3,
-+	DVBFE_MODCOD_QPSK_3_4,
-+	DVBFE_MODCOD_QPSK_4_5,
-+	DVBFE_MODCOD_QPSK_5_6,
-+	DVBFE_MODCOD_QPSK_8_9,
-+	DVBFE_MODCOD_QPSK_9_10,
-+	DVBFE_MODCOD_8PSK_3_5,
-+	DVBFE_MODCOD_8PSK_2_3,
-+	DVBFE_MODCOD_8PSK_3_4,
-+	DVBFE_MODCOD_8PSK_5_6,
-+	DVBFE_MODCOD_8PSK_8_9,
-+	DVBFE_MODCOD_8PSK_9_10,
-+	DVBFE_MODCOD_16APSK_2_3,
-+	DVBFE_MODCOD_16APSK_3_4,
-+	DVBFE_MODCOD_16APSK_4_5,
-+	DVBFE_MODCOD_16APSK_5_6,
-+	DVBFE_MODCOD_16APSK_8_9,
-+	DVBFE_MODCOD_16APSK_9_10,
-+	DVBFE_MODCOD_32APSK_3_4,
-+	DVBFE_MODCOD_32APSK_4_5,
-+	DVBFE_MODCOD_32APSK_5_6,
-+	DVBFE_MODCOD_32APSK_8_9,
-+	DVBFE_MODCOD_32APSK_9_10,
-+	DVBFE_MODCOD_RESERVED_1,
-+	DVBFE_MODCOD_BPSK_1_3,
-+	DVBFE_MODCOD_BPSK_1_4,
-+	DVBFE_MODCOD_RESERVED_2
-+};
-+
-+enum tuner_param {
-+	DVBFE_TUNER_FREQUENCY		= (1 <<  0),
-+	DVBFE_TUNER_TUNERSTEP		= (1 <<  1),
-+	DVBFE_TUNER_IFFREQ		= (1 <<  2),
-+	DVBFE_TUNER_BANDWIDTH		= (1 <<  3),
-+	DVBFE_TUNER_REFCLOCK		= (1 <<  4),
-+	DVBFE_TUNER_IQSENSE		= (1 <<  5),
-+	DVBFE_TUNER_DUMMY		= (1 << 31)
-+};
-+
-+/*
-+ * ALGO_HW: (Hardware Algorithm)
-+ * ----------------------------------------------------------------
-+ * Devices that support this algorithm do everything in hardware
-+ * and no software support is needed to handle them.
-+ * Requesting these devices to LOCK is the only thing required,
-+ * device is supposed to do everything in the hardware.
-+ *
-+ * ALGO_SW: (Software Algorithm)
-+ * ----------------------------------------------------------------
-+ * These are dumb devices, that require software to do everything
-+ *
-+ * ALGO_CUSTOM: (Customizable Agorithm)
-+ * ----------------------------------------------------------------
-+ * Devices having this algorithm can be customized to have specific
-+ * algorithms in the frontend driver, rather than simply doing a
-+ * software zig-zag. In this case the zigzag maybe hardware assisted
-+ * or it maybe completely done in hardware. In all cases, usage of
-+ * this algorithm, in conjunction with the search and track
-+ * callbacks, utilizes the driver specific algorithm.
-+ *
-+ * ALGO_RECOVERY: (Recovery Algorithm)
-+ * ----------------------------------------------------------------
-+ * These devices has AUTO recovery capabilities from LOCK failure
-+ */
-+enum dvbfe_algo {
-+	DVBFE_ALGO_HW			= (1 <<  0),
-+	DVBFE_ALGO_SW			= (1 <<  1),
-+	DVBFE_ALGO_CUSTOM		= (1 <<  2),
-+	DVBFE_ALGO_RECOVERY		= (1 <<  31)
-+};
-+
-+struct tuner_state {
-+	u32 frequency;
-+	u32 tunerstep;
-+	u32 ifreq;
-+	u32 bandwidth;
-+	u32 iqsense;
-+	u32 refclock;
-+};
-+
-+/*
-+ * search callback possible return status
-+ *
-+ * DVBFE_ALGO_SEARCH_SUCCESS
-+ * The frontend search algorithm completed and returned succesfully
-+ *
-+ * DVBFE_ALGO_SEARCH_ASLEEP
-+ * The frontend search algorithm is sleeping
-+ *
-+ * DVBFE_ALGO_SEARCH_FAILED
-+ * The frontend search for a signal failed
-+ *
-+ * DVBFE_ALGO_SEARCH_INVALID
-+ * The frontend search algorith was probably supplied with invalid
-+ * parameters and the search is an invalid one
-+ *
-+ * DVBFE_ALGO_SEARCH_ERROR
-+ * The frontend search algorithm failed due to some error
-+ *
-+ * DVBFE_ALGO_SEARCH_AGAIN
-+ * The frontend search algorithm was requested to search again
-+ */
-+enum dvbfe_search {
-+	DVBFE_ALGO_SEARCH_SUCCESS	= (1 <<  0),
-+	DVBFE_ALGO_SEARCH_ASLEEP	= (1 <<  1),
-+	DVBFE_ALGO_SEARCH_FAILED	= (1 <<  2),
-+	DVBFE_ALGO_SEARCH_INVALID	= (1 <<  3),
-+	DVBFE_ALGO_SEARCH_AGAIN		= (1 <<  4),
-+	DVBFE_ALGO_SEARCH_ERROR		= (1 << 31),
-+};
-+
- struct dvb_tuner_ops {
+- make modules_install
 
- 	struct dvb_tuner_info info;
-@@ -95,10 +217,12 @@ struct dvb_tuner_ops {
- 	int (*get_status)(struct dvb_frontend *fe, u32 *status);
- 	int (*get_rf_strength)(struct dvb_frontend *fe, u16 *strength);
+- depmod -a
 
--	/** These are provided seperately from set_params in order to facilitate silicon
--	 * tuners which require sophisticated tuning loops, controlling each parameter seperately. */
--	int (*set_frequency)(struct dvb_frontend *fe, u32 frequency);
--	int (*set_bandwidth)(struct dvb_frontend *fe, u32 bandwidth);
-+	/**
-+	 * These are provided seperately from set_params in order to facilitate silicon
-+	 * tuners which require sophisticated tuning loops, controlling each parameter seperately.
-+	 */
-+	int (*set_state)(struct dvb_frontend *fe, enum tuner_param param, struct tuner_state *state);
-+	int (*get_state)(struct dvb_frontend *fe, enum tuner_param param, struct tuner_state *state);
- };
+IOW, I run the kernel's installation tools on the *target* machine,
+within an nfs mount of the *build* machine.
 
- struct analog_demod_info {
-@@ -142,7 +266,7 @@ struct dvb_frontend_ops {
- 		    unsigned int *delay,
- 		    fe_status_t *status);
- 	/* get frontend tuning algorithm from the module */
--	int (*get_frontend_algo)(struct dvb_frontend *fe);
-+	enum dvbfe_algo (*get_frontend_algo)(struct dvb_frontend *fe);
+This has worked happily for five or more years.  But now:
 
- 	/* these two are only used for the swzigzag code */
- 	int (*set_frontend)(struct dvb_frontend* fe, struct dvb_frontend_parameters* params);
-@@ -167,6 +291,18 @@ struct dvb_frontend_ops {
- 	int (*i2c_gate_ctrl)(struct dvb_frontend* fe, int enable);
- 	int (*ts_bus_ctrl)(struct dvb_frontend* fe, int acquire);
+Failed to open destination file: Permission deniedihex2fw: Convert ihex files into binary representation for use by Linux kernel
+usage: ihex2fw [<options>] <src.HEX> <dst.fw>
+       -w: wide records (16-bit length)
+       -s: sort records by address
+make[1]: *** [firmware/emi26/loader.fw] Error 1
+make: *** [_modinst_post] Error 2
 
-+	/* These callbacks are based on the superseding IOCTL's	*/
-+	int (*set_params)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*get_params)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*get_info)(struct dvb_frontend *fe, struct dvbfe_info *fe_info);
-+	int (*get_delsys)(struct dvb_frontend *fe, enum dvbfe_delsys *fe_delsys);
-+
-+	/* These callbacks are for devices that implement their own
-+	 * tuning algorithms, rather than a simple swzigzag
-+	 */
-+	enum dvbfe_search (*search)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*track)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+
- 	struct dvb_tuner_ops tuner_ops;
- 	struct analog_demod_ops analog_ops;
- };
-@@ -190,6 +326,7 @@ struct dvb_frontend {
- 	void *frontend_priv;
- 	void *sec_priv;
- 	void *analog_demod_priv;
-+	u32 legacy;
- };
+This is because the target machine is i386 and it is trying to execute
+an x86_64 binary.
 
- extern int dvb_register_frontend(struct dvb_adapter *dvb,
-@@ -204,4 +341,8 @@ extern void dvb_frontend_reinitialise(struct dvb_frontend *fe);
- extern void dvb_frontend_sleep_until(struct timeval *waketime, u32 add_usec);
- extern s32 timeval_usec_diff(struct timeval lasttime, struct timeval curtime);
 
-+extern void decode_dvbs2_modcod(u32 modcod,
-+				enum dvbfe_modulation *modulation,
-+				enum dvbfe_fec *fec);
-+
- #endif
 
---------------000402060805090707090208--
+
+
+and oh dear, the clockevents code just oopsed.
+
+firmware: requesting ipw2200-bss.fw
+ipw2200: Radio Frequency Kill Switch is On:
+Kill switch must be turned off for wireless networking to work.
+ipw2200: Detected geography ZZA (11 802.11bg channels, 13 802.11a channels)
+initcall ipw_init+0x0/0x71 [ipw2200] returned 0 after 163 msecs
+ipw2200: Failed to send WEP_KEY: Aborted due to RF kill switch.
+BUG: unable to handle kernel NULL pointer dereference at 00000040
+IP: [<c0126e7f>] get_next_timer_interrupt+0xe9/0x1ab
+*pde = 00000000 
+Oops: 0000 [#1] PREEMPT 
+Modules linked in: ipw2200 sonypi ipv6 autofs4 hidp l2cap bluetooth sunrpc nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack xt_tcpudp iptable_filter ip_tables x_tables acpi_cpufreq nvram ohci1394 ieee1394 ehci_hcd uhci_hcd sg joydev snd_hda_intel snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ieee80211 3c59x snd_pcm ieee80211_crypt sr_mod snd_timer cdrom snd i2c_i801 soundcore snd_page_alloc button i2c_core pcspkr ext3 jbd [last unloaded: ipw2200]
+
+Pid: 0, comm: swapper Not tainted (2.6.27-rc5 #18)
+EIP: 0060:[<c0126e7f>] EFLAGS: 00010013 CPU: 0
+EIP is at get_next_timer_interrupt+0xe9/0x1ab
+EAX: 00000040 EBX: 00000001 ECX: 0000001d EDX: 00000040
+ESI: 0000001d EDI: c05bc700 EBP: c0469f1c ESP: c0469ee4
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process swapper (pid: 0, ti=c0468000 task=c04343c0 task.ti=c0468000)
+Stack: ffff1cef c013cc1d c05bcf28 00000000 c05bd010 c05bc798 00ffff1d c05bcf28 
+       c05bd128 c05bd328 c05bd528 00000000 b65eb8b3 0000000f c0469f4c c013816f 
+       00000000 b65c1f00 0000000f ffff1cef 00000046 00000096 c04b11c0 00000000 
+Call Trace:
+ [<c013cc1d>] ? __lock_acquire+0x671/0x6b7
+ [<c013816f>] ? tick_nohz_stop_sched_tick+0x13f/0x2ba
+ [<c0123640>] ? irq_exit+0x6d/0x79
+ [<c0105c6a>] ? do_IRQ+0x6d/0x7f
+ [<c0104300>] ? common_interrupt+0x28/0x30
+ [<c013007b>] ? set_process_cpu_timer+0x94/0xb9
+ [<c0234743>] ? acpi_processor_idle+0x2a6/0x44b
+ [<c010256b>] ? cpu_idle+0x5a/0x87
+ [<c031e2fd>] ? rest_init+0x61/0x63
+ =======================
+Code: 83 e6 3f 89 f1 89 5d d0 8b 45 d0 89 d3 8d 04 c8 89 45 d8 8b 00 eb 14 8b 40 08 bb 01 00 00 00 3b 45 cc 0f 49 45 cc 89 45 cc 89 d0 <8b> 10 0f 18 02 90 3b 45 d8 75 e1 85 db 89 da 74 0c 85 f6 74 04 
+EIP: [<c0126e7f>] get_next_timer_interrupt+0xe9/0x1ab SS:ESP 0068:c0469ee4
+---[ end trace 2cf31fb827f3051f ]---
+Kernel panic - not syncing: Attempted to kill the idle task!
+BUG: NMI Watchdog detected LOCKUP on CPU0, ip c01f584e, registers:
+
+
