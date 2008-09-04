@@ -1,102 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYIDSiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbYIDSjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757535AbYIDSiz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYIDShi
+	id S1757650AbYIDSjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYIDShs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:37:38 -0400
-Received: from mail.work.de ([212.12.32.20]:58898 "EHLO mail.work.de"
+	Thu, 4 Sep 2008 14:37:48 -0400
+Received: from mail.work.de ([212.12.32.20]:58906 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756774AbYIDShh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:37:37 -0400
-Message-ID: <48C02AEC.2090903@gmail.com>
-Date: Thu, 04 Sep 2008 22:37:32 +0400
+	id S1756788AbYIDShr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:37:47 -0400
+Message-ID: <48C02AF6.4010702@gmail.com>
+Date: Thu, 04 Sep 2008 22:37:42 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
        akpm@linux-foundation.org
-Subject: DVB Update [PATCH 7/31] multiproto tree
+Subject: DVB Update [PATCH 8/31] multiproto tree
 X-Enigmail-Version: 0.94.0.0
 Content-Type: multipart/mixed;
- boundary="------------020301030809070001070700"
+ boundary="------------090300020701080305010809"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------020301030809070001070700
+--------------090300020701080305010809
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
->From 209207c583848b37a54b135256a62a5eb4135516 Mon Sep 17 00:00:00 2001
+>From 2766ee0ccad424cf0a8ac55cae8494d50fe0dc09 Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 12:26:28 +0200
-Subject: [PATCH] DVB Fix: use backward compatibility for older delivery
-systems
+Date: Thu, 4 Sep 2008 12:31:18 +0200
+Subject: [PATCH] DVB Code simplification: Remove an unnecessary print
 
-* The backward compatibilty of the existing delivery systems was
-broken. The patch fixes the same.
+* Remove an unnecessary printk for the newer delivery systems added
 
 From: Manu Abraham <abraham.manu@gmail.com>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
- dvb_frontend.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ dvb_frontend.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
---------------020301030809070001070700
+--------------090300020701080305010809
 Content-Type: text/x-patch;
- name="7.patch"
+ name="8.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="7.patch"
+ filename="8.patch"
 
->From 209207c583848b37a54b135256a62a5eb4135516 Mon Sep 17 00:00:00 2001
+>From 2766ee0ccad424cf0a8ac55cae8494d50fe0dc09 Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 12:26:28 +0200
-Subject: [PATCH] DVB Fix: use backward compatibility for older delivery systems
+Date: Thu, 4 Sep 2008 12:31:18 +0200
+Subject: [PATCH] DVB Code simplification: Remove an unnecessary print
 
-* The backward compatibilty of the existing delivery systems was
-broken. The patch fixes the same.
+* Remove an unnecessary printk for the newer delivery systems added
 
 From: Manu Abraham <abraham.manu@gmail.com>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
 diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index 106bf2b..de49e4b 100644
+index de49e4b..c830997 100644
 --- a/drivers/media/dvb/dvb-core/dvb_frontend.c
 +++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -1433,7 +1433,6 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
- 	struct dvb_frontend *fe = dvbdev->priv;
- 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
- 	int err = -EOPNOTSUPP;
--	enum dvbfe_delsys delsys = 0;
- 
- 	dprintk ("%s\n", __func__);
- 
-@@ -1699,15 +1698,21 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
- 
- 	case DVBFE_SET_PARAMS: {
- 		struct dvb_frontend_tune_settings fetunesettings;
-+		enum dvbfe_delsys delsys = fepriv->fe_info.delivery;
- 
- 		fe->legacy = 0;
- 		memcpy(&fepriv->fe_params, parg, sizeof (struct dvbfe_params));
- 		memset(&fetunesettings, 0, sizeof (struct dvb_frontend_tune_settings));
- 		memcpy(&fetunesettings.fe_params, parg, sizeof (struct dvbfe_params));
- 
--		if (newapi_to_olddrv(&fepriv->fe_params, &fepriv->parameters, fepriv->fe_info.delivery)  == -EINVAL)
--			printk("%s: ERROR !!! Converting New parameters --> Old parameters\n", __func__);
-+		if ((delsys && DVBFE_DELSYS_DVBS) ||
-+		    (delsys && DVBFE_DELSYS_DVBC) ||
-+		    (delsys && DVBFE_DELSYS_DVBT) ||
-+		    (delsys && DVBFE_DELSYS_ATSC)) {
- 
-+			if (newapi_to_olddrv(&fepriv->fe_params, &fepriv->parameters, fepriv->fe_info.delivery)  == -EINVAL)
-+				printk("%s: ERROR !!! Converting New parameters --> Old parameters\n", __func__);
-+		}
- 		/* Request the search algorithm to search	*/
- 		fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
- 
+@@ -451,11 +451,6 @@ int newapi_to_olddrv(struct dvbfe_params *params,
+ 	case DVBFE_DELSYS_ATSC:
+ 		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
+ 		break;
+-	case DVBFE_DELSYS_DVBS2:
+-	case DVBFE_DELSYS_DSS:
+-	case DVBFE_DELSYS_DVBH:
+-		printk("%s: SORRY ! Backward compatibility unavailable for these delivery systems !!\n", __func__);
+-		break;
+ 	default:
+ 		dprintk("%s: Unsupported delivery system\n", __func__);
+ 		return -EINVAL;
 
---------------020301030809070001070700--
+--------------090300020701080305010809--
