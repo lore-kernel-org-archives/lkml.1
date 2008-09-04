@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbYIDMx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYIDM5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757192AbYIDMx3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYIDMxR
+	id S1756439AbYIDM5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYIDM5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:53:17 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43463 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbYIDMxQ (ORCPT
+	Thu, 4 Sep 2008 08:57:32 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:33341
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752109AbYIDM5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:53:16 -0400
-Date: Thu, 4 Sep 2008 06:52:19 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Ben Hutchings <bhutchings@solarflare.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 1/3] pci: VPD access timeout increase
-Message-ID: <20080904125219.GJ2772@parisc-linux.org>
-References: <20080827204626.4b65862f@extreme> <20080828111323.GI7908@solarflare.com> <20080903155713.7fab2e19@extreme>
+	Thu, 4 Sep 2008 08:57:31 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [TIP/SCHED/DEVEL PATCH v3 1/6] sched: only try to push a task on
+	wakeup if it is migratable
+To: mingo@elte.hu
+Cc: rostedt@goodmis.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, npiggin@suse.de,
+       gregory.haskins@gmail.com
+Date: Thu, 04 Sep 2008 08:55:04 -0400
+Message-ID: <20080904125504.23633.7696.stgit@dev.haskins.net>
+In-Reply-To: <20080904125029.23633.88210.stgit@dev.haskins.net>
+References: <20080904125029.23633.88210.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080903155713.7fab2e19@extreme>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 03:57:13PM -0700, Stephen Hemminger wrote:
-> Accessing the VPD area can take a long time. There are comments in the
-> SysKonnect vendor driver that it can take up to 25ms.  The existing vpd
-> access code fails consistently on my hardware.
+There is no sense in wasting time trying to push a task away that
+cannot move anywhere else.  We gain no benefit from trying to push
+other tasks at this point, so if the task being woken up is non
+migratable, just skip the whole operation.  This reduces overhead
+in the wakeup path for certain tasks.
 
-Wow, that's slow.  If you were to try to read all 32k, it'd take more
-than three minutes!  (I presume it doesn't actually have as much as 32k).
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-> Change the access routines to:
->   * use a mutex rather than spinning with IRQ's disabled and lock held
->   * have a longer timeout
->   * call schedule while spinning to provide some responsivness
+ kernel/sched_rt.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-I agree with your approach, but have one minor comment:
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 998ba54..768be35 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1229,14 +1229,16 @@ static void post_schedule_rt(struct rq *rq)
+ }
+ 
+ /*
+- * If we are not running and we are not going to reschedule soon, we should
+- * try to push tasks away now
++ * If we are not running, we are not going to reschedule soon,
++ * and we have tasks that could be pushed, we should try to push tasks
++ * away now
+  */
+ static void task_wake_up_rt(struct rq *rq, struct task_struct *p)
+ {
+ 	if (!task_running(rq, p) &&
+ 	    !test_tsk_need_resched(rq->curr) &&
+-	    rq->rt.overloaded)
++	    rq->rt.overloaded &&
++	    p->rt.nr_cpus_allowed > 1)
+ 		push_rt_tasks(rq);
+ }
+ 
 
-> -	spin_lock_irq(&vpd->lock);
-> +	mutex_lock(&vpd->lock);
-
-This should be:
-
-+	if (mutex_lock_interruptible(&vpd->lock))
-+		return -EINTR;
-
-> @@ -231,7 +232,7 @@ static int pci_vpd_pci22_write(struct pc
->  	val |= ((u8) *buf++) << 16;
->  	val |= ((u32)(u8) *buf++) << 24;
->  
-> -	spin_lock_irq(&vpd->lock);
-> +	mutex_lock(&vpd->lock);
-
-And the same here, of course.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
