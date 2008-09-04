@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYIDSOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYIDSZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYIDSOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYIDSO1
+	id S1754554AbYIDSZw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbYIDSZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:14:27 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39991 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbYIDSO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:14:27 -0400
-Subject: Re: [RFC v3][PATCH 7/9] Infrastructure for shared objects
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-In-Reply-To: <Pine.LNX.4.64.0809040404550.5982@takamine.ncl.cs.columbia.edu>
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0809040404550.5982@takamine.ncl.cs.columbia.edu>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 11:14:22 -0700
-Message-Id: <1220552062.23386.35.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 4 Sep 2008 14:25:43 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:45373 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbYIDSZn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:25:43 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Rz1oqOpp3s1/2eAHclF7ZE4DwN36LWnxcNnTGdARqUuuM09f6BJdP7mpS2Y1YRrzd
+	VC+f6RBmYN7mW5wjYjuxA==
+Message-ID: <6599ad830809041125m45c75229o3e0f392241b7bc67@mail.gmail.com>
+Date: Thu, 4 Sep 2008 11:25:30 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Vivek Goyal" <vgoyal@redhat.com>
+Subject: Re: [RFC] [PATCH -mm] cgroup: uid-based rules to add processes efficiently in the right cgroup
+Cc: righi.andrea@gmail.com,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Kazunaga Ikeno" <k-ikeno@ak.jp.nec.com>,
+       "Morton Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Graf" <tgraf@redhat.com>, "Ulrich Drepper" <drepper@redhat.com>,
+       "Steve Olivieri" <solivier@redhat.com>
+In-Reply-To: <20080826134127.GA30312@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080710104852.797fe79c@cuia.bos.redhat.com>
+	 <20080711095501.cefff6df.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080714135719.GE16673@redhat.com> <487B665B.9080205@sun.com>
+	 <20080714152142.GJ16673@redhat.com> <48A7FE7B.3060309@gmail.com>
+	 <6599ad830808181405i3ec1f9fdp4d8ca7ab675b2c5f@mail.gmail.com>
+	 <20080819125710.GA18972@redhat.com>
+	 <6599ad830808251754l146588dax65aeff2cc22ac0c1@mail.gmail.com>
+	 <20080826134127.GA30312@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-04 at 04:05 -0400, Oren Laadan wrote:
-> +=== Shared resources (objects)
-> +
-> +Many resources used by tasks may be shared by more than one task (e.g.
-> +file descriptors, memory address space, etc), or even have multiple
-> +references from other resources (e.g. a single inode that represents
-> +two ends of a pipe).
-> +
-> +Clearly, the state of shared objects need only be saved once, even if
-> +they occur multiple times. We use a hash table (ctx->objhash) to keep
-> +track of shared objects in the following manner.
-> +
-> +On the first encounter, the state is dumped and the object is assigned
-> +a unique identifier and also stored in the hash table (indexed by its
-> +physical kenrel address). From then on the object will be found in the
-> +hash and only its identifier is saved.
-> +
-> +On restart the identifier is looked up in the hash table; if not found
-> +then the state is read, the object is created, and added to the hash
-> +table (this time indexed by its identifier). Otherwise, the object in
-> +the hash table is used.
-> +
-> +The interface for the hash table is the following:
-> +
-> +int cr_obj_get_by_ptr(struct cr_ctx *ctx, void *ptr, unsigned short type);
-> +  [checkpoint] find the unique identifier - object reference (objref)
-> +  - of the object that is pointer to by ptr (or 0 if not found).
-> +
-> +int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
-> +                  unsigned short type, unsigned short flags);
-> +  [checkpoint] add the object pointed to by ptr to the hash table if
-> +  it isn't already there, and fill its unique identifier (objref); will
-> +  return 0 if already found in the has, or 1 otherwise.
-> +
-> +void *cr_obj_get_by_ref(struct cr_ctx *ctx, int objref, unsigned short type);
-> +  [restart] return the pointer to the object whose unique identifier
-> +  is equal to objref.
-> +
-> +int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
-> +                  unsigned short type, unsigned short flags);
-> +  [restart] add the object with unique identifier objref, pointed to by
-> +  ptr to the hash table if it isn't already there; will return 0 if
-> +  already found in the has, or 1 otherwise.
+On Tue, Aug 26, 2008 at 6:41 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> So there can be two kind of controls.
+>
+> - Create a per cgroup file say "group_pinned", where if 1 is written to
+>  "group_pinned" that means daemon will not move tasks from this cgroup upon
+>  effective uid/gid changes.
 
-Once you get to the point of putting function prototypes in
-Documentation/, it's probably a good time to start using kerneldocs. :)
+I don't think you'd necessarily need a cgroup file for that - it could
+be part of the daemon configuration.
 
--- Dave
-
+Paul
