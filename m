@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYIDTFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbYIDTGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYIDTFr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 15:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYIDTFY
+	id S1754170AbYIDTGG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYIDTF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 15:05:24 -0400
-Received: from smtp23.orange.fr ([193.252.22.126]:41030 "EHLO smtp23.orange.fr"
+	Thu, 4 Sep 2008 15:05:27 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:39141 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754053AbYIDTFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 15:05:23 -0400
-X-ME-UUID: 20080904190520150.03A3B7000095@mwinf2316.orange.fr
-Message-ID: <48C0316E.1030808@free.fr>
-Date: Thu, 04 Sep 2008 21:05:18 +0200
-From: Eric Valette <eric.valette@free.fr>
-Reply-To: eric.valette@free.fr
-Organization: HOME
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: CD RW packet driver still oops in  2.6.27-rc5-git5
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754223AbYIDTFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 15:05:25 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.63
+Date: Thu, 4 Sep 2008 12:05:22 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Ben Hutchings <bhutchings@solarflare.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] Return value from schedule()
+Message-ID: <20080904120522.6d5fdf8d@extreme>
+In-Reply-To: <20080904174845.GN2772@parisc-linux.org>
+References: <20080827204626.4b65862f@extreme>
+	<20080828111323.GI7908@solarflare.com>
+	<20080903155713.7fab2e19@extreme>
+	<20080904160739.GK2772@parisc-linux.org>
+	<20080904161424.GA23042@elte.hu>
+	<20080904162111.GM2772@parisc-linux.org>
+	<20080904103049.01f748d9@infradead.org>
+	<20080904174845.GN2772@parisc-linux.org>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pktcdvd: writer pktcdvd0 mapped to hdc
-------------[ cut here ]------------
-WARNING: at /usr/src/linux-2.6.23.14/fs/sysfs/dir.c:463
-sysfs_add_one+0x27/0x2f()
-sysfs: duplicate filename '254:0' can not be created
-Modules linked in:
-Pid: 3848, comm: pktsetup Not tainted 2.6.27-rc5-git6 #68
- [<c01189c1>] warn_slowpath+0x5a/0x7b
- [<c0230ee0>] idr_get_empty_slot+0x154/0x202
- [<c0230ee0>] idr_get_empty_slot+0x154/0x202
- [<c023106d>] ida_get_new_above+0xdf/0x17b
- [<c0189d7c>] sysfs_ilookup_test+0x0/0xd
- [<c0165e2f>] ifind+0x15/0x7b
- [<c0189f2f>] sysfs_find_dirent+0x13/0x23
- [<c018a0a8>] sysfs_add_one+0x27/0x2f
- [<c018abe3>] sysfs_do_create_link+0xa2/0xf6
- [<c018ac47>] sysfs_create_link+0x7/0xc
- [<c02ca902>] device_add+0x157/0x4fa
- [<c02cad2d>] device_create_vargs+0x78/0x99
- [<c02cad6c>] device_create+0x1e/0x22
- [<c02d9844>] pkt_setup_dev+0x2ea/0x3d7
- [<c0185801>] show_stat+0x140/0x4fd
- [<c02d99b2>] pkt_ctl_ioctl+0x81/0x192
- [<c015f6f5>] vfs_ioctl+0x49/0x5f
- [<c015f92c>] do_vfs_ioctl+0x221/0x234
- [<c015f96b>] sys_ioctl+0x2c/0x45
- [<c0102c39>] sysenter_do_call+0x12/0x25
- [<c0185801>] show_stat+0x140/0x4fd
- =======================
----[ end trace 208694de153f0031 ]---
+On Thu, 4 Sep 2008 11:48:45 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
--- eric
+> On Thu, Sep 04, 2008 at 10:30:49AM -0700, Arjan van de Ven wrote:
+> > use schedule_hrtimerout() for this (hopefully will be in 2.6.28);
+> > see this weeks LWN for an article describing it
+> 
+> OK, so something like:
+> 
+> 	struct timespec ts = { 0, 10 * 1000 };
+> 
+> 	set_task_state(TASK_INTERRUPTIBLE);
+> 	schedule_hrtimeout(&ts, HRTIMER_MODE_REL);
+> 	if (fatal_signal_pending())
+> 		return -EINTR;
+> 
+> should do the trick.
+> 
 
+Never mind, I changed it to just yield() in revision.
