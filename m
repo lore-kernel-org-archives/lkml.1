@@ -1,88 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYIDRAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbYIDRAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbYIDRAN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYIDQ7w
+	id S1753867AbYIDRAf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYIDQ7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 4 Sep 2008 12:59:55 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:56390 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753184AbYIDQ7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Sep 2008 12:59:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34141 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753165AbYIDQ7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:59:51 -0400
-Message-ID: <48C012F3.3000408@redhat.com>
-Date: Thu, 04 Sep 2008 11:55:15 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+Message-ID: <48C013D9.7060309@oracle.com>
+Date: Thu, 04 Sep 2008 09:59:05 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Implement generic freeze feature
-References: <20080818212819t-sato@mail.jp.nec.com>
-In-Reply-To: <20080818212819t-sato@mail.jp.nec.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+References: <48AD02B2.7020004@oracle.com>	 <0F5B06BAB751E047AB5C87D1F77A778835116209D3@GVW0547EXC.americas.hpqcorp.net>	 <20080821084333.c471b439.randy.dunlap@oracle.com>	 <0F5B06BAB751E047AB5C87D1F77A7788351181004C@GVW0547EXC.americas.hpqcorp.net>	 <20080821091514.8f56e2d5.randy.dunlap@oracle.com>	 <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>	 <20080821172653.3e3e855c.randy.dunlap@oracle.com>	 <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>	 <1219420487.3339.22.camel@localhost.localdomain>	 <48AEEE0A.1010900@oracle.com> <1219424538.3339.51.camel@localhost.localdomain> <0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Sato wrote:
+Miller, Mike (OS Dev) wrote:
+> 
+>> -----Original Message-----
+>> From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com]
+>> Sent: Friday, August 22, 2008 12:02 PM
+>> To: Randy Dunlap
+>> Cc: Miller, Mike (OS Dev); lkml; scsi; akpm
+>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+>>
+>> On Fri, 2008-08-22 at 09:49 -0700, Randy Dunlap wrote:
+>>> James Bottomley wrote:
+>>>> On Fri, 2008-08-22 at 15:48 +0000, Miller, Mike (OS Dev) wrote:
+>>>>>> -----Original Message-----
+>>>>>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
+>>>>>> Sent: Thursday, August 21, 2008 7:27 PM
+>>>>>> To: Miller, Mike (OS Dev)
+>>>>>> Cc: lkml; scsi; akpm
+>>>>>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+>>>>>>
+>>>>>> On Thu, 21 Aug 2008 16:25:24 +0000 Miller, Mike (OS Dev) wrote:
+>>>>>>
+>>>>>>>>> Randy,
+>>>>>>>>> We know of a race condition in cciss_init_one. It's fixed
+>>>>>>>> in 2.6.26 I believe. Here's the patch:
+>> http://groups.google.com/group/linux.kernel/browse_thread/thread/7
+>>>>>> b3
+>>>>>>>> 9f
+>> 2b77622ab03/4f5f45c008655ca1?hl=en&lnk=gst&q=cciss#4f5f45c008655ca
+>>>>>>>>> 1
+>>>>>>>> Mike,
+>>>>>>>> Sorry, but my fingers have typoed the $subject.  My bad.
+>>>>>>>> Kernel is 2.6.27-rc3-git7 (from above):
+>>>>>>>>
+>>>>>>>>>>>> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+>>>>>>>>>>>> Pid: 0, comm: swapper Not tainted 2.6.27-rc3-git7 #1
+>>>>>>>>>>>> RIP: 0010:[<ffffffffa001bb68>]  [<ffffffffa001bb68>]
+>>>>>>>>>>>> do_cciss_intr+0x627/0xa6c [cciss]
+>>>>>>> Hmmmmm, let me know what happens from your retest. I'll
+>>>>>> look at this
+>>>>>>> as soon as I finish what I'm doing now. We trying to spin
+>>>>>> for our test
+>>>>>>> teams but I have something hopelessly broken. :(
+>>>>>> It didn't BUG in the retest.  That just means that it's more
+>>>>>> difficult to find/fix, right?
+>>>>> Yup.
+>>>> Randy,
+>>>>
+>>>> If you can't reproduce it, could you use the debug information or
+>>>> gdb to tell us what line in the source code this:
+>>>>
+>>>> do_cciss_intr+0x627
+>>>>
+>>>> corresponds to?  That might help isolating the problem.
+>>>
+>>> Sure, here's an attempt at that.  Please let me know if you want it
+>>> differently or some other info.
+>>> (gdb) x/20i do_cciss_intr+0x627
+>>> 0x3b68 <do_cciss_intr+1575>:    mov    %rdx,0x248(%rax)
+>>> 0x3b6f <do_cciss_intr+1582>:    mov    0x248(%rbx),%rdx
+>>> 0x3b76 <do_cciss_intr+1589>:    mov    %rax,0x240(%rdx)
+>>> 0x3b7d <do_cciss_intr+1596>:    jmp    0x3b8b <do_cciss_intr+1610>
+>>> 0x3b7f <do_cciss_intr+1598>:    movq   $0x0,0x100c0(%r12)
+>>> 0x3b8b <do_cciss_intr+1610>:    mov    0x234(%rbx),%eax
+>>> 0x3b91 <do_cciss_intr+1616>:    test   %eax,%eax
+>>> 0x3b93 <do_cciss_intr+1618>:    jne    0x3f27 <do_cciss_intr+2534>
+>>> 0x3b99 <do_cciss_intr+1624>:    mov    0x250(%rbx),%r14
+>>> 0x3ba0 <do_cciss_intr+1631>:    movl   $0x0,0xcc(%r14)
+>>> 0x3bab <do_cciss_intr+1642>:    mov    0x228(%rbx),%r8
+>>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
+>>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
+>>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
+>>>
+>>>
+>>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
+>>> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
+>> OK ...that's confusing.  It seems to be saying that
+>> ctrlr_info_t * was NULL.  However, I can't see a way of
+>> getting into the fifo_full callback from do_cciss_intr ..
+>> especially not with an NULL host.
+>>
+>> James
+> 
+> That is weird. Even if we could get there fifo_full doesn't do anything but wait for a bit.
 
-> @@ -141,6 +142,57 @@ static int ioctl_fioasync(unsigned int f
->  }
->  
->  /*
-> + * ioctl_freeze - Freeze the filesystem.
-> + *
-> + * @filp:	target file
-> + *
-> + * Call freeze_bdev() to freeze the filesystem.
-> + */
-> +static int ioctl_freeze(struct file *filp)
-> +{
-> +	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
-> +
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	/* If filesystem doesn't support freeze feature, return. */
-> +	if (sb->s_op->write_super_lockfs == NULL)
-> +		return -EOPNOTSUPP;
-> +
-> +	/* If a regular file or a directory isn't specified, return. */
-> +	if (sb->s_bdev == NULL)
-> +		return -EINVAL;
-> +
-> +	/* Freeze */
-> +	sb = freeze_bdev(sb->s_bdev);
-> +	if (IS_ERR(sb))
-> +		return PTR_ERR(sb);
-> +	return 0;
-> +}
+Hi,
 
-Not a problem with your patch exactly, but I was just wondering; you
-check here whether the sb returned from freeze_bdev is an ERR_PTR (as
-does lock_fs()) - but, freeze_bdev never returns an error, does it?
-->write_super_lockfs is a void...
+This just happened again.  This time it's on 2.6.27-rc5-git3.
 
-It really seems that at least we should be able to handle IO errors on
-the freeze request, and tell the user "No, your filesystem was not
-frozen..."?
-
-Maybe I'll whip up a patch to see about propagating freeze errors up
-from the filesystems that implement it, unless I'm missing some reason
-not to do so...?
-
-Also, should this be checking for a NULL returned from freeze_bdev as
-well?  I guess this should never happen if we have a file open on which
-we are calling the ioctl ...
-
--Eric
+~Randy
