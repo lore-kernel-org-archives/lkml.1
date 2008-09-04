@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIDRXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbYIDR3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYIDRXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYIDRXV
+	id S1753964AbYIDR3m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIDR3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:23:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43451 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751124AbYIDRXU (ORCPT
+	Thu, 4 Sep 2008 13:29:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36916 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYIDR3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:23:20 -0400
-Date: Thu, 4 Sep 2008 10:21:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
-       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, tomasw@gmail.com, yi.zhu@intel.com,
-       linville@tuxdriver.com
-Subject: Re: [GIT]: Networking
-Message-Id: <20080904102156.a40ec447.akpm@linux-foundation.org>
-In-Reply-To: <200809041158.19929.rjw@sisk.pl>
-References: <20080903.161341.239039051.davem@davemloft.net>
-	<200809041025.15277.rjw@sisk.pl>
-	<48BFABE0.6050505@garzik.org>
-	<200809041158.19929.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 4 Sep 2008 13:29:33 -0400
+Date: Thu, 4 Sep 2008 10:29:36 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: frame unwinder patches
+Message-ID: <20080904102936.28e10c39@infradead.org>
+In-Reply-To: <g9p3du$n95$1@ger.gmane.org>
+References: <g9p3du$n95$1@ger.gmane.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 11:58:18 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Thu, 04 Sep 2008 18:46:52 +0200
+Bernd Schubert <bs@q-leap.de> wrote:
 
-> > > BTW, there are two regression fixes for forcedeth:
-> > > 
-> > > http://marc.info/?l=linux-kernel&m=121894389018584&w=4
-> > > http://marc.info/?l=linux-kernel&m=121917167232014&w=4
-> > > 
-> > > that fix the regressions tracked as:
-> > > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=11358
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=11361
-> > > 
-> > > respectively and both are more than 2 weeks old now.
-> > > 
-> > > Is there any chance to push them upstream or is there anything wrong with them?
-> > 
-> > Your patch is fine.  Since DaveM and I are gone this weekend, feel free 
-> > to add "acked-by: jgarzik@redhat" and forward upstream to Linus and Andrew.
+> Hello,
 > 
-> OK, thanks.
+> up to 2.6.22 the -mm series had these nice frame unwinder patches, 
+> which gave beautiful stack traces. Unfortunately these frame unwinder
+> patches seem to have been dropped :(
 > 
-> Andrew, this patch is currently in -mm as forcedeth-fix-kexec-regression.patch
-> Could you please add the Jeff's ACK to it and push it to Linus?
+> Anyone still maintaining updated patches?
+> 
+> Probably all the "?" lines shouldn't be printed.
 
-yup, thanks.
+printing the ? lines is the result of a compromise between getting the
+most reliable information out of a stack trace, and getting a useful
+data for the case where not everything is going as well as it should.
+
+not printing the ? would be trivial (for some backtraces we do that),
+but so far hasn't been seen as desirable because you lose information
+in those hard-to-debug cases when you need anything you can get from
+the backtrace.
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
