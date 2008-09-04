@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYIDTNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYIDTO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYIDTNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 15:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbYIDTNr
+	id S1756683AbYIDTO4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYIDTOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 15:13:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48422 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753747AbYIDTNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 15:13:46 -0400
-Date: Thu, 4 Sep 2008 21:13:33 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       Krzysztof Helt <krzysztof.h1@wp.pl>
-Subject: Re: [PATCH 5/6] x86: move mtrr cpu cap setting early in
-	early_init_xxxx
-Message-ID: <20080904191333.GD24990@elte.hu>
-References: <1220312246-30879-1-git-send-email-yhlu.kernel@gmail.com> <1220312246-30879-5-git-send-email-yhlu.kernel@gmail.com>
+	Thu, 4 Sep 2008 15:14:47 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:18433 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754047AbYIDTOq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 15:14:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=egBarg4mAyXbXqtPAfJi84k/LtSaAFbrDMoWpZ1TeFSNm5inKcYGlubR2ukfCJe0+H
+         egcRyB3rCrsK5DHswNfVYFSa0a+xZuGtQaml/NqZh/AACImJc45rfCs+k7cxzmJv7S20
+         v3Muij8duVlIjlWKmBKS//G6Zd2gk1KK28Qic=
+Date: Thu, 4 Sep 2008 21:14:03 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-ext4@vger.kernel.org
+Subject: oops during unmount - ext3? (2.6.27-rc5)
+Message-ID: <20080904191356.GA7799@joi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220312246-30879-5-git-send-email-yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
+2 days ago 2.6.27-rc5 oopsed on halt with this call trace:
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+dispose_list
+invalidate_inodes
+generic_shutdown_super
+kill_block_super
+? deactivate_super
+mntput_no_expire
+sys_umount
+system_call_fastpath
 
-> Krzysztof Helt <krzysztof.h1@wp.pl> found mtrr is not detected on k6-2
-> 
-> root case:
-> 	we move mtrr_bp_init early for mtrr trimming.
-> and in early_detect, only read cap from cpuid, so some cpu doesn't have
-> that bit in cpuid and need to set workaround bit will have problem.
-> 
-> need to add early_init_xxxx to preset those bit before mtrr_bp_init
-> for those earlier cpus.
-> 
-> this patch is for 2.6.27
+Code: f8 ff 48 89 df e8 bd 19 01 00 48 83 bb 90 02 00 00 00 74 04 0f 0b eb fe 48 8b 83 b8 03 00 00 a8 20 75 04 0f 0b eb fe a8 40 74 04 <0f> 0b eb fe 48 c7 c7 7a a0 57 80 be 56 00 00 00 e8 56 31 f8 ff
 
-hm, not sure we can do it in v2.6.27 as it depends on the other CPU init 
-patches and that is a rather sensitive codepath. This problem should be 
-present in v2.6.26 too, right?
+RIP clear_inode
 
-	Ingo
+Output of decodecode:
+/tmp/tmp.To8z8HQ0uE.o:     file format elf64-x86-64
+
+Disassembly of section .text:
+
+0000000000000000 <.text>:
+   0:   f8                      clc
+   1:   ff 48 89                decl   -0x77(%rax)
+   4:   df e8                   fucomip %st(0),%st
+   6:   bd 19 01 00 48          mov    $0x48000119,%ebp
+   b:   83 bb 90 02 00 00 00    cmpl   $0x0,0x290(%rbx)
+  12:   74 04                   je     0x18
+  14:   0f 0b                   ud2a
+  16:   eb fe                   jmp    0x16
+  18:   48 8b 83 b8 03 00 00    mov    0x3b8(%rbx),%rax
+  1f:   a8 20                   test   $0x20,%al
+  21:   75 04                   jne    0x27
+  23:   0f 0b                   ud2a
+  25:   eb fe                   jmp    0x25
+  27:   a8 40                   test   $0x40,%al
+  29:   74 04                   je     0x2f
+
+/tmp/tmp.To8z8HQ0uE.o:     file format elf64-x86-64
+
+Disassembly of section .text:
+
+0000000000000000 <.text>:
+   0:   0f 0b                   ud2a
+   2:   eb fe                   jmp    0x2
+   4:   48 c7 c7 7a a0 57 80    mov    $0xffffffff8057a07a,%rdi
+   b:   be 56 00 00 00          mov    $0x56,%esi
+  10:   e8 56 31 f8 ff          callq  0xfffffffffff8316b
+
+You can see partial screenshot and .config at http://www.kadu.net/~joi/kernel/2008.09.04/
+
+It might be related to http://lkml.org/lkml/2008/9/3/405 - I'm not sure.
+2 bugs related to VFS and/or ext3 in 2 days (I'm running .27 since rc1)
+
+Marcin
