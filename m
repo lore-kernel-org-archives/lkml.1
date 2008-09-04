@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbYIDSdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbYIDSfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbYIDSdh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYIDSda
+	id S1755842AbYIDSfE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYIDSex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:33:30 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:52680 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbYIDSd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:33:29 -0400
-Date: Thu, 4 Sep 2008 15:33:37 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Dmitry Nezhevenko <dion@inhex.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Shaohua Li <shaohua.li@intel.com>
-Subject: Re: [patch 0/6] final clockevents/hpet fixes
-Message-ID: <20080904153337.68a39607@doriath.conectiva>
-In-Reply-To: <20080903230003.GA1958@laptop.local>
-References: <20080903212735.713411776@linutronix.de>
-	<20080903230003.GA1958@laptop.local>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Sep 2008 14:34:53 -0400
+Received: from mail.work.de ([212.12.32.20]:54782 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751851AbYIDSex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:34:53 -0400
+Message-ID: <48C02A45.3000108@gmail.com>
+Date: Thu, 04 Sep 2008 22:34:45 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+CC: linux-dvb@linuxtv.org
+Subject: DVB Update [PATCH 0/31] multiproto tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, 4 Sep 2008 02:00:03 +0300
-Dmitry Nezhevenko <dion@inhex.net> escreveu:
+Hi,
 
-| On Wed, Sep 03, 2008 at 09:36:25PM -0000, Thomas Gleixner wrote:
-| > This is the final version of the various clockevents fixes, which I will
-| > send to Linus. Can you please give it a try on your machines, so we can
-| > be sure that I did not mess up anything again.
-| > 
-| 
-| Applied full patchset on top of 2.6.27-rc5. Works great on my affected system.
+This patchset adds newer delivery systems, modulations and parameters.
 
- Worked for me too, sorry for the delay I was testing this on more
-machines.
+It adds a much needed uplift for DVB for adding newer delivery systems
+such as DVB-S2, DVB-H. Also it allows the addition of future modulations
+in an easier manner. Newer delivery systems such as DMB-T/H and ISDB-T/H
+can easily be added later on, without breaking compatibility.
 
--- 
-Luiz Fernando N. Capitulino
+The initial post for the update:
+http://article.gmane.org/gmane.linux.drivers.dvb/25606
+
+More details are available according to the discussions:
+http://article.gmane.org/gmane.linux.drivers.dvb/25608
+http://article.gmane.org/gmane.linux.drivers.dvb/25610
+http://article.gmane.org/gmane.linux.drivers.dvb/25611
+
+which were reworked again according to
+Code Review from Johannes Stezenbach <js@linuxtv.org>. (The rework
+happened just immediate after a pull request and a merge):
+
+http://article.gmane.org/gmane.linux.drivers.dvb/25616
+
+It was reworked again,
+Code Review from Oliver Endriss <o.endriss@gmx.de>,
+reviewed again and relevant changes applied:
+
+http://article.gmane.org/gmane.linux.drivers.dvb/37406
+
+The resulting changes were also tested. Drivers also available at
+http://jusst.de/hg/multiproto
+Some newer drivers also on the way.
+
+
+The DVB API update patches are available also at:
+http://www.kernel.org/pub/linux/kernel/people/manu/dvb_patches/
+
+Sample applications:
+simple zapping app
+http://linuxtv.org/hg/dvb-apps/file/ef0bf9bd3bd4/test/szap2.c
+
+VDR 1.7.0 ftp://ftp.cadsoft.de/vdr/Developer/vdr-1.7.0.tar.bz2
+
+Regards,
+Manu
+
