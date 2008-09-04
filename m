@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbYIDJDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbYIDJDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756941AbYIDJDY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 05:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYIDJDQ
+	id S1753752AbYIDJDl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 05:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYIDJDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 05:03:16 -0400
-Received: from styx.suse.cz ([82.119.242.94]:35438 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752434AbYIDJDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 05:03:15 -0400
-Subject: Re: [PATCH 1/2] utrace core
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080903184613.GD16175@infradead.org>
-References: <20080826220102.89635154233@magilla.localdomain>
-	 <20080826220157.397C7154233@magilla.localdomain>
-	 <1220446707.6041.27.camel@elijah.suse.cz>
-	 <20080903180854.61207154228@magilla.localdomain>
-	 <20080903184613.GD16175@infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qhsYZrVp9TwLv8TteA7k"
-Organization: SUSE LINUX
-Date: Thu, 04 Sep 2008 11:03:14 +0200
-Message-Id: <1220518994.6041.83.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Thu, 4 Sep 2008 05:03:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57616 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757220AbYIDJD3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 05:03:29 -0400
+Date: Thu, 4 Sep 2008 02:03:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: linux-next: Tree for September 3
+In-Reply-To: <20080904013743.0ecc9ec5.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809040151080.3452@nehalem.linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au> <20080903214634.ea17ff53.akpm@linux-foundation.org> <alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org> <20080903223318.84b6ce8b.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org> <20080904012544.cabed847.akpm@linux-foundation.org> <20080904013743.0ecc9ec5.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-qhsYZrVp9TwLv8TteA7k
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2008-09-03 at 14:46 -0400, Christoph Hellwig wrote:
-> On Wed, Sep 03, 2008 at 11:08:54AM -0700, Roland McGrath wrote:
-> > > Why does it depend on MODULES?=20
-> >=20
-> > Because otherwise it's not adding anything new anyone can use.
->=20
-> It doesn't add anything new to use either way
->=20
-> > > Does this mean that when ptrace is switched to using the utrace engin=
-es,
-> > > non-modular kernels will have to lack ptrace(2)?
-> >=20
-> > No.  If that were done, then it would be:
-> > 	depends on MODULE || PTRACE
-> > or suchlike.
-> >=20
-> > > Is there anything in the code that actually breaks without
-> > > CONFIG_MODULES?
-> >=20
-> > No.
->=20
-> In which case you should just remove this bogus (non-)dependency.
+On Thu, 4 Sep 2008, Andrew Morton wrote:
+> 
+> ooh look, I fixed something:
+> 
+> --- a/drivers/pcmcia/cs.c~a
+> +++ a/drivers/pcmcia/cs.c
+> @@ -477,6 +477,8 @@ static int socket_setup(struct pcmcia_so
+>  	 */
+>  	msleep(vcc_settle * 10);
+>  
+> +	msleep(100);
+> +
 
-+1
+Heh. I'm hoping that it would help to just change vcc_settle to 50 
+instead?
 
-Petr Tesarik
+>  	skt->ops->get_status(skt, &status);
+>  	if (!(status & SS_POWERON)) {
+>  		cs_err(skt, "unable to apply power.\n");
+> _
+> 
+> we seem not to be giving that card enough settling time.  Or is it
+> a characteristic of the controller?  
 
+No, I think it's mainly the card.
 
---=-qhsYZrVp9TwLv8TteA7k
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> It's a module option, but google(linux "unable to apply power") gets
+> 859 hits.  Maybe the default is too short..
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
+I certainly don't think it would be wrong to change it to a longer 
+timeout. Although I also suspect that we should in that case try to exit 
+early too, ie change it to something like
 
-iD8DBQBIv6RSjpY2ODFi2ogRAvCsAJ9FnshgZ3arlVpmsdWZyJ+MaAzQ2wCeP8B1
-6T2565iM143Om0Ddu6okCeI=
-=pL3J
------END PGP SIGNATURE-----
+	for (i = 0; i < vcc_settle; i++) {
+		msleep(10);
+		skt->ops->get_status(skt, &status);
+		if (status & SS_POWERON)
+			break;
+	}
 
---=-qhsYZrVp9TwLv8TteA7k--
+or similar. But if changing it to 50 fixes it for you, that's probably a 
+good minimal change for now.
 
+> btw, do we really need to spew all this?
+> 
+> pccard: card ejected from slot 0
+> 3c59x 0000:07:00.0: restoring config space at offset 0xf (was 0xffffffff, writing 0x50a0115)
+> 3c59x 0000:07:00.0: restoring config space at offset 0xe (was 0xffffffff, writing 0x0)
+...
+
+No.
+
+Although it's really a KERN_DEBUG(), so most people shouldn't even notice. 
+I do wonder why somebody does pci_restore_state() when the card is 
+ejected..
+
+Oh. It's literally drivers/net/3c59x.c: vortex_remove_one(). So it's not 
+the PCI or Cardbus layer, it's the driver itself doing odd things. I don't 
+think it's worth worrying about. It's trying to restore the state and 
+disable the device that was unplugged and no longer exists ;)
+
+(Which can definitely be a useful thing if the remove_one is done because 
+of some user-initiated driver removal. So I do understand why the driver 
+has that code, it just doesn't make sense when the removal is due to the 
+hardware itself going away).
+
+		Linus
