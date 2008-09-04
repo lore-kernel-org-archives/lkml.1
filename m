@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYIDQRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYIDQRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYIDQRh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIDQR0
+	id S1755835AbYIDQRv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYIDQRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:17:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50863 "EHLO mx2.mail.elte.hu"
+	Thu, 4 Sep 2008 12:17:31 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59050 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbYIDQRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:17:25 -0400
-Date: Thu, 4 Sep 2008 18:17:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert commit e8aa4667baf74dfd85fbaab86861465acb811085
-Message-ID: <20080904161707.GA24369@elte.hu>
-References: <20080904144657.GC15987@alberich.amd.com> <20080904153206.GB7120@elte.hu> <alpine.LFD.1.10.0809041812450.3243@apollo.tec.linutronix.de>
+	id S1753946AbYIDQRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:17:30 -0400
+Date: Thu, 4 Sep 2008 11:17:29 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: unprivileged mounts git tree
+Message-ID: <20080904161729.GA26579@us.ibm.com>
+References: <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu> <20080827184600.GA8069@us.ibm.com> <E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu> <20080903220215.GA27705@us.ibm.com> <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809041812450.3243@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Thu, 4 Sep 2008, Ingo Molnar wrote:
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> On Thu, 04 Sep 2008, Miklos Szeredi wrote:
+> > On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
+> > > Are you going to revert the change forcing CL_SLAVE for
+> > > !capable(CAP_SYS_ADMIN)?  I don't think we want that - I think that
+> > > *within* a set of user mounts, propagation should be safe, right?
+> > > 
+> > > Will you be able to do this soon?  If not, should we just do the part
+> > > returning -EPERM when turning a shared mount into a user mount? 
+> > 
+> > OK, let's do that first and the tricky part (propagation vs. user
+> > mounts) later.  Will push after I've tested it.
 > 
-> > 
-> > * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> > 
-> > > This reverts commit e8aa4667baf74dfd85fbaab86861465acb811085
-> > >  (x86: enable hpet=force for AMD SB400)
-> > > 
-> > > Since ATI/AMD decided not to support HPET on SB4xx it doesn't
-> > > make sense to enable this unsupported feature.
-> > > (I was not aware of this when submitting the quirk.)
-> > > 
-> > > If a system with SB4xx chipset provides an ACPI HPET table and does
-> > > not boot, "nohpet" should be used as kernel parameter.
-> > > 
-> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > 
-> > applied to tip/x86/urgent, thanks Andreas. I guess a system broke due to 
-> > this commit?
+> Here it is:
 > 
-> Hmm, why do we remove something which needs to be force enabled by the 
-> user anyway ?
+> git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git unprivileged-mounts
 
-good point, i thought the original commit caused unconditional 
-force-enabling - but indeed it is only relevant if hpet=force is 
-specified. (which should be rare and specific)
+but you're still doing
 
-> Is the HPET on these systems not working at all so the force enable 
-> code is useless ?
+	if (IS_MNT_SHARED(old_nd.path.mnt) && !capable(CAP_SYS_ADMIN))
+		goto out;
 
-also, if a user does hpet=force and thing break he's got to keep all the 
-pieces, right?
+shouldn't it be something like
 
-or is there any other side-effect of the commit that matters here?
+	if (IS_MNT_SHARED(old_nd.path.mnt) && (old_nd.path.mnt & MNT_USER))
+		goto out;
 
-	Ingo
+?
+
+> I don't know what's next, this patchset has been in and out of -mm for
+> as long as I can remember, but it hasn't generated much interest
+> outside the two of us :)
+> 
+> I do think this is an important feature though, even if not as sexy as
+> some other things.
+> 
+> Al?  Is there any chance of this making it to 2.6.28?
+> 
+> Thanks,
+> Miklos
