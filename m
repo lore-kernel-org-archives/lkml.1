@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYIDX5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYIDX7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYIDX5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 19:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYIDX5e
+	id S1754262AbYIDX7w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 19:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbYIDX7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 19:57:34 -0400
-Received: from iabervon.org ([66.92.72.58]:37068 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbYIDX5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 19:57:33 -0400
-Date: Thu, 4 Sep 2008 19:57:32 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-In-Reply-To: <alpine.LNX.1.00.0809031317080.19665@iabervon.org>
-Message-ID: <alpine.LNX.1.00.0809041956220.19665@iabervon.org>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net>
- <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz> <20080903101947.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.00.0809031317080.19665@iabervon.org>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	Thu, 4 Sep 2008 19:59:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:55172 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbYIDX7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 19:59:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ujw3JtWcqB4z0clWrIvJKLKW9LQMZtS5hMU8HuSsuC6L8ZmYdjpk7pbPVbFWqhGrZz
+         nVYQxE6WE1c3o7MkJjU/iCGydkSwdLLvMIDBpBEcwrhy0PBRi2t2kRDDPp+p5c54/qXn
+         VtfBWxT+x3SLBTmjdK0w7k+rQADEL+/LPr5PY=
+Message-ID: <1df1788c0809041659i3b3a8fb4sa5c44b74976f9a73@mail.gmail.com>
+Date: Thu, 4 Sep 2008 20:59:40 -0300
+From: "=?UTF-8?Q?Br=C3=A1ulio_Barros_de_Oliveira?=" <brauliobo@gmail.com>
+To: "Volker Armin Hemmann" <volker.armin.hemmann@tu-clausthal.de>
+Subject: Re: reiserfs do_journal_end unnecessary hd wake up?
+Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200809050154.00318.volker.armin.hemmann@tu-clausthal.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <loom.20080904T211127-782@post.gmane.org>
+	 <1df1788c0809041632h726fff6cq2eacd86076215017@mail.gmail.com>
+	 <1df1788c0809041647n5f5e4d64yaa2f47d3302494fe@mail.gmail.com>
+	 <200809050154.00318.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m84Nxudq014983
 
-On Wed, 3 Sep 2008, Daniel Barkalow wrote:
-
-> On Wed, 3 Sep 2008, Dmitry Torokhov wrote:
-> 
-> > On Wed, Sep 03, 2008 at 01:50:35PM +0200, Jiri Kosina wrote:
-> > > On Tue, 2 Sep 2008, Dmitry Torokhov wrote:
-> > > 
-> > > > I guess we could use System's product name to differentiate between 
-> > > > Cristopher's and Daniel's boards. Although I must admit it is the very 
-> > > > first time when I see a box that behaves better with active mux. DOes 
-> > > > Vista use active mux nowadays? Because if it is not then I bet there is 
-> > > > (or shortly will be) a BIOS update fixing legacy mode on Daniel's box.
-> > > 
-> > > I guess so, yes.
-> > > 
-> > > On the other hand, this might also be viewed as regression (we made 
-> > > Daniel's hardware behave worse with recent kernel than it did before), so 
-> > > I think we still would like to have this fixed. What about the patch 
-> > > below, adding the match on System's product name, as you suggested? 
-> > > Thanks.
-> > > 
-> > 
-> > I agree. Daniel, could you please try the patch to make sure it
-> > restores the previous behavior for you and I will push it through.
-> > 
-> > Thanks!
-> 
-> I'll test that Thursday as well; is there some quick way to determine 
-> whether you're using active mux or not?
-
-That patch, on top of 2.6.25.10 does give me 4 AUX ports, so I think it is 
-getting the previous behavior as expected.
-
-	-Daniel
-*This .sig left intentionally blank*
+hello volker,
+running tree command on /tmp i couldn't associate any file withkonsole. that's the result[braulio@brauliopresto tmp]$ tree.|-- kde-root [error opening dir]`-- kde4-braulio    |-- kde-braulio    |   |-- 28165-cm81.skz    |   |-- 86714-PicoNet.skz    |   |-- closeditems    |   |-- konqueror-crash-X31257.log    |   |-- konqueror-crash-X31258.log    |   |-- konqueror-crash-X31259.log    |   |-- konqueror-crash-X31262.log    |   |-- konqueror-crash-X31265.log    |   `-- ksycoca -> /var/tmp/kdecache-braulio/ksycoca    `-- ksocket-braulio        |-- KSMserver__0        |-- kdeinit-:0        |-- kdeinit4__0        |-- kdeinit__0        |-- klauncherMT3820.slave-socket        |-- klauncherT31205.slave-socket        `-- klaunchergALyma.slave-socket
+5 directories, 15 files
+regards,brÃ¡ulio
+On Thu, Sep 4, 2008 at 8:54 PM, Volker Armin Hemmann<volker.armin.hemmann@tu-clausthal.de> wrote:> On Friday 05 September 2008, BrÃ¡ulio Barros de Oliveira wrote:>> just found out! it is konsole, unbelievable! going to file a bug>> report right now.>> again, thank you very much for the support.>> brÃ¡ulio>> let me guess - konsole writes to a temp file in /tmp containing the backlog?> That is not a bug but a feature. You can 'save' you some trouble by putting> /tmp on a tempfs. 256mb should be enough.> --> To unsubscribe from this list: send the line "unsubscribe reiserfs-devel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
