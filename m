@@ -1,176 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYIDEqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYIDEyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbYIDEqy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 00:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYIDEqp
+	id S1754535AbYIDEyp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 00:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYIDEyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 00:46:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36712 "EHLO
+	Thu, 4 Sep 2008 00:54:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47558 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751002AbYIDEqo (ORCPT
+	by vger.kernel.org with ESMTP id S1751124AbYIDEyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 00:46:44 -0400
-Date: Wed, 3 Sep 2008 21:46:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: linux-next: Tree for September 3
-Message-Id: <20080903214634.ea17ff53.akpm@linux-foundation.org>
-In-Reply-To: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 00:54:35 -0400
+Date: Wed, 3 Sep 2008 21:53:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Willy Tarreau <w@1wt.eu>
+cc: Arjan van de Ven <arjan@infradead.org>, Alok Kataria <akataria@vmware.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Michael Buesch <mb@bu3sch.de>, Dan Hecht <dhecht@vmware.com>
+Subject: Re: [PATCH] Fix TSC calibration issues
+In-Reply-To: <20080904042542.GH19337@1wt.eu>
+Message-ID: <alpine.LFD.1.10.0809032141160.3378@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
+ <alpine.LFD.1.10.0809021906250.3259@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809031103090.3243@apollo.tec.linutronix.de> <1220490884.22734.83.camel@alok-dev1> <alpine.LFD.1.10.0809031817430.3515@nehalem.linux-foundation.org> <20080903201602.2ab6c449@infradead.org>
+ <alpine.LFD.1.10.0809032041130.3515@nehalem.linux-foundation.org> <20080904042542.GH19337@1wt.eu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008 19:16:19 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
 
-The Vaio says:
+On Thu, 4 Sep 2008, Willy Tarreau wrote:
+>
+> Basically, I would do this :
+> 
+>     pit1 = readpit();
+>     while (readpit() == pit1);
+>     t1 = rdtsc(); // precise beginning of tick 0
+>     while (readpit() != pit1 - 5000);
+>     t2 = rdtsc(); // precise beginning of tick 5000
 
-calling  init_acpi_pm_clocksource+0x0/0x14a
-initcall init_acpi_pm_clocksource+0x0/0x14a returned 0 after 32 msecs
-calling  pcibios_assign_resources+0x0/0x70
-pci 0000:06:05.0: BAR 9 too large: 0x00000000000000-0x00000003ffffff
-pci 0000:06:05.0: CardBus bridge, secondary bus 0000:07
-pci 0000:06:05.0:   IO window: 0x002400-0x0024ff
-pci 0000:06:05.0:   IO window: 0x002800-0x0028ff
-pci 0000:06:05.0:   MEM window: 0x54000000-0x57ffffff
-pci 0000:00:1e.0: PCI bridge, secondary bus 0000:06
-pci 0000:00:1e.0:   IO window: 0x2000-0x2fff
-pci 0000:00:1e.0:   MEM window: 0xb0100000-0xb01fffff
-pci 0000:00:1e.0:   PREFETCH window: disabled
-pci 0000:00:1e.0: setting latency timer to 64
-pci 0000:06:05.0: power state changed by ACPI to D0
-found new irq_cfg for irq 21
- 0 add_pin_to_irq: irq 21 --> apic 0 pin 21
-found new irq_desc for irq 21
-pci 0000:06:05.0: PCI INT A -> GSI 21 (level, low) -> IRQ 21
+There's a few caveats here:
 
-Should I worry?
+ - the "readpit()" has to read without actually latching the value
 
-sony:/home/akpm> cat /proc/ioports 
-0000-001f : dma1
-0020-0021 : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-0060 : keyboard
-0064-0064 : keyboard
-0070-0077 : rtc
-0080-008f : dma page reg
-00a0-00a1 : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-0170-0177 : 0000:00:1f.1
-  0170-0177 : ata_piix
-01f0-01f7 : 0000:00:1f.1
-  01f0-01f7 : ata_piix
-0376-0376 : 0000:00:1f.1
-  0376-0376 : ata_piix
-03c0-03df : vesafb
-03f6-03f6 : 0000:00:1f.1
-  03f6-03f6 : ata_piix
-0680-068f : pnp 00:05
-0800-080f : pnp 00:05
-0cf8-0cff : PCI conf1
-1000-107f : 0000:00:1f.0
-  1000-107f : pnp 00:05
-    1000-1003 : ACPI PM1a_EVT_BLK
-    1004-1005 : ACPI PM1a_CNT_BLK
-    1008-100b : ACPI PM_TMR
-    1010-1015 : ACPI CPU throttle
-    1020-1020 : ACPI PM2_CNT_BLK
-    1028-102f : ACPI GPE0_BLK
-1080-109f : Sony Programable I/O Device
-1180-11bf : 0000:00:1f.0
-  1180-11bf : pnp 00:05
-1800-1807 : 0000:00:02.0
-180c-180f : 0000:00:1f.2
-  180c-180f : ata_piix
-1810-181f : 0000:00:1f.1
-  1810-181f : ata_piix
-1820-183f : 0000:00:1d.0
-  1820-183f : uhci_hcd
-1840-185f : 0000:00:1d.1
-  1840-185f : uhci_hcd
-1860-187f : 0000:00:1d.2
-  1860-187f : uhci_hcd
-1880-189f : 0000:00:1d.3
-  1880-189f : uhci_hcd
-18a8-18af : 0000:00:1f.2
-  18a8-18af : ata_piix
-18b0-18bf : 0000:00:1f.2
-  18b0-18bf : ata_piix
-18c0-18c3 : 0000:00:1f.2
-  18c0-18c3 : ata_piix
-18c8-18cf : 0000:00:1f.2
-  18c8-18cf : ata_piix
-18e0-18ff : 0000:00:1f.3
-  18e0-18ff : i801_smbus
-2000-2fff : PCI Bus 0000:06
-  2000-203f : 0000:06:08.0
-    2000-203f : e100
-  2400-24ff : PCI CardBus 0000:07
-  2800-28ff : PCI CardBus 0000:07
-fe00-fe01 : pnp 00:05
+   latching the PIT value will stop counting.
 
-sony:/home/akpm> cat /proc/iomem  
-00000000-0009f7ff : System RAM
-0009f800-0009ffff : reserved
-000a0000-000bffff : Video RAM area
-000c0000-000c7fff : Video ROM
-000d8000-000fffff : reserved
-  000f0000-000fffff : System ROM
-00100000-3f68ffff : System RAM
-  00100000-00330fd9 : Kernel code
-  00330fda-0047fe7f : Kernel data
-  004bc000-00ad7b13 : Kernel bss
-3f690000-3f69cfff : ACPI Tables
-3f69d000-3f6fffff : ACPI Non-volatile Storage
-3f700000-3fffffff : reserved
-50000000-5007ffff : 0000:00:02.1
-50080000-50080fff : Intel Flush Page
-50400000-507fffff : PCI CardBus 0000:07
-54000000-57ffffff : PCI CardBus 0000:07
-b0000000-b0003fff : 0000:00:1b.0
-  b0000000-b0003fff : ICH HD audio
-b0004000-b00043ff : 0000:00:1d.7
-  b0004000-b00043ff : ehci_hcd
-b0004400-b00047ff : 0000:00:1f.2
-b0040000-b007ffff : 0000:00:02.0
-b0080000-b00fffff : 0000:00:02.0
-b0100000-b01fffff : PCI Bus 0000:06
-  b0100000-b0103fff : 0000:06:05.2
-  b0104000-b01047ff : 0000:06:05.2
-    b0104000-b01047ff : ohci1394
-  b0105000-b0105fff : 0000:06:05.3
-  b0106000-b0106fff : 0000:06:08.0
-    b0106000-b0106fff : e100
-  b0107000-b0107fff : 0000:06:0b.0
-    b0107000-b0107fff : ipw2200
-  b0108000-b0108fff : 0000:06:05.0
-    b0108000-b0108fff : yenta_socket
-c0000000-cfffffff : 0000:00:02.0
-  c0000000-c07affff : vesafb
-d000c000-d000ffff : pnp 00:05
-e0000000-f0005fff : reserved
-  e0000000-efffffff : PCI MMCONFIG 0
-f0008000-f000bfff : reserved
-fec00000-fec00fff : IOAPIC 0
-fed20000-fed8ffff : reserved
-fee00000-fee00fff : Local APIC
-ff000000-ffffffff : reserved
+ - and all the docs say that you have to be careful about reading the PIT 
+   without latching it because the two 8-bit accesses aren't atomic.
 
-dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
-config: http://userweb.kernel.org/~akpm/config-sony.txt
+so the above will work in practice, but there are dangers.
 
-There are no immediately-obvious problems.  Apart from the lack of any
-login prompt on the console (sshd works), but I suspect that was a
-separate gift.
+The best way to fix most of the dangers is probably to only care about the 
+*high* byte, so that it doesn't matter if the low byte doesn't match the 
+high byte.
+
+So you could probably change your version to wait for 4096 cycles (a 
+change of 16 in the high byte):
+
+	static unsigned char read_pit_msb(void)
+	{
+		/* Read but throw away the LSB */
+		inb(0x42);
+		return inb(0x42);
+	}
+
+	..
+	/* PIT ch2: square wave, full 16-bit count */
+	outb(0xb6, 0x43);
+	outb(0, 0x42);
+	outb(0, 0x42);
+	..
+
+	unsigned char pit = read_pit_msb();
+	/* Wait until the MSB changes */
+	while (read_pit_msb() == pit1);
+	t1 = rdtsc();
+	while ((unsigned char) (pit - read_pit_msb()) < 9);
+	t2 = rdtsc();
+
+and it might work out ok without explicit latching, and without having to 
+worry about low/high bytes being out of sync.
+
+> If someone wants to test this, I'd be interested in the number of
+> ticks required to get a good accuracy, I bet that even with a few
+> hundred ones it's already precise by a few ppm (about the precision
+> of the input clock in fact).
+
+I actually tested a patch with a counter value of just 1024, and I got the 
+right answer. 
+
+But if the busy loops aren't busy (due to MSI or virtualization), then all 
+those things fly out the window.
+
+			Linus
