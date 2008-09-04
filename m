@@ -1,107 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYIDFKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYIDFUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbYIDFKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 01:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYIDFKR
+	id S1755383AbYIDFUs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 01:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYIDFUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 01:10:17 -0400
-Received: from 1wt.eu ([62.212.114.60]:3178 "EHLO 1wt.eu"
+	Thu, 4 Sep 2008 01:20:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:33715 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbYIDFKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 01:10:16 -0400
-Date: Thu, 4 Sep 2008 07:09:30 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Alok Kataria <akataria@vmware.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Michael Buesch <mb@bu3sch.de>, Dan Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Fix TSC calibration issues
-Message-ID: <20080904050929.GA1678@1wt.eu>
-References: <alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809021906250.3259@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809031103090.3243@apollo.tec.linutronix.de> <1220490884.22734.83.camel@alok-dev1> <alpine.LFD.1.10.0809031817430.3515@nehalem.linux-foundation.org> <20080903201602.2ab6c449@infradead.org> <alpine.LFD.1.10.0809032041130.3515@nehalem.linux-foundation.org> <20080904042542.GH19337@1wt.eu> <alpine.LFD.1.10.0809032141160.3378@nehalem.linux-foundation.org>
+	id S1751084AbYIDFUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 01:20:39 -0400
+Date: Thu, 4 Sep 2008 15:20:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: linux-next: Tree for September 3
+Message-Id: <20080904152015.3145b06e.sfr@canb.auug.org.au>
+In-Reply-To: <20080903220546.bd673658.akpm@linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+	<20080903214634.ea17ff53.akpm@linux-foundation.org>
+	<20080903215455.792c78a3.akpm@linux-foundation.org>
+	<20080904145744.3f791ca7.sfr@canb.auug.org.au>
+	<20080903220546.bd673658.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809032141160.3378@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 09:53:35PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 4 Sep 2008, Willy Tarreau wrote:
-> >
-> > Basically, I would do this :
-> > 
-> >     pit1 = readpit();
-> >     while (readpit() == pit1);
-> >     t1 = rdtsc(); // precise beginning of tick 0
-> >     while (readpit() != pit1 - 5000);
-> >     t2 = rdtsc(); // precise beginning of tick 5000
-> 
-> There's a few caveats here:
-> 
->  - the "readpit()" has to read without actually latching the value
-> 
->    latching the PIT value will stop counting.
-> 
->  - and all the docs say that you have to be careful about reading the PIT 
->    without latching it because the two 8-bit accesses aren't atomic.
+--Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah yes you're right, I remember having been doing crappy stuff like re-reading
-and checking for difference bigger than 1.
+Hi Andrew,
 
-> so the above will work in practice, but there are dangers.
-> 
-> The best way to fix most of the dangers is probably to only care about the 
-> *high* byte, so that it doesn't matter if the low byte doesn't match the 
-> high byte.
-> 
-> So you could probably change your version to wait for 4096 cycles (a 
-> change of 16 in the high byte):
-> 
-> 	static unsigned char read_pit_msb(void)
-> 	{
-> 		/* Read but throw away the LSB */
-> 		inb(0x42);
-> 		return inb(0x42);
-> 	}
-> 
-> 	..
-> 	/* PIT ch2: square wave, full 16-bit count */
-> 	outb(0xb6, 0x43);
-> 	outb(0, 0x42);
-> 	outb(0, 0x42);
-> 	..
-> 
-> 	unsigned char pit = read_pit_msb();
-> 	/* Wait until the MSB changes */
-> 	while (read_pit_msb() == pit1);
-> 	t1 = rdtsc();
-> 	while ((unsigned char) (pit - read_pit_msb()) < 9);
-> 	t2 = rdtsc();
-> 
-> and it might work out ok without explicit latching, and without having to 
-> worry about low/high bytes being out of sync.
+On Wed, 3 Sep 2008 22:05:46 -0700 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> Thank gawd for that.
+>=20
+> This breakage spans over 1000 commits.  Not sure how that can happen in
+> a rebased tree, but whatever.
 
-I like this variation.
+It happens because I merge that tree into linux-next early in the
+sequence and the two builds I do after each merge did not get the error
+(*and* David really did not do enough testing ...). The set of builds I
+do after merging all the trees hit that so I added a commit to the end of
+linux-next to fix it.
 
-> > If someone wants to test this, I'd be interested in the number of
-> > ticks required to get a good accuracy, I bet that even with a few
-> > hundred ones it's already precise by a few ppm (about the precision
-> > of the input clock in fact).
-> 
-> I actually tested a patch with a counter value of just 1024, and I got the 
-> right answer. 
-> 
-> But if the busy loops aren't busy (due to MSI or virtualization), then all 
-> those things fly out the window.
+That particular build bug will not be in today's linux-next because that
+particular tree has been fixed.
 
-100% agreed, though the problem is already the same with any calibration code,
-with more or less sensitivity.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Willy
+--Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAki/cA8ACgkQjjKRsyhoI8zGpQCfaAsbUkNJRPxCz7J6XtRkvaFm
+T1wAn1zXeoFvyM3yrYlfLi5dLdDUj6Ew
+=vuM1
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S--
