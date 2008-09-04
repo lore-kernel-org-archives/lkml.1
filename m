@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYIDDjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYIDDpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYIDDjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 23:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYIDDjb
+	id S1755665AbYIDDpt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 23:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbYIDDpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 23:39:31 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:19017 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753560AbYIDDja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 23:39:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=kPhLOtpDh6G5KiuUbMvxR9gojChi5aA4wjIhIq0O8rrlCpN/YkVgZ+Jy/9hKgKbrNl
-         8vGxrU1WvmJk2n2q1qZy0ebB0Kl+APELKlnyItQpR0M6mzZqoIJcdrRyTwIK8wu9C5lQ
-         ouym/BD0RKTOhb/QltTJNkDu2U9mrxClyrXxI=
-Subject: [PATCH] bq27x00_battery: use unaligned access helper
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Rodolfo Giometti <giometti@linux.it>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 3 Sep 2008 23:45:40 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45389 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753527AbYIDDpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 23:45:39 -0400
+Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
+	lockless
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org, paulus@samba.org,
+       michael@ellerman.id.au, jean-pierre.dion@bull.net,
+       gilles.carry@ext.bull.net, tinytim@us.ibm.com, tglx@linutronix.de,
+       rostedt@goodmis.org, dwalker@mvista.com
+In-Reply-To: <20080903154105.7dff49db@bull.net>
+References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+	 <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
+	 <1219209781.21386.25.camel@pasglop>  <20080903154105.7dff49db@bull.net>
 Content-Type: text/plain
-Date: Wed, 03 Sep 2008 20:39:28 -0700
-Message-Id: <1220499569.2137.21.camel@brick>
+Date: Thu, 04 Sep 2008 12:52:19 +1000
+Message-Id: <1220496739.4879.20.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -32,54 +33,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove hand-rolled get_unaligned_be16, this points to a possible
-bug as bq27x00_read does another endian byteswap which sparse
-notices:
+On Wed, 2008-09-03 at 15:41 +0200, Sebastien Dugue wrote:
+> On Wed, 20 Aug 2008 15:23:01 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > BTW. It would be good to try to turn the GFP_ATOMIC into GFP_KERNEL,
+> 
+>   That would be nice indeed
+> 
+> > maybe using a semaphore instead of a lock to protect insertion vs.
+> > initialisation.
+> 
+>   a semaphore? are you meaning a mutex? If not, I fail to understand what you're
+> implying.
 
-drivers/power/bq27x00_battery.c:81:14: warning: cast to restricted __be16
-Which should probably be checked.
+Right, a mutex, bad habit calling those semaphores from the old days :-)
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-New in next-20080902
+>   Right, that's the problem with this new scheme and I'm still trying
+> to find a way to handle memory allocation failures be it for GFP_ATOMIC or
+> GFP_KERNEL.
+> 
+>   I could not think of anything simple so far and I'm open for suggestions.
 
-Also all of these functions could (should) change to passing around a u16
-rather than an int as the read function only ever reads 1 or two bytes.
+GFP_KERNEL should not fail, it will just block no ? If it fails, it's
+probably catastrophic enough not to care. You can always fallback to
+linear lookup. I don't know if it's worth trying to fire off a new
+allocation attempt later, probably not.
 
- drivers/power/bq27x00_battery.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-index 62d4948..a5a49e1 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -23,6 +23,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/idr.h>
-+#include <asm/unaligned.h>
- 
- #include <linux/i2c.h>
- 
-@@ -33,7 +34,6 @@
- #define BQ27x00_REG_RSOC		0x0B /* Relative State-of-Charge */
- #define BQ27x00_REG_AI			0x14
- #define BQ27x00_REG_FLAGS		0x0A
--#define HIGH_BYTE(A)			((A) << 8)
- 
- /* If the system has several batteries we need a different name for each
-  * of them...
-@@ -239,7 +239,7 @@ static int bq27200_read(u8 reg, int *rt_value, int b_single,
- 		err = i2c_transfer(client->adapter, msg, 1);
- 		if (err >= 0) {
- 			if (!b_single)
--				*rt_value = data[1] | HIGH_BYTE(data[0]);
-+				*rt_value = get_unaligned_be16(data);
- 			else
- 				*rt_value = data[0];
- 
--- 
-1.6.0.1.514.g59380c
-
+Ben.
 
 
