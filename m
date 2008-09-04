@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYIDQRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYIDQU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYIDQRv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYIDQRb
+	id S1754744AbYIDQU0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYIDQUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:17:31 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:59050 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753946AbYIDQRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:17:30 -0400
-Date: Thu, 4 Sep 2008 11:17:29 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mounts git tree
-Message-ID: <20080904161729.GA26579@us.ibm.com>
-References: <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu> <20080827184600.GA8069@us.ibm.com> <E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu> <20080903220215.GA27705@us.ibm.com> <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu>
+	Thu, 4 Sep 2008 12:20:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:34381 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbYIDQUL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:20:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=CuIJ3jpFsONvjHqqWSOhVs+DoV4eee72qbFmeUzDO8EtKO/KsKO6L6wfN1pUhfA0HD
+         WrRR/NxSOz627WxdTLQ3aQYmYufocS7ymHheJekrlQvn942zW6b1gOSmCmG4/ZxmampW
+         2w3bjGUe2lCUd392CPsF4bvQYI2LYJVwx6qCY=
+Message-ID: <c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
+Date: Thu, 4 Sep 2008 18:20:09 +0200
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Pekka Paalanen" <pq@iki.fi>
+Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080828214256.296e34ec@daedalus.pq.iki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <48B1D5CA.8000607@gmail.com>
+	 <c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
+	 <20080827212130.4b8365a8@daedalus.pq.iki.fi>
+	 <c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
+	 <20080828214256.296e34ec@daedalus.pq.iki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> On Thu, 04 Sep 2008, Miklos Szeredi wrote:
-> > On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
-> > > Are you going to revert the change forcing CL_SLAVE for
-> > > !capable(CAP_SYS_ADMIN)?  I don't think we want that - I think that
-> > > *within* a set of user mounts, propagation should be safe, right?
-> > > 
-> > > Will you be able to do this soon?  If not, should we just do the part
-> > > returning -EPERM when turning a shared mount into a user mount? 
-> > 
-> > OK, let's do that first and the tricky part (propagation vs. user
-> > mounts) later.  Will push after I've tested it.
-> 
-> Here it is:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git unprivileged-mounts
+2008/8/28 Pekka Paalanen <pq@iki.fi>:
+> Yes, but the atmosphere is that if there are no users in-tree, the feature
+> gets kicked, out-of-tree users or no. That's the reason mmiotrace went
+> in-tree in the first place. So, to get that stuff exported, we might need
+> in-tree users, I believe.
 
-but you're still doing
+Perhaps it should be more discussed because it is an unsual case...
 
-	if (IS_MNT_SHARED(old_nd.path.mnt) && !capable(CAP_SYS_ADMIN))
-		goto out;
+Ok so just a question before I start a new patch to correct the marker's file.
 
-shouldn't it be something like
+What is the best way to implement tracers's printk handlers?
+Do you think that these functions must be implemented in trace.c or is
+it more relevant to dispatch the message to
+a function provided by the current tracer in its struct tracer
+operations? If such handler is not implemented, we just defaults the
+formatting like ftrace_printk does.
 
-	if (IS_MNT_SHARED(old_nd.path.mnt) && (old_nd.path.mnt & MNT_USER))
-		goto out;
-
-?
-
-> I don't know what's next, this patchset has been in and out of -mm for
-> as long as I can remember, but it hasn't generated much interest
-> outside the two of us :)
-> 
-> I do think this is an important feature though, even if not as sexy as
-> some other things.
-> 
-> Al?  Is there any chance of this making it to 2.6.28?
-> 
-> Thanks,
-> Miklos
+Thanks...
