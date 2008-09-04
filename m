@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbYIDUCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbYIDUEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbYIDUCn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYIDUCf
+	id S1756822AbYIDUEp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbYIDUEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:02:35 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:20830 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754147AbYIDUCe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:02:34 -0400
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: Andi Kleen <andi@firstfloor.org>, Vivek Goyal <vgoyal@redhat.com>
-CC: Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arozansk@redhat.com" <arozansk@redhat.com>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Date: Thu, 4 Sep 2008 20:01:31 +0000
-Subject: RE: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Thread-Topic: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Thread-Index: AckOyHEvIKNesu3ETu2iwaf49Xd5ygAABfkQ
-Message-ID: <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
- <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com>
- <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org>
- <20080904172052.GN3400@redhat.com>
- <20080904175231.GH18288@one.firstfloor.org>
- <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com>
- <20080904200032.GM18288@one.firstfloor.org>
-In-Reply-To: <20080904200032.GM18288@one.firstfloor.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Sep 2008 16:04:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35301 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752725AbYIDUEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:04:36 -0400
+Date: Thu, 4 Sep 2008 22:04:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: order functions in cpu/common.c and
+	cpu/common_64.c
+Message-ID: <20080904200421.GA24295@elte.hu>
+References: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com> <20080904191205.GC24990@elte.hu> <20080904193733.GA25136@elte.hu> <20080904194127.GA2542@elte.hu>
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080904194127.GA2542@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exactly.
 
-The hpwdt driver is meant to be a catch-all for any NMI coming through on ProLiant HW only. Moreover, for newer ProLiant HW at that.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Once the NMI comes in, we call into our BIOS for the true reason of the NMI. That message gets logged to the IML in NVRAM for the user to view. We then panic the system.
+> > i've pushed out the broken tree into tip/tmp.master.broken (havent 
+> > updated tip/master with the breakage). I've removed the broken 
+> > printk in kernel/resource.c that Andrew found, see commit 
+> > 06e44f6af324 - so that's not the cause.
+> 
+> i've double checked that 06e44f6af324 is applied. I'll bisect this.
 
-Yes, kdump will work under this scenario because we stop the watchdog timer. This is a user configurable setting.
+bisection came up with:
 
+ # good: [8bfd9710] Merge branch 'x86/xsave'
+ # bad:  [06e44f6a] IO resources: fix/remove printk
+ # good: [282a5f84] Merge branch 'irq/sparseirq'
+ # bad:  [a0854a46] x86: make 32bit support show_msr like 64 bit
+ # good: [5031088d] x86: delay early cpu initialization until cpuid is
+ # good: [9d31d35b] x86: order functions in cpu/common.c and cpu/commo
+ # bad:  [10a434fc] x86: remove cpu_vendor_dev
 
-Tom
+| 10a434fcb23a57c385177a0086955fae01003f64 is first bad commit
+| commit 10a434fcb23a57c385177a0086955fae01003f64
+| Author: Yinghai Lu <yhlu.kernel@gmail.com>
+| Date:   Thu Sep 4 21:09:45 2008 +0200
+|
+|     x86: remove cpu_vendor_dev
 
------Original Message-----
-From: Andi Kleen [mailto:andi@firstfloor.org]
-Sent: Thursday, September 04, 2008 3:01 PM
-To: Vivek Goyal
-Cc: Don Zickus; Andi Kleen; Ingo Molnar; Prarit Bhargava; Peter Zijlstra; linux-kernel@vger.kernel.org; arozansk@redhat.com; Mingarelli, Thomas; ak@linux.intel.com; Alan Cox; H. Peter Anvin; Thomas Gleixner; Maciej W. Rozycki
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+and the thing is, 10a434fc is way too big:
 
-> Add "kdump" to the list. It will also be broken if we decide to let one
-> driver hijack the NMI handler.
+| 15 files changed, 106 insertions(+), 106 deletions(-)
 
-kdump is a special case, similar to the NMI button panic mode. It should
-be always only active when the user configured it. When the user configured
-it should be always the fallback and override any other drivers.
+and it's not obvious at first (neither at second) sight what the problem 
+is. You really need to start doing much smaller patches for such 
+critical/hard-to-debug code areas.
 
-But watchdog is a special case. I assume the watchdog will just log
-(and do the work that a SMI should be doing) but then continue
-the chain so that kdump can dump on a watchdog timeout.
-
--Andi
+	Ingo
