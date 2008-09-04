@@ -1,108 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbYIDALQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbYIDAMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756333AbYIDALQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 20:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYIDAKy
+	id S1756441AbYIDAMP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 20:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbYIDAL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 20:10:54 -0400
-Received: from mail.lang.hm ([64.81.33.126]:54413 "EHLO bifrost.lang.hm"
+	Wed, 3 Sep 2008 20:11:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43849 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752887AbYIDAKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 20:10:52 -0400
-Date: Wed, 3 Sep 2008 17:10:54 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-cc: David Miller <davem@davemloft.net>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "tomasw@gmail.com" <tomasw@gmail.com>,
-       "yi.zhu@intel.com" <yi.zhu@intel.com>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>
-Subject: Re: [GIT]: Networking
-In-Reply-To: <20080904000103.GF5967@tesla>
-Message-ID: <alpine.DEB.1.10.0809031703550.30743@asgard.lang.hm>
-References: <20080903.161341.239039051.davem@davemloft.net> <alpine.LFD.1.10.0809031615450.3515@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809031621160.3515@nehalem.linux-foundation.org> <20080903.162603.27086959.davem@davemloft.net>
- <20080904000103.GF5967@tesla>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1751784AbYIDAL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 20:11:58 -0400
+Message-ID: <48BF2757.3090805@kernel.org>
+Date: Thu, 04 Sep 2008 02:09:59 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Miklos Szeredi <miklos@szeredi.hu>, serue@us.ibm.com, greg@kroah.com,
+       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] FUSE: implement ioctl support
+References: <1219945263-21074-1-git-send-email-tj@kernel.org>	<20080828175116.GB18461@kroah.com> <48B6E79E.6020702@kernel.org>	<48B6E801.9080102@kernel.org> <E1KYm0D-0003q0-IQ@pomaz-ex.szeredi.hu>	<48B6EBBD.6050406@kernel.org> <E1KYm9u-0003v5-4t@pomaz-ex.szeredi.hu>	<48B6EF98.4070008@kernel.org> <E1KYn7T-00048J-Qj@pomaz-ex.szeredi.hu>	<48B6FFB6.7000104@kernel.org> <E1KYnhA-0004Ei-3t@pomaz-ex.szeredi.hu>	<48B75C94.7030604@kernel.org> <E1KYyt9-0005Ur-Eu@pomaz-ex.szeredi.hu>	<48B7AF60.8040709@kernel.org> <E1KYzMd-0005aR-28@pomaz-ex.szeredi.hu>	<48B7BB4C.4060907@kernel.org> <m163pjr5qf.fsf@frodo.ebiederm.org>	<E1Ka82g-0003NU-4D@pomaz-ex.szeredi.hu> <48BBD9F5.8060906@kernel.org>	<m163pdb8qx.fsf@frodo.ebiederm.org> <48BEA1D8.9040208@kernel.org> <m1sksg6gq9.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1sksg6gq9.fsf@frodo.ebiederm.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Sep 2008 00:11:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008, Luis R. Rodriguez wrote:
+Eric W. Biederman wrote:
+> Maintenance.  What happens if I go 128bit, if I have some processes
+> that are big endian and some that are little endian.  Or if I have
+> some processes that are running a completely different instruction
+> set with a completely different ABI than other processes.  Or
+> perhaps different perhaps the processes is in a different network
+> namespace than your filesystem and so it's arguments refer
+> to something different entirely.  Is it a userspace bug if userspace
+> does not anticipate how the kernel will change in the future?
 
-> On Wed, Sep 03, 2008 at 04:26:03PM -0700, David Miller wrote:
->> From: Linus Torvalds <torvalds@linux-foundation.org>
->> Date: Wed, 3 Sep 2008 16:24:16 -0700 (PDT)
->>
->>> On Wed, 3 Sep 2008, Linus Torvalds wrote:
->>>>
->>>> What's so hard to understand about this?
->>>
->>> Here's a simple rule of thumb:
->>>  - if it's not on the regression list
->>>  - if it's not a reported security hole
->>>  - if it's not on the reported oopses list
->>> then why are people sending it to me?
->>>
->>> IOW, if it's just another random improvement, and you send it to me
->>> outside of the merge window, then what is the point of the merge window?
->>
->> This is exactly what I've been trying to tell the Intel wireless folks
->> but they refuse to listen.
+What I don't see is how anything becomes different whether that part
+is implemented in kernel or not.  For ioctls, only the implementing
+code knows what the data structure should look like that's why we
+can't handle 64/32 bit problems generically and has ->compat_ioctl
+hook.  To me, splitting it to two pieces looks like more maintenance
+overhead than the other way around.
+
+> If we don't look at ioctl as a set of system calls that should
+> be put into an appropriate format for a filesystem we have
+> a maintenance problem.
 >
-> What I think really happens here IMHO is communication needs to be
-> enhanced. I only recently noticed that "regression only" policy for
-> 2.6.27 for example. I think some of us were rather surprised by it too.
+> If we don't have an interface clean enough we can push data
+> out to a server on a remote machine have it processes the
+> arguments and send the data back.  We actually have failed
+> to properly abstract the interface.
 
-the policy has been the same for quite a while, it's not new for 2.6.27
+I don't think that's a possible goal in generic manner.  We can't even
+do that for read/writes.  At least not at FUSE's level.  We need
+higher abstraction for that.  e.g. /dev/oss via CUSE, ioctl specified
+machine endian 16bit format.  Supporting that in the way you described
+would require a lot of logic in the kernel and I don't really see any
+benefit over, say, forward the sound via pulseaudio after getting it
+to userland.  I don't think the problem can or should be solved at
+FUSE interface level.
 
->> I just won't take their stuff until they get their act in gear.
->>
->> No problem.
->
-> On the other side of the spectrum, and to try to understand this better,
-> since ath9k is new we obviously cannot get regressions, this means
-> unless we find a security hole in our driver or if we can generate an
-> oops with 2.6.27 we cannot send patches for ath9k for 2.6.27?
->
-> It seems to make sense to me for purposes of stabalizing the kernel for
-> sure, however, on the other hand it does also make 2.6.27 miss out on a
-> few possible small fixes which may appear here and there.
->
-> What will happen then is distributions will end up using their own
-> patches on top of the kernel, or users using something like
-> compat-wireless to get more bleeding edge stuff. This is exactly what we
-> want to avoid.
+>> Well, kernel stub kind of beats a lot of benefits of FUSE - no
+>> specific kernel dependencies, easy development and distribution,
+>> etc...
+> 
+> Of course FUSE has specific kernel dependencies.  It depends
+> on the implementation of fusefs in the kernel to talk to it.
+> The reason you don't need a specific kernel today is that
+> the kernel dependencies are well defined.  You are talking
+> about using a very poorly defined interface to talk to the
+> filesystem.  At which point it would be better to open
+> a separate channel and talk to the filsystem directly.
 
-no, if it's that bad it can go into the -stable kernel patches. but the 
-next release kernel will be out in just a couple of months, so it only 
-matters for that short window.
+The difference is that FUSE servers depend on FUSE and each server
+doesn't require separate new pieces to get working and ioctl is poorly
+defined by nature.
 
-> To avoid it I do think another exception needs to be made for patches:
->
-> * Small fixes which make something that was not working, which was
->  supposed to work work
+> Being able to add a kernel system call (ioctl) with no review is a
+> total maintenance disaster.  It is impossible to maintain because
+> there is not a process to even discover what is going on.
 
-but you can't prove that this patch doesn't break something else (if only 
-by altering the timing just enough to expose a race condition somewhere)
+How about adding whole FSes w/o a review?  That's the whole point of
+FUSE.  Seriously, there are infinite number of ways to break the
+regular defined filesystem semantics using FUSE.  FUSE should provide
+mechanism and protects against certain fundamental things.  It can't
+enforce correct semantics on everything.
 
-> If these type of patches cannot be submitted we will have a stable
-> kernel for sure but yet buggy leaving people to opt for alternatives
-> for small fixes or driver updates.
+> We have to have a kernel stub to support other system calls
+> and I don't see why individual ioctls should be different.
+> 
+> If you want to support forwards compatibility reserving
+> some ioctl numbers and saying these numbers will always
+> be parsed this way.  Which would allow you to write
+> a common stub that can be implemented before the ioctls
+> are implemented.
 
-but if you are changing the continuously, why should people test anything? 
-you're going to change it in unpredictable ways before the release anyway.
+ioctls is most likely to be used to emulate legacy or proprietary
+devices.  If you're worried about filesystems abusing it, maybe the
+solution is to only allow CUSE to use ioctls but I really don't see
+what the problem is here.  If the userland FS server wants to shoot
+itself in the foot, it's not really the kernel's problem.
 
+> If you really don't want new kernel dependencies you can hook up to
+> the process via ptrace and intercept the ioctls before they even get
+> to the kernel.  If you can open /proc/<pid>/mem you have the rights
+> to ptrace the process.
 
-it may be valid to tinker with a new driver that didn't exist before, but 
-this far into the release cycle even that's highly questionable, and if 
-you are asking for something to be included becouse of that you need to 
-spell it when submiting the patch (and possibly in the changelog)
+Aieee.. The same goes for the whole FUSE.
 
-David Lang
+Thanks.
+
+-- 
+tejun
