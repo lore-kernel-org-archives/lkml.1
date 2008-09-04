@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYIDVKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbYIDVNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbYIDVKv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 17:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYIDVKn
+	id S1755600AbYIDVNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 17:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYIDVNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 17:10:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32931 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752832AbYIDVKm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 17:10:42 -0400
-Date: Thu, 4 Sep 2008 14:09:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Alok Kataria <akataria@vmware.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC patch 0/4] TSC calibration improvements
-In-Reply-To: <20080904205236.GA3864@elte.hu>
-Message-ID: <alpine.LFD.1.10.0809041403450.3117@nehalem.linux-foundation.org>
-References: <20080904150339.896115280@linutronix.de> <20080904153620.GC7120@elte.hu> <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org> <20080904160036.GA18382@elte.hu> <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> <20080904190728.59634020@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809041303530.4112@nehalem.linux-foundation.org>
- <20080904204305.GA29065@elte.hu> <20080904205236.GA3864@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 4 Sep 2008 17:13:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54858 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753541AbYIDVNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 17:13:39 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: wenji.huang@oracle.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] tracehook: comment pasto fixes
+X-Fcc: ~/Mail/linus
+Emacs: the answer to the world surplus of CPU cycles.
+Message-Id: <20080904211138.1CD9A154248@magilla.localdomain>
+Date: Thu,  4 Sep 2008 14:11:38 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following changes since commit b380b0d4f7dffcc235c0facefa537d4655619101:
+  Al Viro (1):
+        forgotten refcount on sysctl root table
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git tracehook
+
+Roland McGrath (1):
+      tracehook: comment pasto fixes
+
+ include/asm-generic/syscall.h |    2 +-
+ include/linux/tracehook.h     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 
-On Thu, 4 Sep 2008, Ingo Molnar wrote:
-> 
-> hm, unless i'm missing something i think here we still have a small 
-> window for an SMI or some virtualization delay to slip in and cause 
-> massive inaccuracy: if the delay happens _after_ the last 
-> pit_expect_msb() and _before_ the external get_cycles() call. Right?
+Thanks,
+Roland
+---
+[PATCH] tracehook: comment pasto fixes
 
-Yes. I had the extra pit_expect_msb() originally, but decided that 
-basically a single-instruction race for somethign that ran without 
-any MSI for 15ms was a bit pointless.
+Fix some pasto's in comments in the new
+linux/tracehook.h and asm-generic/syscall.h files.
 
-But adding another pit_expect_msb() is certainly not wrong. 
+Reported-by: Wenji Huang <wenji.huang@oracle.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/asm-generic/syscall.h |    2 +-
+ include/linux/tracehook.h     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-However, this one is:
-
-> +	/*
-> +	 * The iteration assumes that expect never goes below zero:
-> +	 */
-> +	BUILD_BUG_ON(QUICK_PIT_ITERATIONS >= 0xff);
-
-No it doesn't. "expect" is unsigned char and will happily wrap, as will 
-the PIT timer. The fact that it is in "single shot" mode doesn't actually 
-mean that the timer stops, it just affects what happens when it goes down 
-to zero. 
-
-So that BUILD_BUG_ON() is misleading and incorrect.
-
-Of course, it is true that in _practice_ you would never actually want to 
-delay that long, but the code as written should be perfectly happy to 
-iterate arbitrarily many times. Of course, the actual final TSC 
-multiply/divide calculations would overflow at some point, but that's much 
-further down the line.
-
-			Linus
+diff --git a/include/asm-generic/syscall.h b/include/asm-generic/syscall.h
+index abcf34c..ea8087b 100644
+--- a/include/asm-generic/syscall.h
++++ b/include/asm-generic/syscall.h
+@@ -126,7 +126,7 @@ void syscall_get_arguments(struct task_struct *task, struct pt_regs *regs,
+  * @args:	array of argument values to store
+  *
+  * Changes @n arguments to the system call starting with the @i'th argument.
+- * @n'th argument to @val.  Argument @i gets value @args[0], and so on.
++ * Argument @i gets value @args[0], and so on.
+  * An arch inline version is probably optimal when @i and @n are constants.
+  *
+  * It's only valid to call this when @task is stopped for tracing on
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index b48d819..6186a78 100644
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -272,7 +272,7 @@ static inline void tracehook_finish_clone(struct task_struct *child,
+  * tracehook_report_clone_complete().  This must prevent the child from
+  * self-reaping if tracehook_report_clone_complete() uses the @child
+  * pointer; otherwise it might have died and been released by the time
+- * tracehook_report_report_clone_complete() is called.
++ * tracehook_report_clone_complete() is called.
+  *
+  * Called with no locks held, but the child cannot run until this returns.
+  */
