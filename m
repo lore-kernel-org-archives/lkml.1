@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbYIDM6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYIDM70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbYIDM6o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbYIDM5l
+	id S1757354AbYIDM70 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbYIDM5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:57:41 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:33358
+	Thu, 4 Sep 2008 08:57:51 -0400
+Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:33378
 	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755361AbYIDM5j (ORCPT
+	with ESMTP id S1756972AbYIDM5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:57:39 -0400
+	Thu, 4 Sep 2008 08:57:50 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [TIP/SCHED/DEVEL PATCH v3 3/6] sched: make double-lock-balance fair
+Subject: [TIP/SCHED/DEVEL PATCH v3 5/6] plist: fix PLIST_NODE_INIT to work
+	with debug enabled
 To: mingo@elte.hu
 Cc: rostedt@goodmis.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
        linux-rt-users@vger.kernel.org, npiggin@suse.de,
        gregory.haskins@gmail.com
-Date: Thu, 04 Sep 2008 08:55:15 -0400
-Message-ID: <20080904125514.23633.91459.stgit@dev.haskins.net>
+Date: Thu, 04 Sep 2008 08:55:25 -0400
+Message-ID: <20080904125525.23633.40405.stgit@dev.haskins.net>
 In-Reply-To: <20080904125029.23633.88210.stgit@dev.haskins.net>
 References: <20080904125029.23633.88210.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.2
@@ -28,99 +29,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-double_lock balance() currently favors logically lower cpus since they
-often do not have to release their own lock to acquire a second lock.
-The result is that logically higher cpus can get starved when there is
-a lot of pressure on the RQs.  This can result in higher latencies on
-higher cpu-ids.
-
-This patch makes the algorithm more fair by forcing all paths to have
-to release both locks before acquiring them again.  Since callsites to
-double_lock_balance already consider it a potential preemption/reschedule
-point, they have the proper logic to recheck for atomicity violations.
+It seems that PLIST_NODE_INIT breaks if used and DEBUG_PI_LIST is defined.
+Since there are no current users of PLIST_NODE_INIT, this has gone
+undetected.  This patch fixes the build issue that enables the
+DEBUG_PI_LIST later in the series when we use it in init_task.h
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched.c |   52 +++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 45 insertions(+), 7 deletions(-)
+ include/linux/plist.h |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 35e1f21..af4c6fa 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2782,21 +2782,43 @@ static void double_rq_unlock(struct rq *rq1, struct rq *rq2)
- 		__release(rq2->lock);
- }
+diff --git a/include/linux/plist.h b/include/linux/plist.h
+index 85de2f0..2b65483 100644
+--- a/include/linux/plist.h
++++ b/include/linux/plist.h
+@@ -96,6 +96,10 @@ struct plist_node {
+ # define PLIST_HEAD_LOCK_INIT(_lock)
+ #endif
  
-+#ifdef CONFIG_PREEMPT
++#define _PLIST_HEAD_INIT(head)				\
++	.prio_list = LIST_HEAD_INIT((head).prio_list),	\
++	.node_list = LIST_HEAD_INIT((head).node_list)
 +
- /*
-- * double_lock_balance - lock the busiest runqueue, this_rq is locked already.
-+ * fair double_lock_balance: Safely acquires both rq->locks in a fair
-+ * way at the expense of forcing extra atomic operations in all
-+ * invocations.  This assures that the double_lock is acquired using the
-+ * same underlying policy as the spinlock_t on this architecture, which
-+ * reduces latency compared to the unfair variant below.  However, it
-+ * also adds more overhead and therefore may reduce throughput.
+ /**
+  * PLIST_HEAD_INIT - static struct plist_head initializer
+  * @head:	struct plist_head variable name
+@@ -103,8 +107,7 @@ struct plist_node {
   */
--static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
-+static inline int _double_lock_balance(struct rq *this_rq, struct rq *busiest)
-+	__releases(this_rq->lock)
-+	__acquires(busiest->lock)
-+	__acquires(this_rq->lock)
-+{
-+	spin_unlock(&this_rq->lock);
-+	double_rq_lock(this_rq, busiest);
-+
-+	return 1;
-+}
-+
-+#else
-+
-+/*
-+ * Unfair double_lock_balance: Optimizes throughput at the expense of
-+ * latency by eliminating extra atomic operations when the locks are
-+ * already in proper order on entry.  This favors lower cpu-ids and will
-+ * grant the double lock to lower cpus over higher ids under contention,
-+ * regardless of entry order into the function.
-+ */
-+static inline int _double_lock_balance(struct rq *this_rq, struct rq *busiest)
- 	__releases(this_rq->lock)
- 	__acquires(busiest->lock)
- 	__acquires(this_rq->lock)
- {
- 	int ret = 0;
- 
--	if (unlikely(!irqs_disabled())) {
--		/* printk() doesn't work good under rq->lock */
--		spin_unlock(&this_rq->lock);
--		BUG_ON(1);
--	}
- 	if (unlikely(!spin_trylock(&busiest->lock))) {
- 		if (busiest < this_rq) {
- 			spin_unlock(&this_rq->lock);
-@@ -2809,6 +2831,22 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
- 	return ret;
+ #define PLIST_HEAD_INIT(head, _lock)			\
+ {							\
+-	.prio_list = LIST_HEAD_INIT((head).prio_list),	\
+-	.node_list = LIST_HEAD_INIT((head).node_list),	\
++	_PLIST_HEAD_INIT(head),                         \
+ 	PLIST_HEAD_LOCK_INIT(&(_lock))			\
  }
  
-+#endif /* CONFIG_PREEMPT */
-+
-+/*
-+ * double_lock_balance - lock the busiest runqueue, this_rq is locked already.
-+ */
-+static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
-+{
-+	if (unlikely(!irqs_disabled())) {
-+		/* printk() doesn't work good under rq->lock */
-+		spin_unlock(&this_rq->lock);
-+		BUG_ON(1);
-+	}
-+
-+	return _double_lock_balance(this_rq, busiest);
-+}
-+
- static void double_unlock_balance(struct rq *this_rq, struct rq *busiest)
- 	__releases(busiest->lock)
- {
+@@ -116,7 +119,7 @@ struct plist_node {
+ #define PLIST_NODE_INIT(node, __prio)			\
+ {							\
+ 	.prio  = (__prio),				\
+-	.plist = PLIST_HEAD_INIT((node).plist, NULL),	\
++	.plist = { _PLIST_HEAD_INIT((node).plist) }, 	\
+ }
+ 
+ /**
 
