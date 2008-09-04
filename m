@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbYIDSlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbYIDSmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbYIDSlm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbYIDSiy
+	id S1758549AbYIDSmY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757591AbYIDSjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:38:54 -0400
-Received: from ns2.bglans.net ([217.79.67.244]:35806 "EHLO mail.bglans.net"
+	Thu, 4 Sep 2008 14:39:13 -0400
+Received: from mail.work.de ([212.12.32.20]:58955 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757116AbYIDSiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:38:52 -0400
-Date: Thu, 4 Sep 2008 21:07:49 +0300 (EEST)
-From: ivaylo@bglans.net
-To: linux-kernel@vger.kernel.org
-cc: w@1wt.eu
-Subject: ICH9 AHCI support on 2.4.XX
-In-Reply-To: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
-Message-ID: <Pine.LNX.4.64.0809042051030.10716@mail.bglans.net>
-References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
+	id S1756273AbYIDSjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:39:12 -0400
+Message-ID: <48C02B4B.4010907@gmail.com>
+Date: Thu, 04 Sep 2008 22:39:07 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1339683907-1130448773-1220551669=:10716"
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+CC: Marco Schluessler <marco@lordzodiac.de>
+Subject: DVB Update [PATCH 16/31] multiproto tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------090101010902000501030604"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This is a multi-part message in MIME format.
+--------------090101010902000501030604
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
---1339683907-1130448773-1220551669=:10716
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+>From 0093e2bd237fcf9825ab8d0c0deebb5bc8dff5c9 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 13:55:49 +0200
+Subject: [PATCH] DVB Fix backward compatibility
 
+Backward compatibility was broken in terms that it was all
+around non-legacy devices being selected for device control
+and hence drivers with the old callbacks never worked. The
+patch fixes the approach where both set of drivers are working
+now.
 
-Hello,
+tested with a TT S2 3200 (new) and a FF S2300 (legacy) devices
 
-I Have Intel motherboard model DG33BU. It is with G33 chipset. There 
-is, Intel Corporation 82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA AHCI Controller,
-on it. So I make small patch to support this controler in kernel (see 
-bellow or the attached file). Probably it will work and on the 
-other mobos with same chipset.
+From: Marco Schluessler <marco@lordzodiac.de>
+Signed-off-by: Marco Schluessler <marco@lordzodiac.de>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
+ dvb_frontend.c |   22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff -ru a/drivers/scsi/ahci.c b/drivers/scsi/ahci.c
---- a/drivers/scsi/ahci.c       2008-01-01 14:06:40.000000000 +0200
-+++ b/drivers/scsi/ahci.c       2008-05-02 01:35:49.000000000 +0300
-@@ -285,6 +285,8 @@
-           board_ahci }, /* ICH8M */
-         { PCI_VENDOR_ID_INTEL, 0x282a, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-           board_ahci }, /* ICH8M */
-+       { PCI_VENDOR_ID_INTEL, 0x2922, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+         board_ahci }, /* ICH9 */
-         { 0x197b, 0x2360, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-           board_ahci }, /* JMicron JMB360 */
-         { 0x197b, 0x2363, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+--------------090101010902000501030604
+Content-Type: text/x-patch;
+ name="16.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="16.patch"
 
+>From 0093e2bd237fcf9825ab8d0c0deebb5bc8dff5c9 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 13:55:49 +0200
+Subject: [PATCH] DVB Fix backward compatibility
 
+Backward compatibility was broken in terms that it was all
+around non-legacy devices being selected for device control
+and hence drivers with the old callbacks never worked. The
+patch fixes the approach where both set of drivers are working
+now.
 
+tested with a TT S2 3200 (new) and a FF S2300 (legacy) devices
 
-Best Regards,
-Ivaylo Josifov
+From: Marco Schluessler <marco@lordzodiac.de>
+Signed-off-by: Marco Schluessler <marco@lordzodiac.de>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
---1339683907-1130448773-1220551669=:10716
-Content-Type: APPLICATION/octet-stream; name=ICH9.patch.gz
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.64.0809042107490.10716@mail.bglans.net>
-Content-Description: 
-Content-Disposition: attachment; filename=ICH9.patch.gz
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
+index 93b08fa..784acbd 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
+@@ -1730,6 +1730,9 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 		enum dvbfe_delsys delsys = fepriv->fe_info.delivery;
+ 
+ 		fe->legacy = 0;
++		if (!(fe->ops.set_params || fe->ops.search))
++			fe->legacy = 1;
++
+ 		memcpy(&fepriv->fe_params, parg, sizeof (struct dvbfe_params));
+ 		memset(&fetunesettings, 0, sizeof (struct dvb_frontend_tune_settings));
+ 		memcpy(&fetunesettings.fe_params, parg, sizeof (struct dvbfe_params));
+@@ -1830,6 +1833,22 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 		fe->legacy = 0;
+ 		if (fe->ops.get_delsys) {
+ 			err = fe->ops.get_delsys(fe, (enum dvbfe_delsys *) parg);
++		} else {
++			switch (fe->ops.info.type) {
++				case FE_QPSK:
++					*((enum dvbfe_delsys *) parg) = DVBFE_DELSYS_DVBS;
++					break;
++				case FE_QAM:
++					*((enum dvbfe_delsys *) parg) = DVBFE_DELSYS_DVBC;
++					break;
++				case FE_OFDM:
++					*((enum dvbfe_delsys *) parg) = DVBFE_DELSYS_DVBT;
++					break;
++				default:
++					up (&fepriv->sem);
++					return -EINVAL;
++			}
++			err = 0;
+ 		}
+ 		break;
+ 	case DVBFE_GET_INFO:
+@@ -1839,6 +1858,9 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 			memcpy(&fepriv->fe_info, (struct dvbfe_info *) parg, sizeof (struct dvbfe_info));
+ 			err = fe->ops.get_info(fe, &fepriv->fe_info);
+ 			memcpy((struct dvbfe_info *) parg, &fepriv->fe_info, sizeof (struct dvbfe_info));
++		} else {
++			memcpy(&fepriv->fe_info, (struct dvbfe_info *) parg, sizeof (struct dvbfe_info));
++			err = 0;
+ 		}
+ 		break;
+ 	};
 
-H4sICC4UwEgAA0lDSDkucGF0Y2gAnc5da8IwFAbga/sr3mvTmNP0w7RX3VSw
-Y3ZDRPCq9ENZbiakbAjifzeVeSF0KywcOCFvzsNp9OEAbr5Qisbo771pRVu3
-WpQftZ7UqPpeHc55//+RJFKcPFvwgoSiJKAJ3Q8Y2dxhjPW7P9MhJwnyEj9M
-gvhh2rfTaQouVehGYF1TSFMHI6A6lqYpOggXF2KMbLZUK4yFTc94n2XFdpHP
-39ZFNi+yfLN4dUEnqWTp3sKnfGeTxzt1NYCzP/BYyiGc/YLH98Xp5MXT6sb5
-Ef1r15eVrs3x0/ZnS/TC/hB8BY82XaQnAgAA
-
---1339683907-1130448773-1220551669=:10716--
+--------------090101010902000501030604--
