@@ -1,68 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYIDKKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbYIDKMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbYIDKKQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 06:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYIDKKF
+	id S1756572AbYIDKMp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 06:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYIDKMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 06:10:05 -0400
-Received: from stargate.synerway.com ([84.14.10.249]:43687 "EHLO
-	kamino.synerway.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751892AbYIDKKE (ORCPT
+	Thu, 4 Sep 2008 06:12:37 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:36067 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751961AbYIDKMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 06:10:04 -0400
-X-Greylist: delayed 914 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Sep 2008 06:10:03 EDT
-Date: Thu, 4 Sep 2008 11:54:47 +0200
-From: Pascal GREGIS <pgs@synerway.com>
-To: linux-kernel@vger.kernel.org
-Subject: SCSI or libata problem with an RDX removable disk
-Message-ID: <20080904095447.GE2814@venus.synerway.com>
+	Thu, 4 Sep 2008 06:12:37 -0400
+Subject: Re: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, mingo <mingo@elte.hu>
+In-Reply-To: <1220518266.9590.22.camel@minggr>
+References: <1220518266.9590.22.camel@minggr>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 11:03:54 +0200
+Message-Id: <1220519034.8609.206.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
-X-OriginalArrivalTime: 04 Sep 2008 09:54:47.0818 (UTC) FILETIME=[4417DEA0:01C90E74]
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Thu, 2008-09-04 at 16:51 +0800, Lin Ming wrote:
+> Comparing with 2.6.27-rc4, oltp has ~10% regression with 2.6.27-rc5 on
+> 8-core stoakley machine.
+> 
+> Run oltp with 8 threads 120 seconds, vmstat shows much more idle time, about ~30%
+> 
+> procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
+>  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+> 10  0      0 7822824  42240 123740    0    0   312    47  442 1613  3  2 88  6  0
+>  9  0      0 7822312  42240 123764    0    0     0    16 26691 232566 56 14 30  0  0
+> 13  0      0 7821940  42240 123764    0    0     0    16 26661 228689 54 14 32  0  0
+>  8  0      0 7821320  42240 123764    0    0     0    16 31508 263765 61 17 23  0  0
+> 12  0      0 7820948  42240 123764    0    0    16    16 28666 242402 57 15 28  0  0
+>  9  0      0 7820584  42240 123780    0    0     0    16 27107 230804 56 14 30  0  0
+> 10  0      0 7819964  42240 123796    0    0    16   612 27599 244037 55 16 29  0  0
+> 11  0      0 7819356  42240 123796    0    0     0    64 23540 209713 51 13 36  0  0
+> 10  0      0 7819212  42240 123796    0    0     0    32 25674 224205 54 13 32  0  0
+> 10  0      0 7818716  42240 123796    0    0     0    20 30106 257161 59 16 25  0  0
+>  7  0      0 7818468  42240 123796    0    0     0    16 28356 241551 57 14 29  0  0
+> 10  0      0 7818096  42240 123796    0    0     0    16 39174 273656 64 16 20  0  0
+> 12  0      0 7817724  42240 123796    0    0     0    20 39688 276936 63 16 20  0  0
+> 11  0      0 7817352  42240 123796    0    0     0    16 42543 285192 66 16 18  0  0
+>  9  0      0 7817352  42240 123796    0    0     0    16 37083 259830 62 14 24  0  0
+>  8  0      0 7817104  42240 123796    0    0     0    16 37450 259160 61 15 23  0  0
+> 10  0      0 7816516  42240 123796    0    0     0    64 37425 261870 61 16 23  0  0
+> 11  0      0 7815896  42240 123812    0    0    16    16 41558 279320 66 16 18  0  0
+>  9  0      0 7815648  42240 123812    0    0     0    16 34017 235741 59 14 28  0  0
+> 10  0      0 7815152  42240 123812    0    0     0    16 35642 248888 60 14 26  0  0
+>  9  0      0 7814532  42240 123812    0    0     0    16 38517 263220 63 15 22  0  0
+>  9  0      0 7814160  42240 123812    0    0     0    20 35965 246487 61 14 25  0  0
+> 10  0      0 7814036  42240 123812    0    0     0    16 33852 236313 59 13 28  0  0
+> 11  0      0 7813664  42240 123812    0    0     0    16 34958 244819 59 14 27  0  0
+> 10  0      0 7813416  42240 123812    0    0     0    16 26106 202062 53 10 37  0  0
+> 10  0      0 7812672  42240 123812    0    0     0    16 31174 222714 56 12 32  0  0
+>  9  0      0 7812300  42240 123812    0    0     0   276 25089 196813 52 11 38  0  0
+>  9  0      0 7812060  42240 123812    0    0     0    16 31877 228004 57 12 31  0  0
+> 
+> 
+> 
+> Bisect located below patch, 
+> after reverted this patch the regression disappear.
+> 
+> commit 354879bb977e06695993435745f06a0f6d39ce2b
+> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date:   Mon Aug 25 17:15:34 2008 +0200
+> 
+>     sched_clock: fix cpu_clock()
+> 
+>     This patch fixes 3 issues:
+> 
+>     a) it removes the dependency on jiffies, because jiffies are
+> incremented
+>        by a single CPU, and the tick is not synchronized between CPUs.
+> Therefore
+>        relying on it to calculate a window to clip whacky TSC values
+> doesn't work
+>        as it can drift around.
+> 
+>        So instead use [GTOD, GTOD+TICK_NSEC) as the window.
+> 
+>     b) __update_sched_clock() did (roughly speaking):
+> 
+>        delta = sched_clock() - scd->tick_raw;
+>        clock += delta;
+> 
+>        Which gives exponential growth, instead of linear.
+> 
+>     c) allows the sched_clock_cpu() value to warp the u64 without
+> breaking.
+> 
+>     the results are more reliable sched_clock() deltas:
 
-I turn to you with a new problem about scsi or libata.
-I have a removable disk of type RDX, connected by SATA to my linux machine.
-I access it via libata on /dev/sdb, like a classical disk.
-I write to it a certain time with some mounts and umounts.
-After a certain number of mounting and unmounting, or maybe a certain number of hours (not clearly identified), the device refuses to be mounted, saying "You must specify the filesystem type.".
-Looking to /var/log/messages I have the following logs :
+Thats bizarre... that just indicates the better clock, which should give
+better (read fairer) scheduling hurts your workload.
 
+Is there anything I can run to see if we can fix the scheduler perhaps?
 
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] READ CAPACITY failed
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Sense not available.
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Write Protect is off
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Mode Sense: 00 00 00 00
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Asking for cache data failed
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Assuming drive cache: write through
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] READ CAPACITY failed
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Sense not available.
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Write Protect is off
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Mode Sense: 00 00 00 00
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Asking for cache data failed
-Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Assuming drive cache: write through
-
-These lines are logged again when I run cfdisk or parted or hdparm or anything
-on /dev/sdb.
-
-My system is :
-linux kernel 2.6.21.1 with some patches :
-- libata-start_stop_management (http://bugs.gentoo.org/attachment.cgi?id=118829)
-
-compiled with libata.
-
-Motherboard ICH6 family (id 2651)
-
-Does anyone know this problem or have an idea about what it is and what to do?
-
-Thank you in advance
-
-Pascal
