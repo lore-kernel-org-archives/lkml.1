@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760092AbYIDUdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYIDUeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760092AbYIDUdo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbYIDU12
+	id S1758556AbYIDUeD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbYIDU1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:27:28 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24364 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754876AbYIDU11 (ORCPT
+	Thu, 4 Sep 2008 16:27:33 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:13263 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758122AbYIDU1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:27:27 -0400
+	Thu, 4 Sep 2008 16:27:31 -0400
 From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 2/6] Adjust block device size after an online resize of a disk.
+Subject: [PATCH 3/6] Check for device resize when rescanning partitions
 To: linux-scsi@vger.kernel.org
 Cc: andrew.patterson@hp.com, James.Bottomley@HansenPartnership.com,
        linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
        andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
        jmoyer@redhat.com
-Date: Thu, 04 Sep 2008 14:27:25 -0600
-Message-ID: <20080904202725.10456.62289.stgit@bob.kio>
+Date: Thu, 04 Sep 2008 14:27:30 -0600
+Message-ID: <20080904202730.10456.14322.stgit@bob.kio>
 In-Reply-To: <20080904202714.10456.88061.stgit@bob.kio>
 References: <20080904202714.10456.88061.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -31,92 +31,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adjust block device size after an online resize of a disk.
+Check for device resize when rescanning partitions
 
-The revalidate_disk routine now checks if a disk has been resized by
-comparing the gendisk capacity to the bdev inode size.  If they are
-different (usually because the disk has been resized underneath the kernel)
-the bdev inode size is adjusted to match the capacity.
+Check for device resize in the rescan_partitions() routine. If the device
+has been resized, the bdev size is set to match. The rescan_partitions()
+routine is called when opening the device and when calling the
+BLKRRPART ioctl.
 
 Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
- fs/block_dev.c     |   37 +++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    2 ++
- 2 files changed, 39 insertions(+), 0 deletions(-)
+ fs/partitions/check.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 4eeb69a..b721955 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -853,6 +853,34 @@ struct block_device *open_by_devnum(dev_t dev, unsigned mode)
- EXPORT_SYMBOL(open_by_devnum);
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index e6f378f..77cfe63 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -504,7 +504,6 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 	res = invalidate_partition(disk, 0);
+ 	if (res)
+ 		return res;
+-	bdev->bd_invalidated = 0;
  
- /**
-+ * check_disk_size_change - checks for disk size change and adjusts
-+ *                          bdev size.
-+ *
-+ * @disk: struct gendisk to check
-+ * @bdev: struct bdev to adjust.
-+ *
-+ * This routine checks to see if the bdev size does not match the disk size
-+ * and adjusts it if it differs.
-+ */
-+void check_disk_size_change(struct gendisk *disk, struct block_device *bdev)
-+{
-+	loff_t disk_size, bdev_size;
-+
-+	disk_size = (loff_t)get_capacity(disk) << 9;
-+	bdev_size = i_size_read(bdev->bd_inode);
-+	if (disk_size != bdev_size) {
-+		char name[BDEVNAME_SIZE];
-+
-+		disk_name(disk, 0, name);
-+		printk(KERN_INFO
-+		       "%s: detected capacity change from %lld to %lld\n",
-+		       name, bdev_size, disk_size);
-+		i_size_write(bdev->bd_inode, disk_size);
-+	}
-+}
-+EXPORT_SYMBOL(check_disk_size_change);
-+
-+/**
-  * revalidate_disk - wrapper for lower-level driver's revalidate_disk
-  *                   call-back
-  *
-@@ -864,11 +892,20 @@ EXPORT_SYMBOL(open_by_devnum);
-  */
- int revalidate_disk(struct gendisk *disk)
- {
-+	struct block_device *bdev;
- 	int ret = 0;
+ 	disk_part_iter_init(&piter, disk, DISK_PITER_INCL_EMPTY);
+ 	while ((part = disk_part_iter_next(&piter)))
+@@ -513,6 +512,8 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
  
  	if (disk->fops->revalidate_disk)
- 		ret = disk->fops->revalidate_disk(disk);
- 
-+	bdev = bdget_disk(disk, 0);
-+	if (!bdev)
-+		return ret;
-+
-+	mutex_lock(&bdev->bd_mutex);
+ 		disk->fops->revalidate_disk(disk);
 +	check_disk_size_change(disk, bdev);
-+	mutex_unlock(&bdev->bd_mutex);
-+	bdput(bdev);
- 	return ret;
- }
- EXPORT_SYMBOL(revalidate_disk);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d63461f..32477e8 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1722,6 +1722,8 @@ extern int fs_may_remount_ro(struct super_block *);
-  */
- #define bio_data_dir(bio)	((bio)->bi_rw & 1)
- 
-+extern void check_disk_size_change(struct gendisk *disk,
-+				   struct block_device *bdev);
- extern int revalidate_disk(struct gendisk *);
- extern int check_disk_change(struct block_device *);
- extern int __invalidate_device(struct block_device *);
++	bdev->bd_invalidated = 0;
+ 	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
+ 		return 0;
+ 	if (IS_ERR(state))	/* I/O error reading the partition table */
 
