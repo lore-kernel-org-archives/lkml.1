@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYIDHnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYIDHoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbYIDHnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 03:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIDHnM
+	id S1754727AbYIDHoE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 03:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYIDHnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 03:43:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:29302 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbYIDHnM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 03:43:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=g4Wgf4v+iF5gyhu0dwt0271gcqBAM02KvN371+BjRsi5BpvkrGu6u7AtzORpFu5+Qw
-         2uA8mv7pfB5M/svbRe8cedFWkmKXpMcC7RPrh6kWMClliWYwM2mno3bD7GxgwQm8yiEb
-         q3Bzh2QNUcYE3vFC3/zN9Zz136pZfSNx2cql8=
-Message-ID: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
-Date: Thu, 4 Sep 2008 09:43:10 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: qestion about I2C_CLASS_HWMON flag
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Sep 2008 03:43:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54335 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751516AbYIDHnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 03:43:51 -0400
+Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
+	lockless
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       jean-pierre.dion@bull.net, michael@ellerman.id.au,
+       linuxppc-dev@ozlabs.org, paulus@samba.org, gilles.carry@ext.bull.net,
+       tglx@linutronix.de
+In-Reply-To: <20080904092252.12b3df4a@bull.net>
+References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+	 <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
+	 <1219209781.21386.25.camel@pasglop> <20080903154105.7dff49db@bull.net>
+	 <1220496739.4879.20.camel@pasglop>  <20080904092252.12b3df4a@bull.net>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 17:34:03 +1000
+Message-Id: <1220513643.4879.68.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I'm wondering why does this flag exist ?
+> > >   I could not think of anything simple so far and I'm open for suggestions.
+> > 
+> > GFP_KERNEL should not fail, it will just block no ?
+> 
+>   No it won't block and will fail (returns NULL).
 
-Why is a hw monitor device so special so that an I2C bus needs
-a flag to tell the rest of the world that it support it ?
+hrm... it used to never fail.. that may have changed. But it will
+definitely block and try very hard to push things out to make space,
+which is the whole point :-)
 
-Thanks
--- 
-Francis
+>   I will have to add that back as there is no more fallback.
+
+Well, the must be one in the case the tree isn't initialized yet, so if
+there's an allocation failure, you may "de-initialize" it or
+something... Or you can fallback if you don't find, as easy, probably
+easier since it shouldn't happen in practice.
+
+> > I don't know if it's worth trying to fire off a new
+> > allocation attempt later, probably not.
+> 
+>   I've been pondering with this lately, but I think that adding a linear
+> lookup fallback should be OK.
+
+Yup.
+
+Cheers,
+Ben.
+
+
