@@ -1,153 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYIDVIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYIDVKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbYIDVIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 17:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYIDVIG
+	id S1755290AbYIDVKv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 17:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYIDVKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 17:08:06 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:41473 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751124AbYIDVIE (ORCPT
+	Thu, 4 Sep 2008 17:10:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32931 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752832AbYIDVKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 17:08:04 -0400
-Message-ID: <48C04D7C.6020500@cs.columbia.edu>
-Date: Thu, 04 Sep 2008 17:05:00 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 4 Sep 2008 17:10:42 -0400
+Date: Thu, 4 Sep 2008 14:09:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+In-Reply-To: <20080904205236.GA3864@elte.hu>
+Message-ID: <alpine.LFD.1.10.0809041403450.3117@nehalem.linux-foundation.org>
+References: <20080904150339.896115280@linutronix.de> <20080904153620.GC7120@elte.hu> <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org> <20080904160036.GA18382@elte.hu> <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
+ <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> <20080904190728.59634020@lxorguk.ukuu.org.uk> <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809041303530.4112@nehalem.linux-foundation.org>
+ <20080904204305.GA29065@elte.hu> <20080904205236.GA3864@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v3][PATCH 1/9] Create syscalls: sys_checkpoint,	sys_restart
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040401320.5982@takamine.ncl.cs.columbia.edu> <20080904144223.GA19364@us.ibm.com> <48C01B92.60900@cs.columbia.edu> <20080904203730.GA28313@us.ibm.com>
-In-Reply-To: <20080904203730.GA28313@us.ibm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Serge E. Hallyn wrote:
-> Quoting Oren Laadan (orenl@cs.columbia.edu):
->>
->> Serge E. Hallyn wrote:
->>> Quoting Oren Laadan (orenl@cs.columbia.edu):
->>>> Create trivial sys_checkpoint and sys_restore system calls. They will
->>>> enable to checkpoint and restart an entire container, to and from a
->>>> checkpoint image file descriptor.
->>>>
->>>> The syscalls take a file descriptor (for the image file) and flags as
->>>> arguments. For sys_checkpoint the first argument identifies the target
->>>> container; for sys_restart it will identify the checkpoint image.
->>>>
->>>> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
->>>> ---
->> [...]
->>
->>>> +/**
->>>> + * sys_checkpoint - checkpoint a container
->>>> + * @pid: pid of the container init(1) process
->>>> + * @fd: file to which dump the checkpoint image
->>>> + * @flags: checkpoint operation flags
->>>> + */
->>>> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
->>>> +{
->>>> +	pr_debug("sys_checkpoint not implemented yet\n");
->>>> +	return -ENOSYS;
->>>> +}
->>>> +/**
->>>> + * sys_restart - restart a container
->>>> + * @crid: checkpoint image identifier
->>> So can we compare your api to Andrey's?
->>>
->>> You've explained before that crid is used to tie together multiple
->>> calls to checkpoint, but why do you have to specify it for restart?
->>> Can't it just come from the fd?  Or, the fd will be passed in
->>> seek()d to the right position for the data for this task, so the crid
->>> won't be available there?
->> I added the 'crid' inside to support a mode of operation in which we
->> would like the checkpoint data to remain in memory across multiple
->> system calls. Here are example scenarios:
->>
->> 1) We will want to reduce down time by first buffering the checkpoint
->> image in memory, then resuming the container, and only then writing
->> the data back to a (the) file descriptor.
->> So instead of:
->>   freeze -> checkpoint and write back -> unfreeze
->> We want:
->>   freeze -> checkpoint to buffer -> unfreeze -> write back
->> I envision each of these steps to be a separate invocation of a syscall.
->> to the 'crid' returned by the sys_checkpoint() at the 2nd step, will be
->> used to identify that data in the 4th step. (Note, that between the
->> unfreeze and the write-back, another checkpoint may be already taken).
->>
->> 2) A task may want to take a checkpoint (e.g. of itself, or a whole
->> container) and keep that checkpoint in memory; at a later time it may
->> want to revert to that checkpoint. Moreover, it may keep multiple such
->> checkpoints (to where it may want to return). 'crid' tells sys_restart
->> which one to use.
->>
->> Note that this 'crid' will in fact be tied to resources that are kept
->> by the kernel - e.g. references to COW pages (when we add that).
->> Louis suggested to use a specialized FD instead of a numeric 'crid'
->> (that is: create a anonymous inode and a struct file that represent
->> that checkpoint in the kernel, and return an FD to it). This approach
->> has pros and cons of 'crid' (see the archives of the containers
->> mailing list). For now I kept 'crid', but I'm definitely open to change
->> it to a FD.
->>
->> Oren.
+On Thu, 4 Sep 2008, Ingo Molnar wrote:
 > 
-> Oh, so the crid identifies one checkpoint inside the file - the single
-> file can store multiple checkpoints?
+> hm, unless i'm missing something i think here we still have a small 
+> window for an SMI or some virtualization delay to slip in and cause 
+> massive inaccuracy: if the delay happens _after_ the last 
+> pit_expect_msb() and _before_ the external get_cycles() call. Right?
 
-Not quite. Let me rephrase the motivation first:
+Yes. I had the extra pit_expect_msb() originally, but decided that 
+basically a single-instruction race for somethign that ran without 
+any MSI for 15ms was a bit pointless.
 
-There are occasions when we would like to keep the checkpoint data in the
-kernel for some (relatively long) time, between syscalls. By "checkpoint
-data" I mean references to memory contents (pages) and all the other data.
+But adding another pit_expect_msb() is certainly not wrong. 
 
-The two scenarios above are two examples: between the syscall to checkpoint
-and the syscall to unfreeze and then write-back the data to a file (first
-example), and for some time until a task may want to "go back in time"
-(second example, useful for ultra fast "undo" for a task).
+However, this one is:
 
-Note that in both cases when I say "keep in kernel" I mean before it is
-written to a file, or to the network. Simply in memory, in some efficient
-manner.
+> +	/*
+> +	 * The iteration assumes that expect never goes below zero:
+> +	 */
+> +	BUILD_BUG_ON(QUICK_PIT_ITERATIONS >= 0xff);
 
-Subsequent syscalls will need to refer to a specific checkpoint data that
-is kept in memory - e.g. to write-back to a file-descriptor, or to clean
-up, or to restart from it. (At any single time a specific container may
-have multiple checkpoints associated with it - eg. because they have not
-yet been written back to storage but already taken).
+No it doesn't. "expect" is unsigned char and will happily wrap, as will 
+the PIT timer. The fact that it is in "single shot" mode doesn't actually 
+mean that the timer stops, it just affects what happens when it goes down 
+to zero. 
 
-Once the data is written back to a file descriptor, the in-kernel data can
-be discarded and cleaned-up.
+So that BUILD_BUG_ON() is misleading and incorrect.
 
-The main reason why I want to keep the data in the kernel and not instead
-copy to user space, is efficiency: most of the checkpoint data is the memory
-footprint; by keeping the data in the kernel, one can merely keep a COW
-reference instead of a whole copy of everything (save space and copy time).
+Of course, it is true that in _practice_ you would never actually want to 
+delay that long, but the code as written should be perfectly happy to 
+iterate arbitrarily many times. Of course, the actual final TSC 
+multiply/divide calculations would overflow at some point, but that's much 
+further down the line.
 
-So, if we have keep data in kernel between syscalls, then we must have a
-way to refer to it. The current implementation uses a very simple 'crid'
-value to do that - although, clearly, at the moment it isn't used.
-
-I hope this explains better.
-
-Oren.
-
-> 
->>> Andrey, how will the 'ctid' in your patchset be used?  It sounds
->>> like it's actually going to set some integer id on the created
->>> container?  We actually don't have container ids (or even
->>> containers) right now, so we probably don't want that in our api,
->>> right?
-> 
-> -serge
+			Linus
