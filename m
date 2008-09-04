@@ -1,239 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbYIDSpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756988AbYIDSpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758307AbYIDSpl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758162AbYIDSlG
+	id S1756988AbYIDSpP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757489AbYIDSkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:41:06 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:35070 "EHLO e2.ny.us.ibm.com"
+	Thu, 4 Sep 2008 14:40:49 -0400
+Received: from mail.work.de ([212.12.32.20]:42200 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758161AbYIDSlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:41:04 -0400
-Subject: Re: [RFC v3][PATCH 8/9] File descriprtors (dump)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-In-Reply-To: <Pine.LNX.4.64.0809040405250.5982@takamine.ncl.cs.columbia.edu>
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0809040405250.5982@takamine.ncl.cs.columbia.edu>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 11:41:00 -0700
-Message-Id: <1220553660.23386.60.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1758081AbYIDSks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:40:48 -0400
+Message-ID: <48C02BAA.2050002@gmail.com>
+Date: Thu, 04 Sep 2008 22:40:42 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+CC: o.endriss@gmx.de
+Subject: DVB Update [PATCH 20/31] multiproto tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------010202050006020300030802"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-04 at 04:05 -0400, Oren Laadan wrote:
-> +/**
-> + * cr_scan_fds - scan file table and construct array of open fds
-> + * @files: files_struct pointer
-> + * @fdtable: (output) array of open fds
-> + * @return: the number of open fds found
-> + *
-> + * Allocates the file descriptors array (*fdtable), caller should free
-> + */
-> +int cr_scan_fds(struct files_struct *files, int **fdtable)
-> +{
-> +	struct fdtable *fdt;
-> +	int *fdlist;
-> +	int i, n, max;
-> +
-> +	max = CR_DEFAULT_FDTABLE;
-> +
-> + repeat:
-> +	n = 0;
-> +	fdlist = kmalloc(max * sizeof(*fdlist), GFP_KERNEL);
-> +	if (!fdlist)
-> +		return -ENOMEM;
-> +
-> +	spin_lock(&files->file_lock);
-> +	fdt = files_fdtable(files);
-> +	for (i = 0; i < fdt->max_fds; i++) {
-> +		if (fcheck_files(files, i)) {
-> +			if (n == max) {
-> +				spin_unlock(&files->file_lock);
-> +				kfree(fdlist);
-> +				max *= 2;
-> +				if (max < 0) {	/* overflow ? */
-> +					n = -EMFILE;
-> +					break;
-> +				}
-> +				goto repeat;
-> +			}
-> +			fdlist[n++] = i;
-> +		}
-> +	}
-> +	spin_unlock(&files->file_lock);
-> +
-> +	*fdtable = fdlist;
-> +	return n;
-> +}
+This is a multi-part message in MIME format.
+--------------010202050006020300030802
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-That loop needs some love.  At least save us from one level of
-indenting:
+>From f27d011f67d5e00ead196b0fcc2585537c2f2380 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:18:08 +0200
+Subject: [PATCH] DVB Code review: explicitly display offending parameters
 
-> +	for (i = 0; i < fdt->max_fds; i++) {
-> +		if (!fcheck_files(files, i)
-> 			continue;
-> 		if (n == max) {
-> +			spin_unlock(&files->file_lock);
-> +			kfree(fdlist);
-> +			max *= 2;
-> +			if (max < 0) {	/* overflow ? */
-> +				n = -EMFILE;
-> +				break;
-> +			}
-> +			goto repeat;
-> +		}
-> +		fdlist[n++] = i;
-> +	}
+Code review #1 Explicitly display the offending parameters,
+while doing parameter conversion.
 
-My gut also says that there has to be a better way to find a good size
-for fdlist() than growing it this way.  
+Thanks to Oliver Endriss <o.endriss@gmx.de> for the code review
 
-Why do we even have a fixed size for this?
+From: Manu Abraham <abraham.manu@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
-+#define CR_DEFAULT_FDTABLE  256
+ dvb_frontend.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-> +/* cr_write_fd_data - dump the state of a given file pointer */
-> +static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int parent)
-> +{
-> +	struct cr_hdr h;
-> +	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> +	struct dentry *dent = file->f_dentry;
-> +	struct inode *inode = dent->d_inode;
-> +	enum fd_type fd_type;
-> +	int ret;
-> +
-> +	h.type = CR_HDR_FD_DATA;
-> +	h.len = sizeof(*hh);
-> +	h.parent = parent;
-> +
-> +	BUG_ON(!inode);
 
-Why a BUG_ON()?  We'll deref it in just a sec anyway.  We prefer to just
-get the NULL dereference rather than an explicit BUG_ON().
+--------------010202050006020300030802
+Content-Type: text/x-patch;
+ name="20.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="20.patch"
 
-> +	hh->f_flags = file->f_flags;
-> +	hh->f_mode = file->f_mode;
-> +	hh->f_pos = file->f_pos;
-> +	hh->f_uid = file->f_uid;
-> +	hh->f_gid = file->f_gid;
+>From f27d011f67d5e00ead196b0fcc2585537c2f2380 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:18:08 +0200
+Subject: [PATCH] DVB Code review: explicitly display offending parameters
 
-Is there a plan to save off the 'struct user' here instead?  Nested user
-namespaces in one checkpoint image might get confused otherwise.
+Code review #1 Explicitly display the offending parameters,
+while doing parameter conversion.
 
-> +	hh->f_version = file->f_version;
-> +	/* FIX: need also file->f_owner */
-> +
-> +	switch (inode->i_mode & S_IFMT) {
-> +	case S_IFREG:
-> +		fd_type = CR_FD_FILE;
-> +		break;
-> +	case S_IFDIR:
-> +		fd_type = CR_FD_DIR;
-> +		break;
-> +	case S_IFLNK:
-> +		fd_type = CR_FD_LINK;
-> +		break;
-> +	default:
-> +		return -EBADF;
-> +	}
+Thanks to Oliver Endriss <o.endriss@gmx.de> for the code review
 
-Why don't we just store (and use) (inode->i_mode & S_IFMT) in fd_type
-instead of making our own types?
+From: Manu Abraham <abraham.manu@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
-> +	/* FIX: check if the file/dir/link is unlinked */
-> +	hh->fd_type = fd_type;
-> +
-> +	ret = cr_write_obj(ctx, &h, hh);
-> +	cr_hbuf_put(ctx, sizeof(*hh));
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return cr_write_fname(ctx, &file->f_path, ctx->vfsroot);
-> +}
-> +
-> +/**
-> + * cr_write_fd_ent - dump the state of a given file descriptor
-> + * @ctx: checkpoint context
-> + * @files: files_struct pointer
-> + * @fd: file descriptor
-> + *
-> + * Save the state of the file descriptor; look up the actual file pointer
-> + * in the hash table, and if found save the matching objref, otherwise call
-> + * cr_write_fd_data to dump the file pointer too.
-> + */
-> +static int
-> +cr_write_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int fd)
-> +{
-> +	struct cr_hdr h;
-> +	struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> +	struct file *file = NULL;
-> +	struct fdtable *fdt;
-> +	int coe, objref, ret;
-> +
-> +	/* make sure hh->fd (that is of type __u16) doesn't overflow */
-> +	if (fd > USHORT_MAX) {
-> +		pr_warning("CR: open files table too big (%d)\n", USHORT_MAX);
-> +		return -EMFILE;
-> +	}
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
+index e6ae5e6..037199a 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
+@@ -224,7 +224,7 @@ static int newfec_to_oldfec(enum dvbfe_fec new_fec, enum fe_code_rate *old_fec)
+ 		*old_fec = FEC_AUTO;
+ 		break;
+ 	default:
+-		printk("%s: Unsupported FEC\n", __func__);
++		printk("%s: Unsupported FEC %x\n", __func__, new_fec);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -265,7 +265,7 @@ static int oldfec_to_newfec(enum fe_code_rate old_fec, enum dvbfe_fec *new_fec)
+ 		*new_fec = DVBFE_FEC_AUTO;
+ 		break;
+ 	default:
+-		printk("%s: Unsupported FEC\n", __func__);
++		printk("%s: Unsupported FEC %x\n", __func__, old_fec);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -303,7 +303,7 @@ static int newmod_to_oldmod(enum dvbfe_modulation new_mod, enum fe_modulation *o
+ 		*old_mod = VSB_16;
+ 		break;
+ 	default:
+-		printk("%s: Unsupported Modulation\n", __func__);
++		printk("%s: Unsupported Modulation %x\n", __func__, new_mod);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -341,7 +341,7 @@ static int oldmod_to_newmod(enum fe_modulation old_mod, enum dvbfe_modulation *n
+ 		*new_mod = DVBFE_MOD_VSB16;
+ 		break;
+ 	default:
+-		printk("%s: Unsupported Modulation\n", __func__);
++		printk("%s: Unsupported Modulation %x\n", __func__, old_mod);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -390,7 +390,7 @@ int newapi_to_olddrv(struct dvbfe_params *params,
+ 			ofdm->bandwidth		= BANDWIDTH_AUTO;
+ 			break;
+ 		default:
+-			dprintk("%s: Unsupported bandwidth\n", __func__);
++			dprintk("%s: Unsupported bandwidth %x\n", __func__, dvbt->bandwidth);
+ 			return -EINVAL;
+ 		}
+ 		newfec_to_oldfec(dvbt->code_rate_HP, &ofdm->code_rate_HP);
+@@ -407,7 +407,7 @@ int newapi_to_olddrv(struct dvbfe_params *params,
+ 			ofdm->transmission_mode = TRANSMISSION_MODE_AUTO;
+ 			break;
+ 		default:
+-			dprintk("%s: Unsupported transmission mode\n", __func__);
++			dprintk("%s: Unsupported transmission mode %x\n", __func__, dvbt->bandwidth);
+ 			return -EINVAL;
+ 		}
+ 		switch (dvbt->guard_interval) {
+@@ -452,7 +452,7 @@ int newapi_to_olddrv(struct dvbfe_params *params,
+ 		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
+ 		break;
+ 	default:
+-		dprintk("%s: Unsupported delivery system\n", __func__);
++		dprintk("%s: Unsupported delivery system %x\n", __func__, delsys);
+ 		return -EINVAL;
+ 		break;
+ 	}
+@@ -558,7 +558,7 @@ int olddrv_to_newapi(struct dvb_frontend *fe,
+ 		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
+ 		break;
+ 	default:
+-		dprintk("%s: Unsupported delivery system\n", __func__);
++		dprintk("%s: Unsupported delivery system %x\n", __func__, fe_type);
+ 		return -EINVAL;
+ 		break;
+ 	}
 
-Since the kernel always seems to make fds integers, it would make sense
-to me to store them as integers in the checkpoint image.  Why bother to
-shrink them down to a 16-bit type?
-
-> +	rcu_read_lock();
-> +	fdt = files_fdtable(files);
-> +	file = fcheck_files(files, fd);
-> +	if (file) {
-> +		coe = FD_ISSET(fd, fdt->close_on_exec);
-> +		get_file(file);
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	/* sanity check (although this shouldn't happen) */
-> +	if (!file)
-> +		return -EBADF;
-> +
-> +	ret = cr_obj_add_ptr(ctx, (void *) file, &objref, CR_OBJ_FILE, 0);
-> +	cr_debug("fd %d objref %d file %p c-o-e %d)\n", fd, objref, file, coe);
-> +
-> +	if (ret >= 0) {
-> +		int new = ret;
-> +
-> +		h.type = CR_HDR_FD_ENT;
-> +		h.len = sizeof(*hh);
-> +		h.parent = 0;
-> +
-> +		hh->objref = objref;
-> +		hh->fd = fd;
-> +		hh->close_on_exec = coe;
-> +
-> +		ret = cr_write_obj(ctx, &h, hh);
-> +		cr_hbuf_put(ctx, sizeof(*hh));
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		/* new==1 if-and-only-if file was new and added to hash */
-> +		if (new)
-> +			ret = cr_write_fd_data(ctx, file, objref);
-> +	}
-
-This if() block is in the normal flow path of the function and should go
-at the top indentation level.  You can just do this:
-
-	  if (ret < 0)
-		goto out;
-  	  // if block contents here...
-
-   out:
-> +	fput(file);
-> +	return ret;
-> +}
--- Dave
-
+--------------010202050006020300030802--
