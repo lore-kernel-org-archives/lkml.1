@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYIDQlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbYIDQp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbYIDQlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIDQl3
+	id S1754497AbYIDQp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYIDQpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:41:29 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:27770 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750822AbYIDQl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:41:28 -0400
-Message-ID: <48C00F90.40907@panasas.com>
-Date: Thu, 04 Sep 2008 19:40:48 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Thu, 4 Sep 2008 12:45:14 -0400
+Received: from xenotime.net ([66.160.160.81]:55627 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752523AbYIDQpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:45:13 -0400
+Date: Thu, 4 Sep 2008 09:45:10 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: linux-kernel@vger.kernel.org
+cc: akpm@linux-foundation.org, arjan@infradead.org, arjan@linux.intel.com,
+       mingo@elte.hu
+Subject: Re: + fix-fastboot-make-the-raid-autodetect-code-wait-for-all-devices-to-init.patch
+ added to -mm tree
+In-Reply-To: <200809040539.m845dEgX022904@imap1.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0809040941550.19666@shark.he.net>
+References: <200809040539.m845dEgX022904@imap1.linux-foundation.org>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, neilb@suse.de
-Subject: Re: [PATCH] nfsd/nfs4acl: Number of used used array elements needs
- to be zeroed.
-References: <20080904165518.15a02908@psychotron.englab.brq.redhat.com> <20080904150101.GB4536@fieldses.org>
-In-Reply-To: <20080904150101.GB4536@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Sep 2008 16:39:57.0146 (UTC) FILETIME=[DD94F3A0:01C90EAC]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep. 04, 2008, 18:01 +0300, "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> On Thu, Sep 04, 2008 at 04:55:18PM +0200, Jiri Pirko wrote:
->> Number of used used array elements needs to be zeroed. It may cause
->> problems otherwise, because it's used uninitialized in find_uid().
->>
->> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
->> ---
->>  fs/nfsd/nfs4acl.c |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
->> index 54b8b41..7dcd90f 100644
->> --- a/fs/nfsd/nfs4acl.c
->> +++ b/fs/nfsd/nfs4acl.c
->> @@ -447,11 +447,13 @@ init_state(struct posix_acl_state *state, int cnt)
->>  	state->users = kzalloc(alloc, GFP_KERNEL);
->>  	if (!state->users)
->>  		return -ENOMEM;
->> +	state->users->n = 0;
->>  	state->groups = kzalloc(alloc, GFP_KERNEL);
->>  	if (!state->groups) {
->>  		kfree(state->users);
->>  		return -ENOMEM;
->>  	}
->> +	state->groups->n = 0;
->>  	return 0;
->>  }
+On Wed, 3 Sep 2008, akpm@linux-foundation.org wrote:
+
+> Subject: fix "fastboot: make the raid autodetect code wait for all devices to init"
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> Thanks for the extra eyes on this code, but: surely the kzalloc()'s are
-> all that's necessary?  Am I missing something?
-
-quickly browsing over the code, shouldn't it be:
-
-diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
-index b6ed383..54b8b41 100644
---- a/fs/nfsd/nfs4acl.c
-+++ b/fs/nfsd/nfs4acl.c
-@@ -443,7 +443,7 @@ init_state(struct posix_acl_state *state, int cnt)
- 	 * enough space for either:
- 	 */
- 	alloc = sizeof(struct posix_ace_state_array)
--		+ cnt*sizeof(struct posix_ace_state);
-+		+ cnt*sizeof(struct posix_user_ace_state);
- 	state->users = kzalloc(alloc, GFP_KERNEL);
- 	if (!state->users)
- 		return -ENOMEM;
-
-Benny
-
+> : commit b52c36a95ed8026b6925fe8595ebcab6921ae62d
+> : Author: Arjan van de Ven <arjan@linux.intel.com>
+> : Date:   Sun Jul 20 13:07:09 2008 -0700
+> :
+> :     fastboot: make the raid autodetect code wait for all devices to init
 > 
-> --b.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> init/do_mounts_md.c: In function `md_run_setup':
+> init/do_mounts_md.c:282: warning: ISO C90 forbids mixed declarations and code
+> 
+> How did this happen?
+
+There are so many warnings that they get lost in the noise
+unless someone is actively looking for them.
+
+If I modify a source file, I try to check its build status afterwards
+and not just that the kernel build succeeded.
+
+-- 
+~Randy
