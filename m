@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYIDUdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbYIDUem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757378AbYIDUdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbYIDU11
+	id S1760262AbYIDUem (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbYIDU1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:27:27 -0400
-Received: from mail.work.de ([212.12.32.20]:42156 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758671AbYIDU1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:27:25 -0400
-Message-ID: <48C044A9.9060807@gmail.com>
-Date: Fri, 05 Sep 2008 00:27:21 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Thu, 4 Sep 2008 16:27:38 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:33540 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758148AbYIDU1g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:27:36 -0400
+From: Andrew Patterson <andrew.patterson@hp.com>
+Subject: [PATCH 4/6] SCSI sd driver calls revalidate_disk wrapper.
+To: linux-scsi@vger.kernel.org
+Cc: andrew.patterson@hp.com, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
+       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
+       jmoyer@redhat.com
+Date: Thu, 04 Sep 2008 14:27:35 -0600
+Message-ID: <20080904202735.10456.85617.stgit@bob.kio>
+In-Reply-To: <20080904202714.10456.88061.stgit@bob.kio>
+References: <20080904202714.10456.88061.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
-       akpm@linux-foundation.org
-Subject: DVB Update [PATCH 27/31] remove unreferenced delivery
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------050306000209020402090801"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050306000209020402090801
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+SCSI sd driver calls revalidate_disk wrapper.
 
->From ff9e7a53cae5acdbe0195346303275e5e712ee02 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 14:51:40 +0200
-Subject: [PATCH] DVB remove unreferenced delivery
+Modify the SCSI disk driver to call the revalidate_disk()
+wrapper. This allows us to do some housekeeping such as accounting for
+a disk being resized online. The wrapper will call
+sd_revalidate_disk() at the appropriate time.
 
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
+---
 
- frontend.h |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/scsi/sd.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 
-
---------------050306000209020402090801
-Content-Type: text/x-patch;
- name="27.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="27.patch"
-
->From ff9e7a53cae5acdbe0195346303275e5e712ee02 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 14:51:40 +0200
-Subject: [PATCH] DVB remove unreferenced delivery
-
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
-
-diff --git a/include/linux/dvb/frontend.h b/include/linux/dvb/frontend.h
-index 6f5fecf..ee48864 100644
---- a/include/linux/dvb/frontend.h
-+++ b/include/linux/dvb/frontend.h
-@@ -588,7 +588,6 @@ struct dvbfe_atsc_info {
- /* DVB Frontend related Information	*/
- struct dvbfe_info {
- 	char				name[128];
--	enum dvbfe_delsys		delivery;
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 7ab19f2..50135d7 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -165,7 +165,7 @@ sd_store_cache_type(struct device *dev, struct device_attribute *attr,
+ 			sd_print_sense_hdr(sdkp, &sshdr);
+ 		return -EINVAL;
+ 	}
+-	sd_revalidate_disk(sdkp->disk);
++	revalidate_disk(sdkp->disk);
+ 	return count;
+ }
  
- 	union {
- 		struct dvbfe_dvbs_info	dvbs;
+@@ -916,7 +916,7 @@ static void sd_rescan(struct device *dev)
+ 	struct scsi_disk *sdkp = scsi_disk_get_from_dev(dev);
+ 
+ 	if (sdkp) {
+-		sd_revalidate_disk(sdkp->disk);
++		revalidate_disk(sdkp->disk);
+ 		scsi_disk_put(sdkp);
+ 	}
+ }
 
-
---------------050306000209020402090801--
