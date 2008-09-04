@@ -1,256 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYIDNHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYIDN2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbYIDNHY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 09:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYIDNHL
+	id S1755576AbYIDN2j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 09:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIDN22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 09:07:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43739 "EHLO mx1.redhat.com"
+	Thu, 4 Sep 2008 09:28:28 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:48549 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753315AbYIDNHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 09:07:10 -0400
-Date: Thu, 4 Sep 2008 09:07:02 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, arozansk@redhat.com, dzickus@redhat.com,
-       Thomas.Mingarelli@hp.com, ak@linux.intel.com, mingo@elte.hu
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
-Subject: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+	id S1750899AbYIDN21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 09:28:27 -0400
+Date: Thu, 4 Sep 2008 08:28:04 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: unprivileged mounts git tree
+Message-ID: <20080904132804.GA14709@us.ibm.com>
+References: <20080808002537.GA5364@us.ibm.com> <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu> <20080827153628.GA11242@us.ibm.com> <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu> <20080827184600.GA8069@us.ibm.com> <E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu> <20080903220215.GA27705@us.ibm.com> <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi and Ingo,
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> On Wed, 3 Sep 2008, Serge E. Hallyn wrote:
+> > Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > On Wed, 3 Sep 2008, Serge E. Hallyn wrote:
+> > > > Ooh.
+> > > > 
+> > > > You predicate the turning of shared mount to a slave mount on
+> > > > !capable(CAP_SYS_ADMIN).  But in fact it's the mount by a privileged
+> > > > user, turning the mount into a user mount, which you want to convert.
+> > > > So my series of steps was:
+> > > > 
+> > > > 	as root:
+> > > > 		(1) mount --bind /mnt /mnt
+> > > > 		(2) mount --make-rshared /mnt
+> > > > 		(3) /usr/src/mmount-0.3/mmount --bind -o user=hallyn /mnt \
+> > > > 			/home/hallyn/etc/mnt
+> > > > 	as hallyn:
+> > > > 		(4) mount --bind /usr /home/hallyn/etc/mnt/usr
+> > > > 
+> > > > You are turning mounts from shared->slave at step 4, but in fact we need
+> > > > to do it at step 3, where we do have CAP_SYS_ADMIN.
+> > > 
+> > > Well, that's arguable: I think root should be able to shoot itself in
+> > > the foot by doing step 3.
+> > 
+> > Maybe I'm not thinking right, but long-term is there any reason why we
+> > should require privilege in order to do step 3, so long as the user has
+> > read access to the source and write access to the destination?
+> > 
+> > I don't think there is.  Other than this glitch.  That's a powerful
+> > reason to fix the glitch.
+> 
+> Agreed, without privileges it's unacceptable to allow step 3 as is.
+> 
+> > The other argument is that, frankly, I think most people are still
+> > either unaware of, or confused by, mounts propagation.  Letting root
+> > shoot himself in the foot is reasonable only to a point.
+> 
+> Hmm, I think there are infinite ways in which root can mess up mount
+> propagation, and this is not even the worst.  I'm not trying to
+> belittle this bug: done unprivileged it's unacceptable.  But with
+> privileges, I really don't know if we should change the propagation
+> semantics for this corner case, they are complicated enough already.
+> 
+> > > Generally we don't restrict what root can
+> > > do.  OTOH I agree that current behavior is ugly in that it provides
+> > > different semantics for privileged/non-privileged callers.
+> > > 
+> > > Perhaps it would be cleaner to simply not allow step 4, instead of
+> > > playing tricks with changing the propagation type.
+> > 
+> > If the user or admin can simply (I haven't tested)
+> > 
+> > 	mmount --bind --make-rslave -o user=hallyn /mnt \
+> > 		/home/hallyn/etc/mnt
+> > 
+> > then returning -EPERM if --make-rslave was not provided is reasonable
+> > IMO.
+> 
+> Right, that sounds perfect.  the only problem is, bind mount currently
+> ignores the propagation flags, for no good reason I can see.
+> 
+> That's a separate patch though.  I'll look into it.
+> 
+> Thanks,
+> Miklos
 
-This patch is an RFC for the following changes.  If I get a positive review,
-changes to the HP Watchdog timer (currently in the kernel) will also be
-submitted along with this patch.
+Cool, thanks, Miklos :)
 
-Thanks,
+Are you going to revert the change forcing CL_SLAVE for
+!capable(CAP_SYS_ADMIN)?  I don't think we want that - I think that
+*within* a set of user mounts, propagation should be safe, right?
 
-P.
+Will you be able to do this soon?  If not, should we just do the part
+returning -EPERM when turning a shared mount into a user mount? 
+Because I think that would then be ready for testing in -mm, and would
+love to see it tested.
 
-The drivers/watchdog/hpwdt.c driver requires that all NMIs are processed
-by the driver.  Currently the driver does not do this.  The first
-step is to implement code to allow the default NMI handler to be replaced
-by a custom NMI handler.
+Were you going to push a patch to mount to do the user mounts, or
+put sample code in Documentation, git log, or under samples/?
 
-This patch re-implements a global set and unset NMI callback so that the
-default NMI handler can be replaced with a custom NMI handler.  This
-functionality was removed from the kernel a while ago and now must be
-reintroduced into the kernel.
-
-An existing unknown NMI callback already exists within the code.  This call
-has been renamed to the more descriptive do_unknown_nmi_callback.
-
-Patch was tested on x86 (32 and 64 bit) on Intel and AMD hardware.
-
-Acked-by: Aris Rozanski <arozansk@redhat.com>
-Signed-off-by: Don Zickus <dzickus@redhat.com>
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-
-diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
-index abb78a2..917b351 100644
---- a/arch/x86/kernel/nmi.c
-+++ b/arch/x86/kernel/nmi.c
-@@ -510,7 +510,7 @@ int proc_nmi_enabled(struct ctl_table *table, int write, struct file *file,
- 
- #endif /* CONFIG_SYSCTL */
- 
--int do_nmi_callback(struct pt_regs *regs, int cpu)
-+int do_unknown_nmi_callback(struct pt_regs *regs, int cpu)
- {
- #ifdef CONFIG_SYSCTL
- 	if (unknown_nmi_panic)
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 03df8e4..f19e414 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -796,7 +796,7 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 		 */
- 		if (nmi_watchdog_tick(regs, reason))
- 			return;
--		if (!do_nmi_callback(regs, cpu))
-+		if (!do_unknown_nmi_callback(regs, cpu))
- 			unknown_nmi_error(reason, regs);
- #else
- 		unknown_nmi_error(reason, regs);
-@@ -819,17 +819,61 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 	reassert_nmi();
- }
- 
-+static __kprobes int dummy_nmi_callback(struct pt_regs * regs, int cpu)
-+{
-+	return 0;
-+}
-+
-+static nmi_callback_t nmi_callback = dummy_nmi_callback;
-+static int nmi_cb_status = 0;
-+
-+int set_nmi_callback(nmi_callback_t callback)
-+{
-+	if (nmi_callback != dummy_nmi_callback) {
-+		printk(KERN_WARNING
-+		       "WARNING: Only one NMI callback can be registered at a "
-+		       "time.\n");
-+		return -EBUSY;
-+	}
-+
-+	nmi_cb_status = atomic_read(&nmi_active);
-+	if (nmi_cb_status) {
-+		if (nmi_watchdog == NMI_LOCAL_APIC) {
-+			disable_lapic_nmi_watchdog();
-+			vmalloc_sync_all();
-+		} else {
-+			printk(KERN_WARNING
-+			       "WARNING: NMI watchdog can only be set on "
-+			       "systems with status lapic NMI.\n");
-+			return -ENODEV;
-+		}
-+	}
-+	rcu_assign_pointer(nmi_callback, callback);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(set_nmi_callback);
-+
-+void unset_nmi_callback(void)
-+{
-+	if (nmi_cb_status && (nmi_watchdog == NMI_LOCAL_APIC))
-+		enable_lapic_nmi_watchdog();
-+	nmi_cb_status = 0;
-+	nmi_callback = dummy_nmi_callback;
-+}
-+
-+EXPORT_SYMBOL_GPL(unset_nmi_callback);
- notrace __kprobes void do_nmi(struct pt_regs *regs, long error_code)
- {
- 	int cpu;
- 
- 	nmi_enter();
- 
--	cpu = smp_processor_id();
-+	cpu = safe_smp_processor_id();
- 
- 	++nmi_count(cpu);
- 
--	if (!ignore_nmis)
-+	if (!ignore_nmis && !rcu_dereference(nmi_callback)(regs,cpu))
- 		default_do_nmi(regs);
- 
- 	nmi_exit();
-diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
-index 513caac..0f3bd27 100644
---- a/arch/x86/kernel/traps_64.c
-+++ b/arch/x86/kernel/traps_64.c
-@@ -815,7 +815,7 @@ asmlinkage notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 		 */
- 		if (nmi_watchdog_tick(regs, reason))
- 			return;
--		if (!do_nmi_callback(regs, cpu))
-+		if (!do_unknown_nmi_callback(regs, cpu))
- 			unknown_nmi_error(reason, regs);
- 
- 		return;
-@@ -830,14 +830,62 @@ asmlinkage notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 		io_check_error(reason, regs);
- }
- 
-+static __kprobes int dummy_nmi_callback(struct pt_regs * regs, int cpu)
-+{
-+	return 0;
-+}
-+
-+static nmi_callback_t nmi_callback = dummy_nmi_callback;
-+static int nmi_cb_status = 0;
-+
-+int set_nmi_callback(nmi_callback_t callback)
-+{
-+	if (nmi_callback != dummy_nmi_callback) {
-+		printk(KERN_WARNING
-+		       "WARNING: Only one NMI callback can be registered at a "
-+		       "time.\n");
-+		return -EBUSY;
-+	}
-+
-+	nmi_cb_status = atomic_read(&nmi_active);
-+	if (nmi_cb_status) {
-+		if (nmi_watchdog == NMI_LOCAL_APIC) {
-+			disable_lapic_nmi_watchdog();
-+			vmalloc_sync_all();
-+		} else {
-+			printk(KERN_WARNING
-+			       "WARNING: NMI watchdog can only be set on "
-+			       "systems with status lapic NMI.\n");
-+			return -ENODEV;
-+		}
-+	}
-+	rcu_assign_pointer(nmi_callback, callback);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(set_nmi_callback);
-+
-+void unset_nmi_callback(void)
-+{
-+	if (nmi_cb_status && (nmi_watchdog == NMI_LOCAL_APIC))
-+		enable_lapic_nmi_watchdog();
-+	nmi_cb_status = 0;
-+	nmi_callback = dummy_nmi_callback;
-+}
-+EXPORT_SYMBOL_GPL(unset_nmi_callback);
-+
- asmlinkage notrace __kprobes void
- do_nmi(struct pt_regs *regs, long error_code)
- {
-+	int cpu;
-+
- 	nmi_enter();
- 
-+	cpu = safe_smp_processor_id();
-+
- 	add_pda(__nmi_count, 1);
- 
--	if (!ignore_nmis)
-+	if (!ignore_nmis && !rcu_dereference(nmi_callback)(regs,cpu))
- 		default_do_nmi(regs);
- 
- 	nmi_exit();
-diff --git a/include/asm-x86/nmi.h b/include/asm-x86/nmi.h
-index 21f8d02..3c3901a 100644
---- a/include/asm-x86/nmi.h
-+++ b/include/asm-x86/nmi.h
-@@ -7,13 +7,30 @@
- 
- #ifdef ARCH_HAS_NMI_WATCHDOG
- 
-+typedef int (*nmi_callback_t)(struct pt_regs * regs, int cpu);
-+
-+/**
-+ * set_nmi_callback
-+ *
-+ * Set a global handler for an NMI. Only one handler may be
-+ * set. Return 1 if the NMI was handled.
-+ */
-+int set_nmi_callback(nmi_callback_t callback);
-+
-+/**
-+ * unset_nmi_callback
-+ *
-+ * Remove the global handler previously set.
-+ */
-+void unset_nmi_callback(void);
-+
- /**
-- * do_nmi_callback
-+ * do_unknown_nmi_callback
-  *
-  * Check to see if a callback exists and execute it.  Return 1
-- * if the handler exists and was handled successfully.
-+ * if the unknown handler exists and was handled successfully.
-  */
--int do_nmi_callback(struct pt_regs *regs, int cpu);
-+int do_unknown_nmi_callback(struct pt_regs *regs, int cpu);
- 
- #ifdef CONFIG_X86_64
- extern void default_do_nmi(struct pt_regs *);
+thanks,
+-serge
