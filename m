@@ -1,47 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYIDSih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbYIDSiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757402AbYIDSih (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYIDShZ
+	id S1757535AbYIDSiz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYIDShi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:37:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44985 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757153AbYIDShW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:37:22 -0400
-Date: Thu, 4 Sep 2008 19:36:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ivaylo@bglans.net
-Cc: linux-kernel@vger.kernel.org, w@1wt.eu
-Subject: Re: Marvel IDE 88SE6101 2.4.XX support
-Message-ID: <20080904193625.652bf013@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0809042115350.11281@mail.bglans.net>
-References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
-	<Pine.LNX.4.64.0809042115350.11281@mail.bglans.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 14:37:38 -0400
+Received: from mail.work.de ([212.12.32.20]:58898 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756774AbYIDShh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:37:37 -0400
+Message-ID: <48C02AEC.2090903@gmail.com>
+Date: Thu, 04 Sep 2008 22:37:32 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+Subject: DVB Update [PATCH 7/31] multiproto tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------020301030809070001070700"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 21:26:12 +0300 (EEST)
-ivaylo@bglans.net wrote:
+This is a multi-part message in MIME format.
+--------------020301030809070001070700
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> 
-> Another one small patch to support Marvel IDE 88SE6101 controler. I have 
-> one on Intel DG33BU motherboard. It is detect as
-> 02:00.0 IDE interface: Marvell Technology Group Ltd. 88SE6101 single-port 
-> PATA133 interface (rev b2)
+>From 209207c583848b37a54b135256a62a5eb4135516 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 12:26:28 +0200
+Subject: [PATCH] DVB Fix: use backward compatibility for older delivery
+systems
 
-Its a pretty generic device - see drivers/ata/pata_marvell.c so IDE
-generic will probably do roughly the right things. The pata_marvell
-driver documents how to do cable detect, which you may want to add and
-make it its own driver.
+* The backward compatibilty of the existing delivery systems was
+broken. The patch fixes the same.
 
-Alan
+From: Manu Abraham <abraham.manu@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+ dvb_frontend.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+--------------020301030809070001070700
+Content-Type: text/x-patch;
+ name="7.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="7.patch"
+
+>From 209207c583848b37a54b135256a62a5eb4135516 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 12:26:28 +0200
+Subject: [PATCH] DVB Fix: use backward compatibility for older delivery systems
+
+* The backward compatibilty of the existing delivery systems was
+broken. The patch fixes the same.
+
+From: Manu Abraham <abraham.manu@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
+index 106bf2b..de49e4b 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
+@@ -1433,7 +1433,6 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 	struct dvb_frontend *fe = dvbdev->priv;
+ 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
+ 	int err = -EOPNOTSUPP;
+-	enum dvbfe_delsys delsys = 0;
+ 
+ 	dprintk ("%s\n", __func__);
+ 
+@@ -1699,15 +1698,21 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 
+ 	case DVBFE_SET_PARAMS: {
+ 		struct dvb_frontend_tune_settings fetunesettings;
++		enum dvbfe_delsys delsys = fepriv->fe_info.delivery;
+ 
+ 		fe->legacy = 0;
+ 		memcpy(&fepriv->fe_params, parg, sizeof (struct dvbfe_params));
+ 		memset(&fetunesettings, 0, sizeof (struct dvb_frontend_tune_settings));
+ 		memcpy(&fetunesettings.fe_params, parg, sizeof (struct dvbfe_params));
+ 
+-		if (newapi_to_olddrv(&fepriv->fe_params, &fepriv->parameters, fepriv->fe_info.delivery)  == -EINVAL)
+-			printk("%s: ERROR !!! Converting New parameters --> Old parameters\n", __func__);
++		if ((delsys && DVBFE_DELSYS_DVBS) ||
++		    (delsys && DVBFE_DELSYS_DVBC) ||
++		    (delsys && DVBFE_DELSYS_DVBT) ||
++		    (delsys && DVBFE_DELSYS_ATSC)) {
+ 
++			if (newapi_to_olddrv(&fepriv->fe_params, &fepriv->parameters, fepriv->fe_info.delivery)  == -EINVAL)
++				printk("%s: ERROR !!! Converting New parameters --> Old parameters\n", __func__);
++		}
+ 		/* Request the search algorithm to search	*/
+ 		fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
+ 
+
+--------------020301030809070001070700--
