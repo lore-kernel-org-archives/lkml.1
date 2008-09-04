@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYIDIPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYIDIVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYIDIPx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYIDIPi
+	id S1756687AbYIDIVB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYIDIUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:15:38 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:49686 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbYIDIPg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:15:36 -0400
-Date: Thu, 4 Sep 2008 10:15:35 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andreas Mohr <andi@lisas.de>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel@vger.kernel.org, shaohua.li@intel.com
-Subject: Re: [PATCH] Prevent clockevent event_handler ending up handler_noop
-Message-ID: <20080904081535.GA593@rhlx01.hs-esslingen.de>
-References: <20080903164356.GA31969@rhlx01.hs-esslingen.de> <alpine.LFD.1.10.0809031908270.3243@apollo.tec.linutronix.de> <20080903173627.GA7767@rhlx01.hs-esslingen.de> <alpine.LFD.1.10.0809032058380.3243@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809032058380.3243@apollo.tec.linutronix.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Sep 2008 04:20:46 -0400
+Received: from sh.osrg.net ([192.16.179.4]:34227 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751959AbYIDIUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 04:20:44 -0400
+Date: Thu, 4 Sep 2008 17:18:52 +0900
+To: andi@firstfloor.org
+Cc: fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       tony.luck@intel.com
+Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures
+ with swiotlb
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080904080528.GZ18288@one.firstfloor.org>
+References: <20080904074441.GY18288@one.firstfloor.org>
+	<20080904165852I.fujita.tomonori@lab.ntt.co.jp>
+	<20080904080528.GZ18288@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080904171903M.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 4 Sep 2008 10:05:28 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-On Wed, Sep 03, 2008 at 09:01:35PM +0200, Thomas Gleixner wrote:
-> When you register something better than PIT, then the PIT is
-> disabled completely. No more interrupts from there.
-
-GOOD.
-
-> > Out of interest: how big would you believe the benefit to be?
-> > (overall system performance gains and ACPI PM benefits)
+> On Thu, Sep 04, 2008 at 04:58:37PM +0900, FUJITA Tomonori wrote:
+> > On Thu, 4 Sep 2008 09:44:41 +0200
+> > Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > > On Thu, Sep 04, 2008 at 01:11:47PM +0900, FUJITA Tomonori wrote:
+> > > > On Thu, 04 Sep 2008 00:09:51 +0200
+> > > > Andi Kleen <andi@firstfloor.org> wrote:
+> > > > 
+> > > > > Joerg Roedel <joerg.roedel@amd.com> writes:
+> > > > > 
+> > > > > > The SWIOTLB version of dma_alloc_coherent allocates all memory with
+> > > > > > GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
+> > > > > > failures. This patch makes the allocation strategy to use the DMA32 zone
+> > > > > > first if this is possible. The changes are boot tested on AMD64 and
+> > > > > > compile tested for i386 and IA64.
+> > > > > 
+> > > > > The high level dma_alloc_coherent() does that anyways.
+> > > > 
+> > > > The high level dma_alloc_coherent means the tricks in
+> > > > arch/x86/pci-dma.c? If so, all the tricks has gone in tip/master.
+> > > 
+> > > Seems wrong -- that is something that is needed by multiple
+> > > IOMMUs. Pretty much all which work with real memory instead
+> > > of virtual mappings.
+> > 
+> > Not all the IOMMUs need the old tricks used in arch/x86/pci-dma.c.
 > 
-> Hard to tell, your milage can vary.
+> That is what I meant with "with real memory"
+> 
+> But actually even for real IOMMus it can make sense to maintain
+> some memory for bypass.
 
-ACPI PM benefits exclusively depend on whether I can make my system go
-below 20 wakeups/s at all or not, otherwise there won't be any improvement
-of course.
-
-I/O overhead due to PIT ISA access _might_ be a couple % of overall
-system performance, but as you say, this is hard to tell, admittedly.
-
-We'll see rather soon, since integration is finished, however I get
-MODPOST symbol link errors for clockevents_register_device() and another
-clockevent function which I forgot.
-Most certainly we should have had an EXPORT_SYMBOL_GPL() for
-these? Or are you going to tell me that modular registration won't work
-at all (yet?) for clock_event_device, as opposed to clocksource?
-
-Anything else I need to take into account, other than applying the
-fixup patch in the parent post and exporting these symbols?
-And how to unregister the event device on module unload?
-
-Oh, and another question:
-Since this timer hardware was previously hooked up to an ALSA snd_timer
-(struct snd_timer_hardware), do you think changing this into
-clock_event_device provides almost equivalent service quality?
-snd_timer is used for precise MIDI timestamping (and not much else,
-thus this valuable timer was entirely unused/idle, read: wasted), I think,
-so I wonder what kind of accuracy loss (jitter, additional timer/IRQ load)
-I'd have for MIDI operation if I used this timer for the entire system's
-highres timer wheel. If you believe this is even remotely comparably robust
-as using a snd_timer-only construct, then I'm more than happy to rip out
-snd_timer and _always_ go with clock_event_device instead.
+Even if it's tree, only each IOMMU knows what's the best. That's the
+point of these changes to remove the tricks in arch/x86/pci-dma.c and
+let IOMMUs do what they want.
 
 
-Looking forward to getting my box crashed, hard ;)
+> Also there's usually the problem that not all busses are translated,
+> e.g. Calgary used to do that so for e.g. dev == NULL allocations you had
+> to use  these fallback algorithms anyways.
 
-Thanks!
+dev == NULL isn't a minor thing. It's just using the fallback
+device. Playing with gfp flag is the major trick. Some (new) IOMMUs
+don't need it.
 
-Andreas
+Handling dev == NULL in a common place is fine by me. It's a minor
+issue.
+
+
+> Clearly copying the fallback logic into lots of low level IOMMUs instead
+> of having it in one place is a big step backwards.
