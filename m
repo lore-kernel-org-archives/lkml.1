@@ -1,120 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbYIDUiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYIDUic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbYIDUiJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760733AbYIDUhX
+	id S1756894AbYIDUic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbYIDUhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:37:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:27691 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760723AbYIDUhV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=mE4bKws5835XeTog9zfq8XlHq2QlnJgMlobp9bKYuv5KMfkSSFFNt5wRoBiBqasrjo
-         Aiaq1b55qWVpnjhK2nC4WDDw6/EI3hWJmWSWCYZsLs/f7NL4ghXZjd8JpumDRFEprTLq
-         4CwnsVYMKhWOx2LjSSHcw/UlJmUE/1wRPU4vU=
-Message-ID: <86802c440809041337l5ae10298od1c38dd43863e0ea@mail.gmail.com>
-Date: Thu, 4 Sep 2008 13:37:20 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: order functions in cpu/common.c and cpu/common_64.c
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <86802c440809041332w197c2b88w95eda369dbb7761e@mail.gmail.com>
+	Thu, 4 Sep 2008 16:37:38 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34617 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759761AbYIDUhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:37:36 -0400
+Date: Thu, 4 Sep 2008 15:37:30 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
+       Andrey Mirkin <major@openvz.org>
+Subject: Re: [RFC v3][PATCH 1/9] Create syscalls: sys_checkpoint,
+	sys_restart
+Message-ID: <20080904203730.GA28313@us.ibm.com>
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040401320.5982@takamine.ncl.cs.columbia.edu> <20080904144223.GA19364@us.ibm.com> <48C01B92.60900@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080904191205.GC24990@elte.hu> <20080904193733.GA25136@elte.hu>
-	 <20080904194127.GA2542@elte.hu> <20080904200421.GA24295@elte.hu>
-	 <86802c440809041307i24cce782u4937d6fd2311c6f@mail.gmail.com>
-	 <86802c440809041332w197c2b88w95eda369dbb7761e@mail.gmail.com>
+In-Reply-To: <48C01B92.60900@cs.columbia.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 4, 2008 at 1:32 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Thu, Sep 4, 2008 at 1:07 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> On Thu, Sep 4, 2008 at 1:04 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>> * Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>> > i've pushed out the broken tree into tip/tmp.master.broken (havent
->>>> > updated tip/master with the breakage). I've removed the broken
->>>> > printk in kernel/resource.c that Andrew found, see commit
->>>> > 06e44f6af324 - so that's not the cause.
->>>>
->>>> i've double checked that 06e44f6af324 is applied. I'll bisect this.
->>>
->>> bisection came up with:
->>>
->>>  # good: [8bfd9710] Merge branch 'x86/xsave'
->>>  # bad:  [06e44f6a] IO resources: fix/remove printk
->>>  # good: [282a5f84] Merge branch 'irq/sparseirq'
->>>  # bad:  [a0854a46] x86: make 32bit support show_msr like 64 bit
->>>  # good: [5031088d] x86: delay early cpu initialization until cpuid is
->>>  # good: [9d31d35b] x86: order functions in cpu/common.c and cpu/commo
->>>  # bad:  [10a434fc] x86: remove cpu_vendor_dev
->>>
->>> | 10a434fcb23a57c385177a0086955fae01003f64 is first bad commit
->>> | commit 10a434fcb23a57c385177a0086955fae01003f64
->>> | Author: Yinghai Lu <yhlu.kernel@gmail.com>
->>> | Date:   Thu Sep 4 21:09:45 2008 +0200
->>> |
->>> |     x86: remove cpu_vendor_dev
->>>
->>> and the thing is, 10a434fc is way too big:
->>>
->>> | 15 files changed, 106 insertions(+), 106 deletions(-)
->>>
->>> and it's not obvious at first (neither at second) sight what the problem
->>> is. You really need to start doing much smaller patches for such
->>> critical/hard-to-debug code areas.
->>>
->> could be alignment again...
->
-> ffffffff80d86c20 d __cpu_dev_amd_cpu_dev
-> ffffffff80d86c20 A __x86_cpu_dev_start
-> ffffffff80d86c28 d __dyn_array_ptr_irq_2_pin_head
-> ffffffff80d86c28 D __dyn_array_start
-> ffffffff80d86c30 d __dyn_array_ptr_irq_cfgx
-> ffffffff80d86c38 d __dyn_array_ptr_sparse_irqs
-> ffffffff80d86c40 D __dyn_array_end
-> ffffffff80d86c40 d __initcall_selinux_init
-> ffffffff80d86c40 D __per_cpu_dyn_array_end
-> ffffffff80d86c40 D __per_cpu_dyn_array_start
-> ffffffff80d86c40 D __security_initcall_start
-> ffffffff80d86c48 R __parainstructions
-> ffffffff80d86c48 D __security_initcall_end
-> ffffffff80d86c48 A __x86_cpu_dev_end
->
-> don't know how could the linker squash others tables into cpu_dev
-> pointer array..
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> 
+> 
+> Serge E. Hallyn wrote:
+> > Quoting Oren Laadan (orenl@cs.columbia.edu):
+> >> Create trivial sys_checkpoint and sys_restore system calls. They will
+> >> enable to checkpoint and restart an entire container, to and from a
+> >> checkpoint image file descriptor.
+> >>
+> >> The syscalls take a file descriptor (for the image file) and flags as
+> >> arguments. For sys_checkpoint the first argument identifies the target
+> >> container; for sys_restart it will identify the checkpoint image.
+> >>
+> >> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+> >> ---
+> 
+> [...]
+> 
+> >> +/**
+> >> + * sys_checkpoint - checkpoint a container
+> >> + * @pid: pid of the container init(1) process
+> >> + * @fd: file to which dump the checkpoint image
+> >> + * @flags: checkpoint operation flags
+> >> + */
+> >> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+> >> +{
+> >> +	pr_debug("sys_checkpoint not implemented yet\n");
+> >> +	return -ENOSYS;
+> >> +}
+> >> +/**
+> >> + * sys_restart - restart a container
+> >> + * @crid: checkpoint image identifier
+> > 
+> > So can we compare your api to Andrey's?
+> > 
+> > You've explained before that crid is used to tie together multiple
+> > calls to checkpoint, but why do you have to specify it for restart?
+> > Can't it just come from the fd?  Or, the fd will be passed in
+> > seek()d to the right position for the data for this task, so the crid
+> > won't be available there?
+> 
+> I added the 'crid' inside to support a mode of operation in which we
+> would like the checkpoint data to remain in memory across multiple
+> system calls. Here are example scenarios:
+> 
+> 1) We will want to reduce down time by first buffering the checkpoint
+> image in memory, then resuming the container, and only then writing
+> the data back to a (the) file descriptor.
+> So instead of:
+>   freeze -> checkpoint and write back -> unfreeze
+> We want:
+>   freeze -> checkpoint to buffer -> unfreeze -> write back
+> I envision each of these steps to be a separate invocation of a syscall.
+> to the 'crid' returned by the sys_checkpoint() at the 2nd step, will be
+> used to identify that data in the 4th step. (Note, that between the
+> unfreeze and the write-back, another checkpoint may be already taken).
+> 
+> 2) A task may want to take a checkpoint (e.g. of itself, or a whole
+> container) and keep that checkpoint in memory; at a later time it may
+> want to revert to that checkpoint. Moreover, it may keep multiple such
+> checkpoints (to where it may want to return). 'crid' tells sys_restart
+> which one to use.
+> 
+> Note that this 'crid' will in fact be tied to resources that are kept
+> by the kernel - e.g. references to COW pages (when we add that).
+> Louis suggested to use a specialized FD instead of a numeric 'crid'
+> (that is: create a anonymous inode and a struct file that represent
+> that checkpoint in the kernel, and return an FD to it). This approach
+> has pros and cons of 'crid' (see the archives of the containers
+> mailing list). For now I kept 'crid', but I'm definitely open to change
+> it to a FD.
+> 
+> Oren.
 
-it seems there is some merging problem.. please check
+Oh, so the crid identifies one checkpoint inside the file - the single
+file can store multiple checkpoints?
 
-index 192f6d8..30973db 100644
---- a/arch/x86/kernel/vmlinux_64.lds.S
-+++ b/arch/x86/kernel/vmlinux_64.lds.S
-@@ -172,11 +172,11 @@ SECTIONS
-   .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
-        *(.x86_cpu_dev.init)
-   }
-+  __x86_cpu_dev_end = .;
+> > Andrey, how will the 'ctid' in your patchset be used?  It sounds
+> > like it's actually going to set some integer id on the created
+> > container?  We actually don't have container ids (or even
+> > containers) right now, so we probably don't want that in our api,
+> > right?
 
-   DYN_ARRAY_INIT(8)
-
-   SECURITY_INIT
--  __x86_cpu_dev_end = .;
-
-   . = ALIGN(8);
-   .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
-
-YH
+-serge
