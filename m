@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbYIDXIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYIDXI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058AbYIDXIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 19:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYIDXId
+	id S1753394AbYIDXI6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 19:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbYIDXIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 19:08:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36193 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752220AbYIDXIc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 19:08:32 -0400
-Date: Thu, 4 Sep 2008 16:08:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: <sasin@solomon-systech.com>
-Cc: linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: mmc/card/block.c : mmc_blk_open readonly mount bug?
-Message-Id: <20080904160808.a23a2197.akpm@linux-foundation.org>
-In-Reply-To: <6334E09627481B4AA5C8DE1E69E19D3B09D1F13A@SSLEXCHANGE.solomonsystech.com>
-References: <6334E09627481B4AA5C8DE1E69E19D3B09D1F13A@SSLEXCHANGE.solomonsystech.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 19:08:36 -0400
+Received: from khc.piap.pl ([195.187.100.11]:57212 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753962AbYIDXIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 19:08:35 -0400
+To: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+Cc: "Nye Liu" <nyet@mrv.com>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nye Liu" <nyet@nyet.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] INITRAMFS: Add option to preserve mtime from INITRAMFS cpio images
+References: <20080805195232.GA5183@curtisfong.org>
+	<20080903202938.GA9065@curtisfong.org>
+	<20080903152231.6b82d9bf.akpm@linux-foundation.org>
+	<20080903223114.GA9456@mrv.com>
+	<ac9c93b10809040011h19b70715ge2ba06372f1b0fe0@mail.gmail.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 05 Sep 2008 01:08:32 +0200
+In-Reply-To: <ac9c93b10809040011h19b70715ge2ba06372f1b0fe0@mail.gmail.com> (Frans Meulenbroeks's message of "Thu\, 4 Sep 2008 09\:11\:42 +0200")
+Message-ID: <m3abenzez3.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 17:17:15 +0800
-<sasin@solomon-systech.com> wrote:
+"Frans Meulenbroeks" <fransmeulenbroeks@gmail.com> writes:
 
-> mmc_block_open increments md->usage although it returns with -EROFS when
-> default mounting a MMC/SD card with write protect switch on.  This
-> reference counting bug prevents /dev/mmcblkX from being released on card
-> removal, and situation worsen with reinsertion until the minor number
-> range runs out.
-> 
-> "return -EROFS;"
-> 
-> should be replaced by
-> 
-> "
-> {
-> ret = -EROFS;
-> mmc_blk_put(md);
-> }
-> "
+> "Invaluable" != "nice to know".
 
-It's unknown what kernel version you're looking at.  The code in 2.6.25
-and 2.6.26 and 2.6.27 has changed since then, but the bug appears to
-still be there.
+Well, I guess it's as "invaluable" for embedded systems running on
+initramfs as mtime on regular filesystems in case of normal systems.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Is mtime on ext3 "invaluable" or just "nice to know"?
 
-mmc_block_open() increments md->usage although it returns with -EROFS when
-default mounting a MMC/SD card with write protect switch on.  This
-reference counting bug prevents /dev/mmcblkX from being released on card
-removal, and situation worsen with reinsertion until the minor number
-range runs out.
+> I admit that the net effect of this on boot time is marginal (but some
+> might consider having mtime a marginal benefit), and 100 cents also
+> make a dollar, so my suggestion would be to either reject this patch
+> or make it optional (e.g. depending on some debug config flag).
 
-Reported-by: <sasin@solomon-systech.com>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: <stable@kernel.org>		[2.6.25.x, 2.6.26.x]
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/mmc/card/block.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff -puN drivers/mmc/card/block.c~drivers-mmc-card-blockc-fix-refcount-leak-in-mmc_block_open drivers/mmc/card/block.c
---- a/drivers/mmc/card/block.c~drivers-mmc-card-blockc-fix-refcount-leak-in-mmc_block_open
-+++ a/drivers/mmc/card/block.c
-@@ -103,8 +103,10 @@ static int mmc_blk_open(struct inode *in
- 			check_disk_change(inode->i_bdev);
- 		ret = 0;
- 
--		if ((filp->f_mode & FMODE_WRITE) && md->read_only)
-+		if ((filp->f_mode & FMODE_WRITE) && md->read_only) {
-+			mmc_blk_put(md);
- 			ret = -EROFS;
-+		}
- 	}
- 
- 	return ret;
-_
-
+It depends on how marginal is it. If it makes unpacking 1% slower I
+can see no need for being optional. 10% - maybe it should?
+-- 
+Krzysztof Halasa
