@@ -1,54 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbYIDSnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYIDSnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbYIDSnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757862AbYIDSjm
+	id S1756816AbYIDSnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbYIDSjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:39:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:15551 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757183AbYIDSjk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:39:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:user-agent:date:from:to:cc:subject:content-disposition
-         :message-id;
-        b=aMCOAh+94HEP0iWMAePPJlHlnjNyB8eTDEq1AjxcyIPxFf3i9FHp/bpV5ru8bIrhuS
-         pmU/b/Z//NZBv2QtUJ3mEn7OMJqr+Zl7SenY2YgMZsVqjDpqI6NRHaNqlwJ+jfEEK101
-         8G2ftq81uRwJ1Egp2wHNkNUyak1zytDfuvDFU=
-References: <20080904183748.950151853@gmail.com>>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Sep 2008 22:37:49 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: mingo@elte.hu
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       yhlu.kernel@gmail.com, macro@linux-mips.org,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [patch 1/3] x86: io-apic - use ARRAY_SIZE macro
-Content-Disposition: inline; filename=x86-ioapic-use-ARRAY_SIZE
-Message-ID: <48c02b69.0405560a.6570.7100@mx.google.com>
+	Thu, 4 Sep 2008 14:39:43 -0400
+Received: from mail.work.de ([212.12.32.20]:58979 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755955AbYIDSjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:39:41 -0400
+Message-ID: <48C02B68.8050302@gmail.com>
+Date: Thu, 04 Sep 2008 22:39:36 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+CC: Marco Schluessler <marco@lordzodiac.de>
+Subject: DVB Update [PATCH 19/31] multiproto tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------000509050600060105040301"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the code width a bit shorter with ARRAY_SIZE macro.
+This is a multi-part message in MIME format.
+--------------000509050600060105040301
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+>From 7d0389d6826fb460c85b25a54450151a55fa5338 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:12:32 +0200
+Subject: [PATCH] DVB Fix wrong copy for DVBFE_GET_PARAMS
 
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-04 20:34:14.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-04 21:35:48.000000000 +0400
-@@ -166,7 +166,7 @@ static void __init init_work(void *data)
- 
- 	memcpy(cfg, irq_cfg_legacy, sizeof(irq_cfg_legacy));
- 
--	legacy_count = sizeof(irq_cfg_legacy)/sizeof(irq_cfg_legacy[0]);
-+	legacy_count = ARRAY_SIZE(irq_cfg_legacy);
- 	for (i = legacy_count; i < *da->nr; i++)
- 		init_one_irq_cfg(&cfg[i]);
- 
+The translated frontend parameters for the ioctl DVBFE_GET_PARAMS
+wasn't copied back. The patch fixes the issue.
 
--- 
+From: Marco Schluessler <marco@lorzodiac.de>
+Signed-off-by: Marco Schluessler <marco@lordzodiac.de>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+ dvb_frontend.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+--------------000509050600060105040301
+Content-Type: text/x-patch;
+ name="19.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="19.patch"
+
+>From 7d0389d6826fb460c85b25a54450151a55fa5338 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:12:32 +0200
+Subject: [PATCH] DVB Fix wrong copy for DVBFE_GET_PARAMS
+
+The translated frontend parameters for the ioctl DVBFE_GET_PARAMS
+wasn't copied back. The patch fixes the issue.
+
+From: Marco Schluessler <marco@lorzodiac.de>
+Signed-off-by: Marco Schluessler <marco@lordzodiac.de>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
+index c451785..e6ae5e6 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
+@@ -1823,10 +1823,12 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 			memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
+ 			err = fe->ops.get_params(fe, (struct dvbfe_params *) parg);
+ 		} else if (fe->ops.get_frontend) {
+-			memcpy (parg, &fepriv->parameters, sizeof (struct dvb_frontend_parameters));
+ 			err = fe->ops.get_frontend(fe, (struct dvb_frontend_parameters*) parg);
+-			if (olddrv_to_newapi(fe, &fepriv->fe_params, &fepriv->parameters, fe->ops.info.type) == -EINVAL)
+-				printk("%s: ERROR !!! Converting Old parameters --> New parameters\n", __func__);
++			if (!err) {
++				if (olddrv_to_newapi(fe, &fepriv->fe_params, &fepriv->parameters, fe->ops.info.type) == -EINVAL)
++					printk("%s: ERROR !!! Converting Old parameters --> New parameters\n", __func__);
++				memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
++			}
+ 		}
+ 		break;
+ 	case DVBFE_GET_DELSYS:
+
+--------------000509050600060105040301--
