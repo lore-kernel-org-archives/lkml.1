@@ -1,57 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbYIDSuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYIDSu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbYIDSuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759632AbYIDSsS
+	id S1760185AbYIDSu5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759943AbYIDStV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:48:18 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53541 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759281AbYIDSsQ (ORCPT
+	Thu, 4 Sep 2008 14:49:21 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:56337 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759941AbYIDStT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:48:16 -0400
-Message-ID: <48C02D53.10706@oracle.com>
-Date: Thu, 04 Sep 2008 11:47:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 4 Sep 2008 14:49:19 -0400
+Date: Thu, 4 Sep 2008 13:49:16 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: unprivileged mounts git tree
+Message-ID: <20080904184916.GA19328@us.ibm.com>
+References: <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu> <20080904161729.GA26579@us.ibm.com> <E1KbIqL-0003QO-34@pomaz-ex.szeredi.hu> <20080904174851.GA13693@hallyn.com> <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Subject: Re: [Bug #11404] BUG: in 2.6.23-rc3-git7 in do_cciss_intr
-References: <q6jBvyFdWbL.A.K4C.fhbuIB@albercik> <N8SeMoDzuxC.A.BhE.YibuIB@albercik>
-In-Reply-To: <N8SeMoDzuxC.A.BhE.YibuIB@albercik>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Quoting Miklos Szeredi (miklos@szeredi.hu):
+> On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
+> > Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
+> > > > but you're still doing
+> > > > 
+> > > > 	if (IS_MNT_SHARED(old_nd.path.mnt) && !capable(CAP_SYS_ADMIN))
+> > > > 		goto out;
+> > > > 
+> > > > shouldn't it be something like
+> > > > 
+> > > > 	if (IS_MNT_SHARED(old_nd.path.mnt) && (old_nd.path.mnt & MNT_USER))
+> > > > 		goto out;
+> > > > 
+> > > > ?
+> > > 
+> > > Why would that be an error?  There's no real security gain to be had
+> > > from restricting a privileged user, but could cause a lot of
+> > > annoyance.  If we think this is dangerous, then protection should be
+> > > built into mount(8) with an option to override.  But not into the
+> > > kernel, IMO.
+> > 
+> > We disagree on that.  But can we agree that the check you added is wrong?
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> No :)
 > 
+> > There is no reason why a user mount should not be able to do shared
+> > mounts, is there?
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11404
-> Subject		: BUG: in 2.6.23-rc3-git7 in do_cciss_intr
-> Submitter	: rdunlap <randy.dunlap@oracle.com>
-> Date		: 2008-08-21 5:52 (10 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121929819616273&w=4
-> 		  http://marc.info/?l=linux-kernel&m=121932889105368&w=4
-> Handled-By	: Miller, Mike (OS Dev) <Mike.Miller@hp.com>
-> 		  James Bottomley <James.Bottomley@hansenpartnership.com>
+> I don't know.  It's something to think about in the future, but not
+> essential.  We know that without the above check the user can do bad
+> things: propagate mounts back into the source, and we don't want that.
 
-Yes, just got this same bug in 2.6.27-rc5-git3.
+When is propagating mounts back into the source bad?  Because you are
+not preventing it.
 
-~Randy
+You are preventing future propagation back into the user's own mounts,
+but not into mounts not owned by the user.
 
+It's not right.
+
+> We could allow binding a shared mount if
+> 
+>   a) the owners of the source and destination match
+>   b) the destination is made a slave of the source
+
+Well that's what I've been saying...
+
+> But the current patchset doesn't allow _any_ changes to propagation
+> without CAP_SYS_ADMIN, so why should bind be an exception?
+
+Because it's not a change in propagation among existing mounts, instead
+it's defining propagation for the new user mounts.  And since user
+mounts don't currently exist, we're in no position to talk about
+exceptions to existing behavior.
+
+> And yes, this is something to think about, but I think it's a rather
+> uncommon corner case, and so the patchset very much makes sense
+> without having to deal with unprivileged mount propagation changes.
+
+I'm willing to accept that if we simply leave the patchset as it was
+before, but your new check just adds inconsistencies for absolutely zero
+security gain.
+
+> >  So should the check above just go away then?
+> 
+> No, we'd be back with the original problem.
+
+We still have the original problem.
+
+When root does
+
+	mount -bind /mnt /mnt
+	mount --make-rshared /mnt
+	mount --bind -o user=hallyn /mnt /home/hallyn/mnt
+
+and hallyn does
+
+	mount --bind /usr /home/hallyn/mnt/usr
+
+then the kernel happily propagates the mount to /mnt/usr.
+Now if hallyn does
+
+	mount --bind /home/hallyn/mnt/usr /home/hallyn/mnt/usr2
+
+THAT gives him a -EPERM.
+
+To what end?
+
+-serge
