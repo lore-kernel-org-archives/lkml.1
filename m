@@ -1,46 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbYIDT53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbYIDT7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756047AbYIDT53 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 15:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYIDT5T
+	id S1756382AbYIDT7y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYIDT7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 15:57:19 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:33195 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754107AbYIDT5S (ORCPT
+	Thu, 4 Sep 2008 15:59:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:24578 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbYIDT7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 15:57:18 -0400
-Date: Thu, 4 Sep 2008 22:00:32 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Don Zickus <dzickus@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       arozansk@redhat.com, Thomas.Mingarelli@hp.com, ak@linux.intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080904200032.GM18288@one.firstfloor.org>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 4 Sep 2008 15:59:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OaPKtOtcI9t2a0Ez1zcVDdkquHQQte+FjxGv/6yeCN+3bjaBGPm88QssmvpTYph8DU
+         756lLxVaPkwX7IjkPl3Zszwt2Gav/BCy97NjrnRgW4EWmOtBD3klEM6ADDzqI4Aig9zq
+         VLTA3KiAoDglbRuYw9+tJbB1In3b1ZJqzljZQ=
+Message-ID: <86802c440809041259i8982000yb0f68aeb2842caf0@mail.gmail.com>
+Date: Thu, 4 Sep 2008 12:59:45 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] x86: order functions in cpu/common.c and cpu/common_64.c
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080904194127.GA2542@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080904190816.GB4349@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+References: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080904191205.GC24990@elte.hu> <20080904193733.GA25136@elte.hu>
+	 <20080904194127.GA2542@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Add "kdump" to the list. It will also be broken if we decide to let one
-> driver hijack the NMI handler.
+On Thu, Sep 4, 2008 at 12:41 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> hm, something in your patch series is early-crashing tip/master with
+>> this config:
+>>
+>>  http://redhat.com/~mingo/misc/config-Thu_Sep__4_21_23_20_CEST_2008.bad
+>>
+>> the early-RIP is 0xffffffff804365b0:
+>>
+>> ffffffff8043656a <proc_bus_pci_release>:
+>>
+>> ffffffff804365b0:       be d0 00 00 00          mov    $0xd0,%esi
+>> ffffffff804365b5:       e8 ad 28 e7 ff          callq  ffffffff802a8e67 <kmem_cache_alloc>
+>>
+>> fault 0xd, general protection fault. Given that it's an immediate
+>> constant load, something really serious happened.
+>
+> ah, that's _another_ -tip testbox that broke at the same time, with a
+> different kernel image. The RIP that corresponds to this box is
+> 0xffffffff80420470:
+>
+> ffffffff8042045b <strnlen>:
+> ffffffff8042045b:       55                      push   %rbp
+>
+> ffffffff80420470:       80 38 00                cmpb   $0x0,(%rax)
+>
+>
+> which could be consistent with the printk messup ...
+>
+>> i've pushed out the broken tree into tip/tmp.master.broken (havent
+>> updated tip/master with the breakage). I've removed the broken printk
+>> in kernel/resource.c that Andrew found, see commit 06e44f6af324 - so
+>> that's not the cause.
+>
+> i've double checked that 06e44f6af324 is applied. I'll bisect this.
+>
+or by
+ca81beb4a340ee690803fcb1498f863d0e68843f
 
-kdump is a special case, similar to the NMI button panic mode. It should 
-be always only active when the user configured it. When the user configured
-it should be always the fallback and override any other drivers.
-
-But watchdog is a special case. I assume the watchdog will just log
-(and do the work that a SMI should be doing) but then continue 
-the chain so that kdump can dump on a watchdog timeout.
-
--Andi
+YH
