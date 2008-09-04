@@ -1,127 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYIDI1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYIDI2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbYIDI1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbYIDIYS
+	id S1757628AbYIDI2U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758045AbYIDIZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:24:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58038 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757797AbYIDIYQ (ORCPT
+	Thu, 4 Sep 2008 04:25:45 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:65089 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758037AbYIDIZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:24:16 -0400
-Subject: [PATCH] ftrace: sched_switch: show the wakee's cpu
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080903214249.661170580@goodmis.org>
-References: <20080903214249.661170580@goodmis.org>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 10:24:16 +0200
-Message-Id: <1220516656.8609.201.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Thu, 4 Sep 2008 04:25:43 -0400
+X-IronPort-AV: E=Sophos;i="4.32,320,1217822400"; 
+   d="scan'208";a="59018002"
+From: Bryan Wu <cooloney@kernel.org>
+To: broonie@opensource.wolfsonmicro.com
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] ASoC codec: fix compiling error in ad1980 driver after ASoC API changed
+Date: Thu,  4 Sep 2008 16:25:54 +0800
+Message-Id: <1220516754-20865-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: ftrace: sched_switch: show the wakee's cpu
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue Sep 02 21:12:13 CEST 2008
+From: Cliff Cai <cliff.cai@analog.com>
 
-While profiling the smp behaviour of the scheduler it was needed to know to
-which cpu a task got woken.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- kernel/trace/trace.c |   41 +++++++++++++++++++++++++++--------------
- kernel/trace/trace.h |    2 ++
- 2 files changed, 29 insertions(+), 14 deletions(-)
+ sound/soc/codecs/ad1980.c |    2 +-
+ sound/soc/codecs/ad1980.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/kernel/trace/trace.c
-===================================================================
---- linux-2.6.orig/kernel/trace/trace.c
-+++ linux-2.6/kernel/trace/trace.c
-@@ -976,6 +977,7 @@ tracing_sched_switch_trace(struct trace_
- 	entry->field.ctx.next_pid	= next->pid;
- 	entry->field.ctx.next_prio	= next->prio;
- 	entry->field.ctx.next_state	= next->state;
-+	entry->field.ctx.next_cpu	= task_cpu(next);
- 	__trace_stack(tr, data, flags, 5);
- 	__raw_spin_unlock(&data->lock);
- 	raw_local_irq_restore(irq_flags);
-@@ -1002,6 +1004,7 @@ tracing_sched_wakeup_trace(struct trace_
- 	entry->field.ctx.next_pid	= wakee->pid;
- 	entry->field.ctx.next_prio	= wakee->prio;
- 	entry->field.ctx.next_state	= wakee->state;
-+	entry->field.ctx.next_cpu	= task_cpu(wakee);
- 	__trace_stack(tr, data, flags, 6);
- 	__raw_spin_unlock(&data->lock);
- 	raw_local_irq_restore(irq_flags);
-@@ -1630,10 +1638,11 @@ print_lat_fmt(struct trace_iterator *ite
- 			__ffs(field->ctx.prev_state) + 1 : 0;
- 		S = state < sizeof(state_to_char) - 1 ? state_to_char[state] : 'X';
- 		comm = trace_find_cmdline(field->ctx.next_pid);
--		trace_seq_printf(s, " %5d:%3d:%c %s %5d:%3d:%c %s\n",
-+		trace_seq_printf(s, " %5d:%3d:%c %s [%03d] %5d:%3d:%c %s\n",
- 				 field->ctx.prev_pid,
- 				 field->ctx.prev_prio,
- 				 S, entry->type == TRACE_CTX ? "==>" : "  +",
-+				 field->ctx.next_cpu,
- 				 field->ctx.next_pid,
- 				 field->ctx.next_prio,
- 				 T, comm);
-@@ -1730,11 +1739,12 @@ static int print_trace_fmt(struct trace_
- 			state_to_char[field->ctx.prev_state] : 'X';
- 		T = field->ctx.next_state < sizeof(state_to_char) ?
- 			state_to_char[field->ctx.next_state] : 'X';
--		ret = trace_seq_printf(s, " %5d:%3d:%c %s %5d:%3d:%c\n",
-+		ret = trace_seq_printf(s, " %5d:%3d:%c %s [%03d] %5d:%3d:%c\n",
- 				       field->ctx.prev_pid,
- 				       field->ctx.prev_prio,
- 				       S,
- 				       entry->type == TRACE_CTX ? "==>" : "  +",
-+				       field->ctx.next_cpu,
- 				       field->ctx.next_pid,
- 				       field->ctx.next_prio,
- 				       T);
-@@ -1811,10 +1821,11 @@ static int print_raw_fmt(struct trace_it
- 			state_to_char[field->ctx.next_state] : 'X';
- 		if (entry->type == TRACE_WAKE)
- 			S = '+';
--		ret = trace_seq_printf(s, "%d %d %c %d %d %c\n",
-+		ret = trace_seq_printf(s, "%d %d %c %d %d %d %c\n",
- 				       field->ctx.prev_pid,
- 				       field->ctx.prev_prio,
- 				       S,
-+				       field->ctx.next_cpu,
- 				       field->ctx.next_pid,
- 				       field->ctx.next_prio,
- 				       T);
-@@ -1887,6 +1898,7 @@ static int print_hex_fmt(struct trace_it
- 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.prev_pid);
- 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.prev_prio);
- 		SEQ_PUT_HEX_FIELD_RET(s, S);
-+		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.next_cpu);
- 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.next_pid);
- 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.next_prio);
- 		SEQ_PUT_HEX_FIELD_RET(s, T);
-Index: linux-2.6/kernel/trace/trace.h
-===================================================================
---- linux-2.6.orig/kernel/trace/trace.h
-+++ linux-2.6/kernel/trace/trace.h
-@@ -41,6 +41,7 @@ struct ctx_switch_entry {
- 	unsigned int		next_pid;
- 	unsigned char		next_prio;
- 	unsigned char		next_state;
-+	unsigned int		next_cpu;
- };
+diff --git a/sound/soc/codecs/ad1980.c b/sound/soc/codecs/ad1980.c
+index bfbab3d..4e09c1f 100644
+--- a/sound/soc/codecs/ad1980.c
++++ b/sound/soc/codecs/ad1980.c
+@@ -141,7 +141,7 @@ static int ac97_write(struct snd_soc_codec *codec, unsigned int reg,
+ 	return 0;
+ }
  
- /*
-
-
+-struct snd_soc_codec_dai ad1980_dai = {
++struct snd_soc_dai ad1980_dai = {
+ 	.name = "AC97",
+ 	.playback = {
+ 		.stream_name = "Playback",
+diff --git a/sound/soc/codecs/ad1980.h b/sound/soc/codecs/ad1980.h
+index 5d4710d..db6c850 100644
+--- a/sound/soc/codecs/ad1980.h
++++ b/sound/soc/codecs/ad1980.h
+@@ -17,7 +17,7 @@
+ #define PR5		0x2000
+ #define PR6		0x4000
+ 
+-extern struct snd_soc_codec_dai ad1980_dai;
++extern struct snd_soc_dai ad1980_dai;
+ extern struct snd_soc_codec_device soc_codec_dev_ad1980;
+ 
+ #endif
+-- 
+1.5.6
