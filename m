@@ -1,114 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbYIDUic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbYIDUkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbYIDUic (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbYIDUhi
+	id S1758180AbYIDUkW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbYIDUkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:37:38 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34617 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759761AbYIDUhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:37:36 -0400
-Date: Thu, 4 Sep 2008 15:37:30 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
-       Andrey Mirkin <major@openvz.org>
-Subject: Re: [RFC v3][PATCH 1/9] Create syscalls: sys_checkpoint,
-	sys_restart
-Message-ID: <20080904203730.GA28313@us.ibm.com>
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040401320.5982@takamine.ncl.cs.columbia.edu> <20080904144223.GA19364@us.ibm.com> <48C01B92.60900@cs.columbia.edu>
+	Thu, 4 Sep 2008 16:40:05 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:34464 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753397AbYIDUkD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:40:03 -0400
+Date: Thu, 4 Sep 2008 22:40:00 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Helge Deller <deller@gmx.de>
+cc: linux-parisc@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: __kernel_suseconds_t is int on PA-RISC (and SPARC64)?
+In-Reply-To: <48B46672.1000902@gmx.de>
+Message-ID: <Pine.LNX.4.64.0809042238090.19113@anakin>
+References: <Pine.LNX.4.64.0808262207450.7910@anakin> <48B46672.1000902@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C01B92.60900@cs.columbia.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> 
-> 
-> Serge E. Hallyn wrote:
-> > Quoting Oren Laadan (orenl@cs.columbia.edu):
-> >> Create trivial sys_checkpoint and sys_restore system calls. They will
-> >> enable to checkpoint and restart an entire container, to and from a
-> >> checkpoint image file descriptor.
-> >>
-> >> The syscalls take a file descriptor (for the image file) and flags as
-> >> arguments. For sys_checkpoint the first argument identifies the target
-> >> container; for sys_restart it will identify the checkpoint image.
-> >>
-> >> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-> >> ---
-> 
-> [...]
-> 
-> >> +/**
-> >> + * sys_checkpoint - checkpoint a container
-> >> + * @pid: pid of the container init(1) process
-> >> + * @fd: file to which dump the checkpoint image
-> >> + * @flags: checkpoint operation flags
-> >> + */
-> >> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
-> >> +{
-> >> +	pr_debug("sys_checkpoint not implemented yet\n");
-> >> +	return -ENOSYS;
-> >> +}
-> >> +/**
-> >> + * sys_restart - restart a container
-> >> + * @crid: checkpoint image identifier
+On Tue, 26 Aug 2008, Helge Deller wrote:
+> Geert Uytterhoeven wrote:
+> > Apparently __kernel_suseconds_t is `int' on PA-RISC (and on SPARC64),
+> > while it's `long' on all other platforms.
 > > 
-> > So can we compare your api to Andrey's?
-> > 
-> > You've explained before that crid is used to tie together multiple
-> > calls to checkpoint, but why do you have to specify it for restart?
-> > Can't it just come from the fd?  Or, the fd will be passed in
-> > seek()d to the right position for the data for this task, so the crid
-> > won't be available there?
+> > Is there a specific reason for that?
 > 
-> I added the 'crid' inside to support a mode of operation in which we
-> would like the checkpoint data to remain in memory across multiple
-> system calls. Here are example scenarios:
+> I don't know for sure, but arch/parisc/kernel/syscall_table.S states:
+> /* even though manpage says struct timeval contains longs, ours has
+>  * time_t and suseconds_t -- both of which are safe wide/narrow */
+>    ENTRY_COMP(setitimer)
 > 
-> 1) We will want to reduce down time by first buffering the checkpoint
-> image in memory, then resuming the container, and only then writing
-> the data back to a (the) file descriptor.
-> So instead of:
->   freeze -> checkpoint and write back -> unfreeze
-> We want:
->   freeze -> checkpoint to buffer -> unfreeze -> write back
-> I envision each of these steps to be a separate invocation of a syscall.
-> to the 'crid' returned by the sys_checkpoint() at the 2nd step, will be
-> used to identify that data in the 4th step. (Note, that between the
-> unfreeze and the write-back, another checkpoint may be already taken).
+> So it was probably chosen to be int so that it can be easily used in 32- and
+> 64bit kernels (or compat code).
 > 
-> 2) A task may want to take a checkpoint (e.g. of itself, or a whole
-> container) and keep that checkpoint in memory; at a later time it may
-> want to revert to that checkpoint. Moreover, it may keep multiple such
-> checkpoints (to where it may want to return). 'crid' tells sys_restart
-> which one to use.
-> 
-> Note that this 'crid' will in fact be tied to resources that are kept
-> by the kernel - e.g. references to COW pages (when we add that).
-> Louis suggested to use a specialized FD instead of a numeric 'crid'
-> (that is: create a anonymous inode and a struct file that represent
-> that checkpoint in the kernel, and return an FD to it). This approach
-> has pros and cons of 'crid' (see the archives of the containers
-> mailing list). For now I kept 'crid', but I'm definitely open to change
-> it to a FD.
-> 
-> Oren.
+> > This causes compiler warnings in the HP SDC Real Time Clock driver,
+> > which is shared between PA-RISC and m68k:
 
-Oh, so the crid identifies one checkpoint inside the file - the single
-file can store multiple checkpoints?
+Here's a patch to fix the compiler warnings. Is this OK for PA-RISC?
 
-> > Andrey, how will the 'ctid' in your patchset be used?  It sounds
-> > like it's actually going to set some integer id on the created
-> > container?  We actually don't have container ids (or even
-> > containers) right now, so we probably don't want that in our api,
-> > right?
+SUbject: [PATCH] HP input: kill warnings due to suseconds_t differences
 
--serge
+Kill compiler warnings related to printf() formats in the input drivers for
+various HP9000 machines, which are shared between PA-RISC (suseconds_t is int)
+and m68k (suseconds_t is long). As both are 32-bit, it's safe to cast to int.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/input/misc/hp_sdc_rtc.c |   10 +++++-----
+ drivers/input/serio/hp_sdc.c    |    2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+--- a/drivers/input/misc/hp_sdc_rtc.c
++++ b/drivers/input/misc/hp_sdc_rtc.c
+@@ -458,35 +458,35 @@ static int hp_sdc_rtc_proc_output (char 
+ 		p += sprintf(p, "i8042 rtc\t: READ FAILED!\n");
+ 	} else {
+ 		p += sprintf(p, "i8042 rtc\t: %ld.%02d seconds\n", 
+-			     tv.tv_sec, tv.tv_usec/1000);
++			     tv.tv_sec, (int)tv.tv_usec/1000);
+ 	}
+ 
+ 	if (hp_sdc_rtc_read_fhs(&tv)) {
+ 		p += sprintf(p, "handshake\t: READ FAILED!\n");
+ 	} else {
+         	p += sprintf(p, "handshake\t: %ld.%02d seconds\n", 
+-			     tv.tv_sec, tv.tv_usec/1000);
++			     tv.tv_sec, (int)tv.tv_usec/1000);
+ 	}
+ 
+ 	if (hp_sdc_rtc_read_mt(&tv)) {
+ 		p += sprintf(p, "alarm\t\t: READ FAILED!\n");
+ 	} else {
+ 		p += sprintf(p, "alarm\t\t: %ld.%02d seconds\n", 
+-			     tv.tv_sec, tv.tv_usec/1000);
++			     tv.tv_sec, (int)tv.tv_usec/1000);
+ 	}
+ 
+ 	if (hp_sdc_rtc_read_dt(&tv)) {
+ 		p += sprintf(p, "delay\t\t: READ FAILED!\n");
+ 	} else {
+ 		p += sprintf(p, "delay\t\t: %ld.%02d seconds\n", 
+-			     tv.tv_sec, tv.tv_usec/1000);
++			     tv.tv_sec, (int)tv.tv_usec/1000);
+ 	}
+ 
+ 	if (hp_sdc_rtc_read_ct(&tv)) {
+ 		p += sprintf(p, "periodic\t: READ FAILED!\n");
+ 	} else {
+ 		p += sprintf(p, "periodic\t: %ld.%02d seconds\n", 
+-			     tv.tv_sec, tv.tv_usec/1000);
++			     tv.tv_sec, (int)tv.tv_usec/1000);
+ 	}
+ 
+         p += sprintf(p,
+--- a/drivers/input/serio/hp_sdc.c
++++ b/drivers/input/serio/hp_sdc.c
+@@ -323,7 +323,7 @@ static void hp_sdc_tasklet(unsigned long
+ 			 * it back to the application. and be less verbose.
+ 			 */
+ 			printk(KERN_WARNING PREFIX "read timeout (%ius)!\n",
+-			       tv.tv_usec - hp_sdc.rtv.tv_usec);
++			       (int)(tv.tv_usec - hp_sdc.rtv.tv_usec));
+ 			curr->idx += hp_sdc.rqty;
+ 			hp_sdc.rqty = 0;
+ 			tmp = curr->seq[curr->actidx];
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
