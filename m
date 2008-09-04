@@ -1,185 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbYIDO0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbYIDO3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756759AbYIDO0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 10:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYIDO0p
+	id S1756113AbYIDO3w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 10:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYIDO3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 10:26:45 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:62828 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbYIDO0o (ORCPT
+	Thu, 4 Sep 2008 10:29:44 -0400
+Received: from mail-in-11.arcor-online.net ([151.189.21.51]:40076 "EHLO
+	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751404AbYIDO3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 10:26:44 -0400
-Message-ID: <48BFEF7D.7050809@cs.columbia.edu>
-Date: Thu, 04 Sep 2008 10:23:57 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 4 Sep 2008 10:29:43 -0400
+Date: Thu, 4 Sep 2008 16:37:01 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Nir Tzachar <nir@tzachar.com>
+cc: 7eggert@gmx.de,
+       =?iso-8859-15?Q?Alejandro_Riveira_Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] ncurses based config
+In-Reply-To: <9b2db90b0809040517v4478f1b9md69ea07ef9c62c86@mail.gmail.com>
+Message-ID: <alpine.LSU.0.999.0809041627170.16019@be1.lrz>
+References: <b86dt-3nV-39@gated-at.bofh.it> <b86wB-3HU-1@gated-at.bofh.it> 
+ <b86Qa-4k2-53@gated-at.bofh.it> <b879t-4DG-23@gated-at.bofh.it> 
+ <E1KbDqF-0003oH-1B@be1.7eggert.dyndns.org>
+ <9b2db90b0809040517v4478f1b9md69ea07ef9c62c86@mail.gmail.com>
 MIME-Version: 1.0
-To: Louis.Rilling@kerlabs.com
-CC: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [RFC v3][PATCH 7/9] Infrastructure for shared objects
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040404550.5982@takamine.ncl.cs.columbia.edu> <20080904093803.GX14473@hawkmoon.kerlabs.com>
-In-Reply-To: <20080904093803.GX14473@hawkmoon.kerlabs.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: TEXT/PLAIN; charset=us-ascii
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 4 Sep 2008, Nir Tzachar wrote:
+> On Thu, Sep 4, 2008 at 3:21 PM, Bodo Eggert <7eggert@gmx.de> wrote:
 
+> > In other words: You don't permanently need half a screen of instructions,
+> > hide them by default and offer a popup. The window below the title is the
+> > only working area, it can be maximized. (Looking at "make menuconfig",
+> > I see the same mistakes.)
+> 
+> I tried to copy the behaviour of menuconfig, hence the similarity.
 
-Louis Rilling wrote:
-> On Thu, Sep 04, 2008 at 04:05:22AM -0400, Oren Laadan wrote:
->> Infrastructure to handle objects that may be shared and referenced by
->> multiple tasks or other objects, e..g open files, memory address space
->> etc.
->>
->> The state of shared objects is saved once. On the first encounter, the
->> state is dumped and the object is assigned a unique identifier and also
->> stored in a hash table (indexed by its physical kenrel address). From
->> then on the object will be found in the hash and only its identifier is
->> saved.
->>
->> On restart the identifier is looked up in the hash table; if not found
->> then the state is read, the object is created, and added to the hash
->> table (this time indexed by its identifier). Otherwise, the object in
->> the hash table is used.
->>
-> 
-> [...]
-> 
->> diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
->> new file mode 100644
->> index 0000000..442b08c
->> --- /dev/null
->> +++ b/checkpoint/objhash.c
->> @@ -0,0 +1,205 @@
->> +/*
->> + *  Checkpoint-restart - object hash infrastructure to manage shared objects
->> + *
->> + *  Copyright (C) 2008 Oren Laadan
->> + *
->> + *  This file is subject to the terms and conditions of the GNU General Public
->> + *  License.  See the file COPYING in the main directory of the Linux
->> + *  distribution for more details.
->> + */
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/file.h>
->> +#include <linux/hash.h>
->> +#include <linux/ckpt.h>
->> +
->> +struct cr_objref {
->> +	int objref;
->> +	void *ptr;
->> +	unsigned short type;
->> +	unsigned short flags;
->> +	struct hlist_node hash;
->> +};
->> +
->> +struct cr_objhash {
->> +	struct hlist_head *head;
->> +	int objref_index;
->> +};
->> +
->> +#define CR_OBJHASH_NBITS  10
->> +#define CR_OBJHASH_TOTAL  (1UL << CR_OBJHASH_NBITS - 1)
-> 
-> Why -1? This makes a total number of 512 entries, which will break below with
-> hashes in range 0..1023.
+Obviously. I tried to put the blame on menuconfig by mentioning it.
 
-Ugh !!!  Was fixed and tested, but sneaked back in :(
-Thanks for spotting, will resend the patchset.
+> Does placing a short help, e.g.,  'press I for instruction' seems
+> good?
 
-Oren.
-
-> 
->> +
->> +static void cr_obj_ref_drop(struct cr_objref *obj)
->> +{
->> +	switch (obj->type) {
->> +	case CR_OBJ_FILE:
->> +		fput((struct file *) obj->ptr);
->> +		break;
->> +	default:
->> +		BUG();
->> +	}
->> +}
->> +
->> +static void cr_obj_ref_grab(struct cr_objref *obj)
->> +{
->> +	switch (obj->type) {
->> +	case CR_OBJ_FILE:
->> +		get_file((struct file *) obj->ptr);
->> +		break;
->> +	default:
->> +		BUG();
->> +	}
->> +}
->> +
->> +static void cr_objhash_clear(struct cr_objhash *objhash)
->> +{
->> +	struct hlist_head *h = objhash->head;
->> +	struct hlist_node *n, *t;
->> +	struct cr_objref *obj;
->> +	int i;
->> +
->> +	for (i = 0; i < CR_OBJHASH_TOTAL; i++) {
->> +		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
->> +			cr_obj_ref_drop(obj);
->> +			kfree(obj);
->> +		}
->> +	}
->> +}
->> +
->> +void cr_objhash_free(struct cr_ctx *ctx)
->> +{
->> +	struct cr_objhash *objhash = ctx->objhash;
->> +
->> +	if (objhash) {
->> +		cr_objhash_clear(objhash);
->> +		kfree(objhash->head);
->> +		kfree(ctx->objhash);
->> +		ctx->objhash = NULL;
->> +	}
->> +}
->> +
->> +int cr_objhash_alloc(struct cr_ctx *ctx)
->> +{
->> +	struct cr_objhash *objhash;
->> +	struct hlist_head *head;
->> +
->> +	objhash = kzalloc(sizeof(*objhash), GFP_KERNEL);
->> +	if (!objhash)
->> +		return -ENOMEM;
->> +	head = kzalloc(CR_OBJHASH_TOTAL * sizeof(*head), GFP_KERNEL);
-> 
-> 512 entries allocated
-> 
->> +	if (!head) {
->> +		kfree(objhash);
->> +		return -ENOMEM;
->> +	}
->> +
->> +	objhash->head = head;
->> +	objhash->objref_index = 1;
->> +
->> +	ctx->objhash = objhash;
->> +	return 0;
->> +}
->> +
->> +static struct cr_objref *cr_obj_find_by_ptr(struct cr_ctx *ctx, void *ptr)
->> +{
->> +	struct hlist_head *h;
->> +	struct hlist_node *n;
->> +	struct cr_objref *obj;
->> +
->> +	h = &ctx->objhash->head[hash_ptr(ptr, CR_OBJHASH_NBITS)];
-> 
-> access to entries 0..1023
-> 
-> Louis
-> 
+In this case, I'd just add one more button.
