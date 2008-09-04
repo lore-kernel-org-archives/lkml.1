@@ -1,80 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYIDOZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbYIDO0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbYIDOZy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 10:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbYIDOZc
+	id S1756759AbYIDO0x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 10:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbYIDO0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 10:25:32 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55154 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752412AbYIDOZb (ORCPT
+	Thu, 4 Sep 2008 10:26:45 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:62828 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbYIDO0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 10:25:31 -0400
-Subject: Re: [2.6.27] early exception - lockdep related?
-From: Peter Zijlstra <peterz@infradead.org>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <68676e00809031221v6486d4cdmc1ac7487acd01190@mail.gmail.com>
-References: <20080902210646.GA10925@dreamland.darkstar.lan>
-	 <1220424721.8609.74.camel@twins>
-	 <68676e00809030128o45820023n6f270847e14af2a3@mail.gmail.com>
-	 <68676e00809031221v6486d4cdmc1ac7487acd01190@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 16:25:31 +0200
-Message-Id: <1220538332.8609.233.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 4 Sep 2008 10:26:44 -0400
+Message-ID: <48BFEF7D.7050809@cs.columbia.edu>
+Date: Thu, 04 Sep 2008 10:23:57 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Louis.Rilling@kerlabs.com
+CC: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: [RFC v3][PATCH 7/9] Infrastructure for shared objects
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040404550.5982@takamine.ncl.cs.columbia.edu> <20080904093803.GX14473@hawkmoon.kerlabs.com>
+In-Reply-To: <20080904093803.GX14473@hawkmoon.kerlabs.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-03 at 21:21 +0200, Luca Tettamanti wrote:
-> On Wed, Sep 3, 2008 at 10:28 AM, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> > On Wed, Sep 3, 2008 at 8:52 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> >> On Tue, 2008-09-02 at 23:06 +0200, Luca Tettamanti wrote:
-> >>> Hello,
-> >>> I'm seeing an early exception (0e) - which seems related to lockdep - at
-> >>> boot with many 2.6.27 kernels and I'm having troubles to track it down.
-> >>
-> >> Does it print one of these nice stack traces?
-> >
-> > Of course not ;-) It dies before dumping the stack trace (or at least
-> > it doesn't make to the console - that machine has a serial port, but
-> > my notebook does not... I've ordered a usb-to-serial adapter).
-> >
-> >>> The strange thing is that it comes and goes with different kernel
-> >>> versions
-> >>
-> >> What kernel version did you generate the below with - and what config.
-> >
-> > -rc2 is working, after that it's intermittent. The last kernel that I
-> > tried is -git from a couple of days ago.
-> >
-> >>> , but a "bad" kernel consistently fails across reboots. It also
-> >>> seems to be sensitive to the configuration (attached)
-> >>
-> >> you seem to have forgotten that attachment.
-> >
-> > Ops, will send as soon as I get home.
+
+
+Louis Rilling wrote:
+> On Thu, Sep 04, 2008 at 04:05:22AM -0400, Oren Laadan wrote:
+>> Infrastructure to handle objects that may be shared and referenced by
+>> multiple tasks or other objects, e..g open files, memory address space
+>> etc.
+>>
+>> The state of shared objects is saved once. On the first encounter, the
+>> state is dumped and the object is assigned a unique identifier and also
+>> stored in a hash table (indexed by its physical kenrel address). From
+>> then on the object will be found in the hash and only its identifier is
+>> saved.
+>>
+>> On restart the identifier is looked up in the hash table; if not found
+>> then the state is read, the object is created, and added to the hash
+>> table (this time indexed by its identifier). Otherwise, the object in
+>> the hash table is used.
+>>
 > 
-> Config is attached.
+> [...]
 > 
-> I tried netconsole, but got not output. No luck with qemu either :S
+>> diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+>> new file mode 100644
+>> index 0000000..442b08c
+>> --- /dev/null
+>> +++ b/checkpoint/objhash.c
+>> @@ -0,0 +1,205 @@
+>> +/*
+>> + *  Checkpoint-restart - object hash infrastructure to manage shared objects
+>> + *
+>> + *  Copyright (C) 2008 Oren Laadan
+>> + *
+>> + *  This file is subject to the terms and conditions of the GNU General Public
+>> + *  License.  See the file COPYING in the main directory of the Linux
+>> + *  distribution for more details.
+>> + */
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/file.h>
+>> +#include <linux/hash.h>
+>> +#include <linux/ckpt.h>
+>> +
+>> +struct cr_objref {
+>> +	int objref;
+>> +	void *ptr;
+>> +	unsigned short type;
+>> +	unsigned short flags;
+>> +	struct hlist_node hash;
+>> +};
+>> +
+>> +struct cr_objhash {
+>> +	struct hlist_head *head;
+>> +	int objref_index;
+>> +};
+>> +
+>> +#define CR_OBJHASH_NBITS  10
+>> +#define CR_OBJHASH_TOTAL  (1UL << CR_OBJHASH_NBITS - 1)
 > 
-> QEMU from SVN reports that:
-> qemu: fatal: Trying to execute code outside RAM or ROM at 0x00000000000a0000
+> Why -1? This makes a total number of 512 entries, which will break below with
+> hashes in range 0..1023.
+
+Ugh !!!  Was fixed and tested, but sneaked back in :(
+Thanks for spotting, will resend the patchset.
+
+Oren.
+
 > 
-> KVM goes a bit further but dies due to an exception while the kernel
-> is still executing in real mode.
-
-Sadly your config just boots, albeit not to userspace due to missing
-drivers.
-
-root@twins:/mnt/build/linux-2.6# git-describe
-v2.6.27-rc5-6-gbef69ea
-
-root@twins:/mnt/build/linux-2.6# /mnt/md0/cross/bin/x86_64-linux-gcc --version
-x86_64-linux-gcc (GCC) 4.3.1 20080510 (prerelease)
-
-
+>> +
+>> +static void cr_obj_ref_drop(struct cr_objref *obj)
+>> +{
+>> +	switch (obj->type) {
+>> +	case CR_OBJ_FILE:
+>> +		fput((struct file *) obj->ptr);
+>> +		break;
+>> +	default:
+>> +		BUG();
+>> +	}
+>> +}
+>> +
+>> +static void cr_obj_ref_grab(struct cr_objref *obj)
+>> +{
+>> +	switch (obj->type) {
+>> +	case CR_OBJ_FILE:
+>> +		get_file((struct file *) obj->ptr);
+>> +		break;
+>> +	default:
+>> +		BUG();
+>> +	}
+>> +}
+>> +
+>> +static void cr_objhash_clear(struct cr_objhash *objhash)
+>> +{
+>> +	struct hlist_head *h = objhash->head;
+>> +	struct hlist_node *n, *t;
+>> +	struct cr_objref *obj;
+>> +	int i;
+>> +
+>> +	for (i = 0; i < CR_OBJHASH_TOTAL; i++) {
+>> +		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
+>> +			cr_obj_ref_drop(obj);
+>> +			kfree(obj);
+>> +		}
+>> +	}
+>> +}
+>> +
+>> +void cr_objhash_free(struct cr_ctx *ctx)
+>> +{
+>> +	struct cr_objhash *objhash = ctx->objhash;
+>> +
+>> +	if (objhash) {
+>> +		cr_objhash_clear(objhash);
+>> +		kfree(objhash->head);
+>> +		kfree(ctx->objhash);
+>> +		ctx->objhash = NULL;
+>> +	}
+>> +}
+>> +
+>> +int cr_objhash_alloc(struct cr_ctx *ctx)
+>> +{
+>> +	struct cr_objhash *objhash;
+>> +	struct hlist_head *head;
+>> +
+>> +	objhash = kzalloc(sizeof(*objhash), GFP_KERNEL);
+>> +	if (!objhash)
+>> +		return -ENOMEM;
+>> +	head = kzalloc(CR_OBJHASH_TOTAL * sizeof(*head), GFP_KERNEL);
+> 
+> 512 entries allocated
+> 
+>> +	if (!head) {
+>> +		kfree(objhash);
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	objhash->head = head;
+>> +	objhash->objref_index = 1;
+>> +
+>> +	ctx->objhash = objhash;
+>> +	return 0;
+>> +}
+>> +
+>> +static struct cr_objref *cr_obj_find_by_ptr(struct cr_ctx *ctx, void *ptr)
+>> +{
+>> +	struct hlist_head *h;
+>> +	struct hlist_node *n;
+>> +	struct cr_objref *obj;
+>> +
+>> +	h = &ctx->objhash->head[hash_ptr(ptr, CR_OBJHASH_NBITS)];
+> 
+> access to entries 0..1023
+> 
+> Louis
+> 
