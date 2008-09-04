@@ -1,140 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYIDM7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758176AbYIDNAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbYIDM7I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbYIDM5q
+	id S1758176AbYIDNAU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 09:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbYIDM7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:57:46 -0400
-Received: from 75-130-108-43.dhcp.oxfr.ma.charter.com ([75.130.108.43]:33369
-	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756459AbYIDM5p (ORCPT
+	Thu, 4 Sep 2008 08:59:54 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:43581 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754934AbYIDM7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:57:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [TIP/SCHED/DEVEL PATCH v3 4/6] sched: add
-	sched_class->needs_post_schedule() member
-To: mingo@elte.hu
-Cc: rostedt@goodmis.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org, npiggin@suse.de,
-       gregory.haskins@gmail.com
-Date: Thu, 04 Sep 2008 08:55:20 -0400
-Message-ID: <20080904125520.23633.64862.stgit@dev.haskins.net>
-In-Reply-To: <20080904125029.23633.88210.stgit@dev.haskins.net>
-References: <20080904125029.23633.88210.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 08:59:53 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: jkosina@suse.cz
+Cc: linux-input@vger.kernel.org, Anssi Hannula <anssi.hannula@gmail.com>,
+       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 5/5] HID: convert to dev_* prints
+Date: Thu,  4 Sep 2008 14:59:47 +0200
+Message-Id: <1220533187-21848-5-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0
+In-Reply-To: <1220533187-21848-4-git-send-email-jirislaby@gmail.com>
+References: <1220533187-21848-1-git-send-email-jirislaby@gmail.com>
+ <1220533187-21848-2-git-send-email-jirislaby@gmail.com>
+ <1220533187-21848-3-git-send-email-jirislaby@gmail.com>
+ <1220533187-21848-4-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently run class->post_schedule() outside of the rq->lock, which
-means that we need to test for the need to post_schedule outside of
-the lock to avoid a forced reacquistion.  This is currently not a problem
-as we only look at rq->rt.overloaded.  However, we want to enhance this
-going forward to look at more state to reduce the need to post_schedule to
-a bare minimum set.  Therefore, we introduce a new member-func called
-needs_post_schedule() which tests for the post_schedule condtion without
-actually performing the work.  Therefore it is safe to call this
-function before the rq->lock is released, because we are guaranteed not
-to drop the lock at an intermediate point (such as what post_schedule()
-may do).
+Since we have a real device bound to a driver, we may use struct
+device for printing. Use dev_* functions instead of printks in
+3 drivers.
 
-We will use this later in the series
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
+ drivers/hid/hid-lg2ff.c |    8 ++++----
+ drivers/hid/hid-pl.c    |   11 ++++++-----
+ drivers/hid/hid-zpff.c  |    6 +++---
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
- include/linux/sched.h |    1 +
- kernel/sched.c        |   10 +++++++++-
- kernel/sched_rt.c     |   24 ++++++++++++++----------
- 3 files changed, 24 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 08a87b5..cf8cd8c 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -912,6 +912,7 @@ struct sched_class {
- 			      struct rq *busiest, struct sched_domain *sd,
- 			      enum cpu_idle_type idle);
- 	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
-+	int (*needs_post_schedule) (struct rq *this_rq);
- 	void (*post_schedule) (struct rq *this_rq);
- 	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
- #endif
-diff --git a/kernel/sched.c b/kernel/sched.c
-index af4c6fa..ddc3877 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2525,6 +2525,14 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- {
- 	struct mm_struct *mm = rq->prev_mm;
- 	long prev_state;
-+#ifdef CONFIG_SMP
-+	int post_schedule = 0;
-+
-+	if (current->sched_class->needs_post_schedule) {
-+		BUG_ON(!current->sched_class->post_schedule);
-+		post_schedule = current->sched_class->needs_post_schedule(rq);
-+	}
-+#endif
+diff --git a/drivers/hid/hid-lg2ff.c b/drivers/hid/hid-lg2ff.c
+index b2e9a67..4e6dc6e 100644
+--- a/drivers/hid/hid-lg2ff.c
++++ b/drivers/hid/hid-lg2ff.c
+@@ -71,18 +71,18 @@ int lg2ff_init(struct hid_device *hid)
+ 	int error;
  
- 	rq->prev_mm = NULL;
+ 	if (list_empty(report_list)) {
+-		printk(KERN_ERR "hid-lg2ff: no output report found\n");
++		dev_err(&hid->dev, "no output report found\n");
+ 		return -ENODEV;
+ 	}
  
-@@ -2543,7 +2551,7 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	finish_arch_switch(prev);
- 	finish_lock_switch(rq, prev);
- #ifdef CONFIG_SMP
--	if (current->sched_class->post_schedule)
-+	if (post_schedule)
- 		current->sched_class->post_schedule(rq);
- #endif
+ 	report = list_entry(report_list->next, struct hid_report, list);
  
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index 768be35..277ccd2 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1212,20 +1212,23 @@ static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
- 		pull_rt_task(rq);
- }
+ 	if (report->maxfield < 1) {
+-		printk(KERN_ERR "hid-lg2ff: output report is empty\n");
++		dev_err(&hid->dev, "output report is empty\n");
+ 		return -ENODEV;
+ 	}
+ 	if (report->field[0]->report_count < 7) {
+-		printk(KERN_ERR "hid-lg2ff: not enough values in the field\n");
++		dev_err(&hid->dev, "not enough values in the field\n");
+ 		return -ENODEV;
+ 	}
  
-+/*
-+ * assumes rq->lock is held
-+ */
-+static int needs_post_schedule_rt(struct rq *rq)
-+{
-+	return rq->rt.overloaded ? 1 : 0;
-+}
-+
- static void post_schedule_rt(struct rq *rq)
- {
- 	/*
--	 * If we have more than one rt_task queued, then
--	 * see if we can push the other rt_tasks off to other CPUS.
--	 * Note we may release the rq lock, and since
--	 * the lock was owned by prev, we need to release it
--	 * first via finish_lock_switch and then reaquire it here.
-+	 * This is only called if needs_post_schedule_rt() indicates that
-+	 * we need to push tasks away
- 	 */
--	if (unlikely(rq->rt.overloaded)) {
--		spin_lock_irq(&rq->lock);
--		push_rt_tasks(rq);
--		spin_unlock_irq(&rq->lock);
--	}
-+	spin_lock_irq(&rq->lock);
-+	push_rt_tasks(rq);
-+	spin_unlock_irq(&rq->lock);
- }
+@@ -109,7 +109,7 @@ int lg2ff_init(struct hid_device *hid)
  
- /*
-@@ -1473,6 +1476,7 @@ static const struct sched_class rt_sched_class = {
- 	.rq_online              = rq_online_rt,
- 	.rq_offline             = rq_offline_rt,
- 	.pre_schedule		= pre_schedule_rt,
-+	.needs_post_schedule	= needs_post_schedule_rt,
- 	.post_schedule		= post_schedule_rt,
- 	.task_wake_up		= task_wake_up_rt,
- 	.switched_from		= switched_from_rt,
+ 	usbhid_submit_report(hid, report, USB_DIR_OUT);
+ 
+-	printk(KERN_INFO "Force feedback for Logitech Rumblepad 2 by "
++	dev_info(&hid->dev, "Force feedback for Logitech Rumblepad 2 by "
+ 	       "Anssi Hannula <anssi.hannula@gmail.com>\n");
+ 
+ 	return 0;
+diff --git a/drivers/hid/hid-pl.c b/drivers/hid/hid-pl.c
+index b450084..682cac1 100644
+--- a/drivers/hid/hid-pl.c
++++ b/drivers/hid/hid-pl.c
+@@ -90,7 +90,7 @@ static int plff_init(struct hid_device *hid)
+ 	   currently unknown. */
+ 
+ 	if (list_empty(report_list)) {
+-		printk(KERN_ERR "hid-plff: no output reports found\n");
++		dev_err(&hid->dev, "no output reports found\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -99,18 +99,19 @@ static int plff_init(struct hid_device *hid)
+ 		report_ptr = report_ptr->next;
+ 
+ 		if (report_ptr == report_list) {
+-			printk(KERN_ERR "hid-plff: required output report is missing\n");
++			dev_err(&hid->dev, "required output report is "
++					"missing\n");
+ 			return -ENODEV;
+ 		}
+ 
+ 		report = list_entry(report_ptr, struct hid_report, list);
+ 		if (report->maxfield < 1) {
+-			printk(KERN_ERR "hid-plff: no fields in the report\n");
++			dev_err(&hid->dev, "no fields in the report\n");
+ 			return -ENODEV;
+ 		}
+ 
+ 		if (report->field[0]->report_count < 4) {
+-			printk(KERN_ERR "hid-plff: not enough values in the field\n");
++			dev_err(&hid->dev, "not enough values in the field\n");
+ 			return -ENODEV;
+ 		}
+ 
+@@ -136,7 +137,7 @@ static int plff_init(struct hid_device *hid)
+ 		usbhid_submit_report(hid, plff->report, USB_DIR_OUT);
+ 	}
+ 
+-	printk(KERN_INFO "hid-plff: Force feedback for PantherLord/GreenAsia "
++	dev_info(&hid->dev, "Force feedback for PantherLord/GreenAsia "
+ 	       "devices by Anssi Hannula <anssi.hannula@gmail.com>\n");
+ 
+ 	return 0;
+diff --git a/drivers/hid/hid-zpff.c b/drivers/hid/hid-zpff.c
+index 9ed04ee..ea82f37 100644
+--- a/drivers/hid/hid-zpff.c
++++ b/drivers/hid/hid-zpff.c
+@@ -73,14 +73,14 @@ static int zpff_init(struct hid_device *hid)
+ 	int error;
+ 
+ 	if (list_empty(report_list)) {
+-		printk(KERN_ERR "hid-zpff: no output report found\n");
++		dev_err(&hid->dev, "no output report found\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	report = list_entry(report_list->next, struct hid_report, list);
+ 
+ 	if (report->maxfield < 4) {
+-		printk(KERN_ERR "hid-zpff: not enough fields in report\n");
++		dev_err(&hid->dev, "not enough fields in report\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -103,7 +103,7 @@ static int zpff_init(struct hid_device *hid)
+ 	zpff->report->field[3]->value[0] = 0x00;
+ 	usbhid_submit_report(hid, zpff->report, USB_DIR_OUT);
+ 
+-	printk(KERN_INFO "Force feedback for Zeroplus based devices by "
++	dev_info(&hid->dev, "force feedback for Zeroplus based devices by "
+ 	       "Anssi Hannula <anssi.hannula@gmail.com>\n");
+ 
+ 	return 0;
+-- 
+1.6.0
 
