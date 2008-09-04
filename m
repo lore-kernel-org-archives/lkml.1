@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYIDI1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYIDI1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757434AbYIDI1Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757747AbYIDIYR
+	id S1755843AbYIDI1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbYIDIYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:24:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37027 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757710AbYIDIYP (ORCPT
+	Thu, 4 Sep 2008 04:24:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58038 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757797AbYIDIYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:24:15 -0400
-Subject: [PATCH] ftrace: make ftrace_printk usable with the other tracers
+	Thu, 4 Sep 2008 04:24:16 -0400
+Subject: [PATCH] ftrace: sched_switch: show the wakee's cpu
 From: Peter Zijlstra <peterz@infradead.org>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
@@ -20,8 +20,8 @@ Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
 In-Reply-To: <20080903214249.661170580@goodmis.org>
 References: <20080903214249.661170580@goodmis.org>
 Content-Type: text/plain
-Date: Thu, 04 Sep 2008 10:24:14 +0200
-Message-Id: <1220516654.8609.200.camel@twins>
+Date: Thu, 04 Sep 2008 10:24:16 +0200
+Message-Id: <1220516656.8609.201.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -30,14 +30,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: ftrace: make ftrace_printk usable with the other tracers
+Subject: ftrace: sched_switch: show the wakee's cpu
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Date: Tue Sep 02 21:12:13 CEST 2008
 
-Currently ftrace_printk only works with the ftrace tracer, switch it to an
-iter_ctrl setting so we can make us of them with other tracers too.
+While profiling the smp behaviour of the scheduler it was needed to know to
+which cpu a task got woken.
 
-[rostedt@redhat.com: tweak to the disable condition]
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
  kernel/trace/trace.c |   41 +++++++++++++++++++++++++++--------------
@@ -48,55 +47,81 @@ Index: linux-2.6/kernel/trace/trace.c
 ===================================================================
 --- linux-2.6.orig/kernel/trace/trace.c
 +++ linux-2.6/kernel/trace/trace.c
-@@ -235,6 +235,7 @@ static const char *trace_options[] = {
- 	"block",
- 	"stacktrace",
- 	"sched-tree",
-+	"ftrace_printk",
- 	NULL
- };
- 
-@@ -3086,9 +3098,10 @@ static __init void tracer_init_debugfs(v
- 
- int __ftrace_printk(unsigned long ip, const char *fmt, ...)
- {
--	struct trace_array *tr = &global_trace;
- 	static DEFINE_SPINLOCK(trace_buf_lock);
- 	static char trace_buf[TRACE_BUF_SIZE];
-+
-+	struct trace_array *tr = &global_trace;
- 	struct trace_array_cpu *data;
- 	struct trace_entry *entry;
- 	unsigned long flags;
-@@ -3096,7 +3109,7 @@ int __ftrace_printk(unsigned long ip, co
- 	va_list ap;
- 	int cpu, len = 0, write, written = 0;
- 
--	if (likely(!ftrace_function_enabled))
-+	if (!(trace_flags & TRACE_ITER_PRINTK) || !tr->ctrl || tracing_disabled)
- 		return 0;
- 
- 	local_irq_save(flags);
-@@ -3104,7 +3117,7 @@ int __ftrace_printk(unsigned long ip, co
- 	data = tr->data[cpu];
- 	disabled = atomic_inc_return(&data->disabled);
- 
--	if (unlikely(disabled != 1 || !ftrace_function_enabled))
-+	if (unlikely(disabled != 1))
- 		goto out;
- 
- 	spin_lock(&trace_buf_lock);
+@@ -976,6 +977,7 @@ tracing_sched_switch_trace(struct trace_
+ 	entry->field.ctx.next_pid	= next->pid;
+ 	entry->field.ctx.next_prio	= next->prio;
+ 	entry->field.ctx.next_state	= next->state;
++	entry->field.ctx.next_cpu	= task_cpu(next);
+ 	__trace_stack(tr, data, flags, 5);
+ 	__raw_spin_unlock(&data->lock);
+ 	raw_local_irq_restore(irq_flags);
+@@ -1002,6 +1004,7 @@ tracing_sched_wakeup_trace(struct trace_
+ 	entry->field.ctx.next_pid	= wakee->pid;
+ 	entry->field.ctx.next_prio	= wakee->prio;
+ 	entry->field.ctx.next_state	= wakee->state;
++	entry->field.ctx.next_cpu	= task_cpu(wakee);
+ 	__trace_stack(tr, data, flags, 6);
+ 	__raw_spin_unlock(&data->lock);
+ 	raw_local_irq_restore(irq_flags);
+@@ -1630,10 +1638,11 @@ print_lat_fmt(struct trace_iterator *ite
+ 			__ffs(field->ctx.prev_state) + 1 : 0;
+ 		S = state < sizeof(state_to_char) - 1 ? state_to_char[state] : 'X';
+ 		comm = trace_find_cmdline(field->ctx.next_pid);
+-		trace_seq_printf(s, " %5d:%3d:%c %s %5d:%3d:%c %s\n",
++		trace_seq_printf(s, " %5d:%3d:%c %s [%03d] %5d:%3d:%c %s\n",
+ 				 field->ctx.prev_pid,
+ 				 field->ctx.prev_prio,
+ 				 S, entry->type == TRACE_CTX ? "==>" : "  +",
++				 field->ctx.next_cpu,
+ 				 field->ctx.next_pid,
+ 				 field->ctx.next_prio,
+ 				 T, comm);
+@@ -1730,11 +1739,12 @@ static int print_trace_fmt(struct trace_
+ 			state_to_char[field->ctx.prev_state] : 'X';
+ 		T = field->ctx.next_state < sizeof(state_to_char) ?
+ 			state_to_char[field->ctx.next_state] : 'X';
+-		ret = trace_seq_printf(s, " %5d:%3d:%c %s %5d:%3d:%c\n",
++		ret = trace_seq_printf(s, " %5d:%3d:%c %s [%03d] %5d:%3d:%c\n",
+ 				       field->ctx.prev_pid,
+ 				       field->ctx.prev_prio,
+ 				       S,
+ 				       entry->type == TRACE_CTX ? "==>" : "  +",
++				       field->ctx.next_cpu,
+ 				       field->ctx.next_pid,
+ 				       field->ctx.next_prio,
+ 				       T);
+@@ -1811,10 +1821,11 @@ static int print_raw_fmt(struct trace_it
+ 			state_to_char[field->ctx.next_state] : 'X';
+ 		if (entry->type == TRACE_WAKE)
+ 			S = '+';
+-		ret = trace_seq_printf(s, "%d %d %c %d %d %c\n",
++		ret = trace_seq_printf(s, "%d %d %c %d %d %d %c\n",
+ 				       field->ctx.prev_pid,
+ 				       field->ctx.prev_prio,
+ 				       S,
++				       field->ctx.next_cpu,
+ 				       field->ctx.next_pid,
+ 				       field->ctx.next_prio,
+ 				       T);
+@@ -1887,6 +1898,7 @@ static int print_hex_fmt(struct trace_it
+ 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.prev_pid);
+ 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.prev_prio);
+ 		SEQ_PUT_HEX_FIELD_RET(s, S);
++		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.next_cpu);
+ 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.next_pid);
+ 		SEQ_PUT_HEX_FIELD_RET(s, field->ctx.next_prio);
+ 		SEQ_PUT_HEX_FIELD_RET(s, T);
 Index: linux-2.6/kernel/trace/trace.h
 ===================================================================
 --- linux-2.6.orig/kernel/trace/trace.h
 +++ linux-2.6/kernel/trace/trace.h
-@@ -356,6 +357,7 @@ enum trace_iterator_flags {
- 	TRACE_ITER_BLOCK		= 0x80,
- 	TRACE_ITER_STACKTRACE		= 0x100,
- 	TRACE_ITER_SCHED_TREE		= 0x200,
-+	TRACE_ITER_PRINTK		= 0x400,
+@@ -41,6 +41,7 @@ struct ctx_switch_entry {
+ 	unsigned int		next_pid;
+ 	unsigned char		next_prio;
+ 	unsigned char		next_state;
++	unsigned int		next_cpu;
  };
  
- #endif /* _LINUX_KERNEL_TRACE_H */
+ /*
 
 
