@@ -1,24 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbYIDWVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYIDWXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757023AbYIDWVM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 18:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbYIDWU5
+	id S1756888AbYIDWXu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 18:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYIDWXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 18:20:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34779 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756791AbYIDWU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 18:20:56 -0400
-Date: Fri, 5 Sep 2008 00:20:35 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, neilb@suse.de
-Subject: Re: [PATCH] nfsd/nfs4acl: Number of used used array elements needs
- to be zeroed.
-Message-ID: <20080905002035.5c7abde1@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20080904150101.GB4536@fieldses.org>
-References: <20080904165518.15a02908@psychotron.englab.brq.redhat.com>
-	<20080904150101.GB4536@fieldses.org>
+	Thu, 4 Sep 2008 18:23:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55252 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754622AbYIDWXk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 18:23:40 -0400
+Date: Thu, 4 Sep 2008 15:22:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       yhlu.kernel@gmail.com, ink@jurassic.park.msu.ru,
+       jbarnes@virtuousgeek.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, dwmw2@infradead.org, sam@ravnborg.org,
+       johnstul@us.ibm.com, tglx@linutronix.de
+Subject: Re: linux-next: Tree for September 3
+Message-Id: <20080904152248.50773a6d.akpm@linux-foundation.org>
+In-Reply-To: <m1zlmn39oy.fsf@frodo.ebiederm.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+	<20080903214634.ea17ff53.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>
+	<20080903223318.84b6ce8b.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org>
+	<20080904012544.cabed847.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org>
+	<20080904015701.5959623a.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org>
+	<20080904104554.32ffebea.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org>
+	<20080904113408.d47c65f6.akpm@linux-foundation.org>
+	<m163pb4pru.fsf@frodo.ebiederm.org>
+	<20080904134148.0fde4508.akpm@linux-foundation.org>
+	<m1zlmn39oy.fsf@frodo.ebiederm.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,40 +45,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 11:01:01 -0400
-"J. Bruce Fields" <bfields@fieldses.org> wrote:
+On Thu, 04 Sep 2008 14:03:41 -0700
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> On Thu, Sep 04, 2008 at 04:55:18PM +0200, Jiri Pirko wrote:
-> > Number of used used array elements needs to be zeroed. It may cause
-> > problems otherwise, because it's used uninitialized in find_uid().
-> > 
-> > Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> > ---
-> >  fs/nfsd/nfs4acl.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
-> > index 54b8b41..7dcd90f 100644
-> > --- a/fs/nfsd/nfs4acl.c
-> > +++ b/fs/nfsd/nfs4acl.c
-> > @@ -447,11 +447,13 @@ init_state(struct posix_acl_state *state, int cnt)
-> >  	state->users = kzalloc(alloc, GFP_KERNEL);
-> >  	if (!state->users)
-> >  		return -ENOMEM;
-> > +	state->users->n = 0;
-> >  	state->groups = kzalloc(alloc, GFP_KERNEL);
-> >  	if (!state->groups) {
-> >  		kfree(state->users);
-> >  		return -ENOMEM;
-> >  	}
-> > +	state->groups->n = 0;
-> >  	return 0;
-> >  }
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> Thanks for the extra eyes on this code, but: surely the kzalloc()'s are
-> all that's necessary?  Am I missing something?
-Sure you are right. Sorry, my bad...
+> > On Thu, 04 Sep 2008 13:31:01 -0700
+> > ebiederm@xmission.com (Eric W. Biederman) wrote:
+> >
+> >> >> are you sure it's a plain tree of mine, without any of the patches 
+> >> >> floating around between Eric/Al?
+> >> >
+> >> > yup, it's yesterday's mainline.
+> >> 
+> >> Does the problem happen if you disable selinux?
+> >> 
+> >> This feels like a case of selinux being over zealous.
+> >
+> > yeah, adding `selinux=0' to the boot command line fixes it.
+> 
+> The proc generic directory back structure is the same.  As requested by
+> the selinux folks.  So I don't expect there is much more we can do on
+> the /proc side.
+> 
+> When we get the interaction bug between the VFS and /proc/net fixed I wonder
+> if there will be some more selinux fall out.  Something to think about.
 
-Jirka
-> 
-> --b.
+fyi, that machine is x86_32-on-FC5.  My x86_64-on-FC6 test box is
+also running selinux and has the same bug.
