@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbYIDIXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYIDIXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbYIDIXF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbYIDIWB
+	id S1757848AbYIDIXh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYIDIWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:22:01 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:47383 "EHLO
+	Thu, 4 Sep 2008 04:22:03 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:43649 "EHLO
 	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754607AbYIDIV5 (ORCPT
+	with ESMTP id S1754934AbYIDIV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Sep 2008 04:21:57 -0400
 X-IronPort-AV: E=Sophos;i="4.32,320,1217822400"; 
-   d="scan'208";a="59017792"
+   d="scan'208";a="59017794"
 From: Bryan Wu <cooloney@kernel.org>
 To: broonie@opensource.wolfsonmicro.com
 Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
        Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 4/9] ASoC: Blackfin: DMA Driver for AC97 sound chip
-Date: Thu,  4 Sep 2008 16:22:03 +0800
-Message-Id: <1220516528-20301-5-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 6/9] ASoC: Blackfin: DMA Driver for I2S sound chip
+Date: Thu,  4 Sep 2008 16:22:05 +0800
+Message-Id: <1220516528-20301-7-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1220516528-20301-1-git-send-email-cooloney@kernel.org>
 References: <1220516528-20301-1-git-send-email-cooloney@kernel.org>
@@ -28,27 +28,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Cliff Cai <cliff.cai@analog.com>
 
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
 Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- sound/soc/blackfin/bf5xx-ac97-pcm.c |  430 +++++++++++++++++++++++++++++++++++
- sound/soc/blackfin/bf5xx-ac97-pcm.h |   29 +++
- 2 files changed, 459 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/blackfin/bf5xx-ac97-pcm.c
- create mode 100644 sound/soc/blackfin/bf5xx-ac97-pcm.h
+ sound/soc/blackfin/bf5xx-i2s-pcm.c |  288 ++++++++++++++++++++++++++++++++++++
+ sound/soc/blackfin/bf5xx-i2s-pcm.h |   29 ++++
+ 2 files changed, 317 insertions(+), 0 deletions(-)
+ create mode 100644 sound/soc/blackfin/bf5xx-i2s-pcm.c
+ create mode 100644 sound/soc/blackfin/bf5xx-i2s-pcm.h
 
-diff --git a/sound/soc/blackfin/bf5xx-ac97-pcm.c b/sound/soc/blackfin/bf5xx-ac97-pcm.c
+diff --git a/sound/soc/blackfin/bf5xx-i2s-pcm.c b/sound/soc/blackfin/bf5xx-i2s-pcm.c
 new file mode 100644
-index 0000000..1975324
+index 0000000..61fccf9
 --- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-ac97-pcm.c
-@@ -0,0 +1,430 @@
++++ b/sound/soc/blackfin/bf5xx-i2s-pcm.c
+@@ -0,0 +1,288 @@
 +/*
-+ * File:         sound/soc/blackfin/bf5xx-ac97-pcm.c
++ * File:         sound/soc/blackfin/bf5xx-i2s-pcm.c
 + * Author:       Cliff Cai <Cliff.Cai@analog.com>
 + *
 + * Created:      Tue June 06 2008
-+ * Description:  DMA Driver for AC97 sound chip
++ * Description:  DMA driver for i2s codec
 + *
 + * Modified:
 + *               Copyright 2008 Analog Devices Inc.
@@ -84,60 +84,24 @@ index 0000000..1975324
 +
 +#include <asm/dma.h>
 +
-+#include "bf5xx-ac97-pcm.h"
-+#include "bf5xx-ac97.h"
++#include "bf5xx-i2s-pcm.h"
++#include "bf5xx-i2s.h"
 +#include "bf5xx-sport.h"
-+
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+static void bf5xx_mmap_copy(struct snd_pcm_substream *substream,
-+	 snd_pcm_uframes_t count)
-+{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
-+	struct sport_device *sport = runtime->private_data;
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		bf5xx_pcm_to_ac97(
-+			(struct ac97_frame *)sport->tx_dma_buf + sport->tx_pos,
-+			(__u32 *)runtime->dma_area + sport->tx_pos, count);
-+		sport->tx_pos += runtime->period_size;
-+		if (sport->tx_pos >= runtime->buffer_size)
-+			sport->tx_pos %= runtime->buffer_size;
-+	} else {
-+		bf5xx_ac97_to_pcm(
-+			(struct ac97_frame *)sport->rx_dma_buf + sport->rx_pos,
-+			(__u32 *)runtime->dma_area + sport->rx_pos, count);
-+		sport->rx_pos += runtime->period_size;
-+		if (sport->rx_pos >= runtime->buffer_size)
-+			sport->rx_pos %= runtime->buffer_size;
-+	}
-+}
-+#endif
 +
 +static void bf5xx_dma_irq(void *data)
 +{
 +	struct snd_pcm_substream *pcm = data;
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+	struct snd_pcm_runtime *runtime = pcm->runtime;
-+	bf5xx_mmap_copy(pcm, runtime->period_size);
-+#endif
 +	snd_pcm_period_elapsed(pcm);
 +}
 +
-+/* The memory size for pure pcm data is 128*1024 = 0x20000 bytes.
-+ * The total rx/tx buffer is for ac97 frame to hold all pcm data
-+ * is  0x20000 * sizeof(struct ac97_frame) / 4.
-+ */
-+#ifdef CONFIG_SND_MMAP_SUPPORT
 +static const struct snd_pcm_hardware bf5xx_pcm_hardware = {
 +	.info			= SNDRV_PCM_INFO_INTERLEAVED |
 +				   SNDRV_PCM_INFO_MMAP |
 +				   SNDRV_PCM_INFO_MMAP_VALID |
 +				   SNDRV_PCM_INFO_BLOCK_TRANSFER,
-+#else
-+static const struct snd_pcm_hardware bf5xx_pcm_hardware = {
-+	.info			= SNDRV_PCM_INFO_INTERLEAVED |
-+				  SNDRV_PCM_INFO_BLOCK_TRANSFER,
-+#endif
-+	.formats		= SNDRV_PCM_FMTBIT_S16_LE,
++	.formats		= SNDRV_PCM_FMTBIT_S16_LE |
++				   SNDRV_PCM_FMTBIT_S24_LE |
++				   SNDRV_PCM_FMTBIT_S32_LE,
 +	.period_bytes_min	= 32,
 +	.period_bytes_max	= 0x10000,
 +	.periods_min		= 1,
@@ -149,9 +113,7 @@ index 0000000..1975324
 +static int bf5xx_pcm_hw_params(struct snd_pcm_substream *substream,
 +	struct snd_pcm_hw_params *params)
 +{
-+	size_t size = bf5xx_pcm_hardware.buffer_bytes_max
-+			* sizeof(struct ac97_frame) / 4;
-+
++	size_t size = bf5xx_pcm_hardware.buffer_bytes_max;
 +	snd_pcm_lib_malloc_pages(substream, size);
 +
 +	return 0;
@@ -160,6 +122,7 @@ index 0000000..1975324
 +static int bf5xx_pcm_hw_free(struct snd_pcm_substream *substream)
 +{
 +	snd_pcm_lib_free_pages(substream);
++
 +	return 0;
 +}
 +
@@ -167,36 +130,19 @@ index 0000000..1975324
 +{
 +	struct snd_pcm_runtime *runtime = substream->runtime;
 +	struct sport_device *sport = runtime->private_data;
++	int period_bytes = frames_to_bytes(runtime, runtime->period_size);
 +
-+	/* An intermediate buffer is introduced for implementing mmap for
-+	 * SPORT working in TMD mode(include AC97).
-+	 */
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+	size_t size = bf5xx_pcm_hardware.buffer_bytes_max
-+			* sizeof(struct ac97_frame) / 4;
-+	/*clean up intermediate buffer*/
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		memset(sport->tx_dma_buf, 0, size);
-+		sport_set_tx_callback(sport, bf5xx_dma_irq, substream);
-+		sport_config_tx_dma(sport, sport->tx_dma_buf, runtime->periods,
-+			runtime->period_size * sizeof(struct ac97_frame));
-+	} else {
-+		memset(sport->rx_dma_buf, 0, size);
-+		sport_set_rx_callback(sport, bf5xx_dma_irq, substream);
-+		sport_config_rx_dma(sport, sport->rx_dma_buf, runtime->periods,
-+			runtime->period_size * sizeof(struct ac97_frame));
-+	}
-+#else
++	pr_debug("%s enter\n", __func__);
 +	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
 +		sport_set_tx_callback(sport, bf5xx_dma_irq, substream);
-+		sport_config_tx_dma(sport, runtime->dma_area, runtime->periods,
-+			runtime->period_size * sizeof(struct ac97_frame));
++		sport_config_tx_dma(sport, runtime->dma_area,
++			runtime->periods, period_bytes);
 +	} else {
 +		sport_set_rx_callback(sport, bf5xx_dma_irq, substream);
-+		sport_config_rx_dma(sport, runtime->dma_area, runtime->periods,
-+			runtime->period_size * sizeof(struct ac97_frame));
++		sport_config_rx_dma(sport, runtime->dma_area,
++			runtime->periods, period_bytes);
 +	}
-+#endif
++
 +	return 0;
 +}
 +
@@ -217,21 +163,15 @@ index 0000000..1975324
 +	case SNDRV_PCM_TRIGGER_STOP:
 +	case SNDRV_PCM_TRIGGER_SUSPEND:
 +	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
-+		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+			sport->tx_pos = 0;
-+#endif
++		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
 +			sport_tx_stop(sport);
-+		} else {
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+			sport->rx_pos = 0;
-+#endif
++		else
 +			sport_rx_stop(sport);
-+		}
 +		break;
 +	default:
 +		ret = -EINVAL;
 +	}
++
 +	return ret;
 +}
 +
@@ -239,23 +179,17 @@ index 0000000..1975324
 +{
 +	struct snd_pcm_runtime *runtime = substream->runtime;
 +	struct sport_device *sport = runtime->private_data;
-+	unsigned int curr;
-+
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-+		curr = sport->tx_pos;
-+	else
-+		curr = sport->rx_pos;
-+#else
-+
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-+		curr = sport_curr_offset_tx(sport) / sizeof(struct ac97_frame);
-+	else {
-+		curr = sport_curr_offset_rx(sport) / sizeof(struct ac97_frame);
-+
++	unsigned int diff;
++	snd_pcm_uframes_t frames;
++	pr_debug("%s enter\n", __func__);
++	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
++		diff = sport_curr_offset_tx(sport);
++		frames = bytes_to_frames(substream->runtime, diff);
++	} else {
++		diff = sport_curr_offset_rx(sport);
++		frames = bytes_to_frames(substream->runtime, diff);
 +	}
-+#endif
-+	return curr;
++	return frames;
 +}
 +
 +static int bf5xx_pcm_open(struct snd_pcm_substream *substream)
@@ -283,7 +217,6 @@ index 0000000..1975324
 +	return ret;
 +}
 +
-+#ifdef CONFIG_SND_MMAP_SUPPORT
 +static int bf5xx_pcm_mmap(struct snd_pcm_substream *substream,
 +	struct vm_area_struct *vma)
 +{
@@ -292,31 +225,11 @@ index 0000000..1975324
 +	vma->vm_start = (unsigned long)runtime->dma_area;
 +	vma->vm_end = vma->vm_start + size;
 +	vma->vm_flags |=  VM_SHARED;
++
 +	return 0 ;
 +}
-+#else
-+static	int bf5xx_pcm_copy(struct snd_pcm_substream *substream, int channel,
-+		    snd_pcm_uframes_t pos,
-+		    void __user *buf, snd_pcm_uframes_t count)
-+{
-+	struct snd_pcm_runtime *runtime = substream->runtime;
 +
-+	pr_debug("%s copy pos:0x%lx count:0x%lx\n",
-+			substream->stream?"Capture":"Playback", pos, count);
-+
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
-+		bf5xx_pcm_to_ac97(
-+				(struct ac97_frame *)runtime->dma_area + pos,
-+				buf, count);
-+	else
-+		bf5xx_ac97_to_pcm(
-+				(struct ac97_frame *)runtime->dma_area + pos,
-+				buf, count);
-+	return 0;
-+}
-+#endif
-+
-+struct snd_pcm_ops bf5xx_pcm_ac97_ops = {
++struct snd_pcm_ops bf5xx_pcm_i2s_ops = {
 +	.open		= bf5xx_pcm_open,
 +	.ioctl		= snd_pcm_lib_ioctl,
 +	.hw_params	= bf5xx_pcm_hw_params,
@@ -324,19 +237,14 @@ index 0000000..1975324
 +	.prepare	= bf5xx_pcm_prepare,
 +	.trigger	= bf5xx_pcm_trigger,
 +	.pointer	= bf5xx_pcm_pointer,
-+#ifdef CONFIG_SND_MMAP_SUPPORT
 +	.mmap		= bf5xx_pcm_mmap,
-+#else
-+	.copy		= bf5xx_pcm_copy,
-+#endif
 +};
 +
 +static int bf5xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
 +{
 +	struct snd_pcm_substream *substream = pcm->streams[stream].substream;
 +	struct snd_dma_buffer *buf = &substream->dma_buffer;
-+	size_t size = bf5xx_pcm_hardware.buffer_bytes_max
-+			* sizeof(struct ac97_frame) / 4;
++	size_t size = bf5xx_pcm_hardware.buffer_bytes_max;
 +
 +	buf->dev.type = SNDRV_DMA_TYPE_DEV;
 +	buf->dev.dev = pcm->card->dev;
@@ -344,53 +252,20 @@ index 0000000..1975324
 +	buf->area = dma_alloc_coherent(pcm->card->dev, size,
 +			&buf->addr, GFP_KERNEL);
 +	if (!buf->area) {
-+		pr_err("Failed to allocate dma memory\n");
-+		pr_err("Please increase uncached DMA memory region\n");
++		pr_err("Failed to allocate dma memory \
++			Please increase uncached DMA memory region\n");
 +		return -ENOMEM;
 +	}
 +	buf->bytes = size;
 +
 +	pr_debug("%s, area:%p, size:0x%08lx\n", __func__,
-+			buf->area, buf->bytes);
++		buf->area, buf->bytes);
 +
 +	if (stream == SNDRV_PCM_STREAM_PLAYBACK)
 +		sport_handle->tx_buf = buf->area;
 +	else
 +		sport_handle->rx_buf = buf->area;
 +
-+/*
-+ * Need to allocate local buffer when enable
-+ * MMAP for SPORT working in TMD mode (include AC97).
-+ */
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		if (!sport_handle->tx_dma_buf) {
-+			sport_handle->tx_dma_buf = dma_alloc_coherent(NULL, \
-+				size, &sport_handle->tx_dma_phy, GFP_KERNEL);
-+			if (!sport_handle->tx_dma_buf) {
-+				pr_err("Failed to allocate memory for tx dma \
-+					buf - Please increase uncached DMA \
-+					memory region\n");
-+				return -ENOMEM;
-+			} else
-+				memset(sport_handle->tx_dma_buf, 0, size);
-+		} else
-+			memset(sport_handle->tx_dma_buf, 0, size);
-+	} else {
-+		if (!sport_handle->rx_dma_buf) {
-+			sport_handle->rx_dma_buf = dma_alloc_coherent(NULL, \
-+				size, &sport_handle->rx_dma_phy, GFP_KERNEL);
-+			if (!sport_handle->rx_dma_buf) {
-+				pr_err("Failed to allocate memory for rx dma \
-+					buf - Please increase uncached DMA \
-+					memory region\n");
-+				return -ENOMEM;
-+			} else
-+				memset(sport_handle->rx_dma_buf, 0, size);
-+		} else
-+			memset(sport_handle->rx_dma_buf, 0, size);
-+	}
-+#endif
 +	return 0;
 +}
 +
@@ -399,10 +274,7 @@ index 0000000..1975324
 +	struct snd_pcm_substream *substream;
 +	struct snd_dma_buffer *buf;
 +	int stream;
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+	size_t size = bf5xx_pcm_hardware.buffer_bytes_max *
-+		sizeof(struct ac97_frame) / 4;
-+#endif
++
 +	for (stream = 0; stream < 2; stream++) {
 +		substream = pcm->streams[stream].substream;
 +		if (!substream)
@@ -413,20 +285,6 @@ index 0000000..1975324
 +			continue;
 +		dma_free_coherent(NULL, buf->bytes, buf->area, 0);
 +		buf->area = NULL;
-+#if defined(CONFIG_SND_MMAP_SUPPORT)
-+	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-+		if (sport_handle->tx_dma_buf)
-+			dma_free_coherent(NULL, size, \
-+				sport_handle->tx_dma_buf, 0);
-+		sport_handle->tx_dma_buf = NULL;
-+	} else {
-+
-+		if (sport_handle->rx_dma_buf)
-+			dma_free_coherent(NULL, size, \
-+				sport_handle->rx_dma_buf, 0);
-+		sport_handle->rx_dma_buf = NULL;
-+	}
-+#endif
 +	}
 +	if (sport_handle)
 +		sport_done(sport_handle);
@@ -434,7 +292,7 @@ index 0000000..1975324
 +
 +static u64 bf5xx_pcm_dmamask = DMA_32BIT_MASK;
 +
-+int bf5xx_pcm_ac97_new(struct snd_card *card, struct snd_soc_dai *dai,
++int bf5xx_pcm_i2s_new(struct snd_card *card, struct snd_soc_dai *dai,
 +	struct snd_pcm *pcm)
 +{
 +	int ret = 0;
@@ -462,25 +320,25 @@ index 0000000..1975324
 +	return ret;
 +}
 +
-+struct snd_soc_platform bf5xx_ac97_soc_platform = {
++struct snd_soc_platform bf5xx_i2s_soc_platform = {
 +	.name		= "bf5xx-audio",
-+	.pcm_ops 	= &bf5xx_pcm_ac97_ops,
-+	.pcm_new	= bf5xx_pcm_ac97_new,
++	.pcm_ops 	= &bf5xx_pcm_i2s_ops,
++	.pcm_new	= bf5xx_pcm_i2s_new,
 +	.pcm_free	= bf5xx_pcm_free_dma_buffers,
 +};
-+EXPORT_SYMBOL_GPL(bf5xx_ac97_soc_platform);
++EXPORT_SYMBOL_GPL(bf5xx_i2s_soc_platform);
 +
 +MODULE_AUTHOR("Cliff Cai");
-+MODULE_DESCRIPTION("ADI Blackfin AC97 PCM DMA module");
++MODULE_DESCRIPTION("ADI Blackfin I2S PCM DMA module");
 +MODULE_LICENSE("GPL");
-diff --git a/sound/soc/blackfin/bf5xx-ac97-pcm.h b/sound/soc/blackfin/bf5xx-ac97-pcm.h
+diff --git a/sound/soc/blackfin/bf5xx-i2s-pcm.h b/sound/soc/blackfin/bf5xx-i2s-pcm.h
 new file mode 100644
-index 0000000..350125a
+index 0000000..4d4609a
 --- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-ac97-pcm.h
++++ b/sound/soc/blackfin/bf5xx-i2s-pcm.h
 @@ -0,0 +1,29 @@
 +/*
-+ * linux/sound/arm/bf5xx-ac97-pcm.h -- ALSA PCM interface for the Blackfin
++ * linux/sound/arm/bf5xx-i2s-pcm.h -- ALSA PCM interface for the Blackfin
 + *
 + * Copyright 2007 Analog Device Inc.
 + *
@@ -489,8 +347,8 @@ index 0000000..350125a
 + * published by the Free Software Foundation.
 + */
 +
-+#ifndef _BF5XX_AC97_PCM_H
-+#define _BF5XX_AC97_PCM_H
++#ifndef _BF5XX_I2S_PCM_H
++#define _BF5XX_I2S_PCM_H
 +
 +struct bf5xx_pcm_dma_params {
 +	char *name;			/* stream identifier */
@@ -505,7 +363,7 @@ index 0000000..350125a
 +};
 +
 +/* platform data */
-+extern struct snd_soc_platform bf5xx_ac97_soc_platform;
++extern struct snd_soc_platform bf5xx_i2s_soc_platform;
 +
 +#endif
 -- 
