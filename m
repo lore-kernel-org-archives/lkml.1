@@ -1,86 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYIDSuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbYIDSta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbYIDSuI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbYIDSoJ
+	id S1759952AbYIDSta (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbYIDSm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:44:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41775 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758832AbYIDSoH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:44:07 -0400
-Date: Thu, 4 Sep 2008 20:47:20 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Don Zickus <dzickus@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       arozansk@redhat.com, Thomas.Mingarelli@hp.com, ak@linux.intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080904184720.GI18288@one.firstfloor.org>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080904182637.GP3400@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 4 Sep 2008 14:42:57 -0400
+Received: from mail.work.de ([212.12.32.20]:42277 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758681AbYIDSm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:42:56 -0400
+Message-ID: <48C02C2C.2060508@gmail.com>
+Date: Thu, 04 Sep 2008 22:42:52 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+CC: rnissl@gmx.de
+Subject: DVB Update [PATCH 30/31] multiproto tree
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------090400030609060607060209"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 02:26:37PM -0400, Don Zickus wrote:
-> On Thu, Sep 04, 2008 at 07:52:31PM +0200, Andi Kleen wrote:
-> > On Thu, Sep 04, 2008 at 01:20:52PM -0400, Don Zickus wrote:
-> > > On Thu, Sep 04, 2008 at 05:52:17PM +0200, Andi Kleen wrote:
-> > > > Then if there's a chipset specific NMI driver it could
-> > > > also check if the chipset raised it. That would be a possible
-> > > > solution for HP -- they would need to implement such a driver
-> > > > for their systems with the special watchdog.
-> > > 
-> > > The thing with HP's special watchdog timer is that it does _not_ have a
-> > > chipset specific NMI it is trying to catch.  HP is going on the assumption
-> > > that _all_ NMIs are /bad/ and they want to catch _every_ NMI, log it, and
-> > > reboot the system.
-> > 
-> > That's my point. If you have drivers which can identify all other
-> > NMIs then the left over NMIs must come from that watchdog driver.
-> > So they just need drivers which can do that for their chipsets.
-> 
-> Except their chipsets are _not_ producing NMIs.  They just want to
+This is a multi-part message in MIME format.
+--------------090400030609060607060209
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-They will produce NMIs when the suitable error conditions are true.
-That is why the fallback is assuming a chipset problem.
+>From ce418a935a3439b68273550dea6caf3a7a820e8f Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:58:55 +0200
+Subject: [PATCH] DVB Support DVBFE_SET_DELSYS backward compatibility
 
-So the only reliable way to find out if the event really came from
-the misdesigned watchdog (whoever designed it didn't understand
-NMIs I would say) you have to check the chipset (and all other
-sources). Hopefully they are all better designed and can
-actually tell you if they triggered or not.
+Make DVBFE_SET_DELSYS backward compatible
 
-Also there's the issue that sometimes people want
-the fallback to be the NMI button.
+From: Reinhard Nissl <rnissl@gmx.de>
+Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
-> > It's not race free, but that's simply not possible with the x86
-> > NMI architecture.
-> 
-> I agree.
-> 
-> > 
-> > Better would be probably to just configure the watchdog 
-> > to reboot the system directly on its own. Most other watchdogs
-> > I'm aware of do that. That's more reliable anyways because the system
-> > might be wedged enough to not be able to process NMIs anymore.
-> 
-> The trick is they want to log it in a special way (BIOS or NVRAM or
-> something I forget) before rebooting.
+ dvb_frontend.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-Then why tell the OS? It should be an SMI then.
+--------------090400030609060607060209
+Content-Type: text/x-patch;
+ name="30.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="30.patch"
 
+>From ce418a935a3439b68273550dea6caf3a7a820e8f Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:58:55 +0200
+Subject: [PATCH] DVB Support DVBFE_SET_DELSYS backward compatibility
 
--Andi
--- 
-ak@linux.intel.com
+Make DVBFE_SET_DELSYS backward compatible
+
+From: Reinhard Nissl <rnissl@gmx.de>
+Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
+index 3a49876..a8005ef 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.c
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
+@@ -1854,6 +1854,24 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 		if (fe->ops.set_delsys) {
+ 			fe->ops.set_delsys(fe, fepriv->delsys);
+ 			err = 0;
++		} else {
++			err = 0;
++			switch (fe->ops.info.type) {
++				case FE_QPSK:
++					if (fepriv->delsys != DVBFE_DELSYS_DVBS)
++						err = -EINVAL;
++					break;
++				case FE_QAM:
++					if (fepriv->delsys != DVBFE_DELSYS_DVBC)
++						err = -EINVAL;
++					break;
++				case FE_OFDM:
++					if (fepriv->delsys != DVBFE_DELSYS_DVBT)
++						err = -EINVAL;
++					break;
++				default:
++					err = -EINVAL;
++			}
+ 		}
+ 		break;
+ 	case DVBFE_GET_INFO:
+
+--------------090400030609060607060209--
