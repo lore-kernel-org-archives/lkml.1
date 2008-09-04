@@ -1,85 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYIDRbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYIDRdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYIDRbg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752877AbYIDRbM
+	id S1755248AbYIDRdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:33:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYIDRdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:31:12 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:30699 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbYIDRbI (ORCPT
+	Thu, 4 Sep 2008 13:33:25 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:37819 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYIDRdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:31:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=ZN80uAuwuPWcOkx95PsAPl9ISVk15CA4p0XAtNY36dKtKIcx8zj+R5qIkFmx6cNVPG
-         a9+uiRMZSmkA49dbjH8O2+hb8HDnea5yw+ngXaW/GbaN0MpcrwkSYwyOour5+y7XmXhE
-         ef6lj3VqK25p+BV42m4zG1xN+Egpk+tXtYcgU=
-Date: Thu, 4 Sep 2008 20:30:58 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
-Message-ID: <20080904203058.7e57729e@daedalus.pq.iki.fi>
-In-Reply-To: <c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
-References: <48B1D5CA.8000607@gmail.com>
-	<c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
-	<20080827212130.4b8365a8@daedalus.pq.iki.fi>
-	<c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
-	<20080828214256.296e34ec@daedalus.pq.iki.fi>
-	<c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 4 Sep 2008 13:33:25 -0400
+Message-ID: <48C01B92.60900@cs.columbia.edu>
+Date: Thu, 04 Sep 2008 13:32:02 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
+       Andrey Mirkin <major@openvz.org>
+Subject: Re: [RFC v3][PATCH 1/9] Create syscalls: sys_checkpoint,	sys_restart
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040401320.5982@takamine.ncl.cs.columbia.edu> <20080904144223.GA19364@us.ibm.com>
+In-Reply-To: <20080904144223.GA19364@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 18:20:09 +0200
-"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
-
-> What is the best way to implement tracers's printk handlers?
-
-Your last message had an idea I didn't think before (or I misunderstood
-you), that there could be an optional callback for inserting markers
-into the ring buffer. My first thought was to have the usual entry
-handler (print_line callback) to format marker text when it is taken
-from the ring buffer and read to user space.
-
-> Do you think that these functions must be implemented in trace.c or is
-> it more relevant to dispatch the message to
-> a function provided by the current tracer in its struct tracer
-> operations? If such handler is not implemented, we just defaults the
-> formatting like ftrace_printk does.
-
-For the output formatting case, I'd prefer the print_line callback,
-it's just one more case for an entry type in there. Notice the
-difference between writing to ring buffer and reading to user.
-
-The trick is, when does mmiotrace sanitize the marker text, when it
-comes from user space, the debugfs file. Either
-a) have another callback for inserting messages into the ring buffer
-b) have a customisable trace_seq_print_cont()
-
-I think I'd favour b). When I tried to use trace_seq_print_cont(),
-I found it difficult to control the printing of \n at the end of
-message. So I would implement my own routine to handle also what
-trace_seq_print_cont() does, filtering the text while copying it
-to struct trace_seq. I'm not sure where this function should live.
-It could be useful to all tracers, that want "one line per marker
-entry" style output, so it could live in trace.c.
-
-So my suggestion is to put the marker text unfiltered into the ring
-buffer, and filter it (if required) during read to user (print_line).
 
 
-Cheers,
-pq
+Serge E. Hallyn wrote:
+> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>> Create trivial sys_checkpoint and sys_restore system calls. They will
+>> enable to checkpoint and restart an entire container, to and from a
+>> checkpoint image file descriptor.
+>>
+>> The syscalls take a file descriptor (for the image file) and flags as
+>> arguments. For sys_checkpoint the first argument identifies the target
+>> container; for sys_restart it will identify the checkpoint image.
+>>
+>> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+>> ---
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+[...]
+
+>> +/**
+>> + * sys_checkpoint - checkpoint a container
+>> + * @pid: pid of the container init(1) process
+>> + * @fd: file to which dump the checkpoint image
+>> + * @flags: checkpoint operation flags
+>> + */
+>> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+>> +{
+>> +	pr_debug("sys_checkpoint not implemented yet\n");
+>> +	return -ENOSYS;
+>> +}
+>> +/**
+>> + * sys_restart - restart a container
+>> + * @crid: checkpoint image identifier
+> 
+> So can we compare your api to Andrey's?
+> 
+> You've explained before that crid is used to tie together multiple
+> calls to checkpoint, but why do you have to specify it for restart?
+> Can't it just come from the fd?  Or, the fd will be passed in
+> seek()d to the right position for the data for this task, so the crid
+> won't be available there?
+
+I added the 'crid' inside to support a mode of operation in which we
+would like the checkpoint data to remain in memory across multiple
+system calls. Here are example scenarios:
+
+1) We will want to reduce down time by first buffering the checkpoint
+image in memory, then resuming the container, and only then writing
+the data back to a (the) file descriptor.
+So instead of:
+  freeze -> checkpoint and write back -> unfreeze
+We want:
+  freeze -> checkpoint to buffer -> unfreeze -> write back
+I envision each of these steps to be a separate invocation of a syscall.
+to the 'crid' returned by the sys_checkpoint() at the 2nd step, will be
+used to identify that data in the 4th step. (Note, that between the
+unfreeze and the write-back, another checkpoint may be already taken).
+
+2) A task may want to take a checkpoint (e.g. of itself, or a whole
+container) and keep that checkpoint in memory; at a later time it may
+want to revert to that checkpoint. Moreover, it may keep multiple such
+checkpoints (to where it may want to return). 'crid' tells sys_restart
+which one to use.
+
+Note that this 'crid' will in fact be tied to resources that are kept
+by the kernel - e.g. references to COW pages (when we add that).
+Louis suggested to use a specialized FD instead of a numeric 'crid'
+(that is: create a anonymous inode and a struct file that represent
+that checkpoint in the kernel, and return an FD to it). This approach
+has pros and cons of 'crid' (see the archives of the containers
+mailing list). For now I kept 'crid', but I'm definitely open to change
+it to a FD.
+
+Oren.
+
+> 
+> Andrey, how will the 'ctid' in your patchset be used?  It sounds
+> like it's actually going to set some integer id on the created
+> container?  We actually don't have container ids (or even
+> containers) right now, so we probably don't want that in our api,
+> right?
+> 
+>> + * @fd: file from which read the checkpoint image
+>> + * @flags: restart operation flags
+>> + */
+>> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
+>> +{
+>> +	pr_debug("sys_restart not implemented yet\n");
+>> +	return -ENOSYS;
+>> +}
+>> diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+>> index d739467..88bdec4 100644
+>> --- a/include/asm-x86/unistd_32.h
+>> +++ b/include/asm-x86/unistd_32.h
+>> @@ -338,6 +338,8 @@
+>>   #define __NR_dup3		330
+>>   #define __NR_pipe2		331
+>>   #define __NR_inotify_init1	332
+>> +#define __NR_checkpoint		333
+>> +#define __NR_restart		334
+>>
+>>   #ifdef __KERNEL__
+>>
+>> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+>> index d6ff145..edc218b 100644
+>> --- a/include/linux/syscalls.h
+>> +++ b/include/linux/syscalls.h
+>> @@ -622,6 +622,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
+>>   asmlinkage long sys_eventfd(unsigned int count);
+>>   asmlinkage long sys_eventfd2(unsigned int count, int flags);
+>>   asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+>> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
+>> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
+>>
+>>   int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+>>
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index c11da38..fd5f7bf 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -779,6 +779,8 @@ config MARKERS
+>>
+>>   source "arch/Kconfig"
+>>
+>> +source "checkpoint/Kconfig"
+>> +
+>>   config PROC_PAGE_MONITOR
+>>    	default y
+>>   	depends on PROC_FS && MMU
+>> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+>> index 08d6e1b..ca95c25 100644
+>> --- a/kernel/sys_ni.c
+>> +++ b/kernel/sys_ni.c
+>> @@ -168,3 +168,7 @@ cond_syscall(compat_sys_timerfd_settime);
+>>   cond_syscall(compat_sys_timerfd_gettime);
+>>   cond_syscall(sys_eventfd);
+>>   cond_syscall(sys_eventfd2);
+>> +
+>> +/* checkpoint/restart */
+>> +cond_syscall(sys_checkpoint);
+>> +cond_syscall(sys_restart);
+>> -- 
+>> 1.5.4.3
+>>
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.linux-foundation.org
+>> https://lists.linux-foundation.org/mailman/listinfo/containers
