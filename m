@@ -1,104 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbYIDIvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757607AbYIDIvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbYIDIvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYIDIvI
+	id S1757607AbYIDIvf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYIDIvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:51:08 -0400
-Received: from mga01.intel.com ([192.55.52.88]:31312 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752336AbYIDIvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:51:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="612632054"
-Subject: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
-From: Lin Ming <ming.m.lin@intel.com>
-To: a.p.zijlstra@chello.nl
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, mingo <mingo@elte.hu>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 16:51:06 +0800
-Message-Id: <1220518266.9590.22.camel@minggr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 04:51:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55286 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757352AbYIDIvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 04:51:23 -0400
+Date: Thu, 4 Sep 2008 01:50:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: linux-next: Tree for September 3
+In-Reply-To: <20080904012544.cabed847.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au> <20080903214634.ea17ff53.akpm@linux-foundation.org> <alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org> <20080903223318.84b6ce8b.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org> <20080904012544.cabed847.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with 2.6.27-rc4, oltp has ~10% regression with 2.6.27-rc5 on
-8-core stoakley machine.
-
-Run oltp with 8 threads 120 seconds, vmstat shows much more idle time, about ~30%
-
-procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
-10  0      0 7822824  42240 123740    0    0   312    47  442 1613  3  2 88  6  0
- 9  0      0 7822312  42240 123764    0    0     0    16 26691 232566 56 14 30  0  0
-13  0      0 7821940  42240 123764    0    0     0    16 26661 228689 54 14 32  0  0
- 8  0      0 7821320  42240 123764    0    0     0    16 31508 263765 61 17 23  0  0
-12  0      0 7820948  42240 123764    0    0    16    16 28666 242402 57 15 28  0  0
- 9  0      0 7820584  42240 123780    0    0     0    16 27107 230804 56 14 30  0  0
-10  0      0 7819964  42240 123796    0    0    16   612 27599 244037 55 16 29  0  0
-11  0      0 7819356  42240 123796    0    0     0    64 23540 209713 51 13 36  0  0
-10  0      0 7819212  42240 123796    0    0     0    32 25674 224205 54 13 32  0  0
-10  0      0 7818716  42240 123796    0    0     0    20 30106 257161 59 16 25  0  0
- 7  0      0 7818468  42240 123796    0    0     0    16 28356 241551 57 14 29  0  0
-10  0      0 7818096  42240 123796    0    0     0    16 39174 273656 64 16 20  0  0
-12  0      0 7817724  42240 123796    0    0     0    20 39688 276936 63 16 20  0  0
-11  0      0 7817352  42240 123796    0    0     0    16 42543 285192 66 16 18  0  0
- 9  0      0 7817352  42240 123796    0    0     0    16 37083 259830 62 14 24  0  0
- 8  0      0 7817104  42240 123796    0    0     0    16 37450 259160 61 15 23  0  0
-10  0      0 7816516  42240 123796    0    0     0    64 37425 261870 61 16 23  0  0
-11  0      0 7815896  42240 123812    0    0    16    16 41558 279320 66 16 18  0  0
- 9  0      0 7815648  42240 123812    0    0     0    16 34017 235741 59 14 28  0  0
-10  0      0 7815152  42240 123812    0    0     0    16 35642 248888 60 14 26  0  0
- 9  0      0 7814532  42240 123812    0    0     0    16 38517 263220 63 15 22  0  0
- 9  0      0 7814160  42240 123812    0    0     0    20 35965 246487 61 14 25  0  0
-10  0      0 7814036  42240 123812    0    0     0    16 33852 236313 59 13 28  0  0
-11  0      0 7813664  42240 123812    0    0     0    16 34958 244819 59 14 27  0  0
-10  0      0 7813416  42240 123812    0    0     0    16 26106 202062 53 10 37  0  0
-10  0      0 7812672  42240 123812    0    0     0    16 31174 222714 56 12 32  0  0
- 9  0      0 7812300  42240 123812    0    0     0   276 25089 196813 52 11 38  0  0
- 9  0      0 7812060  42240 123812    0    0     0    16 31877 228004 57 12 31  0  0
 
 
+On Thu, 4 Sep 2008, Andrew Morton wrote:
+>
+> <plugs it in>
+> 
+> cs: pcmcia_socket0: unable to apply power.
+> pccard: CardBus card inserted into slot 0
+> pci 0000:07:00.0: supports D1
+> pci 0000:07:00.0: supports D2
+> pci 0000:07:00.0: PME# supported from D1 D2 D3hot D3cold
+> pci 0000:07:00.0: PME# disabled
+> 
+> sony:/home/akpm> lspci -s07:00
+> 07:00.0 Ethernet controller: 3Com Corporation 3cCFE575CT CardBus [Cyclone] (rev 10)
 
-Bisect located below patch, 
-after reverted this patch the regression disappear.
+Ok, the PCI resource side definitely works.
 
-commit 354879bb977e06695993435745f06a0f6d39ce2b
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Mon Aug 25 17:15:34 2008 +0200
+I've committed the fix as follows.. (the explanation is about three times 
+the size, but whatever ;)
 
-    sched_clock: fix cpu_clock()
+As to that "unable to apply power" thing, that's a separate issue.. And 
+in fact one that probably doesn't even matter to a CardBus card, since 
+cardbus doesn't care about the insane CS state machines anyway.
 
-    This patch fixes 3 issues:
+Anyway, Ivan and Jesse cc'd for the patch, but I committed it, since I 
+was involved in causing the bug in the first place.
 
-    a) it removes the dependency on jiffies, because jiffies are
-incremented
-       by a single CPU, and the tick is not synchronized between CPUs.
-Therefore
-       relying on it to calculate a window to clip whacky TSC values
-doesn't work
-       as it can drift around.
+		Linus
 
-       So instead use [GTOD, GTOD+TICK_NSEC) as the window.
+---
+commit 5f17cfce5776c566d64430f543a289e5cfa4538b
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Thu Sep 4 01:33:59 2008 -0700
 
-    b) __update_sched_clock() did (roughly speaking):
+    PCI: fix pbus_size_mem() resource alignment for CardBus controllers
+    
+    Commit 884525655d07fdee9245716b998ecdc45cdd8007 ("PCI: clean up resource
+    alignment management") changed the resource handling to mark how a
+    resource was aligned on a per-resource basis.
+    
+    Thus, instead of looking at the resource number to determine whether it
+    was a bridge resource or a regular resource (they have different
+    alignment rules), we should just ask the resource for its alignment
+    directly.
+    
+    The reason this broke only cardbus resources was that for the other
+    types of resources, the old way of deciding alignment actually still
+    happened to work.  But CardBus bridge resources had been changed by
+    commit 934b7024f0ed29003c95cef447d92737ab86dc4f ("Fix cardbus resource
+    allocation") to look more like regular resources than PCI bridge
+    resources from an alignment handling standpoint.
+    
+    Reported-and-tested-by: Andrew Morton <akpm@linux-foundation.org>
+    Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+    Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
+ drivers/pci/setup-bus.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-       delta = sched_clock() - scd->tick_raw;
-       clock += delta;
-
-       Which gives exponential growth, instead of linear.
-
-    c) allows the sched_clock_cpu() value to warp the u64 without
-breaking.
-
-    the results are more reliable sched_clock() deltas:
-
--Lin Ming
-
-
-
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 82634a2..1aad599 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -352,11 +352,12 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
+ 				continue;
+ 			r_size = r->end - r->start + 1;
+ 			/* For bridges size != alignment */
+-			align = (i < PCI_BRIDGE_RESOURCES) ? r_size : r->start;
++			align = resource_alignment(r);
+ 			order = __ffs(align) - 20;
+ 			if (order > 11) {
+-				dev_warn(&dev->dev, "BAR %d too large: "
++				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
+ 				       "%#016llx-%#016llx\n", i,
++				       (unsigned long long)align,
+ 				       (unsigned long long)r->start,
+ 				       (unsigned long long)r->end);
+ 				r->flags = 0;
