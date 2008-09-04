@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbYIDWXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYIDW1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbYIDWXu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 18:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbYIDWXl
+	id S1756864AbYIDW1x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 18:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbYIDW1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 18:23:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55252 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754622AbYIDWXk (ORCPT
+	Thu, 4 Sep 2008 18:27:44 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:47014 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754634AbYIDW1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 18:23:40 -0400
-Date: Thu, 4 Sep 2008 15:22:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: torvalds@linux-foundation.org, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yhlu.kernel@gmail.com, ink@jurassic.park.msu.ru,
-       jbarnes@virtuousgeek.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, dwmw2@infradead.org, sam@ravnborg.org,
-       johnstul@us.ibm.com, tglx@linutronix.de
-Subject: Re: linux-next: Tree for September 3
-Message-Id: <20080904152248.50773a6d.akpm@linux-foundation.org>
-In-Reply-To: <m1zlmn39oy.fsf@frodo.ebiederm.org>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
-	<20080903214634.ea17ff53.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>
-	<20080903223318.84b6ce8b.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org>
-	<20080904012544.cabed847.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org>
-	<20080904015701.5959623a.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org>
-	<20080904104554.32ffebea.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org>
-	<20080904113408.d47c65f6.akpm@linux-foundation.org>
-	<m163pb4pru.fsf@frodo.ebiederm.org>
-	<20080904134148.0fde4508.akpm@linux-foundation.org>
-	<m1zlmn39oy.fsf@frodo.ebiederm.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 18:27:43 -0400
+To: serue@us.ibm.com
+CC: miklos@szeredi.hu, ebiederm@xmission.com, akpm@linux-foundation.org,
+       hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080904184916.GA19328@us.ibm.com> (serue@us.ibm.com)
+Subject: Re: unprivileged mounts git tree
+References: <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu> <20080904161729.GA26579@us.ibm.com> <E1KbIqL-0003QO-34@pomaz-ex.szeredi.hu> <20080904174851.GA13693@hallyn.com> <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu> <20080904184916.GA19328@us.ibm.com>
+Message-Id: <E1KbNHX-0004mH-Fw@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 05 Sep 2008 00:26:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Sep 2008 14:03:41 -0700
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
+> We still have the original problem.
+> 
+> When root does
+> 
+> 	mount -bind /mnt /mnt
+> 	mount --make-rshared /mnt
+> 	mount --bind -o user=hallyn /mnt /home/hallyn/mnt
+> 
+> and hallyn does
+> 
+> 	mount --bind /usr /home/hallyn/mnt/usr
+> 
+> then the kernel happily propagates the mount to /mnt/usr.
 
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > On Thu, 04 Sep 2008 13:31:01 -0700
-> > ebiederm@xmission.com (Eric W. Biederman) wrote:
-> >
-> >> >> are you sure it's a plain tree of mine, without any of the patches 
-> >> >> floating around between Eric/Al?
-> >> >
-> >> > yup, it's yesterday's mainline.
-> >> 
-> >> Does the problem happen if you disable selinux?
-> >> 
-> >> This feels like a case of selinux being over zealous.
-> >
-> > yeah, adding `selinux=0' to the boot command line fixes it.
-> 
-> The proc generic directory back structure is the same.  As requested by
-> the selinux folks.  So I don't expect there is much more we can do on
-> the /proc side.
-> 
-> When we get the interaction bug between the VFS and /proc/net fixed I wonder
-> if there will be some more selinux fall out.  Something to think about.
+Obviously, and that's exactly what root _instructed_ in the last step.
+If it's a security problem, root shouldn't do that.
 
-fyi, that machine is x86_32-on-FC5.  My x86_64-on-FC6 test box is
-also running selinux and has the same bug.
+Your original bug report correctly pointed out the real security
+problem:
+
+|  as root:
+|  	mmount --bind -o user=500 /home/hallyn/etc/ /home/hallyn/etc/
+|  	mount --bind /mnt /mnt
+|  	mount --make-rshared /mnt
+|  	mount --bind /dev /mnt/dev
+| 
+|  as hallyn:
+|  	mmount --bind /mnt /home/hallyn/etc/mnt
+|  	/usr/src/mmount-0.3/mmount --bind mnt/dev mnt/src
+
+Here root does nothing "unsafe", yet the user can get propagation back
+into /mnt, due to the fact that a bind mount makes the new mount part
+of the old peer group.  This is the security hole that is fixed, and
+AFAICS the only security hole related to propagation vs. user mounts.
+
+(I'm going to be offline tomorrow and the weekend, but will hopefully
+have email access next week).
+
+Thanks,
+Miklos
