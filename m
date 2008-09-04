@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYIDQcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYIDQhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYIDQcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYIDQcj
+	id S1753927AbYIDQhQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYIDQhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:32:39 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:58271 "EHLO mail.vyatta.com"
+	Thu, 4 Sep 2008 12:37:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59762 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751404AbYIDQci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:32:38 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.628
-Date: Thu, 4 Sep 2008 09:32:35 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 1/3] pci: VPD access timeout increase
-Message-ID: <20080904093235.30ade46b@extreme>
-In-Reply-To: <20080904141944.GE7908@solarflare.com>
-References: <20080827204626.4b65862f@extreme>
-	<20080828111323.GI7908@solarflare.com>
-	<20080903155713.7fab2e19@extreme>
-	<20080904125219.GJ2772@parisc-linux.org>
-	<20080904141944.GE7908@solarflare.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751002AbYIDQhC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:37:02 -0400
+Date: Thu, 4 Sep 2008 18:36:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+Message-ID: <20080904163644.GA28340@elte.hu>
+References: <20080904150339.896115280@linutronix.de> <20080904153620.GC7120@elte.hu> <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org> <20080904160036.GA18382@elte.hu> <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 15:19:46 +0100
-Ben Hutchings <bhutchings@solarflare.com> wrote:
 
-> Matthew Wilcox wrote:
-> > On Wed, Sep 03, 2008 at 03:57:13PM -0700, Stephen Hemminger wrote:
-> > > Accessing the VPD area can take a long time. There are comments in the
-> > > SysKonnect vendor driver that it can take up to 25ms.  The existing vpd
-> > > access code fails consistently on my hardware.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-It's bad but not that bad more details are:
-
-				MIN		MAX
- -------------------------------------------------------------------
- write				1.8 ms		3.6 ms
- internal write cyles		0.7 ms		7.0 ms
- -------------------------------------------------------------------
- over all program time	 	2.5 ms		10.6 ms
- read				1.3 ms		2.6 ms
- -------------------------------------------------------------------
- over all 			3.8 ms		13.2 ms
-
-
-Usable VPD is limited to 2K so worst case read is 27 seconds.
-Note: there doesn't appear to be an standard for VPD size register in
-PCI spec, but there is a device specific register.
-
-> > Wow, that's slow.  If you were to try to read all 32k, it'd take more
-> > than three minutes!  (I presume it doesn't actually have as much as 32k).
+> On Thu, 4 Sep 2008, Ingo Molnar wrote:
 > > 
-> > > Change the access routines to:
-> > >   * use a mutex rather than spinning with IRQ's disabled and lock held
-> > >   * have a longer timeout
-> > >   * call schedule while spinning to provide some responsivness
-> > 
-> > I agree with your approach, but have one minor comment:
-> > 
-> > > -	spin_lock_irq(&vpd->lock);
-> > > +	mutex_lock(&vpd->lock);
-> > 
-> > This should be:
-> > 
-> > +	if (mutex_lock_interruptible(&vpd->lock))
-> > +		return -EINTR;
-> [...]
+> > ah - perhaps a dynamic statistical approach with an estimation of 
+> > worst-case calibration error (~= standard deviation) and a quality 
+> > threshold to reach? That could dramatically increase the number of 
+> > samples while also making it much faster in practice. Nifty!
 > 
-> This is fine for the sysfs case, but not if this is called during device
-> probe - we don't want signals to modprobe to break device initialisation,
-> do we?
+> Oh, no, I'm _much_ more nifty than that!
+> 
+> Instead of being very clever, I have a very _stupid_ algorithm, one 
+> that has very hardcoded expectations of exactly what it will see. And 
+> if it doesn't see exactly that, it just fails early.
+>
+> I'd post the patch, but I really need to actually _test_ it first, and 
+> I haven't rebooted yet.
 
-Why not, it makes sense to allow killing a stuck modprobe.
+ok, will wait with patience :)
+
+i've been using adaptive calibration with great success in user-space, 
+to run benchmarks on multiple boxes with a variable number of lmbench 
+iterations. Once the observable statistical properties of the series of 
+measurements looks valid it stops the test iterations and emits a 
+result. This both makes things faster (more predictable hw/kernel 
+executes certain lmbench tests much faster) and it makes the results 
+more reliable (less noise, better cross-hardware, cross-kernel and 
+cross-test comparisons). I've got a quality threshold (and a max 
+iterations threshold) hardcoded as well.
+
+	Ingo
