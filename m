@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYIDTlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYIDTm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYIDTlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 15:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYIDTlq
+	id S1755765AbYIDTm5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbYIDTms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 15:41:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36456 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751996AbYIDTlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 15:41:45 -0400
-Date: Thu, 4 Sep 2008 21:41:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: order functions in cpu/common.c and
-	cpu/common_64.c
-Message-ID: <20080904194127.GA2542@elte.hu>
-References: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com> <20080904191205.GC24990@elte.hu> <20080904193733.GA25136@elte.hu>
+	Thu, 4 Sep 2008 15:42:48 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:49734 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbYIDTmr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 15:42:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lW1JcG++F7Yx3tG2QibqRHkcydCPa7C8Z3TIzBYluSvpAy8QXl1FWT0KiUcUVYeAqZ
+         9Tffpz2RZ3GlxTFBNCC/kHoqVsYRFVKBlbedoyqgFLsP6WjXQrfYOXlxhdQUODs/IZCw
+         b4C/OgziODDgvhSqRd/0uwyF92b8qble0IANY=
+Message-ID: <b170af450809041242n43a6ef70s47a2e3e068619af0@mail.gmail.com>
+Date: Thu, 4 Sep 2008 21:42:46 +0200
+From: "=?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?=" <zajec5@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory corruption
+Cc: "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <b170af450808291039u7d036313x49acdaec079e6213@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20080904193733.GA25136@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <48B701FB.2020905@goop.org>
+	 <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
+	 <48B76CE0.5010309@goop.org>
+	 <20080829102547.655440bf@lxorguk.ukuu.org.uk>
+	 <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com>
+	 <Pine.LNX.4.64.0808291120540.8561@blonde.site>
+	 <b170af450808290454m2f349ce3w4f400b0df0e105a2@mail.gmail.com>
+	 <48B7E6EE.9090901@tuffmail.co.uk>
+	 <Pine.LNX.4.64.0808291413260.12571@blonde.site>
+	 <b170af450808291039u7d036313x49acdaec079e6213@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id m84Jh1dq012438
 
-
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> hm, something in your patch series is early-crashing tip/master with 
-> this config:
-> 
->  http://redhat.com/~mingo/misc/config-Thu_Sep__4_21_23_20_CEST_2008.bad
-> 
-> the early-RIP is 0xffffffff804365b0:
-> 
-> ffffffff8043656a <proc_bus_pci_release>:
-> 
-> ffffffff804365b0:       be d0 00 00 00          mov    $0xd0,%esi
-> ffffffff804365b5:       e8 ad 28 e7 ff          callq  ffffffff802a8e67 <kmem_cache_alloc>
-> 
-> fault 0xd, general protection fault. Given that it's an immediate 
-> constant load, something really serious happened.
-
-ah, that's _another_ -tip testbox that broke at the same time, with a 
-different kernel image. The RIP that corresponds to this box is 
-0xffffffff80420470:
-
-ffffffff8042045b <strnlen>:
-ffffffff8042045b:       55                      push   %rbp
-
-ffffffff80420470:       80 38 00                cmpb   $0x0,(%rax)
-
-
-which could be consistent with the printk messup ...
-
-> i've pushed out the broken tree into tip/tmp.master.broken (havent 
-> updated tip/master with the breakage). I've removed the broken printk 
-> in kernel/resource.c that Andrew found, see commit 06e44f6af324 - so 
-> that's not the cause.
-
-i've double checked that 06e44f6af324 is applied. I'll bisect this.
-
-	Ingo
+2008/8/29 RafaÅ‚ MiÅ‚ecki <zajec5@gmail.com>:> 2008/8/29 Hugh Dickins <hugh@veritas.com>:>> Here's my version of Jeremy's patch, that I've now tested on my machines,>> as x86_32 and as x86_64.  It addresses none of the points Alan Cox made,>> and it stays silent for me, even after suspend+resume, unless I actually>> introduce corruption myself.  Omits Jeremy's check in fault.c, but does>> a check every minute, so should soon detect RafaÅ‚'s HDMI corruption>> without any need to suspend+resume.>> Your periodic test works fine:>> Corrupted low memory at ffff88000000be9c (be9c phys) = b02a0004>  <IRQ>  [<ffffffff8020fc9b>] check_for_bios_corruption+0x93/0x9f>  [<ffffffff8020fca7>] ? periodic_check_for_corruption+0x0/0x25>  [<ffffffff8020fcb0>] periodic_check_for_corruption+0x9/0x25>> By the way I confirmed this bug on Sony Vaio FW11M (my one is FW11S).> Probably more machines from FW11* are affected.
+If this patch is known to work fine for Sony Vaio FW* and Alan'smachine, could it go mainline somehow?
+-- RafaÅ‚ MiÅ‚eckiÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
