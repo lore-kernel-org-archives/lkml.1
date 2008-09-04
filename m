@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYIDRV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIDRXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbYIDRV6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYIDRVu
+	id S1754648AbYIDRXc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYIDRXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:21:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47652 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbYIDRVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:21:50 -0400
-Date: Thu, 4 Sep 2008 13:20:52 -0400
-From: Don Zickus <dzickus@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       arozansk@redhat.com, Thomas.Mingarelli@hp.com, ak@linux.intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080904172052.GN3400@redhat.com>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87y727vrgu.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Sep 2008 13:23:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43451 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751124AbYIDRXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 13:23:20 -0400
+Date: Thu, 4 Sep 2008 10:21:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jeff Garzik <jeff@garzik.org>, Ayaz Abdulla <aabdulla@nvidia.com>,
+       David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, tomasw@gmail.com, yi.zhu@intel.com,
+       linville@tuxdriver.com
+Subject: Re: [GIT]: Networking
+Message-Id: <20080904102156.a40ec447.akpm@linux-foundation.org>
+In-Reply-To: <200809041158.19929.rjw@sisk.pl>
+References: <20080903.161341.239039051.davem@davemloft.net>
+	<200809041025.15277.rjw@sisk.pl>
+	<48BFABE0.6050505@garzik.org>
+	<200809041158.19929.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 05:52:17PM +0200, Andi Kleen wrote:
-> Then if there's a chipset specific NMI driver it could
-> also check if the chipset raised it. That would be a possible
-> solution for HP -- they would need to implement such a driver
-> for their systems with the special watchdog.
+On Thu, 4 Sep 2008 11:58:18 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-The thing with HP's special watchdog timer is that it does _not_ have a
-chipset specific NMI it is trying to catch.  HP is going on the assumption
-that _all_ NMIs are /bad/ and they want to catch _every_ NMI, log it, and
-reboot the system.
+> > > BTW, there are two regression fixes for forcedeth:
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=121894389018584&w=4
+> > > http://marc.info/?l=linux-kernel&m=121917167232014&w=4
+> > > 
+> > > that fix the regressions tracked as:
+> > > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=11358
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=11361
+> > > 
+> > > respectively and both are more than 2 weeks old now.
+> > > 
+> > > Is there any chance to push them upstream or is there anything wrong with them?
+> > 
+> > Your patch is fine.  Since DaveM and I are gone this weekend, feel free 
+> > to add "acked-by: jgarzik@redhat" and forward upstream to Linus and Andrew.
+> 
+> OK, thanks.
+> 
+> Andrew, this patch is currently in -mm as forcedeth-fix-kexec-regression.patch
+> Could you please add the Jeff's ACK to it and push it to Linus?
 
-Now obviously NMIs from kgdb and oprofile are not the ones a system should
-panic on but this breaks HP's assumptions.
-
-So that is part of the problem.  How do you become a catch-all for NMIs in
-a system, to process as you wish, but ignore all the 'safe' NMIs?
-
-Cheers,
-Don
+yup, thanks.
