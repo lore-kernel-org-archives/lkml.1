@@ -1,112 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYIDN2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYIDNhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbYIDN2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 09:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIDN22
+	id S1754902AbYIDNhw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 09:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYIDNho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 09:28:28 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48549 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbYIDN21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 09:28:27 -0400
-Date: Thu, 4 Sep 2008 08:28:04 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mounts git tree
-Message-ID: <20080904132804.GA14709@us.ibm.com>
-References: <20080808002537.GA5364@us.ibm.com> <E1KXZpC-0008Ie-6w@pomaz-ex.szeredi.hu> <20080827153628.GA11242@us.ibm.com> <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu> <20080827184600.GA8069@us.ibm.com> <E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu> <20080903220215.GA27705@us.ibm.com> <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 4 Sep 2008 09:37:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40617 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbYIDNhn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 09:37:43 -0400
+Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+From: Peter Zijlstra <peterz@infradead.org>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, arozansk@redhat.com, dzickus@redhat.com,
+       Thomas.Mingarelli@hp.com, ak@linux.intel.com, mingo@elte.hu
+In-Reply-To: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
+References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 15:37:43 +0200
+Message-Id: <1220535463.8609.223.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> On Wed, 3 Sep 2008, Serge E. Hallyn wrote:
-> > Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > On Wed, 3 Sep 2008, Serge E. Hallyn wrote:
-> > > > Ooh.
-> > > > 
-> > > > You predicate the turning of shared mount to a slave mount on
-> > > > !capable(CAP_SYS_ADMIN).  But in fact it's the mount by a privileged
-> > > > user, turning the mount into a user mount, which you want to convert.
-> > > > So my series of steps was:
-> > > > 
-> > > > 	as root:
-> > > > 		(1) mount --bind /mnt /mnt
-> > > > 		(2) mount --make-rshared /mnt
-> > > > 		(3) /usr/src/mmount-0.3/mmount --bind -o user=hallyn /mnt \
-> > > > 			/home/hallyn/etc/mnt
-> > > > 	as hallyn:
-> > > > 		(4) mount --bind /usr /home/hallyn/etc/mnt/usr
-> > > > 
-> > > > You are turning mounts from shared->slave at step 4, but in fact we need
-> > > > to do it at step 3, where we do have CAP_SYS_ADMIN.
-> > > 
-> > > Well, that's arguable: I think root should be able to shoot itself in
-> > > the foot by doing step 3.
-> > 
-> > Maybe I'm not thinking right, but long-term is there any reason why we
-> > should require privilege in order to do step 3, so long as the user has
-> > read access to the source and write access to the destination?
-> > 
-> > I don't think there is.  Other than this glitch.  That's a powerful
-> > reason to fix the glitch.
+On Thu, 2008-09-04 at 09:07 -0400, Prarit Bhargava wrote:
+> Andi and Ingo,
 > 
-> Agreed, without privileges it's unacceptable to allow step 3 as is.
-> 
-> > The other argument is that, frankly, I think most people are still
-> > either unaware of, or confused by, mounts propagation.  Letting root
-> > shoot himself in the foot is reasonable only to a point.
-> 
-> Hmm, I think there are infinite ways in which root can mess up mount
-> propagation, and this is not even the worst.  I'm not trying to
-> belittle this bug: done unprivileged it's unacceptable.  But with
-> privileges, I really don't know if we should change the propagation
-> semantics for this corner case, they are complicated enough already.
-> 
-> > > Generally we don't restrict what root can
-> > > do.  OTOH I agree that current behavior is ugly in that it provides
-> > > different semantics for privileged/non-privileged callers.
-> > > 
-> > > Perhaps it would be cleaner to simply not allow step 4, instead of
-> > > playing tricks with changing the propagation type.
-> > 
-> > If the user or admin can simply (I haven't tested)
-> > 
-> > 	mmount --bind --make-rslave -o user=hallyn /mnt \
-> > 		/home/hallyn/etc/mnt
-> > 
-> > then returning -EPERM if --make-rslave was not provided is reasonable
-> > IMO.
-> 
-> Right, that sounds perfect.  the only problem is, bind mount currently
-> ignores the propagation flags, for no good reason I can see.
-> 
-> That's a separate patch though.  I'll look into it.
+> This patch is an RFC for the following changes.  If I get a positive review,
+> changes to the HP Watchdog timer (currently in the kernel) will also be
+> submitted along with this patch.
 > 
 > Thanks,
-> Miklos
+> 
+> P.
+> 
+> The drivers/watchdog/hpwdt.c driver requires that all NMIs are processed
+> by the driver.  Currently the driver does not do this.  The first
+> step is to implement code to allow the default NMI handler to be replaced
+> by a custom NMI handler.
 
-Cool, thanks, Miklos :)
+Why is the DIE_NMIWATCHDOG notifier not sufficient for this driver?
 
-Are you going to revert the change forcing CL_SLAVE for
-!capable(CAP_SYS_ADMIN)?  I don't think we want that - I think that
-*within* a set of user mounts, propagation should be safe, right?
-
-Will you be able to do this soon?  If not, should we just do the part
-returning -EPERM when turning a shared mount into a user mount? 
-Because I think that would then be ready for testing in -mm, and would
-love to see it tested.
-
-Were you going to push a patch to mount to do the user mounts, or
-put sample code in Documentation, git log, or under samples/?
-
-thanks,
--serge
