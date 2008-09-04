@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYIDWzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbYIDXEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYIDWzk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 18:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbYIDWzb
+	id S1755933AbYIDXEE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 19:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbYIDXDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 18:55:31 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:55425 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754463AbYIDWza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 18:55:30 -0400
-Subject: Re: [Devel] Re: [PATCH 0/9] OpenVZ kernel based
-	checkpointing/restart
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Andrey Mirkin <major@openvz.org>
-Cc: devel@openvz.org, containers@lists.linux-foundation.org,
-       Cedric Le Goater <clg@fr.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200809031759.29132.major@openvz.org>
-References: <1220439476-16465-1-git-send-email-major@openvz.org>
-	 <48BE82F9.4020808@fr.ibm.com>  <200809031759.29132.major@openvz.org>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 15:55:26 -0700
-Message-Id: <1220568926.23386.70.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 4 Sep 2008 19:03:53 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44685 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753541AbYIDXDw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 19:03:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=YYppox1JY4C2xlzahfUOFVvGhznDx4WjPf5JrdS4JUVaPgKOhv7Xl05YPc+ktTb0k
+	3XWMud7erMSGrpuS1ET0g==
+Message-ID: <6599ad830809041603t320a15eakdfbc6fcab232aa59@mail.gmail.com>
+Date: Thu, 4 Sep 2008 16:03:43 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Subject: Re: Default values for cpuset.mems, cpus for children created
+Cc: pj@sgi.com, danms@us.ibm.com, "Balbir Singh" <balbir@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>
+In-Reply-To: <20080815193132.GE11844@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080815193132.GE11844@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-03 at 17:59 +0400, Andrey Mirkin wrote:
-> > The first issues I see with this direction are some EXPORT_SYMBOL() that
-> > would be useless without a module.
-> 
-> Checkpoint/restart functionality is implemented as a kernel module to provide 
-> more flexibility during development process - you can easily unload module, 
-> fix what you need and load module again, you do not need to reboot you server 
-> in this case. We have discussed this question during Container's mini summit 
-> on OLS-2008 and we have found out that it will be convenient to have such an 
-> ability.
+On Fri, Aug 15, 2008 at 12:31 PM, Dhaval Giani
+<dhaval@linux.vnet.ibm.com> wrote:
+> Now an application programmer does not really care where and how
+> subsystems are mounted (or at least that is what libcgroup aims to
+> achieve :-) ). And such a scenario when the cpuset has not been handled
+> is going to lead to failures which a user is not expecting.
+>
+> To work around this, I am making a change which will just set the values
+> which the parent group has for unfilled values, but I can already see
+> cpuset breaking that assumption as well. (for example exclusive
+> cpusets).
 
-It would probably be best to separate out the bits that are needed to
-make this feature build as a module.  Since, as you say, this is only
-useful during development, we'll have to rip these bits out eventually
-to get it merged.  Might as well do that from the start.  
+Yes, this is an awkwardness with the cpusets model of recursively
+sharing a set of identifiable resources. Quite apart from the
+backwards compatibility issue, if you make new cpusets inherit their
+parent's resources you break the exclusive setting, and if you don't
+you require special setup before the cgroup can be used.
 
--- Dave
+There's already a precedent in the cpuset_clone() function, which does
+inherit the parent's resources, but I don't think the clone behaviour
+is widely used, and even that doesn't handle the case of exclusive
+siblings.
 
+I'm inclined to say that this is a userspace bug - if you don't want
+cpusets attached to your cgroup hierarchy, don't include them in the
+set of mounted subsystems.
+
+Paul
