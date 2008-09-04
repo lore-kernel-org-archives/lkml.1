@@ -1,298 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbYIDIKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbYIDILW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbYIDIKh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYIDIKU
+	id S1757356AbYIDILW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYIDILH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:10:20 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:59815 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbYIDIKS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:10:18 -0400
-Date: Thu, 4 Sep 2008 04:06:14 -0400 (EDT)
-From: Oren Laadan <orenl@cs.columbia.edu>
-X-X-Sender: orenl@takamine.ncl.cs.columbia.edu
-To: dave@linux.vnet.ibm.com
-cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: [RFC v3][PATCH 9/9] File descriprtors (restore)
-In-Reply-To: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
-Message-ID: <Pine.LNX.4.64.0809040405520.5982@takamine.ncl.cs.columbia.edu>
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-No-Spam-Score: Local
+	Thu, 4 Sep 2008 04:11:07 -0400
+Received: from gate.crashing.org ([63.228.1.57]:36826 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752540AbYIDILE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 04:11:04 -0400
+Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
+	lockless
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       jean-pierre.dion@bull.net, michael@ellerman.id.au,
+       linuxppc-dev@ozlabs.org, paulus@samba.org, gilles.carry@ext.bull.net,
+       tglx@linutronix.de
+In-Reply-To: <20080904095507.207d1091@bull.net>
+References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
+	 <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
+	 <1219209781.21386.25.camel@pasglop> <20080903154105.7dff49db@bull.net>
+	 <1220496739.4879.20.camel@pasglop> <20080904092252.12b3df4a@bull.net>
+	 <1220513643.4879.68.camel@pasglop>  <20080904095507.207d1091@bull.net>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 17:58:56 +1000
+Message-Id: <1220515136.4879.70.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Restore open file descriptors: for each FD read 'struct cr_hdr_fd_ent'
-and lookup tag in the hash table; if not found (first occurence), read
-in 'struct cr_hdr_fd_data', create a new FD and register in the hash.
-Otherwise attach the file pointer from the hash as an FD.
+>   There's nothing to 'de-initialize' here, or am I missing something?
+> radix_tree_insert() will return ENOMEM and won't insert anything.
 
-This patch only handles basic FDs - regular files, directories and also
-symbolic links.
+Forget my comment, just fallback.
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
-  checkpoint/Makefile    |    2 +-
-  checkpoint/restart.c   |    4 +
-  checkpoint/rstr_file.c |  205 ++++++++++++++++++++++++++++++++++++++++++++++++
-  include/linux/ckpt.h   |    1 +
-  4 files changed, 211 insertions(+), 1 deletions(-)
-  create mode 100644 checkpoint/rstr_file.c
+> > Or you can fallback if you don't find, as easy, probably
+> > easier since it shouldn't happen in practice.
+> 
+>   That's what I had in mind.
 
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index 7496695..88bbc10 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -3,4 +3,4 @@
-  #
+Thanks for doing that work !
 
-  obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
--		ckpt_mem.o rstr_mem.o ckpt_file.o
-+		ckpt_mem.o rstr_mem.o ckpt_file.o rstr_file.o
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index f8c919d..bc49523 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -212,6 +212,10 @@ static int cr_read_task(struct cr_ctx *ctx)
-  	cr_debug("memory: ret %d\n", ret);
-  	if (ret < 0)
-  		goto out;
-+	ret = cr_read_files(ctx);
-+	cr_debug("files: ret %d\n", ret);
-+	if (ret < 0)
-+		goto out;
-  	ret = cr_read_thread(ctx);
-  	cr_debug("thread: ret %d\n", ret);
-  	if (ret < 0)
-diff --git a/checkpoint/rstr_file.c b/checkpoint/rstr_file.c
-new file mode 100644
-index 0000000..56f4f38
---- /dev/null
-+++ b/checkpoint/rstr_file.c
-@@ -0,0 +1,205 @@
-+/*
-+ *  Checkpoint file descriptors
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/file.h>
-+#include <linux/fdtable.h>
-+#include <linux/fsnotify.h>
-+#include <linux/syscalls.h>
-+#include <linux/ckpt.h>
-+#include <linux/ckpt_hdr.h>
-+
-+#include "ckpt_file.h"
-+
-+static int cr_close_all_fds(struct files_struct *files)
-+{
-+	int *fdtable;
-+	int n;
-+
-+	do {
-+		n = cr_scan_fds(files, &fdtable);
-+		if (n < 0)
-+			return n;
-+		while (n--)
-+			sys_close(fdtable[n]);
-+		kfree(fdtable);
-+	} while (n != -1);
-+
-+	return 0;
-+}
-+
-+/**
-+ * cr_attach_file - attach a lonely file ptr to a file descriptor
-+ * @file: lonely file pointer
-+ */
-+static int cr_attach_file(struct file *file)
-+{
-+	int fd = get_unused_fd_flags(0);
-+
-+	if (fd >= 0) {
-+		fsnotify_open(file->f_path.dentry);
-+		fd_install(fd, file);
-+	}
-+	return fd;
-+}
-+
-+#define CR_SETFL_MASK (O_APPEND|O_NONBLOCK|O_NDELAY|FASYNC|O_DIRECT|O_NOATIME)
-+
-+/* cr_read_fd_data - restore the state of a given file pointer */
-+static int
-+cr_read_fd_data(struct cr_ctx *ctx, struct files_struct *files, int parent)
-+{
-+	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int fd, rparent, ret;
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_DATA);
-+	cr_debug("rparent %d parent %d flags %#x mode %#x how %d\n",
-+		 rparent, parent, hh->f_flags, hh->f_mode, hh->fd_type);
-+	if (rparent < 0)
-+		return rparent;
-+	if (rparent != parent)
-+		return -EINVAL;
-+	/* FIX: more sanity checks on f_flags, f_mode etc */
-+
-+	switch (hh->fd_type) {
-+	case CR_FD_FILE:
-+	case CR_FD_DIR:
-+	case CR_FD_LINK:
-+		file = cr_read_open_fname(ctx, hh->f_flags, hh->f_mode);
-+		break;
-+	default:
-+		file = ERR_PTR(-EINVAL);
-+		break;
-+	}
-+
-+	if (IS_ERR(file))
-+		return PTR_ERR(file);
-+
-+	/* FIX: need to restore uid, gid, owner etc */
-+
-+	fd = cr_attach_file(file);	/* no need to cleanup 'file' below */
-+	if (fd < 0) {
-+		filp_close(file, NULL);
-+		return fd;
-+	}
-+
-+	/* register new <objref, file> tuple in hash table */
-+	ret = cr_obj_add_ref(ctx, (void *) file, parent, CR_OBJ_FILE, 0);
-+	if (ret < 0)
-+		goto out;
-+	ret = sys_fcntl(fd, F_SETFL, hh->f_flags & CR_SETFL_MASK);
-+	if (ret < 0)
-+		goto out;
-+	ret = vfs_llseek(file, hh->f_pos, SEEK_SET);
-+	if (ret == -ESPIPE)	/* ignore error on non-seekable files */
-+		ret = 0;
-+
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return (ret < 0 ? ret : fd);
-+}
-+
-+/**
-+ * cr_read_fd_ent - restore the state of a given file descriptor
-+ * @ctx: checkpoint context
-+ * @files: files_struct pointer
-+ * @parent: parent objref
-+ *
-+ * Restore the state of a file descriptor; look up the objref (in the header)
-+ * in the hash table, and if found pick the matching file pointer and use
-+ * it; otherwise call cr_read_fd_data to restore the file pointer too.
-+ */
-+static int
-+cr_read_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int parent)
-+{
-+	struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int newfd, rparent;
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_ENT);
-+	cr_debug("rparent %d parent %d ref %d\n", rparent, parent, hh->objref);
-+	if (rparent < 0)
-+		return rparent;
-+	if (rparent != parent)
-+		return -EINVAL;
-+	cr_debug("fd %d coe %d\n", hh->fd, hh->close_on_exec);
-+	if (hh->objref <= 0)
-+		return -EINVAL;
-+
-+	file = cr_obj_get_by_ref(ctx, hh->objref, CR_OBJ_FILE);
-+	if (IS_ERR(file))
-+		return PTR_ERR(file);
-+
-+	if (file) {
-+		newfd = cr_attach_file(file);
-+		if (newfd < 0)
-+			return newfd;
-+		get_file(file);
-+	} else {
-+		/* create new file pointer (and register in hash table) */
-+		newfd = cr_read_fd_data(ctx, files, hh->objref);
-+		if (newfd < 0)
-+			return newfd;
-+	}
-+
-+	cr_debug("newfd got %d wanted %d\n", newfd, hh->fd);
-+
-+	/* if newfd isn't desired fd, use dup2() to relocated it */
-+	if (newfd != hh->fd) {
-+		int ret = sys_dup2(newfd, hh->fd);
-+		if (ret < 0)
-+			return ret;
-+		sys_close(newfd);
-+	}
-+
-+	if (hh->close_on_exec)
-+		set_close_on_exec(hh->fd, 1);
-+
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return 0;
-+}
-+
-+int cr_read_files(struct cr_ctx *ctx)
-+{
-+	struct cr_hdr_files *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct files_struct *files = current->files;
-+	int n, parent, ret;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FILES);
-+	if (parent < 0)
-+		return parent;
-+#if 0	/* activate when containers are used */
-+	if (parent != task_pid_vnr(current))
-+		return -EINVAL;
-+#endif
-+	cr_debug("objref %d nfds %d\n", hh->objref, hh->nfds);
-+	if (hh->objref < 0 || hh->nfds < 0)
-+		return -EINVAL;
-+
-+	if (hh->nfds > sysctl_nr_open)
-+		return -EMFILE;
-+
-+	/* point of no return -- close all file descriptors */
-+	ret = cr_close_all_fds(files);
-+	if (ret < 0)
-+		return ret;
-+
-+	for (n = 0; n < hh->nfds; n++) {
-+		ret = cr_read_fd_ent(ctx, files, hh->objref);
-+		if (ret < 0)
-+			break;
-+	}
-+
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-diff --git a/include/linux/ckpt.h b/include/linux/ckpt.h
-index ea57fe6..3eb64a0 100644
---- a/include/linux/ckpt.h
-+++ b/include/linux/ckpt.h
-@@ -86,6 +86,7 @@ int cr_write_files(struct cr_ctx *ctx, struct task_struct *t);
+Cheers,
+Ben.
 
-  int do_restart(struct cr_ctx *ctx);
-  int cr_read_mm(struct cr_ctx *ctx);
-+int cr_read_files(struct cr_ctx *ctx);
-
-  #define cr_debug(fmt, args...)  \
-  	pr_debug("[CR:%s] " fmt, __func__, ## args)
--- 
-1.5.4.3
 
