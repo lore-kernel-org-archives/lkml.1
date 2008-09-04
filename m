@@ -1,62 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYIDS2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYIDS37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbYIDS2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbYIDS1w
+	id S1755918AbYIDS37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYIDS3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:27:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58481 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753732AbYIDS1v (ORCPT
+	Thu, 4 Sep 2008 14:29:52 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2662 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbYIDS3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:27:51 -0400
-Date: Thu, 4 Sep 2008 11:26:43 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Alok Kataria <akataria@vmware.com>,
-       Arjan van de Veen <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC patch 0/4] TSC calibration improvements
-In-Reply-To: <20080904190728.59634020@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org>
-References: <20080904150339.896115280@linutronix.de> <20080904153620.GC7120@elte.hu> <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org> <20080904160036.GA18382@elte.hu> <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> <20080904190728.59634020@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 4 Sep 2008 14:29:51 -0400
+Message-ID: <48C0291D.6060205@ct.jp.nec.com>
+Date: Thu, 04 Sep 2008 11:29:49 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rui Sousa <rui.p.m.sousa@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Jeff Dike <jdike@addtoit.com>
+Subject: Re: [PATH] Fix compilation when CONFIG_TRACE_IRQFLAGS_SUPPORT is
+ not set
+References: <200809031753.07292.rui.p.m.sousa@gmail.com> <20080904143918.GA28095@elte.hu> <48C0175B.3070500@ct.jp.nec.com> <200809041947.54339.rui.p.m.sousa@gmail.com>
+In-Reply-To: <200809041947.54339.rui.p.m.sousa@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 4 Sep 2008, Alan Cox wrote:
->
-> > (And yes, I do the latching - it's not reqlly required since I only depend 
-> > on the MSB, and it actually makes for slightly lower precision, but it's 
-> > the "safe" thing. And I figured out that the reason I thought that the 
+Rui Sousa wrote:
+> On Thursday 4 September 2008 19:14, Hiroshi Shimamoto wrote:
+>> Ingo Molnar wrote:
+>>> * Rui Sousa <rui.p.m.sousa@gmail.com> wrote:
+>>>> Hi,
+>>>>
+>>>> This patch fixes compilation if CONFIG_TRACE_IRQFLAGS_SUPPORT is ever
+>>>> disabled (which is currently not allowed by Kconfig). Alternatively we
+>>>> could just remove the option altogether and the associated code paths.
+>>>> Since the compilation error has been in the tree for at least two
+>>>> years and no one noticed it, I guess we don't really have the need for
+>>>> CONFIG_TRACE_IRQFLAGS_SUPPORT=n. Boot tested on x86 UP.
+>>> applied to tip/core/locking - thanks Rui.
+>>>
+>>> since you fixed it i prefer the fix over the removal. We could still
+>>> remove the !TRACE_IRQFLAGS_SUPPORT now (in a separate commit) and
+>>> simpify this header a bit that way. Thus if someone needs the
+>>> !TRACE_IRQFLAGS_SUPPORT mode of build for future work, it can be
+>>> restored via a simple revert.
+>> Hi, it seems that this patch breaks uml build.
 > 
-> Good job you don't. Various Cyrix/Geode chipsets have as errata #2
+> Hi Hiroshi,
 > 
-> "Counter latch command is non-operational in the 8254 timer"
+>> kernel/printk.c: In function 'vprintk':
+>> kernel/printk.c:674: error: implicit declaration of function
+>> 'raw_local_irq_save' kernel/printk.c:772: error: implicit declaration of
+>> function 'raw_local_irq_restore'
+> 
+> With the patch bellow it compiles (make ARCH=um with a x86 host), but I'm 
+> really out of my league on this one...
 
-Yeah, I had some memory of latch issues. I wrote the thing originally 
-without the latching, which is why the whole thing is designed to igore 
-the low cycle count. I just decided that doing the latching shouldn't 
-hurt that much, even if it ends up being just a 1us no-op.
+Hi Rui,
 
-It does mean that on any normal hardware, the expected error is roughly 
-3us over 2048 PIT ticks, which if I do the math right (nominal PIT 
-frequency: 1193182 Hz) is just under 0.2%. Or put another way, ~1750 ppm.
+with this patch, build and boot (on my x86_64 box) looks ok.
 
-Not doing the latching should make the expected error go down to 2us.
+I CC-ed to uml people to check this.
 
-Of course, the 2048 PIT ticks is just a random choice. It could be any 
-multiple of 256 ticks, so that error can be made smaller. Maybe it's worth 
-spending 10ms on this, and get it down by a factor of five (at which point 
-the error on the PIT frequency is probably in the same order of 
-magnitude).
+thanks,
+Hiroshi Shimamoto
 
-			Linus
+> 
+>> thanks,
+>> Hiroshi Shimamoto
+> 
+> Thanks,
+> Rui
+> 
+> ---
+> diff --git a/include/asm-um/system-generic.h b/include/asm-um/system-generic.h
+> index 5bcfa35..f1ea4da 100644
+> --- a/include/asm-um/system-generic.h
+> +++ b/include/asm-um/system-generic.h
+> @@ -4,15 +4,15 @@
+>  #include "asm/arch/system.h"
+>  
+>  #undef switch_to
+> -#undef local_irq_save
+> -#undef local_irq_restore
+> -#undef local_irq_disable
+> -#undef local_irq_enable
+> -#undef local_save_flags
+> -#undef local_irq_restore
+> -#undef local_irq_enable
+> -#undef local_irq_disable
+> -#undef local_irq_save
+> +#undef raw_local_irq_save
+> +#undef raw_local_irq_restore
+> +#undef raw_local_irq_disable
+> +#undef raw_local_irq_enable
+> +#undef raw_local_save_flags
+> +#undef raw_local_irq_restore
+> +#undef raw_local_irq_enable
+> +#undef raw_local_irq_disable
+> +#undef raw_local_irq_save
+>  #undef irqs_disabled
+>  
+>  extern void *switch_to(void *prev, void *next, void *last);
+> @@ -23,21 +23,21 @@ extern int get_signals(void);
+>  extern void block_signals(void);
+>  extern void unblock_signals(void);
+>  
+> -#define local_save_flags(flags) do { typecheck(unsigned long, flags); \
+> +#define raw_local_save_flags(flags) do { typecheck(unsigned long, flags); \
+>  				     (flags) = get_signals(); } while(0)
+> -#define local_irq_restore(flags) do { typecheck(unsigned long, flags); \
+> +#define raw_local_irq_restore(flags) do { typecheck(unsigned long, flags); \
+>  				      set_signals(flags); } while(0)
+>  
+> -#define local_irq_save(flags) do { local_save_flags(flags); \
+> -                                   local_irq_disable(); } while(0)
+> +#define raw_local_irq_save(flags) do { raw_local_save_flags(flags); \
+> +                                   raw_local_irq_disable(); } while(0)
+>  
+> -#define local_irq_enable() unblock_signals()
+> -#define local_irq_disable() block_signals()
+> +#define raw_local_irq_enable() unblock_signals()
+> +#define raw_local_irq_disable() block_signals()
+>  
+>  #define irqs_disabled()                 \
+>  ({                                      \
+>          unsigned long flags;            \
+> -        local_save_flags(flags);        \
+> +        raw_local_save_flags(flags);        \
+>          (flags == 0);                   \
+>  })
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
