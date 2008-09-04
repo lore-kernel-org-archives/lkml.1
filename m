@@ -1,92 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbYIDUb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbYIDUa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759506AbYIDUb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbYIDU0z
+	id S1758768AbYIDUa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757792AbYIDU0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:26:55 -0400
-Received: from mail.work.de ([212.12.32.20]:42138 "EHLO mail.work.de"
+	Thu, 4 Sep 2008 16:26:46 -0400
+Received: from mail.work.de ([212.12.32.20]:42130 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757072AbYIDU0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:26:54 -0400
-Message-ID: <48C0448A.6090004@gmail.com>
-Date: Fri, 05 Sep 2008 00:26:50 +0400
+	id S1758573AbYIDU0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:26:45 -0400
+Message-ID: <48C04480.5060807@gmail.com>
+Date: Fri, 05 Sep 2008 00:26:40 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
        akpm@linux-foundation.org
-CC: o.endriss@gmx.de
-Subject: DVB Update [PATCH 23/31] fix broken usage of get_frontend_algo
+CC: marco@lordzodiac.de
+Subject: DVB Update [PATCH 22/31] fix broken backward compat for DVBFE_GET_PARAMS
 X-Enigmail-Version: 0.94.0.0
 Content-Type: multipart/mixed;
- boundary="------------060705010207010305010905"
+ boundary="------------080403040306080604000103"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------060705010207010305010905
+--------------080403040306080604000103
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
->From cb2ad43c376d891438ee5a963f574f0f0166100e Mon Sep 17 00:00:00 2001
+>From a4d4b171211d0c71eda0f807506e905df2b9e4ef Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 14:27:55 +0200
-Subject: [PATCH] DVB Code review fix broken use get_frontend_algo
+Date: Thu, 4 Sep 2008 14:24:28 +0200
+Subject: [PATCH] DVB fix broken backward compatibility for DVBFE_GET_PARAMS
 
-Code review #3 In legacy drivers, where get_frontend_algo is NULL,
-dvb_frontend_swzigzag_update_delay won't be called.
+DVBFE_GET_PARAMS 's backward compatibily was broken due to a
+wrong copy. Fix it.
 
-Thanks to Oliver Endriss <o.endriss@gmx.de> for the code review
+Thanks to Marco Schluessler <marco@lordzodiac.de> for pointing
+out the bug.
 
 From: Manu Abraham <abraham.manu@gmail.com>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
- dvb_frontend.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ dvb_frontend.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 
---------------060705010207010305010905
+--------------080403040306080604000103
 Content-Type: text/x-patch;
- name="23.patch"
+ name="22.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="23.patch"
+ filename="22.patch"
 
->From cb2ad43c376d891438ee5a963f574f0f0166100e Mon Sep 17 00:00:00 2001
+>From a4d4b171211d0c71eda0f807506e905df2b9e4ef Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 14:27:55 +0200
-Subject: [PATCH] DVB Code review fix broken use get_frontend_algo
+Date: Thu, 4 Sep 2008 14:24:28 +0200
+Subject: [PATCH] DVB fix broken backward compatibility for DVBFE_GET_PARAMS
 
-Code review #3 In legacy drivers, where get_frontend_algo is NULL,
-dvb_frontend_swzigzag_update_delay won't be called.
+DVBFE_GET_PARAMS 's backward compatibily was broken due to a
+wrong copy. Fix it.
 
-Thanks to Oliver Endriss <o.endriss@gmx.de> for the code review
+Thanks to Marco Schluessler <marco@lordzodiac.de> for pointing
+out the bug.
 
 From: Manu Abraham <abraham.manu@gmail.com>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
 diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index 24ae622..7311f0c 100644
+index 2b28bd1..24ae622 100644
 --- a/drivers/media/dvb/dvb-core/dvb_frontend.c
 +++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -995,11 +995,11 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 	 */
- 	/* Legacy	*/
- 	if (fe->legacy) {
--		if ((fepriv->state & FESTATE_LOSTLOCK) && (fepriv->max_drift == 0)) {
--			if (fe->ops.get_frontend_algo)
--				if (fe->ops.get_frontend_algo(fe) == DVBFE_ALGO_RECOVERY)
--					dvb_frontend_swzigzag_update_delay(fepriv, s & FE_HAS_LOCK);
-+		if ((fepriv->state & FESTATE_LOSTLOCK) &&
-+		    (fe->ops.info.caps & FE_CAN_RECOVER) &&
-+		    (fepriv->max_drift == 0)) {
- 
-+			dvb_frontend_swzigzag_update_delay(fepriv, s & FE_HAS_LOCK);
- 			return 0;
- 		}
- 	} else {
+@@ -1816,7 +1816,7 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 			memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
+ 			err = fe->ops.get_params(fe, (struct dvbfe_params *) parg);
+ 		} else if (fe->ops.get_frontend) {
+-			err = fe->ops.get_frontend(fe, (struct dvb_frontend_parameters*) parg);
++			err = fe->ops.get_frontend(fe, &fepriv->parameters);
+ 			if (!err) {
+ 				if (olddrv_to_newapi(fe, &fepriv->fe_params, &fepriv->parameters, fe->ops.info.type) == -EINVAL)
+ 					printk("%s: ERROR !!! Converting Old parameters --> New parameters\n", __func__);
 
 
---------------060705010207010305010905--
+--------------080403040306080604000103--
