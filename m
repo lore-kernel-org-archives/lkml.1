@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbYIDUgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760569AbYIDUgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758864AbYIDUgh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbYIDU1y
+	id S1760569AbYIDUgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758730AbYIDU1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:27:54 -0400
-Received: from mail.work.de ([212.12.32.20]:42175 "EHLO mail.work.de"
+	Thu, 4 Sep 2008 16:27:49 -0400
+Received: from mail.work.de ([212.12.32.20]:42170 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758131AbYIDU1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:27:53 -0400
-Message-ID: <48C044C4.8000908@gmail.com>
-Date: Fri, 05 Sep 2008 00:27:48 +0400
+	id S1758714AbYIDU1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:27:46 -0400
+Message-ID: <48C044BE.60807@gmail.com>
+Date: Fri, 05 Sep 2008 00:27:42 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
        akpm@linux-foundation.org
-CC: anssi.hannula@gmail.com
-Subject: DVB Update [PATCH 31/31] fix broken translation for ATSC
+CC: rnissl@gmx.de
+Subject: DVB Update [PATCH 30/31] support DBFE_SET_DELSYS backward compat
 X-Enigmail-Version: 0.94.0.0
 Content-Type: multipart/mixed;
- boundary="------------010909030007080202040401"
+ boundary="------------080002000206060909050401"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------010909030007080202040401
+--------------080002000206060909050401
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
->From 76f0d0929582d49a0c4a0aa4aefe4e5dea0c1267 Mon Sep 17 00:00:00 2001
+>From ce418a935a3439b68273550dea6caf3a7a820e8f Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 15:01:36 +0200
-Subject: [PATCH] DVB fix broken translation for ATSC in olddrv_to_newapi
+Date: Thu, 4 Sep 2008 14:58:55 +0200
+Subject: [PATCH] DVB Support DVBFE_SET_DELSYS backward compatibility
 
-In olddrv_to_newapi(), the ATSC modulation conversion used
-newmod_to_oldmod() instead of the correct oldmod_to_newmod().
-Fix it.
+Make DVBFE_SET_DELSYS backward compatible
 
-From: Anssi Hannula <anssi.hannula@gmail.com>
-Signed-off-by: Anssi Hannula <anssi.hannula@gmail.com>
+From: Reinhard Nissl <rnissl@gmx.de>
+Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
- dvb_frontend.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ dvb_frontend.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 
---------------010909030007080202040401
+--------------080002000206060909050401
 Content-Type: text/x-patch;
- name="31.patch"
+ name="30.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="31.patch"
+ filename="30.patch"
 
->From 76f0d0929582d49a0c4a0aa4aefe4e5dea0c1267 Mon Sep 17 00:00:00 2001
+>From ce418a935a3439b68273550dea6caf3a7a820e8f Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 15:01:36 +0200
-Subject: [PATCH] DVB fix broken translation for ATSC in olddrv_to_newapi
+Date: Thu, 4 Sep 2008 14:58:55 +0200
+Subject: [PATCH] DVB Support DVBFE_SET_DELSYS backward compatibility
 
-In olddrv_to_newapi(), the ATSC modulation conversion used
-newmod_to_oldmod() instead of the correct oldmod_to_newmod().
-Fix it.
+Make DVBFE_SET_DELSYS backward compatible
 
-From: Anssi Hannula <anssi.hannula@gmail.com>
-Signed-off-by: Anssi Hannula <anssi.hannula@gmail.com>
+From: Reinhard Nissl <rnissl@gmx.de>
+Signed-off-by: Reinhard Nissl <rnissl@gmx.de>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
 diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index a8005ef..fcafcfc 100644
+index 3a49876..a8005ef 100644
 --- a/drivers/media/dvb/dvb-core/dvb_frontend.c
 +++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -557,7 +557,7 @@ int olddrv_to_newapi(struct dvb_frontend *fe,
+@@ -1854,6 +1854,24 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 		if (fe->ops.set_delsys) {
+ 			fe->ops.set_delsys(fe, fepriv->delsys);
+ 			err = 0;
++		} else {
++			err = 0;
++			switch (fe->ops.info.type) {
++				case FE_QPSK:
++					if (fepriv->delsys != DVBFE_DELSYS_DVBS)
++						err = -EINVAL;
++					break;
++				case FE_QAM:
++					if (fepriv->delsys != DVBFE_DELSYS_DVBC)
++						err = -EINVAL;
++					break;
++				case FE_OFDM:
++					if (fepriv->delsys != DVBFE_DELSYS_DVBT)
++						err = -EINVAL;
++					break;
++				default:
++					err = -EINVAL;
++			}
  		}
  		break;
- 	case FE_ATSC:
--		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
-+		oldmod_to_newmod(vsb->modulation, &atsc->modulation);
- 		break;
- 	default:
- 		dprintk("%s: Unsupported delivery system %x\n", __func__, fe_type);
+ 	case DVBFE_GET_INFO:
 
 
---------------010909030007080202040401--
+--------------080002000206060909050401--
