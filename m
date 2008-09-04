@@ -1,86 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbYIDIVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYIDIVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbYIDIVB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYIDIUq
+	id S1757298AbYIDIVg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYIDIVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:20:46 -0400
-Received: from sh.osrg.net ([192.16.179.4]:34227 "EHLO sh.osrg.net"
+	Thu, 4 Sep 2008 04:21:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52195 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751959AbYIDIUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:20:44 -0400
-Date: Thu, 4 Sep 2008 17:18:52 +0900
-To: andi@firstfloor.org
-Cc: fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com, mingo@redhat.com,
-       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures
- with swiotlb
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080904080528.GZ18288@one.firstfloor.org>
-References: <20080904074441.GY18288@one.firstfloor.org>
-	<20080904165852I.fujita.tomonori@lab.ntt.co.jp>
-	<20080904080528.GZ18288@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1752346AbYIDIVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 04:21:15 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [GIT]: Networking
+Date: Thu, 4 Sep 2008 10:25:14 +0200
+User-Agent: KMail/1.9.9
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, tomasw@gmail.com, yi.zhu@intel.com,
+       linville@tuxdriver.com, Jeff Garzik <jeff@garzik.org>
+References: <20080903.161341.239039051.davem@davemloft.net> <alpine.LFD.1.10.0809031621160.3515@nehalem.linux-foundation.org> <20080903.162603.27086959.davem@davemloft.net>
+In-Reply-To: <20080903.162603.27086959.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080904171903M.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+Message-Id: <200809041025.15277.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 10:05:28 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> On Thu, Sep 04, 2008 at 04:58:37PM +0900, FUJITA Tomonori wrote:
-> > On Thu, 4 Sep 2008 09:44:41 +0200
-> > Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > > On Thu, Sep 04, 2008 at 01:11:47PM +0900, FUJITA Tomonori wrote:
-> > > > On Thu, 04 Sep 2008 00:09:51 +0200
-> > > > Andi Kleen <andi@firstfloor.org> wrote:
-> > > > 
-> > > > > Joerg Roedel <joerg.roedel@amd.com> writes:
-> > > > > 
-> > > > > > The SWIOTLB version of dma_alloc_coherent allocates all memory with
-> > > > > > GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
-> > > > > > failures. This patch makes the allocation strategy to use the DMA32 zone
-> > > > > > first if this is possible. The changes are boot tested on AMD64 and
-> > > > > > compile tested for i386 and IA64.
-> > > > > 
-> > > > > The high level dma_alloc_coherent() does that anyways.
-> > > > 
-> > > > The high level dma_alloc_coherent means the tricks in
-> > > > arch/x86/pci-dma.c? If so, all the tricks has gone in tip/master.
+On Thursday, 4 of September 2008, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Wed, 3 Sep 2008 16:24:16 -0700 (PDT)
+> 
+> > On Wed, 3 Sep 2008, Linus Torvalds wrote:
 > > > 
-> > > Seems wrong -- that is something that is needed by multiple
-> > > IOMMUs. Pretty much all which work with real memory instead
-> > > of virtual mappings.
+> > > What's so hard to understand about this?
 > > 
-> > Not all the IOMMUs need the old tricks used in arch/x86/pci-dma.c.
+> > Here's a simple rule of thumb:
+> >  - if it's not on the regression list
+> >  - if it's not a reported security hole
+> >  - if it's not on the reported oopses list
+> > then why are people sending it to me?
+> > 
+> > IOW, if it's just another random improvement, and you send it to me 
+> > outside of the merge window, then what is the point of the merge window? 
 > 
-> That is what I meant with "with real memory"
+> This is exactly what I've been trying to tell the Intel wireless folks
+> but they refuse to listen.
 > 
-> But actually even for real IOMMus it can make sense to maintain
-> some memory for bypass.
+> I just won't take their stuff until they get their act in gear.
+> 
+> No problem.
 
-Even if it's tree, only each IOMMU knows what's the best. That's the
-point of these changes to remove the tricks in arch/x86/pci-dma.c and
-let IOMMUs do what they want.
+BTW, there are two regression fixes for forcedeth:
 
+http://marc.info/?l=linux-kernel&m=121894389018584&w=4
+http://marc.info/?l=linux-kernel&m=121917167232014&w=4
 
-> Also there's usually the problem that not all busses are translated,
-> e.g. Calgary used to do that so for e.g. dev == NULL allocations you had
-> to use  these fallback algorithms anyways.
+that fix the regressions tracked as:
 
-dev == NULL isn't a minor thing. It's just using the fallback
-device. Playing with gfp flag is the major trick. Some (new) IOMMUs
-don't need it.
+http://bugzilla.kernel.org/show_bug.cgi?id=11358
+http://bugzilla.kernel.org/show_bug.cgi?id=11361
 
-Handling dev == NULL in a common place is fine by me. It's a minor
-issue.
+respectively and both are more than 2 weeks old now.
 
+Is there any chance to push them upstream or is there anything wrong with them?
 
-> Clearly copying the fallback logic into lots of low level IOMMUs instead
-> of having it in one place is a big step backwards.
+Thanks,
+Rafael
