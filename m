@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYIDMMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYIDMOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbYIDMMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbYIDMML
+	id S1754969AbYIDMOV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYIDMOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:12:11 -0400
-Received: from mga11.intel.com ([192.55.52.93]:43390 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbYIDMMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:12:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="376682069"
-Subject: Re: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
-From: Lin Ming <ming.m.lin@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, mingo <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-In-Reply-To: <1220526360.8609.213.camel@twins>
-References: <1220518266.9590.22.camel@minggr>
-	 <1220519034.8609.206.camel@twins>  <1220525579.12161.8.camel@minggr>
-	 <1220526360.8609.213.camel@twins>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 20:12:08 +0800
-Message-Id: <1220530328.12161.29.camel@minggr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 08:14:12 -0400
+Received: from mail-in-14.arcor-online.net ([151.189.21.54]:58593 "EHLO
+	mail-in-14.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752177AbYIDMOL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 08:14:11 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] ncurses based config
+To: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<ariveira@gmail.com>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>,
+       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Nir Tzachar <nir@tzachar.com>
+Reply-To: 7eggert@gmx.de
+Date: Thu, 04 Sep 2008 14:21:38 +0200
+References: <b86dt-3nV-39@gated-at.bofh.it> <b86wB-3HU-1@gated-at.bofh.it> <b86Qa-4k2-53@gated-at.bofh.it> <b879t-4DG-23@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1KbDqF-0003oH-1B@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alejandro Riveira Fernández <ariveira@gmail.com> wrote:
+> El Wed, 3 Sep 2008 13:02:42 -0700 (PDT)
 
-> > > Thats bizarre... that just indicates the better clock, which should give
-> > > better (read fairer) scheduling hurts your workload.
-> > > 
-> > > Is there anything I can run to see if we can fix the scheduler perhaps?
-> > 
-> > I observed schedstats of sysbench, there's more
-> > "nr_failed_migrations_hot"
-> > 
-> > 2.6.27-rc4: se.nr_failed_migrations_hot 11
-> > 2.6.27-rc5: se.nr_failed_migrations_hot 95
-> > 
-> > task migration failed because of task_hot, the system is un-balanced?
-> 
-> Ah, that makes sense, a more accurate clock could indeed make more tasks
-> hot.
-> 
-> Can you try fiddling with: /proc/sys/kernel/sched_migration_cost ?
+[nconfig]
 
-sched_migration_cost		regression
-----------------------          -------------
-50000                           ~6%
-0				~8%
-500000 (default)		~10%
-5000000                         ~14%
--1				~19%
-			
-> 
-> Also, we used to have some auto-tuning in there, which dissapeared some
-> time ago, gregory brought it back to live recently, perhaps he likes to
-> share? :-)
-> 
+>> I'm seeing cyan (?) foreground on black background.  Is that the colors
+>> that were planned?
+>   
+>  much nicer colors here (ubuntu)
+>  http://img177.imageshack.us/my.php?image=pantallazonm7.png
+
+Desaturate the image using "luminosity" setting, and you'll spot a problem.
+
+Choosing a non-black background isn't bad per se, but it limits the number of
+colors you can use for foreground, and a dark grey isn't much better.
+
+Generally you should use no color unless you'd like to draw attention. Use
+blue for unimportant things, red if you want to alert. Never use red and blue
+close to each other, because they need different focussing in the eye, and
+trying to see both will cause a headache.
+
+The layout is possibly good for large screen sizes, but you should design it
+for 80x24 first. Having to install X11 or a framebuffer console just to
+configure a kernel is no good.
+
+In other words: You don't permanently need half a screen of instructions,
+hide them by default and offer a popup. The window below the title is the
+only working area, it can be maximized. (Looking at "make menuconfig",
+I see the same mistakes.)
+
 
