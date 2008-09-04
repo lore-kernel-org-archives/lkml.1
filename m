@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYIDCjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYIDCvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYIDCjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 22:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYIDCjP
+	id S1754795AbYIDCvc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 22:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbYIDCvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 22:39:15 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49043 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753382AbYIDCjO (ORCPT
+	Wed, 3 Sep 2008 22:51:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:36205 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbYIDCvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 22:39:14 -0400
-X-Sasl-enc: RU+eOC0MPUc8lI6RSx93By4dWOgV0ztaIFWrmr+XtPuk 1220495952
-Date: Wed, 3 Sep 2008 23:39:05 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Milan Broz <mbroz@redhat.com>, Andi Kleen <ak@linux.intel.com>
-Subject: Re: [patch 00/42] 2.6.26-stable review
-Message-ID: <20080904023905.GA1071@khazad-dum.debian.net>
-References: <20080903172447.GA7731@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080903172447.GA7731@suse.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 3 Sep 2008 22:51:23 -0400
+Date: Wed, 3 Sep 2008 19:51:22 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@tglx.de, hpa@zytor.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [patch] Add basic sanity checks to the syscall execution patch
+Message-ID: <20080903195122.73905236@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What about this one:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9f497bcc695fb828da023d74ad3c966b1e58ad21
+Add basic sanity checks to the syscall execution patch
 
-"ACPI: Fix thermal shutdowns" ?
+Several pieces of malware (rootkits etc) have the nasty habbit
+of putting their own pointers into the syscall table.
+For example, the recently "hot in the news" phalanx rootkit does this.
 
-It should have been submitted to stable@k.o well before 2.6.26.3, but it
-wasn't for some stupid reason.  Then some of us noticed it was missing in
-2.6.26.3, and gave everyone a head's up, but it was too late for 2.6.26.3.
+The patch below, while obviously not perfect protection against malware,
+adds some cheap sanity checks to the syscall path to verify the
+system call is actually still in the kernel code region and not some
+external-to-this region such as a rootkit.
 
-And now it also apparently failed to make it to 2.6.26.4?
+The overhead is very minimal; measured at 2 cycles or less.
+(this is because the branches get predicted right and the rest of the
+code is almost perfectly parallelizable... and an indirect function call
+is a branch issue anyway)
 
-As far as I recall, without this patch, all X6* ThinkPads that are not in
-absolute top-notch thermal condition heat up until they are forced to
-shutdown due to overtemperature (thus, slowly further damaging hardware that
-is not in good shape to begin with).
+with eyes-on-the-code help from Peter
+the idea is from Ben Herrenschmidt 
 
-Greg, is there any way to include the above patch for 2.6.26.4?
+Signed-off-by: Arjan van de Ven
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 109792b..f25c0a1 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -347,7 +347,12 @@ sysenter_past_esp:
+ sysenter_do_call:
+ 	cmpl $(nr_syscalls), %eax
+ 	jae syscall_badsys
+-	call *sys_call_table(,%eax,4)
++	mov sys_call_table(,%eax,4), %eax
++	cmp $_stext, %eax
++	jb syscall_badsys
++	cmp $_etext, %eax
++	jae syscall_badsys
++	call *%eax
+ 	movl %eax,PT_EAX(%esp)
+ 	LOCKDEP_SYS_EXIT
+ 	DISABLE_INTERRUPTS(CLBR_ANY)
+@@ -426,7 +431,12 @@ ENTRY(system_call)
+ 	cmpl $(nr_syscalls), %eax
+ 	jae syscall_badsys
+ syscall_call:
+-	call *sys_call_table(,%eax,4)
++	mov sys_call_table(,%eax,4), %eax
++	cmp $_stext, %eax
++	jb syscall_badsys
++	cmp $_etext, %eax
++	jae syscall_badsys
++	call *%eax
+ 	movl %eax,PT_EAX(%esp)		# store the return value
+ syscall_exit:
+ 	LOCKDEP_SYS_EXIT
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 89434d4..be42486 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -360,8 +360,13 @@ ENTRY(system_call_after_swapgs)
+ system_call_fastpath:
+ 	cmpq $__NR_syscall_max,%rax
+ 	ja badsys
++	mov sys_call_table(,%rax,8), %rax
++	cmpq $_stext, %rax
++	jb badsys	
++	cmpq $_etext, %rax
++	jae badsys	
+ 	movq %r10,%rcx
+-	call *sys_call_table(,%rax,8)  # XXX:	 rip relative
++	call *%rax  # XXX:	 rip relative
+ 	movq %rax,RAX-ARGOFFSET(%rsp)
+ /*
+  * Syscall return path ending with SYSRET (fast path)
