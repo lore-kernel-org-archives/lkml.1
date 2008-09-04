@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYIDXSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYIDXYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbYIDXSv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 19:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYIDXSi
+	id S1754813AbYIDXYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 19:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYIDXYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 19:18:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50371 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754801AbYIDXSg (ORCPT
+	Thu, 4 Sep 2008 19:24:07 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:50351 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbYIDXYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 19:18:36 -0400
-Date: Thu, 4 Sep 2008 16:17:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: torvalds@linux-foundation.org, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yhlu.kernel@gmail.com, ink@jurassic.park.msu.ru,
-       jbarnes@virtuousgeek.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, ebiederm@xmission.com, dwmw2@infradead.org,
-       sam@ravnborg.org, johnstul@us.ibm.com
-Subject: Re: linux-next: Tree for September 3
-Message-Id: <20080904161746.dc4800a4.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809050041520.3243@apollo.tec.linutronix.de>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
-	<20080903214634.ea17ff53.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>
-	<20080903223318.84b6ce8b.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org>
-	<20080904012544.cabed847.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org>
-	<20080904015701.5959623a.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org>
-	<20080904104554.32ffebea.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org>
-	<20080904113408.d47c65f6.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809050041520.3243@apollo.tec.linutronix.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Sep 2008 19:24:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=TvTao3PLFEFSCNevO6PxLzWE8rSLROg7YpqqKsA77tEaCFHg5MX0yY6JDgzsf3GVIw
+         SnDfgmHe4SGDI9mQBvhgcWBn7gey8xlQ2Rbb6H/gk9XV/wBdePfwK/dATLVZMw1muoht
+         sFqtLHG/Etnc41k1EBhog3L5ic7FlYh1Nuflg=
+Message-ID: <e9c3a7c20809041624o24af57fsbe58507a44e6e2ef@mail.gmail.com>
+Date: Thu, 4 Sep 2008 16:24:04 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Ilya Yanok" <yanok@emcraft.com>
+Subject: Re: [PATCH] ASYNC_TX: fix the bug in async_tx_run_dependencies
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, wd@denx.de, yur@emcraft.com
+In-Reply-To: <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220478231-8725-1-git-send-email-yanok@emcraft.com>
+	 <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 332374fbe1ea1422
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 00:45:33 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+On Thu, Sep 4, 2008 at 2:19 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu,  4 Sep 2008 01:43:51 +0400
+> Ilya Yanok <yanok@emcraft.com> wrote:
+>
+>> From: Yuri Tikhonov <yur@emcraft.com>
+>>
+>> Should clear the next pointer of the TX if we are sure that the
+>> next TX (say NXT) will be submitted to the channel too. Overwise,
+>> we break the chain of descriptors, because we lose the information
+>> about the next descriptor to run. So next time, when invoke
+>> async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
+>> NXT will be never submitted.
+>>
+>> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+>
+> This patch should include your signed-off-by: as well.  Because you
+> were on the delivery path, as described in
+> Documentation/SubmittingPatches, section 12.
+>
 
-> On Thu, 4 Sep 2008, Andrew Morton wrote:
-> > 
-> > and oh dear, the clockevents code just oopsed.
-> 
-> Sigh.
->  
-> > BUG: unable to handle kernel NULL pointer dereference at 00000040
-> > IP: [<c0126e7f>] get_next_timer_interrupt+0xe9/0x1ab
-> 
-> Cute, NULL pointer in the timer check code. Can you please addr2line
-> the exact code line or upload the vmlinux somewhere ?
-> 
+Yes, Ilya once I have your signed-off-by I will push this to Linus and
+-stable.  As far as impact for in-tree drivers: iop13xx by is immune,
+iop3xx can hit this, and it looks like the orion5x implementation is
+immune since copy and xor are available on the same channel.
 
-erm, I might have lost that binary, and it only happened the once.  It
-happened shortly after the machine had fully booted, during
-establishment of the first sshd session.
-
-It nuked the machine really well, too.  I had to pull the battery to
-get it back.
-
-fwiw:
-
-
-(gdb) l *0xc0126e7f
-0xc0126e7f is in get_next_timer_interrupt (kernel/timer.c:863).
-warning: Source file is more recent than executable.
-858             for (array = 0; array < 4; array++) {
-859                     struct tvec *varp = varray[array];
-860     
-861                     index = slot = timer_jiffies & TVN_MASK;
-862                     do {
-863                             list_for_each_entry(nte, varp->vec + slot, entry) {
-864                                     found = 1;
-865                                     if (time_before(nte->expires, expires))
-866                                             expires = nte->expires;
-867                             }
-
-which looks reasonable.
+--
+Dan
