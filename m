@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbYIDLtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYIDLvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757574AbYIDLtZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 07:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYIDLtQ
+	id S1757665AbYIDLvK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 07:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbYIDLu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 07:49:16 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:34821 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbYIDLtP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 07:49:15 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-Subject: Re: USB recursive locking, 2.6.27-rc5 while keyboard unplug/plug
-Date: Thu, 4 Sep 2008 13:50:28 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <200809041439.05542.denys@visp.net.lb>
-In-Reply-To: <200809041439.05542.denys@visp.net.lb>
+	Thu, 4 Sep 2008 07:50:57 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47707 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752346AbYIDLu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 07:50:56 -0400
+Date: Thu, 4 Sep 2008 13:50:52 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, device@lanana.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: regarding major number of block extended devt
+Message-ID: <20080904115052.GF20055@kernel.dk>
+References: <48BD30F9.6080108@kernel.org> <48BD3313.7090906@kernel.org> <48BD9F36.8000704@zytor.com> <48BE0EDB.20107@kernel.org> <48BEB759.4050503@zytor.com> <48BEB98C.8030303@kernel.org> <48BEBAF0.7070008@zytor.com> <48BEBF34.50006@kernel.org> <48BED351.1060300@zytor.com> <48BF2AEB.1050508@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809041350.29240.oliver@neukum.org>
+In-Reply-To: <48BF2AEB.1050508@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 04 September 2008 13:39:04 schrieb Denys Fedoryshchenko:
-> Got a warning, while plugging/unplugging keyboard.
+On Thu, Sep 04 2008, Tejun Heo wrote:
+> Hello,
+> 
+> H. Peter Anvin wrote:
+> > Thinking about it some more, one invariant this is *guaranteed* to
+> > violate is:
+> > 
+> >     partition_number = partition_device - master_device
+> > 
+> > Code that needs a partition number (which is common enough) are using
+> > this invariant, because (a) it has held for 17 years and (b) because
+> > there is still no alternative other that relying on fragile naming
+> > scheme hacks.
+> > 
+> > (a) we can't do anything about, but (b) we can, by introducing a
+> > partition number attribute in sysfs.
+> 
+> Yeah, that would certainly be a nice addition.  Also, if partitions
+> are made proper classes, they'll be easily enumerable by
+> /sys/block/*/partitions/*.
+> 
+> Jens, what do you think?
 
-Please edit drivers/hid/usbhid/hid-core.c
-static void hid_cease_io(struct usbhid_device *usbhid)
-{
-	del_timer(&usbhid->io_retry);
-	usb_kill_urb(usbhid->urbin);
-	usb_kill_urb(usbhid->urbctrl);
-	usb_kill_urb(usbhid->urbout);
-	flush_scheduled_work();
-}
+Agree, that addition definitely makes sense.
 
-to remove the flush_scheduled_work() and try again.
+-- 
+Jens Axboe
 
-	Regards
-		Oliver
