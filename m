@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYIDRUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYIDRV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754270AbYIDRUj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIDRUa
+	id S1753872AbYIDRV6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751124AbYIDRVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:20:30 -0400
-Received: from citi.umich.edu ([141.211.133.111]:23647 "EHLO citi.umich.edu"
+	Thu, 4 Sep 2008 13:21:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47652 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750822AbYIDRU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:20:29 -0400
-X-Greylist: delayed 1982 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Sep 2008 13:20:29 EDT
-Date: Thu, 4 Sep 2008 12:47:26 -0400 (EDT)
-From: "david m. richter" <richterd@citi.umich.edu>
-To: Benny Halevy <bhalevy@panasas.com>
-cc: "J. Bruce Fields" <bfields@fieldses.org>, Jiri Pirko <jpirko@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, neilb@suse.de
-Subject: Re: [PATCH] nfsd/nfs4acl: Number of used used array elements needs
- to be zeroed.
-In-Reply-To: <48C00F90.40907@panasas.com>
-Message-ID: <Pine.BSO.4.64.0809041245240.30827@citi.umich.edu>
-References: <20080904165518.15a02908@psychotron.englab.brq.redhat.com>
- <20080904150101.GB4536@fieldses.org> <48C00F90.40907@panasas.com>
+	id S1751002AbYIDRVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 13:21:50 -0400
+Date: Thu, 4 Sep 2008 13:20:52 -0400
+From: Don Zickus <dzickus@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Prarit Bhargava <prarit@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       arozansk@redhat.com, Thomas.Mingarelli@hp.com, ak@linux.intel.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+Message-ID: <20080904172052.GN3400@redhat.com>
+References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87y727vrgu.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008, Benny Halevy wrote:
+On Thu, Sep 04, 2008 at 05:52:17PM +0200, Andi Kleen wrote:
+> Then if there's a chipset specific NMI driver it could
+> also check if the chipset raised it. That would be a possible
+> solution for HP -- they would need to implement such a driver
+> for their systems with the special watchdog.
 
-> On Sep. 04, 2008, 18:01 +0300, "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> > On Thu, Sep 04, 2008 at 04:55:18PM +0200, Jiri Pirko wrote:
-> >> Number of used used array elements needs to be zeroed. It may cause
-> >> problems otherwise, because it's used uninitialized in find_uid().
-> >>
-> >> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> >> ---
-> >>  fs/nfsd/nfs4acl.c |    2 ++
-> >>  1 files changed, 2 insertions(+), 0 deletions(-)
-> >>
-> >> diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
-> >> index 54b8b41..7dcd90f 100644
-> >> --- a/fs/nfsd/nfs4acl.c
-> >> +++ b/fs/nfsd/nfs4acl.c
-> >> @@ -447,11 +447,13 @@ init_state(struct posix_acl_state *state, int cnt)
-> >>  	state->users = kzalloc(alloc, GFP_KERNEL);
-> >>  	if (!state->users)
-> >>  		return -ENOMEM;
-> >> +	state->users->n = 0;
-> >>  	state->groups = kzalloc(alloc, GFP_KERNEL);
-> >>  	if (!state->groups) {
-> >>  		kfree(state->users);
-> >>  		return -ENOMEM;
-> >>  	}
-> >> +	state->groups->n = 0;
-> >>  	return 0;
-> >>  }
-> > 
-> > Thanks for the extra eyes on this code, but: surely the kzalloc()'s are
-> > all that's necessary?  Am I missing something?
-> 
-> quickly browsing over the code, shouldn't it be:
-> 
-> diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
-> index b6ed383..54b8b41 100644
-> --- a/fs/nfsd/nfs4acl.c
-> +++ b/fs/nfsd/nfs4acl.c
-> @@ -443,7 +443,7 @@ init_state(struct posix_acl_state *state, int cnt)
->  	 * enough space for either:
->  	 */
->  	alloc = sizeof(struct posix_ace_state_array)
-> -		+ cnt*sizeof(struct posix_ace_state);
-> +		+ cnt*sizeof(struct posix_user_ace_state);
+The thing with HP's special watchdog timer is that it does _not_ have a
+chipset specific NMI it is trying to catch.  HP is going on the assumption
+that _all_ NMIs are /bad/ and they want to catch _every_ NMI, log it, and
+reboot the system.
 
-	:) heheheh, we could've used your sharp eyes last week when we 
-were dealing with ACL shenanigans -- i believe that this is covered in one 
-of the patches that bruce sent out in the last few days.
+Now obviously NMIs from kgdb and oprofile are not the ones a system should
+panic on but this breaks HP's assumptions.
 
-	d
-	.
+So that is part of the problem.  How do you become a catch-all for NMIs in
+a system, to process as you wish, but ignore all the 'safe' NMIs?
 
->  	state->users = kzalloc(alloc, GFP_KERNEL);
->  	if (!state->users)
->  		return -ENOMEM;
-> 
-> Benny
-> 
-> > 
-> > --b.
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Cheers,
+Don
