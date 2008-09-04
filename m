@@ -1,23 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbYIDR3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbYIDRbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964AbYIDR3m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbYIDR3d
+	id S1754963AbYIDRbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYIDRbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:29:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:36916 "EHLO
+	Thu, 4 Sep 2008 13:31:09 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60617 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822AbYIDR3d (ORCPT
+	with ESMTP id S1751924AbYIDRbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:29:33 -0400
-Date: Thu, 4 Sep 2008 10:29:36 -0700
+	Thu, 4 Sep 2008 13:31:08 -0400
+Date: Thu, 4 Sep 2008 10:30:49 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: frame unwinder patches
-Message-ID: <20080904102936.28e10c39@infradead.org>
-In-Reply-To: <g9p3du$n95$1@ger.gmane.org>
-References: <g9p3du$n95$1@ger.gmane.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Ben Hutchings <bhutchings@solarflare.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-pci@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [PATCH] Return value from schedule()
+Message-ID: <20080904103049.01f748d9@infradead.org>
+In-Reply-To: <20080904162111.GM2772@parisc-linux.org>
+References: <20080827204626.4b65862f@extreme>
+	<20080828111323.GI7908@solarflare.com>
+	<20080903155713.7fab2e19@extreme>
+	<20080904160739.GK2772@parisc-linux.org>
+	<20080904161424.GA23042@elte.hu>
+	<20080904162111.GM2772@parisc-linux.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -29,30 +39,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Sep 2008 18:46:52 +0200
-Bernd Schubert <bs@q-leap.de> wrote:
+On Thu, 4 Sep 2008 10:21:11 -0600
+Matthew Wilcox <matthew@wil.cx> wrote:
 
-> Hello,
+> On Thu, Sep 04, 2008 at 06:14:24PM +0200, Ingo Molnar wrote:
+> > > If schedule() returned whether or not it had scheduled another
+> > > task, we could do something like:
+> > > 
+> > > 		if (!schedule())
+> > > 			udelay(10);
+> > 
+> > hm, i'm not really sure - this really just seems to be a higher
+> > prio variant of yield() combined with some weird code. Do we really
+> > want to promote such arguably broken behavior? If there's any
+> > chance of any polling to take a material amount of CPU time it
+> > should be event driven to begin with.
 > 
-> up to 2.6.22 the -mm series had these nice frame unwinder patches, 
-> which gave beautiful stack traces. Unfortunately these frame unwinder
-> patches seem to have been dropped :(
+> Oh, I'm not concerned about CPU utilisation, I'm concerned about PCI
+> bus utilisation.  Perhaps I'd like a yield_timeout() function instead
+> where I say that I'd like to not run for at least 10 microseconds?
 > 
-> Anyone still maintaining updated patches?
+> Can we do that, or are we still jiffie-based there?
 > 
-> Probably all the "?" lines shouldn't be printed.
 
-printing the ? lines is the result of a compromise between getting the
-most reliable information out of a stack trace, and getting a useful
-data for the case where not everything is going as well as it should.
-
-not printing the ? would be trivial (for some backtraces we do that),
-but so far hasn't been seen as desirable because you lose information
-in those hard-to-debug cases when you need anything you can get from
-the backtrace.
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+use schedule_hrtimerout() for this (hopefully will be in 2.6.28);
+see this weeks LWN for an article describing it
