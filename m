@@ -1,139 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbYIDOq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYIDOr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbYIDOq2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 10:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYIDOqT
+	id S1754649AbYIDOr0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 10:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYIDOrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 10:46:19 -0400
-Received: from brinza.cc.columbia.edu ([128.59.29.8]:52599 "EHLO
-	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbYIDOqT (ORCPT
+	Thu, 4 Sep 2008 10:47:18 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:23917 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbYIDOrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 10:46:19 -0400
-Message-ID: <48BFF427.7040305@cs.columbia.edu>
-Date: Thu, 04 Sep 2008 10:43:51 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 4 Sep 2008 10:47:17 -0400
+X-BigFish: VPS3(z518kz4015M19c2kzz10d3izzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0K6OEEB-02-M7W-01
+Date: Thu, 4 Sep 2008 16:46:57 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] Revert commit e8aa4667baf74dfd85fbaab86861465acb811085
+Message-ID: <20080904144657.GC15987@alberich.amd.com>
 MIME-Version: 1.0
-To: Louis.Rilling@kerlabs.com
-CC: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [RFC v3][PATCH 8/9] File descriprtors (dump)
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040405250.5982@takamine.ncl.cs.columbia.edu> <20080904094740.GY14473@hawkmoon.kerlabs.com>
-In-Reply-To: <20080904094740.GY14473@hawkmoon.kerlabs.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 04 Sep 2008 14:47:04.0497 (UTC) FILETIME=[18C4BA10:01C90E9D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This reverts commit e8aa4667baf74dfd85fbaab86861465acb811085
+ (x86: enable hpet=force for AMD SB400)
+
+Since ATI/AMD decided not to support HPET on SB4xx it doesn't
+make sense to enable this unsupported feature.
+(I was not aware of this when submitting the quirk.)
+
+If a system with SB4xx chipset provides an ACPI HPET table and does
+not boot, "nohpet" should be used as kernel parameter.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/quirks.c |   34 ----------------------------------
+ 1 files changed, 0 insertions(+), 34 deletions(-)
+
+Please apply for 2.6.27.
 
 
-Louis Rilling wrote:
-> On Thu, Sep 04, 2008 at 04:05:50AM -0400, Oren Laadan wrote:
->> Dump the files_struct of a task with 'struct cr_hdr_files', followed by
->> all open file descriptors. Since FDs can be shared, they are assigned a
->> tag and registered in the object hash.
->>
->> For each open FD there is a 'struct cr_hdr_fd_ent' with the FD, its tag
->> and its close-on-exec property. If the FD is to be saved (first time)
->> then this is followed by a 'struct cr_hdr_fd_data' with the FD state.
->> Then will come the next FD and so on.
->>
->> This patch only handles basic FDs - regular files, directories and also
->> symbolic links.
->>
-> 
-> [...]
-> 
->> diff --git a/checkpoint/ckpt_file.c b/checkpoint/ckpt_file.c
->> new file mode 100644
->> index 0000000..34df371
->> --- /dev/null
->> +++ b/checkpoint/ckpt_file.c
->> @@ -0,0 +1,224 @@
->> +/*
->> + *  Checkpoint file descriptors
->> + *
->> + *  Copyright (C) 2008 Oren Laadan
->> + *
->> + *  This file is subject to the terms and conditions of the GNU General Public
->> + *  License.  See the file COPYING in the main directory of the Linux
->> + *  distribution for more details.
->> + */
->> +
->> +#include <linux/kernel.h>
->> +#include <linux/sched.h>
->> +#include <linux/file.h>
->> +#include <linux/fdtable.h>
->> +#include <linux/ckpt.h>
->> +#include <linux/ckpt_hdr.h>
->> +
->> +#include "ckpt_file.h"
->> +
->> +#define CR_DEFAULT_FDTABLE  256
->> +
->> +/**
->> + * cr_scan_fds - scan file table and construct array of open fds
->> + * @files: files_struct pointer
->> + * @fdtable: (output) array of open fds
->> + * @return: the number of open fds found
->> + *
->> + * Allocates the file descriptors array (*fdtable), caller should free
->> + */
->> +int cr_scan_fds(struct files_struct *files, int **fdtable)
->> +{
->> +	struct fdtable *fdt;
->> +	int *fdlist;
->> +	int i, n, max;
->> +
->> +	max = CR_DEFAULT_FDTABLE;
->> +
->> + repeat:
->> +	n = 0;
->> +	fdlist = kmalloc(max * sizeof(*fdlist), GFP_KERNEL);
->> +	if (!fdlist)
->> +		return -ENOMEM;
->> +
->> +	spin_lock(&files->file_lock);
->> +	fdt = files_fdtable(files);
->> +	for (i = 0; i < fdt->max_fds; i++) {
->> +		if (fcheck_files(files, i)) {
->> +			if (n == max) {
->> +				spin_unlock(&files->file_lock);
->> +				kfree(fdlist);
->> +				max *= 2;
->> +				if (max < 0) {	/* overflow ? */
->> +					n = -EMFILE;
->> +					break;
->> +				}
->> +				goto repeat;
-> 
-> 				fdlist = krealloc(fdlist, max, GFP_KERNEL)?
-> 
-> Sorry, I should have suggested this in my first review.
+Thanks,
 
-That's a good point; I did it this way to be paranoid, even though the
-the checkpointee is supposed to be frozen (e.g., if the checkpointee is
-forcefully killed by, say, OOM, and it's fdt->max_fds goes to zero. But
-now I notice that check_files() already tests for this. I'm not sure it
-makes the code simpler, but I'll fix that.
+Andreas
 
-Oren.
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index d138588..9ed3a64 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -65,7 +65,6 @@ static enum {
+ 	ICH_FORCE_HPET_RESUME,
+ 	VT8237_FORCE_HPET_RESUME,
+ 	NVIDIA_FORCE_HPET_RESUME,
+-	ATI_FORCE_HPET_RESUME,
+ } force_hpet_resume_type;
+ 
+ static void __iomem *rcba_base;
+@@ -348,36 +347,6 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235,
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8237,
+ 			 vt8237_force_enable_hpet);
+ 
+-static void ati_force_hpet_resume(void)
+-{
+-	pci_write_config_dword(cached_dev, 0x14, 0xfed00000);
+-	printk(KERN_DEBUG "Force enabled HPET at resume\n");
+-}
+-
+-static void ati_force_enable_hpet(struct pci_dev *dev)
+-{
+-	u32 uninitialized_var(val);
+-
+-	if (hpet_address || force_hpet_address)
+-		return;
+-
+-	if (!hpet_force_user) {
+-		hpet_print_force_info();
+-		return;
+-	}
+-
+-	pci_write_config_dword(dev, 0x14, 0xfed00000);
+-	pci_read_config_dword(dev, 0x14, &val);
+-	force_hpet_address = val;
+-	force_hpet_resume_type = ATI_FORCE_HPET_RESUME;
+-	dev_printk(KERN_DEBUG, &dev->dev, "Force enabled HPET at 0x%lx\n",
+-		   force_hpet_address);
+-	cached_dev = dev;
+-	return;
+-}
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
+-			 ati_force_enable_hpet);
+-
+ /*
+  * Undocumented chipset feature taken from LinuxBIOS.
+  */
+@@ -450,9 +419,6 @@ void force_hpet_resume(void)
+ 	case NVIDIA_FORCE_HPET_RESUME:
+ 		nvidia_force_hpet_resume();
+ 		return;
+-	case ATI_FORCE_HPET_RESUME:
+-		ati_force_hpet_resume();
+-		return;
+ 	default:
+ 		break;
+ 	}
+-- 
+1.6.0.1
 
-> 
-> Louis
-> 
->> +			}
->> +			fdlist[n++] = i;
->> +		}
->> +	}
->> +	spin_unlock(&files->file_lock);
->> +
->> +	*fdtable = fdlist;
->> +	return n;
->> +}
->> +
-> 
+
+
