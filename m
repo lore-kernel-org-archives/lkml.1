@@ -1,282 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYIDUXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbYIDUXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbYIDUXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757283AbYIDUXA
+	id S1757090AbYIDUXx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbYIDUXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:23:00 -0400
-Received: from mail.work.de ([212.12.32.20]:34061 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754886AbYIDUW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:22:58 -0400
-Message-ID: <48C0439E.3040209@gmail.com>
-Date: Fri, 05 Sep 2008 00:22:54 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Thu, 4 Sep 2008 16:23:18 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:34936 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757220AbYIDUXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:23:14 -0400
+Date: Thu, 4 Sep 2008 21:23:01 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
+cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
+ corruption
+In-Reply-To: <b170af450809041242n43a6ef70s47a2e3e068619af0@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0809042056270.3012@blonde.site>
+References: <48B701FB.2020905@goop.org>  <86802c440808281849nb972d64te89894077ea9f33c@mail.gmail.com>
+  <48B76CE0.5010309@goop.org>  <20080829102547.655440bf@lxorguk.ukuu.org.uk>
+  <b170af450808290313x574b4561i3048ffca3e4da197@mail.gmail.com> 
+ <Pine.LNX.4.64.0808291120540.8561@blonde.site> 
+ <b170af450808290454m2f349ce3w4f400b0df0e105a2@mail.gmail.com> 
+ <48B7E6EE.9090901@tuffmail.co.uk>  <Pine.LNX.4.64.0808291413260.12571@blonde.site>
+  <b170af450808291039u7d036313x49acdaec079e6213@mail.gmail.com>
+ <b170af450809041242n43a6ef70s47a2e3e068619af0@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
-       akpm@linux-foundation.org
-Subject: DVB Update [PATCH 2/31] frontend driver api overhaul
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------040905020606080600040509"
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1293509426-1220559781=:3012"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040905020606080600040509
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->From 1d7134c1f2c34eade3ab5526ff301e98e97346a8 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 11:55:41 +0200
-Subject: [PATCH] DVB Frontend driver API overhaul
+--8323584-1293509426-1220559781=:3012
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-* Add support for different frontend driver tuning algorithms
-* Add support for tuning algorithms required by sophisticated
-silicon tuners
-* Add new callbacks for use with multistandard drivers
+On Thu, 4 Sep 2008, Rafa=C5=82 Mi=C5=82ecki wrote:
+> > 2008/8/29 Rafa=C5=82 Mi=C5=82ecki <zajec5@gmail.com>:
+> > 2008/8/29 Hugh Dickins <hugh@veritas.com>:
+> >> Here's my version of Jeremy's patch, that I've now tested on my machin=
+es,
+> >> as x86_32 and as x86_64.  It addresses none of the points Alan Cox mad=
+e,
+> >> and it stays silent for me, even after suspend+resume, unless I actual=
+ly
+> >> introduce corruption myself.  Omits Jeremy's check in fault.c, but doe=
+s
+> >> a check every minute, so should soon detect Rafa=C5=82's HDMI corrupti=
+on
+> >> without any need to suspend+resume.
+> >
+> > Your periodic test works fine:
+> >
+> > Corrupted low memory at ffff88000000be9c (be9c phys) =3D b02a0004
+> >  <IRQ>  [<ffffffff8020fc9b>] check_for_bios_corruption+0x93/0x9f
+> >  [<ffffffff8020fca7>] ? periodic_check_for_corruption+0x0/0x25
+> >  [<ffffffff8020fcb0>] periodic_check_for_corruption+0x9/0x25
+> >
+> > By the way I confirmed this bug on Sony Vaio FW11M (my one is FW11S).
+> > Probably more machines from FW11* are affected.
+>=20
+> If this patch is known to work fine for Sony Vaio FW* and Alan's
+> machine, could it go mainline somehow?
 
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+Well.
 
+Thanks for the prod, and I'm certainly remiss for not following
+up sooner.  But I'm really not at all keen on such a patch going
+into mainline myself.
 
- dvb_frontend.h |  151
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 146 insertions(+), 5 deletions(-)
+It's an interesting experiment, and I'd be happy to see such a patch
+(adjusted to make sure output goes to kerneloops.org) spending a little
+while in Fedora Rawhide (who'd be the right contact for that?).
 
+But so far as mainline goes, I share Alan Cox's opinion that we should
+not be chopping pages out of every x86 user's memory, just because a
+couple of machines with faulty BIOSes have been observed.
 
---------------040905020606080600040509
-Content-Type: text/x-patch;
- name="2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2.patch"
+Particularly now it's evident that the 64kB "limit" is no more than a
+reflection of where the directmap pagetable changes have caught such
+corruption.
 
->From 1d7134c1f2c34eade3ab5526ff301e98e97346a8 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 11:55:41 +0200
-Subject: [PATCH] DVB Frontend driver API overhaul
+If lots more such corruptions are reported, of course I would change
+my position; but those bad directmap PMD crashes are themselves quite
+recognizable now we know to look out for them.
 
-* Add support for different frontend driver tuning algorithms
-* Add support for tuning algorithms required by sophisticated
-silicon tuners
-* Add new callbacks for use with multistandard drivers
+I would prefer you both to use the minimal memmap=3D solutions for now;
+but others may disagree.
 
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
-
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.h b/drivers/media/dvb/dvb-core/dvb_frontend.h
-index aa4133f..0621287 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.h
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.h
-@@ -8,6 +8,9 @@
-  * Overhauled by Holger Waechtler
-  * Kernel I2C stuff by Michael Hunold <hunold@convergence.de>
-  *
-+ * Overhauled for Silicon Tuners, Search Algorithms and multiprotocol
-+ * support by Manu Abraham <abraham.manu@gmail.com>
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU Lesser General Public License
-  * as published by the Free Software Foundation; either version 2.1
-@@ -46,6 +49,7 @@ struct dvb_frontend_tune_settings {
- 	int step_size;
- 	int max_drift;
- 	struct dvb_frontend_parameters parameters;
-+	struct dvbfe_params fe_params;
- };
-
- struct dvb_frontend;
-@@ -69,6 +73,124 @@ struct analog_parameters {
- 	u64 std;
- };
-
-+enum dvbfe_modcod {
-+	DVBFE_MODCOD_DUMMY_PLFRAME	= 0,
-+	DVBFE_MODCOD_QPSK_1_4,
-+	DVBFE_MODCOD_QPSK_1_3,
-+	DVBFE_MODCOD_QPSK_2_5,
-+	DVBFE_MODCOD_QPSK_1_2,
-+	DVBFE_MODCOD_QPSK_3_5,
-+	DVBFE_MODCOD_QPSK_2_3,
-+	DVBFE_MODCOD_QPSK_3_4,
-+	DVBFE_MODCOD_QPSK_4_5,
-+	DVBFE_MODCOD_QPSK_5_6,
-+	DVBFE_MODCOD_QPSK_8_9,
-+	DVBFE_MODCOD_QPSK_9_10,
-+	DVBFE_MODCOD_8PSK_3_5,
-+	DVBFE_MODCOD_8PSK_2_3,
-+	DVBFE_MODCOD_8PSK_3_4,
-+	DVBFE_MODCOD_8PSK_5_6,
-+	DVBFE_MODCOD_8PSK_8_9,
-+	DVBFE_MODCOD_8PSK_9_10,
-+	DVBFE_MODCOD_16APSK_2_3,
-+	DVBFE_MODCOD_16APSK_3_4,
-+	DVBFE_MODCOD_16APSK_4_5,
-+	DVBFE_MODCOD_16APSK_5_6,
-+	DVBFE_MODCOD_16APSK_8_9,
-+	DVBFE_MODCOD_16APSK_9_10,
-+	DVBFE_MODCOD_32APSK_3_4,
-+	DVBFE_MODCOD_32APSK_4_5,
-+	DVBFE_MODCOD_32APSK_5_6,
-+	DVBFE_MODCOD_32APSK_8_9,
-+	DVBFE_MODCOD_32APSK_9_10,
-+	DVBFE_MODCOD_RESERVED_1,
-+	DVBFE_MODCOD_BPSK_1_3,
-+	DVBFE_MODCOD_BPSK_1_4,
-+	DVBFE_MODCOD_RESERVED_2
-+};
-+
-+enum tuner_param {
-+	DVBFE_TUNER_FREQUENCY		= (1 <<  0),
-+	DVBFE_TUNER_TUNERSTEP		= (1 <<  1),
-+	DVBFE_TUNER_IFFREQ		= (1 <<  2),
-+	DVBFE_TUNER_BANDWIDTH		= (1 <<  3),
-+	DVBFE_TUNER_REFCLOCK		= (1 <<  4),
-+	DVBFE_TUNER_IQSENSE		= (1 <<  5),
-+	DVBFE_TUNER_DUMMY		= (1 << 31)
-+};
-+
-+/*
-+ * ALGO_HW: (Hardware Algorithm)
-+ * ----------------------------------------------------------------
-+ * Devices that support this algorithm do everything in hardware
-+ * and no software support is needed to handle them.
-+ * Requesting these devices to LOCK is the only thing required,
-+ * device is supposed to do everything in the hardware.
-+ *
-+ * ALGO_SW: (Software Algorithm)
-+ * ----------------------------------------------------------------
-+ * These are dumb devices, that require software to do everything
-+ *
-+ * ALGO_CUSTOM: (Customizable Agorithm)
-+ * ----------------------------------------------------------------
-+ * Devices having this algorithm can be customized to have specific
-+ * algorithms in the frontend driver, rather than simply doing a
-+ * software zig-zag. In this case the zigzag maybe hardware assisted
-+ * or it maybe completely done in hardware. In all cases, usage of
-+ * this algorithm, in conjunction with the search and track
-+ * callbacks, utilizes the driver specific algorithm.
-+ *
-+ * ALGO_RECOVERY: (Recovery Algorithm)
-+ * ----------------------------------------------------------------
-+ * These devices has AUTO recovery capabilities from LOCK failure
-+ */
-+enum dvbfe_algo {
-+	DVBFE_ALGO_HW			= (1 <<  0),
-+	DVBFE_ALGO_SW			= (1 <<  1),
-+	DVBFE_ALGO_CUSTOM		= (1 <<  2),
-+	DVBFE_ALGO_RECOVERY		= (1 <<  31)
-+};
-+
-+struct tuner_state {
-+	u32 frequency;
-+	u32 tunerstep;
-+	u32 ifreq;
-+	u32 bandwidth;
-+	u32 iqsense;
-+	u32 refclock;
-+};
-+
-+/*
-+ * search callback possible return status
-+ *
-+ * DVBFE_ALGO_SEARCH_SUCCESS
-+ * The frontend search algorithm completed and returned succesfully
-+ *
-+ * DVBFE_ALGO_SEARCH_ASLEEP
-+ * The frontend search algorithm is sleeping
-+ *
-+ * DVBFE_ALGO_SEARCH_FAILED
-+ * The frontend search for a signal failed
-+ *
-+ * DVBFE_ALGO_SEARCH_INVALID
-+ * The frontend search algorith was probably supplied with invalid
-+ * parameters and the search is an invalid one
-+ *
-+ * DVBFE_ALGO_SEARCH_ERROR
-+ * The frontend search algorithm failed due to some error
-+ *
-+ * DVBFE_ALGO_SEARCH_AGAIN
-+ * The frontend search algorithm was requested to search again
-+ */
-+enum dvbfe_search {
-+	DVBFE_ALGO_SEARCH_SUCCESS	= (1 <<  0),
-+	DVBFE_ALGO_SEARCH_ASLEEP	= (1 <<  1),
-+	DVBFE_ALGO_SEARCH_FAILED	= (1 <<  2),
-+	DVBFE_ALGO_SEARCH_INVALID	= (1 <<  3),
-+	DVBFE_ALGO_SEARCH_AGAIN		= (1 <<  4),
-+	DVBFE_ALGO_SEARCH_ERROR		= (1 << 31),
-+};
-+
- struct dvb_tuner_ops {
-
- 	struct dvb_tuner_info info;
-@@ -95,10 +217,12 @@ struct dvb_tuner_ops {
- 	int (*get_status)(struct dvb_frontend *fe, u32 *status);
- 	int (*get_rf_strength)(struct dvb_frontend *fe, u16 *strength);
-
--	/** These are provided seperately from set_params in order to facilitate silicon
--	 * tuners which require sophisticated tuning loops, controlling each parameter seperately. */
--	int (*set_frequency)(struct dvb_frontend *fe, u32 frequency);
--	int (*set_bandwidth)(struct dvb_frontend *fe, u32 bandwidth);
-+	/**
-+	 * These are provided seperately from set_params in order to facilitate silicon
-+	 * tuners which require sophisticated tuning loops, controlling each parameter seperately.
-+	 */
-+	int (*set_state)(struct dvb_frontend *fe, enum tuner_param param, struct tuner_state *state);
-+	int (*get_state)(struct dvb_frontend *fe, enum tuner_param param, struct tuner_state *state);
- };
-
- struct analog_demod_info {
-@@ -142,7 +266,7 @@ struct dvb_frontend_ops {
- 		    unsigned int *delay,
- 		    fe_status_t *status);
- 	/* get frontend tuning algorithm from the module */
--	int (*get_frontend_algo)(struct dvb_frontend *fe);
-+	enum dvbfe_algo (*get_frontend_algo)(struct dvb_frontend *fe);
-
- 	/* these two are only used for the swzigzag code */
- 	int (*set_frontend)(struct dvb_frontend* fe, struct dvb_frontend_parameters* params);
-@@ -167,6 +291,18 @@ struct dvb_frontend_ops {
- 	int (*i2c_gate_ctrl)(struct dvb_frontend* fe, int enable);
- 	int (*ts_bus_ctrl)(struct dvb_frontend* fe, int acquire);
-
-+	/* These callbacks are based on the superseding IOCTL's	*/
-+	int (*set_params)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*get_params)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*get_info)(struct dvb_frontend *fe, struct dvbfe_info *fe_info);
-+	int (*get_delsys)(struct dvb_frontend *fe, enum dvbfe_delsys *fe_delsys);
-+
-+	/* These callbacks are for devices that implement their own
-+	 * tuning algorithms, rather than a simple swzigzag
-+	 */
-+	enum dvbfe_search (*search)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*track)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+
- 	struct dvb_tuner_ops tuner_ops;
- 	struct analog_demod_ops analog_ops;
- };
-@@ -190,6 +326,7 @@ struct dvb_frontend {
- 	void *frontend_priv;
- 	void *sec_priv;
- 	void *analog_demod_priv;
-+	u32 legacy;
- };
-
- extern int dvb_register_frontend(struct dvb_adapter *dvb,
-@@ -204,4 +341,8 @@ extern void dvb_frontend_reinitialise(struct dvb_frontend *fe);
- extern void dvb_frontend_sleep_until(struct timeval *waketime, u32 add_usec);
- extern s32 timeval_usec_diff(struct timeval lasttime, struct timeval curtime);
-
-+extern void decode_dvbs2_modcod(u32 modcod,
-+				enum dvbfe_modulation *modulation,
-+				enum dvbfe_fec *fec);
-+
- #endif
-
-
---------------040905020606080600040509--
+Hugh
+--8323584-1293509426-1220559781=:3012--
