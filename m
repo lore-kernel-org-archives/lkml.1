@@ -1,93 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYIDSiP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbYIDSih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbYIDSiP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:38:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYIDShY
+	id S1757402AbYIDSih (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYIDShZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:37:24 -0400
-Received: from mail.work.de ([212.12.32.20]:58893 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757152AbYIDShV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:37:21 -0400
-Message-ID: <48C02ADD.9000306@gmail.com>
-Date: Thu, 04 Sep 2008 22:37:17 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
-       akpm@linux-foundation.org
-Subject: DVB Update [PATCH 6/31] multiproto tree
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------020202060202090406020304"
+	Thu, 4 Sep 2008 14:37:25 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44985 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757153AbYIDShW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:37:22 -0400
+Date: Thu, 4 Sep 2008 19:36:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ivaylo@bglans.net
+Cc: linux-kernel@vger.kernel.org, w@1wt.eu
+Subject: Re: Marvel IDE 88SE6101 2.4.XX support
+Message-ID: <20080904193625.652bf013@lxorguk.ukuu.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0809042115350.11281@mail.bglans.net>
+References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
+	<Pine.LNX.4.64.0809042115350.11281@mail.bglans.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020202060202090406020304
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Thu, 4 Sep 2008 21:26:12 +0300 (EEST)
+ivaylo@bglans.net wrote:
 
->From 0f40abb23ae691fa3badb89b5f25abc277df4b7d Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 12:23:22 +0200
-Subject: [PATCH] DVB: Use a delay for tracking acquisition status
+> 
+> Another one small patch to support Marvel IDE 88SE6101 controler. I have 
+> one on Intel DG33BU motherboard. It is detect as
+> 02:00.0 IDE interface: Marvell Technology Group Ltd. 88SE6101 single-port 
+> PATA133 interface (rev b2)
 
-* A small delay would be required to reflect the changes in
-tracking the status of the demodulator
+Its a pretty generic device - see drivers/ata/pata_marvell.c so IDE
+generic will probably do roughly the right things. The pata_marvell
+driver documents how to do cable detect, which you may want to add and
+make it its own driver.
 
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
-
- dvb_frontend.c |    2 +-
- dvb_frontend.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-
---------------020202060202090406020304
-Content-Type: text/x-patch;
- name="6.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="6.patch"
-
->From 0f40abb23ae691fa3badb89b5f25abc277df4b7d Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 12:23:22 +0200
-Subject: [PATCH] DVB: Use a delay for tracking acquisition status
-
-* A small delay would be required to reflect the changes in
-tracking the status of the demodulator
-
-From: Manu Abraham <abraham.manu@gmail.com>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
-
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index feebac0..106bf2b 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.c
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -1230,7 +1230,7 @@ restart:
- 					fepriv->status = s;
- 					if (fe->ops.track) {
- 						dprintk("%s: TRACK callback exists at 0x%p\n", __func__, fe->ops.track);
--						fe->ops.track(fe, fe_params);
-+						fe->ops.track(fe, fe_params, &fepriv->delay);
- 					}
- 				}
- 				break;
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.h b/drivers/media/dvb/dvb-core/dvb_frontend.h
-index 84eb7d9..8066ff0 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.h
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.h
-@@ -301,7 +301,7 @@ struct dvb_frontend_ops {
- 	 * tuning algorithms, rather than a simple swzigzag
- 	 */
- 	enum dvbfe_search (*search)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
--	int (*track)(struct dvb_frontend *fe, struct dvbfe_params *fe_params);
-+	int (*track)(struct dvb_frontend *fe, struct dvbfe_params *fe_params, int *delay);
- 
- 	struct dvb_tuner_ops tuner_ops;
- 	struct analog_demod_ops analog_ops;
-
---------------020202060202090406020304--
+Alan
