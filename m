@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbYIDE1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbYIDEmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756219AbYIDE1s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 00:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYIDE1j
+	id S1754549AbYIDEmn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 00:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYIDEmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 00:27:39 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52087 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751412AbYIDE1i (ORCPT
+	Thu, 4 Sep 2008 00:42:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58960 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750941AbYIDEmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 00:27:38 -0400
-Date: Wed, 3 Sep 2008 21:27:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alok Kataria <akataria@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Michael Buesch <mb@bu3sch.de>, Dan Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Fix TSC calibration issues
-Message-ID: <20080903212729.436da8d3@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0809032112400.3378@nehalem.linux-foundation.org>
-References: <48BB2116.1060904@lwfinger.net>
-	<alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809021906250.3259@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809031103090.3243@apollo.tec.linutronix.de>
-	<1220490884.22734.83.camel@alok-dev1>
-	<alpine.LFD.1.10.0809031817430.3515@nehalem.linux-foundation.org>
-	<20080903201602.2ab6c449@infradead.org>
-	<alpine.LFD.1.10.0809032041130.3515@nehalem.linux-foundation.org>
-	<20080903211029.187d8dab@infradead.org>
-	<alpine.LFD.1.10.0809032112400.3378@nehalem.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Thu, 4 Sep 2008 00:42:32 -0400
+Date: Wed, 3 Sep 2008 21:42:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: linux-next: Tree for September 3
+Message-Id: <20080903214225.d7831142.akpm@linux-foundation.org>
+In-Reply-To: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008 21:20:23 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> I do agree that we could aim for something like that. But even to get
-> the rough estimate, we'd probably have to do the 5ms thing.
+On Wed, 3 Sep 2008 19:16:19 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-5msec isn't too big a deal; 250ms otoh ;-)
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
 
-> 
-> > another option for calibrating the tsc rate is to read it from the
-> > msr's/cpuid/aperf of what the hardware says it should be, and then
-> > all we need is to verify it is that; that we could do over timer or
-> > quickly. (of course that only works for systems with constant tsc)
-> 
-> I don't think it's reliable even for systems with a constant TSC.
-> Because the msr/cpuid thing isn't going to actualyl give the right
-> frequency. It might be the frequency the thing is _rated_ at, but it
-> will be off when people over- or under-clock the front-side bus etc.
+ug.  What a lot of bugs.
 
-for 99%+ of the systems it'll be extremely close. We do need to
-validate it to detect the overclocking etc (and if the calibration says
-"it smells funny" we can do the slow 250msec thing)
+acpi:
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+calling  param_sysfs_init+0x0/0x153
+------------[ cut here ]------------
+WARNING: at fs/sysfs/dir.c:465 sysfs_add_one+0x2a/0x36()
+sysfs: duplicate filename 'acpi' can not be created
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.27-rc5 #4
+ [<c01208e4>] warn_slowpath+0x4e/0x77
+ [<c013e30f>] ? __lock_acquire+0x671/0x6b7
+ [<c013a79e>] ? trace_hardirqs_off+0xb/0xd
+ [<c0108621>] ? native_sched_clock+0x82/0x96
+ [<c018a1de>] ? ifind+0x7e/0x88
+ [<c032fee9>] ? _spin_unlock+0x27/0x3c
+ [<c018a1de>] ? ifind+0x7e/0x88
+ [<c01b7262>] ? sysfs_find_dirent+0x16/0x27
+ [<c01b72fc>] sysfs_add_one+0x2a/0x36
+ [<c01b779d>] create_dir+0x43/0x71
+ [<c01b77f8>] sysfs_create_dir+0x2d/0x41
+ [<c032fee9>] ? _spin_unlock+0x27/0x3c
+ [<c01fa600>] kobject_add_internal+0xb3/0x157
+ [<c01fa74f>] kobject_add_varg+0x35/0x41
+ [<c01fa8cd>] kobject_init_and_add+0x26/0x28
+ [<c049160c>] kernel_param_sysfs_setup+0x4c/0x99
+ [<c0491750>] param_sysfs_init+0xf7/0x153
+ [<c0101125>] _stext+0x3d/0x11d
+ [<c0491659>] ? param_sysfs_init+0x0/0x153
+ [<c011c8af>] ? wake_up_process+0xf/0x11
+ [<c012d8b9>] ? start_workqueue_thread+0x1d/0x20
+ [<c012de97>] ? __create_workqueue_key+0xe4/0xfc
+ [<c0482767>] kernel_init+0xeb/0x152
+ [<c048267c>] ? kernel_init+0x0/0x152
+ [<c01046ef>] kernel_thread_helper+0x7/0x10
+ =======================
+---[ end trace 4eaa2a86a8e2da22 ]---
+kobject_add_internal failed for acpi with -EEXIST, don't try to register things with the same name in the same directory.
+Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc5 #4
+ [<c01fa66c>] kobject_add_internal+0x11f/0x157
+ [<c01fa74f>] kobject_add_varg+0x35/0x41
+ [<c01fa8cd>] kobject_init_and_add+0x26/0x28
+ [<c049160c>] kernel_param_sysfs_setup+0x4c/0x99
+ [<c0491750>] param_sysfs_init+0xf7/0x153
+ [<c0101125>] _stext+0x3d/0x11d
+ [<c0491659>] ? param_sysfs_init+0x0/0x153
+ [<c011c8af>] ? wake_up_process+0xf/0x11
+ [<c012d8b9>] ? start_workqueue_thread+0x1d/0x20
+ [<c012de97>] ? __create_workqueue_key+0xe4/0xfc
+ [<c0482767>] kernel_init+0xeb/0x152
+ [<c048267c>] ? kernel_init+0x0/0x152
+ [<c01046ef>] kernel_thread_helper+0x7/0x10
+ =======================
+Module 'acpi' failed to be added to sysfs, error number -17
+
+
+there seem to have been tens or even hunderds of reports of this.  Odd.
