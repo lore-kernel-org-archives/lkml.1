@@ -1,107 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbYIDHGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYIDHLO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbYIDHGa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 03:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYIDHGW
+	id S1754429AbYIDHLO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 03:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYIDHK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 03:06:22 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53654 "EHLO mga11.intel.com"
+	Thu, 4 Sep 2008 03:10:59 -0400
+Received: from nebensachen.de ([195.34.83.29]:44297 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751050AbYIDHGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 03:06:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="612608747"
-Subject: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
-From: Lin Ming <ming.m.lin@intel.com>
-To: a.p.zijlstra@chello.n
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 15:06:22 +0800
-Message-Id: <1220511982.9590.17.camel@minggr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1751100AbYIDHK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 03:10:59 -0400
+X-Hashcash: 1:20:080904:tiwai@suse.de::ob6ihF4EqE4h0xiH:000031kk
+X-Hashcash: 1:20:080904:mchehab@infradead.org::xBGIqrT0jBAoNi4x:0000000000000000000000000000000000000000056N
+X-Hashcash: 1:20:080904:linux-kernel@vger.kernel.org::ueH0UxQSsCN+m0Ix:0000000000000000000000000000000006E0b
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Takashi Iwai <tiwai@suse.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Stale files in linux-next
+Date: Thu, 04 Sep 2008 09:10:52 +0200
+Message-ID: <87fxogz8qr.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with 2.6.27-rc4, oltp has ~10% regression with 2.6.27-rc5 on
-8-core stoakley machine.
+Hi all,
 
-Run oltp with 8 threads 120 seconds, as below
-sysbench --test=oltp --mysql-user=root --mysql-db=mysql --max-time=120
---max-requests=0 --oltp-read-only=on --num-threads=8 run
+the following files have been removed but are still tracked by git (this
+is refering to next-20080903):
 
-vmstat shows much more idle time, about ~30%
+% git diff
+% make clean
+...
+% git diff
+diff --git a/drivers/media/dvb/dvb-usb/dtv5100-fe.c b/drivers/media/dvb/dvb-usb/dtv5100-fe.c
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/include/sound/ad1848.h b/include/sound/ad1848.h
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/sound/isa/ad1848/ad1848_lib.c b/sound/isa/ad1848/ad1848_lib.c
+deleted file mode 100644
+index e69de29..0000000
+%
 
-procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu------
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
-10  0      0 7822824  42240 123740    0    0   312    47  442 1613  3  2 88  6  0
- 9  0      0 7822312  42240 123764    0    0     0    16 26691 232566 56 14 30  0  0
-13  0      0 7821940  42240 123764    0    0     0    16 26661 228689 54 14 32  0  0
- 8  0      0 7821320  42240 123764    0    0     0    16 31508 263765 61 17 23  0  0
-12  0      0 7820948  42240 123764    0    0    16    16 28666 242402 57 15 28  0  0
- 9  0      0 7820584  42240 123780    0    0     0    16 27107 230804 56 14 30  0  0
-10  0      0 7819964  42240 123796    0    0    16   612 27599 244037 55 16 29  0  0
-11  0      0 7819356  42240 123796    0    0     0    64 23540 209713 51 13 36  0  0
-10  0      0 7819212  42240 123796    0    0     0    32 25674 224205 54 13 32  0  0
-10  0      0 7818716  42240 123796    0    0     0    20 30106 257161 59 16 25  0  0
- 7  0      0 7818468  42240 123796    0    0     0    16 28356 241551 57 14 29  0  0
-10  0      0 7818096  42240 123796    0    0     0    16 39174 273656 64 16 20  0  0
-12  0      0 7817724  42240 123796    0    0     0    20 39688 276936 63 16 20  0  0
-11  0      0 7817352  42240 123796    0    0     0    16 42543 285192 66 16 18  0  0
- 9  0      0 7817352  42240 123796    0    0     0    16 37083 259830 62 14 24  0  0
- 8  0      0 7817104  42240 123796    0    0     0    16 37450 259160 61 15 23  0  0
-10  0      0 7816516  42240 123796    0    0     0    64 37425 261870 61 16 23  0  0
-11  0      0 7815896  42240 123812    0    0    16    16 41558 279320 66 16 18  0  0
- 9  0      0 7815648  42240 123812    0    0     0    16 34017 235741 59 14 28  0  0
-10  0      0 7815152  42240 123812    0    0     0    16 35642 248888 60 14 26  0  0
- 9  0      0 7814532  42240 123812    0    0     0    16 38517 263220 63 15 22  0  0
- 9  0      0 7814160  42240 123812    0    0     0    20 35965 246487 61 14 25  0  0
-10  0      0 7814036  42240 123812    0    0     0    16 33852 236313 59 13 28  0  0
-11  0      0 7813664  42240 123812    0    0     0    16 34958 244819 59 14 27  0  0
-10  0      0 7813416  42240 123812    0    0     0    16 26106 202062 53 10 37  0  0
-10  0      0 7812672  42240 123812    0    0     0    16 31174 222714 56 12 32  0  0
- 9  0      0 7812300  42240 123812    0    0     0   276 25089 196813 52 11 38  0  0
- 9  0      0 7812060  42240 123812    0    0     0    16 31877 228004 57 12 31  0  0
+Could these files please be removed properly upstream? Hopefully, I have
+addressed the right people.
 
+Thanks,
 
-
-Bisect located below patch, 
-after reverted this patch the regression disappear.
-
-commit 354879bb977e06695993435745f06a0f6d39ce2b
-Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date:   Mon Aug 25 17:15:34 2008 +0200
-
-    sched_clock: fix cpu_clock()
-
-    This patch fixes 3 issues:
-
-    a) it removes the dependency on jiffies, because jiffies are
-incremented
-       by a single CPU, and the tick is not synchronized between CPUs.
-Therefore
-       relying on it to calculate a window to clip whacky TSC values
-doesn't work
-       as it can drift around.
-
-       So instead use [GTOD, GTOD+TICK_NSEC) as the window.
-
-    b) __update_sched_clock() did (roughly speaking):
-
-       delta = sched_clock() - scd->tick_raw;
-       clock += delta;
-
-       Which gives exponential growth, instead of linear.
-
-    c) allows the sched_clock_cpu() value to warp the u64 without
-breaking.
-
-    the results are more reliable sched_clock() deltas:
-
--Lin Ming
-
-
+Elias
