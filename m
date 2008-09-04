@@ -1,39 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbYIDWjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbYIDWrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbYIDWjO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 18:39:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYIDWi7
+	id S1756696AbYIDWrY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 18:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbYIDWrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 18:38:59 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:27011 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754865AbYIDWi6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 18:38:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vRZ8J5yE30uX9eW1BAHMptaXG8xmdgWiB2wX3elwAv0qpO2Q4sjm10CipG5FSvYv3H
-         KsU/cAhICUpTIqjO+Y/kam1hhl7t8946YtNjlcBJFYcOPQHy1QnqxOSkoTWnfirUiNiV
-         neaUQZthEkwA4xCr8FW6p+dqbX0GUssRTZQDs=
-Message-ID: <1df1788c0809041538x8d41eb8s80966f25aa2ade21@mail.gmail.com>
-Date: Thu, 4 Sep 2008 19:38:56 -0300
-From: "=?UTF-8?Q?Br=C3=A1ulio_Barros_de_Oliveira?=" <brauliobo@gmail.com>
-To: Mat <jackdachef@gmail.com>
-Subject: Re: Re: reiserfs do_journal_end unnecessary hd wake up?
-Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <loom.20080904T211127-782@post.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <loom.20080904T211127-782@post.gmane.org>
+	Thu, 4 Sep 2008 18:47:12 -0400
+Received: from mail.vyatta.com ([216.93.170.194]:50231 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754891AbYIDWrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 18:47:11 -0400
+X-Spam-Flag: NO
+X-Spam-Score: -1.657
+Date: Thu, 4 Sep 2008 15:47:09 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: "Dushan Tcholich" <dusanc@gmail.com>,
+       "Francois Romieu" <romieu@fr.zoreil.com>,
+       "Robert Hancock" <hancockr@shaw.ca>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, bridge@lists.linux-foundation.org
+Subject: [PATCH] bridge: don't allow setting hello time to zero
+Message-ID: <20080904154709.48fe0775@extreme>
+In-Reply-To: <20080831104309.780cc01f@extreme>
+References: <fa.wTMiBcGRgw2fBtdHwtX7y0lkc8s@ifi.uio.no>
+	<48975BD3.6040709@shaw.ca>
+	<a08621850808041337k1d1deb6fk78098d9fcd4930dd@mail.gmail.com>
+	<20080807185802.GA16327@electric-eye.fr.zoreil.com>
+	<a08621850808101200n220afd2dve58abe67830b7a4f@mail.gmail.com>
+	<a08621850808110053j5cbf23e6xdf52c9e7440abf19@mail.gmail.com>
+	<a08621850808291848q5660148fx57d576ecfcbfce8@mail.gmail.com>
+	<a08621850808310151o143845h195a8658d02270d9@mail.gmail.com>
+	<20080831100537.6929c51e@extreme>
+	<20080831104309.780cc01f@extreme>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id m84Mdedq014491
 
-thank you very much for the great instructions. i'll evaluate then andsend you the results.brÃ¡ulio
-On Thu, Sep 4, 2008 at 6:16 PM, Mat <jackdachef@gmail.com> wrote:> ok, then try the following:>> you at least should have noatime,nodiratime,commit=600>> enabled for the reiserfs or >=ext3 filesystems>> you can also try data=writeback (but beware this might put your data at risk !)>>> select the anticipatory i/o scheduler> and set following stuff>> echo "16" > /proc/sys/vm/page-cluster> # default: 3> #>> echo "60" > /proc/sys/vm/swappiness> # default: 60> # By default, Linux will aggressively swap processes out of physical memory onto> disk in order to keep the disk cache as large as possible.> # This means that pages that haven't been used recently will be pushed into swap> long before the system even comes close to running out of memory, which is an> unexpected behavior compared to some operating systems.> # The /proc/sys/vm/swappiness parameter controls how aggressive Linux is in this> area.>> echo "3000" > /proc/sys/vm/dirty_expire_centisecs> # default: 3000 (30 seconds)> #2 how long data can be in the page cache before it is considered expired and> must be written at the next opportunity. Note that this default is very long: a> full 30 seconds. That means that under normal circumstances, unless you write> enough to trigger the other pdflush method, Linux won't actually commit anything> you write until 30 seconds later.>> echo "6000"  > /proc/sys/vm/dirty_writeback_centisecs> # default: 500 (5 seconds)> #1 how often pdflush wakes up to write data to disk. The default wakes up the> two (or more) active threads every five seconds.> # suggestion: 6000 (every 60 seconds)>> echo "15" > /proc/sys/vm/dirty_background_ratio> # default: 10> #3 Maximum percentage of active memory that can be filled with dirty pages> before pdflush begins to write them>> echo "50"   > /proc/sys/vm/dirty_ratio #modified> # default: 40> #4 Maximum percentage of total memory that can be filled with dirty pages before> processes are forced to write dirty buffers themselves during their time slice> instead of being allowed to do more writes.> # modified: 50>> echo "25" > /proc/sys/vm/vfs_cache_pressure>> for i in /sys/block/sd*; do>         /bin/echo "anticipatory" >  $i/queue/scheduler> done>> for i in /sys/block/sd*; do>         /bin/echo "0" >  $i/queue/iosched/antic_expire> done>> for i in /sys/block/sd*; do>         /bin/echo "150" >  $i/queue/iosched/read_expire> done>> for i in /sys/block/sd*; do>         /bin/echo "750" >  $i/queue/iosched/read_batch_expire> done>> for i in /sys/block/sd*; do>         /bin/echo "1200" >  $i/queue/iosched/write_batch_expire> done>> for i in /sys/block/sd*; do>         /bin/echo "1024" >  $i/queue/nr_requests> done>> for i in /sys/block/sd*; do>         /bin/echo "256" >  $i/queue/read_ahead_kb> done>> for i in /sys/block/sd*; do>         /bin/echo "256" >  $i/queue/max_sectors_kb> done>> for i in /sys/class/scsi_host/host*; do>         /bin/echo "min_power" >  $i/link_power_management_policy> done>>>>> try to disable each and every unneeded daemon or applets, programs, etc.>> by using:>> * powertop> * iotop> * htop> * top> * lsof | grep /home> * ...>>>> --> To unsubscribe from this list: send the line "unsubscribe reiserfs-devel" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+The bridge hello time can't be safely set to values less than 1 second,
+otherwise it is possible to end up with a runaway timer.
+
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+
+--- a/net/bridge/br_ioctl.c	2008-09-04 15:25:41.000000000 -0700
++++ b/net/bridge/br_ioctl.c	2008-09-04 15:44:33.000000000 -0700
+@@ -188,15 +188,21 @@ static int old_dev_ioctl(struct net_devi
+ 		return 0;
+ 
+ 	case BRCTL_SET_BRIDGE_HELLO_TIME:
++	{
++		unsigned long t = clock_t_to_jiffies(args[1]);
+ 		if (!capable(CAP_NET_ADMIN))
+ 			return -EPERM;
+ 
++		if (t < HZ)
++			return -EINVAL;
++
+ 		spin_lock_bh(&br->lock);
+-		br->bridge_hello_time = clock_t_to_jiffies(args[1]);
++		br->bridge_hello_time = t;
+ 		if (br_is_root_bridge(br))
+ 			br->hello_time = br->bridge_hello_time;
+ 		spin_unlock_bh(&br->lock);
+ 		return 0;
++	}
+ 
+ 	case BRCTL_SET_BRIDGE_MAX_AGE:
+ 		if (!capable(CAP_NET_ADMIN))
+--- a/net/bridge/br_sysfs_br.c	2008-09-04 15:27:20.000000000 -0700
++++ b/net/bridge/br_sysfs_br.c	2008-09-04 15:33:31.000000000 -0700
+@@ -29,11 +29,12 @@
+  */
+ static ssize_t store_bridge_parm(struct device *d,
+ 				 const char *buf, size_t len,
+-				 void (*set)(struct net_bridge *, unsigned long))
++				 int (*set)(struct net_bridge *, unsigned long))
+ {
+ 	struct net_bridge *br = to_bridge(d);
+ 	char *endp;
+ 	unsigned long val;
++	int err;
+ 
+ 	if (!capable(CAP_NET_ADMIN))
+ 		return -EPERM;
+@@ -43,9 +44,9 @@ static ssize_t store_bridge_parm(struct 
+ 		return -EINVAL;
+ 
+ 	spin_lock_bh(&br->lock);
+-	(*set)(br, val);
++	err = (*set)(br, val);
+ 	spin_unlock_bh(&br->lock);
+-	return len;
++	return err ? err : len;
+ }
+ 
+ 
+@@ -56,12 +57,13 @@ static ssize_t show_forward_delay(struct
+ 	return sprintf(buf, "%lu\n", jiffies_to_clock_t(br->forward_delay));
+ }
+ 
+-static void set_forward_delay(struct net_bridge *br, unsigned long val)
++static int set_forward_delay(struct net_bridge *br, unsigned long val)
+ {
+ 	unsigned long delay = clock_t_to_jiffies(val);
+ 	br->forward_delay = delay;
+ 	if (br_is_root_bridge(br))
+ 		br->bridge_forward_delay = delay;
++	return 0;
+ }
+ 
+ static ssize_t store_forward_delay(struct device *d,
+@@ -80,12 +82,17 @@ static ssize_t show_hello_time(struct de
+ 		       jiffies_to_clock_t(to_bridge(d)->hello_time));
+ }
+ 
+-static void set_hello_time(struct net_bridge *br, unsigned long val)
++static int set_hello_time(struct net_bridge *br, unsigned long val)
+ {
+ 	unsigned long t = clock_t_to_jiffies(val);
++
++	if (t < HZ)
++		return -EINVAL;
++
+ 	br->hello_time = t;
+ 	if (br_is_root_bridge(br))
+ 		br->bridge_hello_time = t;
++	return 0;
+ }
+ 
+ static ssize_t store_hello_time(struct device *d,
+@@ -104,12 +111,13 @@ static ssize_t show_max_age(struct devic
+ 		       jiffies_to_clock_t(to_bridge(d)->max_age));
+ }
+ 
+-static void set_max_age(struct net_bridge *br, unsigned long val)
++static int set_max_age(struct net_bridge *br, unsigned long val)
+ {
+ 	unsigned long t = clock_t_to_jiffies(val);
+ 	br->max_age = t;
+ 	if (br_is_root_bridge(br))
+ 		br->bridge_max_age = t;
++	return 0;
+ }
+ 
+ static ssize_t store_max_age(struct device *d, struct device_attribute *attr,
+@@ -126,9 +134,10 @@ static ssize_t show_ageing_time(struct d
+ 	return sprintf(buf, "%lu\n", jiffies_to_clock_t(br->ageing_time));
+ }
+ 
+-static void set_ageing_time(struct net_bridge *br, unsigned long val)
++static int set_ageing_time(struct net_bridge *br, unsigned long val)
+ {
+ 	br->ageing_time = clock_t_to_jiffies(val);
++	return 0;
+ }
+ 
+ static ssize_t store_ageing_time(struct device *d,
+@@ -180,9 +189,10 @@ static ssize_t show_priority(struct devi
+ 		       (br->bridge_id.prio[0] << 8) | br->bridge_id.prio[1]);
+ }
+ 
+-static void set_priority(struct net_bridge *br, unsigned long val)
++static int set_priority(struct net_bridge *br, unsigned long val)
+ {
+ 	br_stp_set_bridge_priority(br, (u16) val);
++	return 0;
+ }
+ 
+ static ssize_t store_priority(struct device *d, struct device_attribute *attr,
+
