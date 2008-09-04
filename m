@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbYIDWUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbYIDWVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbYIDWUo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 18:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbYIDWUg
+	id S1757023AbYIDWVM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 18:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbYIDWU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 18:20:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:22815 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754559AbYIDWUf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 18:20:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=rYM4CEkkfoRetAldQ1CmbppTbcObkhVcj7AKPfye+liiql+7hrJzKWn2Rp423CtVHU
-         9kx4leWvGJxwQdsCj/iSkte/VLZb/FAB5xFTgoYoHZIHdPz0XcuGZ5SfqpvGoK/2aCy2
-         iGMlbO5fer89H44GInryO6cc/GB9gOzSlx3Ek=
-Message-ID: <48C05F2B.1030608@gmail.com>
-Date: Fri, 05 Sep 2008 00:20:27 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Jiri Kosina <jkosina@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: HID: make compat functions static
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 4 Sep 2008 18:20:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34779 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756791AbYIDWU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 18:20:56 -0400
+Date: Fri, 5 Sep 2008 00:20:35 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org, neilb@suse.de
+Subject: Re: [PATCH] nfsd/nfs4acl: Number of used used array elements needs
+ to be zeroed.
+Message-ID: <20080905002035.5c7abde1@psychotron.englab.brq.redhat.com>
+In-Reply-To: <20080904150101.GB4536@fieldses.org>
+References: <20080904165518.15a02908@psychotron.englab.brq.redhat.com>
+	<20080904150101.GB4536@fieldses.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 4 Sep 2008 11:01:01 -0400
+"J. Bruce Fields" <bfields@fieldses.org> wrote:
 
-does the hid-dummy module runtime-link after the change?
+> On Thu, Sep 04, 2008 at 04:55:18PM +0200, Jiri Pirko wrote:
+> > Number of used used array elements needs to be zeroed. It may cause
+> > problems otherwise, because it's used uninitialized in find_uid().
+> > 
+> > Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> > ---
+> >  fs/nfsd/nfs4acl.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
+> > index 54b8b41..7dcd90f 100644
+> > --- a/fs/nfsd/nfs4acl.c
+> > +++ b/fs/nfsd/nfs4acl.c
+> > @@ -447,11 +447,13 @@ init_state(struct posix_acl_state *state, int cnt)
+> >  	state->users = kzalloc(alloc, GFP_KERNEL);
+> >  	if (!state->users)
+> >  		return -ENOMEM;
+> > +	state->users->n = 0;
+> >  	state->groups = kzalloc(alloc, GFP_KERNEL);
+> >  	if (!state->groups) {
+> >  		kfree(state->users);
+> >  		return -ENOMEM;
+> >  	}
+> > +	state->groups->n = 0;
+> >  	return 0;
+> >  }
+> 
+> Thanks for the extra eyes on this code, but: surely the kzalloc()'s are
+> all that's necessary?  Am I missing something?
+Sure you are right. Sorry, my bad...
 
-ANSI C standard says:
-* In the set of translation units and libraries that constitutes an entire
-program, each declaration of a particular identiﬁer with external linkage
-denotes the same object or function. Within one translation unit, each
-declaration of an identiﬁer with _internal linkage_ denotes the same object or
-function. Each declaration of an identiﬁer with no linkage denotes a unique entity.
-* If the declaration of a ﬁle scope identiﬁer for an object or a function
-contains the storage-class speciﬁer _static_, the identiﬁer has _internal linkage_.
-* For an identiﬁer declared with the storage-class speciﬁer _extern_ in a scope
-in which a _prior declaration_ of that identiﬁer is visible, if the prior
-declaration speciﬁes _internal_ or external linkage, the linkage of the
-identiﬁer at the later declaration _is the same as the linkage speciﬁed at the
-prior declaration_. If no prior declaration is visible, or if the prior
-declaration speciﬁes no linkage, then the identiﬁer has external linkage.
-
-(Note that EXPORT_SYMBOL adds extern.)
-
-I can't find any extension of gnu C to this which would permit that so I think
-and correct me if I'm wrong, the commit is incorrect? Even according to nm, the
-symbol is local, e.g.:
-0000000000000120 t hid_compat_monterey
-
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Tue, 2 Sep 2008 16:05:43 +0000 (+0200)
-Subject: HID: make compat functions static
-X-Git-Url:
-http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fjikos%2Fhid.git;a=commitdiff_plain;h=f72f87666264c9d4880166bcc69cb5c4cf210449
-
-HID: make compat functions static
-
-Done to avoid sparse warnings about undeclared functions.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
----
-
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 15ee33e..164ce7f 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -794,7 +794,7 @@ dbg_hid(const char *fmt, ...)
-
- #ifdef CONFIG_HID_COMPAT
- #define HID_COMPAT_LOAD_DRIVER(name)	\
--void hid_compat_##name(void) { }	\
-+static void hid_compat_##name(void) { }	\
- EXPORT_SYMBOL(hid_compat_##name)
- #else
- #define HID_COMPAT_LOAD_DRIVER(name)
+Jirka
+> 
+> --b.
