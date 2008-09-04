@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYIDQOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbYIDQPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYIDQOz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYIDQOn
+	id S1755489AbYIDQPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbYIDQPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:14:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55735 "EHLO mx3.mail.elte.hu"
+	Thu, 4 Sep 2008 12:15:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:42017 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750941AbYIDQOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:14:42 -0400
-Date: Thu, 4 Sep 2008 18:14:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-pci@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH] Return value from schedule()
-Message-ID: <20080904161424.GA23042@elte.hu>
-References: <20080827204626.4b65862f@extreme> <20080828111323.GI7908@solarflare.com> <20080903155713.7fab2e19@extreme> <20080904160739.GK2772@parisc-linux.org>
+	id S1751388AbYIDQPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:15:03 -0400
+Date: Thu, 4 Sep 2008 18:14:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Revert commit e8aa4667baf74dfd85fbaab86861465acb811085
+In-Reply-To: <20080904153206.GB7120@elte.hu>
+Message-ID: <alpine.LFD.1.10.0809041812450.3243@apollo.tec.linutronix.de>
+References: <20080904144657.GC15987@alberich.amd.com> <20080904153206.GB7120@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080904160739.GK2772@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 4 Sep 2008, Ingo Molnar wrote:
 
-* Matthew Wilcox <matthew@wil.cx> wrote:
+> 
+> * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> 
+> > This reverts commit e8aa4667baf74dfd85fbaab86861465acb811085
+> >  (x86: enable hpet=force for AMD SB400)
+> > 
+> > Since ATI/AMD decided not to support HPET on SB4xx it doesn't
+> > make sense to enable this unsupported feature.
+> > (I was not aware of this when submitting the quirk.)
+> > 
+> > If a system with SB4xx chipset provides an ACPI HPET table and does
+> > not boot, "nohpet" should be used as kernel parameter.
+> > 
+> > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> 
+> applied to tip/x86/urgent, thanks Andreas. I guess a system broke due to 
+> this commit?
 
-> In some circumstances, you want to wait for an event to happen.  let's 
-> assume that it's a hardware event, so you can't just add a notifier of 
-> some kind, you have to poll.  Here's an example:
-> 
-> On Wed, Sep 03, 2008 at 03:57:13PM -0700, Stephen Hemminger wrote:
-> >  			return -ETIMEDOUT;
-> > -		udelay(10);
-> > +		if (signal_pending(current))
-> > +			return -EINTR;
-> > +		schedule();
-> 
-> If there's no other task ready to run, schedule() could return in much
-> less than 10 microseconds (actually, it could return in much less than
-> 10 microseconds even if another task does run, but let's ignore that case).
-> 
-> If schedule() returned whether or not it had scheduled another task, we
-> could do something like:
-> 
-> 		if (!schedule())
-> 			udelay(10);
+Hmm, why do we remove something which needs to be force enabled by the
+user anyway ?  
 
-hm, i'm not really sure - this really just seems to be a higher prio 
-variant of yield() combined with some weird code. Do we really want to 
-promote such arguably broken behavior? If there's any chance of any 
-polling to take a material amount of CPU time it should be event driven 
-to begin with.
+Is the HPET on these systems not working at all so the force enable
+code is useless ?
 
-	Ingo
+Thanks,
+	
+	tglx
