@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYIDOTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbYIDOUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYIDOTA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 10:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYIDOSw
+	id S1753567AbYIDOUI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 10:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYIDOTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 10:18:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59646 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751976AbYIDOSv (ORCPT
+	Thu, 4 Sep 2008 10:19:54 -0400
+Received: from smarthost01.mail.zen.net.uk ([212.23.3.140]:54624 "EHLO
+	smarthost01.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750958AbYIDOTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 10:18:51 -0400
-Message-ID: <48BFEE2C.70303@linux-foundation.org>
-Date: Thu, 04 Sep 2008 09:18:20 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 4/4] capture pages freed during direct reclaim for	allocation
- by the reclaimer
-References: <1220467452-15794-5-git-send-email-apw@shadowen.org>	 <1220475206-23684-1-git-send-email-apw@shadowen.org>	 <48BEFAF9.3030006@linux-foundation.org> <1220510308.8609.167.camel@twins>
-In-Reply-To: <1220510308.8609.167.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 10:19:53 -0400
+Date: Thu, 4 Sep 2008 15:19:46 +0100
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Stephen Hemminger <shemminger@vyatta.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 1/3] pci: VPD access timeout increase
+Message-ID: <20080904141944.GE7908@solarflare.com>
+References: <20080827204626.4b65862f@extreme> <20080828111323.GI7908@solarflare.com> <20080903155713.7fab2e19@extreme> <20080904125219.GJ2772@parisc-linux.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080904125219.GJ2772@parisc-linux.org>
+User-Agent: Mutt/1.4.1i
+X-Originating-Smarthost01-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Wed, 2008-09-03 at 16:00 -0500, Christoph Lameter wrote:
->> Andy Whitcroft wrote:
->>
->>>  
->>>  #ifndef __GENERATING_BOUNDS_H
->>> @@ -208,6 +211,9 @@ __PAGEFLAG(SlubDebug, slub_debug)
->>>   */
->>>  TESTPAGEFLAG(Writeback, writeback) TESTSCFLAG(Writeback, writeback)
->>>  __PAGEFLAG(Buddy, buddy)
->>> +PAGEFLAG(BuddyCapture, buddy_capture)	/* A buddy page, but reserved. */
->>> +	__SETPAGEFLAG(BuddyCapture, buddy_capture)
->>> +	__CLEARPAGEFLAG(BuddyCapture, buddy_capture)
->> Doesnt __PAGEFLAG do what you want without having to explicitly specify
->> __SET/__CLEAR?
+Matthew Wilcox wrote:
+> On Wed, Sep 03, 2008 at 03:57:13PM -0700, Stephen Hemminger wrote:
+> > Accessing the VPD area can take a long time. There are comments in the
+> > SysKonnect vendor driver that it can take up to 25ms.  The existing vpd
+> > access code fails consistently on my hardware.
 > 
-> PAGEFLAG() __PAGEFLAG()
+> Wow, that's slow.  If you were to try to read all 32k, it'd take more
+> than three minutes!  (I presume it doesn't actually have as much as 32k).
 > 
-> does TESTPAGEFLAG() double.
+> > Change the access routines to:
+> >   * use a mutex rather than spinning with IRQ's disabled and lock held
+> >   * have a longer timeout
+> >   * call schedule while spinning to provide some responsivness
 > 
+> I agree with your approach, but have one minor comment:
+> 
+> > -	spin_lock_irq(&vpd->lock);
+> > +	mutex_lock(&vpd->lock);
+> 
+> This should be:
+> 
+> +	if (mutex_lock_interruptible(&vpd->lock))
+> +		return -EINTR;
+[...]
 
-Usually one either wants the atomic versions or the non atomic versions. This
-usage seems to be mainly non atomic plus one use of ClearPageBuddy() in
-capture_or_return() (Which raises some questions about how the bit
-modifications are serialized. Is there concurrency during free?)
+This is fine for the sysfs case, but not if this is called during device
+probe - we don't want signals to modprobe to break device initialisation,
+do we?
 
-So
+Ben.
 
-__PAGEFLAG(BuddyCapture, buddy_capture)
-	CLEARPAGEFLAG(BuddyCapture, buddy_capture)
-
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
