@@ -1,115 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYIDMRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYIDMT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755659AbYIDMRU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYIDMRM
+	id S1755982AbYIDMT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYIDMTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:17:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35286 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752259AbYIDMRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:17:11 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX19jBeNSc2djYQ7GbuRaFyQ3peIWy1olRcPb4jeYbx
-	ZHnMVaOtsn0HqP
-Date: Thu, 4 Sep 2008 14:17:05 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [Patch] Check hfs_bnode_find return value
-Message-ID: <20080904121705.GA30173@alice>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0808290405480.2507@localhost.localdomain>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc5-00099-gd26acd9 (x86_64)
-X-Uptime: 14:15:42 up  2:04,  1 user,  load average: 0.05, 0.04, 0.08
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
+	Thu, 4 Sep 2008 08:19:51 -0400
+Received: from mga01.intel.com ([192.55.52.88]:27817 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752626AbYIDMTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 08:19:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
+   d="scan'208";a="612679956"
+Subject: Re: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
+From: Lin Ming <ming.m.lin@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <20080904113529.GA25533@elte.hu>
+References: <1220518266.9590.22.camel@minggr>
+	 <1220519034.8609.206.camel@twins> <1220525579.12161.8.camel@minggr>
+	 <20080904110901.GD8668@elte.hu> <1220527806.12161.14.camel@minggr>
+	 <20080904113529.GA25533@elte.hu>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 20:19:48 +0800
+Message-Id: <1220530788.12161.31.camel@minggr>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
 
-sorry i just noticed that the mail from yesterday was broken...
-
-* Roman Zippel (zippel@linux-m68k.org) wrote:
-> Hi,
+On Thu, 2008-09-04 at 13:35 +0200, Ingo Molnar wrote:
+> * Lin Ming <ming.m.lin@intel.com> wrote:
 > 
-> On Tue, 26 Aug 2008, Eric Sesterhenn wrote:
+> > A huge trace result file, see the attachment for more.
 > 
-> > --- linux/fs/hfsplus/brec.c.orig	2008-08-26 19:18:56.000000000 +0200
-> > +++ linux/fs/hfsplus/brec.c	2008-08-26 19:19:27.000000000 +0200
-> > @@ -304,6 +304,8 @@ static struct hfs_bnode *hfs_bnode_split
-> >  	/* update next bnode header */
-> >  	if (new_node->next) {
-> >  		struct hfs_bnode *next_node = hfs_bnode_find(tree, new_node->next);
-> > +		if (IS_ERR(next_node))
-> > +			return next_node;
-> >  		next_node->prev = new_node->this;
-> >  		hfs_bnode_read(next_node, &node_desc, 0, sizeof(node_desc));
-> >  		node_desc.prev = cpu_to_be32(next_node->prev);
+> > # tracer: sched_switch
+> > #
+> > #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
+> > #              | |      |          |         |
+> >           mysqld-3799  [07]   151.411009:   3799:120:R ==>  3807:120:R
+> ...
+> >         sysbench-3803  [07]   151.417048:   3803:120:R   +  3791:120:S
 > 
-> Al Viro already fixed this for HFS in a better way, could you please adopt 
-> his solution?
+> ok, this only spans 6 milliseconds, which is probably a bit too light.
+> 
+> Could you please increase the trace size 32-fold (via 
+> /debug/tracing/trace_entries), and send us the (large!) trace file 
+> compressed via bzip2 -9, off-list (or via a web link)? [anyone on-list 
+> can have a look at the smaller trace file already]
 
-This is the patch from hfs applied to hfsplus (see
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3d10a15d6919488204bdb264050d156ced20d9aa
-). Guess Al should sign this off since it is his work?
+The large trace file also available at below link,
+http://myfreefilehosting.com/f/94991018dc_1.31MB 
 
+> 
+> Thanks,
+> 
+> 	Ingo
 
---- linux/fs/hfsplus/brec.c.orig	2008-09-03 17:00:07.000000000 +0200
-+++ linux/fs/hfsplus/brec.c	2008-09-03 17:00:43.000000000 +0200
-@@ -216,7 +216,7 @@ skip:
- static struct hfs_bnode *hfs_bnode_split(struct hfs_find_data *fd)
- {
- 	struct hfs_btree *tree;
--	struct hfs_bnode *node, *new_node;
-+	struct hfs_bnode *node, *new_node, *next_node;
- 	struct hfs_bnode_desc node_desc;
- 	int num_recs, new_rec_off, new_off, old_rec_off;
- 	int data_start, data_end, size;
-@@ -235,6 +235,17 @@ static struct hfs_bnode *hfs_bnode_split
- 	new_node->type = node->type;
- 	new_node->height = node->height;
- 
-+	if (node->next)
-+		next_node = hfs_bnode_find(tree, node->next);
-+	else
-+		next_node = NULL;
-+
-+	if (IS_ERR(next_node)) {
-+		hfs_bnode_put(node);
-+		hfs_bnode_put(new_node);
-+		return next_node;
-+	}
-+
- 	size = tree->node_size / 2 - node->num_recs * 2 - 14;
- 	old_rec_off = tree->node_size - 4;
- 	num_recs = 1;
-@@ -248,6 +259,8 @@ static struct hfs_bnode *hfs_bnode_split
- 		/* panic? */
- 		hfs_bnode_put(node);
- 		hfs_bnode_put(new_node);
-+		if (next_node)
-+			hfs_bnode_put(next_node);
- 		return ERR_PTR(-ENOSPC);
- 	}
- 
-@@ -302,8 +315,7 @@ static struct hfs_bnode *hfs_bnode_split
- 	hfs_bnode_write(node, &node_desc, 0, sizeof(node_desc));
- 
- 	/* update next bnode header */
--	if (new_node->next) {
--		struct hfs_bnode *next_node = hfs_bnode_find(tree, new_node->next);
-+	if (next_node) {
- 		next_node->prev = new_node->this;
- 		hfs_bnode_read(next_node, &node_desc, 0, sizeof(node_desc));
- 		node_desc.prev = cpu_to_be32(next_node->prev);
-
------ End forwarded message -----
