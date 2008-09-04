@@ -1,759 +1,513 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbYIDUYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYIDUYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757764AbYIDUYR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYIDUX1
+	id S1757902AbYIDUYf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbYIDUXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:23:27 -0400
-Received: from mail.work.de ([212.12.32.20]:34069 "EHLO mail.work.de"
+	Thu, 4 Sep 2008 16:23:41 -0400
+Received: from mail.work.de ([212.12.32.20]:34072 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756962AbYIDUXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:23:24 -0400
-Message-ID: <48C043B5.2000202@gmail.com>
-Date: Fri, 05 Sep 2008 00:23:17 +0400
+	id S1757485AbYIDUXi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:23:38 -0400
+Message-ID: <48C043C4.1000607@gmail.com>
+Date: Fri, 05 Sep 2008 00:23:32 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
        akpm@linux-foundation.org
-Subject: DVB Update [PATCH 3/31] frontend core update
+Subject: DVB Update [PATCH 4/31] frontend backward compatibility
 X-Enigmail-Version: 0.94.0.0
 Content-Type: multipart/mixed;
- boundary="------------010400010202090505030104"
+ boundary="------------050503020404080400050504"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------010400010202090505030104
+--------------050503020404080400050504
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
->From 6a505dda50ecd5eddffdabb79a9a32ccaf9fe29b Mon Sep 17 00:00:00 2001
+>From 398e5176385e8779f7d88eaa2856085248d690fc Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 12:11:15 +0200
-Subject: [PATCH] DVB Frontend API update: Frontend core support
+Date: Thu, 4 Sep 2008 12:16:58 +0200
+Subject: [PATCH] DVB Frontend backward compatibility support
 
-* Add support for the new datastuctures and ioctls,
-for the updated API
+* Add backward compatibility support for older applications
+and drivers to be used by the updated frontend API
 
 From: Manu Abraham <abraham.manu@gmail.com>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
- dvb_frontend.c |  495
-+++++++++++++++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 443 insertions(+), 52 deletions(-)
+
+ dvb_frontend.c |  392
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ dvb_frontend.h |   10 +
+ 2 files changed, 401 insertions(+), 1 deletion(-)
 
 
---------------010400010202090505030104
+--------------050503020404080400050504
 Content-Type: text/x-patch;
- name="3.patch"
+ name="4.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="3.patch"
+ filename="4.patch"
 
->From 6a505dda50ecd5eddffdabb79a9a32ccaf9fe29b Mon Sep 17 00:00:00 2001
+>From 398e5176385e8779f7d88eaa2856085248d690fc Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 12:11:15 +0200
-Subject: [PATCH] DVB Frontend API update: Frontend core support
+Date: Thu, 4 Sep 2008 12:16:58 +0200
+Subject: [PATCH] DVB Frontend backward compatibility support
 
-* Add support for the new datastuctures and ioctls,
-for the updated API
+* Add backward compatibility support for older applications
+and drivers to be used by the updated frontend API
 
 From: Manu Abraham <abraham.manu@gmail.com>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
 diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index 8cbdb21..da7283c 100644
+index da7283c..feebac0 100644
 --- a/drivers/media/dvb/dvb-core/dvb_frontend.c
 +++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -8,6 +8,7 @@
+@@ -8,7 +8,9 @@
   *				      for convergence integrated media GmbH
   *
   * Copyright (C) 2004 Andrew de Quincey (tuning thread cleanup)
-+ * Copyright (C) Manu Abraham (Multi protocol support)
+- * Copyright (C) Manu Abraham (Multi protocol support)
++ *
++ * Multi protocol support and backward compatibility
++ * Copyright (C) Manu Abraham
   *
   * This program is free software; you can redistribute it and/or
   * modify it under the terms of the GNU General Public License
-@@ -95,7 +96,12 @@ struct dvb_frontend_private {
+@@ -188,6 +190,386 @@ void decode_dvbs2_modcod(u32 dvbfe_modcod,
+ }
+ EXPORT_SYMBOL(decode_dvbs2_modcod);
  
- 	/* thread/frontend values */
- 	struct dvb_device *dvbdev;
-+	/* Legacy datatype, superseded by dvbfe_params		*/
- 	struct dvb_frontend_parameters parameters;
-+	/* dvbfe_params supersedes dvb_frontend_parameters	*/
-+	struct dvbfe_params	fe_params;
-+	struct dvbfe_info	fe_info;
-+
- 	struct dvb_fe_events events;
- 	struct semaphore sem;
- 	struct list_head list_head;
-@@ -124,10 +130,64 @@ struct dvb_frontend_private {
- 	unsigned int step_size;
- 	int quality;
- 	unsigned int check_wrapped;
-+
-+	enum dvbfe_search	algo_status;
- };
- 
- static void dvb_frontend_wakeup(struct dvb_frontend *fe);
- 
-+struct modcod_table {
-+	u32 dvbfe_modcod;
-+	u32 dvbfe_modulation;
-+	u32 dvbfe_fec;
-+};
-+
-+static struct modcod_table dvbs2_modcod_lookup[] = {
-+	{ DVBFE_MODCOD_DUMMY_PLFRAME,	DVBFE_MOD_NONE,		DVBFE_FEC_NONE    },
-+	{ DVBFE_MODCOD_QPSK_1_4,	DVBFE_MOD_QPSK,		DVBFE_FEC_1_4	  },
-+	{ DVBFE_MODCOD_QPSK_1_3,	DVBFE_MOD_QPSK,		DVBFE_FEC_1_3	  },
-+	{ DVBFE_MODCOD_QPSK_2_5,	DVBFE_MOD_QPSK,		DVBFE_FEC_2_5	  },
-+	{ DVBFE_MODCOD_QPSK_1_2,	DVBFE_MOD_QPSK,		DVBFE_FEC_1_2	  },
-+	{ DVBFE_MODCOD_QPSK_3_5,	DVBFE_MOD_QPSK,		DVBFE_FEC_3_5	  },
-+	{ DVBFE_MODCOD_QPSK_2_3,	DVBFE_MOD_QPSK,		DVBFE_FEC_2_3	  },
-+	{ DVBFE_MODCOD_QPSK_3_4,	DVBFE_MOD_QPSK,		DVBFE_FEC_3_4	  },
-+	{ DVBFE_MODCOD_QPSK_4_5,	DVBFE_MOD_QPSK,		DVBFE_FEC_4_5	  },
-+	{ DVBFE_MODCOD_QPSK_5_6,	DVBFE_MOD_QPSK,		DVBFE_FEC_5_6	  },
-+	{ DVBFE_MODCOD_QPSK_8_9,	DVBFE_MOD_QPSK,		DVBFE_FEC_8_9	  },
-+	{ DVBFE_MODCOD_QPSK_9_10,	DVBFE_MOD_QPSK,		DVBFE_FEC_9_10	  },
-+	{ DVBFE_MODCOD_8PSK_3_5,	DVBFE_MOD_8PSK,		DVBFE_FEC_3_5	  },
-+	{ DVBFE_MODCOD_8PSK_2_3,	DVBFE_MOD_8PSK,		DVBFE_FEC_2_3	  },
-+	{ DVBFE_MODCOD_8PSK_3_4,	DVBFE_MOD_8PSK,		DVBFE_FEC_3_4	  },
-+	{ DVBFE_MODCOD_8PSK_5_6,	DVBFE_MOD_8PSK,		DVBFE_FEC_5_6	  },
-+	{ DVBFE_MODCOD_8PSK_8_9,	DVBFE_MOD_8PSK,		DVBFE_FEC_8_9	  },
-+	{ DVBFE_MODCOD_8PSK_9_10,	DVBFE_MOD_8PSK,		DVBFE_FEC_9_10	  },
-+	{ DVBFE_MODCOD_16APSK_2_3,	DVBFE_MOD_16APSK,	DVBFE_FEC_2_3	  },
-+	{ DVBFE_MODCOD_16APSK_3_4,	DVBFE_MOD_16APSK,	DVBFE_FEC_3_4	  },
-+	{ DVBFE_MODCOD_16APSK_4_5,	DVBFE_MOD_16APSK,	DVBFE_FEC_4_5	  },
-+	{ DVBFE_MODCOD_16APSK_5_6,	DVBFE_MOD_16APSK,	DVBFE_FEC_5_6	  },
-+	{ DVBFE_MODCOD_16APSK_8_9,	DVBFE_MOD_16APSK,	DVBFE_FEC_8_9	  },
-+	{ DVBFE_MODCOD_16APSK_9_10,	DVBFE_MOD_16APSK,	DVBFE_FEC_9_10	  },
-+	{ DVBFE_MODCOD_32APSK_3_4,	DVBFE_MOD_32APSK,	DVBFE_FEC_3_4	  },
-+	{ DVBFE_MODCOD_32APSK_4_5,	DVBFE_MOD_32APSK,	DVBFE_FEC_4_5	  },
-+	{ DVBFE_MODCOD_32APSK_5_6,	DVBFE_MOD_32APSK,	DVBFE_FEC_5_6	  },
-+	{ DVBFE_MODCOD_32APSK_8_9,	DVBFE_MOD_32APSK,	DVBFE_FEC_8_9	  },
-+	{ DVBFE_MODCOD_32APSK_9_10,	DVBFE_MOD_32APSK,	DVBFE_FEC_9_10	  },
-+	{ DVBFE_MODCOD_RESERVED_1,	DVBFE_MOD_NONE,		DVBFE_FEC_NONE	  },
-+	{ DVBFE_MODCOD_BPSK_1_3,	DVBFE_MOD_BPSK,		DVBFE_FEC_1_3	  },
-+	{ DVBFE_MODCOD_BPSK_1_4,	DVBFE_MOD_BPSK,		DVBFE_FEC_1_4	  },
-+	{ DVBFE_MODCOD_RESERVED_2,	DVBFE_MOD_NONE,		DVBFE_FEC_NONE    }
-+};
-+
-+void decode_dvbs2_modcod(u32 dvbfe_modcod,
-+			 enum dvbfe_modulation *modulation,
-+			 enum dvbfe_fec *fec)
++static int newfec_to_oldfec(enum dvbfe_fec new_fec, enum fe_code_rate *old_fec)
 +{
-+	BUG_ON(dvbfe_modcod >= ARRAY_SIZE(dvbs2_modcod_lookup));
-+	*modulation = dvbs2_modcod_lookup[dvbfe_modcod].dvbfe_modulation;
-+	*fec = dvbs2_modcod_lookup[dvbfe_modcod].dvbfe_fec;
++	switch (new_fec) {
++	case DVBFE_FEC_NONE:
++		*old_fec = FEC_NONE;
++		break;
++	case DVBFE_FEC_1_2:
++		*old_fec = FEC_1_2;
++		break;
++	case DVBFE_FEC_2_3:
++		*old_fec = FEC_2_3;
++		break;
++	case DVBFE_FEC_3_4:
++		*old_fec = FEC_3_4;
++		break;
++	case DVBFE_FEC_4_5:
++		*old_fec = FEC_4_5;
++		break;
++	case DVBFE_FEC_5_6:
++		*old_fec = FEC_5_6;
++		break;
++	case DVBFE_FEC_6_7:
++		*old_fec = FEC_6_7;
++		break;
++	case DVBFE_FEC_7_8:
++		*old_fec = FEC_7_8;
++		break;
++	case DVBFE_FEC_8_9:
++		*old_fec = FEC_8_9;
++		break;
++	case DVBFE_FEC_AUTO:
++		*old_fec = FEC_AUTO;
++		break;
++	default:
++		printk("%s: Unsupported FEC\n", __func__);
++		return -EINVAL;
++	}
++
++	return 0;
 +}
-+EXPORT_SYMBOL(decode_dvbs2_modcod);
++
++static int oldfec_to_newfec(enum fe_code_rate old_fec, enum dvbfe_fec *new_fec)
++{
++	switch (old_fec) {
++	case FEC_NONE:
++		*new_fec = DVBFE_FEC_NONE;
++		break;
++	case FEC_1_2:
++		*new_fec = DVBFE_FEC_1_2;
++		break;
++	case FEC_2_3:
++		*new_fec = DVBFE_FEC_2_3;
++		break;
++	case FEC_3_4:
++		*new_fec = DVBFE_FEC_3_4;
++		break;
++	case FEC_4_5:
++		*new_fec = DVBFE_FEC_4_5;
++		break;
++	case FEC_5_6:
++		*new_fec = DVBFE_FEC_5_6;
++		break;
++	case FEC_6_7:
++		*new_fec = DVBFE_FEC_6_7;
++		break;
++	case FEC_7_8:
++		*new_fec = DVBFE_FEC_7_8;
++		break;
++	case FEC_8_9:
++		*new_fec = DVBFE_FEC_8_9;
++		break;
++	case FEC_AUTO:
++		*new_fec = DVBFE_FEC_AUTO;
++		break;
++	default:
++		printk("%s: Unsupported FEC\n", __func__);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int newmod_to_oldmod(enum dvbfe_modulation new_mod, enum fe_modulation *old_mod)
++{
++	switch (new_mod) {
++	case DVBFE_MOD_QPSK:
++		*old_mod = QPSK;
++		break;
++	case DVBFE_MOD_QAM16:
++		*old_mod = QAM_16;
++		break;
++	case DVBFE_MOD_QAM32:
++		*old_mod = QAM_32;
++		break;
++	case DVBFE_MOD_QAM64:
++		*old_mod = QAM_64;
++		break;
++	case DVBFE_MOD_QAM128:
++		*old_mod = QAM_128;
++		break;
++	case DVBFE_MOD_QAM256:
++		*old_mod = QAM_256;
++		break;
++	case DVBFE_MOD_QAMAUTO:
++		*old_mod = QAM_AUTO;
++		break;
++	case DVBFE_MOD_VSB8:
++		*old_mod = VSB_8;
++		break;
++	case DVBFE_MOD_VSB16:
++		*old_mod = VSB_16;
++		break;
++	default:
++		printk("%s: Unsupported Modulation\n", __func__);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int oldmod_to_newmod(enum fe_modulation old_mod, enum dvbfe_modulation *new_mod)
++{
++	switch (old_mod) {
++	case QPSK:
++		*new_mod = DVBFE_MOD_QPSK;
++		break;
++	case QAM_16:
++		*new_mod = DVBFE_MOD_QAM16;
++		break;
++	case QAM_32:
++		*new_mod = DVBFE_MOD_QAM32;
++		break;
++	case QAM_64:
++		*new_mod = DVBFE_MOD_QAM64;
++		break;
++	case QAM_128:
++		*new_mod = DVBFE_MOD_QAM128;
++		break;
++	case QAM_256:
++		*new_mod = DVBFE_MOD_QAM256;
++		break;
++	case QAM_AUTO:
++		*new_mod = DVBFE_MOD_AUTO;
++		break;
++	case VSB_8:
++		*new_mod = DVBFE_MOD_VSB8;
++		break;
++	case VSB_16:
++		*new_mod = DVBFE_MOD_VSB16;
++		break;
++	default:
++		printk("%s: Unsupported Modulation\n", __func__);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++int newapi_to_olddrv(struct dvbfe_params *params,
++		     struct dvb_frontend_parameters *p,
++		     enum dvbfe_delsys delsys)
++{
++	struct dvb_qpsk_parameters	*qpsk	= &p->u.qpsk;
++	struct dvb_qam_parameters	*qam	= &p->u.qam;
++	struct dvb_ofdm_parameters	*ofdm	= &p->u.ofdm;
++	struct dvb_vsb_parameters	*vsb	= &p->u.vsb;
++
++	struct dvbs_params		*dvbs	= &params->delsys.dvbs;
++	struct dvbc_params		*dvbc	= &params->delsys.dvbc;
++	struct dvbt_params		*dvbt	= &params->delsys.dvbt;
++	struct atsc_params		*atsc	= &params->delsys.atsc;
++
++	p->frequency = params->frequency;
++	p->inversion = params->inversion;
++
++	switch (delsys) {
++	case DVBFE_DELSYS_DVBS:
++		qpsk->symbol_rate		= dvbs->symbol_rate;
++		newfec_to_oldfec(dvbs->fec, &qpsk->fec_inner);
++		break;
++	case DVBFE_DELSYS_DVBC:
++		qam->symbol_rate		= dvbc->symbol_rate;
++		newmod_to_oldmod(dvbc->modulation, &qam->modulation);
++		newfec_to_oldfec(dvbc->fec, &qam->fec_inner);
++		break;
++	case DVBFE_DELSYS_DVBT:
++		switch (dvbt->bandwidth) {
++		case DVBFE_BANDWIDTH_8_MHZ:
++			ofdm->bandwidth		= BANDWIDTH_8_MHZ;
++			break;
++		case DVBFE_BANDWIDTH_7_MHZ:
++			ofdm->bandwidth		= BANDWIDTH_7_MHZ;
++			break;
++		case DVBFE_BANDWIDTH_6_MHZ:
++			ofdm->bandwidth		= BANDWIDTH_6_MHZ;
++			break;
++		case DVBFE_BANDWIDTH_AUTO:
++			ofdm->bandwidth		= BANDWIDTH_AUTO;
++			break;
++		default:
++			dprintk("%s: Unsupported bandwidth\n", __func__);
++			return -EINVAL;
++		}
++		newfec_to_oldfec(dvbt->code_rate_HP, &ofdm->code_rate_HP);
++		newfec_to_oldfec(dvbt->code_rate_LP, &ofdm->code_rate_LP);
++		newmod_to_oldmod(dvbt->constellation, &ofdm->constellation);
++		switch (dvbt->transmission_mode) {
++		case DVBFE_TRANSMISSION_MODE_2K:
++			ofdm->transmission_mode = TRANSMISSION_MODE_2K;
++			break;
++		case DVBFE_TRANSMISSION_MODE_8K:
++			ofdm->transmission_mode = TRANSMISSION_MODE_8K;
++			break;
++		case DVBFE_TRANSMISSION_MODE_AUTO:
++			ofdm->transmission_mode = TRANSMISSION_MODE_AUTO;
++			break;
++		default:
++			dprintk("%s: Unsupported transmission mode\n", __func__);
++			return -EINVAL;
++		}
++		switch (dvbt->guard_interval) {
++		case DVBFE_GUARD_INTERVAL_1_32:
++			ofdm->guard_interval	= GUARD_INTERVAL_1_32;
++			break;
++		case DVBFE_GUARD_INTERVAL_1_16:
++			ofdm->guard_interval	= GUARD_INTERVAL_1_16;
++			break;
++		case DVBFE_GUARD_INTERVAL_1_8:
++			ofdm->guard_interval	= GUARD_INTERVAL_1_8;
++			break;
++		case DVBFE_GUARD_INTERVAL_1_4:
++			ofdm->guard_interval	= GUARD_INTERVAL_1_4;
++			break;
++		case DVBFE_GUARD_INTERVAL_AUTO:
++			ofdm->guard_interval	= GUARD_INTERVAL_AUTO;
++			break;
++		}
++		switch (dvbt->hierarchy) {
++		case DVBFE_HIERARCHY_OFF:
++			ofdm->hierarchy_information		= HIERARCHY_NONE;
++			break;
++		case DVBFE_HIERARCHY_AUTO:
++			ofdm->hierarchy_information		= HIERARCHY_AUTO;
++			break;
++		case DVBFE_HIERARCHY_ON:
++			switch (dvbt->alpha) {
++			case DVBFE_ALPHA_1:
++				ofdm->hierarchy_information	= HIERARCHY_1;
++				break;
++			case DVBFE_ALPHA_2:
++				ofdm->hierarchy_information	= HIERARCHY_2;
++				break;
++			case DVBFE_ALPHA_4:
++				ofdm->hierarchy_information	= HIERARCHY_4;
++				break;
++			}
++			break;
++		}
++	case DVBFE_DELSYS_ATSC:
++		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
++		break;
++	case DVBFE_DELSYS_DVBS2:
++	case DVBFE_DELSYS_DSS:
++	case DVBFE_DELSYS_DVBH:
++		printk("%s: SORRY ! Backward compatibility unavailable for these delivery systems !!\n", __func__);
++		break;
++	default:
++		dprintk("%s: Unsupported delivery system\n", __func__);
++		return -EINVAL;
++		break;
++	}
++	return 0;
++}
++
++int olddrv_to_newapi(struct dvb_frontend *fe,
++		     struct dvbfe_params *params,
++		     struct dvb_frontend_parameters *p,
++		     enum fe_type fe_type)
++{
++	struct dvb_qpsk_parameters	*qpsk	= &p->u.qpsk;
++	struct dvb_qam_parameters	*qam	= &p->u.qam;
++	struct dvb_ofdm_parameters	*ofdm	= &p->u.ofdm;
++	struct dvb_vsb_parameters	*vsb	= &p->u.vsb;
++
++	struct dvbs_params		*dvbs	= &params->delsys.dvbs;
++	struct dvbc_params		*dvbc	= &params->delsys.dvbc;
++	struct dvbt_params		*dvbt	= &params->delsys.dvbt;
++	struct atsc_params		*atsc	= &params->delsys.atsc;
++
++	params->frequency = p->frequency;
++	params->inversion = p->inversion;
++
++	switch (fe_type) {
++	case FE_QPSK:
++		dvbs->symbol_rate		= qpsk->symbol_rate;
++		oldfec_to_newfec(qpsk->fec_inner, &dvbs->fec);
++		break;
++	case FE_QAM:
++		dvbc->symbol_rate		= qam->symbol_rate;
++		oldmod_to_newmod(qam->modulation, &dvbc->modulation);
++		oldfec_to_newfec(qam->fec_inner, &dvbc->fec);
++		break;
++	case FE_OFDM:
++		switch (ofdm->bandwidth) {
++		case BANDWIDTH_8_MHZ:
++			dvbt->bandwidth		= DVBFE_BANDWIDTH_8_MHZ;
++			break;
++		case BANDWIDTH_7_MHZ:
++			dvbt->bandwidth		= DVBFE_BANDWIDTH_7_MHZ;
++			break;
++		case BANDWIDTH_6_MHZ:
++			dvbt->bandwidth		= DVBFE_BANDWIDTH_6_MHZ;
++			break;
++		case BANDWIDTH_AUTO:
++			dvbt->bandwidth		= DVBFE_BANDWIDTH_AUTO;
++			break;
++		}
++		oldfec_to_newfec(ofdm->code_rate_HP, &dvbt->code_rate_HP);
++		oldfec_to_newfec(ofdm->code_rate_LP, &dvbt->code_rate_LP);
++		oldmod_to_newmod(ofdm->constellation, &dvbt->constellation);
++		switch (ofdm->transmission_mode) {
++		case TRANSMISSION_MODE_2K:
++			dvbt->transmission_mode	= DVBFE_TRANSMISSION_MODE_2K;
++			break;
++		case TRANSMISSION_MODE_8K:
++			dvbt->transmission_mode = DVBFE_TRANSMISSION_MODE_8K;
++			break;
++		case TRANSMISSION_MODE_AUTO:
++			dvbt->transmission_mode	= DVBFE_TRANSMISSION_MODE_AUTO;
++			break;
++		}
++		switch (ofdm->guard_interval) {
++		case GUARD_INTERVAL_1_32:
++			dvbt->guard_interval	= DVBFE_GUARD_INTERVAL_1_32;
++			break;
++		case GUARD_INTERVAL_1_16:
++			dvbt->guard_interval	= DVBFE_GUARD_INTERVAL_1_16;
++			break;
++		case GUARD_INTERVAL_1_8:
++			dvbt->guard_interval	= DVBFE_GUARD_INTERVAL_1_8;
++			break;
++		case GUARD_INTERVAL_1_4:
++			dvbt->guard_interval	= DVBFE_GUARD_INTERVAL_1_4;
++			break;
++		case GUARD_INTERVAL_AUTO:
++			dvbt->guard_interval	= DVBFE_GUARD_INTERVAL_AUTO;
++			break;
++		}
++		switch (ofdm->hierarchy_information) {
++		case HIERARCHY_NONE:
++			dvbt->hierarchy		= DVBFE_HIERARCHY_OFF;
++			break;
++		case HIERARCHY_AUTO:
++			dvbt->hierarchy		= DVBFE_HIERARCHY_AUTO;
++			break;
++		case HIERARCHY_1:
++			dvbt->hierarchy		= DVBFE_HIERARCHY_ON;
++			dvbt->alpha		= DVBFE_ALPHA_1;
++			break;
++		case HIERARCHY_2:
++			dvbt->hierarchy		= DVBFE_HIERARCHY_ON;
++			dvbt->alpha		= DVBFE_ALPHA_2;
++			break;
++		case HIERARCHY_4:
++			dvbt->hierarchy		= DVBFE_HIERARCHY_ON;
++			dvbt->alpha		= DVBFE_ALPHA_4;
++			break;
++		}
++		break;
++	case FE_ATSC:
++		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
++		break;
++	default:
++		dprintk("%s: Unsupported delivery system\n", __func__);
++		return -EINVAL;
++		break;
++	}
++	return 0;
++}
 +
  static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
  {
  	struct dvb_frontend_private *fepriv = fe->frontend_priv;
-@@ -149,12 +209,21 @@ static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
+@@ -1323,6 +1705,9 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 		memset(&fetunesettings, 0, sizeof (struct dvb_frontend_tune_settings));
+ 		memcpy(&fetunesettings.fe_params, parg, sizeof (struct dvbfe_params));
  
- 	e = &events->events[events->eventw];
- 
--	memcpy (&e->parameters, &fepriv->parameters,
--		sizeof (struct dvb_frontend_parameters));
-+	if (fe->legacy)
-+		memcpy(&e->parameters, &fepriv->parameters, sizeof (struct dvb_frontend_parameters));
-+	else
-+		memcpy(&e->fe_params, &fepriv->fe_params, sizeof (struct dvbfe_params));
- 
--	if (status & FE_HAS_LOCK)
--		if (fe->ops.get_frontend)
--			fe->ops.get_frontend(fe, &e->parameters);
-+	if (fe->legacy) {
-+		/* Legacy	*/
-+		if (status & FE_HAS_LOCK)
-+			if (fe->ops.get_frontend)
-+				fe->ops.get_frontend(fe, &e->parameters);
-+	} else {
-+		if (status & FE_HAS_LOCK)
-+			if (fe->ops.get_params)
-+				fe->ops.get_params(fe, &e->fe_params);
-+	}
- 
- 	events->eventw = wp;
- 
-@@ -165,6 +234,73 @@ static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
- 	wake_up_interruptible (&events->wait_queue);
- }
- 
-+static int dvbfe_sanity_check(struct dvb_frontend *fe)
-+{
-+	struct dvb_frontend_private *fepriv = fe->frontend_priv;
++		if (newapi_to_olddrv(&fepriv->fe_params, &fepriv->parameters, fepriv->fe_info.delivery)  == -EINVAL)
++			printk("%s: ERROR !!! Converting New parameters --> Old parameters\n", __func__);
 +
-+	/* Sanity checks	*/
-+	if ((fepriv->fe_params.frequency < fepriv->fe_info.frequency_min) ||
-+	    (fepriv->fe_params.frequency > fepriv->fe_info.frequency_max))
-+		return -EINVAL;
-+
-+	switch (fepriv->fe_params.delivery) {
-+	case DVBFE_DELSYS_DVBS:
-+		if (!(fepriv->fe_params.delsys.dvbs.modulation &
-+		      fepriv->fe_info.delsys.dvbs.modulation))
-+			return -EINVAL;
-+		if (!(fepriv->fe_params.delsys.dvbs.fec &
-+		      fepriv->fe_info.delsys.dvbs.fec))
-+			return -EINVAL;
-+		break;
-+	case DVBFE_DELSYS_DVBS2:
-+		if (!(fepriv->fe_params.delsys.dvbs2.modulation &
-+		      fepriv->fe_info.delsys.dvbs2.modulation))
-+			return -EINVAL;
-+		if (!(fepriv->fe_params.delsys.dvbs2.fec &
-+		      fepriv->fe_info.delsys.dvbs2.fec))
-+			return -EINVAL;
-+		break;
-+	case DVBFE_DELSYS_DSS:
-+		if (!(fepriv->fe_params.delsys.dss.modulation &
-+		      fepriv->fe_info.delsys.dss.modulation))
-+			return -EINVAL;
-+		if (!(fepriv->fe_params.delsys.dss.fec &
-+		      fepriv->fe_info.delsys.dss.fec))
-+			return -EINVAL;
-+		break;
-+	case DVBFE_DELSYS_DVBC:
-+		if (!(fepriv->fe_params.delsys.dvbc.modulation &
-+		      fepriv->fe_info.delsys.dvbc.modulation))
-+			return -EINVAL;
-+		break;
-+	case DVBFE_DELSYS_DVBT:
-+		if (!(fepriv->fe_params.delsys.dvbt.constellation &
-+		      fepriv->fe_info.delsys.dvbt.modulation))
-+		      return -EINVAL;
-+		if (!(fepriv->fe_params.delsys.dvbt.priority &
-+		      fepriv->fe_info.delsys.dvbt.stream_priority))
-+		      return -EINVAL;
-+		break;
-+	case DVBFE_DELSYS_DVBH:
-+		if (!(fepriv->fe_params.delsys.dvbh.constellation &
-+		      fepriv->fe_info.delsys.dvbh.modulation))
-+		      return -EINVAL;
-+		if (!(fepriv->fe_params.delsys.dvbh.priority &
-+		      fepriv->fe_info.delsys.dvbh.stream_priority))
-+		      return -EINVAL;
-+		break;
-+	case DVBFE_DELSYS_ATSC:
-+		if (!(fepriv->fe_params.delsys.atsc.modulation &
-+		      fepriv->fe_info.delsys.atsc.modulation))
-+			return -EINVAL;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static int dvb_frontend_get_event(struct dvb_frontend *fe,
- 			    struct dvb_frontend_event *event, int flags)
- {
-@@ -261,13 +397,29 @@ static int dvb_frontend_swzigzag_autotune(struct dvb_frontend *fe, int check_wra
- {
- 	int autoinversion;
- 	int ready = 0;
-+	int original_inversion;
-+	u32 original_frequency;
-+
- 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
--	int original_inversion = fepriv->parameters.inversion;
--	u32 original_frequency = fepriv->parameters.frequency;
+ 		/* Request the search algorithm to search	*/
+ 		fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
  
--	/* are we using autoinversion? */
--	autoinversion = ((!(fe->ops.info.caps & FE_CAN_INVERSION_AUTO)) &&
--			 (fepriv->parameters.inversion == INVERSION_AUTO));
-+	if (fe->legacy) {
-+		/* Legacy	*/
-+		original_inversion = fepriv->parameters.inversion;
-+		original_frequency = fepriv->parameters.frequency;
-+		/* are we using autoinversion ?	*/
-+		/* Legacy	*/
-+		autoinversion = ((!(fe->ops.info.caps & FE_CAN_INVERSION_AUTO)) &&
-+				 (fepriv->parameters.inversion == INVERSION_AUTO));
-+	} else {
-+		/* Superseding	*/
-+		original_inversion = fepriv->fe_params.inversion;
-+		original_frequency = fepriv->fe_params.frequency;
-+		if (fe->ops.get_info) {
-+			fe->ops.get_info(fe, &fepriv->fe_info);
-+		}
-+		autoinversion = ((!(fepriv->fe_info.inversion & INVERSION_AUTO)) &&
-+				 (fepriv->fe_params.inversion == INVERSION_AUTO));
-+	}
- 
- 	/* setup parameters correctly */
- 	while(!ready) {
-@@ -330,17 +482,46 @@ static int dvb_frontend_swzigzag_autotune(struct dvb_frontend *fe, int check_wra
- 	dprintk("%s: drift:%i inversion:%i auto_step:%i "
- 		"auto_sub_step:%i started_auto_step:%i\n",
- 		__func__, fepriv->lnb_drift, fepriv->inversion,
--		fepriv->auto_step, fepriv->auto_sub_step, fepriv->started_auto_step);
-+		fepriv->auto_step, fepriv->auto_sub_step,
-+		fepriv->started_auto_step);
- 
--	/* set the frontend itself */
--	fepriv->parameters.frequency += fepriv->lnb_drift;
--	if (autoinversion)
--		fepriv->parameters.inversion = fepriv->inversion;
--	if (fe->ops.set_frontend)
--		fe->ops.set_frontend(fe, &fepriv->parameters);
-+	/* set the frontend itself	*/
-+	/* Legacy	*/
-+	if (fe->legacy)
-+		fepriv->parameters.frequency += fepriv->lnb_drift;
-+	else
-+		/* Supeseding	*/
-+		fepriv->fe_params.frequency += fepriv->lnb_drift;
- 
--	fepriv->parameters.frequency = original_frequency;
--	fepriv->parameters.inversion = original_inversion;
-+	if (autoinversion) {
-+		/* Legacy	*/
-+		if (fe->legacy)
-+			fepriv->parameters.inversion = fepriv->inversion;
-+		else
-+			/* Superseding	*/
-+			fepriv->fe_params.inversion = fepriv->inversion;
-+	}
-+	/* Legacy	*/
-+	if (fe->legacy) {
-+		if (fe->ops.set_frontend)
-+			fe->ops.set_frontend(fe, &fepriv->parameters);
-+	} else {
-+//		if ((dvbfe_sanity_check(fe) == 0)) {
-+			/* Superseding	*/
-+			if (fe->ops.set_params)
-+				fe->ops.set_params(fe, &fepriv->fe_params);
-+//		} else
-+//			return -EINVAL;
-+	}
-+	/* Legacy	*/
-+	if (fe->legacy) {
-+		fepriv->parameters.frequency = original_frequency;
-+		fepriv->parameters.inversion = original_inversion;
-+	} else {
-+		/* Superseding	*/
-+		fepriv->fe_params.frequency = original_frequency;
-+		fepriv->fe_params.inversion = original_inversion;
-+	}
- 
- 	fepriv->auto_sub_step++;
- 	return 0;
-@@ -355,19 +536,30 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 	if (fepriv->state & FESTATE_IDLE) {
- 		fepriv->delay = 3*HZ;
- 		fepriv->quality = 0;
--		return;
-+		return 0;
- 	}
- 
- 	/* in SCAN mode, we just set the frontend when asked and leave it alone */
- 	if (fepriv->tune_mode_flags & FE_TUNE_MODE_ONESHOT) {
- 		if (fepriv->state & FESTATE_RETUNE) {
--			if (fe->ops.set_frontend)
--				fe->ops.set_frontend(fe, &fepriv->parameters);
-+
-+			if (fe->legacy) {
-+				/* Legacy	*/
-+				if (fe->ops.set_frontend)
-+					fe->ops.set_frontend(fe, &fepriv->parameters);
-+			} else {
-+				if (dvbfe_sanity_check(fe) == 0) {
-+					/* Superseding	*/
-+					if (fe->ops.set_params)
-+						fe->ops.set_params(fe, &fepriv->fe_params);
-+				} else
-+					return -EINVAL;
-+			}
- 			fepriv->state = FESTATE_TUNED;
+@@ -1399,6 +1784,11 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 		if (fe->ops.get_params) {
+ 			memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
+ 			err = fe->ops.get_params(fe, (struct dvbfe_params *) parg);
++		} else if (fe->ops.get_frontend) {
++			memcpy (parg, &fepriv->parameters, sizeof (struct dvb_frontend_parameters));
++			err = fe->ops.get_frontend(fe, (struct dvb_frontend_parameters*) parg);
++			if (olddrv_to_newapi(fe, &fepriv->fe_params, &fepriv->parameters, fe->ops.info.type) == -EINVAL)
++				printk("%s: ERROR !!! Converting Old parameters --> New parameters\n", __func__);
  		}
- 		fepriv->delay = 3*HZ;
- 		fepriv->quality = 0;
--		return;
-+		return 0;
- 	}
- 
- 	/* get the frontend status */
-@@ -388,11 +580,22 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 		fepriv->state = FESTATE_TUNED;
- 
- 		/* if we're tuned, then we have determined the correct inversion */
--		if ((!(fe->ops.info.caps & FE_CAN_INVERSION_AUTO)) &&
--		    (fepriv->parameters.inversion == INVERSION_AUTO)) {
--			fepriv->parameters.inversion = fepriv->inversion;
-+		/* Legacy	*/
-+		if (fe->legacy) {
-+			if ((!(fe->ops.info.caps & FE_CAN_INVERSION_AUTO)) &&
-+			    (fepriv->parameters.inversion == INVERSION_AUTO)) {
-+				fepriv->parameters.inversion = fepriv->inversion;
-+			}
-+		} else {
-+			/* Superseding	*/
-+			if (fe->ops.get_info) {
-+				fe->ops.get_info(fe, &fepriv->fe_info);
-+				if ((!(fepriv->fe_info.inversion & INVERSION_AUTO)) &&
-+				    (fepriv->fe_params.inversion == INVERSION_AUTO))
-+					fepriv->fe_params.inversion = fepriv->inversion;
-+			}
- 		}
--		return;
-+		return 0;
- 	}
- 
- 	/* if we are tuned already, check we're still locked */
-@@ -401,7 +604,7 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 
- 		/* we're tuned, and the lock is still good... */
- 		if (s & FE_HAS_LOCK) {
--			return;
-+			return 0;
- 		} else { /* if we _WERE_ tuned, but now don't have a lock */
- 			fepriv->state = FESTATE_ZIGZAG_FAST;
- 			fepriv->started_auto_step = fepriv->auto_step;
-@@ -410,24 +613,43 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 	}
- 
- 	/* don't actually do anything if we're in the LOSTLOCK state,
--	 * the frontend is set to FE_CAN_RECOVER, and the max_drift is 0 */
--	if ((fepriv->state & FESTATE_LOSTLOCK) &&
--	    (fe->ops.info.caps & FE_CAN_RECOVER) && (fepriv->max_drift == 0)) {
--		dvb_frontend_swzigzag_update_delay(fepriv, s & FE_HAS_LOCK);
--		return;
-+	 * the frontend is set to FE_CAN_RECOVER, and the max_drift is 0
-+	 */
-+	/* Legacy	*/
-+	if (fe->legacy) {
-+		if ((fepriv->state & FESTATE_LOSTLOCK) && (fepriv->max_drift == 0)) {
-+			if (fe->ops.get_frontend_algo)
-+				if (fe->ops.get_frontend_algo(fe) == DVBFE_ALGO_RECOVERY)
-+					dvb_frontend_swzigzag_update_delay(fepriv, s & FE_HAS_LOCK);
-+
-+			return 0;
-+		}
-+	} else {
-+		if (fepriv->state & FESTATE_LOSTLOCK) {
-+			if (fe->ops.get_frontend_algo) {
-+				if ((fe->ops.get_frontend_algo(fe) == DVBFE_ALGO_RECOVERY) &&
-+				    (fepriv->max_drift == 0)) {
-+
-+					dvb_frontend_swzigzag_update_delay(fepriv, s & DVBFE_HAS_LOCK);
-+					return 0;
-+				}
-+			}
-+		}
- 	}
- 
- 	/* don't do anything if we're in the DISEQC state, since this
- 	 * might be someone with a motorized dish controlled by DISEQC.
--	 * If its actually a re-tune, there will be a SET_FRONTEND soon enough.	*/
-+	 * If its actually a re-tune, there will be a SET_FRONTEND soon enough.
-+	 */
- 	if (fepriv->state & FESTATE_DISEQC) {
- 		dvb_frontend_swzigzag_update_delay(fepriv, s & FE_HAS_LOCK);
--		return;
-+		return 0;
- 	}
- 
- 	/* if we're in the RETUNE state, set everything up for a brand
- 	 * new scan, keeping the current inversion setting, as the next
--	 * tune is _very_ likely to require the same */
-+	 * tune is _very_ likely to require the same
-+	 */
- 	if (fepriv->state & FESTATE_RETUNE) {
- 		fepriv->lnb_drift = 0;
- 		fepriv->auto_step = 0;
-@@ -443,17 +665,19 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 		/* peform a tune */
- 		if (dvb_frontend_swzigzag_autotune(fe, fepriv->check_wrapped)) {
- 			/* OK, if we've run out of trials at the fast speed.
--			 * Drop back to slow for the _next_ attempt */
-+			 * Drop back to slow for the _next_ attempt
-+			 */
- 			fepriv->state = FESTATE_SEARCHING_SLOW;
- 			fepriv->started_auto_step = fepriv->auto_step;
--			return;
-+			return 0;
- 		}
- 		fepriv->check_wrapped = 1;
- 
- 		/* if we've just retuned, enter the ZIGZAG_FAST state.
- 		 * This ensures we cannot return from an
- 		 * FE_SET_FRONTEND ioctl before the first frontend tune
--		 * occurs */
-+		 * occurs
-+		 */
- 		if (fepriv->state & FESTATE_RETUNE) {
- 			fepriv->state = FESTATE_TUNING_FAST;
- 		}
-@@ -464,9 +688,12 @@ static void dvb_frontend_swzigzag(struct dvb_frontend *fe)
- 		dvb_frontend_swzigzag_update_delay(fepriv, s & FE_HAS_LOCK);
- 
- 		/* Note: don't bother checking for wrapping; we stay in this
--		 * state until we get a lock */
-+		 * state until we get a lock
-+		 */
- 		dvb_frontend_swzigzag_autotune(fe, 0);
- 	}
-+
-+	return 0;
- }
- 
- static int dvb_frontend_is_exiting(struct dvb_frontend *fe)
-@@ -509,7 +736,13 @@ static int dvb_frontend_thread(void *data)
- 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
- 	unsigned long timeout;
- 	fe_status_t s;
-+
-+	enum dvbfe_algo algo;
-+
-+	/* Legacy datatype	*/
- 	struct dvb_frontend_parameters *params;
-+	/* Superseding datatype	*/
-+	struct dvbfe_params *fe_params = &fepriv->fe_params;
- 
- 	dprintk("%s\n", __func__);
- 
-@@ -555,23 +788,78 @@ restart:
- 
- 		/* do an iteration of the tuning loop */
- 		if (fe->ops.get_frontend_algo) {
--			if (fe->ops.get_frontend_algo(fe) == FE_ALGO_HW) {
--				/* have we been asked to retune? */
--				params = NULL;
-+			algo = fe->ops.get_frontend_algo(fe);
-+			switch (algo) {
-+			case DVBFE_ALGO_HW:
-+				dprintk("%s: Frontend ALGO = DVBFE_ALGO_HW\n", __func__);
-+				params = NULL; /* have we been asked to RETUNE ?	*/
-+
- 				if (fepriv->state & FESTATE_RETUNE) {
-+					dprintk("%s: Retune requested, FESTAT_RETUNE\n", __func__);
- 					params = &fepriv->parameters;
- 					fepriv->state = FESTATE_TUNED;
- 				}
--
--				fe->ops.tune(fe, params, fepriv->tune_mode_flags, &fepriv->delay, &s);
-+				if (fe->ops.tune) {
-+					fe->ops.tune(fe, params, fepriv->tune_mode_flags, &fepriv->delay, &s);
-+					dprintk("%s: TUNE callback exists at 0x%p\n", __func__, fe->ops.tune);
-+				}
- 				if (s != fepriv->status) {
-+					dprintk("%s: state changed, adding current state\n", __func__);
- 					dvb_frontend_add_event(fe, s);
- 					fepriv->status = s;
- 				}
--			} else
-+				break;
-+			case DVBFE_ALGO_SW:
-+				dprintk("%s: Frontend ALGO = DVBFE_ALGO_SW\n", __func__);
- 				dvb_frontend_swzigzag(fe);
--		} else
-+				break;
-+			case DVBFE_ALGO_CUSTOM:
-+				params = NULL; /* have we been asked to RETUNE ?	*/
-+				dprintk("%s: Frontend ALGO = DVBFE_ALGO_CUSTOM, state=%d\n", __func__, fepriv->state);
-+				if (fepriv->state & FESTATE_RETUNE) {
-+					dprintk("%s: Retune requested, FESTAT_RETUNE\n", __func__);
-+					fe_params = &fepriv->fe_params;
-+					fepriv->state = FESTATE_TUNED;
-+				}
-+				/* Case where we are going to search for a carrier
-+				 *
-+				 * User asked us to retune again for some reason, possibly
-+				 * requesting a search with a new set of parameters
-+				 */
-+				if (fepriv->algo_status & DVBFE_ALGO_SEARCH_AGAIN) {
-+					if (fe->ops.search) {
-+						fepriv->algo_status = fe->ops.search(fe, fe_params);
-+						dprintk("%s: SEARCH callback exists at 0x%p\n", __func__, fe->ops.search);
-+						/* We did do a search as was requested, the flags are
-+						 * now unset as well and has the flags wrt to search.
-+						 */
-+					}
-+					fepriv->algo_status &= ~DVBFE_ALGO_SEARCH_AGAIN;
-+				}
-+				/* Track the carrier if the search was successful	*/
-+				if (fepriv->algo_status == DVBFE_ALGO_SEARCH_SUCCESS) {
-+					if (fepriv->algo_status & DVBFE_ALGO_SEARCH_SUCCESS)
-+						dprintk("%s: status = DVBFE_ALGO_SEARCH_SUCCESS\n", __func__);
-+					if (fepriv->algo_status & DVBFE_ALGO_SEARCH_FAILED)
-+						fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
-+
-+					fe->ops.read_status(fe, &s);
-+					dvb_frontend_add_event(fe, s); /* update event list	*/
-+					fepriv->status = s;
-+					if (fe->ops.track) {
-+						dprintk("%s: TRACK callback exists at 0x%p\n", __func__, fe->ops.track);
-+						fe->ops.track(fe, fe_params);
-+					}
-+				}
-+				break;
-+			default:
-+				dprintk("%s: UNDEFINED ALGO !\n", __func__);
-+				break;
-+			}
-+
-+		} else {
- 			dvb_frontend_swzigzag(fe);
-+		}
- 	}
- 
- 	if (dvb_powerdown_on_sleep) {
-@@ -589,6 +877,7 @@ restart:
- 	fepriv->thread = NULL;
- 	mb();
- 
-+	dprintk("%s: frontend_wakeup\n", __func__);
- 	dvb_frontend_wakeup(fe);
- 	return 0;
- }
-@@ -762,6 +1051,7 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
- 	struct dvb_frontend *fe = dvbdev->priv;
- 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
- 	int err = -EOPNOTSUPP;
-+	enum dvbfe_delsys delsys = 0;
- 
- 	dprintk ("%s\n", __func__);
- 
-@@ -947,12 +1237,10 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
- 			break;
- 		}
- 
--		memcpy (&fepriv->parameters, parg,
--			sizeof (struct dvb_frontend_parameters));
--
-+		fe->legacy = 1;
-+		memcpy(&fepriv->parameters, parg, sizeof (struct dvb_frontend_parameters));
- 		memset(&fetunesettings, 0, sizeof(struct dvb_frontend_tune_settings));
--		memcpy(&fetunesettings.parameters, parg,
--		       sizeof (struct dvb_frontend_parameters));
-+		memcpy(&fetunesettings.parameters, parg, sizeof (struct dvb_frontend_parameters));
- 
- 		/* force auto frequency inversion if requested */
- 		if (dvb_force_auto_inversion) {
-@@ -1015,6 +1303,7 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
  		break;
+ 	case DVBFE_GET_DELSYS:
+diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.h b/drivers/media/dvb/dvb-core/dvb_frontend.h
+index 0621287..84eb7d9 100644
+--- a/drivers/media/dvb/dvb-core/dvb_frontend.h
++++ b/drivers/media/dvb/dvb-core/dvb_frontend.h
+@@ -345,4 +345,14 @@ extern void decode_dvbs2_modcod(u32 modcod,
+ 				enum dvbfe_modulation *modulation,
+ 				enum dvbfe_fec *fec);
  
- 	case FE_GET_FRONTEND:
-+		fe->legacy = 1;
- 		if (fe->ops.get_frontend) {
- 			memcpy (parg, &fepriv->parameters, sizeof (struct dvb_frontend_parameters));
- 			err = fe->ops.get_frontend(fe, (struct dvb_frontend_parameters*) parg);
-@@ -1025,6 +1314,108 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
- 		fepriv->tune_mode_flags = (unsigned long) parg;
- 		err = 0;
- 		break;
 +
-+	case DVBFE_SET_PARAMS: {
-+		struct dvb_frontend_tune_settings fetunesettings;
++extern int newapi_to_olddrv(struct dvbfe_params *params,
++			    struct dvb_frontend_parameters *p,
++			    enum dvbfe_delsys delsys);
 +
-+		fe->legacy = 0;
-+		memcpy(&fepriv->fe_params, parg, sizeof (struct dvbfe_params));
-+		memset(&fetunesettings, 0, sizeof (struct dvb_frontend_tune_settings));
-+		memcpy(&fetunesettings.fe_params, parg, sizeof (struct dvbfe_params));
++extern int olddrv_to_newapi(struct dvb_frontend *fe,
++			    struct dvbfe_params *params,
++			    struct dvb_frontend_parameters *p,
++			    enum fe_type fe_type);
 +
-+		/* Request the search algorithm to search	*/
-+		fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
-+
-+		/* force auto frequency inversion if requested */
-+		if (dvb_force_auto_inversion) {
-+			fepriv->fe_params.inversion = DVBFE_INVERSION_AUTO;
-+			fetunesettings.fe_params.inversion = DVBFE_INVERSION_AUTO;
-+		}
-+		if (fe->ops.get_delsys) {
-+			fe->ops.get_delsys(fe, &delsys);
-+			if ((delsys == DVBFE_DELSYS_DVBT) ||
-+			    (delsys == DVBFE_DELSYS_DVBH)) {
-+
-+				/* without hierachical coding code_rate_LP is irrelevant,
-+				 * so we tolerate the otherwise invalid FEC_NONE setting */
-+				if (fepriv->fe_params.delsys.dvbt.hierarchy == DVBFE_HIERARCHY_OFF &&
-+				    fepriv->fe_params.delsys.dvbt.code_rate_LP == DVBFE_FEC_NONE)
-+
-+					fepriv->fe_params.delsys.dvbt.code_rate_LP = DVBFE_FEC_AUTO;
-+			}
-+		}
-+
-+		/* get frontend-specific tuning settings */
-+		if (fe->ops.get_tune_settings &&
-+		   (fe->ops.get_tune_settings(fe, &fetunesettings) == 0)) {
-+
-+			fepriv->min_delay = (fetunesettings.min_delay_ms * HZ) / 1000;
-+			fepriv->max_drift = fetunesettings.max_drift;
-+			fepriv->step_size = fetunesettings.step_size;
-+		} else {
-+			/* default values */
-+			switch (fepriv->fe_info.delivery) {
-+			case DVBFE_DELSYS_DVBS:
-+			case DVBFE_DELSYS_DSS:
-+			case DVBFE_DELSYS_DVBS2:
-+				fepriv->min_delay = HZ / 20;
-+				fepriv->step_size = fepriv->fe_params.delsys.dvbs.symbol_rate / 16000;
-+				fepriv->max_drift = fepriv->fe_params.delsys.dvbs.symbol_rate / 2000;
-+				break;
-+			case DVBFE_DELSYS_DVBC:
-+				fepriv->min_delay = HZ / 20;
-+				fepriv->step_size = 0; /* no zigzag */
-+				fepriv->max_drift = 0;
-+				break;
-+			case DVBFE_DELSYS_DVBT:
-+			case DVBFE_DELSYS_DVBH:
-+				fepriv->min_delay = HZ / 20;
-+				fepriv->step_size = fepriv->fe_info.frequency_step * 2;
-+				fepriv->max_drift = (fepriv->fe_info.frequency_step * 2) + 1;
-+				break;
-+			case DVBFE_DELSYS_ATSC:
-+				fepriv->min_delay = HZ / 20;
-+				fepriv->step_size = 0;
-+				fepriv->max_drift = 0;
-+				break;
-+			default:
-+				return -EINVAL;
-+			}
-+		}
-+		if (dvb_override_tune_delay > 0)
-+			fepriv->min_delay = (dvb_override_tune_delay * HZ) / 1000;
-+
-+		fepriv->state = FESTATE_RETUNE;
-+		printk("%s: FESTATE_RETUNE: fepriv->state=%d\n", __func__, fepriv->state);
-+		dvb_frontend_wakeup(fe);
-+		dvb_frontend_add_event(fe, 0);
-+		fepriv->status = 0;
-+		err = 0;
-+		break;
-+	}
-+
-+	case DVBFE_GET_PARAMS:
-+		fe->legacy = 0;
-+		if (fe->ops.get_params) {
-+			memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
-+			err = fe->ops.get_params(fe, (struct dvbfe_params *) parg);
-+		}
-+		break;
-+	case DVBFE_GET_DELSYS:
-+		fe->legacy = 0;
-+		if (fe->ops.get_delsys) {
-+			err = fe->ops.get_delsys(fe, (enum dvbfe_delsys *) parg);
-+		}
-+		break;
-+	case DVBFE_GET_INFO:
-+		printk("%s: DVBFE_GET_INFO\n", __func__);
-+		fe->legacy = 0;
-+		if (fe->ops.get_info) {
-+			memcpy(&fepriv->fe_info, (struct dvbfe_info *) parg, sizeof (struct dvbfe_info));
-+			err = fe->ops.get_info(fe, &fepriv->fe_info);
-+			memcpy((struct dvbfe_info *) parg, &fepriv->fe_info, sizeof (struct dvbfe_info));
-+		}
-+		break;
- 	};
- 
- 	up (&fepriv->sem);
+ #endif
 
 
---------------010400010202090505030104--
+--------------050503020404080400050504--
