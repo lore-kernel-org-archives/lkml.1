@@ -1,141 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYIDSl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbYIDSlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbYIDSl7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757562AbYIDSjE
+	id S1757570AbYIDSlm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757522AbYIDSiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:39:04 -0400
-Received: from mail.work.de ([212.12.32.20]:58949 "EHLO mail.work.de"
+	Thu, 4 Sep 2008 14:38:54 -0400
+Received: from ns2.bglans.net ([217.79.67.244]:35806 "EHLO mail.bglans.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757548AbYIDSjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:39:01 -0400
-Message-ID: <48C02B40.7010603@gmail.com>
-Date: Thu, 04 Sep 2008 22:38:56 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	id S1757116AbYIDSiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:38:52 -0400
+Date: Thu, 4 Sep 2008 21:07:49 +0300 (EEST)
+From: ivaylo@bglans.net
+To: linux-kernel@vger.kernel.org
+cc: w@1wt.eu
+Subject: ICH9 AHCI support on 2.4.XX
+In-Reply-To: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
+Message-ID: <Pine.LNX.4.64.0809042051030.10716@mail.bglans.net>
+References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
-       akpm@linux-foundation.org
-CC: Arvo Jarve <arvo@softshark.ee>
-Subject: DVB Update [PATCH 15/31] multiproto tree
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------060402090408070706020204"
+Content-Type: MULTIPART/MIXED; BOUNDARY="1339683907-1130448773-1220551669=:10716"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060402090408070706020204
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->From 8053f283eb95229023d30a431e76823acaf4a617 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 13:50:56 +0200
-Subject: [PATCH] DVB Add event only with changed status
+--1339683907-1130448773-1220551669=:10716
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
-The event list was updated continuously, add to the event list
-only when the status has changed
 
-From: Arvo Jarve <arvo@softshark.ee>
-Signed-off-by: Arvo Jarve <arvo@softshark.ee>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
+Hello,
 
- dvb_frontend.c |   35 ++++++++++++++++++++++-------------
- 1 file changed, 22 insertions(+), 13 deletions(-)
+I Have Intel motherboard model DG33BU. It is with G33 chipset. There 
+is, Intel Corporation 82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA AHCI Controller,
+on it. So I make small patch to support this controler in kernel (see 
+bellow or the attached file). Probably it will work and on the 
+other mobos with same chipset.
 
---------------060402090408070706020204
-Content-Type: text/x-patch;
- name="15.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="15.patch"
 
->From 8053f283eb95229023d30a431e76823acaf4a617 Mon Sep 17 00:00:00 2001
-From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 13:50:56 +0200
-Subject: [PATCH] DVB Add event only with changed status
+diff -ru a/drivers/scsi/ahci.c b/drivers/scsi/ahci.c
+--- a/drivers/scsi/ahci.c       2008-01-01 14:06:40.000000000 +0200
++++ b/drivers/scsi/ahci.c       2008-05-02 01:35:49.000000000 +0300
+@@ -285,6 +285,8 @@
+           board_ahci }, /* ICH8M */
+         { PCI_VENDOR_ID_INTEL, 0x282a, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+           board_ahci }, /* ICH8M */
++       { PCI_VENDOR_ID_INTEL, 0x2922, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++         board_ahci }, /* ICH9 */
+         { 0x197b, 0x2360, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+           board_ahci }, /* JMicron JMB360 */
+         { 0x197b, 0x2363, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
 
-The event list was updated continuously, add to the event list
-only when the status has changed
 
-From: Arvo Jarve <arvo@softshark.ee>
-Signed-off-by: Arvo Jarve <arvo@softshark.ee>
-Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
-diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index 3ca28d0..93b08fa 100644
---- a/drivers/media/dvb/dvb-core/dvb_frontend.c
-+++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -586,10 +586,13 @@ static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
- 
- 	e = &events->events[events->eventw];
- 
--	if (fe->legacy)
-+	if (fe->legacy) {
- 		memcpy(&e->parameters, &fepriv->parameters, sizeof (struct dvb_frontend_parameters));
--	else
-+		e->status = status;
-+	} else {
- 		memcpy(&e->fe_params, &fepriv->fe_params, sizeof (struct dvbfe_params));
-+		e->fe_events.status = status;
-+	}
- 
- 	if (fe->legacy) {
- 		/* Legacy	*/
-@@ -606,8 +609,6 @@ static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
- 
- 	mutex_unlock(&events->mtx);
- 
--	e->status = status;
--
- 	wake_up_interruptible (&events->wait_queue);
- }
- 
-@@ -1211,19 +1212,13 @@ restart:
- 						/* We did do a search as was requested, the flags are
- 						 * now unset as well and has the flags wrt to search.
- 						 */
-+					} else {
-+						fepriv->algo_status &= ~DVBFE_ALGO_SEARCH_AGAIN;
- 					}
--					fepriv->algo_status &= ~DVBFE_ALGO_SEARCH_AGAIN;
- 				}
- 				/* Track the carrier if the search was successful	*/
- 				if (fepriv->algo_status == DVBFE_ALGO_SEARCH_SUCCESS) {
--					if (fepriv->algo_status & DVBFE_ALGO_SEARCH_SUCCESS)
--						dprintk("%s: status = DVBFE_ALGO_SEARCH_SUCCESS\n", __func__);
--					if (fepriv->algo_status & DVBFE_ALGO_SEARCH_FAILED)
--						fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
--
--					fe->ops.read_status(fe, &s);
--					dvb_frontend_add_event(fe, s); /* update event list	*/
--					fepriv->status = s;
-+					dprintk("%s: STATUS = DVBFE_ALGO_SEARCH_SUCCESS\n", __func__);
- 					if (fe->ops.track) {
- 						dprintk("%s: TRACK callback exists at 0x%p\n", __func__, fe->ops.track);
- #if 0
-@@ -1234,6 +1229,20 @@ restart:
- #endif
- 						fe->ops.track(fe, fe_params, &fepriv->delay);
- 					}
-+				} else {
-+					fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
-+					fepriv->delay = HZ / 2;
-+				}
-+				fe->ops.read_status(fe, &s);
-+				if (s != fepriv->status) {
-+					dvb_frontend_add_event(fe, s); /* update event list */
-+					fepriv->status = s;
-+					if (!(s & FE_HAS_LOCK)) {
-+						fepriv->delay = HZ / 10;
-+						fepriv->algo_status |= DVBFE_ALGO_SEARCH_AGAIN;
-+					} else {
-+						fepriv->delay = 60 * HZ;
-+					}
- 				}
- 				break;
- 			default:
 
---------------060402090408070706020204--
+Best Regards,
+Ivaylo Josifov
+
+--1339683907-1130448773-1220551669=:10716
+Content-Type: APPLICATION/octet-stream; name=ICH9.patch.gz
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0809042107490.10716@mail.bglans.net>
+Content-Description: 
+Content-Disposition: attachment; filename=ICH9.patch.gz
+
+H4sICC4UwEgAA0lDSDkucGF0Y2gAnc5da8IwFAbga/sr3mvTmNP0w7RX3VSw
+Y3ZDRPCq9ENZbiakbAjifzeVeSF0KywcOCFvzsNp9OEAbr5Qisbo771pRVu3
+WpQftZ7UqPpeHc55//+RJFKcPFvwgoSiJKAJ3Q8Y2dxhjPW7P9MhJwnyEj9M
+gvhh2rfTaQouVehGYF1TSFMHI6A6lqYpOggXF2KMbLZUK4yFTc94n2XFdpHP
+39ZFNi+yfLN4dUEnqWTp3sKnfGeTxzt1NYCzP/BYyiGc/YLH98Xp5MXT6sb5
+Ef1r15eVrs3x0/ZnS/TC/hB8BY82XaQnAgAA
+
+--1339683907-1130448773-1220551669=:10716--
