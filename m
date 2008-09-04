@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYIDPck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbYIDPgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146AbYIDPck (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 11:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYIDPc2
+	id S1754126AbYIDPgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 11:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYIDPgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 11:32:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40025 "EHLO mx2.mail.elte.hu"
+	Thu, 4 Sep 2008 11:36:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40701 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754258AbYIDPc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 11:32:27 -0400
-Date: Thu, 4 Sep 2008 17:32:06 +0200
+	id S1750941AbYIDPgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 11:36:38 -0400
+Date: Thu, 4 Sep 2008 17:36:20 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert commit e8aa4667baf74dfd85fbaab86861465acb811085
-Message-ID: <20080904153206.GB7120@elte.hu>
-References: <20080904144657.GC15987@alberich.amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@osdl.org>,
+       Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+Message-ID: <20080904153620.GC7120@elte.hu>
+References: <20080904150339.896115280@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080904144657.GC15987@alberich.amd.com>
+In-Reply-To: <20080904150339.896115280@linutronix.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -34,21 +37,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> This reverts commit e8aa4667baf74dfd85fbaab86861465acb811085
->  (x86: enable hpet=force for AMD SB400)
+> This patch series addresses following:
 > 
-> Since ATI/AMD decided not to support HPET on SB4xx it doesn't
-> make sense to enable this unsupported feature.
-> (I was not aware of this when submitting the quirk.)
+>      - reduce the calibration time to a useful value
+>      - make decision smarter, when a reference (HPET/PMTIMER) is around
 > 
-> If a system with SB4xx chipset provides an ACPI HPET table and does
-> not boot, "nohpet" should be used as kernel parameter.
+> The first patches are cleanups to prepare for the smarter loop
+> handling.
 > 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> The main change is to reduce the PIT delay value to 10ms, which gives
+> reasonable results on very slow machines as well. To avoid looping
+> several times when the machine has a working reference counter
+> (HPET/pmtimer), we compare the results of the PIT and the reference and
+> break out of the loop when both match inside of a 10% window.
+> 
+> For virtualized environments the PIT calibration fails often and the
+> reference calibration is not reproducible with 10ms. To address this
+> we check whether the PIT failed two times in a row and make the PIT
+> loop longer (50ms) for the last try to get a better result for the
+> reference.
+> 
+> Most of the machines I tested break out of the loop after the first
+> try with a stable reproducible result.
 
-applied to tip/x86/urgent, thanks Andreas. I guess a system broke due to 
-this commit?
+i've added them to tip/x86/tsc and merged it into tip/master - if 
+there's test success we can merge it into x86/urgent as well and push it 
+into v2.6.27. Any objections to that merge route?
 
 	Ingo
