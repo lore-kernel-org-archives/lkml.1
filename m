@@ -1,139 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYIDVD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYIDVHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbYIDVD2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 17:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYIDVDR
+	id S1755154AbYIDVHQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 17:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYIDVHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 17:03:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47749 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752735AbYIDVDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 17:03:16 -0400
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX19d8Yl0md1d8c5dmMcymJipP5uySr2NDJFJ9hoWV9
-	XI086vIqSgSWd/
-Message-ID: <48C04D0E.8010905@gmx.de>
-Date: Thu, 04 Sep 2008 23:03:10 +0200
-From: Helge Deller <deller@gmx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 4 Sep 2008 17:07:04 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:48330 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbYIDVHD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 17:07:03 -0400
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>, Don Zickus <dzickus@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Prarit Bhargava <prarit@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arozansk@redhat.com" <arozansk@redhat.com>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Thu, 4 Sep 2008 21:05:37 +0000
+Subject: RE: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+Thread-Topic: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+Thread-Index: AckO0OFkoQsTnCZNRPywwznWrxzmiAAADNKg
+Message-ID: <183C1D5A376DE343AA8F94FC2A1EC14938D3E748D1@GVW1091EXB.americas.hpqcorp.net>
+References: <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com>
+ <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org>
+ <20080904172052.GN3400@redhat.com>
+ <20080904175231.GH18288@one.firstfloor.org>
+ <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com>
+ <20080904200032.GM18288@one.firstfloor.org>
+ <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net>
+ <20080904205725.GC4349@redhat.com>
+In-Reply-To: <20080904205725.GC4349@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: linux-parisc@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: __kernel_suseconds_t is int on PA-RISC (and SPARC64)?
-References: <Pine.LNX.4.64.0808262207450.7910@anakin> <48B46672.1000902@gmx.de> <Pine.LNX.4.64.0809042238090.19113@anakin>
-In-Reply-To: <Pine.LNX.4.64.0809042238090.19113@anakin>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.42
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Tue, 26 Aug 2008, Helge Deller wrote:
->> Geert Uytterhoeven wrote:
->>> Apparently __kernel_suseconds_t is `int' on PA-RISC (and on SPARC64),
->>> while it's `long' on all other platforms.
->>>
->>> Is there a specific reason for that?
->> I don't know for sure, but arch/parisc/kernel/syscall_table.S states:
->> /* even though manpage says struct timeval contains longs, ours has
->>  * time_t and suseconds_t -- both of which are safe wide/narrow */
->>    ENTRY_COMP(setitimer)
->>
->> So it was probably chosen to be int so that it can be easily used in 32- and
->> 64bit kernels (or compat code).
->>
->>> This causes compiler warnings in the HP SDC Real Time Clock driver,
->>> which is shared between PA-RISC and m68k:
-> 
-> Here's a patch to fix the compiler warnings. Is this OK for PA-RISC?
-> 
-> SUbject: [PATCH] HP input: kill warnings due to suseconds_t differences
-> 
-> Kill compiler warnings related to printf() formats in the input drivers for
-> various HP9000 machines, which are shared between PA-RISC (suseconds_t is int)
-> and m68k (suseconds_t is long). As both are 32-bit, it's safe to cast to int.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Ok regarding question #1. The die_notifier works as you mentioned; however, the fact that the watchdog timer ticks also come through as NMIs is a hinderance. Now, when the watchdog timer is configured through the LOCAL_APIC the issue isn't so bad. I think the hpwdt driver handles the NMI coming in because there isn't a flood of timer ticks coming through as in the IOAPIC case.
 
-Thanks Geert.
-Tested and OK for PA-RISC.
+As for the KDUMP perhaps I am missing something. If I handle the NMI coming in and source it via our BIOS, I then stop the watchdog timer and the kdump will take place.
 
-Acked-by: Helge Deller <deller@gmx.de>
+Tom
+
+-----Original Message-----
+From: Vivek Goyal [mailto:vgoyal@redhat.com]
+Sent: Thursday, September 04, 2008 3:57 PM
+To: Mingarelli, Thomas
+Cc: Andi Kleen; Don Zickus; Ingo Molnar; Prarit Bhargava; Peter Zijlstra; linux-kernel@vger.kernel.org; arozansk@redhat.com; ak@linux.intel.com; Alan Cox; H. Peter Anvin; Thomas Gleixner; Maciej W. Rozycki
+Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+
+On Thu, Sep 04, 2008 at 08:01:31PM +0000, Mingarelli, Thomas wrote:
+> Exactly.
+>
+> The hpwdt driver is meant to be a catch-all for any NMI coming through on ProLiant HW only. Moreover, for newer ProLiant HW at that.
+>
+> Once the NMI comes in, we call into our BIOS for the true reason of the NMI. That message gets logged to the IML in NVRAM for the user to view. We then panic the system.
+>
+> Yes, kdump will work under this scenario because we stop the watchdog timer. This is a user configurable setting.
+>
+>
+
+Sorry I did not get it. Few questions.
+
+- So you want to capture every NMI and then do something. So what's the
+  harm in registering on die chain and look for both DIE_NMI_IPI and
+  DIE_NMI events and take appropriate action? Depending on reason code,
+  one or other will be called. If I read the code correctly, you will get
+  to see every NMI on that cpu irrespective of the reason and then you can
+  take the action accordingly.
+
+- How would kdump continue to work above driver hijacks the nmi callback.
+  You will disable watchdog, log message and call panic(). panic() will
+  lead to kdump and kdump will send NMI IPI to reset of the cpus in the
+  system to save their state and halt these. The moment other cpus get
+  NMI IPI, above driver will hijack that NMI also and nobody gets a chance
+  to run? So kdump will not work?
+
+  Am I missing something?
+
+Thanks
+Vivek
 
 
-> ---
->  drivers/input/misc/hp_sdc_rtc.c |   10 +++++-----
->  drivers/input/serio/hp_sdc.c    |    2 +-
->  2 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> --- a/drivers/input/misc/hp_sdc_rtc.c
-> +++ b/drivers/input/misc/hp_sdc_rtc.c
-> @@ -458,35 +458,35 @@ static int hp_sdc_rtc_proc_output (char 
->  		p += sprintf(p, "i8042 rtc\t: READ FAILED!\n");
->  	} else {
->  		p += sprintf(p, "i8042 rtc\t: %ld.%02d seconds\n", 
-> -			     tv.tv_sec, tv.tv_usec/1000);
-> +			     tv.tv_sec, (int)tv.tv_usec/1000);
->  	}
->  
->  	if (hp_sdc_rtc_read_fhs(&tv)) {
->  		p += sprintf(p, "handshake\t: READ FAILED!\n");
->  	} else {
->          	p += sprintf(p, "handshake\t: %ld.%02d seconds\n", 
-> -			     tv.tv_sec, tv.tv_usec/1000);
-> +			     tv.tv_sec, (int)tv.tv_usec/1000);
->  	}
->  
->  	if (hp_sdc_rtc_read_mt(&tv)) {
->  		p += sprintf(p, "alarm\t\t: READ FAILED!\n");
->  	} else {
->  		p += sprintf(p, "alarm\t\t: %ld.%02d seconds\n", 
-> -			     tv.tv_sec, tv.tv_usec/1000);
-> +			     tv.tv_sec, (int)tv.tv_usec/1000);
->  	}
->  
->  	if (hp_sdc_rtc_read_dt(&tv)) {
->  		p += sprintf(p, "delay\t\t: READ FAILED!\n");
->  	} else {
->  		p += sprintf(p, "delay\t\t: %ld.%02d seconds\n", 
-> -			     tv.tv_sec, tv.tv_usec/1000);
-> +			     tv.tv_sec, (int)tv.tv_usec/1000);
->  	}
->  
->  	if (hp_sdc_rtc_read_ct(&tv)) {
->  		p += sprintf(p, "periodic\t: READ FAILED!\n");
->  	} else {
->  		p += sprintf(p, "periodic\t: %ld.%02d seconds\n", 
-> -			     tv.tv_sec, tv.tv_usec/1000);
-> +			     tv.tv_sec, (int)tv.tv_usec/1000);
->  	}
->  
->          p += sprintf(p,
-> --- a/drivers/input/serio/hp_sdc.c
-> +++ b/drivers/input/serio/hp_sdc.c
-> @@ -323,7 +323,7 @@ static void hp_sdc_tasklet(unsigned long
->  			 * it back to the application. and be less verbose.
->  			 */
->  			printk(KERN_WARNING PREFIX "read timeout (%ius)!\n",
-> -			       tv.tv_usec - hp_sdc.rtv.tv_usec);
-> +			       (int)(tv.tv_usec - hp_sdc.rtv.tv_usec));
->  			curr->idx += hp_sdc.rqty;
->  			hp_sdc.rqty = 0;
->  			tmp = curr->seq[curr->actidx];
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
 
+> Tom
+>
+> -----Original Message-----
+> From: Andi Kleen [mailto:andi@firstfloor.org]
+> Sent: Thursday, September 04, 2008 3:01 PM
+> To: Vivek Goyal
+> Cc: Don Zickus; Andi Kleen; Ingo Molnar; Prarit Bhargava; Peter Zijlstra; linux-kernel@vger.kernel.org; arozansk@redhat.com; Mingarelli, Thomas; ak@linux.intel.com; Alan Cox; H. Peter Anvin; Thomas Gleixner; Maciej W. Rozycki
+> Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+>
+> > Add "kdump" to the list. It will also be broken if we decide to let one
+> > driver hijack the NMI handler.
+>
+> kdump is a special case, similar to the NMI button panic mode. It should
+> be always only active when the user configured it. When the user configured
+> it should be always the fallback and override any other drivers.
+>
+> But watchdog is a special case. I assume the watchdog will just log
+> (and do the work that a SMI should be doing) but then continue
+> the chain so that kdump can dump on a watchdog timeout.
+>
+> -Andi
