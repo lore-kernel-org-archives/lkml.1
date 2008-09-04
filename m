@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbYIDMT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYIDMVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755982AbYIDMT7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYIDMTv
+	id S1756202AbYIDMVt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYIDMVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:19:51 -0400
-Received: from mga01.intel.com ([192.55.52.88]:27817 "EHLO mga01.intel.com"
+	Thu, 4 Sep 2008 08:21:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:52177 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbYIDMTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:19:51 -0400
+	id S1751814AbYIDMVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 08:21:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="612679956"
-Subject: Re: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
-From: Lin Ming <ming.m.lin@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <20080904113529.GA25533@elte.hu>
-References: <1220518266.9590.22.camel@minggr>
-	 <1220519034.8609.206.camel@twins> <1220525579.12161.8.camel@minggr>
-	 <20080904110901.GD8668@elte.hu> <1220527806.12161.14.camel@minggr>
-	 <20080904113529.GA25533@elte.hu>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 20:19:48 +0800
-Message-Id: <1220530788.12161.31.camel@minggr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
+   d="scan'208";a="435589985"
+Message-ID: <48BFD2D7.20209@linux.intel.com>
+Date: Thu, 04 Sep 2008 14:21:43 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: [patch 00/42] 2.6.26-stable review
+References: <20080903172447.GA7731@suse.de> <20080904023905.GA1071@khazad-dum.debian.net>
+In-Reply-To: <20080904023905.GA1071@khazad-dum.debian.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Henrique de Moraes Holschuh wrote:
+> What about this one:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9f497bcc695fb828da023d74ad3c966b1e58ad21
+> 
+> "ACPI: Fix thermal shutdowns" ?
+> 
+> It should have been submitted to stable@k.o well before 2.6.26.3,
 
-On Thu, 2008-09-04 at 13:35 +0200, Ingo Molnar wrote:
-> * Lin Ming <ming.m.lin@intel.com> wrote:
-> 
-> > A huge trace result file, see the attachment for more.
-> 
-> > # tracer: sched_switch
-> > #
-> > #           TASK-PID   CPU#    TIMESTAMP  FUNCTION
-> > #              | |      |          |         |
-> >           mysqld-3799  [07]   151.411009:   3799:120:R ==>  3807:120:R
-> ...
-> >         sysbench-3803  [07]   151.417048:   3803:120:R   +  3791:120:S
-> 
-> ok, this only spans 6 milliseconds, which is probably a bit too light.
-> 
-> Could you please increase the trace size 32-fold (via 
-> /debug/tracing/trace_entries), and send us the (large!) trace file 
-> compressed via bzip2 -9, off-list (or via a web link)? [anyone on-list 
-> can have a look at the smaller trace file already]
+Nope because the bug it fixed was only introduced for 2.6.27-rc1.
 
-The large trace file also available at below link,
-http://myfreefilehosting.com/f/94991018dc_1.31MB 
-
-> 
-> Thanks,
-> 
-> 	Ingo
-
+-Andi
