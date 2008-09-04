@@ -1,111 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbYIDATb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYIDA1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbYIDATb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Sep 2008 20:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYIDATS
+	id S1754236AbYIDA1E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Sep 2008 20:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYIDA0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Sep 2008 20:19:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41104 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751784AbYIDATR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Sep 2008 20:19:17 -0400
-Date: Wed, 3 Sep 2008 17:18:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
-cc: David Miller <davem@davemloft.net>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "tomasw@gmail.com" <tomasw@gmail.com>,
-       "yi.zhu@intel.com" <yi.zhu@intel.com>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>
-Subject: Re: [GIT]: Networking
-In-Reply-To: <20080904000103.GF5967@tesla>
-Message-ID: <alpine.LFD.1.10.0809031703480.3515@nehalem.linux-foundation.org>
-References: <20080903.161341.239039051.davem@davemloft.net> <alpine.LFD.1.10.0809031615450.3515@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809031621160.3515@nehalem.linux-foundation.org> <20080903.162603.27086959.davem@davemloft.net>
- <20080904000103.GF5967@tesla>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 3 Sep 2008 20:26:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46727 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709AbYIDA0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Sep 2008 20:26:53 -0400
+Message-ID: <48BF2AEB.1050508@kernel.org>
+Date: Thu, 04 Sep 2008 02:25:15 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: device@lanana.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: regarding major number of block extended devt
+References: <48BD30F9.6080108@kernel.org> <48BD3313.7090906@kernel.org> <48BD9F36.8000704@zytor.com> <48BE0EDB.20107@kernel.org> <48BEB759.4050503@zytor.com> <48BEB98C.8030303@kernel.org> <48BEBAF0.7070008@zytor.com> <48BEBF34.50006@kernel.org> <48BED351.1060300@zytor.com>
+In-Reply-To: <48BED351.1060300@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Sep 2008 00:26:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-
-On Wed, 3 Sep 2008, Luis R. Rodriguez wrote:
+H. Peter Anvin wrote:
+> Thinking about it some more, one invariant this is *guaranteed* to
+> violate is:
 > 
-> What I think really happens here IMHO is communication needs to be
-> enhanced. I only recently noticed that "regression only" policy for
-> 2.6.27 for example. I think some of us were rather surprised by it too.
-
-It's really not a "2.6.27" policy, it's always been a "merge window" vs 
-"-rc" policy. It's just that I've started making more noise about it, 
-since many people don't seem to see what the point of the merge window is.
-
-And no, the problem isn't new either. But it does seem to have been 
-getting somewhat worse lately. Possibly simply because we have more code 
-(ie releases have grown, which has made the problem more visible, even if 
-it hasn't necessarily changed in any other way).
-
-> Before snapping at people for not following "orders" we need a clear
-> guideline for what should or not be sent.
-
-The basic rule really should be:
-
- - *any* new development should target the merge window. 
-
-   I think some of the driver people in particular have been mislead by 
-   the fact that we have actually accepted new drivers even after the 
-   merge window ("they can't regress"), and that in turn has probably 
-   de-sensitized people a bit to the whole merge window.
-
-   Similarly, drivers (and other wholly self-contained modules like 
-   filesystems etc) that didn't exist before - even if they were then
-   merged _during_ the merge window - have also been getting leeway in the 
-   -rc code, since again they cannot regress.
-
-And it really does appear like a lot of driver people just get very comfy 
-and used to that _first_ release, when we allow almost anything. And then 
-they just continue with it.
-
-> To avoid it I do think another exception needs to be made for patches:
+>     partition_number = partition_device - master_device
 > 
-> * Small fixes which make something that was not working, which was
->   supposed to work work
+> Code that needs a partition number (which is common enough) are using
+> this invariant, because (a) it has held for 17 years and (b) because
+> there is still no alternative other that relying on fragile naming
+> scheme hacks.
+> 
+> (a) we can't do anything about, but (b) we can, by introducing a
+> partition number attribute in sysfs.
 
-Not really.
+Yeah, that would certainly be a nice addition.  Also, if partitions
+are made proper classes, they'll be easily enumerable by
+/sys/block/*/partitions/*.
 
-The thing is, if it's a driver that has been around for more than a single 
-release, then those "small fixes" really can't be worth all that much. And 
-yes, they may be small, and yes, they may be "obvious", but the fact is, 
-they definitely can regress.
+Jens, what do you think?
 
-Sure, if some driver really haven't been around for very long, I can see 
-your point. Not very many people have used it, and I can well imagine that 
-there are lots of those "small fixes" that really do matter.
-
-but if the driver has been in active use for a few kernel versions, there 
-really is almost no excuse to say "this fix is so important that it needs 
-to go in even though it's not a regression/security/oops fix".
-
-So I would agree that the very first release a new driver (or filesystem) 
-is in is special. Almost anything goes during the -rc releases leading up 
-to that. And yes, I can well imagine that during the -rc for the second 
-release it perhaps makes sense to be a _bit_ more relaxed, simply because 
-it's young and as more people use it, silly (but serious) issues can just 
-become more obvious.
-
-But in the long run? No. Drivers are not different from any other code, 
-and the -rc rules should be "regressions only".
-
-In fact, in many ways we should be even _more_ careful with drivers than 
-with most other things, because driver changes are seldom "obvious". Even 
-really trivial stuff can interact with hardware in odd ways, in ways that 
-is seldom true of normal code that you can think about and analyze (since 
-we assume that the CPU itself doesn't have subtle timing etc bugs, of 
-course).
-
-			Linus
+-- 
+tejun
