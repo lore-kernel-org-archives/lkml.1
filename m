@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbYIDQVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbYIDQWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbYIDQVY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYIDQVO
+	id S1755157AbYIDQWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYIDQWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:21:14 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58100 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbYIDQVN (ORCPT
+	Thu, 4 Sep 2008 12:22:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48311 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751404AbYIDQWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:21:13 -0400
-Date: Thu, 4 Sep 2008 10:21:11 -0600
-From: Matthew Wilcox <matthew@wil.cx>
+	Thu, 4 Sep 2008 12:22:44 -0400
+Date: Thu, 4 Sep 2008 09:21:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Ben Hutchings <bhutchings@solarflare.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-pci@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [PATCH] Return value from schedule()
-Message-ID: <20080904162111.GM2772@parisc-linux.org>
-References: <20080827204626.4b65862f@extreme> <20080828111323.GI7908@solarflare.com> <20080903155713.7fab2e19@extreme> <20080904160739.GK2772@parisc-linux.org> <20080904161424.GA23042@elte.hu>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+In-Reply-To: <20080904160036.GA18382@elte.hu>
+Message-ID: <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
+References: <20080904150339.896115280@linutronix.de> <20080904153620.GC7120@elte.hu> <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org> <20080904160036.GA18382@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080904161424.GA23042@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 06:14:24PM +0200, Ingo Molnar wrote:
-> > If schedule() returned whether or not it had scheduled another task, we
-> > could do something like:
-> > 
-> > 		if (!schedule())
-> > 			udelay(10);
+
+
+On Thu, 4 Sep 2008, Ingo Molnar wrote:
 > 
-> hm, i'm not really sure - this really just seems to be a higher prio 
-> variant of yield() combined with some weird code. Do we really want to 
-> promote such arguably broken behavior? If there's any chance of any 
-> polling to take a material amount of CPU time it should be event driven 
-> to begin with.
+> ah - perhaps a dynamic statistical approach with an estimation of 
+> worst-case calibration error (~= standard deviation) and a quality 
+> threshold to reach? That could dramatically increase the number of 
+> samples while also making it much faster in practice. Nifty!
 
-Oh, I'm not concerned about CPU utilisation, I'm concerned about PCI bus
-utilisation.  Perhaps I'd like a yield_timeout() function instead where
-I say that I'd like to not run for at least 10 microseconds?
+Oh, no, I'm _much_ more nifty than that!
 
-Can we do that, or are we still jiffie-based there?
+Instead of being very clever, I have a very _stupid_ algorithm, one that 
+has very hardcoded expectations of exactly what it will see. And if it 
+doesn't see exactly that, it just fails early. 
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I'd post the patch, but I really need to actually _test_ it first, and I 
+haven't rebooted yet.
+
+		Linus
