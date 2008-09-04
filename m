@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYIDPTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYIDPTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbYIDPTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 11:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYIDPTB
+	id S1755457AbYIDPTq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 11:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYIDPTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 11:19:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42747 "EHLO mx3.mail.elte.hu"
+	Thu, 4 Sep 2008 11:19:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:56979 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752002AbYIDPTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 11:19:00 -0400
-Date: Thu, 4 Sep 2008 17:18:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Prarit Bhargava <prarit@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, arozansk@redhat.com, dzickus@redhat.com,
-       Thomas.Mingarelli@hp.com, ak@linux.intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080904151832.GA7120@elte.hu>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <48BFFAFB.6060907@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BFFAFB.6060907@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752872AbYIDPTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 11:19:05 -0400
+Message-Id: <20080904151249.615344193@linutronix.de>
+References: <20080904150339.896115280@linutronix.de>
+User-Agent: quilt/0.46-1
+Date: Thu, 04 Sep 2008 15:18:44 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>
+Subject: [RFC patch 1/4] x86: TSC: define the PIT latch value separate
+Content-Disposition: inline; filename=tsc-define-latch-value.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/tsc.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+Index: linux-2.6/arch/x86/kernel/tsc.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/tsc.c
++++ linux-2.6/arch/x86/kernel/tsc.c
+@@ -122,6 +122,10 @@ static u64 tsc_read_refs(u64 *pm, u64 *h
+ 	return ULLONG_MAX;
+ }
+ 
++#define CAL_MS		50
++#define CAL_LATCH	(CLOCK_TICK_RATE / (1000 / CAL_MS))
++#define CAL_PIT_LOOPS	5000
++
+ /*
+  * Try to calibrate the TSC against the Programmable
+  * Interrupt Timer and return the frequency of the TSC
+@@ -144,8 +148,8 @@ static unsigned long pit_calibrate_tsc(v
+ 	 * (LSB then MSB) to begin countdown.
+ 	 */
+ 	outb(0xb0, 0x43);
+-	outb((CLOCK_TICK_RATE / (1000 / 50)) & 0xff, 0x42);
+-	outb((CLOCK_TICK_RATE / (1000 / 50)) >> 8, 0x42);
++	outb(CAL_LATCH & 0xff, 0x42);
++	outb(CAL_LATCH >> 8, 0x42);
+ 
+ 	tsc = t1 = t2 = get_cycles();
+ 
+@@ -166,18 +170,18 @@ static unsigned long pit_calibrate_tsc(v
+ 	/*
+ 	 * Sanity checks:
+ 	 *
+-	 * If we were not able to read the PIT more than 5000
++	 * If we were not able to read the PIT more than PIT_MIN_LOOPS
+ 	 * times, then we have been hit by a massive SMI
+ 	 *
+ 	 * If the maximum is 10 times larger than the minimum,
+ 	 * then we got hit by an SMI as well.
+ 	 */
+-	if (pitcnt < 5000 || tscmax > 10 * tscmin)
++	if (pitcnt < CAL_PIT_LOOPS || tscmax > 10 * tscmin)
+ 		return ULONG_MAX;
+ 
+ 	/* Calculate the PIT value */
+ 	delta = t2 - t1;
+-	do_div(delta, 50);
++	do_div(delta, CAL_MS);
+ 	return delta;
+ }
+ 
 
-> Ingo Molnar wrote:
->>
->> i'd much rather attack this general problem from this angle:
->>
->>   static inline unsigned char get_nmi_reason(void)
->>   {
->>           return inb(0x61);
->>   }
->>
->> that port 61H read is both arcane (on modern chipsets) and broken on  
->> multiple levels. It's racy and SMP unsafe to begin with, if there's any 
->> mixture of intentional cross-CPU or CPU self-generated NMIs mixed with  
->> chipset generated NMIs.
->>
->> One possible approach would be to get rid of it, and to perhaps 
->> register a low-priority die notifier on systems where we know port 61  
->> reads+writes to be safe and desired. Modern systems will emit MCEs in  
->> most cases anyway, not NMIs.
->>
->
-> I believe we should still do it, but as the lowest priority "nothing 
-> else claimed this".  It reflects a system error and not all systems 
-> will generate #MC instead of NMI for all system errors.
->
-> Pretty much what you're saying above.
+-- 
 
-ok. One potential additional concern i can think of is multi-source 
-NMIs: NMIs, when generated by some sort of hardware are edge triggered 
-most of the time, so if in the notifier chain a notifier decides "this 
-was for me, return now", we will lose an event.
-
-So i think we should iterate through all notifier entries and call them 
-(even if all of them indicate that they handled it), and determine 
-whether at least one notifier handled something. If nothing handled the 
-NMI _then_ do the port 61H logic as a final fall-back thing.
-
-	Ingo
