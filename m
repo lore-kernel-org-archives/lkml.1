@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYIDHoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbYIDHsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbYIDHoE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 03:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYIDHnw
+	id S1755291AbYIDHsY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 03:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYIDHsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 03:43:52 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54335 "EHLO gate.crashing.org"
+	Thu, 4 Sep 2008 03:48:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45945 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751516AbYIDHnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 03:43:51 -0400
-Subject: Re: [PATCH 2/2] powerpc - Make the irq reverse mapping radix tree
-	lockless
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: dwalker@mvista.com, tinytim@us.ibm.com, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org,
-       jean-pierre.dion@bull.net, michael@ellerman.id.au,
-       linuxppc-dev@ozlabs.org, paulus@samba.org, gilles.carry@ext.bull.net,
-       tglx@linutronix.de
-In-Reply-To: <20080904092252.12b3df4a@bull.net>
-References: <1218029429-21114-1-git-send-email-sebastien.dugue@bull.net>
-	 <1218029429-21114-3-git-send-email-sebastien.dugue@bull.net>
-	 <1219209781.21386.25.camel@pasglop> <20080903154105.7dff49db@bull.net>
-	 <1220496739.4879.20.camel@pasglop>  <20080904092252.12b3df4a@bull.net>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 17:34:03 +1000
-Message-Id: <1220513643.4879.68.camel@pasglop>
+	id S1751048AbYIDHsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 03:48:15 -0400
+Date: Thu, 4 Sep 2008 17:48:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: linux-next: Tree for September 3
+Message-Id: <20080904174801.5e448337.sfr@canb.auug.org.au>
+In-Reply-To: <20080904001558.875f58b1.akpm@linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+	<20080903214634.ea17ff53.akpm@linux-foundation.org>
+	<20080903215455.792c78a3.akpm@linux-foundation.org>
+	<20080904145744.3f791ca7.sfr@canb.auug.org.au>
+	<20080903220546.bd673658.akpm@linux-foundation.org>
+	<20080904152015.3145b06e.sfr@canb.auug.org.au>
+	<20080903230129.806d54af.akpm@linux-foundation.org>
+	<20080904001558.875f58b1.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__4_Sep_2008_17_48_01_+1000_6/w36CFTaSknS3Yo"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__4_Sep_2008_17_48_01_+1000_6/w36CFTaSknS3Yo
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > >   I could not think of anything simple so far and I'm open for suggestions.
-> > 
-> > GFP_KERNEL should not fail, it will just block no ?
-> 
->   No it won't block and will fail (returns NULL).
+Hi Andrew,
 
-hrm... it used to never fail.. that may have changed. But it will
-definitely block and try very hard to push things out to make space,
-which is the whole point :-)
+On Thu, 4 Sep 2008 00:15:58 -0700 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> I cannot find any of these patches on a mailing list.
 
->   I will have to add that back as there is no more fallback.
+Hmmm ...
 
-Well, the must be one in the case the tree isn't initialized yet, so if
-there's an allocation failure, you may "de-initialize" it or
-something... Or you can fallback if you don't find, as easy, probably
-easier since it shouldn't happen in practice.
+> I cannot revert tty-kref-get-current-tty and I can't immediately spot
+> the bug in it.
 
-> > I don't know if it's worth trying to fire off a new
-> > allocation attempt later, probably not.
-> 
->   I've been pondering with this lately, but I think that adding a linear
-> lookup fallback should be OK.
+Yeah, it is a bit involved and caught up.
 
-Yup.
+> I could revert the whole tty tree, but I'd prefer that you do it,
+> please.  I've been trying for two days to get a -mm out, but I'm
+> building on a foundation of straw :(
 
+OK, I have done that for today ...  this is an actual revert (as I don't
+have time this evening to go back and remerge everything after the ttydev
+tree) so there is a bisect hole between when the tree gets merged and
+when it gets reverted (not actually very large, but I though it was worth
+mentioning).
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__4_Sep_2008_17_48_01_+1000_6/w36CFTaSknS3Yo
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAki/krEACgkQjjKRsyhoI8xDIgCdF0mKOCJ2z+lYWhdPyEs8VE44
+2tIAnRK+BwHBFDeUfUWZ0o+0JbOBshFI
+=WHsv
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__4_Sep_2008_17_48_01_+1000_6/w36CFTaSknS3Yo--
