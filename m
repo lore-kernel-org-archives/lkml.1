@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbYIDI61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbYIDJDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbYIDI61 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYIDI6R
+	id S1756941AbYIDJDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 05:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYIDJDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:58:17 -0400
-Received: from tallyho.bytemark.co.uk ([80.68.81.166]:50453 "EHLO
-	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753429AbYIDI6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:58:16 -0400
-Date: Thu, 4 Sep 2008 09:58:09 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 4/4] capture pages freed during direct reclaim for
-	allocation by the reclaimer
-Message-ID: <20080904085809.GA6460@brain>
-References: <1220467452-15794-5-git-send-email-apw@shadowen.org> <1220475206-23684-1-git-send-email-apw@shadowen.org> <48BEFAF9.3030006@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BEFAF9.3030006@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 4 Sep 2008 05:03:16 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35438 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752434AbYIDJDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 05:03:15 -0400
+Subject: Re: [PATCH 1/2] utrace core
+From: Petr Tesarik <ptesarik@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080903184613.GD16175@infradead.org>
+References: <20080826220102.89635154233@magilla.localdomain>
+	 <20080826220157.397C7154233@magilla.localdomain>
+	 <1220446707.6041.27.camel@elijah.suse.cz>
+	 <20080903180854.61207154228@magilla.localdomain>
+	 <20080903184613.GD16175@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qhsYZrVp9TwLv8TteA7k"
+Organization: SUSE LINUX
+Date: Thu, 04 Sep 2008 11:03:14 +0200
+Message-Id: <1220518994.6041.83.camel@elijah.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 03, 2008 at 04:00:41PM -0500, Christoph Lameter wrote:
-> Andy Whitcroft wrote:
-> 
-> >  
-> >  #ifndef __GENERATING_BOUNDS_H
-> > @@ -208,6 +211,9 @@ __PAGEFLAG(SlubDebug, slub_debug)
-> >   */
-> >  TESTPAGEFLAG(Writeback, writeback) TESTSCFLAG(Writeback, writeback)
-> >  __PAGEFLAG(Buddy, buddy)
-> > +PAGEFLAG(BuddyCapture, buddy_capture)	/* A buddy page, but reserved. */
-> > +	__SETPAGEFLAG(BuddyCapture, buddy_capture)
-> > +	__CLEARPAGEFLAG(BuddyCapture, buddy_capture)
-> 
-> Doesnt __PAGEFLAG do what you want without having to explicitly specify
-> __SET/__CLEAR?
 
-I think I end up with one extra test that I don't need, but its
-probabally much clearer.
+--=-qhsYZrVp9TwLv8TteA7k
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> How does page allocator fastpath behavior fare with this pathch?
+On Wed, 2008-09-03 at 14:46 -0400, Christoph Hellwig wrote:
+> On Wed, Sep 03, 2008 at 11:08:54AM -0700, Roland McGrath wrote:
+> > > Why does it depend on MODULES?=20
+> >=20
+> > Because otherwise it's not adding anything new anyone can use.
+>=20
+> It doesn't add anything new to use either way
+>=20
+> > > Does this mean that when ptrace is switched to using the utrace engin=
+es,
+> > > non-modular kernels will have to lack ptrace(2)?
+> >=20
+> > No.  If that were done, then it would be:
+> > 	depends on MODULE || PTRACE
+> > or suchlike.
+> >=20
+> > > Is there anything in the code that actually breaks without
+> > > CONFIG_MODULES?
+> >=20
+> > No.
+>=20
+> In which case you should just remove this bogus (non-)dependency.
 
-The fastpath should be unaffected on the allocation side.  On the free
-side there is an additional check for merging with a buddy under capture
-as we merge buddies in __free_one_page.
++1
 
--apw
+Petr Tesarik
+
+
+--=-qhsYZrVp9TwLv8TteA7k
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQBIv6RSjpY2ODFi2ogRAvCsAJ9FnshgZ3arlVpmsdWZyJ+MaAzQ2wCeP8B1
+6T2565iM143Om0Ddu6okCeI=
+=pL3J
+-----END PGP SIGNATURE-----
+
+--=-qhsYZrVp9TwLv8TteA7k--
+
