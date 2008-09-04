@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbYIDFUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbYIDFWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbYIDFUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 01:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbYIDFUj
+	id S1756256AbYIDFWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 01:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYIDFWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 01:20:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33715 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbYIDFUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 01:20:39 -0400
-Date: Thu, 4 Sep 2008 15:20:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+	Thu, 4 Sep 2008 01:22:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50485 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751603AbYIDFWD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 01:22:03 -0400
+Date: Wed, 3 Sep 2008 22:21:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
 Subject: Re: linux-next: Tree for September 3
-Message-Id: <20080904152015.3145b06e.sfr@canb.auug.org.au>
-In-Reply-To: <20080903220546.bd673658.akpm@linux-foundation.org>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
-	<20080903214634.ea17ff53.akpm@linux-foundation.org>
-	<20080903215455.792c78a3.akpm@linux-foundation.org>
-	<20080904145744.3f791ca7.sfr@canb.auug.org.au>
-	<20080903220546.bd673658.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S"
+In-Reply-To: <20080903214634.ea17ff53.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au> <20080903214634.ea17ff53.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Andrew,
 
-On Wed, 3 Sep 2008 22:05:46 -0700 Andrew Morton <akpm@linux-foundation.org>=
- wrote:
+On Wed, 3 Sep 2008, Andrew Morton wrote:
 >
-> Thank gawd for that.
->=20
-> This breakage spans over 1000 commits.  Not sure how that can happen in
-> a rebased tree, but whatever.
+> The Vaio says:
+> 
+> calling  init_acpi_pm_clocksource+0x0/0x14a
+> initcall init_acpi_pm_clocksource+0x0/0x14a returned 0 after 32 msecs
+> calling  pcibios_assign_resources+0x0/0x70
+> pci 0000:06:05.0: BAR 9 too large: 0x00000000000000-0x00000003ffffff
 
-It happens because I merge that tree into linux-next early in the
-sequence and the two builds I do after each merge did not get the error
-(*and* David really did not do enough testing ...). The set of builds I
-do after merging all the trees hit that so I added a commit to the end of
-linux-next to fix it.
+Hmm. This should not be a new warning, afaik.
 
-That particular build bug will not be in today's linux-next because that
-particular tree has been fixed.
+But it looks totally bogus.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The code does:
 
---Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S
-Content-Type: application/pgp-signature
+	r_size = r->end - r->start + 1;
+	/* For bridges size != alignment */
+	align = (i < PCI_BRIDGE_RESOURCES) ? r_size : r->start;
+	order = __ffs(align) - 20;
+	if (order > 11) {
+		dev_warn(&dev->dev, "BAR %d too large: "
+			"%#016llx-%#016llx\n", i,
+			(unsigned long long)r->start,
+			(unsigned long long)r->end);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+and the thing is, that's a bridge resource, so it chooses r_start as the 
+alignment. Which is zero. so now __ffs(align) returns a bogus value, and 
+you get the bogus warning.
 
-iEYEARECAAYFAki/cA8ACgkQjjKRsyhoI8zGpQCfaAsbUkNJRPxCz7J6XtRkvaFm
-T1wAn1zXeoFvyM3yrYlfLi5dLdDUj6Ew
-=vuM1
------END PGP SIGNATURE-----
+But CARDBUS bridges are _different_ from normal PCI bridges, and the 
+alignment value isn't r->start. Strictly speaking it's not r_size either, 
+it's always a fixed alignment of 4096 for MMIO bridging, i think. Maybe. 
+Whatever. But our resource handling code can't handle that, and always 
+wants either size alignment or start alignment.
 
---Signature=_Thu__4_Sep_2008_15_20_15_+1000_UAzYWt9izz.wEp_S--
+But for cardbus bridges, we should be doing size alignment, and the 
+problem is that that code doesn't do the proper "resource_alignment()" 
+use.
+
+Can you apply this patch, just to see if it fixes things.
+
+And do you know when this started happening? It shouldn't have been all 
+that recent. Maybe you haven't tried your Vaio in a while?
+
+		Linus
+
+---
+ drivers/pci/setup-bus.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 82634a2..1aad599 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -352,11 +352,12 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long
+ 				continue;
+ 			r_size = r->end - r->start + 1;
+ 			/* For bridges size != alignment */
+-			align = (i < PCI_BRIDGE_RESOURCES) ? r_size : r->start;
++			align = resource_alignment(r);
+ 			order = __ffs(align) - 20;
+ 			if (order > 11) {
+-				dev_warn(&dev->dev, "BAR %d too large: "
++				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
+ 				       "%#016llx-%#016llx\n", i,
++				       (unsigned long long)align,
+ 				       (unsigned long long)r->start,
+ 				       (unsigned long long)r->end);
+ 				r->flags = 0;
