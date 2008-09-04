@@ -1,82 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYIDEKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYIDENN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbYIDEKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 00:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYIDEKk
+	id S1754109AbYIDENN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 00:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYIDEM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 00:10:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57287 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750975AbYIDEKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 00:10:39 -0400
-Date: Wed, 3 Sep 2008 21:10:29 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alok Kataria <akataria@vmware.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Michael Buesch <mb@bu3sch.de>, Dan Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH] Fix TSC calibration issues
-Message-ID: <20080903211029.187d8dab@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0809032041130.3515@nehalem.linux-foundation.org>
-References: <48BB2116.1060904@lwfinger.net>
-	<alpine.LFD.1.10.0809011504200.12958@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809020033450.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809012015160.12958@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809012033280.3210@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809020835150.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809020759480.3210@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809021918450.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809021120120.3210@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809022358370.3243@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0809021906250.3259@nehalem.linux-foundation.org>
-	<alpine.LFD.1.10.0809031103090.3243@apollo.tec.linutronix.de>
-	<1220490884.22734.83.camel@alok-dev1>
-	<alpine.LFD.1.10.0809031817430.3515@nehalem.linux-foundation.org>
-	<20080903201602.2ab6c449@infradead.org>
-	<alpine.LFD.1.10.0809032041130.3515@nehalem.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Thu, 4 Sep 2008 00:12:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53978 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750941AbYIDEM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 00:12:57 -0400
+Date: Thu, 4 Sep 2008 13:11:46 +0900
+To: joro@8bytes.org
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, iommu@lists.linux-foundation.org, mingo@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 1/3] x86: remove the NULL device hack in dma-mapping.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080903200114.GC16706@8bytes.org>
+References: <1220465065-10533-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1220465065-10533-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20080903200114.GC16706@8bytes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <20080904130800O.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008 20:59:05 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Wed, 3 Sep 2008 22:01:14 +0200
+Joerg Roedel <joro@8bytes.org> wrote:
 
-> The only frequency we can trust on 99% of all machines is the PIT,
-
-pmtimer is also quite ok, with the exception of some K6 based boxes.
-(I'm surprised the K6 boxes even have enough modern stuff to have
-pmtimer; I'd think they would fall under the date cutoff)
-
-> and it's a very uncomfortable programming model due to all the
-> history (it is one of the few truly 8-bit things left in a modern
-> PC). The other options are just not reliably there, or are known to
-> not have a stable frequency.
+> On Thu, Sep 04, 2008 at 03:04:23AM +0900, FUJITA Tomonori wrote:
+> > dma_alloc_coherent in dma-mapping.h has a hack to use
+> > x86_dma_fallback_dev if a pointer to a device is NULL. Some of IOMMUs
+> > don't need such hack. The hack also makes it difficult for IOMMUs to
+> > make a proper decision because the hack hides the information.
 > 
-> So how would you suggest we do it? Lowering the wait to 5ms (times 5,
-> so it's really 25ms, although we can probably stop early if the first 
-> iterations are very consistent) will work, but it _will_ reduce
-> precision. And it's still real time.
+> I don't think its the right way to work around shortcomings of the
+> generic code in the architecture specific implementations. Especially
+> when the generic code can be easily fixed like in this case.
 
-one of the options we have is to start with an initial
-rough-but-conservative estimate, and refine it over time as the system
-is running.... sort of like ntp but for the calibration.
+Well, the generic code should not have such work around.
 
-another option for calibrating the tsc rate is to read it from the
-msr's/cpuid/aperf of what the hardware says it should be, and then all
-we need is to verify it is that; that we could do over timer or quickly.
-(of course that only works for systems with constant tsc)
+As I wrote in another mail, you try to bring back the tricks used in
+arch/x86/kernel/pci-dma.c to lib/swiotlb.c. I try to bring back them
+to arch/x86/kernel/pci-swiotlb.c.
 
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  arch/x86/kernel/pci-swiotlb_64.c |   15 ++++++++++++++-
+> >  include/asm-x86/dma-mapping.h    |    9 +--------
+> >  2 files changed, 15 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+> > index c4ce033..f3d8d0e 100644
+> > --- a/arch/x86/kernel/pci-swiotlb_64.c
+> > +++ b/arch/x86/kernel/pci-swiotlb_64.c
+> > @@ -11,6 +11,8 @@
+> >  
+> >  int swiotlb __read_mostly;
+> >  
+> > +extern struct device x86_dma_fallback_dev;
+> > +
+> >  static dma_addr_t
+> >  swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
+> >  			int direction)
+> > @@ -18,9 +20,20 @@ swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
+> >  	return swiotlb_map_single(hwdev, phys_to_virt(paddr), size, direction);
+> >  }
+> >  
+> > +static void *x86_swiotlb_alloc_coherent(struct device *dev, size_t size,
+> > +					dma_addr_t *dma_handle, gfp_t gfp)
+> > +{
+> > +	if (!dev) {
+> > +		dev = &x86_dma_fallback_dev;
+> > +		gfp |= GFP_DMA;
+> > +	}
+> 
+> This really should be checked in the generic x86 dma_alloc_coherent
+> function.
+
+I don't think so. Any motherboards with the recent IOMMUs support ISA?
+
+
+> > +
+> > +	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
+> > +}
+> > +
+> >  struct dma_mapping_ops swiotlb_dma_ops = {
+> >  	.mapping_error = swiotlb_dma_mapping_error,
+> > -	.alloc_coherent = swiotlb_alloc_coherent,
+> > +	.alloc_coherent = x86_swiotlb_alloc_coherent,
+> >  	.free_coherent = swiotlb_free_coherent,
+> >  	.map_single = swiotlb_map_single_phys,
+> >  	.unmap_single = swiotlb_unmap_single,
+> > diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
+> > index bc6c8df..3463702 100644
+> > --- a/include/asm-x86/dma-mapping.h
+> > +++ b/include/asm-x86/dma-mapping.h
+> > @@ -14,7 +14,6 @@
+> >  
+> >  extern dma_addr_t bad_dma_address;
+> >  extern int iommu_merge;
+> > -extern struct device x86_dma_fallback_dev;
+> >  extern int panic_on_overflow;
+> >  extern int force_iommu;
+> >  
+> > @@ -251,14 +250,8 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
+> >  	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
+> >  		return memory;
+> >  
+> > -	if (!dev) {
+> > -		dev = &x86_dma_fallback_dev;
+> > -		gfp |= GFP_DMA;
+> > -	}
+> 
+> Why do you move this check to swiotlb implemenation? This will break
+> existing IOMMU implementations which don't check for a valid dev
+> pointer?
+
+As I wrote above, I don't think so (though I forgot to add this to
+pci-nommu.c).
