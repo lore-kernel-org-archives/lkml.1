@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbYIDTM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756523AbYIDTOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbYIDTM3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 15:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYIDTMV
+	id S1756523AbYIDTOU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYIDTOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 15:12:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48207 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753113AbYIDTMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 15:12:20 -0400
-Date: Thu, 4 Sep 2008 21:12:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: order functions in cpu/common.c and
-	cpu/common_64.c
-Message-ID: <20080904191205.GC24990@elte.hu>
-References: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com>
+	Thu, 4 Sep 2008 15:14:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36060 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753998AbYIDTOA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 15:14:00 -0400
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: frame unwinder patches
+From: Andi Kleen <andi@firstfloor.org>
+References: <g9p3du$n95$1@ger.gmane.org>
+Date: Thu, 04 Sep 2008 21:13:58 +0200
+In-Reply-To: <g9p3du$n95$1@ger.gmane.org> (Bernd Schubert's message of "Thu, 04 Sep 2008 18:46:52 +0200")
+Message-ID: <87tzcvvi4p.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bernd Schubert <bs@q-leap.de> writes:
 
-applied these patches to tip/x86/cpu:
+> Hello,
+>
+> up to 2.6.22 the -mm series had these nice frame unwinder patches, 
+> which gave beautiful stack traces. Unfortunately these frame unwinder patches
+> seem to have been dropped :(
+>
+> Anyone still maintaining updated patches?
 
- 0a488a5: x86: move 32bit related functions together
- 01b2e16: x86: make get_mode_name of 64bit the same as 32bit
- a0854a4: x86: make 32bit support show_msr like 64 bit
- 10a434f: x86: remove cpu_vendor_dev
- 9d31d35: x86: order functions in cpu/common.c and cpu/common_64.c v2
- 3da99c9: x86: make (early)_identify_cpu more the same between 32bit and 64 bit
- 5031088: x86: delay early cpu initialization until cpuid is done
- 5fef55f: x86: move mtrr cpu cap setting early in early_init_xxxx
+The SUSE kernel rpm should have an uptodate set
 
-thanks Yinghai!
+(ftp.suse.com/pub/projects/kernel/HEAD ) 
 
-	Ingo
+I agree that they were much better than the current unwinder,
+also they didn't require slowing down the kernel with 
+frame pointers.
+
+-Andi 
