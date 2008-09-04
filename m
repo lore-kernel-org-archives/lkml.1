@@ -1,47 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYIDQGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYIDQIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbYIDQGP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbYIDQF7
+	id S1754593AbYIDQIU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYIDQIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:05:59 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59830 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbYIDQF6 (ORCPT
+	Thu, 4 Sep 2008 12:08:06 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57625 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYIDQIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:05:58 -0400
-Date: Thu, 4 Sep 2008 17:05:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Parisc List <linux-parisc@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] forgotten refcount on sysctl root table
-Message-ID: <20080904160557.GT28946@ZenIV.linux.org.uk>
-References: <1220540651.3276.16.camel@localhost.localdomain>
+	Thu, 4 Sep 2008 12:08:04 -0400
+Date: Thu, 4 Sep 2008 10:07:39 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Ben Hutchings <bhutchings@solarflare.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-pci@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>
+Subject: [PATCH] Return value from schedule()
+Message-ID: <20080904160739.GK2772@parisc-linux.org>
+References: <20080827204626.4b65862f@extreme> <20080828111323.GI7908@solarflare.com> <20080903155713.7fab2e19@extreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220540651.3276.16.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080903155713.7fab2e19@extreme>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	We should've set refcount on the root sysctl table; otherwise we'll
-blow up the first time we get down to zero dynamically registered sysctl
-tables.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index fe47133..50ec088 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -159,6 +159,7 @@ static int proc_dointvec_taint(struct ctl_table *table, int write, struct file *
- static struct ctl_table root_table[];
- static struct ctl_table_root sysctl_table_root;
- static struct ctl_table_header root_table_header = {
-+	.count = 1,
- 	.ctl_table = root_table,
- 	.ctl_entry = LIST_HEAD_INIT(sysctl_table_root.default_set.list),
- 	.root = &sysctl_table_root,
+In some circumstances, you want to wait for an event to happen.  let's
+assume that it's a hardware event, so you can't just add a notifier of
+some kind, you have to poll.  Here's an example:
+
+On Wed, Sep 03, 2008 at 03:57:13PM -0700, Stephen Hemminger wrote:
+>  			return -ETIMEDOUT;
+> -		udelay(10);
+> +		if (signal_pending(current))
+> +			return -EINTR;
+> +		schedule();
+
+If there's no other task ready to run, schedule() could return in much
+less than 10 microseconds (actually, it could return in much less than
+10 microseconds even if another task does run, but let's ignore that case).
+
+If schedule() returned whether or not it had scheduled another task, we
+could do something like:
+
+		if (!schedule())
+			udelay(10);
+
+Please consider this patch:
+
+It can be useful to know whether a call to schedule() ran another task
+or not.  For example, if you're giving up the CPU while waiting for an
+event to happen, you might want to delay if no other process wants the
+CPU to ensure you're not just bashing away at a device that is unlikely
+to have finished yet.
+
+Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5270d44..39c6ef9 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -329,7 +329,7 @@ extern signed long schedule_timeout(signed long timeout);
+ extern signed long schedule_timeout_interruptible(signed long timeout);
+ extern signed long schedule_timeout_killable(signed long timeout);
+ extern signed long schedule_timeout_uninterruptible(signed long timeout);
+-asmlinkage void schedule(void);
++asmlinkage int schedule(void);
+ 
+ struct nsproxy;
+ struct user_namespace;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 04160d2..ba3ab9a 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4337,8 +4337,9 @@ pick_next_task(struct rq *rq, struct task_struct *prev)
+ 
+ /*
+  * schedule() is the main scheduler function.
++ * It returns 1 if we scheduled a new task and 0 if no other task was chosen.
+  */
+-asmlinkage void __sched schedule(void)
++asmlinkage int __sched schedule(void)
+ {
+ 	struct task_struct *prev, *next;
+ 	unsigned long *switch_count;
+@@ -4411,6 +4412,7 @@ need_resched_nonpreemptible:
+ 	preempt_enable_no_resched();
+ 	if (unlikely(test_thread_flag(TIF_NEED_RESCHED)))
+ 		goto need_resched;
++	return (next != prev);
+ }
+ EXPORT_SYMBOL(schedule);
+ 
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
