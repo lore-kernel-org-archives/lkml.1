@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756683AbYIDTO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbYIDTR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756683AbYIDTO4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 15:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYIDTOr
+	id S1756253AbYIDTR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbYIDTRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 15:14:47 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:18433 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754047AbYIDTOq (ORCPT
+	Thu, 4 Sep 2008 15:17:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:46310 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754113AbYIDTRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 15:14:46 -0400
+	Thu, 4 Sep 2008 15:17:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=egBarg4mAyXbXqtPAfJi84k/LtSaAFbrDMoWpZ1TeFSNm5inKcYGlubR2ukfCJe0+H
-         egcRyB3rCrsK5DHswNfVYFSa0a+xZuGtQaml/NqZh/AACImJc45rfCs+k7cxzmJv7S20
-         v3Muij8duVlIjlWKmBKS//G6Zd2gk1KK28Qic=
-Date: Thu, 4 Sep 2008 21:14:03 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-ext4@vger.kernel.org
-Subject: oops during unmount - ext3? (2.6.27-rc5)
-Message-ID: <20080904191356.GA7799@joi>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JIv18AgRFiBaOtDTrDSI6rcJm6Bqp5Npi/x6RKBPE3tKDf5VlVVBNXaBiLUTxR553e
+         2wgetoOq9wuliE2uK9GWl6G6jFoLXkbPlFPNJFd5iH0U9JPJ7yZXMSIuhj9bOdA3GtOZ
+         tTadOMcqoev9UCgy6PiG3b9Z/DsIKMQT5TkzI=
+Message-ID: <86802c440809041217p454c4471y66a8ed6907d9cc8@mail.gmail.com>
+Date: Thu, 4 Sep 2008 12:17:14 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 5/6] x86: move mtrr cpu cap setting early in early_init_xxxx
+Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       "Krzysztof Helt" <krzysztof.h1@wp.pl>
+In-Reply-To: <20080904191333.GD24990@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1220312246-30879-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1220312246-30879-5-git-send-email-yhlu.kernel@gmail.com>
+	 <20080904191333.GD24990@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-2 days ago 2.6.27-rc5 oopsed on halt with this call trace:
+On Thu, Sep 4, 2008 at 12:13 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+>> Krzysztof Helt <krzysztof.h1@wp.pl> found mtrr is not detected on k6-2
+>>
+>> root case:
+>>       we move mtrr_bp_init early for mtrr trimming.
+>> and in early_detect, only read cap from cpuid, so some cpu doesn't have
+>> that bit in cpuid and need to set workaround bit will have problem.
+>>
+>> need to add early_init_xxxx to preset those bit before mtrr_bp_init
+>> for those earlier cpus.
+>>
+>> this patch is for 2.6.27
+>
+> hm, not sure we can do it in v2.6.27 as it depends on the other CPU init
+> patches and that is a rather sensitive codepath. This problem should be
+> present in v2.6.26 too, right?
 
-dispose_list
-invalidate_inodes
-generic_shutdown_super
-kill_block_super
-? deactivate_super
-mntput_no_expire
-sys_umount
-system_call_fastpath
+Yes. old cpus without cpuid bit for mtrr need this patch...
+Krzysztof Helt tested it and it works with 2.6.27-rc5 (?)
 
-Code: f8 ff 48 89 df e8 bd 19 01 00 48 83 bb 90 02 00 00 00 74 04 0f 0b eb fe 48 8b 83 b8 03 00 00 a8 20 75 04 0f 0b eb fe a8 40 74 04 <0f> 0b eb fe 48 c7 c7 7a a0 57 80 be 56 00 00 00 e8 56 31 f8 ff
 
-RIP clear_inode
-
-Output of decodecode:
-/tmp/tmp.To8z8HQ0uE.o:     file format elf64-x86-64
-
-Disassembly of section .text:
-
-0000000000000000 <.text>:
-   0:   f8                      clc
-   1:   ff 48 89                decl   -0x77(%rax)
-   4:   df e8                   fucomip %st(0),%st
-   6:   bd 19 01 00 48          mov    $0x48000119,%ebp
-   b:   83 bb 90 02 00 00 00    cmpl   $0x0,0x290(%rbx)
-  12:   74 04                   je     0x18
-  14:   0f 0b                   ud2a
-  16:   eb fe                   jmp    0x16
-  18:   48 8b 83 b8 03 00 00    mov    0x3b8(%rbx),%rax
-  1f:   a8 20                   test   $0x20,%al
-  21:   75 04                   jne    0x27
-  23:   0f 0b                   ud2a
-  25:   eb fe                   jmp    0x25
-  27:   a8 40                   test   $0x40,%al
-  29:   74 04                   je     0x2f
-
-/tmp/tmp.To8z8HQ0uE.o:     file format elf64-x86-64
-
-Disassembly of section .text:
-
-0000000000000000 <.text>:
-   0:   0f 0b                   ud2a
-   2:   eb fe                   jmp    0x2
-   4:   48 c7 c7 7a a0 57 80    mov    $0xffffffff8057a07a,%rdi
-   b:   be 56 00 00 00          mov    $0x56,%esi
-  10:   e8 56 31 f8 ff          callq  0xfffffffffff8316b
-
-You can see partial screenshot and .config at http://www.kadu.net/~joi/kernel/2008.09.04/
-
-It might be related to http://lkml.org/lkml/2008/9/3/405 - I'm not sure.
-2 bugs related to VFS and/or ext3 in 2 days (I'm running .27 since rc1)
-
-Marcin
+YH
