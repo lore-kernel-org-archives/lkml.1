@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYIDKJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbYIDKKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbYIDKJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 06:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYIDKJG
+	id S1757279AbYIDKKQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 06:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYIDKKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 06:09:06 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:20600 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYIDKJF (ORCPT
+	Thu, 4 Sep 2008 06:10:05 -0400
+Received: from stargate.synerway.com ([84.14.10.249]:43687 "EHLO
+	kamino.synerway.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751892AbYIDKKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 06:09:05 -0400
-Date: Thu, 4 Sep 2008 12:08:55 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-Subject: Re: qestion about I2C_CLASS_HWMON flag
-Message-ID: <20080904120855.7e7b9720@hyperion.delvare>
-In-Reply-To: <38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
-References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
-	<38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
-	<20080904103707.557ac764@hyperion.delvare>
-	<38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Thu, 4 Sep 2008 06:10:04 -0400
+X-Greylist: delayed 914 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Sep 2008 06:10:03 EDT
+Date: Thu, 4 Sep 2008 11:54:47 +0200
+From: Pascal GREGIS <pgs@synerway.com>
+To: linux-kernel@vger.kernel.org
+Subject: SCSI or libata problem with an RDX removable disk
+Message-ID: <20080904095447.GE2814@venus.synerway.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
+X-OriginalArrivalTime: 04 Sep 2008 09:54:47.0818 (UTC) FILETIME=[4417DEA0:01C90E74]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 10:49:55 +0200, Francis Moreau wrote:
-> On Thu, Sep 4, 2008 at 10:37 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > Hi Francis,
-> >
-> > On Thu, Sep 4, 2008 at 9:43 AM, Francis Moreau <francis.moro@gmail.com> wrote:
-> >> I'm wondering why does this flag exist ?
-> >>
-> >> Why is a hw monitor device so special so that an I2C bus needs
-> >> a flag to tell the rest of the world that it support it ?
-> >
-> > I don't understand your point. We have I2C_CLASS flags for many I2C
-> > device types (analog TV, digital TV, etc.) I2C_CLASS_HWMON isn't the
-> > exception you describe. Look at <linux/i2c.h> for a list of these flags.
-> >
-> 
-> My question (sorry if that silly) is why do we need these flags at all ?
-> 
-> Can't I2C bus address any kinds of I2C devices ?
+Hello everyone,
 
-In general they can, yes (where they can't, it's due to restrictions in
-protocol implementations, not device types.) But this isn't a matter of
-what devices can be on the bus. This is a matter of what devices can be
-probed for on a given bus. For example, hardware monitoring drivers
-which handle I2C devices, make sure that I2C_CLASS_HWMON is set before
-probing I2C addresses on a given bus in search of a device to
-auto-detect. On the other hand, if they are merely attaching to an I2C
-device which has already been instantiated (and thus no probing is
-needed) they do not care about the class. The reason for this mechanism
-is that probing can be risky, so we want to limit it to what is
-strictly needed. For example, there is no point in probing the I2C bus
-of a TV adapter for hardware monitoring chips - there simply can't be
-any there. If there ever was any, that would be such a special case
-that we would instantiate the I2C device in question explicitly from
-the adapter code, so we have no need for probing.
+I turn to you with a new problem about scsi or libata.
+I have a removable disk of type RDX, connected by SATA to my linux machine.
+I access it via libata on /dev/sdb, like a classical disk.
+I write to it a certain time with some mounts and umounts.
+After a certain number of mounting and unmounting, or maybe a certain number of hours (not clearly identified), the device refuses to be mounted, saying "You must specify the filesystem type.".
+Looking to /var/log/messages I have the following logs :
 
-The general idea is that the class value is about what devices can be
-probed for, not what devices can be present. The field should probably
-have been named "probe_class" instead of just "class", but back when it
-was created, all I2C in the kernel was about probing so this precision
-didn't seem needed. Things have changed since then. Maybe we'll rename
-it at some point but I don't want to bother driver authors uselessly.
 
-> What make hwmon devices special so that some I2C adapter can't
-> talk to them ?
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] READ CAPACITY failed
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Sense not available.
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Write Protect is off
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Mode Sense: 00 00 00 00
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Asking for cache data failed
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Assuming drive cache: write through
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] READ CAPACITY failed
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK,SUGGEST_OK
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Sense not available.
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Write Protect is off
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Mode Sense: 00 00 00 00
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Asking for cache data failed
+Jul 15 14:55:54 testrdx kernel: sd 0:0:1:0: [sdb] Assuming drive cache: write through
 
-Again there's nothing special about hwmon. All device types are (or
-should be) handled the same way.
+These lines are logged again when I run cfdisk or parted or hdparm or anything
+on /dev/sdb.
 
--- 
-Jean Delvare
+My system is :
+linux kernel 2.6.21.1 with some patches :
+- libata-start_stop_management (http://bugs.gentoo.org/attachment.cgi?id=118829)
+
+compiled with libata.
+
+Motherboard ICH6 family (id 2651)
+
+Does anyone know this problem or have an idea about what it is and what to do?
+
+Thank you in advance
+
+Pascal
