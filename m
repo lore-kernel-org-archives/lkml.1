@@ -1,110 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYIDI0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbYIDI1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbYIDI0v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757868AbYIDIXu
+	id S1757434AbYIDI1Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757747AbYIDIYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:23:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48315 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757368AbYIDIXs (ORCPT
+	Thu, 4 Sep 2008 04:24:17 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37027 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757710AbYIDIYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:23:48 -0400
-Date: Thu, 4 Sep 2008 01:23:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for September 3
-In-Reply-To: <86802c440809040014w5a6d2921k8c99b3978772e1fb@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0809040102260.3378@nehalem.linux-foundation.org>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>  <20080903214634.ea17ff53.akpm@linux-foundation.org>  <alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>  <20080903223318.84b6ce8b.akpm@linux-foundation.org>
- <86802c440809040014w5a6d2921k8c99b3978772e1fb@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Sep 2008 04:24:15 -0400
+Subject: [PATCH] ftrace: make ftrace_printk usable with the other tracers
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080903214249.661170580@goodmis.org>
+References: <20080903214249.661170580@goodmis.org>
+Content-Type: text/plain
+Date: Thu, 04 Sep 2008 10:24:14 +0200
+Message-Id: <1220516654.8609.200.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Subject: ftrace: make ftrace_printk usable with the other tracers
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue Sep 02 21:12:13 CEST 2008
+
+Currently ftrace_printk only works with the ftrace tracer, switch it to an
+iter_ctrl setting so we can make us of them with other tracers too.
+
+[rostedt@redhat.com: tweak to the disable condition]
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/trace/trace.c |   41 +++++++++++++++++++++++++++--------------
+ kernel/trace/trace.h |    2 ++
+ 2 files changed, 29 insertions(+), 14 deletions(-)
+
+Index: linux-2.6/kernel/trace/trace.c
+===================================================================
+--- linux-2.6.orig/kernel/trace/trace.c
++++ linux-2.6/kernel/trace/trace.c
+@@ -235,6 +235,7 @@ static const char *trace_options[] = {
+ 	"block",
+ 	"stacktrace",
+ 	"sched-tree",
++	"ftrace_printk",
+ 	NULL
+ };
+ 
+@@ -3086,9 +3098,10 @@ static __init void tracer_init_debugfs(v
+ 
+ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ {
+-	struct trace_array *tr = &global_trace;
+ 	static DEFINE_SPINLOCK(trace_buf_lock);
+ 	static char trace_buf[TRACE_BUF_SIZE];
++
++	struct trace_array *tr = &global_trace;
+ 	struct trace_array_cpu *data;
+ 	struct trace_entry *entry;
+ 	unsigned long flags;
+@@ -3096,7 +3109,7 @@ int __ftrace_printk(unsigned long ip, co
+ 	va_list ap;
+ 	int cpu, len = 0, write, written = 0;
+ 
+-	if (likely(!ftrace_function_enabled))
++	if (!(trace_flags & TRACE_ITER_PRINTK) || !tr->ctrl || tracing_disabled)
+ 		return 0;
+ 
+ 	local_irq_save(flags);
+@@ -3104,7 +3117,7 @@ int __ftrace_printk(unsigned long ip, co
+ 	data = tr->data[cpu];
+ 	disabled = atomic_inc_return(&data->disabled);
+ 
+-	if (unlikely(disabled != 1 || !ftrace_function_enabled))
++	if (unlikely(disabled != 1))
+ 		goto out;
+ 
+ 	spin_lock(&trace_buf_lock);
+Index: linux-2.6/kernel/trace/trace.h
+===================================================================
+--- linux-2.6.orig/kernel/trace/trace.h
++++ linux-2.6/kernel/trace/trace.h
+@@ -356,6 +357,7 @@ enum trace_iterator_flags {
+ 	TRACE_ITER_BLOCK		= 0x80,
+ 	TRACE_ITER_STACKTRACE		= 0x100,
+ 	TRACE_ITER_SCHED_TREE		= 0x200,
++	TRACE_ITER_PRINTK		= 0x400,
+ };
+ 
+ #endif /* _LINUX_KERNEL_TRACE_H */
 
 
-On Thu, 4 Sep 2008, Yinghai Lu wrote:
-> >
-> > --- x   2008-09-03 21:38:24.000000000 -0700
-> > +++ y   2008-09-03 22:29:04.000000000 -0700
-> > ...
-> > @@ -503,15 +503,15 @@
-> >  calling  init_acpi_pm_clocksource+0x0/0x14a
-> >  initcall init_acpi_pm_clocksource+0x0/0x14a returned 0 after 32 msecs
-> >  calling  pcibios_assign_resources+0x0/0x70
-> > -pci 0000:06:05.0: BAR 9 too large: 0x00000000000000-0x00000003ffffff
-> >  pci 0000:06:05.0: CardBus bridge, secondary bus 0000:07
-> >  pci 0000:06:05.0:   IO window: 0x002400-0x0024ff
-> >  pci 0000:06:05.0:   IO window: 0x002800-0x0028ff
-> > -pci 0000:06:05.0:   MEM window: 0x54000000-0x57ffffff
-> > +pci 0000:06:05.0:   PREFETCH window: 0x50000000-0x53ffffff
-> > +pci 0000:06:05.0:   MEM window: 0x58000000-0x5bffffff
-> >  pci 0000:00:1e.0: PCI bridge, secondary bus 0000:06
-> >  pci 0000:00:1e.0:   IO window: 0x2000-0x2fff
-> >  pci 0000:00:1e.0:   MEM window: 0xb0100000-0xb01fffff
-> > -pci 0000:00:1e.0:   PREFETCH window: disabled
-> > +pci 0000:00:1e.0:   PREFETCH window: 0x00000050000000-0x00000053ffffff
-> >  pci 0000:00:1e.0: setting latency timer to 64
-> >  pci 0000:06:05.0: power state changed by ACPI to D0
-> 
-> 06:05.0 is under 00:1e.0
-
-Right. This is the depth-first bus assignment, so what happens is that 
-pci_assign_unassigned_resources() does:
-
-        /* Depth first, calculate sizes and alignments of all
-           subordinate buses. */
-        list_for_each_entry(bus, &pci_root_buses, node) {
-                pci_bus_size_bridges(bus);
-        }
-
-where pci_bus_size_bridges() does depth-first (and _has_ to, of course, 
-since it needs to look at the inner bridges in order to be able to size 
-the outer ones!)
-
-And there it will now successfully see that BAR 9 that used to get 
-ignored, so now it sizes the PCI bridge that leads _to_ the Cardbus bridge 
-with that in mind. So that is why the "BAR 9 too large" message has gone 
-away, but that is all that got printed out at the resource _sizing_ stage.
-
-And then, after all the sizing has been done, the odd ordering of the 
-printout is because we next do:
-
-        /* Depth last, allocate resources and update the hardware. */
-        list_for_each_entry(bus, &pci_root_buses, node) {
-                pci_bus_assign_resources(bus); 
-                pci_enable_bridges(bus);
-        }
-
-and that "Depth last" comment is a bit mis-leading.
-
-It is true that "pci_bus_assign_resources()" will make the actual call to 
-"pbus_assign_resources_sorted()" depth-last, but if you look at how it 
-then actually writes those assigned resources to the actual bridge 
-devices, it will do those "pci_setup_bridge/cardbus()" calls depth-first: 
-if you look at pci_bus_assign_resources(), you'll see that it does the 
-recursive call for the subordinate bus _before_ it sets up the upper 
-bridge.
-
-And since the _printout_ comes when the final setup is done, that means 
-that the Cardbus bridge (that is deeper in the resource chain) will print 
-out first. So even though the resource was _allocated_ depth-last, it is 
-written out depth-first!
-
-> wonder if some pci code change cause that.... doesn't get pref mem assigned.
-> 
-> can you apply attached patches to get more dump?
-
-It all works fine, and makes sense (well, except for the printout order, 
-which is a bit non-obvious, but it all boils down to us wanting to have 
-all the inner bridges set up correctly before we "enable" them through the 
-outer bridge mapping, so that depth-first makes sense, I think).
-
-			Linus
