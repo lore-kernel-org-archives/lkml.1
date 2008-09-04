@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYIDIVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbYIDIWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbYIDIVg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYIDIVR
+	id S1757556AbYIDIWP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbYIDIV5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:21:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52195 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbYIDIVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:21:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [GIT]: Networking
-Date: Thu, 4 Sep 2008 10:25:14 +0200
-User-Agent: KMail/1.9.9
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, tomasw@gmail.com, yi.zhu@intel.com,
-       linville@tuxdriver.com, Jeff Garzik <jeff@garzik.org>
-References: <20080903.161341.239039051.davem@davemloft.net> <alpine.LFD.1.10.0809031621160.3515@nehalem.linux-foundation.org> <20080903.162603.27086959.davem@davemloft.net>
-In-Reply-To: <20080903.162603.27086959.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809041025.15277.rjw@sisk.pl>
+	Thu, 4 Sep 2008 04:21:57 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:30867 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbYIDIVz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 04:21:55 -0400
+X-IronPort-AV: E=Sophos;i="4.32,320,1217822400"; 
+   d="scan'208";a="59017791"
+From: Bryan Wu <cooloney@kernel.org>
+To: broonie@opensource.wolfsonmicro.com
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/9] ASoC: add Blackfin build options to Kconfig and Makefile of sound soc framework
+Date: Thu,  4 Sep 2008 16:22:00 +0800
+Message-Id: <1220516528-20301-2-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1220516528-20301-1-git-send-email-cooloney@kernel.org>
+References: <1220516528-20301-1-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 4 of September 2008, David Miller wrote:
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Wed, 3 Sep 2008 16:24:16 -0700 (PDT)
-> 
-> > On Wed, 3 Sep 2008, Linus Torvalds wrote:
-> > > 
-> > > What's so hard to understand about this?
-> > 
-> > Here's a simple rule of thumb:
-> >  - if it's not on the regression list
-> >  - if it's not a reported security hole
-> >  - if it's not on the reported oopses list
-> > then why are people sending it to me?
-> > 
-> > IOW, if it's just another random improvement, and you send it to me 
-> > outside of the merge window, then what is the point of the merge window? 
-> 
-> This is exactly what I've been trying to tell the Intel wireless folks
-> but they refuse to listen.
-> 
-> I just won't take their stuff until they get their act in gear.
-> 
-> No problem.
+From: Cliff Cai <cliff.cai@analog.com>
 
-BTW, there are two regression fixes for forcedeth:
+Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ sound/soc/Kconfig  |    2 +-
+ sound/soc/Makefile |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-http://marc.info/?l=linux-kernel&m=121894389018584&w=4
-http://marc.info/?l=linux-kernel&m=121917167232014&w=4
-
-that fix the regressions tracked as:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11358
-http://bugzilla.kernel.org/show_bug.cgi?id=11361
-
-respectively and both are more than 2 weeks old now.
-
-Is there any chance to push them upstream or is there anything wrong with them?
-
-Thanks,
-Rafael
+diff --git a/sound/soc/Kconfig b/sound/soc/Kconfig
+index f743530..0adbc92 100644
+--- a/sound/soc/Kconfig
++++ b/sound/soc/Kconfig
+@@ -31,7 +31,7 @@ source "sound/soc/sh/Kconfig"
+ source "sound/soc/fsl/Kconfig"
+ source "sound/soc/davinci/Kconfig"
+ source "sound/soc/omap/Kconfig"
+-
++source "sound/soc/blackfin/Kconfig"
+ # Supported codecs
+ source "sound/soc/codecs/Kconfig"
+ 
+diff --git a/sound/soc/Makefile b/sound/soc/Makefile
+index 933a66d..d849349 100644
+--- a/sound/soc/Makefile
++++ b/sound/soc/Makefile
+@@ -2,4 +2,4 @@ snd-soc-core-objs := soc-core.o soc-dapm.o
+ 
+ obj-$(CONFIG_SND_SOC)	+= snd-soc-core.o
+ obj-$(CONFIG_SND_SOC)	+= codecs/ at32/ at91/ pxa/ s3c24xx/ sh/ fsl/ davinci/
+-obj-$(CONFIG_SND_SOC)	+= omap/ au1x/
++obj-$(CONFIG_SND_SOC)	+= omap/ au1x/ blackfin/
+-- 
+1.5.6
