@@ -1,121 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbYIDU6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYIDVCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbYIDU6u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYIDU6l
+	id S1755837AbYIDVCM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 17:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754101AbYIDVB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:58:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57771 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753702AbYIDU6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:58:40 -0400
-Date: Thu, 4 Sep 2008 22:58:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: order functions in cpu/common.c and
-	cpu/common_64.c
-Message-ID: <20080904205821.GA8348@elte.hu>
-References: <1220331936-15100-1-git-send-email-yhlu.kernel@gmail.com> <20080904191205.GC24990@elte.hu> <20080904193733.GA25136@elte.hu> <20080904194127.GA2542@elte.hu> <20080904200421.GA24295@elte.hu> <86802c440809041307i24cce782u4937d6fd2311c6f@mail.gmail.com> <86802c440809041332w197c2b88w95eda369dbb7761e@mail.gmail.com> <86802c440809041337l5ae10298od1c38dd43863e0ea@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809041337l5ae10298od1c38dd43863e0ea@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 4 Sep 2008 17:01:58 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:40544 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753979AbYIDVB5 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 17:01:57 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>, Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+In-Reply-To: Your message of "Thu, 04 Sep 2008 17:36:20 +0200."
+             <20080904153620.GC7120@elte.hu>
+From: Valdis.Kletnieks@vt.edu
+References: <20080904150339.896115280@linutronix.de>
+            <20080904153620.GC7120@elte.hu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1220562057_3385P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 04 Sep 2008 17:00:57 -0400
+Message-ID: <116316.1220562057@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1220562057_3385P
+Content-Type: text/plain; charset=us-ascii
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+On Thu, 04 Sep 2008 17:36:20 +0200, Ingo Molnar said:
 
-> On Thu, Sep 4, 2008 at 1:32 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > On Thu, Sep 4, 2008 at 1:07 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >> On Thu, Sep 4, 2008 at 1:04 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >>>
-> >>> * Ingo Molnar <mingo@elte.hu> wrote:
-> >>>
-> >>>> > i've pushed out the broken tree into tip/tmp.master.broken (havent
-> >>>> > updated tip/master with the breakage). I've removed the broken
-> >>>> > printk in kernel/resource.c that Andrew found, see commit
-> >>>> > 06e44f6af324 - so that's not the cause.
-> >>>>
-> >>>> i've double checked that 06e44f6af324 is applied. I'll bisect this.
-> >>>
-> >>> bisection came up with:
-> >>>
-> >>>  # good: [8bfd9710] Merge branch 'x86/xsave'
-> >>>  # bad:  [06e44f6a] IO resources: fix/remove printk
-> >>>  # good: [282a5f84] Merge branch 'irq/sparseirq'
-> >>>  # bad:  [a0854a46] x86: make 32bit support show_msr like 64 bit
-> >>>  # good: [5031088d] x86: delay early cpu initialization until cpuid is
-> >>>  # good: [9d31d35b] x86: order functions in cpu/common.c and cpu/commo
-> >>>  # bad:  [10a434fc] x86: remove cpu_vendor_dev
-> >>>
-> >>> | 10a434fcb23a57c385177a0086955fae01003f64 is first bad commit
-> >>> | commit 10a434fcb23a57c385177a0086955fae01003f64
-> >>> | Author: Yinghai Lu <yhlu.kernel@gmail.com>
-> >>> | Date:   Thu Sep 4 21:09:45 2008 +0200
-> >>> |
-> >>> |     x86: remove cpu_vendor_dev
-> >>>
-> >>> and the thing is, 10a434fc is way too big:
-> >>>
-> >>> | 15 files changed, 106 insertions(+), 106 deletions(-)
-> >>>
-> >>> and it's not obvious at first (neither at second) sight what the problem
-> >>> is. You really need to start doing much smaller patches for such
-> >>> critical/hard-to-debug code areas.
-> >>>
-> >> could be alignment again...
-> >
-> > ffffffff80d86c20 d __cpu_dev_amd_cpu_dev
-> > ffffffff80d86c20 A __x86_cpu_dev_start
-> > ffffffff80d86c28 d __dyn_array_ptr_irq_2_pin_head
-> > ffffffff80d86c28 D __dyn_array_start
-> > ffffffff80d86c30 d __dyn_array_ptr_irq_cfgx
-> > ffffffff80d86c38 d __dyn_array_ptr_sparse_irqs
-> > ffffffff80d86c40 D __dyn_array_end
-> > ffffffff80d86c40 d __initcall_selinux_init
-> > ffffffff80d86c40 D __per_cpu_dyn_array_end
-> > ffffffff80d86c40 D __per_cpu_dyn_array_start
-> > ffffffff80d86c40 D __security_initcall_start
-> > ffffffff80d86c48 R __parainstructions
-> > ffffffff80d86c48 D __security_initcall_end
-> > ffffffff80d86c48 A __x86_cpu_dev_end
-> >
-> > don't know how could the linker squash others tables into cpu_dev
-> > pointer array..
-> 
-> it seems there is some merging problem.. please check
-> 
-> index 192f6d8..30973db 100644
-> --- a/arch/x86/kernel/vmlinux_64.lds.S
-> +++ b/arch/x86/kernel/vmlinux_64.lds.S
-> @@ -172,11 +172,11 @@ SECTIONS
->    .x86_cpu_dev.init : AT(ADDR(.x86_cpu_dev.init) - LOAD_OFFSET) {
->         *(.x86_cpu_dev.init)
->    }
-> +  __x86_cpu_dev_end = .;
-> 
->    DYN_ARRAY_INIT(8)
-> 
->    SECURITY_INIT
-> -  __x86_cpu_dev_end = .;
-> 
->    . = ALIGN(8);
->    .parainstructions : AT(ADDR(.parainstructions) - LOAD_OFFSET) {
+> i've added them to tip/x86/tsc and merged it into tip/master - if 
+> there's test success we can merge it into x86/urgent as well and push it 
+> into v2.6.27. Any objections to that merge route?
 
-indeed, that was my fault and it probably explains the crash i was 
-seeing - thanks!
+Timekeeping has always been a snarly issue fraught with peril when testing on
+new hardware.  Are we confident enough that this will DTRT on almost every
+platform, including all the busticated ones?  Seems dangerous to be merging
+it for .27 when we're already past -rc5.
 
-	Ingo
+But if Ingo and Thomas want to merge it, it's OK with me as long as they
+take the blame for it. :)
+
+
+--==_Exmh_1220562057_3385P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIwEyJcC3lWbTT17ARAogqAJ43DiqotPwRzeHLjVHCjJ5ZpZ8qmwCgxzBv
+dbjTeF15mB7pzDW0a1kiojg=
+=zH/E
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1220562057_3385P--
