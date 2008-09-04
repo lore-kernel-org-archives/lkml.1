@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYIDKBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbYIDKJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756763AbYIDKBq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 06:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYIDKBh
+	id S1756521AbYIDKJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 06:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbYIDKJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 06:01:37 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5872 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbYIDKBg (ORCPT
+	Thu, 4 Sep 2008 06:09:06 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:20600 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbYIDKJF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 06:01:36 -0400
-X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K6O16C-03-EBP-01
-Date: Thu, 4 Sep 2008 12:00:35 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: joro@8bytes.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, mingo@redhat.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 1/3] x86: remove the NULL device hack in dma-mapping.h
-Message-ID: <20080904100035.GS3189@amd.com>
-References: <1220465065-10533-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220465065-10533-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20080903200114.GC16706@8bytes.org> <20080904130800O.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080904130800O.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 04 Sep 2008 10:00:35.0575 (UTC) FILETIME=[135F6070:01C90E75]
+	Thu, 4 Sep 2008 06:09:05 -0400
+Date: Thu, 4 Sep 2008 12:08:55 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Francis Moreau" <francis.moro@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       i2c@lm-sensors.org
+Subject: Re: qestion about I2C_CLASS_HWMON flag
+Message-ID: <20080904120855.7e7b9720@hyperion.delvare>
+In-Reply-To: <38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+	<38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
+	<20080904103707.557ac764@hyperion.delvare>
+	<38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 01:11:46PM +0900, FUJITA Tomonori wrote:
-> On Wed, 3 Sep 2008 22:01:14 +0200
-> Joerg Roedel <joro@8bytes.org> wrote:
+On Thu, 4 Sep 2008 10:49:55 +0200, Francis Moreau wrote:
+> On Thu, Sep 4, 2008 at 10:37 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> > Hi Francis,
+> >
+> > On Thu, Sep 4, 2008 at 9:43 AM, Francis Moreau <francis.moro@gmail.com> wrote:
+> >> I'm wondering why does this flag exist ?
+> >>
+> >> Why is a hw monitor device so special so that an I2C bus needs
+> >> a flag to tell the rest of the world that it support it ?
+> >
+> > I don't understand your point. We have I2C_CLASS flags for many I2C
+> > device types (analog TV, digital TV, etc.) I2C_CLASS_HWMON isn't the
+> > exception you describe. Look at <linux/i2c.h> for a list of these flags.
+> >
 > 
-> > On Thu, Sep 04, 2008 at 03:04:23AM +0900, FUJITA Tomonori wrote:
-> > > dma_alloc_coherent in dma-mapping.h has a hack to use
-> > > x86_dma_fallback_dev if a pointer to a device is NULL. Some of IOMMUs
-> > > don't need such hack. The hack also makes it difficult for IOMMUs to
-> > > make a proper decision because the hack hides the information.
-> > 
-> > I don't think its the right way to work around shortcomings of the
-> > generic code in the architecture specific implementations. Especially
-> > when the generic code can be easily fixed like in this case.
+> My question (sorry if that silly) is why do we need these flags at all ?
 > 
-> Well, the generic code should not have such work around.
+> Can't I2C bus address any kinds of I2C devices ?
 
-I don't see that as a workaround. It is the best what we can do to
-handle device dma_masks with the current Linux page allocator (if we
-don't have hardware dma translation).
+In general they can, yes (where they can't, it's due to restrictions in
+protocol implementations, not device types.) But this isn't a matter of
+what devices can be on the bus. This is a matter of what devices can be
+probed for on a given bus. For example, hardware monitoring drivers
+which handle I2C devices, make sure that I2C_CLASS_HWMON is set before
+probing I2C addresses on a given bus in search of a device to
+auto-detect. On the other hand, if they are merely attaching to an I2C
+device which has already been instantiated (and thus no probing is
+needed) they do not care about the class. The reason for this mechanism
+is that probing can be risky, so we want to limit it to what is
+strictly needed. For example, there is no point in probing the I2C bus
+of a TV adapter for hardware monitoring chips - there simply can't be
+any there. If there ever was any, that would be such a special case
+that we would instantiate the I2C device in question explicitly from
+the adapter code, so we have no need for probing.
 
-> As I wrote in another mail, you try to bring back the tricks used in
-> arch/x86/kernel/pci-dma.c to lib/swiotlb.c. I try to bring back them
-> to arch/x86/kernel/pci-swiotlb.c.
+The general idea is that the class value is about what devices can be
+probed for, not what devices can be present. The field should probably
+have been named "probe_class" instead of just "class", but back when it
+was created, all I2C in the kernel was about probing so this precision
+didn't seem needed. Things have changed since then. Maybe we'll rename
+it at some point but I don't want to bother driver authors uselessly.
 
-As I said, I don't see that as a 'hack'. It is also what the fixme
-comment in the swiotlb alloc_coherent function stated, that this
-function has to handle the DMA mask of the device.
+> What make hwmon devices special so that some I2C adapter can't
+> talk to them ?
 
-> > > +static void *x86_swiotlb_alloc_coherent(struct device *dev, size_t size,
-> > > +					dma_addr_t *dma_handle, gfp_t gfp)
-> > > +{
-> > > +	if (!dev) {
-> > > +		dev = &x86_dma_fallback_dev;
-> > > +		gfp |= GFP_DMA;
-> > > +	}
-> > 
-> > This really should be checked in the generic x86 dma_alloc_coherent
-> > function.
-> 
-> I don't think so. Any motherboards with the recent IOMMUs support ISA?
-
-Not that I am aware of. But as we both know there are people who do
-corner case tests with the dma-api functions like passing their own
-created devices or even NULL to it an look what happens :-)
-We have to handle this case in _every_ IOMMU implemention. So the
-generic function is the right place for this check, imho.
-
-Joerg
+Again there's nothing special about hwmon. All device types are (or
+should be) handled the same way.
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+Jean Delvare
