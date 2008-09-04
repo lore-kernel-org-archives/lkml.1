@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbYIDSEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYIDSFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbYIDSEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYIDSEN
+	id S1755690AbYIDSFl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYIDSFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:04:13 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56866 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbYIDSEM (ORCPT
+	Thu, 4 Sep 2008 14:05:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49082 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752958AbYIDSFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:04:12 -0400
-To: serge@hallyn.com
-CC: miklos@szeredi.hu, serue@us.ibm.com, ebiederm@xmission.com,
-       akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080904174851.GA13693@hallyn.com> (serge@hallyn.com)
-Subject: Re: unprivileged mounts git tree
-References: <E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu> <20080903220215.GA27705@us.ibm.com> <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu> <20080904161729.GA26579@us.ibm.com> <E1KbIqL-0003QO-34@pomaz-ex.szeredi.hu> <20080904174851.GA13693@hallyn.com>
-Message-Id: <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 04 Sep 2008 20:03:50 +0200
+	Thu, 4 Sep 2008 14:05:30 -0400
+Date: Thu, 4 Sep 2008 11:05:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: linux-next: Tree for September 3
+In-Reply-To: <20080904104554.32ffebea.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au> <20080903214634.ea17ff53.akpm@linux-foundation.org> <alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org> <20080903223318.84b6ce8b.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org> <20080904012544.cabed847.akpm@linux-foundation.org> <alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org> <20080904015701.5959623a.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org> <20080904104554.32ffebea.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
-> Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
-> > > but you're still doing
-> > > 
-> > > 	if (IS_MNT_SHARED(old_nd.path.mnt) && !capable(CAP_SYS_ADMIN))
-> > > 		goto out;
-> > > 
-> > > shouldn't it be something like
-> > > 
-> > > 	if (IS_MNT_SHARED(old_nd.path.mnt) && (old_nd.path.mnt & MNT_USER))
-> > > 		goto out;
-> > > 
-> > > ?
-> > 
-> > Why would that be an error?  There's no real security gain to be had
-> > from restricting a privileged user, but could cause a lot of
-> > annoyance.  If we think this is dangerous, then protection should be
-> > built into mount(8) with an option to override.  But not into the
-> > kernel, IMO.
+
+On Thu, 4 Sep 2008, Andrew Morton wrote:
 > 
-> We disagree on that.  But can we agree that the check you added is wrong?
+> Working on it, but got distracted by a /proc/net bug.
 
-No :)
+Ok, that's just something odd.
 
-> There is no reason why a user mount should not be able to do shared
-> mounts, is there?
+> sony:/home/akpm> ls -l /proc/net/dev
+> ls: /proc/net/dev: Permission denied
+> 
+> sony:/home/akpm> ls -l /proc/net
+> ls: /proc/net: Permission denied
+> 
+> sony:/home/akpm> ls -ld /proc/net
+> ls: /proc/net: Permission denied
+> 
+> sony:/home/akpm> ls -l /proc | grep net
+> ?---------  ? ?         ?                 ?            ? /proc/net
+> 
+> This is a pull of your tree from yesterday, ending at commit 
+> fbb16e243887332dd5754e48ffe5b963378f3cd2
 
-I don't know.  It's something to think about in the future, but not
-essential.  We know that without the above check the user can do bad
-things: propagate mounts back into the source, and we don't want that.
+There's been various suggested patches by Al/Eric (added to cc) for 
+/proc/net handling, but none of them have actually even been merged yet. 
+So I don't think this code has changed in a while. 
 
-We could allow binding a shared mount if
+Al, Eric, ideas?
 
-  a) the owners of the source and destination match
-  b) the destination is made a slave of the source
+> config: http://userweb.kernel.org/~akpm/config-sony.txt
+> dmesg: http://userweb.kernel.org/~akpm/dmesg-sony-without.txt
 
-But the current patchset doesn't allow _any_ changes to propagation
-without CAP_SYS_ADMIN, so why should bind be an exception?
+That whole thing should just be a simple symlink:
 
-And yes, this is something to think about, but I think it's a rather
-uncommon corner case, and so the patchset very much makes sense
-without having to deal with unprivileged mount propagation changes.
+	fs/proc/proc_net.c:     proc_symlink("net", NULL, "self/net");
 
->  So should the check above just go away then?
+are you sure it's a plain tree of mine, without any of the patches 
+floating around between Eric/Al?
 
-No, we'd be back with the original problem.
-
-Thanks,
-Miklos
+			Linus
