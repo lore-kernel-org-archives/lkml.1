@@ -1,101 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbYIDRqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755735AbYIDRsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755524AbYIDRqh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYIDRqZ
+	id S1755735AbYIDRsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYIDRsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:46:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51223 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752268AbYIDRqY (ORCPT
+	Thu, 4 Sep 2008 13:48:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:36702 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbYIDRsI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:46:24 -0400
-Date: Thu, 4 Sep 2008 10:45:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, netdev@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: linux-next: Tree for September 3
-Message-Id: <20080904104554.32ffebea.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
-	<20080903214634.ea17ff53.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org>
-	<20080903223318.84b6ce8b.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org>
-	<20080904012544.cabed847.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org>
-	<20080904015701.5959623a.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Sep 2008 13:48:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=qo5RzTzmJmitfgtAwELRFiskgPy0dYEjHVhDRP2v6EF2r+HYBGEExXMvddFBiT2oDp
+         fFSAldqnqkstTS9w634uRtDmUQ6iXA3erven/R0LVZITkf+Ffq/fFTmY0sivaBMdqBg6
+         qQOciWIng3afjV/7yPqWDCpOV4SNOi1BurOH4=
+From: Rui Sousa <rui.p.m.sousa@gmail.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATH] Fix compilation when CONFIG_TRACE_IRQFLAGS_SUPPORT is not set
+Date: Thu, 4 Sep 2008 19:47:53 +0200
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+References: <200809031753.07292.rui.p.m.sousa@gmail.com> <20080904143918.GA28095@elte.hu> <48C0175B.3070500@ct.jp.nec.com>
+In-Reply-To: <48C0175B.3070500@ct.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809041947.54339.rui.p.m.sousa@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008 02:07:05 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thursday 4 September 2008 19:14, Hiroshi Shimamoto wrote:
+> Ingo Molnar wrote:
+> > * Rui Sousa <rui.p.m.sousa@gmail.com> wrote:
+> >> Hi,
+> >>
+> >> This patch fixes compilation if CONFIG_TRACE_IRQFLAGS_SUPPORT is ever
+> >> disabled (which is currently not allowed by Kconfig). Alternatively we
+> >> could just remove the option altogether and the associated code paths.
+> >> Since the compilation error has been in the tree for at least two
+> >> years and no one noticed it, I guess we don't really have the need for
+> >> CONFIG_TRACE_IRQFLAGS_SUPPORT=n. Boot tested on x86 UP.
+> >
+> > applied to tip/core/locking - thanks Rui.
+> >
+> > since you fixed it i prefer the fix over the removal. We could still
+> > remove the !TRACE_IRQFLAGS_SUPPORT now (in a separate commit) and
+> > simpify this header a bit that way. Thus if someone needs the
+> > !TRACE_IRQFLAGS_SUPPORT mode of build for future work, it can be
+> > restored via a simple revert.
+>
+> Hi, it seems that this patch breaks uml build.
 
-> 
-> 
-> On Thu, 4 Sep 2008, Andrew Morton wrote:
-> > > 
-> > > commit 5f17cfce5776c566d64430f543a289e5cfa4538b
-> > > 
-> > >     PCI: fix pbus_size_mem() resource alignment for CardBus controllers
-> > 
-> > Is this worth backporting into 2.6.26.x?
-> 
-> It's certainly at least *potentially* -stable material, but because I 
-> suspect that the whole yenta_allocate_resources() -> pci_setup_cardbus() 
-> fallback code will end up resulting in a working setup, it may not be 
-> worth it.  At least not until we've heard from more people..
-> 
-> Can you check whether your vortex cardbus thing _works_ even without the 
-> fix?
-> 
+Hi Hiroshi,
 
-Working on it, but got distracted by a /proc/net bug.
+> kernel/printk.c: In function 'vprintk':
+> kernel/printk.c:674: error: implicit declaration of function
+> 'raw_local_irq_save' kernel/printk.c:772: error: implicit declaration of
+> function 'raw_local_irq_restore'
 
+With the patch bellow it compiles (make ARCH=um with a x86 host), but I'm 
+really out of my league on this one...
 
+> thanks,
+> Hiroshi Shimamoto
 
-sony:/home/akpm> ifconfig -a
-Warning: cannot open /proc/net/dev (Permission denied). Limited output.
-Warning: cannot open /proc/net/dev (Permission denied). Limited output.
-eth0      Link encap:Ethernet  HWaddr 00:01:4A:9F:7C:79  
-          inet addr:192.168.2.10  Bcast:192.168.2.255  Mask:255.255.255.0
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+Thanks,
+Rui
 
-Warning: cannot open /proc/net/dev (Permission denied). Limited output.
-lo        Link encap:Local Loopback  
-          inet addr:127.0.0.1  Mask:255.0.0.0
-          UP LOOPBACK RUNNING  MTU:16436  Metric:1
-
-sony:/home/akpm> ls -l /proc/net/dev
-ls: /proc/net/dev: Permission denied
-
-sony:/home/akpm> ls -l /proc/net
-ls: /proc/net: Permission denied
-
-sony:/home/akpm> ls -ld /proc/net
-ls: /proc/net: Permission denied
-
-sony:/home/akpm> ls -l /proc | grep net
-?---------  ? ?         ?                 ?            ? /proc/net
-
-
-This is a pull of your tree from yesterday, ending at
-
-
-commit fbb16e243887332dd5754e48ffe5b963378f3cd2
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Wed Sep 3 00:54:47 2008 +0200
-
-    [x86] Fix TSC calibration issues
-
-config: http://userweb.kernel.org/~akpm/config-sony.txt
-dmesg: http://userweb.kernel.org/~akpm/dmesg-sony-without.txt
+---
+diff --git a/include/asm-um/system-generic.h b/include/asm-um/system-generic.h
+index 5bcfa35..f1ea4da 100644
+--- a/include/asm-um/system-generic.h
++++ b/include/asm-um/system-generic.h
+@@ -4,15 +4,15 @@
+ #include "asm/arch/system.h"
+ 
+ #undef switch_to
+-#undef local_irq_save
+-#undef local_irq_restore
+-#undef local_irq_disable
+-#undef local_irq_enable
+-#undef local_save_flags
+-#undef local_irq_restore
+-#undef local_irq_enable
+-#undef local_irq_disable
+-#undef local_irq_save
++#undef raw_local_irq_save
++#undef raw_local_irq_restore
++#undef raw_local_irq_disable
++#undef raw_local_irq_enable
++#undef raw_local_save_flags
++#undef raw_local_irq_restore
++#undef raw_local_irq_enable
++#undef raw_local_irq_disable
++#undef raw_local_irq_save
+ #undef irqs_disabled
+ 
+ extern void *switch_to(void *prev, void *next, void *last);
+@@ -23,21 +23,21 @@ extern int get_signals(void);
+ extern void block_signals(void);
+ extern void unblock_signals(void);
+ 
+-#define local_save_flags(flags) do { typecheck(unsigned long, flags); \
++#define raw_local_save_flags(flags) do { typecheck(unsigned long, flags); \
+ 				     (flags) = get_signals(); } while(0)
+-#define local_irq_restore(flags) do { typecheck(unsigned long, flags); \
++#define raw_local_irq_restore(flags) do { typecheck(unsigned long, flags); \
+ 				      set_signals(flags); } while(0)
+ 
+-#define local_irq_save(flags) do { local_save_flags(flags); \
+-                                   local_irq_disable(); } while(0)
++#define raw_local_irq_save(flags) do { raw_local_save_flags(flags); \
++                                   raw_local_irq_disable(); } while(0)
+ 
+-#define local_irq_enable() unblock_signals()
+-#define local_irq_disable() block_signals()
++#define raw_local_irq_enable() unblock_signals()
++#define raw_local_irq_disable() block_signals()
+ 
+ #define irqs_disabled()                 \
+ ({                                      \
+         unsigned long flags;            \
+-        local_save_flags(flags);        \
++        raw_local_save_flags(flags);        \
+         (flags == 0);                   \
+ })
+ 
