@@ -1,119 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbYIDVHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYIDVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbYIDVHQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 17:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYIDVHE
+	id S1755290AbYIDVIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 17:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYIDVIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 17:07:04 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:48330 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbYIDVHD convert rfc822-to-8bit (ORCPT
+	Thu, 4 Sep 2008 17:08:06 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:41473 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbYIDVIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 17:07:03 -0400
-From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Andi Kleen <andi@firstfloor.org>, Don Zickus <dzickus@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arozansk@redhat.com" <arozansk@redhat.com>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Date: Thu, 4 Sep 2008 21:05:37 +0000
-Subject: RE: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Thread-Topic: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Thread-Index: AckO0OFkoQsTnCZNRPywwznWrxzmiAAADNKg
-Message-ID: <183C1D5A376DE343AA8F94FC2A1EC14938D3E748D1@GVW1091EXB.americas.hpqcorp.net>
-References: <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com>
- <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org>
- <20080904172052.GN3400@redhat.com>
- <20080904175231.GH18288@one.firstfloor.org>
- <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com>
- <20080904200032.GM18288@one.firstfloor.org>
- <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net>
- <20080904205725.GC4349@redhat.com>
-In-Reply-To: <20080904205725.GC4349@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Sep 2008 17:08:04 -0400
+Message-ID: <48C04D7C.6020500@cs.columbia.edu>
+Date: Thu, 04 Sep 2008 17:05:00 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
+       Andrey Mirkin <major@openvz.org>
+Subject: Re: [RFC v3][PATCH 1/9] Create syscalls: sys_checkpoint,	sys_restart
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040401320.5982@takamine.ncl.cs.columbia.edu> <20080904144223.GA19364@us.ibm.com> <48C01B92.60900@cs.columbia.edu> <20080904203730.GA28313@us.ibm.com>
+In-Reply-To: <20080904203730.GA28313@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok regarding question #1. The die_notifier works as you mentioned; however, the fact that the watchdog timer ticks also come through as NMIs is a hinderance. Now, when the watchdog timer is configured through the LOCAL_APIC the issue isn't so bad. I think the hpwdt driver handles the NMI coming in because there isn't a flood of timer ticks coming through as in the IOAPIC case.
-
-As for the KDUMP perhaps I am missing something. If I handle the NMI coming in and source it via our BIOS, I then stop the watchdog timer and the kdump will take place.
-
-Tom
-
------Original Message-----
-From: Vivek Goyal [mailto:vgoyal@redhat.com]
-Sent: Thursday, September 04, 2008 3:57 PM
-To: Mingarelli, Thomas
-Cc: Andi Kleen; Don Zickus; Ingo Molnar; Prarit Bhargava; Peter Zijlstra; linux-kernel@vger.kernel.org; arozansk@redhat.com; ak@linux.intel.com; Alan Cox; H. Peter Anvin; Thomas Gleixner; Maciej W. Rozycki
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-
-On Thu, Sep 04, 2008 at 08:01:31PM +0000, Mingarelli, Thomas wrote:
-> Exactly.
->
-> The hpwdt driver is meant to be a catch-all for any NMI coming through on ProLiant HW only. Moreover, for newer ProLiant HW at that.
->
-> Once the NMI comes in, we call into our BIOS for the true reason of the NMI. That message gets logged to the IML in NVRAM for the user to view. We then panic the system.
->
-> Yes, kdump will work under this scenario because we stop the watchdog timer. This is a user configurable setting.
->
->
-
-Sorry I did not get it. Few questions.
-
-- So you want to capture every NMI and then do something. So what's the
-  harm in registering on die chain and look for both DIE_NMI_IPI and
-  DIE_NMI events and take appropriate action? Depending on reason code,
-  one or other will be called. If I read the code correctly, you will get
-  to see every NMI on that cpu irrespective of the reason and then you can
-  take the action accordingly.
-
-- How would kdump continue to work above driver hijacks the nmi callback.
-  You will disable watchdog, log message and call panic(). panic() will
-  lead to kdump and kdump will send NMI IPI to reset of the cpus in the
-  system to save their state and halt these. The moment other cpus get
-  NMI IPI, above driver will hijack that NMI also and nobody gets a chance
-  to run? So kdump will not work?
-
-  Am I missing something?
-
-Thanks
-Vivek
 
 
+Serge E. Hallyn wrote:
+> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>
+>> Serge E. Hallyn wrote:
+>>> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>>>> Create trivial sys_checkpoint and sys_restore system calls. They will
+>>>> enable to checkpoint and restart an entire container, to and from a
+>>>> checkpoint image file descriptor.
+>>>>
+>>>> The syscalls take a file descriptor (for the image file) and flags as
+>>>> arguments. For sys_checkpoint the first argument identifies the target
+>>>> container; for sys_restart it will identify the checkpoint image.
+>>>>
+>>>> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+>>>> ---
+>> [...]
+>>
+>>>> +/**
+>>>> + * sys_checkpoint - checkpoint a container
+>>>> + * @pid: pid of the container init(1) process
+>>>> + * @fd: file to which dump the checkpoint image
+>>>> + * @flags: checkpoint operation flags
+>>>> + */
+>>>> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+>>>> +{
+>>>> +	pr_debug("sys_checkpoint not implemented yet\n");
+>>>> +	return -ENOSYS;
+>>>> +}
+>>>> +/**
+>>>> + * sys_restart - restart a container
+>>>> + * @crid: checkpoint image identifier
+>>> So can we compare your api to Andrey's?
+>>>
+>>> You've explained before that crid is used to tie together multiple
+>>> calls to checkpoint, but why do you have to specify it for restart?
+>>> Can't it just come from the fd?  Or, the fd will be passed in
+>>> seek()d to the right position for the data for this task, so the crid
+>>> won't be available there?
+>> I added the 'crid' inside to support a mode of operation in which we
+>> would like the checkpoint data to remain in memory across multiple
+>> system calls. Here are example scenarios:
+>>
+>> 1) We will want to reduce down time by first buffering the checkpoint
+>> image in memory, then resuming the container, and only then writing
+>> the data back to a (the) file descriptor.
+>> So instead of:
+>>   freeze -> checkpoint and write back -> unfreeze
+>> We want:
+>>   freeze -> checkpoint to buffer -> unfreeze -> write back
+>> I envision each of these steps to be a separate invocation of a syscall.
+>> to the 'crid' returned by the sys_checkpoint() at the 2nd step, will be
+>> used to identify that data in the 4th step. (Note, that between the
+>> unfreeze and the write-back, another checkpoint may be already taken).
+>>
+>> 2) A task may want to take a checkpoint (e.g. of itself, or a whole
+>> container) and keep that checkpoint in memory; at a later time it may
+>> want to revert to that checkpoint. Moreover, it may keep multiple such
+>> checkpoints (to where it may want to return). 'crid' tells sys_restart
+>> which one to use.
+>>
+>> Note that this 'crid' will in fact be tied to resources that are kept
+>> by the kernel - e.g. references to COW pages (when we add that).
+>> Louis suggested to use a specialized FD instead of a numeric 'crid'
+>> (that is: create a anonymous inode and a struct file that represent
+>> that checkpoint in the kernel, and return an FD to it). This approach
+>> has pros and cons of 'crid' (see the archives of the containers
+>> mailing list). For now I kept 'crid', but I'm definitely open to change
+>> it to a FD.
+>>
+>> Oren.
+> 
+> Oh, so the crid identifies one checkpoint inside the file - the single
+> file can store multiple checkpoints?
 
-> Tom
->
-> -----Original Message-----
-> From: Andi Kleen [mailto:andi@firstfloor.org]
-> Sent: Thursday, September 04, 2008 3:01 PM
-> To: Vivek Goyal
-> Cc: Don Zickus; Andi Kleen; Ingo Molnar; Prarit Bhargava; Peter Zijlstra; linux-kernel@vger.kernel.org; arozansk@redhat.com; Mingarelli, Thomas; ak@linux.intel.com; Alan Cox; H. Peter Anvin; Thomas Gleixner; Maciej W. Rozycki
-> Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
->
-> > Add "kdump" to the list. It will also be broken if we decide to let one
-> > driver hijack the NMI handler.
->
-> kdump is a special case, similar to the NMI button panic mode. It should
-> be always only active when the user configured it. When the user configured
-> it should be always the fallback and override any other drivers.
->
-> But watchdog is a special case. I assume the watchdog will just log
-> (and do the work that a SMI should be doing) but then continue
-> the chain so that kdump can dump on a watchdog timeout.
->
-> -Andi
+Not quite. Let me rephrase the motivation first:
+
+There are occasions when we would like to keep the checkpoint data in the
+kernel for some (relatively long) time, between syscalls. By "checkpoint
+data" I mean references to memory contents (pages) and all the other data.
+
+The two scenarios above are two examples: between the syscall to checkpoint
+and the syscall to unfreeze and then write-back the data to a file (first
+example), and for some time until a task may want to "go back in time"
+(second example, useful for ultra fast "undo" for a task).
+
+Note that in both cases when I say "keep in kernel" I mean before it is
+written to a file, or to the network. Simply in memory, in some efficient
+manner.
+
+Subsequent syscalls will need to refer to a specific checkpoint data that
+is kept in memory - e.g. to write-back to a file-descriptor, or to clean
+up, or to restart from it. (At any single time a specific container may
+have multiple checkpoints associated with it - eg. because they have not
+yet been written back to storage but already taken).
+
+Once the data is written back to a file descriptor, the in-kernel data can
+be discarded and cleaned-up.
+
+The main reason why I want to keep the data in the kernel and not instead
+copy to user space, is efficiency: most of the checkpoint data is the memory
+footprint; by keeping the data in the kernel, one can merely keep a COW
+reference instead of a whole copy of everything (save space and copy time).
+
+So, if we have keep data in kernel between syscalls, then we must have a
+way to refer to it. The current implementation uses a very simple 'crid'
+value to do that - although, clearly, at the moment it isn't used.
+
+I hope this explains better.
+
+Oren.
+
+> 
+>>> Andrey, how will the 'ctid' in your patchset be used?  It sounds
+>>> like it's actually going to set some integer id on the created
+>>> container?  We actually don't have container ids (or even
+>>> containers) right now, so we probably don't want that in our api,
+>>> right?
+> 
+> -serge
