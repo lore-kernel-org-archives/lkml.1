@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYIDM0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYIDMa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbYIDM0v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbYIDM0m
+	id S1754570AbYIDMa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYIDMaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:26:42 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:5652 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbYIDM0m (ORCPT
+	Thu, 4 Sep 2008 08:30:16 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:18459 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752609AbYIDMaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:26:42 -0400
-X-SourceIP: 213.46.9.244
-Subject: Re: oltp ~10% regression with 2.6.27-rc5 on stoakley machine
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, mingo <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>
-In-Reply-To: <1220530328.12161.29.camel@minggr>
-References: <1220518266.9590.22.camel@minggr>
-	 <1220519034.8609.206.camel@twins>  <1220525579.12161.8.camel@minggr>
-	 <1220526360.8609.213.camel@twins>  <1220530328.12161.29.camel@minggr>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 14:26:27 +0200
-Message-Id: <1220531187.8609.217.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Sep 2008 08:30:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=jdYIxiR6dTA/uBmObDiW1HFYg4WNqQ2CPCTyDjz6EZTeZ9x2fogN9nU1HnZ/4mqiDW
+         embhUV63p8XmixAiAHhB5ObzzEHmk4czKC/ngPZuMIOitTEDEhXSBU2MPdY0kLw8+xcf
+         QLoXkpHEY2FEbgP4mvh0N0esx0ZRTrSc7PjOA=
+From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mtd@lists.infradead.org, Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Ian Molton <spyro@f2s.com>
+Subject: [PATCH] tmio_nand: fix base address programming
+Date: Thu,  4 Sep 2008 16:27:44 +0400
+Message-Id: <1220531264-1006-1-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-04 at 20:12 +0800, Lin Ming wrote:
-> > > > Thats bizarre... that just indicates the better clock, which should give
-> > > > better (read fairer) scheduling hurts your workload.
-> > > > 
-> > > > Is there anything I can run to see if we can fix the scheduler perhaps?
-> > > 
-> > > I observed schedstats of sysbench, there's more
-> > > "nr_failed_migrations_hot"
-> > > 
-> > > 2.6.27-rc4: se.nr_failed_migrations_hot 11
-> > > 2.6.27-rc5: se.nr_failed_migrations_hot 95
-> > > 
-> > > task migration failed because of task_hot, the system is un-balanced?
-> > 
-> > Ah, that makes sense, a more accurate clock could indeed make more tasks
-> > hot.
-> > 
-> > Can you try fiddling with: /proc/sys/kernel/sched_migration_cost ?
-> 
-> sched_migration_cost		regression
-> ----------------------          -------------
-> 50000                           ~6%
-> 0				~8%
-> 500000 (default)		~10%
-> 5000000                         ~14%
-> -1				~19%
+Fix offset of second word used for programming base address of memory
+window. Also program tmio with offset of the FCR, not with physical
+memory location.
 
-at 50000 (~6%), is the predominant difference in schedstats still the
-nr_failed_migrations_hot?
+Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Ian Molton <spyro@f2s.com>
+---
+ drivers/mtd/nand/tmio_nand.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/mtd/nand/tmio_nand.c b/drivers/mtd/nand/tmio_nand.c
+index cbab654..edb1e32 100644
+--- a/drivers/mtd/nand/tmio_nand.c
++++ b/drivers/mtd/nand/tmio_nand.c
+@@ -109,7 +109,7 @@ struct tmio_nand {
+ 
+ 	void __iomem *ccr;
+ 	void __iomem *fcr;
+-	unsigned long fcr_phys;
++	unsigned long fcr_base;
+ 
+ 	unsigned int irq;
+ 
+@@ -316,8 +316,8 @@ static int tmio_hw_init(struct platform_device *dev, struct tmio_nand *tmio)
+ 	tmio_iowrite8(0x81, tmio->ccr + CCR_ICC);
+ 
+ 	/* (10h)BaseAddress    0x1000 spba.spba2 */
+-	tmio_iowrite16(tmio->fcr_phys, tmio->ccr + CCR_BASE);
+-	tmio_iowrite16(tmio->fcr_phys >> 16, tmio->ccr + CCR_BASE + 16);
++	tmio_iowrite16(tmio->fcr_base, tmio->ccr + CCR_BASE);
++	tmio_iowrite16(tmio->fcr_base >> 16, tmio->ccr + CCR_BASE + 2);
+ 
+ 	/* (04h)Command Register I/O spcmd */
+ 	tmio_iowrite8(0x02, tmio->ccr + CCR_COMMAND);
+@@ -395,7 +395,7 @@ static int tmio_probe(struct platform_device *dev)
+ 		goto err_iomap_ccr;
+ 	}
+ 
+-	tmio->fcr_phys = (unsigned long)fcr->start;
++	tmio->fcr_base = fcr->start & 0xfffff;
+ 	tmio->fcr = ioremap(fcr->start, fcr->end - fcr->start + 1);
+ 	if (!tmio->fcr) {
+ 		retval = -EIO;
+-- 
+1.5.6.5
 
