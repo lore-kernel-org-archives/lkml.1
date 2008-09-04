@@ -1,93 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbYIDPwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbYIDQAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931AbYIDPwa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 11:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbYIDPwV
+	id S1753267AbYIDQAV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 12:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750822AbYIDQAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 11:52:21 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55216 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbYIDPwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 11:52:20 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Prarit Bhargava <prarit@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, arozansk@redhat.com, dzickus@redhat.com,
-       Thomas.Mingarelli@hp.com, ak@linux.intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com>
-	<1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com>
-	<20080904145617.GB28095@elte.hu>
-Date: Thu, 04 Sep 2008 17:52:17 +0200
-In-Reply-To: <20080904145617.GB28095@elte.hu> (Ingo Molnar's message of "Thu, 4 Sep 2008 16:56:17 +0200")
-Message-ID: <87y727vrgu.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 4 Sep 2008 12:00:07 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44332 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751898AbYIDQAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:00:04 -0400
+Date: Thu, 4 Sep 2008 11:00:00 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: Oren Laadan <orenl@cs.columbia.edu>, containers@lists.linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de,
+       dave@linux.vnet.ibm.com
+Subject: Re: [RFC v3][PATCH 2/9] General infrastructure for checkpoint
+	restart
+Message-ID: <20080904160000.GB19364@us.ibm.com>
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu> <Pine.LNX.4.64.0809040402170.5982@takamine.ncl.cs.columbia.edu> <20080904091230.GW14473@hawkmoon.kerlabs.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080904091230.GW14473@hawkmoon.kerlabs.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
->
-> i'd much rather attack this general problem from this angle:
->
->   static inline unsigned char get_nmi_reason(void)
->   {
->           return inb(0x61);
->   }
->
-> that port 61H read is both arcane (on modern chipsets) and broken on 
-> multiple levels.
+Quoting Louis Rilling (Louis.Rilling@kerlabs.com):
+> On Thu, Sep 04, 2008 at 04:02:38AM -0400, Oren Laadan wrote:
+> >
+> > Add those interfaces, as well as helpers needed to easily manage the
+> > file format. The code is roughly broken out as follows:
+> >
+> > checkpoint/sys.c - user/kernel data transfer, as well as setup of the
+> > checkpoint/restart context (a per-checkpoint data structure for
+> > housekeeping)
+> >
+> > checkpoint/checkpoint.c - output wrappers and basic checkpoint handling
+> >
+> > checkpoint/restart.c - input wrappers and basic restart handling
+> >
+> > Patches to add the per-architecture support as well as the actual
+> > work to do the memory checkpoint follow in subsequent patches.
+> >
+> 
+> [...]
+> 
+> > diff --git a/include/linux/ckpt_hdr.h b/include/linux/ckpt_hdr.h
+> > new file mode 100644
+> > index 0000000..629ad5a
+> > --- /dev/null
+> > +++ b/include/linux/ckpt_hdr.h
+> > @@ -0,0 +1,82 @@
+> > +#ifndef _CHECKPOINT_CKPT_HDR_H_
+> > +#define _CHECKPOINT_CKPT_HDR_H_
+> > +/*
+> > + *  Generic container checkpoint-restart
+> > + *
+> > + *  Copyright (C) 2008 Oren Laadan
+> > + *
+> > + *  This file is subject to the terms and conditions of the GNU General Public
+> > + *  License.  See the file COPYING in the main directory of the Linux
+> > + *  distribution for more details.
+> > + */
+> > +
+> > +#include <linux/types.h>
+> > +#include <linux/utsname.h>
+> > +
+> > +/*
+> > + * To maintain compatibility between 32-bit and 64-bit architecture flavors,
+> > + * keep data 64-bit aligned: use padding for structure members, and use
+> > + * __attribute__ ((aligned (8))) for the entire structure.
+> > + */
+> > +
+> > +/* records: generic header */
+> > +
+> > +struct cr_hdr {
+> > +	__s16 type;
+> > +	__s16 len;
+> > +	__u32 parent;
+> > +};
+> > +
+> > +/* header types */
+> > +enum {
+> > +	CR_HDR_HEAD = 1,
+> > +	CR_HDR_STRING,
+> > +
+> > +	CR_HDR_TASK = 101,
+> > +	CR_HDR_THREAD,
+> > +	CR_HDR_CPU,
+> > +
+> > +	CR_HDR_MM = 201,
+> > +	CR_HDR_VMA,
+> > +	CR_HDR_MM_CONTEXT,
+> > +
+> > +	CR_HDR_TAIL = 5001
+> > +};
+> > +
+> > +struct cr_hdr_head {
+> > +	__u64 magic;
+> > +
+> > +	__u16 major;
+> > +	__u16 minor;
+> > +	__u16 patch;
+> > +	__u16 rev;
+> > +
+> > +	__u64 time;	/* when checkpoint taken */
+> > +	__u64 flags;	/* checkpoint options */
+> > +
+> > +	char release[__NEW_UTS_LEN];
+> > +	char version[__NEW_UTS_LEN];
+> > +	char machine[__NEW_UTS_LEN];
+> > +} __attribute__((aligned(8)));
+> > +
+> > +struct cr_hdr_tail {
+> > +	__u64 magic;
+> > +} __attribute__((aligned(8)));
+> > +
+> > +struct cr_hdr_task {
+> > +	__u64 state;
+> > +	__u32 exit_state;
+> > +	__u32 exit_code, exit_signal;
+> 
+> 64bits alignment issue?
+> I probably missed it in previous versions...
 
-Yes it is. I did some datasheet reading recently and unfortunately
-there is no really standardized better way. So the only replacement
-would be to have chipset specific NMI drivers that know 
-the particular registers of the chipset.
+In the first version it was followed by two __u16's (pid and tgid)...
 
- It's racy and SMP unsafe to begin with, if there's any 
-> mixture of intentional cross-CPU or CPU self-generated NMIs mixed with 
-> chipset generated NMIs.
->
-> One possible approach would be to get rid of it, and to perhaps register 
-
-Removing the IO port accesses by default would be a good idea
-I agree. They are hardly useful for anything on modern systems.
-
-But you still need some way to catch the chipset NMIs
-and give some indication of the problem.
-
-The way so far was to ask all the other sources (software NMIs
-in memory flags, perfmon IPIs check perf ctrs, etc.) first 
-and if it's none of them assume it's a chipset NMI
-(or NMI button NMI if the sysctl is set).
-
-Then if there's a chipset specific NMI driver it could
-also check if the chipset raised it. That would be a possible
-solution for HP -- they would need to implement such a driver
-for their systems with the special watchdog.
-
-Yes that's racy but the poor hardware support doesn't unfortunately 
-leave much wiggling room to do better.
-
-> a low-priority die notifier on systems where we know port 61 
-> reads+writes to be safe and desired. Modern systems will emit MCEs in 
-> most cases anyway, not NMIs.
-
-The chipsets will still trigger NMIs (depending on their
-configuration) -- e.g. on some PCI or internal errors -- they cannot
-trigger MCEs directly.  Fortunately it's being replaced with PCI-AER
-on PCI-Express, but PCI-X which doesn't do that is still very common
-and shipping.
-
-BTW the NMI handlers are also racy, it's not safe 
-to call printk in a NMI handler. They really should be taught
-to start using mce_log()
-
--Andi
--- 
-ak@linux.intel.com
+-serge
