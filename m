@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbYIDEN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYIDENo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751669AbYIDEN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 00:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYIDEM6
+	id S1756315AbYIDENo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 00:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYIDEM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 00:12:58 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53979 "EHLO sh.osrg.net"
+	Thu, 4 Sep 2008 00:12:59 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53980 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbYIDEM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 00:12:57 -0400
-Date: Thu, 4 Sep 2008 13:11:46 +0900
+	id S1751165AbYIDEM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 00:12:58 -0400
+Date: Thu, 4 Sep 2008 13:11:35 +0900
 To: joro@8bytes.org
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       tony.luck@intel.com, iommu@lists.linux-foundation.org, mingo@redhat.com,
+Cc: fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, hpa@zytor.com, tglx@linutronix.de,
        kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 3/3] swiotlb: use GFP_DMA32 instead of GFP_DMA in
- swiotlb_alloc_coherent
+Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures
+ with swiotlb
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080903200527.GD16706@8bytes.org>
-References: <1220465065-10533-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1220465065-10533-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20080903200527.GD16706@8bytes.org>
+In-Reply-To: <20080903195414.GB16706@8bytes.org>
+References: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com>
+	<20080904024842J.fujita.tomonori@lab.ntt.co.jp>
+	<20080903195414.GB16706@8bytes.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080904130130M.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <20080904125716R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008 22:05:27 +0200
+On Wed, 3 Sep 2008 21:54:15 +0200
 Joerg Roedel <joro@8bytes.org> wrote:
 
-> On Thu, Sep 04, 2008 at 03:04:25AM +0900, FUJITA Tomonori wrote:
-> > x86 sets up gfp flag propely so swiotlb_alloc_coherent doesn't need to
-> > use GFP_DMA unconditionally. It leads to allocation failures in some
-> > systems.
+> On Thu, Sep 04, 2008 at 03:05:21AM +0900, FUJITA Tomonori wrote:
+> > On Wed, 3 Sep 2008 17:03:44 +0200
+> > Joerg Roedel <joerg.roedel@amd.com> wrote:
 > > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  lib/swiotlb.c |    7 +------
-> >  1 files changed, 1 insertions(+), 6 deletions(-)
+> > > The SWIOTLB version of dma_alloc_coherent allocates all memory with
+> > > GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
+> > > failures. This patch makes the allocation strategy to use the DMA32 zone
+> > > first if this is possible. The changes are boot tested on AMD64 and
+> > > compile tested for i386 and IA64.
+> > > 
+> > > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > Cc: tony.luck@intel.com
+> > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > > ---
+> > >  lib/swiotlb.c |   23 +++++++++++++++++------
+> > >  1 files changed, 17 insertions(+), 6 deletions(-)
 > > 
-> > diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> > index 977edbd..b88d7c2 100644
-> > --- a/lib/swiotlb.c
-> > +++ b/lib/swiotlb.c
-> > @@ -467,12 +467,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
-> >  	void *ret;
-> >  	int order = get_order(size);
-> >  
-> > -	/*
-> > -	 * XXX fix me: the DMA API should pass us an explicit DMA mask
-> > -	 * instead, or use ZONE_DMA32 (ia64 overloads ZONE_DMA to be a ~32
-> > -	 * bit range instead of a 16MB one).
-> > -	 */
-> > -	flags |= GFP_DMA;
-> > +	flags |= GFP_DMA32;
+> > This doesn't look correct since IA64 doesn't need this flag hack.
 > 
-> No. This is exactly the place where the swiotlb iommu implementation
-> should handle the dma_mask of the specific device. Unconditionally use
-> DMA32 here is not the best possible handling.
+> Thats why the patch checks the DMA mask against ISA_DMA_THRESHOLD. This
+> is defined as the border of the ZONE_DMA (16MB on x86 and 4G on IA64).
+> So is correct for x86 and ia64.
 
-Not best but it works though ideally we can just remove the flags hack
-completely.
+You try to bring back the tricks used in arch/x86/kernel/pci-dma.c to
+lib/swiotlb.c. I believe that they should be in
+arch/x86/kernel/pci-swiotlb.c.
+
+
+> > Another problem about this patch is that swiotlb doesn't use GFP_DMA
+> > for the fallback_dev.
+> 
+> Thats not true, it does. ISA_DMA_THRESHOLD is defined to be the same as
+> DMA_24BIT_MASK, which is the DMA mask of the fallback_dev.
+
+I don't think so. device x86_dma_fallback_dev is defined as (in
+tip/master):
+
+struct device x86_dma_fallback_dev = {
+       .bus_id = "fallback device",
+       .coherent_dma_mask = DMA_32BIT_MASK,
+       .dma_mask = &x86_dma_fallback_dev.coherent_dma_mask,
+};
