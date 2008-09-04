@@ -1,80 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYIDX3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYIDX3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYIDX3O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 19:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbYIDX24
+	id S1753552AbYIDX3b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 19:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbYIDX3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 19:28:56 -0400
-Received: from www.tglx.de ([62.245.132.106]:35509 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbYIDX2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 19:28:55 -0400
-Date: Fri, 5 Sep 2008 01:27:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: torvalds@linux-foundation.org, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       yhlu.kernel@gmail.com, ink@jurassic.park.msu.ru,
-       jbarnes@virtuousgeek.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, ebiederm@xmission.com, dwmw2@infradead.org,
-       sam@ravnborg.org, johnstul@us.ibm.com
-Subject: Re: linux-next: Tree for September 3
-In-Reply-To: <20080904161746.dc4800a4.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0809050121440.3243@apollo.tec.linutronix.de>
-References: <20080903191619.6b6b230e.sfr@canb.auug.org.au> <20080903214634.ea17ff53.akpm@linux-foundation.org> <alpine.LFD.1.10.0809032201510.3378@nehalem.linux-foundation.org> <20080903223318.84b6ce8b.akpm@linux-foundation.org>
- <alpine.LFD.1.10.0809040045190.3378@nehalem.linux-foundation.org> <20080904012544.cabed847.akpm@linux-foundation.org> <alpine.LFD.1.10.0809040143350.3452@nehalem.linux-foundation.org> <20080904015701.5959623a.akpm@linux-foundation.org>
- <alpine.LFD.1.10.0809040203510.3452@nehalem.linux-foundation.org> <20080904104554.32ffebea.akpm@linux-foundation.org> <alpine.LFD.1.10.0809041058140.3400@nehalem.linux-foundation.org> <20080904113408.d47c65f6.akpm@linux-foundation.org>
- <alpine.LFD.1.10.0809050041520.3243@apollo.tec.linutronix.de> <20080904161746.dc4800a4.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 4 Sep 2008 19:29:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:44133 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238AbYIDX3A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 19:29:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=q1wAh032ZHVgSnobc+RT48PWEF8T0K6shDSzFTnVJLMGaY6HGsftr9DWIhyJI+nxZ7
+         eu274TezaXO46F7K9+Lxm7QHIP7St2Po1AOQZcMRGi1/7clIhzkIQ1bbj7fQaZYQ7r8q
+         hdugZq3OK5IHs9WhV/rCS+vz9b3+Skr6lko9o=
+Message-ID: <1df1788c0809041628m269f13c3l27d9f9dd59a42fef@mail.gmail.com>
+Date: Thu, 4 Sep 2008 20:28:58 -0300
+From: "=?UTF-8?Q?Br=C3=A1ulio_Barros_de_Oliveira?=" <brauliobo@gmail.com>
+To: Mat <jackdachef@gmail.com>
+Subject: Re: Re: reiserfs do_journal_end unnecessary hd wake up?
+Cc: reiserfs-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1df1788c0809041538x8d41eb8s80966f25aa2ade21@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <loom.20080904T211127-782@post.gmane.org>
+	 <1df1788c0809041538x8d41eb8s80966f25aa2ade21@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Sep 2008, Andrew Morton wrote:
-> > 
-> > Cute, NULL pointer in the timer check code. Can you please addr2line
-> > the exact code line or upload the vmlinux somewhere ?
-> > 
-> 
-> erm, I might have lost that binary, and it only happened the once.  It
-> happened shortly after the machine had fully booted, during
-> establishment of the first sshd session.
-> 
-> It nuked the machine really well, too.  I had to pull the battery to
-> get it back.
+hello mat, here comes the results of each action.
+in all the process i've used the iotop (what a great utility you
+pointed!), and always saw only the pdflush process acessing the hd. no
+user interface were used.
+the apm is set to 128 with hdparm
 
-Known problem on Sonys. :(
+ok, then try the following:
 
-> fwiw:
->
-> (gdb) l *0xc0126e7f
-> 0xc0126e7f is in get_next_timer_interrupt (kernel/timer.c:863).
-> warning: Source file is more recent than executable.
-> 858             for (array = 0; array < 4; array++) {
-> 859                     struct tvec *varp = varray[array];
-> 860     
-> 861                     index = slot = timer_jiffies & TVN_MASK;
-> 862                     do {
-> 863                             list_for_each_entry(nte, varp->vec + slot, entry) {
-> 864                                     found = 1;
-> 865                                     if (time_before(nte->expires, expires))
-> 866                                             expires = nte->expires;
-> 867                             }
-> 
-> which looks reasonable.
+you at least should have noatime,nodiratime,commit=600
 
-Yeah, as Linus decoded it's that loop. So we look at some corrupted
-entry here. 
+:) that did the job! also, i've tested without the commit option,
+which didn't changed the result.
 
-CONFIG_DEBUG_OBJECTS (add debug_objects to the command line as well)
-should catch it when this is a timer being discarded, freed or
-reinitialized.
+enabled for the reiserfs or >=ext3 filesystems
 
-Otherwise, when it is just random corruption it wont help much.
+you can also try data=writeback (but beware this might put your data at risk !)
 
-Thanks,
+* can't try
 
-	tglx
+select the anticipatory i/o scheduler
+and set following stuff
 
+:( no change.
+
+echo "16" > /proc/sys/vm/page-cluster
+# default: 3
+#
+
+:( no change.
+
+echo "60" > /proc/sys/vm/swappiness
+# default: 60
+# By default, Linux will aggressively swap processes out of physical memory onto
+disk in order to keep the disk cache as large as possible.
+# This means that pages that haven't been used recently will be pushed into swap
+long before the system even comes close to running out of memory, which is an
+unexpected behavior compared to some operating systems.
+# The /proc/sys/vm/swappiness parameter controls how aggressive Linux is in this
+area.
+
+:( no change.
+
+echo "3000" > /proc/sys/vm/dirty_expire_centisecs
+# default: 3000 (30 seconds)
+#2 how long data can be in the page cache before it is considered expired and
+must be written at the next opportunity. Note that this default is very long: a
+full 30 seconds. That means that under normal circumstances, unless you write
+enough to trigger the other pdflush method, Linux won't actually commit anything
+you write until 30 seconds later.
+
+:( no change.
+
+echo "6000"  > /proc/sys/vm/dirty_writeback_centisecs
+# default: 500 (5 seconds)
+#1 how often pdflush wakes up to write data to disk. The default wakes up the
+two (or more) active threads every five seconds.
+# suggestion: 6000 (every 60 seconds)
+
+:( no change.
+
+echo "15" > /proc/sys/vm/dirty_background_ratio
+# default: 10
+#3 Maximum percentage of active memory that can be filled with dirty pages
+before pdflush begins to write them
+
+echo "50"   > /proc/sys/vm/dirty_ratio #modified
+# default: 40
+#4 Maximum percentage of total memory that can be filled with dirty pages before
+processes are forced to write dirty buffers themselves during their time slice
+instead of being allowed to do more writes.
+# modified: 50
+
+echo "25" > /proc/sys/vm/vfs_cache_pressure
+
+for i in /sys/block/sd*; do
+        /bin/echo "anticipatory" >  $i/queue/scheduler
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "0" >  $i/queue/iosched/antic_expire
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "150" >  $i/queue/iosched/read_expire
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "750" >  $i/queue/iosched/read_batch_expire
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "1200" >  $i/queue/iosched/write_batch_expire
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "1024" >  $i/queue/nr_requests
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "256" >  $i/queue/read_ahead_kb
+done
+
+for i in /sys/block/sd*; do
+        /bin/echo "256" >  $i/queue/max_sectors_kb
+done
+
+for i in /sys/class/scsi_host/host*; do
+        /bin/echo "min_power" >  $i/link_power_management_policy
+done
+
+
+
+
+try to disable each and every unneeded daemon or applets, programs, etc.
+
+by using:
+
+* powertop
+* iotop
+* htop
+* top
+* lsof | grep /home
+* ...
