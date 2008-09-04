@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYIDRjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYIDRjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbYIDRjP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 13:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIDRjA
+	id S1753250AbYIDRjd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYIDRjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 13:39:00 -0400
-Received: from mga09.intel.com ([134.134.136.24]:48097 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYIDRi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 13:38:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="435696239"
-Message-ID: <48C01D2A.8000400@linux.intel.com>
-Date: Thu, 04 Sep 2008 10:38:50 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Randy.Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, mingo@elte.hu
-Subject: Re: + fix-fastboot-make-the-raid-autodetect-code-wait-for-all-devices-to-init.patch
- added to -mm tree
-References: <200809040539.m845dEgX022904@imap1.linux-foundation.org>	<Pine.LNX.4.64.0809040941550.19666@shark.he.net> <20080904103646.1826d797.akpm@linux-foundation.org>
-In-Reply-To: <20080904103646.1826d797.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 4 Sep 2008 13:39:23 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:48478 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751671AbYIDRjW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 13:39:22 -0400
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Dan Hecht <dhecht@vmware.com>,
+       Garrett Smith <garrett@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org>
+References: <20080904150339.896115280@linutronix.de>
+	 <20080904153620.GC7120@elte.hu>
+	 <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 04 Sep 2008 10:39:21 -0700
+Message-Id: <1220549961.11753.22.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 4 Sep 2008 09:45:10 -0700 (PDT) "Randy.Dunlap" <rdunlap@xenotime.net> wrote:
+On Thu, 2008-09-04 at 08:45 -0700, Linus Torvalds wrote:
 > 
->> On Wed, 3 Sep 2008, akpm@linux-foundation.org wrote:
->>
->>> Subject: fix "fastboot: make the raid autodetect code wait for all devices to init"
->>> From: Andrew Morton <akpm@linux-foundation.org>
->>>
->>> : commit b52c36a95ed8026b6925fe8595ebcab6921ae62d
->>> : Author: Arjan van de Ven <arjan@linux.intel.com>
->>> : Date:   Sun Jul 20 13:07:09 2008 -0700
->>> :
->>> :     fastboot: make the raid autodetect code wait for all devices to init
->>>
->>> init/do_mounts_md.c: In function `md_run_setup':
->>> init/do_mounts_md.c:282: warning: ISO C90 forbids mixed declarations and code
->>>
->>> How did this happen?
->> There are so many warnings that they get lost in the noise
->> unless someone is actively looking for them.
+> On Thu, 4 Sep 2008, Ingo Molnar wrote:
+> >
+> > i've added them to tip/x86/tsc and merged it into tip/master - if
+> > there's test success we can merge it into x86/urgent as well and push it
+> > into v2.6.27. Any objections to that merge route?
 > 
-> Well if that's the explanation then OK (sort-of).  I'm more concerned
-> that the warning does not appear *at all* for some people's
-> compiler/Kconfig combinations.
+> I don't think it's quite that urgent, and wonder what the downside is of
+> just changing the timeout to 10ms. On 32-bit x86, it was 30ms (I think)
+> before the merge, so it sounds like 50ms was a bit excessive even before
+> the whole "loop five times"/
+> 
+> So _short_ term, I'd really prefer (a) looping just three times and (b)
+> looping with a smaller timeout.
 
-it's weird; I could have sworn I had this fixed before sending the patch
-out in the first place (I did notice the warning and remember fixing it)
+Looping for a smaller timeout is really going to strain things for
+Virtualization.
+Even on native hardware if you reduce the  timeout to less than 10ms it
+may result in errors in the range of 2500ppm on a 2GHz systems when
+calibrating against pmtimer/hpet, this is far worse than what NTP can
+correct, afaik NTP can handle errors only upto 500ppm. And IMHO that is
+the reason why we had a timeout of 50ms before (since it limits the
+maximum theoretical error to 500ppm)
 
-probably a tool/flow issue on my side (forgetting quilt add/git add or something)
-apologies for that
+In addition to that, the pmtimer hardware itself has some drift,
+typically in the range of 20 to 100ppm.  If this drift happens to be in
+the same direction as the error in measuring the tsc against the
+pmtimer, we could have a total error of more than 500ppm in the tsc
+frequency calibration code with the 50ms timeout. So anything less than
+50msec of timeout is risky for virtualized environment.
+
+If people think that new hardware is good enough to handle these errors
+with a smaller timeout value thats okay, but for virtualized environment
+we need to keep these timeouts as they are or increase them. 
+
+If still there is a pressing need to reduce the timeout, then
+alternatively, as Arjan suggested, we can ask the hardware (hypervisor)
+for tsc frequency, and do this only if we are running under a hypervisor
+( can't do this for h/w with constant TSC too since its not reliable as
+mentioned by Linus).
+This tsc freq from hypervisor, can be implemented using cpuid's if the
+backend hypervisor supports that (VMware does). Let me know what people
+think about this and we can work towards a standard interface. 
+
+Thanks,
+Alok
+> 
+> Long-term, I actually think even 10ms is actually a total waste. I'll post
+> my trial "quick calibration" code that is more likely to fail under
+> virtualization or SMM (or, indeed, perhaps even on things like TMTA CPU's
+> that can have longer latencies due to translation), but that is really
+> fast and knows very intimately when it succeeds. I just need to do
+> slightly more testing.
+> 
+>                                 Linus
+
