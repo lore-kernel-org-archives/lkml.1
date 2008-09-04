@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbYIDS1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYIDS2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbYIDS1o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYIDS1e
+	id S1754131AbYIDS2E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbYIDS1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:27:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55218 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667AbYIDS1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:27:33 -0400
-Date: Thu, 4 Sep 2008 14:26:37 -0400
-From: Don Zickus <dzickus@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       arozansk@redhat.com, Thomas.Mingarelli@hp.com, ak@linux.intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080904182637.GP3400@redhat.com>
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org>
+	Thu, 4 Sep 2008 14:27:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58481 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753732AbYIDS1v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 14:27:51 -0400
+Date: Thu, 4 Sep 2008 11:26:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Alok Kataria <akataria@vmware.com>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+In-Reply-To: <20080904190728.59634020@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org>
+References: <20080904150339.896115280@linutronix.de> <20080904153620.GC7120@elte.hu> <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org> <20080904160036.GA18382@elte.hu> <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>
+ <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> <20080904190728.59634020@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080904175231.GH18288@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 07:52:31PM +0200, Andi Kleen wrote:
-> On Thu, Sep 04, 2008 at 01:20:52PM -0400, Don Zickus wrote:
-> > On Thu, Sep 04, 2008 at 05:52:17PM +0200, Andi Kleen wrote:
-> > > Then if there's a chipset specific NMI driver it could
-> > > also check if the chipset raised it. That would be a possible
-> > > solution for HP -- they would need to implement such a driver
-> > > for their systems with the special watchdog.
-> > 
-> > The thing with HP's special watchdog timer is that it does _not_ have a
-> > chipset specific NMI it is trying to catch.  HP is going on the assumption
-> > that _all_ NMIs are /bad/ and they want to catch _every_ NMI, log it, and
-> > reboot the system.
+
+
+On Thu, 4 Sep 2008, Alan Cox wrote:
+>
+> > (And yes, I do the latching - it's not reqlly required since I only depend 
+> > on the MSB, and it actually makes for slightly lower precision, but it's 
+> > the "safe" thing. And I figured out that the reason I thought that the 
 > 
-> That's my point. If you have drivers which can identify all other
-> NMIs then the left over NMIs must come from that watchdog driver.
-> So they just need drivers which can do that for their chipsets.
-
-Except their chipsets are _not_ producing NMIs.  They just want to
-supercede all the other NMI handlers.  For example if an EDAC NMI came in,
-they don't want the EDAC handler to try and recover from it, HP just wants
-their NMI watchdog to grab the NMI, log it and reboot.
-
+> Good job you don't. Various Cyrix/Geode chipsets have as errata #2
 > 
-> It's not race free, but that's simply not possible with the x86
-> NMI architecture.
+> "Counter latch command is non-operational in the 8254 timer"
 
-I agree.
+Yeah, I had some memory of latch issues. I wrote the thing originally 
+without the latching, which is why the whole thing is designed to igore 
+the low cycle count. I just decided that doing the latching shouldn't 
+hurt that much, even if it ends up being just a 1us no-op.
 
-> 
-> Better would be probably to just configure the watchdog 
-> to reboot the system directly on its own. Most other watchdogs
-> I'm aware of do that. That's more reliable anyways because the system
-> might be wedged enough to not be able to process NMIs anymore.
+It does mean that on any normal hardware, the expected error is roughly 
+3us over 2048 PIT ticks, which if I do the math right (nominal PIT 
+frequency: 1193182 Hz) is just under 0.2%. Or put another way, ~1750 ppm.
 
-The trick is they want to log it in a special way (BIOS or NVRAM or
-something I forget) before rebooting.
+Not doing the latching should make the expected error go down to 2us.
 
-> 
-> > 
-> > Now obviously NMIs from kgdb and oprofile are not the ones a system should
-> > panic on but this breaks HP's assumptions.
-> > 
-> > So that is part of the problem.  How do you become a catch-all for NMIs in
-> > a system, to process as you wish, but ignore all the 'safe' NMIs?
-> 
-> To be fully reliable: you need a new NMI architecture or move the event
-> somewhere else.
-> To be reasonable reliable (assuming NMis are not very frequent): you
-> need drivers for all NMI sources that can identify them.
+Of course, the 2048 PIT ticks is just a random choice. It could be any 
+multiple of 256 ticks, so that error can be made smaller. Maybe it's worth 
+spending 10ms on this, and get it down by a factor of five (at which point 
+the error on the PIT frequency is probably in the same order of 
+magnitude).
 
-Yeah I know.  Originally I thought this would be easy, just replace the
-default handler.  But once the mention of kgdb and oprofile using the NMIs
-came up, I realized we are almost back to square one. :-(
-
-Cheers,
-Don
+			Linus
