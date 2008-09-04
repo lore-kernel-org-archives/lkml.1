@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbYIDJu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbYIDJvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbYIDJu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 05:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbYIDJuM
+	id S1757318AbYIDJvT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 05:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbYIDJvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 05:50:12 -0400
-Received: from mail.rz.uni-duesseldorf.de ([134.99.128.30]:53802 "EHLO
-	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754364AbYIDJuK (ORCPT
+	Thu, 4 Sep 2008 05:51:06 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:44166 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755059AbYIDJvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 05:50:10 -0400
-X-Greylist: delayed 1008 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Sep 2008 05:50:10 EDT
-Date: Thu, 04 Sep 2008 11:49:21 +0200 (CEST)
-From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: [patch 5/8] m68k: Remove unused atari_kbd_translate()
-In-reply-to: <20080903071742.326285837@mail.of.borg>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <alpine.DEB.1.00.0809041148100.12258@zirkon.biophys.uni-duesseldorf.de>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-References: <20080903071542.615137611@mail.of.borg>
- <20080903071742.326285837@mail.of.borg>
+	Thu, 4 Sep 2008 05:51:04 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K6O0NO-03-E14-01
+Date: Thu, 4 Sep 2008 11:49:33 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       tony.luck@intel.com
+Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures with swiotlb
+Message-ID: <20080904094933.GR3189@amd.com>
+References: <20080904074441.GY18288@one.firstfloor.org> <20080904165852I.fujita.tomonori@lab.ntt.co.jp> <20080904080528.GZ18288@one.firstfloor.org> <20080904171903M.fujita.tomonori@lab.ntt.co.jp> <20080904083124.GA18288@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080904083124.GA18288@one.firstfloor.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 04 Sep 2008 09:49:34.0297 (UTC) FILETIME=[89385C90:01C90E73]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Geert,
+On Thu, Sep 04, 2008 at 10:31:24AM +0200, Andi Kleen wrote:
+> > Even if it's tree, only each IOMMU knows what's the best. That's the
+> > point of these changes to remove the tricks in arch/x86/pci-dma.c and
+> > let IOMMUs do what they want.
+> 
+> Duplicating all the code.  Sounds great.
 
-acked as requested.
+Even greater is that hardware IOMMUs now don't pay the penalty of this
+completly unnecessary alloc-free cycle in the generic dma_alloc_coherent
+function and that now finally the driver specific free_coherent function
+is called. And this all to the cost of minimal code duplication. If you
+look into the patches you see that the old retry-loop is now in
+pci-nommu.c where it belongs to. The GART also only needs small parts of
+the old logic which are now in a specific alloc_coherent function for
+this driver.
+ 
+> > > Also there's usually the problem that not all busses are translated,
+> > > e.g. Calgary used to do that so for e.g. dev == NULL allocations you had
+> > > to use  these fallback algorithms anyways.
+> > 
+> > dev == NULL isn't a minor thing. It's just using the fallback
+> > device.
+> 
+> You still have to handle it fully.
 
-> If CONFIG_VT=n, I get:
->
-> | arch/m68k/atari/built-in.o: In function `atari_kbd_translate':
-> | arch/m68k/atari/atakeyb.c:640: undefined reference to `shift_state'
->
-> Just remove atari_kbd_translate(), as it's unused.
->
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Thats why the handling of dev == NULL is still in the dma_alloc_coherent
+function and should also stay there.
 
-Acked-by: Michael Schmity <schmitz@debian.org>
+Joerg
 
-> ---
-> arch/m68k/atari/atakeyb.c |   12 ------------
-> 1 file changed, 12 deletions(-)
->
-> --- a/arch/m68k/atari/atakeyb.c
-> +++ b/arch/m68k/atari/atakeyb.c
-> @@ -635,15 +635,3 @@ int atari_keyb_init(void)
-> 	return 0;
-> }
-> EXPORT_SYMBOL_GPL(atari_keyb_init);
-> -
-> -int atari_kbd_translate(unsigned char keycode, unsigned char *keycodep, char raw_mode)
-> -{
-> -#ifdef CONFIG_MAGIC_SYSRQ
-> -	/* ALT+HELP pressed? */
-> -	if ((keycode == 98) && ((shift_state & 0xff) == 8))
-> -		*keycodep = 0xff;
-> -	else
-> -#endif
-> -		*keycodep = keycode;
-> -	return 1;
-> -}
->
-> --
-> Gr{oetje,eeting}s,
->
-> 						Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
