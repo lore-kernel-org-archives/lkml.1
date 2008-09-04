@@ -1,120 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbYIDSu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbYIDTFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbYIDSu5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759943AbYIDStV
+	id S1755131AbYIDTFb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 15:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYIDTFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:49:21 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:56337 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759941AbYIDStT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:49:19 -0400
-Date: Thu, 4 Sep 2008 13:49:16 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: ebiederm@xmission.com, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+	Thu, 4 Sep 2008 15:05:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37335 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753276AbYIDTFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 15:05:16 -0400
+Date: Thu, 4 Sep 2008 21:04:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mounts git tree
-Message-ID: <20080904184916.GA19328@us.ibm.com>
-References: <E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu> <20080903224334.GA726@us.ibm.com> <E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu> <20080904132804.GA14709@us.ibm.com> <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu> <20080904161729.GA26579@us.ibm.com> <E1KbIqL-0003QO-34@pomaz-ex.szeredi.hu> <20080904174851.GA13693@hallyn.com> <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu>
+Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4 -
+	fix v7
+Message-ID: <20080904190457.GB24990@elte.hu>
+References: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1KbJBO-0003Xz-0G@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
-> > Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > On Thu, 4 Sep 2008, Serge E. Hallyn wrote:
-> > > > but you're still doing
-> > > > 
-> > > > 	if (IS_MNT_SHARED(old_nd.path.mnt) && !capable(CAP_SYS_ADMIN))
-> > > > 		goto out;
-> > > > 
-> > > > shouldn't it be something like
-> > > > 
-> > > > 	if (IS_MNT_SHARED(old_nd.path.mnt) && (old_nd.path.mnt & MNT_USER))
-> > > > 		goto out;
-> > > > 
-> > > > ?
-> > > 
-> > > Why would that be an error?  There's no real security gain to be had
-> > > from restricting a privileged user, but could cause a lot of
-> > > annoyance.  If we think this is dangerous, then protection should be
-> > > built into mount(8) with an option to override.  But not into the
-> > > kernel, IMO.
-> > 
-> > We disagree on that.  But can we agree that the check you added is wrong?
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> v3: use reserve_region_with_split() instead to hand overlapping
+> 	with test case by extend 0xe0000000 - 0xeffffff to 0xdd800000 -
+> 	get
+> 		e0000000-efffffff : PCI MMCONFIG 0
+> 			 e0000000-efffffff : reserved
+> 	in /proc/iomem
+> 	get
+> 		found conflict for reserved [dd800000, efffffff], try to reserve with split
+> 		    __reserve_region_with_split: (PCI Bus #80) [dd000000, ddffffff], res: (reserved) [dd800000, efffffff]
+> 		    __reserve_region_with_split: (PCI Bus #00) [de000000, dfffffff], res: (reserved) [de000000, efffffff]
+> 		initcall pci_subsys_init+0x0/0x121 returned 0 after 381 msecs
+> 	in dmesg
 > 
-> No :)
+> v4: take out __insert_resource and insert_resource_expand_to_fit : Linus already check in.
+>     use reserve_region_with_split at the first point
+>     use const char *name
 > 
-> > There is no reason why a user mount should not be able to do shared
-> > mounts, is there?
+> v5: fix checking on overlapping
 > 
-> I don't know.  It's something to think about in the future, but not
-> essential.  We know that without the above check the user can do bad
-> things: propagate mounts back into the source, and we don't want that.
-
-When is propagating mounts back into the source bad?  Because you are
-not preventing it.
-
-You are preventing future propagation back into the user's own mounts,
-but not into mounts not owned by the user.
-
-It's not right.
-
-> We could allow binding a shared mount if
+> v6: only reserve common area in conflict
+> 	so got sth in /proc/iomem
+> 		d8000000-dfffffff : PCI Bus #00
+> 		  dc000000-dfffffff : GART
+> 		    dc000000-dfffffff : reserved
+> 		e0000000-efffffff : PCI MMCONFIG 0
+> 		  e0000000-efffffff : reserved
+> 	when we have big range in e820
+> 		00000000dc000000-00000000f0000000 (reserved)
 > 
->   a) the owners of the source and destination match
->   b) the destination is made a slave of the source
+> v7: remove wrong removing of write_unlock(&resource_lock) in adjust_resource()
 
-Well that's what I've been saying...
+i've applied the generic commit below to tip/core/resources, and merged 
+tip/core/resources into tip/x86/core, and added the remaining e820.c 
+oneliner change (attached below as well).
 
-> But the current patchset doesn't allow _any_ changes to propagation
-> without CAP_SYS_ADMIN, so why should bind be an exception?
+thanks Yinghai!
 
-Because it's not a change in propagation among existing mounts, instead
-it's defining propagation for the new user mounts.  And since user
-mounts don't currently exist, we're in no position to talk about
-exceptions to existing behavior.
+	Ingo
 
-> And yes, this is something to think about, but I think it's a rather
-> uncommon corner case, and so the patchset very much makes sense
-> without having to deal with unprivileged mount propagation changes.
+-------------------->
+>From 268364a0f48aee2f851f9d1ef8a6cda0f3039ef1 Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Date: Thu, 4 Sep 2008 21:02:44 +0200
+Subject: [PATCH] IO resources: add reserve_region_with_split()
 
-I'm willing to accept that if we simply leave the patchset as it was
-before, but your new check just adds inconsistencies for absolutely zero
-security gain.
+add reserve_region_with_split() to not lose e820 reserved entries if
+they overlap with existing IO regions:
 
-> >  So should the check above just go away then?
-> 
-> No, we'd be back with the original problem.
+with test case by extend 0xe0000000 - 0xeffffff to 0xdd800000 -
+we get:
+	e0000000-efffffff : PCI MMCONFIG 0
+		 e0000000-efffffff : reserved
 
-We still have the original problem.
+and in /proc/iomem we get:
+	found conflict for reserved [dd800000, efffffff], try to reserve with split
+	    __reserve_region_with_split: (PCI Bus #80) [dd000000, ddffffff], res: (reserved) [dd800000, efffffff]
+	    __reserve_region_with_split: (PCI Bus #00) [de000000, dfffffff], res: (reserved) [de000000, efffffff]
+	initcall pci_subsys_init+0x0/0x121 returned 0 after 381 msecs
+in dmesg
 
-When root does
+various fixes and improvements suggested by Linus.
 
-	mount -bind /mnt /mnt
-	mount --make-rshared /mnt
-	mount --bind -o user=hallyn /mnt /home/hallyn/mnt
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/ioport.h |    3 ++
+ kernel/resource.c      |   68 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+), 0 deletions(-)
 
-and hallyn does
+diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+index 8d3b7a9..fded376 100644
+--- a/include/linux/ioport.h
++++ b/include/linux/ioport.h
+@@ -108,6 +108,9 @@ extern struct resource iomem_resource;
+ 
+ extern int request_resource(struct resource *root, struct resource *new);
+ extern int release_resource(struct resource *new);
++extern void reserve_region_with_split(struct resource *root,
++			     resource_size_t start, resource_size_t end,
++			     const char *name);
+ extern int insert_resource(struct resource *parent, struct resource *new);
+ extern void insert_resource_expand_to_fit(struct resource *root, struct resource *new);
+ extern int allocate_resource(struct resource *root, struct resource *new,
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 03d796c..414d6fc 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -516,6 +516,74 @@ int adjust_resource(struct resource *res, resource_size_t start, resource_size_t
+ 	return result;
+ }
+ 
++static void __init __reserve_region_with_split(struct resource *root,
++		resource_size_t start, resource_size_t end,
++		const char *name)
++{
++	struct resource *parent = root;
++	struct resource *conflict;
++	struct resource *res = kzalloc(sizeof(*res), GFP_KERNEL);
++
++	if (!res)
++		return;
++
++	res->name = name;
++	res->start = start;
++	res->end = end;
++	res->flags = IORESOURCE_BUSY;
++
++	for (;;) {
++		conflict = __request_resource(parent, res);
++		if (!conflict)
++			break;
++		if (conflict != parent) {
++			parent = conflict;
++			if (!(conflict->flags & IORESOURCE_BUSY))
++				continue;
++		}
++
++		/* Uhhuh, that didn't work out.. */
++		kfree(res);
++		res = NULL;
++		break;
++	}
++
++	if (!res) {
++		printk(KERN_DEBUG "    __reserve_region_with_split: (%s) [%llx, %llx], res: (%s) [%llx, %llx]\n",
++			 conflict->name, conflict->start, conflict->end,
++			 name, start, end);
++
++		/* failed, split and try again */
++
++		/* conflict coverred whole area */
++		if (conflict->start <= start && conflict->end >= end)
++			return;
++
++		if (conflict->start > start)
++			__reserve_region_with_split(root, start, conflict->start-1, name);
++		if (!(conflict->flags & IORESOURCE_BUSY)) {
++			resource_size_t common_start, common_end;
++
++			common_start = max(conflict->start, start);
++			common_end = min(conflict->end, end);
++			if (common_start < common_end)
++				__reserve_region_with_split(root, common_start, common_end, name);
++		}
++		if (conflict->end < end)
++			__reserve_region_with_split(root, conflict->end+1, end, name);
++	}
++
++}
++
++void reserve_region_with_split(struct resource *root,
++		resource_size_t start, resource_size_t end,
++		const char *name)
++{
++	write_lock(&resource_lock);
++	__reserve_region_with_split(root, start, end, name);
++	write_unlock(&resource_lock);
++}
++
+ EXPORT_SYMBOL(adjust_resource);
+ 
+ /**
 
-	mount --bind /usr /home/hallyn/mnt/usr
+>From fac8f1e4f99dff7a0c3a929f327d66f46de6fa21 Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Date: Thu, 4 Sep 2008 20:59:22 +0200
+Subject: [PATCH] x86: split e820 reserved entries record to late, v7
 
-then the kernel happily propagates the mount to /mnt/usr.
-Now if hallyn does
+try to insert_resource second time, by expanding the resource...
 
-	mount --bind /home/hallyn/mnt/usr /home/hallyn/mnt/usr2
+for case: e820 reserved entry is partially overlapped with bar res...
 
-THAT gives him a -EPERM.
+hope it will never happen
 
-To what end?
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/e820.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--serge
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index a7a7133..e24d1bc 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -1320,7 +1320,7 @@ void __init e820_reserve_resources_late(void)
+ 	res = e820_res;
+ 	for (i = 0; i < e820.nr_map; i++) {
+ 		if (!res->parent && res->end)
+-			insert_resource(&iomem_resource, res);
++			reserve_region_with_split(&iomem_resource, res->start, res->end, res->name);
+ 		res++;
+ 	}
+ }
+
+>From ebd60cd64f8ab1170102c3ab072eb73042b7a33d Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Date: Thu, 4 Sep 2008 21:04:32 +0200
+Subject: [PATCH] x86: unify using pci_mmcfg_insert_resource
+
+even with known_bridge insert them late too.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/pci/mmconfig-shared.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
+index d963576..654a223 100644
+--- a/arch/x86/pci/mmconfig-shared.c
++++ b/arch/x86/pci/mmconfig-shared.c
+@@ -209,7 +209,7 @@ static int __init pci_mmcfg_check_hostbridge(void)
+ 	return name != NULL;
+ }
+ 
+-static void __init pci_mmcfg_insert_resources(unsigned long resource_flags)
++static void __init pci_mmcfg_insert_resources(void)
+ {
+ #define PCI_MMCFG_RESOURCE_NAME_LEN 19
+ 	int i;
+@@ -233,7 +233,7 @@ static void __init pci_mmcfg_insert_resources(unsigned long resource_flags)
+ 			 cfg->pci_segment);
+ 		res->start = cfg->address;
+ 		res->end = res->start + (num_buses << 20) - 1;
+-		res->flags = IORESOURCE_MEM | resource_flags;
++		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
+ 		insert_resource(&iomem_resource, res);
+ 		names += PCI_MMCFG_RESOURCE_NAME_LEN;
+ 	}
+@@ -434,11 +434,9 @@ static void __init __pci_mmcfg_init(int early)
+ 	    (pci_mmcfg_config[0].address == 0))
+ 		return;
+ 
+-	if (pci_mmcfg_arch_init()) {
+-		if (known_bridge)
+-			pci_mmcfg_insert_resources(IORESOURCE_BUSY);
++	if (pci_mmcfg_arch_init())
+ 		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
+-	} else {
++	else {
+ 		/*
+ 		 * Signal not to attempt to insert mmcfg resources because
+ 		 * the architecture mmcfg setup could not initialize.
+@@ -475,7 +473,7 @@ static int __init pci_mmcfg_late_insert_resources(void)
+ 	 * marked so it won't cause request errors when __request_region is
+ 	 * called.
+ 	 */
+-	pci_mmcfg_insert_resources(0);
++	pci_mmcfg_insert_resources();
+ 
+ 	return 0;
+ }
