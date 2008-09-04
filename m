@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYIDOBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbYIDODr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYIDOBZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 10:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYIDOBP
+	id S1756216AbYIDODr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 10:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYIDODi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 10:01:15 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54324 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbYIDOBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 10:01:14 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: Regression: SATA disk double spin-off during hibernation on hp nx6325
-Date: Thu, 4 Sep 2008 16:05:20 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-acpi@vger.kernel.org, linux-ide@vger.kernel.org, trenn@suse.de,
-       htejun@gmail.com, hancockr@shaw.ca, linux-kernel@vger.kernel.org,
-       "Maciej Rutecki" <maciej.rutecki@gmail.com>
-References: <200808290002.55026.rjw@sisk.pl> <200808291257.33690.rjw@sisk.pl> <200808291330.42265.elendil@planet.nl>
-In-Reply-To: <200808291330.42265.elendil@planet.nl>
+	Thu, 4 Sep 2008 10:03:38 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45659 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751590AbYIDODi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 10:03:38 -0400
+Date: Thu, 4 Sep 2008 10:03:36 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Thiago Galesi <thiagogalesi@gmail.com>
+cc: Alex Buell <alex.buell@munted.org.uk>, <linux-kernel@vger.kernel.org>,
+       Robert Hancock <hancockr@shaw.ca>, Tomas Styblo <tripie@cpan.org>,
+       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: [PATCH] JMicron JM20337 USB-SATA data corruption bugfix - device
+ 152d:2338
+In-Reply-To: <82ecf08e0809040509v323a3065h68a2e72dc86f23ac@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809040958370.2474-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809041605.22055.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 29 of August 2008, Frans Pop wrote:
-> On Friday 29 August 2008, Rafael J. Wysocki wrote:
-> > Suspend to RAM is fine, hibernation (aka suspend to disk) is not (on my
-> > box). Does it mean that hibernation is fine on your box with
-> > 2.6.27-rc5, although shutdown is not?  That would require special
-> > DMI-dependent handling, so please double check.
-> 
-> Ah, right. The double spin down happens during hibernation too.
-> 
-> > Anyway, please attach the output of dmidecode to
-> > http://bugzilla.kernel.org/show_bug.cgi?id=8855
-> > so I can include your box into the final version of the patch.
-> 
-> Done.
+On Thu, 4 Sep 2008, Thiago Galesi wrote:
 
-I have uploaded a new version of the patch into the Bugzilla:
-http://bugzilla.kernel.org/attachment.cgi?id=17618&action=view
+> Ok, I looked into this a little bit further...
+> 
+> K3B provides an interesting log:
+> 
+> first, this is repeated 3 times:
+> 
+> (K3bDevice::ScsiCommand) failed:
+>                            command:    MODE SELECT (55)
+>                            errorcode:  70
+>                            sense key:  ILLEGAL REQUEST (5)
+>                            asc:        26
+>                            ascq:       0
+> 
+> then it shows:
+> 
+> (K3bDevice::ScsiCommand) failed:
+>                            command:    GET PERFORMANCE (ac)
+>                            errorcode:  0
+>                            sense key:  NO SENSE (2)
+>                            asc:        0
+>                            ascq:       0
+> (K3bDevice::Device) /dev/scd0: GET PERFORMANCE length det failed.
+> 
+> And then all commands from then on fail
+> 
+> strace indicate this is sent via SG_IO IOCTL (unfortunatelly, strace
+> doen't show the contents in the ioctl)
+> 
+> I don't know if the device is supposed to stop working when receiving
+> an unkown command (like it is apparently doing), also because
+> apparently cdrecord doesn't send this command but fails anyway
 
-Can you test it, please (also please attach dmesg output to the Bugzilla
-entry)?
+Who would ever design a device that was supposed to stop working when 
+it received an unknown command?  Obviously there's a bug either in the 
+device or in the JMicron adapter.
 
-Thanks,
-Rafael
+What commands does cdrecord send and where does it fail?
+
+Oh yes, one other thing...  Have you tried hooking this drive directly 
+to an IDE cable (avoiding the USB-ATA adapter) to see if it works okay 
+in that environment?  If it does then you know where the bug is.
+
+Alan Stern
+
