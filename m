@@ -1,146 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYIDS37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYIDSbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbYIDS37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 14:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYIDS3w
+	id S1755951AbYIDSbw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 14:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYIDSbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 14:29:52 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:2662 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851AbYIDS3v (ORCPT
+	Thu, 4 Sep 2008 14:31:44 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:33867 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751851AbYIDSbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 14:29:51 -0400
-Message-ID: <48C0291D.6060205@ct.jp.nec.com>
-Date: Thu, 04 Sep 2008 11:29:49 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Rui Sousa <rui.p.m.sousa@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Jeff Dike <jdike@addtoit.com>
-Subject: Re: [PATH] Fix compilation when CONFIG_TRACE_IRQFLAGS_SUPPORT is
- not set
-References: <200809031753.07292.rui.p.m.sousa@gmail.com> <20080904143918.GA28095@elte.hu> <48C0175B.3070500@ct.jp.nec.com> <200809041947.54339.rui.p.m.sousa@gmail.com>
-In-Reply-To: <200809041947.54339.rui.p.m.sousa@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Sep 2008 14:31:43 -0400
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Daniel Hecht <dhecht@vmware.com>,
+       Garrett Smith <garrett@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <alpine.LFD.1.10.0809041044160.3400@nehalem.linux-foundation.org>
+References: <20080904150339.896115280@linutronix.de>
+	 <20080904153620.GC7120@elte.hu>
+	 <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org>
+	 <1220549961.11753.22.camel@alok-dev1>
+	 <alpine.LFD.1.10.0809041044160.3400@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 04 Sep 2008 11:31:43 -0700
+Message-Id: <1220553103.11753.39.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rui Sousa wrote:
-> On Thursday 4 September 2008 19:14, Hiroshi Shimamoto wrote:
->> Ingo Molnar wrote:
->>> * Rui Sousa <rui.p.m.sousa@gmail.com> wrote:
->>>> Hi,
->>>>
->>>> This patch fixes compilation if CONFIG_TRACE_IRQFLAGS_SUPPORT is ever
->>>> disabled (which is currently not allowed by Kconfig). Alternatively we
->>>> could just remove the option altogether and the associated code paths.
->>>> Since the compilation error has been in the tree for at least two
->>>> years and no one noticed it, I guess we don't really have the need for
->>>> CONFIG_TRACE_IRQFLAGS_SUPPORT=n. Boot tested on x86 UP.
->>> applied to tip/core/locking - thanks Rui.
->>>
->>> since you fixed it i prefer the fix over the removal. We could still
->>> remove the !TRACE_IRQFLAGS_SUPPORT now (in a separate commit) and
->>> simpify this header a bit that way. Thus if someone needs the
->>> !TRACE_IRQFLAGS_SUPPORT mode of build for future work, it can be
->>> restored via a simple revert.
->> Hi, it seems that this patch breaks uml build.
+On Thu, 2008-09-04 at 10:53 -0700, Linus Torvalds wrote:
 > 
-> Hi Hiroshi,
+> On Thu, 4 Sep 2008, Alok Kataria wrote:
+> >
+> > Looping for a smaller timeout is really going to strain things for
+> > Virtualization.
 > 
->> kernel/printk.c: In function 'vprintk':
->> kernel/printk.c:674: error: implicit declaration of function
->> 'raw_local_irq_save' kernel/printk.c:772: error: implicit declaration of
->> function 'raw_local_irq_restore'
+> Can you check the patch I just sent out?
 > 
-> With the patch bellow it compiles (make ARCH=um with a x86 host), but I'm 
-> really out of my league on this one...
+> It loops for a _very_ short timeout, but on the other hand it should also
+> absolutely immediately notice that it's getting the wrong expected values
+> under virtualization, and the fast case will then fail early.
 
-Hi Rui,
+Yep tried that, the fast calibration failed in 4-5 reboots that i did
+until now. Will do some more runs just to be sure.
+> 
+> It then falls back on the slow case, but I don't think you can avoid that
+> under virtualization.
 
-with this patch, build and boot (on my x86_64 box) looks ok.
+That's fine i think the slow calibration works well for us and we can
+live with the added 200msec delay while booting. 
 
-I CC-ed to uml people to check this.
+I am assuming the patch you just sent was for 2.6.27.
+And that we won't be changing the timeout's after this patch.
+So, can we also apply the 2 patches that I sent yesterday on top of this
+one ? the one that calibrated against pmtimer/hpet over the full loop
+and the one that fixed the warning message. Both of these will affect
+the slower case, which is now not the common case when running on native
+hardware.
 
-thanks,
-Hiroshi Shimamoto
+In the long run though, I think to get rid of all this complexity, we
+can think of getting the frequency from the hypervisor. Lets see, i will
+try making a patch maybe early next week and send it for the x86 tree.
+
+Thanks,
+Alok
 
 > 
->> thanks,
->> Hiroshi Shimamoto
+> > Even on native hardware if you reduce the  timeout to less than 10ms it
+> > may result in errors in the range of 2500ppm on a 2GHz systems when
+> > calibrating against pmtimer/hpet, this is far worse than what NTP can
+> > correct, afaik NTP can handle errors only upto 500ppm. And IMHO that is
+> > the reason why we had a timeout of 50ms before (since it limits the
+> > maximum theoretical error to 500ppm)
 > 
-> Thanks,
-> Rui
+> I would not mind at all having the more precise thing happen _later_,
+> especially if we can do it incrementally.
 > 
-> ---
-> diff --git a/include/asm-um/system-generic.h b/include/asm-um/system-generic.h
-> index 5bcfa35..f1ea4da 100644
-> --- a/include/asm-um/system-generic.h
-> +++ b/include/asm-um/system-generic.h
-> @@ -4,15 +4,15 @@
->  #include "asm/arch/system.h"
->  
->  #undef switch_to
-> -#undef local_irq_save
-> -#undef local_irq_restore
-> -#undef local_irq_disable
-> -#undef local_irq_enable
-> -#undef local_save_flags
-> -#undef local_irq_restore
-> -#undef local_irq_enable
-> -#undef local_irq_disable
-> -#undef local_irq_save
-> +#undef raw_local_irq_save
-> +#undef raw_local_irq_restore
-> +#undef raw_local_irq_disable
-> +#undef raw_local_irq_enable
-> +#undef raw_local_save_flags
-> +#undef raw_local_irq_restore
-> +#undef raw_local_irq_enable
-> +#undef raw_local_irq_disable
-> +#undef raw_local_irq_save
->  #undef irqs_disabled
->  
->  extern void *switch_to(void *prev, void *next, void *last);
-> @@ -23,21 +23,21 @@ extern int get_signals(void);
->  extern void block_signals(void);
->  extern void unblock_signals(void);
->  
-> -#define local_save_flags(flags) do { typecheck(unsigned long, flags); \
-> +#define raw_local_save_flags(flags) do { typecheck(unsigned long, flags); \
->  				     (flags) = get_signals(); } while(0)
-> -#define local_irq_restore(flags) do { typecheck(unsigned long, flags); \
-> +#define raw_local_irq_restore(flags) do { typecheck(unsigned long, flags); \
->  				      set_signals(flags); } while(0)
->  
-> -#define local_irq_save(flags) do { local_save_flags(flags); \
-> -                                   local_irq_disable(); } while(0)
-> +#define raw_local_irq_save(flags) do { raw_local_save_flags(flags); \
-> +                                   raw_local_irq_disable(); } while(0)
->  
-> -#define local_irq_enable() unblock_signals()
-> -#define local_irq_disable() block_signals()
-> +#define raw_local_irq_enable() unblock_signals()
-> +#define raw_local_irq_disable() block_signals()
->  
->  #define irqs_disabled()                 \
->  ({                                      \
->          unsigned long flags;            \
-> -        local_save_flags(flags);        \
-> +        raw_local_save_flags(flags);        \
->          (flags == 0);                   \
->  })
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> One of the problems with the TSC calibration is that we need it fairly
+> early (for things like usleep()), and it needs to be in the right
+> ballpark. It definitely does not need to be in the parts-per-million
+> range, it needs to be in the "within a few percent" range.
 > 
+> (To make matters worse, the TSC isn't then even used in practice for
+> real-time clocks, because of variable frequency and/or halting in idle
+> states. So the actual real-time clock will actually be based on HPET or
+> PM_TIMER anyway most of the time).
+> 
+>                 Linus
 
