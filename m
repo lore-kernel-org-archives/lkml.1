@@ -1,88 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbYIDJyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbYIDKBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757031AbYIDJyP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 05:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbYIDJx4
+	id S1756763AbYIDKBq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 06:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYIDKBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 05:53:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52893 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbYIDJxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 05:53:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeff Garzik <jeff@garzik.org>, akpm@linux-foundation.org
-Subject: Re: [GIT]: Networking
-Date: Thu, 4 Sep 2008 11:58:18 +0200
-User-Agent: KMail/1.9.9
-Cc: Ayaz Abdulla <aabdulla@nvidia.com>, David Miller <davem@davemloft.net>,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       tomasw@gmail.com, yi.zhu@intel.com, linville@tuxdriver.com
-References: <20080903.161341.239039051.davem@davemloft.net> <200809041025.15277.rjw@sisk.pl> <48BFABE0.6050505@garzik.org>
-In-Reply-To: <48BFABE0.6050505@garzik.org>
+	Thu, 4 Sep 2008 06:01:37 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:5872 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752316AbYIDKBg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 06:01:36 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K6O16C-03-EBP-01
+Date: Thu, 4 Sep 2008 12:00:35 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: joro@8bytes.org, tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, mingo@redhat.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 1/3] x86: remove the NULL device hack in dma-mapping.h
+Message-ID: <20080904100035.GS3189@amd.com>
+References: <1220465065-10533-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220465065-10533-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20080903200114.GC16706@8bytes.org> <20080904130800O.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200809041158.19929.rjw@sisk.pl>
+In-Reply-To: <20080904130800O.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 04 Sep 2008 10:00:35.0575 (UTC) FILETIME=[135F6070:01C90E75]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 4 of September 2008, Jeff Garzik wrote:
-> Rafael J. Wysocki wrote:
-> > On Thursday, 4 of September 2008, David Miller wrote:
-> >> From: Linus Torvalds <torvalds@linux-foundation.org>
-> >> Date: Wed, 3 Sep 2008 16:24:16 -0700 (PDT)
-> >>
-> >>> On Wed, 3 Sep 2008, Linus Torvalds wrote:
-> >>>> What's so hard to understand about this?
-> >>> Here's a simple rule of thumb:
-> >>>  - if it's not on the regression list
-> >>>  - if it's not a reported security hole
-> >>>  - if it's not on the reported oopses list
-> >>> then why are people sending it to me?
-> >>>
-> >>> IOW, if it's just another random improvement, and you send it to me 
-> >>> outside of the merge window, then what is the point of the merge window? 
-> >> This is exactly what I've been trying to tell the Intel wireless folks
-> >> but they refuse to listen.
-> >>
-> >> I just won't take their stuff until they get their act in gear.
-> >>
-> >> No problem.
-> > 
-> > BTW, there are two regression fixes for forcedeth:
-> > 
-> > http://marc.info/?l=linux-kernel&m=121894389018584&w=4
-> > http://marc.info/?l=linux-kernel&m=121917167232014&w=4
-> > 
-> > that fix the regressions tracked as:
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11358
-> > http://bugzilla.kernel.org/show_bug.cgi?id=11361
-> > 
-> > respectively and both are more than 2 weeks old now.
-> > 
-> > Is there any chance to push them upstream or is there anything wrong with them?
+On Thu, Sep 04, 2008 at 01:11:46PM +0900, FUJITA Tomonori wrote:
+> On Wed, 3 Sep 2008 22:01:14 +0200
+> Joerg Roedel <joro@8bytes.org> wrote:
 > 
-> Your patch is fine.  Since DaveM and I are gone this weekend, feel free 
-> to add "acked-by: jgarzik@redhat" and forward upstream to Linus and Andrew.
+> > On Thu, Sep 04, 2008 at 03:04:23AM +0900, FUJITA Tomonori wrote:
+> > > dma_alloc_coherent in dma-mapping.h has a hack to use
+> > > x86_dma_fallback_dev if a pointer to a device is NULL. Some of IOMMUs
+> > > don't need such hack. The hack also makes it difficult for IOMMUs to
+> > > make a proper decision because the hack hides the information.
+> > 
+> > I don't think its the right way to work around shortcomings of the
+> > generic code in the architecture specific implementations. Especially
+> > when the generic code can be easily fixed like in this case.
+> 
+> Well, the generic code should not have such work around.
 
-OK, thanks.
+I don't see that as a workaround. It is the best what we can do to
+handle device dma_masks with the current Linux page allocator (if we
+don't have hardware dma translation).
 
-Andrew, this patch is currently in -mm as forcedeth-fix-kexec-regression.patch
-Could you please add the Jeff's ACK to it and push it to Linus?
+> As I wrote in another mail, you try to bring back the tricks used in
+> arch/x86/kernel/pci-dma.c to lib/swiotlb.c. I try to bring back them
+> to arch/x86/kernel/pci-swiotlb.c.
 
-> I thought there was some discussion about Yinghai Lu's MAC addr patch, 
-> though.
+As I said, I don't see that as a 'hack'. It is also what the fixme
+comment in the swiotlb alloc_coherent function stated, that this
+function has to handle the DMA mask of the device.
 
-I see.
+> > > +static void *x86_swiotlb_alloc_coherent(struct device *dev, size_t size,
+> > > +					dma_addr_t *dma_handle, gfp_t gfp)
+> > > +{
+> > > +	if (!dev) {
+> > > +		dev = &x86_dma_fallback_dev;
+> > > +		gfp |= GFP_DMA;
+> > > +	}
+> > 
+> > This really should be checked in the generic x86 dma_alloc_coherent
+> > function.
+> 
+> I don't think so. Any motherboards with the recent IOMMUs support ISA?
 
-> I'll look into it Monday, but maybe Ayaz (maintainer @ nv) could ack it
-> sooner than that?
+Not that I am aware of. But as we both know there are people who do
+corner case tests with the dma-api functions like passing their own
+created devices or even NULL to it an look what happens :-)
+We have to handle this case in _every_ IOMMU implemention. So the
+generic function is the right place for this check, imho.
 
-OK, thanks a lot!
+Joerg
 
-Rafael
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
