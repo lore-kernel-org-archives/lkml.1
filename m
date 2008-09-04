@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYIDHmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYIDHnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbYIDHmF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 03:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIDHlx
+	id S1755282AbYIDHnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 03:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIDHnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 03:41:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48979 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbYIDHlw (ORCPT
+	Thu, 4 Sep 2008 03:43:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:29302 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYIDHnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 03:41:52 -0400
-Subject: Re: [PATCH 0/2] ftrace: ftrace_printk fixes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080903214249.661170580@goodmis.org>
-References: <20080903214249.661170580@goodmis.org>
-Content-Type: text/plain
-Date: Thu, 04 Sep 2008 09:41:52 +0200
-Message-Id: <1220514112.8609.185.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 4 Sep 2008 03:43:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=g4Wgf4v+iF5gyhu0dwt0271gcqBAM02KvN371+BjRsi5BpvkrGu6u7AtzORpFu5+Qw
+         2uA8mv7pfB5M/svbRe8cedFWkmKXpMcC7RPrh6kWMClliWYwM2mno3bD7GxgwQm8yiEb
+         q3Bzh2QNUcYE3vFC3/zN9Zz136pZfSNx2cql8=
+Message-ID: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+Date: Thu, 4 Sep 2008 09:43:10 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: qestion about I2C_CLASS_HWMON flag
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-03 at 17:42 -0400, Steven Rostedt wrote:
-> Peter Zijlstra is starting to use ftrace_printk to debug the scheduler.
-> He quickly came across a few issues.
-> 
-> These two patches address some of the things he has concerns about.
+Hello,
 
-Yay - works now!
+I'm wondering why does this flag exist ?
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Why is a hw monitor device so special so that an I2C bus needs
+a flag to tell the rest of the world that it support it ?
 
-> I'm expecting that Peter will be sending some more patches to help with
-> the interface.
-
-Yep, I will.. let me extract that from the massive diff I have
-here.. :-)
-
-
-
+Thanks
+-- 
+Francis
