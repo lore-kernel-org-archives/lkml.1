@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYIDFeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbYIDFnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbYIDFeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 01:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYIDFdw
+	id S1755980AbYIDFnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 01:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbYIDFnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 01:33:52 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:55991 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbYIDFdv (ORCPT
+	Thu, 4 Sep 2008 01:43:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45509 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751100AbYIDFnE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 01:33:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=V6a3gU/5T19SDOSbxkcp/3mMQUVOuQSMl0TgGchRDaA2yJhUoqVTiDTdJ5/Ph6M0QQ
-         M/4QhgoS2eQc6d7HFHxmsJfwcoLWgLTsgl2K7EYj9b6G6zilIMZTb1dKIFcBze7toGae
-         +nsJN3hZMhDwKhEDA1kMrp8Y1LYkKdR/cCY1s=
-Message-ID: <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
-Date: Thu, 4 Sep 2008 08:33:50 +0300
-From: "David Shwatrz" <dshwatrz@gmail.com>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
-Cc: "Benjamin Thery" <benjamin.thery@bull.net>, "Greg KH" <greg@kroah.com>,
-       "Mark Ryden" <markryde@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Tejun Heo" <htejun@gmail.com>, "Daniel Lezcano" <dlezcano@fr.ibm.com>,
-       linux-kernel@vger.kernel.org, "Al Viro" <viro@ftp.linux.org.uk>,
-       "Linux Containers" <containers@lists.osdl.org>, netdev@vger.kernel.org
-In-Reply-To: <20080902170148.GA9305@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Sep 2008 01:43:04 -0400
+Date: Wed, 3 Sep 2008 22:42:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: linux-next: Tree for September 3
+Message-Id: <20080903224228.b8f0d207.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809032223200.3378@nehalem.linux-foundation.org>
+References: <20080903191619.6b6b230e.sfr@canb.auug.org.au>
+	<20080903214634.ea17ff53.akpm@linux-foundation.org>
+	<20080903215455.792c78a3.akpm@linux-foundation.org>
+	<20080904145744.3f791ca7.sfr@canb.auug.org.au>
+	<20080903220546.bd673658.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0809032223200.3378@nehalem.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
-	 <m1zloyh2mb.fsf_-_@frodo.ebiederm.org>
-	 <m1vdzmh2jr.fsf_-_@frodo.ebiederm.org>
-	 <20080820021754.GA25182@kroah.com>
-	 <m1od3m282j.fsf_-_@frodo.ebiederm.org>
-	 <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net>
-	 <dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com>
-	 <48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
->go into my tree this week,
+On Wed, 3 Sep 2008 22:26:23 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I am also interested in this patch; may I ask  - what do you mean by
-"my  tree" ?I am a little newbie in the kernel, as you might understand.
-I looked into http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-for candidates for this git tree you are talking about.
+> 
+> 
+> On Wed, 3 Sep 2008, Andrew Morton wrote:
+> > 
+> > This breakage spans over 1000 commits.  Not sure how that can happen in
+> > a rebased tree, but whatever.
+> 
+> If the only problem is that dmesg thing, and that cardbus doesn't work as 
+> a result, try my small patch before even bothering to bisect. I _think_ it 
+> will fix that thing.
+> 
+> But that particular thing actually comes from my source tree and is not 
+> linux-next specific, so if this is something that started happening only 
+> with Linux-next, and doesn't happen in my tree, then there is something 
+> else going on too with your Vaio.
+> 
+> Maybe that cardbus problem has been going on for a while, and you just 
+> didn't notice because it didn't matter? And now you have some new problem 
+> that is unrelated to that resource thing?
+> 
 
- May I ask: what is the **exact** URL for this git tree you are talking about ?
+yup, I have a bunch of things going wrong here.  The cardbus problem
+has no observed-by-me consequences.
 
-Thanks,
+I moved on from that and am presently working out why I have no logins
+running on the VTs.
 
-Regards,
-DS
-
-
-On Tue, Sep 2, 2008 at 8:01 PM, Greg KH <gregkh@suse.de> wrote:
-> On Tue, Sep 02, 2008 at 04:03:20PM +0200, Benjamin Thery wrote:
->> Mark Ryden wrote:
->>> Hello,
->>>  I hope that this patch (from 4.7.08) was not forgetten... I don't see
->>> it for example in linux-net (I have an up-to-date linux-next git
->>> tree).
->>
->> I was about to ask the same thing.
->>
->> Greg, what is the plan with these remaining patches for sysfs tagged
->> dirs? Will you have some time to merge them in your tree soon?
->
-> Yes, they should go into my tree this week, sorry been busy with 2.6.27
-> work and Novell's Hackweek.
->
-> thanks,
->
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
