@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbYIDVXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbYIDV0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756609AbYIDVXi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 17:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbYIDVXa
+	id S1756137AbYIDV0G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 17:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbYIDVZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 17:23:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42387 "EHLO mx1.redhat.com"
+	Thu, 4 Sep 2008 17:25:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42520 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753557AbYIDVXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 17:23:30 -0400
-Date: Thu, 4 Sep 2008 17:22:45 -0400
+	id S1753987AbYIDVZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 17:25:54 -0400
+Date: Thu, 4 Sep 2008 17:24:53 -0400
 From: Don Zickus <dzickus@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
+To: Vivek Goyal <vgoyal@redhat.com>
 Cc: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>,
-       Vivek Goyal <vgoyal@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
        Prarit Bhargava <prarit@redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -23,36 +23,29 @@ Cc: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        "Maciej W. Rozycki" <macro@linux-mips.org>
 Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080904212245.GQ3400@redhat.com>
-References: <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com> <20080904200032.GM18288@one.firstfloor.org> <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net> <20080904201926.GN18288@one.firstfloor.org> <183C1D5A376DE343AA8F94FC2A1EC14938D3E7486E@GVW1091EXB.americas.hpqcorp.net> <20080904205345.GO18288@one.firstfloor.org>
+Message-ID: <20080904212453.GR3400@redhat.com>
+References: <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com> <20080904200032.GM18288@one.firstfloor.org> <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net> <20080904205725.GC4349@redhat.com> <183C1D5A376DE343AA8F94FC2A1EC14938D3E748D1@GVW1091EXB.americas.hpqcorp.net> <20080904212134.GD4349@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080904205345.GO18288@one.firstfloor.org>
+In-Reply-To: <20080904212134.GD4349@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 10:53:45PM +0200, Andi Kleen wrote:
-> So if your handler can decide "This is an NMI that came from
-> a source i know about" it can be a proper[1] NMI cititzen.
-
-The way it was explained to me months ago, is that it can't.  Currently it
-works by making sure the nmi watchdog is disabled on the box (either
-compiled off, or nmi_watchdog=0).  Then it registers itself on the DIE
-chain.  Because it is on the top of the chain, it just so happens to
-be the first handler to process the NMIs, so HP is happy.  Kdump works
-because it registers later on top of the HP handler thus it is called
-before HP can panic the box.  However, I suspect if one were to run
-oprofile in nmi mode, HP would panic the box on the first profile point.
-
+On Thu, Sep 04, 2008 at 05:21:34PM -0400, Vivek Goyal wrote:
+> On Thu, Sep 04, 2008 at 09:05:37PM +0000, Mingarelli, Thomas wrote:
+> > Ok regarding question #1. The die_notifier works as you mentioned; however, the fact that the watchdog timer ticks also come through as NMIs is a hinderance. Now, when the watchdog timer is configured through the LOCAL_APIC the issue isn't so bad. I think the hpwdt driver handles the NMI coming in because there isn't a flood of timer ticks coming through as in the IOAPIC case.
 > 
-> Otherwise it will be hard to make it coexist nicely.
+> Ok, so how does replacing the nmi callback help here? You driver handler
+> be still called upon timer ticks. So you will be called on watchdog tick
+> whether you are on die chain or you replace nmi handler with nmi callback.
+> So watchdog ticks can't be a reason for not being on die chain.
 
-Hence our attempt at a solution by creating a registration for a new
-nmi_handler, which in hindsight seemed to miss a couple of cases.
+Prarit's patch disabled the timer upon registering a callback to prevent
+this case.  The thought was if you have your own handler you could provide
+your own watchdog.
 
 Cheers,
 Don
-
