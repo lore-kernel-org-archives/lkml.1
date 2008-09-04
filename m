@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755452AbYIDOLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYIDOTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755452AbYIDOLu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 10:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIDOLl
+	id S1755361AbYIDOTA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 10:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYIDOSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 10:11:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:53164 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340AbYIDOLl (ORCPT
+	Thu, 4 Sep 2008 10:18:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59646 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751976AbYIDOSv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 10:11:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Va6StdwGs721ZXdMMn2O4/MCZbPnLs3d+hHTzXwlYbhiQRcKFWqj3hKl3A4pynUKxm
-         sbNmXEtfbq/fB7/6a5vyf78xnFYZQn2R0G73d8492dchkfle8DMbrQubGAi2fPyn2W6V
-         dOtQveRlG4TCEr9PZF+poevdNOvpDxNp/gk7w=
-Message-ID: <8bd0f97a0809040711k70a9784cu1f2dac31b23c978c@mail.gmail.com>
-Date: Thu, 4 Sep 2008 10:11:39 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Bryan Wu" <cooloney@kernel.org>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org, "Cliff Cai" <cliff.cai@analog.com>
-Subject: Re: [PATCH 3/9] ASoC: Blackfin: SPORT peripheral interface driver
-In-Reply-To: <20080904104753.GC12775@rakim.wolfsonmicro.main>
+	Thu, 4 Sep 2008 10:18:51 -0400
+Message-ID: <48BFEE2C.70303@linux-foundation.org>
+Date: Thu, 04 Sep 2008 09:18:20 -0500
+From: Christoph Lameter <cl@linux-foundation.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andy Whitcroft <apw@shadowen.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 4/4] capture pages freed during direct reclaim for	allocation
+ by the reclaimer
+References: <1220467452-15794-5-git-send-email-apw@shadowen.org>	 <1220475206-23684-1-git-send-email-apw@shadowen.org>	 <48BEFAF9.3030006@linux-foundation.org> <1220510308.8609.167.camel@twins>
+In-Reply-To: <1220510308.8609.167.camel@twins>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220516528-20301-1-git-send-email-cooloney@kernel.org>
-	 <1220516528-20301-4-git-send-email-cooloney@kernel.org>
-	 <20080904104753.GC12775@rakim.wolfsonmicro.main>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 4, 2008 at 6:47 AM, Mark Brown wrote:
-> On Thu, Sep 04, 2008 at 04:22:02PM +0800, Bryan Wu wrote:
->> From: Cliff Cai <cliff.cai@analog.com>
->
->> SPORT is a serial port which can support serveral serial communication protocols.
->> It can be used as I2C/PCM/AC97. For further information, please look up the HRM.
->
->> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->
-> Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
->
-> with the proviso that there's no ALSA or ASoC interfacing stuff in here
-> so I'm likely to miss stuff.
+Peter Zijlstra wrote:
+> On Wed, 2008-09-03 at 16:00 -0500, Christoph Lameter wrote:
+>> Andy Whitcroft wrote:
+>>
+>>>  
+>>>  #ifndef __GENERATING_BOUNDS_H
+>>> @@ -208,6 +211,9 @@ __PAGEFLAG(SlubDebug, slub_debug)
+>>>   */
+>>>  TESTPAGEFLAG(Writeback, writeback) TESTSCFLAG(Writeback, writeback)
+>>>  __PAGEFLAG(Buddy, buddy)
+>>> +PAGEFLAG(BuddyCapture, buddy_capture)	/* A buddy page, but reserved. */
+>>> +	__SETPAGEFLAG(BuddyCapture, buddy_capture)
+>>> +	__CLEARPAGEFLAG(BuddyCapture, buddy_capture)
+>> Doesnt __PAGEFLAG do what you want without having to explicitly specify
+>> __SET/__CLEAR?
+> 
+> PAGEFLAG() __PAGEFLAG()
+> 
+> does TESTPAGEFLAG() double.
+> 
 
-yeah, this is like a library for our SPORT peripheral to avoid
-duplicating it in all the Blackfin ALSA pieces
--mike
+Usually one either wants the atomic versions or the non atomic versions. This
+usage seems to be mainly non atomic plus one use of ClearPageBuddy() in
+capture_or_return() (Which raises some questions about how the bit
+modifications are serialized. Is there concurrency during free?)
+
+So
+
+__PAGEFLAG(BuddyCapture, buddy_capture)
+	CLEARPAGEFLAG(BuddyCapture, buddy_capture)
+
