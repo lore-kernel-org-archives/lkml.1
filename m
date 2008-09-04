@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYIDIO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYIDIPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbYIDIO5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 04:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYIDIOn
+	id S1757539AbYIDIPx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 04:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYIDIPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 04:14:43 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:60175 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbYIDIOm (ORCPT
+	Thu, 4 Sep 2008 04:15:38 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:49686 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbYIDIPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 04:14:42 -0400
-Message-ID: <48BF98EB.5080602@cs.columbia.edu>
-Date: Thu, 04 Sep 2008 04:14:35 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 4 Sep 2008 04:15:36 -0400
+Date: Thu, 4 Sep 2008 10:15:35 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andreas Mohr <andi@lisas.de>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, shaohua.li@intel.com
+Subject: Re: [PATCH] Prevent clockevent event_handler ending up handler_noop
+Message-ID: <20080904081535.GA593@rhlx01.hs-esslingen.de>
+References: <20080903164356.GA31969@rhlx01.hs-esslingen.de> <alpine.LFD.1.10.0809031908270.3243@apollo.tec.linutronix.de> <20080903173627.GA7767@rhlx01.hs-esslingen.de> <alpine.LFD.1.10.0809032058380.3243@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-To: Andrey Mirkin <major@openvz.org>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [PATCH 0/9] OpenVZ kernel based checkpointing/restart
-References: <1220439476-16465-1-git-send-email-major@openvz.org>
-In-Reply-To: <1220439476-16465-1-git-send-email-major@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809032058380.3243@apollo.tec.linutronix.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+On Wed, Sep 03, 2008 at 09:01:35PM +0200, Thomas Gleixner wrote:
+> When you register something better than PIT, then the PIT is
+> disabled completely. No more interrupts from there.
 
-Andrey Mirkin wrote:
-> This patchset introduces kernel based checkpointing/restart as it is
-> implemented in OpenVZ project. This patchset has limited functionality and
-> are able to checkpoint/restart only single process. Recently Oren Laaden
-> sent another kernel based implementation of checkpoint/restart. The main
-> differences between this patchset and Oren's patchset are:
+GOOD.
 
-Thanks Andrey. I'll take a close look at it by the weekend. Just a couple
-of comments after a very brief look at the code:
-
+> > Out of interest: how big would you believe the benefit to be?
+> > (overall system performance gains and ACPI PM benefits)
 > 
-> * In this patchset checkpointing initiated not from the process
-> (right now we do not have a container, only namespaces), Oren's patchset
-> performs checkpointing from the process context.
+> Hard to tell, your milage can vary.
 
-Actually, my patch is written to checkpoint from outside the context of the
-target task;  for simplicity only, it is applied to the current process.
+ACPI PM benefits exclusively depend on whether I can make my system go
+below 20 wakeups/s at all or not, otherwise there won't be any improvement
+of course.
 
-> 
-> * Restart in this patchset is initiated from process, which restarts a new
-> process (in new namespaces) with saved state. Oren's patchset uses the same
-> process from which restart was initiated and restore saved state over it.
+I/O overhead due to PIT ISA access _might_ be a couple % of overall
+system performance, but as you say, this is hard to tell, admittedly.
 
-Here, too, handling of namespaces was left out in order to provide a simple
-proof of concept. In fact, spawning a new process and entering a new namespace
-can be easily done in user-space.
+We'll see rather soon, since integration is finished, however I get
+MODPOST symbol link errors for clockevents_register_device() and another
+clockevent function which I forgot.
+Most certainly we should have had an EXPORT_SYMBOL_GPL() for
+these? Or are you going to tell me that modular registration won't work
+at all (yet?) for clock_event_device, as opposed to clocksource?
 
-Oren.
+Anything else I need to take into account, other than applying the
+fixup patch in the parent post and exporting these symbols?
+And how to unregister the event device on module unload?
 
-> 
-> * Checkpoint/restart functionality in this patchset is implemented as a kernel
-> module
-> 
-> 
-> As checkpointing is initiated not from the process which state should be saved
-> we should freeze a process before saving its state. Right now Container Freezer
-> from Matt Helsley can be used for this.
-> 
-> This patchset introduce only a concept how kernel based checkpointing/restart
-> can be implemented and are able to checkpoint/restart only a single process
-> with simple VMAs. 
-> 
-> I've tried to split my patchset in small patches to make review more easier.
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+Oh, and another question:
+Since this timer hardware was previously hooked up to an ALSA snd_timer
+(struct snd_timer_hardware), do you think changing this into
+clock_event_device provides almost equivalent service quality?
+snd_timer is used for precise MIDI timestamping (and not much else,
+thus this valuable timer was entirely unused/idle, read: wasted), I think,
+so I wonder what kind of accuracy loss (jitter, additional timer/IRQ load)
+I'd have for MIDI operation if I used this timer for the entire system's
+highres timer wheel. If you believe this is even remotely comparably robust
+as using a snd_timer-only construct, then I'm more than happy to rip out
+snd_timer and _always_ go with clock_event_device instead.
+
+
+Looking forward to getting my box crashed, hard ;)
+
+Thanks!
+
+Andreas
