@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYIDMvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYIDMwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbYIDMvx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYIDMvp
+	id S1757283AbYIDMwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755882AbYIDMv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:51:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53821 "EHLO smtps.tip.net.au"
+	Thu, 4 Sep 2008 08:51:59 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53851 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbYIDMvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:51:44 -0400
-Date: Thu, 4 Sep 2008 22:51:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: Tree for September 4
-Message-Id: <20080904225127.2937905e.sfr@canb.auug.org.au>
-In-Reply-To: <20080904125248.117e7cf9@lxorguk.ukuu.org.uk>
-References: <20080904193606.573f2cb3.sfr@canb.auug.org.au>
-	<20080904125248.117e7cf9@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1753191AbYIDMv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 08:51:58 -0400
+Date: Thu, 4 Sep 2008 21:50:19 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 1/3] x86: remove the NULL device hack in dma-mapping.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080904100035.GS3189@amd.com>
+References: <20080903200114.GC16706@8bytes.org>
+	<20080904130800O.fujita.tomonori@lab.ntt.co.jp>
+	<20080904100035.GS3189@amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Sep_2008_22_51_27_+1000_7xPW+bt/Uqxg1UZJ"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080904215030Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Sep_2008_22_51_27_+1000_7xPW+bt/Uqxg1UZJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 4 Sep 2008 12:00:35 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Hi Alan,
+> On Thu, Sep 04, 2008 at 01:11:46PM +0900, FUJITA Tomonori wrote:
+> > On Wed, 3 Sep 2008 22:01:14 +0200
+> > Joerg Roedel <joro@8bytes.org> wrote:
+> > 
+> > > On Thu, Sep 04, 2008 at 03:04:23AM +0900, FUJITA Tomonori wrote:
+> > > > dma_alloc_coherent in dma-mapping.h has a hack to use
+> > > > x86_dma_fallback_dev if a pointer to a device is NULL. Some of IOMMUs
+> > > > don't need such hack. The hack also makes it difficult for IOMMUs to
+> > > > make a proper decision because the hack hides the information.
+> > > 
+> > > I don't think its the right way to work around shortcomings of the
+> > > generic code in the architecture specific implementations. Especially
+> > > when the generic code can be easily fixed like in this case.
+> > 
+> > Well, the generic code should not have such work around.
+> 
+> I don't see that as a workaround. It is the best what we can do to
+> handle device dma_masks with the current Linux page allocator (if we
+> don't have hardware dma translation).
 
-On Thu, 4 Sep 2008 12:52:48 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
-> > I have reverted the ttydev tree for today at Andrew's request since it =
-is
-> > causing him a problem.
->=20
-> I've pushed a "mini" ttydev tree with just the fixes and earlier patches
-> in for the moment while I nail this one down. That way the stuff which
-> is independent can still be tested and get to Linus even if the big tty
-> rework has to be delayed.
+It's a hack. What swiotlb should do is allocating from only swiotlb's
+memory area (I agree with Andi about this). dma_mask is irrelevant for
+it. The current swiotlb_alloc_coherent is a bit wrong though I don't
+like to bother IA64 people.
 
-Thanks, I will fetch that tomorrow.  (Aren't timezones fun? :-))
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> > > > +static void *x86_swiotlb_alloc_coherent(struct device *dev, size_t size,
+> > > > +					dma_addr_t *dma_handle, gfp_t gfp)
+> > > > +{
+> > > > +	if (!dev) {
+> > > > +		dev = &x86_dma_fallback_dev;
+> > > > +		gfp |= GFP_DMA;
+> > > > +	}
+> > > 
+> > > This really should be checked in the generic x86 dma_alloc_coherent
+> > > function.
+> > 
+> > I don't think so. Any motherboards with the recent IOMMUs support ISA?
+> 
+> Not that I am aware of. But as we both know there are people who do
+> corner case tests with the dma-api functions like passing their own
+> created devices or even NULL to it an look what happens :-)
 
---Signature=_Thu__4_Sep_2008_22_51_27_+1000_7xPW+bt/Uqxg1UZJ
-Content-Type: application/pgp-signature
+That's the wrong way to use DMA API. We don't need to care about
+it. The only reason we handle it now is for the ancient code.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAki/2c8ACgkQjjKRsyhoI8xuMACfXj5GQnikxXMoYEnTGwAxZMRx
-ykkAnRbzP9KoPfMKlPcBUPZqCCo/sjYs
-=meCT
------END PGP SIGNATURE-----
+> We have to handle this case in _every_ IOMMU implemention. So the
+> generic function is the right place for this check, imho.
 
---Signature=_Thu__4_Sep_2008_22_51_27_+1000_7xPW+bt/Uqxg1UZJ--
+As I said, I don't think that every IOMMU need to handle it. Well,
+it's a minor issue. I don't care much so handling it in a generic code
+is fine. But as I pointed out in another mail, the fallback device has
+DMA_32BIT_MASK so hiding it in dma-mapping.h makes it difficult to
+make pci-dma.c work as before.
