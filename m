@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbYIDUeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757378AbYIDUdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbYIDUeD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbYIDU1d
+	id S1757378AbYIDUdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbYIDU11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:27:33 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:13263 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758122AbYIDU1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:27:31 -0400
-From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 3/6] Check for device resize when rescanning partitions
-To: linux-scsi@vger.kernel.org
-Cc: andrew.patterson@hp.com, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
-       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
-       jmoyer@redhat.com
-Date: Thu, 04 Sep 2008 14:27:30 -0600
-Message-ID: <20080904202730.10456.14322.stgit@bob.kio>
-In-Reply-To: <20080904202714.10456.88061.stgit@bob.kio>
-References: <20080904202714.10456.88061.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Thu, 4 Sep 2008 16:27:27 -0400
+Received: from mail.work.de ([212.12.32.20]:42156 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758671AbYIDU1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:27:25 -0400
+Message-ID: <48C044A9.9060807@gmail.com>
+Date: Fri, 05 Sep 2008 00:27:21 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
+       akpm@linux-foundation.org
+Subject: DVB Update [PATCH 27/31] remove unreferenced delivery
+X-Enigmail-Version: 0.94.0.0
+Content-Type: multipart/mixed;
+ boundary="------------050306000209020402090801"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for device resize when rescanning partitions
+This is a multi-part message in MIME format.
+--------------050306000209020402090801
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Check for device resize in the rescan_partitions() routine. If the device
-has been resized, the bdev size is set to match. The rescan_partitions()
-routine is called when opening the device and when calling the
-BLKRRPART ioctl.
+>From ff9e7a53cae5acdbe0195346303275e5e712ee02 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:51:40 +0200
+Subject: [PATCH] DVB remove unreferenced delivery
 
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
+From: Manu Abraham <abraham.manu@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
- fs/partitions/check.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ frontend.h |    1 -
+ 1 file changed, 1 deletion(-)
 
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index e6f378f..77cfe63 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -504,7 +504,6 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
- 	res = invalidate_partition(disk, 0);
- 	if (res)
- 		return res;
--	bdev->bd_invalidated = 0;
+
+--------------050306000209020402090801
+Content-Type: text/x-patch;
+ name="27.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="27.patch"
+
+>From ff9e7a53cae5acdbe0195346303275e5e712ee02 Mon Sep 17 00:00:00 2001
+From: Manu Abraham <manu@linuxtv.org>
+Date: Thu, 4 Sep 2008 14:51:40 +0200
+Subject: [PATCH] DVB remove unreferenced delivery
+
+From: Manu Abraham <abraham.manu@gmail.com>
+Signed-off-by: Manu Abraham <manu@linuxtv.org>
+
+diff --git a/include/linux/dvb/frontend.h b/include/linux/dvb/frontend.h
+index 6f5fecf..ee48864 100644
+--- a/include/linux/dvb/frontend.h
++++ b/include/linux/dvb/frontend.h
+@@ -588,7 +588,6 @@ struct dvbfe_atsc_info {
+ /* DVB Frontend related Information	*/
+ struct dvbfe_info {
+ 	char				name[128];
+-	enum dvbfe_delsys		delivery;
  
- 	disk_part_iter_init(&piter, disk, DISK_PITER_INCL_EMPTY);
- 	while ((part = disk_part_iter_next(&piter)))
-@@ -513,6 +512,8 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
- 
- 	if (disk->fops->revalidate_disk)
- 		disk->fops->revalidate_disk(disk);
-+	check_disk_size_change(disk, bdev);
-+	bdev->bd_invalidated = 0;
- 	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
- 		return 0;
- 	if (IS_ERR(state))	/* I/O error reading the partition table */
+ 	union {
+ 		struct dvbfe_dvbs_info	dvbs;
 
+
+--------------050306000209020402090801--
