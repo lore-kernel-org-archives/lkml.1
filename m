@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754997AbYIDQvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYIDRAN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754997AbYIDQvq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 12:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYIDQvh
+	id S1755257AbYIDRAN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 13:00:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYIDQ7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 12:51:37 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:48032 "EHLO fieldses.org"
+	Thu, 4 Sep 2008 12:59:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34141 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbYIDQvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 12:51:36 -0400
-Date: Thu, 4 Sep 2008 12:51:26 -0400
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, neilb@suse.de
-Subject: Re: [PATCH] nfsd/nfs4acl: Number of used used array elements needs
-	to be zeroed.
-Message-ID: <20080904165126.GF4536@fieldses.org>
-References: <20080904165518.15a02908@psychotron.englab.brq.redhat.com> <20080904150101.GB4536@fieldses.org> <48C00F90.40907@panasas.com>
+	id S1753165AbYIDQ7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 12:59:51 -0400
+Message-ID: <48C012F3.3000408@redhat.com>
+Date: Thu, 04 Sep 2008 11:55:15 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+References: <20080818212819t-sato@mail.jp.nec.com>
+In-Reply-To: <20080818212819t-sato@mail.jp.nec.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C00F90.40907@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 07:40:48PM +0300, Benny Halevy wrote:
-> On Sep. 04, 2008, 18:01 +0300, "J. Bruce Fields" <bfields@fieldses.org> wrote:
-> > On Thu, Sep 04, 2008 at 04:55:18PM +0200, Jiri Pirko wrote:
-> >> Number of used used array elements needs to be zeroed. It may cause
-> >> problems otherwise, because it's used uninitialized in find_uid().
-> >>
-> >> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> >> ---
-> >>  fs/nfsd/nfs4acl.c |    2 ++
-> >>  1 files changed, 2 insertions(+), 0 deletions(-)
-> >>
-> >> diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
-> >> index 54b8b41..7dcd90f 100644
-> >> --- a/fs/nfsd/nfs4acl.c
-> >> +++ b/fs/nfsd/nfs4acl.c
-> >> @@ -447,11 +447,13 @@ init_state(struct posix_acl_state *state, int cnt)
-> >>  	state->users = kzalloc(alloc, GFP_KERNEL);
-> >>  	if (!state->users)
-> >>  		return -ENOMEM;
-> >> +	state->users->n = 0;
-> >>  	state->groups = kzalloc(alloc, GFP_KERNEL);
-> >>  	if (!state->groups) {
-> >>  		kfree(state->users);
-> >>  		return -ENOMEM;
-> >>  	}
-> >> +	state->groups->n = 0;
-> >>  	return 0;
-> >>  }
-> > 
-> > Thanks for the extra eyes on this code, but: surely the kzalloc()'s are
-> > all that's necessary?  Am I missing something?
-> 
-> quickly browsing over the code, shouldn't it be:
-> 
-> diff --git a/fs/nfsd/nfs4acl.c b/fs/nfsd/nfs4acl.c
-> index b6ed383..54b8b41 100644
-> --- a/fs/nfsd/nfs4acl.c
-> +++ b/fs/nfsd/nfs4acl.c
-> @@ -443,7 +443,7 @@ init_state(struct posix_acl_state *state, int cnt)
->  	 * enough space for either:
->  	 */
->  	alloc = sizeof(struct posix_ace_state_array)
-> -		+ cnt*sizeof(struct posix_ace_state);
-> +		+ cnt*sizeof(struct posix_user_ace_state);
->  	state->users = kzalloc(alloc, GFP_KERNEL);
->  	if (!state->users)
->  		return -ENOMEM;
+Takashi Sato wrote:
 
-Yep, see 91b80969ba466ba4b915a4a1d03add8c297add3f.--b.
+> @@ -141,6 +142,57 @@ static int ioctl_fioasync(unsigned int f
+>  }
+>  
+>  /*
+> + * ioctl_freeze - Freeze the filesystem.
+> + *
+> + * @filp:	target file
+> + *
+> + * Call freeze_bdev() to freeze the filesystem.
+> + */
+> +static int ioctl_freeze(struct file *filp)
+> +{
+> +	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
+> +
+> +	if (!capable(CAP_SYS_ADMIN))
+> +		return -EPERM;
+> +
+> +	/* If filesystem doesn't support freeze feature, return. */
+> +	if (sb->s_op->write_super_lockfs == NULL)
+> +		return -EOPNOTSUPP;
+> +
+> +	/* If a regular file or a directory isn't specified, return. */
+> +	if (sb->s_bdev == NULL)
+> +		return -EINVAL;
+> +
+> +	/* Freeze */
+> +	sb = freeze_bdev(sb->s_bdev);
+> +	if (IS_ERR(sb))
+> +		return PTR_ERR(sb);
+> +	return 0;
+> +}
+
+Not a problem with your patch exactly, but I was just wondering; you
+check here whether the sb returned from freeze_bdev is an ERR_PTR (as
+does lock_fs()) - but, freeze_bdev never returns an error, does it?
+->write_super_lockfs is a void...
+
+It really seems that at least we should be able to handle IO errors on
+the freeze request, and tell the user "No, your filesystem was not
+frozen..."?
+
+Maybe I'll whip up a patch to see about propagating freeze errors up
+from the filesystems that implement it, unless I'm missing some reason
+not to do so...?
+
+Also, should this be checking for a NULL returned from freeze_bdev as
+well?  I guess this should never happen if we have a file open on which
+we are calling the ioctl ...
+
+-Eric
