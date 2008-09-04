@@ -1,149 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbYIDUaR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYIDU3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758376AbYIDUaR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 16:30:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbYIDU03
+	id S1758599AbYIDU3u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 16:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757945AbYIDU0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:26:29 -0400
-Received: from mail.work.de ([212.12.32.20]:42121 "EHLO mail.work.de"
+	Thu, 4 Sep 2008 16:26:20 -0400
+Received: from mail.work.de ([212.12.32.20]:42117 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756315AbYIDU01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:26:27 -0400
-Message-ID: <48C0446E.702@gmail.com>
-Date: Fri, 05 Sep 2008 00:26:22 +0400
+	id S1756842AbYIDU0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 16:26:19 -0400
+Message-ID: <48C04466.3010801@gmail.com>
+Date: Fri, 05 Sep 2008 00:26:14 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org, v4l-dvb-maintainer@linuxtv.org,
        akpm@linux-foundation.org
-CC: o.endriss@gmx.de
-Subject: DVB Update [PATCH 20/31] explicitly display offending params
+CC: Marco Schluessler <marco@lordzodiac.de>
+Subject: DVB Update [PATCH 19/31] fix wrong copy for DVBFE_GET_PARAMS
 X-Enigmail-Version: 0.94.0.0
 Content-Type: multipart/mixed;
- boundary="------------080808050307030401080904"
+ boundary="------------070506020606070003040708"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
---------------080808050307030401080904
+--------------070506020606070003040708
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
->From f27d011f67d5e00ead196b0fcc2585537c2f2380 Mon Sep 17 00:00:00 2001
+>From 7d0389d6826fb460c85b25a54450151a55fa5338 Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 14:18:08 +0200
-Subject: [PATCH] DVB Code review: explicitly display offending parameters
+Date: Thu, 4 Sep 2008 14:12:32 +0200
+Subject: [PATCH] DVB Fix wrong copy for DVBFE_GET_PARAMS
 
-Code review #1 Explicitly display the offending parameters,
-while doing parameter conversion.
+The translated frontend parameters for the ioctl DVBFE_GET_PARAMS
+wasn't copied back. The patch fixes the issue.
 
-Thanks to Oliver Endriss <o.endriss@gmx.de> for the code review
-
-From: Manu Abraham <abraham.manu@gmail.com>
+From: Marco Schluessler <marco@lorzodiac.de>
+Signed-off-by: Marco Schluessler <marco@lordzodiac.de>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
- dvb_frontend.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ dvb_frontend.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 
-
---------------080808050307030401080904
+--------------070506020606070003040708
 Content-Type: text/x-patch;
- name="20.patch"
+ name="19.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="20.patch"
+ filename="19.patch"
 
->From f27d011f67d5e00ead196b0fcc2585537c2f2380 Mon Sep 17 00:00:00 2001
+>From 7d0389d6826fb460c85b25a54450151a55fa5338 Mon Sep 17 00:00:00 2001
 From: Manu Abraham <manu@linuxtv.org>
-Date: Thu, 4 Sep 2008 14:18:08 +0200
-Subject: [PATCH] DVB Code review: explicitly display offending parameters
+Date: Thu, 4 Sep 2008 14:12:32 +0200
+Subject: [PATCH] DVB Fix wrong copy for DVBFE_GET_PARAMS
 
-Code review #1 Explicitly display the offending parameters,
-while doing parameter conversion.
+The translated frontend parameters for the ioctl DVBFE_GET_PARAMS
+wasn't copied back. The patch fixes the issue.
 
-Thanks to Oliver Endriss <o.endriss@gmx.de> for the code review
-
-From: Manu Abraham <abraham.manu@gmail.com>
+From: Marco Schluessler <marco@lorzodiac.de>
+Signed-off-by: Marco Schluessler <marco@lordzodiac.de>
 Signed-off-by: Manu Abraham <manu@linuxtv.org>
 
 diff --git a/drivers/media/dvb/dvb-core/dvb_frontend.c b/drivers/media/dvb/dvb-core/dvb_frontend.c
-index e6ae5e6..037199a 100644
+index c451785..e6ae5e6 100644
 --- a/drivers/media/dvb/dvb-core/dvb_frontend.c
 +++ b/drivers/media/dvb/dvb-core/dvb_frontend.c
-@@ -224,7 +224,7 @@ static int newfec_to_oldfec(enum dvbfe_fec new_fec, enum fe_code_rate *old_fec)
- 		*old_fec = FEC_AUTO;
- 		break;
- 	default:
--		printk("%s: Unsupported FEC\n", __func__);
-+		printk("%s: Unsupported FEC %x\n", __func__, new_fec);
- 		return -EINVAL;
- 	}
- 
-@@ -265,7 +265,7 @@ static int oldfec_to_newfec(enum fe_code_rate old_fec, enum dvbfe_fec *new_fec)
- 		*new_fec = DVBFE_FEC_AUTO;
- 		break;
- 	default:
--		printk("%s: Unsupported FEC\n", __func__);
-+		printk("%s: Unsupported FEC %x\n", __func__, old_fec);
- 		return -EINVAL;
- 	}
- 
-@@ -303,7 +303,7 @@ static int newmod_to_oldmod(enum dvbfe_modulation new_mod, enum fe_modulation *o
- 		*old_mod = VSB_16;
- 		break;
- 	default:
--		printk("%s: Unsupported Modulation\n", __func__);
-+		printk("%s: Unsupported Modulation %x\n", __func__, new_mod);
- 		return -EINVAL;
- 	}
- 
-@@ -341,7 +341,7 @@ static int oldmod_to_newmod(enum fe_modulation old_mod, enum dvbfe_modulation *n
- 		*new_mod = DVBFE_MOD_VSB16;
- 		break;
- 	default:
--		printk("%s: Unsupported Modulation\n", __func__);
-+		printk("%s: Unsupported Modulation %x\n", __func__, old_mod);
- 		return -EINVAL;
- 	}
- 
-@@ -390,7 +390,7 @@ int newapi_to_olddrv(struct dvbfe_params *params,
- 			ofdm->bandwidth		= BANDWIDTH_AUTO;
- 			break;
- 		default:
--			dprintk("%s: Unsupported bandwidth\n", __func__);
-+			dprintk("%s: Unsupported bandwidth %x\n", __func__, dvbt->bandwidth);
- 			return -EINVAL;
+@@ -1823,10 +1823,12 @@ static int dvb_frontend_ioctl(struct inode *inode, struct file *file,
+ 			memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
+ 			err = fe->ops.get_params(fe, (struct dvbfe_params *) parg);
+ 		} else if (fe->ops.get_frontend) {
+-			memcpy (parg, &fepriv->parameters, sizeof (struct dvb_frontend_parameters));
+ 			err = fe->ops.get_frontend(fe, (struct dvb_frontend_parameters*) parg);
+-			if (olddrv_to_newapi(fe, &fepriv->fe_params, &fepriv->parameters, fe->ops.info.type) == -EINVAL)
+-				printk("%s: ERROR !!! Converting Old parameters --> New parameters\n", __func__);
++			if (!err) {
++				if (olddrv_to_newapi(fe, &fepriv->fe_params, &fepriv->parameters, fe->ops.info.type) == -EINVAL)
++					printk("%s: ERROR !!! Converting Old parameters --> New parameters\n", __func__);
++				memcpy(parg, &fepriv->fe_params, sizeof (struct dvbfe_params));
++			}
  		}
- 		newfec_to_oldfec(dvbt->code_rate_HP, &ofdm->code_rate_HP);
-@@ -407,7 +407,7 @@ int newapi_to_olddrv(struct dvbfe_params *params,
- 			ofdm->transmission_mode = TRANSMISSION_MODE_AUTO;
- 			break;
- 		default:
--			dprintk("%s: Unsupported transmission mode\n", __func__);
-+			dprintk("%s: Unsupported transmission mode %x\n", __func__, dvbt->bandwidth);
- 			return -EINVAL;
- 		}
- 		switch (dvbt->guard_interval) {
-@@ -452,7 +452,7 @@ int newapi_to_olddrv(struct dvbfe_params *params,
- 		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
  		break;
- 	default:
--		dprintk("%s: Unsupported delivery system\n", __func__);
-+		dprintk("%s: Unsupported delivery system %x\n", __func__, delsys);
- 		return -EINVAL;
- 		break;
- 	}
-@@ -558,7 +558,7 @@ int olddrv_to_newapi(struct dvb_frontend *fe,
- 		newmod_to_oldmod(atsc->modulation, &vsb->modulation);
- 		break;
- 	default:
--		dprintk("%s: Unsupported delivery system\n", __func__);
-+		dprintk("%s: Unsupported delivery system %x\n", __func__, fe_type);
- 		return -EINVAL;
- 		break;
- 	}
+ 	case DVBFE_GET_DELSYS:
 
 
---------------080808050307030401080904--
+--------------070506020606070003040708--
