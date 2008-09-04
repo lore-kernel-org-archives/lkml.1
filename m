@@ -1,136 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756362AbYIDHg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbYIDHll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756362AbYIDHg1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 03:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbYIDHgQ
+	id S1755791AbYIDHll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 03:41:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIDHle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 03:36:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54158 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751898AbYIDHgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 03:36:15 -0400
-Message-ID: <48BF8FE9.6060309@garzik.org>
-Date: Thu, 04 Sep 2008 03:36:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Ben Hutchings <bhutchings@solarflare.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 3/3] sky2: use pci_read_vpd to read info during boot
-References: <20080827204626.4b65862f@extreme>	<20080828111323.GI7908@solarflare.com>	<20080903155316.1a0a5698@extreme>	<20080903155700.7517d8d9@extreme> <20080903160017.299831b0@extreme>
-In-Reply-To: <20080903160017.299831b0@extreme>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Thu, 4 Sep 2008 03:41:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46146 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbYIDHld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 03:41:33 -0400
+Date: Thu, 4 Sep 2008 09:44:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: andi@firstfloor.org, joerg.roedel@amd.com, mingo@redhat.com,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       tony.luck@intel.com
+Subject: Re: [PATCH] swiotlb: fix dma_alloc_coherent allocation failures with swiotlb
+Message-ID: <20080904074441.GY18288@one.firstfloor.org>
+References: <1220454224-25985-1-git-send-email-joerg.roedel@amd.com> <877i9sx4nk.fsf@basil.nowhere.org> <20080904131130E.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080904131130E.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> Change sky2 driver (in netdev next tree) to use vpd access routines.
+On Thu, Sep 04, 2008 at 01:11:47PM +0900, FUJITA Tomonori wrote:
+> On Thu, 04 Sep 2008 00:09:51 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> > Joerg Roedel <joerg.roedel@amd.com> writes:
+> > 
+> > > The SWIOTLB version of dma_alloc_coherent allocates all memory with
+> > > GFP_DMA unconditionally. This leads sometimes unnecessary to allocation
+> > > failures. This patch makes the allocation strategy to use the DMA32 zone
+> > > first if this is possible. The changes are boot tested on AMD64 and
+> > > compile tested for i386 and IA64.
+> > 
+> > The high level dma_alloc_coherent() does that anyways.
 > 
-> Note: other usage of vpd internal access routines will go away in later patches.
-> 
-> ---
-> Patch against netdev-2.6#upstream-next assumes the previous PCI API change.
-> 
-> --- a/drivers/net/sky2.c	2008-09-03 11:35:47.000000000 -0700
-> +++ b/drivers/net/sky2.c	2008-09-03 11:44:06.000000000 -0700
-> @@ -4199,10 +4199,9 @@ static int __devinit pci_wake_enabled(st
->  
->  static void __devinit sky2_vpd_info(struct sky2_hw *hw)
->  {
-> -	int cap = pci_find_capability(hw->pdev, PCI_CAP_ID_VPD);
-> -	const u8 *p;
-> -	u8 *vpd_buf = NULL;
-> -	u16 len;
-> +	loff_t offs;
-> +	u8 len;
-> +	u8 tag[3];
->  	static struct vpd_tag {
->  		char tag[2];
->  		char *label;
-> @@ -4211,47 +4210,48 @@ static void __devinit sky2_vpd_info(stru
->  		{ "EC", "Engineering Level" },
->  		{ "MN", "Manufacturer" },
->  	};
-> +	char str[128];
->  
-> -	if (!cap)
-> -		goto out;
-> -
-> -	vpd_buf = kmalloc(VPD_SIZE, GFP_KERNEL);
-> -	if (!vpd_buf)
-> -		goto out;
-> +	if (pci_read_vpd(hw->pdev, 0, sizeof(tag), tag) < 0)
-> +		return;
-> +	if (tag[0] != VPD_MAGIC)
-> +		return;
-> +	len = tag[1];
-> +	if (len == 0 || len > sizeof(str))
-> +		return;
->  
-> -	if (sky2_vpd_read(hw, cap, vpd_buf, 0, VPD_SIZE))
-> -		goto out;
-> +	offs = 3;
-> +	if (pci_read_vpd(hw->pdev, offs, len, str) < 0)
-> +		return;
->  
-> -	if (vpd_buf[0] != VPD_MAGIC)
-> -		goto out;
-> -	len = vpd_buf[1];
-> -	if (len == 0 || len > VPD_SIZE - 4)
-> -		goto out;
-> -	p = vpd_buf + 3;
-> -	dev_info(&hw->pdev->dev, "%.*s\n", len, p);
-> -	p += len;
-> +	dev_info(&hw->pdev->dev, "%.*s\n", len, str);
->  
-> -	while (p < vpd_buf + VPD_SIZE - 4) {
-> +	for(;;) {
->  		int i;
->  
-> -		if (!memcmp("RW", p, 2))	/* end marker */
-> +		offs += len;
-> +		if (pci_read_vpd(hw->pdev, offs, sizeof(tag), tag) < 0)
->  			break;
->  
-> -		len = p[2];
-> -		if (len > (p - vpd_buf) - 4)
-> +		if (!memcmp("RW", tag, 2))	/* end marker */
-> +			break;
-> +
-> +		offs += sizeof(tag);
-> +		len = tag[2];
-> +		if (len > sizeof(str))
->  			break;
->  
->  		for (i = 0; i < ARRAY_SIZE(vpd_tags); i++) {
-> -			if (!memcmp(vpd_tags[i].tag, p, 2)) {
-> +			if (!memcmp(vpd_tags[i].tag, tag, 2)) {
-> +				if (pci_read_vpd(hw->pdev, offs, len, str) < 0)
-> +					return;
-> +
->  				printk(KERN_DEBUG " %s: %.*s\n",
-> -				       vpd_tags[i].label, len, p + 3);
-> +				       vpd_tags[i].label, len, str);
->  				break;
->  			}
->  		}
-> -		p += len + 3;
->  	}
-> -out:
-> -	kfree(vpd_buf);
->  }
+> The high level dma_alloc_coherent means the tricks in
+> arch/x86/pci-dma.c? If so, all the tricks has gone in tip/master.
 
-Acked-by: me
+Seems wrong -- that is something that is needed by multiple
+IOMMUs. Pretty much all which work with real memory instead
+of virtual mappings.
 
-I presume this will go via PCI tree?
+I also have an older swiotlb rewrite in the pipeline based on the DMA
+allocator. The project got a little sidelined, but I hope to eventually 
+forward port it again.
 
+-Andi
 
+-- 
+ak@linux.intel.com
