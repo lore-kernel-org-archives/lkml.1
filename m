@@ -1,136 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754083AbYIDP2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYIDPcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754083AbYIDP2W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 11:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYIDP2N
+	id S1754055AbYIDPcZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 11:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYIDPcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 11:28:13 -0400
-Received: from xenotime.net ([66.160.160.81]:57990 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751671AbYIDP2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 11:28:12 -0400
-Date: Thu, 4 Sep 2008 08:28:07 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Nir Tzachar <nir@tzachar.com>
-cc: "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] ncurses based config
-In-Reply-To: <9b2db90b0809032155h6ed5df9ey846de96779022d11@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0809040822440.19666@shark.he.net>
-References: <1220469076-16487-1-git-send-email-nir@tzachar.com> 
- <200809032138.14651.bzolnier@gmail.com>  <Pine.LNX.4.64.0809031259110.20541@shark.he.net>
- <9b2db90b0809032155h6ed5df9ey846de96779022d11@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1606286688-1057114846-1220542087=:19666"
+	Thu, 4 Sep 2008 11:32:18 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:45433 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbYIDPcS (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 11:32:18 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc5-mmotm0829 - CONFIG_HID_COMPAT causes hangs at boot
+In-Reply-To: Your message of "Thu, 04 Sep 2008 16:55:23 +0200."
+             <48BFF6DB.1060807@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <7419.1220261347@turing-police.cc.vt.edu> <48BD4D20.5020704@gmail.com> <13476.1220371878@turing-police.cc.vt.edu> <48BDA9F2.7000203@gmail.com> <4909.1220499086@turing-police.cc.vt.edu>
+            <48BFF6DB.1060807@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1220542322_3385P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 04 Sep 2008 11:32:02 -0400
+Message-ID: <17477.1220542322@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--==_Exmh_1220542322_3385P
+Content-Type: text/plain; charset=us-ascii
 
----1606286688-1057114846-1220542087=:19666
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+On Thu, 04 Sep 2008 16:55:23 +0200, Jiri Slaby said:
 
-On Thu, 4 Sep 2008, Nir Tzachar wrote:
+> Hmm, *if* we stuck in request_module in hid, workqueue cannot be flushed and
+> tty waits... Could you stick 2 printks into hid_compat_load if it finishes?
 
-> Good morning.
->=20
-> Sorry for the delay, it was night here...
->=20
-> > Hi,
-> > >
-> > > On Wednesday 03 September 2008, Nir Tzachar wrote:
-> > > > This patch was inspired by the kernel projects page, where an ncurs=
-es
-> > > > replacement for menuconfig was mentioned (by Sam Ravnborg).
-> > > >
-> > > > Building on menuconfig, this patch implements a more modern look
-> > interface using
-> > > > ncurses and ncurses' satellite libraries (menu, panel, form). The
-> > implementation
-> > > > does not depend on lxdialog, which is currently distributed with th=
-e
-> > kernel.
-> > > >
-> > > > The only change outside of nconf.c is due to a name clash: both ncu=
-rses
-> > and
-> > > > lkc.h define a fucntion named menu_init(). I changed the internal
-> > version's
-> > > > name.
-> > > >
-> > > > Please consider the patch for merging. Comments are appreciated.
-> > >
-> > > Could you please tell what kernel version is it against?
-> >
-> > It applies cleanly to 2.6.27-rc5-git4 FWIW.
-> >
->=20
-> I based the patch on current git tree. Is a more stable version preferabl=
-e?
+I severely doubt that it's going to finish, as it stayed stuck at that same
+point for at least 10-15 minutes or so - it took a while for alt-sysrq-t to get
+down to the tracemod because I booted with 'boot_delay=100', and then the
+time to find paper and pen, write it down, etc..
 
-No, that's fine.
 
-> >
-> > > I'm getting the following error on make nconfig (and also on make
-> > menuconfig
-> > > which works fine without this patch) with the current Linus' tree:
-> > >
-> > >   HOSTCC  scripts/kconfig/conf.o
-> > >   HOSTCC  scripts/kconfig/kxgettext.o
-> > >   HOSTCC  scripts/kconfig/nconf.o
-> > >   HOSTCC  scripts/kconfig/zconf.tab.o
-> > > scripts/kconfig/zconf.tab.c: In function =FF=FFconf_parse=FF=FF:
-> > > scripts/kconfig/zconf.tab.c:2258: warning: implicit declaration of
-> > function =FF=FFmenu_init=FF=FF
-> > >   HOSTLD  scripts/kconfig/nconf
-> > > scripts/kconfig/nconf arch/x86/Kconfig
-> > > make[1]: *** [nconfig] Segmentation fault
-> > > make: *** [nconfig] Error 2
-> >
-> > Need to change all /menu_init/ in zconf.tab.c* to /_menu_init/.
-> >
->=20
-> I believe the patch does change these lines.
+--==_Exmh_1220542322_3385P
+Content-Type: application/pgp-signature
 
-Perhaps the patch was missing some pieces then.  It does not
-contain any changes to the zconf* files.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-> >
-> > Need to strip trailing whitespace on new source code lines.
-> >
->=20
-> scripts/checkpatch.pl did not report anything here. Maybe git-email-send
-> messed up the patch??
+iD8DBQFIv/9ycC3lWbTT17ARAraiAJ0UfOqR6+PkwIuKxdEmY8lrEe+Y3QCgqFMk
+u/S6joYHBc+tHhm6met5x5Q=
+=7Qeo
+-----END PGP SIGNATURE-----
 
-Too bad.
-
-quilt reported several of those when I applied the patch.
-AFAIK, git also will report that.
-
-These lines have trailing spaces:
-
-57:+nconf-objs  :=3D nconf.o zconf.tab.o=20
-85:+HOSTLOADLIBES_nconf =3D -lmenu -lpanel -lform -lncurses=20
-86:+HOSTCFLAGS_nconf.o  =3D=20
-87:+LDFLAGS_nconf.o     =3D=20
-
-> > I'm seeing cyan (?) foreground on black background.  Is that the colors
-> > that were planned?
-> >
->=20
-> > Instructions are dark blue on black -- cannot read them.
-> >
->=20
-> Well, colors were never my strong point ;) If someone can come up with a
-> better color scheme I'll be more than happy to change.
-
---=20
-~Randy
----1606286688-1057114846-1220542087=:19666--
+--==_Exmh_1220542322_3385P--
