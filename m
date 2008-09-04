@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYIDMcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYIDMfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755970AbYIDMcB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbYIDMbx
+	id S1755609AbYIDMfK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYIDMe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:31:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47939 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbYIDMbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:31:53 -0400
-Message-ID: <48BFD48B.7050202@redhat.com>
-Date: Thu, 04 Sep 2008 14:28:59 +0200
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [patch 00/42] 2.6.26-stable review
-References: <20080903172447.GA7731@suse.de> <20080904023905.GA1071@khazad-dum.debian.net> <48BFD2D7.20209@linux.intel.com>
-In-Reply-To: <48BFD2D7.20209@linux.intel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Sep 2008 08:34:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41993 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752326AbYIDMe4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 08:34:56 -0400
+Date: Thu, 4 Sep 2008 13:34:19 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@tglx.de, hpa@zytor.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
+Message-ID: <20080904133419.3704490b@lxorguk.ukuu.org.uk>
+In-Reply-To: <873akgw251.fsf@basil.nowhere.org>
+References: <20080903195122.73905236@infradead.org>
+	<873akgw251.fsf@basil.nowhere.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 04 Sep 2008 14:01:46 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Andi Kleen wrote:
-> Henrique de Moraes Holschuh wrote:
->> What about this one:
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9f497bcc695fb828da023d74ad3c966b1e58ad21
->>
->> "ACPI: Fix thermal shutdowns" ?
->>
->> It should have been submitted to stable@k.o well before 2.6.26.3,
+> Arjan van de Ven <arjan@infradead.org> writes:
 > 
-> Nope because the bug it fixed was only introduced for 2.6.27-rc1.
+> > Add basic sanity checks to the syscall execution patch
+> 
+> This just means that the root kits will switch to patch
+> the first instruction of the entry points instead.
+> 
+> So the protection will be zero to minimal, but the overhead will
+> be there forever.
 
-No Andi, the bug _is_ in 2.6.26 tree!
+Agreed entirely. This is a waste of time and a game not worth playing.
+The only place you can expect to make a difference here is in virtualised
+environments by teaching KVM how to provide 'irrevocably read only' pages
+to guests where the guest OS isn't permitted to change the rights back or
+the virtual mapping of that page.
 
-Introduced in 2.6.26.2.
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=commit;h=04f496871e8af87a1e40c504371a206fd7389193
-
-Milan
---
-mbroz@redhat.com
-
+Alan
