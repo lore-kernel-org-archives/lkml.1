@@ -1,67 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYIDMOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbYIDMRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbYIDMOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 08:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbYIDMOM
+	id S1755659AbYIDMRU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 08:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYIDMRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 08:14:12 -0400
-Received: from mail-in-14.arcor-online.net ([151.189.21.54]:58593 "EHLO
-	mail-in-14.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752177AbYIDMOL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 08:14:11 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] ncurses based config
-To: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
-	<ariveira@gmail.com>,
-       "Randy.Dunlap" <rdunlap@xenotime.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>,
-       linux-kernel@vger.kernel.org, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Nir Tzachar <nir@tzachar.com>
-Reply-To: 7eggert@gmx.de
-Date: Thu, 04 Sep 2008 14:21:38 +0200
-References: <b86dt-3nV-39@gated-at.bofh.it> <b86wB-3HU-1@gated-at.bofh.it> <b86Qa-4k2-53@gated-at.bofh.it> <b879t-4DG-23@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Thu, 4 Sep 2008 08:17:12 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35286 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752259AbYIDMRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 08:17:11 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX19jBeNSc2djYQ7GbuRaFyQ3peIWy1olRcPb4jeYbx
+	ZHnMVaOtsn0HqP
+Date: Thu, 4 Sep 2008 14:17:05 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org
+Subject: Re: [Patch] Check hfs_bnode_find return value
+Message-ID: <20080904121705.GA30173@alice>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1KbDqF-0003oH-1B@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0808290405480.2507@localhost.localdomain>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.27-rc5-00099-gd26acd9 (x86_64)
+X-Uptime: 14:15:42 up  2:04,  1 user,  load average: 0.05, 0.04, 0.08
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alejandro Riveira Fernández <ariveira@gmail.com> wrote:
-> El Wed, 3 Sep 2008 13:02:42 -0700 (PDT)
+hi,
 
-[nconfig]
+sorry i just noticed that the mail from yesterday was broken...
 
->> I'm seeing cyan (?) foreground on black background.  Is that the colors
->> that were planned?
->   
->  much nicer colors here (ubuntu)
->  http://img177.imageshack.us/my.php?image=pantallazonm7.png
+* Roman Zippel (zippel@linux-m68k.org) wrote:
+> Hi,
+> 
+> On Tue, 26 Aug 2008, Eric Sesterhenn wrote:
+> 
+> > --- linux/fs/hfsplus/brec.c.orig	2008-08-26 19:18:56.000000000 +0200
+> > +++ linux/fs/hfsplus/brec.c	2008-08-26 19:19:27.000000000 +0200
+> > @@ -304,6 +304,8 @@ static struct hfs_bnode *hfs_bnode_split
+> >  	/* update next bnode header */
+> >  	if (new_node->next) {
+> >  		struct hfs_bnode *next_node = hfs_bnode_find(tree, new_node->next);
+> > +		if (IS_ERR(next_node))
+> > +			return next_node;
+> >  		next_node->prev = new_node->this;
+> >  		hfs_bnode_read(next_node, &node_desc, 0, sizeof(node_desc));
+> >  		node_desc.prev = cpu_to_be32(next_node->prev);
+> 
+> Al Viro already fixed this for HFS in a better way, could you please adopt 
+> his solution?
 
-Desaturate the image using "luminosity" setting, and you'll spot a problem.
-
-Choosing a non-black background isn't bad per se, but it limits the number of
-colors you can use for foreground, and a dark grey isn't much better.
-
-Generally you should use no color unless you'd like to draw attention. Use
-blue for unimportant things, red if you want to alert. Never use red and blue
-close to each other, because they need different focussing in the eye, and
-trying to see both will cause a headache.
-
-The layout is possibly good for large screen sizes, but you should design it
-for 80x24 first. Having to install X11 or a framebuffer console just to
-configure a kernel is no good.
-
-In other words: You don't permanently need half a screen of instructions,
-hide them by default and offer a popup. The window below the title is the
-only working area, it can be maximized. (Looking at "make menuconfig",
-I see the same mistakes.)
+This is the patch from hfs applied to hfsplus (see
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3d10a15d6919488204bdb264050d156ced20d9aa
+). Guess Al should sign this off since it is his work?
 
 
+--- linux/fs/hfsplus/brec.c.orig	2008-09-03 17:00:07.000000000 +0200
++++ linux/fs/hfsplus/brec.c	2008-09-03 17:00:43.000000000 +0200
+@@ -216,7 +216,7 @@ skip:
+ static struct hfs_bnode *hfs_bnode_split(struct hfs_find_data *fd)
+ {
+ 	struct hfs_btree *tree;
+-	struct hfs_bnode *node, *new_node;
++	struct hfs_bnode *node, *new_node, *next_node;
+ 	struct hfs_bnode_desc node_desc;
+ 	int num_recs, new_rec_off, new_off, old_rec_off;
+ 	int data_start, data_end, size;
+@@ -235,6 +235,17 @@ static struct hfs_bnode *hfs_bnode_split
+ 	new_node->type = node->type;
+ 	new_node->height = node->height;
+ 
++	if (node->next)
++		next_node = hfs_bnode_find(tree, node->next);
++	else
++		next_node = NULL;
++
++	if (IS_ERR(next_node)) {
++		hfs_bnode_put(node);
++		hfs_bnode_put(new_node);
++		return next_node;
++	}
++
+ 	size = tree->node_size / 2 - node->num_recs * 2 - 14;
+ 	old_rec_off = tree->node_size - 4;
+ 	num_recs = 1;
+@@ -248,6 +259,8 @@ static struct hfs_bnode *hfs_bnode_split
+ 		/* panic? */
+ 		hfs_bnode_put(node);
+ 		hfs_bnode_put(new_node);
++		if (next_node)
++			hfs_bnode_put(next_node);
+ 		return ERR_PTR(-ENOSPC);
+ 	}
+ 
+@@ -302,8 +315,7 @@ static struct hfs_bnode *hfs_bnode_split
+ 	hfs_bnode_write(node, &node_desc, 0, sizeof(node_desc));
+ 
+ 	/* update next bnode header */
+-	if (new_node->next) {
+-		struct hfs_bnode *next_node = hfs_bnode_find(tree, new_node->next);
++	if (next_node) {
+ 		next_node->prev = new_node->this;
+ 		hfs_bnode_read(next_node, &node_desc, 0, sizeof(node_desc));
+ 		node_desc.prev = cpu_to_be32(next_node->prev);
+
+----- End forwarded message -----
