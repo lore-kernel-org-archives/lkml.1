@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYIEQOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYIEQPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbYIEQOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYIEQOC
+	id S1754130AbYIEQPl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYIEQPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:14:02 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53467 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753819AbYIEQOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:14:00 -0400
-Date: Fri, 5 Sep 2008 18:13:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] sched_clock: fix NOHZ interaction
-Message-ID: <20080905161340.GN10292@elte.hu>
-References: <48BABC19.1060509@qumranet.com> <1220281088.8426.63.camel@twins> <48BC15B6.6030506@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 5 Sep 2008 12:15:30 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:39706 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751986AbYIEQPa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 12:15:30 -0400
+Message-Id: <48C17754.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Fri, 05 Sep 2008 17:15:48 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux@sandersweb.net>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi-suse@firstfloor.org>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+References: <200808311422.12525.linux@sandersweb.net>
+ <20080831122751.72afafb5@infradead.org>
+ <alpine.LFD.1.10.0808311237290.12958@nehalem.linux-foundation.org>
+ <200809051138.20615.linux@sandersweb.net>
+In-Reply-To: <200809051138.20615.linux@sandersweb.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <48BC15B6.6030506@qumranet.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1914]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>--- a/include/asm-x86/nops.h
+>+++ b/include/asm-x86/nops.h
+>@@ -84,7 +84,7 @@
+> #define ASM_NOP6 K7_NOP6
+> #define ASM_NOP7 K7_NOP7
+> #define ASM_NOP8 K7_NOP8
+>-#elif defined(CONFIG_X86_P6_NOP)
+>+/* #elif defined(CONFIG_X86_P6_NOP)
+> #define ASM_NOP1 P6_NOP1
+> #define ASM_NOP2 P6_NOP2
+> #define ASM_NOP3 P6_NOP3
+>@@ -93,6 +93,7 @@
+> #define ASM_NOP6 P6_NOP6
+> #define ASM_NOP7 P6_NOP7
+> #define ASM_NOP8 P6_NOP8
+>+*/
+> #elif defined(CONFIG_X86_64)
+> #define ASM_NOP1 K8_NOP1
+> #define ASM_NOP2 K8_NOP2
 
-* Avi Kivity <avi@qumranet.com> wrote:
+I disagree here: If I configure a 686+ kernel, I expect these NOPs to be
+that way (and to work). If you want to run on something that's not
+compliant, you just shouldn't configure your kernel that way.
 
-> Peter Zijlstra wrote:
->> Avi, the below fixes it for me..
->>   
->
-> For me too.  Thanks!
+Jan
 
-applied to tip/sched/urgent - thanks!
-
-	Ingo
