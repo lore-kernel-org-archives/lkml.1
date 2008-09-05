@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYIEOiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbYIEOmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbYIEOiw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbYIEOie
+	id S1754270AbYIEOmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753371AbYIEOmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:38:34 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:13459 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754215AbYIEOie convert rfc822-to-8bit (ORCPT
+	Fri, 5 Sep 2008 10:42:39 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59762 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753333AbYIEOmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:38:34 -0400
-Date: Fri, 5 Sep 2008 16:38:19 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Uwe =?ISO-8859-1?B?S2xlaW5lLUv2bmln?= 
-	<ukleinek@informatik.uni-freiburg.de>
-Cc: linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Linux I2C <i2c@lm-sensors.org>
-Subject: Re: [PATCH] Fix section for probe and remove function for Apple SMU
- Controller
-Message-ID: <20080905163819.2f858b2c@hyperion.delvare>
-In-Reply-To: <20080902211556.GA6872@informatik.uni-freiburg.de>
-References: <20080902210501.GA4306@informatik.uni-freiburg.de>
-	<20080902211556.GA6872@informatik.uni-freiburg.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 5 Sep 2008 10:42:39 -0400
+Date: Fri, 5 Sep 2008 15:37:16 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Khem Raj <raj.khem@gmail.com>
+Subject: Re: [PATCH 02/23] arm: use the new byteorder headers
+Message-ID: <20080905143716.GA17091@flint.arm.linux.org.uk>
+References: <1219106875.17033.55.camel@brick> <20080819072715.GB30521@flint.arm.linux.org.uk> <1219172580.17033.87.camel@brick> <1220608169.2985.305.camel@pmac.infradead.org> <20080905102533.GA26458@flint.arm.linux.org.uk> <1220623566.2985.343.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220623566.2985.343.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe,
-
-Note: patches to i2c bus drivers are better sent to the i2c mailing
-list (Cc'd.)
-
-On Tue, 2 Sep 2008 23:15:56 +0200, Uwe Kleine-König wrote:
-> __devexit for i2c_powermac_probe is obviously wrong.  In the definition
-> of struct platform_driver i2c_powermac_driver the remove function
-> i2c_powermac_remove is wrapped in __devexit_p, so it should be defined
-> using __devexit.
+On Fri, Sep 05, 2008 at 03:06:06PM +0100, David Woodhouse wrote:
+> On Fri, 2008-09-05 at 11:25 +0100, Russell King wrote:
+> > On Fri, Sep 05, 2008 at 10:49:29AM +0100, David Woodhouse wrote:
+> > > On Tue, 2008-08-19 at 12:03 -0700, Harvey Harrison wrote:
+> > > > include/linux/swab.h, include/linux/byteorder.h are in current
+> > > > mainline which is all that these patches depend on.
+> > > 
+> > > Er, it also depends on the patch which exports those headers to
+> > > userspace, which isn't in Linus' tree yet.
+> > 
+> > How useful.  If those generic headers are already in Linus' tree, and
+> > are required for architectures to convert, why hasn't the patch which
+> > exports them to userspace already been submitted?
 > 
-> Signed-off-by: Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> ---
->  drivers/i2c/busses/i2c-powermac.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> Because they weren't being used by anything exported to userspace yet.
+> The patch has been seen, but wasn't destined for 2.6.27...
+>
+> > However, another question: why should userspace be using a kernel header
+> > file for byteswapping?
 > 
-> diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
-> index 22f6d5c..0e7b1c6 100644
-> --- a/drivers/i2c/busses/i2c-powermac.c
-> +++ b/drivers/i2c/busses/i2c-powermac.c
-> @@ -180,7 +180,7 @@ static const struct i2c_algorithm i2c_powermac_algorithm = {
->  };
->  
->  
-> -static int i2c_powermac_remove(struct platform_device *dev)
-> +static int __devexit i2c_powermac_remove(struct platform_device *dev)
->  {
->  	struct i2c_adapter	*adapter = platform_get_drvdata(dev);
->  	struct pmac_i2c_bus	*bus = i2c_get_adapdata(adapter);
-> @@ -200,7 +200,7 @@ static int i2c_powermac_remove(struct platform_device *dev)
->  }
->  
->  
-> -static int __devexit i2c_powermac_probe(struct platform_device *dev)
-> +static int __devinit i2c_powermac_probe(struct platform_device *dev)
->  {
->  	struct pmac_i2c_bus *bus = dev->dev.platform_data;
->  	struct device_node *parent = NULL;
+> ... mostly (on my part, at least) because of that question.
+> 
+> Given my druthers, I'd revert the ARM part of the patch for now, and we
+> can have a _serious_ think about whether we really need to export these
+> functions to userspace.
 
-Looks good, patch applied. Thanks for your contribution.
+I'll revert it, and if it's resubmitted, I'll ignore it until after the
+next merge window - since my tree for the upcoming merge window currently
+pre-dates the revert, so effectively continues to carry it until it's
+merged.
+
+I'm not sure what went wrong, other than being continuously bugged by
+Harvey to apply his patch.  If his patches are inappropriate, surely
+that should've been pointed out to Harvey before he got the first of
+his series merged?
+
+Maybe more of his patches need reverting if some have been applied?
 
 -- 
-Jean Delvare
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
