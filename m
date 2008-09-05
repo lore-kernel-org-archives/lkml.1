@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYIEJNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYIEJQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbYIEJNM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYIEJM5
+	id S1755389AbYIEJQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIEJQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:12:57 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49759 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbYIEJM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:12:56 -0400
-Date: Fri, 5 Sep 2008 18:11:41 +0900
-To: mingo@redhat.com
-Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 0/3] fix alloc_coherent allocation issues
- (tip/x86/iommu)
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1220605129-18359-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1220605129-18359-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 5 Sep 2008 05:16:18 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:50734 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbYIEJQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 05:16:17 -0400
+Message-ID: <48C0F8BE.7060108@emcraft.com>
+Date: Fri, 05 Sep 2008 13:15:42 +0400
+From: Ilya Yanok <yanok@emcraft.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, wd@denx.de,
+       yur@emcraft.com, Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [PATCH] ASYNC_TX: fix the bug in async_tx_run_dependencies
+References: <1220478231-8725-1-git-send-email-yanok@emcraft.com> <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
+In-Reply-To: <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080905181155W.fujita.tomonori@lab.ntt.co.jp>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: Spam detection software, running on the system "ocean.emcraft.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  Andrew Morton wrote: >> From: Yuri Tikhonov
+	<yur@emcraft.com> >> >> Should clear the next pointer of the TX if we
+	are sure that the >> next TX (say NXT) will be submitted to the channel
+	too. Overwise, >> we break the chain of descriptors, because we lose the
+	information >> about the next descriptor to run. So next time, when
+	invoke >> async_tx_run_dependencies() with TX, it's TX->next will be
+	NULL, and >> NXT will be never submitted. >> >> Signed-off-by: Yuri
+	Tikhonov <yur@emcraft.com> >> Signed-off-by: Ilya Yanok
+	<yanok@emcraft.com> [...] 
+	Content analysis details:   (-4.4 points, 2.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  5 Sep 2008 17:58:46 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+Andrew Morton wrote:
+>> From: Yuri Tikhonov <yur@emcraft.com>
+>>
+>> Should clear the next pointer of the TX if we are sure that the
+>> next TX (say NXT) will be submitted to the channel too. Overwise,
+>> we break the chain of descriptors, because we lose the information
+>> about the next descriptor to run. So next time, when invoke
+>> async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
+>> NXT will be never submitted.
+>>
+>> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+>>     
+Signed-off-by: Ilya Yanok <yanok@emcraft.com>
 
-> This patchset restores some of the current alloc_coherent behaviors
-> that Joerg's x86 patchset (in tip/x86/iommu) changes.
-> 
-> The first patch uses __GFP_DMA for NULL device argument (fallback_dev)
-> with pci-nommu. It's a hack for ISA (and some old code) so we need
-> DMA_ZONE.
-> 
-> The second patch uses __GFP_NORETRY in the case of GFP_DMA.
-> 
-> The third patch is a minor cleanup.
+> This patch should include your signed-off-by: as well.  Because you
+> were on the delivery path, as described in
+> Documentation/SubmittingPatches, section 12.  
+>   
 
-Oops, I messed up the subjects. They should have been:
+Excuse me for being inattentive.
 
-[PATCH 1/3] x86: fix nommu_alloc_coherent allocation with NULL device argument
-[PATCH 2/3] x86: use __GFP_NORETRY in the case of GFP_DMA with pci-nommu
-[PATCH 3/3] x86: gart alloc_coherent doesn't need to check NULL device argument
+Regards, Ilya.
 
