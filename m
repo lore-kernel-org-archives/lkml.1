@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbYIEQPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYIEQQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753508AbYIEQPz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYIEQPg
+	id S1754352AbYIEQQW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbYIEQPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 5 Sep 2008 12:15:37 -0400
+Received: from h155.mvista.com ([63.81.120.155]:60579 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754007AbYIEQPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 5 Sep 2008 12:15:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54083 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754016AbYIEQPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:15:35 -0400
-Date: Fri, 5 Sep 2008 18:15:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: balbir@linux.vnet.ibm.com, Spencer Candland <spencer@bluehost.com>,
-       dmitry.adamushko@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Still seeing decreasing stime/utime
-Message-ID: <20080905161516.GO10292@elte.hu>
-References: <48B5C4C7.8040509@bluehost.com> <48B66BCC.8030207@linux.vnet.ibm.com> <48B702FA.8060308@bluehost.com> <20080828224502.GA1540@balbir.in.ibm.com> <48B859C8.5000001@bluehost.com> <48B8E102.5050503@linux.vnet.ibm.com> <1220095656.8426.23.camel@twins> <20080830135557.GA24039@balbir.in.ibm.com> <1220110327.14894.40.camel@lappy.programming.kicks-ass.net>
+Message-ID: <48C15B48.4000305@ru.mvista.com>
+Date: Fri, 05 Sep 2008 20:16:08 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220110327.14894.40.camel@lappy.programming.kicks-ass.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: =?UTF-8?B?Ik1hc291ZCBTaGFyYmlhbmkgXCLZhdiz2LnZiNivINi02LHYqNuM2KfZhtuM?=
+	 =?UTF-8?B?XCIi?= <masouds@masoud.ir>
+Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: HPT374 detection crash with 74811f355f4f69a187fa74892dcf2a684b84ce99
+References: <1a9da18c0809041610tb3f2a58r6acd6f10a3d50a91@mail.gmail.com>
+In-Reply-To: <1a9da18c0809041610tb3f2a58r6acd6f10a3d50a91@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Masoud Sharbiani "مسعود شربیانی" wrote:
 
-> On Sat, 2008-08-30 at 19:25 +0530, Balbir Singh wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-08-30 13:27:36]:
-> > 
-> > > On Sat, 2008-08-30 at 11:26 +0530, Balbir Singh wrote:
-> > > > Spencer Candland wrote:
-> > > > >> Here is an experimental patch (I've just compiled and booted a machine
-> > > > >> with it, I am unable to reproduce your problem), could you please test
-> > > > >> it for me and see if it helps solve the problem
-> > > > > 
-> > > > > Looks like this fixed it.  I have been testing this for the last 16
-> > > > > hours and everything is looking good.
-> > > > > 
-> > > > 
-> > > > Excellent! Ingo, Peter, do you like the patch? If so, could you please pick it
-> > > > up Ingo. I think we should even push the fix to stable releases.
-> > > 
-> > > Looks good, except for the issue you yourself earlier raised, a few of
-> > > those functions looks too large to be inlined.
-> > >
-> > 
-> > Here's the updated revision with task_*time functions moved to sched.c
-> > and inlining removed, except for task_gtime(). I've compiled and
-> > booted a machine (x86_64) with this patch applied.
-> > 
-> > Reported-by: spencer@bluehost.com
-> > 
-> > Spencer reported a problem where utime and stime were going negative despite
-> > the fixes in commit b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa. The suspected
-> > reason for the problem is that signal_struct maintains it's own utime and
-> > stime (of exited tasks), these are not updated using the new task_utime()
-> > routine, hence sig->utime can go backwards and cause the same problem
-> > to occur (sig->utime, adds tsk->utime and not task_utime()). This patch
-> > fixes the problem
-> > 
-> > TODO: using max(task->prev_utime, derived utime) works for now, but a more
-> > generic solution is to implement cputime_max() and use the cputime_gt()
-> > function for comparison.
-> > 
-> > Comments?
-> > 
-> > Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Thanks Balbir!
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Hi there, Looks like your commit 74811f355f4f69a187fa74892dcf2a684b84ce99
+>  (hpt366: convert to use ->host_priv)
 
-applied to tip/sched/urgent, thanks!
+    Thanks for the bisection.
 
-	Ingo
+> has caused the following crash:
+
+    Oops, we did it again. :-)
+
+> (Full dmesg follows, as captured from a serial console)
+
+> [   22.555200] hpt366: HPT374 chipset detected
+> [   22.559489] hpt366 0000:03:06.0: IDE controller (0x1103:0x0008 rev 0x07)
+> [   22.566278] HPT366_IDE 0000:03:06.0: PCI INT A -> GSI 28 (level, low) -> IRQ 28
+> [   22.573729] usb 1-2: new full speed USB device using uhci_hcd and address 4
+> [   22.580726] pci 0000:03:06.1: PCI INT A -> GSI 28 (level, low) -> IRQ 28
+> [   22.587529] hpt366 0000:03:06.0: DPLL base: 48 MHz, f_CNT: 142, assuming 33 MHz PCI
+> [   22.602705] hpt366 0000:03:06.0: using 50 MHz DPLL clock
+> [   22.608181] hpt366 0000:03:06.0: 100% native mode on irq 28
+> [   22.613831] hpt366 0000:03:06.1: no clock data saved by BIOS
+
+    Aha, HPT374 workaround for reading BIOS clock data didn't get executed.
+
+> [   22.731015] usb 1-2: configuration #1 chosen from 1 choice
+> [   22.737191] ata2.00: ATA-6: ST3120022A, 3.04, max UDMA/100
+> [   22.738880] hub 1-2:1.0: USB hub found
+> [   22.746597] ata2.00: 234441648 sectors, multi 16: LBA48
+> [   22.747804] hpt366 0000:03:06.1: DPLL base: 33 MHz, f_CNT: 139, assuming
+
+    Uh, I wonder where did it get those 33 MHz DPLL base -- there's simply no 
+such base.  Looks like memory addressed by .host_priv got corrupt...
+
+MBR, Sergei
