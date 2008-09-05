@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYIENtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYIENuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbYIENtg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYIENt1
+	id S1754454AbYIENuL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYIENt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:49:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:60240 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbYIENt1 (ORCPT
+	Fri, 5 Sep 2008 09:49:57 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:12659 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753182AbYIENt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:49:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FVQNdyp07N8i9q7SOEVCfuQI20Y3GnqFn6ascoj/F4RFSuuvavb5qGOLPEHzRJhRWP
-         H+yp1WYeRuEQXPBAlox6DRtnfDE6I54UICcju5p7/MbLpeWSPKZGFX0fY6zBtGFBZZ93
-         oQqcHO++NR0uj37KwOHfMb6VV/fAboom8b8tY=
-Date: Fri, 5 Sep 2008 17:49:21 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       yhlu.kernel@gmail.com, macro@linux-mips.org
-Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for
-	setup_IO_APIC_irqs
-Message-ID: <20080905134921.GA7239@lenovo>
-References: <20080904183748.950151853@gmail.com>> <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com> <20080905080447.GC12409@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080905080447.GC12409@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 5 Sep 2008 09:49:56 -0400
+Date: Fri, 5 Sep 2008 15:49:48 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Francis Moreau" <francis.moro@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       i2c@lm-sensors.org
+Subject: Re: qestion about I2C_CLASS_HWMON flag
+Message-ID: <20080905154948.24d2b460@hyperion.delvare>
+In-Reply-To: <38b2ab8a0809050638m524feaeet51817a8207505b87@mail.gmail.com>
+References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+	<38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
+	<20080904103707.557ac764@hyperion.delvare>
+	<38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+	<20080904120855.7e7b9720@hyperion.delvare>
+	<38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
+	<20080905112056.44b7b910@hyperion.delvare>
+	<38b2ab8a0809050544l1914530clec53494e12c77ff5@mail.gmail.com>
+	<20080905151157.21b7f8ce@hyperion.delvare>
+	<38b2ab8a0809050638m524feaeet51817a8207505b87@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Fri, Sep 05, 2008 at 10:04:47AM +0200]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > Use a nested level for 'for' cycle and break long lines.
-| > For apic_print we should countinue using KERNEL_DEBUG if
-| > we have started to.
-| 
-| > @@ -1521,32 +1521,35 @@ static void __init setup_IO_APIC_irqs(vo
-| >  	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
-| >  
-| >  	for (apic = 0; apic < nr_ioapics; apic++) {
-| > -	for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
-| > +		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
-| >  
-| > +			idx = find_irq_entry(apic, pin, mp_INT);
-| > +			if (idx == -1) {
-| 
-| hm, i dont really like the super-deep nesting we do here. Could you 
-| please split out the iterator into a separate function? That makes the 
-| code a lot easier to understand and saves two extra tabs as well for 
-| those ugly-looking printk lines.
-| 
-| 	Ingo
-| 
+On Fri, 5 Sep 2008 15:38:23 +0200, Francis Moreau wrote:
+> On Fri, Sep 5, 2008 at 3:11 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > It's not about hacking, it can be done cleanly. Just have the adapter
+> > driver code check for information in the platform data, and if class
+> > information is provided, use that instead of the default value. Or if
+> > all users will provide the information, don't even have a default in
+> > the driver. Again, the class flags are a (needed) mechanism, the policy
+> > is left for driver authors and platform maintainers to establish.
+> 
+> Ah OK I see now.
+> 
+> On v2.6.23 i2c-gpio.c had no I2C_CLASS_HWMON flag set and
+> had no way to pass this info from platform board.
+> 
+> But on v2.6.27 it is now set whatever the platforms.
+> 
+> Wouldn't it have been better to allow the platform code to pass this type
+> information through the 'i2c_gpio_platform_data' structure for example ?
 
-ok Ingo, will take a look, thanks
+If you have a need for that, sure. If you don't, that's making the code
+more complex for no good reason.
 
-		- Cyrill -
+I expect I2C_CLASS_HWMON to be removed from that driver soon. Now that
+almost all hwmon drivers have been converted to support instantiated
+I2C devices, and given that all users of i2c-gpio are embedded
+architectures with platform code, it should be no longer needed. But
+again I am leaving it to whoever is actually using this driver to
+decide what is best for them.
+
+-- 
+Jean Delvare
