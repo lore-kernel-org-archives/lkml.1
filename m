@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751676AbYIEQbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbYIEQcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676AbYIEQbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYIEQbf
+	id S1753404AbYIEQcv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbYIEQcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:31:35 -0400
-Received: from h155.mvista.com ([63.81.120.155]:60743 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753136AbYIEQbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:31:34 -0400
-Message-ID: <48C15F07.6000501@ru.mvista.com>
-Date: Fri, 05 Sep 2008 20:32:07 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: =?UTF-8?B?Ik1hc291ZCBTaGFyYmlhbmkgXCLZhdiz2LnZiNivINi02LHYqNuM2KfZhtuM?=
-	 =?UTF-8?B?XCIi?= <masouds@masoud.ir>,
-       bzolnier@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: HPT374 detection crash with 74811f355f4f69a187fa74892dcf2a684b84ce99
-References: <1a9da18c0809041610tb3f2a58r6acd6f10a3d50a91@mail.gmail.com> <48C15B52.6020508@ru.mvista.com>
-In-Reply-To: <48C15B52.6020508@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Sep 2008 12:32:39 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:48584 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751105AbYIEQci (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 12:32:38 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 05 Sep 2008 12:32:32 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
+In-reply-to: <s5hhc8u8soi.wl%tiwai@suse.de>
+Message-id: <alpine.LFD.1.10.0809051231120.23787@xanadu.home>
+References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
+ <200612092150.02940.dtor@insightbb.com>
+ <20061209185737.1768315d.randy.dunlap@oracle.com>
+ <200612092205.19358.dtor@insightbb.com>
+ <Pine.LNX.4.64.0612092212410.2630@xanadu.home>
+ <20061209210945.5abe2d89.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0612102244140.2630@xanadu.home>
+ <20080904195744.f367cd2d.randy.dunlap@oracle.com>
+ <alpine.LFD.1.10.0809050028590.23787@xanadu.home>
+ <20080904214444.0dccf859.randy.dunlap@oracle.com>
+ <alpine.LFD.1.10.0809050104560.23787@xanadu.home>
+ <s5htzcvt7id.wl%tiwai@suse.de>
+ <alpine.LFD.1.10.0809051049460.23787@xanadu.home>
+ <s5hhc8u8soi.wl%tiwai@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I just wrote:
+On Fri, 5 Sep 2008, Takashi Iwai wrote:
 
->> Hi there, Looks like your commit 74811f355f4f69a187fa74892dcf2a684b84ce99
->>  (hpt366: convert to use ->host_priv)
+> At Fri, 05 Sep 2008 10:52:25 -0400 (EDT),
+> Nicolas Pitre wrote:
+> > 
+> > On Fri, 5 Sep 2008, Takashi Iwai wrote:
+> > 
+> > > > This was fixed 2 years ago.  Who broke it this time?
+> > > 
+> > > Oh, it must be me.
+> > 
+> > I think both your patch and the one I previously posted are needed.
+> 
+> Could you repost?  I can't find it easily now.
 
->    Thanks for doing the bisection.
+diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+index 6e1e8c6..22cf319 100644
+--- a/drivers/input/touchscreen/Kconfig
++++ b/drivers/input/touchscreen/Kconfig
+@@ -219,7 +219,6 @@ config TOUCHSCREEN_ATMEL_TSADCC
+ 
+ config TOUCHSCREEN_UCB1400
+ 	tristate "Philips UCB1400 touchscreen"
+-	select AC97_BUS
+ 	depends on UCB1400_CORE
+ 	help
+ 	  This enables support for the Philips UCB1400 touchscreen interface.
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 5dba165..70355d3 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -52,6 +52,7 @@ config HTC_PASIC3
+ 
+ config UCB1400_CORE
+ 	tristate "Philips UCB1400 Core driver"
++	select AC97_BUS
+ 	help
+ 	  This enables support for the Philips UCB1400 core functions.
+ 	  The UCB1400 is an AC97 audio codec.
 
->> has caused the following crash:
 
->    Oops, we did it again. :-)
-
-    Already seeing Bart's mistake, see below:
-
->> (Full dmesg follows, as captured from a serial console)
-
->> [   22.555200] hpt366: HPT374 chipset detected
->> [   22.559489] hpt366 0000:03:06.0: IDE controller (0x1103:0x0008 rev 0x07)
->> [   22.566278] HPT366_IDE 0000:03:06.0: PCI INT A -> GSI 28 (level, low) -> IRQ 28
->> [   22.573729] usb 1-2: new full speed USB device using uhci_hcd and address 4
->> [   22.580726] pci 0000:03:06.1: PCI INT A -> GSI 28 (level, low) -> IRQ 28
->> [   22.587529] hpt366 0000:03:06.0: DPLL base: 48 MHz, f_CNT: 142, assuming 33 MHz PCI
->> [   22.602705] hpt366 0000:03:06.0: using 50 MHz DPLL clock
->> [   22.608181] hpt366 0000:03:06.0: 100% native mode on irq 28
->> [   22.613831] hpt366 0000:03:06.1: no clock data saved by BIOS
-
->    Aha, HPT374 workaround for reading BIOS clock data didn't get executed.
-
->> [   22.731015] usb 1-2: configuration #1 chosen from 1 choice
->> [   22.737191] ata2.00: ATA-6: ST3120022A, 3.04, max UDMA/100
->> [   22.738880] hub 1-2:1.0: USB hub found
->> [   22.746597] ata2.00: 234441648 sectors, multi 16: LBA48
->> [   22.747804] hpt366 0000:03:06.1: DPLL base: 33 MHz, f_CNT: 139, assuming
-
->    Uh, I wonder where did it get those 33 MHz DPLL base -- there's 
-> simply no such base.  Looks like memory addressed by .host_priv got 
-> corrupt...
-
-    No, that's just wrong pointer arithmetics there:
-
-        struct hpt_info *info = host->host_priv + (hwif->dev == host->dev[1]);
-
-The 'host_priv' is declared as 'void *', hence in case the condition abobe is 
-true, there will be added only 1 to host->host_priv, not sizeof(struct 
-hpt_info) as it should've been...
-
-MBR, Sergei
-
+Nicolas
