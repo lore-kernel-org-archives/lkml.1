@@ -1,124 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbYIEX2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752885AbYIEXsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642AbYIEX2t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 19:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIEX2j
+	id S1752885AbYIEXsN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 19:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYIEXr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 19:28:39 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51448 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbYIEX2j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 19:28:39 -0400
-Message-ID: <48C1C0A6.2000600@ct.jp.nec.com>
-Date: Fri, 05 Sep 2008 16:28:38 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 5 Sep 2008 19:47:59 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2365 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751674AbYIEXr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 19:47:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,342,1217833200"; 
+   d="scan'208";a="436248632"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] x86_32: signal: move signal number conversion to upper
- layer
-References: <48C1BF41.8040404@ct.jp.nec.com>
-In-Reply-To: <48C1BF41.8040404@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C90FB1.D2462C31"
+Subject: RE: [E1000-devel] linux-next: Tree for September 4 (PATCH: IXGBE)
+Date: Fri, 5 Sep 2008 16:47:55 -0700
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5206120576@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20080904204137.9b31f644.randy.dunlap@oracle.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [E1000-devel] linux-next: Tree for September 4 (PATCH: IXGBE)
+Thread-Index: AckPCWaCnsXb0uofQpqaw9lW4ZPiEgAouCLw
+References: <20080904193606.573f2cb3.sfr@canb.auug.org.au> <20080904204137.9b31f644.randy.dunlap@oracle.com>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "jgarzik" <jgarzik@pobox.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       <e1000-devel@lists.sourceforge.net>
+Cc: "Morton" <akpm@linux-foundation.org>, <linux-next@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       <Andrew@sc8-sf-spam2-b.sourceforge.net>
+X-OriginalArrivalTime: 05 Sep 2008 23:47:56.0829 (UTC) FILETIME=[D2475CD0:01C90FB1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+This is a multi-part message in MIME format.
 
-Bring signal number conversion in __setup_frame() and __setup_rt_frame()
-up into the common part setup_frame().
+------_=_NextPart_001_01C90FB1.D2462C31
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/signal_32.c |   31 ++++++++++++-------------------
- 1 files changed, 12 insertions(+), 19 deletions(-)
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>=20
+> ixgbe needs to be restricted to the same build config (m/y)
+> as DCA since it calls the dca_*() functions.
+>=20
+> ixgbe_main.c:(.text+0xd9c09): undefined reference to `dca3_get_tag'
+> ixgbe_main.c:(.text+0xd9cc9): undefined reference to `dca3_get_tag'
+> ixgbe_main.c:(.text+0xda5c1): undefined reference to
+> `dca_add_requester' ixgbe_main.c:(.text+0xda5d6): undefined reference
+> to `dca_remove_requester' text+0xdc162): undefined reference to
+> `dca_add_requester'=20
+> text+0xdc1d3): undefined reference to `dca_remove_requester'
+> ixgbe_main.c:(.init.text+0xa74b): undefined reference to
+> `dca_register_notify' ixgbe_main.c:(.devinit.text+0xa4ca): undefined
+> reference to `dca_add_requester' ixgbe_main.c:(.exit.text+0xd21):
+> undefined reference to `dca_unregister_notify'
+> ixgbe_main.c:(.devexit.text+0x72d): undefined reference to
+> `dca_remove_requester' make[1]: *** [.tmp_vmlinux1] Error 1=20
+>=20
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+...
+> +	depends on PCI && INET && DCA
 
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index 48982f7..b668efc 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -344,7 +344,6 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 	struct sigframe __user *frame;
- 	void __user *restorer;
- 	int err = 0;
--	int usig;
- 	void __user *fpstate = NULL;
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
-@@ -352,13 +351,7 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		goto give_sigsegv;
- 
--	usig = current_thread_info()->exec_domain
--		&& current_thread_info()->exec_domain->signal_invmap
--		&& sig < 32
--		? current_thread_info()->exec_domain->signal_invmap[sig]
--		: sig;
--
--	err = __put_user(usig, &frame->sig);
-+	err = __put_user(sig, &frame->sig);
- 	if (err)
- 		goto give_sigsegv;
- 
-@@ -422,7 +415,6 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	struct rt_sigframe __user *frame;
- 	void __user *restorer;
- 	int err = 0;
--	int usig;
- 	void __user *fpstate = NULL;
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
-@@ -430,13 +422,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		goto give_sigsegv;
- 
--	usig = current_thread_info()->exec_domain
--		&& current_thread_info()->exec_domain->signal_invmap
--		&& sig < 32
--		? current_thread_info()->exec_domain->signal_invmap[sig]
--		: sig;
--
--	err |= __put_user(usig, &frame->sig);
-+	err |= __put_user(sig, &frame->sig);
- 	err |= __put_user(&frame->info, &frame->pinfo);
- 	err |= __put_user(&frame->uc, &frame->puc);
- 	err |= copy_siginfo_to_user(&frame->info, info);
-@@ -482,7 +468,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	/* Set up registers for signal handler */
- 	regs->sp = (unsigned long)frame;
- 	regs->ip = (unsigned long)ka->sa.sa_handler;
--	regs->ax = (unsigned long)usig;
-+	regs->ax = (unsigned long)sig;
- 	regs->dx = (unsigned long)&frame->info;
- 	regs->cx = (unsigned long)&frame->uc;
- 
-@@ -506,12 +492,19 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	       sigset_t *set, struct pt_regs *regs)
- {
- 	int ret;
-+	int usig;
-+
-+	usig = current_thread_info()->exec_domain
-+		&& current_thread_info()->exec_domain->signal_invmap
-+		&& sig < 32
-+		? current_thread_info()->exec_domain->signal_invmap[sig]
-+		: sig;
- 
- 	/* Set up the stack frame */
- 	if (ka->sa.sa_flags & SA_SIGINFO)
--		ret = __setup_rt_frame(sig, ka, info, set, regs);
-+		ret = __setup_rt_frame(usig, ka, info, set, regs);
- 	else
--		ret = __setup_frame(sig, ka, set, regs);
-+		ret = __setup_frame(usig, ka, set, regs);
- 
- 	return ret;
- }
--- 
-1.5.6
+Looks like you set IXGBE=3Dy and CONFIG_DCA=3Dm.  This depends DCA =
+option is
+not so great because if INTEL_IOATDMA is disabled (and therefore DCA is
+disabled) then ixgbe won't show up as an option.
 
+How about this instead, use a select INTEL_IOATDMA:
+
+inline is whitespace busted, sorry. attached is the patch.
+
+
+------_=_NextPart_001_01C90FB1.D2462C31
+Content-Type: application/octet-stream;
+	name="ixgbe_Kconfig_dca.patch"
+Content-Transfer-Encoding: base64
+Content-Description: ixgbe_Kconfig_dca.patch
+Content-Disposition: attachment;
+	filename="ixgbe_Kconfig_dca.patch"
+
+aXhnYmU6IGZpeCBEQ0EgZGVwZW5kZW5jeSBpbiBLY29uZmlnCgpGcm9tOiBKZXNzZSBCcmFuZGVi
+dXJnIDxqZXNzZS5icmFuZGVidXJnQGludGVsLmNvbT4KCml4Z2JlIGNhbiBkZXBlbmQgb24gZGNh
+IElGIGl0IGlzIGVuYWJsZWQuICBTbyBpZiB3ZSBhcmUgY29tcGlsZWQKYXMgSVhHQkU9eSwgYW5k
+IERDQSBpcyBlbmFibGVkLCB0aGVuIHdlIG11c3QgZm9yY2UgSU5URUxfSU9BVERNQQphbmQgdGhl
+cmVmb3JlIERDQSB0byBiZSA9eSBhbHNvLgoKU2lnbmVkLW9mZi1ieTogSmVzc2UgQnJhbmRlYnVy
+ZyA8amVzc2UuYnJhbmRlYnVyZ0BpbnRlbC5jb20+CkNDOiBSYW5keSBEdW5sYXAgPHJhbmR5LmR1
+bmxhcEBvcmFjbGUuY29tPgpDQzogRW1pbCBUYW50aWxvdiA8ZW1pbC5zLnRhbnRpbG92QGludGVs
+LmNvbT4KLS0tCiBkcml2ZXJzL25ldC9LY29uZmlnIHwgICAgMSArCiAxIGZpbGVzIGNoYW5nZWQs
+IDEgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL25l
+dC9LY29uZmlnIGIvZHJpdmVycy9uZXQvS2NvbmZpZwppbmRleCA0YTExMjk2Li44NmY1M2ExIDEw
+MDY0NAotLS0gYS9kcml2ZXJzL25ldC9LY29uZmlnCisrKyBiL2RyaXZlcnMvbmV0L0tjb25maWcK
+QEAgLTIzODEsNiArMjM4MSw3IEBAIGNvbmZpZyBJWEdCRQogCXRyaXN0YXRlICJJbnRlbChSKSAx
+MEdiRSBQQ0kgRXhwcmVzcyBhZGFwdGVycyBzdXBwb3J0IgogCWRlcGVuZHMgb24gUENJICYmIElO
+RVQKIAlzZWxlY3QgSU5FVF9MUk8KKwlzZWxlY3QgSU5URUxfSU9BVERNQQogCS0tLWhlbHAtLS0K
+IAkgIFRoaXMgZHJpdmVyIHN1cHBvcnRzIEludGVsKFIpIDEwR2JFIFBDSSBFeHByZXNzIGZhbWls
+eSBvZgogCSAgYWRhcHRlcnMuICBGb3IgbW9yZSBpbmZvcm1hdGlvbiBvbiBob3cgdG8gaWRlbnRp
+ZnkgeW91ciBhZGFwdGVyLCBnbwo=
+
+------_=_NextPart_001_01C90FB1.D2462C31--
