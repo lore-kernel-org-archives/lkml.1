@@ -1,67 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbYIELq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbYIELuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153AbYIELq1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 07:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbYIELqR
+	id S1753233AbYIELuP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 07:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYIELuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 07:46:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45711 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207AbYIELqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 07:46:15 -0400
-Date: Fri, 5 Sep 2008 13:45:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: David Witbrodt <dawitbro@sbcglobal.net>,
-       Jordan Crouse <jordan.crouse@amd.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: split e820 reserved entries record to late v4 -
-	fix v7
-Message-ID: <20080905114551.GB27878@elte.hu>
-References: <1220254284-29532-1-git-send-email-yhlu.kernel@gmail.com> <20080904190457.GB24990@elte.hu> <86802c440809050152p734f54bex60ae512361d79f93@mail.gmail.com>
+	Fri, 5 Sep 2008 07:50:03 -0400
+Received: from burp.tkv.asdf.org ([212.16.99.49]:59839 "EHLO
+	cs181073102.pp.htv.fi" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751860AbYIELuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 07:50:01 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Re: How to find origin PID of a sk_buff in iptables match?
+References: <b8ixO-2NS-5@gated-at.bofh.it>
+From: Markku Savela <msa@moth.iki.fi>
+Date: Fri, 05 Sep 2008 14:49:59 +0300
+In-Reply-To: <b8ixO-2NS-5@gated-at.bofh.it> (Markku Savela's message of "Thu\, 04 Sep 2008 10\:40\:08 +0200")
+Message-ID: <873akeu80o.fsf@burp.tkv.asdf.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809050152p734f54bex60ae512361d79f93@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Actually, my problem can be reduced to a question:
 
-> On Thu, Sep 4, 2008 at 12:04 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >> v7: remove wrong removing of write_unlock(&resource_lock) in adjust_resource()
-> >
-> > i've applied the generic commit below to tip/core/resources, and merged
-> > tip/core/resources into tip/x86/core, and added the remaining e820.c
-> > oneliner change (attached below as well).
-> >
-> 
-> wonder if need to put
-> 
->   x86: split e820 reserved entries record to late v4
->   IO resources: add reserve_region_with_split()
->   x86: split e820 reserved entries record to late, v7
-> 
-> into 2.6.27 for fix hang on David's system.
+ Can someone explain why core/sock.c in function sock_init_data sets
 
-too late i think. It hung on v2.6.26 too, right? So v2.6.28 would be 
-more appropriate, and linux-next or tip/msater can be used as a 
-practical kernel in the meanwhile.
+    sk->sk_peercred.pid = 0;
+    sk->sk_peercred.uid = -1;
+    sk->sk_peercred.pid = -1;
 
-	Ingo
+ instead of assigning default values from the current task context?
