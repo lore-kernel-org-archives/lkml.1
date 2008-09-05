@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYIEUrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYIEUrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbYIEUrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYIEUq7
+	id S1754721AbYIEUrq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYIEUrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:46:59 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:43260 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751465AbYIEUq6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:46:58 -0400
-Date: Fri, 5 Sep 2008 12:37:18 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>
-Cc: linux-kernel@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
-       jiayingz@google.com, dkegel@google.com
-Subject: Re: [uml-devel] [PATCH 2/6] UML: Don't valgrind userspace
-Message-ID: <20080905163718.GA11455@c2.user-mode-linux.org>
-References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net> <alpine.DEB.1.00.0808291614430.15543@abydos.NerdBox.Net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0808291614430.15543@abydos.NerdBox.Net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Sep 2008 16:47:37 -0400
+Received: from main.gmane.org ([80.91.229.2]:47431 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbYIEUrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 16:47:36 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [v4l-dvb-maintainer] [PULL] http://linuxtv.org/hg/~mcisely/pvrusb2
+Date: Fri, 05 Sep 2008 17:02:35 -0400
+Message-ID: <48C19E6B.2090505@tmr.com>
+References: <Pine.LNX.4.64.0808312020060.16986@cnc.isely.net> <20080902061821.4df5cba4@mchehab.chehab.org> <Pine.LNX.4.64.0809020815060.16986@cnc.isely.net> <48BD3FCC.2030206@linuxtv.org> <48BD4DCE.9020507@s5r6.in-berlin.de> <Pine.LNX.4.64.0809020933001.11377@cnc.isely.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Michael Krufky <mkrufky@linuxtv.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <Pine.LNX.4.64.0809020933001.11377@cnc.isely.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 29, 2008 at 04:15:24PM -0700, Steve VanDeBogart wrote:
-> Add a flag to tell Valgrind to run the forked child natively.  Necessary
-> because Valgrind makes additional system calls to instrumented processes,
-> which confuse UML.
+Mike Isely wrote:
 
-> +#ifdef UML_CONFIG_VALGRIND_SUPPORT
-> +		flags |= VALGRIND_CLONE_LETGO;
-> +#endif
-> +	}
+>> If you need this kind of safety measures against errors in future code
+>> changes, could it be that you have some general QA problems?
 
-I keep forgetting that I have a really bad feeling about this:
+That's always a problem with humans in the loop. I very much agree that 
+one line or three is far safer against a hasty line insertion than only two.
 
-+#define VALGRIND_CLONE_LETGO   0x80000000      /* do not track fork like childr
-en*/
-
-This is effectively appropriating part of the kernel's ABI for
-valgrind's use.  Not to mention that that bit is already taken:
-
-#define CLONE_IO		0x80000000	/* Clone io context */
-
-Could you do this with an annotation that says "let the next clone run
-untraced"?
-
-				Jeff
+In my own code I write one if it fits, three if it doesn't. Being easy 
+to read is good, being hard to misread is better.
+> 
+> One of the points behind a good coding style is that it should encourage 
+> code that is robust against trivial mistakes.  Prefering
+> 
+> 	if (a) {
+> 		b;
+> 	}
+> 
+> over
+> 
+> 	if (a)
+> 		b;
+> 
+> I consider to be an example of this kind of simple safety.  (And I have 
+> in the past seen people getting burned from the obvious error of 
+> sticking a debug printf in between.)  ACTUALLY, I'd much, much rather 
+> prefer
+> 
+> 	if (a) b;
+> 
+> however checkpatch.pl gets angry about that as well (even though the 
+> kernel CodingStyle document would seem to actually allow this - it's 
+> still one statement and since "b" is outside the normal flow then it's 
+> "something to hide" and should be ok in any case).
+> 
+> 
+>> (However, why waste time arguing over braces or not?)
+> 
+> Tell that to those who would use checkpatch.pl to gate incoming 
+> changesets.
+> 
 
 -- 
-Work email - jdike at linux dot intel dot com
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
