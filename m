@@ -1,119 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbYIEJMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYIEJNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454AbYIEJMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYIEJMO
+	id S1755866AbYIEJNM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbYIEJM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:12:14 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:65313 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752125AbYIEJMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:12:12 -0400
-Subject: Re: [PATCH 1/3] PCI: vpd handle longer delays in access
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Ben Hutchings <bhutchings@solarflare.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080904205718.543005986@vyatta.com>
-References: <20080904205636.130211023@vyatta.com>
-	 <20080904205718.543005986@vyatta.com>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 11:11:41 +0200
-Message-Id: <1220605901.7080.14.camel@twins.programming.kicks-ass.net>
+	Fri, 5 Sep 2008 05:12:57 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49759 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753568AbYIEJM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 05:12:56 -0400
+Date: Fri, 5 Sep 2008 18:11:41 +0900
+To: mingo@redhat.com
+Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 0/3] fix alloc_coherent allocation issues
+ (tip/x86/iommu)
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1220605129-18359-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1220605129-18359-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 (2.22.2-2.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080905181155W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-04 at 13:56 -0700, Stephen Hemminger wrote:
-> plain text document attachment (vpd-delay.patch)
-> Accessing the VPD area can take a long time.  The existing 
-> VPD access code fails consistently on my hardware. There are comments
-> in the SysKonnect vendor driver that it can take up to 13ms per word. 
+On Fri,  5 Sep 2008 17:58:46 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+
+> This patchset restores some of the current alloc_coherent behaviors
+> that Joerg's x86 patchset (in tip/x86/iommu) changes.
 > 
-> Change the access routines to:
->   * use a mutex rather than spinning with IRQ's disabled and lock held
->   * have a longer timeout
->   * call schedule while spinning to provide some responsivness
+> The first patch uses __GFP_DMA for NULL device argument (fallback_dev)
+> with pci-nommu. It's a hack for ISA (and some old code) so we need
+> DMA_ZONE.
 > 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> The second patch uses __GFP_NORETRY in the case of GFP_DMA.
 > 
-> 
-> --- a/drivers/pci/access.c	2008-09-04 09:06:51.000000000 -0700
-> +++ b/drivers/pci/access.c	2008-09-04 10:16:52.000000000 -0700
-> @@ -133,7 +133,7 @@ PCI_USER_WRITE_CONFIG(dword, u32)
->  
->  struct pci_vpd_pci22 {
->  	struct pci_vpd base;
-> -	spinlock_t lock; /* controls access to hardware and the flags */
-> +	struct mutex lock;
->  	u8	cap;
->  	bool	busy;
->  	bool	flag; /* value of F bit to wait for */
-> @@ -144,29 +144,33 @@ static int pci_vpd_pci22_wait(struct pci
->  {
->  	struct pci_vpd_pci22 *vpd =
->  		container_of(dev->vpd, struct pci_vpd_pci22, base);
-> -	u16 flag, status;
-> -	int wait;
-> +	u16 flag = vpd->flag ? PCI_VPD_ADDR_F : 0;
-> +	unsigned long timeout = jiffies + (vpd->flag ? HZ/50 : HZ/10);
-> +	u16 status;
->  	int ret;
->  
->  	if (!vpd->busy)
->  		return 0;
->  
-> -	flag = vpd->flag ? PCI_VPD_ADDR_F : 0;
-> -	wait = vpd->flag ? 10 : 1000; /* read: 100 us; write: 10 ms */
->  	for (;;) {
-> -		ret = pci_user_read_config_word(dev,
-> -						vpd->cap + PCI_VPD_ADDR,
-> +		ret = pci_user_read_config_word(dev, vpd->cap + PCI_VPD_ADDR,
->  						&status);
->  		if (ret < 0)
-> -			return ret;
-> +			break;
-> +
->  		if ((status & PCI_VPD_ADDR_F) == flag) {
->  			vpd->busy = false;
-> -			return 0;
-> +			break;
->  		}
-> -		if (wait-- == 0)
-> +
-> +		if (time_after(jiffies, timeout))
->  			return -ETIMEDOUT;
-> -		udelay(10);
-> +		if (signal_pending(current))
-> +			return -EINTR;
-> +		yield();
+> The third patch is a minor cleanup.
 
-At the very least put a big comment in here that we're polling the
-hardware without completion event.
+Oops, I messed up the subjects. They should have been:
 
-yield() is not good either, when used with a RT task (IMHO still the
-only valid use of yield) it mostly doesn't spend any time away from this
-task at all.
-
-The other option, schedule_hrtimeout() isn't ideal either because on
-crappy hardware it will fall back to jiffie based timeouts and I _hope_
-that most hardware is less shitty than the 13ms reported in the
-changelog.
-
-Can we make this a per device delay that starts out small (the previous
-10 us sound good) and gets doubled every once in a while when not enough
-for a particular device?
-
-That way we can - at some threshold - switch to sleeping delays..
-
->  	}
-> +
-> +	return ret;
->  }
-
+[PATCH 1/3] x86: fix nommu_alloc_coherent allocation with NULL device argument
+[PATCH 2/3] x86: use __GFP_NORETRY in the case of GFP_DMA with pci-nommu
+[PATCH 3/3] x86: gart alloc_coherent doesn't need to check NULL device argument
 
