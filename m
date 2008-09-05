@@ -1,129 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbYIESck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbYIESda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754724AbYIESck (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 14:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbYIESc2
+	id S1754804AbYIESda (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 14:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYIESdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 14:32:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44431 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754345AbYIESc1 (ORCPT
+	Fri, 5 Sep 2008 14:33:22 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:49959 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685AbYIESdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 14:32:27 -0400
-Date: Fri, 5 Sep 2008 11:30:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for September 4
-Message-Id: <20080905113042.0f6d5850.akpm@linux-foundation.org>
-In-Reply-To: <200809051256.36257.rjw@sisk.pl>
-References: <20080904193606.573f2cb3.sfr@canb.auug.org.au>
-	<20080904214437.c53f02d9.akpm@linux-foundation.org>
-	<200809051256.36257.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Sep 2008 14:33:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=W7IqISSvtrfEldSOQaa0p6jJAuLWN1mK7L3qlQTznQ4tB1D4OgPO9aKcB7qGQWlQ7C
+         eH4SpVarBDOYrUFeJ9eXKzGkW7i34R4lehHM4/pSzDwkxw2rBtGf8iLzLtjbdAW3eTYM
+         cQlnvOYEbOoT3Ixi0e9ypFqP2qgRbr78lJnaM=
+Message-ID: <d120d5000809051133h1a51d68bs56db0397a321bc9f@mail.gmail.com>
+Date: Fri, 5 Sep 2008 14:33:18 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
+Cc: "Nicolas Pitre" <nico@cam.org>, "Randy Dunlap" <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
+       linux-next@vger.kernel.org
+In-Reply-To: <s5hprniv7ep.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
+	 <20080904195744.f367cd2d.randy.dunlap@oracle.com>
+	 <alpine.LFD.1.10.0809050028590.23787@xanadu.home>
+	 <20080904214444.0dccf859.randy.dunlap@oracle.com>
+	 <alpine.LFD.1.10.0809050104560.23787@xanadu.home>
+	 <s5htzcvt7id.wl%tiwai@suse.de>
+	 <alpine.LFD.1.10.0809051049460.23787@xanadu.home>
+	 <s5hhc8u8soi.wl%tiwai@suse.de>
+	 <alpine.LFD.1.10.0809051231120.23787@xanadu.home>
+	 <s5hprniv7ep.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 12:56:35 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Fri, Sep 5, 2008 at 1:17 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Fri, 05 Sep 2008 12:32:32 -0400 (EDT),
+> Nicolas Pitre wrote:
+>>
+>> On Fri, 5 Sep 2008, Takashi Iwai wrote:
+>>
+>> > At Fri, 05 Sep 2008 10:52:25 -0400 (EDT),
+>> > Nicolas Pitre wrote:
+>> > >
+>> > > On Fri, 5 Sep 2008, Takashi Iwai wrote:
+>> > >
+>> > > > > This was fixed 2 years ago.  Who broke it this time?
+>> > > >
+>> > > > Oh, it must be me.
+>> > >
+>> > > I think both your patch and the one I previously posted are needed.
+>> >
+>> > Could you repost?  I can't find it easily now.
+>
+> Thanks.  For linux-next, yes, it's needed.  But it's not for 2.6.27.
+>
+> Meanwhile, my fix should be included in 2.6.27 since it's a
+> regression.
+>
+> Randy, could you check whether these two patches fix your problem?
+> I'll put my patch to my tree for the next pull request after your
+> confirmation.
+>
+> Can Nicolas's patch be to input tree, or any other taker?
+>
 
-> On Friday, 5 of September 2008, Andrew Morton wrote:
-> > On Thu, 4 Sep 2008 19:36:06 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > I have created today's linux-next tree at
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > 
-> > The infamous Vaio hasn't finished catching up with you guys yet. 
-> > Something in linux-next broke suspend-to-RAM.
-> > 
-> > An `echo mem > /sys/power/state' causes "Freezing of tasks failed after
-> > 20.00 seconds (1 tasks refusing to freeze):"
-> > 
-> > dmesg: http://userweb.kernel.org/~akpm/dmesg-sony-suspend.txt
-> > config: http://userweb.kernel.org/~akpm/config-sony.txt
-> > 
-> > This only happens after the X server has been started.
-> > 
-> > Mainline is OK.
-> 
-> According to your dmesg the process that refused to freeze was
-> 
-> hald-addon-stor
-> 
-> which got stuck in ... getnstimeofday (???) (can you check what
-> source code corresponds to getnstimeofday+0x37/0xbc pls?):
-> 
-> hald-addon-st D 00000046     0  2322   2282
->        f4de5b74 00000046 f4de5b54 00000046 f4de5b5c c0135f56 f6b96e44 f4deaf40 
->        f4deb0bc f5580948 f4de5bb0 f4de5b6c c013336e f6aa77c8 f6aa77c8 f6aa77a0 
->        f4de5bb0 f4de5b7c c0331f09 f4de5bd0 c01f4205 00000000 00000000 00000000 
-> Call Trace:
->  [<c0135f56>] ? getnstimeofday+0x37/0xbc
->  [<c013336e>] ? ktime_get_ts+0x40/0x44
->  [<c0331f09>] io_schedule+0x39/0x6c
->  [<c01f4205>] get_request_wait+0x80/0xcd
-> ...
+I'll take it.
 
-(gdb) x/60i getnstimeofday
-0xc0135d63 <getnstimeofday>:    push   %ebp
-0xc0135d64 <getnstimeofday+1>:  mov    %esp,%ebp
-0xc0135d66 <getnstimeofday+3>:  push   %edi
-0xc0135d67 <getnstimeofday+4>:  push   %esi
-0xc0135d68 <getnstimeofday+5>:  push   %ebx
-0xc0135d69 <getnstimeofday+6>:  sub    $0x8,%esp
-0xc0135d6c <getnstimeofday+9>:  mov    %eax,0xffffffec(%ebp)
-0xc0135d6f <getnstimeofday+12>: mov    0xc045a2c0,%eax
-0xc0135d74 <getnstimeofday+17>: mov    %eax,0xfffffff0(%ebp)
-0xc0135d77 <getnstimeofday+20>: test   $0x1,%al
-0xc0135d79 <getnstimeofday+22>: je     0xc0135d7f <getnstimeofday+28>
-0xc0135d7b <getnstimeofday+24>: pause  
-0xc0135d7d <getnstimeofday+26>: jmp    0xc0135d6f <getnstimeofday+12>
-0xc0135d7f <getnstimeofday+28>: mov    0xffffffec(%ebp),%ecx
-0xc0135d82 <getnstimeofday+31>: mov    0xc05db920,%eax
-0xc0135d87 <getnstimeofday+36>: mov    0xc05db924,%edx
-0xc0135d8d <getnstimeofday+42>: mov    %eax,(%ecx)
-0xc0135d8f <getnstimeofday+44>: mov    %edx,0x4(%ecx)
-0xc0135d92 <getnstimeofday+47>: mov    0xc05db938,%eax
-0xc0135d97 <getnstimeofday+52>: call   *0x10(%eax)
-0xc0135d9a <getnstimeofday+55>: mov    0xc05db938,%esi
-0xc0135da0 <getnstimeofday+61>: mov    0x1c(%esi),%ecx
-0xc0135da3 <getnstimeofday+64>: sub    0x48(%esi),%eax
-0xc0135da6 <getnstimeofday+67>: sbb    0x4c(%esi),%edx
-0xc0135da9 <getnstimeofday+70>: and    0x14(%esi),%eax
-0xc0135dac <getnstimeofday+73>: and    0x18(%esi),%edx
-0xc0135daf <getnstimeofday+76>: mov    %edx,%edi
-0xc0135db1 <getnstimeofday+78>: imul   %ecx,%edi
-0xc0135db4 <getnstimeofday+81>: mul    %ecx
-0xc0135db6 <getnstimeofday+83>: mov    0x24(%esi),%ecx
-0xc0135db9 <getnstimeofday+86>: lea    (%edi,%edx,1),%edx
-0xc0135dbc <getnstimeofday+89>: mov    %eax,%ebx
-0xc0135dbe <getnstimeofday+91>: mov    %edx,%esi
-0xc0135dc0 <getnstimeofday+93>: xor    %edi,%edi
-0xc0135dc2 <getnstimeofday+95>: shrd   %cl,%edx,%ebx
-0xc0135dc5 <getnstimeofday+98>: shr    %cl,%esi
-0xc0135dc7 <getnstimeofday+100>:        test   $0x20,%cl
-0xc0135dca <getnstimeofday+103>:        cmovne %esi,%ebx
-0xc0135dcd <getnstimeofday+106>:        cmovne %edi,%esi
-0xc0135dd0 <getnstimeofday+109>:        mov    %ebx,%edx
-
-(gdb) l *0xc0135d9a
-0xc0135d9a is in getnstimeofday (kernel/time/timekeeping.c:104).
-99      
-100                     /* read clocksource: */
-101                     cycle_now = clocksource_read(clock);
-102     
-103                     /* calculate the delta since the last update_wall_time: */
-104                     cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-105     
-106                     /* convert to nanoseconds: */
-107                     nsecs = cyc2ns(clock, cycle_delta);
-108     
-
-Which implies that someone mucked up xtime_lock.
-
-But I don't think any of that is correct.  The getnstimeofday is just
-stack gunk.  hald is in D state and is asleep in get_request_wait().
+-- 
+Dmitry
