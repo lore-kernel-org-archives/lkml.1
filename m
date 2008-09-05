@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYIENMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbYIENQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbYIENMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbYIENMI
+	id S1753737AbYIENQq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYIENQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:12:08 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:24747 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbYIENMH (ORCPT
+	Fri, 5 Sep 2008 09:16:35 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:52970 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbYIENQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:12:07 -0400
-Date: Fri, 5 Sep 2008 15:11:57 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-Subject: Re: qestion about I2C_CLASS_HWMON flag
-Message-ID: <20080905151157.21b7f8ce@hyperion.delvare>
-In-Reply-To: <38b2ab8a0809050544l1914530clec53494e12c77ff5@mail.gmail.com>
-References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
-	<38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
-	<20080904103707.557ac764@hyperion.delvare>
-	<38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
-	<20080904120855.7e7b9720@hyperion.delvare>
-	<38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
-	<20080905112056.44b7b910@hyperion.delvare>
-	<38b2ab8a0809050544l1914530clec53494e12c77ff5@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Sep 2008 09:16:34 -0400
+Message-ID: <48C13111.4030205@emcraft.com>
+Date: Fri, 05 Sep 2008 17:16:01 +0400
+From: Ilya Yanok <yanok@emcraft.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+CC: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH] ASYNC_TX: fix the bug in async_tx_run_dependencies
+References: <1220478231-8725-1-git-send-email-yanok@emcraft.com> <20080905130622.4C497248B8@gemini.denx.de>
+In-Reply-To: <20080905130622.4C497248B8@gemini.denx.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: Spam detection software, running on the system "ocean.emcraft.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  Dear Wolfgang, this patch is already applied (d2029eba
+	in linux-2.6-denx repo) I just sent it upstream. Regards, Ilya. [...] 
+	Content analysis details:   (-4.4 points, 2.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 14:44:30 +0200, Francis Moreau wrote:
-> On Fri, Sep 5, 2008 at 11:20 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > Nothing prevents you from setting the class flags based on
-> > platform-specific information if you have a need for that.
-> 
-> Just to be sure, do you mean by hacking the adapter source code ?
+Dear Wolfgang,
 
-It's not about hacking, it can be done cleanly. Just have the adapter
-driver code check for information in the platform data, and if class
-information is provided, use that instead of the default value. Or if
-all users will provide the information, don't even have a default in
-the driver. Again, the class flags are a (needed) mechanism, the policy
-is left for driver authors and platform maintainers to establish.
+this patch is already applied (d2029eba in linux-2.6-denx repo) I just
+sent it upstream.
 
-> > That being said, in cases where you have that level of information
-> > about which devices are present on the I2C bus,
-> 
-> Isn't the case for most of all embedded platforms ?
+Regards, Ilya.
 
-Indeed.
+Wolfgang Denk wrote:
+>> Should clear the next pointer of the TX if we are sure that the
+>> next TX (say NXT) will be submitted to the channel too. Overwise,
+>> we break the chain of descriptors, because we lose the information
+>> about the next descriptor to run. So next time, when invoke
+>> async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
+>> NXT will be never submitted.
+>>
+>> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+>> ---
+>>  crypto/async_tx/async_tx.c |    3 ++-
+>>  1 files changed, 2 insertions(+), 1 deletions(-)
+>>     
+>
+> What about this patch? SHould it be applied to our repository?
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+>   
 
-> > you probably want to
-> > declare the I2C devices at the platform level, and not rely on probing
-> > at all (so .class is 0).
-> 
-> do you mean by using I2C_BOARD_INFO ?
-
-Exactly. Except on powerpc where they have a different mechanism, I
-think.
-
--- 
-Jean Delvare
