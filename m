@@ -1,116 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbYIEEBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbYIEEDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbYIEEBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 00:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYIEEAu
+	id S1753543AbYIEEDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 00:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbYIEEDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 00:00:50 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:40049 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbYIEEAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 00:00:49 -0400
-Date: Thu, 4 Sep 2008 21:00:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, paul.moore@hp.com,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: + security-selinux-include-netlabelh-fix-two-build-errors.patch
- added to -mm tree
-Message-Id: <20080904210033.20700500.randy.dunlap@oracle.com>
-In-Reply-To: <200809050326.m853QB13012853@imap1.linux-foundation.org>
-References: <200809050326.m853QB13012853@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Fri, 5 Sep 2008 00:03:38 -0400
+Received: from 1wt.eu ([62.212.114.60]:3191 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbYIEEDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 00:03:37 -0400
+Date: Fri, 5 Sep 2008 06:03:26 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: ivaylo@bglans.net, linux-kernel@vger.kernel.org
+Subject: Re: Marvel IDE 88SE6101 2.4.XX support
+Message-ID: <20080905040326.GB17104@1wt.eu>
+References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net> <Pine.LNX.4.64.0809042115350.11281@mail.bglans.net> <20080904193625.652bf013@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080904193625.652bf013@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Sep 2008 20:26:11 -0700 akpm@linux-foundation.org wrote:
+Hi Alan,
 
-> The patch titled
->      security/selinux/include/netlabel.h: fix two build errors
-> has been added to the -mm tree.  Its filename is
->      security-selinux-include-netlabelh-fix-two-build-errors.patch
+On Thu, Sep 04, 2008 at 07:36:25PM +0100, Alan Cox wrote:
+> On Thu, 4 Sep 2008 21:26:12 +0300 (EEST)
+> ivaylo@bglans.net wrote:
 > 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
+> > 
+> > Another one small patch to support Marvel IDE 88SE6101 controler. I have 
+> > one on Intel DG33BU motherboard. It is detect as
+> > 02:00.0 IDE interface: Marvell Technology Group Ltd. 88SE6101 single-port 
+> > PATA133 interface (rev b2)
 > 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: security/selinux/include/netlabel.h: fix two build errors
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> security/selinux/include/netlabel.h:74: error: two or more data types in declaration specifiers
-> security/selinux/include/netlabel.h:106: error: expected ';', ',' or ')' before 'u32'
-> 
-> Caused by
-> 
->     commit b023202e2a41a61165f472cc889f37c4a260ba51
->     Author: Paul Moore <paul.moore@hp.com>
->     Date:   Tue Sep 2 10:24:41 2008 -0400
-> 
->         selinux: Fix missing calls to netlbl_skbuff_err()
-> 
-> Cc: Paul Moore <paul.moore@hp.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  security/selinux/include/netlabel.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff -puN security/selinux/include/netlabel.h~security-selinux-include-netlabelh-fix-two-build-errors security/selinux/include/netlabel.h
-> --- a/security/selinux/include/netlabel.h~security-selinux-include-netlabelh-fix-two-build-errors
-> +++ a/security/selinux/include/netlabel.h
-> @@ -71,7 +71,7 @@ static inline void selinux_netlbl_cache_
->  	return;
->  }
->  
-> -static inline void void selinux_netlbl_err(struct sk_buff *skb,
-> +static inline void selinux_netlbl_err(struct sk_buff *skb,
->  					   int error,
->  					   int gateway)
->  {
-> @@ -102,7 +102,7 @@ static inline int selinux_netlbl_skbuff_
->  }
->  
->  static inline int selinux_netlbl_skbuff_setsid(struct sk_buff *skb,
-> -					       u16 family
-> +					       u16 family,
->  					       u32 sid)
->  {
->  	return 0;
-> _
+> Its a pretty generic device - see drivers/ata/pata_marvell.c so IDE
+> generic will probably do roughly the right things. The pata_marvell
+> driver documents how to do cable detect, which you may want to add and
+> make it its own driver.
 
+Indeed, your driver is clear enough to serve as a doc. Looking at
+ata_piix.c in 2.4, I see that the libata core has evolved a lot,
+but backporting your work should not be hard at all. Among other
+things, the driver needs to set ap->cbl itself during reset, for
+instance.
 
-Even with this patch, net/netlabel/netlabel_mgmt.c has build errors when CONFIG_IPV6=n:
+However, I wonder if it's really worth doing it if the IDE generic
+driver already works. The PATA port on such motherboards today is
+mostly used by CD/DVD, and I think that even if we limit ourselves
+to 40-pin, it's not dramatic (all my IDE CD drives have always been
+running that way for ages).
 
-linux-next-20080904/net/netlabel/netlabel_domainhash.c:79: warning: unused variable 'tmp6'
-linux-next-20080904/net/netlabel/netlabel_domainhash.c:78: warning: unused variable 'iter6'
-linux-next-20080904/net/netlabel/netlabel_domainhash.c:340: warning: unused variable 'tmp6'
-linux-next-20080904/net/netlabel/netlabel_domainhash.c:301: warning: unused variable 'iter6'
-linux-next-20080904/net/netlabel/netlabel_mgmt.c:219: error: implicit declaration of function 'netlbl_af6list_add'
-linux-next-20080904/net/netlabel/netlabel_mgmt.c:317: error: implicit declaration of function 'netlbl_af6list_foreach_rcu'
-linux-next-20080904/net/netlabel/netlabel_mgmt.c:318: error: expected ';' before '{' token
-make[3]: *** [net/netlabel/netlabel_mgmt.o] Error 1
+Or maybe this would be more interesting for other chips of the same
+family ?
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Ivaylo, if you're interested in trying to backport pata_marvell.c
+from 2.6 to 2.4, that's fine for me, just inform me so that I know
+I'm waiting for you. Otherwise I can merge your IDE generic patch.
+In this case, could you repost your patch after fixing the name
+"MARVEL" in the PCI IDs (=> "MARVELL") ?
+
+Thanks,
+Willy
+
