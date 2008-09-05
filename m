@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbYIEUJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753777AbYIEUK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753029AbYIEUJR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYIEUJE
+	id S1753777AbYIEUK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYIEUKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:09:04 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41501 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751097AbYIEUJD (ORCPT
+	Fri, 5 Sep 2008 16:10:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58726 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbYIEUKQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:09:03 -0400
-Subject: Re: [PATCH] mmc_block: use generic helper to print capacities
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080831205448.5b23507d@mjolnir.drzeus.cx>
-References: <48B9546B.4010004@simon.arlott.org.uk>
-	 <1220117091.3615.3.camel@localhost.localdomain>
-	 <20080830174516.GD1239@parisc-linux.org>
-	 <48B9B552.8060406@simon.arlott.org.uk>
-	 <48B9B588.7060709@simon.arlott.org.uk>
-	 <1220147947.3615.18.camel@localhost.localdomain>
-	 <20080831025412.GJ1239@parisc-linux.org>
-	 <1220195310.4021.4.camel@localhost.localdomain>
-	 <1220195634.4021.9.camel@localhost.localdomain>
-	 <20080831205448.5b23507d@mjolnir.drzeus.cx>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 15:09:00 -0500
-Message-Id: <1220645340.3331.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 5 Sep 2008 16:10:16 -0400
+Message-ID: <48C1912E.3070407@zytor.com>
+Date: Fri, 05 Sep 2008 13:06:06 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux@sandersweb.net,
+       Andi Kleen <andi-suse@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+References: <200808311422.12525.linux@sandersweb.net> <20080831122751.72afafb5@infradead.org> <alpine.LFD.1.10.0808311237290.12958@nehalem.linux-foundation.org> <200809051138.20615.linux@sandersweb.net> <48C17754.76E4.0078.0@novell.com> <alpine.LFD.1.10.0809050931340.3117@nehalem.linux-foundation.org> <20080905184353.GA29496@elte.hu>
+In-Reply-To: <20080905184353.GA29496@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-08-31 at 20:54 +0200, Pierre Ossman wrote:
-> From: Pierre Ossman <drzeus@drzeus.cx>
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+>>  - Move the optimized nop definitions (K7_NOPx etc) to the only place that 
+>>    cares - asm/x86/kernel/alternative.c. When we do things _dynamically_, 
+>>    it can actually make sense to pick a nop more precisely, but for this 
+>>    whole static thing it's just a pain.
+>>
+>> IOW, if it actually _worked_ reasonably, I wouldn't care. But clearly 
+>> it doesn't. And once it's not working reasonably, it should be fixed.
+> 
+> yes - we had 3-4 tries already and while it looked worthwile initially 
+> it's clearly not showing signs of getting more robust and whatever 
+> benefits there might be slightly better NOPs is dwarved by all these 
+> robustness problems. Peter?
 
-Did you want me to take this?  It seems to depend on pieces of your mmc
-tree, so I'd have to carry it in my post-merge tree.
+There is already a fix for this based on a first-principles test in tip.
 
-James
+	-hpa
 
 
