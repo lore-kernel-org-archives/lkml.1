@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbYIEAIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIEALZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755086AbYIEAIH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 20:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYIEAH4
+	id S1754648AbYIEALZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 20:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYIEALR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 20:07:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49928 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbYIEAHz (ORCPT
+	Thu, 4 Sep 2008 20:11:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51560 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750899AbYIEALQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 20:07:55 -0400
-Subject: Re: linux-next: Tree for September 4
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080904165309.b5fd9214.akpm@linux-foundation.org>
-References: <20080904193606.573f2cb3.sfr@canb.auug.org.au>
-	 <20080904165309.b5fd9214.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 01:07:49 +0100
-Message-Id: <1220573269.4843.1.camel@shinybook.infradead.org>
+	Thu, 4 Sep 2008 20:11:16 -0400
+Date: Thu, 4 Sep 2008 17:10:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Jones <pjones@redhat.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] efifb/imacfb consolidation + hardware support
+Message-Id: <20080904171006.3698819b.akpm@linux-foundation.org>
+In-Reply-To: <48C001EC.3040205@redhat.com>
+References: <48C001EC.3040205@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-04 at 16:53 -0700, Andrew Morton wrote:
+
+> User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+
+uh-oh.
+
+On Thu, 04 Sep 2008 11:42:36 -0400
+Peter Jones <pjones@redhat.com> wrote:
+
+> Hi.  Below is a patch that removes imacfb entirely, merging its DMI
+> table into the (otherwise very similar) efifb driver.  This also adds
+> hardware support for many of the newer Intel Apple hardware.  This has
+> been fairly well tested; we've been shipping it in Fedora for some time.
 > 
-> sparc64 `make headers_check':
-> 
-> make[1]: *** No rule to make target
-> `/usr/src/devel/arch/sparc/include/asm/statfs_32.h', needed by
-> `/usr/src/devel/usr/include/asm/.install'.  Stop.
 
-Fixed in ~dwmw2/random-2.6.git. Thanks.
+The patch was space-stuffed.  I fixed that.  Please see
+Documentation/email-clients.txt to fix it.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Please send a Signed-off-by: for this change.
