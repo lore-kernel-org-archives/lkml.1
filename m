@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYIEUP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751412AbYIEUWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbYIEUP6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYIEUPu
+	id S1751412AbYIEUWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYIEUWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:15:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:39648 "EHLO
+	Fri, 5 Sep 2008 16:22:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60024 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbYIEUPt (ORCPT
+	with ESMTP id S1751608AbYIEUWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:15:49 -0400
-Message-ID: <48C19296.6020201@zytor.com>
-Date: Fri, 05 Sep 2008 13:12:06 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Fri, 5 Sep 2008 16:22:06 -0400
+Message-ID: <48C19415.9060108@kernel.org>
+Date: Fri, 05 Sep 2008 13:18:29 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: linux@sandersweb.net, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi-suse@firstfloor.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-References: <200808311422.12525.linux@sandersweb.net> <20080831122751.72afafb5@infradead.org> <alpine.LFD.1.10.0808311237290.12958@nehalem.linux-foundation.org> <200809051138.20615.linux@sandersweb.net> <48C17754.76E4.0078.0@novell.com>
-In-Reply-To: <48C17754.76E4.0078.0@novell.com>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+Subject: Re: [2.6.27] overlapping early reservations [was: early exception
+ - lockdep related?]
+References: <68676e00809051217h3da02a6bld4412b4a2ee3b728@mail.gmail.com> <1220642738.11202.21.camel@twins.programming.kicks-ass.net>
+In-Reply-To: <1220642738.11202.21.camel@twins.programming.kicks-ass.net>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
+Peter Zijlstra wrote:
+> On Fri, 2008-09-05 at 21:17 +0200, Luca Tettamanti wrote:
+>> On Thu, Sep 4, 2008 at 10:51 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
+>>> On Thu, Sep 4, 2008 at 4:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>>>> Sadly your config just boots, albeit not to userspace due to missing
+>>>> drivers.
+>>> Yes, I managed to boot it with qemu... I tried kgdb - without luck -
+>>> kernel dies too early.
+>>> I also managed to get a stack trace :D
+>>>
+>>> http://img151.imageshack.us/my.php?image=tracedm1.jpg
+>>>
+>>> It seems that lockdep is an innocent bystander... the kernel died with
+>>> panic() in __reserve_early, and then took another exception while
+>>> printing the panic (I guess).
+>>> Will add further debug stuff to see wtf is going on.
+>> Hum, kernel says:
+>>
+>> http://img177.imageshack.us/my.php?image=overlappingus2.jpg
+>>
+>> Overlapping early reservations b98000-eff266 RAMDISK to 200000-d09cf7
+>> TEXT DATA BSS
+>>
+>> It would appear that the initramfs is overlapping the kernel itself,
+>> is the boot loader (LILO) doing something stupid?
 > 
-> I disagree here: If I configure a 686+ kernel, I expect these NOPs to be
-> that way (and to work). If you want to run on something that's not
-> compliant, you just shouldn't configure your kernel that way.
+> Suppose it is, lets ask hpa..
 > 
 
-Okay, we do not generate P6 NOPs statically if CONFIG_X86_GENERIC_CPU is 
-enabled -- unless, of course gcc/binutils generates them, which they now 
-do for certain CPU types.  If you are selecting a specific CPU *and* you 
-don't select GENERIC, you should get valid code for the selected CPU only.
-
-As far as using them dynamically, there is code in -tip that determines 
-dynamically and explicitly if the long NOPs are available, and only uses 
-them if they are.
+It definitely looks like it.
 
 	-hpa
