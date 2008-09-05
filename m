@@ -1,121 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbYIEOu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYIEOvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbYIEOu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYIEOuQ
+	id S1754795AbYIEOvu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYIEOvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:50:16 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:54335 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753357AbYIEOuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:50:15 -0400
-Date: Fri, 5 Sep 2008 16:50:05 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: linux-kernel@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>
-Subject: Re: Proposed SDIO layer rework
-Message-ID: <20080905165005.2a4ac355@mjolnir.drzeus.cx>
-In-Reply-To: <48C11BF3.2060609@weinigel.se>
-References: <48C11BF3.2060609@weinigel.se>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-19144-1220626214-0001-2"
+	Fri, 5 Sep 2008 10:51:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:32880 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751465AbYIEOvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 10:51:42 -0400
+Message-ID: <48C1477B.6060500@goop.org>
+Date: Fri, 05 Sep 2008 07:51:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Eric Lacombe <tuxiko@free.fr>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [x86] fs, gs purpose & multicore prog
+References: <200809031109.45660.goretux@gmail.com> <48C011A6.2000609@goop.org> <200809051317.11116.goretux@gmail.com>
+In-Reply-To: <200809051317.11116.goretux@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Eric Lacombe wrote:
+> So, %gs is not used in 32-bit kernel and %fs is not used in 64-bit kernel. Is 
+> it right ? Why there were different choices of design ?
+>   
 
---=_freyr.drzeus.cx-19144-1220626214-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+They both use the opposite from what their respective usermodes use for
+thread local storage, since there may be a slight performance advantage
+to doing so (at least on 32-bit).  32-bit's use of %gs for usermode TLS
+is old and arbitrary, probably predating x86-64 (at least its wide
+availability).  The use of %gs for kernel per-cpu data is architectural
+on 64-bit, because of the "swapgs" instruction; there's no "swapfs"
+instruction.
 
-On Fri, 05 Sep 2008 13:45:55 +0200
-Christer Weinigel <christer@weinigel.se> wrote:
+>>> - When I do a "mov %fs ..." instruction (in a module), it seems that %fs
+>>> is equal to 0 (idem for %gs). Are these registers not always filled ?
+>>>       
+>> On 32-bit they will always have a value, or you'll get a GPF.  On 64-bit
+>> the value of the selector doesn't matter because the MSRs are the real
+>> content.
+>>     
+>
+> ok, but what about the limits and access types?
+>   
 
-> First some measurements.  I've connected the SDIO bus to an Agilent=20
-> scope to get some pretty plots.
+They don't exist in 64-bit.  The GDT contains them, but they're not
+enforced.
 
-Why doesn't santa bring me any of the nice toys everyone else seems to
-be getting :(
+>>> - What is the purpose of MSR_FS_BASE and MSR_GS_BASE ?
+>>> (I thought they were filled with "gdt[fs_entry].base")
+>>>       
+>> On 64-bit, the GDT isn't large enough to hold a 64-bit offset, so it
+>> only stores the low 32-bits.  When you load a segment register with a
+>> selector, it picks up from the gdt.  If you want a full 64-bit offset,
+>> you need to write it to the msr.
+>>     
+>
+> Ok, I just saw that a 64-bit base in segment descriptor is only available for 
+> the system descriptor.
+>   
 
-> Since more and more high speed chips are being connected to embedded=20
-> devices using SDIO, I belive that to get good SDIO performance, the SDIO=
-=20
-> layer has to be changed not to use a worker thread.  This is=20
-> unfortunately rather painful since it means that we have to add=20
-> asynchronous variants of all the I/O operations, and the sdio_irq thread=
-=20
-> has to be totally redone, and the sdio IRQ enabling and disablin turned=20
-> out to be a bit tricky.
->=20
-> So, do you think that it is worth it to make such a major change to the=20
-> SDIO subsystem?  I belive so, but I guess I'm a bit biased.  I can clean=
-=20
-> up the work I've done and make sure that everything is backwards=20
-> compatible so that existing SDIO function drivers keep working (my=20
-> current hack to the sdio_irq thread breaks existing drivers, and it is=20
-> too ugly to live anyway so I don't even want to show it to you yet), and=
-=20
-> add a demo driver which shows how to use the asynchronous functions.
+Yes, the IDT has double-wide entries to fit 64-bit values, but they
+didn't extend that to the GDT.  Or something - I last looked at this a
+couple of months ago, and it never sticks in my brain for long.
 
-The latency improvement is indeed impressive, but I am not convinced it
-is worth it. An asynchronous API is much more complex and difficult to
-work with (not to mention reading and trying to make sense of existing
-code), and SDIO is not even an asynchronous bus to begin with.
+> Ok, but how does the kernel technically run tasks on different processor (or 
+> core)? My question was ambiguous, I was not assuming that I knew how 
+> multiprocessor works.
+>   
 
-Also, as the latency is caused by CPU cycles, the problem will be
-reduced as hardware improved.
+That's a very broad question.  A good proportion of the core kernel code
+is dedicated to doing just that.  Very roughly, at boot time it brings
+up all the cpus, and they more or less run independently each looking
+for work to do in the form of processes waiting to run on the run
+queue.  They collectively run the scheduler algorithms to work out who
+runs what when; almost everything run in the kernel is a task - both
+usermode processes and kernel threads.  Except for the stuff which isn't.
 
-But...
-
-> But if you don't like this idea at all, I'll probably just keep it as a=20
-> patch and not bother as much with backwards compatibility.  This is a=20
-> lot more work for me though, and I'd much prefer to get it into the=20
-> official kernel.
-
-I do like the idea of reducing latencies (and generally improving the
-performance of the MMC stack). The primary reason I haven't done
-anything myself is lack of stuff to test and proper instrumentation.
-
-There are really two issues here, which aren't necessarily related;
-actual interrupt latency and command completion latency.
-
-The main culprit in your case is the command completion one. Perhaps
-there is some other way of solving that inside the MMC core? E.g. we
-could spin instead of sleeping while we wait for the request to
-complete. Most drivers never use process context to handle a request
-anyway. We would need to determine when the request is small enough
-(all non-busy, non-data commands?) and that the CPU is slow enough. I
-also saw something about a new trigger interface that could make this
-efficient.
-
-Does this sound like something worth exploring?
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-19144-1220626214-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjBRyAACgkQ7b8eESbyJLiKdACglUcNqDYgKkrzhCY1iRhMGtVB
-oo8AoKDv6HQ1ZIVdv6yWuTAtbO0FxXdz
-=VBAl
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-19144-1220626214-0001-2--
+    J
