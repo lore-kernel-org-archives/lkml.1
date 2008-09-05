@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYIEUFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbYIEUJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYIEUFI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIEUE4
+	id S1753029AbYIEUJR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYIEUJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:04:56 -0400
-Received: from quackingmoose.com ([63.73.180.143]:40142 "EHLO
-	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751270AbYIEUE4 (ORCPT
+	Fri, 5 Sep 2008 16:09:04 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:41501 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751097AbYIEUJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:04:56 -0400
-Date: Fri, 5 Sep 2008 13:04:55 -0700
-From: Aaron Straus <aaron@merfinllc.com>
-To: Chuck Lever <chuck.lever@oracle.com>
-Cc: Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Message-ID: <20080905200455.GH22796@merfinllc.com>
-References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com>
-User-Agent: Mutt/1.5.11
+	Fri, 5 Sep 2008 16:09:03 -0400
+Subject: Re: [PATCH] mmc_block: use generic helper to print capacities
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <20080831205448.5b23507d@mjolnir.drzeus.cx>
+References: <48B9546B.4010004@simon.arlott.org.uk>
+	 <1220117091.3615.3.camel@localhost.localdomain>
+	 <20080830174516.GD1239@parisc-linux.org>
+	 <48B9B552.8060406@simon.arlott.org.uk>
+	 <48B9B588.7060709@simon.arlott.org.uk>
+	 <1220147947.3615.18.camel@localhost.localdomain>
+	 <20080831025412.GJ1239@parisc-linux.org>
+	 <1220195310.4021.4.camel@localhost.localdomain>
+	 <1220195634.4021.9.camel@localhost.localdomain>
+	 <20080831205448.5b23507d@mjolnir.drzeus.cx>
+Content-Type: text/plain
+Date: Fri, 05 Sep 2008 15:09:00 -0500
+Message-Id: <1220645340.3331.55.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sep 05 03:56 PM, Chuck Lever wrote:
-> [ replacing cc: nfs@sf.net with linux-nfs@vger.kernel.org, and neil's  
-> old address with his current one ]
-
-Sorry I probably grabbed an old MAINTAINERS file.
-
-> On Sep 5, 2008, at Sep 5, 2008, 3:19 PM, Aaron Straus wrote:
-> > Writer_Version     Outcome:
-> > <= 2.6.19          OK
-> > >= 2.6.20	    BAD
+On Sun, 2008-08-31 at 20:54 +0200, Pierre Ossman wrote:
+> From: Pierre Ossman <drzeus@drzeus.cx>
 > 
-> Up to which kernel?  Recent ones may address this issue already.
+> Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 
-BAD up to 2.6.27-rc? 
+Did you want me to take this?  It seems to depend on pieces of your mmc
+tree, so I'd have to carry it in my post-merge tree.
 
-I have to see exactly which is the last rc version I tested.
-
-> > I can try to bisect between 2.6.19 <-> 2.6.20.
-> 
-> That's a good start.
-
-OK will try to bisect.
-
-> Comparing a wire trace with strace output, starting with the writing  
-> client, might also be illuminating.  We prefer wireshark as it uses  
-> good default trace settings, parses the wire bytes and displays them  
-> coherently, and allows you to sort the frames in various useful ways.
-
-OK.  Could you also try to reproduce on your side using those python
-programs?  I want to make sure it's not something specific with our
-mounts, etc.
-
-Thanks!
-					=a=
+James
 
 
--- 
-===================
-Aaron Straus
-aaron@merfinllc.com
