@@ -1,123 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYIENqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbYIENrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYIENqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYIENqV
+	id S1754230AbYIENrd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYIENrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:46:21 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:40331 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753152AbYIENqU (ORCPT
+	Fri, 5 Sep 2008 09:47:24 -0400
+Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:54524 "EHLO
+	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbYIENrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:46:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=T56VYVhJAMST0UFQSNHkLjnDq/2xL0jE/aactC+B4A9YiAVinFAIpxU86VrfP6xPk8
-         G78gfkaialzP7DTb8QLwr6adfr5JYZEgs3DMOROSYWfcKPr3M3OZFc5O8IaHGY6oLdNs
-         /pe4KrFKm5XHiBh3oF4brSGEtr75igBZWhOvM=
-Message-ID: <48C13827.1010409@gmail.com>
-Date: Fri, 05 Sep 2008 15:46:15 +0200
-From: Anders Aagaard <aagaande@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080901)
+	Fri, 5 Sep 2008 09:47:23 -0400
+Message-ID: <48C13869.9040603@weinigel.se>
+Date: Fri, 05 Sep 2008 15:47:21 +0200
+From: Christer Weinigel <christer@weinigel.se>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: suspend-devel@lists.sourceforge.net
-Subject: Re: [Suspend-devel] Resume performance
-References: <48C10908.60101@gmail.com> <200809051308.14079.rjw@sisk.pl>
-In-Reply-To: <200809051308.14079.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Ben Dooks <ben-linux@fluff.org>
+CC: linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: Proposed SDIO layer rework
+References: <48C11BF3.2060609@weinigel.se> <20080905131855.GY26082@trinity.fluff.org>
+In-Reply-To: <20080905131855.GY26082@trinity.fluff.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Friday, 5 of September 2008, Anders Aagaard wrote:
->> Hi
+Ben Dooks wrote:
+>> Most of the CPU is probably spent doing PIO transfers to the SDIO 
+>> controller, if DMA starts working in the s3cmci driver, the CPU load 
+>> difference will be even larger.
 > 
-> Hi,
-> 
-> This is a kernel problem, so let's CC the LKML.
-> 
->> I have a intel P35 board with a quad core cpu in it, it's currently 
->> running as a server for a small network, and I'd like to be able to shut 
->> it down when idle, and use wake on lan to wake it up when it's needed. 
->> Now I got that part working quite well, but for some reason I have a 
->> long delay in resume.
->>
->> I seem to remember being able to resume this computer in 2-3 seconds 
->> when I was testing it, now it needs 35 seconds to resume.  It seems 
->> regardless of resume options used, and it always resumes to a working 
->> state without problems.
-> 
-> What kernel are you using at the moment and which one was used for the
-> testing?
+> I'm not sure if I'll get the time to look at this before the new kernel
+> is released... anyway DMA may not be much of a win for smaller transfers
+> anyway, since the setup (the cache will need to be cleaned out or the
+> transfer memory made unbuffered)  and complete time will add another
+> IRQ's worth of response time. This means small transfers are probably
+> better off using PIO.
 
-I'm using gentoo's 2.6.25-r7, I've also tried vanilla sources.
+Yes.  For the DMA-capable S3C SPI driver I wrote, I added some 
+thresholds, so for smaller transfers than a certain number of bytes, I 
+skip DMA and just do a polled/interrupt transfer instead.  For short 
+transfers at high clock rates it's not even worth getting an interrupt 
+per byte, it's better to just busy wait for each byte, since the 
+interrupt overhead is larger than the time between each byte.
 
-> 
->> I've tried quite a lot of things, booting with noapic/nosmp, booting a 
->> kernel without usb/network drivers, disabling ahci (using ata_piix 
->> driver instead of ahci), and there's always that one long delay.  And 
->> I'm not quite sure how the kernel printk timing information works, so 
->> I'm not sure whats causing that delay.
->>
->> Output from dmesg when booting with nosmp (to get accurate timing data):
->> scripts/show_delta -b "Force enabled HPET at resume"
->> [349.821150 < 7.039261 >] ata3.00: configured for UDMA/133
->> [349.821160 < 7.039271 >] sd 2:0:0:0: [sdc] 976773168 512-byte hardware 
->> sectors (500108 MB)
->> [349.821165 < 7.039276 >] sd 2:0:0:0: [sdc] Write Protect is off
->> [349.821166 < 7.039277 >] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
->> [349.821173 < 7.039284 >] sd 2:0:0:0: [sdc] Write cache: enabled, read 
->> cache: enabled, doesn't support DPO or FUA
->> [349.972801 < 7.190912 >] ata1: SATA link up 3.0 Gbps (SStatus 123 
->> SControl 300)
->> [349.979060 < 7.197171 >] ata1.00: configured for UDMA/133
->> [349.979070 < 7.197181 >] sd 0:0:0:0: [sda] 976771055 512-byte hardware 
->> sectors (500107 MB)
->> [349.979075 < 7.197186 >] sd 0:0:0:0: [sda] Write Protect is off
->> [349.979076 < 7.197187 >] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
->> [349.979083 < 7.197194 >] sd 0:0:0:0: [sda] Write cache: enabled, read 
->> cache: enabled, doesn't support DPO or FUA
-> 
-> It looks like this happens here.  Can you try to unload the network driver
-> before suspend, please?
+A SDIO CMD/response packet is 48 bits, so at 25 MHz that is only about 4 
+us and I think the interrupt overhead is more than that.  So if we 
+really want to squeeze every last clock cycle out of the SDIO driver it 
+may be better to busy wait for the end of simple CMD52s instead of using 
+the an interrupt to complete the transfer.
 
-I tried to build a kernel without it, and it still takes the exact same 
-amount to boot, I've also tried unloading usb drivers and it takes the 
-exact same amount of time.
+I'll clean up my s3cmci patches and send them to you, but I can't 
+promise when I'll be done, so it'll probably have to wait for the next 
+kernel release.
 
-> 
->> [373.945179 < 31.163290 >] r8169: eth0: link up
->> [373.952159 < 31.170270 >] PM: Writing back config space on device 
->> 0000:02:02.0 at offset f (was 4020100, writing 4020104)
->> [373.952172 < 31.170283 >] PM: Writing back config space on device 
->> 0000:02:02.0 at offset 5 (was 0, writing fddf8000)
->> [373.952176 < 31.170287 >] PM: Writing back config space on device 
->> 0000:02:02.0 at offset 4 (was 0, writing fddfd000)
->> [373.952180 < 31.170291 >] PM: Writing back config space on device 
->> 0000:02:02.0 at offset 3 (was 0, writing 4410)
->> [373.952185 < 31.170296 >] PM: Writing back config space on device 
->> 0000:02:02.0 at offset 1 (was 2100000, writing 2100006)
->>
->> Notice the long delay between all hd's found and it writing back config 
->> space, note that this happens with or without that network card driver 
->> in the kernel.
->>
->> Attaching full log of boot + suspend/resume cycle, kernel booted with 
->> nosmp/noapic, it takes the same amount of time without those options, 
->> but timing data gets a bit garbled.
->>
->> Thanks for your work so far, it's working quite well and saving me a lot 
->> of power doing it this way, at this point I'm just trying to get it 
->> faster :)
-> 
-> Sure, 35 seconds to resume is hardly acceptable.
-> 
-> Thanks,
-> Rafael
-> 
-
+   /Christer
