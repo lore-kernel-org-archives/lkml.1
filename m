@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbYIEM1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbYIEM1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbYIEM1D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 08:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbYIEM0w
+	id S1754137AbYIEM1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 08:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYIEM1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 08:26:52 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:29831 "EHLO
+	Fri, 5 Sep 2008 08:27:25 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:29880 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488AbYIEM0w convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752267AbYIEM1Y convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 08:26:52 -0400
-Message-Id: <48C141C0.76E4.0078.0@novell.com>
+	Fri, 5 Sep 2008 08:27:24 -0400
+Message-Id: <48C141E1.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Fri, 05 Sep 2008 13:27:12 +0100
+Date: Fri, 05 Sep 2008 13:27:45 +0100
 From: "Jan Beulich" <jbeulich@novell.com>
 To: <mingo@elte.hu>, <tglx@linutronix.de>,
        "Andrew Morton" <akpm@linux-foundation.org>, <hpa@zytor.com>
 Cc: "Nick Piggin" <npiggin@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/3] x86: ticket spin locks: factor out more common
-	 code
+Subject: [PATCH 3/3] x86: ticket spin locks: reduce instruction
+	 dependencies
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -27,79 +27,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Reduce the amount of partial register accesses in the NR_CPUS < 256
+case, and slightly weaken resource dependencies in the other case.
+
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 Cc: Nick Piggin <npiggin@suse.de>
 
 ---
- include/asm-x86/spinlock.h |   42 ++++++++++++++++--------------------------
- 1 file changed, 16 insertions(+), 26 deletions(-)
+ include/asm-x86/spinlock.h |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 --- linux-x86.orig/include/asm-x86/spinlock.h
 +++ linux-x86/include/asm-x86/spinlock.h
-@@ -54,19 +54,7 @@
-  * much between them in performance though, especially as locks are out of line.
-  */
- #if (NR_CPUS < 256)
--static inline int __ticket_spin_is_locked(raw_spinlock_t *lock)
--{
--	int tmp = ACCESS_ONCE(lock->slock);
--
--	return (((tmp >> 8) & 0xff) != (tmp & 0xff));
--}
--
--static inline int __ticket_spin_is_contended(raw_spinlock_t *lock)
--{
--	int tmp = ACCESS_ONCE(lock->slock);
--
--	return (((tmp >> 8) - tmp) & 0xff) > 1;
--}
-+#define TICKET_SHIFT 8
+@@ -21,8 +21,10 @@
  
- static __always_inline void __ticket_spin_lock(raw_spinlock_t *lock)
- {
-@@ -116,19 +104,7 @@ static __always_inline void __ticket_spi
- 		     : "memory", "cc");
- }
+ #ifdef CONFIG_X86_32
+ # define LOCK_PTR_REG "a"
++# define REG_PTR_MODE "k"
  #else
--static inline int __ticket_spin_is_locked(raw_spinlock_t *lock)
--{
--	int tmp = ACCESS_ONCE(lock->slock);
--
--	return (((tmp >> 16) & 0xffff) != (tmp & 0xffff));
--}
--
--static inline int __ticket_spin_is_contended(raw_spinlock_t *lock)
--{
--	int tmp = ACCESS_ONCE(lock->slock);
--
--	return (((tmp >> 16) - tmp) & 0xffff) > 1;
--}
-+#define TICKET_SHIFT 16
- 
- static __always_inline void __ticket_spin_lock(raw_spinlock_t *lock)
- {
-@@ -182,6 +158,20 @@ static __always_inline void __ticket_spi
- }
+ # define LOCK_PTR_REG "D"
++# define REG_PTR_MODE "q"
  #endif
  
-+static inline int __ticket_spin_is_locked(raw_spinlock_t *lock)
-+{
-+	int tmp = ACCESS_ONCE(lock->slock);
-+
-+	return !!(((tmp >> TICKET_SHIFT) ^ tmp) & ((1 << TICKET_SHIFT) - 1));
-+}
-+
-+static inline int __ticket_spin_is_contended(raw_spinlock_t *lock)
-+{
-+	int tmp = ACCESS_ONCE(lock->slock);
-+
-+	return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) > 1;
-+}
-+
- #ifdef CONFIG_PARAVIRT
- /*
-  * Define virtualization-friendly old-style lock byte lock, for use in
-
+ #if defined(CONFIG_X86_32) && \
+@@ -77,19 +79,17 @@ static __always_inline void __ticket_spi
+ 
+ static __always_inline int __ticket_spin_trylock(raw_spinlock_t *lock)
+ {
+-	int tmp;
+-	short new;
++	int tmp, new;
+ 
+-	asm volatile("movw %2,%w0\n\t"
++	asm volatile("movzwl %2, %0\n\t"
+ 		     "cmpb %h0,%b0\n\t"
++		     "leal 0x100(%" REG_PTR_MODE "0), %1\n\t"
+ 		     "jne 1f\n\t"
+-		     "movw %w0,%w1\n\t"
+-		     "incb %h1\n\t"
+ 		     LOCK_PREFIX "cmpxchgw %w1,%2\n\t"
+ 		     "1:"
+ 		     "sete %b1\n\t"
+ 		     "movzbl %b1,%0\n\t"
+-		     : "=&a" (tmp), "=&Q" (new), "+m" (lock->slock)
++		     : "=&a" (tmp), "=&q" (new), "+m" (lock->slock)
+ 		     :
+ 		     : "memory", "cc");
+ 
+@@ -136,8 +136,8 @@ static __always_inline int __ticket_spin
+ 		     "movl %0,%1\n\t"
+ 		     "roll $16, %0\n\t"
+ 		     "cmpl %0,%1\n\t"
++		     "leal 0x00010000(%" REG_PTR_MODE "0), %1\n\t"
+ 		     "jne 1f\n\t"
+-		     "addl $0x00010000, %1\n\t"
+ 		     LOCK_PREFIX "cmpxchgl %1,%2\n\t"
+ 		     "1:"
+ 		     "sete %b1\n\t"
 
 
 
