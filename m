@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYIESf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYIESi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbYIESf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 14:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYIESfT
+	id S1754148AbYIESi7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 14:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbYIESiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 14:35:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43039 "EHLO mx3.mail.elte.hu"
+	Fri, 5 Sep 2008 14:38:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57334 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751911AbYIESfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 14:35:18 -0400
-Date: Fri, 5 Sep 2008 20:34:59 +0200
+	id S1751663AbYIESiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 14:38:51 -0400
+Date: Fri, 5 Sep 2008 20:38:35 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, arjan@infradead.org,
-       torvalds@linux-foundation.org, sfr@canb.auug.org.au,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] Blacklist DMAR on Intel G31/G33 chipsets
-Message-ID: <20080905183459.GC14258@elte.hu>
-References: <1220439231.2985.103.camel@pmac.infradead.org> <1220518477.2985.163.camel@pmac.infradead.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       yhlu.kernel@gmail.com, macro@linux-mips.org
+Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for
+	setup_IO_APIC_irqs
+Message-ID: <20080905183835.GA19215@elte.hu>
+References: <20080904183748.950151853@gmail.com>> <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com> <20080905080447.GC12409@elte.hu> <20080905180126.GA19334@lenovo> <20080905181111.GG27395@elte.hu> <20080905183347.GB19334@lenovo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220518477.2985.163.camel@pmac.infradead.org>
+In-Reply-To: <20080905183347.GB19334@lenovo>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,39 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-> Some BIOSes (the Intel DG33BU, for example) wrongly claim to have DMAR
-> when they don't. Avoid the resulting crashes when it doesn't work as
-> expected.
-> 
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> ---
-> 
-> This time, I build-tested it with CONFIG_DMAR actually enabled. Sorry. 
-> I'd still be grateful if someone could test it on a DG33BU with the 
-> old BIOS though, since I've killed mine. I tested the DMI version, but 
-> not this one.
+> So as you see it's more then enough self-solid :) So I wouldn't break 
+> it 'cause of printing. If we have enough memory for bit field - we 
+> could just mark there if pin is connected to irq and print connection 
+> map after. Don't get me wrong please - I just don't want to overload 
+> this function with additional call.
 
-ok - fixing this makes sense. I have two worries about this patch.
+the compiler will inline that single-called function just fine, as long 
+as you declare it static.
 
-Firstly, the quirk is keyed off an ACPI capability which is quite bad if 
-someone boots with ACPI off. (which is still quite possible) The DMAR is 
-PCI enumerated so there's nothing inherently ACPI about this. A DMI 
-quirk (which will work even if ACPI is disabled) looks more robust.
-
-Secondly, keying off the PCI ID and assuming a BIOS bug based on the 
-presence of an ACPI table can indeed get incoherent results as you 
-suspect. It's better to single out the specific BIOS as long as the DMI 
-info is specific enough. Even if that PCI ID is never supposed to be 
-combined with VT-d (because, obviously, VT-d needs a different chipset), 
-it's just a sloppy concept in general.
-
-The fact that you've already tested the DMI version and cannot test the 
-new version is one more reason to favor the first patch.
-
-Could you please resend the initial DMI version of the 
-drivers/pci/intel-iommu.c commit stand-alone, not embedded in a 'misc' 
-pull request, and with Jesse Cc:-ed as well? Thanks,
+spreading printouts over several functions isnt all that bad i think. We 
+could even drop the 'not connected' complication - it's evident enough 
+from the fact that nothing gets printed.
 
 	Ingo
