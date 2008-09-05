@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYIEUmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbYIEUpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbYIEUmT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYIEUmJ
+	id S1753619AbYIEUpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYIEUpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:42:09 -0400
-Received: from 1wt.eu ([62.212.114.60]:3214 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbYIEUmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:42:08 -0400
-Date: Fri, 5 Sep 2008 22:41:34 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, pageexec@freemail.hu,
-       Andi Kleen <andi@firstfloor.org>,
+	Fri, 5 Sep 2008 16:45:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:47039 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYIEUpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 16:45:10 -0400
+Date: Fri, 5 Sep 2008 22:48:30 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: pageexec@freemail.hu
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
        tglx@tglx.de, hpa@zytor.com
 Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
-Message-ID: <20080905204134.GI19337@1wt.eu>
-References: <20080903195122.73905236@infradead.org> <48C0FF43.30940.2C3EFC0@pageexec.freemail.hu> <1220609647.4879.169.camel@pasglop> <48C10EC5.24400.3008276@pageexec.freemail.hu> <1220612231.4879.175.camel@pasglop> <20080905114233.GA27878@elte.hu>
+Message-ID: <20080905204830.GB18288@one.firstfloor.org>
+References: <20080905172644.GV18288@one.firstfloor.org> <48C18BB8.13126.4E8982B@pageexec.freemail.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080905114233.GA27878@elte.hu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <48C18BB8.13126.4E8982B@pageexec.freemail.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 05, 2008 at 01:42:33PM +0200, Ingo Molnar wrote:
-> The far better solution would be to insert uncertainty into the picture: 
-
-till there OK :-)
-
-> some sort of low-frequency watchdog [runs once a second or so] that 
-> tries to hide itself from the general kernel scope as much as possible, 
-> perhaps as ELF-PIC code at some randomized location, triggered by some 
-> frequently used and opaque kernel facility that an attacker can not 
-> afford to block or fully filter, and which would just check integrity 
-> periodically and with little cost.
-
-"can not" above is the unrealistic requirement unfortunately.
-
-> When it finds a problem it immediately triggers a hard to block/filter 
-> vector of alert (which can be a silent alarm over the network or to the 
-> screen as well).
+On Fri, Sep 05, 2008 at 09:42:48PM +0200, pageexec@freemail.hu wrote:
+> On 5 Sep 2008 at 19:26, Andi Kleen wrote:
 > 
-> that method does not prevent rootkits in general (nothing can), but sure 
-> makes their life more risky in practice - and a guaranteed livelihood 
-> and risk reduction is what typical criminals are interested in 
-> primarily, not whether they can break into a particular house.
+> > 
+> > First such checkers already exist -- they are called root kit checkers.
+> > There are various around. 
+> > Usually operate from user space. You could run them in a cron job.
 > 
-> If we implement it then it should not be present in distro .config's, 
-> etc. - it should be as invisible as possible - perhaps only be part of 
-> the kernel image .init.data section in some unremarkably generic manner. 
+> how trivial do you think it is for *kernel* code to evade *userland*
+> checking it? ;) otherwise agreed with rest.
 
-Then they will simply proceed like this :
-  - patch /boot/vmlinuz
-  - sync
-  - crash system
+It depends on where the userland runs. e.g. if it's under a hypervisor
+and in a separate domain it should be reasonably safe.
 
-=> user says "oh crap" and presses the reset button. Patched kernel boots.
-   Game over. Patching vmlinuz for known targetted distros is even easier
-   because the attacker just has to embed binary changes for the most
-   common distro kernels.
+And then I don't think it is much difference between Ingo's kernel
+checker and a user land checker. Both can be disabled it you know
+about them.
 
-Clearly all this is a waste of developer time, CPU cycles, memory,
-reliability and debugging time. All that time would be more efficiently
-spent auditing and debugging existing code to reduce the attack surface,
-and CPU cycles + memory would be better spent adding double checks to
-most sensible functions' entry points and user data processing.
+-Andi
 
-Regards,
-Willy
-
+-- 
+ak@linux.intel.com
