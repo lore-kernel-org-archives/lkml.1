@@ -1,66 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbYIEDov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbYIEEBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756131AbYIEDov (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 23:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYIEDon
+	id S1752904AbYIEEBB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 00:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYIEEAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 23:44:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56360 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbYIEDom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 23:44:42 -0400
-Message-ID: <48C0AAF8.605@cn.fujitsu.com>
-Date: Fri, 05 Sep 2008 11:43:52 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Jackson <pj@sgi.com>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpuset: hotplug documentation fix
-Content-Type: text/plain; charset=UTF-8
+	Fri, 5 Sep 2008 00:00:50 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:40049 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716AbYIEEAt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 00:00:49 -0400
+Date: Thu, 4 Sep 2008 21:00:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, paul.moore@hp.com,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: + security-selinux-include-netlabelh-fix-two-build-errors.patch
+ added to -mm tree
+Message-Id: <20080904210033.20700500.randy.dunlap@oracle.com>
+In-Reply-To: <200809050326.m853QB13012853@imap1.linux-foundation.org>
+References: <200809050326.m853QB13012853@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If all the cpus/mems in a cpuset are offlined, the tasks in it will
-be moved to the nearest ancestor with non-empty cpus/mems.
+On Thu, 04 Sep 2008 20:26:11 -0700 akpm@linux-foundation.org wrote:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> The patch titled
+>      security/selinux/include/netlabel.h: fix two build errors
+> has been added to the -mm tree.  Its filename is
+>      security-selinux-include-netlabelh-fix-two-build-errors.patch
+> 
+> Before you just go and hit "reply", please:
+>    a) Consider who else should be cc'ed
+>    b) Prefer to cc a suitable mailing list as well
+>    c) Ideally: find the original patch on the mailing list and do a
+>       reply-to-all to that, adding suitable additional cc's
+> 
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> 
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
+> 
+> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> 
+> ------------------------------------------------------
+> Subject: security/selinux/include/netlabel.h: fix two build errors
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> security/selinux/include/netlabel.h:74: error: two or more data types in declaration specifiers
+> security/selinux/include/netlabel.h:106: error: expected ';', ',' or ')' before 'u32'
+> 
+> Caused by
+> 
+>     commit b023202e2a41a61165f472cc889f37c4a260ba51
+>     Author: Paul Moore <paul.moore@hp.com>
+>     Date:   Tue Sep 2 10:24:41 2008 -0400
+> 
+>         selinux: Fix missing calls to netlbl_skbuff_err()
+> 
+> Cc: Paul Moore <paul.moore@hp.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  security/selinux/include/netlabel.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -puN security/selinux/include/netlabel.h~security-selinux-include-netlabelh-fix-two-build-errors security/selinux/include/netlabel.h
+> --- a/security/selinux/include/netlabel.h~security-selinux-include-netlabelh-fix-two-build-errors
+> +++ a/security/selinux/include/netlabel.h
+> @@ -71,7 +71,7 @@ static inline void selinux_netlbl_cache_
+>  	return;
+>  }
+>  
+> -static inline void void selinux_netlbl_err(struct sk_buff *skb,
+> +static inline void selinux_netlbl_err(struct sk_buff *skb,
+>  					   int error,
+>  					   int gateway)
+>  {
+> @@ -102,7 +102,7 @@ static inline int selinux_netlbl_skbuff_
+>  }
+>  
+>  static inline int selinux_netlbl_skbuff_setsid(struct sk_buff *skb,
+> -					       u16 family
+> +					       u16 family,
+>  					       u32 sid)
+>  {
+>  	return 0;
+> _
+
+
+Even with this patch, net/netlabel/netlabel_mgmt.c has build errors when CONFIG_IPV6=n:
+
+linux-next-20080904/net/netlabel/netlabel_domainhash.c:79: warning: unused variable 'tmp6'
+linux-next-20080904/net/netlabel/netlabel_domainhash.c:78: warning: unused variable 'iter6'
+linux-next-20080904/net/netlabel/netlabel_domainhash.c:340: warning: unused variable 'tmp6'
+linux-next-20080904/net/netlabel/netlabel_domainhash.c:301: warning: unused variable 'iter6'
+linux-next-20080904/net/netlabel/netlabel_mgmt.c:219: error: implicit declaration of function 'netlbl_af6list_add'
+linux-next-20080904/net/netlabel/netlabel_mgmt.c:317: error: implicit declaration of function 'netlbl_af6list_foreach_rcu'
+linux-next-20080904/net/netlabel/netlabel_mgmt.c:318: error: expected ';' before '{' token
+make[3]: *** [net/netlabel/netlabel_mgmt.o] Error 1
+
 ---
- Documentation/cpusets.txt |   18 ++++++++++--------
- 1 files changed, 10 insertions(+), 8 deletions(-)
-
-diff --git a/Documentation/cpusets.txt b/Documentation/cpusets.txt
-index 1f5a924..871c1dd 100644
---- a/Documentation/cpusets.txt
-+++ b/Documentation/cpusets.txt
-@@ -635,14 +635,16 @@ prior 'mems' setting, will not be moved.
- 
- There is an exception to the above.  If hotplug functionality is used
- to remove all the CPUs that are currently assigned to a cpuset,
--then the kernel will automatically update the cpus_allowed of all
--tasks attached to CPUs in that cpuset to allow all CPUs.  When memory
--hotplug functionality for removing Memory Nodes is available, a
--similar exception is expected to apply there as well.  In general,
--the kernel prefers to violate cpuset placement, over starving a task
--that has had all its allowed CPUs or Memory Nodes taken offline.  User
--code should reconfigure cpusets to only refer to online CPUs and Memory
--Nodes when using hotplug to add or remove such resources.
-+then all the tasks in that cpuset will be moved to the nearest ancestor
-+with non-empty cpus.  But the moving of some (or all) tasks might fail if
-+cpuset is binded with another cgroup subsystem which has some restrictions
-+on task attaching.  In this failing case, those tasks will stay
-+in the original cpuset, and the kernel will automatically update
-+their cpus_allowed to allow all online CPUs.  When memory hotplug
-+functionality for removing Memory Nodes is available, a similar exception
-+is expected to apply there as well.  In general, the kernel prefers to
-+violate cpuset placement, over starving a task that has had all
-+its allowed CPUs or Memory Nodes taken offline.
- 
- There is a second exception to the above.  GFP_ATOMIC requests are
- kernel internal allocations that must be satisfied, immediately.
--- 
-1.5.4.rc3
-
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
