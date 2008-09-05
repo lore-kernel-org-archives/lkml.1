@@ -1,143 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYIEADg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbYIEADz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYIEADg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 20:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbYIEAD1
+	id S1752315AbYIEADz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 20:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYIEADn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 20:03:27 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:4055 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbYIEAD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 20:03:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=c/MxShfv3QGd1OxN4Xt6aXUZggXyA3E7cMHMypsBZWoLfuJ6XWp3raNC9v3todTARI
-         1OOFXkGG+ogqesuzMHoFqKS1sof7axE0j9FkAvrY5f4c1aZhhgB4ZJkJyghQeOssT009
-         1GlltBJLrcYtoW6quUzsLyGWeZguUu7m+6TIk=
-Message-ID: <e9c3a7c20809041703h5bf6a007g6dcbe8fb2a5deffd@mail.gmail.com>
-Date: Thu, 4 Sep 2008 17:03:25 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Ilya Yanok" <yanok@emcraft.com>
-Subject: Re: [PATCH] ASYNC_TX: fix the bug in async_tx_run_dependencies
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, wd@denx.de, yur@emcraft.com
-In-Reply-To: <e9c3a7c20809041624o24af57fsbe58507a44e6e2ef@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 4 Sep 2008 20:03:43 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47178 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755204AbYIEADm (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 20:03:42 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] HID: fix tty<->hid deadlock
+In-Reply-To: Your message of "Thu, 04 Sep 2008 17:16:07 +0200."
+             <1220541367-10984-1-git-send-email-jirislaby@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <48BFFAE0.5010001@gmail.com>
+            <1220541367-10984-1-git-send-email-jirislaby@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1220573006_3066P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220478231-8725-1-git-send-email-yanok@emcraft.com>
-	 <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
-	 <e9c3a7c20809041624o24af57fsbe58507a44e6e2ef@mail.gmail.com>
-X-Google-Sender-Auth: afef86e921337caa
+Date: Thu, 04 Sep 2008 20:03:26 -0400
+Message-ID: <3717.1220573006@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 4, 2008 at 4:24 PM, Dan Williams <dan.j.williams@intel.com> wrote:
-> On Thu, Sep 4, 2008 at 2:19 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->> On Thu,  4 Sep 2008 01:43:51 +0400
->> Ilya Yanok <yanok@emcraft.com> wrote:
->>
->>> From: Yuri Tikhonov <yur@emcraft.com>
->>>
->>> Should clear the next pointer of the TX if we are sure that the
->>> next TX (say NXT) will be submitted to the channel too. Overwise,
->>> we break the chain of descriptors, because we lose the information
->>> about the next descriptor to run. So next time, when invoke
->>> async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
->>> NXT will be never submitted.
->>>
->>> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
->>
->> This patch should include your signed-off-by: as well.  Because you
->> were on the delivery path, as described in
->> Documentation/SubmittingPatches, section 12.
->>
->
-> Yes, Ilya once I have your signed-off-by I will push this to Linus and
-> -stable.  As far as impact for in-tree drivers: iop13xx by is immune,
-> iop3xx can hit this, and it looks like the orion5x implementation is
-> immune since copy and xor are available on the same channel.
->
+--==_Exmh_1220573006_3066P
+Content-Type: text/plain; charset=us-ascii
 
-Please also take a look at this cleanup patch that I will queue for
-.28.  I think it makes things easier to read let me know if you
-disagree.
+On Thu, 04 Sep 2008 17:16:07 +0200, Jiri Slaby said:
 
----gmail mangled patch follows--->
-async_tx: make async_tx_run_dependencies() easier to read
+> hid_compat_load() runs on the default workqueue, it request_module(), it
+> execs modprobe, it exits, tty flushes default workqueue, it hangs, because
+> we are still in it.
+> 
+> I haven't run into it since there always was at least one opener of the tty,
+> I guess. Could you try the patch below?
+> 
+> --
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> ---
+>  drivers/hid/hid-core.c |   11 ++++++++++-
+>  1 files changed, 10 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+> index 92c16e1..18d952a 100644
+> --- a/drivers/hid/hid-core.c
+> +++ b/drivers/hid/hid-core.c
 
-From: Dan Williams <dan.j.williams@intel.com>
+With this patch applied, the kernel behaves as expected for my config: it
+requests a 'modprobe hid_dummy', which prints a nasty message about being
+unable to find it on the initrd, and then we continue with the boot.
 
-* Rename 'next' to 'dep'
-* Move the channel switch check inside the loop to simplify
-  termination
+Thanks for the quick fix...
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+--==_Exmh_1220573006_3066P
+Content-Type: application/pgp-signature
 
- crypto/async_tx/async_tx.c |   36 +++++++++++++++++-------------------
- 1 files changed, 17 insertions(+), 19 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFIwHdOcC3lWbTT17ARArj3AKD0ASFsYPnjn1rC0svO+2Z/W30ZKgCg9s6k
+WnegiFLQrVjNvZLWWRTKRxQ=
+=r6SI
+-----END PGP SIGNATURE-----
 
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index e8362c1..b833cca 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -115,34 +115,32 @@ EXPORT_SYMBOL_GPL(dma_wait_for_async_tx);
-  *	(start) dependent operations on their target channel
-  * @tx: transaction with dependencies
-  */
--void
--async_tx_run_dependencies(struct dma_async_tx_descriptor *tx)
-+void async_tx_run_dependencies(struct dma_async_tx_descriptor *tx)
- {
--	struct dma_async_tx_descriptor *next = tx->next;
-+	struct dma_async_tx_descriptor *dep = tx->next;
-+	struct dma_async_tx_descriptor *dep_next;
- 	struct dma_chan *chan;
-
--	if (!next)
-+	if (dep)
-+		chan = dep->chan;
-+	else
- 		return;
-
--	tx->next = NULL;
--	chan = next->chan;
--
- 	/* keep submitting up until a channel switch is detected
- 	 * in that case we will be called again as a result of
- 	 * processing the interrupt from async_tx_channel_switch
- 	 */
--	while (next && next->chan == chan) {
--		struct dma_async_tx_descriptor *_next;
--
--		spin_lock_bh(&next->lock);
--		next->parent = NULL;
--		_next = next->next;
--		if (_next && _next->chan == chan)
--			next->next = NULL;
--		spin_unlock_bh(&next->lock);
--
--		next->tx_submit(next);
--		next = _next;
-+	for (; dep; dep = dep_next) {
-+		spin_lock_bh(&dep->lock);
-+		dep->parent = NULL;
-+		dep_next = dep->next;
-+		if (dep_next && dep_next->chan == chan)
-+			dep->next = NULL; /* ->next will be submitted */
-+		else
-+			dep_next = NULL; /* submit current dep and terminate */
-+		spin_unlock_bh(&dep->lock);
-+
-+		dep->tx_submit(dep);
- 	}
-
- 	chan->device->device_issue_pending(chan);
+--==_Exmh_1220573006_3066P--
