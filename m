@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYIEQQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYIEQQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbYIEQQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbYIEQPh
+	id S1755032AbYIEQQi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYIEQPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:15:37 -0400
-Received: from h155.mvista.com ([63.81.120.155]:60579 "EHLO imap.sh.mvista.com"
+	Fri, 5 Sep 2008 12:15:46 -0400
+Received: from h155.mvista.com ([63.81.120.155]:60591 "EHLO imap.sh.mvista.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754007AbYIEQPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:15:36 -0400
-Message-ID: <48C15B48.4000305@ru.mvista.com>
-Date: Fri, 05 Sep 2008 20:16:08 +0400
+	id S1754309AbYIEQPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 12:15:45 -0400
+Message-ID: <48C15B52.6020508@ru.mvista.com>
+Date: Fri, 05 Sep 2008 20:16:18 +0400
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Organization: MontaVista Software Inc.
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
@@ -36,7 +36,7 @@ Masoud Sharbiani "مسعود شربیانی" wrote:
 > Hi there, Looks like your commit 74811f355f4f69a187fa74892dcf2a684b84ce99
 >  (hpt366: convert to use ->host_priv)
 
-    Thanks for the bisection.
+    Thanks for doing the bisection.
 
 > has caused the following crash:
 
