@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315AbYIEADz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYIEAF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752315AbYIEADz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 20:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYIEADn
+	id S1755439AbYIEAF3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 20:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYIEAFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 20:03:43 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47178 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755204AbYIEADm (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 20:03:42 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] HID: fix tty<->hid deadlock
-In-Reply-To: Your message of "Thu, 04 Sep 2008 17:16:07 +0200."
-             <1220541367-10984-1-git-send-email-jirislaby@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <48BFFAE0.5010001@gmail.com>
-            <1220541367-10984-1-git-send-email-jirislaby@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1220573006_3066P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 04 Sep 2008 20:03:26 -0400
-Message-ID: <3717.1220573006@turing-police.cc.vt.edu>
+	Thu, 4 Sep 2008 20:05:23 -0400
+Received: from iabervon.org ([66.92.72.58]:38362 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751448AbYIEAFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 20:05:22 -0400
+Date: Thu, 4 Sep 2008 20:05:20 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       Christopher Desjardins <cddesjardins@gmail.com>
+Subject: Re: Lenovo 3000 N100 i8042 problems
+In-Reply-To: <alpine.LNX.1.00.0809031250561.19665@iabervon.org>
+Message-ID: <alpine.LNX.1.00.0809041957430.19665@iabervon.org>
+References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net>
+ <alpine.LNX.1.00.0809021200470.19665@iabervon.org> <20080903102047.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.00.0809031250561.19665@iabervon.org>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1220573006_3066P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 3 Sep 2008, Daniel Barkalow wrote:
 
-On Thu, 04 Sep 2008 17:16:07 +0200, Jiri Slaby said:
-
-> hid_compat_load() runs on the default workqueue, it request_module(), it
-> execs modprobe, it exits, tty flushes default workqueue, it hangs, because
-> we are still in it.
+> On Wed, 3 Sep 2008, Dmitry Torokhov wrote:
 > 
-> I haven't run into it since there always was at least one opener of the tty,
-> I guess. Could you try the patch below?
+> > On Tue, Sep 02, 2008 at 12:16:15PM -0400, Daniel Barkalow wrote:
+> > > legacy mode only has a bug that doesn't matter to Windows, and active mux 
+> > > may have some of the usual problems but nothing I particularly noticed.
+> > > 
+> > > I noticed that, when my i8042 would stop working, it would generally have 
+> > > just delivered one mouse interrupt to CPU1 after never previously doing 
+> > > so. Perhaps there's some sort of deadlock in the Linux i8042 driver when 
+> > > both cores are unexpectedly getting interrupts from the two devices at 
+> > > once? I could understand there being a Linux bug only triggered by quirky 
+> > > hardware that only applies to legacy mode, which was just uncovered by 
+> > > this patch.
+> > >
+> > 
+> > I am not sure, internally we the kernel still deals with 2 interrupt
+> > sources (KBD and AUX) regardless whether it is in legacy or active
+> > multiplexing mode...
+> > 
+> > Does it take long to trigger the bug? You coudl try doing "echo 1 >
+> > /sys/modules/i8042/parameters/debug" and thend me dmesg or
+> > /var/log/messages after the bug was triggered - I might see something
+> > there. But please be aware that if you send me such a log I can decode
+> > everything that you have been typing...
 > 
-> --
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> ---
->  drivers/hid/hid-core.c |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 92c16e1..18d952a 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
+> It's usually within an hour of the right usage pattern. I'll try to 
+> trigger it with debugging on while not typing anything secret Thursday 
+> evening.
 
-With this patch applied, the kernel behaves as expected for my config: it
-requests a 'modprobe hid_dummy', which prints a nasty message about being
-unable to find it on the initrd, and then we continue with the boot.
+Attached. This has me typing some unimportant stuff, and then it sticks, 
+then I plug in a USB keyboard, then I tried unbinding the i8042 and 
+binding it again; the audio stuttered briefly, and recovered, and I did it 
+again, and then saved this log.
 
-Thanks for the quick fix...
-
---==_Exmh_1220573006_3066P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIwHdOcC3lWbTT17ARArj3AKD0ASFsYPnjn1rC0svO+2Z/W30ZKgCg9s6k
-WnegiFLQrVjNvZLWWRTKRxQ=
-=r6SI
------END PGP SIGNATURE-----
-
---==_Exmh_1220573006_3066P--
+	-Daniel
+*This .sig left intentionally blank*
