@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbYIEKmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbYIEKoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753415AbYIEKmB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 06:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbYIEKlw
+	id S1753292AbYIEKoM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 06:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYIEKn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 06:41:52 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:43532 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbYIEKlv (ORCPT
+	Fri, 5 Sep 2008 06:43:57 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:1495 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784AbYIEKn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 06:41:51 -0400
-X-BigFish: VPS-26(z1823lz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
+	Fri, 5 Sep 2008 06:43:56 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-SS: 5,
-X-WSS-ID: 0K6PXP6-03-AJT-01
-Date: Fri, 5 Sep 2008 12:41:29 +0200
+X-WSS-ID: 0K6PXRX-03-ALE-01
+Date: Fri, 5 Sep 2008 12:43:05 +0200
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
        iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: gart alloc_coherent doesn't need to check NULL device argument
-Message-ID: <20080905104129.GZ3189@amd.com>
-References: <1220605129-18359-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] x86: use __GFP_NORETRY in the case of GFP_DMA with pci-nommu
+Message-ID: <20080905104305.GA3189@amd.com>
+References: <1220605129-18359-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <1220605129-18359-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1220605129-18359-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 05 Sep 2008 10:41:29.0832 (UTC) FILETIME=[F4A30680:01C90F43]
+X-OriginalArrivalTime: 05 Sep 2008 10:43:06.0092 (UTC) FILETIME=[2E0322C0:01C90F44]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-True, thanks.
-
-On Fri, Sep 05, 2008 at 05:58:49PM +0900, FUJITA Tomonori wrote:
-> asm/dma-mapping.h guarantees that gart alloc_coherent doesn't get NULL
-> device argument.
-> 
+On Fri, Sep 05, 2008 at 05:58:48PM +0900, FUJITA Tomonori wrote:
 > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-
-Acked-by: Joerg Roedel <joerg.roedel@amd.com>
-
 > ---
->  arch/x86/kernel/pci-gart_64.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
+>  arch/x86/kernel/pci-nommu.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-> index 4d08649..0b99d4a 100644
-> --- a/arch/x86/kernel/pci-gart_64.c
-> +++ b/arch/x86/kernel/pci-gart_64.c
-> @@ -506,9 +506,6 @@ gart_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_addr,
->  
->  	align_mask = (1UL << get_order(size)) - 1;
->  
-> -	if (!dev)
-> -		dev = &x86_dma_fallback_dev;
-> -
->  	*dma_addr = dma_map_area(dev, __pa(vaddr), size, DMA_BIDIRECTIONAL,
->  				 align_mask);
->  	flush_gart();
+> diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+> index 526b2db..3495f88 100644
+> --- a/arch/x86/kernel/pci-nommu.c
+> +++ b/arch/x86/kernel/pci-nommu.c
+> @@ -102,6 +102,9 @@ nommu_alloc_coherent(struct device *hwdev, size_t size,
+>  	if (dma_mask == DMA_24BIT_MASK)
+>  		gfp |= GFP_DMA;
+>  again:
+> +	if (gfp & GFP_DMA)
+> +		gfp |= __GFP_NORETRY;
+> +
+
+Huh? Why that? The __GFP_NORETRY is a hint from the caller to the page
+allocator on how aggressive it should try to allocate memory. I don't
+think the DMA code should touch those flags unless there is a very very
+good reason for it.
+
+>  	page = alloc_pages_node(node, gfp, get_order(size));
+>  	if (!page)
+>  		return NULL;
 > -- 
 > 1.5.4.2
 > 
