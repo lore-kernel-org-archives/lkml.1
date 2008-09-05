@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbYIEJ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbYIEJdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752164AbYIEJ2w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYIEJ2m
+	id S1752234AbYIEJdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750738AbYIEJdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:28:42 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:36449 "EHLO pasmtpA.tele.dk"
+	Fri, 5 Sep 2008 05:33:47 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54459 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbYIEJ2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:28:42 -0400
-Date: Fri, 5 Sep 2008 11:28:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-Message-ID: <20080905092838.GS20055@kernel.dk>
-References: <20080821091514.8f56e2d5.randy.dunlap@oracle.com> <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net> <20080821172653.3e3e855c.randy.dunlap@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net> <1219420487.3339.22.camel@localhost.localdomain> <48AEEE0A.1010900@oracle.com> <1219424538.3339.51.camel@localhost.localdomain> <0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net> <48C013D9.7060309@oracle.com> <0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
+	id S1750705AbYIEJdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 05:33:46 -0400
+Date: Fri, 5 Sep 2008 11:33:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Don Zickus <dzickus@redhat.com>,
+       Prarit Bhargava <prarit@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       arozansk@redhat.com, Thomas.Mingarelli@hp.com, ak@linux.intel.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
+Message-ID: <20080905093303.GA28887@elte.hu>
+References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com> <20080904200032.GM18288@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
+In-Reply-To: <20080904200032.GM18288@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
-> > >>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
-> > >>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
-> > >>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
-> > >>>
-> > >>>
-> > >>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
-> > >>>
-> > /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
-> > >> OK ...that's confusing.  It seems to be saying that ctrlr_info_t *
-> > >> was NULL.  However, I can't see a way of getting into the
-> > fifo_full
-> > >> callback from do_cciss_intr ..
-> > >> especially not with an NULL host.
-> > >>
-> > >> James
-> > >
-> > > That is weird. Even if we could get there fifo_full doesn't
-> > do anything but wait for a bit.
-> >
-> > Hi,
-> >
-> > This just happened again.  This time it's on 2.6.27-rc5-git3.
-> >
-> > ~Randy
+
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> > Add "kdump" to the list. It will also be broken if we decide to let 
+> > one driver hijack the NMI handler.
 > 
-> Thanks Randy. I think. :)
-> 
-> I'll try to recreate in my lab.
+> kdump is a special case, similar to the NMI button panic mode. It 
+> should be always only active when the user configured it. When the 
+> user configured it should be always the fallback and override any 
+> other drivers.
 
-This looks somewhat strange, mostly like 'c' is NULL and it's oopsing in
-in removeQ (I don't think Randy's analysis is correct in assuming it's
-'h' and it's in fifo_full). Given that 'c' cannot be NULL, it's c->prev
-or c->next that are NULL.
+if by 'any other drivers' you mean all other notifiers then that's wrong 
+- kdump must still come after many other NMI sources.
 
--- 
-Jens Axboe
+Basically, the sane order is this:
 
+highest priority:
+ 
+  instruction patching callbacks. (kprobes, mmiotrace, kmemcheck) These 
+  are abstractions that are essential for the kernel to properly 
+  function/execute. We dont ever want them to be overriden.
+
+high priority:
+
+  CPU-generated profiling callbacks. (nmi-lapic watchdog, performance 
+  counter generated NMIs) These are 'good' NMI sources that can (well, 
+  'could') identify themselves, and they can also come in very 
+  frequently so we want to execute them early.
+
+mid priority:
+
+  optional/interactive debug facilities. (kdump, KGDB, trace dump, NMI 
+  button).
+  The user enables them optionally and wants them catch all non-expected 
+  or interactive NMI events.
+
+normal priority:
+
+  various platform drivers. Infrequent NMI sources. It's what we use to 
+  make unexpected events slightly more informative when the user does 
+  not configure any explicit debugging helper.
+
+lowest priority:
+
+  fallback legacy platform handlers - 61H reads, etc.
+
+All in one, the patch submitted here is wrong as a generic facility. One 
+valid aspect of the patch is that the port 61H reads (and other 
+architecture code chipset ops) should execute as a regular notifier and 
+with low priority.
+
+as it does not really solve anything in a structured way, it allows 
+platform drivers to install a super-high priority notifier, creating 
+needless duplication and confusion. The exact reasons for the changes 
+should be listed instead and proper (and separate) patches done for each 
+reason, along the suggestions in this thread - i believe all issues were 
+covered in one way or another.
+
+	Ingo
