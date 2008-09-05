@@ -1,135 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbYIEI6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbYIEI63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbYIEI6N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 04:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYIEI56
+	id S1755365AbYIEI63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 04:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYIEI6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 04:57:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39105 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbYIEI55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 04:57:57 -0400
-Date: Fri, 5 Sep 2008 10:57:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Don Zickus <dzickus@redhat.com>,
-       "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>,
-       Andi Kleen <andi@firstfloor.org>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arozansk@redhat.com" <arozansk@redhat.com>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080905085736.GD18485@elte.hu>
-References: <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com> <20080904200032.GM18288@one.firstfloor.org> <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net> <20080904205725.GC4349@redhat.com> <183C1D5A376DE343AA8F94FC2A1EC14938D3E748D1@GVW1091EXB.americas.hpqcorp.net> <20080904212134.GD4349@redhat.com> <20080904212453.GR3400@redhat.com> <20080904214628.GE4349@redhat.com>
+	Fri, 5 Sep 2008 04:58:00 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:63608 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbYIEI57 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 04:57:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=MA9BbVk1hcXWcLQgMEoit2Nxo6H/1gHzcSmG0u4aUJe38du4z1Bt8uCAOSZEfRlcBY
+         arC8Hi+qvZ9kUJl7a8yzv/X0g/ctXf72NxZ8fYGmrhT5a4w9zeXho3/JGbuUoM9UnCPm
+         N5P/kzKouqNisPnhMKPqTausDMkCcolkN3AzI=
+Message-ID: <38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
+Date: Fri, 5 Sep 2008 10:57:56 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: qestion about I2C_CLASS_HWMON flag
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       i2c@lm-sensors.org
+In-Reply-To: <20080904120855.7e7b9720@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080904214628.GE4349@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+	 <38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
+	 <20080904103707.557ac764@hyperion.delvare>
+	 <38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+	 <20080904120855.7e7b9720@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Good morning Jean,
 
-* Vivek Goyal <vgoyal@redhat.com> wrote:
+On Thu, Sep 4, 2008 at 12:08 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> In general they can, yes (where they can't, it's due to restrictions in
+> protocol implementations, not device types.) But this isn't a matter of
+> what devices can be on the bus. This is a matter of what devices can be
+> probed for on a given bus. For example, hardware monitoring drivers
+> which handle I2C devices, make sure that I2C_CLASS_HWMON is set before
+> probing I2C addresses on a given bus in search of a device to
+> auto-detect. On the other hand, if they are merely attaching to an I2C
+> device which has already been instantiated (and thus no probing is
+> needed) they do not care about the class. The reason for this mechanism
+> is that probing can be risky, so we want to limit it to what is
+> strictly needed. For example, there is no point in probing the I2C bus
+> of a TV adapter for hardware monitoring chips - there simply can't be
+> any there. If there ever was any, that would be such a special case
+> that we would instantiate the I2C device in question explicitly from
+> the adapter code, so we have no need for probing.
 
-> > Prarit's patch disabled the timer upon registering a callback to 
-> > prevent this case.  The thought was if you have your own handler you 
-> > could provide your own watchdog.
-> 
-> In theory, you could do the same while registering the handler on die 
-> chain?
-> 
-> I don't get the whole point. So we are looking for a system where no 
-> body else uses an NMI for any purpose and the moment NMI happens, this 
-> driver will go and panic() the system. I don't get, what do we achive 
-> by that?
-> 
-> Looks like you got some device in platform which raises an NMI and 
-> which indicates that something is wrong and log the message and do a 
-> panic(). But you don't have a way to find out if that device has 
-> raised the interrupt or something else has raised the NMI, hence you 
-> want to stop the watchdog timer and assume any NMI henceforth is from 
-> device?
-> 
-> So any functionality which is dependent on NMI, will not work as long 
-> as this driver is loaded.
+OK but which devices that can be connected to an I2C bus is platform specific,
+isn't it ? For example, an I2C adapter can be used in a TV and in that
+case there
+may be no point to probe for a HW mon chips but this same I2C adapter can be
+used by other platforms in a different context where there's a HW mon chip.
 
-exactly. The proposed patch brings the NMI notifier arms race to its 
-next level: it is in essence a "super high priority" notifier that wants 
-exclusivity. That is unnecessary: we already have sufficient 
-infrastructure in place to recognize the priority of notifiers, and die 
-notifiers make active use of it. (see the list below)
+So the flags probably are useful, but they're are hard coded in adapters...
 
-If the goal is to log relevant NMI events to NVRAM for later inspection 
-then the solution is to register a low-priority notifier which will 
-execute if no other notifier shows interest in an NMI event.
-
-If the goal is to reboot the system if there's a "bad" NMI, then the 
-solution is to register a low-priority notifier which will execute and 
-panic the system if no other notifier shows interest in that NMI event.
-
-This means all the 'good' NMI sources need to register at higher 
-priority and all the standard platform fallback notifiers need to 
-register at lowest priority. Debuggers go last. If any of the existing 
-notifiers in the kernel dont follow the rules and cause problems then we 
-can fix up those.
-
-Here's a list of all current die notifiers we use in the kernel:
-
-                                                                  prio
-                                                                  ----
-  # core kernel:
-
-  kernel/kprobes.c                   # instruction probing        +INT_MAX
-  kernel/trace/trace.c               # dump trace                 150
-
-  # arch/x86:
-
-  arch/x86/mm/kmmio.c                # mmiotrace, debug feature   0 
-  arch/x86/kernel/kgdb.c             # kgdb, kernel debugger      -INT_MAX
-  arch/x86/kernel/crash.c            # kdump                      0
-  arch/x86/oprofile/nmi_int.c        # oprofile                   0
-  arch/x86/oprofile/nmi_timer_int.c  # oprofile timer fallback    0
-
-  # drivers:
-
-  drivers/watchdog/hpwdt.c           # HP watchdog driver         +INT_MAX
-  drivers/char/ipmi/ipmi_watchdog.c  # IPMI watchdog              150
-  drivers/misc/sgi-xp/xpc_main.c     # SGI SN2                    0
-
-  # upcoming:
-  arch/x86/mm/kmemcheck/smp.c        # in tip/master              0
-                                     [ this should change to +INT_MAX ]
-
-One change we could do is to move arch/x86/kernel/crash.c's priority to 
--100. That would achieve the following effect: it would execute after 
-all known sources of NMIs, but before the lowest prio interactive 
-notifiers such as kgdb.
-
-That way a platform driver could insert at priority -50 and execute 
-after the known self-generated NMI sources, but before any of the debug 
-and crash-tool notifiers. And the constants should be made symbolic as 
-well, so that we encode the purpose of a notifier, not the 
-implementation - and can map the purpose to priority and shape the 
-ordering flexibly.
-
-furthermore, as i indicated it in my first reply, if the port 61H read 
-is causing problems on this platform (and i'd not be surprised if it did 
-so) we can turn it into a lowest-prio fallback notifier which only 
-executes if no known sources of NMIs show interest in an event.
-
-	Ingo
+Sorry if I'm still missing something.
+-- 
+Francis
