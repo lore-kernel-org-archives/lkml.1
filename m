@@ -1,106 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYIEJUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYIEJVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbYIEJUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYIEJUY
+	id S1756164AbYIEJVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbYIEJVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:20:24 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59107 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753927AbYIEJUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:20:23 -0400
-X-Authenticated: #704063
-X-Provags-ID: V01U2FsdGVkX1/yRqsnDr7ySsoaDIWpIb9rp1rTtEAl3dBZylFQP6
-	QCGWqel7Ok0/Qq
-Date: Fri, 5 Sep 2008 11:20:17 +0200
-From: Eric Sesterhenn <snakebyte@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bob Copeland <me@bobcopeland.com>, linux-kernel@vger.kernel.org
-Subject: Re: __getblk infinite loop
-Message-ID: <20080905092017.GA2712@alice>
-References: <20080905032411.GB13208@hash.localnet> <20080904223836.54fbabb1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080904223836.54fbabb1.akpm@linux-foundation.org>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snake-basket.de
-X-Operating-System: Linux/2.6.27-rc5-00099-gd26acd9 (x86_64)
-X-Uptime: 11:13:10 up 20 min,  1 user,  load average: 0.06, 0.28, 0.31
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
+	Fri, 5 Sep 2008 05:21:07 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:45552 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179AbYIEJVG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 05:21:06 -0400
+Date: Fri, 5 Sep 2008 11:20:56 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Francis Moreau" <francis.moro@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       i2c@lm-sensors.org
+Subject: Re: qestion about I2C_CLASS_HWMON flag
+Message-ID: <20080905112056.44b7b910@hyperion.delvare>
+In-Reply-To: <38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
+References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+	<38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
+	<20080904103707.557ac764@hyperion.delvare>
+	<38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+	<20080904120855.7e7b9720@hyperion.delvare>
+	<38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Thu, 4 Sep 2008 23:24:11 -0400 Bob Copeland <me@bobcopeland.com> wrote:
+On Fri, 5 Sep 2008 10:57:56 +0200, Francis Moreau wrote:
+> Good morning Jean,
 > 
-> > Hi all,
-> > 
-> > Eric Sesterhenn and I were puzzling over a lockup found by his fsfuzzer.
-> > 
-> > sb_bread() calls __getblk, which says:
-> > 
-> > /*
-> >  * __getblk will locate (and, if necessary, create) the buffer_head
-> >  * which corresponds to the passed block_device, block and size. The
-> >  * returned buffer has its reference count incremented.
-> >  *
-> >  * __getblk() cannot fail - it just keeps trying.  If you pass it an
-> >  * illegal block number, __getblk() will happily return a buffer_head
-> >  * which represents the non-existent block.  Very weird.
-> >  *
-> >  * __getblk() will lock up the machine if grow_dev_page's try_to_free_buffers()
-> >  * attempt is failing.  FIXME, perhaps?
-> >  */
-> > 
-> > In fact the following will cause an infinite loop when mounting omfs 
-> > loopback (on 32 bit x86 at least):
-> > 
-> > diff --git a/fs/omfs/inode.c b/fs/omfs/inode.c
-> > index a95fe59..80eacc8 100644
-> > --- a/fs/omfs/inode.c
-> > +++ b/fs/omfs/inode.c
-> > @@ -413,6 +413,15 @@ static int omfs_fill_super(struct super_block *sb, void *data, int silent)
-> >  	sector_t start;
-> >  	int ret = -EINVAL;
-> >  
-> > +	if (1) {
-> > +		sector_t foo = 0x1d4000004ULL;
-> > +
-> > +		sb_set_blocksize(sb, 2048);
-> > +		bh = sb_bread(sb, foo);
-> > +		brelse(bh);
-> > +		goto end;
-> > +	}
-> > +
-> >  	save_mount_options(sb, (char *) data);
-> >  
-> >  	sbi = kzalloc(sizeof(struct omfs_sb_info), GFP_KERNEL);
-> > 
-> > What's supposed to happen here?  I would have thought that sb_bread
-> > would realize foo was outside the block dev and bail out, but instead
-> > it just gets stuck.  Do I need to bounds-check anything passed to
-> > sb_bread?
+> On Thu, Sep 4, 2008 at 12:08 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > In general they can, yes (where they can't, it's due to restrictions in
+> > protocol implementations, not device types.) But this isn't a matter of
+> > what devices can be on the bus. This is a matter of what devices can be
+> > probed for on a given bus. For example, hardware monitoring drivers
+> > which handle I2C devices, make sure that I2C_CLASS_HWMON is set before
+> > probing I2C addresses on a given bus in search of a device to
+> > auto-detect. On the other hand, if they are merely attaching to an I2C
+> > device which has already been instantiated (and thus no probing is
+> > needed) they do not care about the class. The reason for this mechanism
+> > is that probing can be risky, so we want to limit it to what is
+> > strictly needed. For example, there is no point in probing the I2C bus
+> > of a TV adapter for hardware monitoring chips - there simply can't be
+> > any there. If there ever was any, that would be such a special case
+> > that we would instantiate the I2C device in question explicitly from
+> > the adapter code, so we have no need for probing.
 > 
-> That loop does lock up on people occasionally - last time was in isofs,
-> because it had done an insane set_blocksize() earlier on.
+> OK but which devices that can be connected to an I2C bus is platform specific,
+> isn't it ? For example, an I2C adapter can be used in a TV and in that
+> case there
+> may be no point to probe for a HW mon chips but this same I2C adapter can be
+> used by other platforms in a different context where there's a HW mon chip.
 > 
-> Yes, it's always a case of garbage in, garbage out (or nothing out, as
-> the case may be).
-> 
-> No, it's not particularly programmer-friendly behaviour.
+> So the flags probably are useful, but they're are hard coded in adapters...
 
-Wouldnt it make sense to limit the loop in __getblk_slow()?
+Nothing prevents you from setting the class flags based on
+platform-specific information if you have a need for that.
 
-Like only try five times and drop a warning?
-Yesterday I changed free_more_memory() to
-return the number of pages freed by try_to_free_pages() and abort
-if no pages where freed. But it seems it always frees exactly one
-page...
+That being said, in cases where you have that level of information
+about which devices are present on the I2C bus, you probably want to
+declare the I2C devices at the platform level, and not rely on probing
+at all (so .class is 0).
 
-Greetings, Eric
+-- 
+Jean Delvare
