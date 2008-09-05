@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbYIEOGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbYIEOHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737AbYIEOGm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbYIEOGb
+	id S1754516AbYIEOHd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYIEOHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:06:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58562 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754456AbYIEOG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:06:29 -0400
-Message-ID: <48C13CB6.4010506@redhat.com>
-Date: Fri, 05 Sep 2008 10:05:42 -0400
-From: Peter Jones <pjones@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 5 Sep 2008 10:07:22 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51696 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753427AbYIEOHV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 10:07:21 -0400
+Date: Fri, 5 Sep 2008 09:07:20 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] error missed ifndef CONFIG_HAVE_SPARSE_IRQ
+Message-ID: <20080905140720.GA9393@sgi.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] efifb/imacfb consolidation + hardware support
-References: <48C001EC.3040205@redhat.com> <20080904171006.3698819b.akpm@linux-foundation.org>
-In-Reply-To: <20080904171006.3698819b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-> 
-> uh-oh.
-> 
-> On Thu, 04 Sep 2008 11:42:36 -0400
-> Peter Jones <pjones@redhat.com> wrote:
-> 
->> Hi.  Below is a patch that removes imacfb entirely, merging its DMI
->> table into the (otherwise very similar) efifb driver.  This also adds
->> hardware support for many of the newer Intel Apple hardware.  This has
->> been fairly well tested; we've been shipping it in Fedora for some time.
->>
-> 
-> The patch was space-stuffed.  I fixed that.  Please see
-> Documentation/email-clients.txt to fix it.
+An error return from create_irq_nr() is 0, but an error return from
+create_irq() is -1.
 
-Thanks for the pointer.
+Signed-off-by: Dean Nelson <dcn@sgi.com>
 
-> Please send a Signed-off-by: for this change.
+---
 
-I'll assume that in this response is fine:
+ drivers/pci/htirq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Signed-off-by: Peter Jones <pjones@redhat.com>
-
-
--- 
-         Peter
+Index: linux/drivers/pci/htirq.c
+===================================================================
+--- linux.orig/drivers/pci/htirq.c	2008-09-05 08:04:21.000000000 -0500
++++ linux/drivers/pci/htirq.c	2008-09-05 08:07:45.000000000 -0500
+@@ -144,7 +144,7 @@ int __ht_create_irq(struct pci_dev *dev,
+ #else
+ 	irq = create_irq();
+ #endif
+-	if (irq == 0) {
++	if (irq <= 0) {
+ 		kfree(cfg);
+ 		return -EBUSY;
+ 	}
