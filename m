@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbYIEUDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYIEUFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753992AbYIEUDR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYIEUDG
+	id S1754121AbYIEUFI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIEUE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:03:06 -0400
-Received: from 1wt.eu ([62.212.114.60]:3203 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbYIEUDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:03:05 -0400
-Date: Fri, 5 Sep 2008 21:59:30 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>
-Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, ariveira@gmail.com, rdunlap@xenotime.net,
-       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de,
-       Nir Tzachar <nir@tzachar.com>
-Subject: Re: [PATCH] ncurses based config V2
-Message-ID: <20080905195930.GA27913@1wt.eu>
-References: <1220469076-16487-1-git-send-email-nir@tzachar.com> <1220603220-17090-1-git-send-email-nir@tzachar.com>
-Mime-Version: 1.0
+	Fri, 5 Sep 2008 16:04:56 -0400
+Received: from quackingmoose.com ([63.73.180.143]:40142 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751270AbYIEUE4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 16:04:56 -0400
+Date: Fri, 5 Sep 2008 13:04:55 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080905200455.GH22796@merfinllc.com>
+References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220603220-17090-1-git-send-email-nir@tzachar.com>
+In-Reply-To: <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi,
 
-On Fri, Sep 05, 2008 at 11:27:00AM +0300, Nir Tzachar wrote:
-> Changes:
-> 1) Fixed segfaults in help window.
-> 2) Removed the instructions window, made the instructions appear as a button
->    which displays a popup window.
-> 3) Added hot keys support. As ncurses does not support several colors inside
->    a menu, keys are highlighted using "()".
-> 4) Optimized for 80x24 terminals.
-> 6) Fixed zconf.y to use _menu_init
-> 7) added nconfig to "make help"
-> 8) Misc fixes.
+On Sep 05 03:56 PM, Chuck Lever wrote:
+> [ replacing cc: nfs@sf.net with linux-nfs@vger.kernel.org, and neil's  
+> old address with his current one ]
+
+Sorry I probably grabbed an old MAINTAINERS file.
+
+> On Sep 5, 2008, at Sep 5, 2008, 3:19 PM, Aaron Straus wrote:
+> > Writer_Version     Outcome:
+> > <= 2.6.19          OK
+> > >= 2.6.20	    BAD
 > 
-> Comments are appreciated.
+> Up to which kernel?  Recent ones may address this issue already.
 
-OK, I've just tried it. Here are the first comments I can make :
+BAD up to 2.6.27-rc? 
 
-  - colors are too dark. Cyan on black is barely readable, red on black is
-    almost unreadable and blue on black is not readable at all, I have to
-    switch off the light to read it. Most often you'll see light shades of
-    grey (even white) in interfaces because it's hard to see dark shades,
-    and bright flashy letters would dazzle and be seen as fuzzy. Many colors
-    are perfectly readable on while or even light grey (except yellow and
-    sometimes cyan). Blue backgrounds were often used under DOS and were
-    OK with almost all colors except red (well-known eye focus problem).
-    But there was a trick, pixels were very large in 640x200, nowaydays
-    we have small pixels and letters are not much readable anymore on blue
-    backgrounds. For your tests, you can try to load 
-    xterm -bg <color> -fg <color> and ensure that you're using a medium
-    font (tickness of 1-pixel).
+I have to see exactly which is the last rc version I tested.
 
-  - pressing arrows too fast regularly escapes (probably because of the
-    ESC prefix, I don't know). This is rather strange, because no other
-    application does this to me. Is there a specific initialization
-    sequence with ncurses to state that arrows should return special codes
-    instead of the ESC prefix ? (I have no idea)
+> > I can try to bisect between 2.6.19 <-> 2.6.20.
+> 
+> That's a good start.
 
-  - entering text in boxes (eg: local version) does not move the cursor,
-    it remains at the beginning of the line. If I press any arrow, the
-    box immediately closes (most likely the Esc prefix again).
+OK will try to bisect.
 
-  - in the input boxes, spaces are missing aroung the title, which touches
-    the frame (eg: Local version again).
+> Comparing a wire trace with strace output, starting with the writing  
+> client, might also be illuminating.  We prefer wireshark as it uses  
+> good default trace settings, parses the wire bytes and displays them  
+> coherently, and allows you to sort the frames in various useful ways.
 
-  - in "instructions", it's not explained how to leave that box. I found
-    both Enter and Esc to work, but a last line with a small message would
-    be better.
+OK.  Could you also try to reproduce on your side using those python
+programs?  I want to make sure it's not something specific with our
+mounts, etc.
 
-  - I noticed I was tempted a lot to press "?" to get help, but the key is
-    not bound. It would be nice to have it bound to Help since make oldconfig
-    and menuconfig to both report help that way.
+Thanks!
+					=a=
 
-  - I'm not convinced that the parenthesis around hotkeys make the menu
-    that much readable, especially when there are lots of short words or
-    even acronyms. Eg :
-        [ ]   (U)TS namespace
-        [ ]   (I)PC namespace
-        [ ]   (U)ser namespace (EXPERIMENTAL)
-        [ ]   (P)ID Namespaces (EXPERIMENTAL)
 
-    I don't know if there is something such as a bold attribute in ncurses,
-    it would make sense to use it IMHO because you don't force a color on
-    people's terms, you rely on the style which works well for them.
-
-I'm sorry I don't go further for now, the arrows causing frequent exits is
-too bothersome, I've started it about 30 times just for this report, it's
-too hard to navigate. I hope that the points above are already helpful.
-
-Regards,
-Willy
-
+-- 
+===================
+Aaron Straus
+aaron@merfinllc.com
