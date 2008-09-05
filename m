@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYIEPP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYIEPRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbYIEPP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 11:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753784AbYIEPPP
+	id S1754809AbYIEPRV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 11:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbYIEPRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 11:15:15 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:33100 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753571AbYIEPPO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 11:15:14 -0400
-Subject: Re: [PATCH 0/6] detect online disk resize
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Pasi =?ISO-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
-       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
-       jmoyer@redhat.com
-In-Reply-To: <20080905082110.GN13941@edu.joroinen.fi>
-References: <20080904202714.10456.88061.stgit@bob.kio>
-	 <20080905082110.GN13941@edu.joroinen.fi>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 05 Sep 2008 09:15:10 -0600
-Message-Id: <1220627710.7790.17.camel@grinch>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 5 Sep 2008 11:17:13 -0400
+Received: from [195.171.2.24] ([195.171.2.24]:51243 "EHLO fogou.chygwyn.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753233AbYIEPRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 11:17:11 -0400
+X-Greylist: delayed 3627 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Sep 2008 11:17:11 EDT
+Date: Fri, 5 Sep 2008 15:13:52 +0100
+From: steve@chygwyn.com
+To: Julien Brunel <brunel@diku.dk>
+Cc: swhiteho@redhat.com, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] fs/gfs2: Use an IS_ERR test rather than a NULL test
+Message-ID: <20080905141352.GA20654@fogou.chygwyn.com>
+References: <200809011051.22862.brunel@diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809011051.22862.brunel@diku.dk>
+Organization: ChyGwyn Limited
+X-Registered-Office: Digital Technium, Singleton Park, Swansea. SA2 8PP
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-05 at 11:21 +0300, Pasi Kärkkäinen wrote:
-> > 1. For SCSI devices do:
-> > 
-> >   # echo 1 > /sys/class/scsi_device/<device>/device/rescan
-> > 
-> >   or
-> > 
-> >   # blockdev --rereadpt <device file>
-> > 
-> > 2. Other devices (not device mapper)
-> > 
-> >   # blockdev --rereadpt <device file>
-> > 
-> > I have tested this patch on SCSI and SmartArray (cciss)
-> > devices. Device mapper still does not recognize device size changes
-> > until the device is restarted.
-> > 
+Hi,
+
+Sorry for taking so long about this. Its now in the -nmw git tree.
+Thanks,
+
+Steve.
+
+On Mon, Sep 01, 2008 at 10:51:22AM +0200, Julien Brunel wrote:
+> From: Julien Brunel <brunel@diku.dk>
 > 
-> Hello and thanks for the patch! 
+> In case of error, the function gfs2_inode_lookup returns an
+> ERR pointer, but never returns a NULL pointer. So a NULL test that
+> necessarily comes after an IS_ERR test should be deleted, and a NULL
+> test that may come after a call to this function should be
+> strengthened by an IS_ERR test.
 > 
-> How about device mapper.. what's needed to make it detect/support online resizes?
-> I'm specificly interested in online resizing (growing) dm-multipath devices.. 
+> The semantic match that finds this problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
-
-Yes, it would be nice if this patchset worked here too. It currently
-does not. 
-
-> Basicly I'd like to have LVM PV on dm-multipath device.. so first I need to
-> get the actual disks resized, then dm-multipath device, and finally run pvresize.
+> // <smpl>
+> @match_bad_null_test@
+> expression x, E;
+> statement S1,S2;
+> @@
+> x = gfs2_inode_lookup(...)
+> ... when != x = E
+> * if (x != NULL) 
+> S1 else S2
+> // </smpl>
 > 
-
-I did some testing with multipath here.  I could get it working by
-shutting down the devices, resizing all the underlying paths using the
-above methods, restarting the devices, then running pvresize. This
-method does not help much given that most users cannot realistically
-shutdown a device. This patch series works fine with standard LVM/dm,
-i.e., resize using one of the above methods, then run pvresize.
-
-I was planning on looking into dm-multipath in the near future.  Mike
-Anderson has done some work in this area in the past.
-
-> I know dm-multipath part can be done atm using this (hacky) method:
-> https://www.redhat.com/archives/dm-devel/2008-August/msg00033.html
+> Signed-off-by:  Julien Brunel <brunel@diku.dk>
+> Signed-off-by:  Julia Lawall <julia@diku.dk>
 > 
-
-This is indeed ugly.  It looks like they are pulling the paths out of
-the device, resizing them, and then adding them back in.
-
-> -- Pasi
-
-
+> ---
+>  fs/gfs2/inode.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff -u -p a/fs/gfs2/inode.c b/fs/gfs2/inode.c
+> --- a/fs/gfs2/inode.c
+> +++ b/fs/gfs2/inode.c
+> @@ -1033,13 +1033,11 @@ struct inode *gfs2_createi(struct gfs2_h
+>  
+>  	if (bh)
+>  		brelse(bh);
+> -	if (!inode)
+> -		return ERR_PTR(-ENOMEM);
+>  	return inode;
+>  
+>  fail_gunlock2:
+>  	gfs2_glock_dq_uninit(ghs + 1);
+> -	if (inode)
+> +	if (inode && !IS_ERR(inode))
+>  		iput(inode);
+>  fail_gunlock:
+>  	gfs2_glock_dq(ghs);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
