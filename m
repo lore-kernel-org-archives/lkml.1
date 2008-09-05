@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYIEJQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYIEJS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755389AbYIEJQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIEJQS
+	id S1755389AbYIEJS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYIEJSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:16:18 -0400
-Received: from ocean.emcraft.com ([213.221.7.182]:50734 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751825AbYIEJQR (ORCPT
+	Fri, 5 Sep 2008 05:18:46 -0400
+Received: from outbound-mail-39.bluehost.com ([69.89.20.193]:55982 "HELO
+	outbound-mail-39.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752125AbYIEJSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:16:17 -0400
-Message-ID: <48C0F8BE.7060108@emcraft.com>
-Date: Fri, 05 Sep 2008 13:15:42 +0400
-From: Ilya Yanok <yanok@emcraft.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Fri, 5 Sep 2008 05:18:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=TdSz9zRffbxJnU43U/8iBAP1bdaSe2hd1GFz6Jt7uKOTGHzZoMF9f0pSnAsKnJb3+56PSte3hl6ojdX+T0VKHXRet/vMkm/1Ap5ohg/lnB2z4R6n/vRPvTUUZ1t3QyZX;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch 1/5] x2apic: fix reserved APIC register accesses in print_local_APIC()
+Date: Fri, 5 Sep 2008 02:18:25 -0700
+User-Agent: KMail/1.9.9
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+References: <20080904000237.746216000@linux-os.sc.intel.com> <20080904175139.GN14481@linux-os.sc.intel.com> <20080905081042.GD12409@elte.hu>
+In-Reply-To: <20080905081042.GD12409@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, wd@denx.de,
-       yur@emcraft.com, Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [PATCH] ASYNC_TX: fix the bug in async_tx_run_dependencies
-References: <1220478231-8725-1-git-send-email-yanok@emcraft.com> <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
-In-Reply-To: <20080904141945.f5c4c3eb.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: Spam detection software, running on the system "ocean.emcraft.com", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  Andrew Morton wrote: >> From: Yuri Tikhonov
-	<yur@emcraft.com> >> >> Should clear the next pointer of the TX if we
-	are sure that the >> next TX (say NXT) will be submitted to the channel
-	too. Overwise, >> we break the chain of descriptors, because we lose the
-	information >> about the next descriptor to run. So next time, when
-	invoke >> async_tx_run_dependencies() with TX, it's TX->next will be
-	NULL, and >> NXT will be never submitted. >> >> Signed-off-by: Yuri
-	Tikhonov <yur@emcraft.com> >> Signed-off-by: Ilya Yanok
-	<yanok@emcraft.com> [...] 
-	Content analysis details:   (-4.4 points, 2.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 AWL                    AWL: From: address is in the auto white-list
+Content-Disposition: inline
+Message-Id: <200809050218.25504.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 212.183.134.129 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> From: Yuri Tikhonov <yur@emcraft.com>
->>
->> Should clear the next pointer of the TX if we are sure that the
->> next TX (say NXT) will be submitted to the channel too. Overwise,
->> we break the chain of descriptors, because we lose the information
->> about the next descriptor to run. So next time, when invoke
->> async_tx_run_dependencies() with TX, it's TX->next will be NULL, and
->> NXT will be never submitted.
->>
->> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
->>     
-Signed-off-by: Ilya Yanok <yanok@emcraft.com>
+On Friday, September 05, 2008 1:10 am Ingo Molnar wrote:
+> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> > On Thu, Sep 04, 2008 at 04:06:31AM -0700, Ingo Molnar wrote:
+> > > applied the following patches tip/irq/sparseirq:
+> >
+> > Ingo, Shouldn't this go to tip/x86/x2apic ? Thanks.
+>
+> normally yes - but this is a special case: there's existing overlap with
+> other DMAR changes in irq/sparseirq (intr-remap and ioapic unification
+> changes), so these followups have to go there too. Also, since they
+> change the generic PCI code it's better they live in a generic topic to
+> begin with. The full stack of pending changes is:
+>
+> 0f48966: dmar: fix dmar_parse_dev() devices_cnt error condition check
+> 2283240: dmar: use list_for_each_entry_safe() in dmar_dev_scope_init()
+> 3f1fdb3: dmar: initialize the return value in dmar_parse_dev()
+> f12c73e: dmar: fix using early fixmap mapping for DMAR table parsing
+> 1cb1158: x64, x2apic/intr-remap: disable DMA-remapping if
+> Interrupt-remapping is detected (temporary quirk) 2ae2101: x64,
+> x2apic/intr-remap: Interrupt remapping infrastructure fe962e9: x64,
+> x2apic/intr-remap: Queued invalidation infrastructure (part of VT-d)
+> ad3ad3f: x64, x2apic/intr-remap: parse ioapic scope under vt-d structures
+> 2d6b5f8: x64, x2apic/intr-remap: Fix the need for RMRR in the DMA-remapping
+> detection aaa9d1d: x64, x2apic/intr-remap: use CONFIG_DMAR for
+> DMA-remapping specific code 1886e8a: x64, x2apic/intr-remap: code
+> re-structuring, to be used by both DMA and Interrupt remapping c42d9f3:
+> x64, x2apic/intr-remap: fix the need for sequential array allocation of
+> iommus e61d98d: x64, x2apic/intr-remap: Intel vt-d, IOMMU code
+> reorganization
+>
+> Jesse, do you have any objections to this approach?
 
-> This patch should include your signed-off-by: as well.  Because you
-> were on the delivery path, as described in
-> Documentation/SubmittingPatches, section 12.  
->   
+Nope, no problems.  I think I have some pending patches that may have 
+conflicts with the above, but I'll take care of that when I get back to the 
+US (I think Sunday or Monday will be a massive patch review/merge/comment 
+day).
 
-Excuse me for being inattentive.
-
-Regards, Ilya.
-
+Thanks,
+Jesse
