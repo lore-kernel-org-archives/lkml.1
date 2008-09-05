@@ -1,35 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYIEGqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYIEG5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbYIEGqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 02:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYIEGqY
+	id S1753547AbYIEG5B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 02:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751051AbYIEG4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 02:46:24 -0400
-Received: from mx2.suse.de ([195.135.220.15]:57035 "EHLO mx2.suse.de"
+	Fri, 5 Sep 2008 02:56:54 -0400
+Received: from ns.suse.de ([195.135.220.2]:55848 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbYIEGqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 02:46:23 -0400
-Date: Fri, 05 Sep 2008 08:46:18 +0200
-Message-ID: <s5htzcvt7id.wl%tiwai@suse.de>
+	id S1750986AbYIEG4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 02:56:53 -0400
+Date: Fri, 05 Sep 2008 08:56:52 +0200
+Message-ID: <s5hr67zt70r.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Dmitry Torokhov <dtor@insightbb.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
-       linux-next@vger.kernel.org
-Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
-In-Reply-To: <alpine.LFD.1.10.0809050104560.23787@xanadu.home>
-References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
-	<200612092150.02940.dtor@insightbb.com>
-	<20061209185737.1768315d.randy.dunlap@oracle.com>
-	<200612092205.19358.dtor@insightbb.com>
-	<Pine.LNX.4.64.0612092212410.2630@xanadu.home>
-	<20061209210945.5abe2d89.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0612102244140.2630@xanadu.home>
-	<20080904195744.f367cd2d.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0809050028590.23787@xanadu.home>
-	<20080904214444.0dccf859.randy.dunlap@oracle.com>
-	<alpine.LFD.1.10.0809050104560.23787@xanadu.home>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: warning on device removal
+In-Reply-To: <200809041436.49083.oliver@neukum.org>
+References: <20080904122022.GA550@doriath.ww600.siemens.net>
+	<200809041436.49083.oliver@neukum.org>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -39,82 +28,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 05 Sep 2008 01:09:48 -0400 (EDT),
-Nicolas Pitre wrote:
+At Thu, 4 Sep 2008 14:36:48 +0200,
+Oliver Neukum wrote:
 > 
-> On Thu, 4 Sep 2008, Randy Dunlap wrote:
-> 
-> > On Fri, 05 Sep 2008 00:37:17 -0400 (EDT) Nicolas Pitre wrote:
+> Am Donnerstag 04 September 2008 14:20:22 schrieb Dmitry Baryshkov:
+> > Hi,
 > > 
-> > > On Thu, 4 Sep 2008, Randy Dunlap wrote:
-> > > 
-> > > > On Sun, 10 Dec 2006 22:55:25 -0500 (EST) Nicolas Pitre wrote:
-> > > > 
-> > > > > On Sat, 9 Dec 2006, Randy Dunlap wrote:
-> > > > > 
-> > > > > > On Sat, 09 Dec 2006 22:17:55 -0500 (EST) Nicolas Pitre wrote:
-> > > > > > 
-> > > > > > > Please consider what SND_CONFIG_AC97_BUS corresponds to.  It is 
-> > > > > > > sound/pci/ac97/ac97_bus.c and if you look into this file you'll see that 
-> > > > > > > it is perfectly buildable even if sound is entirely configured out, just 
-> > > > > > > like some lib code would be.
-> > > > > > 
-> > > > > > OK.  Should it (CONFIG_SND_AC97_BUS -> sound/pci/ac97/ac97_bus.c)
-> > > > > > be buildable when sound is disabled?
-> > > > > 
-> > > > > Yes.
-> > > > > 
-> > > > > > If so, where should it be moved to (since afaik, make won't even
-> > > > > > descend into sound/ if SOUND=n; I don't see that changing
-> > > > > > any time soon).
-> > > > > 
-> > > > > What about this patch?
-> > > > 
-> > > > Can we get this patch or some patch into the input tree for linux-next?
-> > > 
-> > > This patch is commit e1036502e5263851259d147771226161e5ccc85a and 
-> > > appeared in mainline almost 2 years ago.
+> > I've got the following trace on one of my arm boards when removing
+> > the usb masstorage device:
 > > 
-> > Ack.  Sorry about that.  Wrong ucb thread.
-> > 
-> > ucb1400_core still has build errors in linux-next
-> > since it uses ac97_bus_type even when CONFIG_SOUND=n.
+> > ------------[ cut here ]------------
+> > WARNING: at /home/lumag/tosa-tree/arch/arm/mm/consistent.c:368 dma_free_coherent+0x34/0x248()
+> > Modules linked in:
+> > [<c0028fe4>] (dump_stack+0x0/0x14) from [<c003c810>] (warn_on_slowpath+0x4c/0x84)
+> > [<c003c7c4>] (warn_on_slowpath+0x0/0x84) from [<c0029e54>] (dma_free_coherent+0x34/0x248)
 > 
-> Both sound (AC97) and UCB1400 should be able to select CONFIG_AC97_BUS 
-> independently from each other.
-> 
-> And in linux/sound/Makefile one can find this note:
-> 
-> 	# This one must be compilable even if sound is configured out
-> 	obj-$(CONFIG_AC97_BUS) += ac97_bus.o
-> 
-> This was fixed 2 years ago.  Who broke it this time?
+> Looks like a principal problem we have with that architecture.
+> Is arm incapable of supporting buffer freeing in hard irq context
+> or do we use the wrong API?
 
-Oh, it must be me.
+According to DMA-API.txt, dma_free_coherent() must be called with IRQ
+enabled:
 
-Could you check the patch below?
+> void
+> dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
+>			   dma_addr_t dma_handle)
+...
+> Note that unlike their sibling allocation calls, these routines
+> may only be called with IRQs enabled.
 
-
-thanks,
 
 Takashi
-
-diff --git a/sound/Kconfig b/sound/Kconfig
-index a37bee0..164a53a 100644
---- a/sound/Kconfig
-+++ b/sound/Kconfig
-@@ -91,6 +91,9 @@ endif # SOUND_PRIME
- 
- endif # !M68K
- 
-+endif # SOUND
-+
-+# AC97_BUS is used from both sound and ucb1400
- config AC97_BUS
- 	tristate
- 	help
-@@ -99,4 +102,3 @@ config AC97_BUS
- 	  sound although they're sharing the AC97 bus. Concerned drivers
- 	  should "select" this.
- 
--endif # SOUND
