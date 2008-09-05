@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbYIEVE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYIEVEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbYIEVE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 17:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbYIEVD6
+	id S1754766AbYIEVEA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 17:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYIEVDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 17:03:58 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:33777 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754671AbYIEVD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 17:03:56 -0400
-Subject: Re: [PATCH] mmc_block: use generic helper to print capacities
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20080905225209.29aace1b@mjolnir.drzeus.cx>
-References: <48B9546B.4010004@simon.arlott.org.uk>
-	 <1220117091.3615.3.camel@localhost.localdomain>
-	 <20080830174516.GD1239@parisc-linux.org>
-	 <48B9B552.8060406@simon.arlott.org.uk>
-	 <48B9B588.7060709@simon.arlott.org.uk>
-	 <1220147947.3615.18.camel@localhost.localdomain>
-	 <20080831025412.GJ1239@parisc-linux.org>
-	 <1220195310.4021.4.camel@localhost.localdomain>
-	 <1220195634.4021.9.camel@localhost.localdomain>
-	 <20080831205448.5b23507d@mjolnir.drzeus.cx>
-	 <1220645340.3331.55.camel@localhost.localdomain>
-	 <20080905225209.29aace1b@mjolnir.drzeus.cx>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 16:03:54 -0500
-Message-Id: <1220648634.3331.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Sep 2008 17:03:41 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:65038 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752477AbYIEVDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 17:03:39 -0400
+Date: Fri, 5 Sep 2008 22:02:22 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [patch 1/2] x2apic: fix reserved APIC register accesses in
+ print_local_APIC()
+In-Reply-To: <20080905160414.GL10292@elte.hu>
+Message-ID: <Pine.LNX.4.55.0809052151430.7062@cliff.in.clinika.pl>
+References: <20080902234759.554038000@linux-os.sc.intel.com>
+ <Pine.LNX.4.55.0809030625520.23174@cliff.in.clinika.pl>
+ <20080903184552.GE14481@linux-os.sc.intel.com>
+ <Pine.LNX.4.55.0809032145020.23174@cliff.in.clinika.pl> <20080905160414.GL10292@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-05 at 22:52 +0200, Pierre Ossman wrote:
-> On Fri, 05 Sep 2008 15:09:00 -0500
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
-> > On Sun, 2008-08-31 at 20:54 +0200, Pierre Ossman wrote:
-> > > From: Pierre Ossman <drzeus@drzeus.cx>
-> > > 
-> > > Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
-> > 
-> > Did you want me to take this?
-> 
-> That was the idea since it needed your helper.
-> 
-> > It seems to depend on pieces of your mmc
-> > tree, so I'd have to carry it in my post-merge tree.
-> > 
-> 
-> Oh? There shouldn't be any changes around those chunks. What kind of
-> problems are you seeing?
+On Fri, 5 Sep 2008, Ingo Molnar wrote:
 
-Oh ... your inline attached patch is actually whitespace broken (it has
-spaces for tabs), which is why it doesn't apply.  Sorry, that's the
-first thing I usually check, I just skipped it in your case.  Could you
-resend it as an attachment?
+> hm, is the remote read debug output, now that it's not present in CPUs 
+> made in the past 5 years or so, really that important?
 
-Thanks,
+ Maybe, maybe not, but if included it should be done correctly or
+otherwise anotated why done differently.  Otherwise people may get
+confused and propagate incorrect information as not everybody is inclined
+to chase and cross-refer the relevant piece of documentation for each and
+every bit of code fiddling with hardware.  In fact the requirement to do
+so reduces trust in code it applies to and makes long-term maintenance a
+nightmare.
 
-James
+ This observation applies universally of course.  I tend to look at code
+without referring to documentation too as most often than not this is much
+more effective time-wise.
 
-
+  Maciej
