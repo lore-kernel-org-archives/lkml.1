@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYIEMmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbYIEMok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYIEMmn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 08:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYIEMmf
+	id S1753463AbYIEMok (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 08:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYIEMod
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 08:42:35 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:6649 "EHLO
-	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739AbYIEMme (ORCPT
+	Fri, 5 Sep 2008 08:44:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:27107 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbYIEMoc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 08:42:34 -0400
-X-BigFish: VPS-37(z518kz1432R98dR1805M179dR936fQ3117K19c2kzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K6Q3AM-01-944-01
-Date: Fri, 5 Sep 2008 14:42:03 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert commit e8aa4667baf74dfd85fbaab86861465acb811085
-Message-ID: <20080905124203.GD6743@alberich.amd.com>
-References: <20080904144657.GC15987@alberich.amd.com> <20080904153206.GB7120@elte.hu> <alpine.LFD.1.10.0809041812450.3243@apollo.tec.linutronix.de>
+	Fri, 5 Sep 2008 08:44:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TqlN9STeYUcfS8dOq3FCDPxUrdBenRQHiUqstthcBww7dFkXQ6ccuE5IeZHNHGGUrP
+         a93jTymIM0Xi9SUhUyOfWp8xSc1jH3n3PyfYLxLZPSb387cCpiGTiAXLQOe74vD6OGYG
+         3qVW8fw/18AcvuMKN3VpNcXs1EiwqGTEbWPg8=
+Message-ID: <38b2ab8a0809050544l1914530clec53494e12c77ff5@mail.gmail.com>
+Date: Fri, 5 Sep 2008 14:44:30 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: qestion about I2C_CLASS_HWMON flag
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       i2c@lm-sensors.org
+In-Reply-To: <20080905112056.44b7b910@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809041812450.3243@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 05 Sep 2008 12:42:10.0951 (UTC) FILETIME=[D0AE1970:01C90F54]
+References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+	 <38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
+	 <20080904103707.557ac764@hyperion.delvare>
+	 <38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+	 <20080904120855.7e7b9720@hyperion.delvare>
+	 <38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
+	 <20080905112056.44b7b910@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 06:14:38PM +0200, Thomas Gleixner wrote:
-> On Thu, 4 Sep 2008, Ingo Molnar wrote:
-> 
-> > 
-> > * Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
-> > 
-> > > This reverts commit e8aa4667baf74dfd85fbaab86861465acb811085
-> > >  (x86: enable hpet=force for AMD SB400)
-> > > 
-> > > Since ATI/AMD decided not to support HPET on SB4xx it doesn't
-> > > make sense to enable this unsupported feature.
-> > > (I was not aware of this when submitting the quirk.)
-> > > 
-> > > If a system with SB4xx chipset provides an ACPI HPET table and does
-> > > not boot, "nohpet" should be used as kernel parameter.
-> > > 
-> > > Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-> > 
-> > applied to tip/x86/urgent, thanks Andreas. I guess a system broke due to 
-> > this commit?
-> 
-> Hmm, why do we remove something which needs to be force enabled by the
-> user anyway ?  
+On Fri, Sep 5, 2008 at 11:20 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> On Fri, 5 Sep 2008 10:57:56 +0200, Francis Moreau wrote:
+ags probably are useful, but they're are hard coded in adapters...
+>
+> Nothing prevents you from setting the class flags based on
+> platform-specific information if you have a need for that.
+>
 
-> Is the HPET on these systems not working at all so the force enable
-> code is useless ?
+Just to be sure, do you mean by hacking the adapter source code ?
 
-The current quirk is incomplete. Some more chipset fiddling has to be
-done to enable HPET interrupts. I have a patch that would do this.
-And from my tests it seems to work faultlessly.
+> That being said, in cases where you have that level of information
+> about which devices are present on the I2C bus,
 
-But the official statement is that HPET is not supported on SB4XX.
+Isn't the case for most of all embedded platforms ?
 
-Thus there are 2 alternatives:
-(1) Remove the current (incomplete) quirk.
-(2) Extent the quirk.
-    But whoever forces HPET would use it on his own risk.
+> you probably want to
+> declare the I2C devices at the platform level, and not rely on probing
+> at all (so .class is 0).
 
-I decided to do (1) because it's safest.
-Other opinions?
+do you mean by using I2C_BOARD_INFO ?
 
-
-Regards,
-
-Andreas
-
-
+Thanks
+-- 
+Francis
