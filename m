@@ -1,71 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbYIESDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYIESFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753610AbYIESDv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 14:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbYIESDm
+	id S1754233AbYIESFR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 14:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYIESE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 14:03:42 -0400
-Received: from h155.mvista.com ([63.81.120.155]:61907 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751345AbYIESDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 14:03:41 -0400
-Message-ID: <48C1749E.6050002@ru.mvista.com>
-Date: Fri, 05 Sep 2008 22:04:14 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Masoud Sharbiani <masouds@google.com>
-Cc: bzolnier@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix pointer arithmetic in hpt3xx driver code
-References: <20080905174834.GD26371@google.com>
-In-Reply-To: <20080905174834.GD26371@google.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Sep 2008 14:04:58 -0400
+Received: from systemlinux.org ([83.151.29.59]:45680 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751234AbYIESE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 14:04:57 -0400
+Date: Fri, 5 Sep 2008 19:55:36 +0200
+From: Andre Noll <maan@systemlinux.org>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
+       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
+       jmoyer@redhat.com
+Subject: Re: [PATCH 2/6] Adjust block device size after an online resize of a disk.
+Message-ID: <20080905175536.GD3795@skl-net.de>
+References: <20080904202714.10456.88061.stgit@bob.kio> <20080904202725.10456.62289.stgit@bob.kio> <20080905131244.GC3795@skl-net.de> <1220628997.7790.30.camel@grinch>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="W5WqUoFLvi1M7tJE"
+Content-Disposition: inline
+In-Reply-To: <1220628997.7790.30.camel@grinch>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masoud Sharbiani wrote:
 
-> Hi there,
-> git commit 74811f355f4f69a187fa74892dcf2a684b84ce99 causes crash at
-> module load (or boot) time on my machine with a hpt374 controller.
-> Sergei says this is due to the pointer arithmatic. This patch fixes that
-> and makes my machine boot again.
+--W5WqUoFLvi1M7tJE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Signed-Off-By: Masoud Sharbiani <masouds@google.com>
+On 09:36, Andrew Patterson wrote:
+> On Fri, 2008-09-05 at 15:12 +0200, Andre Noll wrote:
+> > On 14:27, Andrew Patterson wrote:
+> > >  int revalidate_disk(struct gendisk *disk)
+> > >  {
+> > > +	struct block_device *bdev;
+> > >  	int ret =3D 0;
+> > > =20
+> > >  	if (disk->fops->revalidate_disk)
+> > >  		ret =3D disk->fops->revalidate_disk(disk);
+> >=20
+> > Maybe we should return early at this point if revalidate_disk()
+> > failed or fops->revalidate_disk is NULL.
+>=20
+> We won't run check_disk_size_change() if we return early here. So the
+> question is would anyone ever make this call if they didn't have a
+> revalidate_disk routine?
 
-> diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
-> index eb107ee..f41f3fd 100644
-> --- a/drivers/ide/pci/hpt366.c
-> +++ b/drivers/ide/pci/hpt366.c
-> @@ -613,6 +613,14 @@ static int check_in_drive_list(ide_drive_t *drive, const char **list)
->  	return 0;
->  }
+I'd say no. In case someone ever does, it seems natural to do nothing
+and return early.
 
-> +static struct hpt_info *hpt3xx_get_info(void *host_priv, struct device *hwif_dev, struct device *host_dev)
+> > > +	bdev =3D bdget_disk(disk, 0);
+> > > +	if (!bdev)
+> > > +		return ret;
+> >=20
+> > We might return success here even if bdev is NULL. OTOH, as the callers
+> > of revalidate_disk() do not check the return value anyway (although at
+> > least tapeblock_revalidate_disk() might return a negative value) it's
+> > probably also an option to change the return type of revalidate_disk()
+> > to void.
+> >=20
+>=20
+> The revalidate_disk() wrapper tries to maintain compatibility with the
+> current interface. It might make sense to change it given no one
+> actually really seems to use the return value. I guess I am very wary
+> about effectively changing the interface of the lower-level
+> revalidate_disk() routines, at least in this particular patchset.
 
-    Ugh, that's oversimplified and doesn't save much...
-    I rather meant the following prototype:
+Agreed, that should be done later in a different patchset. It just
+looked a bit odd to introduce a new function returning int with none
+of its callers actually caring about the return value.
 
-static struct hpt_info *hpt3xx_get_info(struct pci_dev *dev)
+Thanks
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
-In case it'll be too complex for you, I'll do it myself later.
+--W5WqUoFLvi1M7tJE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> +{
-> +	struct hpt_info *info = (struct hpt_info *)host_priv;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-    Newline needed after the declaration block.
+iD8DBQFIwXKYWto1QDEAkw8RAhK9AJ9szRI9FyG3l85lDgoIWldb0vrQHACfVx/R
+9wO06YWWGnseGc2cKxg/yu4=
+=g2kD
+-----END PGP SIGNATURE-----
 
-> +	if (hwif_dev == host_dev)
-		return info + 1;
-	else
-		return info;
-
-or
-
-	return hwif_dev == host_dev ? info + 1 : info;
-
+--W5WqUoFLvi1M7tJE--
