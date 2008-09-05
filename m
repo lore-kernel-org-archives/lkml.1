@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYIEVzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbYIEWOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbYIEVzo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 17:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYIEVzf
+	id S1753641AbYIEWOr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 18:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbYIEWOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 17:55:35 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:38837 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbYIEVze (ORCPT
+	Fri, 5 Sep 2008 18:14:36 -0400
+Received: from quackingmoose.com ([63.73.180.143]:60382 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751646AbYIEWOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 17:55:34 -0400
-Date: Fri, 5 Sep 2008 14:54:52 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
-Message-ID: <20080905215452.GF11692@us.ibm.com>
-References: <20080905172132.GA11692@us.ibm.com> <87ej3yv588.fsf@basil.nowhere.org> <20080905195314.GE11692@us.ibm.com> <20080905200401.GA18288@one.firstfloor.org>
+	Fri, 5 Sep 2008 18:14:36 -0400
+Date: Fri, 5 Sep 2008 15:14:35 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080905221435.GA12911@merfinllc.com>
+References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080905200455.GH22796@merfinllc.com> <04854041-E23D-48B5-B9FF-0B7ECEB2C371@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
 Content-Disposition: inline
-In-Reply-To: <20080905200401.GA18288@one.firstfloor.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <04854041-E23D-48B5-B9FF-0B7ECEB2C371@oracle.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 05, 2008 at 10:04:01PM +0200, Andi Kleen wrote:
-> > The inability to offline all non-primary node memory sections
-> > certainly needs to be addressed.  The pgdat removal work that
-> > Yasunori Goto has started will hopefully continue and help resolve
-> > this issue. 
-> 
-> You make it sound like it's just some minor technical hurdle
-> that needs to be addressed.
 
-Sorry, that was not my intent.
+--17pEHd4RhPHOinZp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> But from all analysis of these issues
-> I've seen so far it's extremly hard and all possible solutions
-> have serious issues. So before doing some baby steps there
-> should be at least some general idea how this thing is supposed
-> to work in the end.
+Hi,
 
-I am not sure if I understand why you appear to be opposed to
-enabling the hotremove function before all the issues related
-to an eventual goal of being able to free all memory on a node
-are addressed.  Even in the absence of solutions for these issues
-it seems like there could still be other possible benefits such
-as the ability to selectively expand and shrink available memory
-for testing or debugging purposes.  I believe it would also be
-helpful to those working on or testing possible solutions for
-the removal issues.
+On Sep 05 04:36 PM, Chuck Lever wrote:
+> I have the latest Fedora 9 kernels on two clients, mounting via NFSv3 =20
+> using "actimeo=3D600" (for other reasons).  The server is OpenSolaris =20
+> 2008.5.
+>=20
+> reader.py reported zeroes in the test file after about 5 minutes.
 
-Gary
+Awesome.  Thanks for testing!  Our actime is much shorter which is
+probably why it happens sooner for us.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+> Looking at the file a little later, I don't see any problems with it.
+>=20
+> Since your scripts are not using any kind of serialization (ie file =20
+> locking) between the clients, I wonder if non-determinant behavior is =20
+> to be expected.
 
+Hmm... yep.  I don't know what guarantees we want to make.   The
+behavior doesn't seem to be consistent with older kernels though... so
+I'm thinking it might be a bug.
+
+We hit this particular issue because we have scripts which essentially
+'tail -f' log files looking for errors.   They miss log messages (and
+see corrupted ones) b/c of the NULLs.  That's also why there is no
+serialization.... we don't need it when grep'ing through log messages.
+
+I'm bisecting now.  I see a block of intricate-looking NFS patches, I'll
+try to narrow it down to a particular commit. =20
+
+I'll also get the wireshark data at that point.
+
+					Thanks,
+					=3Da=3D
+
+
+--=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Aaron Straus
+aaron@merfinllc.com
+
+--17pEHd4RhPHOinZp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQFIwa9Lr/o4YuvB+jgRAmvKAKDUdRcC4+2SENjQ7ZG5zDktvwmtfwCg38Cv
+G/k0kYMgXmnCnQFFINZ0oP8=
+=N7mJ
+-----END PGP SIGNATURE-----
+
+--17pEHd4RhPHOinZp--
