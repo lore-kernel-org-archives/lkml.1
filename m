@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYIENuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbYIENxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbYIENuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYIENuD
+	id S1754169AbYIENxB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYIENwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:50:03 -0400
-Received: from gv-out-0910.google.com ([216.239.58.187]:42127 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754305AbYIENuA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:50:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=UlfISg6zIIJXnzqPxV4JqSsX52y80sr2Wtv6sjQCjtSO+KP3IuMl+ATBdRmXoN/lCE
-         lRUvNh/AyhaSTPo4ZDxRQUU1ujLCeViGgTO0MH491tGk2u4nW+Eso/Xz5c/lGPDFPebA
-         /3Ymcxw2t6c5dK2wpaWiNHKYX3a4CFjkX/b8s=
-Date: Fri, 5 Sep 2008 15:49:53 +0200
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: "Nir Tzachar" <tzachar@grad120a.cs.bgu.ac.il>
-Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, rdunlap@xenotime.net,
-       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de,
-       Nir Tzachar <nir@tzachar.com>
-Subject: Re: [PATCH] ncurses based config V2
-Message-ID: <20080905154953.3abefbce@Varda>
-In-Reply-To: <1220603220-17090-1-git-send-email-nir@tzachar.com>
-References: <1220469076-16487-1-git-send-email-nir@tzachar.com>
-	<1220603220-17090-1-git-send-email-nir@tzachar.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 5 Sep 2008 09:52:53 -0400
+Received: from ns1.q-leap.de ([153.94.51.193]:56623 "EHLO mail.q-leap.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752909AbYIENww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 09:52:52 -0400
+From: Bernd Schubert <bs@q-leap.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: frame unwinder patches
+Date: Fri, 5 Sep 2008 15:52:47 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
+References: <g9p3du$n95$1@ger.gmane.org> <200809051119.21699.bs@q-leap.de> <20080905063317.5e3a2b2c@infradead.org>
+In-Reply-To: <20080905063317.5e3a2b2c@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809051552.47929.bs@q-leap.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri,  5 Sep 2008 11:27:00 +0300
-"Nir Tzachar" <tzachar@nexus.cs.bgu.ac.il> escribió:
+On Friday 05 September 2008 15:33:17 Arjan van de Ven wrote:
+> On Fri, 5 Sep 2008 11:19:21 +0200
+>
+> Bernd Schubert <bs@q-leap.de> wrote:
+> > > not printing the ? would be trivial (for some backtraces we do
+> > > that), but so far hasn't been seen as desirable because you lose
+> > > information in those hard-to-debug cases when you need anything you
+> > > can get from the backtrace.
+> >
+> > I see your point, but in most cases it is rather annoying.
+>
+> ... if you see backtraces regularly there's something wrong ;-)
 
-> Changes:
-> 1) Fixed segfaults in help window.
-> 2) Removed the instructions window, made the instructions appear as a button
->    which displays a popup window.
-> 3) Added hot keys support. As ncurses does not support several colors inside
->    a menu, keys are highlighted using "()".
-> 4) Optimized for 80x24 terminals.
-> 6) Fixed zconf.y to use _menu_init
-> 7) added nconfig to "make help"
-> 8) Misc fixes.
-> 
-> Comments are appreciated.
-> Cheers.
-> ---
->  scripts/kconfig/Makefile            |   17 +-
->  scripts/kconfig/lkc.h               |    2 +-
->  scripts/kconfig/mconf.c             |    2 +
->  scripts/kconfig/menu.c              |    2 +-
->  scripts/kconfig/nconf.c             | 2019 +++++++++++++++++++++++++++++++++++
->  scripts/kconfig/zconf.tab.c_shipped |    2 +-
->  scripts/kconfig/zconf.y             |    2 +-
->  7 files changed, 2041 insertions(+), 5 deletions(-)
->  create mode 100644 scripts/kconfig/nconf.c
+It always depends on what you are doing. Presently I'm fixing the 
+reset-handler of the mpt fusion driver and since I'm not 
+$hardcore_kernel_hacker_with_super_scsi_knowlegde, but only know C and a 
+little bit about the kernel API I insert dump_stack() and printks all over 
+the place into the code to understand what is going on.
 
- Tried it and the segmentation fault disappeared 
+Well, this reset part is mostly done, now this problem: 
+http://marc.info/?l=linux-scsi&m=118039573814323&w=2
 
-> 
+So yes, there is something wrong ;) Unfortunately so far nobody cared about 
+these bugs we are hitting regularily.
+
+>
+> (and if you really care it's 1 line of code to turn it off)
+
+It is not only this, I think the dwarf2 stack unwinder patches provide by far 
+better traces than the in-kernel unwinder. At least ever since I applied 
+these patches to our kernels, I was able to read the stack dumps...
+
+
+Cheers,
+Bernd
+
+
+-- 
+Bernd Schubert
+Q-Leap Networks GmbH
