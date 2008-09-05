@@ -1,164 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753820AbYIEUen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYIEUlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753820AbYIEUen (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYIEUed
+	id S1753264AbYIEUlm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIEUld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:34:33 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:4674 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbYIEUec (ORCPT
+	Fri, 5 Sep 2008 16:41:33 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:31617 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbYIEUlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:34:32 -0400
-Subject: Re: [PATCH 2/6] Adjust block device size after an online resize of
-	a disk.
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Andre Noll <maan@systemlinux.org>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
-       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
-       jmoyer@redhat.com
-In-Reply-To: <20080905175536.GD3795@skl-net.de>
-References: <20080904202714.10456.88061.stgit@bob.kio>
-	 <20080904202725.10456.62289.stgit@bob.kio>
-	 <20080905131244.GC3795@skl-net.de> <1220628997.7790.30.camel@grinch>
-	 <20080905175536.GD3795@skl-net.de>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 14:34:26 -0600
-Message-Id: <1220646866.7790.67.camel@grinch>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 5 Sep 2008 16:41:32 -0400
+Cc: Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Message-Id: <04854041-E23D-48B5-B9FF-0B7ECEB2C371@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Aaron Straus <aaron@merfinllc.com>
+In-Reply-To: <20080905200455.GH22796@merfinllc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Date: Fri, 5 Sep 2008 16:36:46 -0400
+References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080905200455.GH22796@merfinllc.com>
+X-Mailer: Apple Mail (2.928.1)
 X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-05 at 19:55 +0200, Andre Noll wrote:
-> On 09:36, Andrew Patterson wrote:
-> > On Fri, 2008-09-05 at 15:12 +0200, Andre Noll wrote:
-> > > On 14:27, Andrew Patterson wrote:
-> > > >  int revalidate_disk(struct gendisk *disk)
-> > > >  {
-> > > > +	struct block_device *bdev;
-> > > >  	int ret = 0;
-> > > >  
-> > > >  	if (disk->fops->revalidate_disk)
-> > > >  		ret = disk->fops->revalidate_disk(disk);
-> > > 
-> > > Maybe we should return early at this point if revalidate_disk()
-> > > failed or fops->revalidate_disk is NULL.
-> > 
-> > We won't run check_disk_size_change() if we return early here. So the
-> > question is would anyone ever make this call if they didn't have a
-> > revalidate_disk routine?
-> 
-> I'd say no. In case someone ever does, it seems natural to do nothing
-> and return early.
+On Sep 5, 2008, at Sep 5, 2008, 4:04 PM, Aaron Straus wrote:
+> Hi,
+>
+> On Sep 05 03:56 PM, Chuck Lever wrote:
+>> [ replacing cc: nfs@sf.net with linux-nfs@vger.kernel.org, and neil's
+>> old address with his current one ]
+>
+> Sorry I probably grabbed an old MAINTAINERS file.
+>
+>> On Sep 5, 2008, at Sep 5, 2008, 3:19 PM, Aaron Straus wrote:
+>>> Writer_Version     Outcome:
+>>> <= 2.6.19          OK
+>>>> = 2.6.20	    BAD
+>>
+>> Up to which kernel?  Recent ones may address this issue already.
+>
+> BAD up to 2.6.27-rc?
+>
+> I have to see exactly which is the last rc version I tested.
+>
+>>> I can try to bisect between 2.6.19 <-> 2.6.20.
+>>
+>> That's a good start.
+>
+> OK will try to bisect.
+>
+>> Comparing a wire trace with strace output, starting with the writing
+>> client, might also be illuminating.  We prefer wireshark as it uses
+>> good default trace settings, parses the wire bytes and displays them
+>> coherently, and allows you to sort the frames in various useful ways.
+>
+> OK.  Could you also try to reproduce on your side using those python
+> programs?  I want to make sure it's not something specific with our
+> mounts, etc.
 
-OK.  Jens, Do you want me to send you a new patch? Resend the entire
-series, or send a patch to the patch? I have appended the new patch.
+I have the latest Fedora 9 kernels on two clients, mounting via NFSv3  
+using "actimeo=600" (for other reasons).  The server is OpenSolaris  
+2008.5.
 
+reader.py reported zeroes in the test file after about 5 minutes.
 
-Andrew
---
+Looking at the file a little later, I don't see any problems with it.
 
-Adjust block device size after an online resize of a disk.
+Since your scripts are not using any kind of serialization (ie file  
+locking) between the clients, I wonder if non-determinant behavior is  
+to be expected.
 
-From: Andrew Patterson <andrew.patterson@hp.com>
-
-The revalidate_disk routine now checks if a disk has been resized by
-comparing the gendisk capacity to the bdev inode size.  If they are
-different (usually because the disk has been resized underneath the
-kernel)
-the bdev inode size is adjusted to match the capacity.
-
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
-
- fs/block_dev.c     |   39 +++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    2 ++
- 2 files changed, 41 insertions(+), 0 deletions(-)
-
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 4eeb69a..d7feb5f 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -853,6 +853,34 @@ struct block_device *open_by_devnum(dev_t dev,
-unsigned mode)
- EXPORT_SYMBOL(open_by_devnum);
- 
- /**
-+ * check_disk_size_change - checks for disk size change and adjusts
-+ *                          bdev size.
-+ *
-+ * @disk: struct gendisk to check
-+ * @bdev: struct bdev to adjust.
-+ *
-+ * This routine checks to see if the bdev size does not match the disk
-size
-+ * and adjusts it if it differs.
-+ */
-+void check_disk_size_change(struct gendisk *disk, struct block_device
-*bdev)
-+{
-+	loff_t disk_size, bdev_size;
-+
-+	disk_size = (loff_t)get_capacity(disk) << 9;
-+	bdev_size = i_size_read(bdev->bd_inode);
-+	if (disk_size != bdev_size) {
-+		char name[BDEVNAME_SIZE];
-+
-+		disk_name(disk, 0, name);
-+		printk(KERN_INFO
-+		       "%s: detected capacity change from %lld to %lld\n",
-+		       name, bdev_size, disk_size);
-+		i_size_write(bdev->bd_inode, disk_size);
-+	}
-+}
-+EXPORT_SYMBOL(check_disk_size_change);
-+
-+/**
-  * revalidate_disk - wrapper for lower-level driver's revalidate_disk
-  *                   call-back
-  *
-@@ -864,11 +892,22 @@ EXPORT_SYMBOL(open_by_devnum);
-  */
- int revalidate_disk(struct gendisk *disk)
- {
-+	struct block_device *bdev;
- 	int ret = 0;
- 
- 	if (disk->fops->revalidate_disk)
- 		ret = disk->fops->revalidate_disk(disk);
-+	else
-+		return ret;
-+
-+	bdev = bdget_disk(disk, 0);
-+	if (!bdev)
-+		return ret;
- 
-+	mutex_lock(&bdev->bd_mutex);
-+	check_disk_size_change(disk, bdev);
-+	mutex_unlock(&bdev->bd_mutex);
-+	bdput(bdev);
- 	return ret;
- }
- EXPORT_SYMBOL(revalidate_disk);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d63461f..32477e8 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1722,6 +1722,8 @@ extern int fs_may_remount_ro(struct super_block
-*);
-  */
- #define bio_data_dir(bio)	((bio)->bi_rw & 1)
- 
-+extern void check_disk_size_change(struct gendisk *disk,
-+				   struct block_device *bdev);
- extern int revalidate_disk(struct gendisk *);
- extern int check_disk_change(struct block_device *);
- extern int __invalidate_device(struct block_device *);
-
-
+-- 
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
