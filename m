@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbYIEPIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYIEPJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbYIEPIZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 11:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbYIEPIR
+	id S1755095AbYIEPJT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 11:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYIEPJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 11:08:17 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:4465 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbYIEPIQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 11:08:16 -0400
-Subject: Re: [GIT]: Networking
-From: Alex Williamson <alex.williamson@hp.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jouni.malinen@atheros.com
-In-Reply-To: <20080827.164649.87042354.davem@davemloft.net>
-References: <20080827.164649.87042354.davem@davemloft.net>
-Content-Type: text/plain
-Organization: HP OSLO R&D
-Date: Fri, 05 Sep 2008 09:08:12 -0600
-Message-Id: <1220627292.7260.3.camel@2710p.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Fri, 5 Sep 2008 11:09:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50642 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753772AbYIEPJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 11:09:11 -0400
+Date: Fri, 5 Sep 2008 17:08:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make sure the CPA test code's use of
+	_PAGE_UNUSED1 is obvious
+Message-ID: <20080905150854.GE10292@elte.hu>
+References: <48B7117F.8090008@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48B7117F.8090008@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.1876]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-08-27 at 16:46 -0700, David Miller wrote:
 
-> 22) Two mac80211 bug fixes from Jouni Malinen:
->     a) Use IWEVCUSTOM so that we don't hit the 256 byte limit that
->        IWEVASSOCREQIE has
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-This one breaks wireless with 32bit userspace/64bit kernel.  Bisected
-back to changeset 087d833e5a9f67ba933cb32eaf5a2279c1a5b47c:
+> The CPA test code uses _PAGE_UNUSED1, so make sure its obvious.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-mac80211: Use IWEVASSOCREQIE instead of IWEVCUSTOM
+applied to tip/x86/cpa - thanks Jeremy.
 
--- 
-Alex Williamson                             HP Open Source & Linux Org.
-
+	Ingo
