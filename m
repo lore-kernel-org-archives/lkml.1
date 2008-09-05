@@ -1,114 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753051AbYIEKgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbYIEKif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753051AbYIEKgD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 06:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYIEKfx
+	id S1752874AbYIEKif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 06:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYIEKi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 06:35:53 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:54565 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYIEKfw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 06:35:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SiYRr3shUc6hqqATBqbnXHBMI1m6wcv9JogW8ccojobsq3yU1fdcqEL/ahvp3FGr1B
-         VjmEW08Zw+v73Qdw6Phe3NxhcC4IrQM8jDI99//YIIZPOuAN+JWFT9Is+wx2o1ywD9Id
-         gu9OZxliSuIC4zriIH8fRLYOQ+hVmxTnpIGXA=
-Date: Fri, 5 Sep 2008 14:33:18 +0400
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: Re: [PATCH] platform: add new device registration helper
-Message-ID: <20080905103318.GB25622@doriath.ww600.siemens.net>
-References: <1220563816-8106-1-git-send-email-dbaryshkov@gmail.com> <20080904172050.cbde3013.akpm@linux-foundation.org>
+	Fri, 5 Sep 2008 06:38:27 -0400
+Received: from mail.bglans.net ([217.79.67.244]:47803 "EHLO mail.bglans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbYIEKi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 06:38:26 -0400
+Date: Fri, 5 Sep 2008 13:37:35 +0300 (EEST)
+From: ivaylo@bglans.net
+To: Willy Tarreau <w@1wt.eu>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Marvel IDE 88SE6101 2.4.XX support
+In-Reply-To: <20080905040326.GB17104@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0809051317430.9897@mail.bglans.net>
+References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net>
+ <Pine.LNX.4.64.0809042115350.11281@mail.bglans.net>
+ <20080904193625.652bf013@lxorguk.ukuu.org.uk> <20080905040326.GB17104@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080904172050.cbde3013.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: MULTIPART/MIXED; BOUNDARY="1339683907-1998988427-1220611055=:9897"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 04, 2008 at 05:20:50PM -0700, Andrew Morton wrote:
-> On Fri,  5 Sep 2008 01:30:16 +0400
-> Dmitry Baryshkov <dbaryshkov@gmail.com> wrote:
-> 
-> > Add a helper that registers simple platform_device
-> > w/o resources but with parent and device data.
-> > 
-> > This is usefull to cleanup platform code from code that
-> > registers such simple devices as leds-gpio, generic-bl,
-> > etc.
-> > 
-> 
-> nits:
-> 
-> > + *
-> > + * This function creates a simple platform device that requires minimal
-> > + * resource and memory management. Canned release function freeing memory
-> > + * allocated for the device allows drivers using such devices to be
-> > + * unloaded without waiting for the last reference to the device to be
-> > + * dropped.
-> 
-> Should document the return value (tested with IS_ERR)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Will the wording "Returns a valid platform device, or a valid IS_ERR
-condition containing errno" be appropriate?
-
-> > +{
-> > +	struct platform_device *pdev;
-> > +	int retval;
-> > +
-> > +	pdev = platform_device_alloc(name, id);
-> > +	if (!pdev) {
-> > +		retval = -ENOMEM;
-> > +		goto error;
-> > +	}
-> > +
-> > +	pdev->dev.parent = parent;
-> > +
-> > +	if (size) {
-> > +		retval = platform_device_add_data(pdev, data, size);
-> > +		if (retval)
-> > +			goto error;
-> > +	}
-> > +
-> > +	retval = platform_device_add(pdev);
-> > +	if (retval)
-> > +		goto error;
-> > +
-> > +	return pdev;
-> > +
-> > +error:
-> > +	platform_device_put(pdev);
-> 
-> Are you sure this can't trigger a !kobj->state_initialized warning in
-> kobject_put()?
-
-No. The kobject is initialised in platform_device_alloc() ->
-device_initialise()
-
-> >
-> > ...
-> >
-> > +extern struct platform_device *platform_device_register_data(struct device *,
-> > +		const char *, int, const void *, size_t);
-> 
-> It's nice (IMO) to include the names of the args, for documentation
-> purposes.  Obviously the surrounding code didn't agree.
-
-I just copied the surrounding code style. If you wish, I can put the
-names for this function back.
-
-BTW: would you prefer the followup "fix" patch or just the replacement
-one?
+--1339683907-1998988427-1220611055=:9897
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
 
--- 
-With best wishes
-Dmitry
+Hello,
 
+Thanks, Alan for your comment about Marvell PATA IDE driver.
+In this time I'm a litle bit busy and do not have time to backport driver 
+in 2.4 probably after a time I'll try (I'm not a profesional C programer 
+and it is litle hard to me). I correct generic IDE patch and send you in 
+the attached file.
+
+
+I make also patch to update e1000 driver in the 2.4 kernel to e1000-7.6.5 and 
+add support for:
+00:19.0 Ethernet controller: Intel Corporation 82801I (ICH9 Family) 
+Gigabit Ethernet Controller (rev 02)
+
+But I'm not sure if there are any license violations and any other person 
+who manage network drivers to send it to him. If you know something about 
+it please tell me to send the patch for testing and e.t.c.
+
+
+Best Regards,
+Ivaylo Josifov
+
+
+
+On Fri, 5 Sep 2008, Willy Tarreau wrote:
+
+> Hi Alan,
+>
+> On Thu, Sep 04, 2008 at 07:36:25PM +0100, Alan Cox wrote:
+>> On Thu, 4 Sep 2008 21:26:12 +0300 (EEST)
+>> ivaylo@bglans.net wrote:
+>>
+>>>
+>>> Another one small patch to support Marvel IDE 88SE6101 controler. I have
+>>> one on Intel DG33BU motherboard. It is detect as
+>>> 02:00.0 IDE interface: Marvell Technology Group Ltd. 88SE6101 single-port
+>>> PATA133 interface (rev b2)
+>>
+>> Its a pretty generic device - see drivers/ata/pata_marvell.c so IDE
+>> generic will probably do roughly the right things. The pata_marvell
+>> driver documents how to do cable detect, which you may want to add and
+>> make it its own driver.
+>
+> Indeed, your driver is clear enough to serve as a doc. Looking at
+> ata_piix.c in 2.4, I see that the libata core has evolved a lot,
+> but backporting your work should not be hard at all. Among other
+> things, the driver needs to set ap->cbl itself during reset, for
+> instance.
+>
+> However, I wonder if it's really worth doing it if the IDE generic
+> driver already works. The PATA port on such motherboards today is
+> mostly used by CD/DVD, and I think that even if we limit ourselves
+> to 40-pin, it's not dramatic (all my IDE CD drives have always been
+> running that way for ages).
+>
+> Or maybe this would be more interesting for other chips of the same
+> family ?
+>
+> Ivaylo, if you're interested in trying to backport pata_marvell.c
+> from 2.6 to 2.4, that's fine for me, just inform me so that I know
+> I'm waiting for you. Otherwise I can merge your IDE generic patch.
+> In this case, could you repost your patch after fixing the name
+> "MARVEL" in the PCI IDs (=> "MARVELL") ?
+>
+> Thanks,
+> Willy
+>
+--1339683907-1998988427-1220611055=:9897
+Content-Type: APPLICATION/octet-stream; name=Marvell-IDE.patch.gz
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0809051337350.9897@mail.bglans.net>
+Content-Description: 
+Content-Disposition: attachment; filename=Marvell-IDE.patch.gz
+
+H4sICCQHwUgAA01hcnZlbC1JREUucGF0Y2gArVRdj5pAFH2GXzHZvu2AzCCi
+pWkiCyalUdm4W5M+ET7GMomLG/zoJhv/ey8DVtgFbZsSknu553iAc48kfLVC
+ar5HoZbk/MDyrcYTpj3HXPvBMpbzuBejqBuTVVW99FtJJ2SkEgonooZFTMsg
+PXI6ECaAyxjjS/eoNAYq0RHRrcHQ0kcNjT5ojMdIpYahmAgXZYjGYxlJr+je
+8YLlZO76i8Bzg0f/4Yt3Zyti7E6WnjOpjYN7z3H8qR9QBQmGPf8OsNLoiTgp
+OSr/rq9f16et+l9nnrPw52/1q3Ggk77ZB+3iuKKvgz5+pz+zF8vJdFo93vkG
+1TwwKaF/pt+vnh/6ojt+kpGcXA9beiEI6ZWwpf8hbOnbsI0s2hE2cyjCBoWa
+ZdqkXpyGWcbWW+kzooqYhPvdJnkKYTD37W+PvjuzSyDabHZhtGaAwObufHvh
+Fhs5Kq/CXu0WPES3Goyk3oFlySaXgNq+LkFK2IHH7ETq2J1gZuGT4N3UoZsS
+4xnfBXHKn7dsB5T6ZVCZVCOmP/nqxCr6Fkr58qe2SWjahbvswl12ocIu4ebZ
+IVLae3YDBvXk8Sxe72Hra57tX4rdBzzZitx1IFXqOtC/yNxlhd+J0y2DtiZO
+p2Sg9BEWtYzch4SteMbavxKSRF7ox2HUpHV8NYCrQ4F/KW4XrbIiRGkYNWnt
+aQNqUWQsy78As0T1KGgGAAA=
+
+--1339683907-1998988427-1220611055=:9897--
