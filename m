@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbYIEJkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752560AbYIEJp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752466AbYIEJkM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYIEJkA
+	id S1752560AbYIEJp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYIEJpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:40:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35904 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYIEJj7 (ORCPT
+	Fri, 5 Sep 2008 05:45:17 -0400
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:51938 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYIEJpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:39:59 -0400
-Date: Fri, 5 Sep 2008 11:43:16 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com
-Subject: Re: frame unwinder patches
-Message-ID: <20080905094316.GS18288@one.firstfloor.org>
-References: <g9p3du$n95$1@ger.gmane.org> <87tzcvvi4p.fsf@basil.nowhere.org> <200809051124.17194.bs@q-leap.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809051124.17194.bs@q-leap.de>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 5 Sep 2008 05:45:16 -0400
+Message-ID: <48C0FF9F.3060803@linux.vnet.ibm.com>
+Date: Fri, 05 Sep 2008 15:15:03 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [PATCH][mmotm]memcg: handle null dereference of mm->owner
+References: <20080905165017.b2715fe4.nishimura@mxp.nes.nec.co.jp> <20080905174021.9fa29b01.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080905174021.9fa29b01.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 05, 2008 at 11:24:16AM +0200, Bernd Schubert wrote:
-> On Thursday 04 September 2008 21:13:58 Andi Kleen wrote:
-> > Bernd Schubert <bs@q-leap.de> writes:
-> > > Hello,
-> > >
-> > > up to 2.6.22 the -mm series had these nice frame unwinder patches,
-> > > which gave beautiful stack traces. Unfortunately these frame unwinder
-> > > patches seem to have been dropped :(
-> > >
-> > > Anyone still maintaining updated patches?
-> >
-> > The SUSE kernel rpm should have an uptodate set
-> >
-> > (ftp.suse.com/pub/projects/kernel/HEAD )
-> >
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 5 Sep 2008 16:50:17 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> Thanks Andi, found it! If someone else needs it, the correct path is 
-> ftp://ftp.suse.com/pub/projects/kernel/kotd/HEAD. 
-
-Thanks for the correction.
-
-> > I agree that they were much better than the current unwinder,
-> > also they didn't require slowing down the kernel with
-> > frame pointers.
+>> Hi.
+>>
+>> mm_update_next_owner() may clear mm->owner to NULL
+>> if it races with swapoff, page migration, etc.
+>> (This behavior was introduced by mm-owner-fix-race-between-swap-and-exit.patch.)
+>>
+>> But memcg doesn't take account of this situation, and causes:
+>>
+>>   BUG: unable to handle kernel NULL pointer dereference at 0000000000000630
+>>
+>> This fixes it.
+>>
+> Thank you for catching this.
 > 
-> What it the reason this patch isn't mainline? It provides better traces, 
-> doesn't slow down the kernel (which is important in our HPC envirement), so 
-> what is the disadvantage?
 
-The initial version that was merged had a few teething problems because
-it ran into tool chain bugs (which were quickly resolved). Unfortunately 
-it lead to a few people developing irrational fears of dwarf2 in the 
-process and it was reverted, annoying the original contributor.
-Right now someone would just need to retry the submission I guess.
+Thanks, Daisuke
 
--Andi
+> BTW, I have a question to Balbir and Paul. (I'm sorry I missed the discussion.)
+> Recently I wonder why we need MM_OWNER.
+> 
+> - What's bad with thread's cgroup ?
+> - Why we can't disallow per-thread cgroup under memcg ?)
+> 
+
+
+For the following reasons, I had initially designed it to be that way because
+
+1. There is no concept of a thread maintaining or managing its memory
+independently of others
+2. If we ever support full migration, it is easier to do so with the thread
+group leader owning the memory, rather than figuring out what to do everytime a
+task changed a cgroup.
+3. A task with appropriate permissions can spread itself across cgroups and hog
+memory
+
 
 -- 
-ak@linux.intel.com
+	Balbir
