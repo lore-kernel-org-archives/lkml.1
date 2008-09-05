@@ -1,105 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579AbYIEQ4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYIEQ5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753579AbYIEQ4e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbYIEQ40
+	id S1754018AbYIEQ5o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYIEQ5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:56:26 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:45250 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbYIEQ4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:56:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=juFiu6Slw6zEmVNkeNIZO1VNf0HEhgOYsexNie3EnaLFTYt699vLK/mwQ+Ts9BPbZc
-         8arCDuAc6kOysO1SlBjh85sYdjINmWkDTwe7Mu9ayKhHZ06VUB85XLmWKJq9ZcszTs+b
-         5tg5QEsRSXp9XQM/pZhxj+oO4Kuk09Sd/UfCI=
-Message-ID: <86802c440809050956u1298f05ftb2ed813c5b10ad72@mail.gmail.com>
-Date: Fri, 5 Sep 2008 09:56:23 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
-Cc: "Jan Beulich" <jbeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080905150030.GD10292@elte.hu>
+	Fri, 5 Sep 2008 12:57:35 -0400
+Received: from mga14.intel.com ([143.182.124.37]:55272 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbYIEQ5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 12:57:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,340,1217833200"; 
+   d="scan'208";a="42253833"
+From: Chris Leech <christopher.leech@intel.com>
+Subject: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte
+	arrays as integers
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       devel@open-fcoe.org
+Date: Fri, 05 Sep 2008 09:57:32 -0700
+Message-ID: <20080905165732.16689.50256.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48C13D1C.76E4.0078.0@novell.com> <20080905150030.GD10292@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 5, 2008 at 8:00 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jan Beulich <jbeulich@novell.com> wrote:
->
->> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
->> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
->>
->> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->>
->> ---
->>  arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
->>  arch/x86/mm/ioremap.c        |   15 ++++++---------
->>  include/asm-x86/processor.h  |    4 ++--
->>  3 files changed, 25 insertions(+), 11 deletions(-)
->
-> hm, the cpu/common.c bits just got reworked massively in tip/master.
-> I've tried a blind merge (see the patch below) but at least the first
-> hunk looks wrong. Mind looking at how to merge this?
->
->        Ingo
->
-> --------------->
-> Subject: x86: x86_{phys,virt}_bits field also for i386 (v2)
-> From: "Jan Beulich" <jbeulich@novell.com>
-> Date: Fri, 05 Sep 2008 13:07:24 +0100
->
-> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
->
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
-> ---
->  arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
->  arch/x86/mm/ioremap.c        |   15 ++++++---------
->  include/asm-x86/processor.h  |    4 ++--
->  3 files changed, 25 insertions(+), 11 deletions(-)
->
-> Index: tip/arch/x86/kernel/cpu/common.c
-> ===================================================================
-> --- tip.orig/arch/x86/kernel/cpu/common.c
-> +++ tip/arch/x86/kernel/cpu/common.c
-> @@ -464,6 +464,18 @@ static void __cpuinit get_cpu_cap(struct
->                        c->x86_capability[1] = cpuid_edx(0x80000001);
->                        c->x86_capability[6] = cpuid_ecx(0x80000001);
->                }
-> +                       if (xlvl >= 0x80000008) {
-> +                               u32 eax = cpuid_eax(0x80000008);
-> +
-> +                               c->x86_phys_bits = eax & 0xff;
-> +                               c->x86_virt_bits = (eax >> 8) & 0xff;
-> +                               /* CPUID workaround for Intel 0F33/0F34 CPU */
-> +                               if (c->x86_vendor == X86_VENDOR_INTEL
-> +                                   && c->x86 == 0xF && c->x86_model == 0x3
-> +                                   && (c->x86_mask == 0x3
-> +                                       || c->x86_mask == 0x4))
-> +                                       c->x86_phys_bits = 36;
-> +                       }
->        }
->
->  #ifdef CONFIG_X86_64
+Both iSCSI and Fibre Channel make use of 24-bit big-endian values in
+frame headers.  This patch defines __be24 and __le24 typedefs for a
+structure wrapped around a 3-byte array, and macros to convert back and
+forth to a 32-bit integer.
 
-there is the same code in the same func for 64 bit.
+The undefs in iscsi_proto.h are because of the different calling
+convention for the existing hton24 macro in the iSCSI code.  iSCSI will
+be converted in a subsequent patch.
 
-also could move the intel workaround code to early_init_intel and init_intel of
-intel.c/intel_64.c
+Signed-off-by: Chris Leech <christopher.leech@intel.com>
+---
 
-YH
+ include/linux/byteorder.h         |   56 ++++++++++++++++++++++++++++++++++++
+ include/linux/byteorder/generic.h |   57 +++++++++++++++++++++++++++++++++++++
+ include/linux/types.h             |    2 +
+ include/scsi/iscsi_proto.h        |    2 +
+ 4 files changed, 117 insertions(+), 0 deletions(-)
+
+
+diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
+index 29f002d..e41c17b 100644
+--- a/include/linux/byteorder.h
++++ b/include/linux/byteorder.h
+@@ -62,6 +62,54 @@
+ # define __cpu_to_le64(x) ((__force __le64)__swab64(x))
+ #endif
+ 
++/**
++ * __le24_to_cpu - read a 3-byte array as a 24-bit little-endian integer
++ * @x: __le24, a structure wrapper around a 3-byte array
++ *
++ * Evaluates to a __u32 integer type
++ */
++#define __le24_to_cpu(x) \
++({ \
++	__le24 _x = (x); \
++	(__u32) ((_x.b[2] << 16) | (_x.b[1] << 8) | (_x.b[0])); \
++})
++
++/**
++ * __cpu_to_le24 - store a value in a 3-byte array in little-endian format
++ * @x: __u32, there is no checking to ensure only the lower 24 bits are set
++ *
++ * Evaluates to an __le24 compound literal
++ */
++#define __cpu_to_le24(x) \
++({ \
++	__u32 _x = (x); \
++	(__le24) { .b = { _x & 0xff, (_x >> 8) & 0xff, (_x >> 16) & 0xff } }; \
++})
++
++/**
++ * __be24_to_cpu - read a 3-byte array as a 24-bit big-endian integer
++ * @x: __be24, a structure wrapper around a 3-byte array
++ *
++ * Evaluates to a __u32 integer type
++ */
++#define __be24_to_cpu(x) \
++({ \
++	__be24 _x = (x); \
++	(__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2])); \
++})
++
++/**
++ * __cpu_to_be24 - store a value in a 3-byte array in big-endian format
++ * @x: __u32, there is no checking to ensure only the lower 24 bits are set
++ *
++ * Evaluates to an __be24 compound literal
++ */
++#define __cpu_to_be24(x) \
++({ \
++	__u32 _x = (x); \
++	(__be24) { .b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } }; \
++})
++
+ /*
+  * These helpers could be phased out over time as the base version
+  * handles constant folding.
+@@ -280,15 +328,19 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
+ #ifdef __KERNEL__
+ 
+ # define le16_to_cpu __le16_to_cpu
++# define le24_to_cpu __le24_to_cpu
+ # define le32_to_cpu __le32_to_cpu
+ # define le64_to_cpu __le64_to_cpu
+ # define be16_to_cpu __be16_to_cpu
++# define be24_to_cpu __be24_to_cpu
+ # define be32_to_cpu __be32_to_cpu
+ # define be64_to_cpu __be64_to_cpu
+ # define cpu_to_le16 __cpu_to_le16
++# define cpu_to_le24 __cpu_to_le24
+ # define cpu_to_le32 __cpu_to_le32
+ # define cpu_to_le64 __cpu_to_le64
+ # define cpu_to_be16 __cpu_to_be16
++# define cpu_to_be24 __cpu_to_be24
+ # define cpu_to_be32 __cpu_to_be32
+ # define cpu_to_be64 __cpu_to_be64
+ 
+@@ -332,11 +384,15 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
+ # define ___htons(x) __cpu_to_be16(x)
+ # define ___ntohl(x) __be32_to_cpu(x)
+ # define ___ntohs(x) __be16_to_cpu(x)
++# define ___hton24(x) __cpu_to_be24(x)
++# define ___ntoh24(x) __be24_to_cpu(x)
+ 
+ # define htonl(x) ___htonl(x)
+ # define ntohl(x) ___ntohl(x)
+ # define htons(x) ___htons(x)
+ # define ntohs(x) ___ntohs(x)
++# define hton24(x) ___hton24(x)
++# define ntoh24(x) ___ntoh24(x)
+ 
+ static inline void le16_add_cpu(__le16 *var, u16 val)
+ {
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index 0846e6b..a57fbc3 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -119,6 +119,59 @@
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
+ 
++/**
++ * __le24_to_cpu - read a 3-byte array as a 24-bit little-endian integer
++ * @x: __le24, a structure wrapper around a 3-byte array
++ *
++ * Evaluates to a __u32 integer type
++ */
++#define __le24_to_cpu(x) \
++({ \
++	__le24 _x = (x); \
++	(__u32) ((_x.b[2] << 16) | (_x.b[1] << 8) | (_x.b[0])); \
++})
++
++/**
++ * __cpu_to_le24 - store a value in a 3-byte array in little-endian format
++ * @x: __u32, there is no checking to ensure only the lower 24 bits are set
++ *
++ * Evaluates to an __le24 compound literal
++ */
++#define __cpu_to_le24(x) \
++({ \
++	__u32 _x = (x); \
++	(__le24) { .b = { _x & 0xff, (_x >> 8) & 0xff, (_x >> 16) & 0xff } }; \
++})
++
++/**
++ * __be24_to_cpu - read a 3-byte array as a 24-bit big-endian integer
++ * @x: __be24, a structure wrapper around a 3-byte array
++ *
++ * Evaluates to a __u32 integer type
++ */
++#define __be24_to_cpu(x) \
++({ \
++	__be24 _x = (x); \
++	(__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2])); \
++})
++
++/**
++ * __cpu_to_be24 - store a value in a 3-byte array in big-endian format
++ * @x: __u32, there is no checking to ensure only the lower 24 bits are set
++ *
++ * Evaluates to an __be24 compound literal
++ */
++#define __cpu_to_be24(x) \
++({ \
++	__u32 _x = (x); \
++	(__be24) { .b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } }; \
++})
++
++#define le24_to_cpu __le24_to_cpu
++#define cpu_to_le24 __cpu_to_le24
++#define be24_to_cpu __be24_to_cpu
++#define cpu_to_be24 __cpu_to_be24
++
+ /*
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+@@ -134,11 +187,15 @@
+ #define ___htons(x) __cpu_to_be16(x)
+ #define ___ntohl(x) __be32_to_cpu(x)
+ #define ___ntohs(x) __be16_to_cpu(x)
++#define ___hton24(x) __cpu_to_be24(x)
++#define ___ntoh24(x) __be24_to_cpu(x)
+ 
+ #define htonl(x) ___htonl(x)
+ #define ntohl(x) ___ntohl(x)
+ #define htons(x) ___htons(x)
+ #define ntohs(x) ___ntohs(x)
++#define hton24(x) ___hton24(x)
++#define ntoh24(x) ___ntoh24(x)
+ 
+ static inline void le16_add_cpu(__le16 *var, u16 val)
+ {
+diff --git a/include/linux/types.h b/include/linux/types.h
+index d4a9ce6..85fcff7 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -188,6 +188,8 @@ typedef __u64 __bitwise __be64;
+ typedef __u16 __bitwise __sum16;
+ typedef __u32 __bitwise __wsum;
+ 
++typedef struct { __u8 b[3]; } __be24, __le24;
++
+ #ifdef __KERNEL__
+ typedef unsigned __bitwise__ gfp_t;
+ 
+diff --git a/include/scsi/iscsi_proto.h b/include/scsi/iscsi_proto.h
+index f2a2c11..429c5ff 100644
+--- a/include/scsi/iscsi_proto.h
++++ b/include/scsi/iscsi_proto.h
+@@ -35,6 +35,8 @@
+ /*
+  * useful common(control and data pathes) macro
+  */
++#undef ntoh24
++#undef hton24
+ #define ntoh24(p) (((p)[0] << 16) | ((p)[1] << 8) | ((p)[2]))
+ #define hton24(p, v) { \
+         p[0] = (((v) >> 16) & 0xFF); \
+
