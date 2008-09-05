@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYIEKXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbYIEKXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbYIEKXU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 06:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYIEKVd
+	id S1754511AbYIEKXz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 06:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbYIEKVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 06:21:33 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:51198 "EHLO
+	Fri, 5 Sep 2008 06:21:37 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:63643 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753491AbYIEKVa (ORCPT
+	with ESMTP id S1753487AbYIEKVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 06:21:30 -0400
+	Fri, 5 Sep 2008 06:21:31 -0400
 X-IronPort-AV: E=Sophos;i="4.32,320,1217822400"; 
-   d="scan'208";a="74640984"
+   d="scan'208";a="74640983"
 From: Bryan Wu <cooloney@kernel.org>
 To: broonie@sirena.org.uk
 Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
        Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 6/9] ASoC: Blackfin: I2S CPU DAI driver
-Date: Fri,  5 Sep 2008 18:21:39 +0800
-Message-Id: <1220610102-7716-7-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 5/9] ASoC: Blackfin: DMA Driver for I2S sound chip
+Date: Fri,  5 Sep 2008 18:21:38 +0800
+Message-Id: <1220610102-7716-6-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1220610102-7716-1-git-send-email-cooloney@kernel.org>
 References: <1220610102-7716-1-git-send-email-cooloney@kernel.org>
@@ -31,24 +31,24 @@ From: Cliff Cai <cliff.cai@analog.com>
 Signed-off-by: Cliff Cai <cliff.cai@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- sound/soc/blackfin/bf5xx-i2s.c |  289 ++++++++++++++++++++++++++++++++++++++++
- sound/soc/blackfin/bf5xx-i2s.h |   14 ++
- 2 files changed, 303 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/blackfin/bf5xx-i2s.c
- create mode 100644 sound/soc/blackfin/bf5xx-i2s.h
+ sound/soc/blackfin/bf5xx-i2s-pcm.c |  288 ++++++++++++++++++++++++++++++++++++
+ sound/soc/blackfin/bf5xx-i2s-pcm.h |   29 ++++
+ 2 files changed, 317 insertions(+), 0 deletions(-)
+ create mode 100644 sound/soc/blackfin/bf5xx-i2s-pcm.c
+ create mode 100644 sound/soc/blackfin/bf5xx-i2s-pcm.h
 
-diff --git a/sound/soc/blackfin/bf5xx-i2s.c b/sound/soc/blackfin/bf5xx-i2s.c
+diff --git a/sound/soc/blackfin/bf5xx-i2s-pcm.c b/sound/soc/blackfin/bf5xx-i2s-pcm.c
 new file mode 100644
-index 0000000..10fc252
+index 0000000..61fccf9
 --- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-i2s.c
-@@ -0,0 +1,289 @@
++++ b/sound/soc/blackfin/bf5xx-i2s-pcm.c
+@@ -0,0 +1,288 @@
 +/*
-+ * File:         sound/soc/blackfin/bf5xx-i2s.c
++ * File:         sound/soc/blackfin/bf5xx-i2s-pcm.c
 + * Author:       Cliff Cai <Cliff.Cai@analog.com>
 + *
 + * Created:      Tue June 06 2008
-+ * Description:  Blackfin I2S CPU DAI driver
++ * Description:  DMA driver for i2s codec
 + *
 + * Modified:
 + *               Copyright 2008 Analog Devices Inc.
@@ -71,285 +71,299 @@ index 0000000..10fc252
 + * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++#include <linux/dma-mapping.h>
++
 +#include <sound/core.h>
 +#include <sound/pcm.h>
 +#include <sound/pcm_params.h>
-+#include <sound/initval.h>
 +#include <sound/soc.h>
 +
-+#include <asm/irq.h>
-+#include <asm/portmux.h>
-+#include <linux/mutex.h>
-+#include <linux/gpio.h>
++#include <asm/dma.h>
 +
-+#include "bf5xx-sport.h"
++#include "bf5xx-i2s-pcm.h"
 +#include "bf5xx-i2s.h"
++#include "bf5xx-sport.h"
 +
-+struct bf5xx_i2s_port {
-+	u16 tcr1;
-+	u16 rcr1;
-+	u16 tcr2;
-+	u16 rcr2;
-+	int counter;
-+};
-+
-+static struct bf5xx_i2s_port bf5xx_i2s;
-+static int sport_num = CONFIG_SND_BF5XX_SPORT_NUM;
-+
-+static struct sport_param sport_params[2] = {
-+	{
-+		.dma_rx_chan	= CH_SPORT0_RX,
-+		.dma_tx_chan	= CH_SPORT0_TX,
-+		.err_irq	= IRQ_SPORT0_ERROR,
-+		.regs		= (struct sport_register *)SPORT0_TCR1,
-+	},
-+	{
-+		.dma_rx_chan	= CH_SPORT1_RX,
-+		.dma_tx_chan	= CH_SPORT1_TX,
-+		.err_irq	= IRQ_SPORT1_ERROR,
-+		.regs		= (struct sport_register *)SPORT1_TCR1,
-+	}
-+};
-+
-+static int bf5xx_i2s_set_dai_fmt(struct snd_soc_dai *cpu_dai,
-+		unsigned int fmt)
++static void bf5xx_dma_irq(void *data)
 +{
-+	int ret = 0;
-+	
-+	/* interface format:support I2S,slave mode */
-+	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-+	case SND_SOC_DAIFMT_I2S:
-+		break;
-+	case SND_SOC_DAIFMT_LEFT_J:
-+		ret = -EINVAL;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
++	struct snd_pcm_substream *pcm = data;
++	snd_pcm_period_elapsed(pcm);
++}
++
++static const struct snd_pcm_hardware bf5xx_pcm_hardware = {
++	.info			= SNDRV_PCM_INFO_INTERLEAVED |
++				   SNDRV_PCM_INFO_MMAP |
++				   SNDRV_PCM_INFO_MMAP_VALID |
++				   SNDRV_PCM_INFO_BLOCK_TRANSFER,
++	.formats		= SNDRV_PCM_FMTBIT_S16_LE |
++				   SNDRV_PCM_FMTBIT_S24_LE |
++				   SNDRV_PCM_FMTBIT_S32_LE,
++	.period_bytes_min	= 32,
++	.period_bytes_max	= 0x10000,
++	.periods_min		= 1,
++	.periods_max		= PAGE_SIZE/32,
++	.buffer_bytes_max	= 0x20000, /* 128 kbytes */
++	.fifo_size		= 16,
++};
++
++static int bf5xx_pcm_hw_params(struct snd_pcm_substream *substream,
++	struct snd_pcm_hw_params *params)
++{
++	size_t size = bf5xx_pcm_hardware.buffer_bytes_max;
++	snd_pcm_lib_malloc_pages(substream, size);
++
++	return 0;
++}
++
++static int bf5xx_pcm_hw_free(struct snd_pcm_substream *substream)
++{
++	snd_pcm_lib_free_pages(substream);
++
++	return 0;
++}
++
++static int bf5xx_pcm_prepare(struct snd_pcm_substream *substream)
++{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	struct sport_device *sport = runtime->private_data;
++	int period_bytes = frames_to_bytes(runtime, runtime->period_size);
++
++	pr_debug("%s enter\n", __func__);
++	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
++		sport_set_tx_callback(sport, bf5xx_dma_irq, substream);
++		sport_config_tx_dma(sport, runtime->dma_area,
++			runtime->periods, period_bytes);
++	} else {
++		sport_set_rx_callback(sport, bf5xx_dma_irq, substream);
++		sport_config_rx_dma(sport, runtime->dma_area,
++			runtime->periods, period_bytes);
 +	}
 +
-+	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-+	case SND_SOC_DAIFMT_CBS_CFS:
-+		ret = -EINVAL;
++	return 0;
++}
++
++static int bf5xx_pcm_trigger(struct snd_pcm_substream *substream, int cmd)
++{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	struct sport_device *sport = runtime->private_data;
++	int ret = 0;
++
++	pr_debug("%s enter\n", __func__);
++	switch (cmd) {
++	case SNDRV_PCM_TRIGGER_START:
++		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
++			sport_tx_start(sport);
++		else
++			sport_rx_start(sport);
 +		break;
-+	case SND_SOC_DAIFMT_CBM_CFS:
-+		ret = -EINVAL;
-+		break;
-+	case SND_SOC_DAIFMT_CBM_CFM:
-+		break;
-+	case SND_SOC_DAIFMT_CBS_CFM:
-+		ret = -EINVAL;
++	case SNDRV_PCM_TRIGGER_STOP:
++	case SNDRV_PCM_TRIGGER_SUSPEND:
++	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
++		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
++			sport_tx_stop(sport);
++		else
++			sport_rx_stop(sport);
 +		break;
 +	default:
 +		ret = -EINVAL;
-+		break;
 +	}
 +
 +	return ret;
 +}
 +
-+static int bf5xx_i2s_startup(struct snd_pcm_substream *substream)
++static snd_pcm_uframes_t bf5xx_pcm_pointer(struct snd_pcm_substream *substream)
 +{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	struct sport_device *sport = runtime->private_data;
++	unsigned int diff;
++	snd_pcm_uframes_t frames;
 +	pr_debug("%s enter\n", __func__);
++	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
++		diff = sport_curr_offset_tx(sport);
++		frames = bytes_to_frames(substream->runtime, diff);
++	} else {
++		diff = sport_curr_offset_rx(sport);
++		frames = bytes_to_frames(substream->runtime, diff);
++	}
++	return frames;
++}
 +
-+	/*this counter is used for counting how many pcm streams are opened*/
-+	bf5xx_i2s.counter++;
++static int bf5xx_pcm_open(struct snd_pcm_substream *substream)
++{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	int ret;
++
++	pr_debug("%s enter\n", __func__);
++	snd_soc_set_runtime_hwparams(substream, &bf5xx_pcm_hardware);
++
++	ret = snd_pcm_hw_constraint_integer(runtime, \
++			SNDRV_PCM_HW_PARAM_PERIODS);
++	if (ret < 0)
++		goto out;
++
++	if (sport_handle != NULL)
++		runtime->private_data = sport_handle;
++	else {
++		pr_err("sport_handle is NULL\n");
++		return -1;
++	}
++	return 0;
++
++ out:
++	return ret;
++}
++
++static int bf5xx_pcm_mmap(struct snd_pcm_substream *substream,
++	struct vm_area_struct *vma)
++{
++	struct snd_pcm_runtime *runtime = substream->runtime;
++	size_t size = vma->vm_end - vma->vm_start;
++	vma->vm_start = (unsigned long)runtime->dma_area;
++	vma->vm_end = vma->vm_start + size;
++	vma->vm_flags |=  VM_SHARED;
++
++	return 0 ;
++}
++
++struct snd_pcm_ops bf5xx_pcm_i2s_ops = {
++	.open		= bf5xx_pcm_open,
++	.ioctl		= snd_pcm_lib_ioctl,
++	.hw_params	= bf5xx_pcm_hw_params,
++	.hw_free	= bf5xx_pcm_hw_free,
++	.prepare	= bf5xx_pcm_prepare,
++	.trigger	= bf5xx_pcm_trigger,
++	.pointer	= bf5xx_pcm_pointer,
++	.mmap		= bf5xx_pcm_mmap,
++};
++
++static int bf5xx_pcm_preallocate_dma_buffer(struct snd_pcm *pcm, int stream)
++{
++	struct snd_pcm_substream *substream = pcm->streams[stream].substream;
++	struct snd_dma_buffer *buf = &substream->dma_buffer;
++	size_t size = bf5xx_pcm_hardware.buffer_bytes_max;
++
++	buf->dev.type = SNDRV_DMA_TYPE_DEV;
++	buf->dev.dev = pcm->card->dev;
++	buf->private_data = NULL;
++	buf->area = dma_alloc_coherent(pcm->card->dev, size,
++			&buf->addr, GFP_KERNEL);
++	if (!buf->area) {
++		pr_err("Failed to allocate dma memory \
++			Please increase uncached DMA memory region\n");
++		return -ENOMEM;
++	}
++	buf->bytes = size;
++
++	pr_debug("%s, area:%p, size:0x%08lx\n", __func__,
++		buf->area, buf->bytes);
++
++	if (stream == SNDRV_PCM_STREAM_PLAYBACK)
++		sport_handle->tx_buf = buf->area;
++	else
++		sport_handle->rx_buf = buf->area;
++
 +	return 0;
 +}
 +
-+static int bf5xx_i2s_hw_params(struct snd_pcm_substream *substream,
-+				struct snd_pcm_hw_params *params)
++static void bf5xx_pcm_free_dma_buffers(struct snd_pcm *pcm)
++{
++	struct snd_pcm_substream *substream;
++	struct snd_dma_buffer *buf;
++	int stream;
++
++	for (stream = 0; stream < 2; stream++) {
++		substream = pcm->streams[stream].substream;
++		if (!substream)
++			continue;
++
++		buf = &substream->dma_buffer;
++		if (!buf->area)
++			continue;
++		dma_free_coherent(NULL, buf->bytes, buf->area, 0);
++		buf->area = NULL;
++	}
++	if (sport_handle)
++		sport_done(sport_handle);
++}
++
++static u64 bf5xx_pcm_dmamask = DMA_32BIT_MASK;
++
++int bf5xx_pcm_i2s_new(struct snd_card *card, struct snd_soc_dai *dai,
++	struct snd_pcm *pcm)
 +{
 +	int ret = 0;
 +
-+	bf5xx_i2s.tcr2 &= ~0x1f;
-+	bf5xx_i2s.rcr2 &= ~0x1f;
-+	switch (params_format(params)) {
-+	case SNDRV_PCM_FORMAT_S16_LE:
-+		bf5xx_i2s.tcr2 |= 15;
-+		bf5xx_i2s.rcr2 |= 15;
-+		break;
-+	case SNDRV_PCM_FORMAT_S24_LE:
-+		bf5xx_i2s.tcr2 |= 23;
-+		bf5xx_i2s.rcr2 |= 23;
-+		break;
-+	case SNDRV_PCM_FORMAT_S32_LE:
-+		bf5xx_i2s.tcr2 |= 31;
-+		bf5xx_i2s.rcr2 |= 31;
-+		break;
-+	}
-+
-+	if (bf5xx_i2s.counter == 1) {
-+	/*
-+	 * TX and RX are not independent,they are enabled at the same time,
-+	 * even if only one side is running.So,we need to configure both of
-+	 * them at the time when the first stream is opened.
-+	 *
-+	 * CPU DAI format:I2S, slave mode.
-+	 */
-+		ret = sport_config_rx(sport_handle, RFSR | RCKFE, RSFSE|bf5xx_i2s.rcr2, 0, 0);
-+		if (ret) {
-+			pr_err("SPORT is busy!\n");
-+			return -EBUSY;
-+		}
-+
-+		ret = sport_config_tx(sport_handle, TFSR | TCKFE, TSFSE|bf5xx_i2s.tcr2, 0, 0);
-+		if (ret) {
-+			pr_err("SPORT is busy!\n");
-+			return -EBUSY;
-+		}
-+	}
-+	
-+	return 0;
-+}
-+
-+static void bf5xx_i2s_shutdown(struct snd_pcm_substream *substream)
-+{
 +	pr_debug("%s enter\n", __func__);
-+	bf5xx_i2s.counter--;
-+}
++	if (!card->dev->dma_mask)
++		card->dev->dma_mask = &bf5xx_pcm_dmamask;
++	if (!card->dev->coherent_dma_mask)
++		card->dev->coherent_dma_mask = DMA_32BIT_MASK;
 +
-+static int bf5xx_i2s_probe(struct platform_device *pdev,
-+			   struct snd_soc_dai *dai)
-+{
-+	u16 sport_req[][7] = {
-+		{ P_SPORT0_DTPRI, P_SPORT0_TSCLK, P_SPORT0_RFS,
-+		  P_SPORT0_DRPRI, P_SPORT0_RSCLK, 0},
-+		{ P_SPORT1_DTPRI, P_SPORT1_TSCLK, P_SPORT1_RFS,
-+		  P_SPORT1_DRPRI, P_SPORT1_RSCLK, 0},
-+	};
-+
-+	pr_debug("%s enter\n", __func__);
-+	if (peripheral_request_list(&sport_req[sport_num][0], "soc-audio")) {
-+		pr_err("Requesting Peripherals failed\n");
-+		return -EFAULT;
++	if (dai->playback.channels_min) {
++		ret = bf5xx_pcm_preallocate_dma_buffer(pcm,
++			SNDRV_PCM_STREAM_PLAYBACK);
++		if (ret)
++			goto out;
 +	}
 +
-+	/* request DMA for SPORT */
-+	sport_handle = sport_init(&sport_params[sport_num], 4, \
-+			2 * sizeof(u32), NULL);
-+	if (!sport_handle) {
-+		peripheral_free_list(&sport_req[sport_num][0]);
-+		return -ENODEV;
++	if (dai->capture.channels_min) {
++		ret = bf5xx_pcm_preallocate_dma_buffer(pcm,
++			SNDRV_PCM_STREAM_CAPTURE);
++		if (ret)
++			goto out;
 +	}
-+
-+	return 0;
++ out:
++	return ret;
 +}
 +
-+#ifdef CONFIG_PM
-+static int bf5xx_i2s_suspend(struct platform_device *dev,
-+			     struct snd_soc_dai *dai)
-+{
-+	struct sport_device *sport =
-+		(struct sport_device *)dai->private_data;
-+
-+	pr_debug("%s : sport %d\n", __func__, dai->id);
-+	if (!dai->active)
-+		return 0;
-+	if (dai->capture.active)
-+		sport_rx_stop(sport);
-+	if (dai->playback.active)
-+		sport_tx_stop(sport);
-+	return 0;
-+}
-+
-+static int bf5xx_i2s_resume(struct platform_device *pdev,
-+			    struct snd_soc_dai *dai)
-+{
-+	int ret;
-+	struct sport_device *sport =
-+		(struct sport_device *)dai->private_data;
-+
-+	pr_debug("%s : sport %d\n", __func__, dai->id);
-+	if (!dai->active)
-+		return 0;
-+
-+	ret = sport_config_rx(sport_handle, RFSR | RCKFE, RSFSE|0x1f, 0, 0);
-+	if (ret) {
-+		pr_err("SPORT is busy!\n");
-+		return -EBUSY;
-+	}
-+
-+	ret = sport_config_tx(sport_handle, TFSR | TCKFE, TSFSE|0x1f, 0, 0);
-+	if (ret) {
-+		pr_err("SPORT is busy!\n");
-+		return -EBUSY;
-+	}
-+
-+	if (dai->capture.active)
-+		sport_rx_start(sport);
-+	if (dai->playback.active)
-+		sport_tx_start(sport);
-+	return 0;
-+}
-+
-+#else
-+#define bf5xx_i2s_suspend	NULL
-+#define bf5xx_i2s_resume	NULL
-+#endif
-+
-+#define BF5XX_I2S_RATES (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_11025 |\
-+		SNDRV_PCM_RATE_16000 | SNDRV_PCM_RATE_22050 | \
-+		SNDRV_PCM_RATE_44100 | SNDRV_PCM_RATE_48000 | \
-+		SNDRV_PCM_RATE_96000)
-+
-+#define BF5XX_I2S_FORMATS (SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE |\
-+	SNDRV_PCM_FMTBIT_S32_LE)
-+
-+struct snd_soc_dai bf5xx_i2s_dai = {
-+	.name = "bf5xx-i2s",
-+	.id = 0,
-+	.type = SND_SOC_DAI_I2S,
-+	.probe = bf5xx_i2s_probe,
-+	.suspend = bf5xx_i2s_suspend,
-+	.resume = bf5xx_i2s_resume,
-+	.playback = {
-+		.channels_min = 2,
-+		.channels_max = 2,
-+		.rates = BF5XX_I2S_RATES,
-+		.formats = BF5XX_I2S_FORMATS,},
-+	.capture = {
-+		.channels_min = 2,
-+		.channels_max = 2,
-+		.rates = BF5XX_I2S_RATES,
-+		.formats = BF5XX_I2S_FORMATS,},
-+	.ops = {
-+		.startup   = bf5xx_i2s_startup,
-+		.shutdown  = bf5xx_i2s_shutdown,
-+		.hw_params = bf5xx_i2s_hw_params,},
-+	.dai_ops = {
-+		.set_fmt = bf5xx_i2s_set_dai_fmt,
-+	},
++struct snd_soc_platform bf5xx_i2s_soc_platform = {
++	.name		= "bf5xx-audio",
++	.pcm_ops 	= &bf5xx_pcm_i2s_ops,
++	.pcm_new	= bf5xx_pcm_i2s_new,
++	.pcm_free	= bf5xx_pcm_free_dma_buffers,
 +};
-+EXPORT_SYMBOL_GPL(bf5xx_i2s_dai);
++EXPORT_SYMBOL_GPL(bf5xx_i2s_soc_platform);
 +
-+/* Module information */
 +MODULE_AUTHOR("Cliff Cai");
-+MODULE_DESCRIPTION("I2S driver for ADI Blackfin");
++MODULE_DESCRIPTION("ADI Blackfin I2S PCM DMA module");
 +MODULE_LICENSE("GPL");
-+
-diff --git a/sound/soc/blackfin/bf5xx-i2s.h b/sound/soc/blackfin/bf5xx-i2s.h
+diff --git a/sound/soc/blackfin/bf5xx-i2s-pcm.h b/sound/soc/blackfin/bf5xx-i2s-pcm.h
 new file mode 100644
-index 0000000..7107d1a
+index 0000000..4d4609a
 --- /dev/null
-+++ b/sound/soc/blackfin/bf5xx-i2s.h
-@@ -0,0 +1,14 @@
++++ b/sound/soc/blackfin/bf5xx-i2s-pcm.h
+@@ -0,0 +1,29 @@
 +/*
-+ * linux/sound/arm/bf5xx-i2s.h
++ * linux/sound/arm/bf5xx-i2s-pcm.h -- ALSA PCM interface for the Blackfin
++ *
++ * Copyright 2007 Analog Device Inc.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
 +
-+#ifndef _BF5XX_I2S_H
-+#define _BF5XX_I2S_H
++#ifndef _BF5XX_I2S_PCM_H
++#define _BF5XX_I2S_PCM_H
 +
-+extern struct snd_soc_dai bf5xx_i2s_dai;
++struct bf5xx_pcm_dma_params {
++	char *name;			/* stream identifier */
++};
++
++struct bf5xx_gpio {
++	u32 sys;
++	u32 rx;
++	u32 tx;
++	u32 clk;
++	u32 frm;
++};
++
++/* platform data */
++extern struct snd_soc_platform bf5xx_i2s_soc_platform;
 +
 +#endif
 -- 
