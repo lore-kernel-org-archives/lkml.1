@@ -1,80 +1,563 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYIEH64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbYIEIBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbYIEH64 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 03:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYIEH6o
+	id S1754896AbYIEIBd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 04:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbYIEIBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 03:58:44 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:19441 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754748AbYIEH6m (ORCPT
+	Fri, 5 Sep 2008 04:01:20 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:29894 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752511AbYIEIBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 03:58:42 -0400
+	Fri, 5 Sep 2008 04:01:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=nwUiPGQNNe3jOWhcIUSbddivDuVaMZftXfJGa0cDAj4Kv+KqKftBZD86svGKgYJsPu
-         4V1D/qft/oiD1A9IoSDzLKmCogMQ3VPX9ZBkQf3j3h2KSghUNSYUsaaWsrM11EFXRUjL
-         fEG/xxT2WlLOJnRf8/78e4/G6lXqFS/To7b/k=
-Message-ID: <19f34abd0809050058h1e463acdnbfdbfcfa3ef79391@mail.gmail.com>
-Date: Fri, 5 Sep 2008 09:58:41 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: PROBLEM: Kernel 2.6.26 oops if I unplug my Logitech USB 1.1 headset
+        b=wTAtPDOFULKeL6I8zoSs7TObIIovteBAUaLEvKid+9ZVg/ZmIXERxa4Nbw5aMPDB0c
+         ZqqK2YYEqsqLTjF68FFHU1vzzRmihRCNdmbMatQ9sLKZiOzUNGk5uDPz2X9YBHVX4O3o
+         uviz809BDrYSeFi99vTqczqUUiHW5vbo7dEpk=
+Message-ID: <7d1d9c250809050101v9ab3907l649781ee38a5a243@mail.gmail.com>
+Date: Fri, 5 Sep 2008 04:01:16 -0400
+From: "Paul Gortmaker" <paul.gortmaker@gmail.com>
+To: "David Fries" <david@fries.net>
+Subject: Re: [PATCH] ne.c fix for hibernate and rmmod oops fix
 Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Edgar Kalkowski" <eMail@edgar-kalkowski.de>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-In-Reply-To: <s5hod33t6f9.wl%tiwai@suse.de>
+       "Atsushi Nemoto" <anemo@mba.ocn.ne.jp>,
+       "Paul Gortmaker" <p_gortmaker@yahoo.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20080904030212.GA23493@spacedout.fries.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48C069B1.3000201@edgar-kalkowski.de>
-	 <20080904172822.e5390a59.akpm@linux-foundation.org>
-	 <s5hod33t6f9.wl%tiwai@suse.de>
+References: <20080904030212.GA23493@spacedout.fries.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 5, 2008 at 9:09 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> At Thu, 4 Sep 2008 17:28:22 -0700,
-> Andrew Morton wrote:
->>
->> On Fri, 05 Sep 2008 01:05:21 +0200
->> Edgar Kalkowski <eMail@edgar-kalkowski.de> wrote:
->>
->> > Dear kernel hackers. ;)
->> >
->> > [1.] One line summary of the problem: If I unplug my USB-Headset the kernel oopses.
->>
->> cc's added.
->>
->> Might be USB, might be ALSA.
+On Wed, Sep 3, 2008 at 11:02 PM, David Fries <david@fries.net> wrote:
+> Andrew Morton,
 >
-> Hm, it's hard to guess...
-> Edgar, could you check whether it happens with 2.6.25?
+> This patch is ready to be merged.
 
-Hi,
+Hi David,
 
-I recognize this address:
+I think there are some things that should be done here still.
 
->>> BUG: unable to handle kernel paging request at 00100100
+Generally speaking, this is an old driver for hardware that most of
+us will never see again, so the concern is that any changes may
+break some existing configurations we can't easily test.  In light
+of that, the change footprint should be minimized and/or be
+bisectable wherever possible.
 
-Is this a magic value? I also got it, see for example:
-http://lkml.org/lkml/2008/8/21/426
+For example, if I'm reading it correctly, you've changed the module
+behaviour so that on module load an autoprobe takes place, where
+that was not the case before, because the probe is invasive.
 
-Google will also recognize it:
-http://www.google.com/search?hl=en&q="unable+to+handle+kernel+paging+request"+00100100
+It looks like you've got several semi-independent fixes here, plus
+some shuffling of code blocks and a couple of needless white
+space changes which all add up to a pretty big patch to an old
+legacy driver.  I think it would be good if this was broken down
+a bit and had a reduced footprint.  It would also be good to know
+if you have tested both module and non-module (build and/or boot).
 
-Where does it come from?
+Additional comments inline.
 
+Thanks,
+Paul.
 
-Vegard
+>
+> This ne2000 and the previous cr4 problem found when enabling suspend to
+> disk on my i486 with a PnP ISA NE2000 and Creative SB Live in the
+> trunk of my car.  It is providing in car podcast entertainment.  Must
+> be a unique setup.
+>
+> --
+> David Fries <david@fries.net>
+> http://fries.net/~david/ (PGP encryption key available)
+>
+>
+> From c2307cd616ccbe4b8eb1bb65e46aea11da7787a2 Mon Sep 17 00:00:00 2001
+> Message-Id: <c2307cd616ccbe4b8eb1bb65e46aea11da7787a2.1220402838.git.david@fries.net>
+> From: David Fries <david@fries.net>
+> Date: Wed, 27 Aug 2008 22:49:16 -0500
+> Subject: [PATCH 1/1] [PATCH] ne.c fix for hibernate and rmmod oops fix
+>
+> Removing the module would cause a kernel oops as platform_driver_probe
+> failed to detect a device and unregistered the platform driver on
+> module init, and cleanup_module would unregister the already
+> unregistered driver.  The suspend and resume functions weren't being
+> called and the network card didn't function across a suspend to disk
+> followed by a power cycle.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+The suspend/resume fix looks to be a candidate for a simple
+fix (i.e. separate patch) in its own right.
+
+>
+> platform_driver support was added earlier, but without any
+> platform_device_register* calls I don't think it was being used.  Now
+> all devices are registered using platform_device_register_simple and
+> pointers are kept to unregister the ones that the probe failed for or
+> unregister all devices on module shutdown.  init_module no longer
+> calls ne_init to reduce confusion (and multiple unregister paths that
+> caused the rmmod oops).
+>
+> With the devices now registered they are added to the platform driver
+> and get suspend and resume events.  A call to pnp_stop_dev and
+> pnp_start_dev now shutsdown and initializes plug and play devices.
+>
+> netif_device_detach(dev) was added before unregister_netdev(dev) when
+> removing the region as occationally I would see a race condition where
+> the device was still being used in unregister_netdev.
+
+This too sounds like it could be an independent fix on its own. I'd
+say do those 1st and then the platform patch won't be as big.
+
+>
+> Signed-off-by: David Fries <david@fries.net>
+> Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Cc: Jeff Garzik <jeff@garzik.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  drivers/net/ne.c |  277 +++++++++++++++++++++++++++++++++--------------------
+>  1 files changed, 172 insertions(+), 105 deletions(-)
+>
+> diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+> index 42443d6..7980cf0 100644
+> --- a/drivers/net/ne.c
+> +++ b/drivers/net/ne.c
+> @@ -64,6 +64,27 @@ static const char version2[] =
+>
+>  /* Do we support clones that don't adhere to 14,15 of the SAprom ? */
+>  #define SUPPORT_NE_BAD_CLONES
+> +/* 0xbad = bad sig or no reset ack */
+> +#define BAD 0xbad
+> +#define BAD_STR "0xbad"
+
+I think your change puts the above as the human readable name in
+/proc/ioports when you have a bad clone.  As such it probably should
+be something like "ne2000(bad sig)" or similar, so it doesn't look
+like some resource management bug to an end user.
+
+> +
+> +#define MAX_NE_CARDS   4       /* Max number of NE cards per module */
+> +static struct platform_device *pdev_ne[MAX_NE_CARDS];
+> +
+> +static int io[MAX_NE_CARDS];
+> +static int irq[MAX_NE_CARDS];
+> +static int bad[MAX_NE_CARDS];
+> +
+> +#ifdef MODULE
+> +module_param_array(io, int, NULL, 0);
+> +module_param_array(irq, int, NULL, 0);
+> +module_param_array(bad, int, NULL, 0);
+> +MODULE_PARM_DESC(io, "I/O base address(es),required");
+> +MODULE_PARM_DESC(irq, "IRQ number(s)");
+> +MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
+> +MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
+> +MODULE_LICENSE("GPL");
+> +#endif /* MODULE */
+
+The relocation of all this makes it harder to read through the patch and
+see what the significant changes are.  Is it necessary?
+
+>
+>  /* Do we perform extra sanity checks on stuff ? */
+>  /* #define NE_SANITY_CHECK */
+> @@ -162,7 +183,6 @@ static void ne_block_input(struct net_device *dev, int count,
+>  static void ne_block_output(struct net_device *dev, const int count,
+>                const unsigned char *buf, const int start_page);
+>
+> -
+>  /*  Probe for various non-shared-memory ethercards.
+>
+
+Gratuitous whitespace change.
+
+>    NEx000-clone boards have a Station Address PROM (SAPROM) in the packet
+> @@ -192,8 +212,13 @@ static int __init do_ne_probe(struct net_device *dev)
+>  #endif
+>
+>        /* First check any supplied i/o locations. User knows best. <cough> */
+> -       if (base_addr > 0x1ff)  /* Check a single specified location. */
+> -               return ne_probe1(dev, base_addr);
+> +       if (base_addr > 0x1ff) {        /* Check a single specified location. */
+> +               int ret = ne_probe1(dev, base_addr);
+> +               if (ret)
+> +                       printk(KERN_WARNING "ne.c: No NE*000 card found at "
+> +                               "i/o = %#lx\n", base_addr);
+> +               return ret;
+> +       }
+>        else if (base_addr != 0)        /* Don't probe at all. */
+>                return -ENXIO;
+>
+> @@ -214,28 +239,6 @@ static int __init do_ne_probe(struct net_device *dev)
+>        return -ENODEV;
+>  }
+>
+> -#ifndef MODULE
+> -struct net_device * __init ne_probe(int unit)
+> -{
+> -       struct net_device *dev = alloc_eip_netdev();
+> -       int err;
+> -
+> -       if (!dev)
+> -               return ERR_PTR(-ENOMEM);
+> -
+> -       sprintf(dev->name, "eth%d", unit);
+> -       netdev_boot_setup_check(dev);
+> -
+> -       err = do_ne_probe(dev);
+> -       if (err)
+> -               goto out;
+> -       return dev;
+> -out:
+> -       free_netdev(dev);
+> -       return ERR_PTR(err);
+> -}
+> -#endif
+> -
+>  static int __init ne_probe_isapnp(struct net_device *dev)
+>  {
+>        int i;
+> @@ -329,7 +332,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+>           with an otherwise unused dev->mem_end value of "0xBAD" will
+>           cause the driver to skip these parts of the probe. */
+>
+> -       bad_card = ((dev->base_addr != 0) && (dev->mem_end == 0xbad));
+> +       bad_card = ((dev->base_addr != 0) && (dev->mem_end == BAD));
+>
+>        /* Reset card. Who knows what dain-bramaged state it was left in. */
+>
+> @@ -472,7 +475,7 @@ static int __init ne_probe1(struct net_device *dev, unsigned long ioaddr)
+>                outb_p(0x00, ioaddr + EN0_RCNTLO);
+>                outb_p(0x00, ioaddr + EN0_RCNTHI);
+>                outb_p(E8390_RREAD+E8390_START, ioaddr); /* Trigger it... */
+> -               mdelay(10);             /* wait 10ms for interrupt to propagate */
+> +               mdelay(10);     /* wait 10ms for interrupt to propagate */
+
+Gratuitous whitespace change.
+
+>                outb_p(0x00, ioaddr + EN0_IMR);                 /* Mask it again. */
+>                dev->irq = probe_irq_off(cookie);
+>                if (ei_debug > 2)
+> @@ -807,18 +810,20 @@ static int __init ne_drv_probe(struct platform_device *pdev)
+>  {
+>        struct net_device *dev;
+>        struct resource *res;
+> -       int err, irq;
+> +       int err, r_irq;
+>
+>        res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> -       irq = platform_get_irq(pdev, 0);
+> -       if (!res || irq < 0)
+> +       r_irq = platform_get_irq(pdev, 0);
+> +       if (!res || r_irq < 0)
+>                return -ENODEV;
+>
+>        dev = alloc_eip_netdev();
+>        if (!dev)
+>                return -ENOMEM;
+> -       dev->irq = irq;
+> +       dev->irq = r_irq;
+>        dev->base_addr = res->start;
+> +       if (!strcmp(res->name, BAD_STR))
+> +               dev->mem_end = BAD;
+>        err = do_ne_probe(dev);
+>        if (err) {
+>                free_netdev(dev);
+> @@ -828,24 +833,56 @@ static int __init ne_drv_probe(struct platform_device *pdev)
+>        return 0;
+>  }
+>
+> -static int __exit ne_drv_remove(struct platform_device *pdev)
+> +static int ne_drv_remove(struct platform_device *pdev)
+
+I guess the above is because of your addition of ne_loop_rm?
+If someone is unfortunate enough to be using an ISA ne2000, then
+they might care about saving on driver size while built-in...
+
+>  {
+>        struct net_device *dev = platform_get_drvdata(pdev);
+>
+> -       unregister_netdev(dev);
+> -       free_irq(dev->irq, dev);
+> -       release_region(dev->base_addr, NE_IO_EXTENT);
+> -       free_netdev(dev);
+> +       if (dev) {
+> +               struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
+> +               netif_device_detach(dev);
+> +               unregister_netdev(dev);
+> +               if (idev)
+> +                       pnp_device_detach(idev);
+> +               /* Careful ne_drv_remove can be called twice, once from
+> +                * the platform_driver.remove and again when the
+> +                * platform_device is being removed.
+> +                */
+> +               ei_status.priv = 0;
+> +               free_irq(dev->irq, dev);
+> +               release_region(dev->base_addr, NE_IO_EXTENT);
+> +               free_netdev(dev);
+> +               platform_set_drvdata(pdev, NULL);
+> +       }
+>        return 0;
+>  }
+>
+> +/* Remove unused devices or all if true. */
+> +static void ne_loop_rm_unreg(int all)
+> +{
+> +       int this_dev;
+> +       struct platform_device *pdev;
+> +       for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++) {
+> +               pdev = pdev_ne[this_dev];
+> +               /* No network device == unused */
+> +               if (pdev && (!platform_get_drvdata(pdev) || all)) {
+> +                       ne_drv_remove(pdev);
+> +                       platform_device_unregister(pdev);
+> +                       pdev_ne[this_dev] = NULL;
+> +               }
+> +       }
+> +}
+> +
+>  #ifdef CONFIG_PM
+>  static int ne_drv_suspend(struct platform_device *pdev, pm_message_t state)
+>  {
+>        struct net_device *dev = platform_get_drvdata(pdev);
+>
+> -       if (netif_running(dev))
+> +       if (netif_running(dev)) {
+> +               struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
+>                netif_device_detach(dev);
+> +               if (idev)
+> +                       pnp_stop_dev(idev);
+> +       }
+>        return 0;
+>  }
+>
+> @@ -854,6 +891,9 @@ static int ne_drv_resume(struct platform_device *pdev)
+>        struct net_device *dev = platform_get_drvdata(pdev);
+>
+>        if (netif_running(dev)) {
+> +               struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
+> +               if (idev)
+> +                       pnp_start_dev(idev);
+>                ne_reset_8390(dev);
+>                NS8390p_init(dev, 1);
+>                netif_device_attach(dev);
+
+The two chunks above look to be what could be bundled together
+as a separate, stand-alone fix.
+
+> @@ -866,7 +906,7 @@ static int ne_drv_resume(struct platform_device *pdev)
+>  #endif
+>
+>  static struct platform_driver ne_driver = {
+> -       .remove         = __exit_p(ne_drv_remove),
+> +       .remove         = ne_drv_remove,
+>        .suspend        = ne_drv_suspend,
+>        .resume         = ne_drv_resume,
+>        .driver         = {
+> @@ -875,91 +915,118 @@ static struct platform_driver ne_driver = {
+>        },
+>  };
+>
+> -static int __init ne_init(void)
+> -{
+> -       return platform_driver_probe(&ne_driver, ne_drv_probe);
+> -}
+> -
+> -static void __exit ne_exit(void)
+> -{
+> -       platform_driver_unregister(&ne_driver);
+> -}
+> -
+> -#ifdef MODULE
+> -#define MAX_NE_CARDS   4       /* Max number of NE cards per module */
+> -static struct net_device *dev_ne[MAX_NE_CARDS];
+> -static int io[MAX_NE_CARDS];
+> -static int irq[MAX_NE_CARDS];
+> -static int bad[MAX_NE_CARDS];  /* 0xbad = bad sig or no reset ack */
+> -
+> -module_param_array(io, int, NULL, 0);
+> -module_param_array(irq, int, NULL, 0);
+> -module_param_array(bad, int, NULL, 0);
+> -MODULE_PARM_DESC(io, "I/O base address(es),required");
+> -MODULE_PARM_DESC(irq, "IRQ number(s)");
+> -MODULE_PARM_DESC(bad, "Accept card(s) with bad signatures");
+> -MODULE_DESCRIPTION("NE1000/NE2000 ISA/PnP Ethernet driver");
+> -MODULE_LICENSE("GPL");
+> -
+>  /* This is set up so that no ISA autoprobe takes place. We can't guarantee
+>  that the ne2k probe is the last 8390 based probe to take place (as it
+>  is at boot) and so the probe will get confused by any other 8390 cards.
+>  ISA device autoprobes on a running machine are not recommended anyway. */
+>
+> -int __init init_module(void)
+> +/* Register platform devices for each non-zero io[] (and one 0 io for probe
+> + * or pnp probing), then probe to see if we found any.
+> + */
+> +static void __init ne_add_devices(void)
+>  {
+> -       int this_dev, found = 0;
+> -       int plat_found = !ne_init();
+> +       int this_dev;
+> +       int probed_zero = 0;
+> +       struct platform_device *pdev;
+>
+>        for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++) {
+> -               struct net_device *dev = alloc_eip_netdev();
+> -               if (!dev)
+> -                       break;
+> -               dev->irq = irq[this_dev];
+> -               dev->mem_end = bad[this_dev];
+> -               dev->base_addr = io[this_dev];
+> -               if (do_ne_probe(dev) == 0) {
+> -                       dev_ne[found++] = dev;
+> -                       continue;
+> +               struct resource r[2] = {
+> +                       {
+> +                               .start = io[this_dev],
+> +                               .end = io[this_dev]+NE_IO_EXTENT-1,
+> +                               .flags = IORESOURCE_IO},
+> +                       {
+> +                               .start = irq[this_dev],
+> +                               .flags = IORESOURCE_IRQ} };
+> +               /* probe zero once */
+> +               if (io[this_dev] == 0) {
+> +                       if (probed_zero)
+> +                               continue;
+> +                       probed_zero = 1;
+>                }
+
+This is where I think you now have the module doing an
+autoprobe that wasn''t being done before.
+
+> -               free_netdev(dev);
+> -               if (found || plat_found)
+> -                       break;
+> -               if (io[this_dev] != 0)
+> -                       printk(KERN_WARNING "ne.c: No NE*000 card found at i/o = %#x\n", io[this_dev]);
+> -               else
+> -                       printk(KERN_NOTICE "ne.c: You must supply \"io=0xNNN\" value(s) for ISA cards.\n");
+> -               return -ENXIO;
+> +               if (pdev_ne[this_dev])
+> +                       continue;
+> +               if (bad[this_dev] == BAD)
+> +                       r[0].name = BAD_STR;
+> +               pdev = platform_device_register_simple(
+> +                       DRV_NAME, this_dev, r, ARRAY_SIZE(r));
+> +               if (IS_ERR(pdev))
+> +                       continue;
+> +               pdev_ne[this_dev] = pdev;
+>        }
+> -       if (found || plat_found)
+> -               return 0;
+> -       return -ENODEV;
+>  }
+>
+> -static void cleanup_card(struct net_device *dev)
+> +#ifdef MODULE
+> +int __init init_module()
+>  {
+> -       struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
+> -       if (idev)
+> -               pnp_device_detach(idev);
+> -       free_irq(dev->irq, dev);
+> -       release_region(dev->base_addr, NE_IO_EXTENT);
+> +       int retval;
+> +       ne_add_devices();
+> +       retval = platform_driver_probe(&ne_driver, ne_drv_probe);
+> +       if (retval) {
+> +               if (io[0] == 0)
+> +                       printk(KERN_NOTICE "ne.c: You must supply \"io=0xNNN\""
+> +                               " value(s) for ISA cards.\n");
+> +               ne_loop_rm_unreg(1);
+> +               return retval;
+> +       }
+> +
+> +       /* Unregister unused platform_devices. */
+> +       ne_loop_rm_unreg(0);
+> +       return retval;
+> +}
+> +#else /* MODULE */
+> +static int __init ne_init(void)
+> +{
+> +       int retval = platform_driver_probe(&ne_driver, ne_drv_probe);
+> +
+> +       /* Unregister unused platform_devices. */
+> +       ne_loop_rm_unreg(0);
+> +       return retval;
+>  }
+> +module_init(ne_init);
+>
+> -void __exit cleanup_module(void)
+> +struct net_device * __init ne_probe(int unit)
+>  {
+>        int this_dev;
+> +       struct net_device *dev;
+> +       struct platform_device *pdev;
+>
+> -       ne_exit();
+> -       for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++) {
+> -               struct net_device *dev = dev_ne[this_dev];
+> -               if (dev) {
+> -                       unregister_netdev(dev);
+> -                       cleanup_card(dev);
+> -                       free_netdev(dev);
+> -               }
+> +       /* Find an empty slot. */
+> +       this_dev = 0;
+> +       while (pdev_ne[this_dev] || io[this_dev]) {
+> +               if (++this_dev == MAX_NE_CARDS)
+> +                       return ERR_PTR(-ENOMEM);
+>        }
+> +
+> +       /* Get irq, io from kernel command line */
+> +       dev = alloc_eip_netdev();
+> +       if (!dev)
+> +               return ERR_PTR(-ENOMEM);
+> +
+> +       sprintf(dev->name, "eth%d", unit);
+> +       netdev_boot_setup_check(dev);
+> +
+> +       io[this_dev] = dev->base_addr;
+> +       irq[this_dev] = dev->irq;
+> +       bad[this_dev] = dev->mem_end;
+> +
+> +       free_netdev(dev);
+> +
+> +       ne_add_devices();
+> +
+> +       /* return the first device found */
+> +       for (this_dev = 0; this_dev < MAX_NE_CARDS; this_dev++)
+> +               if ((pdev = pdev_ne[this_dev]) &&
+> +                       (dev = platform_get_drvdata(pdev)))
+> +                       return dev;
+> +
+> +       return ERR_PTR(-ENODEV);
+>  }
+> -#else /* MODULE */
+> -module_init(ne_init);
+> -module_exit(ne_exit);
+>  #endif /* MODULE */
+> +
+> +static void __exit ne_exit(void)
+> +{
+> +       platform_driver_unregister(&ne_driver);
+> +       ne_loop_rm_unreg(1);
+> +}
+> +module_exit(ne_exit);
+> --
+> 1.4.4.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
