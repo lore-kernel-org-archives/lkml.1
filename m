@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYIEMaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbYIEMdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbYIEMaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 08:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYIEMar
+	id S1753561AbYIEMdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 08:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYIEMdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 08:30:47 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:55276 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751659AbYIEMaq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 08:30:46 -0400
-Date: Fri, 5 Sep 2008 18:00:04 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>
-Subject: [PATCH] sched: Fix __load_balance_iterator() for cfq with only one
-	task
-Message-ID: <20080905123004.GD6238@in.ibm.com>
-Reply-To: ego@in.ibm.com
-MIME-Version: 1.0
+	Fri, 5 Sep 2008 08:33:17 -0400
+Received: from 1wt.eu ([62.212.114.60]:3196 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752154AbYIEMdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 08:33:16 -0400
+Date: Fri, 5 Sep 2008 14:33:02 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: ivaylo@bglans.net
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Marvel IDE 88SE6101 2.4.XX support
+Message-ID: <20080905123302.GB22545@1wt.eu>
+References: <Pine.LNX.4.62.0708102357470.24424@mail.bglans.net> <Pine.LNX.4.64.0809042115350.11281@mail.bglans.net> <20080904193625.652bf013@lxorguk.ukuu.org.uk> <20080905040326.GB17104@1wt.eu> <Pine.LNX.4.64.0809051317430.9897@mail.bglans.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <Pine.LNX.4.64.0809051317430.9897@mail.bglans.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Fix __load_balance_iterator() for cfq with only one task.
+Hello,
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+On Fri, Sep 05, 2008 at 01:37:35PM +0300, ivaylo@bglans.net wrote:
+> 
+> Hello,
+> 
+> Thanks, Alan for your comment about Marvell PATA IDE driver.
+> In this time I'm a litle bit busy and do not have time to backport driver 
+> in 2.4 probably after a time I'll try (I'm not a profesional C programer 
+> and it is litle hard to me). I correct generic IDE patch and send you in 
+> the attached file.
 
-The __load_balance_iterator() returns a NULL when there's only one
-sched_entity which is a task. It is caused by the following code-path.
+OK. BTW, next time, please post it in pure text form, so that people on
+the list can easily review and comment it.
 
+> I make also patch to update e1000 driver in the 2.4 kernel to e1000-7.6.5 
+> and add support for:
+> 00:19.0 Ethernet controller: Intel Corporation 82801I (ICH9 Family) 
+> Gigabit Ethernet Controller (rev 02)
+> 
+> But I'm not sure if there are any license violations and any other person 
+> who manage network drivers to send it to him. If you know something about 
+> it please tell me to send the patch for testing and e.t.c.
 
-	/* Skip over entities that are not tasks */
-	do {
-		se = list_entry(next, struct sched_entity, group_node);
-		next = next->next;
-	} while (next != &cfs_rq->tasks && !entity_is_task(se));
+Please contact Auke Kok and/or Jesse Brandeburg at intel. They are the
+driver's maintainers, and since they still support it, I do not want to
+change it without their agreement. If they want to propose an upgrade,
+I'll trust them.
 
-	if (next == &cfs_rq->tasks)
-		return NULL;
-	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-      This will return NULL even when se is a task.
+Regards,
+Willy
 
-As a side-effect, there was a regression in sched_mc behavior since 2.6.25,
-since iter_move_one_task() when it calls load_balance_start_fair(),
-would not get any tasks to move!
-
-Fix this by checking if the last entity was a task or not.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
-
- kernel/sched_fair.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index fb8994c..f1c96e3 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1451,7 +1451,7 @@ __load_balance_iterator(struct cfs_rq *cfs_rq, struct list_head *next)
- 		next = next->next;
- 	} while (next != &cfs_rq->tasks && !entity_is_task(se));
- 
--	if (next == &cfs_rq->tasks)
-+	if (next == &cfs_rq->tasks && !entity_is_task(se))
- 		return NULL;
- 
- 	cfs_rq->balance_iterator = next;
--- 
-Thanks and Regards
-gautham
