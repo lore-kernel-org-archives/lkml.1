@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYIEKYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbYIEKY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbYIEKYZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 06:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYIEKVi
+	id S1754800AbYIEKY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 06:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYIEKVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 06:21:38 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:51198 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbYIEKVb (ORCPT
+	Fri, 5 Sep 2008 06:21:40 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:36516 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752961AbYIEKVc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 06:21:31 -0400
+	Fri, 5 Sep 2008 06:21:32 -0400
 X-IronPort-AV: E=Sophos;i="4.32,320,1217822400"; 
-   d="scan'208";a="74640985"
+   d="scan'208";a="59089267"
 From: Bryan Wu <cooloney@kernel.org>
 To: broonie@sirena.org.uk
 Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
        Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 9/9] ASoC: Blackfin: add Blackfin arch ASoC Kconfig and Makefile
-Date: Fri,  5 Sep 2008 18:21:42 +0800
-Message-Id: <1220610102-7716-10-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 7/9] ASoC: Blackfin: board driver for AD1980/1 audio codec
+Date: Fri,  5 Sep 2008 18:21:40 +0800
+Message-Id: <1220610102-7716-8-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1220610102-7716-1-git-send-email-cooloney@kernel.org>
 References: <1220610102-7716-1-git-send-email-cooloney@kernel.org>
@@ -31,128 +31,128 @@ From: Cliff Cai <cliff.cai@analog.com>
 Signed-off-by: Cliff Cai <cliff.cai@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- sound/soc/blackfin/Kconfig  |   85 +++++++++++++++++++++++++++++++++++++++++++
- sound/soc/blackfin/Makefile |   20 ++++++++++
- 2 files changed, 105 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/blackfin/Kconfig
- create mode 100644 sound/soc/blackfin/Makefile
+ sound/soc/blackfin/bf5xx-ad1980.c |  113 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 113 insertions(+), 0 deletions(-)
+ create mode 100644 sound/soc/blackfin/bf5xx-ad1980.c
 
-diff --git a/sound/soc/blackfin/Kconfig b/sound/soc/blackfin/Kconfig
+diff --git a/sound/soc/blackfin/bf5xx-ad1980.c b/sound/soc/blackfin/bf5xx-ad1980.c
 new file mode 100644
-index 0000000..f98331d
+index 0000000..124425d
 --- /dev/null
-+++ b/sound/soc/blackfin/Kconfig
-@@ -0,0 +1,85 @@
-+config SND_BF5XX_I2S
-+	tristate "SoC I2S Audio for the ADI BF5xx chip"
-+	depends on BLACKFIN && SND_SOC
-+	help
-+	  Say Y or M if you want to add support for codecs attached to
-+	  the Blackfin SPORT (synchronous serial ports) interface in I2S
-+	  mode (supports single stereo In/Out).
-+	  You will also need to select the audio interfaces to support below.
++++ b/sound/soc/blackfin/bf5xx-ad1980.c
+@@ -0,0 +1,113 @@
++/*
++ * File:         sound/soc/blackfin/bf5xx-ad1980.c
++ * Author:       Cliff Cai <Cliff.Cai@analog.com>
++ *
++ * Created:      Tue June 06 2008
++ * Description:  Board driver for AD1980/1 audio codec
++ *
++ * Modified:
++ *               Copyright 2008 Analog Devices Inc.
++ *
++ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
 +
-+config SND_BF5XX_SOC_SSM2602
-+	tristate "SoC SSM2602 Audio support for BF52x ezkit"
-+	depends on SND_BF5XX_I2S
-+	select SND_BF5XX_SOC_I2S
-+	select SND_SOC_SSM2602
-+	select I2C
-+	select I2C_BLACKFIN_TWI
-+	help
-+	  Say Y if you want to add support for SoC audio on BF527-EZKIT.
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/device.h>
++#include <asm/dma.h>
 +
-+config SND_BF5XX_AC97
-+	tristate "SoC AC97 Audio for the ADI BF5xx chip"
-+	depends on BLACKFIN && SND_SOC
-+	help
-+	  Say Y or M if you want to add support for codecs attached to
-+	  the Blackfin SPORT (synchronous serial ports) interface in slot 16
-+	  mode (pseudo AC97 interface).
-+	  You will also need to select the audio interfaces to support below.
++#include <sound/core.h>
++#include <sound/pcm.h>
++#include <sound/soc.h>
 +
-+	  Note:
-+	  AC97 codecs which do not implment the slot-16 mode will not function
-+	  properly with this driver. This driver is known to work with the
-+	  Analog Devices line of AC97 codecs.
++#include <linux/gpio.h>
++#include <asm/portmux.h>
 +
-+config SND_MMAP_SUPPORT
-+	bool "Enable MMAP Support"
-+	depends on SND_BF5XX_AC97
-+	default y
-+	help
-+	  Say y if you want AC97 driver to support mmap mode.
-+	  We introduce an intermediate buffer to simulate mmap.
++#include "../codecs/ad1980.h"
++#include "bf5xx-sport.h"
++#include "bf5xx-ac97-pcm.h"
++#include "bf5xx-ac97.h"
 +
-+config SND_BF5XX_SOC_SPORT
-+	tristate
-+	
-+config SND_BF5XX_SOC_I2S
-+	tristate
-+	select SND_BF5XX_SOC_SPORT
++static struct snd_soc_machine bf5xx_board;
 +
-+config SND_BF5XX_SOC_AC97
-+	tristate
-+	select AC97_BUS
-+	select SND_SOC_AC97_BUS
-+	select SND_BF5XX_SOC_SPORT
++static int bf5xx_board_startup(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_dai *cpu_dai = rtd->dai->cpu_dai;
 +
-+config SND_BF5XX_SOC_AD1980
-+	tristate "SoC AD1980/1 Audio support for BF5xx"
-+	depends on SND_BF5XX_AC97
-+	select SND_BF5XX_SOC_AC97
-+	select SND_SOC_AD1980
-+	help
-+	  Say Y if you want to add support for SoC audio on BF5xx STAMP/EZKIT.
++	pr_debug("%s enter\n", __func__);
++	cpu_dai->private_data = sport_handle;
++	return 0;
++}
 +
-+config SND_BF5XX_SPORT_NUM
-+	int "Set a SPORT for Sound chip"
-+	depends on (SND_BF5XX_I2S || SND_BF5XX_AC97)
-+	range 0 3 if BF54x
-+	range 0 1 if (BF53x || BF561)
-+	default 0
-+	help
-+	  Set the correct SPORT for sound chip.
++static struct snd_soc_ops bf5xx_board_ops = {
++	.startup = bf5xx_board_startup,
++};
 +
-+config SND_BF5XX_HAVE_COLD_RESET
-+	bool "BOARD has COLD Reset GPIO"
-+	depends on SND_BF5XX_AC97
-+	default y if BFIN548_EZKIT
-+	default n if !BFIN548_EZKIT
-+	
-+config SND_BF5XX_RESET_GPIO_NUM
-+	int "Set a GPIO for cold reset"
-+	depends on SND_BF5XX_HAVE_COLD_RESET
-+	range 0 159
-+	default 19 if BFIN548_EZKIT
-+	default 5 if BFIN537_STAMP
-+	help
-+	  Set the correct GPIO for RESET the sound chip.
-diff --git a/sound/soc/blackfin/Makefile b/sound/soc/blackfin/Makefile
-new file mode 100644
-index 0000000..9ea8bd9
---- /dev/null
-+++ b/sound/soc/blackfin/Makefile
-@@ -0,0 +1,20 @@
-+# Blackfin Platform Support
-+snd-bf5xx-ac97-objs := bf5xx-ac97-pcm.o
-+snd-bf5xx-i2s-objs := bf5xx-i2s-pcm.o
-+snd-soc-bf5xx-sport-objs := bf5xx-sport.o
-+snd-soc-bf5xx-ac97-objs := bf5xx-ac97.o
-+snd-soc-bf5xx-i2s-objs := bf5xx-i2s.o
++static struct snd_soc_dai_link bf5xx_board_dai = {
++	.name = "AC97",
++	.stream_name = "AC97 HiFi",
++	.cpu_dai = &bfin_ac97_dai,
++	.codec_dai = &ad1980_dai,
++	.ops = &bf5xx_board_ops,
++};
 +
-+obj-$(CONFIG_SND_BF5XX_AC97) += snd-bf5xx-ac97.o
-+obj-$(CONFIG_SND_BF5XX_I2S) += snd-bf5xx-i2s.o
-+obj-$(CONFIG_SND_BF5XX_SOC_SPORT) += snd-soc-bf5xx-sport.o
-+obj-$(CONFIG_SND_BF5XX_SOC_AC97) += snd-soc-bf5xx-ac97.o
-+obj-$(CONFIG_SND_BF5XX_SOC_I2S) += snd-soc-bf5xx-i2s.o
++static struct snd_soc_machine bf5xx_board = {
++	.name = "bf5xx-board",
++	.dai_link = &bf5xx_board_dai,
++	.num_links = 1,
++};
 +
-+# Blackfin Machine Support
-+snd-ad1980-objs := bf5xx-ad1980.o
-+snd-ssm2602-objs := bf5xx-ssm2602.o
++static struct snd_soc_device bf5xx_board_snd_devdata = {
++	.machine = &bf5xx_board,
++	.platform = &bf5xx_ac97_soc_platform,
++	.codec_dev = &soc_codec_dev_ad1980,
++};
 +
++static struct platform_device *bf5xx_board_snd_device;
 +
-+obj-$(CONFIG_SND_BF5XX_SOC_AD1980) += snd-ad1980.o
-+obj-$(CONFIG_SND_BF5XX_SOC_SSM2602) += snd-ssm2602.o
++static int __init bf5xx_board_init(void)
++{
++	int ret;
++
++	bf5xx_board_snd_device = platform_device_alloc("soc-audio", -1);
++	if (!bf5xx_board_snd_device)
++		return -ENOMEM;
++
++	platform_set_drvdata(bf5xx_board_snd_device, &bf5xx_board_snd_devdata);
++	bf5xx_board_snd_devdata.dev = &bf5xx_board_snd_device->dev;
++	ret = platform_device_add(bf5xx_board_snd_device);
++
++	if (ret)
++		platform_device_put(bf5xx_board_snd_device);
++
++	return ret;
++}
++
++static void __exit bf5xx_board_exit(void)
++{
++	platform_device_unregister(bf5xx_board_snd_device);
++}
++
++module_init(bf5xx_board_init);
++module_exit(bf5xx_board_exit);
++
++/* Module information */
++MODULE_AUTHOR("Cliff Cai");
++MODULE_DESCRIPTION("ALSA SoC AD1980/1 BF5xx board");
++MODULE_LICENSE("GPL");
 -- 
 1.5.6
