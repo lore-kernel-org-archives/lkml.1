@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbYIEVfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYIEVjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753444AbYIEVfS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 17:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbYIEVfF
+	id S1754129AbYIEVjb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 17:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbYIEVjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 17:35:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:34769 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbYIEVfD (ORCPT
+	Fri, 5 Sep 2008 17:39:23 -0400
+Received: from smtp239.poczta.interia.pl ([217.74.64.239]:49884 "EHLO
+	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbYIEVjX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 17:35:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=ZNJzZL2Eg517oxEbPg9oBndde81iX54RvrjNjruV4vd+HPBOeONLd+EGd4jzL5YoWo
-         eDWimKb+bb88xPixGDwNZA+/QJ/SEbCzOEZCc9/Uv/3Hht7RC9bIOy+UgjAGlXuyYXBh
-         Ey0TxokPWbjdEQ85B/YN382BApWctvdYGHdXs=
-Date: Sat, 6 Sep 2008 01:36:46 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org
+	Fri, 5 Sep 2008 17:39:23 -0400
+Date: Fri, 5 Sep 2008 23:46:19 +0200
+From: Krzysztof Helt <krzysztof.h1@poczta.fm>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] proc: more debugging for "already registered" case
-Message-ID: <20080905213646.GF11569@x200.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: 2.6.27-rc5-mm1 compilation fix with gcc 3.4.6
+Message-Id: <20080905234619.2e95ae92.krzysztof.h1@poczta.fm>
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-EMID: ec0b138
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Print parent directory name as well.
+Hi Andrew,
 
-Target is to catch non-creation of parent directory when proc_mkdir will
-return NULL and all subsequent registrations go directly in /proc
-instead of intended directory.
+I found that 2.6.27-rc5-mm1 does not compile with gcc 3.4.6.
+The error is:
+  CC      kernel/sched.o
+kernel/sched.c: In function `start_rt_bandwidth':
+kernel/sched.c:208: sorry, unimplemented: inlining failed in call to 'rt_bandwidth_enabled': function body not available
+kernel/sched.c:214: sorry, unimplemented: called from here
+make[1]: *** [kernel/sched.o] Error 1
+make: *** [kernel] Error 2
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+It seems that the gcc 3.4.6 requires full inline definition before first usage.
+The patch below fixes the compilation problem.
 
- fs/proc/generic.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Regards,
+Krzysztof
 
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -547,8 +547,8 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
+Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl> (if needed>
+
+diff -urp linux-ref/kernel/sched.c linux-mm/kernel/sched.c
+--- linux-ref/kernel/sched.c	2008-09-05 23:39:02.000000000 +0200
++++ linux-mm/kernel/sched.c	2008-09-05 23:41:12.779563125 +0200
+@@ -205,7 +205,10 @@ void init_rt_bandwidth(struct rt_bandwid
+ 	rt_b->rt_period_timer.cb_mode = HRTIMER_CB_IRQSAFE_NO_SOFTIRQ;
+ }
  
- 	for (tmp = dir->subdir; tmp; tmp = tmp->next)
- 		if (strcmp(tmp->name, dp->name) == 0) {
--			printk(KERN_WARNING "proc_dir_entry '%s' already "
--					"registered\n", dp->name);
-+			printk(KERN_WARNING "proc_dir_entry '%s'/'%s' already "
-+					"registered\n", dir->name, dp->name);
- 			dump_stack();
- 			break;
- 		}
+-static inline int rt_bandwidth_enabled(void);
++static inline int rt_bandwidth_enabled(void)
++{
++	return sysctl_sched_rt_runtime >= 0;
++}
+ 
+ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
+ {
+@@ -844,11 +847,6 @@ static inline u64 global_rt_runtime(void
+ 	return (u64)sysctl_sched_rt_runtime * NSEC_PER_USEC;
+ }
+ 
+-static inline int rt_bandwidth_enabled(void)
+-{
+-	return sysctl_sched_rt_runtime >= 0;
+-}
+-
+ #ifndef prepare_arch_switch
+ # define prepare_arch_switch(next)	do { } while (0)
+ #endif
+
+
+----------------------------------------------------------------------
+Nie zwlekaj! Tapetuj z nami!
+Sprawdz >>  http://link.interia.pl/f1f01
 
