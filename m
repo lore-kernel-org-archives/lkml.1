@@ -1,23 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbYIECHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYIEC6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbYIECHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 22:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYIECHW
+	id S1753819AbYIEC6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 22:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYIEC6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 22:07:22 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:20165 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751834AbYIECHU (ORCPT
+	Thu, 4 Sep 2008 22:58:11 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:19091 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbYIEC6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 22:07:20 -0400
-Date: Thu, 4 Sep 2008 19:03:08 -0700
+	Thu, 4 Sep 2008 22:58:09 -0400
+Date: Thu, 4 Sep 2008 19:57:44 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] dynamically enable readprofile at runtime
-Message-Id: <20080904190308.6d377ac6.randy.dunlap@oracle.com>
-In-Reply-To: <20080829202713.348431DC@kernel>
-References: <20080829202713.348431DC@kernel>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Dmitry Torokhov <dtor@insightbb.com>, lkml <linux-kernel@vger.kernel.org>,
+       akpm <akpm@osdl.org>, linux-next@vger.kernel.org
+Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
+Message-Id: <20080904195744.f367cd2d.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.64.0612102244140.2630@xanadu.home>
+References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
+	<200612092150.02940.dtor@insightbb.com>
+	<20061209185737.1768315d.randy.dunlap@oracle.com>
+	<200612092205.19358.dtor@insightbb.com>
+	<Pine.LNX.4.64.0612092212410.2630@xanadu.home>
+	<20061209210945.5abe2d89.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0612102244140.2630@xanadu.home>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -31,166 +38,282 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008 13:27:13 -0700 Dave Hansen wrote:
+On Sun, 10 Dec 2006 22:55:25 -0500 (EST) Nicolas Pitre wrote:
 
-> Way too often, I have a machine that exhibits some kind of crappy
-> behavior.  The CPU looks wedged in the kernel or it is spending
-> way too much system time and I wonder what is responsible.
+> On Sat, 9 Dec 2006, Randy Dunlap wrote:
 > 
-> I try to run readprofile.  But, of course, Ubuntu doesn't enable
-> it by default.  Dang!
+> > On Sat, 09 Dec 2006 22:17:55 -0500 (EST) Nicolas Pitre wrote:
+> > 
+> > > Please consider what SND_CONFIG_AC97_BUS corresponds to.  It is 
+> > > sound/pci/ac97/ac97_bus.c and if you look into this file you'll see that 
+> > > it is perfectly buildable even if sound is entirely configured out, just 
+> > > like some lib code would be.
+> > 
+> > OK.  Should it (CONFIG_SND_AC97_BUS -> sound/pci/ac97/ac97_bus.c)
+> > be buildable when sound is disabled?
 > 
-> The reason we boot-time enable it is that it takes a big bufffer
-> that we generally can only bootmem alloc.  But, does it hurt to
-> at least try and runtime-alloc it?
+> Yes.
 > 
-> To use:
-> echo 2 > /sys/kernel/profile
+> > If so, where should it be moved to (since afaik, make won't even
+> > descend into sound/ if SOUND=n; I don't see that changing
+> > any time soon).
 > 
-> Then run readprofile like normal.
+> What about this patch?
 
-I like it.
+Can we get this patch or some patch into the input tree for linux-next?
 
-> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+Currently ucb1400_core using ac97_bus_type is the #1 build failure in linux-next.
+In 50 randconfigs today, this was the failure in 20 builds.
+
+
+> ----- >8
+> Subject: break config ordering/dependency between UCB1400 touchscreen driver and sound subsystem
+> 
+> Commit 2d4ba4a3b9aef95d328d74a17ae84f8d658059e2 introduced a dependency
+> that was never meant to exist when the ac97_bus.c module was created.
+> Move ac97_bus.c up the directory hierarchy to make sure it is built when 
+> selected even if sound is configured out so things work as originally 
+> expected.
+> 
+> Signed-off-by: Nicolas Pitre <nico@cam.org>
+> 
 > ---
 > 
->  linux-2.6.git-dave/kernel/ksysfs.c  |   29 +++++++++++++++++++++++++++++
->  linux-2.6.git-dave/kernel/profile.c |   33 ++++++++++++++++++++++++---------
->  2 files changed, 53 insertions(+), 9 deletions(-)
-> 
-> diff -puN kernel/ksysfs.c~dynamic-readprofile kernel/ksysfs.c
-> --- linux-2.6.git/kernel/ksysfs.c~dynamic-readprofile	2008-08-29 13:15:52.000000000 -0700
-> +++ linux-2.6.git-dave/kernel/ksysfs.c	2008-08-29 13:19:03.000000000 -0700
-> @@ -14,6 +14,7 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/kexec.h>
-> +#include <linux/profile.h>
->  #include <linux/sched.h>
+> diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
+> index 3d5f196..6b46c9b 100644
+> --- a/drivers/input/touchscreen/Kconfig
+> +++ b/drivers/input/touchscreen/Kconfig
+> @@ -146,7 +146,7 @@ config TOUCHSCREEN_TOUCHWIN
 >  
->  #define KERNEL_ATTR_RO(_name) \
-> @@ -53,6 +54,31 @@ static ssize_t uevent_helper_store(struc
->  KERNEL_ATTR_RW(uevent_helper);
->  #endif
+>  config TOUCHSCREEN_UCB1400
+>  	tristate "Philips UCB1400 touchscreen"
+> -	depends on SND_AC97_BUS
+> +	select AC97_BUS
+>  	help
+>  	  This enables support for the Philips UCB1400 touchscreen interface.
+>  	  The UCB1400 is an AC97 audio codec.  The touchscreen interface
+> diff --git a/sound/Kconfig b/sound/Kconfig
+> index 95949b6..9d77300 100644
+> --- a/sound/Kconfig
+> +++ b/sound/Kconfig
+> @@ -93,4 +93,12 @@ endmenu
 >  
-> +#ifdef CONFIG_PROFILING
-> +/* uevent helper program, used during early boo */
-
-s/boo/boot/ ??
-
-> +static ssize_t profiling_show(struct kobject *kobj,
-> +				  struct kobj_attribute *attr, char *buf)
+>  endif
+>  
+> +config AC97_BUS
+> +	tristate
+> +	help
+> +	  This is used to avoid config and link hard dependencies between the
+> +	  sound subsystem and other function drivers completely unrelated to
+> +	  sound although they're sharing the AC97 bus. Concerned drivers
+> +	  should "select" this.
+> +
+>  endmenu
+> diff --git a/sound/Makefile b/sound/Makefile
+> index 5f6bef5..9aee54c 100644
+> --- a/sound/Makefile
+> +++ b/sound/Makefile
+> @@ -8,6 +8,9 @@ obj-$(CONFIG_DMASOUND) += oss/
+>  obj-$(CONFIG_SND) += core/ i2c/ drivers/ isa/ pci/ ppc/ arm/ synth/ usb/ sparc/ parisc/ pcmcia/ mips/
+>  obj-$(CONFIG_SND_AOA) += aoa/
+>  
+> +# This one must be compilable even if sound is configured out
+> +obj-$(CONFIG_AC97_BUS) += ac97_bus.o
+> +
+>  ifeq ($(CONFIG_SND),y)
+>    obj-y += last.o
+>  endif
+> diff --git a/sound/ac97_bus.c b/sound/ac97_bus.c
+> new file mode 100644
+> index 0000000..66de2c2
+> --- /dev/null
+> +++ b/sound/ac97_bus.c
+> @@ -0,0 +1,72 @@
+> +/*
+> + * Linux driver model AC97 bus interface
+> + *
+> + * Author:	Nicolas Pitre
+> + * Created:	Jan 14, 2005
+> + * Copyright:	(C) MontaVista Software Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/device.h>
+> +#include <linux/string.h>
+> +
+> +/*
+> + * Let drivers decide whether they want to support given codec from their
+> + * probe method.  Drivers have direct access to the struct snd_ac97 structure and may
+> + * decide based on the id field amongst other things.
+> + */
+> +static int ac97_bus_match(struct device *dev, struct device_driver *drv)
 > +{
-> +	return sprintf(buf, "%d\n", prof_on);
+> +	return 1;
 > +}
-> +static ssize_t profiling_store(struct kobject *kobj,
-> +				   struct kobj_attribute *attr,
-> +				   const char *buf, size_t count)
+> +
+> +static int ac97_bus_suspend(struct device *dev, pm_message_t state)
 > +{
-> +	int ret;
+> +	int ret = 0;
 > +
-> +	profile_setup(buf);
-> +	profile_init();
-> +	if (!prof_buffer)
-> +		return -ENOMEM;
-> +	ret = create_proc_profile();
-> +	if (ret)
-> +		return ret;
-> +	return count;
+> +	if (dev->driver && dev->driver->suspend)
+> +		ret = dev->driver->suspend(dev, state);
+> +
+> +	return ret;
 > +}
-> +KERNEL_ATTR_RW(profiling);
-> +#endif
 > +
->  #ifdef CONFIG_KEXEC
->  static ssize_t kexec_loaded_show(struct kobject *kobj,
->  				 struct kobj_attribute *attr, char *buf)
-> @@ -109,6 +135,9 @@ static struct attribute * kernel_attrs[]
->  	&uevent_seqnum_attr.attr,
->  	&uevent_helper_attr.attr,
->  #endif
-> +#ifdef CONFIG_PROFILING
-> +	&profiling_attr.attr,
-> +#endif
->  #ifdef CONFIG_KEXEC
->  	&kexec_loaded_attr.attr,
->  	&kexec_crash_loaded_attr.attr,
-> diff -puN kernel/profile.c~dynamic-readprofile kernel/profile.c
-> --- linux-2.6.git/kernel/profile.c~dynamic-readprofile	2008-08-29 13:15:52.000000000 -0700
-> +++ linux-2.6.git-dave/kernel/profile.c	2008-08-29 13:18:50.000000000 -0700
-> @@ -50,11 +50,11 @@ static DEFINE_PER_CPU(int, cpu_profile_f
->  static DEFINE_MUTEX(profile_flip_mutex);
->  #endif /* CONFIG_SMP */
->  
-> -static int __init profile_setup(char *str)
-> +int profile_setup(char *str)
->  {
-> -	static char __initdata schedstr[] = "schedule";
-> -	static char __initdata sleepstr[] = "sleep";
-> -	static char __initdata kvmstr[] = "kvm";
-> +	static char schedstr[] = "schedule";
-> +	static char sleepstr[] = "sleep";
-> +	static char kvmstr[] = "kvm";
->  	int par;
->  
->  	if (!strncmp(str, sleepstr, strlen(sleepstr))) {
-> @@ -100,14 +100,29 @@ static int __init profile_setup(char *st
->  __setup("profile=", profile_setup);
->  
->  
-> -void __init profile_init(void)
-> +void profile_init(void)
->  {
-> +	int buffer_bytes;
->  	if (!prof_on)
->  		return;
->  
->  	/* only text is profiled */
->  	prof_len = (_etext - _stext) >> prof_shift;
-> -	prof_buffer = alloc_bootmem(prof_len*sizeof(atomic_t));
-> +	buffer_bytes = prof_len*sizeof(atomic_t);
-> +	if (!slab_is_available()) {
-> +		prof_buffer = alloc_bootmem(buffer_bytes);
-> +		return;
-> +	}
+> +static int ac97_bus_resume(struct device *dev)
+> +{
+> +	int ret = 0;
 > +
-> +	prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
-> +	if (prof_buffer)
-> +		return;
+> +	if (dev->driver && dev->driver->resume)
+> +		ret = dev->driver->resume(dev);
 > +
-> +	prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
-> +	if (prof_buffer)
-> +		return;
+> +	return ret;
+> +}
 > +
-> +	prof_buffer = vmalloc(buffer_bytes);
->  }
+> +struct bus_type ac97_bus_type = {
+> +	.name		= "ac97",
+> +	.match		= ac97_bus_match,
+> +	.suspend	= ac97_bus_suspend,
+> +	.resume		= ac97_bus_resume,
+> +};
+> +
+> +static int __init ac97_bus_init(void)
+> +{
+> +	return bus_register(&ac97_bus_type);
+> +}
+> +
+> +subsys_initcall(ac97_bus_init);
+> +
+> +static void __exit ac97_bus_exit(void)
+> +{
+> +	bus_unregister(&ac97_bus_type);
+> +}
+> +
+> +module_exit(ac97_bus_exit);
+> +
+> +EXPORT_SYMBOL(ac97_bus_type);
+> +
+> +MODULE_LICENSE("GPL");
+> diff --git a/sound/drivers/Kconfig b/sound/drivers/Kconfig
+> index 7971285..40ebd2f 100644
+> --- a/sound/drivers/Kconfig
+> +++ b/sound/drivers/Kconfig
+> @@ -26,11 +26,7 @@ config SND_VX_LIB
+>  config SND_AC97_CODEC
+>  	tristate
+>  	select SND_PCM
+> -	select SND_AC97_BUS
+> -
+> -config SND_AC97_BUS
+> -	tristate
+> -
+> +	select AC97_BUS
 >  
->  /* Profile event notifications */
-> @@ -527,7 +542,7 @@ static void __init profile_nop(void *unu
->  {
->  }
+>  config SND_DUMMY
+>  	tristate "Dummy (/dev/null) soundcard"
+> diff --git a/sound/pci/ac97/Makefile b/sound/pci/ac97/Makefile
+> index 77b3482..3c32221 100644
+> --- a/sound/pci/ac97/Makefile
+> +++ b/sound/pci/ac97/Makefile
+> @@ -10,11 +10,9 @@ snd-ac97-codec-objs += ac97_proc.o
+>  endif
 >  
-> -static int __init create_hash_tables(void)
-> +static int create_hash_tables(void)
->  {
->  	int cpu;
+>  snd-ak4531-codec-objs := ak4531_codec.o
+> -snd-ac97-bus-objs := ac97_bus.o
 >  
-> @@ -575,14 +590,14 @@ out_cleanup:
->  #define create_hash_tables()			({ 0; })
->  #endif
+>  # Toplevel Module Dependency
+>  obj-$(CONFIG_SND_AC97_CODEC) += snd-ac97-codec.o
+>  obj-$(CONFIG_SND_ENS1370) += snd-ak4531-codec.o
+> -obj-$(CONFIG_SND_AC97_BUS) += snd-ac97-bus.o
 >  
-> -static int __init create_proc_profile(void)
-> +int create_proc_profile(void)
->  {
->  	struct proc_dir_entry *entry;
->  
->  	if (!prof_on)
->  		return 0;
->  	if (create_hash_tables())
-> -		return -1;
-> +		return -ENOMEM;
->  	entry = proc_create("profile", S_IWUSR | S_IRUGO,
->  			    NULL, &proc_profile_operations);
->  	if (!entry)
+>  obj-m := $(sort $(obj-m))
+> diff --git a/sound/pci/ac97/ac97_bus.c b/sound/pci/ac97/ac97_bus.c
+> deleted file mode 100644
+> index 66de2c2..0000000
+> --- a/sound/pci/ac97/ac97_bus.c
+> +++ /dev/null
+> @@ -1,72 +0,0 @@
+> -/*
+> - * Linux driver model AC97 bus interface
+> - *
+> - * Author:	Nicolas Pitre
+> - * Created:	Jan 14, 2005
+> - * Copyright:	(C) MontaVista Software Inc.
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - */
+> -
+> -#include <linux/module.h>
+> -#include <linux/init.h>
+> -#include <linux/device.h>
+> -#include <linux/string.h>
+> -
+> -/*
+> - * Let drivers decide whether they want to support given codec from their
+> - * probe method.  Drivers have direct access to the struct snd_ac97 structure and may
+> - * decide based on the id field amongst other things.
+> - */
+> -static int ac97_bus_match(struct device *dev, struct device_driver *drv)
+> -{
+> -	return 1;
+> -}
+> -
+> -static int ac97_bus_suspend(struct device *dev, pm_message_t state)
+> -{
+> -	int ret = 0;
+> -
+> -	if (dev->driver && dev->driver->suspend)
+> -		ret = dev->driver->suspend(dev, state);
+> -
+> -	return ret;
+> -}
+> -
+> -static int ac97_bus_resume(struct device *dev)
+> -{
+> -	int ret = 0;
+> -
+> -	if (dev->driver && dev->driver->resume)
+> -		ret = dev->driver->resume(dev);
+> -
+> -	return ret;
+> -}
+> -
+> -struct bus_type ac97_bus_type = {
+> -	.name		= "ac97",
+> -	.match		= ac97_bus_match,
+> -	.suspend	= ac97_bus_suspend,
+> -	.resume		= ac97_bus_resume,
+> -};
+> -
+> -static int __init ac97_bus_init(void)
+> -{
+> -	return bus_register(&ac97_bus_type);
+> -}
+> -
+> -subsys_initcall(ac97_bus_init);
+> -
+> -static void __exit ac97_bus_exit(void)
+> -{
+> -	bus_unregister(&ac97_bus_type);
+> -}
+> -
+> -module_exit(ac97_bus_exit);
+> -
+> -EXPORT_SYMBOL(ac97_bus_type);
+> -
+> -MODULE_LICENSE("GPL");
+> -
+
 
 ---
 ~Randy
