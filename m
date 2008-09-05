@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbYIELVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbYIELjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753393AbYIELVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 07:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYIELVG
+	id S1753063AbYIELjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 07:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbYIELjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 07:21:06 -0400
-Received: from burp.tkv.asdf.org ([212.16.99.49]:37169 "EHLO
-	cs181073102.pp.htv.fi" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751858AbYIELVF (ORCPT
+	Fri, 5 Sep 2008 07:39:05 -0400
+Received: from torres.zugschlus.de ([85.214.68.41]:51732 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752037AbYIELjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 07:21:05 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: How to find origin PID of a sk_buff in iptables match?
-References: <b8ixO-2NS-5@gated-at.bofh.it>
-From: Markku Savela <msa@moth.iki.fi>
-In-Reply-To: <b8ixO-2NS-5@gated-at.bofh.it> (Markku Savela's message of "Thu\, 04 Sep 2008 10\:40\:08 +0200")
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-Date: Fri, 05 Sep 2008 14:21:03 +0300
-Message-ID: <877i9qu9cw.fsf@burp.tkv.asdf.org>
+	Fri, 5 Sep 2008 07:39:04 -0400
+Date: Fri, 5 Sep 2008 13:39:02 +0200
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26.3 mount process looping on ext3 rw remount
+Message-ID: <20080905113901.GA2756@torres.zugschlus.de>
+References: <20080823084228.GA21293@torres.zugschlus.de> <20080825183528.30b66f45.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080825183528.30b66f45.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 25, 2008 at 06:35:28PM -0700, Andrew Morton wrote:
+> Please try to get a kernel profile while it's happening.  oprofile
+> maybe, or just the plain old timer-based profiler.  There's some info
+> in Documentation/basic_profiling.txt.
 
-> Also, I noticed that in my match code in OUTPUT chain, the current
-> task seemed to the originator I want (ping test). However, I'm not
-> quite sure whether this is always true?
+I'll boot my next kernel with profile=2.
 
-Well, nobody answered.
+> Actually, a simple alternative is to hit sysrq-P five or ten times. 
+> Most of the resulting stack traces will point back at where the CPU is
+> stuck.
 
-Anyway, as suspected with TCP connections it seems that current->pid
-produces 0 very often after the first initial packet (SYN). I take
-this to mean, that the TCP engine is being executed on some interrupt
-context?
+Where are they written to? "P" in a sysrqd telnet session does not
+result in anything being written to the kernel log or to dmesg.
 
-Now I'm wondering how SELINUX manages to get the secmark right, as the
-code in iptables seems to eventually need the current task context?
-Something tricky being made using the SECMARK and CONNSECMARK? It
-seems to trust, that at least the first packet has the current task
-context properly set and the remaining packets of the connection don't
-need current task?
+> This gets a bit hit-or-miss if you have multiple CPUs, because the
+> sysrq-p trace can land on the wrong CPU.  We recently added a sysrq-l
+> which will generate a trace on all CPUS.
 
-I guess I have to dug deeper in this (emulate what SELINUX does). Or
-can someone point to a tutorial description on how to reliably
-associate each outgoing packet with some originating task context?
+"l" results in the SysRq HELP being written to the kernel log, so I
+guess that "recently" means "not yet in 2.6.26.3".
+
+Greetings
+Marc
+
+-- 
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
