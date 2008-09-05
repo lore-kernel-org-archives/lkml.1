@@ -1,81 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbYIEUrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYIEUwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbYIEUrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYIEUrh
+	id S1753912AbYIEUwa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYIEUwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:47:37 -0400
-Received: from main.gmane.org ([80.91.229.2]:47431 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbYIEUrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:47:36 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [v4l-dvb-maintainer] [PULL] http://linuxtv.org/hg/~mcisely/pvrusb2
-Date: Fri, 05 Sep 2008 17:02:35 -0400
-Message-ID: <48C19E6B.2090505@tmr.com>
-References: <Pine.LNX.4.64.0808312020060.16986@cnc.isely.net> <20080902061821.4df5cba4@mchehab.chehab.org> <Pine.LNX.4.64.0809020815060.16986@cnc.isely.net> <48BD3FCC.2030206@linuxtv.org> <48BD4DCE.9020507@s5r6.in-berlin.de> <Pine.LNX.4.64.0809020933001.11377@cnc.isely.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+	Fri, 5 Sep 2008 16:52:20 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:39477 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751098AbYIEUwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 16:52:19 -0400
+Date: Fri, 5 Sep 2008 22:52:09 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <Pine.LNX.4.64.0809020933001.11377@cnc.isely.net>
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] mmc_block: use generic helper to print capacities
+Message-ID: <20080905225209.29aace1b@mjolnir.drzeus.cx>
+In-Reply-To: <1220645340.3331.55.camel@localhost.localdomain>
+References: <48B9546B.4010004@simon.arlott.org.uk>
+	<1220117091.3615.3.camel@localhost.localdomain>
+	<20080830174516.GD1239@parisc-linux.org>
+	<48B9B552.8060406@simon.arlott.org.uk>
+	<48B9B588.7060709@simon.arlott.org.uk>
+	<1220147947.3615.18.camel@localhost.localdomain>
+	<20080831025412.GJ1239@parisc-linux.org>
+	<1220195310.4021.4.camel@localhost.localdomain>
+	<1220195634.4021.9.camel@localhost.localdomain>
+	<20080831205448.5b23507d@mjolnir.drzeus.cx>
+	<1220645340.3331.55.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-21762-1220647937-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Isely wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
->> If you need this kind of safety measures against errors in future code
->> changes, could it be that you have some general QA problems?
+--=_freyr.drzeus.cx-21762-1220647937-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-That's always a problem with humans in the loop. I very much agree that 
-one line or three is far safer against a hasty line insertion than only two.
+On Fri, 05 Sep 2008 15:09:00 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-In my own code I write one if it fits, three if it doesn't. Being easy 
-to read is good, being hard to misread is better.
-> 
-> One of the points behind a good coding style is that it should encourage 
-> code that is robust against trivial mistakes.  Prefering
-> 
-> 	if (a) {
-> 		b;
-> 	}
-> 
-> over
-> 
-> 	if (a)
-> 		b;
-> 
-> I consider to be an example of this kind of simple safety.  (And I have 
-> in the past seen people getting burned from the obvious error of 
-> sticking a debug printf in between.)  ACTUALLY, I'd much, much rather 
-> prefer
-> 
-> 	if (a) b;
-> 
-> however checkpatch.pl gets angry about that as well (even though the 
-> kernel CodingStyle document would seem to actually allow this - it's 
-> still one statement and since "b" is outside the normal flow then it's 
-> "something to hide" and should be ok in any case).
-> 
-> 
->> (However, why waste time arguing over braces or not?)
-> 
-> Tell that to those who would use checkpatch.pl to gate incoming 
-> changesets.
-> 
+> On Sun, 2008-08-31 at 20:54 +0200, Pierre Ossman wrote:
+> > From: Pierre Ossman <drzeus@drzeus.cx>
+> >=20
+> > Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+>=20
+> Did you want me to take this?
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+That was the idea since it needed your helper.
 
+> It seems to depend on pieces of your mmc
+> tree, so I'd have to carry it in my post-merge tree.
+>=20
+
+Oh? There shouldn't be any changes around those chunks. What kind of
+problems are you seeing?
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-21762-1220647937-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkjBm/4ACgkQ7b8eESbyJLhXlQCg0ydekPFBDFYBnIMHBONuY37p
+5WgAoMCLm893WV1ZKvybXBQxiK1ZVDNB
+=XiW4
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-21762-1220647937-0001-2--
