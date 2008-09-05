@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYIEG6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYIEHDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYIEG6r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 02:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYIEG6j
+	id S1753999AbYIEHDG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 03:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438AbYIEHCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 02:58:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43564 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751051AbYIEG6j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 02:58:39 -0400
-Date: Thu, 4 Sep 2008 23:58:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: hamid.jahanjou@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VM: Implements the swap-out page-clustering technique
-Message-Id: <20080904235835.4406970a.akpm@linux-foundation.org>
-In-Reply-To: <48C0E383.5060308@gmail.com>
-References: <48BFCECE.90103@gmail.com>
-	<20080904161433.5b020bd9.akpm@linux-foundation.org>
-	<48C0E383.5060308@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Sep 2008 03:02:53 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39760 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751436AbYIEHCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 03:02:52 -0400
+Date: Fri, 5 Sep 2008 09:02:47 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com,
+       jmoyer@redhat.com
+Subject: Re: [PATCH 0/6] detect online disk resize
+Message-ID: <20080905070247.GN20055@kernel.dk>
+References: <20080904202714.10456.88061.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080904202714.10456.88061.stgit@bob.kio>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Sep 2008 11:15:07 +0330 "Hamid R. Jahanjou" <hamid.jahanjou@gmail.com> wrote:
-
-> Andrew Morton wrote:
-> > I tried that once.  The code all worked as-designed but didn't seem to
-> > improve performance much across a spread of workloads.
-> >
-> > Benchmarks are essential, please.  Good ones.
-> Do you recommend any specific benchmarks for memory-related projects ?
-> Which
-> one did you use for your own implementation ?
+On Thu, Sep 04 2008, Andrew Patterson wrote:
+> Resubmitting this patch against Jens's linux-2.6-block:for-2.6.28 repo.
 > 
+> This patch series handles online disk resizes that are currently not
+> completely recognized by the kernel using the existing revalidate_disk
+> routines.  An online resize can occur when growing or shrinking a
+> Fibre Channel LUN or perhaps by adding a disk to an existing RAID
+> volume.
+> 
+> The kernel currently recognizes a device size change when the
+> lower-level revalidate_disk routines are called; however, the block
+> layer does not use the new size while it has any current openers on
+> the device. So, for example, if LVM has an volume open on the device,
+> you will generally not see the size change until after a reboot. We
+> fix this problem by creating a wrapper to be used with lower-level
+> revalidate_disk routines.  This wrapper first calls the lower-level
+> driver's revalidate_disk routine. It then compares the gendisk
+> capacity to the block devices inode size. If there is a difference, we
+> adjust the block device's size. If the size has changed, we then flush
+> the disk for safety. The size is also checked in rescan_partitions
+> which is called when the device is opened or when the BLKRRPART ioctl
+> is called.
+> 
+> There are several ways to "kick off" a device size change:
+> 
+> 1. For SCSI devices do:
+> 
+>   # echo 1 > /sys/class/scsi_device/<device>/device/rescan
+> 
+>   or
+> 
+>   # blockdev --rereadpt <device file>
+> 
+> 2. Other devices (not device mapper)
+> 
+>   # blockdev --rereadpt <device file>
+> 
+> I have tested this patch on SCSI and SmartArray (cciss)
+> devices. Device mapper still does not recognize device size changes
+> until the device is restarted.
+> 
+> 
+> Diff stats:
+> 
+>  drivers/scsi/sd.c     |    4 +-
+>  fs/block_dev.c        |   91 ++++++++++++++++++++++++++++++++++++++++++++++---
+>  fs/partitions/check.c |    3 +-
+>  include/linux/fs.h    |    3 ++
+>  4 files changed, 93 insertions(+), 8 deletions(-)
+> 
+> Commits:
+> 
+>  - Wrapper for lower-level revalidate_disk routines.
+>  - Adjust block device size after an online resize of a disk.
+>  - Check for device resize in rescan_partitions.
+>  - SCSI sd driver calls revalidate_disk wrapper.
+>  - Added flush_disk to factor out common buffer cache flushing code.
+>  - Call flush_disk() after detecting an online resize.
 
-Pretty much any and all benchmarks, when there's not enough memory
-(boot with mem=).  Kernel compiles, database benchmarks, you name it. 
-Basically anything which has a measurable execution time is relevant.
+Thanks Andrew, applied.
 
-Designing and running these things is a lot of work and thought.  And
-it's an integral part of the development process, because some things
-are going to get slower and others will show large inter-run variations
-and then one needs to get in there and find explanations and hopefully
-fixes.
+-- 
+Jens Axboe
 
-For example, start with small and simple microbenchmarks: run two
-processes which concurrently allocate 1*mem, then modify it all
-linearly, then read it all linearly.  Build up from there.  Do not
-dive into complex benchmarks on day 1, because you'll have no hope of
-explaining the results which they produce.
-
-Beware that behaviour on SMP can be very different from behaviour on
-uniprocessor because of the relatively large duration of a timeslice. 
-Both must be tested.
