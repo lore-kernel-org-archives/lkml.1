@@ -1,70 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYIERCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbYIERDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754108AbYIERCv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 13:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYIERCj
+	id S1754983AbYIERDl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 13:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYIERDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 13:02:39 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:6862 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbYIERCi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 13:02:38 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: + security-selinux-include-netlabelh-fix-two-build-errors.patch added to -mm tree
-Date: Fri, 5 Sep 2008 13:02:34 -0400
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       netdev <netdev@vger.kernel.org>
-References: <200809050326.m853QB13012853@imap1.linux-foundation.org> <20080904210033.20700500.randy.dunlap@oracle.com> <200809051244.15420.paul.moore@hp.com>
-In-Reply-To: <200809051244.15420.paul.moore@hp.com>
+	Fri, 5 Sep 2008 13:03:31 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:34448 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751996AbYIERDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 13:03:31 -0400
+Message-ID: <48C1665A.8070406@cs.wisc.edu>
+Date: Fri, 05 Sep 2008 12:03:22 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Chris Leech <christopher.leech@intel.com>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       devel@open-fcoe.org
+Subject: Re: [Open-FCoE] [PATCH 2/3] 24-bit types: convert iSCSI to use the
+ __be24 type and	macros
+References: <20080905165732.16689.50256.stgit@localhost.localdomain> <20080905165738.16689.31487.stgit@localhost.localdomain>
+In-Reply-To: <20080905165738.16689.31487.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809051302.34768.paul.moore@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 September 2008 12:44:15 pm Paul Moore wrote:
-> On Friday 05 September 2008 12:00:33 am Randy Dunlap wrote:
-> > Even with this patch, net/netlabel/netlabel_mgmt.c has build errors
-> > when CONFIG_IPV6=n:
->
-> Interesting, I tried to reproduce this quickly by changing my
-> .config, running 'make oldconfig', verifying that CONFIG_IPV6 was
-> still "n" (it was actually commented out), and then running 'make
-> M=net/netlabel' ... the result was no error.
->
-> You are correct, I obviously made a mistake in the code (which I am
-> fixing now) but I don't understand why the steps I took above didn't
-> highlight the problem?  What am I missing?
+Chris Leech wrote:
+> The calling convention of hton24 is different now, it takes a single u32
+> as an argument and evaluates to a __be24 lvalue.
+> 
+> Signed-off-by: Chris Leech <christopher.leech@intel.com>
 
-Hmmm, nevermind, the problem seems to have disappeared after 
-running 'make prepare scripts'.
+Looks fine by me. Thanks.
 
-> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:79: warning:
-> > unused variable 'tmp6'
-> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:78: warning:
-> > unused variable 'iter6'
-> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:340:
-> > warning: unused variable 'tmp6'
-> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:301:
-> > warning: unused variable 'iter6'
-> > linux-next-20080904/net/netlabel/netlabel_mgmt.c:219: error:
-> > implicit declaration of function 'netlbl_af6list_add'
-> > linux-next-20080904/net/netlabel/netlabel_mgmt.c:317: error:
-> > implicit declaration of function 'netlbl_af6list_foreach_rcu'
-> > linux-next-20080904/net/netlabel/netlabel_mgmt.c:318: error:
-> > expected ';' before '{' token make[3]: ***
-> > [net/netlabel/netlabel_mgmt.o] Error 1
-
--- 
-paul moore
-linux @ hp
+Acked-by: Mike Christie <michaelc@cs.wisc.edu>
