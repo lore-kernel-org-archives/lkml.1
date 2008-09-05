@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbYIEI63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYIEJAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755365AbYIEI63 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 04:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYIEI6A
+	id S1754889AbYIEJAc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbYIEJAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 04:58:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:63608 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbYIEI57 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 04:57:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=MA9BbVk1hcXWcLQgMEoit2Nxo6H/1gHzcSmG0u4aUJe38du4z1Bt8uCAOSZEfRlcBY
-         arC8Hi+qvZ9kUJl7a8yzv/X0g/ctXf72NxZ8fYGmrhT5a4w9zeXho3/JGbuUoM9UnCPm
-         N5P/kzKouqNisPnhMKPqTausDMkCcolkN3AzI=
-Message-ID: <38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
-Date: Fri, 5 Sep 2008 10:57:56 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: qestion about I2C_CLASS_HWMON flag
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-In-Reply-To: <20080904120855.7e7b9720@hyperion.delvare>
+	Fri, 5 Sep 2008 05:00:21 -0400
+Received: from mail.suse.de ([195.135.220.2]:40843 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752035AbYIEJAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 05:00:19 -0400
+Date: Fri, 5 Sep 2008 11:00:13 +0200
+From: Holger Macht <hmacht@suse.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Steven King <sfking@fdwdc.com>, Tomas Carnecky <tom@dbservice.com>,
+       Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net
+Subject: Re: 2.6.26.[1-3] + x61 tablet + x6ultrabase: no resume
+	after?undocking
+Message-ID: <20080905090013.GC6891@homac>
+Mail-Followup-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+	Steven King <sfking@fdwdc.com>, Tomas Carnecky <tom@dbservice.com>,
+	Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org,
+	linux-acpi@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net
+References: <200808301535.22419.sfking@fdwdc.com> <20080901112816.GA21970@khazad-dum.debian.net> <48BBDD2C.5020804@dbservice.com> <200809011205.05253.sfking@fdwdc.com> <20080903144541.GA10978@homac> <20080903212827.GB14620@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
-	 <38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
-	 <20080904103707.557ac764@hyperion.delvare>
-	 <38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
-	 <20080904120855.7e7b9720@hyperion.delvare>
+In-Reply-To: <20080903212827.GB14620@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good morning Jean,
+On Wed 03. Sep - 18:28:27, Henrique de Moraes Holschuh wrote:
+> (Holger dropped from CC/To as requested by the mail-followup-to header).
+> 
+> On Wed, 03 Sep 2008, Holger Macht wrote:
+> > On Mon 01. Sep - 12:05:04, Steven King wrote:
+> > > On Monday 01 September 2008 5:16:44 Tomas Carnecky wrote:
+> > > 
+> > > > I just tested suspend/resume with the CDROM drive removed (an empty
+> > > > bay). Suspend/resume now works just fine, regardless how I dock/undock
+> > > > the laptop.
+> > > 
+> > > I'm seeing the exact same things as Tom.  Also, in my dmesg I see:
+> > > 
+> > > ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: found ejectable bay
+> > > ACPI: \_SB_.PCI0.IDE0.PRIM.MSTR: Adding notify handler
+> > > ACPI: Error installing bay notify handler
+> > > 
+> > > is this significant?
+> > 
+> > No, it's not. Bay driver is obsolete with 2.6.26's libata hotplug code.
+> 
+> Hardly so.  We need to be able to query state and command the bay from
+> userspace.  We need to support non-libata devices.  We don't need, but want,
+> notifications that can be easily flagged by userspace as being related to
+> bay/dock ejections and insertions (for OSD).
+> 
+> What makes bay obsolete is the rework on the dock driver that adds all bay
+> functionality to dock.c... and that ain't even on 2.6.27, AFAIK.
 
-On Thu, Sep 4, 2008 at 12:08 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> In general they can, yes (where they can't, it's due to restrictions in
-> protocol implementations, not device types.) But this isn't a matter of
-> what devices can be on the bus. This is a matter of what devices can be
-> probed for on a given bus. For example, hardware monitoring drivers
-> which handle I2C devices, make sure that I2C_CLASS_HWMON is set before
-> probing I2C addresses on a given bus in search of a device to
-> auto-detect. On the other hand, if they are merely attaching to an I2C
-> device which has already been instantiated (and thus no probing is
-> needed) they do not care about the class. The reason for this mechanism
-> is that probing can be risky, so we want to limit it to what is
-> strictly needed. For example, there is no point in probing the I2C bus
-> of a TV adapter for hardware monitoring chips - there simply can't be
-> any there. If there ever was any, that would be such a special case
-> that we would instantiate the I2C device in question explicitly from
-> the adapter code, so we have no need for probing.
+Maybe the statement was a little bit harsh, it's just that you won't need
+bay in conjunction with libata, because it can't install the notification
+handler because that was already done by libata.
 
-OK but which devices that can be connected to an I2C bus is platform specific,
-isn't it ? For example, an I2C adapter can be used in a TV and in that
-case there
-may be no point to probe for a HW mon chips but this same I2C adapter can be
-used by other platforms in a different context where there's a HW mon chip.
-
-So the flags probably are useful, but they're are hard coded in adapters...
-
-Sorry if I'm still missing something.
--- 
-Francis
+Regards,
+	Holger
