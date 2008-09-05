@@ -1,105 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbYIELCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbYIELEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbYIELCn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 07:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYIELCf
+	id S1753243AbYIELEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 07:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYIELDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 07:02:35 -0400
-Received: from smarthost01.mail.zen.net.uk ([212.23.3.140]:56839 "EHLO
-	smarthost01.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751051AbYIELCe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 07:02:34 -0400
-X-Greylist: delayed 74561 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Sep 2008 07:02:33 EDT
-Date: Fri, 5 Sep 2008 12:02:23 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] PCI: revise VPD access interface
-Message-ID: <20080905110222.GH7908@solarflare.com>
-References: <20080904205636.130211023@vyatta.com> <20080904205718.626058270@vyatta.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 5 Sep 2008 07:03:55 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59668 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751628AbYIELDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 07:03:54 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Anders Aagaard <aagaande@gmail.com>
+Subject: Re: [Suspend-devel] Resume performance
+Date: Fri, 5 Sep 2008 13:08:13 +0200
+User-Agent: KMail/1.9.9
+Cc: suspend-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+References: <48C10908.60101@gmail.com>
+In-Reply-To: <48C10908.60101@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080904205718.626058270@vyatta.com>
-User-Agent: Mutt/1.4.1i
-X-Originating-Smarthost01-IP: [82.69.137.158]
+Message-Id: <200809051308.14079.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> Change PCI VPD API which was only used by sysfs to something usable
-> in drivers. 
->    * move iteration over multiple words to the low level
->    * cleanup types of arguments
->    * add exportable wrapper
+On Friday, 5 of September 2008, Anders Aagaard wrote:
+> Hi
+
+Hi,
+
+This is a kernel problem, so let's CC the LKML.
+
+> I have a intel P35 board with a quad core cpu in it, it's currently 
+> running as a server for a small network, and I'd like to be able to shut 
+> it down when idle, and use wake on lan to wake it up when it's needed. 
+> Now I got that part working quite well, but for some reason I have a 
+> long delay in resume.
 > 
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> I seem to remember being able to resume this computer in 2-3 seconds 
+> when I was testing it, now it needs 35 seconds to resume.  It seems 
+> regardless of resume options used, and it always resumes to a working 
+> state without problems.
+
+What kernel are you using at the moment and which one was used for the
+testing?
+
+> I've tried quite a lot of things, booting with noapic/nosmp, booting a 
+> kernel without usb/network drivers, disabling ahci (using ata_piix 
+> driver instead of ahci), and there's always that one long delay.  And 
+> I'm not quite sure how the kernel printk timing information works, so 
+> I'm not sure whats causing that delay.
 > 
-> --- a/drivers/pci/access.c	2008-09-04 10:16:52.000000000 -0700
-> +++ b/drivers/pci/access.c	2008-09-04 10:19:47.000000000 -0700
-[...]
-> -static int pci_vpd_pci22_write(struct pci_dev *dev, int pos, int size,
-> -			       const char *buf)
-> +static int pci_vpd_pci22_write(struct pci_dev *dev, loff_t pos, size_t count,
-> +			       const void *buf)
->  {
->  	struct pci_vpd_pci22 *vpd =
->  		container_of(dev->vpd, struct pci_vpd_pci22, base);
-> -	u32 val;
-> +	loff_t end = pos + count;
->  	int ret;
->  
-> -	if (pos < 0 || pos > vpd->base.len || pos & 3 ||
-> -	    size > vpd->base.len - pos || size < 4)
-> +	if (pos > vpd->base.len || pos & 3)
->  		return -EINVAL;
->  
-> -	val = (u8) *buf++;
-> -	val |= ((u8) *buf++) << 8;
-> -	val |= ((u8) *buf++) << 16;
-> -	val |= ((u32)(u8) *buf++) << 24;
-> -
->  	ret = mutex_lock_killable(&vpd->lock);
->  	if (ret)
->  		return ret;
-> -	ret = pci_vpd_pci22_wait(dev);
-> -	if (ret < 0)
-> -		goto out;
-> -	ret = pci_user_write_config_dword(dev, vpd->cap + PCI_VPD_DATA,
-> -					  val);
-> -	if (ret < 0)
-> -		goto out;
-> -	ret = pci_user_write_config_word(dev, vpd->cap + PCI_VPD_ADDR,
-> -					 pos | PCI_VPD_ADDR_F);
-> -	if (ret < 0)
-> -		goto out;
-> -	vpd->busy = true;
-> -	vpd->flag = 0;
-> -	ret = pci_vpd_pci22_wait(dev);
-> -out:
-> -	mutex_unlock(&vpd->lock);
-> -	if (ret < 0)
-> -		return ret;
->  
-> -	return 4;
-> +	while (pos < end) {
-> +		u32 val;
-> +
-> +		ret = pci_vpd_pci22_wait(dev);
-> +		if (ret < 0)
-> +			break;
-> +		memcpy(&val, buf, sizeof(u32));
-[...]
+> Output from dmesg when booting with nosmp (to get accurate timing data):
+> scripts/show_delta -b "Force enabled HPET at resume"
+> [349.821150 < 7.039261 >] ata3.00: configured for UDMA/133
+> [349.821160 < 7.039271 >] sd 2:0:0:0: [sdc] 976773168 512-byte hardware 
+> sectors (500108 MB)
+> [349.821165 < 7.039276 >] sd 2:0:0:0: [sdc] Write Protect is off
+> [349.821166 < 7.039277 >] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+> [349.821173 < 7.039284 >] sd 2:0:0:0: [sdc] Write cache: enabled, read 
+> cache: enabled, doesn't support DPO or FUA
+> [349.972801 < 7.190912 >] ata1: SATA link up 3.0 Gbps (SStatus 123 
+> SControl 300)
+> [349.979060 < 7.197171 >] ata1.00: configured for UDMA/133
+> [349.979070 < 7.197181 >] sd 0:0:0:0: [sda] 976771055 512-byte hardware 
+> sectors (500107 MB)
+> [349.979075 < 7.197186 >] sd 0:0:0:0: [sda] Write Protect is off
+> [349.979076 < 7.197187 >] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> [349.979083 < 7.197194 >] sd 0:0:0:0: [sda] Write cache: enabled, read 
+> cache: enabled, doesn't support DPO or FUA
 
-I'm not sure this is correct.  pci_user_write_config_dword() expects a
-value in host byte order, but this memcpy() makes val always little-endian.
+It looks like this happens here.  Can you try to unload the network driver
+before suspend, please?
 
-Ben.
+> [373.945179 < 31.163290 >] r8169: eth0: link up
+> [373.952159 < 31.170270 >] PM: Writing back config space on device 
+> 0000:02:02.0 at offset f (was 4020100, writing 4020104)
+> [373.952172 < 31.170283 >] PM: Writing back config space on device 
+> 0000:02:02.0 at offset 5 (was 0, writing fddf8000)
+> [373.952176 < 31.170287 >] PM: Writing back config space on device 
+> 0000:02:02.0 at offset 4 (was 0, writing fddfd000)
+> [373.952180 < 31.170291 >] PM: Writing back config space on device 
+> 0000:02:02.0 at offset 3 (was 0, writing 4410)
+> [373.952185 < 31.170296 >] PM: Writing back config space on device 
+> 0000:02:02.0 at offset 1 (was 2100000, writing 2100006)
+> 
+> Notice the long delay between all hd's found and it writing back config 
+> space, note that this happens with or without that network card driver 
+> in the kernel.
+> 
+> Attaching full log of boot + suspend/resume cycle, kernel booted with 
+> nosmp/noapic, it takes the same amount of time without those options, 
+> but timing data gets a bit garbled.
+> 
+> Thanks for your work so far, it's working quite well and saving me a lot 
+> of power doing it this way, at this point I'm just trying to get it 
+> faster :)
 
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
+Sure, 35 seconds to resume is hardly acceptable.
+
+Thanks,
+Rafael
