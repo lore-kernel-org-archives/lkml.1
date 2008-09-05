@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbYIEHJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIEHVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753508AbYIEHJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 03:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbYIEHJt
+	id S1753521AbYIEHVN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 03:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbYIEHVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 03:09:49 -0400
-Received: from mail.suse.de ([195.135.220.2]:56860 "EHLO mx1.suse.de"
+	Fri, 5 Sep 2008 03:21:03 -0400
+Received: from ns2.suse.de ([195.135.220.15]:59955 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbYIEHJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 03:09:48 -0400
-Date: Fri, 05 Sep 2008 09:09:46 +0200
-Message-ID: <s5hod33t6f9.wl%tiwai@suse.de>
+	id S1751502AbYIEHVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 03:21:01 -0400
+Date: Fri, 05 Sep 2008 09:20:59 +0200
+Message-ID: <s5hmyint5wk.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Edgar Kalkowski <eMail@edgar-kalkowski.de>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: PROBLEM: Kernel 2.6.26 oops if I unplug my Logitech USB 1.1 headset
-In-Reply-To: <20080904172822.e5390a59.akpm@linux-foundation.org>
-References: <48C069B1.3000201@edgar-kalkowski.de>
-	<20080904172822.e5390a59.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc5-mm1
+In-Reply-To: <20080904224004.d3dd3076.akpm@linux-foundation.org>
+References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -28,22 +26,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 4 Sep 2008 17:28:22 -0700,
+At Thu, 4 Sep 2008 22:40:04 -0700,
 Andrew Morton wrote:
 > 
-> On Fri, 05 Sep 2008 01:05:21 +0200
-> Edgar Kalkowski <eMail@edgar-kalkowski.de> wrote:
+> +drivers-rtc-rtc-bq4802c-dont-use-bin_2_bcd-and-bcd_2_bin.patch
 > 
-> > Dear kernel hackers. ;)
-> > 
-> > [1.] One line summary of the problem: If I unplug my USB-Headset the kernel oopses.
-> 
-> cc's added.
-> 
-> Might be USB, might be ALSA.
+>  ALSA fix
 
-Hm, it's hard to guess...
-Edgar, could you check whether it happens with 2.6.25?
+I think it's irrelevant with ALSA.  It's a pure rtc-stuff.
+
+> 
+> +oss-remove-references-to-dead-sound-oss-vars-aedsp16_msssbpro.patch
+> 
+>  OSS drivers
+
+I applied to my tree now.
 
 
 thanks,
