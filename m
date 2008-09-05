@@ -1,60 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYIETR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbYIETTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753784AbYIETR0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 15:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYIETRQ
+	id S1754075AbYIETTw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 15:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbYIETTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 15:17:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:22954 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbYIETRP (ORCPT
+	Fri, 5 Sep 2008 15:19:41 -0400
+Received: from quackingmoose.com ([63.73.180.143]:34517 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751824AbYIETTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 15:17:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=m8r/nPGSP2hx5PC8L84mI77vGcKlBWztuQn1rgMl0lbz5tVW1XEPS+ddR8ztJ/cMgl
-         B/9zM/glYpb/5++WJKIB9TJ5sYcVspNIuGnlbmJms345M4sMBVR5p+SY+6RTntB4uLAV
-         fyO8mLwfL6JwMPv4PvlixB+ocVdiPgCjsIok8=
-Message-ID: <68676e00809051217h3da02a6bld4412b4a2ee3b728@mail.gmail.com>
-Date: Fri, 5 Sep 2008 21:17:13 +0200
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Subject: Re: [2.6.27] overlapping early reservations [was: early exception - lockdep related?]
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
+	Fri, 5 Sep 2008 15:19:41 -0400
+Date: Fri, 5 Sep 2008 12:19:40 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: neilb@cse.unsw.edu.au, nfs@lists.sourceforge.net,
+       trond.myklebust@fys.uio.no, linux-kernel@vger.kernel.org
+Subject: blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080905191939.GG22796@merfinllc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="L+ofChggJdETEG3Y"
 Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 4, 2008 at 10:51 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> On Thu, Sep 4, 2008 at 4:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> Sadly your config just boots, albeit not to userspace due to missing
->> drivers.
->
-> Yes, I managed to boot it with qemu... I tried kgdb - without luck -
-> kernel dies too early.
-> I also managed to get a stack trace :D
->
-> http://img151.imageshack.us/my.php?image=tracedm1.jpg
->
-> It seems that lockdep is an innocent bystander... the kernel died with
-> panic() in __reserve_early, and then took another exception while
-> printing the panic (I guess).
-> Will add further debug stuff to see wtf is going on.
 
-Hum, kernel says:
+--L+ofChggJdETEG3Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-http://img177.imageshack.us/my.php?image=overlappingus2.jpg
+Hi all,
 
-Overlapping early reservations b98000-eff266 RAMDISK to 200000-d09cf7
-TEXT DATA BSS
+  We're hitting some bad behavior in NFS v3.  The situation is this:
 
-It would appear that the initramfs is overlapping the kernel itself,
-is the boot loader (LILO) doing something stupid?
+   machine A - NFS server
 
-Luca
+   machine B - NFS client (writer)
+   machine C - NFS client (reader)
+
+   (all machines x86 SMP)
+
+  machine A exports a directory on ext3 filesystem:
+
+	/srv/home       192.168.0.0/24(rw,sync,no_subtree_check)
+
+  machines B and C mount that directory normally
+
+        mount A:/srv/home /mntpnt
+
+  machine B opens a file and writes to it (think a log file)
+
+  machine C stats that file, opens it and reads it (think tailing the
+                                                    log file)
+
+
+  The issue is that machine C will often see large blocks of NULLs
+(zeros) in the file.  If you do the same read again just after you see
+the block of NULLs you will see proper the data.
+
+  Attached are two simple python programs that demonstrate the problem.
+
+  To use them (they will write to a file called test-nfs in CWD):
+
+ (on machine B in one window)
+
+   python writer.py
+
+ (on machine C in another window)
+
+   python reader.py
+
+  
+  reader.py will die when it sees NULLs in the file.  Usually for us
+this happens after about 60s (two timeouts I think).   The first NULL is
+usually either at index 4000 or 8000 depending on the kernel.
+
+
+  Now the version of the kernel the server is running doesn't seem to
+matter.  The reader also doesn't seem to matter (though I didn't test
+this completely).  The writer seems to be the issue:
+
+  Writer_Version     Outcome:
+  <= 2.6.19          OK
+  >= 2.6.20	     BAD
+
+  I've tested both vanilla kernel.org kernels and Ubuntu 8.04 kernels.
+
+  I can try to bisect between 2.6.19 <-> 2.6.20. 
+
+  Anyone else hitting this problem?  Any better ideas?
+
+
+  					Thanks,
+					=a=
+
+
+   
+-- 
+===================
+Aaron Straus
+aaron@merfinllc.com
+
+--L+ofChggJdETEG3Y
+Content-Type: text/x-python; charset=us-ascii
+Content-Disposition: attachment; filename="reader.py"
+
+#!/usr/bin/env python
+import time
+import os
+
+def run(file_name):
+    data = ''
+    last_data_len = len(data)
+    last_size = os.stat(file_name).st_size
+
+    while True:
+        st_size = os.stat(file_name).st_size
+        if st_size != last_size:
+            print 'size changed @ %s' % time.asctime()
+
+        data = open(file_name).read()
+
+        if len(data) != last_data_len:
+            print 'new data arrived @ %s' % time.asctime()
+            print repr(data[-50:])
+
+
+        if '\0' in data:
+            first_index = data.index('\0')
+            data_fragment = data[first_index-50:first_index+50]
+            print 'Detected NULL @ %d %s' % (first_index, repr(data_fragment))
+            break
+
+        time.sleep(0.250)
+
+        last_data_len = len(data)
+        last_size = st_size
+
+if __name__ == '__main__':
+    run('test-nfs')
+
+--L+ofChggJdETEG3Y
+Content-Type: text/x-python; charset=us-ascii
+Content-Disposition: attachment; filename="writer.py"
+
+#!/usr/bin/env python
+import time
+
+def run(file_name):
+    fp = open(file_name, 'w')
+
+    count = 1
+
+    while count:
+        fp.write('meow\n' * 800)
+        fp.flush()
+        time.sleep(32)
+
+    fp.close()
+
+if __name__ == '__main__':
+    run('test-nfs')
+
+--L+ofChggJdETEG3Y--
