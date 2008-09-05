@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbYIEWeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIEWfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbYIEWeH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 18:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbYIEWdz
+	id S1753521AbYIEWfJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 18:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYIEWe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 18:33:55 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:51125 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbYIEWdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 18:33:54 -0400
-Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080905185455.GY18288@one.firstfloor.org>
-References: <20080905172132.GA11692@us.ibm.com>
-	 <87ej3yv588.fsf@basil.nowhere.org>
-	 <1220639514.25932.28.camel@badari-desktop>
-	 <20080905185455.GY18288@one.firstfloor.org>
-Content-Type: text/plain
-Date: Fri, 05 Sep 2008 15:34:03 -0700
-Message-Id: <1220654043.25932.43.camel@badari-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Sep 2008 18:34:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34066 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750971AbYIEWe4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 18:34:56 -0400
+Date: Fri, 5 Sep 2008 15:34:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alok Kataria <akataria@vmware.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dan Hecht <dhecht@vmware.com>,
+       Garrett Smith <garrett@vmware.com>
+Subject: Re: [RFC patch 0/4] TSC calibration improvements
+In-Reply-To: <1220653095.14401.72.camel@alok-dev1>
+Message-ID: <alpine.LFD.1.10.0809051522410.3117@nehalem.linux-foundation.org>
+References: <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org>  <20080904160036.GA18382@elte.hu>  <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> 
+ <20080904190728.59634020@lxorguk.ukuu.org.uk>  <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0809041303530.4112@nehalem.linux-foundation.org>  <20080904204305.GA29065@elte.hu> <20080904205236.GA3864@elte.hu> 
+ <alpine.LFD.1.10.0809041403450.3117@nehalem.linux-foundation.org>  <20080904213350.GA15678@elte.hu> <1220653095.14401.72.camel@alok-dev1>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-09-05 at 20:54 +0200, Andi Kleen wrote:
-> > At this time we are interested on node remove (on x86_64). 
-> > It doesn't really work well at this time - 
+
+On Fri, 5 Sep 2008, Alok Kataria wrote:
 > 
-> That's a quite euphemistic way to put it.
-> 
-> > due to some of the structures
-> 
-> That means you can never put any slab data on specific nodes.
-> And all the kernel subsystems on that node will not ever get local
-> memory.  How are you going to solve that?  And if you disallow
-> kernel allocations in so large memory areas you get many of the highmem
-> issues that plagued 32bit back in the 64bit kernel.
+> This can happen if, in the pit_expect_msb (the one just before the 
+> second read_tsc), we hit an SMI/virtualization event *after* doing the 
+> 50 iterations of PIT read loop, this allows the pit_expect_msb to 
+> succeed when the SMI returns.
 
-You are absolutely correct. There is no easy solution - one has 
-to loose performance in order to support node removal, along with
-some old x86 issues :(
+So theoretically, on real hardware, the minimum of 50 reads will take 
+100us. The 256 PTI cycles will take 214us, so in the absolute worst case, 
+you can have two consecutive successful cycles despite having a 228us SMI 
+(or other event) if it happens just in the middle.
 
-We were contemplating idea of limiting node removal to few
-select set of nodes as a compromise - but it didn't sound right :(
+Of course, then the actual _error_ on the TSC read will be just half that, 
+but since there are two TSC reads - one at the beginning and one at the 
+end - and if the errors of the two reads go in opposite directions, they 
+can add up to 228us.
 
-> 
-> There are lots of other issues. It's quite questionable if this
-> whole exercise makes sense at all.
+So I agree - in theory you can have a fairly big error if you hit 
+everything just right. In practice, of course, even that *maximal* error 
+is actually perfectly fine for TSC calibration.
 
-Same issues exist with ia64 and x86_64 won't be any worse off.
-Gary was trying to enable the functionality so that we can atleast
-test out offlining memory section easier (test page migration,
-isolation code and hash out issues)
+So I just don't care one whit.  The fact is, fast bootup is more important 
+than some crazy and totally unrealistic VM situation. The 50ms thing was 
+already too long, the 250ms one is unbearable.
 
-Another possible idea being considered (still lot of unknowns)
-to make use offline memory section feature for power management
-(*cough*).
+The thing is, you _can_ calibrate the thing more carefully _later_. Use a 
+tiemr to do two events one second apart (without slowing down the boot) if 
+you want to get a really good value, along with the HPET/PMTIMER 
+fine-tuning. That way you should actually be able to get a _really_ 
+precise thing, because you do need a long time to get precision. But that 
+long time should not be in a critical path on the bootup.
 
-Anyway, as you can see this patch doesn't add any code - just
-enables config option for x86_64. (if you are worried about
-code bloat).
-
-> > (BTW, on ppc64 this works fine - since we are interested mostly in
-> > removing *some* sections of memory to give it back to hypervisor - 
-> > not entire node removal).
-> 
-> Ok for hypervisors you can do it reasonably easy on x86 too, but it's likely
-> that some hypercall interface is better than going through
-> sysfs. 
-
-sysfs interface already exists to offline sections of memory. (same
-interface as online).
-
-The proposed patch provides easy way to find out what sections of
-memory belongs to which node. (could be useful on its own).
-
-Thanks,
-Badari
-
+			Linus
