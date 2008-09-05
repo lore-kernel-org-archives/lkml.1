@@ -1,86 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYIEOvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYIEOwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754795AbYIEOvu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbYIEOvm
+	id S1754864AbYIEOwl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYIEOwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:51:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:32880 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbYIEOvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:51:42 -0400
-Message-ID: <48C1477B.6060500@goop.org>
-Date: Fri, 05 Sep 2008 07:51:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Eric Lacombe <tuxiko@free.fr>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [x86] fs, gs purpose & multicore prog
-References: <200809031109.45660.goretux@gmail.com> <48C011A6.2000609@goop.org> <200809051317.11116.goretux@gmail.com>
-In-Reply-To: <200809051317.11116.goretux@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Sep 2008 10:52:32 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:8576 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753154AbYIEOwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 10:52:31 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 05 Sep 2008 10:52:25 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Dmitry Torokhov <dtor@insightbb.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
+In-reply-to: <s5htzcvt7id.wl%tiwai@suse.de>
+Message-id: <alpine.LFD.1.10.0809051049460.23787@xanadu.home>
+References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
+ <200612092150.02940.dtor@insightbb.com>
+ <20061209185737.1768315d.randy.dunlap@oracle.com>
+ <200612092205.19358.dtor@insightbb.com>
+ <Pine.LNX.4.64.0612092212410.2630@xanadu.home>
+ <20061209210945.5abe2d89.randy.dunlap@oracle.com>
+ <Pine.LNX.4.64.0612102244140.2630@xanadu.home>
+ <20080904195744.f367cd2d.randy.dunlap@oracle.com>
+ <alpine.LFD.1.10.0809050028590.23787@xanadu.home>
+ <20080904214444.0dccf859.randy.dunlap@oracle.com>
+ <alpine.LFD.1.10.0809050104560.23787@xanadu.home>
+ <s5htzcvt7id.wl%tiwai@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Lacombe wrote:
-> So, %gs is not used in 32-bit kernel and %fs is not used in 64-bit kernel. Is 
-> it right ? Why there were different choices of design ?
->   
+On Fri, 5 Sep 2008, Takashi Iwai wrote:
 
-They both use the opposite from what their respective usermodes use for
-thread local storage, since there may be a slight performance advantage
-to doing so (at least on 32-bit).  32-bit's use of %gs for usermode TLS
-is old and arbitrary, probably predating x86-64 (at least its wide
-availability).  The use of %gs for kernel per-cpu data is architectural
-on 64-bit, because of the "swapgs" instruction; there's no "swapfs"
-instruction.
+> At Fri, 05 Sep 2008 01:09:48 -0400 (EDT),
+> Nicolas Pitre wrote:
+> > 
+> > On Thu, 4 Sep 2008, Randy Dunlap wrote:
+> > 
+> > > On Fri, 05 Sep 2008 00:37:17 -0400 (EDT) Nicolas Pitre wrote:
+> > > 
+> > > > On Thu, 4 Sep 2008, Randy Dunlap wrote:
+> > > > 
+> > > > > On Sun, 10 Dec 2006 22:55:25 -0500 (EST) Nicolas Pitre wrote:
+> > > > > 
+> > > > > > On Sat, 9 Dec 2006, Randy Dunlap wrote:
+> > > > > > 
+> > > > > > > On Sat, 09 Dec 2006 22:17:55 -0500 (EST) Nicolas Pitre wrote:
+> > > > > > > 
+> > > > > > > > Please consider what SND_CONFIG_AC97_BUS corresponds to.  It is 
+> > > > > > > > sound/pci/ac97/ac97_bus.c and if you look into this file you'll see that 
+> > > > > > > > it is perfectly buildable even if sound is entirely configured out, just 
+> > > > > > > > like some lib code would be.
+> > > > > > > 
+> > > > > > > OK.  Should it (CONFIG_SND_AC97_BUS -> sound/pci/ac97/ac97_bus.c)
+> > > > > > > be buildable when sound is disabled?
+> > > > > > 
+> > > > > > Yes.
+> > > > > > 
+> > > > > > > If so, where should it be moved to (since afaik, make won't even
+> > > > > > > descend into sound/ if SOUND=n; I don't see that changing
+> > > > > > > any time soon).
+> > > > > > 
+> > > > > > What about this patch?
+> > > > > 
+> > > > > Can we get this patch or some patch into the input tree for linux-next?
+> > > > 
+> > > > This patch is commit e1036502e5263851259d147771226161e5ccc85a and 
+> > > > appeared in mainline almost 2 years ago.
+> > > 
+> > > Ack.  Sorry about that.  Wrong ucb thread.
+> > > 
+> > > ucb1400_core still has build errors in linux-next
+> > > since it uses ac97_bus_type even when CONFIG_SOUND=n.
+> > 
+> > Both sound (AC97) and UCB1400 should be able to select CONFIG_AC97_BUS 
+> > independently from each other.
+> > 
+> > And in linux/sound/Makefile one can find this note:
+> > 
+> > 	# This one must be compilable even if sound is configured out
+> > 	obj-$(CONFIG_AC97_BUS) += ac97_bus.o
+> > 
+> > This was fixed 2 years ago.  Who broke it this time?
+> 
+> Oh, it must be me.
 
->>> - When I do a "mov %fs ..." instruction (in a module), it seems that %fs
->>> is equal to 0 (idem for %gs). Are these registers not always filled ?
->>>       
->> On 32-bit they will always have a value, or you'll get a GPF.  On 64-bit
->> the value of the selector doesn't matter because the MSRs are the real
->> content.
->>     
->
-> ok, but what about the limits and access types?
->   
+I think both your patch and the one I previously posted are needed.
 
-They don't exist in 64-bit.  The GDT contains them, but they're not
-enforced.
 
->>> - What is the purpose of MSR_FS_BASE and MSR_GS_BASE ?
->>> (I thought they were filled with "gdt[fs_entry].base")
->>>       
->> On 64-bit, the GDT isn't large enough to hold a 64-bit offset, so it
->> only stores the low 32-bits.  When you load a segment register with a
->> selector, it picks up from the gdt.  If you want a full 64-bit offset,
->> you need to write it to the msr.
->>     
->
-> Ok, I just saw that a 64-bit base in segment descriptor is only available for 
-> the system descriptor.
->   
-
-Yes, the IDT has double-wide entries to fit 64-bit values, but they
-didn't extend that to the GDT.  Or something - I last looked at this a
-couple of months ago, and it never sticks in my brain for long.
-
-> Ok, but how does the kernel technically run tasks on different processor (or 
-> core)? My question was ambiguous, I was not assuming that I knew how 
-> multiprocessor works.
->   
-
-That's a very broad question.  A good proportion of the core kernel code
-is dedicated to doing just that.  Very roughly, at boot time it brings
-up all the cpus, and they more or less run independently each looking
-for work to do in the form of processes waiting to run on the run
-queue.  They collectively run the scheduler algorithms to work out who
-runs what when; almost everything run in the kernel is a task - both
-usermode processes and kernel threads.  Except for the stuff which isn't.
-
-    J
+Nicolas
