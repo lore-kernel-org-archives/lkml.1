@@ -1,177 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbYIEH6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYIEH64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbYIEH6k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 03:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYIEH6c
+	id S1755294AbYIEH64 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 03:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYIEH6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 03:58:32 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:19312 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbYIEH6b (ORCPT
+	Fri, 5 Sep 2008 03:58:44 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:19441 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754748AbYIEH6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 03:58:31 -0400
+	Fri, 5 Sep 2008 03:58:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=wSxif/dRFPFIqEWg5ccLD5vbUHX4xPv2E9c/MbmDzdr3gnzVaNwudgOVXUAkkVEnnJ
-         wJunclRc+LRJWs2oo7fHvGrVzSAM8iXhmSnfRgVHaI3XfdxM5Z9z6RvyZjWvRU+h4Jtf
-         2b+K2dHYB10fIuKklewN31bFcvc7jyROI0tTQ=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: move nonx_setup etc from common.c to init_64.c
-Date: Fri,  5 Sep 2008 00:58:28 -0700
-Message-Id: <1220601508-16360-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nwUiPGQNNe3jOWhcIUSbddivDuVaMZftXfJGa0cDAj4Kv+KqKftBZD86svGKgYJsPu
+         4V1D/qft/oiD1A9IoSDzLKmCogMQ3VPX9ZBkQf3j3h2KSghUNSYUsaaWsrM11EFXRUjL
+         fEG/xxT2WlLOJnRf8/78e4/G6lXqFS/To7b/k=
+Message-ID: <19f34abd0809050058h1e463acdnbfdbfcfa3ef79391@mail.gmail.com>
+Date: Fri, 5 Sep 2008 09:58:41 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: PROBLEM: Kernel 2.6.26 oops if I unplug my Logitech USB 1.1 headset
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Edgar Kalkowski" <eMail@edgar-kalkowski.de>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+In-Reply-To: <s5hod33t6f9.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48C069B1.3000201@edgar-kalkowski.de>
+	 <20080904172822.e5390a59.akpm@linux-foundation.org>
+	 <s5hod33t6f9.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-like 32 bit put it in init_32.c
+On Fri, Sep 5, 2008 at 9:09 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Thu, 4 Sep 2008 17:28:22 -0700,
+> Andrew Morton wrote:
+>>
+>> On Fri, 05 Sep 2008 01:05:21 +0200
+>> Edgar Kalkowski <eMail@edgar-kalkowski.de> wrote:
+>>
+>> > Dear kernel hackers. ;)
+>> >
+>> > [1.] One line summary of the problem: If I unplug my USB-Headset the kernel oopses.
+>>
+>> cc's added.
+>>
+>> Might be USB, might be ALSA.
+>
+> Hm, it's hard to guess...
+> Edgar, could you check whether it happens with 2.6.25?
 
-Signed-off-by: Yinghai <yhlu.kernel@gmail.com>
+Hi,
 
----
- arch/x86/kernel/cpu/common.c |   54 -------------------------------------------
- arch/x86/mm/init_64.c        |   54 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+), 54 deletions(-)
+I recognize this address:
 
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -847,51 +847,6 @@ struct desc_ptr idt_descr = { 256 * 16 -
- 
- char boot_cpu_stack[IRQSTACKSIZE] __page_aligned_bss;
- 
--unsigned long __supported_pte_mask __read_mostly = ~0UL;
--EXPORT_SYMBOL_GPL(__supported_pte_mask);
--
--static int do_not_nx __cpuinitdata;
--
--/* noexec=on|off
--Control non executable mappings for 64bit processes.
--
--on	Enable(default)
--off	Disable
--*/
--static int __init nonx_setup(char *str)
--{
--	if (!str)
--		return -EINVAL;
--	if (!strncmp(str, "on", 2)) {
--		__supported_pte_mask |= _PAGE_NX;
--		do_not_nx = 0;
--	} else if (!strncmp(str, "off", 3)) {
--		do_not_nx = 1;
--		__supported_pte_mask &= ~_PAGE_NX;
--	}
--	return 0;
--}
--early_param("noexec", nonx_setup);
--
--int force_personality32;
--
--/* noexec32=on|off
--Control non executable heap for 32bit processes.
--To control the stack too use noexec=off
--
--on	PROT_READ does not imply PROT_EXEC for 32bit processes (default)
--off	PROT_READ implies PROT_EXEC
--*/
--static int __init nonx32_setup(char *str)
--{
--	if (!strcmp(str, "on"))
--		force_personality32 &= ~READ_IMPLIES_EXEC;
--	else if (!strcmp(str, "off"))
--		force_personality32 |= READ_IMPLIES_EXEC;
--	return 1;
--}
--__setup("noexec32=", nonx32_setup);
--
- void pda_init(int cpu)
- {
- 	struct x8664_pda *pda = cpu_pda(cpu);
-@@ -957,15 +912,6 @@ void syscall_init(void)
- 	       X86_EFLAGS_TF|X86_EFLAGS_DF|X86_EFLAGS_IF|X86_EFLAGS_IOPL);
- }
- 
--void __cpuinit check_efer(void)
--{
--	unsigned long efer;
--
--	rdmsrl(MSR_EFER, efer);
--	if (!(efer & EFER_NX) || do_not_nx)
--		__supported_pte_mask &= ~_PAGE_NX;
--}
--
- unsigned long kernel_eflags;
- 
- /*
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -88,6 +88,60 @@ early_param("gbpages", parse_direct_gbpa
- 
- int after_bootmem;
- 
-+unsigned long __supported_pte_mask __read_mostly = ~0UL;
-+EXPORT_SYMBOL_GPL(__supported_pte_mask);
-+
-+static int do_not_nx __cpuinitdata;
-+
-+/* noexec=on|off
-+Control non executable mappings for 64bit processes.
-+
-+on	Enable(default)
-+off	Disable
-+*/
-+static int __init nonx_setup(char *str)
-+{
-+	if (!str)
-+		return -EINVAL;
-+	if (!strncmp(str, "on", 2)) {
-+		__supported_pte_mask |= _PAGE_NX;
-+		do_not_nx = 0;
-+	} else if (!strncmp(str, "off", 3)) {
-+		do_not_nx = 1;
-+		__supported_pte_mask &= ~_PAGE_NX;
-+	}
-+	return 0;
-+}
-+early_param("noexec", nonx_setup);
-+
-+void __cpuinit check_efer(void)
-+{
-+	unsigned long efer;
-+
-+	rdmsrl(MSR_EFER, efer);
-+	if (!(efer & EFER_NX) || do_not_nx)
-+		__supported_pte_mask &= ~_PAGE_NX;
-+}
-+
-+int force_personality32;
-+
-+/* noexec32=on|off
-+Control non executable heap for 32bit processes.
-+To control the stack too use noexec=off
-+
-+on	PROT_READ does not imply PROT_EXEC for 32bit processes (default)
-+off	PROT_READ implies PROT_EXEC
-+*/
-+static int __init nonx32_setup(char *str)
-+{
-+	if (!strcmp(str, "on"))
-+		force_personality32 &= ~READ_IMPLIES_EXEC;
-+	else if (!strcmp(str, "off"))
-+		force_personality32 |= READ_IMPLIES_EXEC;
-+	return 1;
-+}
-+__setup("noexec32=", nonx32_setup);
-+
- /*
-  * NOTE: This function is marked __ref because it calls __init function
-  * (alloc_bootmem_pages). It's safe to do it ONLY when after_bootmem == 0.
+>>> BUG: unable to handle kernel paging request at 00100100
+
+Is this a magic value? I also got it, see for example:
+http://lkml.org/lkml/2008/8/21/426
+
+Google will also recognize it:
+http://www.google.com/search?hl=en&q="unable+to+handle+kernel+paging+request"+00100100
+
+Where does it come from?
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
