@@ -1,128 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYIEMHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbYIEMK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbYIEMHT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 08:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYIEMHG
+	id S1753795AbYIEMK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 08:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbYIEMKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 08:07:06 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:29020 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752208AbYIEMHF convert rfc822-to-8bit (ORCPT
+	Fri, 5 Sep 2008 08:10:15 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:4732 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752471AbYIEMKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 08:07:05 -0400
-Message-Id: <48C13D1C.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Fri, 05 Sep 2008 13:07:24 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Fri, 5 Sep 2008 08:10:14 -0400
+X-Greylist: delayed 1913 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Sep 2008 08:10:13 EDT
+Message-ID: <48C119FB.4030809@imap.cc>
+Date: Fri, 05 Sep 2008 13:37:31 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org, bgmerrell@novell.com,
+       hirofuchi@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       usbip-devel@lists.sourceforge.net
+Subject: Re: USBIP protocol
+References: <20080903191023.GF2772@parisc-linux.org> <Pine.LNX.4.44L0.0809031544020.3559-100000@iolanthe.rowland.org> <20080904214802.GO2772@parisc-linux.org>
+In-Reply-To: <20080904214802.GO2772@parisc-linux.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5C687B4DAC3FE291AD0F3880"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-former in ioremap's phys_addr_valid() check also on 32bit/PAE.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5C687B4DAC3FE291AD0F3880
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+On Thu, 4 Sep 2008 15:48:02 -0600, Matthew Wilcox wrote:
+> On Wed, Sep 03, 2008 at 04:15:39PM -0400, Alan Stern wrote:
+[...]
+>> It's referred to as SetPortFeature(PORT_RESET) in section 11.24.2.13; =
+=20
+>> the request is actually sent to the device's upstream hub.
+>=20
+> Mmm.  In this case, we don't have an upstream hub.  The vhci-hcd driver=
 
----
- arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
- arch/x86/mm/ioremap.c        |   15 ++++++---------
- include/asm-x86/processor.h  |    4 ++--
- 3 files changed, 25 insertions(+), 11 deletions(-)
+> is on the host and sends URBs across the network where they're received=
 
---- linux-2.6.27-rc5/arch/x86/kernel/cpu/common.c	2008-08-21 14:37:29.000000000 +0200
-+++ 2.6.27-rc5-x86-phys-virt-bits/arch/x86/kernel/cpu/common.c	2008-08-22 15:24:33.000000000 +0200
-@@ -305,6 +305,18 @@ static void __cpuinit early_get_cap(stru
- 				c->x86_capability[1] = cpuid_edx(0x80000001);
- 				c->x86_capability[6] = cpuid_ecx(0x80000001);
- 			}
-+			if (xlvl >= 0x80000008) {
-+				u32 eax = cpuid_eax(0x80000008);
-+
-+				c->x86_phys_bits = eax & 0xff;
-+				c->x86_virt_bits = (eax >> 8) & 0xff;
-+				/* CPUID workaround for Intel 0F33/0F34 CPU */
-+				if (c->x86_vendor == X86_VENDOR_INTEL
-+				    && c->x86 == 0xF && c->x86_model == 0x3
-+				    && (c->x86_mask == 0x3
-+					|| c->x86_mask == 0x4))
-+					c->x86_phys_bits = 36;
-+			}
- 		}
- 
- 	}
-@@ -326,12 +338,17 @@ static void __init early_cpu_detect(void
- 
- 	c->x86_cache_alignment = 32;
- 	c->x86_clflush_size = 32;
-+	c->x86_phys_bits = 32;
-+	c->x86_virt_bits = 32;
- 
- 	if (!have_cpuid_p())
- 		return;
- 
- 	cpu_detect(c);
- 
-+	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
-+		c->x86_phys_bits = 36;
-+
- 	get_cpu_vendor(c, 1);
- 
- 	if (c->x86_vendor != X86_VENDOR_UNKNOWN &&
---- linux-2.6.27-rc5/arch/x86/mm/ioremap.c	2008-08-29 10:55:13.000000000 +0200
-+++ 2.6.27-rc5-x86-phys-virt-bits/arch/x86/mm/ioremap.c	2008-08-22 15:24:33.000000000 +0200
-@@ -32,19 +32,16 @@ unsigned long __phys_addr(unsigned long 
- }
- EXPORT_SYMBOL(__phys_addr);
- 
--static inline int phys_addr_valid(unsigned long addr)
--{
--	return addr < (1UL << boot_cpu_data.x86_phys_bits);
--}
--
--#else
-+#endif
- 
--static inline int phys_addr_valid(unsigned long addr)
-+static inline int phys_addr_valid(resource_size_t addr)
- {
-+#ifdef CONFIG_RESOURCES_64BIT
-+	return !(addr >> boot_cpu_data.x86_phys_bits);
-+#else
- 	return 1;
--}
--
- #endif
-+}
- 
- int page_is_ram(unsigned long pagenr)
- {
---- linux-2.6.27-rc5/include/asm-x86/processor.h	2008-08-21 14:37:34.000000000 +0200
-+++ 2.6.27-rc5-x86-phys-virt-bits/include/asm-x86/processor.h	2008-08-22 15:24:33.000000000 +0200
-@@ -73,8 +73,6 @@ struct cpuinfo_x86 {
- #else
- 	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
- 	int			 x86_tlbsize;
--	__u8			x86_virt_bits;
--	__u8			x86_phys_bits;
- 	/* CPUID returned core id bits: */
- 	__u8			x86_coreid_bits;
- 	/* Max extended CPUID function supported: */
-@@ -99,6 +97,8 @@ struct cpuinfo_x86 {
- 	u16			apicid;
- 	u16			initial_apicid;
- 	u16			x86_clflush_size;
-+	u8			x86_virt_bits;
-+	u8			x86_phys_bits;
- #ifdef CONFIG_SMP
- 	/* number of cores as seen by the OS: */
- 	u16			booted_cores;
+> by the stub driver.  The stub then sends them to the exported device.
+
+The way I've always understood it, there is, by definition,
+always an upstream hub. It's the entity controlling the port
+to which the device is connected. In the case discussed here,
+I guess the stub would have to play that part.
+
+Am I wrong?
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
+--------------enig5C687B4DAC3FE291AD0F3880
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFIwRoCQ3+did9BuFsRAjmeAJ0Tqu92peXJTLVTVp4d5ZzT4i0c0gCfdZ5I
+6NrT+wuzsAkZFf0PcPzs1qc=
+=jAcS
+-----END PGP SIGNATURE-----
+
+--------------enig5C687B4DAC3FE291AD0F3880--
