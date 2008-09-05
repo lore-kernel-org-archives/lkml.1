@@ -1,111 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIEKZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbYIEKbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYIEKZY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 06:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbYIEKYv
+	id S1753138AbYIEKbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 06:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYIEKbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 06:24:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32809 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754751AbYIEKYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 06:24:49 -0400
-Date: Fri, 5 Sep 2008 12:24:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Don Zickus <dzickus@redhat.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>,
-       "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>,
-       Andi Kleen <andi@firstfloor.org>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arozansk@redhat.com" <arozansk@redhat.com>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-Message-ID: <20080905102416.GA11212@elte.hu>
-References: <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com> <20080904200032.GM18288@one.firstfloor.org> <183C1D5A376DE343AA8F94FC2A1EC14938D3E74841@GVW1091EXB.americas.hpqcorp.net> <20080904205725.GC4349@redhat.com> <183C1D5A376DE343AA8F94FC2A1EC14938D3E748D1@GVW1091EXB.americas.hpqcorp.net> <20080904212134.GD4349@redhat.com> <20080904212453.GR3400@redhat.com>
-MIME-Version: 1.0
+	Fri, 5 Sep 2008 06:31:05 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51292 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbYIEKbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 06:31:04 -0400
+Date: Fri, 5 Sep 2008 11:25:33 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Khem Raj <raj.khem@gmail.com>
+Subject: Re: [PATCH 02/23] arm: use the new byteorder headers
+Message-ID: <20080905102533.GA26458@flint.arm.linux.org.uk>
+References: <1219106875.17033.55.camel@brick> <20080819072715.GB30521@flint.arm.linux.org.uk> <1219172580.17033.87.camel@brick> <1220608169.2985.305.camel@pmac.infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080904212453.GR3400@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1220608169.2985.305.camel@pmac.infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 05, 2008 at 10:49:29AM +0100, David Woodhouse wrote:
+> On Tue, 2008-08-19 at 12:03 -0700, Harvey Harrison wrote:
+> > include/linux/swab.h, include/linux/byteorder.h are in current
+> > mainline which is all that these patches depend on.
+> 
+> Er, it also depends on the patch which exports those headers to
+> userspace, which isn't in Linus' tree yet.
 
-* Don Zickus <dzickus@redhat.com> wrote:
+How useful.  If those generic headers are already in Linus' tree, and
+are required for architectures to convert, why hasn't the patch which
+exports them to userspace already been submitted?
 
-> Prarit's patch disabled the timer upon registering a callback to 
-> prevent this case.  The thought was if you have your own handler you 
-> could provide your own watchdog.
+However, another question: why should userspace be using a kernel header
+file for byteswapping?
 
-btw., while we are talking about watchdog design problems, the current 
-way the NMI timer watchdog oprofile fallback uses the die handler and 
-how it all interacts with the ioapic/lapic-timer NMI watchdog is 
-misdesigned as well. (this is used in the relatively rare but still 
-possible case where no primary oprofile handler is found and installed)
-
-The i386 and x86_64 architecture code started using die notifiers for 
-the NMI timer watchdog oprofile code two years ago, via commit 2fbe7b25 
-"i386/x86-64: Remove un/set_nmi_callback and reserve/release_lapic_nmi 
-functions". [ Hey - what a coincidence - that was done by you! ;-) ]
-
-It was a nice cleanup but not complete: using a die notifier for the NMI 
-watchdog does not work properly as the NMI watchdog driver has no 
-knowledge currently about whether it got activated (often it's not even 
-possible to tell it):
-
- +       case DIE_NMI:
- +               oprofile_add_sample(args->regs, 0);
- +               ret = NOTIFY_STOP;
- +               break;
-
-it always returns NOTIFY_STOP. That breaks all other lower prio 
-notifiers down the chain which might have proper knowledge about the 
-source of the NMI. Such kind of cross-notifier breakage is one of the 
-reasons why driver notifiers try to become exclusive and try to play 
-tricks with the nmi watchdog.
-
-Instead the full solution would be for it to return NOTIFY_OK when it is 
-not the source of the NMI (and is able to tell it).
-
-[
-  The reason why i qualified my statement with "when it is able to tell 
-  it" is that while it is possible to disambiguate the NMI source when 
-  the source of the NMI was the local apic timer (we already do that in 
-  lapic_wd_event() - we return 1 if we rearmed the counter in the CPU), 
-  it is not possible to tell it reliably that the NMI source was the
-  IO-APIC.
-
-  The reason for that is that the IO-APIC generated NMIs are 
-  fundamentally 'anonymous' in that case: we put the legacy PIC into 
-  auto-EOI mode and the IO-APIC broadcasts the NMIs and they are edge 
-  triggered (on all but some really ancient systems) . So there's no 
-  permanent and reliable information left about why the NMI was raised 
-  in the CPU. This is a property of the hardware, we cannot solve it on 
-  the kernel side. (we tried explicit ACKs before, and those are even 
-  worse.)
-]
-
-So the right long-term solution is to move all NMI watchdog code 
-(including the lockup detection bits - nmi_watchdog_tick(), etc.) into 
-the notifier, then to propagate the re-arm information from 
-lapic_wd_event() back into the notifier return code, and perhaps to 
-print a (one-time) warning into the kernel log about the (in essence) 
-deactivated lower-prio notifiers when the IO-APIC watchdog is activated.
-
-This is all non-default debug or instrumentation functionality so if 
-they cancel out each other in certain rare cases that's not a big issue 
-in practice, as long as the user is informed about the constraints.
-
-	Ingo
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
