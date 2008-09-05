@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYIERAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYIERCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbYIERAT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 13:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYIEQ7t
+	id S1754108AbYIERCv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 13:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYIERCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:59:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49695 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754002AbYIEQ7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:59:48 -0400
-Date: Fri, 5 Sep 2008 18:59:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: hpet: modify IXP400 quirk to enable interrupts
-Message-ID: <20080905165932.GB12645@elte.hu>
-References: <20080904144657.GC15987@alberich.amd.com> <20080904153206.GB7120@elte.hu> <alpine.LFD.1.10.0809041812450.3243@apollo.tec.linutronix.de> <20080905124203.GD6743@alberich.amd.com> <alpine.LFD.1.10.0809051600370.3243@apollo.tec.linutronix.de> <20080905163326.GE6743@alberich.amd.com>
+	Fri, 5 Sep 2008 13:02:39 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:6862 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbYIERCi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 13:02:38 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: + security-selinux-include-netlabelh-fix-two-build-errors.patch added to -mm tree
+Date: Fri, 5 Sep 2008 13:02:34 -0400
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       netdev <netdev@vger.kernel.org>
+References: <200809050326.m853QB13012853@imap1.linux-foundation.org> <20080904210033.20700500.randy.dunlap@oracle.com> <200809051244.15420.paul.moore@hp.com>
+In-Reply-To: <200809051244.15420.paul.moore@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080905163326.GE6743@alberich.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0004]
+Message-Id: <200809051302.34768.paul.moore@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 05 September 2008 12:44:15 pm Paul Moore wrote:
+> On Friday 05 September 2008 12:00:33 am Randy Dunlap wrote:
+> > Even with this patch, net/netlabel/netlabel_mgmt.c has build errors
+> > when CONFIG_IPV6=n:
+>
+> Interesting, I tried to reproduce this quickly by changing my
+> .config, running 'make oldconfig', verifying that CONFIG_IPV6 was
+> still "n" (it was actually commented out), and then running 'make
+> M=net/netlabel' ... the result was no error.
+>
+> You are correct, I obviously made a mistake in the code (which I am
+> fixing now) but I don't understand why the steps I took above didn't
+> highlight the problem?  What am I missing?
 
-* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+Hmmm, nevermind, the problem seems to have disappeared after 
+running 'make prepare scripts'.
 
-> The current quirk is incomplete. Some more chipset fiddling has to be
-> done to enable HPET interrupts. This patch aims to do this. From my
-> tests it seems to work faultlessly.
-> 
-> But the official statement is that HPET is not supported on SB4X0.
-> 
-> Users will still have to use hpet=force to enable it.
-> 
-> Use it at your own risk.
-> 
-> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:79: warning:
+> > unused variable 'tmp6'
+> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:78: warning:
+> > unused variable 'iter6'
+> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:340:
+> > warning: unused variable 'tmp6'
+> > linux-next-20080904/net/netlabel/netlabel_domainhash.c:301:
+> > warning: unused variable 'iter6'
+> > linux-next-20080904/net/netlabel/netlabel_mgmt.c:219: error:
+> > implicit declaration of function 'netlbl_af6list_add'
+> > linux-next-20080904/net/netlabel/netlabel_mgmt.c:317: error:
+> > implicit declaration of function 'netlbl_af6list_foreach_rcu'
+> > linux-next-20080904/net/netlabel/netlabel_mgmt.c:318: error:
+> > expected ';' before '{' token make[3]: ***
+> > [net/netlabel/netlabel_mgmt.o] Error 1
 
-applied to tip/timers/hpet - thanks Andreas!
-
-	Ingo
+-- 
+paul moore
+linux @ hp
