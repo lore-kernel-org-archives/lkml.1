@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbYIEQEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbYIEQGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbYIEQEn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbYIEQEe
+	id S1754718AbYIEQGQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYIEQGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:04:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58044 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbYIEQEd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:04:33 -0400
-Date: Fri, 5 Sep 2008 18:04:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [patch 1/2] x2apic: fix reserved APIC register accesses in
-	print_local_APIC()
-Message-ID: <20080905160414.GL10292@elte.hu>
-References: <20080902234759.554038000@linux-os.sc.intel.com> <Pine.LNX.4.55.0809030625520.23174@cliff.in.clinika.pl> <20080903184552.GE14481@linux-os.sc.intel.com> <Pine.LNX.4.55.0809032145020.23174@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0809032145020.23174@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 5 Sep 2008 12:06:01 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55159 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbYIEQGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 12:06:00 -0400
+Date: Fri, 5 Sep 2008 09:05:59 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: pageexec@freemail.hu
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@tglx.de, hpa@zytor.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
+Message-ID: <20080905090559.7cbc74f3@infradead.org>
+In-Reply-To: <48C0FF43.30940.2C3EFC0@pageexec.freemail.hu>
+References: <20080903195122.73905236@infradead.org>
+	<873akgw251.fsf@basil.nowhere.org>
+	<20080904054444.79e71974@infradead.org>
+	<48C0FF43.30940.2C3EFC0@pageexec.freemail.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 05 Sep 2008 11:43:31 +0200
+pageexec@freemail.hu wrote:
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> consider how your whole patch is based on one big self-contradiction.
+> you already assume that the attacker *can* modify arbitrary kernel
+> memory (even the otherwise *read-only* syscall table at that), but at
+> the very same time you're saying he *can't* use the same powers to
+> patch out your 'protection' or do many other things to evade it. as
+> it is, it's cargo cult security at its best, reminding one on the
+> Vista kernel's similar 'protection' mechanism for the service
+> descriptor tables...
 
-> On Wed, 3 Sep 2008, Suresh Siddha wrote:
-> 
-> > from SDV Vol 3a Section 17.27.1
-> > 
-> >   The remote read delivery mode provided in the 82489DX and local APIC for
-> >   Pentium processors is not supported in the local APIC in the Pentium 4, Intel
-> >   Xeon, and P6 family processors.
-> > 
-> > It looks like it is not supported (officially atleast) even in APIC bus
-> > architectures. Only the Pentium integrated APIC seems to be the exception.
-> 
->  Yeah, trust documentation and see where you'll get... ;)
 
-hm, is the remote read debug output, now that it's not present in CPUs 
-made in the past 5 years or so, really that important?
+so I'm not going to say that the patch is important or good;
+it's the result of ben mentioning the idea on irc and me thinking "sure
+lets see what it would take and cost".
+Nothing more than that
 
-	Ingo
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
