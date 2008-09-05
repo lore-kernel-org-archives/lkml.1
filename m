@@ -1,101 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYIEISW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYIEIYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbYIEISW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 04:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYIEISJ
+	id S1755068AbYIEIYj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 04:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYIEIYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 04:18:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:24054 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbYIEISH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 04:18:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Kk3EzlmxZDP28xISiLf0xh7yV/dEfYi+eEWbJw0Gr1RyNzVSC8sup+bg7qVs+P0e5q
-         Ubzmb4JOSbdh5l66tbpCN1Ta9SAr2EYQMJFQOwHkjmkclXSvcRM6Pmxk3rG0e9PhX4BX
-         xfCSpjJ+j2mYUpkBie6rh0WJ9kRSgjaZhSVRY=
-Message-ID: <19f34abd0809050118g38c87ca5i56fb3cc6d01b7f1a@mail.gmail.com>
-Date: Fri, 5 Sep 2008 10:18:06 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Takashi Iwai" <tiwai@suse.de>
-Subject: Re: PROBLEM: Kernel 2.6.26 oops if I unplug my Logitech USB 1.1 headset
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Edgar Kalkowski" <eMail@edgar-kalkowski.de>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-In-Reply-To: <19f34abd0809050101h2b207d19k9d1bd67351499385@mail.gmail.com>
+	Fri, 5 Sep 2008 04:24:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58490 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752489AbYIEIYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 04:24:22 -0400
+Date: Fri, 5 Sep 2008 10:24:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: move nonx_setup etc from common.c to init_64.c
+Message-ID: <20080905082406.GC18485@elte.hu>
+References: <1220601508-16360-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48C069B1.3000201@edgar-kalkowski.de>
-	 <20080904172822.e5390a59.akpm@linux-foundation.org>
-	 <s5hod33t6f9.wl%tiwai@suse.de>
-	 <19f34abd0809050058h1e463acdnbfdbfcfa3ef79391@mail.gmail.com>
-	 <19f34abd0809050101h2b207d19k9d1bd67351499385@mail.gmail.com>
+In-Reply-To: <1220601508-16360-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0013]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 5, 2008 at 10:01 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Fri, Sep 5, 2008 at 9:58 AM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
->> On Fri, Sep 5, 2008 at 9:09 AM, Takashi Iwai <tiwai@suse.de> wrote:
->>> At Thu, 4 Sep 2008 17:28:22 -0700,
->>> Andrew Morton wrote:
->>>>
->>>> On Fri, 05 Sep 2008 01:05:21 +0200
->>>> Edgar Kalkowski <eMail@edgar-kalkowski.de> wrote:
->>>>
->>>> > Dear kernel hackers. ;)
->>>> >
->>>> > [1.] One line summary of the problem: If I unplug my USB-Headset the kernel oopses.
->>>>
->>>> cc's added.
->>>>
->>>> Might be USB, might be ALSA.
->>>
->>> Hm, it's hard to guess...
->>> Edgar, could you check whether it happens with 2.6.25?
->>
->> Hi,
->>
->> I recognize this address:
->>
->>>>> BUG: unable to handle kernel paging request at 00100100
->>
->> Is this a magic value? I also got it, see for example:
->> http://lkml.org/lkml/2008/8/21/426
->>
->> Google will also recognize it:
->> http://www.google.com/search?hl=en&q="unable+to+handle+kernel+paging+request"+00100100
->>
->> Where does it come from?
->
-> Oh. It _is_ LIST_POISON1. Sorry for the bit of noise.
 
-Probably totally unrelated, but I couldn't help to find this bit of
-code somewhat odd. In snd_ctl_dev_disconnect():
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-        down_read(&card->controls_rwsem);
-        list_for_each_entry(ctl, &card->ctl_files, list) {
-                wake_up(&ctl->change_sleep);
-                kill_fasync(&ctl->fasync, SIGIO, POLL_ERR);
-        }
-        up_read(&card->controls_rwsem);
+> like 32 bit put it in init_32.c
+> 
+> Signed-off-by: Yinghai <yhlu.kernel@gmail.com>
 
-...shouldn't that be using &card->ctl_files_rwlock instead of
-&card->controls_rwsem? That one is always used to protect the list ops
-on &card->ctl_files in all the other places. Or maybe it is already
-locked from higher ups?
+applied to tip/x86/unify-cpu-detect - thanks Yinghai.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Ingo
