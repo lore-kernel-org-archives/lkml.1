@@ -1,120 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbYIERWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755274AbYIERXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbYIERWk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 13:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYIERWO
+	id S1755274AbYIERXi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 13:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbYIERX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 13:22:14 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42428 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbYIERWN (ORCPT
+	Fri, 5 Sep 2008 13:23:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41642 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752135AbYIERX2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 13:22:13 -0400
-Date: Fri, 5 Sep 2008 10:21:54 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: linux-mm@kvack.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, Gary Hade <garyhade@us.ibm.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] [RESEND] mm: show memory section to node relationship in
-	sysfs
-Message-ID: <20080905172154.GB11692@us.ibm.com>
-MIME-Version: 1.0
+	Fri, 5 Sep 2008 13:23:28 -0400
+Date: Fri, 5 Sep 2008 19:26:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: pageexec@freemail.hu, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       tglx@tglx.de, hpa@zytor.com
+Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
+Message-ID: <20080905172644.GV18288@one.firstfloor.org>
+References: <20080905154221.GF10292@elte.hu> <48C15D0A.6363.4324231@pageexec.freemail.hu> <20080905165239.GA12645@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Sieve: CMU Sieve 2.3
-X-Spam-TestScore: ALL_TRUSTED=-1.44,DNS_FROM_RFC_ABUSE=0.479
-X-Spam-TokenSummary: Bayes not run.
-X-Xagent-From: garyhade@us.ibm.com
-X-Xagent-To: garyhade@linux.vnet.ibm.com
-X-Xagent-Gateway: bldgate.vnet.ibm.com (XAGENTU2 at BLDGATE)
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080905165239.GA12645@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending with linux-kernel@vger.kernel.org copied this time.  No changes
-other than this and the Subject line.  Based on linux-mm discussion
-yesterday I will be revising this patch to include proper documentation
-and symlinks instead of node number containing files.  If there are any
-other comments please fire away.
 
+First such checkers already exist -- they are called root kit checkers.
+There are various around. 
+Usually operate from user space. You could run them in a cron job.
 
-Show memory section to node relationship in sysfs
+> well at least in the case of Linux we have a fairly good tally of what 
+> kernel code is supposed to be executable at some given moment after 
+> bootup, and can lock that list down permanently until the next reboot, 
+> and give the list to the checker to verify every now and then? Such a 
 
-Add /sys/devices/system/memory/memoryX/node files to show
-the node on which each memory section resides.
+Doing it in a hypervisor implicitely like Alan proposed would seem much 
+stronger and also somewhat cleaner than doing it delayed.
 
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> verification pass certainly wouldnt be cheap though: all kernel 
+> pagetables have to be scanned and verified, plus all known code (a few 
+> megabytes typically), and the key CPU data structures.
 
----
- Documentation/memory-hotplug.txt |    1 -
- drivers/base/memory.c            |   20 ++++++++++++++++++++
- 2 files changed, 20 insertions(+), 1 deletion(-)
+The issue is that a lot of non key data structures all over the memory
+have function pointers (or pointers to function pointers) too.
+So if you protect syscall table they are just going to patch some dentry
+instead. Still if it's reasonable clean it might be still useful to
+raise the bar a bit, but I'm not sure a checker qualifies for that.
 
-Index: linux-2.6.27-rc5/drivers/base/memory.c
-===================================================================
---- linux-2.6.27-rc5.orig/drivers/base/memory.c	2008-09-03 14:24:54.000000000 -0700
-+++ linux-2.6.27-rc5/drivers/base/memory.c	2008-09-03 14:25:14.000000000 -0700
-@@ -150,6 +150,22 @@
- 	return len;
- }
-
-+/*
-+ * node on which memory section resides
-+ */
-+static ssize_t show_mem_node(struct sys_device *dev,
-+			struct sysdev_attribute *attr, char *buf)
-+{
-+	unsigned long start_pfn;
-+	int ret;
-+	struct memory_block *mem =
-+		container_of(dev, struct memory_block, sysdev);
-+
-+	start_pfn = section_nr_to_pfn(mem->phys_index);
-+	ret = pfn_to_nid(start_pfn);
-+	return sprintf(buf, "%d\n", ret);
-+}
-+
- int memory_notify(unsigned long val, void *v)
- {
- 	return blocking_notifier_call_chain(&memory_chain, val, v);
-@@ -278,6 +294,7 @@
- static SYSDEV_ATTR(state, 0644, show_mem_state, store_mem_state);
- static SYSDEV_ATTR(phys_device, 0444, show_phys_device, NULL);
- static SYSDEV_ATTR(removable, 0444, show_mem_removable, NULL);
-+static SYSDEV_ATTR(node, 0444, show_mem_node, NULL);
-
- #define mem_create_simple_file(mem, attr_name)	\
- 	sysdev_create_file(&mem->sysdev, &attr_##attr_name)
-@@ -368,6 +385,8 @@
- 		ret = mem_create_simple_file(mem, phys_device);
- 	if (!ret)
- 		ret = mem_create_simple_file(mem, removable);
-+	if (!ret)
-+		ret = mem_create_simple_file(mem, node);
-
- 	return ret;
- }
-@@ -413,6 +432,7 @@
- 	mem_remove_simple_file(mem, state);
- 	mem_remove_simple_file(mem, phys_device);
- 	mem_remove_simple_file(mem, removable);
-+	mem_remove_simple_file(mem, node);
- 	unregister_memory(mem, section);
-
- 	return 0;
-Index: linux-2.6.27-rc5/Documentation/memory-hotplug.txt
-===================================================================
---- linux-2.6.27-rc5.orig/Documentation/memory-hotplug.txt	2008-09-03 14:25:54.000000000 -0700
-+++ linux-2.6.27-rc5/Documentation/memory-hotplug.txt	2008-09-03 14:26:15.000000000 -0700
-@@ -365,7 +365,6 @@
-   - allowing memory hot-add to ZONE_MOVABLE. maybe we need some switch like
-     sysctl or new control file.
-   - showing memory section and physical device relationship.
--  - showing memory section and node relationship (maybe good for NUMA)
-   - showing memory section is under ZONE_MOVABLE or not
-   - test and make it better memory offlining.
-   - support HugeTLB page migration and offlining.
+-Andi
