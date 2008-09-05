@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYIEOYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYIEOhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbYIEOYl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYIEOYd
+	id S1754122AbYIEOhv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYIEOhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:24:33 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:3795 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbYIEOYc (ORCPT
+	Fri, 5 Sep 2008 10:37:40 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:56096 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465AbYIEOhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:24:32 -0400
-Date: Fri, 5 Sep 2008 15:24:28 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH 1/1] ASoC codec: SSM2602 audio codec driver (v3)
-Message-ID: <20080905142428.GI12383@sirena.org.uk>
-Mail-Followup-To: Bryan Wu <cooloney@kernel.org>,
-	Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
-	linux-kernel@vger.kernel.org
-References: <1220609397-7161-1-git-send-email-cooloney@kernel.org>
+	Fri, 5 Sep 2008 10:37:39 -0400
+From: Hannes Hering <hannes.hering@gmx.de>
+Subject: [PATCH 1/2] ehea: Fix DLPAR memory handling
+Date: Fri, 5 Sep 2008 16:36:26 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220609397-7161-1-git-send-email-cooloney@kernel.org>
-X-Cookie: Universe, n.:
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: jeff@garzik.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
+       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       osstklei@de.ibm.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200809051636.26545.hannes.hering@gmx.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 05, 2008 at 06:09:57PM +0800, Bryan Wu wrote:
-> From: Cliff Cai <cliff.cai@analog.com>
+The ehea busmap must be allocated only once in the first of many calls of the
+ehea_create_busmap_callback.
 
-Looks good, just a few coding sandards issues that I've fixed up locally.
+Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+---
+
+diff -Nurp -X dontdiff linux-2.6.27-rc5/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
+--- linux-2.6.27-rc5/drivers/net/ehea/ehea_qmr.c	2008-08-29 00:52:02.000000000 +0200
++++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-09-05 15:31:30.000000000 +0200
+@@ -595,7 +595,8 @@ static int ehea_create_busmap_callback(u
+ 	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
+ 	mr_len = *(unsigned long *)arg;
+ 
+-	ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
++	if (!ehea_bmap)
++		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+ 	if (!ehea_bmap)
+ 		return -ENOMEM;
+ 
