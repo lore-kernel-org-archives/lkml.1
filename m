@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbYIES3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbYIESam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbYIES3p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 14:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbYIES3g
+	id S1754233AbYIESam (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 14:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbYIESab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 14:29:36 -0400
-Received: from flock1.newmail.ru ([82.204.219.207]:54603 "HELO
-	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751151AbYIES3f (ORCPT
+	Fri, 5 Sep 2008 14:30:31 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:50796 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYIESaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 14:29:35 -0400
-X-Greylist: delayed 562 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Sep 2008 14:29:34 EDT
-From: Andrey Borzenkov <arvidjaar@newmail.ru>
-To: hpa@zytor.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Ghost EDD devices in /sys again
-Date: Fri, 5 Sep 2008 22:19:43 +0400
-User-Agent: KMail/1.9.10
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Fri, 5 Sep 2008 14:30:30 -0400
+Date: Fri, 5 Sep 2008 14:17:04 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alex Williamson <alex.williamson@hp.com>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jouni.malinen@atheros.com
+Subject: Re: [GIT]: Networking
+Message-ID: <20080905181704.GC3027@tuxdriver.com>
+References: <20080827.164649.87042354.davem@davemloft.net> <1220627292.7260.3.camel@2710p.home> <alpine.LFD.1.10.0809051039070.3117@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Message-Id: <200809052219.44093.arvidjaar@newmail.ru>
-Content-Type: multipart/signed;
-  boundary="nextPart17972051.c6SMrpffnh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809051039070.3117@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart17972051.c6SMrpffnh
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, Sep 05, 2008 at 10:45:11AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 5 Sep 2008, Alex Williamson wrote:
+> 
+> > On Wed, 2008-08-27 at 16:46 -0700, David Miller wrote:
+> > 
+> > > 22) Two mac80211 bug fixes from Jouni Malinen:
+> > >     a) Use IWEVCUSTOM so that we don't hit the 256 byte limit that
+> > >        IWEVASSOCREQIE has
+> > 
+> > This one breaks wireless with 32bit userspace/64bit kernel.  Bisected
+> > back to changeset 087d833e5a9f67ba933cb32eaf5a2279c1a5b47c:
+> > 
+> > mac80211: Use IWEVASSOCREQIE instead of IWEVCUSTOM
+> 
+> Grr. I'd love to say "I told you so", and write another rant about -rc 
+> series patches. But I'm too lazy, so people - please mentally insert my 
+> standard rant here.
+> 
+> David/Jouni - just revert it?
 
-This is regression but old enough. Apparently I had for whatever reasons
-EDD turned off till recently. This is 2.6.27-rc5 just in case.
+Yes, just revert it.
 
-In 2006 I fixed ghost devices due to buggy BIOS:
+Jouni, feel free to send me a new version for 2.6.28.
 
-http://marc.info/?l=linux-kernel&m=114087765422490&w=2
+Thanks,
 
-Later edd.S has been rewritten in C, and apparently this patch has been
-lost:
-
-{pts/1}% ls /sys/firmware/edd
-int13_dev80/  int13_dev84/  int13_dev88/  int13_dev8c/
-int13_dev81/  int13_dev85/  int13_dev89/  int13_dev8d/
-int13_dev82/  int13_dev86/  int13_dev8a/  int13_dev8e/
-int13_dev83/  int13_dev87/  int13_dev8b/  int13_dev8f/
-
-But I have just a single disk. This is the same system BTW.
-
-Unfortunately I do not speak asm language of C; if somebody could provide
-equivalent fix for current edd.c, I am more than ready to test it.
-
-Thank you
-
--andrey
-
---nextPart17972051.c6SMrpffnh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjBeEAACgkQR6LMutpd94zdpwCgvkQVz+XBmGj9EUUkgXdh71DO
-YOIAn1NHr4VJoon6+oQRUVKh2nefwVKy
-=FQsP
------END PGP SIGNATURE-----
-
---nextPart17972051.c6SMrpffnh--
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
