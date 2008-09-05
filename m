@@ -1,63 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYIEOSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYIEOYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbYIEOSk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYIEOSc
+	id S1754009AbYIEOYl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbYIEOYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:18:32 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11759 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909AbYIEOSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:18:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,320,1217833200"; 
-   d="scan'208";a="436076589"
-Message-ID: <48C13FB7.80105@linux.intel.com>
-Date: Fri, 05 Sep 2008 16:18:31 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 5 Sep 2008 10:24:33 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3795 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbYIEOYc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 10:24:32 -0400
+Date: Fri, 5 Sep 2008 15:24:28 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH 1/1] ASoC codec: SSM2602 audio codec driver (v3)
+Message-ID: <20080905142428.GI12383@sirena.org.uk>
+Mail-Followup-To: Bryan Wu <cooloney@kernel.org>,
+	Cliff Cai <cliff.cai@analog.com>, alsa-devel@alsa-project.org,
+	linux-kernel@vger.kernel.org
+References: <1220609397-7161-1-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>, Vivek Goyal <vgoyal@redhat.com>,
-       Don Zickus <dzickus@redhat.com>, Prarit Bhargava <prarit@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       arozansk@redhat.com, Thomas.Mingarelli@hp.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: [PATCH RFC] NMI Re-introduce un[set]_nmi_callback
-References: <20080904130048.31841.3329.sendpatchset@prarit.bos.redhat.com> <1220535463.8609.223.camel@twins> <48BFF0C0.7060208@redhat.com> <20080904145617.GB28095@elte.hu> <87y727vrgu.fsf@basil.nowhere.org> <20080904172052.GN3400@redhat.com> <20080904175231.GH18288@one.firstfloor.org> <20080904182637.GP3400@redhat.com> <20080904190816.GB4349@redhat.com> <20080904200032.GM18288@one.firstfloor.org> <20080905093303.GA28887@elte.hu>
-In-Reply-To: <20080905093303.GA28887@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220609397-7161-1-git-send-email-cooloney@kernel.org>
+X-Cookie: Universe, n.:
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
->>> Add "kdump" to the list. It will also be broken if we decide to let 
->>> one driver hijack the NMI handler.
->> kdump is a special case, similar to the NMI button panic mode. It 
->> should be always only active when the user configured it. When the 
->> user configured it should be always the fallback and override any 
->> other drivers.
-> 
-> if by 'any other drivers' you mean all other notifiers then that's wrong 
-> - kdump must still come after many other NMI sources.
+On Fri, Sep 05, 2008 at 06:09:57PM +0800, Bryan Wu wrote:
+> From: Cliff Cai <cliff.cai@analog.com>
 
-Your ordering makes sense. Someone just has to go through all
-the users and fix them up I guess and also document it properly.
-
-One thing to consider though: if there are more and more NMI drivers
-it would make sense to have a new notifier chain just for this
-(and also finally convert oprofile to use it too).
-
-The problem with adding more and more into the die chain is that
-die is executed on every exception, including quite performance
-critical ones like page fault or int 3 (performance critical for
-dprobes)
-
--Andi
-
+Looks good, just a few coding sandards issues that I've fixed up locally.
