@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbYIENrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYIENtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbYIENrd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYIENrY
+	id S1754139AbYIENtg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYIENt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:47:24 -0400
-Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:54524 "EHLO
-	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753121AbYIENrX (ORCPT
+	Fri, 5 Sep 2008 09:49:27 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:60240 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbYIENt1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:47:23 -0400
-Message-ID: <48C13869.9040603@weinigel.se>
-Date: Fri, 05 Sep 2008 15:47:21 +0200
-From: Christer Weinigel <christer@weinigel.se>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 5 Sep 2008 09:49:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FVQNdyp07N8i9q7SOEVCfuQI20Y3GnqFn6ascoj/F4RFSuuvavb5qGOLPEHzRJhRWP
+         H+yp1WYeRuEQXPBAlox6DRtnfDE6I54UICcju5p7/MbLpeWSPKZGFX0fY6zBtGFBZZ93
+         oQqcHO++NR0uj37KwOHfMb6VV/fAboom8b8tY=
+Date: Fri, 5 Sep 2008 17:49:21 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       yhlu.kernel@gmail.com, macro@linux-mips.org
+Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for
+	setup_IO_APIC_irqs
+Message-ID: <20080905134921.GA7239@lenovo>
+References: <20080904183748.950151853@gmail.com>> <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com> <20080905080447.GC12409@elte.hu>
 MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-CC: linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: Proposed SDIO layer rework
-References: <48C11BF3.2060609@weinigel.se> <20080905131855.GY26082@trinity.fluff.org>
-In-Reply-To: <20080905131855.GY26082@trinity.fluff.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080905080447.GC12409@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Dooks wrote:
->> Most of the CPU is probably spent doing PIO transfers to the SDIO 
->> controller, if DMA starts working in the s3cmci driver, the CPU load 
->> difference will be even larger.
-> 
-> I'm not sure if I'll get the time to look at this before the new kernel
-> is released... anyway DMA may not be much of a win for smaller transfers
-> anyway, since the setup (the cache will need to be cleaned out or the
-> transfer memory made unbuffered)  and complete time will add another
-> IRQ's worth of response time. This means small transfers are probably
-> better off using PIO.
+[Ingo Molnar - Fri, Sep 05, 2008 at 10:04:47AM +0200]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > Use a nested level for 'for' cycle and break long lines.
+| > For apic_print we should countinue using KERNEL_DEBUG if
+| > we have started to.
+| 
+| > @@ -1521,32 +1521,35 @@ static void __init setup_IO_APIC_irqs(vo
+| >  	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
+| >  
+| >  	for (apic = 0; apic < nr_ioapics; apic++) {
+| > -	for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
+| > +		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
+| >  
+| > +			idx = find_irq_entry(apic, pin, mp_INT);
+| > +			if (idx == -1) {
+| 
+| hm, i dont really like the super-deep nesting we do here. Could you 
+| please split out the iterator into a separate function? That makes the 
+| code a lot easier to understand and saves two extra tabs as well for 
+| those ugly-looking printk lines.
+| 
+| 	Ingo
+| 
 
-Yes.  For the DMA-capable S3C SPI driver I wrote, I added some 
-thresholds, so for smaller transfers than a certain number of bytes, I 
-skip DMA and just do a polled/interrupt transfer instead.  For short 
-transfers at high clock rates it's not even worth getting an interrupt 
-per byte, it's better to just busy wait for each byte, since the 
-interrupt overhead is larger than the time between each byte.
+ok Ingo, will take a look, thanks
 
-A SDIO CMD/response packet is 48 bits, so at 25 MHz that is only about 4 
-us and I think the interrupt overhead is more than that.  So if we 
-really want to squeeze every last clock cycle out of the SDIO driver it 
-may be better to busy wait for the end of simple CMD52s instead of using 
-the an interrupt to complete the transfer.
-
-I'll clean up my s3cmci patches and send them to you, but I can't 
-promise when I'll be done, so it'll probably have to wait for the next 
-kernel release.
-
-   /Christer
+		- Cyrill -
