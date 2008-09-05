@@ -1,101 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbYIEUBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbYIEUDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752538AbYIEUBq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751097AbYIEUBi
+	id S1753992AbYIEUDR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYIEUDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:01:38 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:41158 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbYIEUBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:01:37 -0400
-Subject: Re: [PATCH 1/2 v5] cfg80211: Add new wireless regulatory
-	infrastructure
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1220643824-11398-1-git-send-email-lrodriguez@atheros.com>
-References: <1220643824-11398-1-git-send-email-lrodriguez@atheros.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-dzoN3VCCPsUMlxidCWdd"
-Date: Fri, 05 Sep 2008 22:01:32 +0200
-Message-Id: <1220644892.11109.18.camel@johannes.berg>
+	Fri, 5 Sep 2008 16:03:06 -0400
+Received: from 1wt.eu ([62.212.114.60]:3203 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751047AbYIEUDF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 16:03:05 -0400
+Date: Fri, 5 Sep 2008 21:59:30 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Nir Tzachar <tzachar@grad120a.cs.bgu.ac.il>
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, ariveira@gmail.com, rdunlap@xenotime.net,
+       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de,
+       Nir Tzachar <nir@tzachar.com>
+Subject: Re: [PATCH] ncurses based config V2
+Message-ID: <20080905195930.GA27913@1wt.eu>
+References: <1220469076-16487-1-git-send-email-nir@tzachar.com> <1220603220-17090-1-git-send-email-nir@tzachar.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220603220-17090-1-git-send-email-nir@tzachar.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
---=-dzoN3VCCPsUMlxidCWdd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Fri, Sep 05, 2008 at 11:27:00AM +0300, Nir Tzachar wrote:
+> Changes:
+> 1) Fixed segfaults in help window.
+> 2) Removed the instructions window, made the instructions appear as a button
+>    which displays a popup window.
+> 3) Added hot keys support. As ncurses does not support several colors inside
+>    a menu, keys are highlighted using "()".
+> 4) Optimized for 80x24 terminals.
+> 6) Fixed zconf.y to use _menu_init
+> 7) added nconfig to "make help"
+> 8) Misc fixes.
+> 
+> Comments are appreciated.
 
-On Fri, 2008-09-05 at 12:43 -0700, Luis R. Rodriguez wrote:
-> This adds the new wireless regulatory infrastructure. The
-> main motiviation behind this was to centralize regulatory
-> code as each driver was implementing their own regulatory solution,
-> and to replace the initial centralized code we have where:
->=20
-> * only 3 regulatory domains are supported: US, JP and EU
-> * regulatory domains can only be changed through a module parameter
-> * all rules are built statically in the kernel
->=20
-> We now have support for regulatory domains for many countries
-> and regulatory domains are now queried through a userspace agent
-> (CRDA) through udev allowing distributions to update regulatory rules
-> without updating the kernel. Updates on regulatory rules can
-> now be left as an independent effort.
->=20
-> Each driver can regulatory_hint() a regulatory domain
-> based on either their EEPROM mapped regulatory domain value to a
-> respective ISO/IEC 3166-1 country code or pass an internally built
-> regulatory domain. We also add support to let the user set the
-> regulatory domain through userspace in case of faulty EEPROMs to
-> further help compliance.
->=20
-> Support for world roaming will be added soon for cards capable of
-> this.
->=20
-> For more information see:
->=20
-> http://wireless.kernel.org/en/developers/Regulatory/CRDA
->=20
-> For now we leave an option to enable the old module parameter,
-> ieee80211_regdom, and to build the 3 old regdomains statically
-> (US, JP and EU). This option is CONFIG_WIRELESS_OLD_REGULATORY.
-> These old static definitions and the module parameter is being
-> scheduled for removal for 2.6.29.
->=20
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+OK, I've just tried it. Here are the first comments I can make :
 
-Looks fine to me now, as far as I've looked, I guess there'll be some
-odd fixes required etc. but we can figure that out.
+  - colors are too dark. Cyan on black is barely readable, red on black is
+    almost unreadable and blue on black is not readable at all, I have to
+    switch off the light to read it. Most often you'll see light shades of
+    grey (even white) in interfaces because it's hard to see dark shades,
+    and bright flashy letters would dazzle and be seen as fuzzy. Many colors
+    are perfectly readable on while or even light grey (except yellow and
+    sometimes cyan). Blue backgrounds were often used under DOS and were
+    OK with almost all colors except red (well-known eye focus problem).
+    But there was a trick, pixels were very large in 640x200, nowaydays
+    we have small pixels and letters are not much readable anymore on blue
+    backgrounds. For your tests, you can try to load 
+    xterm -bg <color> -fg <color> and ensure that you're using a medium
+    font (tickness of 1-pixel).
 
-johannes
+  - pressing arrows too fast regularly escapes (probably because of the
+    ESC prefix, I don't know). This is rather strange, because no other
+    application does this to me. Is there a specific initialization
+    sequence with ncurses to state that arrows should return special codes
+    instead of the ESC prefix ? (I have no idea)
 
---=-dzoN3VCCPsUMlxidCWdd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+  - entering text in boxes (eg: local version) does not move the cursor,
+    it remains at the beginning of the line. If I press any arrow, the
+    box immediately closes (most likely the Esc prefix again).
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+  - in the input boxes, spaces are missing aroung the title, which touches
+    the frame (eg: Local version again).
 
-iQIcBAABAgAGBQJIwZAZAAoJEKVg1VMiehFYIkMP/3XN+1i3IGU1ugoJeIW+ypiK
-ZeIlc9XQkpg2LqTzyFAw6gUXR3yAKXUkWARVc/7FYKXsUKBgBZGOW5LYa8TqA5E0
-EIF3N+4V47sV+14Hyc3zEfp582Ogyq3rZIKFrNR7PaReWYA0KrSr5TVN96UomjB4
-YlnYrzOT9Uq2LlZAusPpywqADSTH3PCh/thgsAXzf2uQPMfP+klvFccnBoeZLUlh
-3Rl6nRI4Q1UhCPMpYt62pBzSstBREgE4YXu4dYOljZRe8i44mYfvTwSQz3xyPenz
-dlU5h/tQ8ClLekVD9sTqptT6DrCZnqw+Ytk95m/PSpxa3dVpXatZG2VbkltzhjWR
-B7t6BW4DSzNFl5xO3nuo5/06Sosg+kQ4v+XsBApmCke4sdwdHDaQRxMnzGFs2gyl
-LZ6DuNiE9MlDf8x6naq2d5BfClJgHS3UJhmfHeheLKk32T/djKBf+43Hq6OrmE/0
-UzybuMPoaP3Kx6raDkXAsHCvPTUkCk/g1oMGGuZ32+HGdgvdK2nb8zeMLFtgt9xy
-oA8XcB993QAhRmyg4/kCrFFphj6dXSyDvQPjeZL054FWj5pyr8JhyjvnWYr+ep2o
-VSLGf7spmzngsVi8VIY42imKBotPLvUZdNXsizjaVLsY/342+GN3HDEu4QxW7cKI
-Ds+8Oc91Gw9KRBJ3h53n
-=EI7k
------END PGP SIGNATURE-----
+  - in "instructions", it's not explained how to leave that box. I found
+    both Enter and Esc to work, but a last line with a small message would
+    be better.
 
---=-dzoN3VCCPsUMlxidCWdd--
+  - I noticed I was tempted a lot to press "?" to get help, but the key is
+    not bound. It would be nice to have it bound to Help since make oldconfig
+    and menuconfig to both report help that way.
+
+  - I'm not convinced that the parenthesis around hotkeys make the menu
+    that much readable, especially when there are lots of short words or
+    even acronyms. Eg :
+        [ ]   (U)TS namespace
+        [ ]   (I)PC namespace
+        [ ]   (U)ser namespace (EXPERIMENTAL)
+        [ ]   (P)ID Namespaces (EXPERIMENTAL)
+
+    I don't know if there is something such as a bold attribute in ncurses,
+    it would make sense to use it IMHO because you don't force a color on
+    people's terms, you rely on the style which works well for them.
+
+I'm sorry I don't go further for now, the arrows causing frequent exits is
+too bothersome, I've started it about 30 times just for this report, it's
+too hard to navigate. I hope that the points above are already helpful.
+
+Regards,
+Willy
 
