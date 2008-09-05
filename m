@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYIEMGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYIEMHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYIEMGR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 08:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYIEMGG
+	id S1754009AbYIEMHT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 08:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYIEMHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 08:06:06 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:28969 "EHLO
+	Fri, 5 Sep 2008 08:07:06 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:29020 "EHLO
 	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbYIEMGF convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1752208AbYIEMHF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 08:06:05 -0400
-Message-Id: <48C13CE0.76E4.0078.0@novell.com>
+	Fri, 5 Sep 2008 08:07:05 -0400
+Message-Id: <48C13D1C.76E4.0078.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Fri, 05 Sep 2008 13:06:24 +0100
+Date: Fri, 05 Sep 2008 13:07:24 +0100
 From: "Jan Beulich" <jbeulich@novell.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix printk format compiler warnings
+To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
@@ -24,71 +25,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-%llx and the like cannot be used on u64-derived data types - they must
-be cast to long long explicitly for arch-es where u64 is a typedef of
-unsigned long (ia64 is where I observed the problem).
+Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
+former in ioremap's phys_addr_valid() check also on 32bit/PAE.
 
 Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
 ---
- drivers/pci/probe.c     |   16 +++++++++++++---
- drivers/pci/setup-bus.c |    6 +++++-
- 2 files changed, 18 insertions(+), 4 deletions(-)
+ arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
+ arch/x86/mm/ioremap.c        |   15 ++++++---------
+ include/asm-x86/processor.h  |    4 ++--
+ 3 files changed, 25 insertions(+), 11 deletions(-)
 
---- linux-2.6.27-rc5/drivers/pci/probe.c	2008-08-21 14:37:32.000000000 +0200
-+++ 2.6.27-rc5-pci-probe-print/drivers/pci/probe.c	2008-09-02 15:18:08.000000000 +0200
-@@ -383,7 +383,10 @@ void __devinit pci_read_bridge_bases(str
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
--		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
-+		printk(KERN_INFO "PCI: bridge %s io port: [%Lx, %Lx]\n",
-+		       pci_name(dev),
-+		       (unsigned long long)res->start,
-+		       (unsigned long long)res->end);
- 	}
+--- linux-2.6.27-rc5/arch/x86/kernel/cpu/common.c	2008-08-21 14:37:29.000000000 +0200
++++ 2.6.27-rc5-x86-phys-virt-bits/arch/x86/kernel/cpu/common.c	2008-08-22 15:24:33.000000000 +0200
+@@ -305,6 +305,18 @@ static void __cpuinit early_get_cap(stru
+ 				c->x86_capability[1] = cpuid_edx(0x80000001);
+ 				c->x86_capability[6] = cpuid_ecx(0x80000001);
+ 			}
++			if (xlvl >= 0x80000008) {
++				u32 eax = cpuid_eax(0x80000008);
++
++				c->x86_phys_bits = eax & 0xff;
++				c->x86_virt_bits = (eax >> 8) & 0xff;
++				/* CPUID workaround for Intel 0F33/0F34 CPU */
++				if (c->x86_vendor == X86_VENDOR_INTEL
++				    && c->x86 == 0xF && c->x86_model == 0x3
++				    && (c->x86_mask == 0x3
++					|| c->x86_mask == 0x4))
++					c->x86_phys_bits = 36;
++			}
+ 		}
  
- 	res = child->resource[1];
-@@ -395,7 +398,10 @@ void __devinit pci_read_bridge_bases(str
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev), res->start, res->end);
-+		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%Lx, %Lx]\n",
-+		       pci_name(dev),
-+		       (unsigned long long)res->start,
-+		       (unsigned long long)res->end);
  	}
+@@ -326,12 +338,17 @@ static void __init early_cpu_detect(void
  
- 	res = child->resource[2];
-@@ -431,7 +437,11 @@ void __devinit pci_read_bridge_bases(str
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n", pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64)?"64":"32",res->start, res->end);
-+		printk(KERN_INFO "PCI: bridge %s %dbit mmio pref: [%Lx, %Lx]\n",
-+		       pci_name(dev),
-+		       res->flags & PCI_PREF_RANGE_TYPE_64 ? 64 : 32,
-+		       (unsigned long long)res->start,
-+		       (unsigned long long)res->end);
- 	}
+ 	c->x86_cache_alignment = 32;
+ 	c->x86_clflush_size = 32;
++	c->x86_phys_bits = 32;
++	c->x86_virt_bits = 32;
+ 
+ 	if (!have_cpuid_p())
+ 		return;
+ 
+ 	cpu_detect(c);
+ 
++	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
++		c->x86_phys_bits = 36;
++
+ 	get_cpu_vendor(c, 1);
+ 
+ 	if (c->x86_vendor != X86_VENDOR_UNKNOWN &&
+--- linux-2.6.27-rc5/arch/x86/mm/ioremap.c	2008-08-29 10:55:13.000000000 +0200
++++ 2.6.27-rc5-x86-phys-virt-bits/arch/x86/mm/ioremap.c	2008-08-22 15:24:33.000000000 +0200
+@@ -32,19 +32,16 @@ unsigned long __phys_addr(unsigned long 
  }
+ EXPORT_SYMBOL(__phys_addr);
  
---- linux-2.6.27-rc5/drivers/pci/setup-bus.c	2008-08-21 14:37:32.000000000 +0200
-+++ 2.6.27-rc5-pci-probe-print/drivers/pci/setup-bus.c	2008-09-02 15:18:20.000000000 +0200
-@@ -539,7 +539,11 @@ static void pci_bus_dump_res(struct pci_
-                 if (!res)
-                         continue;
+-static inline int phys_addr_valid(unsigned long addr)
+-{
+-	return addr < (1UL << boot_cpu_data.x86_phys_bits);
+-}
+-
+-#else
++#endif
  
--		printk(KERN_INFO "bus: %02x index %x %s: [%llx, %llx]\n", bus->number, i, (res->flags & IORESOURCE_IO)? "io port":"mmio", res->start, res->end);
-+		printk(KERN_INFO "bus: %02x index %x %s: [%Lx, %Lx]\n",
-+		       bus->number, i,
-+		       res->flags & IORESOURCE_IO ? "io port" : "mmio",
-+		       (unsigned long long)res->start,
-+		       (unsigned long long)res->end);
-         }
- }
+-static inline int phys_addr_valid(unsigned long addr)
++static inline int phys_addr_valid(resource_size_t addr)
+ {
++#ifdef CONFIG_RESOURCES_64BIT
++	return !(addr >> boot_cpu_data.x86_phys_bits);
++#else
+ 	return 1;
+-}
+-
+ #endif
++}
  
+ int page_is_ram(unsigned long pagenr)
+ {
+--- linux-2.6.27-rc5/include/asm-x86/processor.h	2008-08-21 14:37:34.000000000 +0200
++++ 2.6.27-rc5-x86-phys-virt-bits/include/asm-x86/processor.h	2008-08-22 15:24:33.000000000 +0200
+@@ -73,8 +73,6 @@ struct cpuinfo_x86 {
+ #else
+ 	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
+ 	int			 x86_tlbsize;
+-	__u8			x86_virt_bits;
+-	__u8			x86_phys_bits;
+ 	/* CPUID returned core id bits: */
+ 	__u8			x86_coreid_bits;
+ 	/* Max extended CPUID function supported: */
+@@ -99,6 +97,8 @@ struct cpuinfo_x86 {
+ 	u16			apicid;
+ 	u16			initial_apicid;
+ 	u16			x86_clflush_size;
++	u8			x86_virt_bits;
++	u8			x86_phys_bits;
+ #ifdef CONFIG_SMP
+ 	/* number of cores as seen by the OS: */
+ 	u16			booted_cores;
 
 
 
