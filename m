@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYIEO5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYIEO7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbYIEO5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 10:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYIEO5K
+	id S1754554AbYIEO7L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 10:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYIEO65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 10:57:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33173 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbYIEO5J (ORCPT
+	Fri, 5 Sep 2008 10:58:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:53374 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbYIEO64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 10:57:09 -0400
-Date: Fri, 5 Sep 2008 07:57:03 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>
-Subject: Re: frame unwinder patches
-Message-ID: <20080905075703.6041650e@infradead.org>
-In-Reply-To: <200809051648.52767.bs@q-leap.de>
-References: <g9p3du$n95$1@ger.gmane.org>
-	<200809051552.47929.bs@q-leap.de>
-	<20080905071337.3373ab86@infradead.org>
-	<200809051648.52767.bs@q-leap.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Sep 2008 10:58:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=u4/bcxcTRNQ0WAcsBdL1ucyDr7Ep89sd3+vVKw+dKBzhZXTEmaDn3nw5EzZz5VJn2Q
+         qIVKZdlBanc2bFwQs9XXGaXiaMKd3q5JKyesb6b35epyzNbXLnvdccAqOm25XstvavWn
+         73JRBO39AlYrnKVKCEPY83faWkyeKFuAV/YX0=
+Message-ID: <b6c5339f0809050758r8ba7559k4ebe56531f5556e6@mail.gmail.com>
+Date: Fri, 5 Sep 2008 10:58:55 -0400
+From: "Bob Copeland" <me@bobcopeland.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: __getblk infinite loop
+Cc: linux-kernel@vger.kernel.org, snakebyte@gmx.de
+In-Reply-To: <20080904223836.54fbabb1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080905032411.GB13208@hash.localnet>
+	 <20080904223836.54fbabb1.akpm@linux-foundation.org>
+X-Google-Sender-Auth: de9141a0f27bb28f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 16:48:52 +0200
-Bernd Schubert <bs@q-leap.de> wrote:
+On Fri, Sep 5, 2008 at 1:38 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> That loop does lock up on people occasionally - last time was in isofs,
+> because it had done an insane set_blocksize() earlier on.
+>
+> Yes, it's always a case of garbage in, garbage out (or nothing out, as
+> the case may be).
+>
+> No, it's not particularly programmer-friendly behaviour.
 
-> On Friday 05 September 2008 16:13:37 Arjan van de Ven wrote:
-> > On Fri, 5 Sep 2008 15:52:47 +0200
-> >
-> > Bernd Schubert <bs@q-leap.de> wrote:
-> > > > (and if you really care it's 1 line of code to turn it off)
-> > >
-> > > It is not only this, I think the dwarf2 stack unwinder patches
-> > > provide by far better traces than the in-kernel unwinder. At least
-> > > ever since I applied these patches to our kernels, I was able to
-> > > read the stack dumps...
-> >
-> > they really wouldn't be different than the ones you get if you
-> > remove the "?" lines.
-> 
-> Well may be, but then there is still the performace degrading, so I
-> don't want to have it enabled on our production kernels. I admit I
-> never measured what is the difference between of
-> CONFIG_FRAME_POINTER=y and =n, but the fact the help text says there
-> is a difference already makes me want to disable it (especially,
-> since we have to provide benchmarks before we can sell a system).
+Ok, I think I get it now - sector_t 0x1d4000004 is in the addressable
+range (by one bit) since we can address 4G blocks of PAGE_SIZE and the
+FS is using a block size of 2048.  grow_buffers() always returns 0
+because find_or_create_page() fails adding a page with that huge
+offset into the pagecache (?), so we try to free memory and try again.
+ Your patch here:
 
-to be honest, on 64 bit the overhead is quite small (the extra
-instructions it adds are optimized for by the modern cpus that you use
-in the systems you're selling); on 32 bit the overhead is.. well a
-little bigger but not THAT much. yes it loses a register for the
-compiler to use, but no it's not a general purpose register, and with
-the register renaming that today's cpus do, I'd be surprised if you
-could see anything significant.
+    http://marc.info/?l=linux-kernel&m=117202372525279&w=2
 
+doesn't apply to the situation since index is still technically a
+valid page offset.
 
-
+So, I guess the answer is to deal with it in fsck and tell people
+"don't do that."
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Bob Copeland %% www.bobcopeland.com
