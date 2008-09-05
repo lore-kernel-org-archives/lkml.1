@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbYIEJY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbYIEJ2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751949AbYIEJY2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 05:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750839AbYIEJYU
+	id S1752164AbYIEJ2w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 05:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbYIEJ2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 05:24:20 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:48340 "EHLO mail.q-leap.de"
+	Fri, 5 Sep 2008 05:28:42 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36449 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbYIEJYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 05:24:20 -0400
-From: Bernd Schubert <bs@q-leap.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: frame unwinder patches
-Date: Fri, 5 Sep 2008 11:24:16 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <g9p3du$n95$1@ger.gmane.org> <87tzcvvi4p.fsf@basil.nowhere.org>
-In-Reply-To: <87tzcvvi4p.fsf@basil.nowhere.org>
+	id S1750971AbYIEJ2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 05:28:42 -0400
+Date: Fri, 5 Sep 2008 11:28:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       lkml <linux-kernel@vger.kernel.org>, scsi <linux-scsi@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
+Message-ID: <20080905092838.GS20055@kernel.dk>
+References: <20080821091514.8f56e2d5.randy.dunlap@oracle.com> <0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net> <20080821172653.3e3e855c.randy.dunlap@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net> <1219420487.3339.22.camel@localhost.localdomain> <48AEEE0A.1010900@oracle.com> <1219424538.3339.51.camel@localhost.localdomain> <0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net> <48C013D9.7060309@oracle.com> <0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809051124.17194.bs@q-leap.de>
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 September 2008 21:13:58 Andi Kleen wrote:
-> Bernd Schubert <bs@q-leap.de> writes:
-> > Hello,
+On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
+> > >>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
+> > >>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
+> > >>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e <do_cciss_intr+2509>
+> > >>>
+> > >>>
+> > >>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
+> > >>>
+> > /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:206
+> > >> OK ...that's confusing.  It seems to be saying that ctrlr_info_t *
+> > >> was NULL.  However, I can't see a way of getting into the
+> > fifo_full
+> > >> callback from do_cciss_intr ..
+> > >> especially not with an NULL host.
+> > >>
+> > >> James
+> > >
+> > > That is weird. Even if we could get there fifo_full doesn't
+> > do anything but wait for a bit.
 > >
-> > up to 2.6.22 the -mm series had these nice frame unwinder patches,
-> > which gave beautiful stack traces. Unfortunately these frame unwinder
-> > patches seem to have been dropped :(
+> > Hi,
 > >
-> > Anyone still maintaining updated patches?
->
-> The SUSE kernel rpm should have an uptodate set
->
-> (ftp.suse.com/pub/projects/kernel/HEAD )
->
+> > This just happened again.  This time it's on 2.6.27-rc5-git3.
+> >
+> > ~Randy
+> 
+> Thanks Randy. I think. :)
+> 
+> I'll try to recreate in my lab.
 
-Thanks Andi, found it! If someone else needs it, the correct path is 
-ftp://ftp.suse.com/pub/projects/kernel/kotd/HEAD. 
-
-
-> I agree that they were much better than the current unwinder,
-> also they didn't require slowing down the kernel with
-> frame pointers.
-
-What it the reason this patch isn't mainline? It provides better traces, 
-doesn't slow down the kernel (which is important in our HPC envirement), so 
-what is the disadvantage?
-
-
-Thanks again,
-Bernd
+This looks somewhat strange, mostly like 'c' is NULL and it's oopsing in
+in removeQ (I don't think Randy's analysis is correct in assuming it's
+'h' and it's in fifo_full). Given that 'c' cannot be NULL, it's c->prev
+or c->next that are NULL.
 
 -- 
-Bernd Schubert
-Q-Leap Networks GmbH
+Jens Axboe
+
