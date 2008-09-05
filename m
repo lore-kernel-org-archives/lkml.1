@@ -1,68 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYIEQQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYIEQSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbYIEQQi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 12:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbYIEQPq
+	id S1754954AbYIEQSu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 12:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYIEQSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 12:15:46 -0400
-Received: from h155.mvista.com ([63.81.120.155]:60591 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754309AbYIEQPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 12:15:45 -0400
-Message-ID: <48C15B52.6020508@ru.mvista.com>
-Date: Fri, 05 Sep 2008 20:16:18 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: =?UTF-8?B?Ik1hc291ZCBTaGFyYmlhbmkgXCLZhdiz2LnZiNivINi02LHYqNuM2KfZhtuM?=
-	 =?UTF-8?B?XCIi?= <masouds@masoud.ir>
-Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: HPT374 detection crash with 74811f355f4f69a187fa74892dcf2a684b84ce99
-References: <1a9da18c0809041610tb3f2a58r6acd6f10a3d50a91@mail.gmail.com>
-In-Reply-To: <1a9da18c0809041610tb3f2a58r6acd6f10a3d50a91@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 5 Sep 2008 12:18:41 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50528 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbYIEQSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 12:18:41 -0400
+Subject: Re: [RFC][PATCH] dynamically enable readprofile at runtime
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080904190308.6d377ac6.randy.dunlap@oracle.com>
+References: <20080829202713.348431DC@kernel>
+	 <20080904190308.6d377ac6.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Fri, 05 Sep 2008 09:18:36 -0700
+Message-Id: <1220631516.23386.126.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 2008-09-04 at 19:03 -0700, Randy Dunlap wrote:
+> > +#ifdef CONFIG_PROFILING
+> > +/* uevent helper program, used during early boo */
+> 
+> s/boo/boot/ ??
 
-Masoud Sharbiani "مسعود شربیانی" wrote:
+Well, my crappy copied comment has a typo in it.  I really meant "boo".
+I was trying to scare patch reviewers.
 
-> Hi there, Looks like your commit 74811f355f4f69a187fa74892dcf2a684b84ce99
->  (hpt366: convert to use ->host_priv)
+I'll have a new one out in a bit, akpm found another issue in it.
 
-    Thanks for doing the bisection.
+-- Dave
 
-> has caused the following crash:
-
-    Oops, we did it again. :-)
-
-> (Full dmesg follows, as captured from a serial console)
-
-> [   22.555200] hpt366: HPT374 chipset detected
-> [   22.559489] hpt366 0000:03:06.0: IDE controller (0x1103:0x0008 rev 0x07)
-> [   22.566278] HPT366_IDE 0000:03:06.0: PCI INT A -> GSI 28 (level, low) -> IRQ 28
-> [   22.573729] usb 1-2: new full speed USB device using uhci_hcd and address 4
-> [   22.580726] pci 0000:03:06.1: PCI INT A -> GSI 28 (level, low) -> IRQ 28
-> [   22.587529] hpt366 0000:03:06.0: DPLL base: 48 MHz, f_CNT: 142, assuming 33 MHz PCI
-> [   22.602705] hpt366 0000:03:06.0: using 50 MHz DPLL clock
-> [   22.608181] hpt366 0000:03:06.0: 100% native mode on irq 28
-> [   22.613831] hpt366 0000:03:06.1: no clock data saved by BIOS
-
-    Aha, HPT374 workaround for reading BIOS clock data didn't get executed.
-
-> [   22.731015] usb 1-2: configuration #1 chosen from 1 choice
-> [   22.737191] ata2.00: ATA-6: ST3120022A, 3.04, max UDMA/100
-> [   22.738880] hub 1-2:1.0: USB hub found
-> [   22.746597] ata2.00: 234441648 sectors, multi 16: LBA48
-> [   22.747804] hpt366 0000:03:06.1: DPLL base: 33 MHz, f_CNT: 139, assuming
-
-    Uh, I wonder where did it get those 33 MHz DPLL base -- there's simply no 
-such base.  Looks like memory addressed by .host_priv got corrupt...
-
-MBR, Sergei
