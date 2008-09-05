@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbYIERS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbYIERS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752052AbYIERS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 13:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYIERR5
+	id S1753097AbYIERS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 13:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbYIERSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 13:17:57 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49039 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbYIERR4 (ORCPT
+	Fri, 5 Sep 2008 13:18:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54758 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142AbYIERSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 13:17:56 -0400
-Subject: Re: [PATCH 1/2] Remove redundant CONFIG_ARCH_SUPPORTS_AOUT
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, bunk@kernel.org
-In-Reply-To: <20080905162831.GA13801@phobos.i.cabal.ca>
-References: <1213696004.26255.960.camel@pmac.infradead.org>
-	 <1220632021.2985.360.camel@pmac.infradead.org>
-	 <20080905162831.GA13801@phobos.i.cabal.ca>
+	Fri, 5 Sep 2008 13:18:45 -0400
+Subject: Re: [PATCH] Fixing section mismatch warning .
+From: Peter Zijlstra <peterz@infradead.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       marcin.slusarz@gmail.com
+In-Reply-To: <b9df5fa10809020843h2d264062g894b5a719dca9091@mail.gmail.com>
+References: <b9df5fa10809020843h2d264062g894b5a719dca9091@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 05 Sep 2008 18:17:52 +0100
-Message-Id: <1220635072.2985.368.camel@pmac.infradead.org>
+Date: Fri, 05 Sep 2008 19:18:40 +0200
+Message-Id: <1220635120.11202.18.camel@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-05 at 12:28 -0400, Kyle McMartin wrote:
-> On Fri, Sep 05, 2008 at 05:27:01PM +0100, David Woodhouse wrote:
-> > diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
-> > index a7d4fd3..8313fcc 100644
-> > --- a/arch/parisc/Kconfig
-> > +++ b/arch/parisc/Kconfig
-> > @@ -76,9 +76,6 @@ config IRQ_PER_CPU
-> >  	bool
-> >  	default y
-> >  
-> > -config ARCH_SUPPORTS_AOUT
-> > -	def_bool y
-> > -
-> >  # unless you want to implement ACPI on PA-RISC ... ;-)
-> >  config PM
-> >  	bool
+On Tue, 2008-09-02 at 21:43 +0600, Rakib Mullick wrote:
+> LD      kernel/built-in.o
+> WARNING: kernel/built-in.o(.text+0x326): Section mismatch in reference
+> from the function init_hrtick() to the variable
+> ..cpuinit.data:hotplug_hrtick_nb.8
+> The function init_hrtick() references
+> the variable __cpuinitdata hotplug_hrtick_nb.8.
+> This is often because init_hrtick lacks a __cpuinitdata
+> annotation or the annotation of hotplug_hrtick_nb.8 is wrong.
 > 
-> This isn't even correct. PA-RISC only supports SOM or ELF...
+>  This patch fixes the above warning.
+>  Thanks.
+> 
+> Signed-off-by: Md.Rakib H. Mullick (rakib.mullick@gmail.com)
+> 
+> --- linux-2.6.27-rc5.orig/kernel/sched.c	2008-08-31 17:07:03.000000000 +0600
+> +++ linux-2.6.27-rc5/kernel/sched.c	2008-09-01 22:23:30.000000000 +0600
+> @@ -1087,7 +1087,7 @@ hotplug_hrtick(struct notifier_block *nf
+>  	return NOTIFY_DONE;
+>  }
+> 
+> -static void init_hrtick(void)
+> +static __init void init_hrtick(void)
+>  {
+>  	hotcpu_notifier(hotplug_hrtick, 0);
+>  }
 
-Yeah, ARCH_SUPPORTS_AOUT was a bit b0rked from the beginning.
+then, shouldn't it be __cpuinit ?
 
-Hm, that reminds me -- I was supposed to pick up Adrian's patch to
-remove a bunch of pointless <asm/a.out.h> files... now added to my tree
-and sent.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
+BTW - would've been nice to see sched mentioned in the topic.
 
