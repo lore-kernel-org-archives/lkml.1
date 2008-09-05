@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbYIEDMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYIEDN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbYIEDMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 23:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYIEDJb
+	id S1757078AbYIEDN3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 23:13:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYIEDJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 23:09:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:54468 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753312AbYIEDJa (ORCPT
+	Thu, 4 Sep 2008 23:09:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:58345 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753647AbYIEDJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 23:09:30 -0400
+	Thu, 4 Sep 2008 23:09:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Unz42AE4a7yLrzgZyaDCBCUUU6qZsCQ4kMYdkIzeG5AaNUauhOK6J4Wqbt/QMSc/Oz
-         yTYkooyLWBQBDM2HDadjNhihPqA/Fs+dXRm9G9sYUnFYaYvtqg5ii/i6SIBhy74IJGGv
-         XGn4B7HU5wnK8yXy3MF3XjnVc/+sMuU1SPbUs=
+        b=TbP+f0B3ztE5YHXT+Zm44VwJJBKFK3ZGWsb9Q5ePyW5agIdnVORjp9inDe1Y0ZaxQc
+         3NrQ8cUZPoDBL0l3irQ8BvEFC5r4UqNs7Nlgv/OBbyrbcypV5McS45/gRspuXlOhEzCv
+         trG8bUdy+j8w0U4sH7nnzywoeJ6rWXUl1tnbA=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 11/16] x86: cpu common merge get_cpu_cap
-Date: Thu,  4 Sep 2008 20:09:09 -0700
-Message-Id: <1220584154-32497-11-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 12/16] x86: cpu common merge early_identify_cpu
+Date: Thu,  4 Sep 2008 20:09:10 -0700
+Message-Id: <1220584154-32497-12-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <1220584154-32497-1-git-send-email-yhlu.kernel@gmail.com>
 References: <1220584154-32497-1-git-send-email-yhlu.kernel@gmail.com>
@@ -33,61 +33,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- arch/x86/kernel/cpu/common.c    |   20 ++++++++++++++++++++
- arch/x86/kernel/cpu/common_64.c |    2 ++
- 2 files changed, 22 insertions(+), 0 deletions(-)
+ arch/x86/kernel/cpu/common.c    |    4 ++++
+ arch/x86/kernel/cpu/common_64.c |   19 ++++++++++++++++---
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index b2018f7..ffc2f5e 100644
+index ffc2f5e..61a7074 100644
 --- a/arch/x86/kernel/cpu/common.c
 +++ b/arch/x86/kernel/cpu/common.c
-@@ -458,6 +458,26 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
- 			c->x86_capability[6] = cpuid_ecx(0x80000001);
- 		}
- 	}
-+
+@@ -490,7 +490,11 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
+  */
+ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
+ {
 +#ifdef CONFIG_X86_64
-+	/* Transmeta-defined flags: level 0x80860001 */
-+	xlvl = cpuid_eax(0x80860000);
-+	if ((xlvl & 0xffff0000) == 0x80860000) {
-+		/* Don't set x86_cpuid_level here for now to not confuse. */
-+		if (xlvl >= 0x80860001)
-+			c->x86_capability[2] = cpuid_edx(0x80860001);
-+	}
-+
-+	if (c->extended_cpuid_level >= 0x80000007)
-+		c->x86_power = cpuid_edx(0x80000007);
-+
-+	if (c->extended_cpuid_level >= 0x80000008) {
-+		u32 eax = cpuid_eax(0x80000008);
-+
-+		c->x86_virt_bits = (eax >> 8) & 0xff;
-+		c->x86_phys_bits = eax & 0xff;
-+	}
++	c->x86_clflush_size = 64;
++#else
+ 	c->x86_clflush_size = 32;
 +#endif
- }
- /*
-  * Do minimum CPU detection early.
+ 	c->x86_cache_alignment = c->x86_clflush_size;
+ 
+ 	if (!have_cpuid_p())
 diff --git a/arch/x86/kernel/cpu/common_64.c b/arch/x86/kernel/cpu/common_64.c
-index 7ac0a00..75bb7ff 100644
+index 75bb7ff..6475548 100644
 --- a/arch/x86/kernel/cpu/common_64.c
 +++ b/arch/x86/kernel/cpu/common_64.c
-@@ -461,6 +461,7 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
- 		}
- 	}
- 
-+#ifdef CONFIG_X86_64
- 	/* Transmeta-defined flags: level 0x80860001 */
- 	xlvl = cpuid_eax(0x80860000);
- 	if ((xlvl & 0xffff0000) == 0x80860000) {
-@@ -478,6 +479,7 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
- 		c->x86_virt_bits = (eax >> 8) & 0xff;
- 		c->x86_phys_bits = eax & 0xff;
- 	}
-+#endif
+@@ -482,15 +482,28 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
+ #endif
  }
  
- /* Do some early cpuid on the boot CPU to get some parameter that are
+-/* Do some early cpuid on the boot CPU to get some parameter that are
+-   needed before check_bugs. Everything advanced is in identify_cpu
+-   below. */
++/*
++ * Do minimum CPU detection early.
++ * Fields really needed: vendor, cpuid_level, family, model, mask,
++ * cache alignment.
++ * The others are not touched to avoid unwanted side effects.
++ *
++ * WARNING: this function is only called on the BP.  Don't add code here
++ * that is supposed to run on all CPUs.
++ */
+ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
+ {
+ 
++#ifdef CONFIG_X86_64
+ 	c->x86_clflush_size = 64;
++#else
++	c->x86_clflush_size = 32;
++#endif
+ 	c->x86_cache_alignment = c->x86_clflush_size;
+ 
++	if (!have_cpuid_p())
++		return;
++
+ 	memset(&c->x86_capability, 0, sizeof c->x86_capability);
+ 
+ 	c->extended_cpuid_level = 0;
 -- 
 1.5.4.5
 
