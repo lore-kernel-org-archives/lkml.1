@@ -1,113 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbYIEIfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbYIEIlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbYIEIfW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 04:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753029AbYIEIfI
+	id S1754923AbYIEIlS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 04:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYIEIlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 04:35:08 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40010 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753195AbYIEIfG (ORCPT
+	Fri, 5 Sep 2008 04:41:06 -0400
+Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:2754 "EHLO
+	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752489AbYIEIlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 04:35:06 -0400
-Date: Fri, 5 Sep 2008 17:40:21 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Hugh Dickins <hugh@veritas.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [PATCH][mmotm]memcg: handle null dereference of mm->owner
-Message-Id: <20080905174021.9fa29b01.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080905165017.b2715fe4.nishimura@mxp.nes.nec.co.jp>
-References: <20080905165017.b2715fe4.nishimura@mxp.nes.nec.co.jp>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Sep 2008 04:41:04 -0400
+Message-ID: <48C0F09C.1000101@xs4all.nl>
+Date: Fri, 05 Sep 2008 10:41:00 +0200
+From: Rambaldi <rambaldi@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080815)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.27-rc5 xen balloon driver warnings
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 16:50:17 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Hi,
 
-> Hi.
-> 
-> mm_update_next_owner() may clear mm->owner to NULL
-> if it races with swapoff, page migration, etc.
-> (This behavior was introduced by mm-owner-fix-race-between-swap-and-exit.patch.)
-> 
-> But memcg doesn't take account of this situation, and causes:
-> 
->   BUG: unable to handle kernel NULL pointer dereference at 0000000000000630
-> 
-> This fixes it.
-> 
-Thank you for catching this.
-
-BTW, I have a question to Balbir and Paul. (I'm sorry I missed the discussion.)
-Recently I wonder why we need MM_OWNER.
-
-- What's bad with thread's cgroup ?
-- Why we can't disallow per-thread cgroup under memcg ?)
-
-Thanks,
--Kame
+when running the 2.6.27-rc5 kernel as 64 bits dumU I get the following warnings:
 
 
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> ---
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 2979d22..ec2c16b 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -244,6 +244,14 @@ static struct mem_cgroup *mem_cgroup_from_cont(struct cgroup *cont)
->  
->  struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p)
->  {
-> +	/*
-> +	 * mm_update_next_owner() may clear mm->owner to NULL
-> +	 * if it races with swapoff, page migration, etc.
-> +	 * So this can be called with p == NULL.
-> +	 */
-> +	if (unlikely(!p))
-> +		return NULL;
-> +
->  	return container_of(task_subsys_state(p, mem_cgroup_subsys_id),
->  				struct mem_cgroup, css);
->  }
-> @@ -534,6 +542,11 @@ static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
->  	if (likely(!memcg)) {
->  		rcu_read_lock();
->  		mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-> +		if (unlikely(!mem)) {
-> +			rcu_read_unlock();
-> +			kmem_cache_free(page_cgroup_cache, pc);
-> +			return 0;
-> +		}
->  		/*
->  		 * For every charge from the cgroup, increment reference count
->  		 */
-> @@ -790,6 +803,10 @@ int mem_cgroup_shrink_usage(struct mm_struct *mm, gfp_t gfp_mask)
->  
->  	rcu_read_lock();
->  	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-> +	if (unlikely(!mem)) {
-> +		rcu_read_unlock();
-> +		return 0;
-> +	}
->  	css_get(&mem->css);
->  	rcu_read_unlock();
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+xen_balloon: Initialising balloon driver.
+------------[ cut here ]------------
+WARNING: at fs/sysfs/dir.c:463 sysfs_add_one+0x33/0x39()
+sysfs: duplicate filename 'memory' can not be created
+Modules linked in:
+Pid: 1, comm: swapper Not tainted 2.6.27-rc5 #2
+
+Call Trace:
+  [<ffffffff80231c9c>] warn_slowpath+0xb4/0xdd
+  [<ffffffff803311f8>] write_console+0xda/0x119
+  [<ffffffff8020baf6>] xen_mc_flush+0x11c/0x15b
+  [<ffffffff8032c0d8>] notify_update+0x2b/0x30
+  [<ffffffff80330579>] vt_console_print+0x27b/0x288
+  [<ffffffff802f0b6e>] idr_get_empty_slot+0x164/0x243
+  [<ffffffff80274ad0>] __kmalloc+0x99/0xc6
+  [<ffffffff8027456b>] kmem_cache_alloc+0x65/0x92
+  [<ffffffff802b7a30>] sysfs_ilookup_test+0x0/0xf
+  [<ffffffff802b7c2c>] sysfs_find_dirent+0x1b/0x2f
+  [<ffffffff802b7ce2>] sysfs_add_one+0x33/0x39
+  [<ffffffff802b8219>] create_dir+0x4f/0x87
+  [<ffffffff802b8286>] sysfs_create_dir+0x35/0x4c
+  [<ffffffff802f1959>] kobject_add_internal+0xd3/0x18e
+  [<ffffffff8055dbb9>] balloon_init+0x0/0x1bd
+  [<ffffffff802f1a38>] kset_register+0x24/0x3a
+  [<ffffffff8055dc69>] balloon_init+0xb0/0x1bd
+  [<ffffffff8020a042>] do_one_initcall+0x42/0x141
+  [<ffffffff802b1b04>] create_proc_entry+0x73/0x8a
+  [<ffffffff80254260>] register_irq_proc+0xa7/0xbf
+  [<ffffffff805488d0>] kernel_init+0x116/0x16b
+  [<ffffffff8020fd3b>] int_ret_from_sys_call+0x13/0x33
+  [<ffffffff80210ef9>] child_rip+0xa/0x11
+  [<ffffffff80210208>] retint_restore_args+0x5/0x20
+  [<ffffffff8030caa0>] dummycon_dummy+0x0/0x3
+  [<ffffffff8030caa0>] dummycon_dummy+0x0/0x3
+  [<ffffffff80210eef>] child_rip+0x0/0x11
+
+---[ end trace 4eaa2a86a8e2da22 ]---
+kobject_add_internal failed for memory with -EEXIST, don't try to register things with the same name in the same directory.
+Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc5 #2
+
+Call Trace:
+  [<ffffffff802f19d5>] kobject_add_internal+0x14f/0x18e
+  [<ffffffff8055dbb9>] balloon_init+0x0/0x1bd
+  [<ffffffff802f1a38>] kset_register+0x24/0x3a
+  [<ffffffff8055dc69>] balloon_init+0xb0/0x1bd
+  [<ffffffff8020a042>] do_one_initcall+0x42/0x141
+  [<ffffffff802b1b04>] create_proc_entry+0x73/0x8a
+  [<ffffffff80254260>] register_irq_proc+0xa7/0xbf
+  [<ffffffff805488d0>] kernel_init+0x116/0x16b
+  [<ffffffff8020fd3b>] int_ret_from_sys_call+0x13/0x33
+  [<ffffffff80210ef9>] child_rip+0xa/0x11
+  [<ffffffff80210208>] retint_restore_args+0x5/0x20
+  [<ffffffff8030caa0>] dummycon_dummy+0x0/0x3
+  [<ffffffff8030caa0>] dummycon_dummy+0x0/0x3
+  [<ffffffff80210eef>] child_rip+0x0/0x11
+
+SCSI subsystem initialized
 
