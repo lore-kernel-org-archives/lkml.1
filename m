@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYIENdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbYIENif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYIENdZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYIENdR
+	id S1753717AbYIENif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbYIENi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:33:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34520 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbYIENdQ (ORCPT
+	Fri, 5 Sep 2008 09:38:26 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:32488 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752821AbYIENiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:33:16 -0400
-Date: Fri, 5 Sep 2008 06:33:17 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: frame unwinder patches
-Message-ID: <20080905063317.5e3a2b2c@infradead.org>
-In-Reply-To: <200809051119.21699.bs@q-leap.de>
-References: <g9p3du$n95$1@ger.gmane.org>
-	<20080904102936.28e10c39@infradead.org>
-	<200809051119.21699.bs@q-leap.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Sep 2008 09:38:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bc6Gi5OnQcIvqbQF/Dz2hxb49YQbvbdbL1MM4Njdk/GVUM+JvjDvl9yeG7wA7TrpC3
+         gzBMw7Vgz/OHSyht+EWQR7EhpM3Su7Qxzgarv23ePBjryC9ThuRR6FBBj+ureAD/X35q
+         yXu2IZOaL1CACSuaJSsJqisrsiF84Mcu7DCtE=
+Message-ID: <38b2ab8a0809050638m524feaeet51817a8207505b87@mail.gmail.com>
+Date: Fri, 5 Sep 2008 15:38:23 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: qestion about I2C_CLASS_HWMON flag
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       i2c@lm-sensors.org
+In-Reply-To: <20080905151157.21b7f8ce@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
+	 <38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
+	 <20080904103707.557ac764@hyperion.delvare>
+	 <38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
+	 <20080904120855.7e7b9720@hyperion.delvare>
+	 <38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
+	 <20080905112056.44b7b910@hyperion.delvare>
+	 <38b2ab8a0809050544l1914530clec53494e12c77ff5@mail.gmail.com>
+	 <20080905151157.21b7f8ce@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 11:19:21 +0200
-Bernd Schubert <bs@q-leap.de> wrote:
+On Fri, Sep 5, 2008 at 3:11 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> On Fri, 5 Sep 2008 14:44:30 +0200, Francis Moreau wrote:
+>> On Fri, Sep 5, 2008 at 11:20 AM, Jean Delvare <khali@linux-fr.org> wrote:
+>> > Nothing prevents you from setting the class flags based on
+>> > platform-specific information if you have a need for that.
+>>
+>> Just to be sure, do you mean by hacking the adapter source code ?
+>
+> It's not about hacking, it can be done cleanly. Just have the adapter
+> driver code check for information in the platform data, and if class
+> information is provided, use that instead of the default value. Or if
+> all users will provide the information, don't even have a default in
+> the driver. Again, the class flags are a (needed) mechanism, the policy
+> is left for driver authors and platform maintainers to establish.
+>
 
-> > not printing the ? would be trivial (for some backtraces we do
-> > that), but so far hasn't been seen as desirable because you lose
-> > information in those hard-to-debug cases when you need anything you
-> > can get from the backtrace.
-> 
-> I see your point, but in most cases it is rather annoying.
+Ah OK I see now.
 
-... if you see backtraces regularly there's something wrong ;-)
+On v2.6.23 i2c-gpio.c had no I2C_CLASS_HWMON flag set and
+had no way to pass this info from platform board.
 
-(and if you really care it's 1 line of code to turn it off)
+But on v2.6.27 it is now set whatever the platforms.
 
+Wouldn't it have been better to allow the platform code to pass this type
+information through the 'i2c_gpio_platform_data' structure for example ?
 
+Thanks Jean !
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Francis
