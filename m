@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYIEAF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbYIEAIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbYIEAF3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Sep 2008 20:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYIEAFX
+	id S1755086AbYIEAIH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Sep 2008 20:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYIEAH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 20:05:23 -0400
-Received: from iabervon.org ([66.92.72.58]:38362 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751448AbYIEAFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 20:05:22 -0400
-Date: Thu, 4 Sep 2008 20:05:20 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-In-Reply-To: <alpine.LNX.1.00.0809031250561.19665@iabervon.org>
-Message-ID: <alpine.LNX.1.00.0809041957430.19665@iabervon.org>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net>
- <alpine.LNX.1.00.0809021200470.19665@iabervon.org> <20080903102047.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.00.0809031250561.19665@iabervon.org>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Sep 2008 20:07:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49928 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543AbYIEAHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Sep 2008 20:07:55 -0400
+Subject: Re: linux-next: Tree for September 4
+From: David Woodhouse <dwmw2@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080904165309.b5fd9214.akpm@linux-foundation.org>
+References: <20080904193606.573f2cb3.sfr@canb.auug.org.au>
+	 <20080904165309.b5fd9214.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 05 Sep 2008 01:07:49 +0100
+Message-Id: <1220573269.4843.1.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Sep 2008, Daniel Barkalow wrote:
-
-> On Wed, 3 Sep 2008, Dmitry Torokhov wrote:
+On Thu, 2008-09-04 at 16:53 -0700, Andrew Morton wrote:
 > 
-> > On Tue, Sep 02, 2008 at 12:16:15PM -0400, Daniel Barkalow wrote:
-> > > legacy mode only has a bug that doesn't matter to Windows, and active mux 
-> > > may have some of the usual problems but nothing I particularly noticed.
-> > > 
-> > > I noticed that, when my i8042 would stop working, it would generally have 
-> > > just delivered one mouse interrupt to CPU1 after never previously doing 
-> > > so. Perhaps there's some sort of deadlock in the Linux i8042 driver when 
-> > > both cores are unexpectedly getting interrupts from the two devices at 
-> > > once? I could understand there being a Linux bug only triggered by quirky 
-> > > hardware that only applies to legacy mode, which was just uncovered by 
-> > > this patch.
-> > >
-> > 
-> > I am not sure, internally we the kernel still deals with 2 interrupt
-> > sources (KBD and AUX) regardless whether it is in legacy or active
-> > multiplexing mode...
-> > 
-> > Does it take long to trigger the bug? You coudl try doing "echo 1 >
-> > /sys/modules/i8042/parameters/debug" and thend me dmesg or
-> > /var/log/messages after the bug was triggered - I might see something
-> > there. But please be aware that if you send me such a log I can decode
-> > everything that you have been typing...
+> sparc64 `make headers_check':
 > 
-> It's usually within an hour of the right usage pattern. I'll try to 
-> trigger it with debugging on while not typing anything secret Thursday 
-> evening.
+> make[1]: *** No rule to make target
+> `/usr/src/devel/arch/sparc/include/asm/statfs_32.h', needed by
+> `/usr/src/devel/usr/include/asm/.install'.  Stop.
 
-Attached. This has me typing some unimportant stuff, and then it sticks, 
-then I plug in a USB keyboard, then I tried unbinding the i8042 and 
-binding it again; the audio stuttered briefly, and recovered, and I did it 
-again, and then saved this log.
+Fixed in ~dwmw2/random-2.6.git. Thanks.
 
-	-Daniel
-*This .sig left intentionally blank*
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
