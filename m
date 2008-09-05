@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYIEUlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbYIEUmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbYIEUlm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 16:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbYIEUld
+	id S1754311AbYIEUmT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 16:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYIEUmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 16:41:33 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:31617 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbYIEUlc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 16:41:32 -0400
-Cc: Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-Message-Id: <04854041-E23D-48B5-B9FF-0B7ECEB2C371@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Aaron Straus <aaron@merfinllc.com>
-In-Reply-To: <20080905200455.GH22796@merfinllc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Date: Fri, 5 Sep 2008 16:36:46 -0400
-References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080905200455.GH22796@merfinllc.com>
-X-Mailer: Apple Mail (2.928.1)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 5 Sep 2008 16:42:09 -0400
+Received: from 1wt.eu ([62.212.114.60]:3214 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751713AbYIEUmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Sep 2008 16:42:08 -0400
+Date: Fri, 5 Sep 2008 22:41:34 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, pageexec@freemail.hu,
+       Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       tglx@tglx.de, hpa@zytor.com
+Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
+Message-ID: <20080905204134.GI19337@1wt.eu>
+References: <20080903195122.73905236@infradead.org> <48C0FF43.30940.2C3EFC0@pageexec.freemail.hu> <1220609647.4879.169.camel@pasglop> <48C10EC5.24400.3008276@pageexec.freemail.hu> <1220612231.4879.175.camel@pasglop> <20080905114233.GA27878@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080905114233.GA27878@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 5, 2008, at Sep 5, 2008, 4:04 PM, Aaron Straus wrote:
-> Hi,
->
-> On Sep 05 03:56 PM, Chuck Lever wrote:
->> [ replacing cc: nfs@sf.net with linux-nfs@vger.kernel.org, and neil's
->> old address with his current one ]
->
-> Sorry I probably grabbed an old MAINTAINERS file.
->
->> On Sep 5, 2008, at Sep 5, 2008, 3:19 PM, Aaron Straus wrote:
->>> Writer_Version     Outcome:
->>> <= 2.6.19          OK
->>>> = 2.6.20	    BAD
->>
->> Up to which kernel?  Recent ones may address this issue already.
->
-> BAD up to 2.6.27-rc?
->
-> I have to see exactly which is the last rc version I tested.
->
->>> I can try to bisect between 2.6.19 <-> 2.6.20.
->>
->> That's a good start.
->
-> OK will try to bisect.
->
->> Comparing a wire trace with strace output, starting with the writing
->> client, might also be illuminating.  We prefer wireshark as it uses
->> good default trace settings, parses the wire bytes and displays them
->> coherently, and allows you to sort the frames in various useful ways.
->
-> OK.  Could you also try to reproduce on your side using those python
-> programs?  I want to make sure it's not something specific with our
-> mounts, etc.
+On Fri, Sep 05, 2008 at 01:42:33PM +0200, Ingo Molnar wrote:
+> The far better solution would be to insert uncertainty into the picture: 
 
-I have the latest Fedora 9 kernels on two clients, mounting via NFSv3  
-using "actimeo=600" (for other reasons).  The server is OpenSolaris  
-2008.5.
+till there OK :-)
 
-reader.py reported zeroes in the test file after about 5 minutes.
+> some sort of low-frequency watchdog [runs once a second or so] that 
+> tries to hide itself from the general kernel scope as much as possible, 
+> perhaps as ELF-PIC code at some randomized location, triggered by some 
+> frequently used and opaque kernel facility that an attacker can not 
+> afford to block or fully filter, and which would just check integrity 
+> periodically and with little cost.
 
-Looking at the file a little later, I don't see any problems with it.
+"can not" above is the unrealistic requirement unfortunately.
 
-Since your scripts are not using any kind of serialization (ie file  
-locking) between the clients, I wonder if non-determinant behavior is  
-to be expected.
+> When it finds a problem it immediately triggers a hard to block/filter 
+> vector of alert (which can be a silent alarm over the network or to the 
+> screen as well).
+> 
+> that method does not prevent rootkits in general (nothing can), but sure 
+> makes their life more risky in practice - and a guaranteed livelihood 
+> and risk reduction is what typical criminals are interested in 
+> primarily, not whether they can break into a particular house.
+> 
+> If we implement it then it should not be present in distro .config's, 
+> etc. - it should be as invisible as possible - perhaps only be part of 
+> the kernel image .init.data section in some unremarkably generic manner. 
 
--- 
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+Then they will simply proceed like this :
+  - patch /boot/vmlinuz
+  - sync
+  - crash system
+
+=> user says "oh crap" and presses the reset button. Patched kernel boots.
+   Game over. Patching vmlinuz for known targetted distros is even easier
+   because the attacker just has to embed binary changes for the most
+   common distro kernels.
+
+Clearly all this is a waste of developer time, CPU cycles, memory,
+reliability and debugging time. All that time would be more efficiently
+spent auditing and debugging existing code to reduce the attack surface,
+and CPU cycles + memory would be better spent adding double checks to
+most sensible functions' entry points and user data processing.
+
+Regards,
+Willy
+
