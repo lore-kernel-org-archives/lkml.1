@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYIENuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbYIENuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754454AbYIENuL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 09:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYIENt5
+	id S1754554AbYIENuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 09:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYIENuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 09:49:57 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:12659 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753182AbYIENt4 (ORCPT
+	Fri, 5 Sep 2008 09:50:03 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:42127 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbYIENuA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 09:49:56 -0400
-Date: Fri, 5 Sep 2008 15:49:48 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Francis Moreau" <francis.moro@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       i2c@lm-sensors.org
-Subject: Re: qestion about I2C_CLASS_HWMON flag
-Message-ID: <20080905154948.24d2b460@hyperion.delvare>
-In-Reply-To: <38b2ab8a0809050638m524feaeet51817a8207505b87@mail.gmail.com>
-References: <38b2ab8a0809040043g7f944872l47f84c53bb213829@mail.gmail.com>
-	<38b2ab8a0809040105j7ae3aca8xd334a4d203d9415b@mail.gmail.com>
-	<20080904103707.557ac764@hyperion.delvare>
-	<38b2ab8a0809040149u2bc0342h5c32b87f9277322f@mail.gmail.com>
-	<20080904120855.7e7b9720@hyperion.delvare>
-	<38b2ab8a0809050157yfb21b08v23ae368d3337c1ca@mail.gmail.com>
-	<20080905112056.44b7b910@hyperion.delvare>
-	<38b2ab8a0809050544l1914530clec53494e12c77ff5@mail.gmail.com>
-	<20080905151157.21b7f8ce@hyperion.delvare>
-	<38b2ab8a0809050638m524feaeet51817a8207505b87@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 5 Sep 2008 09:50:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=UlfISg6zIIJXnzqPxV4JqSsX52y80sr2Wtv6sjQCjtSO+KP3IuMl+ATBdRmXoN/lCE
+         lRUvNh/AyhaSTPo4ZDxRQUU1ujLCeViGgTO0MH491tGk2u4nW+Eso/Xz5c/lGPDFPebA
+         /3Ymcxw2t6c5dK2wpaWiNHKYX3a4CFjkX/b8s=
+Date: Fri, 5 Sep 2008 15:49:53 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: "Nir Tzachar" <tzachar@grad120a.cs.bgu.ac.il>
+Cc: linux-kernel@vger.kernel.org, bzolnier@gmail.com, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, rdunlap@xenotime.net,
+       kosaki.motohiro@jp.fujitsu.com, 7eggert@gmx.de,
+       Nir Tzachar <nir@tzachar.com>
+Subject: Re: [PATCH] ncurses based config V2
+Message-ID: <20080905154953.3abefbce@Varda>
+In-Reply-To: <1220603220-17090-1-git-send-email-nir@tzachar.com>
+References: <1220469076-16487-1-git-send-email-nir@tzachar.com>
+	<1220603220-17090-1-git-send-email-nir@tzachar.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 15:38:23 +0200, Francis Moreau wrote:
-> On Fri, Sep 5, 2008 at 3:11 PM, Jean Delvare <khali@linux-fr.org> wrote:
-> > It's not about hacking, it can be done cleanly. Just have the adapter
-> > driver code check for information in the platform data, and if class
-> > information is provided, use that instead of the default value. Or if
-> > all users will provide the information, don't even have a default in
-> > the driver. Again, the class flags are a (needed) mechanism, the policy
-> > is left for driver authors and platform maintainers to establish.
-> 
-> Ah OK I see now.
-> 
-> On v2.6.23 i2c-gpio.c had no I2C_CLASS_HWMON flag set and
-> had no way to pass this info from platform board.
-> 
-> But on v2.6.27 it is now set whatever the platforms.
-> 
-> Wouldn't it have been better to allow the platform code to pass this type
-> information through the 'i2c_gpio_platform_data' structure for example ?
+El Fri,  5 Sep 2008 11:27:00 +0300
+"Nir Tzachar" <tzachar@nexus.cs.bgu.ac.il> escribió:
 
-If you have a need for that, sure. If you don't, that's making the code
-more complex for no good reason.
+> Changes:
+> 1) Fixed segfaults in help window.
+> 2) Removed the instructions window, made the instructions appear as a button
+>    which displays a popup window.
+> 3) Added hot keys support. As ncurses does not support several colors inside
+>    a menu, keys are highlighted using "()".
+> 4) Optimized for 80x24 terminals.
+> 6) Fixed zconf.y to use _menu_init
+> 7) added nconfig to "make help"
+> 8) Misc fixes.
+> 
+> Comments are appreciated.
+> Cheers.
+> ---
+>  scripts/kconfig/Makefile            |   17 +-
+>  scripts/kconfig/lkc.h               |    2 +-
+>  scripts/kconfig/mconf.c             |    2 +
+>  scripts/kconfig/menu.c              |    2 +-
+>  scripts/kconfig/nconf.c             | 2019 +++++++++++++++++++++++++++++++++++
+>  scripts/kconfig/zconf.tab.c_shipped |    2 +-
+>  scripts/kconfig/zconf.y             |    2 +-
+>  7 files changed, 2041 insertions(+), 5 deletions(-)
+>  create mode 100644 scripts/kconfig/nconf.c
 
-I expect I2C_CLASS_HWMON to be removed from that driver soon. Now that
-almost all hwmon drivers have been converted to support instantiated
-I2C devices, and given that all users of i2c-gpio are embedded
-architectures with platform code, it should be no longer needed. But
-again I am leaving it to whoever is actually using this driver to
-decide what is best for them.
+ Tried it and the segmentation fault disappeared 
 
--- 
-Jean Delvare
+> 
