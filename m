@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbYIFVux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbYIFWJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbYIFVux (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 17:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYIFVuo
+	id S1753817AbYIFWJx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 18:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYIFWJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 17:50:44 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:28031 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbYIFVun (ORCPT
+	Sat, 6 Sep 2008 18:09:44 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53407 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752598AbYIFWJn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 17:50:43 -0400
-Date: Sat, 6 Sep 2008 15:50:41 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-Subject: Re: hotplug create_slot hang
-Message-ID: <20080906215041.GD27298@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-References: <86802c440809061015v21b6c1eat8718618a6ae25e47@mail.gmail.com>
+	Sat, 6 Sep 2008 18:09:43 -0400
+Message-Id: <200809062208.m86M8hJM016685@terminus.zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809061015v21b6c1eat8718618a6ae25e47@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+content-class: 
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: RE: [PATCH] Ghost EDD devices in /sys again
+Date: Sat, 6 Sep 2008 15:08:59 -0700
+Importance: normal
+X-Priority: 3
+To: Andrey Borzenkov <arvidjaar@newmail.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Yinghai Lu <yhlu.kernel@gmail.com>:
-> calling  pci_hotplug_init+0x0/0x1d
-> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> initcall pci_hotplug_init+0x0/0x1d returned 0 after 11 msecs
+I think this is closer to what we really want; after all, memory being written is the "first principles" test that applies here.
+
+-- 
+Sent from my mobile phone (pardon any lack of formatting)
+
+
+-----Original Message-----
+From: Andrey Borzenkov <arvidjaar@newmail.ru>
+Sent: Saturday, September 06, 2008 10:46
+To: H. Peter Anvin <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>; Rafael J. Wysocki <rjw@sisk.pl>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Ghost EDD devices in /sys again
+
+On Saturday 06 September 2008, H. Peter Anvin wrote:
 > 
-> calling  acpiphp_init+0x0/0x5f
-> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-> decode_hpp: Could not get hotplug parameters. Use defaults
-> pci_create_slot: created pci_slot on 0000:07:00
-> acpiphp: Slot [1] registered
-> decode_hpp: Could not get hotplug parameters. Use defaults
-> pci_create_slot: created pci_slot on 0000:0d:00
-> acpiphp: Slot [2] registered
-> initcall acpiphp_init+0x0/0x5f returned 0 after 105 msecs
+> Andrey Borzenkov wrote:
+> > 
+> > Was it really that simple?
+> > 
+> > Subject: [PATCH] Fix ghost devices under /sys/firmware/edd
+> > From: Andrey Borzenkov <arvidjaar@mail.ru>
+> > 
+> > Some BIOSes do not always set CF on error before return from int13.
+> > The patch adds additional check for status being zero (AH == 0).
+> > 
+> 
+> Do you have any evidence that there aren't any BIOSes which leave AH != 
+> 0 on legitimate success?  If so, you have turned a nuisance bug into 
+> something that could cause install failures.
+> 
 
-Is this the hang?
+Hmm ... if install depends on having valid MBR, it will break right
+now as well, because it will have duplicated signatures. So at least
+something like following is needed.
 
-> calling  pcied_init+0x0/0x7b
-> pciehp: HPC vendor_id 8086 device_id 340a ss_vid 0 ss_did 0
-> pci_create_slot: inc refcount to 2 on 0000:07:00
-> pci_destroy_slot: dec refcount to 1 on 0000:07:00
-> pciehp: pci_hp_register failed with error -16
-> pciehp: pciehp: slot already registered by another hotplug driver
+diff --git a/arch/x86/boot/edd.c b/arch/x86/boot/edd.c
+index d93cbc6..4c20d31 100644
+--- a/arch/x86/boot/edd.c
++++ b/arch/x86/boot/edd.c
+@@ -58,6 +58,7 @@ static u32 read_mbr_sig(u8 devno, struct edd_info *ei, u32 *mbrsig)
+        if (mbrbuf_end > (char *)(size_t)boot_params.hdr.heap_end_ptr)
+                return -1;
 
-This failure is by design -- we only allow one hotplug driver to
-claim a slot now, and it's "first one loaded wins".
++       memset(mbrbuf_ptr, 0, sector_size);
+        if (read_mbr(devno, mbrbuf_ptr))
+                return -1;
 
-Unless you're talking about something else?
-
-Thanks.
-
-/ac
 
