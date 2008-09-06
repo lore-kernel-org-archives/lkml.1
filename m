@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbYIFMEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbYIFMHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752973AbYIFMEU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 08:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbYIFMEK
+	id S1753233AbYIFMHw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 08:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbYIFMHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 08:04:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36220 "EHLO mx3.mail.elte.hu"
+	Sat, 6 Sep 2008 08:07:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40650 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbYIFMEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 08:04:09 -0400
-Date: Sat, 6 Sep 2008 14:03:47 +0200
+	id S1751418AbYIFMHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 08:07:42 -0400
+Date: Sat, 6 Sep 2008 14:07:20 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/2] ftrace: fixes for PPC
-Message-ID: <20080906120346.GA30964@elte.hu>
-References: <20080906050602.409299112@goodmis.org>
+To: Andrey Borzenkov <arvidjaar@newmail.ru>
+Cc: hpa@zytor.com, Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Ghost EDD devices in /sys again
+Message-ID: <20080906120720.GB30964@elte.hu>
+References: <200809052219.44093.arvidjaar@newmail.ru> <200809061240.25925.arvidjaar@newmail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080906050602.409299112@goodmis.org>
+In-Reply-To: <200809061240.25925.arvidjaar@newmail.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,19 +36,66 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Andrey Borzenkov <arvidjaar@newmail.ru> wrote:
 
-> I spent the day chasing a bug that would hang PPC on boot up when 
-> ftrace is configured in. I found that it was simply a stupid bug I did 
-> to handle the non MCOUNT_RECORD case. Since I was testing only on x86, 
-> and the MCOUNT_RECORD is automatically set for dynamic ftrace if it is 
-> available, I did not test the case where MCOUNT_RECORD was not set.
+> On Friday 05 September 2008, Andrey Borzenkov wrote:
+> > This is regression but old enough. Apparently I had for whatever reasons
+> > EDD turned off till recently. This is 2.6.27-rc5 just in case.
+> > 
+> > In 2006 I fixed ghost devices due to buggy BIOS:
+> > 
+> > http://marc.info/?l=linux-kernel&m=114087765422490&w=2
+> > 
+> > Later edd.S has been rewritten in C, and apparently this patch has been
+> > lost:
+> > 
+> > {pts/1}% ls /sys/firmware/edd
+> > int13_dev80/  int13_dev84/  int13_dev88/  int13_dev8c/
+> > int13_dev81/  int13_dev85/  int13_dev89/  int13_dev8d/
+> > int13_dev82/  int13_dev86/  int13_dev8a/  int13_dev8e/
+> > int13_dev83/  int13_dev87/  int13_dev8b/  int13_dev8f/
+> > 
+> > But I have just a single disk. This is the same system BTW.
+> > 
+> > Unfortunately I do not speak asm language of C; if somebody could provide
+> > equivalent fix for current edd.c, I am more than ready to test it.
 > 
-> I have not finished porting MCOUNT_RECORD to PPC, but have found that 
-> it has caused some issues for archs that do not support it yet.
+> Was it really that simple?
 > 
-> This patch series handles these cases.
+> Subject: [PATCH] Fix ghost devices under /sys/firmware/edd
+> From: Andrey Borzenkov <arvidjaar@mail.ru>
+> 
+> Some BIOSes do not always set CF on error before return from int13.
+> The patch adds additional check for status being zero (AH == 0).
+> 
+> This was fixed for edd.S in
+> http://marc.info/?l=linux-kernel&m=114087765422490&w=2, but lost
+> again when edd.S was rewritten in C.
+> 
+> Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+> 
+> ---
+> 
+>  arch/x86/boot/edd.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/arch/x86/boot/edd.c b/arch/x86/boot/edd.c
+> index d93cbc6..bf4ae6f 100644
+> --- a/arch/x86/boot/edd.c
+> +++ b/arch/x86/boot/edd.c
+> @@ -32,7 +32,9 @@ static int read_mbr(u8 devno, void *buf)
+>  		     : "+a" (ax), "+c" (cx), "+d" (dx), "+b" (bx)
+>  		     : : "esi", "edi", "memory");
+>  
+> -	return -(u8)ax;		/* 0 or -1 */
+> +	/* Some BIOSes do not set carry flag on error but still return
+> +	 * error in AH. The condition below is expected to catch both */
+> +	return -!!ax;		/* 0 or -1 */
+>  }
+>  
+>  static u32 read_mbr_sig(u8 devno, struct edd_info *ei, u32 *mbrsig)
 
-applied to tip/tracing/ftrace, thanks Steve.
+looks good to me - applied it to tip/x86/urgent. Thanks Andrey!
 
 	Ingo
