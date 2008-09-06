@@ -1,30 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbYIFJyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYIFJyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752613AbYIFJyE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 05:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYIFJxy
+	id S1754053AbYIFJyZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 05:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYIFJyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 05:53:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56989 "EHLO mx2.suse.de"
+	Sat, 6 Sep 2008 05:54:10 -0400
+Received: from ns.suse.de ([195.135.220.2]:49272 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752235AbYIFJxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 05:53:53 -0400
-Date: Sat, 06 Sep 2008 11:53:48 +0200
-Message-ID: <s5hljy5txar.wl%tiwai@suse.de>
+	id S1752790AbYIFJyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 05:54:08 -0400
+Date: Sat, 06 Sep 2008 11:54:06 +0200
+Message-ID: <s5hk5dptxa9.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Nicolas Pitre <nico@cam.org>, Dmitry Torokhov <dtor@insightbb.com>,
+To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+Cc: "Nicolas Pitre" <nico@cam.org>, "Randy Dunlap" <randy.dunlap@oracle.com>,
        lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
        linux-next@vger.kernel.org
 Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
-In-Reply-To: <48C1A004.2030607@oracle.com>
+In-Reply-To: <d120d5000809051133h1a51d68bs56db0397a321bc9f@mail.gmail.com>
 References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
-	<200612092150.02940.dtor@insightbb.com>
-	<20061209185737.1768315d.randy.dunlap@oracle.com>
-	<200612092205.19358.dtor@insightbb.com>
-	<Pine.LNX.4.64.0612092212410.2630@xanadu.home>
-	<20061209210945.5abe2d89.randy.dunlap@oracle.com>
-	<Pine.LNX.4.64.0612102244140.2630@xanadu.home>
 	<20080904195744.f367cd2d.randy.dunlap@oracle.com>
 	<alpine.LFD.1.10.0809050028590.23787@xanadu.home>
 	<20080904214444.0dccf859.randy.dunlap@oracle.com>
@@ -34,7 +28,7 @@ References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
 	<s5hhc8u8soi.wl%tiwai@suse.de>
 	<alpine.LFD.1.10.0809051231120.23787@xanadu.home>
 	<s5hprniv7ep.wl%tiwai@suse.de>
-	<48C1A004.2030607@oracle.com>
+	<d120d5000809051133h1a51d68bs56db0397a321bc9f@mail.gmail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -44,35 +38,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 05 Sep 2008 14:09:24 -0700,
-Randy Dunlap wrote:
+At Fri, 5 Sep 2008 14:33:18 -0400,
+Dmitry Torokhov wrote:
 > 
-> Takashi Iwai wrote:
+> On Fri, Sep 5, 2008 at 1:17 PM, Takashi Iwai <tiwai@suse.de> wrote:
 > > At Fri, 05 Sep 2008 12:32:32 -0400 (EDT),
 > > Nicolas Pitre wrote:
+> >>
 > >> On Fri, 5 Sep 2008, Takashi Iwai wrote:
 > >>
-> >>> At Fri, 05 Sep 2008 10:52:25 -0400 (EDT),
-> >>> Nicolas Pitre wrote:
-> >>>> On Fri, 5 Sep 2008, Takashi Iwai wrote:
-> >>>>
-> >>>>>> This was fixed 2 years ago.  Who broke it this time?
-> >>>>> Oh, it must be me.
-> >>>> I think both your patch and the one I previously posted are needed.
-> >>> Could you repost?  I can't find it easily now.
-> > 
+> >> > At Fri, 05 Sep 2008 10:52:25 -0400 (EDT),
+> >> > Nicolas Pitre wrote:
+> >> > >
+> >> > > On Fri, 5 Sep 2008, Takashi Iwai wrote:
+> >> > >
+> >> > > > > This was fixed 2 years ago.  Who broke it this time?
+> >> > > >
+> >> > > > Oh, it must be me.
+> >> > >
+> >> > > I think both your patch and the one I previously posted are needed.
+> >> >
+> >> > Could you repost?  I can't find it easily now.
+> >
 > > Thanks.  For linux-next, yes, it's needed.  But it's not for 2.6.27.
-> > 
+> >
 > > Meanwhile, my fix should be included in 2.6.27 since it's a
 > > regression.
-> > 
+> >
 > > Randy, could you check whether these two patches fix your problem?
 > > I'll put my patch to my tree for the next pull request after your
 > > confirmation.
+> >
+> > Can Nicolas's patch be to input tree, or any other taker?
+> >
 > 
-> Yes, all fixed/good.  Thanks.
+> I'll take it.
 
-Thanks for checking!
+Thanks!
 
 
 Takashi
