@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYIFNRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbYIFNVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbYIFNRw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 09:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYIFNRo
+	id S1753218AbYIFNVD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 09:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYIFNUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 09:17:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47244 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYIFNRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 09:17:44 -0400
-Date: Sat, 6 Sep 2008 15:17:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.27-rc5-mm1 compilation fix with gcc 3.4.6
-Message-ID: <20080906131727.GB4910@elte.hu>
-References: <20080905234619.2e95ae92.krzysztof.h1@poczta.fm>
+	Sat, 6 Sep 2008 09:20:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:62204 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbYIFNUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 09:20:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=KdKocXbkssSChy2+znwRLWZ6KHZ93ONZD6PRT3TNN7DXcLA4F2e6coOxUHFLEKgIKf
+         KoqIB/aa1rZ2OA5P4B/biS5pqzLiwHoJGTWc/RnctTV0ZrBOy554EA0L4I88uDJGyBSo
+         P3j6fgabSc6vr9eaHFnrSUo2txYAU4Vh2MQzE=
+Message-ID: <68676e00809060620k35679302s42fc0a74aa1dc2d3@mail.gmail.com>
+Date: Sat, 6 Sep 2008 15:20:52 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Subject: Re: [2.6.27] overlapping early reservations [was: early exception - lockdep related?]
+Cc: "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+In-Reply-To: <48C19415.9060108@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080905234619.2e95ae92.krzysztof.h1@poczta.fm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0003]
+References: <68676e00809051217h3da02a6bld4412b4a2ee3b728@mail.gmail.com>
+	 <1220642738.11202.21.camel@twins.programming.kicks-ass.net>
+	 <48C19415.9060108@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 5, 2008 at 10:18 PM, H. Peter Anvin <hpa@kernel.org> wrote:
+> Peter Zijlstra wrote:
+>>
+>> On Fri, 2008-09-05 at 21:17 +0200, Luca Tettamanti wrote:
+>>>
+>>> On Thu, Sep 4, 2008 at 10:51 PM, Luca Tettamanti <kronos.it@gmail.com>
+>>> wrote:
+>>>>
+>>>> On Thu, Sep 4, 2008 at 4:25 PM, Peter Zijlstra <peterz@infradead.org>
+>>>> wrote:
+>>>>>
+>>>>> Sadly your config just boots, albeit not to userspace due to missing
+>>>>> drivers.
+>>>>
+>>>> Yes, I managed to boot it with qemu... I tried kgdb - without luck -
+>>>> kernel dies too early.
+>>>> I also managed to get a stack trace :D
+>>>>
+>>>> http://img151.imageshack.us/my.php?image=tracedm1.jpg
+>>>>
+>>>> It seems that lockdep is an innocent bystander... the kernel died with
+>>>> panic() in __reserve_early, and then took another exception while
+>>>> printing the panic (I guess).
+>>>> Will add further debug stuff to see wtf is going on.
+>>>
+>>> Hum, kernel says:
+>>>
+>>> http://img177.imageshack.us/my.php?image=overlappingus2.jpg
+>>>
+>>> Overlapping early reservations b98000-eff266 RAMDISK to 200000-d09cf7
+>>> TEXT DATA BSS
+>>>
+>>> It would appear that the initramfs is overlapping the kernel itself,
+>>> is the boot loader (LILO) doing something stupid?
+>>
+>> Suppose it is, lets ask hpa..
+>>
+>
+> It definitely looks like it.
 
-* Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
+Is there anything that the kernel could to do confuse lilo?
+The issue started appearing with 2.6.27 and the outcome of the boot
+process varies between versions and seems sensitive to configuration
+changes (though a "bad" kernel consistently fails).
 
-> Hi Andrew,
-> 
-> I found that 2.6.27-rc5-mm1 does not compile with gcc 3.4.6.
-> The error is:
->   CC      kernel/sched.o
-> kernel/sched.c: In function `start_rt_bandwidth':
-> kernel/sched.c:208: sorry, unimplemented: inlining failed in call to 'rt_bandwidth_enabled': function body not available
-> kernel/sched.c:214: sorry, unimplemented: called from here
-> make[1]: *** [kernel/sched.o] Error 1
-> make: *** [kernel] Error 2
-> 
-> It seems that the gcc 3.4.6 requires full inline definition before 
-> first usage. The patch below fixes the compilation problem.
+Orthogonal to my problem: the panic() in reserve_early is useless for
+debugging since the output won't reach the screen or the serial
+console (even worse: the kernel takes an exception while trying to
+execute the panic). Is it acceptable to replace it with an
+early_printk + hlt?
 
-applied to tip/sched/rt, thanks Krzysztof!
-
-	Ingo
+Luca
