@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbYIFElK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbYIFEvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbYIFElK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 00:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbYIFElB
+	id S1752424AbYIFEvS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 00:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280AbYIFEvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 00:41:01 -0400
-Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:52030 "EHLO
-	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750967AbYIFElA (ORCPT
+	Sat, 6 Sep 2008 00:51:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:34851 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbYIFEvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 00:41:00 -0400
-Message-ID: <48C209DF.5040509@lougher.demon.co.uk>
-Date: Sat, 06 Sep 2008 05:41:03 +0100
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
+	Sat, 6 Sep 2008 00:51:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=UuxS8yb3Ivb4TjiJH3GW1SHrhTsf2OEuXG5lcT0zsz8QEHT0P4HbVCHlWlHMkBiJsI
+         +oK5kF7uttL6gYiaT7IvdvQdsTZbVG93HI4bh48jk/T9HiU6z2GCaCfNmAiE6S2UwW8N
+         /3VMIsRRTlNDOnDuj8V6MEIWPmrleosMM/Z+A=
+Message-ID: <48C20C3E.20306@gmail.com>
+Date: Sat, 06 Sep 2008 00:51:10 -0400
+From: sangsu <sangsu@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: linux-crypto@vger.kernel.org, squashfs-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
-Subject: Re: [Squashfs-devel] [patch 0/3] [RFC] zlib crypto module
-References: <20080829134158.108976037@vixen.sonytel.be>
-In-Reply-To: <20080829134158.108976037@vixen.sonytel.be>
+To: dbrownell@users.sourceforge.net, gregkh@suse.de, stern@rowland.harvard.edu,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] USB: g_file_storage: fix handling zero-length packet 
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> These patches add a (de)compression module for the "zlib" format using the
-> crypto API:
->   [1] crypto: Add a zlib crypto module
->   [2] tcrypt: Add a self test for the zlib crypto module
->   [3] squashfs: Switch from zlib/inflate to "zlib" crypto module
-> 
-> The last patch is a proof-of-concept to make SquashFS 3.4 use this new zlib
-> crypto module. This makes it easier to e.g. change the decompression algorithm
-> in SquashFS or to make use of a hardware-accelerated zlib crypto module.
-> 
-> It can be extended to other compressed file systems, like e.g. AxFS and CRAMFS.
-> 
-> All comments are welcome. Thanks!
-> 
+According to "CH 5.5.3. Control Transfer Packet Size Constraints",
+Zero-length packet should be sent when the last data payload size
+is equal to the endpoint's MaxPacketSize. This patch helps
+g_file_storage send zero-length packet properly.
 
-Moving Squashfs over to the crypto API is a good idea.  When the zlib 
-crypto module code is in the mainline kernel moving Squashfs, AxFS and 
-CRAMFS over will be easy.
+This is tested in s3c2440/s5c7329 architectures and works well.
 
-Are you planning to do the necessary work to get this (or a subsequent 
-version following the comments from Herbert Xu) into mainline?
+Signed-off-by: SangSu Park<sangsu@gmail.com>
+---
+driver/usb/gadget/file_storage.c | 3++-
+1 files changed, 2 insertion(+), 1 deletions(-)
 
-Cheers
-
-Phillip
+--- a/drivers/usb/gadget/file_storage.c	2008-09-01 11:13:03.000000000 -0400
++++ b/drivers/usb/gadget/file_storage.c	2008-09-01 11:16:41.000000000 -0400
+@@ -1463,7 +1463,8 @@
+	if (rc >= 0 && rc != DELAYED_STATUS) {
+		rc = min(rc, w_length);
+		fsg->ep0req->length = rc;
+-		fsg->ep0req->zero = rc < w_length;
++		fsg->ep0req->zero = rc < w_length
++			&& (rc % gadget->ep0->maxpacket) == 0;
+		fsg->ep0req_name = (ctrl->bRequestType & USB_DIR_IN ?
+				"ep0-in" : "ep0-out");
+		rc = ep0_queue(fsg);
