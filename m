@@ -1,42 +1,43 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbYIDUDC (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 4 Sep 2008 16:03:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbYIDUCr
+	id S1754528AbYIFTKz (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 6 Sep 2008 15:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYIFTKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Sep 2008 16:02:47 -0400
-Received: from [59.151.105.76] ([59.151.105.76]:38601 "EHLO lenovodata.com"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756760AbYIDUCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Sep 2008 16:02:47 -0400
-X-Greylist: delayed 11244 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Sep 2008 16:02:46 EDT
-Date: Fri, 5 Sep 2008 00:57:08 +0800
-To: linux-kernel@vger.kernel.org
-Subject: =?utf-8?B?5bCP6JqC6JqB5bCPIOmCgOivt+S9oOWKoOWFpeiBlOaDs+e9keebmO+8jOS9oOeri+WIu+aLpeaciTVH5YWN6LS556m66Ze0LiA=?=
-From: system@lenovodata.com
-X-Priority: 3
-X-Mailer: LenovoData! .
+	Sat, 6 Sep 2008 15:10:44 -0400
+Received: from web73414.mail.tp2.yahoo.com ([203.188.201.74]:43981 "HELO
+	web73414.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752084AbYIFTKn convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 15:10:43 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Sep 2008 15:10:43 EDT
+X-YMail-OSG: OGB7ujUVM1nmOc8xra4U9CjivqyVLsgM4B66jHVSZHhXsRvVz5PCW3KMISjozaM_YV_iBDia3gd_E_9v9UpT8CK8nVnYx0PBBzOlRD2D6CT6Q8D0O6LECO7TeRm4Tik-
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Sun, 7 Sep 2008 03:04:01 +0800 (CST)
+From: =?big5?B?u6+n9SCwqA==?= <ygvr4f73836@yahoo.com.tw>
+Reply-To: ygvr4f73836@yahoo.com.tw
+Subject: =?big5?B?MDM6MDM6NTgtLT61TKZXrNulVS2wqqSkvsepZi27crfTrHmlWDY1?=
+To: linsueder@pchome.com.tw
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Message-ID: <200809041630.d1d1ba473339@www.lenovodata.com>
+Content-Type: text/plain; charset=big5
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-ID: <752743.42281.qm@web73414.mail.tp2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757060AbYIDUDC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754528AbYIFTKz@vger.kernel.org>
+
+=B5L=A6W=AC=DB=A5U-=B0=AA=A4=A4=BE=C7=A9f-=BBr=B7=D3=ACy=A5X http://qet=
+wr.com/dgfg
 
 
-
-DQpIae+8jOaIkeaYr+Wwj+iaguiageWwj++8jOWcqOiBlOaDs+e9keebmOS4uuS9oOeUs+ivt+S6
-huS4gOWdlzVH5YWN6LS556m66Ze077yM5b+r5p2l55m76ZmG55yL55yL5ZCnDQrngrnlh7vlpoLk
-uIvpk77mjqUNCmh0dHA6Ly93d3cubGVub3ZvZGF0YS5jb20vYWNjb3VudC92YWlsZGludml0ZXIv
-N08wdE9oemJQTlF6d1g5cG5uWEVobjlieHQ0VzQxWkI3WGFXQjY0OGNjYjczNWU2ZDFiOTYxMTFk
-NjlkOWU1YTY2Y2VhODcxZTE3N2E4OGU0MmQ1ZGE2ZWU5MzI2Y2JlYjRiZTFiYTMyYzcxZDUzZDhi
-NGJmMTYzYzg0ZjQ0NzBiMGU0ZDcyOTQxNjc2MjdkN2Q0NmUwOGViNmEzMjQ4MzY0NjMyNmQzZDYz
-YzQxOGNmMDRiNmFmNzE3OWE05bCx55m76ZmG5LqG77yM55So5oi35ZCN5ZKM5a+G56CB6YO95piv
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZ++8jOWIq+W/mOS6huS/ruaUueWvhueggeWTpu+8
-gQ0KDQrogZTmg7PnvZHnm5jlj6/ku6XlronlhajnmoTlrZjlgqjkvaDnmoTmlofku7bvvIzmk43k
-vZzotbfmnaXlsLHlg4/lnKjmnKzlnLDnlLXohJHkuIDmoLfmlrnkvr8NCuS4iuS8oOS4i+i9vemA
-n+W6pumDveW+iOW/qw0K5L2g5YaN5Lmf5LiN55So5Zug5Li657uZ5pyL5Y+L5Lyg6L6T5aSn5paH
-5Lu25Y+R5oSB5LqG77yM5oiR5Y+q6KaB54K55LiA5LiL5YWx5Lqr77yM5L2g55qE5pyL5Y+L44CB
-5ZCM5LqL56uL5Y2z5pS25Yiw5L2g5YWx5Lqr6L+H5p2l55qE5paH5Lu25LqG77yB
-
+      _________________________________________________________________=
+________________________________________
+=B7Q=AA=BE=B9D=B5L=B2=E1=A5=CD=AC=A1=A6p=A6=F3=A4j=C5=DC=A8=AD=B9=C0=A1=
+H http://tw.promote.mail.yahoo.com/dc/change.html
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
