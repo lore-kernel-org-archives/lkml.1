@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYIFMTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbYIFMYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYIFMTZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 08:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbYIFMTJ
+	id S1752803AbYIFMYH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 08:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYIFMXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 08:19:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:58237 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbYIFMTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 08:19:08 -0400
-Date: Sat, 6 Sep 2008 21:18:37 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: use __GFP_NORETRY in the case of GFP_DMA with
- pci-nommu
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080905104305.GA3189@amd.com>
-References: <1220605129-18359-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1220605129-18359-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20080905104305.GA3189@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080906211813F.fujita.tomonori@lab.ntt.co.jp>
+	Sat, 6 Sep 2008 08:23:54 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:58452 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYIFMXx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 08:23:53 -0400
+Date: Sat, 6 Sep 2008 14:23:50 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Greg Ungerer <gerg@snapgear.com>, jbarnes@virtuousgeek.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: [2.6 patch] m68k: remove the dead PCI code
+In-Reply-To: <20080831161016.GE3695@cs181140183.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0809061422510.4138@anakin>
+References: <20080819134718.GH8852@cs181140183.pp.htv.fi> <48B24E2C.9060703@snapgear.com>
+ <20080825204333.GA13027@cs181140183.pp.htv.fi> <48B77764.6060607@snapgear.com>
+ <20080829070103.GD16462@cs181140183.pp.htv.fi> <Pine.LNX.4.64.0808290929280.22326@anakin>
+ <20080831161016.GE3695@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 12:43:05 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Fri, Sep 05, 2008 at 05:58:48PM +0900, FUJITA Tomonori wrote:
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  arch/x86/kernel/pci-nommu.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
-> > index 526b2db..3495f88 100644
-> > --- a/arch/x86/kernel/pci-nommu.c
-> > +++ b/arch/x86/kernel/pci-nommu.c
-> > @@ -102,6 +102,9 @@ nommu_alloc_coherent(struct device *hwdev, size_t size,
-> >  	if (dma_mask == DMA_24BIT_MASK)
-> >  		gfp |= GFP_DMA;
-> >  again:
-> > +	if (gfp & GFP_DMA)
-> > +		gfp |= __GFP_NORETRY;
-> > +
+On Sun, 31 Aug 2008, Adrian Bunk wrote:
+> This patch removes the no longer used m68k PCI code.
 > 
-> Huh? Why that? The __GFP_NORETRY is a hint from the caller to the page
-> allocator on how aggressive it should try to allocate memory. I don't
-> think the DMA code should touch those flags unless there is a very very
-> good reason for it.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> --- a/include/asm-m68k/pci.h
+> +++ b/include/asm-m68k/pci.h
 
-The current comment is reasonable for me:
+> -/* The PCI address space does equal the physical memory
+> - * address space.  The networking and block device layers use
+> - * this boolean for bounce buffer decisions.
+> - */
 
-/* Don't invoke OOM killer or retry in lower 16MB DMA zone */
-if (gfp & __GFP_DMA)
-     noretry = 1;
+I'd like to keep this comment, as the #define is still there.
+Is that OK for you?
+
+>  #define PCI_DMA_BUS_IS_PHYS	(1)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
