@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbYIFPqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbYIFPuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbYIFPqZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 11:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbYIFPqR
+	id S1753764AbYIFPuJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 11:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYIFPt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 11:46:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40582 "EHLO mx3.mail.elte.hu"
+	Sat, 6 Sep 2008 11:49:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47575 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752103AbYIFPqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 11:46:16 -0400
-Date: Sat, 6 Sep 2008 17:45:51 +0200
+	id S1752118AbYIFPt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 11:49:56 -0400
+Date: Sat, 6 Sep 2008 17:49:35 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, pageexec@freemail.hu,
-       Andi Kleen <andi@firstfloor.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
-Message-ID: <20080906154551.GB1774@elte.hu>
-References: <20080903195122.73905236@infradead.org> <48C0FF43.30940.2C3EFC0@pageexec.freemail.hu> <1220609647.4879.169.camel@pasglop> <48C10EC5.24400.3008276@pageexec.freemail.hu> <1220612231.4879.175.camel@pasglop> <20080905114233.GA27878@elte.hu> <20080905204134.GI19337@1wt.eu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, arjan@infradead.org,
+       torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] Blacklist DMAR on Intel G31/G33 chipsets
+Message-ID: <20080906154935.GD1774@elte.hu>
+References: <1220439231.2985.103.camel@pmac.infradead.org> <1220518477.2985.163.camel@pmac.infradead.org> <20080905183459.GC14258@elte.hu> <1220640430.2985.389.camel@pmac.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080905204134.GI19337@1wt.eu>
+In-Reply-To: <1220640430.2985.389.camel@pmac.infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,22 +36,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Willy Tarreau <w@1wt.eu> wrote:
+* David Woodhouse <dwmw2@infradead.org> wrote:
 
-> Then they will simply proceed like this :
->   - patch /boot/vmlinuz
->   - sync
->   - crash system
+> On Fri, 2008-09-05 at 20:34 +0200, Ingo Molnar wrote:
+> > * David Woodhouse <dwmw2@infradead.org> wrote:
+> > 
+> > > Some BIOSes (the Intel DG33BU, for example) wrongly claim to have DMAR
+> > > when they don't. Avoid the resulting crashes when it doesn't work as
+> > > expected.
+> > > 
+> > > Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> > > ---
+> > > 
+> > > This time, I build-tested it with CONFIG_DMAR actually enabled. Sorry. 
+> > > I'd still be grateful if someone could test it on a DG33BU with the 
+> > > old BIOS though, since I've killed mine. I tested the DMI version, but 
+> > > not this one.
+> > 
+> > ok - fixing this makes sense. I have two worries about this patch.
+> > 
+> > Firstly, the quirk is keyed off an ACPI capability which is quite bad if 
+> > someone boots with ACPI off. (which is still quite possible) The DMAR is 
+> > PCI enumerated so there's nothing inherently ACPI about this. A DMI 
+> > quirk (which will work even if ACPI is disabled) looks more robust.
 > 
-> => user says "oh crap" and presses the reset button. Patched kernel boots.
->    Game over. Patching vmlinuz for known targetted distros is even easier
->    because the attacker just has to embed binary changes for the most
->    common distro kernels.
+> No, the intel-iommu code is isn't PCI-enumerated -- it all depends on 
+> that ACPI table, unfortunately. [...]
 
-a reboot often raises attention. But yes, in terms of end user boxes, 
-probably not. Anyway, my points were about transparent rootkits 
-installed on a running system without anyone noticing - obviously if the 
-attacker can modify the kernel image and the user does not mind a reboot 
-it's game over.
+ah, you are right ... and i thought i could trust grep -i acpi 
+drivers/pci/intel-iommu.c coming up empty ;-)
+
+Jesse's call obviously, but the DMI thing local to intel-iommu.c still 
+looks better to me in all regards. I'm no fan of DMI in general - it 
+just doesnt scale - but here a crappy BIOS gets punished with a DMI 
+quirk and that's OK.
 
 	Ingo
