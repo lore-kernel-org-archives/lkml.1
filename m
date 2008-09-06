@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbYIFFXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbYIFFhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752668AbYIFFXk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 01:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYIFFXb
+	id S1752668AbYIFFhz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 01:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYIFFhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 01:23:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46563 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751076AbYIFFXb (ORCPT
+	Sat, 6 Sep 2008 01:37:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:23035 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbYIFFhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 01:23:31 -0400
-Date: Fri, 5 Sep 2008 22:23:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: linux-kernel@vger.kernel.org, tony@atomide.com
-Subject: Re: [PATCH] Add missing macro argument for devm_release_* family
-Message-Id: <20080905222320.36eb3bfa.akpm@linux-foundation.org>
-In-Reply-To: <20080906.081841.03994201.Hiroshi.DOYU@nokia.com>
-References: <1220662823-19106-1-git-send-email-Hiroshi.DOYU@nokia.com>
-	<20080905185254.78706060.akpm@linux-foundation.org>
-	<20080906.081841.03994201.Hiroshi.DOYU@nokia.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Sat, 6 Sep 2008 01:37:45 -0400
+Date: Fri, 5 Sep 2008 22:36:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, "jgarzik" <jgarzik@pobox.com>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       <e1000-devel@lists.sourceforge.net>,
+       "Morton" <akpm@linux-foundation.org>, <linux-next@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       <Andrew@sc8-sf-spam2-b.sourceforge.net>
+Subject: Re: [E1000-devel] linux-next: Tree for September 4 (PATCH: IXGBE)
+Message-Id: <20080905223634.7a05a2f5.randy.dunlap@oracle.com>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F5206120576@orsmsx418.amr.corp.intel.com>
+References: <20080904193606.573f2cb3.sfr@canb.auug.org.au>
+	<20080904204137.9b31f644.randy.dunlap@oracle.com>
+	<36D9DB17C6DE9E40B059440DB8D95F5206120576@orsmsx418.amr.corp.intel.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 06 Sep 2008 08:18:41 +0300 (EEST) Hiroshi DOYU <Hiroshi.DOYU@nokia.com> wrote:
+On Fri, 5 Sep 2008 16:47:55 -0700 Brandeburg, Jesse wrote:
 
-> From: "ext Andrew Morton" <akpm@linux-foundation.org>
-> Subject: Re: [PATCH] Add missing macro argument for devm_release_* family
-> Date: Fri, 5 Sep 2008 18:52:54 -0700
+> Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > ixgbe needs to be restricted to the same build config (m/y)
+> > as DCA since it calls the dca_*() functions.
+> > 
+> > ixgbe_main.c:(.text+0xd9c09): undefined reference to `dca3_get_tag'
+> > ixgbe_main.c:(.text+0xd9cc9): undefined reference to `dca3_get_tag'
+> > ixgbe_main.c:(.text+0xda5c1): undefined reference to
+> > `dca_add_requester' ixgbe_main.c:(.text+0xda5d6): undefined reference
+> > to `dca_remove_requester' text+0xdc162): undefined reference to
+> > `dca_add_requester' 
+> > text+0xdc1d3): undefined reference to `dca_remove_requester'
+> > ixgbe_main.c:(.init.text+0xa74b): undefined reference to
+> > `dca_register_notify' ixgbe_main.c:(.devinit.text+0xa4ca): undefined
+> > reference to `dca_add_requester' ixgbe_main.c:(.exit.text+0xd21):
+> > undefined reference to `dca_unregister_notify'
+> > ixgbe_main.c:(.devexit.text+0x72d): undefined reference to
+> > `dca_remove_requester' make[1]: *** [.tmp_vmlinux1] Error 1 
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ...
+> > +	depends on PCI && INET && DCA
 > 
-> > On Sat,  6 Sep 2008 04:00:23 +0300 Hiroshi DOYU <Hiroshi.DOYU@nokia.com> wrote:
-> > 
-> > > From: ext Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> > > 
-> > > Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-> > > ---
-> > >  include/linux/ioport.h |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-> > > index 22d2115..c813c63 100644
-> > > --- a/include/linux/ioport.h
-> > > +++ b/include/linux/ioport.h
-> > > @@ -158,9 +158,9 @@ extern struct resource * __devm_request_region(struct device *dev,
-> > >  				struct resource *parent, resource_size_t start,
-> > >  				resource_size_t n, const char *name);
-> > >  
-> > > -#define devm_release_region(start,n) \
-> > > +#define devm_release_region(dev,start,n) \
-> > >  	__devm_release_region(dev, &ioport_resource, (start), (n))
-> > > -#define devm_release_mem_region(start,n) \
-> > > +#define devm_release_mem_region(dev,start,n) \
-> > >  	__devm_release_region(dev, &iomem_resource, (start), (n))
-> > >  
-> > >  extern void __devm_release_region(struct device *dev, struct resource *parent,
-> > 
-> > um, OK.
-> > 
-> > But none of these things appear to have any callers anywhere.  Why
-> > don't we just delete it all?
+> Looks like you set IXGBE=y and CONFIG_DCA=m.  This depends DCA option is
+> not so great because if INTEL_IOATDMA is disabled (and therefore DCA is
+> disabled) then ixgbe won't show up as an option.
 > 
-> Not sure for others, but at least, I am using this in my developing
-> driver;)
+> How about this instead, use a select INTEL_IOATDMA:
+> 
+> inline is whitespace busted, sorry. attached is the patch.
 
-yeah, I was just trolling ;)
+OK, that works.  Thanks.
 
-I queued this fix for 2.6.27.
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
