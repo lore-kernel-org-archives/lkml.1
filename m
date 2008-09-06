@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYIFUvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYIFUvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYIFUvT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 16:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbYIFUvJ
+	id S1755153AbYIFUvw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 16:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYIFUvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 16:51:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50638 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752757AbYIFUvI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 16:51:08 -0400
-Date: Sat, 6 Sep 2008 13:50:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Alok Kataria <akataria@vmware.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dan Hecht <dhecht@vmware.com>,
-       Garrett Smith <garrett@vmware.com>
-Subject: Re: [RFC patch 0/4] TSC calibration improvements
-In-Reply-To: <alpine.LFD.1.10.0809062233500.3243@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0809061347120.3117@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org>  <20080904160036.GA18382@elte.hu>  <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> 
- <20080904190728.59634020@lxorguk.ukuu.org.uk>  <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0809041303530.4112@nehalem.linux-foundation.org>  <20080904204305.GA29065@elte.hu> <20080904205236.GA3864@elte.hu> 
- <alpine.LFD.1.10.0809041403450.3117@nehalem.linux-foundation.org>  <20080904213350.GA15678@elte.hu> <1220653095.14401.72.camel@alok-dev1> <alpine.LFD.1.10.0809051522410.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809061803470.3243@apollo.tec.linutronix.de>
- <alpine.LFD.1.10.0809061328400.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809062233500.3243@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 6 Sep 2008 16:51:44 -0400
+Received: from bavaria.utcluj.ro ([193.226.5.35]:54133 "EHLO bavaria.utcluj.ro"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752783AbYIFUvn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 16:51:43 -0400
+X-Greylist: delayed 1911 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Sep 2008 16:51:43 EDT
+Subject: Power management stuff
+From: Cristi Magherusan <cristi.magherusan@net.utcluj.ro>
+Reply-To: cristi.magherusan@net.utcluj.ro
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4KryEtvPS9ZYxxm36+Lf"
+Organization: Universitatea Tehnica din Cluj-Napoca, Centrul de Comunicatii
+	"Pusztai Kalman"
+Date: Sat, 06 Sep 2008 23:19:46 +0300
+Message-Id: <1220732386.18701.68.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-4KryEtvPS9ZYxxm36+Lf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Sat, 6 Sep 2008, Thomas Gleixner wrote:
-> 
-> Just checked. The -tip version still has the expect-- in the for()
-> which might lead to stupid results depending on the gcc madness level.
+Hello,
 
-Umm. What? You're on some odd drugs.
 
-			Linus
+I have a few ideas/questions about some power management-related issues:
+
+1) How could we get the current frequency/voltage settings for the CPU,
+fr example when using SpeedStep by using the /proc filesystem?
+
+2) It would be nice to modify a bit the CPU throttling API to be able to
+set a max value when using dynamic governors, like ondemand.=20
+The frequency/voltage pair should be set to the minimum allowed by
+construction, just like it was before, and scale up to a max value set
+by the user. This would allow the user set the best balance between
+responsiveness and power consumption that suits its needs.
+Also, targeting a certain temperature would be a great feature to have.
+
+3) Is there any plan to improve the current battery framework and
+provide information about the estimated recharging time, as it was
+before. I guess the versions before 2.6.24 used to provide this but the
+newer versions don't do it anymore.
+
+Thanks,
+Cristi
+
+
+--=-4KryEtvPS9ZYxxm36+Lf
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkjC5eIACgkQfwrBISYVZFUdbACgjJJCOBOwhHFGd770k6z/zqt7
+qsoAoI9SIpux2Uvn3X1+NYE1jORpissu
+=Fgmt
+-----END PGP SIGNATURE-----
+
+--=-4KryEtvPS9ZYxxm36+Lf--
+
