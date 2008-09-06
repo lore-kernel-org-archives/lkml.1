@@ -1,20 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYIFJxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbYIFJyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYIFJxX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 05:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbYIFJxP
+	id S1752613AbYIFJyE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 05:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYIFJxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 05:53:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49215 "EHLO mx1.suse.de"
+	Sat, 6 Sep 2008 05:53:54 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56989 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752326AbYIFJxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 05:53:14 -0400
-Date: Sat, 06 Sep 2008 11:53:08 +0200
-Message-ID: <s5hod31txbv.wl%tiwai@suse.de>
+	id S1752235AbYIFJxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 05:53:53 -0400
+Date: Sat, 06 Sep 2008 11:53:48 +0200
+Message-ID: <s5hljy5txar.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ALSA fix
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Nicolas Pitre <nico@cam.org>, Dmitry Torokhov <dtor@insightbb.com>,
+       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@osdl.org>,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH] ucb1400_ts depends SND_AC97_BUS
+In-Reply-To: <48C1A004.2030607@oracle.com>
+References: <20061209003635.e778ff76.randy.dunlap@oracle.com>
+	<200612092150.02940.dtor@insightbb.com>
+	<20061209185737.1768315d.randy.dunlap@oracle.com>
+	<200612092205.19358.dtor@insightbb.com>
+	<Pine.LNX.4.64.0612092212410.2630@xanadu.home>
+	<20061209210945.5abe2d89.randy.dunlap@oracle.com>
+	<Pine.LNX.4.64.0612102244140.2630@xanadu.home>
+	<20080904195744.f367cd2d.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0809050028590.23787@xanadu.home>
+	<20080904214444.0dccf859.randy.dunlap@oracle.com>
+	<alpine.LFD.1.10.0809050104560.23787@xanadu.home>
+	<s5htzcvt7id.wl%tiwai@suse.de>
+	<alpine.LFD.1.10.0809051049460.23787@xanadu.home>
+	<s5hhc8u8soi.wl%tiwai@suse.de>
+	<alpine.LFD.1.10.0809051231120.23787@xanadu.home>
+	<s5hprniv7ep.wl%tiwai@suse.de>
+	<48C1A004.2030607@oracle.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.2
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -24,42 +44,35 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+At Fri, 05 Sep 2008 14:09:24 -0700,
+Randy Dunlap wrote:
+> 
+> Takashi Iwai wrote:
+> > At Fri, 05 Sep 2008 12:32:32 -0400 (EDT),
+> > Nicolas Pitre wrote:
+> >> On Fri, 5 Sep 2008, Takashi Iwai wrote:
+> >>
+> >>> At Fri, 05 Sep 2008 10:52:25 -0400 (EDT),
+> >>> Nicolas Pitre wrote:
+> >>>> On Fri, 5 Sep 2008, Takashi Iwai wrote:
+> >>>>
+> >>>>>> This was fixed 2 years ago.  Who broke it this time?
+> >>>>> Oh, it must be me.
+> >>>> I think both your patch and the one I previously posted are needed.
+> >>> Could you repost?  I can't find it easily now.
+> > 
+> > Thanks.  For linux-next, yes, it's needed.  But it's not for 2.6.27.
+> > 
+> > Meanwhile, my fix should be included in 2.6.27 since it's a
+> > regression.
+> > 
+> > Randy, could you check whether these two patches fix your problem?
+> > I'll put my patch to my tree for the next pull request after your
+> > confirmation.
+> 
+> Yes, all fixed/good.  Thanks.
 
-please pull another ALSA fix for 2.6.27-rc5 from:
+Thanks for checking!
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
-
-which is a simple regression fix in Kconfig.
-
-Thanks!
 
 Takashi
-
-===
-
-Takashi Iwai (1):
-      Fix CONFIG_AC97_BUS dependency
-
- sound/Kconfig |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/sound/Kconfig b/sound/Kconfig
-index a37bee0..8ebf512 100644
---- a/sound/Kconfig
-+++ b/sound/Kconfig
-@@ -91,6 +91,9 @@ endif # SOUND_PRIME
- 
- endif # !M68K
- 
-+endif # SOUND
-+
-+# AC97_BUS is used from both sound and ucb1400
- config AC97_BUS
- 	tristate
- 	help
-@@ -99,4 +102,3 @@ config AC97_BUS
- 	  sound although they're sharing the AC97 bus. Concerned drivers
- 	  should "select" this.
- 
--endif # SOUND
