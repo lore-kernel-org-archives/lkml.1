@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbYIFUNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYIFU13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbYIFUNo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 16:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYIFUNg
+	id S1754670AbYIFU13 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 16:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbYIFU1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 16:13:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:42353 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbYIFUNf (ORCPT
+	Sat, 6 Sep 2008 16:27:19 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2413 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752084AbYIFU1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 16:13:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mpnMeiOgAvsjQrw8/Q5m5fwOJhUvuGNNdUzq8L1pI//EtBUkH8u9FuwYCphNbjulBM
-         vtfTojS7fWJibPwoK5wG9T7cw15lSMVSlR6B9MQgVmFRQk7BJSugTgjciKHKtnP4ggHX
-         evD+7pVO6psEsobPygXfmk9mQuiyCP/hfSBuQ=
-Date: Sun, 7 Sep 2008 00:13:29 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for
-	setup_IO_APIC_irqs
-Message-ID: <20080906201329.GE23729@lenovo>
-References: <20080905181111.GG27395@elte.hu> <20080905183347.GB19334@lenovo> <20080905183835.GA19215@elte.hu> <20080906101533.GA7273@lenovo> <Pine.LNX.4.55.0809061938250.13851@cliff.in.clinika.pl> <20080906190446.GA23729@lenovo> <86802c440809061216n5bbad56amabf9934f8bf08d57@mail.gmail.com> <20080906193820.GC23729@lenovo> <20080906194413.GD23729@lenovo> <Pine.LNX.4.55.0809062104570.13851@cliff.in.clinika.pl>
+	Sat, 6 Sep 2008 16:27:19 -0400
+Date: Sat, 6 Sep 2008 16:27:17 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: sangsu <sangsu@gmail.com>
+cc: dbrownell@users.sourceforge.net, <gregkh@suse.de>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] USB: g_file_storage: fix handling zero-length packet 
+In-Reply-To: <48C20C3E.20306@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0809061615340.30019-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0809062104570.13851@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Maciej W. Rozycki - Sat, Sep 06, 2008 at 09:08:51PM +0100]
-| On Sat, 6 Sep 2008, Cyrill Gorcunov wrote:
-| 
-| > So I think better would be just use Ingo's suggestion
-| > about to separate apic/pin iterator and function body.
-| 
-|  No doubt about it.  Then if the number of entries was to be huge, then
-| lines output to the log buffer could be limited to 80 characters.  With
-| the use of sprintf() it would be rather trivial.  And you would avoid any
-| concerns about stack consumption.
-| 
-|  Please note that with MPS 1.1 systems the number of "unconnected" I/O 
-| APIC inputs can be considerable.
-| 
-|   Maciej
-| 
+On Sat, 6 Sep 2008, sangsu wrote:
 
-Thanks Maciej, will continue tomorrow.
+> According to "CH 5.5.3. Control Transfer Packet Size Constraints",
+> Zero-length packet should be sent when the last data payload size
+> is equal to the endpoint's MaxPacketSize.
 
-		- Cyrill -
+Not so.  5.5.3 actually says this:
+
+	The Data stage of a control transfer from an endpoint to the
+	host is complete when the endpoint does one of the following:
+
+	 - Has transferred exactly the amount of data specified during 
+	the Setup stage
+
+	 - Transfers a packet with a payload size less than
+	wMaxPacketSize or transfers a zero-length packet
+
+This clearly indicates that if the amount of data specified in the
+Setup stage is a multiple of the wMaxPacketSize then there should not
+be a zero-length packet, because the transfer ends as soon as the last 
+wMaxPacketSize packet is sent.
+
+> This patch helps
+> g_file_storage send zero-length packet properly.
+> 
+> This is tested in s3c2440/s5c7329 architectures and works well.
+> 
+> Signed-off-by: SangSu Park<sangsu@gmail.com>
+> ---
+> driver/usb/gadget/file_storage.c | 3++-
+> 1 files changed, 2 insertion(+), 1 deletions(-)
+> 
+> --- a/drivers/usb/gadget/file_storage.c	2008-09-01 11:13:03.000000000 -0400
+> +++ b/drivers/usb/gadget/file_storage.c	2008-09-01 11:16:41.000000000 -0400
+> @@ -1463,7 +1463,8 @@
+> 	if (rc >= 0 && rc != DELAYED_STATUS) {
+> 		rc = min(rc, w_length);
+> 		fsg->ep0req->length = rc;
+> -		fsg->ep0req->zero = rc < w_length;
+> +		fsg->ep0req->zero = rc < w_length
+> +			&& (rc % gadget->ep0->maxpacket) == 0;
+> 		fsg->ep0req_name = (ctrl->bRequestType & USB_DIR_IN ?
+> 				"ep0-in" : "ep0-out");
+> 		rc = ep0_queue(fsg);
+
+Firstly, this patch does not do what your description says it does.
+
+Secondly, the patch is not needed.  g_file_storage doesn't have to 
+check whether the data size is a multiple of MaxPacketSize because the 
+device controller driver already is supposed to make that check.
+
+Alan Stern
+
