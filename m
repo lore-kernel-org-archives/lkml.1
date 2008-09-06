@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbYIFWNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbYIFWSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754050AbYIFWNO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 18:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYIFWM6
+	id S1754232AbYIFWSi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 18:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752790AbYIFWS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 18:12:58 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:52635 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752511AbYIFWM5 (ORCPT
+	Sat, 6 Sep 2008 18:18:29 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:2751 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbYIFWS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 18:12:57 -0400
-Date: Sat, 6 Sep 2008 18:12:31 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: John Reiser <jreiser@BitWagon.com>
-Cc: Steve VanDeBogart <vandebo-lkml@NerdBox.Net>, jiayingz@google.com,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net, dkegel@google.com
-Subject: Re: [uml-devel] [PATCH 2/6] UML: Don't valgrind userspace
-Message-ID: <20080906221231.GA9359@c2.user-mode-linux.org>
-References: <alpine.DEB.1.00.0808281139420.15543@abydos.NerdBox.Net> <alpine.DEB.1.00.0808291614430.15543@abydos.NerdBox.Net> <20080905163718.GA11455@c2.user-mode-linux.org> <48C2EE46.2060509@BitWagon.com>
+	Sat, 6 Sep 2008 18:18:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wl3jqTdH/vEEE9d3RuId+TWw4vkVPeZd008wSyVUNQcBQhY2r6tChbFnhfGdjPOhdS
+         lxnFcuoWGWQqY6caFi+iae2vyPqueFUSITX2vOiamPd5/O2rS9tHa1qB0VBZw3+bLU6S
+         IDxAKOUd1lpyBSkRtn1WS7Ae8uYhCgQklMe+s=
+Message-ID: <86802c440809061518w1c74c0f4u4ccc7b6b0da7b398@mail.gmail.com>
+Date: Sat, 6 Sep 2008 15:18:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alex Chiang" <achiang@hp.com>, "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
+Subject: Re: hotplug create_slot hang
+In-Reply-To: <20080906215041.GD27298@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C2EE46.2060509@BitWagon.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <86802c440809061015v21b6c1eat8718618a6ae25e47@mail.gmail.com>
+	 <20080906215041.GD27298@ldl.fc.hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 06, 2008 at 01:55:34PM -0700, John Reiser wrote:
-> > This is effectively appropriating part of the kernel's ABI for
-> > valgrind's use.  
-> 
-> UML is part of the kernel, so getting a memory reference checker (valgrind)
-> running in UML is part of the kernel, too.  The concept of "escape from the
-> virtualizer" eventually occurs to more than just memory reference checkers.
+On Sat, Sep 6, 2008 at 2:50 PM, Alex Chiang <achiang@hp.com> wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com>:
+>> calling  pci_hotplug_init+0x0/0x1d
+>> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+>> initcall pci_hotplug_init+0x0/0x1d returned 0 after 11 msecs
+>>
+>> calling  acpiphp_init+0x0/0x5f
+>> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+>> decode_hpp: Could not get hotplug parameters. Use defaults
+>> pci_create_slot: created pci_slot on 0000:07:00
+>> acpiphp: Slot [1] registered
+>> decode_hpp: Could not get hotplug parameters. Use defaults
+>> pci_create_slot: created pci_slot on 0000:0d:00
+>> acpiphp: Slot [2] registered
+>> initcall acpiphp_init+0x0/0x5f returned 0 after 105 msecs
+>
+> Is this the hang?
+>
+>> calling  pcied_init+0x0/0x7b
+>> pciehp: HPC vendor_id 8086 device_id 340a ss_vid 0 ss_did 0
+>> pci_create_slot: inc refcount to 2 on 0000:07:00
+>> pci_destroy_slot: dec refcount to 1 on 0000:07:00
+>> pciehp: pci_hp_register failed with error -16
+>> pciehp: pciehp: slot already registered by another hotplug driver
+>
+> This failure is by design -- we only allow one hotplug driver to
+> claim a slot now, and it's "first one loaded wins".
+>
+> Unless you're talking about something else?
 
-Irrelevant - what if UML, or anything else for that matter, starts
-using CLONE_IO?  All of a sudden, valgrind will start letting those
-threads go.
+after
 
-> Why wouldn't that be a race between the next _NR_clone from this thread
-> and the next _NR_clone from any other existing thread [in the same
-> process]?
+pciehp: pciehp: slot already registered by another hotplug driver
 
-Yeah, if you cloned in a signal handler, that would be a problem.
+never go on...
 
-How about sticking the annotation in the thread itself?  This may be
-what you're suggesting here - I can't really tell.
-
-> Valgrind can pre-pend a block of code at the start of the new thread,
-> but almost immediately that code will want to "unvirtualize."
-> Doing so at _NR_clone itself is convenient all around.
-
-  	      		Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+YH
