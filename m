@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYIFXMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYIFXNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYIFXMx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 19:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYIFXHY
+	id S1756067AbYIFXNU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 19:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbYIFXHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 19:07:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37845 "EHLO ogre.sisk.pl"
+	Sat, 6 Sep 2008 19:07:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37848 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755140AbYIFXHV convert rfc822-to-8bit (ORCPT
+	id S1754957AbYIFXHV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Sep 2008 19:07:21 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Christopher Li" <chrisl@vmware.com>,
-       "David Vrabel" <david.vrabel@csr.com>
+       "Ingo Molnar" <mingo@elte.hu>
 References: <s3QDdfEDq6.A.wlH.MowwIB@albercik>
 In-Reply-To: <s3QDdfEDq6.A.wlH.MowwIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Wz8EH5sroeE.A.KbB.wpwwIB@albercik>
-Subject: [Bug #11382] e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
+Message-ID: <Wz8EH5sroeE.A.GfB.ypwwIB@albercik>
+Subject: [Bug #11380] lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat,  6 Sep 2008 23:30:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,12 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11382
-Subject		: e1000e: 2.6.27-rc1 corrupts EEPROM/NVM
-Submitter	: David Vrabel <david.vrabel@csr.com>
-Date		: 2008-08-08 10:47 (30 days old)
-References	: http://marc.info/?l=linux-kernel&m=121819267211679&w=4
-Handled-By	: Christopher Li <chrisl@vmware.com>
-Patch		: http://marc.info/?l=linux-mm-commits&m=122038324200305&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11380
+Subject		: lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
+Submitter	: Ingo Molnar <mingo@elte.hu>
+Date		: 2008-08-20 6:44 (18 days old)
+References	: http://marc.info/?l=linux-kernel&m=121921480931970&w=4
 
 
