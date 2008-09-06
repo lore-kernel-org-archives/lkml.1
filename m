@@ -1,122 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYIFI6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbYIFJJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbYIFI6V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 04:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYIFI6K
+	id S1753317AbYIFJJY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 05:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYIFJJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 04:58:10 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:60930 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752133AbYIFI6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 04:58:08 -0400
-Date: Sat, 6 Sep 2008 10:57:57 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH] mmc_block: use generic helper to print capacities
-Message-ID: <20080906105757.00badd4f@mjolnir.drzeus.cx>
-In-Reply-To: <1220648634.3331.57.camel@localhost.localdomain>
-References: <48B9546B.4010004@simon.arlott.org.uk>
-	<1220117091.3615.3.camel@localhost.localdomain>
-	<20080830174516.GD1239@parisc-linux.org>
-	<48B9B552.8060406@simon.arlott.org.uk>
-	<48B9B588.7060709@simon.arlott.org.uk>
-	<1220147947.3615.18.camel@localhost.localdomain>
-	<20080831025412.GJ1239@parisc-linux.org>
-	<1220195310.4021.4.camel@localhost.localdomain>
-	<1220195634.4021.9.camel@localhost.localdomain>
-	<20080831205448.5b23507d@mjolnir.drzeus.cx>
-	<1220645340.3331.55.camel@localhost.localdomain>
-	<20080905225209.29aace1b@mjolnir.drzeus.cx>
-	<1220648634.3331.57.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-27721-1220691485-0001-2"
+	Sat, 6 Sep 2008 05:09:17 -0400
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:64309 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752150AbYIFJJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 05:09:16 -0400
+Message-ID: <48C248B9.6010805@superbug.co.uk>
+Date: Sat, 06 Sep 2008 10:09:13 +0100
+From: James Courtier-Dutton <James@superbug.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Uniquely identify and Motherboard Model.
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi,
 
---=_freyr.drzeus.cx-27721-1220691485-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Is there a way I could uniquely identify a Motherboard Model. I don't
+need the serial number, just the model.
+Applications for this could be:
+1) Create a table to map Motherboard Model to lmsensors calibration
+settings. All motherboards seem to use different resistors, so the
+calibration needs to be adjusted for each motherboard model.
+2) Sound card in/out wiring.
+3) Any other wiring on the motherboard that one needs to know, but
+cannot identify through other means.
 
-On Fri, 05 Sep 2008 16:03:54 -0500
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+It might be useful for the kernel to provide this as a service so that
+driver modules can use it to make choices.
 
->=20
-> Oh ... your inline attached patch is actually whitespace broken (it has
-> spaces for tabs), which is why it doesn't apply.  Sorry, that's the
-> first thing I usually check, I just skipped it in your case.  Could you
-> resend it as an attachment?
->=20
 
-What the... It seems someone broke git-diff (or less). This one is
-properly undamaged:
+Kind Regards
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 62a4c91..dad8edb 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -29,6 +29,7 @@
- #include <linux/blkdev.h>
- #include <linux/mutex.h>
- #include <linux/scatterlist.h>
-+#include <linux/string_helpers.h>
-=20
- #include <linux/mmc/card.h>
- #include <linux/mmc/host.h>
-@@ -496,6 +497,8 @@ static int mmc_blk_probe(struct mmc_card *card)
- 	struct mmc_blk_data *md;
- 	int err;
-=20
-+	char cap_str[10];
-+
- 	/*
- 	 * Check that the card supports the command class(es) we need.
- 	 */
-@@ -510,10 +513,11 @@ static int mmc_blk_probe(struct mmc_card *card)
- 	if (err)
- 		goto out;
-=20
--	printk(KERN_INFO "%s: %s %s %lluKiB %s\n",
-+	string_get_size(get_capacity(md->disk) << 9, STRING_UNITS_2,
-+			cap_str, sizeof(cap_str));
-+	printk(KERN_INFO "%s: %s %s %s %s\n",
- 		md->disk->disk_name, mmc_card_id(card), mmc_card_name(card),
--		(unsigned long long)(get_capacity(md->disk) >> 1),
--		md->read_only ? "(ro)" : "");
-+		cap_str, md->read_only ? "(ro)" : "");
-=20
- 	mmc_set_drvdata(card, md);
- 	add_disk(md->disk);
-
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-27721-1220691485-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkjCRhoACgkQ7b8eESbyJLhNSACfQqxCW+HmPS3abGvheXQku33X
-WRUAn1vc2CUPO3dBR5Ue/Z6aGWwWcdDX
-=B7IC
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-27721-1220691485-0001-2--
+James
