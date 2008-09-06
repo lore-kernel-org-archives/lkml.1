@@ -1,103 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbYIFWkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbYIFW7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754236AbYIFWkq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 18:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbYIFWkh
+	id S1754275AbYIFW7u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 18:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYIFW7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 18:40:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50802 "EHLO mx2.mail.elte.hu"
+	Sat, 6 Sep 2008 18:59:41 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:60037 "EHLO lll.lu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752600AbYIFWkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 18:40:36 -0400
-Date: Sun, 7 Sep 2008 00:40:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Alok Kataria <akataria@vmware.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dan Hecht <dhecht@vmware.com>,
-       Garrett Smith <garrett@vmware.com>
-Subject: Re: [RFC patch 0/4] TSC calibration improvements
-Message-ID: <20080906224016.GA9229@elte.hu>
-References: <20080904205236.GA3864@elte.hu> <alpine.LFD.1.10.0809041403450.3117@nehalem.linux-foundation.org> <20080904213350.GA15678@elte.hu> <1220653095.14401.72.camel@alok-dev1> <alpine.LFD.1.10.0809051522410.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809061803470.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809061328400.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809062233500.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809061347120.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809061351170.3117@nehalem.linux-foundation.org>
+	id S1752887AbYIFW7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 18:59:40 -0400
+Message-ID: <48C30B4D.7030700@knaff.lu>
+Date: Sun, 07 Sep 2008 00:59:25 +0200
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809061351170.3117@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] init: bzip2 or lzma -compressed kernels and initrds
+References: <200809062119.m86LJ5Of026101@hitchhiker.org.lu> <c384c5ea0809061529g2c7280d8j216f7791ceeb439a@mail.gmail.com>
+In-Reply-To: <c384c5ea0809061529g2c7280d8j216f7791ceeb439a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> "expect" is an unsigned char. There are absolutely _zero_ issues with 
-> overflow, underflow, random phases of the moon, madness levels or 
-> anything else. But yes, it does look like Ingo screwed up when adding 
-> that final check, since expect was already decremented at the end of 
-> the loop.
+Leon Woestenberg wrote:
+> Hello,
 > 
-> Ingo? Did you actually test it?
+> a small remark on the non-code parts:
+> 
+> On Sat, Sep 6, 2008 at 11:19 PM, Alain Knaff <alain@knaff.lu> wrote:
+>> compressing the kernel with bzip2 or lzma rather than gzip. Both
+>> compressors give smaller sizes than gzip.  Moreover, lzma's
+>> decompresses faster than gzip.
+>>
+> versus
+> 
+>> +config KERNEL_GZIP
+>> +       bool "Gzip"
+>> +       help
+>> +         The old and tried gzip compression. Its compression ratio is
+>> +        the poorest among the 3 choices; however its speed (both
+>> +        compression and decompression) is the fastest.
+>> +
+> 
+> This seems contradictionary information.
 
-hm, yes, that's my brown paper bag fault, sorry.
+Oops, sorry for that. Actually the Kconfig text is correct. On
+decompression, Lzma is faster than bzip2 but slower than gzip:
 
-I did that addition in tip/x86/tsc and posted it to you and i did test 
-it immediately - and i noticed that i never saw the fast-calibration 
-message i expected to see. I even pasted the boot log over irc yesterday 
-and i still have it:
+Compressor	Compression	Decompression	Size
+gzip -9		1,01s		0,11s		833069
+lzma -9		3,43s		0,24s		705125
+bzip2 -9	2,88s		0,38s		777706
 
- *> [  0.000] TSC: PIT calibration deviates from PMTIMER: 738839 846296.
- *> [  0.000] TSC: Using PIT calibration value
- *> [  0.000] Detected 738.839 MHz processor.
- *> does not seem to trigger anywhere
+On compression, lzma is actually slowest of the 3, but that should be of
+little concern, as this happens only once, whereas decompression happens
+many times (on each boot).
 
-i wanted to debug that problem straight after i worked down my 800+ 
-mails post-vacation mbox :-/ Which state i reached about 2 hours ago so 
-i'm now free - the fix is below.
+So, overall lzma looks like the best (acceptable decompression speed,
+best decompression ratio). I only included Bzip2 because it's much
+better known than lzma.
 
-i _think_ that the quality of calibration should now be pretty OK with 
-latest -git. The clever fast calibration stuff could be .28 material. 
+> However, I welcome more compression options in kernel and filesystem
+> land, so I'm very interested in this patch.
 
-And/or we could change the 5x 50msec calibration to 3x 30msec right now, 
-the precision is still plenty and the 90 msec is then replaced with your 
-fast-calibrate method anyway on proper boxes. Hm?
+Thanks for your interest and warm welcome :)
 
-	Ingo
+> Recently, on the filesystem side there seems to be some effort to
+> modularize the decompressors, instead of the use of #ifdef's.
+> 
+> The other architectures (especially used in embedded) need to hook in
+> on this, getting rid of the many out-of-tree patches for kernel/fs
+> decompression.
+> 
+> Regards,
 
-------------------->
->From 5df45515512436a808d3476a90e83f2efb022422 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sat, 6 Sep 2008 23:55:40 +0200
-Subject: [PATCH] x86, tsc calibration: fix
+Unfortunately, I didn't have any such machine available for testing, so
+I just for Intel 32/64.
 
-my brown paperbag day ...
+However, the changes in the Assembly part (head_32.S and head_64.S) are
+trivial, so should be easy to port. The only change to these files is
+the offset where the uncompressed size of the file may be found (4 bytes
+from the end for gzip, and 5 from the start for lzma).
 
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/tsc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+misc.c, where the bulk of the "architecture-specific" change is, is
+actually not that architecture-specific, and could maybe be moved to a
+common part? Diff'ing the boot/compressed/misc.c's of various
+architectures shows (at first glance) mostly version differences: some
+architectures get some changes/enhancements earlier than others. It's as
+if the various architectures were stuck at some different points in the
+past as compared to Intel...
 
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 6dab90f..4847a92 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -319,7 +319,7 @@ static unsigned long quick_pit_calibrate(void)
- 		/*
- 		 * Make sure we can rely on the second TSC timestamp:
- 		 */
--		if (!pit_expect_msb(--expect))
-+		if (!pit_expect_msb(expect))
- 			goto failed;
- 
- 		/*
+most of the other files are architecture-independant anyways (the stuff
+in lib/ and init/)
+
+Alain
