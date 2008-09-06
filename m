@@ -1,164 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593AbYIFNm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYIFNt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593AbYIFNm2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 09:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYIFNmQ
+	id S1753222AbYIFNt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 09:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYIFNtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 09:42:16 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60972 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751762AbYIFNmN (ORCPT
+	Sat, 6 Sep 2008 09:49:20 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:3430 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867AbYIFNtT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 09:42:13 -0400
-Subject: Re: linux-next: Tree for September 4
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <200809061325.20924.rjw@sisk.pl>
-References: <20080904193606.573f2cb3.sfr@canb.auug.org.au>
-	 <200809051256.36257.rjw@sisk.pl>
-	 <20080905113042.0f6d5850.akpm@linux-foundation.org>
-	 <200809061325.20924.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 06 Sep 2008 08:42:10 -0500
-Message-Id: <1220708530.3430.8.camel@localhost.localdomain>
+	Sat, 6 Sep 2008 09:49:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=pThJTd+80Q40sS6y0TLVajHILNS81w5Up85WiiFYVZq4J/6X1H6hDqxLa+NqrwBvm9
+         Lo6RPi68bJwAbDSCBTRINZT+jIZG4MIn6z1Ns4hnmeNZalGsHqCe4icIo4rCB4RvHpSu
+         /EEn+MmlFyhf09vBvKHcnd0H/KgYUC2y7LaG8=
+Date: Sat, 6 Sep 2008 16:49:09 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>
+Cc: "Steven Rostedt" <rostedt@goodmis.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
+Message-ID: <20080906164909.4b6f3a49@daedalus.pq.iki.fi>
+In-Reply-To: <c62985530809060439r2dffedd8kd6ac9e061f1273c3@mail.gmail.com>
+References: <48B1D5CA.8000607@gmail.com>
+	<c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
+	<20080827212130.4b8365a8@daedalus.pq.iki.fi>
+	<c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
+	<20080828214256.296e34ec@daedalus.pq.iki.fi>
+	<c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
+	<20080904203058.7e57729e@daedalus.pq.iki.fi>
+	<alpine.DEB.1.10.0809041407140.2431@gandalf.stny.rr.com>
+	<c62985530809060439r2dffedd8kd6ac9e061f1273c3@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-09-06 at 13:25 +0200, Rafael J. Wysocki wrote:
-> On Friday, 5 of September 2008, Andrew Morton wrote:
-> > On Fri, 5 Sep 2008 12:56:35 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Friday, 5 of September 2008, Andrew Morton wrote:
-> > > > On Thu, 4 Sep 2008 19:36:06 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > > > 
-> > > > > I have created today's linux-next tree at
-> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-> > > > 
-> > > > The infamous Vaio hasn't finished catching up with you guys yet. 
-> > > > Something in linux-next broke suspend-to-RAM.
-> > > > 
-> > > > An `echo mem > /sys/power/state' causes "Freezing of tasks failed after
-> > > > 20.00 seconds (1 tasks refusing to freeze):"
-> > > > 
-> > > > dmesg: http://userweb.kernel.org/~akpm/dmesg-sony-suspend.txt
-> > > > config: http://userweb.kernel.org/~akpm/config-sony.txt
-> > > > 
-> > > > This only happens after the X server has been started.
-> > > > 
-> > > > Mainline is OK.
-> > > 
-> > > According to your dmesg the process that refused to freeze was
-> > > 
-> > > hald-addon-stor
-> > > 
-> > > which got stuck in ... getnstimeofday (???) (can you check what
-> > > source code corresponds to getnstimeofday+0x37/0xbc pls?):
-> > > 
-> > > hald-addon-st D 00000046     0  2322   2282
-> > >        f4de5b74 00000046 f4de5b54 00000046 f4de5b5c c0135f56 f6b96e44 f4deaf40 
-> > >        f4deb0bc f5580948 f4de5bb0 f4de5b6c c013336e f6aa77c8 f6aa77c8 f6aa77a0 
-> > >        f4de5bb0 f4de5b7c c0331f09 f4de5bd0 c01f4205 00000000 00000000 00000000 
-> > > Call Trace:
-> > >  [<c0135f56>] ? getnstimeofday+0x37/0xbc
-> > >  [<c013336e>] ? ktime_get_ts+0x40/0x44
-> > >  [<c0331f09>] io_schedule+0x39/0x6c
-> > >  [<c01f4205>] get_request_wait+0x80/0xcd
-> > > ...
-> > 
-> > (gdb) x/60i getnstimeofday
-> > 0xc0135d63 <getnstimeofday>:    push   %ebp
-> > 0xc0135d64 <getnstimeofday+1>:  mov    %esp,%ebp
-> > 0xc0135d66 <getnstimeofday+3>:  push   %edi
-> > 0xc0135d67 <getnstimeofday+4>:  push   %esi
-> > 0xc0135d68 <getnstimeofday+5>:  push   %ebx
-> > 0xc0135d69 <getnstimeofday+6>:  sub    $0x8,%esp
-> > 0xc0135d6c <getnstimeofday+9>:  mov    %eax,0xffffffec(%ebp)
-> > 0xc0135d6f <getnstimeofday+12>: mov    0xc045a2c0,%eax
-> > 0xc0135d74 <getnstimeofday+17>: mov    %eax,0xfffffff0(%ebp)
-> > 0xc0135d77 <getnstimeofday+20>: test   $0x1,%al
-> > 0xc0135d79 <getnstimeofday+22>: je     0xc0135d7f <getnstimeofday+28>
-> > 0xc0135d7b <getnstimeofday+24>: pause  
-> > 0xc0135d7d <getnstimeofday+26>: jmp    0xc0135d6f <getnstimeofday+12>
-> > 0xc0135d7f <getnstimeofday+28>: mov    0xffffffec(%ebp),%ecx
-> > 0xc0135d82 <getnstimeofday+31>: mov    0xc05db920,%eax
-> > 0xc0135d87 <getnstimeofday+36>: mov    0xc05db924,%edx
-> > 0xc0135d8d <getnstimeofday+42>: mov    %eax,(%ecx)
-> > 0xc0135d8f <getnstimeofday+44>: mov    %edx,0x4(%ecx)
-> > 0xc0135d92 <getnstimeofday+47>: mov    0xc05db938,%eax
-> > 0xc0135d97 <getnstimeofday+52>: call   *0x10(%eax)
-> > 0xc0135d9a <getnstimeofday+55>: mov    0xc05db938,%esi
-> > 0xc0135da0 <getnstimeofday+61>: mov    0x1c(%esi),%ecx
-> > 0xc0135da3 <getnstimeofday+64>: sub    0x48(%esi),%eax
-> > 0xc0135da6 <getnstimeofday+67>: sbb    0x4c(%esi),%edx
-> > 0xc0135da9 <getnstimeofday+70>: and    0x14(%esi),%eax
-> > 0xc0135dac <getnstimeofday+73>: and    0x18(%esi),%edx
-> > 0xc0135daf <getnstimeofday+76>: mov    %edx,%edi
-> > 0xc0135db1 <getnstimeofday+78>: imul   %ecx,%edi
-> > 0xc0135db4 <getnstimeofday+81>: mul    %ecx
-> > 0xc0135db6 <getnstimeofday+83>: mov    0x24(%esi),%ecx
-> > 0xc0135db9 <getnstimeofday+86>: lea    (%edi,%edx,1),%edx
-> > 0xc0135dbc <getnstimeofday+89>: mov    %eax,%ebx
-> > 0xc0135dbe <getnstimeofday+91>: mov    %edx,%esi
-> > 0xc0135dc0 <getnstimeofday+93>: xor    %edi,%edi
-> > 0xc0135dc2 <getnstimeofday+95>: shrd   %cl,%edx,%ebx
-> > 0xc0135dc5 <getnstimeofday+98>: shr    %cl,%esi
-> > 0xc0135dc7 <getnstimeofday+100>:        test   $0x20,%cl
-> > 0xc0135dca <getnstimeofday+103>:        cmovne %esi,%ebx
-> > 0xc0135dcd <getnstimeofday+106>:        cmovne %edi,%esi
-> > 0xc0135dd0 <getnstimeofday+109>:        mov    %ebx,%edx
-> > 
-> > (gdb) l *0xc0135d9a
-> > 0xc0135d9a is in getnstimeofday (kernel/time/timekeeping.c:104).
-> > 99      
-> > 100                     /* read clocksource: */
-> > 101                     cycle_now = clocksource_read(clock);
-> > 102     
-> > 103                     /* calculate the delta since the last update_wall_time: */
-> > 104                     cycle_delta = (cycle_now - clock->cycle_last) & clock->mask;
-> > 105     
-> > 106                     /* convert to nanoseconds: */
-> > 107                     nsecs = cyc2ns(clock, cycle_delta);
-> > 108     
-> > 
-> > Which implies that someone mucked up xtime_lock.
-> > 
-> > But I don't think any of that is correct.  The getnstimeofday is just
-> > stack gunk.  hald is in D state and is asleep in get_request_wait().
+On Sat, 6 Sep 2008 13:39:55 +0200
+"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
+
+> 2008/9/4 Steven Rostedt <rostedt@goodmis.org>:
 > 
-> Right.  It looks like there was a media change in the CD drive and hald was
-> waiting for the device in sr_test_unit_ready() forever.  Apparently, the device
-> could not get ready.
+> > For logdev (my pet project from way back, and the latest ftrace is based
+> > on), I had a CUSTOM type. The API allowed to register a callback to a
+> > type, and it would associate that type to some number (descriptor) and
+> > pass that number back to you. Then you could use this number to write to
+> > the buffer using the CUSTOM type and registered number. On output, when a
+> > CUSTOM type is detected, it would read the custom.id (the number) and
+> > search for any registered callbacks to handle the entry.
+> >
+> > This probably would not be too difficult to implement. Especially since it
+> > is already implemented in logdev.
+> > (see http://rostedt.homelinux.com/logdev/)
+> >
+> > -- Steve
 > 
-> It looks like a SATA/ATA (whatever the CD-ROM is attached to) issue or sr_mod
-> breakage.
+> Why not. It is a way for a tracer to handle output for any type of entries.
+> But will this feature really be used for other special types than
+> TRACE_PRINT? I'm not sure... If it is not the case, the Pekka's
+> solution seems to me far more simple.
+> 
+> But actually I don't know the needs of others tracers...
 
-Um, I don't see how that follows.
+I never thought TRACE_PRINT would need anything more. At least I'm happy
+with the concept of TRACE_PRINT, it just needs some adjustments in the API
+to be nice to use.
 
-get_request_wait() is the first thing the block layer does to try to get
-a request structure for the queue.  If it's stuck there it means that
-block was out of requests and is waiting for some memory to free up.  If
-we're stuck there, nothing went down to the CD.
+True, I might some day want to add yet another entry type for mmiotrace,
+but I'm not planning that for now, and I could just add it like they are
+in the current framework. But the benefit of the CUSTOM type would be
+to allow modularized and out-of-tree tracers. And then, why keep the
+current predefined types, why not make everything a CUSTOM type? Just
+define a block size in the ring buffer and use TRACE_CONT to handle
+payload larger than the block.
 
-However, being stuck here really isn't good news.  These things are
-mempool backed to prevent writeout deadlock ... we shouldn't be running
-out of them.  What does 
-
-/sys/block/<dev>/queue/nr_reqeusts
-
-and
-
-/sys/block/<dev>/stat
-
-say for this device?
-
-James
+Anyway, personally I'm satisfied with the current state of the framework
+and I can only talk for mmiotrace.
 
 
+Cheers,
+pq
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
