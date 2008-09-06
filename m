@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbYIFPuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYIFPvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbYIFPuJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 11:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYIFPt5
+	id S1753963AbYIFPvt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 11:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbYIFPvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 11:49:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47575 "EHLO mx2.mail.elte.hu"
+	Sat, 6 Sep 2008 11:51:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42234 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752118AbYIFPt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 11:49:56 -0400
-Date: Sat, 6 Sep 2008 17:49:35 +0200
+	id S1752103AbYIFPvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 11:51:40 -0400
+Date: Sat, 6 Sep 2008 17:51:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, arjan@infradead.org,
-       torvalds@linux-foundation.org, sfr@canb.auug.org.au,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] Blacklist DMAR on Intel G31/G33 chipsets
-Message-ID: <20080906154935.GD1774@elte.hu>
-References: <1220439231.2985.103.camel@pmac.infradead.org> <1220518477.2985.163.camel@pmac.infradead.org> <20080905183459.GC14258@elte.hu> <1220640430.2985.389.camel@pmac.infradead.org>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: [PATCH 5/6] x86: move mtrr cpu cap setting early in
+	early_init_xxxx
+Message-ID: <20080906155124.GE1774@elte.hu>
+References: <1220312246-30879-1-git-send-email-yhlu.kernel@gmail.com> <1220312246-30879-5-git-send-email-yhlu.kernel@gmail.com> <20080904191333.GD24990@elte.hu> <86802c440809041217p454c4471y66a8ed6907d9cc8@mail.gmail.com> <20080904221418.239c2b54.krzysztof.h1@poczta.fm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220640430.2985.389.camel@pmac.infradead.org>
+In-Reply-To: <20080904221418.239c2b54.krzysztof.h1@poczta.fm>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,39 +39,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+* Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
 
-> On Fri, 2008-09-05 at 20:34 +0200, Ingo Molnar wrote:
-> > * David Woodhouse <dwmw2@infradead.org> wrote:
-> > 
-> > > Some BIOSes (the Intel DG33BU, for example) wrongly claim to have DMAR
-> > > when they don't. Avoid the resulting crashes when it doesn't work as
-> > > expected.
-> > > 
-> > > Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-> > > ---
-> > > 
-> > > This time, I build-tested it with CONFIG_DMAR actually enabled. Sorry. 
-> > > I'd still be grateful if someone could test it on a DG33BU with the 
-> > > old BIOS though, since I've killed mine. I tested the DMI version, but 
-> > > not this one.
-> > 
-> > ok - fixing this makes sense. I have two worries about this patch.
-> > 
-> > Firstly, the quirk is keyed off an ACPI capability which is quite bad if 
-> > someone boots with ACPI off. (which is still quite possible) The DMAR is 
-> > PCI enumerated so there's nothing inherently ACPI about this. A DMI 
-> > quirk (which will work even if ACPI is disabled) looks more robust.
+> On Thu, 4 Sep 2008 12:17:14 -0700
+> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 > 
-> No, the intel-iommu code is isn't PCI-enumerated -- it all depends on 
-> that ACPI table, unfortunately. [...]
+> > On Thu, Sep 4, 2008 at 12:13 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > >
+> > >> Krzysztof Helt <krzysztof.h1@wp.pl> found mtrr is not detected on k6-2
+> > >>
+> > >> root case:
+> > >>       we move mtrr_bp_init early for mtrr trimming.
+> > >> and in early_detect, only read cap from cpuid, so some cpu doesn't have
+> > >> that bit in cpuid and need to set workaround bit will have problem.
+> > >>
+> > >> need to add early_init_xxxx to preset those bit before mtrr_bp_init
+> > >> for those earlier cpus.
+> > >>
+> > >> this patch is for 2.6.27
+> > >
+> > > hm, not sure we can do it in v2.6.27 as it depends on the other CPU init
+> > > patches and that is a rather sensitive codepath. This problem should be
+> > > present in v2.6.26 too, right?
+> > 
+> > Yes. old cpus without cpuid bit for mtrr need this patch...
+> > Krzysztof Helt tested it and it works with 2.6.27-rc5 (?)
+> > 
+> > 
+> 
+> Yes, I tested the patches with 2.6.27-rc5.
 
-ah, you are right ... and i thought i could trust grep -i acpi 
-drivers/pci/intel-iommu.c coming up empty ;-)
-
-Jesse's call obviously, but the DMI thing local to intel-iommu.c still 
-looks better to me in all regards. I'm no fan of DMI in general - it 
-just doesnt scale - but here a crappy BIOS gets punished with a DMI 
-quirk and that's OK.
+ok, i've cherry-picked those two commits over into tip/x86/urgent.
 
 	Ingo
