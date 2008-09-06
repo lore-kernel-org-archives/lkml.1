@@ -1,70 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYIFQCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbYIFQDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYIFQCU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 12:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYIFQCL
+	id S1754164AbYIFQDQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 12:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYIFQDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 12:02:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35539 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbYIFQCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 12:02:10 -0400
-Date: Sat, 6 Sep 2008 18:01:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHSET 0/5] BUILD_BUG_ON: error on none-const expressions
-Message-ID: <20080906160137.GC5061@elte.hu>
-References: <48BBE77D.7070007@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48BBE77D.7070007@panasas.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 6 Sep 2008 12:03:00 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46489 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbYIFQC7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 12:02:59 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <9031244.1220716855172.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Sun, 7 Sep 2008 01:00:55 +0900 (JST)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Andi Kleen <andi@firstfloor.org>,
+       Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+In-Reply-To: <20080906143318.GA23621@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <20080906143318.GA23621@elte.hu>
+ <20080905215452.GF11692@us.ibm.com> <20080906000154.GC18288@one.firstfloor.org> <20080906153855.7260.E1E9C6FF@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----- Original Message -----
+>* Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+>
+>> I don't think its driver is almighty. IIRC, balloon driver can be 
+>> cause of fragmentation for 24-7 system.
+>> 
+>> In addition, I have heard that memory hotplug would be useful for 
+>> reducing of power consumption of DIMM.
+>> 
+>> I have to admit that memory hotplug has many issues, but I would like 
+>> to solve them step by step.
+>
+>What would be nice is to insert the information both during bootup and 
+>in /proc/meminfo and 'free' output that hot-removable memory segments 
+>are not generic free memory, it's currently a limited resource that 
+>might or might not be sufficient to serve a given workload.
+>
+>Perhaps even exclude it from 'total' memory reported by meminfo - to be 
+>on the safe side of user expectations. In terms of user-space memory it 
+>is already generic swappable memory but in terms of kernel-space 
+>allocations it is not.
+>
+I wonder why anyone doesn't talk about ZONE_MOVABLE...When I wrote memory
+hotplug, I assumed help of ZONE_MOVABLE and SPARSEMEM. It is shown in
+meminfo.(I think memory hotplug is useful only when ZONE_MOVABLE is used.)
 
-* Boaz Harrosh <bharrosh@panasas.com> wrote:
+Most of problems which Goto wrote are mainly about placement of memmap and 
+pgdat, zones. One example is that "when SPARSEMEM_VMEMMAP is enabled,
+memmap is not removed even when memory is removed. "
 
-> Submitted a patchset to fix BUILD_BUG_ON to no longer let through
-> none compile-time constant expressions. This was debated a few
-> times on LKML. The final solution is as proposed by Rusty Russell,
-> which produces all expected results in my tests.
-> [see: http://www.spinics.net/lists/kernel/msg772904.html]
-> 
-> [PATCH 1/5] debug, x86: move BUILD_BUG_ON() ARRAY_SIZE and __FUNCTION__
->   Ingo this is your patch. Please verify?
 
-yeah.
+>As i said it earlier in the thread, i certainly have no objections from 
+>the x86 maintenance side - nothing is worse than a generic kernel 
+>feature only available on certain less frequently used platforms. Memory 
+>hotplug has been available for some time in the MM and it's not really 
+>causing any maintenance trouble at the moment and it is not enabled by 
+>default either.
+>
+>Having said that, i have my doubts about its generic utility (the power 
+>saving aspects are likely not realizable - nobody really wants DIMMs to 
+>just sit there unused and the cost of dynamic migration is just 
+>horrendous) - but as long as it's opt-in there's no reason to limit the 
+>availability of an in-kernel feature artificially.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Nobody ? maybe just a trade-off problem in user side. 
+Even without DIMM hotplug or DIMM's power save mode, making a DIMM idle
+is of no use ? I think memory consumes much power when it used.
+Memory Hotplug and ZONE_MOVABLE can make some memory idle.
+(I'm sorry if my thinking is wrong.)
 
-> [PATCH 5/5] debug: BUILD_BUG_ON: error on none-const expressions
->   Finally after all call sites are fixed this can go in.
->   (Rusty this one is From: you)
+>
+>Removing those limitations of kernel-space allocations should indeed be 
+>done in baby steps - and whether it's worth turning such memory into 
+>completely generic kernel memory is an open question.
+>
+I think generic kernel space memory hotplug will never be available.
 
-v3 looks good to me.
+>But the fact that a piece of memory is not fully generic is no reason 
+>not to allow users to create special, capability-limited RAM resources 
+>like they can already do via hugetlbfs or ramfs, as long as the the 
+>capability limitations are advertised clearly.
+>
+Hmm, adding a feature like 
+ - offline some memory at boot.
+ - online-memory-as-hugeltb mode
+  
+is useful for generic pc users ?
 
-Andrew, are you picking this up? Looks like the perfect fit for -mm to 
-me. I can drop the previous version from -tip so that there's no 
-linux-next conflict.
-
-	Ingo
+Regards,
+-Kame
