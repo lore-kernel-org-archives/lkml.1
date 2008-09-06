@@ -1,139 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYIFIw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYIFI6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbYIFIw6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 04:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYIFIwf
+	id S1753201AbYIFI6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 04:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbYIFI6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 04:52:35 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:39018 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbYIFIwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 04:52:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=md2rWc9W4zI8AH2Es5CIBLsNYPulmil8vDhkVXuwdBkT7lzsg+C2zaMLzo7dm6mD+X
-         jrGGfAhFAOYLHP1D+2ElwNT1gnY2MAG8ymoqPBbaO7zFWtyNPaghGXKLVp6VH7DHfcJC
-         gzz9hLKzHPFW1Iq+wgs/SAT6SNk6wxGyrvbIc=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 2/2] x86: calling early_init_xxx in init_xxx
-Date: Sat,  6 Sep 2008 01:52:28 -0700
-Message-Id: <1220691148-5608-2-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
+	Sat, 6 Sep 2008 04:58:10 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:60930 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752133AbYIFI6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 04:58:08 -0400
+Date: Sat, 6 Sep 2008 10:57:57 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] mmc_block: use generic helper to print capacities
+Message-ID: <20080906105757.00badd4f@mjolnir.drzeus.cx>
+In-Reply-To: <1220648634.3331.57.camel@localhost.localdomain>
+References: <48B9546B.4010004@simon.arlott.org.uk>
+	<1220117091.3615.3.camel@localhost.localdomain>
+	<20080830174516.GD1239@parisc-linux.org>
+	<48B9B552.8060406@simon.arlott.org.uk>
+	<48B9B588.7060709@simon.arlott.org.uk>
+	<1220147947.3615.18.camel@localhost.localdomain>
+	<20080831025412.GJ1239@parisc-linux.org>
+	<1220195310.4021.4.camel@localhost.localdomain>
+	<1220195634.4021.9.camel@localhost.localdomain>
+	<20080831205448.5b23507d@mjolnir.drzeus.cx>
+	<1220645340.3331.55.camel@localhost.localdomain>
+	<20080905225209.29aace1b@mjolnir.drzeus.cx>
+	<1220648634.3331.57.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-27721-1220691485-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so
-1. could set some cap to ap
-2. restore some cap after memset in identify_cpu for boot cpu
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-esp for CONSTANT_TSC
+--=_freyr.drzeus.cx-27721-1220691485-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-before this patch:
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow rep_good nopl pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
+On Fri, 05 Sep 2008 16:03:54 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-after this patch:
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good nopl pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
+>=20
+> Oh ... your inline attached patch is actually whitespace broken (it has
+> spaces for tabs), which is why it doesn't apply.  Sorry, that's the
+> first thing I usually check, I just skipped it in your case.  Could you
+> resend it as an attachment?
+>=20
 
-constant_tsc is back...
+What the... It seems someone broke git-diff (or less). This one is
+properly undamaged:
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
----
- arch/x86/kernel/cpu/amd.c        |    7 ++-----
- arch/x86/kernel/cpu/amd_64.c     |    2 ++
- arch/x86/kernel/cpu/centaur_64.c |    2 ++
- arch/x86/kernel/cpu/common.c     |    7 ++++---
- arch/x86/kernel/cpu/intel_64.c   |    2 ++
- 5 files changed, 12 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/cpu/amd.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd.c
-@@ -26,11 +26,8 @@ __asm__(".align 4\nvide: ret");
- 
- static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
- {
--	if (cpuid_eax(0x80000000) >= 0x80000007) {
--		c->x86_power = cpuid_edx(0x80000007);
--		if (c->x86_power & (1<<8))
--			set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
--	}
-+	if (c->x86_power & (1<<8))
-+		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- 
- 	/*  Set MTRR capability flag if appropriate */
- 	if (c->x86_model == 13 || c->x86_model == 9 ||
-Index: linux-2.6/arch/x86/kernel/cpu/amd_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd_64.c
-@@ -140,6 +140,8 @@ static void __cpuinit init_amd(struct cp
- 	}
- #endif
- 
-+	early_init_amd(c);
+diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
+index 62a4c91..dad8edb 100644
+--- a/drivers/mmc/card/block.c
++++ b/drivers/mmc/card/block.c
+@@ -29,6 +29,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/mutex.h>
+ #include <linux/scatterlist.h>
++#include <linux/string_helpers.h>
+=20
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -496,6 +497,8 @@ static int mmc_blk_probe(struct mmc_card *card)
+ 	struct mmc_blk_data *md;
+ 	int err;
+=20
++	char cap_str[10];
 +
- 	/* Bit 31 in normal CPUID used for nonstandard 3DNow ID;
- 	   3DNow is IDd by bit 31 in extended CPUID (1*32+31) anyway */
- 	clear_cpu_cap(c, 0*32+31);
-Index: linux-2.6/arch/x86/kernel/cpu/centaur_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/centaur_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/centaur_64.c
-@@ -16,6 +16,8 @@ static void __cpuinit early_init_centaur
- 
- static void __cpuinit init_centaur(struct cpuinfo_x86 *c)
- {
-+	early_init_centaur(c);
-+
- 	if (c->x86 == 0x6 && c->x86_model >= 0xf) {
- 		c->x86_cache_alignment = c->x86_clflush_size * 2;
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -473,9 +473,6 @@ static void __cpuinit get_cpu_cap(struct
- 			c->x86_capability[2] = cpuid_edx(0x80860001);
- 	}
- 
--	if (c->extended_cpuid_level >= 0x80000007)
--		c->x86_power = cpuid_edx(0x80000007);
--
- 	if (c->extended_cpuid_level >= 0x80000008) {
- 		u32 eax = cpuid_eax(0x80000008);
- 
-@@ -483,6 +480,10 @@ static void __cpuinit get_cpu_cap(struct
- 		c->x86_phys_bits = eax & 0xff;
- 	}
- #endif
-+
-+	if (c->extended_cpuid_level >= 0x80000007)
-+		c->x86_power = cpuid_edx(0x80000007);
-+
- }
- /*
-  * Do minimum CPU detection early.
-Index: linux-2.6/arch/x86/kernel/cpu/intel_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/intel_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/intel_64.c
-@@ -54,6 +54,8 @@ static void __cpuinit srat_detect_node(v
- 
- static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- {
-+	early_init_intel(c);
-+
- 	init_intel_cacheinfo(c);
- 	if (c->cpuid_level > 9) {
- 		unsigned eax = cpuid_eax(10);
+ 	/*
+ 	 * Check that the card supports the command class(es) we need.
+ 	 */
+@@ -510,10 +513,11 @@ static int mmc_blk_probe(struct mmc_card *card)
+ 	if (err)
+ 		goto out;
+=20
+-	printk(KERN_INFO "%s: %s %s %lluKiB %s\n",
++	string_get_size(get_capacity(md->disk) << 9, STRING_UNITS_2,
++			cap_str, sizeof(cap_str));
++	printk(KERN_INFO "%s: %s %s %s %s\n",
+ 		md->disk->disk_name, mmc_card_id(card), mmc_card_name(card),
+-		(unsigned long long)(get_capacity(md->disk) >> 1),
+-		md->read_only ? "(ro)" : "");
++		cap_str, md->read_only ? "(ro)" : "");
+=20
+ 	mmc_set_drvdata(card, md);
+ 	add_disk(md->disk);
+
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.drzeus.cx-27721-1220691485-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkjCRhoACgkQ7b8eESbyJLhNSACfQqxCW+HmPS3abGvheXQku33X
+WRUAn1vc2CUPO3dBR5Ue/Z6aGWwWcdDX
+=B7IC
+-----END PGP SIGNATURE-----
+
+--=_freyr.drzeus.cx-27721-1220691485-0001-2--
