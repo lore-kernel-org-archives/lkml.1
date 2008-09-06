@@ -1,165 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYIFIwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbYIFIw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbYIFIwn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 04:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYIFIwe
+	id S1753772AbYIFIw6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 04:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYIFIwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 04:52:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:35306 "EHLO
+	Sat, 6 Sep 2008 04:52:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:39018 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbYIFIwd (ORCPT
+	with ESMTP id S1752150AbYIFIwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Sep 2008 04:52:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=r/manSeBcPjYHC6TNj8Jd2J8Ns8o41yiWstbNJoH5h4bdOl6ZzvcWdveg6ET8x6i1R
-         yzn7HO33SUKlHoU/HCT0Hcmo0MfZYfGW4MJZk9lq5SmrIJNj7CYCaJ7rrld8wX4Tg19k
-         VmiFFs0tF+UMWFFL8mqXU3ZS5HptZN9k3QRRo=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=md2rWc9W4zI8AH2Es5CIBLsNYPulmil8vDhkVXuwdBkT7lzsg+C2zaMLzo7dm6mD+X
+         jrGGfAhFAOYLHP1D+2ElwNT1gnY2MAG8ymoqPBbaO7zFWtyNPaghGXKLVp6VH7DHfcJC
+         gzz9hLKzHPFW1Iq+wgs/SAT6SNk6wxGyrvbIc=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 1/2] x86: remove duplicated get_mode_name calling
-Date: Sat,  6 Sep 2008 01:52:27 -0700
-Message-Id: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 2/2] x86: calling early_init_xxx in init_xxx
+Date: Sat,  6 Sep 2008 01:52:28 -0700
+Message-Id: <1220691148-5608-2-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
+In-Reply-To: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
+References: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+so
+1. could set some cap to ap
+2. restore some cap after memset in identify_cpu for boot cpu
+
+esp for CONSTANT_TSC
+
+before this patch:
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow rep_good nopl pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
+
+after this patch:
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good nopl pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
+
+constant_tsc is back...
+
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- arch/x86/kernel/cpu/amd.c       |    3 ---
- arch/x86/kernel/cpu/amd_64.c    |    3 +--
- arch/x86/kernel/cpu/centaur.c   |    1 -
- arch/x86/kernel/cpu/common.c    |    9 +++------
- arch/x86/kernel/cpu/cpu.h       |    1 -
- arch/x86/kernel/cpu/cyrix.c     |    1 -
- arch/x86/kernel/cpu/transmeta.c |    1 -
- 7 files changed, 4 insertions(+), 15 deletions(-)
+ arch/x86/kernel/cpu/amd.c        |    7 ++-----
+ arch/x86/kernel/cpu/amd_64.c     |    2 ++
+ arch/x86/kernel/cpu/centaur_64.c |    2 ++
+ arch/x86/kernel/cpu/common.c     |    7 ++++---
+ arch/x86/kernel/cpu/intel_64.c   |    2 ++
+ 5 files changed, 12 insertions(+), 8 deletions(-)
 
 Index: linux-2.6/arch/x86/kernel/cpu/amd.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
 +++ linux-2.6/arch/x86/kernel/cpu/amd.c
-@@ -42,7 +42,6 @@ static void __cpuinit init_amd(struct cp
+@@ -26,11 +26,8 @@ __asm__(".align 4\nvide: ret");
+ 
+ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
  {
- 	u32 l, h;
- 	int mbytes = num_physpages >> (20-PAGE_SHIFT);
--	int r;
+-	if (cpuid_eax(0x80000000) >= 0x80000007) {
+-		c->x86_power = cpuid_edx(0x80000007);
+-		if (c->x86_power & (1<<8))
+-			set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+-	}
++	if (c->x86_power & (1<<8))
++		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
  
- #ifdef CONFIG_SMP
- 	unsigned long long value;
-@@ -75,8 +74,6 @@ static void __cpuinit init_amd(struct cp
- 	 */
- 	clear_cpu_cap(c, 0*32+31);
- 
--	r = get_model_name(c);
--
- 	switch (c->x86) {
- 	case 4:
- 		/*
+ 	/*  Set MTRR capability flag if appropriate */
+ 	if (c->x86_model == 13 || c->x86_model == 9 ||
 Index: linux-2.6/arch/x86/kernel/cpu/amd_64.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/amd_64.c
 +++ linux-2.6/arch/x86/kernel/cpu/amd_64.c
-@@ -157,8 +157,7 @@ static void __cpuinit init_amd(struct cp
- 	if (c->x86 >= 6)
- 		set_cpu_cap(c, X86_FEATURE_FXSAVE_LEAK);
+@@ -140,6 +140,8 @@ static void __cpuinit init_amd(struct cp
+ 	}
+ #endif
  
--	level = get_model_name(c);
--	if (!level) {
-+	if (!c->x86_model_id[0]) {
- 		switch (c->x86) {
- 		case 0xf:
- 			/* Should distinguish Models here, but this is only
-Index: linux-2.6/arch/x86/kernel/cpu/centaur.c
++	early_init_amd(c);
++
+ 	/* Bit 31 in normal CPUID used for nonstandard 3DNow ID;
+ 	   3DNow is IDd by bit 31 in extended CPUID (1*32+31) anyway */
+ 	clear_cpu_cap(c, 0*32+31);
+Index: linux-2.6/arch/x86/kernel/cpu/centaur_64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/centaur.c
-+++ linux-2.6/arch/x86/kernel/cpu/centaur.c
-@@ -289,7 +289,6 @@ static void __cpuinit init_c3(struct cpu
- 	if (c->x86_model >= 6 && c->x86_model < 9)
- 		set_cpu_cap(c, X86_FEATURE_3DNOW);
+--- linux-2.6.orig/arch/x86/kernel/cpu/centaur_64.c
++++ linux-2.6/arch/x86/kernel/cpu/centaur_64.c
+@@ -16,6 +16,8 @@ static void __cpuinit early_init_centaur
  
--	get_model_name(c);
- 	display_cacheinfo(c);
- }
- 
+ static void __cpuinit init_centaur(struct cpuinfo_x86 *c)
+ {
++	early_init_centaur(c);
++
+ 	if (c->x86 == 0x6 && c->x86_model >= 0xf) {
+ 		c->x86_cache_alignment = c->x86_clflush_size * 2;
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
 Index: linux-2.6/arch/x86/kernel/cpu/common.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/common.c
 +++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -252,13 +252,13 @@ static struct cpu_dev __cpuinitdata defa
- 	.c_x86_vendor = X86_VENDOR_UNKNOWN,
- };
- 
--int __cpuinit get_model_name(struct cpuinfo_x86 *c)
-+static void __cpuinit get_model_name(struct cpuinfo_x86 *c)
- {
- 	unsigned int *v;
- 	char *p, *q;
- 
- 	if (c->extended_cpuid_level < 0x80000004)
--		return 0;
-+		return;
- 
- 	v = (unsigned int *) c->x86_model_id;
- 	cpuid(0x80000002, &v[0], &v[1], &v[2], &v[3]);
-@@ -277,8 +277,6 @@ int __cpuinit get_model_name(struct cpui
- 	     while (q <= &c->x86_model_id[48])
- 		  *q++ = '\0';	/* Zero-pad the rest */
+@@ -473,9 +473,6 @@ static void __cpuinit get_cpu_cap(struct
+ 			c->x86_capability[2] = cpuid_edx(0x80860001);
  	}
+ 
+-	if (c->extended_cpuid_level >= 0x80000007)
+-		c->x86_power = cpuid_edx(0x80000007);
 -
--	return 1;
- }
+ 	if (c->extended_cpuid_level >= 0x80000008) {
+ 		u32 eax = cpuid_eax(0x80000008);
  
- void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
-@@ -610,8 +608,7 @@ static void __cpuinit generic_identify(s
- #endif
+@@ -483,6 +480,10 @@ static void __cpuinit get_cpu_cap(struct
+ 		c->x86_phys_bits = eax & 0xff;
  	}
- 
--	if (c->extended_cpuid_level >= 0x80000004)
--		get_model_name(c); /* Default name */
-+	get_model_name(c); /* Default name */
- 
- 	init_scattered_cpuid_features(c);
- 	detect_nopl(c);
-Index: linux-2.6/arch/x86/kernel/cpu/cpu.h
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/cpu.h
-+++ linux-2.6/arch/x86/kernel/cpu/cpu.h
-@@ -31,7 +31,6 @@ struct cpu_dev {
- 
- extern struct cpu_dev *__x86_cpu_dev_start[], *__x86_cpu_dev_end[];
- 
--extern int get_model_name(struct cpuinfo_x86 *c);
- extern void display_cacheinfo(struct cpuinfo_x86 *c);
- 
  #endif
-Index: linux-2.6/arch/x86/kernel/cpu/cyrix.c
++
++	if (c->extended_cpuid_level >= 0x80000007)
++		c->x86_power = cpuid_edx(0x80000007);
++
+ }
+ /*
+  * Do minimum CPU detection early.
+Index: linux-2.6/arch/x86/kernel/cpu/intel_64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/cyrix.c
-+++ linux-2.6/arch/x86/kernel/cpu/cyrix.c
-@@ -301,7 +301,6 @@ static void __cpuinit init_cyrix(struct
- 			 */
- 			if ((0x30 <= dir1 && dir1 <= 0x6f) || (0x80 <= dir1 && dir1 <= 0x8f))
- 				geode_configure();
--			get_model_name(c);  /* get CPU marketing name */
- 			return;
- 		} else { /* MediaGX */
- 			Cx86_cb[2] = (dir0_lsn & 1) ? '3' : '4';
-Index: linux-2.6/arch/x86/kernel/cpu/transmeta.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/transmeta.c
-+++ linux-2.6/arch/x86/kernel/cpu/transmeta.c
-@@ -12,7 +12,6 @@ static void __cpuinit init_transmeta(str
- 	unsigned int cpu_rev, cpu_freq = 0, cpu_flags, new_cpu_rev;
- 	char cpu_info[65];
+--- linux-2.6.orig/arch/x86/kernel/cpu/intel_64.c
++++ linux-2.6/arch/x86/kernel/cpu/intel_64.c
+@@ -54,6 +54,8 @@ static void __cpuinit srat_detect_node(v
  
--	get_model_name(c);	/* Same as AMD/Cyrix */
- 	display_cacheinfo(c);
- 
- 	/* Print CMS and CPU revision */
+ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ {
++	early_init_intel(c);
++
+ 	init_intel_cacheinfo(c);
+ 	if (c->cpuid_level > 9) {
+ 		unsigned eax = cpuid_eax(10);
