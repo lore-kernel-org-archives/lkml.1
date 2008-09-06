@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbYIFFJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYIFFT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753583AbYIFFJt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 01:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbYIFFJL
+	id S1752649AbYIFFT2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 01:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbYIFFTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 01:09:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48099 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751461AbYIFFJI (ORCPT
+	Sat, 6 Sep 2008 01:19:20 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:56803 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbYIFFTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 01:09:08 -0400
-Message-Id: <20080906050906.111265558@goodmis.org>
-References: <20080906050602.409299112@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Sat, 06 Sep 2008 01:06:04 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/2] ftrace: fix unlocking of hash
-Content-Disposition: inline; filename=ftrace-ppc-dynamic-fix.patch
+	Sat, 6 Sep 2008 01:19:19 -0400
+Date: Sat, 06 Sep 2008 08:18:41 +0300 (EEST)
+Message-Id: <20080906.081841.03994201.Hiroshi.DOYU@nokia.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, tony@atomide.com
+Subject: Re: [PATCH] Add missing macro argument for devm_release_* family
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <20080905185254.78706060.akpm@linux-foundation.org>
+References: <1220662823-19106-1-git-send-email-Hiroshi.DOYU@nokia.com>
+	<20080905185254.78706060.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Sep 2008 05:18:43.0812 (UTC) FILETIME=[0800A240:01C90FE0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This must be brown paper bag week for Steven Rostedt!
+From: "ext Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Add missing macro argument for devm_release_* family
+Date: Fri, 5 Sep 2008 18:52:54 -0700
 
-While working on ftrace for PPC, I discovered that the hash locking done
-when CONFIG_FTRACE_MCOUNT_RECORD is not set, is totally incorrect.
+> On Sat,  6 Sep 2008 04:00:23 +0300 Hiroshi DOYU <Hiroshi.DOYU@nokia.com> wrote:
+> 
+> > From: ext Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+> > 
+> > Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+> > ---
+> >  include/linux/ioport.h |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+> > index 22d2115..c813c63 100644
+> > --- a/include/linux/ioport.h
+> > +++ b/include/linux/ioport.h
+> > @@ -158,9 +158,9 @@ extern struct resource * __devm_request_region(struct device *dev,
+> >  				struct resource *parent, resource_size_t start,
+> >  				resource_size_t n, const char *name);
+> >  
+> > -#define devm_release_region(start,n) \
+> > +#define devm_release_region(dev,start,n) \
+> >  	__devm_release_region(dev, &ioport_resource, (start), (n))
+> > -#define devm_release_mem_region(start,n) \
+> > +#define devm_release_mem_region(dev,start,n) \
+> >  	__devm_release_region(dev, &iomem_resource, (start), (n))
+> >  
+> >  extern void __devm_release_region(struct device *dev, struct resource *parent,
+> 
+> um, OK.
+> 
+> But none of these things appear to have any callers anywhere.  Why
+> don't we just delete it all?
 
-With a cut and paste error, I had the hash lock macro to lock for both
-hash_lock _and_ hash_unlock!
-
-This bug did not affect x86 since this bug was introduced when
-CONFIG_FTRACE_MCOUNT_RECORD was added to x86.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ftrace.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-tip.git/kernel/trace/ftrace.c
-===================================================================
---- linux-tip.git.orig/kernel/trace/ftrace.c	2008-09-05 21:53:46.000000000 -0700
-+++ linux-tip.git/kernel/trace/ftrace.c	2008-09-05 21:57:57.000000000 -0700
-@@ -170,7 +170,8 @@ static int __unregister_ftrace_function(
-  */
- static DEFINE_SPINLOCK(ftrace_hash_lock);
- #define ftrace_hash_lock(flags)	  spin_lock_irqsave(&ftrace_hash_lock, flags)
--#define ftrace_hash_unlock(flags) spin_lock_irqsave(&ftrace_hash_lock, flags)
-+#define ftrace_hash_unlock(flags) \
-+			spin_unlock_irqrestore(&ftrace_hash_lock, flags)
- #else
- /* This is protected via the ftrace_lock with MCOUNT_RECORD. */
- #define ftrace_hash_lock(flags)   do { (void)(flags); } while (0)
-
--- 
+Not sure for others, but at least, I am using this in my developing
+driver;)
