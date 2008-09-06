@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYIFMKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYIFMKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbYIFMKF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 08:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbYIFMJz
+	id S1754014AbYIFMKb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 08:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYIFMKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 08:09:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49980 "EHLO mx3.mail.elte.hu"
+	Sat, 6 Sep 2008 08:10:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50040 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbYIFMJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 08:09:55 -0400
-Date: Sat, 6 Sep 2008 14:09:39 +0200
+	id S1753696AbYIFMKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 08:10:07 -0400
+Date: Sat, 6 Sep 2008 14:09:54 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] x86: remove duplicated get_mode_name calling
-Message-ID: <20080906120937.GC30964@elte.hu>
-References: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
+Subject: Re: [PATCH 2/2] x86: calling early_init_xxx in init_xxx
+Message-ID: <20080906120954.GD30964@elte.hu>
+References: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com> <1220691148-5608-2-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1220691148-5608-1-git-send-email-yhlu.kernel@gmail.com>
+In-Reply-To: <1220691148-5608-2-git-send-email-yhlu.kernel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,17 +37,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> so
+> 1. could set some cap to ap
+> 2. restore some cap after memset in identify_cpu for boot cpu
 > 
-> ---
->  arch/x86/kernel/cpu/amd.c       |    3 ---
->  arch/x86/kernel/cpu/amd_64.c    |    3 +--
->  arch/x86/kernel/cpu/centaur.c   |    1 -
->  arch/x86/kernel/cpu/common.c    |    9 +++------
->  arch/x86/kernel/cpu/cpu.h       |    1 -
->  arch/x86/kernel/cpu/cyrix.c     |    1 -
->  arch/x86/kernel/cpu/transmeta.c |    1 -
->  7 files changed, 4 insertions(+), 15 deletions(-)
+> esp for CONSTANT_TSC
+> 
+> before this patch:
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow rep_good nopl pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
+> 
+> after this patch:
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm 3dnowext 3dnow constant_tsc rep_good nopl pni monitor cx16 lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs
+> 
+> constant_tsc is back...
 
 applied to tip/x86/unify-cpu-detect, thanks Yinghai.
 
