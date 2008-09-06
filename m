@@ -1,99 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbYIFQOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbYIFQSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbYIFQOo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 12:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYIFQOf
+	id S1753941AbYIFQSs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 12:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbYIFQSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 12:14:35 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:37931 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbYIFQOf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 12:14:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=edJPvWrha6lVLi0FC+IEgmv4pPIA4mXrzOS9Y+X8rnfDNlpB9nUNHM6MLAx8c4q+ST
-         fXz0gtkmej+7wppcGnJUp7px+iXvBuDFGPUkIrl2TDDd7NvDsgx+7+kfJjCfz25uU7d1
-         +Gqv/tbolxkkUm5aoFH1K8ub68ieDJTLVQALw=
-Message-ID: <86802c440809060914n31f34adal513273bb6dcbef6a@mail.gmail.com>
-Date: Sat, 6 Sep 2008 09:14:34 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [2.6.27] overlapping early reservations [was: early exception - lockdep related?]
-Cc: "H. Peter Anvin" <hpa@kernel.org>, "Peter Zijlstra" <peterz@infradead.org>,
-       "Luca Tettamanti" <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com
-In-Reply-To: <20080906134118.GD4910@elte.hu>
+	Sat, 6 Sep 2008 12:18:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46227 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751932AbYIFQSj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 12:18:39 -0400
+Date: Sat, 6 Sep 2008 18:17:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Andi Kleen <andi@firstfloor.org>,
+       Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
+Message-ID: <20080906161740.GB10238@elte.hu>
+References: <20080906143318.GA23621@elte.hu> <20080905215452.GF11692@us.ibm.com> <20080906000154.GC18288@one.firstfloor.org> <20080906153855.7260.E1E9C6FF@jp.fujitsu.com> <9031244.1220716855172.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <68676e00809051217h3da02a6bld4412b4a2ee3b728@mail.gmail.com>
-	 <1220642738.11202.21.camel@twins.programming.kicks-ass.net>
-	 <48C19415.9060108@kernel.org> <20080906134118.GD4910@elte.hu>
+In-Reply-To: <9031244.1220716855172.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 6, 2008 at 6:41 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * H. Peter Anvin <hpa@kernel.org> wrote:
->
->> Peter Zijlstra wrote:
->>> On Fri, 2008-09-05 at 21:17 +0200, Luca Tettamanti wrote:
->>>> On Thu, Sep 4, 2008 at 10:51 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
->>>>> On Thu, Sep 4, 2008 at 4:25 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->>>>>> Sadly your config just boots, albeit not to userspace due to missing
->>>>>> drivers.
->>>>> Yes, I managed to boot it with qemu... I tried kgdb - without luck -
->>>>> kernel dies too early.
->>>>> I also managed to get a stack trace :D
->>>>>
->>>>> http://img151.imageshack.us/my.php?image=tracedm1.jpg
->>>>>
->>>>> It seems that lockdep is an innocent bystander... the kernel died with
->>>>> panic() in __reserve_early, and then took another exception while
->>>>> printing the panic (I guess).
->>>>> Will add further debug stuff to see wtf is going on.
->>>> Hum, kernel says:
->>>>
->>>> http://img177.imageshack.us/my.php?image=overlappingus2.jpg
->>>>
->>>> Overlapping early reservations b98000-eff266 RAMDISK to 200000-d09cf7
->>>> TEXT DATA BSS
->>>>
->>>> It would appear that the initramfs is overlapping the kernel itself,
->>>> is the boot loader (LILO) doing something stupid?
->>>
->>> Suppose it is, lets ask hpa..
->>>
->>
->> It definitely looks like it.
->
-> yeah. Kernel is loaded at the standard 2MB physical, and goes up to
-> 13.6MB physical. That's a tad large at 11.6 MB but still valid.
->
-> ramdisk image goes from 11.6 MB to 14.9 MB - roughly standard size. That
-> overlaps 2 MB into the kernel image so we have to panic. LILO should
-> have loaded the ramdisk somewhere else. (or should have aborted the boot
-> if it cannot do that)
->
-> We could perhaps print a prominent warning, delay the boot for 5 seconds
-> or so via mdelay(5000) and simply not load the ramdisk if this happens?
-> The kernel is obviously still functional - and such a large vmlinuz
-> likely has all the built-in drivers to boot up to user-space - the lack
-> of the ramdisk does not necessarily hurt .
->
-wonder if lilo is fixing bzImage from 1M, and when it is calculating
-pos of ramdisk...base that
-later on-same-position uncompressing, put vmlinux from 2M...
 
-it seems kexec is puting initrd as high as possible, or could specify
-the ramdisk postion ..
+* kamezawa.hiroyu@jp.fujitsu.com <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-wonder if new lilo could help.
+> > Removing those limitations of kernel-space allocations should indeed 
+> > be done in baby steps - and whether it's worth turning such memory 
+> > into completely generic kernel memory is an open question.
+>
+> I think generic kernel space memory hotplug will never be available.
 
-YH
+yeah, most likely. (It's possible technically even on a native kernel - 
+just very expensive to various aspects of the kernel.)
+
+> > But the fact that a piece of memory is not fully generic is no 
+> > reason not to allow users to create special, capability-limited RAM 
+> > resources like they can already do via hugetlbfs or ramfs, as long 
+> > as the the capability limitations are advertised clearly.
+>
+> Hmm, adding a feature like
+>  - offline some memory at boot.
+>  - online-memory-as-hugeltb mode
+>   
+> is useful for generic pc users ?
+
+yeah - it's actually the way how hugetlb should be done. Plus expand 
+gbpages to hugetlbfs and hotplug memory on Barcelona CPUs and you can do 
+user-space apps that can run for a long time without any TLB misses. 
+_That_ might make sense to explore in practice. (i'm not holding my 
+breath though, TLB misses are _fast_ on the best x86 CPUs.)
+
+But we wont be able to make such experiments without having the 
+capability on x86. So i'd like to break the catch-22 by accepting all 
+this into arch/x86, it certainly is simple and makes some sense, it's 
+just that i'm not that convinced about it personally at the moment.
+
+So feel free to turn it all into a killer feature (make hugetlb backed 
+memory transparent to user-space, etc. etc.) that high-performance 
+computing users strive for and all that will change. Please send the 
+reshaped patches so we can move past the 'what if' discussion phase ;-)
+
+	Ingo
