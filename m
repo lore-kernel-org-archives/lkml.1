@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbYIFQm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbYIFQpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbYIFQm4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 12:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYIFQms
+	id S1754343AbYIFQpy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 12:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYIFQpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 12:42:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60540 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbYIFQms (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 12:42:48 -0400
-Date: Sat, 6 Sep 2008 09:42:48 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: nice and hyperthreading on atom
-Message-ID: <20080906094248.5930911a@infradead.org>
-In-Reply-To: <1220715811849@dmwebmail.dmwebmail.chezphil.org>
-References: <1220715811849@dmwebmail.dmwebmail.chezphil.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 6 Sep 2008 12:45:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51632 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751532AbYIFQpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 12:45:46 -0400
+Date: Sat, 6 Sep 2008 18:45:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: kill sys32_pause
+Message-ID: <20080906164535.GA4856@elte.hu>
+References: <20080901013924.GA7947@lst.de> <20080901161451.GA16121@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080901161451.GA16121@lst.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0928]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 06 Sep 2008 16:43:31 +0100
-"Phil Endecott" <phil_wueww_endecott@chezphil.org> wrote:
 
-> Dear Experts,
+* Christoph Hellwig <hch@lst.de> wrote:
+
+> It's an unused duplicate of the generic sys_pause.
 > 
-> I have an ASUS Eee with an Atom processor, which has hyperthreading 
-> enabled.  If I have two processes, one nice and the other normal,
-> they each get 50% of the CPU time.  Of course this is what you'd
-> expect if the scheduler didn't understand that the two virtual
-> processors are not really independent.  I'd like to fix it.
+> (now without the b0rked ia64 bits, sorry)
 > 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-but you cannot imfluence the cpu's scheduling of the instructions.
+applied to tip/x86/cleanups - thanks Christoph. I'm curious, how did you 
+find it, some automation - or old-fashioned code reading?
 
-As an OS one COULD decide to just not schedule the nice task at all,
-but then, especially on atom where HT has a high efficiency, your cpu
-is mostly idle ...
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
