@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbYIFXxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbYIFXx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbYIFXxK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 19:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbYIFXuq
+	id S1756375AbYIFXx3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 19:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbYIFXus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 19:50:46 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:59399 "EHLO relay.sgi.com"
+	Sat, 6 Sep 2008 19:50:48 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:59404 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753039AbYIFXuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753055AbYIFXuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Sep 2008 19:50:39 -0400
-Message-Id: <20080906235037.880702000@polaris-admin.engr.sgi.com>
+Message-Id: <20080906235038.148283000@polaris-admin.engr.sgi.com>
 References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 06 Sep 2008 16:50:43 -0700
+Date: Sat, 06 Sep 2008 16:50:45 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 Cc: davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
@@ -21,482 +21,711 @@ Cc: davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
        Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
        Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [RFC 07/13] sched: Reduce stack size requirements in kernel/sched.c
-Content-Disposition: inline; filename=stack-hogs-kernel_sched_c
+Subject: [RFC 09/13] genapic: reduce stack pressuge in io_apic.c step 1 temp cpumask_ts
+Content-Disposition: inline; filename=stack-hogs-io_apic_c-step-1-temp-cpumask_ts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Make the following changes to kernel/sched.c functions:
+  * Step 1 of cleaning up io_apic.c removes local cpumask_t variables
+    from the stack.
 
-    - use node_to_cpumask_ptr in place of node_to_cpumask
-    - use get_cpumask_var for temporary cpumask_t variables
-    - use alloc_cpumask_ptr where available
+  - Method 1: remove unnecessary "extra" cpumask variables.
 
-  * Remove special code for SCHED_CPUMASK_ALLOC and use CPUMASK_ALLOC
-    from linux/cpumask.h.
+  - Method 2: use for_each_online_cpu_mask_nr() to logically AND
+              the passed in mask with cpu_online_map, eliminating
+	      the need for a temp cpumask variable.
 
-  * The resultant stack savings are:
+  - Method 3: use get_cpumask_var variables where possible. The current
+    assignment of temp variables is:
+	
 
-    ====== Stack (-l 100)
+    /*
+     * Temporary cpumask variables
+     *
+     * (XXX - would be _MUCH_ better as a "stack" of temp cpumasks.)
+     *
+     * level 4:
+     *     irq_complete_move()
+     *     check_timer()
+     *     msi_compose_msg()
+     *     set_msi_irq_affinity()
+     *     ir_set_msi_irq_affinity()
+     *     dmar_msi_set_affinity()
+     *     set_ht_irq_affinity()
+     *     arch_setup_ht_irq()
+     *     setup_ioapic_dest()
+     *
+     * level 3:
+     *     set_ioapic_affinity_irq()
+     *     setup_IO_APIC_irq()
+     *     migrate_ioapic_irq()
+     *
+     * level 2:
+     *     create_irq_nr()
+     *
+     * level 1:
+     *     __assign_irq_vector()
+     *     setup_timer_IRQ0_pin()
+     */
 
-	1 - initial
-	2 - stack-hogs-kernel_sched_c
-	'.' is less than the limit(100)
+  * Addition of temp cpumask variables for the "target" of TARGET_CPUS
+    is in preparation of changing the TARGET_CPUS for x86_64.  I've
+    kept those changes here to document which routines get which temp
+    cpumask variables.
 
-       .1.    .2.    ..final..
-      2216  -1536 680   -69%  __build_sched_domains
-      1592  -1592   .  -100%  move_task_off_dead_cpu
-      1096  -1096   .  -100%  sched_balance_self
-      1032  -1032   .  -100%  sched_setaffinity
-       616   -616   .  -100%  rebalance_domains
-       552   -552   .  -100%  free_sched_groups
-       512   -512   .  -100%  cpu_to_allnodes_group
-      7616  -6936 680   -91%  Totals
-
+  * Total stack size savings are in the last step.
 
 Applies to linux-2.6.tip/master.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- kernel/sched.c |  151 ++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 81 insertions(+), 70 deletions(-)
+ arch/x86/kernel/io_apic.c |  268 ++++++++++++++++++++++++++++++----------------
+ 1 file changed, 175 insertions(+), 93 deletions(-)
 
---- linux-2.6.tip.orig/kernel/sched.c
-+++ linux-2.6.tip/kernel/sched.c
-@@ -70,6 +70,7 @@
+--- linux-2.6.tip.orig/arch/x86/kernel/io_apic.c
++++ linux-2.6.tip/arch/x86/kernel/io_apic.c
+@@ -41,6 +41,7 @@
+ #endif
  #include <linux/bootmem.h>
- #include <linux/debugfs.h>
- #include <linux/ctype.h>
+ #include <linux/dmar.h>
 +#include <linux/cpumask_ptr.h>
- #include <linux/ftrace.h>
- #include <trace/sched.h>
  
-@@ -117,6 +118,12 @@
-  */
- #define RUNTIME_INF	((u64)~0ULL)
+ #include <asm/idle.h>
+ #include <asm/io.h>
+@@ -93,6 +94,39 @@ int mp_bus_id_to_type[MAX_MP_BUSSES];
+ 
+ DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
  
 +/*
-+ * temp cpumask variables
++ * Temporary cpumask variables
++ *
++ * (XXX - would be _MUCH_ better as a "stack" of temp cpumasks.)
++ *
++ * level 4:
++ *     irq_complete_move()
++ *     check_timer()
++ *     msi_compose_msg()
++ *     set_msi_irq_affinity()
++ *     ir_set_msi_irq_affinity()
++ *     dmar_msi_set_affinity()
++ *     set_ht_irq_affinity()
++ *     arch_setup_ht_irq()
++ *     setup_ioapic_dest()
++ *
++ * level 3:
++ *     set_ioapic_affinity_irq()
++ *     setup_IO_APIC_irq()
++ *     migrate_ioapic_irq()
++ *
++ * level 2:
++ *     create_irq_nr()
++ *
++ * level 1:
++ *     __assign_irq_vector()
++ *     setup_timer_IRQ0_pin()
 + */
-+static DEFINE_PER_CPUMASK(temp_cpumask_1);
-+static DEFINE_PER_CPUMASK(temp_cpumask_2);
++static DEFINE_PER_CPUMASK(cpumask_irq_level_4);
++static DEFINE_PER_CPUMASK(cpumask_irq_level_3);
++static DEFINE_PER_CPUMASK(cpumask_irq_level_2);
++static DEFINE_PER_CPUMASK(cpumask_irq_level_1);
 +
- #ifdef CONFIG_SMP
- /*
-  * Divide a load by a sched group cpu_power : (load / sg->__cpu_power)
-@@ -2141,7 +2148,11 @@ static int sched_balance_self(int cpu, i
- {
- 	struct task_struct *t = current;
- 	struct sched_domain *tmp, *sd = NULL;
-+	cpumask_ptr span;
-+	cpumask_ptr tmpmask;
+ int skip_ioapic_setup;
  
-+	get_cpumask_var(span, temp_cpumask_1);
-+	get_cpumask_var(tmpmask, temp_cpumask_2);
- 	for_each_domain(cpu, tmp) {
- 		/*
- 		 * If power savings logic is enabled for a domain, stop there.
-@@ -2156,7 +2167,6 @@ static int sched_balance_self(int cpu, i
- 		update_shares(sd);
- 
- 	while (sd) {
--		cpumask_t span, tmpmask;
- 		struct sched_group *group;
- 		int new_cpu, weight;
- 
-@@ -2165,14 +2175,14 @@ static int sched_balance_self(int cpu, i
- 			continue;
- 		}
- 
--		span = sd->span;
-+		*span = sd->span;
- 		group = find_idlest_group(sd, t, cpu);
- 		if (!group) {
- 			sd = sd->child;
- 			continue;
- 		}
- 
--		new_cpu = find_idlest_cpu(group, t, cpu, &tmpmask);
-+		new_cpu = find_idlest_cpu(group, t, cpu, tmpmask);
- 		if (new_cpu == -1 || new_cpu == cpu) {
- 			/* Now try balancing at a lower domain level of cpu */
- 			sd = sd->child;
-@@ -2182,7 +2192,7 @@ static int sched_balance_self(int cpu, i
- 		/* Now try balancing at a lower domain level of new_cpu */
- 		cpu = new_cpu;
- 		sd = NULL;
--		weight = cpus_weight(span);
-+		weight = cpus_weight(*span);
- 		for_each_domain(cpu, tmp) {
- 			if (weight <= cpus_weight(tmp->span))
- 				break;
-@@ -2192,6 +2202,9 @@ static int sched_balance_self(int cpu, i
- 		/* while loop will break here if sd == NULL */
- 	}
- 
-+	put_cpumask_var(span, temp_cpumask_1);
-+	put_cpumask_var(tmpmask, temp_cpumask_2);
-+
- 	return cpu;
- }
- 
-@@ -3865,8 +3878,9 @@ static void rebalance_domains(int cpu, e
- 	unsigned long next_balance = jiffies + 60*HZ;
- 	int update_next_balance = 0;
- 	int need_serialize;
+ static int __init parse_noapic(char *str)
+@@ -551,19 +585,24 @@ static void set_ioapic_affinity_irq(unsi
+ 	struct irq_cfg *cfg;
+ 	unsigned long flags;
+ 	unsigned int dest;
 -	cpumask_t tmp;
 +	cpumask_ptr tmp;
+ 	struct irq_desc *desc;
  
-+	get_cpumask_var(tmp, temp_cpumask_1);
- 	for_each_domain(cpu, sd) {
- 		if (!(sd->flags & SD_LOAD_BALANCE))
- 			continue;
-@@ -3890,7 +3904,7 @@ static void rebalance_domains(int cpu, e
- 		}
+-	cpus_and(tmp, mask, cpu_online_map);
+-	if (cpus_empty(tmp))
++	get_cpumask_var(tmp, cpumask_irq_level_3);
++	cpus_and(*tmp, mask, cpu_online_map);
++	if (cpus_empty(*tmp)) {
++		put_cpumask_var(tmp, cpumask_irq_level_3);
+ 		return;
++	}
  
- 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
--			if (load_balance(cpu, rq, sd, idle, &balance, &tmp)) {
-+			if (load_balance(cpu, rq, sd, idle, &balance, tmp)) {
- 				/*
- 				 * We've pulled tasks over so either we're no
- 				 * longer idle, or one of our SMT siblings is
-@@ -3924,6 +3938,8 @@ out:
+ 	cfg = irq_cfg(irq);
+-	if (assign_irq_vector(irq, mask))
++	if (assign_irq_vector(irq, mask)) {
++		put_cpumask_var(tmp, cpumask_irq_level_3);
+ 		return;
++	}
+ 
+-	cpus_and(tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tmp, cfg->domain, mask);
++	dest = cpu_mask_to_apicid(*tmp);
+ 	/*
+ 	 * Only the high 8 bits are valid.
  	 */
- 	if (likely(update_next_balance))
- 		rq->next_balance = next_balance;
-+
-+	put_cpumask_var(tmp, temp_cpumask_1);
+@@ -574,6 +613,7 @@ static void set_ioapic_affinity_irq(unsi
+ 	__target_IO_APIC_irq(irq, dest, cfg->vector);
+ 	desc->affinity = mask;
+ 	spin_unlock_irqrestore(&ioapic_lock, flags);
++	put_cpumask_var(tmp, cpumask_irq_level_3);
+ }
+ #endif /* CONFIG_SMP */
+ 
+@@ -1206,7 +1246,7 @@ void unlock_vector_lock(void)
+ 	spin_unlock(&vector_lock);
  }
  
- /*
-@@ -5384,11 +5400,14 @@ out_unlock:
- 
- long sched_setaffinity(pid_t pid, const cpumask_t *in_mask)
+-static int __assign_irq_vector(int irq, cpumask_t mask)
++static int __assign_irq_vector(int irq, cpumask_t inmask)
  {
--	cpumask_t cpus_allowed;
--	cpumask_t new_mask = *in_mask;
-+	cpumask_ptr cpus_allowed;
-+	cpumask_ptr new_mask;
- 	struct task_struct *p;
- 	int retval;
+ 	/*
+ 	 * NOTE! The local APIC isn't very good at handling
+@@ -1223,37 +1263,37 @@ static int __assign_irq_vector(int irq, 
+ 	unsigned int old_vector;
+ 	int cpu;
+ 	struct irq_cfg *cfg;
++	cpumask_ptr tmpmask;
  
-+	get_cpumask_var(cpus_allowed, temp_cpumask_1);
-+	get_cpumask_var(new_mask, temp_cpumask_2);
-+	*new_mask = *in_mask;
- 	get_online_cpus();
- 	read_lock(&tasklist_lock);
+ 	cfg = irq_cfg(irq);
+-
+-	/* Only try and allocate irqs on cpus that are present */
+-	cpus_and(mask, mask, cpu_online_map);
+-
+ 	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
+ 		return -EBUSY;
  
-@@ -5416,24 +5435,26 @@ long sched_setaffinity(pid_t pid, const 
- 	if (retval)
- 		goto out_unlock;
- 
--	cpuset_cpus_allowed(p, &cpus_allowed);
--	cpus_and(new_mask, new_mask, cpus_allowed);
-+	cpuset_cpus_allowed(p, cpus_allowed);
-+	cpus_and(*new_mask, *new_mask, *cpus_allowed);
-  again:
--	retval = set_cpus_allowed_ptr(p, &new_mask);
-+	retval = set_cpus_allowed_ptr(p, new_mask);
- 
- 	if (!retval) {
--		cpuset_cpus_allowed(p, &cpus_allowed);
--		if (!cpus_subset(new_mask, cpus_allowed)) {
-+		cpuset_cpus_allowed(p, cpus_allowed);
-+		if (!cpus_subset(*new_mask, *cpus_allowed)) {
- 			/*
- 			 * We must have raced with a concurrent cpuset
- 			 * update. Just reset the cpus_allowed to the
- 			 * cpuset's cpus_allowed
- 			 */
--			new_mask = cpus_allowed;
-+			*new_mask = *cpus_allowed;
- 			goto again;
- 		}
++	/* Only try and allocate irqs on cpus that are present */
++	get_cpumask_var(tmpmask, cpumask_irq_level_1);
++
+ 	old_vector = cfg->vector;
+ 	if (old_vector) {
+-		cpumask_t tmp;
+-		cpus_and(tmp, cfg->domain, mask);
+-		if (!cpus_empty(tmp))
++		cpus_and(*tmpmask, inmask, cpu_online_map);
++		cpus_and(*tmpmask, cfg->domain, *tmpmask);
++		if (!cpus_empty(*tmpmask)) {
++			put_cpumask_var(tmpmask, cpumask_irq_level_1);
+ 			return 0;
++		}
  	}
- out_unlock:
-+	put_cpumask_var(cpus_allowed, temp_cpumask_1);
-+	put_cpumask_var(new_mask, temp_cpumask_2);
- 	put_task_struct(p);
- 	put_online_cpus();
- 	return retval;
-@@ -6107,15 +6128,19 @@ static int __migrate_task_irq(struct tas
- static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+ 
+-	for_each_cpu_mask_nr(cpu, mask) {
+-		cpumask_t domain, new_mask;
++	for_each_online_cpu_mask_nr(cpu, inmask) {
+ 		int new_cpu;
+ 		int vector, offset;
+ 
+-		domain = vector_allocation_domain(cpu);
+-		cpus_and(new_mask, domain, cpu_online_map);
++		*tmpmask = vector_allocation_domain(cpu);
+ 
+ 		vector = current_vector;
+ 		offset = current_offset;
+ next:
+ 		vector += 8;
+ 		if (vector >= first_system_vector) {
+-			/* If we run out of vectors on large boxen, must share them. */
++			/* If no more vectors on large boxen, must share them */
+ 			offset = (offset + 1) % 8;
+ 			vector = FIRST_DEVICE_VECTOR + offset;
+ 		}
+@@ -1266,7 +1306,7 @@ next:
+ 		if (vector == SYSCALL_VECTOR)
+ 			goto next;
+ #endif
+-		for_each_cpu_mask_nr(new_cpu, new_mask)
++		for_each_online_cpu_mask_nr(new_cpu, *tmpmask)
+ 			if (per_cpu(vector_irq, new_cpu)[vector] != -1)
+ 				goto next;
+ 		/* Found one! */
+@@ -1276,12 +1316,14 @@ next:
+ 			cfg->move_in_progress = 1;
+ 			cfg->old_domain = cfg->domain;
+ 		}
+-		for_each_cpu_mask_nr(new_cpu, new_mask)
++		for_each_online_cpu_mask_nr(new_cpu, *tmpmask)
+ 			per_cpu(vector_irq, new_cpu)[vector] = irq;
+ 		cfg->vector = vector;
+-		cfg->domain = domain;
++		cfg->domain = *tmpmask;
++		put_cpumask_var(tmpmask, cpumask_irq_level_1);
+ 		return 0;
+ 	}
++	put_cpumask_var(tmpmask, cpumask_irq_level_1);
+ 	return -ENOSPC;
+ }
+ 
+@@ -1299,15 +1341,13 @@ static int assign_irq_vector(int irq, cp
+ static void __clear_irq_vector(int irq)
  {
- 	unsigned long flags;
+ 	struct irq_cfg *cfg;
+-	cpumask_t mask;
+ 	int cpu, vector;
+ 
+ 	cfg = irq_cfg(irq);
+ 	BUG_ON(!cfg->vector);
+ 
+ 	vector = cfg->vector;
+-	cpus_and(mask, cfg->domain, cpu_online_map);
+-	for_each_cpu_mask_nr(cpu, mask)
++	for_each_online_cpu_mask_nr(cpu, cfg->domain)
+ 		per_cpu(vector_irq, cpu)[vector] = -1;
+ 
+ 	cfg->vector = 0;
+@@ -1478,18 +1518,19 @@ static void setup_IO_APIC_irq(int apic, 
+ {
+ 	struct irq_cfg *cfg;
+ 	struct IO_APIC_route_entry entry;
 -	cpumask_t mask;
 +	cpumask_ptr mask;
-+	cpumask_ptr cpus_allowed;
- 	struct rq *rq;
- 	int dest_cpu;
  
-+	get_cpumask_var(mask, temp_cpumask_1);
-+	get_cpumask_var(cpus_allowed, temp_cpumask_2);
- 	do {
- 		/* On same node? */
--		mask = node_to_cpumask(cpu_to_node(dead_cpu));
--		cpus_and(mask, mask, p->cpus_allowed);
--		dest_cpu = any_online_cpu(mask);
-+		node_to_cpumask_ptr(pnodemask, cpu_to_node(dead_cpu));
-+		*mask = *pnodemask;
-+		cpus_and(*mask, *mask, p->cpus_allowed);
-+		dest_cpu = any_online_cpu(*mask);
- 
- 		/* On any allowed CPU? */
- 		if (dest_cpu >= nr_cpu_ids)
-@@ -6123,9 +6148,8 @@ static void move_task_off_dead_cpu(int d
- 
- 		/* No more Mr. Nice Guy. */
- 		if (dest_cpu >= nr_cpu_ids) {
--			cpumask_t cpus_allowed;
-+			cpuset_cpus_allowed_locked(p, cpus_allowed);
- 
--			cpuset_cpus_allowed_locked(p, &cpus_allowed);
- 			/*
- 			 * Try to stay on the same cpuset, where the
- 			 * current cpuset may be a subset of all cpus.
-@@ -6134,7 +6158,7 @@ static void move_task_off_dead_cpu(int d
- 			 * called within calls to cpuset_lock/cpuset_unlock.
- 			 */
- 			rq = task_rq_lock(p, &flags);
--			p->cpus_allowed = cpus_allowed;
-+			p->cpus_allowed = *cpus_allowed;
- 			dest_cpu = any_online_cpu(p->cpus_allowed);
- 			task_rq_unlock(rq, &flags);
- 
-@@ -6150,6 +6174,9 @@ static void move_task_off_dead_cpu(int d
- 			}
- 		}
- 	} while (!__migrate_task_irq(p, dead_cpu, dest_cpu));
-+
-+	put_cpumask_var(mask, temp_cpumask_1);
-+	put_cpumask_var(cpus_allowed, temp_cpumask_2);
- }
- 
- /*
-@@ -6710,7 +6737,7 @@ static int sched_domain_debug_one(struct
- 
- static void sched_domain_debug(struct sched_domain *sd, int cpu)
- {
--	cpumask_t *groupmask;
-+	cpumask_ptr groupmask;
- 	int level = 0;
- 
- 	if (!sd) {
-@@ -6720,7 +6747,7 @@ static void sched_domain_debug(struct sc
- 
- 	printk(KERN_DEBUG "CPU%d attaching sched-domain:\n", cpu);
- 
--	groupmask = kmalloc(sizeof(cpumask_t), GFP_KERNEL);
-+	alloc_cpumask_ptr(&groupmask);
- 	if (!groupmask) {
- 		printk(KERN_DEBUG "Cannot load-balance (out of memory)\n");
+ 	if (!IO_APIC_IRQ(irq))
  		return;
-@@ -6734,7 +6761,7 @@ static void sched_domain_debug(struct sc
- 		if (!sd)
- 			break;
+ 
+ 	cfg = irq_cfg(irq);
+ 
+-	mask = TARGET_CPUS;
+-	if (assign_irq_vector(irq, mask))
+-		return;
++	get_cpumask_var(mask, cpumask_irq_level_3);
++	*mask = TARGET_CPUS;
++	if (assign_irq_vector(irq, *mask))
++		goto out;
+ 
+-	cpus_and(mask, cfg->domain, mask);
++	cpus_and(*mask, cfg->domain, *mask);
+ 
+ 	apic_printk(APIC_VERBOSE,KERN_DEBUG
+ 		    "IOAPIC[%d]: Set routing entry (%d-%d -> 0x%x -> "
+@@ -1499,12 +1540,12 @@ static void setup_IO_APIC_irq(int apic, 
+ 
+ 
+ 	if (setup_ioapic_entry(mp_ioapics[apic].mp_apicid, irq, &entry,
+-			       cpu_mask_to_apicid(mask), trigger, polarity,
++			       cpu_mask_to_apicid(*mask), trigger, polarity,
+ 			       cfg->vector)) {
+ 		printk("Failed to setup ioapic entry for ioapic  %d, pin %d\n",
+ 		       mp_ioapics[apic].mp_apicid, pin);
+ 		__clear_irq_vector(irq);
+-		return;
++		goto out;
  	}
--	kfree(groupmask);
-+	free_cpumask_ptr(groupmask);
+ 
+ 	ioapic_register_intr(irq, trigger);
+@@ -1512,6 +1553,8 @@ static void setup_IO_APIC_irq(int apic, 
+ 		disable_8259A_irq(irq);
+ 
+ 	ioapic_write_entry(apic, pin, entry);
++out:
++	put_cpumask_var(mask, cpumask_irq_level_3);
  }
- #else /* !CONFIG_SCHED_DEBUG */
- # define sched_domain_debug(sd, cpu) do { } while (0)
-@@ -7120,9 +7147,9 @@ static int cpu_to_allnodes_group(int cpu
- 				 struct sched_group **sg, cpumask_t *nodemask)
+ 
+ static void __init setup_IO_APIC_irqs(void)
+@@ -1560,6 +1603,7 @@ static void __init setup_timer_IRQ0_pin(
+ 					int vector)
  {
- 	int group;
-+	node_to_cpumask_ptr(pnodemask, cpu_to_node(cpu));
+ 	struct IO_APIC_route_entry entry;
++	cpumask_ptr tgt_cpus;
  
--	*nodemask = node_to_cpumask(cpu_to_node(cpu));
--	cpus_and(*nodemask, *nodemask, *cpu_map);
-+	cpus_and(*nodemask, *pnodemask, *cpu_map);
- 	group = first_cpu(*nodemask);
- 
- 	if (sg)
-@@ -7172,9 +7199,9 @@ static void free_sched_groups(const cpum
- 
- 		for (i = 0; i < nr_node_ids; i++) {
- 			struct sched_group *oldsg, *sg = sched_group_nodes[i];
-+			node_to_cpumask_ptr(pnodemask, i);
- 
--			*nodemask = node_to_cpumask(i);
--			cpus_and(*nodemask, *nodemask, *cpu_map);
-+			cpus_and(*nodemask, *pnodemask, *cpu_map);
- 			if (cpus_empty(*nodemask))
- 				continue;
- 
-@@ -7297,19 +7324,6 @@ struct allmasks {
+ #ifdef CONFIG_INTR_REMAP
+ 	if (intr_remapping_enabled)
+@@ -1567,6 +1611,8 @@ static void __init setup_timer_IRQ0_pin(
  #endif
- };
  
--#if	NR_CPUS > 128
--#define	SCHED_CPUMASK_ALLOC		1
--#define	SCHED_CPUMASK_FREE(v)		kfree(v)
--#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
--#else
--#define	SCHED_CPUMASK_ALLOC		0
--#define	SCHED_CPUMASK_FREE(v)
--#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
--#endif
--
--#define	SCHED_CPUMASK_VAR(v, a) 	cpumask_t *v = (cpumask_t *) \
--			((unsigned long)(a) + offsetof(struct allmasks, v))
--
- static int default_relax_domain_level = -1;
+ 	memset(&entry, 0, sizeof(entry));
++	get_cpumask_var(tgt_cpus, cpumask_irq_level_1);
++	*tgt_cpus = TARGET_CPUS;
  
- static int __init setup_relax_domain_level(char *str)
-@@ -7354,8 +7368,9 @@ static int __build_sched_domains(const c
- {
- 	int i;
- 	struct root_domain *rd;
--	SCHED_CPUMASK_DECLARE(allmasks);
--	cpumask_t *tmpmask;
-+	CPUMASK_ALLOC(allmasks);
-+	CPUMASK_PTR(tmpmask, allmasks);
-+
- #ifdef CONFIG_NUMA
- 	struct sched_group **sched_group_nodes = NULL;
- 	int sd_allnodes = 0;
-@@ -7367,6 +7382,7 @@ static int __build_sched_domains(const c
- 				    GFP_KERNEL);
- 	if (!sched_group_nodes) {
- 		printk(KERN_WARNING "Can not alloc sched group node list\n");
-+		CPUMASK_FREE(allmasks);
- 		return -ENOMEM;
- 	}
- #endif
-@@ -7377,13 +7393,11 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_NUMA
- 		kfree(sched_group_nodes);
- #endif
-+		CPUMASK_FREE(allmasks);
- 		return -ENOMEM;
- 	}
- 
--#if SCHED_CPUMASK_ALLOC
--	/* get space for all scratch cpumask variables */
--	allmasks = kmalloc(sizeof(*allmasks), GFP_KERNEL);
--	if (!allmasks) {
-+	if (allmasks == NULL) {
- 		printk(KERN_WARNING "Cannot alloc cpumask array\n");
- 		kfree(rd);
- #ifdef CONFIG_NUMA
-@@ -7391,9 +7405,6 @@ static int __build_sched_domains(const c
- #endif
- 		return -ENOMEM;
- 	}
--#endif
--	tmpmask = (cpumask_t *)allmasks;
--
- 
- #ifdef CONFIG_NUMA
- 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
-@@ -7404,10 +7415,10 @@ static int __build_sched_domains(const c
+ 	/*
+ 	 * We use logical delivery to get the timer IRQ
+@@ -1574,7 +1620,7 @@ static void __init setup_timer_IRQ0_pin(
  	 */
- 	for_each_cpu_mask_nr(i, *cpu_map) {
- 		struct sched_domain *sd = NULL, *p;
--		SCHED_CPUMASK_VAR(nodemask, allmasks);
-+		CPUMASK_PTR(nodemask, allmasks);
-+		node_to_cpumask_ptr(pnodemask, cpu_to_node(i));
+ 	entry.dest_mode = INT_DEST_MODE;
+ 	entry.mask = 1;					/* mask IRQ now */
+-	entry.dest = cpu_mask_to_apicid(TARGET_CPUS);
++	entry.dest = cpu_mask_to_apicid(*tgt_cpus);
+ 	entry.delivery_mode = INT_DELIVERY_MODE;
+ 	entry.polarity = 0;
+ 	entry.trigger = 0;
+@@ -1590,6 +1636,7 @@ static void __init setup_timer_IRQ0_pin(
+ 	 * Add it to the IO-APIC irq-routing table:
+ 	 */
+ 	ioapic_write_entry(apic, pin, entry);
++	put_cpumask_var(tgt_cpus, cpumask_irq_level_1);
+ }
  
--		*nodemask = node_to_cpumask(cpu_to_node(i));
--		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		cpus_and(*nodemask, *pnodemask, *cpu_map);
  
- #ifdef CONFIG_NUMA
- 		if (cpus_weight(*cpu_map) >
-@@ -7470,8 +7481,8 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_SCHED_SMT
- 	/* Set up CPU (sibling) groups */
- 	for_each_cpu_mask_nr(i, *cpu_map) {
--		SCHED_CPUMASK_VAR(this_sibling_map, allmasks);
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(this_sibling_map, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
+@@ -2250,25 +2297,26 @@ static void migrate_ioapic_irq(int irq, 
+ {
+ 	struct irq_cfg *cfg;
+ 	struct irq_desc *desc;
+-	cpumask_t tmp, cleanup_mask;
++	cpumask_ptr tmpmask;
+ 	struct irte irte;
+ 	int modify_ioapic_rte;
+ 	unsigned int dest;
+ 	unsigned long flags;
  
- 		*this_sibling_map = per_cpu(cpu_sibling_map, i);
- 		cpus_and(*this_sibling_map, *this_sibling_map, *cpu_map);
-@@ -7487,8 +7498,8 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_SCHED_MC
- 	/* Set up multi-core groups */
- 	for_each_cpu_mask_nr(i, *cpu_map) {
--		SCHED_CPUMASK_VAR(this_core_map, allmasks);
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(this_core_map, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
+-	cpus_and(tmp, mask, cpu_online_map);
+-	if (cpus_empty(tmp))
+-		return;
++	get_cpumask_var(tmpmask, cpumask_irq_level_3);
++	cpus_and(*tmpmask, mask, cpu_online_map);
++	if (cpus_empty(*tmpmask))
++		goto out;
  
- 		*this_core_map = cpu_coregroup_map(i);
- 		cpus_and(*this_core_map, *this_core_map, *cpu_map);
-@@ -7503,11 +7514,11 @@ static int __build_sched_domains(const c
+ 	if (get_irte(irq, &irte))
+-		return;
++		goto out;
  
- 	/* Set up physical groups */
- 	for (i = 0; i < nr_node_ids; i++) {
--		SCHED_CPUMASK_VAR(nodemask, allmasks);
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(nodemask, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
-+		node_to_cpumask_ptr(pnodemask, i);
+ 	if (assign_irq_vector(irq, mask))
+-		return;
++		goto out;
  
--		*nodemask = node_to_cpumask(i);
--		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		cpus_and(*nodemask, *pnodemask, *cpu_map);
- 		if (cpus_empty(*nodemask))
- 			continue;
+ 	cfg = irq_cfg(irq);
+-	cpus_and(tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tmpmask, cfg->domain, mask);
++	dest = cpu_mask_to_apicid(*tmpmask);
  
-@@ -7519,7 +7530,7 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_NUMA
- 	/* Set up node groups */
- 	if (sd_allnodes) {
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
+ 	desc = irq_to_desc(irq);
+ 	modify_ioapic_rte = desc->status & IRQ_LEVEL;
+@@ -2287,13 +2335,15 @@ static void migrate_ioapic_irq(int irq, 
+ 	modify_irte(irq, &irte);
  
- 		init_sched_build_groups(cpu_map, cpu_map,
- 					&cpu_to_allnodes_group,
-@@ -7529,15 +7540,15 @@ static int __build_sched_domains(const c
- 	for (i = 0; i < nr_node_ids; i++) {
- 		/* Set up node groups */
- 		struct sched_group *sg, *prev;
--		SCHED_CPUMASK_VAR(nodemask, allmasks);
--		SCHED_CPUMASK_VAR(domainspan, allmasks);
--		SCHED_CPUMASK_VAR(covered, allmasks);
-+		CPUMASK_PTR(nodemask, allmasks);
-+		CPUMASK_PTR(domainspan, allmasks);
-+		CPUMASK_PTR(covered, allmasks);
-+		node_to_cpumask_ptr(pnodemask, i);
- 		int j;
- 
--		*nodemask = node_to_cpumask(i);
- 		cpus_clear(*covered);
- 
--		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		cpus_and(*nodemask, *pnodemask, *cpu_map);
- 		if (cpus_empty(*nodemask)) {
- 			sched_group_nodes[i] = NULL;
- 			continue;
-@@ -7566,7 +7577,7 @@ static int __build_sched_domains(const c
- 		prev = sg;
- 
- 		for (j = 0; j < nr_node_ids; j++) {
--			SCHED_CPUMASK_VAR(notcovered, allmasks);
-+			CPUMASK_PTR(notcovered, allmasks);
- 			int n = (i + j) % nr_node_ids;
- 			node_to_cpumask_ptr(pnodemask, n);
- 
-@@ -7645,13 +7656,13 @@ static int __build_sched_domains(const c
- 		cpu_attach_domain(sd, rd, i);
+ 	if (cfg->move_in_progress) {
+-		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
+-		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
+-		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
++		cpus_and(*tmpmask, cfg->old_domain, cpu_online_map);
++		cfg->move_cleanup_count = cpus_weight(*tmpmask);
++		send_IPI_mask(*tmpmask, IRQ_MOVE_CLEANUP_VECTOR);
+ 		cfg->move_in_progress = 0;
  	}
  
--	SCHED_CPUMASK_FREE((void *)allmasks);
-+	CPUMASK_FREE(allmasks);
- 	return 0;
- 
- #ifdef CONFIG_NUMA
- error:
- 	free_sched_groups(cpu_map, tmpmask);
--	SCHED_CPUMASK_FREE((void *)allmasks);
-+	CPUMASK_FREE(allmasks);
- 	return -ENOMEM;
- #endif
+ 	desc->affinity = mask;
++out:
++	put_cpumask_var(tmpmask, cpumask_irq_level_3);
  }
+ 
+ static int migrate_irq_remapped_level(int irq)
+@@ -2415,11 +2465,13 @@ static void irq_complete_move(unsigned i
+ 	vector = ~get_irq_regs()->orig_ax;
+ 	me = smp_processor_id();
+ 	if ((vector == cfg->vector) && cpu_isset(me, cfg->domain)) {
+-		cpumask_t cleanup_mask;
++		cpumask_ptr cleanup_mask;
+ 
+-		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
+-		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
+-		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
++		get_cpumask_var(cleanup_mask, cpumask_irq_level_4);
++		cpus_and(*cleanup_mask, cfg->old_domain, cpu_online_map);
++		cfg->move_cleanup_count = cpus_weight(*cleanup_mask);
++		send_IPI_mask(*cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
++		put_cpumask_var(cleanup_mask, cpumask_irq_level_4);
+ 		cfg->move_in_progress = 0;
+ 	}
+ }
+@@ -2749,6 +2801,7 @@ static inline void __init check_timer(vo
+ 	unsigned long flags;
+ 	unsigned int ver;
+ 	int no_pin1 = 0;
++	cpumask_ptr tgt_cpus;
+ 
+ 	local_irq_save(flags);
+ 
+@@ -2759,7 +2812,10 @@ static inline void __init check_timer(vo
+ 	 * get/set the timer IRQ vector:
+ 	 */
+ 	disable_8259A_irq(0);
+-	assign_irq_vector(0, TARGET_CPUS);
++	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
++	*tgt_cpus = TARGET_CPUS;
++	assign_irq_vector(0, *tgt_cpus);
++	put_cpumask_var(tgt_cpus, cpumask_irq_level_4);
+ 
+ 	/*
+ 	 * As IRQ0 is to be enabled in the 8259A, the virtual
+@@ -3059,12 +3115,15 @@ unsigned int create_irq_nr(unsigned int 
+ 	unsigned int new;
+ 	unsigned long flags;
+ 	struct irq_cfg *cfg_new;
++	cpumask_ptr tgt_cpus;
+ 
+ #ifndef CONFIG_HAVE_SPARSE_IRQ
+ 	irq_want = nr_irqs - 1;
+ #endif
+ 
+ 	irq = 0;
++	get_cpumask_var(tgt_cpus, cpumask_irq_level_2);
++	*tgt_cpus = TARGET_CPUS;
+ 	spin_lock_irqsave(&vector_lock, flags);
+ 	for (new = irq_want; new > 0; new--) {
+ 		if (platform_legacy_irq(new))
+@@ -3075,11 +3134,12 @@ unsigned int create_irq_nr(unsigned int 
+ 		/* check if need to create one */
+ 		if (!cfg_new)
+ 			cfg_new = irq_cfg_alloc(new);
+-		if (__assign_irq_vector(new, TARGET_CPUS) == 0)
++		if (__assign_irq_vector(new, *tgt_cpus) == 0)
+ 			irq = new;
+ 		break;
+ 	}
+ 	spin_unlock_irqrestore(&vector_lock, flags);
++	put_cpumask_var(tgt_cpus, cpumask_irq_level_2);
+ 
+ 	if (irq > 0) {
+ 		dynamic_irq_init(irq);
+@@ -3122,16 +3182,18 @@ static int msi_compose_msg(struct pci_de
+ 	struct irq_cfg *cfg;
+ 	int err;
+ 	unsigned dest;
+-	cpumask_t tmp;
++	cpumask_ptr tgt_cpus;
+ 
+-	tmp = TARGET_CPUS;
+-	err = assign_irq_vector(irq, tmp);
++	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
++	*tgt_cpus = TARGET_CPUS;
++	err = assign_irq_vector(irq, *tgt_cpus);
+ 	if (err)
+ 		return err;
+ 
+ 	cfg = irq_cfg(irq);
+-	cpus_and(tmp, cfg->domain, tmp);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tgt_cpus, cfg->domain, *tgt_cpus);
++	dest = cpu_mask_to_apicid(*tgt_cpus);
++	put_cpumask_var(tgt_cpus, cpumask_irq_level_4);
+ 
+ #ifdef CONFIG_INTR_REMAP
+ 	if (irq_remapped(irq)) {
+@@ -3190,19 +3252,20 @@ static void set_msi_irq_affinity(unsigne
+ 	struct irq_cfg *cfg;
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+-	cpumask_t tmp;
++	cpumask_ptr tmp;
+ 	struct irq_desc *desc;
+ 
+-	cpus_and(tmp, mask, cpu_online_map);
+-	if (cpus_empty(tmp))
+-		return;
++	get_cpumask_var(tmp, cpumask_irq_level_4);
++	cpus_and(*tmp, mask, cpu_online_map);
++	if (cpus_empty(*tmp))
++		goto out;
+ 
+ 	if (assign_irq_vector(irq, mask))
+-		return;
++		goto out;
+ 
+ 	cfg = irq_cfg(irq);
+-	cpus_and(tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tmp, cfg->domain, mask);
++	dest = cpu_mask_to_apicid(*tmp);
+ 
+ 	read_msi_msg(irq, &msg);
+ 
+@@ -3214,6 +3277,8 @@ static void set_msi_irq_affinity(unsigne
+ 	write_msi_msg(irq, &msg);
+ 	desc = irq_to_desc(irq);
+ 	desc->affinity = mask;
++out:
++	put_cpumask_var(tmp, cpumask_irq_level_4);
+ }
+ 
+ #ifdef CONFIG_INTR_REMAP
+@@ -3225,12 +3290,13 @@ static void ir_set_msi_irq_affinity(unsi
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned int dest;
+-	cpumask_t tmp, cleanup_mask;
++	cpumask_ptr tmp;
+ 	struct irte irte;
+ 	struct irq_desc *desc;
+ 
+-	cpus_and(tmp, mask, cpu_online_map);
+-	if (cpus_empty(tmp))
++	get_cpumask_var(tmp, cpumask_irq_level_4);
++	cpus_and(*tmp, mask, cpu_online_map);
++	if (cpus_empty(*tmp))
+ 		return;
+ 
+ 	if (get_irte(irq, &irte))
+@@ -3240,8 +3306,8 @@ static void ir_set_msi_irq_affinity(unsi
+ 		return;
+ 
+ 	cfg = irq_cfg(irq);
+-	cpus_and(tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tmp, cfg->domain, mask);
++	dest = cpu_mask_to_apicid(*tmp);
+ 
+ 	irte.vector = cfg->vector;
+ 	irte.dest_id = IRTE_DEST(dest);
+@@ -3257,14 +3323,15 @@ static void ir_set_msi_irq_affinity(unsi
+ 	 * vector allocation.
+ 	 */
+ 	if (cfg->move_in_progress) {
+-		cpus_and(cleanup_mask, cfg->old_domain, cpu_online_map);
+-		cfg->move_cleanup_count = cpus_weight(cleanup_mask);
+-		send_IPI_mask(cleanup_mask, IRQ_MOVE_CLEANUP_VECTOR);
++		cpus_and(*tmp, cfg->old_domain, cpu_online_map);
++		cfg->move_cleanup_count = cpus_weight(*tmp);
++		send_IPI_mask(*tmp, IRQ_MOVE_CLEANUP_VECTOR);
+ 		cfg->move_in_progress = 0;
+ 	}
+ 
+ 	desc = irq_to_desc(irq);
+ 	desc->affinity = mask;
++	put_cpumask_var(tmp, cpumask_irq_level_4);
+ }
+ #endif
+ #endif /* CONFIG_SMP */
+@@ -3469,19 +3536,20 @@ static void dmar_msi_set_affinity(unsign
+ 	struct irq_cfg *cfg;
+ 	struct msi_msg msg;
+ 	unsigned int dest;
+-	cpumask_t tmp;
++	cpumask_ptr tmp;
+ 	struct irq_desc *desc;
+ 
+-	cpus_and(tmp, mask, cpu_online_map);
+-	if (cpus_empty(tmp))
+-		return;
++	get_cpumask_var(tmp, cpumask_irq_level_4);
++	cpus_and(*tmp, mask, cpu_online_map);
++	if (cpus_empty(*tmp))
++		goto out;
+ 
+ 	if (assign_irq_vector(irq, mask))
+-		return;
++		goto out;
+ 
+ 	cfg = irq_cfg(irq);
+-	cpus_and(tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tmp, cfg->domain, mask);
++	dest = cpu_mask_to_apicid(*tmp);
+ 
+ 	dmar_msi_read(irq, &msg);
+ 
+@@ -3493,6 +3561,8 @@ static void dmar_msi_set_affinity(unsign
+ 	dmar_msi_write(irq, &msg);
+ 	desc = irq_to_desc(irq);
+ 	desc->affinity = mask;
++out:
++	put_cpumask_var(tmp, cpumask_irq_level_4);
+ }
+ #endif /* CONFIG_SMP */
+ 
+@@ -3548,23 +3618,26 @@ static void set_ht_irq_affinity(unsigned
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned int dest;
+-	cpumask_t tmp;
++	cpumask_ptr tmp;
+ 	struct irq_desc *desc;
+ 
+-	cpus_and(tmp, mask, cpu_online_map);
+-	if (cpus_empty(tmp))
+-		return;
++	get_cpumask_var(tmp, cpumask_irq_level_4);
++	cpus_and(*tmp, mask, cpu_online_map);
++	if (cpus_empty(*tmp))
++		goto out;
+ 
+ 	if (assign_irq_vector(irq, mask))
+-		return;
++		goto out;
+ 
+ 	cfg = irq_cfg(irq);
+-	cpus_and(tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(tmp);
++	cpus_and(*tmp, cfg->domain, mask);
++	dest = cpu_mask_to_apicid(*tmp);
+ 
+ 	target_ht_irq(irq, dest, cfg->vector);
+ 	desc = irq_to_desc(irq);
+ 	desc->affinity = mask;
++out:
++	put_cpumask_var(tmp, cpumask_irq_level_4);
+ }
+ #endif
+ 
+@@ -3583,17 +3656,18 @@ int arch_setup_ht_irq(unsigned int irq, 
+ {
+ 	struct irq_cfg *cfg;
+ 	int err;
+-	cpumask_t tmp;
++	cpumask_ptr tgt_cpus;
+ 
+-	tmp = TARGET_CPUS;
+-	err = assign_irq_vector(irq, tmp);
++	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
++	*tgt_cpus = TARGET_CPUS;
++	err = assign_irq_vector(irq, *tgt_cpus);
+ 	if (!err) {
+ 		struct ht_irq_msg msg;
+ 		unsigned dest;
+ 
+ 		cfg = irq_cfg(irq);
+-		cpus_and(tmp, cfg->domain, tmp);
+-		dest = cpu_mask_to_apicid(tmp);
++		cpus_and(*tgt_cpus, cfg->domain, *tgt_cpus);
++		dest = cpu_mask_to_apicid(*tgt_cpus);
+ 
+ 		msg.address_hi = HT_IRQ_HIGH_DEST_ID(dest);
+ 
+@@ -3615,6 +3689,7 @@ int arch_setup_ht_irq(unsigned int irq, 
+ 		set_irq_chip_and_handler_name(irq, &ht_irq_chip,
+ 					      handle_edge_irq, "edge");
+ 	}
++	put_cpumask_var(tgt_cpus, cpumask_irq_level_4);
+ 	return err;
+ }
+ #endif /* CONFIG_HT_IRQ */
+@@ -3799,10 +3874,12 @@ void __init setup_ioapic_dest(void)
+ {
+ 	int pin, ioapic, irq, irq_entry;
+ 	struct irq_cfg *cfg;
++	cpumask_ptr tgt_cpus;
+ 
+ 	if (skip_ioapic_setup == 1)
+ 		return;
+ 
++	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
+ 	for (ioapic = 0; ioapic < nr_ioapics; ioapic++) {
+ 		for (pin = 0; pin < nr_ioapic_registers[ioapic]; pin++) {
+ 			irq_entry = find_irq_entry(ioapic, pin, mp_INT);
+@@ -3820,14 +3897,19 @@ void __init setup_ioapic_dest(void)
+ 						  irq_trigger(irq_entry),
+ 						  irq_polarity(irq_entry));
+ #ifdef CONFIG_INTR_REMAP
+-			else if (intr_remapping_enabled)
+-				set_ir_ioapic_affinity_irq(irq, TARGET_CPUS);
++			else if (intr_remapping_enabled) {
++				*tgt_cpus = TARGET_CPUS;
++				set_ir_ioapic_affinity_irq(irq, *tgt_cpus);
++			}
+ #endif
+-			else
+-				set_ioapic_affinity_irq(irq, TARGET_CPUS);
++			else {
++				*tgt_cpus = TARGET_CPUS;
++				set_ioapic_affinity_irq(irq, *tgt_cpus);
++			}
+ 		}
+ 
+ 	}
++	put_cpumask_var(tgt_cpus, cpumask_irq_level_4);
+ }
+ #endif
+ 
 
 -- 
