@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbYIFXye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYIFXyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbYIFXye (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 19:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYIFXuu
+	id S1756688AbYIFXyu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 19:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbYIFXuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 19:50:50 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54646 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752965AbYIFXuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 19:50:39 -0400
-Message-Id: <20080906235038.292703000@polaris-admin.engr.sgi.com>
+	Sat, 6 Sep 2008 19:50:51 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:59429 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753372AbYIFXuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 19:50:40 -0400
+Message-Id: <20080906235038.710364000@polaris-admin.engr.sgi.com>
 References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 06 Sep 2008 16:50:46 -0700
+Date: Sat, 06 Sep 2008 16:50:49 -0700
 From: Mike Travis <travis@sgi.com>
 To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
 Cc: davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
@@ -22,285 +21,386 @@ Cc: davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
        Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
        Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [RFC 10/13] genapic: reduce stack pressuge in io_apic.c step 2 internal abi
-Content-Disposition: inline; filename=stack-hogs-io_apic_c-step-2-internal-abi
+Subject: [RFC 13/13] genapic: reduce stack pressuge in io_apic.c step 5 cpu_mask_to_apicid
+Content-Disposition: inline; filename=stack-hogs-io_apic_c-step-5-cpu_mask_to_apicid
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Step 2 of cleaning up io_apic.c removes cpumask_t variables
-    passed as arguments on the stack for internal functions:
+  * Step 5 "cpu_mask_to_apicid" of cleaning up io_apic.c modifies the
+    cpu_mask_to_apicid genapic interface to pass a pointer to incoming
+    cpumask_t argument removing yet another "cpumask_t variable on the stack".
 
-	assign_irq_vector()
-	__assign_irq_vector()
-	migrate_ioapic_irq()
-	set_ioapic_affinity_irq()
-	set_ir_ioapic_affinity_irq()
+	apicid = cpu_mask_to_apicid(cpumask);
 
-   The last two functions are used both internally and externally so
-   there are now intermediate functions to maintain the external ABI.
+    becomes:
+
+	apicid = cpu_mask_to_apicid(&cpumask);
+
+  * All the appropriate genapic "cpu_mask_to_apicid" functions
+    are modified to use this new interface.
+
+  * Total stack savings are:
+
+    ====== Stack (-l 100)
+
+	1 - initial
+	2 - stack-hogs-io_apic_c-step-1-temp-cpumask_ts
+	3 - stack-hogs-io_apic_c-step-2-internal-abi
+	4 - stack-hogs-io_apic_c-step-3-target_cpus
+	5 - stack-hogs-io_apic_c-step-4-vector_allocation_domain
+	6 - stack-hogs-io_apic_c-step-5-cpu_mask_to_apicid
+
+       .1.    .2.   .3.   .4.    .5.   .6.    ..final..
+      1576   -512     .  -512      .  -552   .  -100%  setup_IO_APIC_irq
+      1560   -512     .  -528      .  -520   .  -100%  msi_compose_msg
+      1560   -512     .  -512      .  -536   .  -100%  arch_setup_ht_irq
+      1560  -1008     .     .   -552     .   .  -100%  __assign_irq_vector
+      1144      .  -512  -632      .     .   .  -100%  setup_IO_APIC
+      1048      .     .  -512      .  -536   .  -100%  setup_timer_IRQ0_pin
+      1048      .  -512  -536      .     .   .  -100%  setup_ioapic_dest
+      1048   -512  -536     .      .     .   .  -100%  set_ioapic_affinity_irq
+      1040   -512     .     .      .  -528   .  -100%  set_msi_irq_affinity
+      1040   -512     .     .      .  -528   .  -100%  set_ht_irq_affinity
+      1040   -512     .     .      .  -528   .  -100%  dmar_msi_set_affinity
+      1032     -8  -512  -512      .     .   .  -100%  create_irq_nr
+      1024      .     .     .  -1024     .   .  -100%  x2apic_vector_allocation_domain
+      1024      .     .     .  -1024     .   .  -100%  uv_vector_allocation_domain
+       520   -520     .     .      .     .   .  -100%  __clear_irq_vector
+       512   -512     .     .      .     .   .  -100%  irq_complete_move
+       512      .  -512     .      .     .   .  -100%  assign_irq_vector
+	 0      .  +536     .      .  -536   .      .  set_ioapic_affinity_irq_p
+    18288 -5632 -2048 -3744 -2600 -4264   . -100%  Totals
 
 Applies to linux-2.6.tip/master.
 
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
- arch/x86/kernel/io_apic.c |   66 +++++++++++++++++++++++++++-------------------
- 1 file changed, 39 insertions(+), 27 deletions(-)
+ arch/x86/kernel/genapic_flat_64.c        |    8 ++++----
+ arch/x86/kernel/genx2apic_cluster.c      |    4 ++--
+ arch/x86/kernel/genx2apic_phys.c         |    4 ++--
+ arch/x86/kernel/genx2apic_uv_x.c         |    4 ++--
+ arch/x86/kernel/io_apic.c                |   20 ++++++++++----------
+ include/asm-x86/bigsmp/apic.h            |    4 ++--
+ include/asm-x86/es7000/apic.h            |    8 ++++----
+ include/asm-x86/genapic_32.h             |    2 +-
+ include/asm-x86/genapic_64.h             |    2 +-
+ include/asm-x86/mach-default/mach_apic.h |    4 ++--
+ include/asm-x86/numaq/apic.h             |    2 +-
+ include/asm-x86/summit/apic.h            |    8 ++++----
+ 12 files changed, 35 insertions(+), 35 deletions(-)
 
+--- linux-2.6.tip.orig/arch/x86/kernel/genapic_flat_64.c
++++ linux-2.6.tip/arch/x86/kernel/genapic_flat_64.c
+@@ -140,9 +140,9 @@ static int flat_apic_id_registered(void)
+ 	return physid_isset(read_xapic_id(), phys_cpu_present_map);
+ }
+ 
+-static unsigned int flat_cpu_mask_to_apicid(cpumask_t cpumask)
++static unsigned int flat_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+-	return cpus_addr(cpumask)[0] & APIC_ALL_CPUS;
++	return cpus_addr(*cpumask)[0] & APIC_ALL_CPUS;
+ }
+ 
+ static unsigned int phys_pkg_id(int index_msb)
+@@ -227,7 +227,7 @@ static void physflat_send_IPI_all(int ve
+ 	physflat_send_IPI_mask(&cpu_online_map, vector);
+ }
+ 
+-static unsigned int physflat_cpu_mask_to_apicid(cpumask_t cpumask)
++static unsigned int physflat_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int cpu;
+ 
+@@ -235,7 +235,7 @@ static unsigned int physflat_cpu_mask_to
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	if ((unsigned)cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	else
+--- linux-2.6.tip.orig/arch/x86/kernel/genx2apic_cluster.c
++++ linux-2.6.tip/arch/x86/kernel/genx2apic_cluster.c
+@@ -92,7 +92,7 @@ static int x2apic_apic_id_registered(voi
+ 	return 1;
+ }
+ 
+-static unsigned int x2apic_cpu_mask_to_apicid(cpumask_t cpumask)
++static unsigned int x2apic_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int cpu;
+ 
+@@ -100,7 +100,7 @@ static unsigned int x2apic_cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	if ((unsigned)cpu < NR_CPUS)
+ 		return per_cpu(x86_cpu_to_logical_apicid, cpu);
+ 	else
+--- linux-2.6.tip.orig/arch/x86/kernel/genx2apic_phys.c
++++ linux-2.6.tip/arch/x86/kernel/genx2apic_phys.c
+@@ -85,7 +85,7 @@ static int x2apic_apic_id_registered(voi
+ 	return 1;
+ }
+ 
+-static unsigned int x2apic_cpu_mask_to_apicid(cpumask_t cpumask)
++static unsigned int x2apic_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int cpu;
+ 
+@@ -93,7 +93,7 @@ static unsigned int x2apic_cpu_mask_to_a
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	if ((unsigned)cpu < NR_CPUS)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	else
+--- linux-2.6.tip.orig/arch/x86/kernel/genx2apic_uv_x.c
++++ linux-2.6.tip/arch/x86/kernel/genx2apic_uv_x.c
+@@ -160,7 +160,7 @@ static void uv_init_apic_ldr(void)
+ {
+ }
+ 
+-static unsigned int uv_cpu_mask_to_apicid(cpumask_t cpumask)
++static unsigned int uv_cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int cpu;
+ 
+@@ -168,7 +168,7 @@ static unsigned int uv_cpu_mask_to_apici
+ 	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
+ 	 * May as well be the first.
+ 	 */
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	if ((unsigned)cpu < nr_cpu_ids)
+ 		return per_cpu(x86_cpu_to_apicid, cpu);
+ 	else
 --- linux-2.6.tip.orig/arch/x86/kernel/io_apic.c
 +++ linux-2.6.tip/arch/x86/kernel/io_apic.c
-@@ -578,9 +578,9 @@ static void __target_IO_APIC_irq(unsigne
- 	}
- }
- 
--static int assign_irq_vector(int irq, cpumask_t mask);
-+static int assign_irq_vector(int irq, cpumask_t *mask);
- 
--static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
-+static void set_ioapic_affinity_irq_p(unsigned int irq, cpumask_t *mask)
- {
- 	struct irq_cfg *cfg;
- 	unsigned long flags;
-@@ -589,7 +589,7 @@ static void set_ioapic_affinity_irq(unsi
- 	struct irq_desc *desc;
- 
- 	get_cpumask_var(tmp, cpumask_irq_level_3);
--	cpus_and(*tmp, mask, cpu_online_map);
-+	cpus_and(*tmp, *mask, cpu_online_map);
- 	if (cpus_empty(*tmp)) {
- 		put_cpumask_var(tmp, cpumask_irq_level_3);
- 		return;
-@@ -601,7 +601,7 @@ static void set_ioapic_affinity_irq(unsi
- 		return;
+@@ -602,7 +602,7 @@ static void set_ioapic_affinity_irq_p(un
  	}
  
--	cpus_and(*tmp, cfg->domain, mask);
-+	cpus_and(*tmp, cfg->domain, *mask);
- 	dest = cpu_mask_to_apicid(*tmp);
+ 	cpus_and(*tmp, cfg->domain, *mask);
+-	dest = cpu_mask_to_apicid(*tmp);
++	dest = cpu_mask_to_apicid(tmp);
  	/*
  	 * Only the high 8 bits are valid.
-@@ -611,10 +611,16 @@ static void set_ioapic_affinity_irq(unsi
- 	desc = irq_to_desc(irq);
- 	spin_lock_irqsave(&ioapic_lock, flags);
- 	__target_IO_APIC_irq(irq, dest, cfg->vector);
--	desc->affinity = mask;
-+	desc->affinity = *mask;
- 	spin_unlock_irqrestore(&ioapic_lock, flags);
- 	put_cpumask_var(tmp, cpumask_irq_level_3);
- }
-+
-+/* for struct irq_chip.set_affinity compatibility */
-+static void set_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
-+{
-+	set_ioapic_affinity_irq_p(irq, &mask);
-+}
- #endif /* CONFIG_SMP */
+ 	 */
+@@ -1546,7 +1546,7 @@ static void setup_IO_APIC_irq(int apic, 
  
- /*
-@@ -1246,7 +1252,7 @@ void unlock_vector_lock(void)
- 	spin_unlock(&vector_lock);
- }
  
--static int __assign_irq_vector(int irq, cpumask_t inmask)
-+static int __assign_irq_vector(int irq, cpumask_t *inmask)
- {
- 	/*
- 	 * NOTE! The local APIC isn't very good at handling
-@@ -1274,7 +1280,7 @@ static int __assign_irq_vector(int irq, 
- 
- 	old_vector = cfg->vector;
- 	if (old_vector) {
--		cpus_and(*tmpmask, inmask, cpu_online_map);
-+		cpus_and(*tmpmask, *inmask, cpu_online_map);
- 		cpus_and(*tmpmask, cfg->domain, *tmpmask);
- 		if (!cpus_empty(*tmpmask)) {
- 			put_cpumask_var(tmpmask, cpumask_irq_level_1);
-@@ -1282,7 +1288,7 @@ static int __assign_irq_vector(int irq, 
- 		}
- 	}
- 
--	for_each_online_cpu_mask_nr(cpu, inmask) {
-+	for_each_online_cpu_mask_nr(cpu, *inmask) {
- 		int new_cpu;
- 		int vector, offset;
- 
-@@ -1327,7 +1333,7 @@ next:
- 	return -ENOSPC;
- }
- 
--static int assign_irq_vector(int irq, cpumask_t mask)
-+static int assign_irq_vector(int irq, cpumask_t *mask)
- {
- 	int err;
- 	unsigned long flags;
-@@ -1527,7 +1533,7 @@ static void setup_IO_APIC_irq(int apic, 
- 
- 	get_cpumask_var(mask, cpumask_irq_level_3);
- 	*mask = TARGET_CPUS;
--	if (assign_irq_vector(irq, *mask))
-+	if (assign_irq_vector(irq, mask))
- 		goto out;
- 
- 	cpus_and(*mask, cfg->domain, *mask);
-@@ -2293,7 +2299,7 @@ static DECLARE_DELAYED_WORK(ir_migration
-  * as simple as edge triggered migration and we can do the irq migration
-  * with a simple atomic update to IO-APIC RTE.
-  */
--static void migrate_ioapic_irq(int irq, cpumask_t mask)
-+static void migrate_ioapic_irq(int irq, cpumask_t *mask)
- {
- 	struct irq_cfg *cfg;
- 	struct irq_desc *desc;
-@@ -2304,7 +2310,7 @@ static void migrate_ioapic_irq(int irq, 
- 	unsigned long flags;
- 
- 	get_cpumask_var(tmpmask, cpumask_irq_level_3);
--	cpus_and(*tmpmask, mask, cpu_online_map);
-+	cpus_and(*tmpmask, *mask, cpu_online_map);
- 	if (cpus_empty(*tmpmask))
- 		goto out;
- 
-@@ -2315,7 +2321,7 @@ static void migrate_ioapic_irq(int irq, 
- 		goto out;
+ 	if (setup_ioapic_entry(mp_ioapics[apic].mp_apicid, irq, &entry,
+-			       cpu_mask_to_apicid(*mask), trigger, polarity,
++			       cpu_mask_to_apicid(mask), trigger, polarity,
+ 			       cfg->vector)) {
+ 		printk("Failed to setup ioapic entry for ioapic  %d, pin %d\n",
+ 		       mp_ioapics[apic].mp_apicid, pin);
+@@ -1626,7 +1626,7 @@ static void __init setup_timer_IRQ0_pin(
+ 	 */
+ 	entry.dest_mode = INT_DEST_MODE;
+ 	entry.mask = 1;					/* mask IRQ now */
+-	entry.dest = cpu_mask_to_apicid(*tgt_cpus);
++	entry.dest = cpu_mask_to_apicid(tgt_cpus);
+ 	entry.delivery_mode = INT_DELIVERY_MODE;
+ 	entry.polarity = 0;
+ 	entry.trigger = 0;
+@@ -2322,7 +2322,7 @@ static void migrate_ioapic_irq(int irq, 
  
  	cfg = irq_cfg(irq);
--	cpus_and(*tmpmask, cfg->domain, mask);
-+	cpus_and(*tmpmask, cfg->domain, *mask);
- 	dest = cpu_mask_to_apicid(*tmpmask);
+ 	cpus_and(*tmpmask, cfg->domain, *mask);
+-	dest = cpu_mask_to_apicid(*tmpmask);
++	dest = cpu_mask_to_apicid(tmpmask);
  
  	desc = irq_to_desc(irq);
-@@ -2341,7 +2347,7 @@ static void migrate_ioapic_irq(int irq, 
- 		cfg->move_in_progress = 0;
- 	}
+ 	modify_ioapic_rte = desc->status & IRQ_LEVEL;
+@@ -3204,7 +3204,7 @@ static int msi_compose_msg(struct pci_de
  
--	desc->affinity = mask;
-+	desc->affinity = *mask;
- out:
- 	put_cpumask_var(tmpmask, cpumask_irq_level_3);
- }
-@@ -2365,7 +2371,7 @@ static int migrate_irq_remapped_level(in
- 	}
- 
- 	/* everthing is clear. we have right of way */
--	migrate_ioapic_irq(irq, desc->pending_mask);
-+	migrate_ioapic_irq(irq, &desc->pending_mask);
- 
- 	ret = 0;
- 	desc->status &= ~IRQ_MOVE_PENDING;
-@@ -2402,19 +2408,25 @@ static void ir_irq_migration(struct work
- /*
-  * Migrates the IRQ destination in the process context.
-  */
--static void set_ir_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
-+static void set_ir_ioapic_affinity_irq_p(unsigned int irq, cpumask_t *mask)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 
- 	if (desc->status & IRQ_LEVEL) {
- 		desc->status |= IRQ_MOVE_PENDING;
--		desc->pending_mask = mask;
-+		desc->pending_mask = *mask;
- 		migrate_irq_remapped_level(irq);
- 		return;
- 	}
- 
- 	migrate_ioapic_irq(irq, mask);
- }
-+
-+/* for struct irq_chip.set_affinity compatibility */
-+static void set_ir_ioapic_affinity_irq(unsigned int irq, cpumask_t mask)
-+{
-+	set_ir_ioapic_affinity_irq_p(irq, &mask)
-+}
- #endif
- 
- asmlinkage void smp_irq_move_cleanup_interrupt(void)
-@@ -2814,7 +2826,7 @@ static inline void __init check_timer(vo
- 	disable_8259A_irq(0);
- 	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
- 	*tgt_cpus = TARGET_CPUS;
--	assign_irq_vector(0, *tgt_cpus);
-+	assign_irq_vector(0, tgt_cpus);
+ 	cfg = irq_cfg(irq);
+ 	cpus_and(*tgt_cpus, cfg->domain, *tgt_cpus);
+-	dest = cpu_mask_to_apicid(*tgt_cpus);
++	dest = cpu_mask_to_apicid(tgt_cpus);
  	put_cpumask_var(tgt_cpus, cpumask_irq_level_4);
  
- 	/*
-@@ -3134,7 +3146,7 @@ unsigned int create_irq_nr(unsigned int 
- 		/* check if need to create one */
- 		if (!cfg_new)
- 			cfg_new = irq_cfg_alloc(new);
--		if (__assign_irq_vector(new, *tgt_cpus) == 0)
-+		if (__assign_irq_vector(new, tgt_cpus) == 0)
- 			irq = new;
- 		break;
- 	}
-@@ -3186,7 +3198,7 @@ static int msi_compose_msg(struct pci_de
- 
- 	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
- 	*tgt_cpus = TARGET_CPUS;
--	err = assign_irq_vector(irq, *tgt_cpus);
-+	err = assign_irq_vector(irq, tgt_cpus);
- 	if (err)
- 		return err;
- 
-@@ -3260,7 +3272,7 @@ static void set_msi_irq_affinity(unsigne
- 	if (cpus_empty(*tmp))
- 		goto out;
- 
--	if (assign_irq_vector(irq, mask))
-+	if (assign_irq_vector(irq, &mask))
- 		goto out;
- 
- 	cfg = irq_cfg(irq);
-@@ -3302,7 +3314,7 @@ static void ir_set_msi_irq_affinity(unsi
- 	if (get_irte(irq, &irte))
- 		return;
- 
--	if (assign_irq_vector(irq, mask))
-+	if (assign_irq_vector(irq, &mask))
- 		return;
- 
- 	cfg = irq_cfg(irq);
-@@ -3544,7 +3556,7 @@ static void dmar_msi_set_affinity(unsign
- 	if (cpus_empty(*tmp))
- 		goto out;
- 
--	if (assign_irq_vector(irq, mask))
-+	if (assign_irq_vector(irq, &mask))
- 		goto out;
- 
- 	cfg = irq_cfg(irq);
-@@ -3626,7 +3638,7 @@ static void set_ht_irq_affinity(unsigned
- 	if (cpus_empty(*tmp))
- 		goto out;
- 
--	if (assign_irq_vector(irq, mask))
-+	if (assign_irq_vector(irq, &mask))
- 		goto out;
- 
- 	cfg = irq_cfg(irq);
-@@ -3660,7 +3672,7 @@ int arch_setup_ht_irq(unsigned int irq, 
- 
- 	get_cpumask_var(tgt_cpus, cpumask_irq_level_4);
- 	*tgt_cpus = TARGET_CPUS;
--	err = assign_irq_vector(irq, *tgt_cpus);
-+	err = assign_irq_vector(irq, tgt_cpus);
- 	if (!err) {
- 		struct ht_irq_msg msg;
- 		unsigned dest;
-@@ -3899,12 +3911,12 @@ void __init setup_ioapic_dest(void)
  #ifdef CONFIG_INTR_REMAP
- 			else if (intr_remapping_enabled) {
- 				*tgt_cpus = TARGET_CPUS;
--				set_ir_ioapic_affinity_irq(irq, *tgt_cpus);
-+				set_ir_ioapic_affinity_irq_p(irq, tgt_cpus);
- 			}
- #endif
- 			else {
- 				*tgt_cpus = TARGET_CPUS;
--				set_ioapic_affinity_irq(irq, *tgt_cpus);
-+				set_ioapic_affinity_irq_p(irq, tgt_cpus);
- 			}
- 		}
+@@ -3277,7 +3277,7 @@ static void set_msi_irq_affinity(unsigne
  
+ 	cfg = irq_cfg(irq);
+ 	cpus_and(*tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(*tmp);
++	dest = cpu_mask_to_apicid(tmp);
+ 
+ 	read_msi_msg(irq, &msg);
+ 
+@@ -3319,7 +3319,7 @@ static void ir_set_msi_irq_affinity(unsi
+ 
+ 	cfg = irq_cfg(irq);
+ 	cpus_and(*tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(*tmp);
++	dest = cpu_mask_to_apicid(tmp);
+ 
+ 	irte.vector = cfg->vector;
+ 	irte.dest_id = IRTE_DEST(dest);
+@@ -3561,7 +3561,7 @@ static void dmar_msi_set_affinity(unsign
+ 
+ 	cfg = irq_cfg(irq);
+ 	cpus_and(*tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(*tmp);
++	dest = cpu_mask_to_apicid(tmp);
+ 
+ 	dmar_msi_read(irq, &msg);
+ 
+@@ -3643,7 +3643,7 @@ static void set_ht_irq_affinity(unsigned
+ 
+ 	cfg = irq_cfg(irq);
+ 	cpus_and(*tmp, cfg->domain, mask);
+-	dest = cpu_mask_to_apicid(*tmp);
++	dest = cpu_mask_to_apicid(tmp);
+ 
+ 	target_ht_irq(irq, dest, cfg->vector);
+ 	desc = irq_to_desc(irq);
+@@ -3679,7 +3679,7 @@ int arch_setup_ht_irq(unsigned int irq, 
+ 
+ 		cfg = irq_cfg(irq);
+ 		cpus_and(*tgt_cpus, cfg->domain, *tgt_cpus);
+-		dest = cpu_mask_to_apicid(*tgt_cpus);
++		dest = cpu_mask_to_apicid(tgt_cpus);
+ 
+ 		msg.address_hi = HT_IRQ_HIGH_DEST_ID(dest);
+ 
+--- linux-2.6.tip.orig/include/asm-x86/bigsmp/apic.h
++++ linux-2.6.tip/include/asm-x86/bigsmp/apic.h
+@@ -121,12 +121,12 @@ static inline int check_phys_apicid_pres
+ }
+ 
+ /* As we are using single CPU as destination, pick only one CPU here */
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int cpu;
+ 	int apicid;	
+ 
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	return apicid;
+ }
+--- linux-2.6.tip.orig/include/asm-x86/es7000/apic.h
++++ linux-2.6.tip/include/asm-x86/es7000/apic.h
+@@ -144,14 +144,14 @@ static inline int check_phys_apicid_pres
+ 	return (1);
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int num_bits_set;
+ 	int cpus_found = 0;
+ 	int cpu;
+ 	int apicid;
+ 
+-	num_bits_set = cpus_weight(cpumask);
++	num_bits_set = cpus_weight(*cpumask);
+ 	/* Return id to all */
+ 	if (num_bits_set == NR_CPUS)
+ #if defined CONFIG_ES7000_CLUSTERED_APIC
+@@ -163,10 +163,10 @@ static inline unsigned int cpu_mask_to_a
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+ 	 */
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	while (cpus_found < num_bits_set) {
+-		if (cpu_isset(cpu, cpumask)) {
++		if (cpu_isset(cpu, *cpumask)) {
+ 			int new_apicid = cpu_to_logical_apicid(cpu);
+ 			if (apicid_cluster(apicid) !=
+ 					apicid_cluster(new_apicid)){
+--- linux-2.6.tip.orig/include/asm-x86/genapic_32.h
++++ linux-2.6.tip/include/asm-x86/genapic_32.h
+@@ -57,7 +57,7 @@ struct genapic {
+ 
+ 	unsigned (*get_apic_id)(unsigned long x);
+ 	unsigned long apic_id_mask;
+-	unsigned int (*cpu_mask_to_apicid)(cpumask_t cpumask);
++	unsigned int (*cpu_mask_to_apicid)(const cpumask_t *cpumask);
+ 	void (*vector_allocation_domain)(int cpu, cpumask_t *retmask);
+ 
+ #ifdef CONFIG_SMP
+--- linux-2.6.tip.orig/include/asm-x86/genapic_64.h
++++ linux-2.6.tip/include/asm-x86/genapic_64.h
+@@ -29,7 +29,7 @@ struct genapic {
+ 	void (*send_IPI_all)(int vector);
+ 	void (*send_IPI_self)(int vector);
+ 	/* */
+-	unsigned int (*cpu_mask_to_apicid)(cpumask_t cpumask);
++	unsigned int (*cpu_mask_to_apicid)(const cpumask_t *cpumask);
+ 	unsigned int (*phys_pkg_id)(int index_msb);
+ 	unsigned int (*get_apic_id)(unsigned long x);
+ 	unsigned long (*set_apic_id)(unsigned int id);
+--- linux-2.6.tip.orig/include/asm-x86/mach-default/mach_apic.h
++++ linux-2.6.tip/include/asm-x86/mach-default/mach_apic.h
+@@ -65,9 +65,9 @@ static inline int apic_id_registered(voi
+ 	return physid_isset(read_apic_id(), phys_cpu_present_map);
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+-	return cpus_addr(cpumask)[0];
++	return cpus_addr(*cpumask)[0];
+ }
+ 
+ static inline u32 phys_pkg_id(u32 cpuid_apic, int index_msb)
+--- linux-2.6.tip.orig/include/asm-x86/numaq/apic.h
++++ linux-2.6.tip/include/asm-x86/numaq/apic.h
+@@ -122,7 +122,7 @@ static inline void enable_apic_mode(void
+  * We use physical apicids here, not logical, so just return the default
+  * physical broadcast to stop people from breaking us
+  */
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	return (int) 0xF;
+ }
+--- linux-2.6.tip.orig/include/asm-x86/summit/apic.h
++++ linux-2.6.tip/include/asm-x86/summit/apic.h
+@@ -137,14 +137,14 @@ static inline void enable_apic_mode(void
+ {
+ }
+ 
+-static inline unsigned int cpu_mask_to_apicid(cpumask_t cpumask)
++static inline unsigned int cpu_mask_to_apicid(const cpumask_t *cpumask)
+ {
+ 	int num_bits_set;
+ 	int cpus_found = 0;
+ 	int cpu;
+ 	int apicid;
+ 
+-	num_bits_set = cpus_weight(cpumask);
++	num_bits_set = cpus_weight(*cpumask);
+ 	/* Return id to all */
+ 	if (num_bits_set == NR_CPUS)
+ 		return (int) 0xFF;
+@@ -152,10 +152,10 @@ static inline unsigned int cpu_mask_to_a
+ 	 * The cpus in the mask must all be on the apic cluster.  If are not
+ 	 * on the same apicid cluster return default value of TARGET_CPUS.
+ 	 */
+-	cpu = first_cpu(cpumask);
++	cpu = first_cpu(*cpumask);
+ 	apicid = cpu_to_logical_apicid(cpu);
+ 	while (cpus_found < num_bits_set) {
+-		if (cpu_isset(cpu, cpumask)) {
++		if (cpu_isset(cpu, *cpumask)) {
+ 			int new_apicid = cpu_to_logical_apicid(cpu);
+ 			if (apicid_cluster(apicid) !=
+ 					apicid_cluster(new_apicid)){
 
 -- 
