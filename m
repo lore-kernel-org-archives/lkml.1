@@ -1,79 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYIFXWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbYIFXuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYIFXWV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 19:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYIFXWL
+	id S1755163AbYIFXuy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 19:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYIFXuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 19:22:11 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:16117 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbYIFXWK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 19:22:10 -0400
-Message-ID: <48C31095.6020206@hp.com>
-Date: Sat, 06 Sep 2008 19:21:57 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Benchmarking results: DSS elapsed time values w/ rq_affinity=0/1
- - Jens' for-2.6.28 tree
-References: <48C15C02.7060504@hp.com>
-In-Reply-To: <48C15C02.7060504@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Sat, 6 Sep 2008 19:50:39 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:59378 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752995AbYIFXui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 19:50:38 -0400
+Message-Id: <20080906235037.471203000@polaris-admin.engr.sgi.com>
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Sat, 06 Sep 2008 16:50:40 -0700
+From: Mike Travis <travis@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Cc: davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: [RFC 04/13] cpumask: add cpumask_ptr operations
+Content-Disposition: inline; filename=get_cpumask_ptr
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some results obtained during runs where we varied the number of
- readers & the multi-block read counts. 5 runs per rq_affinity setting
-were done, and the averages are plotted at:
+ * Define a generic cpumask_ptr type and some helper functions that
+ * do not add any overhead to low count NR_CPUS systems.  Essentially
+ * for NR_CPUS <= BITS_PER_LONG, an array of one cpumask is created on
+ * the stack.  For larger count systems, a pointer is defined.  In both
+ * cases the pointer variable can be used as C will optimize out the
+ * pointer derefence in the small system case.
+ *
+ * Add a simple kmalloc to allocate a temporary cpumask variable.
+ * (Note, kmalloc should be defined before including this file.)
+ *
+ * Add a simple per_cpu variable to facilitate those cases where a
+ * kmalloc failure cannot be reasonable handled (or we're using it
+ * before the mm system is initialized.)
+ *
+ * This is useful for getting temporary per_cpu cpumask_t variables.
+ * Note there are no locks, so these are _extremely_ temporary cpumask
+ * vars, with only preemption disabled, while in use.
+ *
+ * Many thanks to Linus Torvalds for the typedef/alloc idea.
+ *
+ * Adds the following cpumask_ptr operations for NR_CPUS > BITS_PER_LONG:
+ *
+ *   cpumask_ptr p;		Declares p to be a cpumask_t pointer
+ *
+ *   alloc_cpumask_ptr(p);	allocates and assigns memory to p
+ *   free_cpumask_ptr(p);	frees memory used by p
+ *
+ *   DEFINE_PER_CPUMASK(p, v)	Defines a PER_CPUMASK variable v
+ *   DECLARE_PER_CPUMASK(p, v)	Declares a PER_CPUMASK variable v
+ *   get_cpumask_var(p, v)	Obtains possession of PER_CPUMASK variable v
+ *   				and assignes it to p
+ *   put_cpumask_var(p, v)	Relenquishs possession of PER_CPUMASK variable v
+ *
+ * If NR_CPUS <= BITS_PER_LONG then the above are all essentially NOP's.
 
-http://free.linux.hp.com/~adb/jens/08-09-05/by_mbr.jpeg
+Applies to linux-2.6.tip/master.
 
-In all cases we are seeing a noticeable improvement in reduction of
-elapsed time to perform the tasks, and again we are seeing much tighter
-deviations with rq_affinity set to 1:
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ include/linux/cpumask_ptr.h |   78 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 78 insertions(+)
 
-                          Min   Avg   Max   Std Dev
-                         ----- ----- -----  --------
-mbrs= 32 nrdrs= 64 rq=0: 30.57 31.50 34.06  1.456108
-mbrs= 32 nrdrs= 64 rq=1: 29.27 29.59 29.96  0.325469   6.05% improvement
+--- /dev/null
++++ linux-2.6.tip/include/linux/cpumask_ptr.h
+@@ -0,0 +1,78 @@
++#ifndef __LINUX_CPUMASK_PTR_H
++#define __LINUX_CPUMASK_PTR_H
++
++/*
++ * Define a generic cpumask_ptr type and some helper functions that
++ * do not add any overhead to low count NR_CPUS systems.  Essentially
++ * for NR_CPUS <= BITS_PER_LONG, an array of one cpumask is created on
++ * the stack.  For larger count systems, a pointer is defined.  In both
++ * cases the pointer variable can be used as C will optimize out the
++ * pointer derefence in the small system case.
++ *
++ * Add a simple kmalloc to allocate a temporary cpumask variable.
++ * (Note, kmalloc should be defined before including this file.)
++ *
++ * Add a simple per_cpu variable to facilitate those cases where a
++ * kmalloc failure cannot be reasonable handled (or we're using it
++ * before the mm system is initialized.)
++ *
++ * This is useful for getting temporary per_cpu cpumask_t variables.
++ * Note there are no locks, so these are _extremely_ temporary cpumask
++ * vars, with only preemption disabled, while in use.
++ *
++ * Many thanks to Linus Torvalds for the typedef/alloc idea.
++ *
++ * Adds the following cpumask_ptr operations for NR_CPUS > BITS_PER_LONG:
++ *
++ *   cpumask_ptr p;		Declares p to be a cpumask_t pointer
++ *
++ *   alloc_cpumask_ptr(p);	allocates and assigns memory to p
++ *   free_cpumask_ptr(p);	frees memory used by p
++ *
++ *   DEFINE_PER_CPUMASK(p, v)	Defines a PER_CPUMASK variable v
++ *   DECLARE_PER_CPUMASK(p, v)	Declares a PER_CPUMASK variable v
++ *   get_cpumask_var(p, v)	Obtains possession of PER_CPUMASK variable v
++ *   				and assignes it to p
++ *   put_cpumask_var(p, v)	Relenquishs possession of PER_CPUMASK variable v
++ *
++ * If NR_CPUS <= BITS_PER_LONG then the above are all essentially NOP's.
++ */
++
++#if NR_CPUS <= BITS_PER_LONG
++
++typedef cpumask_t cpumask_ptr[1];
++static inline void alloc_cpumask_ptr(cpumask_ptr *p)
++{
++}
++static inline void free_cpumask_ptr(cpumask_ptr *p)
++{
++}
++#define	DEFINE_PER_CPUMASK(v)	void *unused_##v __maybe_unused
++#define	DECLARE_PER_CPUMASK(v)
++#define get_cpumask_var(p, v)	do { } while(0)
++#define put_cpumask_var(p, v)	do { } while(0)
++
++#else /* NR_CPUS > BITS_PER_LONG */
++
++#include <linux/slab.h>
++typedef cpumask_t *cpumask_ptr;
++static inline void _get_cpumask_ptr(cpumask_ptr *p, cpumask_t *m)
++{
++	*p = m;
++}
++static inline void alloc_cpumask_ptr(cpumask_ptr *p)
++{
++	_get_cpumask_ptr(p, kmalloc(sizeof(cpumask_t), GFP_KERNEL));
++}
++static inline void free_cpumask_ptr(cpumask_ptr *p)
++{
++	kfree(*p);
++}
++#define	DEFINE_PER_CPUMASK(v)	DEFINE_PER_CPU(cpumask_t, v)
++#define	DECLARE_PER_CPUMASK(v)	DECLARE_PER_CPU(cpumask_t, v)
++#define	get_cpumask_var(p, v)	_get_cpumask_ptr(&(p), &get_cpu_var(v))
++#define	put_cpumask_var(p, v)	put_cpu_var(v)
++
++#endif /* NR_CPUS > BITS_PER_LONG */
++
++#endif /* __LINUX_CPUMASK_PTR_H */
 
-mbrs= 32 nrdrs=128 rq=0: 28.14 28.48 29.32  0.480208
-mbrs= 32 nrdrs=128 rq=1: 27.54 27.88 28.48  0.359194   2.11% improvement
-
-mbrs= 32 nrdrs=256 rq=0: 33.05 33.70 34.30  0.548151
-mbrs= 32 nrdrs=256 rq=1: 33.10 33.36 33.74  0.257158   1.01% improvement
-
-mbrs= 64 nrdrs= 64 rq=0: 30.53 30.74 31.10  0.255441
-mbrs= 64 nrdrs= 64 rq=1: 29.40 29.65 29.91  0.187216   3.55% improvement
-
-mbrs= 64 nrdrs=128 rq=0: 28.09 28.79 29.23  0.484149
-mbrs= 64 nrdrs=128 rq=1: 27.73 27.96 28.33  0.226429   2.89% improvement
-
-mbrs= 64 nrdrs=256 rq=0: 33.35 34.04 34.76  0.518816
-mbrs= 64 nrdrs=256 rq=1: 33.02 33.13 33.25  0.088034   2.67% improvement
-
-mbrs=128 nrdrs= 64 rq=0: 30.37 30.75 31.23  0.329439
-mbrs=128 nrdrs= 64 rq=1: 29.20 29.49 29.82  0.221179   4.08% improvement
-
-mbrs=128 nrdrs=128 rq=0: 28.04 28.54 29.00  0.392785
-mbrs=128 nrdrs=128 rq=1: 27.76 28.08 28.26  0.190840   1.63% improvement
-
-mbrs=128 nrdrs=256 rq=0: 33.37 33.89 34.30  0.448297
-mbrs=128 nrdrs=256 rq=1: 33.04 33.30 33.56  0.203175   1.76% improvement
-
-mbrs=256 nrdrs= 64 rq=0: 30.55 30.80 30.94  0.167392
-mbrs=256 nrdrs= 64 rq=1: 29.23 29.57 29.91  0.305156   3.99% improvement
-
-mbrs=256 nrdrs=128 rq=0: 28.38 28.82 29.20  0.305172
-mbrs=256 nrdrs=128 rq=1: 27.78 27.92 28.11  0.142583   3.12% improvement
-
-mbrs=256 nrdrs=256 rq=0: 33.25 34.21 34.88  0.598398
-mbrs=256 nrdrs=256 rq=1: 33.11 33.23 33.48  0.154499   2.88% improvement
-
+-- 
