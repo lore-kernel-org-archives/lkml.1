@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYIFVcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYIFVf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbYIFVcu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 17:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYIFVcm
+	id S1755237AbYIFVf0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 17:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYIFVfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 17:32:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47623 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752394AbYIFVcl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 17:32:41 -0400
-Date: Sat, 6 Sep 2008 14:32:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Alok Kataria <akataria@vmware.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Dan Hecht <dhecht@vmware.com>,
-       Garrett Smith <garrett@vmware.com>
-Subject: Re: [RFC patch 0/4] TSC calibration improvements
-In-Reply-To: <alpine.LFD.1.10.0809062318230.3243@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0809061430010.3117@nehalem.linux-foundation.org>
-References: <alpine.LFD.1.10.0809040840330.3381@nehalem.linux-foundation.org>  <20080904160036.GA18382@elte.hu>  <alpine.LFD.1.10.0809040920000.3381@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0809041021110.3400@nehalem.linux-foundation.org> 
- <20080904190728.59634020@lxorguk.ukuu.org.uk>  <alpine.LFD.1.10.0809041114030.3400@nehalem.linux-foundation.org>  <alpine.LFD.1.10.0809041303530.4112@nehalem.linux-foundation.org>  <20080904204305.GA29065@elte.hu> <alpine.LFD.1.10.0809061803470.3243@apollo.tec.linutronix.de>
- <alpine.LFD.1.10.0809061328400.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809062233500.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809062240170.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809061356270.3117@nehalem.linux-foundation.org>
- <alpine.LFD.1.10.0809062301520.3243@apollo.tec.linutronix.de> <alpine.LFD.1.10.0809061411430.3117@nehalem.linux-foundation.org> <alpine.LFD.1.10.0809062318230.3243@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 6 Sep 2008 17:35:10 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:53310 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752720AbYIFVfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Sep 2008 17:35:09 -0400
+X-Greylist: delayed 939 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Sep 2008 17:35:08 EDT
+Date: Sat, 6 Sep 2008 23:22:34 +0200
+From: Alain Knaff <alain@knaff.lu>
+Message-Id: <200809062122.m86LMYJg026138@hitchhiker.org.lu>
+Subject: [PATCH] documentation: clean up extras and omissions in dontdiff
+To: <torvalds@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <alain@knaff.lu>
+X-Mailer: mail (GNU Mailutils 1.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Alain Knaff <alain@knaff.lu>
 
+While making the bzip/lzma compression patch, I noticed that
+vmlinux.scr was mistakenly listed in Documentation/dontdiff although
+it is a source file, and not a generated file (it's present in the .tar
+archive)
 
-On Sat, 6 Sep 2008, Thomas Gleixner wrote:
-> 
-> I didn't know that sending a test patch which is admittetly not pretty
-> is a capital crime nowadays.
+However, a couple of files that were really generated were missing.
 
-The thing is, there's a pattern to this. And it has nothing to do with 
-"test patch".
+Signed-off-by: Alain Knaff <alain@knaff.lu>
 
-See commit fbb16e243887332dd5754e48ffe5b963378f3cd2, and then see what I 
-had to do in ec0c15afb41fd9ad45b53468b60db50170e22346.
+---
 
-That wasn't a test patch, was it?
-
-I don't want to continually see these patches that are simply adding more 
-and more crap. I want to not have to clean up the end result afterwards.
-
-			Linus
+diff -purN -X linux-2.6.26.3udpcast/Documentation/dontdiff linux-2.6.26.3/Documentation/dontdiff linux-2.6.26.3udpcast/Documentation/dontdiff
+--- linux-2.6.26.3/Documentation/dontdiff	2008-08-20 20:11:37.000000000 +0200
++++ linux-2.6.26.3udpcast/Documentation/dontdiff	2008-09-06 22:04:53.000000000 +0200
+@@ -183,10 +183,18 @@ vmlinux
+ vmlinux-*
+ vmlinux.aout
+ vmlinux*.lds*
+-vmlinux*.scr
+ vsyscall.lds
+ wanxlfw.inc
+ uImage
+ unifdef
+ zImage*
+ zconf.hash.c
++bounds.h
++cpustr.h
++vdso-syms.lds
++vdso.so.dbg
++mkcpustr
++vmlinux.bin.all
++vmlinux.bin.lzma
++vmlinux.bin.bz2
++vmlinux.bin.gz
