@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbYIEX6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbYIFAED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172AbYIEX6n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Sep 2008 19:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYIEX6f
+	id S1753173AbYIFAED (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Sep 2008 20:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYIFADw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Sep 2008 19:58:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45791 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635AbYIEX6e (ORCPT
+	Fri, 5 Sep 2008 20:03:52 -0400
+Received: from quackingmoose.com ([63.73.180.143]:45266 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751607AbYIFADv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Sep 2008 19:58:34 -0400
-Date: Sat, 6 Sep 2008 02:01:54 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
-Message-ID: <20080906000154.GC18288@one.firstfloor.org>
-References: <20080905172132.GA11692@us.ibm.com> <87ej3yv588.fsf@basil.nowhere.org> <20080905195314.GE11692@us.ibm.com> <20080905200401.GA18288@one.firstfloor.org> <20080905215452.GF11692@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 5 Sep 2008 20:03:51 -0400
+Date: Fri, 5 Sep 2008 17:03:51 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080906000351.GE12911@merfinllc.com>
+References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="RpqchZ26BWispMcB"
 Content-Disposition: inline
-In-Reply-To: <20080905215452.GF11692@us.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I am not sure if I understand why you appear to be opposed to
-> enabling the hotremove function before all the issues related
 
-I'm quite sceptical that it can be ever made to work in a useful
-way for real hardware (as opposed to an hypervisor para virtual setup
-for which this interface is not the right way -- it should be done
-in some specific driver instead) 
+--RpqchZ26BWispMcB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-And if it cannot be made to work then it will be a false promise
-to the user. They will see it and think it will work, but it will
-not.
+On Sep 05 03:56 PM, Chuck Lever wrote:
+> > I can try to bisect between 2.6.19 <-> 2.6.20.
+>=20
+> That's a good start.
 
-This means I don't see a real use case for this feature.
+Hi,
 
--Andi
+OK.    Bisected.
 
+This is the commit where we start to see blocks of NULLs in NFS files.
+
+e261f51f25b98c213e0b3d7f2109b117d714f69d is first bad commit
+commit e261f51f25b98c213e0b3d7f2109b117d714f69d
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Tue Dec 5 00:35:41 2006 -0500
+
+    NFS: Make nfs_updatepage() mark the page as dirty.
+   =20
+    This will ensure that we can call set_page_writeback() from within
+    nfs_writepage(), which is always called with the page lock set.
+   =20
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+
+
+					Thanks,
+					=3Da=3D
+
+
+
+--=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Aaron Straus
+aaron@merfinllc.com
+
+--RpqchZ26BWispMcB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQFIwcjmr/o4YuvB+jgRAkFpAKDwFy4suG3fDVj9cdeidhWJcZ3obgCg43yF
+g0Aat8IFtXE0yjOzxOwARNc=
+=xXb5
+-----END PGP SIGNATURE-----
+
+--RpqchZ26BWispMcB--
