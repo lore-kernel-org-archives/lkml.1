@@ -1,94 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbYIFKLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYIFKPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbYIFKLb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 06:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbYIFKLW
+	id S1753535AbYIFKPr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 06:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYIFKPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 06:11:22 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:3009 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbYIFKLV (ORCPT
+	Sat, 6 Sep 2008 06:15:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:60180 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752349AbYIFKPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 06:11:21 -0400
-Date: Sat, 6 Sep 2008 12:18:16 +0200
-From: Krzysztof Helt <krzysztof.h1@poczta.fm>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Airlie <airlied@linux.ie>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: 2.6.27-rc5-mm1: 3 WARN_ON dumps during boot (acpi +
- vmap_pte_range)
-Message-Id: <20080906121816.e12ed118.krzysztof.h1@poczta.fm>
-In-Reply-To: <20080905235014.fc31b2b0.akpm@linux-foundation.org>
-References: <20080906084558.dff614d4.krzysztof.h1@poczta.fm>
-	<20080905235014.fc31b2b0.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-EMID: c8e2b138
+	Sat, 6 Sep 2008 06:15:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JhvTi7+FIts090/3pMWxRUOoL++DZOPHDcoZWFCi7jURnr8d9eNz8dYh8B6DlZ+Fh5
+         IGs8UKe9Ckv61yDUD3mVlMevGMQPADOawhsGvbVX8dWY9pCzZUx4BNgyx+uHNyoJVnwS
+         y2ULEg/8OiVtDSvnP+XWbL2p7je+UN22em6Ek=
+Date: Sat, 6 Sep 2008 14:15:33 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       yhlu.kernel@gmail.com, macro@linux-mips.org
+Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for
+	setup_IO_APIC_irqs
+Message-ID: <20080906101533.GA7273@lenovo>
+References: <20080904183748.950151853@gmail.com>> <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com> <20080905080447.GC12409@elte.hu> <20080905180126.GA19334@lenovo> <20080905181111.GG27395@elte.hu> <20080905183347.GB19334@lenovo> <20080905183835.GA19215@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080905183835.GA19215@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Sep 2008 23:50:14 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+[Ingo Molnar - Fri, Sep 05, 2008 at 08:38:35PM +0200]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > So as you see it's more then enough self-solid :) So I wouldn't break 
+| > it 'cause of printing. If we have enough memory for bit field - we 
+| > could just mark there if pin is connected to irq and print connection 
+| > map after. Don't get me wrong please - I just don't want to overload 
+| > this function with additional call.
+| 
+| the compiler will inline that single-called function just fine, as long 
+| as you declare it static.
+| 
+| spreading printouts over several functions isnt all that bad i think. We 
+| could even drop the 'not connected' complication - it's evident enough 
+| from the fact that nothing gets printed.
+| 
+| 	Ingo
+| 
 
-> On Sat, 6 Sep 2008 08:45:58 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> wrote:
-> 
-> This one I reported to Nick and Dave yesterday - no response as yet.
+Ingo, how about the following approach? We don't introduce new
+functions but rather srink the code by new printout form.
 
-I wanted only to report. I cannot use the 2.6.27-rc5-mm1 because
-the Xorg does not start (hangs) with it. My card is AGP so can it be
-related to the warnings?
+		- Cyrill -
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH] x86: io-apic - setup_IO_APIC_irqs code simplification
 
-> 
-> > ------------[ cut here ]------------
-> > WARNING: at mm/vmalloc.c:105 vmap_pte_range+0xcb/0x100()
-> > Modules linked in:
-> > Pid: 776, comm: modprobe Tainted: G        W 2.6.27-rc5-mm1 #1
-> >  [<c012526f>] warn_on_slowpath+0x5f/0x90
-> >  [<c01617e9>] handle_mm_fault+0x1d9/0x210
-> >  [<c01bd0a0>] ext3_get_block+0x0/0x100
-> >  [<c011759b>] do_page_fault+0x12b/0x4f0
-> >  [<c0105dde>] do_IRQ+0x7e/0xd0
-> >  [<c0154ce4>] __alloc_pages_internal+0x94/0x410
-> >  [<c0117470>] do_page_fault+0x0/0x4f0
-> >  [<c038506a>] error_code+0x72/0x78
-> >  [<c015496c>] buffered_rmqueue+0x12c/0x210
-> >  [<c014fbab>] find_get_page+0x2b/0xa0
-> >  [<c016768b>] vmap_pte_range+0xcb/0x100
-> >  [<c01676ed>] vmap_pmd_range+0x2d/0x40
-> >  [<c016772d>] vmap_pud_range+0x2d/0x40
-> >  [<c01677a6>] vmap_page_range+0x66/0x90
-> >  [<c016844f>] map_vm_area+0x2f/0x50
-> >  [<c0168996>] __vmalloc_area_node+0xb6/0x110
-> >  [<c0168a95>] __vmalloc_node+0x85/0xb0
-> >  [<c0148eb9>] load_module+0x89/0xd90
-> >  [<c0168b01>] vmalloc+0x21/0x30
-> >  [<c0148eb9>] load_module+0x89/0xd90
-> >  [<c0148eb9>] load_module+0x89/0xd90
-> >  [<c01380e0>] autoremove_wake_function+0x0/0x50
-> >  [<c0177db0>] vfs_read+0x90/0x150
-> >  [<c0149c44>] sys_init_module+0x44/0x1a0
-> >  [<c0178111>] sys_read+0x41/0x70
-> >  [<c01031fa>] syscall_call+0x7/0xb
-> >  =======================
-> > ---[ end trace 4eaa2a86a8e2da22 ]---
-> > Intel ICH 0000:00:1f.5: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-> > Intel ICH 0000:00:1f.5: setting latency timer to 64
-> 
-> That's coming out of the module loader and is a new one.  It's the same
-> warning as the agp one:
-> 
+By changing printout form we are able to shrink code a bit.
 
-The third one is interesting because it is "moving". One the first reboot
-(the posted was the second) this warning happened when the snd_au8820
-module was loaded and there was no warning about ext3.
+Former printout example:
 
-Regards,
-Krzysztof
+	init IO_APIC IRQs
+	 IO-APIC (apicid-pin) 1-1, 1-2, 1-3 not connected.
+	 IO-APIC (apicid-pin) 2-1, 2-2, 2-3 not connected.
 
-----------------------------------------------------------------------
-Nie zwlekaj! Tapetuj z nami!
-Sprawdz >>  http://link.interia.pl/f1f01
+New printout example:
 
+	init IO_APIC IRQs
+	 1-1 1-2 1-3 (apicid-pin) not connected
+	 2-1 2-2 2-3 (apicid-pin) not connected
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+
+Index: linux-2.6.git/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-06 13:46:23.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-06 14:08:13.000000000 +0400
+@@ -1516,41 +1516,44 @@ static void setup_IO_APIC_irq(int apic, 
+ 
+ static void __init setup_IO_APIC_irqs(void)
+ {
+-	int apic, pin, idx, irq, first_notcon = 1;
++	int apic, pin, idx, irq;
++	int notcon = 0;
+ 
+ 	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
+ 
+ 	for (apic = 0; apic < nr_ioapics; apic++) {
+-	for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
++		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
+ 
+-		idx = find_irq_entry(apic,pin,mp_INT);
+-		if (idx == -1) {
+-			if (first_notcon) {
+-				apic_printk(APIC_VERBOSE, KERN_DEBUG " IO-APIC (apicid-pin) %d-%d", mp_ioapics[apic].mp_apicid, pin);
+-				first_notcon = 0;
+-			} else
+-				apic_printk(APIC_VERBOSE, ", %d-%d", mp_ioapics[apic].mp_apicid, pin);
+-			continue;
+-		}
+-		if (!first_notcon) {
+-			apic_printk(APIC_VERBOSE, " not connected.\n");
+-			first_notcon = 1;
+-		}
++			idx = find_irq_entry(apic, pin, mp_INT);
++			if (idx == -1) {
++				apic_printk(APIC_VERBOSE,
++					KERN_DEBUG " %d-%d",
++					mp_ioapics[apic].mp_apicid, pin);
++				if (!notcon)
++					notcon = 1;
++				continue;
++			}
+ 
+-		irq = pin_2_irq(idx, apic, pin);
++			irq = pin_2_irq(idx, apic, pin);
+ #ifdef CONFIG_X86_32
+-                if (multi_timer_check(apic, irq))
+-                        continue;
++			if (multi_timer_check(apic, irq))
++				continue;
+ #endif
+-		add_pin_to_irq(irq, apic, pin);
++			add_pin_to_irq(irq, apic, pin);
+ 
+-		setup_IO_APIC_irq(apic, pin, irq,
+-				  irq_trigger(idx), irq_polarity(idx));
+-	}
++			setup_IO_APIC_irq(apic, pin, irq,
++					irq_trigger(idx), irq_polarity(idx));
++		}
++		if (notcon) {
++			apic_printk(APIC_VERBOSE,
++				KERN_DEBUG " (apicid-pin) not connected\n");
++			notcon = 0;
++		}
+ 	}
+ 
+-	if (!first_notcon)
+-		apic_printk(APIC_VERBOSE, " not connected.\n");
++	if (notcon)
++		apic_printk(APIC_VERBOSE,
++			KERN_DEBUG " (apicid-pin) not connected\n");
+ }
+ 
+ /*
