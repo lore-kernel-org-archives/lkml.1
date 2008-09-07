@@ -1,101 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbYIGW1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYIGWia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbYIGW1W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 18:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbYIGW1E
+	id S1755355AbYIGWia (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 18:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYIGWiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 18:27:04 -0400
-Received: from ns2.mvista.com ([63.81.120.155]:18975 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755532AbYIGW1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 18:27:01 -0400
-Message-ID: <48C4552F.9070806@ru.mvista.com>
-Date: Mon, 08 Sep 2008 02:26:55 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Sun, 7 Sep 2008 18:38:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:55253 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751504AbYIGWiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 18:38:21 -0400
+Message-ID: <48C457DC.9050904@goop.org>
+Date: Sun, 07 Sep 2008 15:38:20 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/18] ide: add ->read_sff_dma_status method
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <200809032013.08489.bzolnier@gmail.com> <48C41A2E.8040907@ru.mvista.com> <200809072123.33695.bzolnier@gmail.com>
-In-Reply-To: <200809072123.33695.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rambaldi <rambaldi@xs4all.nl>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.27-rc5 xen balloon driver warnings
+References: <48C0F09C.1000101@xs4all.nl>
+In-Reply-To: <48C0F09C.1000101@xs4all.nl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Bartlomiej Zolnierkiewicz wrote:
-
->>>>> static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
->>>>> {
->>>>> 	ide_hwif_t *hwif = drive->hwif;
->>>>> @@ -323,6 +331,8 @@ static void ata_output_data(ide_drive_t 
->>>>>
->>>>> void default_hwif_transport(ide_hwif_t *hwif)
->>>>> {
->>>>> +	hwif->read_sff_dma_status = ide_read_sff_dma_status;
->>>>> +
->>>>> 	hwif->tf_load	  = ide_tf_load;
->>>>> 	hwif->tf_read	  = ide_tf_read;
->>>>>           
->>>>    I also didn't understand the motivation behind putting this method 
->>>> together with the transport operations... IMO, DMA programming interface 
->>>> hardly has anything to do with transporting the data over IDE bus.
->>>>         
->>> The motivation was that hwif->dma_ops is not available yet when
->>> ->read_sff_dma_status is used in ide_pci_check_simplex().
->>>       
->>> However I agree that it should somehow find its way into ->dma_ops
->>> (as usual patches are stongly preffered :).
->>>       
->>     Unless I'm missing something changing the place where hwif->dma_ops is 
->> initialized to sff_dma_ops (along the lines it was changed for hwif->dma_base) 
->> seems pretty trivial, so I wonder why you didn't do it in the same patch...
->>     
-
-   Ah, I forgot for a moment that there were two patches and it would 
-have make no sense to do that in the patch that factored out 
-ide_pci_check_simplex()... And then tre was a patch introducing 'struct 
-ide_tp_ops' which incorporated the read_sff_dma_status() method.
-
-> Indeed, it should be trivial now, one just needs to be careful to:
+Rambaldi wrote:
+> Hi,
 >
-> * move 'if (d->dma_ops) ...' from ide_init_port() into
->   ->init_dma/ide_hwif_setup_dma()
->
-> * unset ->dma_ops on ->init_dma/ide_hwif_setup_dma() failures
->   
+> when running the 2.6.27-rc5 kernel as 64 bits dumU I get the following
+> warnings:
 
-   Sure.
+This patch, change 167e6cf62979df03513898966f9227847d192327 in tip.git,
+should fix this.  I'm not sure if the other sysfs changes apply to
+mainline git or not.
 
-> I guess I overlooked it ATM of making the patch (or the code evolved
-> greatly in the meantime)...
->   
+Could you try this and see how it goes?  The first chunk should be
+sufficient to fix your problem.
 
-   I think I understand now: it's sticking read_sff_dma_status() method 
-into 'struct ide_tp_ops' that was a wrong move that's worth undoing (by 
-putting it where it really belongs).
+     J
 
-> [ It is really time consuming and difficult to recall the every small
->   detail of every patch after few months (the patch was posted 10 weeks
->   
+Subject: xen-balloon: fix up sysfs issues
 
-   Heh, as if it wasn't time consuming to untange that after a few 
-months (when I'm suposed to spend time elsewhere :-)...
+1. Set the class so it doesn't clash with the normal memory class
+2. Fix up the sysfs show functions to match the new prototype
+3. Clean up use of memparse
 
->   ago and merged 6 weeks ago)...  The most efficient way of handling
->   such issues upon discovery is with sending patches... ]
->   
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: viets@work.de
+Cc: Andi Kleen <andi@firstfloor.org>
+---
+ drivers/xen/balloon.c |   27 ++++++++++++---------------
+ 1 file changed, 12 insertions(+), 15 deletions(-)
 
-    Sigh, I'll see what I can do in my currently very limieted time...
+===================================================================
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -60,7 +60,7 @@
+ 
+ #define PAGES2KB(_p) ((_p)<<(PAGE_SHIFT-10))
+ 
+-#define BALLOON_CLASS_NAME "memory"
++#define BALLOON_CLASS_NAME "xen_memory"
+ 
+ struct balloon_stats {
+ 	/* We aim for 'current allocation' == 'target allocation'. */
+@@ -588,12 +587,13 @@
+ }
+ 
+ 
+-#define BALLOON_SHOW(name, format, args...)			\
+-	static ssize_t show_##name(struct sys_device *dev,	\
+-				   char *buf)			\
+-	{							\
+-		return sprintf(buf, format, ##args);		\
+-	}							\
++#define BALLOON_SHOW(name, format, args...)				\
++	static ssize_t show_##name(struct sys_device *dev,		\
++				   struct sysdev_attribute *attr,	\
++				   char *buf)				\
++	{								\
++		return sprintf(buf, format, ##args);			\
++	}								\
+ 	static SYSDEV_ATTR(name, S_IRUGO, show_##name, NULL)
+ 
+ BALLOON_SHOW(current_kb, "%lu\n", PAGES2KB(balloon_stats.current_pages));
+@@ -604,7 +604,8 @@
+ 	     (balloon_stats.hard_limit!=~0UL) ? PAGES2KB(balloon_stats.hard_limit) : 0);
+ BALLOON_SHOW(driver_kb, "%lu\n", PAGES2KB(balloon_stats.driver_pages));
+ 
+-static ssize_t show_target_kb(struct sys_device *dev, char *buf)
++static ssize_t show_target_kb(struct sys_device *dev, struct sysdev_attribute *attr,
++			      char *buf)
+ {
+ 	return sprintf(buf, "%lu\n", PAGES2KB(balloon_stats.target_pages));
+ }
+@@ -614,19 +615,14 @@
+ 			       const char *buf,
+ 			       size_t count)
+ {
+-	char memstring[64], *endchar;
++	char *endchar;
+ 	unsigned long long target_bytes;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 
+-	if (count <= 1)
+-		return -EBADMSG; /* runt */
+-	if (count > sizeof(memstring))
+-		return -EFBIG;   /* too long */
+-	strcpy(memstring, buf);
++	target_bytes = memparse(buf, &endchar);
+ 
+-	target_bytes = memparse(memstring, &endchar);
+ 	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
+ 
+ 	return count;
 
-> Thanks,
-> Bart
->   
-
-MBR, Sergei
 
 
