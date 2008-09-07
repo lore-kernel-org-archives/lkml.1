@@ -1,127 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbYIGWTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbYIGWUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbYIGWTp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 18:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbYIGWRa
+	id S1755689AbYIGWUF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 18:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbYIGWRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 18:17:30 -0400
+	Sun, 7 Sep 2008 18:17:37 -0400
 Received: from mu-out-0910.google.com ([209.85.134.187]:25685 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755912AbYIGWR2 (ORCPT
+	with ESMTP id S1755953AbYIGWRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 18:17:28 -0400
+	Sun, 7 Sep 2008 18:17:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=JplE0alivsC4f692LqP21fCv5NcjxdG7lqKrXWBatVpuRqU94jH3vW0FOVJAJ6UmIu
-         mQ6ztKf01LjfH8D0hPIpEQy8+mKVmIwc3BVyOee/gmxKrwyeewIE4gyP8Ez9/H2bbxIf
-         iPMtG/j0yCihKFyATgrDTeqqcPbqhd0PXiwK4=
+        b=SFRClEyhATMrcWKDEejGaTBRDfLfeEyRmMTAwZI9vLseWnft53irJJU14V5OYMpe67
+         J3hGtsr4goPK1MmocSx4wC+uIaXnWImzFYdHoVNyxXwSXDLcwaRHs7fRS5QXJySLuTLs
+         v78zR/MaCxRchT9M6uo5qOhmM02d9WGzFIx70=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Mon, 08 Sep 2008 00:15:19 +0200
-Message-Id: <20080907221519.24285.44318.sendpatchset@localhost.localdomain>
+Date: Mon, 08 Sep 2008 00:15:26 +0200
+Message-Id: <20080907221526.24285.12942.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080907221424.24285.81137.sendpatchset@localhost.localdomain>
 References: <20080907221424.24285.81137.sendpatchset@localhost.localdomain>
-Subject: [PATCH 08/18] ide-floppy: use drive->capacity64 for caching current capacity
+Subject: [PATCH 09/18] ide: IDE_AFLAG_MEDIA_CHANGED -> IDE_DFLAG_MEDIA_CHANGED
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-* Use drive->capacity64 for caching current capacity.
-
-* Switch ide_floppy_capacity() to use drive->capacity64.
-
-* Call set_capacity() in idefloppy_open() and ide_floppy_probe()
-  instead of ide_floppy_get_capacity().
 
 There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-floppy.c |   23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ drivers/ide/ide-cd.c       |    6 +++---
+ drivers/ide/ide-cd_ioctl.c |    4 ++--
+ drivers/ide/ide-floppy.c   |    6 +++---
+ include/linux/ide.h        |    2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
+Index: b/drivers/ide/ide-cd.c
+===================================================================
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -88,7 +88,7 @@ static void ide_cd_put(struct cdrom_info
+ /* Mark that we've seen a media change and invalidate our internal buffers. */
+ static void cdrom_saw_media_change(ide_drive_t *drive)
+ {
+-	drive->atapi_flags |= IDE_AFLAG_MEDIA_CHANGED;
++	drive->dev_flags |= IDE_DFLAG_MEDIA_CHANGED;
+ 	drive->atapi_flags &= ~IDE_AFLAG_TOC_VALID;
+ }
+ 
+@@ -1882,8 +1882,8 @@ static int ide_cdrom_setup(ide_drive_t *
+ 	if (!drive->queue->unplug_delay)
+ 		drive->queue->unplug_delay = 1;
+ 
+-	drive->atapi_flags = IDE_AFLAG_MEDIA_CHANGED | IDE_AFLAG_NO_EJECT |
+-		       ide_cd_flags(id);
++	drive->dev_flags |= IDE_DFLAG_MEDIA_CHANGED;
++	drive->atapi_flags = IDE_AFLAG_NO_EJECT | ide_cd_flags(id);
+ 
+ 	if ((drive->atapi_flags & IDE_AFLAG_VERTOS_300_SSD) &&
+ 	    fw_rev[4] == '1' && fw_rev[6] <= '2')
+Index: b/drivers/ide/ide-cd_ioctl.c
+===================================================================
+--- a/drivers/ide/ide-cd_ioctl.c
++++ b/drivers/ide/ide-cd_ioctl.c
+@@ -86,8 +86,8 @@ int ide_cdrom_check_media_change_real(st
+ 
+ 	if (slot_nr == CDSL_CURRENT) {
+ 		(void) cdrom_check_status(drive, NULL);
+-		retval = (drive->atapi_flags & IDE_AFLAG_MEDIA_CHANGED) ? 1 : 0;
+-		drive->atapi_flags &= ~IDE_AFLAG_MEDIA_CHANGED;
++		retval = (drive->dev_flags & IDE_DFLAG_MEDIA_CHANGED) ? 1 : 0;
++		drive->dev_flags &= ~IDE_DFLAG_MEDIA_CHANGED;
+ 		return retval;
+ 	} else {
+ 		return -EINVAL;
 Index: b/drivers/ide/ide-floppy.c
 ===================================================================
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -445,7 +445,9 @@ static int ide_floppy_get_flexible_disk_
- 			drive->name, lba_capacity, capacity);
- 		floppy->blocks = floppy->block_size ?
- 			capacity / floppy->block_size : 0;
-+		drive->capacity64 = floppy->blocks * floppy->bs_factor;
- 	}
-+
- 	return 0;
- }
- 
-@@ -466,7 +468,7 @@ static int ide_floppy_get_capacity(ide_d
- 	drive->bios_head = drive->bios_sect = 0;
- 	floppy->blocks = 0;
- 	floppy->bs_factor = 1;
--	set_capacity(floppy->disk, 0);
-+	drive->capacity64 = 0;
- 
- 	ide_floppy_create_read_capacity_cmd(&pc);
- 	if (ide_queue_pc_tail(drive, disk, &pc)) {
-@@ -523,6 +525,8 @@ static int ide_floppy_get_capacity(ide_d
- 					       "non 512 bytes block size not "
- 					       "fully supported\n",
- 					       drive->name);
-+				drive->capacity64 =
-+					floppy->blocks * floppy->bs_factor;
- 				rc = 0;
- 			}
- 			break;
-@@ -547,17 +551,12 @@ static int ide_floppy_get_capacity(ide_d
- 	if (!(drive->atapi_flags & IDE_AFLAG_CLIK_DRIVE))
- 		(void) ide_floppy_get_flexible_disk_page(drive);
- 
--	set_capacity(disk, floppy->blocks * floppy->bs_factor);
--
- 	return rc;
- }
- 
- sector_t ide_floppy_capacity(ide_drive_t *drive)
- {
--	idefloppy_floppy_t *floppy = drive->driver_data;
--	unsigned long capacity = floppy->blocks * floppy->bs_factor;
--
--	return capacity;
-+	return drive->capacity64;
- }
- 
- static void idefloppy_setup(ide_drive_t *drive)
-@@ -671,14 +670,16 @@ static int idefloppy_open(struct inode *
- 		if (ide_do_test_unit_ready(drive, disk))
- 			ide_do_start_stop(drive, disk, 1);
- 
--		if (ide_floppy_get_capacity(drive)
--		   && (filp->f_flags & O_NDELAY) == 0
-+		ret = ide_floppy_get_capacity(drive);
-+
-+		set_capacity(disk, ide_floppy_capacity(drive));
-+
-+		if (ret && (filp->f_flags & O_NDELAY) == 0) {
- 		    /*
- 		     * Allow O_NDELAY to open a drive without a disk, or with an
- 		     * unreadable disk, so that we can get the format capacity
- 		     * of the drive or begin the format - Sam
- 		     */
--		    ) {
- 			ret = -EIO;
+@@ -689,8 +689,8 @@ static int idefloppy_open(struct inode *
  			goto out_put_floppy;
  		}
-@@ -811,6 +812,8 @@ static int ide_floppy_probe(ide_drive_t 
  
- 	idefloppy_setup(drive);
+-		drive->atapi_flags |= IDE_AFLAG_MEDIA_CHANGED;
+ 		ide_set_media_lock(drive, disk, 1);
++		drive->dev_flags |= IDE_DFLAG_MEDIA_CHANGED;
+ 		check_disk_change(inode->i_bdev);
+ 	} else if (drive->atapi_flags & IDE_AFLAG_FORMAT_IN_PROGRESS) {
+ 		ret = -EBUSY;
+@@ -747,8 +747,8 @@ static int idefloppy_media_changed(struc
+ 		drive->dev_flags &= ~IDE_DFLAG_ATTACH;
+ 		return 0;
+ 	}
+-	ret = !!(drive->atapi_flags & IDE_AFLAG_MEDIA_CHANGED);
+-	drive->atapi_flags &= ~IDE_AFLAG_MEDIA_CHANGED;
++	ret = !!(drive->dev_flags & IDE_DFLAG_MEDIA_CHANGED);
++	drive->dev_flags &= ~IDE_DFLAG_MEDIA_CHANGED;
+ 	return ret;
+ }
  
-+	set_capacity(g, ide_floppy_capacity(drive));
-+
- 	g->minors = 1 << PARTN_BITS;
- 	g->driverfs_dev = &drive->gendev;
- 	if (drive->dev_flags & IDE_DFLAG_REMOVABLE)
+Index: b/include/linux/ide.h
+===================================================================
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -462,7 +462,6 @@ struct ide_acpi_hwif_link;
+ /* ATAPI device flags */
+ enum {
+ 	IDE_AFLAG_DRQ_INTERRUPT		= (1 << 0),
+-	IDE_AFLAG_MEDIA_CHANGED		= (1 << 1),
+ 	/* Drive cannot lock the door. */
+ 	IDE_AFLAG_NO_DOORLOCK		= (1 << 2),
+ 
+@@ -571,6 +570,7 @@ enum {
+ 	/* retrying in PIO */
+ 	IDE_DFLAG_DMA_PIO_RETRY		= (1 << 25),
+ 	IDE_DFLAG_LBA			= (1 << 26),
++	IDE_DFLAG_MEDIA_CHANGED		= (1 << 27),
+ };
+ 
+ struct ide_drive_s {
