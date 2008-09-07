@@ -1,554 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYIGRUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYIGRW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbYIGRUy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 13:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYIGRUp
+	id S1755955AbYIGRW3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 13:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYIGRWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 13:20:45 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:31511 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753741AbYIGRUn (ORCPT
+	Sun, 7 Sep 2008 13:22:19 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:23486 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753891AbYIGRWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 13:20:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=dANWWAxNxqXijvZxFeNyE3cRQBnukDZD9+LIs1ibC+8dkQzu6j+sTRpAg3rbOD+obS
-         DB6h8FvgijXuLoXwW1kRULywxTUGy/4uvhrIdOKUKnYDeGjF25CC0O6b3nsjQdpQQte9
-         ZyNaNsK0gig/9+2I1Q7rOjKAybtk2UY+1cDX0=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: cpu make amd.c more like amd_64.c v2
-Date: Sun,  7 Sep 2008 10:20:38 -0700
-Message-Id: <1220808038-14987-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Sun, 7 Sep 2008 13:22:18 -0400
+Message-ID: <48C40DB4.5050007@panasas.com>
+Date: Sun, 07 Sep 2008 20:21:56 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Chris Leech <chris.leech@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Harvey Harrison <harvey.harrison@gmail.com>
+Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte
+ arrays as integers
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>	 <48C3A0A9.3000206@panasas.com> <41b516cb0809070856v2000b93bm5305236e4a98b81a@mail.gmail.com>
+In-Reply-To: <41b516cb0809070856v2000b93bm5305236e4a98b81a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Sep 2008 17:21:05.0010 (UTC) FILETIME=[1BC85D20:01C9110E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1. make 32bit have early_init_amd_mc and amd_detect_cmp
-2. seperate init_amd_k5/k6/k7 ...
+Chris Leech wrote:
+> On Sun, Sep 7, 2008 at 2:36 AM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+>> Chris Leech wrote:
+>>> Both iSCSI and Fibre Channel make use of 24-bit big-endian values in
+>>> frame headers.  This patch defines __be24 and __le24 typedefs for a
+>>> structure wrapped around a 3-byte array, and macros to convert back and
+>>> forth to a 32-bit integer.
+>>>
+>>> The undefs in iscsi_proto.h are because of the different calling
+>>> convention for the existing hton24 macro in the iSCSI code.  iSCSI will
+>>> be converted in a subsequent patch.
+>>>
+>>> Signed-off-by: Chris Leech <christopher.leech@intel.com>
+>> I like what this patch wants to accomplish, but I disagree with the
+>> implementation.
+>>
+>> First why is the double definition, one in include/linux/byteorder.h
+>> and one in include/linux/byteorder/generic.h ?
+> 
+> Because there are currently two byteorder/swab implementations in the
+> kernel.  As you said Harvey Harrison has done a lot of work in this
+> area, but right now only the arm and avr32 architectures make use of
+> the new linux/byteorder.h.  I could put the 24-bit support in it's own
+> header instead.
+> 
+>> Second and most important, in both these files all routines are inline's
+>> not MACROs, and rightly so. There is no place for a macro and the MACRO
+>> works bad for these.
+> 
+> I understand the benefits of inline functions, but I disagree that a
+> macro is a bad choice in this case.  An inline implementation of
+> cpu_to_be24/hton24 would require a different interface than the rest
+> of the byteorder functions, looking more like the existing iSCSI
+> hton24 macro by taking a pointer to a memory location to store the
+> result in.
+> 
+> By using a macro that expands to a compound literal, I was able to
+> maintain the same calling convention of X = cpu_to_be24(Y);
+> Attempting to do so with an inline results in a function definition
+> that returns a structure by value, and even when inlined generates
+> much worse assembly (yes, I tried it).
+> 
+>> One - the definition of a local variable in a {} scope in the middle of anywhere.
+> 
+> That was done in order to only evaluate the macro operand only once,
+> making it safe to call with an expression that may have side effects.
+> Macros that create scoped variables are all over the place, like min,
+> max and container_of.  I consider it necessary in creating a good
+> macro implementation for this functionality, and my motivation for
+> using macros was given above.
+> 
+>> Second - type safety.
+> 
+> Actually, the assignment to a locally scoped variable gives just as
+> much type checking as an inline would :-)
+> 
+> Chris
+> 
+>> I CC: Harvey Harrison which did lots of work in these area's.
+>>
+>> For me this patch is totally unacceptable.
+>>
+>> Thanks for working on this
+>> Boaz
 
-v2: fix compiling for !CONFIG_SMP
+I wanted to see what you're saying and tried this test code below:
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+<test.c>
+#include "stdio.h"
 
----
- arch/x86/kernel/cpu/amd.c    |  396 ++++++++++++++++++++++++-------------------
- arch/x86/kernel/cpu/amd_64.c |   17 +
- arch/x86/kernel/cpu/common.c |    2 
- include/asm-x86/processor.h  |    2 
- 4 files changed, 236 insertions(+), 181 deletions(-)
+typedef unsigned char __u8;
+typedef unsigned int __u32;
 
-Index: linux-2.6/arch/x86/kernel/cpu/amd.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd.c
-@@ -24,8 +24,200 @@
- extern void vide(void);
- __asm__(".align 4\nvide: ret");
- 
-+static void __cpuinit init_amd_k5(struct cpuinfo_x86 *c)
-+{
-+/*
-+ * General Systems BIOSen alias the cpu frequency registers
-+ * of the Elan at 0x000df000. Unfortuantly, one of the Linux
-+ * drivers subsequently pokes it, and changes the CPU speed.
-+ * Workaround : Remove the unneeded alias.
-+ */
-+#define CBAR		(0xfffc) /* Configuration Base Address  (32-bit) */
-+#define CBAR_ENB	(0x80000000)
-+#define CBAR_KEY	(0X000000CB)
-+	if (c->x86_model == 9 || c->x86_model == 10) {
-+		if (inl (CBAR) & CBAR_ENB)
-+			outl (0 | CBAR_KEY, CBAR);
-+	}
-+}
-+
-+
-+static void __cpuinit init_amd_k6(struct cpuinfo_x86 *c)
-+{
-+	u32 l, h;
-+	int mbytes = num_physpages >> (20-PAGE_SHIFT);
-+
-+	if (c->x86_model < 6) {
-+		/* Based on AMD doc 20734R - June 2000 */
-+		if (c->x86_model == 0) {
-+			clear_cpu_cap(c, X86_FEATURE_APIC);
-+			set_cpu_cap(c, X86_FEATURE_PGE);
-+		}
-+		return;
-+	}
-+
-+	if (c->x86_model == 6 && c->x86_mask == 1) {
-+		const int K6_BUG_LOOP = 1000000;
-+		int n;
-+		void (*f_vide)(void);
-+		unsigned long d, d2;
-+
-+		printk(KERN_INFO "AMD K6 stepping B detected - ");
-+
-+		/*
-+		 * It looks like AMD fixed the 2.6.2 bug and improved indirect
-+		 * calls at the same time.
-+		 */
-+
-+		n = K6_BUG_LOOP;
-+		f_vide = vide;
-+		rdtscl(d);
-+		while (n--)
-+			f_vide();
-+		rdtscl(d2);
-+		d = d2-d;
-+
-+		if (d > 20*K6_BUG_LOOP)
-+			printk("system stability may be impaired when more than 32 MB are used.\n");
-+		else
-+			printk("probably OK (after B9730xxxx).\n");
-+		printk(KERN_INFO "Please see http://membres.lycos.fr/poulot/k6bug.html\n");
-+	}
-+
-+	/* K6 with old style WHCR */
-+	if (c->x86_model < 8 ||
-+	   (c->x86_model == 8 && c->x86_mask < 8)) {
-+		/* We can only write allocate on the low 508Mb */
-+		if (mbytes > 508)
-+			mbytes = 508;
-+
-+		rdmsr(MSR_K6_WHCR, l, h);
-+		if ((l&0x0000FFFF) == 0) {
-+			unsigned long flags;
-+			l = (1<<0)|((mbytes/4)<<1);
-+			local_irq_save(flags);
-+			wbinvd();
-+			wrmsr(MSR_K6_WHCR, l, h);
-+			local_irq_restore(flags);
-+			printk(KERN_INFO "Enabling old style K6 write allocation for %d Mb\n",
-+				mbytes);
-+		}
-+		return;
-+	}
-+
-+	if ((c->x86_model == 8 && c->x86_mask > 7) ||
-+	     c->x86_model == 9 || c->x86_model == 13) {
-+		/* The more serious chips .. */
-+
-+		if (mbytes > 4092)
-+			mbytes = 4092;
-+
-+		rdmsr(MSR_K6_WHCR, l, h);
-+		if ((l&0xFFFF0000) == 0) {
-+			unsigned long flags;
-+			l = ((mbytes>>2)<<22)|(1<<16);
-+			local_irq_save(flags);
-+			wbinvd();
-+			wrmsr(MSR_K6_WHCR, l, h);
-+			local_irq_restore(flags);
-+			printk(KERN_INFO "Enabling new style K6 write allocation for %d Mb\n",
-+				mbytes);
-+		}
-+
-+		return;
-+	}
-+
-+	if (c->x86_model == 10) {
-+		/* AMD Geode LX is model 10 */
-+		/* placeholder for any needed mods */
-+		return;
-+	}
-+}
-+
-+static void __cpuinit init_amd_k7(struct cpuinfo_x86 *c)
-+{
-+	u32 l, h;
-+
-+	/*
-+	 * Bit 15 of Athlon specific MSR 15, needs to be 0
-+	 * to enable SSE on Palomino/Morgan/Barton CPU's.
-+	 * If the BIOS didn't enable it already, enable it here.
-+	 */
-+	if (c->x86_model >= 6 && c->x86_model <= 10) {
-+		if (!cpu_has(c, X86_FEATURE_XMM)) {
-+			printk(KERN_INFO "Enabling disabled K7/SSE Support.\n");
-+			rdmsr(MSR_K7_HWCR, l, h);
-+			l &= ~0x00008000;
-+			wrmsr(MSR_K7_HWCR, l, h);
-+			set_cpu_cap(c, X86_FEATURE_XMM);
-+		}
-+	}
-+
-+	/*
-+	 * It's been determined by AMD that Athlons since model 8 stepping 1
-+	 * are more robust with CLK_CTL set to 200xxxxx instead of 600xxxxx
-+	 * As per AMD technical note 27212 0.2
-+	 */
-+	if ((c->x86_model == 8 && c->x86_mask >= 1) || (c->x86_model > 8)) {
-+		rdmsr(MSR_K7_CLK_CTL, l, h);
-+		if ((l & 0xfff00000) != 0x20000000) {
-+			printk ("CPU: CLK_CTL MSR was %x. Reprogramming to %x\n", l,
-+				((l & 0x000fffff)|0x20000000));
-+			wrmsr(MSR_K7_CLK_CTL, (l & 0x000fffff)|0x20000000, h);
-+		}
-+	}
-+
-+	set_cpu_cap(c, X86_FEATURE_K7);
-+}
-+
-+/*
-+ * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
-+ * Assumes number of cores is a power of two.
-+ */
-+static void __cpuinit amd_detect_cmp(struct cpuinfo_x86 *c)
-+{
-+#ifdef CONFIG_X86_HT
-+	unsigned bits;
-+
-+	bits = c->x86_coreid_bits;
-+
-+	/* Low order bits define the core id (index of core in socket) */
-+	c->cpu_core_id = c->initial_apicid & ((1 << bits)-1);
-+	/* Convert the initial APIC ID into the socket ID */
-+	c->phys_proc_id = c->initial_apicid >> bits;
-+#endif
-+}
-+
-+static void __cpuinit early_init_amd_mc(struct cpuinfo_x86 *c)
-+{
-+#ifdef CONFIG_X86_HT
-+	unsigned bits, ecx;
-+
-+	/* Multi core CPU? */
-+	if (c->extended_cpuid_level < 0x80000008)
-+		return;
-+
-+	ecx = cpuid_ecx(0x80000008);
-+
-+	c->x86_max_cores = (ecx & 0xff) + 1;
-+
-+	/* CPU telling us the core id bits shift? */
-+	bits = (ecx >> 12) & 0xF;
-+
-+	/* Otherwise recompute */
-+	if (bits == 0) {
-+		while ((1 << bits) < c->x86_max_cores)
-+			bits++;
-+	}
-+
-+	c->x86_coreid_bits = bits;
-+#endif
-+}
-+
- static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
- {
-+	early_init_amd_mc(c);
-+
- 	if (c->x86_power & (1<<8))
- 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
- 
-@@ -37,9 +229,6 @@ static void __cpuinit early_init_amd(str
- 
- static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- {
--	u32 l, h;
--	int mbytes = num_physpages >> (20-PAGE_SHIFT);
--
- #ifdef CONFIG_SMP
- 	unsigned long long value;
- 
-@@ -50,7 +239,7 @@ static void __cpuinit init_amd(struct cp
- 	 * Errata 63 for SH-B3 steppings
- 	 * Errata 122 for all steppings (F+ have it disabled by default)
- 	 */
--	if (c->x86 == 15) {
-+	if (c->x86 == 0xf) {
- 		rdmsrl(MSR_K7_HWCR, value);
- 		value |= 1 << 6;
- 		wrmsrl(MSR_K7_HWCR, value);
-@@ -73,192 +262,55 @@ static void __cpuinit init_amd(struct cp
- 
- 	switch (c->x86) {
- 	case 4:
--		/*
--		 * General Systems BIOSen alias the cpu frequency registers
--		 * of the Elan at 0x000df000. Unfortuantly, one of the Linux
--		 * drivers subsequently pokes it, and changes the CPU speed.
--		 * Workaround : Remove the unneeded alias.
--		 */
--#define CBAR		(0xfffc) /* Configuration Base Address  (32-bit) */
--#define CBAR_ENB	(0x80000000)
--#define CBAR_KEY	(0X000000CB)
--			if (c->x86_model == 9 || c->x86_model == 10) {
--				if (inl (CBAR) & CBAR_ENB)
--					outl (0 | CBAR_KEY, CBAR);
--			}
--			break;
-+		init_amd_k5(c);
-+		break;
- 	case 5:
--			if (c->x86_model < 6) {
--				/* Based on AMD doc 20734R - June 2000 */
--				if (c->x86_model == 0) {
--					clear_cpu_cap(c, X86_FEATURE_APIC);
--					set_cpu_cap(c, X86_FEATURE_PGE);
--				}
--				break;
--			}
--
--			if (c->x86_model == 6 && c->x86_mask == 1) {
--				const int K6_BUG_LOOP = 1000000;
--				int n;
--				void (*f_vide)(void);
--				unsigned long d, d2;
--
--				printk(KERN_INFO "AMD K6 stepping B detected - ");
--
--				/*
--				 * It looks like AMD fixed the 2.6.2 bug and improved indirect
--				 * calls at the same time.
--				 */
--
--				n = K6_BUG_LOOP;
--				f_vide = vide;
--				rdtscl(d);
--				while (n--)
--					f_vide();
--				rdtscl(d2);
--				d = d2-d;
--
--				if (d > 20*K6_BUG_LOOP)
--					printk("system stability may be impaired when more than 32 MB are used.\n");
--				else
--					printk("probably OK (after B9730xxxx).\n");
--				printk(KERN_INFO "Please see http://membres.lycos.fr/poulot/k6bug.html\n");
--			}
--
--			/* K6 with old style WHCR */
--			if (c->x86_model < 8 ||
--			   (c->x86_model == 8 && c->x86_mask < 8)) {
--				/* We can only write allocate on the low 508Mb */
--				if (mbytes > 508)
--					mbytes = 508;
--
--				rdmsr(MSR_K6_WHCR, l, h);
--				if ((l&0x0000FFFF) == 0) {
--					unsigned long flags;
--					l = (1<<0)|((mbytes/4)<<1);
--					local_irq_save(flags);
--					wbinvd();
--					wrmsr(MSR_K6_WHCR, l, h);
--					local_irq_restore(flags);
--					printk(KERN_INFO "Enabling old style K6 write allocation for %d Mb\n",
--						mbytes);
--				}
--				break;
--			}
--
--			if ((c->x86_model == 8 && c->x86_mask > 7) ||
--			     c->x86_model == 9 || c->x86_model == 13) {
--				/* The more serious chips .. */
--
--				if (mbytes > 4092)
--					mbytes = 4092;
--
--				rdmsr(MSR_K6_WHCR, l, h);
--				if ((l&0xFFFF0000) == 0) {
--					unsigned long flags;
--					l = ((mbytes>>2)<<22)|(1<<16);
--					local_irq_save(flags);
--					wbinvd();
--					wrmsr(MSR_K6_WHCR, l, h);
--					local_irq_restore(flags);
--					printk(KERN_INFO "Enabling new style K6 write allocation for %d Mb\n",
--						mbytes);
--				}
--
--				break;
--			}
--
--			if (c->x86_model == 10) {
--				/* AMD Geode LX is model 10 */
--				/* placeholder for any needed mods */
--				break;
--			}
--			break;
--	case 6: /* An Athlon/Duron */
--
--			/*
--			 * Bit 15 of Athlon specific MSR 15, needs to be 0
--			 * to enable SSE on Palomino/Morgan/Barton CPU's.
--			 * If the BIOS didn't enable it already, enable it here.
--			 */
--			if (c->x86_model >= 6 && c->x86_model <= 10) {
--				if (!cpu_has(c, X86_FEATURE_XMM)) {
--					printk(KERN_INFO "Enabling disabled K7/SSE Support.\n");
--					rdmsr(MSR_K7_HWCR, l, h);
--					l &= ~0x00008000;
--					wrmsr(MSR_K7_HWCR, l, h);
--					set_cpu_cap(c, X86_FEATURE_XMM);
--				}
--			}
--
--			/*
--			 * It's been determined by AMD that Athlons since model 8 stepping 1
--			 * are more robust with CLK_CTL set to 200xxxxx instead of 600xxxxx
--			 * As per AMD technical note 27212 0.2
--			 */
--			if ((c->x86_model == 8 && c->x86_mask >= 1) || (c->x86_model > 8)) {
--				rdmsr(MSR_K7_CLK_CTL, l, h);
--				if ((l & 0xfff00000) != 0x20000000) {
--					printk ("CPU: CLK_CTL MSR was %x. Reprogramming to %x\n", l,
--						((l & 0x000fffff)|0x20000000));
--					wrmsr(MSR_K7_CLK_CTL, (l & 0x000fffff)|0x20000000, h);
--				}
--			}
--			break;
--	}
--
--	switch (c->x86) {
--	case 15:
--	/* Use K8 tuning for Fam10h and Fam11h */
--	case 0x10:
--	case 0x11:
--		set_cpu_cap(c, X86_FEATURE_K8);
-+		init_amd_k6(c);
- 		break;
--	case 6:
--		set_cpu_cap(c, X86_FEATURE_K7);
-+	case 6: /* An Athlon/Duron */
-+		init_amd_k7(c);
- 		break;
- 	}
-+
-+	/* K6s reports MCEs but don't actually have all the MSRs */
-+	if (c->x86 < 6)
-+		clear_cpu_cap(c, X86_FEATURE_MCE);
-+
- 	if (c->x86 >= 6)
- 		set_cpu_cap(c, X86_FEATURE_FXSAVE_LEAK);
- 
-+	if (!c->x86_model_id[0]) {
-+		switch (c->x86) {
-+		case 0xf:
-+			/* Should distinguish Models here, but this is only
-+			   a fallback anyways. */
-+			strcpy(c->x86_model_id, "Hammer");
-+			break;
-+		}
-+	}
-+
- 	display_cacheinfo(c);
- 
--	if (cpuid_eax(0x80000000) >= 0x80000008)
--		c->x86_max_cores = (cpuid_ecx(0x80000008) & 0xff) + 1;
-+	/* Multi core CPU? */
-+	if (c->extended_cpuid_level >= 0x80000008)
-+		amd_detect_cmp(c);
- 
--#ifdef CONFIG_X86_HT
--	/*
--	 * On a AMD multi core setup the lower bits of the APIC id
--	 * distinguish the cores.
--	 */
--	if (c->x86_max_cores > 1) {
--		int cpu = smp_processor_id();
--		unsigned bits = (cpuid_ecx(0x80000008) >> 12) & 0xf;
--
--		if (bits == 0) {
--			while ((1 << bits) < c->x86_max_cores)
--				bits++;
--		}
--		c->cpu_core_id = c->phys_proc_id & ((1<<bits)-1);
--		c->phys_proc_id >>= bits;
--		printk(KERN_INFO "CPU %d(%d) -> Core %d\n",
--		       cpu, c->x86_max_cores, c->cpu_core_id);
--	}
--#endif
-+	detect_ht(c);
- 
--	if (cpuid_eax(0x80000000) >= 0x80000006) {
--		if ((c->x86 == 0x10) && (cpuid_edx(0x80000006) & 0xf000))
-+	if (c->extended_cpuid_level >= 0x80000006) {
-+		if ((c->x86 >= 0x0f) && (cpuid_edx(0x80000006) & 0xf000))
- 			num_cache_leaves = 4;
- 		else
- 			num_cache_leaves = 3;
- 	}
- 
--	/* K6s reports MCEs but don't actually have all the MSRs */
--	if (c->x86 < 6)
--		clear_cpu_cap(c, X86_FEATURE_MCE);
-+	if (c->x86 >= 0xf && c->x86 <= 0x11)
-+		set_cpu_cap(c, X86_FEATURE_K8);
- 
--	if (cpu_has_xmm2)
-+	if (cpu_has_xmm2) {
-+		/* MFENCE stops RDTSC speculation */
- 		set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
-+	}
- }
- 
- static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
-Index: linux-2.6/arch/x86/kernel/cpu/amd_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/amd_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/amd_64.c
-@@ -174,17 +174,20 @@ static void __cpuinit init_amd(struct cp
- 	if (c->extended_cpuid_level >= 0x80000008)
- 		amd_detect_cmp(c);
- 
--	if (c->extended_cpuid_level >= 0x80000006 &&
--		(cpuid_edx(0x80000006) & 0xf000))
--		num_cache_leaves = 4;
--	else
--		num_cache_leaves = 3;
-+	if (c->extended_cpuid_level >= 0x80000006) {
-+		if ((c->x86 >= 0x0f) && (cpuid_edx(0x80000006) & 0xf000))
-+			num_cache_leaves = 4;
-+		else
-+			num_cache_leaves = 3;
-+	}
- 
- 	if (c->x86 >= 0xf && c->x86 <= 0x11)
- 		set_cpu_cap(c, X86_FEATURE_K8);
- 
--	/* MFENCE stops RDTSC speculation */
--	set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
-+	if (cpu_has_xmm2) {
-+		/* MFENCE stops RDTSC speculation */
-+		set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
-+	}
- 
- 	if (c->x86 == 0x10) {
- 		/* do this for boot cpu */
-Index: linux-2.6/include/asm-x86/processor.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/processor.h
-+++ linux-2.6/include/asm-x86/processor.h
-@@ -76,9 +76,9 @@ struct cpuinfo_x86 {
- 	int			 x86_tlbsize;
- 	__u8			x86_virt_bits;
- 	__u8			x86_phys_bits;
-+#endif
- 	/* CPUID returned core id bits: */
- 	__u8			x86_coreid_bits;
--#endif
- 	/* Max extended CPUID function supported: */
- 	__u32			extended_cpuid_level;
- 	/* Maximum supported CPUID level, -1=no CPUID: */
-Index: linux-2.6/arch/x86/kernel/cpu/common.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/common.c
-+++ linux-2.6/arch/x86/kernel/cpu/common.c
-@@ -629,8 +629,8 @@ static void __cpuinit identify_cpu(struc
- 	c->x86_vendor_id[0] = '\0'; /* Unset */
- 	c->x86_model_id[0] = '\0';  /* Unset */
- 	c->x86_max_cores = 1;
--#ifdef CONFIG_X86_64
- 	c->x86_coreid_bits = 0;
-+#ifdef CONFIG_X86_64
- 	c->x86_clflush_size = 64;
- #else
- 	c->cpuid_level = -1;	/* CPUID not detected */
+typedef struct { __u8 b[3]; } __be24, __le24;
+
+#define __be24_to_cpu(x) \
+({ \
+	__be24 _x = (x); \
+	(__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2])); \
+})
+
+static inline __u32 be24_to_cpu(__be24 _x)
+{
+	return (__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2]));
+}
+
+#define __cpu_to_be24(x) \
+({ \
+	__u32 _x = (x); \
+	(__be24) { .b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } }; \
+})
+
+static inline __be24 cpu_to_be24(__u32 _x)
+{
+	__be24 be = {
+		.b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } 
+	};
+	return be;
+}
+
+int test1(__u32 r)
+{
+	union {
+		__be24 be17;
+		__u32 be_as_u;
+	} be = {.be_as_u = 0};
+
+	be.be17 = cpu_to_be24(r);
+	__u32 cpu = be24_to_cpu(be.be17) + 1;
+
+	printf("cpu=%x be=%x\n",cpu, be.be_as_u);
+	return cpu;
+}
+
+int test2(__u32 r)
+{
+	union {
+		__be24 be17;
+		__u32 be_as_u;
+	} be = {.be_as_u = 0};
+
+	be.be17 = __cpu_to_be24(r);
+	__u32 cpu = __be24_to_cpu(be.be17) + 1;
+
+	printf("cpu=%x be=%x\n",cpu, be.be_as_u);
+	return cpu;
+}
+
+int main()
+{
+	__u32 r = rand();
+	test1(r);
+	test2(r);
+
+	return 0;
+}
+</test.c>
+
+I compile it like this:
+$ gcc -O1 test.c -o test
+if I
+$ gdb test
+gdb> disass test1
+gdb> disass test2
+
+I get the exact same assembly.
+
+What am I doing wrong ?
+
+$ gcc --version
+gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)
+
+Boaz
