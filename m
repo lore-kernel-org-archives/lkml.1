@@ -1,124 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYIGOMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbYIGPY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbYIGOMH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 10:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYIGOLz
+	id S1755406AbYIGPY4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 11:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYIGPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 10:11:55 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:20431 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbYIGOLy (ORCPT
+	Sun, 7 Sep 2008 11:24:47 -0400
+Received: from ik-out-1112.google.com ([66.249.90.183]:59246 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751531AbYIGPYq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 10:11:54 -0400
+	Sun, 7 Sep 2008 11:24:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=dHGsL9Vo6AkFVqPDP9xERh+GOus3z3PVxjuZPE7muo8CCi0s2+G0EC0MD74gwNnxzP
-         oiqHW74NQgDFuWSXuky4F78/VJ8jjLo5tUB+Qz6M6ToVwKORHDqG5zruKFF6ndHD62zT
-         0kYgf/ImMMoFA9BA6JrbMAfk7RGAg7PsAbXJ0=
-Date: Sun, 7 Sep 2008 17:11:43 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
-Message-ID: <20080907171143.3acdbedd@daedalus.pq.iki.fi>
-In-Reply-To: <20080904203058.7e57729e@daedalus.pq.iki.fi>
-References: <48B1D5CA.8000607@gmail.com>
-	<c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
-	<20080827212130.4b8365a8@daedalus.pq.iki.fi>
-	<c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
-	<20080828214256.296e34ec@daedalus.pq.iki.fi>
-	<c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
-	<20080904203058.7e57729e@daedalus.pq.iki.fi>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=u3oXg802R0E+0X1JW5DzLABxfluSyHfq0NvrF4e6lFROP3Ky8ZSfrVRteZnAn15RQb
+         aaZ730q/KzTaX87765D+K2AQq3oJcs4w9NMLCFZGchkO88jBhbbcgfERN5mnDv6O9+/R
+         bR9izsdEJtgzj4cE8bq0qfw9ivc95X79NENVE=
+Message-ID: <48C3F237.1020503@tuffmail.co.uk>
+Date: Sun, 07 Sep 2008 16:24:39 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Hugh Dickens <hugh@veritas.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Subject: Re: [PATCH 0 of 3] Low memory corruption detection and workaround
+References: <patchbomb.1220777491@localhost>
+In-Reply-To: <patchbomb.1220777491@localhost>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven,
+Jeremy Fitzhardinge wrote:
+> Hi Ingo,
+>
+> This series implements a check and workaround for memory corruption in
+> low memory.
+>
+> The first patch adds the basic mechanism.  The second adds some
+> enchancements from Hugh, namely periodic scanning for badness.  The
+> third tidies the user interface up by adding a proper Kconfig option
+> and several kernel command-line parameters to enable the feature and
+> control the amount of memory it scans and how often.  It also uses a
+> WARN() with the intention of getting any output into ksymoops.org.
+>
+> I've tested it as far as I can, but none of my systems seem to exhibit
+> this type of corruption so I haven't seen the failure case output.  I
+> hope Alan and Rafał can test this version of the patch and report it
+> does the expected thing.
+>
+> [ Hugh - I took the liberty of splitting your patch up into a delta on
+>   top of mine, moving the pure bugfixes into my base patch, and
+>   putting your additional code into the new patch From you with your
+>   sign-off from the original patch, and adding my own sob to reflect
+>   the changes I made.  I hope you don't mind. ]
+>
+> Thanks,
+> 	J
+>   
 
-is there a logic behind trace_seq_print_cont() printing the terminating
-newline only, when there actually is no TRACE_CONT entry?
+Seems to work ok. 
 
-Hmm, wait a minute, I don't understand how this thing works at all.
+(And here's the output, for the benefit of Google / kerneloops.org).
 
-Let's take for instance print_lat_fmt() which is the first user of
-trace_seq_print_cont(). Now, print_lat_fmt() does
+[   84.140181] Back to C!
+[   84.140181] Corrupted low memory at ffff8800000083e8 (83e8 phys) =
+803c85370cfc0000
+[   84.140181] Corrupted low memory at ffff8800000083f0 (83f0 phys) =
+00003000
+[   84.140181] ------------[ cut here ]------------
+[   84.140181] WARNING: at arch/x86/kernel/setup.c:698
+check_for_bios_corruption+0xd9/0xe0()
+[   84.140181] Memory corruption detected in low memory
+[   84.140181] Modules linked in:
+[   84.140181] Pid: 7813, comm: s2ram Not tainted
+2.6.27-rc5-00322-gb84d508 #160
+[   84.140181]
+[   84.140181] Call Trace:
+[   84.140181]  [<ffffffff80238a87>] warn_slowpath+0xb7/0xe0
+[   84.140181]  [<ffffffff802524f6>] ? down_trylock+0x36/0x50
+[   84.140181]  [<ffffffff80239330>] ? try_acquire_console_sem+0x10/0x40
+[   84.140181]  [<ffffffff80212b69>] ? read_tsc+0x9/0x20
+[   84.140181]  [<ffffffff80253eca>] ? getnstimeofday+0x3a/0xc0
+[   84.140181]  [<ffffffff80239c07>] ? printk+0x67/0x70
+[   84.140181]  [<ffffffff8036f3e3>] ? acpi_os_release_lock+0x9/0xb
+[   84.140181]  [<ffffffff8037d75c>] ? acpi_set_register+0x161/0x173
+[   84.140181]  [<ffffffff8020fe69>] check_for_bios_corruption+0xd9/0xe0
+[   84.140181]  [<ffffffff803c1db9>] pm_dev_dbg+0x9/0x10
+[   84.140181]  [<ffffffff803c28f2>] dpm_power_up+0x32/0xf0
+[   84.140181]  [<ffffffff803c2b47>] device_power_up+0x17/0x20
+[   84.140181]  [<ffffffff80261e6c>] suspend_devices_and_enter+0x16c/0x190
+[   84.140181]  [<ffffffff8026205c>] enter_state+0x19c/0x1b0
+[   84.140181]  [<ffffffff8026211f>] state_store+0xaf/0xf0
+[   84.140181]  [<ffffffff803465b7>] kobj_attr_store+0x17/0x20
+[   84.140181]  [<ffffffff802ff34b>] sysfs_write_file+0xeb/0x140
+[   84.140181]  [<ffffffff802a9c87>] vfs_write+0xc7/0x180
+[   84.140181]  [<ffffffff802aa290>] sys_write+0x50/0x90
+[   84.140181]  [<ffffffff8020c35b>] system_call_fastpath+0x16/0x1b
+[   84.140181]
+[   84.140181] ---[ end trace e31222efe32d34ab ]---
 
-	struct trace_entry *entry = iter->ent;
-
-and uses 'entry'. Let's assume it is of type TRACE_PRINT. It does
-
-	case TRACE_PRINT:
-		seq_print_ip_sym(s, field->print.ip, sym_flags);
-		trace_seq_printf(s, ": %s", field->print.buf);
-		if (field->flags & TRACE_FLAG_CONT)
-			trace_seq_print_cont(s, iter);
-		break;
-
-Ok, it prints the beginning of the message, and if there should be
-continuation blocks, it calls trace_seq_print_cont(), defined as
-follows:
-
-static void
-trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
-{
-	struct trace_array *tr = iter->tr;
-	struct trace_array_cpu *data = tr->data[iter->cpu];
-	struct trace_entry *ent;
-
-	ent = trace_entry_idx(tr, data, iter, iter->cpu);
-	if (!ent || ent->type != TRACE_CONT) {
-		trace_seq_putc(s, '\n');
-		return;
-	}
-
-	do {
-		trace_seq_printf(s, "%s", ent->cont.buf);
-		__trace_iterator_increment(iter, iter->cpu);
-		ent = trace_entry_idx(tr, data, iter, iter->cpu);
-	} while (ent && ent->type == TRACE_CONT);
-}
-
-Here it uses trace_entry_idx() to get 'ent'. What's the difference to
-iter->ent? I don't understand how trace_entry_idx() works, but looking
-at how it is used, it must return the pointer to the *next* entry in
-the ring buffer. So I don't understand the name of the function, and I
-don't see a call to __trace_iterator_increment(), which is confusing.
-
-If contrary to the assumption, 'ent' is not a continuation, it prints
-the terminating newline. This is an exceptional case, as the original
-entry was marked as having continuation entries.
-
-The normal case then is to execute the do-while, until it hits a
-non-continuation entry. Here it does *not* print the terminating newline.
-
-Steven, could you explain what is going on here?
-
-
-Thanks.
-
-
-
-On Thu, 4 Sep 2008 20:30:58 +0300
-Pekka Paalanen <pq@iki.fi> wrote:
-
-> b) have a customisable trace_seq_print_cont()
-> 
-> I think I'd favour b). When I tried to use trace_seq_print_cont(),
-> I found it difficult to control the printing of \n at the end of
-> message. So I would implement my own routine to handle also what
-> trace_seq_print_cont() does, filtering the text while copying it
-> to struct trace_seq. I'm not sure where this function should live.
-> It could be useful to all tracers, that want "one line per marker
-> entry" style output, so it could live in trace.c.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
