@@ -1,219 +1,554 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYIGQ4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYIGRUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbYIGQ4i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 12:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbYIGQ4a
+	id S1755860AbYIGRUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 13:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbYIGRUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 12:56:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48087 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753906AbYIGQ42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 12:56:28 -0400
-Date: Sun, 7 Sep 2008 16:56:25 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.37-rc1
-Message-ID: <20080907165625.GA997@hera.kernel.org>
-Reply-To: w@1wt.eu
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Sep 2008 16:56:27 +0000 (UTC)
+	Sun, 7 Sep 2008 13:20:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:31511 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741AbYIGRUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 13:20:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=dANWWAxNxqXijvZxFeNyE3cRQBnukDZD9+LIs1ibC+8dkQzu6j+sTRpAg3rbOD+obS
+         DB6h8FvgijXuLoXwW1kRULywxTUGy/4uvhrIdOKUKnYDeGjF25CC0O6b3nsjQdpQQte9
+         ZyNaNsK0gig/9+2I1Q7rOjKAybtk2UY+1cDX0=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: cpu make amd.c more like amd_64.c v2
+Date: Sun,  7 Sep 2008 10:20:38 -0700
+Message-Id: <1220808038-14987-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+1. make 32bit have early_init_amd_mc and amd_detect_cmp
+2. seperate init_amd_k5/k6/k7 ...
 
-I've just released Linux 2.4.37-rc1.
+v2: fix compiling for !CONFIG_SMP
 
-This version includes all fixes that went into 2.4.36.7, plus a few
-add-ons that were requested several times. Most of them are simply IDE
-PCI updates to support recent IDE/SATA/AHCI controllers commonly found
-on a lot of motherboards. Many of them have been successfully tested
-(I personally tested ICH8, ICH9, MV6145 and JMicron 368). In fact, all
-my intel-based motherboards had no working IDE or SATA at all and now
-are all fully functional after a full week-end of build/boot/test
-cycles.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-Among other user-visible changes, I've merged Erik Andersen's old
-patch to correctly register/unregister SCSI devices when plugging or
-unplugging USB devices. Having been using it for the last 3 years, I
-forgot how painful it was to use USB storage on a standard kernel 2.4
-machine. Fortunately there are still users to remind me that!
+---
+ arch/x86/kernel/cpu/amd.c    |  396 ++++++++++++++++++++++++-------------------
+ arch/x86/kernel/cpu/amd_64.c |   17 +
+ arch/x86/kernel/cpu/common.c |    2 
+ include/asm-x86/processor.h  |    2 
+ 4 files changed, 236 insertions(+), 181 deletions(-)
 
-Accompanying this patch is another one to add the "rootdelay" command
-line parameter, which is necessary to boot on USB devices. This is
-something all users (including me) have been using in various forms,
-so let's merge it in a form compatible with kernel 2.6 instead of
-having everyone patch each new release.
-
-There are two fixes I had in my own tree that will be backported to
-2.4.36.8. One fixes build of i386 without CONFIG_VT, and the other one
-fixes duplex detection and setting on via-rhine.
-
-The rest consists in minor updates (the Netfilter CLASSIFY target and
-support for ADM8515 in Pegasus USB ethernet driver).
-
-As previously announced, I've dropped the -pre naming in favor of -rc.
-I expect the 2.4.37 cycle to be short because it's based on very stable
-code and only includes minor additions, so the risk of a regression is
-particularly low. If you're interested by or feel concerned by a change,
-please test it and report your findings. If you are missing one minor
-feature or driver which you think might be of interest to other people,
-is already present in 2.6, and has a very low risk of regression,
-please send it early so that we can merge it in an -rc for people to
-test it. Also, if you want to post PCI ID updates (eg: IDE controllers),
-it's OK provided that you test them on real hardware ; I don't want to
-receive massive resyncs with 2.6 leading to untested drivers.
-
-I was tempted by merging a kbuild-2.4 patch that brings build targets
-allmodconfig, allyesconfig, randconfig, etc... and which I use before
-every release to ensure everything builds. For instance, I know that
-all 1167 modules I can configure on i386 build. But I figured I would
-likely be the only user of this patch. If other persons find it useful,
-please ask, I may reconsider the option, it's not intrusive at all.
-
-I expect to release 2.4.37 around october or november (depending on my
-spare time and reports in fact). There will probably be between 2 and 4
-rc, this one is already very polished.
-
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/patch-2.4.37-rc1.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/patch-2.4.37.log
-
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/wtarreau/linux-2.4.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/wtarreau/linux-2.4.git/
-
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/wtarreau/linux-2.4.git
-
-Last point, the changelog seems large because it includes all 2.4.36.X
-changes. The diff with 2.4.36.7 only show something like 15 lines.
-
-Now test, have fun and report !
-
-Willy
---
-Summary of changes from v2.4.36 to v2.4.37-rc1
-============================================
-
-Al Viro (1):
-      Fix SMP ordering hole in fcntl_setlk() (CVE-2008-1669)
-
-Axel Reinhold (1):
-      add ICH9x support to ahci driver
-
-Carsten (1):
-      usb: add support for ADM8515 to pegasus.h
-
-Chris Wright (1):
-      asn1: additional sanity checking during BER decoding (CVE-2008-1673)
-
-David Newall (1):
-      usb-serial: back-port of pl2303.c from 2.6.24.1
-
-David S. Miller (3):
-      sit: Add missing kfree_skb() on pskb_may_pull() failure (CVE-2008-2136)
-      sparc: Fix mmap VA span checking (CVE-2008-2137)
-      sctp: Make sure N * sizeof(union sctp_addr) does not overflow (CVE-2008-2826)
-
-Emeric Brun (1):
-      x86 SMP: don't report error on uniprocessor machines
-
-Erik Andersen (1):
-      2.4.x USB and 1394 hotplug
-
-Eugene Teo (1):
-      wan: Missing capability checks in sbni_ioctl() (CVE-2008-3525)
-
-Florin Malita (1):
-      [PPPOE]: Missing result check in __pppoe_xmit().
-
-Gilbert Ashley (1):
-      Kernel patch to add rootdelay feature
-
-Gilbert Ashley Gilbert (1):
-      udf: fix uid/gid permissions
-
-Gilles Espinasse (2):
-      PCI ID updates for amd74xx
-      ahci driver update
-
-Glen Nakamura (3):
-      ext2_readdir() filp->f_pos fix (try #2)
-      Duplicate id in videodev.h
-      Fix typo in acpi_boot_init
-
-Gunnar Larisch (1):
-      3c980-TX needs EXTRA_PREAMBLE
-
-Herbert Xu (1):
-      net pppoe: Check packet length on all receive paths
-
-Ivaylo Josifov (1):
-      ide-generic: Marvell IDE 88SE6101 2.4.XX support
-
-Jesse Brandeburg (1):
-      ip-pnp-dhcp: wait lazily when doing dhcp for diskless systems
-
-Li Zefan (1):
-      ACPI: check a return value correctly in acpi_power_get_context()
-
-Patrick McHardy (1):
-      [TCP]: Fix shrinking windows with window scaling
-
-Roel Kluin (1):
-      wireless, airo: waitbusy() won't delay
-
-Solar Designer (1):
-      IDE: fix panic during probe with negative IRQ
-
-Stephen Hemminger (1):
-      ipv6: use timer pending
-
-Steve Rosenbluth (3):
-      signal.h: use an explicit cast to silent compiler warnings
-      fix build error with some flavours of gcc 2.95.3
-      ata_piix: add PCI ID for intel ICH8 controller
-
-Unknown (1):
-      linux-2.4 CLASSIFY patch.
-
-Vlad Yasevich (2):
-      sctp: Do not leak memory on multiple listen() calls
-      sctp: Allow only 1 listening socket with SO_REUSEADDR
-
-Willy Tarreau (15):
-      Do not complain about gcc 4.2 for user-space
-      i386: fix setCx86/getCx86 race in macros
-      security: insufficient range checks in certain fault handlers
-      intermezzo: fix uninitialized use of pointer in error path
-      Fix dnotify/close race (CVE-2008-1375)
-      ide-generic: add support for JMicron 368
-      ide-generic: add support for Marvell 6145 PATA port
-      ata_piix: add support for ICH9 in IDE mode
-      doc: explain how to build a suitable gcc in Documentation/using-newer-gcc.txt
-      sound: fix warning due to incorrect error code checking in ad1889
-      sky2: fix uninitialized "mss" variable in sky2_xmit_frame()
-      x86 would not build without CONFIG_VT
-      via-rhine: fix mii duplex detection during link monitoring
-      pc_keyb: fix breakage on ia64/mips/mips64
-      Change VERSION to 2.4.37-rc1
-
-Xiong Wu (1):
-      Correct the upto value during list conntrack information
-
-dann frazier (8):
-      avoid semi-infinite loop when mounting bad ext2
-      ext2: skip pages past number of blocks in ext2_find_entry
-      memory leak when socket is release()d before PPPIOCGCHAN has been called on it
-      2.4: fix memory corruption from misinterpreted bad_inode_ops return values
-      2.4: [SCSI] aacraid: Fix security hole
-      2.4: USB: fix DoS in pwc USB video driver
-      2.4: [POWERPC] CHRP: Fix possible NULL pointer dereference
-      old buffer overflow in moxa driver (CVE-2005-0504)
-
+Index: linux-2.6/arch/x86/kernel/cpu/amd.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
++++ linux-2.6/arch/x86/kernel/cpu/amd.c
+@@ -24,8 +24,200 @@
+ extern void vide(void);
+ __asm__(".align 4\nvide: ret");
+ 
++static void __cpuinit init_amd_k5(struct cpuinfo_x86 *c)
++{
++/*
++ * General Systems BIOSen alias the cpu frequency registers
++ * of the Elan at 0x000df000. Unfortuantly, one of the Linux
++ * drivers subsequently pokes it, and changes the CPU speed.
++ * Workaround : Remove the unneeded alias.
++ */
++#define CBAR		(0xfffc) /* Configuration Base Address  (32-bit) */
++#define CBAR_ENB	(0x80000000)
++#define CBAR_KEY	(0X000000CB)
++	if (c->x86_model == 9 || c->x86_model == 10) {
++		if (inl (CBAR) & CBAR_ENB)
++			outl (0 | CBAR_KEY, CBAR);
++	}
++}
++
++
++static void __cpuinit init_amd_k6(struct cpuinfo_x86 *c)
++{
++	u32 l, h;
++	int mbytes = num_physpages >> (20-PAGE_SHIFT);
++
++	if (c->x86_model < 6) {
++		/* Based on AMD doc 20734R - June 2000 */
++		if (c->x86_model == 0) {
++			clear_cpu_cap(c, X86_FEATURE_APIC);
++			set_cpu_cap(c, X86_FEATURE_PGE);
++		}
++		return;
++	}
++
++	if (c->x86_model == 6 && c->x86_mask == 1) {
++		const int K6_BUG_LOOP = 1000000;
++		int n;
++		void (*f_vide)(void);
++		unsigned long d, d2;
++
++		printk(KERN_INFO "AMD K6 stepping B detected - ");
++
++		/*
++		 * It looks like AMD fixed the 2.6.2 bug and improved indirect
++		 * calls at the same time.
++		 */
++
++		n = K6_BUG_LOOP;
++		f_vide = vide;
++		rdtscl(d);
++		while (n--)
++			f_vide();
++		rdtscl(d2);
++		d = d2-d;
++
++		if (d > 20*K6_BUG_LOOP)
++			printk("system stability may be impaired when more than 32 MB are used.\n");
++		else
++			printk("probably OK (after B9730xxxx).\n");
++		printk(KERN_INFO "Please see http://membres.lycos.fr/poulot/k6bug.html\n");
++	}
++
++	/* K6 with old style WHCR */
++	if (c->x86_model < 8 ||
++	   (c->x86_model == 8 && c->x86_mask < 8)) {
++		/* We can only write allocate on the low 508Mb */
++		if (mbytes > 508)
++			mbytes = 508;
++
++		rdmsr(MSR_K6_WHCR, l, h);
++		if ((l&0x0000FFFF) == 0) {
++			unsigned long flags;
++			l = (1<<0)|((mbytes/4)<<1);
++			local_irq_save(flags);
++			wbinvd();
++			wrmsr(MSR_K6_WHCR, l, h);
++			local_irq_restore(flags);
++			printk(KERN_INFO "Enabling old style K6 write allocation for %d Mb\n",
++				mbytes);
++		}
++		return;
++	}
++
++	if ((c->x86_model == 8 && c->x86_mask > 7) ||
++	     c->x86_model == 9 || c->x86_model == 13) {
++		/* The more serious chips .. */
++
++		if (mbytes > 4092)
++			mbytes = 4092;
++
++		rdmsr(MSR_K6_WHCR, l, h);
++		if ((l&0xFFFF0000) == 0) {
++			unsigned long flags;
++			l = ((mbytes>>2)<<22)|(1<<16);
++			local_irq_save(flags);
++			wbinvd();
++			wrmsr(MSR_K6_WHCR, l, h);
++			local_irq_restore(flags);
++			printk(KERN_INFO "Enabling new style K6 write allocation for %d Mb\n",
++				mbytes);
++		}
++
++		return;
++	}
++
++	if (c->x86_model == 10) {
++		/* AMD Geode LX is model 10 */
++		/* placeholder for any needed mods */
++		return;
++	}
++}
++
++static void __cpuinit init_amd_k7(struct cpuinfo_x86 *c)
++{
++	u32 l, h;
++
++	/*
++	 * Bit 15 of Athlon specific MSR 15, needs to be 0
++	 * to enable SSE on Palomino/Morgan/Barton CPU's.
++	 * If the BIOS didn't enable it already, enable it here.
++	 */
++	if (c->x86_model >= 6 && c->x86_model <= 10) {
++		if (!cpu_has(c, X86_FEATURE_XMM)) {
++			printk(KERN_INFO "Enabling disabled K7/SSE Support.\n");
++			rdmsr(MSR_K7_HWCR, l, h);
++			l &= ~0x00008000;
++			wrmsr(MSR_K7_HWCR, l, h);
++			set_cpu_cap(c, X86_FEATURE_XMM);
++		}
++	}
++
++	/*
++	 * It's been determined by AMD that Athlons since model 8 stepping 1
++	 * are more robust with CLK_CTL set to 200xxxxx instead of 600xxxxx
++	 * As per AMD technical note 27212 0.2
++	 */
++	if ((c->x86_model == 8 && c->x86_mask >= 1) || (c->x86_model > 8)) {
++		rdmsr(MSR_K7_CLK_CTL, l, h);
++		if ((l & 0xfff00000) != 0x20000000) {
++			printk ("CPU: CLK_CTL MSR was %x. Reprogramming to %x\n", l,
++				((l & 0x000fffff)|0x20000000));
++			wrmsr(MSR_K7_CLK_CTL, (l & 0x000fffff)|0x20000000, h);
++		}
++	}
++
++	set_cpu_cap(c, X86_FEATURE_K7);
++}
++
++/*
++ * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
++ * Assumes number of cores is a power of two.
++ */
++static void __cpuinit amd_detect_cmp(struct cpuinfo_x86 *c)
++{
++#ifdef CONFIG_X86_HT
++	unsigned bits;
++
++	bits = c->x86_coreid_bits;
++
++	/* Low order bits define the core id (index of core in socket) */
++	c->cpu_core_id = c->initial_apicid & ((1 << bits)-1);
++	/* Convert the initial APIC ID into the socket ID */
++	c->phys_proc_id = c->initial_apicid >> bits;
++#endif
++}
++
++static void __cpuinit early_init_amd_mc(struct cpuinfo_x86 *c)
++{
++#ifdef CONFIG_X86_HT
++	unsigned bits, ecx;
++
++	/* Multi core CPU? */
++	if (c->extended_cpuid_level < 0x80000008)
++		return;
++
++	ecx = cpuid_ecx(0x80000008);
++
++	c->x86_max_cores = (ecx & 0xff) + 1;
++
++	/* CPU telling us the core id bits shift? */
++	bits = (ecx >> 12) & 0xF;
++
++	/* Otherwise recompute */
++	if (bits == 0) {
++		while ((1 << bits) < c->x86_max_cores)
++			bits++;
++	}
++
++	c->x86_coreid_bits = bits;
++#endif
++}
++
+ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
+ {
++	early_init_amd_mc(c);
++
+ 	if (c->x86_power & (1<<8))
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+ 
+@@ -37,9 +229,6 @@ static void __cpuinit early_init_amd(str
+ 
+ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
+ {
+-	u32 l, h;
+-	int mbytes = num_physpages >> (20-PAGE_SHIFT);
+-
+ #ifdef CONFIG_SMP
+ 	unsigned long long value;
+ 
+@@ -50,7 +239,7 @@ static void __cpuinit init_amd(struct cp
+ 	 * Errata 63 for SH-B3 steppings
+ 	 * Errata 122 for all steppings (F+ have it disabled by default)
+ 	 */
+-	if (c->x86 == 15) {
++	if (c->x86 == 0xf) {
+ 		rdmsrl(MSR_K7_HWCR, value);
+ 		value |= 1 << 6;
+ 		wrmsrl(MSR_K7_HWCR, value);
+@@ -73,192 +262,55 @@ static void __cpuinit init_amd(struct cp
+ 
+ 	switch (c->x86) {
+ 	case 4:
+-		/*
+-		 * General Systems BIOSen alias the cpu frequency registers
+-		 * of the Elan at 0x000df000. Unfortuantly, one of the Linux
+-		 * drivers subsequently pokes it, and changes the CPU speed.
+-		 * Workaround : Remove the unneeded alias.
+-		 */
+-#define CBAR		(0xfffc) /* Configuration Base Address  (32-bit) */
+-#define CBAR_ENB	(0x80000000)
+-#define CBAR_KEY	(0X000000CB)
+-			if (c->x86_model == 9 || c->x86_model == 10) {
+-				if (inl (CBAR) & CBAR_ENB)
+-					outl (0 | CBAR_KEY, CBAR);
+-			}
+-			break;
++		init_amd_k5(c);
++		break;
+ 	case 5:
+-			if (c->x86_model < 6) {
+-				/* Based on AMD doc 20734R - June 2000 */
+-				if (c->x86_model == 0) {
+-					clear_cpu_cap(c, X86_FEATURE_APIC);
+-					set_cpu_cap(c, X86_FEATURE_PGE);
+-				}
+-				break;
+-			}
+-
+-			if (c->x86_model == 6 && c->x86_mask == 1) {
+-				const int K6_BUG_LOOP = 1000000;
+-				int n;
+-				void (*f_vide)(void);
+-				unsigned long d, d2;
+-
+-				printk(KERN_INFO "AMD K6 stepping B detected - ");
+-
+-				/*
+-				 * It looks like AMD fixed the 2.6.2 bug and improved indirect
+-				 * calls at the same time.
+-				 */
+-
+-				n = K6_BUG_LOOP;
+-				f_vide = vide;
+-				rdtscl(d);
+-				while (n--)
+-					f_vide();
+-				rdtscl(d2);
+-				d = d2-d;
+-
+-				if (d > 20*K6_BUG_LOOP)
+-					printk("system stability may be impaired when more than 32 MB are used.\n");
+-				else
+-					printk("probably OK (after B9730xxxx).\n");
+-				printk(KERN_INFO "Please see http://membres.lycos.fr/poulot/k6bug.html\n");
+-			}
+-
+-			/* K6 with old style WHCR */
+-			if (c->x86_model < 8 ||
+-			   (c->x86_model == 8 && c->x86_mask < 8)) {
+-				/* We can only write allocate on the low 508Mb */
+-				if (mbytes > 508)
+-					mbytes = 508;
+-
+-				rdmsr(MSR_K6_WHCR, l, h);
+-				if ((l&0x0000FFFF) == 0) {
+-					unsigned long flags;
+-					l = (1<<0)|((mbytes/4)<<1);
+-					local_irq_save(flags);
+-					wbinvd();
+-					wrmsr(MSR_K6_WHCR, l, h);
+-					local_irq_restore(flags);
+-					printk(KERN_INFO "Enabling old style K6 write allocation for %d Mb\n",
+-						mbytes);
+-				}
+-				break;
+-			}
+-
+-			if ((c->x86_model == 8 && c->x86_mask > 7) ||
+-			     c->x86_model == 9 || c->x86_model == 13) {
+-				/* The more serious chips .. */
+-
+-				if (mbytes > 4092)
+-					mbytes = 4092;
+-
+-				rdmsr(MSR_K6_WHCR, l, h);
+-				if ((l&0xFFFF0000) == 0) {
+-					unsigned long flags;
+-					l = ((mbytes>>2)<<22)|(1<<16);
+-					local_irq_save(flags);
+-					wbinvd();
+-					wrmsr(MSR_K6_WHCR, l, h);
+-					local_irq_restore(flags);
+-					printk(KERN_INFO "Enabling new style K6 write allocation for %d Mb\n",
+-						mbytes);
+-				}
+-
+-				break;
+-			}
+-
+-			if (c->x86_model == 10) {
+-				/* AMD Geode LX is model 10 */
+-				/* placeholder for any needed mods */
+-				break;
+-			}
+-			break;
+-	case 6: /* An Athlon/Duron */
+-
+-			/*
+-			 * Bit 15 of Athlon specific MSR 15, needs to be 0
+-			 * to enable SSE on Palomino/Morgan/Barton CPU's.
+-			 * If the BIOS didn't enable it already, enable it here.
+-			 */
+-			if (c->x86_model >= 6 && c->x86_model <= 10) {
+-				if (!cpu_has(c, X86_FEATURE_XMM)) {
+-					printk(KERN_INFO "Enabling disabled K7/SSE Support.\n");
+-					rdmsr(MSR_K7_HWCR, l, h);
+-					l &= ~0x00008000;
+-					wrmsr(MSR_K7_HWCR, l, h);
+-					set_cpu_cap(c, X86_FEATURE_XMM);
+-				}
+-			}
+-
+-			/*
+-			 * It's been determined by AMD that Athlons since model 8 stepping 1
+-			 * are more robust with CLK_CTL set to 200xxxxx instead of 600xxxxx
+-			 * As per AMD technical note 27212 0.2
+-			 */
+-			if ((c->x86_model == 8 && c->x86_mask >= 1) || (c->x86_model > 8)) {
+-				rdmsr(MSR_K7_CLK_CTL, l, h);
+-				if ((l & 0xfff00000) != 0x20000000) {
+-					printk ("CPU: CLK_CTL MSR was %x. Reprogramming to %x\n", l,
+-						((l & 0x000fffff)|0x20000000));
+-					wrmsr(MSR_K7_CLK_CTL, (l & 0x000fffff)|0x20000000, h);
+-				}
+-			}
+-			break;
+-	}
+-
+-	switch (c->x86) {
+-	case 15:
+-	/* Use K8 tuning for Fam10h and Fam11h */
+-	case 0x10:
+-	case 0x11:
+-		set_cpu_cap(c, X86_FEATURE_K8);
++		init_amd_k6(c);
+ 		break;
+-	case 6:
+-		set_cpu_cap(c, X86_FEATURE_K7);
++	case 6: /* An Athlon/Duron */
++		init_amd_k7(c);
+ 		break;
+ 	}
++
++	/* K6s reports MCEs but don't actually have all the MSRs */
++	if (c->x86 < 6)
++		clear_cpu_cap(c, X86_FEATURE_MCE);
++
+ 	if (c->x86 >= 6)
+ 		set_cpu_cap(c, X86_FEATURE_FXSAVE_LEAK);
+ 
++	if (!c->x86_model_id[0]) {
++		switch (c->x86) {
++		case 0xf:
++			/* Should distinguish Models here, but this is only
++			   a fallback anyways. */
++			strcpy(c->x86_model_id, "Hammer");
++			break;
++		}
++	}
++
+ 	display_cacheinfo(c);
+ 
+-	if (cpuid_eax(0x80000000) >= 0x80000008)
+-		c->x86_max_cores = (cpuid_ecx(0x80000008) & 0xff) + 1;
++	/* Multi core CPU? */
++	if (c->extended_cpuid_level >= 0x80000008)
++		amd_detect_cmp(c);
+ 
+-#ifdef CONFIG_X86_HT
+-	/*
+-	 * On a AMD multi core setup the lower bits of the APIC id
+-	 * distinguish the cores.
+-	 */
+-	if (c->x86_max_cores > 1) {
+-		int cpu = smp_processor_id();
+-		unsigned bits = (cpuid_ecx(0x80000008) >> 12) & 0xf;
+-
+-		if (bits == 0) {
+-			while ((1 << bits) < c->x86_max_cores)
+-				bits++;
+-		}
+-		c->cpu_core_id = c->phys_proc_id & ((1<<bits)-1);
+-		c->phys_proc_id >>= bits;
+-		printk(KERN_INFO "CPU %d(%d) -> Core %d\n",
+-		       cpu, c->x86_max_cores, c->cpu_core_id);
+-	}
+-#endif
++	detect_ht(c);
+ 
+-	if (cpuid_eax(0x80000000) >= 0x80000006) {
+-		if ((c->x86 == 0x10) && (cpuid_edx(0x80000006) & 0xf000))
++	if (c->extended_cpuid_level >= 0x80000006) {
++		if ((c->x86 >= 0x0f) && (cpuid_edx(0x80000006) & 0xf000))
+ 			num_cache_leaves = 4;
+ 		else
+ 			num_cache_leaves = 3;
+ 	}
+ 
+-	/* K6s reports MCEs but don't actually have all the MSRs */
+-	if (c->x86 < 6)
+-		clear_cpu_cap(c, X86_FEATURE_MCE);
++	if (c->x86 >= 0xf && c->x86 <= 0x11)
++		set_cpu_cap(c, X86_FEATURE_K8);
+ 
+-	if (cpu_has_xmm2)
++	if (cpu_has_xmm2) {
++		/* MFENCE stops RDTSC speculation */
+ 		set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
++	}
+ }
+ 
+ static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 *c, unsigned int size)
+Index: linux-2.6/arch/x86/kernel/cpu/amd_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd_64.c
++++ linux-2.6/arch/x86/kernel/cpu/amd_64.c
+@@ -174,17 +174,20 @@ static void __cpuinit init_amd(struct cp
+ 	if (c->extended_cpuid_level >= 0x80000008)
+ 		amd_detect_cmp(c);
+ 
+-	if (c->extended_cpuid_level >= 0x80000006 &&
+-		(cpuid_edx(0x80000006) & 0xf000))
+-		num_cache_leaves = 4;
+-	else
+-		num_cache_leaves = 3;
++	if (c->extended_cpuid_level >= 0x80000006) {
++		if ((c->x86 >= 0x0f) && (cpuid_edx(0x80000006) & 0xf000))
++			num_cache_leaves = 4;
++		else
++			num_cache_leaves = 3;
++	}
+ 
+ 	if (c->x86 >= 0xf && c->x86 <= 0x11)
+ 		set_cpu_cap(c, X86_FEATURE_K8);
+ 
+-	/* MFENCE stops RDTSC speculation */
+-	set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
++	if (cpu_has_xmm2) {
++		/* MFENCE stops RDTSC speculation */
++		set_cpu_cap(c, X86_FEATURE_MFENCE_RDTSC);
++	}
+ 
+ 	if (c->x86 == 0x10) {
+ 		/* do this for boot cpu */
+Index: linux-2.6/include/asm-x86/processor.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/processor.h
++++ linux-2.6/include/asm-x86/processor.h
+@@ -76,9 +76,9 @@ struct cpuinfo_x86 {
+ 	int			 x86_tlbsize;
+ 	__u8			x86_virt_bits;
+ 	__u8			x86_phys_bits;
++#endif
+ 	/* CPUID returned core id bits: */
+ 	__u8			x86_coreid_bits;
+-#endif
+ 	/* Max extended CPUID function supported: */
+ 	__u32			extended_cpuid_level;
+ 	/* Maximum supported CPUID level, -1=no CPUID: */
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -629,8 +629,8 @@ static void __cpuinit identify_cpu(struc
+ 	c->x86_vendor_id[0] = '\0'; /* Unset */
+ 	c->x86_model_id[0] = '\0';  /* Unset */
+ 	c->x86_max_cores = 1;
+-#ifdef CONFIG_X86_64
+ 	c->x86_coreid_bits = 0;
++#ifdef CONFIG_X86_64
+ 	c->x86_clflush_size = 64;
+ #else
+ 	c->cpuid_level = -1;	/* CPUID not detected */
