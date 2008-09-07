@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYIGEUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbYIGEfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYIGEUr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 00:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbYIGEUi
+	id S1753375AbYIGEfT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 00:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYIGEfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 00:20:38 -0400
-Received: from ganymede.vroon.org ([195.66.242.11]:33128 "EHLO
-	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbYIGEUh (ORCPT
+	Sun, 7 Sep 2008 00:35:03 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:42930 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750766AbYIGEfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 00:20:37 -0400
-Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
-From: Tony Vroon <tony@vroon.org>
-To: Jeroen van Rijn <jvrnix@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <8ee0b8e80809062016r12388b59nea95f820079c39f8@mail.gmail.com>
-References: <1220754742.8530.12.camel@localhost>
-	 <8ee0b8e80809062016r12388b59nea95f820079c39f8@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+DtZTRs8Y/2F16PNPuxj"
-Date: Sun, 07 Sep 2008 05:22:07 +0100
-Message-Id: <1220761327.8530.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 7 Sep 2008 00:35:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=m2kyY3xKJ71y58vT1qnAiA8s/7k6xjZlf6FmmNu4xUcrqe5YpyJyNDG6OnFd1HP2JDrLmf8GDVhTMxgJWOEfuwwhBbglQlf7Sz1EYlGEtMwwi4Rg3NZZY8h2GaVElUDMesKDuxGI2yPN+kJIPn/cozH8bhOz5JlWzuDtktEAVXk=  ;
+X-YMail-OSG: o1lkmM4VM1k3SorhcvbzsK4d8vRBavrI0oti05ADF5khb7AeUXL.XvRoY6Q0LnWziwLihrb3c4mFnqEnztdnJppVos0wlft5a1uFZ0B..8ag7Fftr3BFAbSSzuJGYvAcw0s-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] USB: g_file_storage: fix handling zero-length packet
+Date: Sat, 6 Sep 2008 21:32:56 -0700
+User-Agent: KMail/1.9.9
+Cc: sangsu <sangsu@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, gregkh@suse.de
+References: <Pine.LNX.4.44L0.0809061615340.30019-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0809061615340.30019-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200809062132.56859.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 06 September 2008, Alan Stern wrote:
+> Secondly, the patch is not needed.  g_file_storage doesn't have to 
+> check whether the data size is a multiple of MaxPacketSize because the 
+> device controller driver already is supposed to make that check.
 
---=-+DtZTRs8Y/2F16PNPuxj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Exactly.
 
-On Sun, 2008-09-07 at 05:16 +0200, Jeroen van Rijn wrote:
-> Still, before I sign off, have you tried running "mcelog
-> --ascii"? It needs to be run on the machine the check occured on. It
-> might give you something to go on before the cavalry arrives.
+The only fuzziness here is what to do if the host misbehaves and
+sends another IN packet when all its data has been sent, instead
+of the OUT/STATUS packet.  (Host error...)
 
-That worked, thank you. Had to feed it back in as /dev/mcelog was empty,
-but it made a bit more sense of it:
-
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 0 data cache        bit57 =3D processor context corrupt
-       bit59 =3D misc error valid
-       bit61 =3D error uncorrected
-       bit62 =3D error overflow (multiple errors)
-  bus error 'local node observed, request didn't time out
-      generic error mem transaction
-      generic access, level generic'
-STATUS fa00002000020c0f MCGSTATUS 0
-MCE 1
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 4 0 data cache        bit57 =3D processor context corrupt
-       bit59 =3D misc error valid
-       bit61 =3D error uncorrected
-       bit62 =3D error overflow (multiple errors)
-  bus error 'generic participation, request timed out
-      generic error mem transaction
-      generic access, level generic'
-STATUS fa00000000070f0f MCGSTATUS 0
-
-> Best regards,
->   Jeroen.
-
-Regards,
-Tony V.
-
---=-+DtZTRs8Y/2F16PNPuxj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkjDVu8ACgkQp5vW4rUFj5qQagCgicbpvVJX66dPgxoGfPkN4sRx
-ot4An0YsKhy/Y1X2MMtbhMeeOD5s2OjG
-=pHii
------END PGP SIGNATURE-----
-
---=-+DtZTRs8Y/2F16PNPuxj--
-
+Most peripheral controller hardware is well enough designed that
+it can detect this and send a zero length packet rather than STALL
+the transfer.  It's polite to do so, because that host bug isn't
+exactly unknown.  (Some old versions of Linux did that...)
