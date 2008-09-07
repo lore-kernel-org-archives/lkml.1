@@ -1,165 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYIGTrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbYIGUIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756108AbYIGTrd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 15:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbYIGTrZ
+	id S1756120AbYIGUIQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 16:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbYIGUIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 15:47:25 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:53112 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755569AbYIGTrY (ORCPT
+	Sun, 7 Sep 2008 16:08:00 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:33401 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754322AbYIGUH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 15:47:24 -0400
-Date: Sun, 7 Sep 2008 12:46:28 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
-       akpm@linux-foundation.org, dipankar@in.ibm.com,
-       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
-       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
-       andi@firstfloor.org
-Subject: Re: [RFC, PATCH] Add a CPU_STARTING notifier (was: Re: [PATCH,
-	RFC] v4 scalable classic RCU implementation)
-Message-ID: <20080907194628.GC6941@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <48C3AA6A.3060402@colorfullife.com>
+	Sun, 7 Sep 2008 16:07:59 -0400
+From: David Sanders <linux@sandersweb.net>
+Reply-To: linux@sandersweb.net
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+Date: Sun, 7 Sep 2008 16:07:52 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+References: <200808311422.12525.linux@sandersweb.net> <48C1C156.9080003@zytor.com>
+In-Reply-To: <48C1C156.9080003@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C3AA6A.3060402@colorfullife.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200809071607.52645.linux@sandersweb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 07, 2008 at 12:18:18PM +0200, Manfred Spraul wrote:
-> Paul E. McKenney wrote:
->> +/*
->> + * If the specified CPU is offline, tell the caller that it is in
->> + * a quiescent state.  Otherwise, whack it with a reschedule IPI.
->> + * Grace periods can end up waiting on an offline CPU when that
->> + * CPU is in the process of coming online -- it will be added to the
->> + * rcu_node bitmasks before it actually makes it online.  Because this
->> + * race is quite rare, we check for it after detecting that the grace
->> + * period has been delayed rather than checking each and every CPU
->> + * each and every time we start a new grace period.
->> + */
->> +static int rcu_implicit_offline_qs(struct rcu_data *rdp)
->> +{
->> +	/*
->> +	 * If the CPU is offline, it is in a quiescent state.  We can
->> +	 * trust its state not to change because interrupts are disabled.
->> +	 */
->> +	if (cpu_is_offline(rdp->cpu)) {
->> +		rdp->offline_fqs++;
->> +		return 1;
->> +	}
->>   
-> I fear that this won't work.
-> E.g. look at x86, smp_callin() [arch/x86/kernel/smpboot.c]:
-> The boot code must enable local interrupts around calibrate_delay(), 
-> otherwise the NMI watchdog would complain.
-> That means the first interrupts, the first read side critical sections can 
-> run way before the cpu bit is set within cpu_online_map.
-> cpus are just started, we are not within stop_machine. Thus we cannot make 
-> any assumption about what the remaining cpus are doing.
-
-Ouch!  Very good catch!!!  ;-)
-
-> What about introducing a CPU_STARTING notifier call, similar to CPU_DYING:
-> - called with disabled interrupts
-> - called before interrupts are enabled
-> - must not sleep
-> - called on the new cpu.
-
-I suppose another approach would be to make calibrate_delay() kick the
-watchdog timer every so often, but the effort explaining to people why
-their machine's bogomips had decreased would probably far exceed any
-possible benefit...
-
-So given a CPU_STARTING notifier, RCU could set a bit in a coming-online
-bitmap, which would be reset rcu_online_cpu().  Then RCU would consider
-a CPU offline only if it is marked offline in cpu_online_map -and- it is
-not marked as coming-online.
-
-> This might also be useful for something like kvm. I'm not sure if it's 
-> guaranteed that hardware_enable() runs early enough.
+On Friday 05 September 2008 19:31, H. Peter Anvin wrote:
+> David Sanders wrote:
+> > I recently discovered that x86 kernels won't boot under Virtual PC.  In
+> > this case paravirt was not built into the kernel.  The kernel just
+> > "hangs" on attempted boot with no error messages.  Git-bisect pinpointed
+> > the following commit as the problem:
 >
-> Attached is a patch proposal. Note that it doesn't work correctly: On 
-> x86-64, I have seen that CPU_STARTING is called after CPU_ONLINE. Thus 
-> frozen_cpus could already be cleared, then _FROZEN would be wrong.
+> Hi David,
+>
+> Could you please confirm if the tip kernel solves the problem?
+>
+> Either that or apply this patch series to mainline; I'd like to promote
+> this to urgent and send it to Linus for inclusion in 2.6.27, but I need
+> verification as quickly as possible.
+>
+> 	-hpa
+Peter, sorry about delay in replying I was out of town for weekend.  I will 
+apply your patch and git back to you on results.  A quick look a the patches 
+indicates that nop.h and the users of nop.h are not addressed so I may have 
+to combine your patches with Linus's Kconfig patch to get a working kernel.
+David
 
-Then notify_cpu_starting() is invoked right before smp_callin() in
-start_secondary()?
-
-							Thanx, Paul
-
-> --
-> Manfred
-
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index d7faf88..c2747ac 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -69,6 +69,7 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
->  #endif
-> 
->  int cpu_up(unsigned int cpu);
-> +void notify_cpu_starting(unsigned int cpu);
->  extern void cpu_hotplug_init(void);
->  extern void cpu_maps_update_begin(void);
->  extern void cpu_maps_update_done(void);
-> diff --git a/include/linux/notifier.h b/include/linux/notifier.h
-> index da2698b..8e47661 100644
-> --- a/include/linux/notifier.h
-> +++ b/include/linux/notifier.h
-> @@ -213,9 +213,16 @@ static inline int notifier_to_errno(int ret)
->  #define CPU_DOWN_FAILED		0x0006 /* CPU (unsigned)v NOT going down */
->  #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
->  #define CPU_DYING		0x0008 /* CPU (unsigned)v not running any task,
-> -				        * not handling interrupts, soon dead */
-> +				        * not handling interrupts, soon dead.
-> +				        * Called on the dying cpu, interrupts
-> +				        * are already disabled. Must not
-> +				        * sleep, must not fail */
->  #define CPU_POST_DEAD		0x0009 /* CPU (unsigned)v dead, cpu_hotplug
->  					* lock is dropped */
-> +#define CPU_STARTING		0x000A /* CPU (unsigned)v soon running.
-> +					* Called on the new cpu, just before
-> +					* enabling interrupts. Must not sleep,
-> +					* must not fail */
-> 
->  /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
->   * operation in progress
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index 5b7c88f..2300fc0 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -455,6 +455,25 @@ out:
->  }
->  #endif /* CONFIG_PM_SLEEP_SMP */
-> 
-> +/**
-> + * notify_cpu_starting(cpu) - call the CPU_STARTING notifiers
-> + * @cpu: cpu that just started
-> + *
-> + * This function calls the cpu_chain notifiers with CPU_STARTING.
-> + * It must be called by the arch code on the new cpu, immediately
-> + * before enabling interrupts.
-> + */
-> +void notify_cpu_starting(unsigned int cpu)
-> +{
-> +	unsigned long val = CPU_STARTING;
-> +
-> +#ifdef CONFIG_PM_SLEEP_SMP
-> +	if (cpu_isset(cpu, frozen_cpus))
-> +		val = CPU_STARTING_FROZEN;
-> +#endif /* CONFIG_PM_SLEEP_SMP */
-> +	raw_notifier_call_chain(&cpu_chain, val, (void*)(long)cpu);
-> +}
-> +
->  #endif /* CONFIG_SMP */
-> 
->  /*
 
