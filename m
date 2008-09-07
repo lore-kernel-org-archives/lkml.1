@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYIGRwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYIGSLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbYIGRwV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 13:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbYIGRwI
+	id S1755943AbYIGSLo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 14:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbYIGSLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 13:52:08 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:37281 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754050AbYIGRwF (ORCPT
+	Sun, 7 Sep 2008 14:11:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39791 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbYIGSLe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 13:52:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IlvUwSignyMPxn0gHOzfsLGmdA0BL7FGdGCHJoFwojbeNJB9zyDNu19vts9s6jg6zm
-         zAwCea5FQIW+nkEiq5Si9+o7fmP05nu4Fj5yc5y/7cxys88pIqE55cm/LgEH9wnD1E+y
-         cT96QrFsvxbq4B/mgOj5FmIfeyh6QUoe9YWfo=
-Message-ID: <41b516cb0809071052t1aea47b3hd7dc40d3bb1cfce3@mail.gmail.com>
-Date: Sun, 7 Sep 2008 10:52:04 -0700
-From: "Chris Leech" <chris.leech@gmail.com>
-To: "Boaz Harrosh" <bharrosh@panasas.com>
-Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte arrays as integers
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       "Harvey Harrison" <harvey.harrison@gmail.com>
-In-Reply-To: <48C40DB4.5050007@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 7 Sep 2008 14:11:34 -0400
+Date: Sun, 7 Sep 2008 11:11:37 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tglx@tglx.de, torvalds@linux-foundation.org,
+       peterz@infradead.org
+Subject: update on hrtimer based select/poll and range-hrtimers
+Message-ID: <20080907111137.76a10b1e@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>
-	 <48C3A0A9.3000206@panasas.com>
-	 <41b516cb0809070856v2000b93bm5305236e4a98b81a@mail.gmail.com>
-	 <48C40DB4.5050007@panasas.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 7, 2008 at 10:21 AM, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> I wanted to see what you're saying and tried this test code below:
->
-> <test.c>
->
-> I get the exact same assembly.
->
-> What am I doing wrong ?
+Hi,
 
-Interesting.  My earlier comparisons were done in the kernel and
-comparing the resulting libicssi.o and iscsi_tcp.o.  Let me look into
-this more.
+since the last lkml posting I've merged a few fixes and added comments
+from Peter, and I've redone the "estimate_accuracy" function.
 
-Chris
+Rather than reposting the entire series, I'll point to the git tree at
+
+git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-hrtimer.git
+
+and I've pasted the new function below.
+Rather than having the hardcoded steps from the "Linus" function, I've
+turned it into:
+0 for realtime tasks
+"0.1% of the time" for not-nice, not realtime tasks
+"0.5% of the time" for nice, not realtime tasks
+with a cap of 100msec for both.
+
+I would like to request feedback on this approach; I think this is
+better than the "hardcoded steps" as before, but maybe someone can come
+up with an ever better idea....
+
+static unsigned long __estimate_accuracy(struct timespec *tv)
+{
+        unsigned long slack;
+        int divfactor = 1000;
+  
+        if (task_nice(current))
+                divfactor = divfactor / 5;
+
+        slack = tv->tv_nsec / divfactor; 
+        slack += tv->tv_sec * (NSEC_PER_SEC/divfactor);
+
+        if (slack > 100 * NSEC_PER_MSEC)
+                slack =  100 * NSEC_PER_MSEC;
+        return slack;
+}
+
+static unsigned long estimate_accuracy(struct timespec *tv)
+{
+        unsigned long ret;
+        struct timespec now;
+
+        /*
+         * Realtime tasks get a slack of 0 for obvious reasons.
+         */
+
+        if (current->policy == SCHED_FIFO ||
+                current->policy == SCHED_RR)
+                return 0;
+
+        ktime_get_ts(&now);
+        now = timespec_sub(*tv, now);
+        ret = __estimate_accuracy(&now);
+        if (ret < current->timer_slack_ns)
+                return current->timer_slack_ns;
+        return ret;
+}
