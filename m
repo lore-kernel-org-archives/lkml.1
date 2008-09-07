@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbYIGXZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbYIGXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752017AbYIGXZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 19:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751014AbYIGXZs
+	id S1751942AbYIGXfi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 19:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbYIGXf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 19:25:48 -0400
-Received: from xenotime.net ([66.160.160.81]:45566 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750823AbYIGXZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 19:25:48 -0400
-Date: Sun, 7 Sep 2008 16:25:39 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
-cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com
-Subject: Re: build issue #565 for v2.6.27-rc5 : undefined reference to
- `ei_interrupt' in hp-plus.c
-In-Reply-To: <200809071519.09066.toralf.foerster@gmx.de>
-Message-ID: <Pine.LNX.4.64.0809071623590.14467@shark.he.net>
-References: <200809071519.09066.toralf.foerster@gmx.de>
+	Sun, 7 Sep 2008 19:35:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:44112 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbYIGXf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 19:35:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=D9aSB9yk1eSImaXYRXvllzTFh9KEOBTza/ny2bBFV2tLy0fEHKnZroixw4vdI/oYLh
+         55j3F1p+YowlZlf0JEggIclAVxRdMqhXyYJJK5pJXmha8dYaHCWTeRo4+Ts59705zVIK
+         m8bUedD8Z+N9pB+qfMS1R9q/Dz7Dzh390vU7k=
+Message-ID: <86802c440809071635l1457659bufeefa6e65cc34bdf@mail.gmail.com>
+Date: Sun, 7 Sep 2008 16:35:25 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [Xen-devel] [PATCH 7 of 7] x86: always explicitly map acpi memory
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Xen Devel" <xen-devel@lists.xensource.com>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <6f23bad119ae2ed00f1c.1220826079@localhost>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1606286688-1757710931-1220829939=:14467"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <patchbomb.1220826072@localhost>
+	 <6f23bad119ae2ed00f1c.1220826079@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, Sep 7, 2008 at 3:21 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Always map acpi tables, rather than assuming we can use the normal
+> linear mapping to access the acpi tables.  This is necessary in a
+> virtual environment where the linear mappings are to pseudo-physical
+> memory, but the acpi tables exist at a real physical address.  It
+> doesn't hurt to map in the normal non-virtual case, so just do it
+> unconditionally.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>  arch/x86/kernel/acpi/boot.c |    3 ---
+>  1 file changed, 3 deletions(-)
+>
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -126,9 +126,6 @@
+>
+>        if (!phys || !size)
+>                return NULL;
+> -
+> -       if (phys+size <= (max_low_pfn_mapped << PAGE_SHIFT))
+> -               return __va(phys);
+>
+>        if (prev_map)
+>                early_iounmap(prev_map, prev_size);
+>
 
----1606286688-1757710931-1220829939=:14467
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+actually,
+case 1: acpi tables near mmio, range, we don't map them from
+2.6.27-rc1, and it is bigger than max_low_mapped...
+case 2: some strange system put acpi in the middle of RAM... like when
+8G ram installed, but MMIO is 3.5G, BIOS put acpi tables around 2G..
 
-On Sun, 7 Sep 2008, Toralf F=F6rster wrote:
-
-> Hello,
->=20
-> the build (.config attached) failed, make ends with :
-> ...
->   AR      arch/x86/lib/lib.a
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: modpost: Found 7 section mismatch(es).
-> To see full details build your kernel with:
-> 'make CONFIG_DEBUG_SECTION_MISMATCH=3Dy'
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `hpp_open':
-> hp-plus.c:(.text+0x1952a7): undefined reference to `ei_interrupt'
-> hp-plus.c:(.text+0x195318): undefined reference to `ei_open'
-> drivers/built-in.o: In function `hpp_close':
-> hp-plus.c:(.text+0x1953fe): undefined reference to `ei_close'
-> drivers/built-in.o: In function `hp_plus_probe':
-> (.init.text+0x12013): undefined reference to `__alloc_ei_netdev'
-> make: *** [.tmp_vmlinux1] Error 1
->=20
-> The build was made with :
-> $>make randconfig; make clean; make
->=20
-> Here's the config:
-
-Hi,
-
-hopefully this patch from last week fixes this build error, but
-the patch needs to be merged....
-  http://marc.info/?l=3Dlinux-next&m=3D122038632306156&w=3D2
-
---=20
-~Randy
----1606286688-1757710931-1220829939=:14467--
+YH
