@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYIGNha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbYIGN6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbYIGNha (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 09:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYIGNhW
+	id S1755567AbYIGN6X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 09:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYIGN6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 09:37:22 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:32739 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753683AbYIGNhV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 09:37:21 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Date: Sun, 07 Sep 2008 18:15:01 +0300
-Message-Id: <20080907151501.3572.11553.sendpatchset@gollum>
-Subject: [GIT PULL] UBIFS updates for 2.6.27-rc6
-X-OriginalArrivalTime: 07 Sep 2008 13:37:01.0927 (UTC) FILETIME=[CF14AF70:01C910EE]
-X-Nokia-AV: Clean
+	Sun, 7 Sep 2008 09:58:11 -0400
+Received: from japan.chezphil.org ([77.240.5.4]:3624 "EHLO japan.chezphil.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbYIGN6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 09:58:11 -0400
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Date: Sun, 07 Sep 2008 14:58:08 +0100
+Subject: Re: nice and hyperthreading on atom
+Message-ID: <1220795888167@dmwebmail.dmwebmail.chezphil.org>
+In-Reply-To: <1220715811849@dmwebmail.dmwebmail.chezphil.org>
+References: <1220715811849@dmwebmail.dmwebmail.chezphil.org>
+X-Mailer: Decimail Webmail 3alpha16
+MIME-Version: 1.0
+Content-Type: text/plain; format="flowed"
+From: "Phil Endecott" <phil_wueww_endecott@chezphil.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Phil Endecott wrote:
+> Dear Experts,
+>
+> I have an ASUS Eee with an Atom processor, which has hyperthreading 
+> enabled.  If I have two processes, one nice and the other normal, they 
+> each get 50% of the CPU time.  Of course this is what you'd expect if 
+> the scheduler didn't understand that the two virtual processors are not 
+> really independent.  I'd like to fix it.
 
-please pull from
+I thought I'd try to quantify the effect with real processes.  My 
+"foreground" task is a compilation and my "background" task is a tight 
+loop at nice -9.  No doubt you would get different results with 
+different tasks (amount of I/O, cache hit rate, different nice level etc.).
 
-git://git.infradead.org/~dedekind/ubifs-2.6.git linux-next
+With no background task running, the foreground task takes 86s whether 
+or not HT is enabled.  With the background task running, the foreground 
+task takes 97s with HT off and 104s with HT on.  104s is better than I 
+was expecting; in fact it's close enough to 97s that the problem can be 
+overlooked in this case.
 
-The following changes since commit 6a55617ed5d1aa62b850de2cf66f5ede2eef4825:
-  Linus Torvalds (1):
-        Linux v2.6.27-rc4
+I made a number of other measurements, of which the most significant is 
+that the run time with no background task comes down to 63s with -j2 
+when HT is on.  So for this compilation, hyperthreading makes the CPU 
+perform like 1.36 uniprocessors (in some sense).  I'll have to try to 
+remember how to make -j2 the default...
 
-are available:
+Anyway, can I take it that the previous patches to improve this 
+behaviour have never been merged?
 
-Adrian Hunter (2):
-      UBIFS: always read hashed-key nodes under TNC mutex
-      UBIFS: allow for racing between GC and TNC
 
-Artem Bityutskiy (13):
-      UBIFS: fix zero-length truncations
-      UBIFS: do not update min_idx_lebs in stafs
-      UBIFS: push empty flash hack down
-      UBIFS: remove incorrect index space check
-      UBIFS: improve statfs reporting
-      UBIFS: fix assertion
-      UBIFS: add forgotten gc_idx_lebs component
-      UBIFS: introduce LEB overhead
-      UBIFS: improve statfs reporting even more
-      UBIFS: fill f_fsid
-      UBIFS: amend f_fsid
-      UBIFS: fix division by zero
-      UBIFS: make minimum fanout 3
+Regards,  Phil.
 
- fs/ubifs/budget.c      |  114 ++++++++++++++++++++++++++++++++++++-----------
- fs/ubifs/dir.c         |    1 -
- fs/ubifs/file.c        |   20 +++++++--
- fs/ubifs/find.c        |   18 +++----
- fs/ubifs/gc.c          |    6 +++
- fs/ubifs/misc.h        |   49 +++++++-------------
- fs/ubifs/super.c       |   22 ++++++---
- fs/ubifs/tnc.c         |  116 +++++++++++++++++++++++++-----------------------
- fs/ubifs/ubifs-media.h |    2 +-
- fs/ubifs/ubifs.h       |   14 +++++-
- 10 files changed, 221 insertions(+), 141 deletions(-)
 
-Few notes. We included only the stuff we consider to be fixes and
-improvement/new feature patches were not included. These patches:
 
-UBIFS: do not update min_idx_lebs in stafs
-UBIFS: push empty flash hack down
-UBIFS: improve statfs reporting
-UBIFS: introduce LEB overhead
-UBIFS: improve statfs reporting even more
 
-which may look like non-fixes actually fix this complaint:
-http://lists.infradead.org/pipermail/linux-mtd/2008-August/022579.html
-
-The
-UBIFS: fill f_fsid
-UBIFS: amend f_fsid
-
-patches we also consider as fixes because it's not really OK
-to avoid filling f_fsid, and we need f_fsid for NFS support.
-
-Thanks.
