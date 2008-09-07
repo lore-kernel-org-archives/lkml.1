@@ -1,184 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbYIGRW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYIGR0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbYIGRW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 13:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYIGRWT
+	id S1755925AbYIGR0c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 13:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbYIGR0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 13:22:19 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:23486 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753891AbYIGRWS (ORCPT
+	Sun, 7 Sep 2008 13:26:24 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:49019 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741AbYIGR0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 13:22:18 -0400
-Message-ID: <48C40DB4.5050007@panasas.com>
-Date: Sun, 07 Sep 2008 20:21:56 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 7 Sep 2008 13:26:23 -0400
+Date: Sun, 7 Sep 2008 10:25:36 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org
+Subject: Re: [PATCH, RFC] v4 scalable classic RCU implementation
+Message-ID: <20080907172536.GA6941@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <48C2B1D2.5070801@colorfullife.com>
 MIME-Version: 1.0
-To: Chris Leech <chris.leech@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte
- arrays as integers
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>	 <48C3A0A9.3000206@panasas.com> <41b516cb0809070856v2000b93bm5305236e4a98b81a@mail.gmail.com>
-In-Reply-To: <41b516cb0809070856v2000b93bm5305236e4a98b81a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Sep 2008 17:21:05.0010 (UTC) FILETIME=[1BC85D20:01C9110E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C2B1D2.5070801@colorfullife.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Leech wrote:
-> On Sun, Sep 7, 2008 at 2:36 AM, Boaz Harrosh <bharrosh@panasas.com> wrote:
->> Chris Leech wrote:
->>> Both iSCSI and Fibre Channel make use of 24-bit big-endian values in
->>> frame headers.  This patch defines __be24 and __le24 typedefs for a
->>> structure wrapped around a 3-byte array, and macros to convert back and
->>> forth to a 32-bit integer.
->>>
->>> The undefs in iscsi_proto.h are because of the different calling
->>> convention for the existing hton24 macro in the iSCSI code.  iSCSI will
->>> be converted in a subsequent patch.
->>>
->>> Signed-off-by: Chris Leech <christopher.leech@intel.com>
->> I like what this patch wants to accomplish, but I disagree with the
->> implementation.
->>
->> First why is the double definition, one in include/linux/byteorder.h
->> and one in include/linux/byteorder/generic.h ?
+On Sat, Sep 06, 2008 at 06:37:38PM +0200, Manfred Spraul wrote:
+> Hi Paul,
+>
+> Paul E. McKenney wrote:
+>> o	The rcu_pending() and rcu_needs_cpu() primitives are now
+>> 	much more aggressive about permitting CPUs to enter dynticks
+>> 	idle mode.  Only CPUs that have RCU callbacks are kept out
+>> 	of dynticks idle mode.
+>>   
+>
+> I've noticed that right now rcu_enter_nohz() can be nested within 
+> rcu_irq_enter():
+> irq_exit() first calls tick_nohz_stop_sched_tick(), then rcu_irq_exit().
+> And tick_nohz_stop_sched_tick() can switch into nohz mode.
+>
+> Is that intentional? Does rcupreempt support that? It broke my rcustate 
+> code on x86-64.
+>
+> I would prefer if something like the attached patch is applied. What do you 
+> think?
+> Do you need the patch as well?
+
+Good question -- when I tried splitting irqs from NMIs, things broke
+badly, and this might well explain it.  Thank you very much for the
+hint!!!
+
+							Thanx, Paul
+
+> --
+>    Manfred
+
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index ba20a90..cca5a83 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -284,10 +284,10 @@ void irq_exit(void)
+>  		invoke_softirq();
 > 
-> Because there are currently two byteorder/swab implementations in the
-> kernel.  As you said Harvey Harrison has done a lot of work in this
-> area, but right now only the arm and avr32 architectures make use of
-> the new linux/byteorder.h.  I could put the 24-bit support in it's own
-> header instead.
-> 
->> Second and most important, in both these files all routines are inline's
->> not MACROs, and rightly so. There is no place for a macro and the MACRO
->> works bad for these.
-> 
-> I understand the benefits of inline functions, but I disagree that a
-> macro is a bad choice in this case.  An inline implementation of
-> cpu_to_be24/hton24 would require a different interface than the rest
-> of the byteorder functions, looking more like the existing iSCSI
-> hton24 macro by taking a pointer to a memory location to store the
-> result in.
-> 
-> By using a macro that expands to a compound literal, I was able to
-> maintain the same calling convention of X = cpu_to_be24(Y);
-> Attempting to do so with an inline results in a function definition
-> that returns a structure by value, and even when inlined generates
-> much worse assembly (yes, I tried it).
-> 
->> One - the definition of a local variable in a {} scope in the middle of anywhere.
-> 
-> That was done in order to only evaluate the macro operand only once,
-> making it safe to call with an expression that may have side effects.
-> Macros that create scoped variables are all over the place, like min,
-> max and container_of.  I consider it necessary in creating a good
-> macro implementation for this functionality, and my motivation for
-> using macros was given above.
-> 
->> Second - type safety.
-> 
-> Actually, the assignment to a locally scoped variable gives just as
-> much type checking as an inline would :-)
-> 
-> Chris
-> 
->> I CC: Harvey Harrison which did lots of work in these area's.
->>
->> For me this patch is totally unacceptable.
->>
->> Thanks for working on this
->> Boaz
+>  #ifdef CONFIG_NO_HZ
+> +	rcu_irq_exit(0);
+>  	/* Make sure that timer wheel updates are propagated */
+>  	if (!in_interrupt() && idle_cpu(smp_processor_id()) && !need_resched())
+>  		tick_nohz_stop_sched_tick(0);
+> -	rcu_irq_exit(0);
+>  #endif
+>  	preempt_enable_no_resched();
+>  }
 
-I wanted to see what you're saying and tried this test code below:
-
-<test.c>
-#include "stdio.h"
-
-typedef unsigned char __u8;
-typedef unsigned int __u32;
-
-typedef struct { __u8 b[3]; } __be24, __le24;
-
-#define __be24_to_cpu(x) \
-({ \
-	__be24 _x = (x); \
-	(__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2])); \
-})
-
-static inline __u32 be24_to_cpu(__be24 _x)
-{
-	return (__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2]));
-}
-
-#define __cpu_to_be24(x) \
-({ \
-	__u32 _x = (x); \
-	(__be24) { .b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } }; \
-})
-
-static inline __be24 cpu_to_be24(__u32 _x)
-{
-	__be24 be = {
-		.b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } 
-	};
-	return be;
-}
-
-int test1(__u32 r)
-{
-	union {
-		__be24 be17;
-		__u32 be_as_u;
-	} be = {.be_as_u = 0};
-
-	be.be17 = cpu_to_be24(r);
-	__u32 cpu = be24_to_cpu(be.be17) + 1;
-
-	printf("cpu=%x be=%x\n",cpu, be.be_as_u);
-	return cpu;
-}
-
-int test2(__u32 r)
-{
-	union {
-		__be24 be17;
-		__u32 be_as_u;
-	} be = {.be_as_u = 0};
-
-	be.be17 = __cpu_to_be24(r);
-	__u32 cpu = __be24_to_cpu(be.be17) + 1;
-
-	printf("cpu=%x be=%x\n",cpu, be.be_as_u);
-	return cpu;
-}
-
-int main()
-{
-	__u32 r = rand();
-	test1(r);
-	test2(r);
-
-	return 0;
-}
-</test.c>
-
-I compile it like this:
-$ gcc -O1 test.c -o test
-if I
-$ gdb test
-gdb> disass test1
-gdb> disass test2
-
-I get the exact same assembly.
-
-What am I doing wrong ?
-
-$ gcc --version
-gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)
-
-Boaz
