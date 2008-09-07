@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbYIGXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbYIGXhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbYIGXfi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 19:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbYIGXf2
+	id S1752184AbYIGXhA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 19:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYIGXgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 19:35:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:44112 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbYIGXf0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 19:35:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D9aSB9yk1eSImaXYRXvllzTFh9KEOBTza/ny2bBFV2tLy0fEHKnZroixw4vdI/oYLh
-         55j3F1p+YowlZlf0JEggIclAVxRdMqhXyYJJK5pJXmha8dYaHCWTeRo4+Ts59705zVIK
-         m8bUedD8Z+N9pB+qfMS1R9q/Dz7Dzh390vU7k=
-Message-ID: <86802c440809071635l1457659bufeefa6e65cc34bdf@mail.gmail.com>
-Date: Sun, 7 Sep 2008 16:35:25 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: [Xen-devel] [PATCH 7 of 7] x86: always explicitly map acpi memory
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Xen Devel" <xen-devel@lists.xensource.com>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <6f23bad119ae2ed00f1c.1220826079@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <patchbomb.1220826072@localhost>
-	 <6f23bad119ae2ed00f1c.1220826079@localhost>
+	Sun, 7 Sep 2008 19:36:52 -0400
+Received: from mail.sprymix.net ([69.50.217.222]:33945 "EHLO mail.sprymix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbYIGXgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 19:36:52 -0400
+X-Greylist: delayed 2032 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Sep 2008 19:36:52 EDT
+From: Elvis Pranskevichus <el@prans.net>
+To: Dmitry Torokhov <dtor@mail.ru>
+Cc: LKML <linux-kernel@vger.kernel.org>, Elvis Pranskevichus <el@prans.net>
+Subject: [PATCH] Input: ALPS - add signature for DualPoint model found in Dell Latitude E6500
+Date: Sun,  7 Sep 2008 19:02:56 -0400
+Message-Id: <1220828576-10476-1-git-send-email-el@prans.net>
+X-Mailer: git-send-email 1.6.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 7, 2008 at 3:21 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Always map acpi tables, rather than assuming we can use the normal
-> linear mapping to access the acpi tables.  This is necessary in a
-> virtual environment where the linear mappings are to pseudo-physical
-> memory, but the acpi tables exist at a real physical address.  It
-> doesn't hurt to map in the normal non-virtual case, so just do it
-> unconditionally.
->
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  arch/x86/kernel/acpi/boot.c |    3 ---
->  1 file changed, 3 deletions(-)
->
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -126,9 +126,6 @@
->
->        if (!phys || !size)
->                return NULL;
-> -
-> -       if (phys+size <= (max_low_pfn_mapped << PAGE_SHIFT))
-> -               return __va(phys);
->
->        if (prev_map)
->                early_iounmap(prev_map, prev_size);
->
+Signed-off-by: Elvis Pranskevichus <el@prans.net>
+---
+ drivers/input/mouse/alps.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-actually,
-case 1: acpi tables near mmio, range, we don't map them from
-2.6.27-rc1, and it is bigger than max_low_mapped...
-case 2: some strange system put acpi in the middle of RAM... like when
-8G ram installed, but MMIO is 3.5G, BIOS put acpi tables around 2G..
+diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
+index 385e32b..cbedf95 100644
+--- a/drivers/input/mouse/alps.c
++++ b/drivers/input/mouse/alps.c
+@@ -54,6 +54,7 @@ static const struct alps_model_info alps_model_data[] = {
+ 	{ { 0x20, 0x02, 0x0e },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
+ 	{ { 0x22, 0x02, 0x0a },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
+ 	{ { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
++	{ { 0x62, 0x02, 0x14 }, 0xcf, 0xcf, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude E6500 */
+ 	{ { 0x73, 0x02, 0x50 }, 0xcf, 0xcf, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
+ };
+ 
+-- 
+1.6.0.1
 
-YH
