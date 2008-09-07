@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYIGQag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbYIGQkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbYIGQag (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 12:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYIGQa2
+	id S1755777AbYIGQkG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 12:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbYIGQjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 12:30:28 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36453 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753238AbYIGQa2 (ORCPT
+	Sun, 7 Sep 2008 12:39:54 -0400
+Received: from mail-in-04.arcor-online.net ([151.189.21.44]:59821 "EHLO
+	mail-in-04.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753197AbYIGQjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 12:30:28 -0400
-Message-ID: <48C40191.8070208@zytor.com>
-Date: Sun, 07 Sep 2008 09:30:09 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 7 Sep 2008 12:39:52 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [2.6.27] overlapping early reservations [was: early exception 	- lockdep related?]
+To: Ingo Molnar <mingo@elte.hu>, Luca Tettamanti <kronos.it@gmail.com>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+Reply-To: 7eggert@gmx.de
+Date: Sun, 07 Sep 2008 18:47:33 +0200
+References: <b8P0N-3Dp-11@gated-at.bofh.it> <b8PaB-3Or-23@gated-at.bofh.it> <b8Q6x-51x-11@gated-at.bofh.it> <b961C-rW-9@gated-at.bofh.it> <b97qL-26L-15@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-To: Alain Knaff <alain@knaff.lu>
-CC: Steven Noonan <steven.noonan@uplinklabs.net>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] init: bzip2 or lzma -compressed kernels and initrds
-References: <200809062119.m86LJ5Of026101@hitchhiker.org.lu>	 <48C34803.60006@zytor.com> <1a6b76aa0809062135n4d0710c7sf7332d6b4e63cdad@mail.gmail.com> <48C35CA9.4010205@zytor.com> <48C38571.7060808@knaff.lu>
-In-Reply-To: <48C38571.7060808@knaff.lu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1KcNQE-0001Le-8P@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alain Knaff wrote:
-> 
-> Could you elaborate please?
-> 
+Ingo Molnar <mingo@elte.hu> wrote:
 
-At a brief glance, there is an awful lot of #ifdefs in that code, a lot 
-of which look unnecessary.  #ifdefs make the code hard to read, and 
-usually signify that additional abstractions are called for.
+> In any case it would make sense to turn that particular overlap
+> situation into a warning message and disable initrd decompress - and try
+> to boot with whatever is built-in the kernel.
 
-	-hpa
+If I explicitely tell my system to load a ramdisk, ignoring it is a bug.
+
+I had a similar bug in PAM: One of these modules has a parameter to invert
+the check. I copied the tested configuration to an old debian system, which
+did not have this parameter, and it decided to ignore it (as if I were just
+joking while writing the config files of a security system). Therefore the
+system was open for everybody who was not supposed to use it.
+
+I don't think ignoring an intrd will be as serious, but having a panic (and
+a timeout) is preferable to starting the wrong configuration.
+
