@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYIGHza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYIGIDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbYIGHza (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 03:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYIGHzU
+	id S1754966AbYIGIDs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 04:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYIGIDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 03:55:20 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:25542 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188AbYIGHzT (ORCPT
+	Sun, 7 Sep 2008 04:03:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:39079 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbYIGID3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 03:55:19 -0400
+	Sun, 7 Sep 2008 04:03:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
+        d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=nIIADRx5NUu4wPKCeDvysS1rFIpUMXSnrKgD+DJdqS03NwjaFM+Y+Xu/41Uhz0QSvv
-         ifo0WbiGckMlOo0iLdC1EkkBjvxs40XF8XiDIDPtTxpIfFRN+VS7v8ZuthFGPeQ/gS8Z
-         8A80YBir9G5s+b7UAiRAkZ6SzfRklj5NPZcZA=
-Message-ID: <36ca99e90809070055u3b3b8415i2a5dbfb6bf617d35@mail.gmail.com>
-Date: Sun, 7 Sep 2008 09:55:17 +0200
-From: "Bert Wesarg" <bert.wesarg@googlemail.com>
-To: "Mike Travis" <travis@sgi.com>
-Subject: Re: [RFC 11/13] genapic: reduce stack pressuge in io_apic.c step 3 target_cpus
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       davej@codemonkey.org.uk, "David Miller" <davem@davemloft.net>,
-       "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Jack Steiner" <steiner@sgi.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>, "Jes Sorensen" <jes@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080906235038.421559000@polaris-admin.engr.sgi.com>
+        b=pClA8HJEpZXGJmDfrWLb+cI1a+5fe/eKwfHVBQ6RNy5dcGXeB03Pkgelqmk4LWLamf
+         9nmJ+tPRmd0DybrhwXrCUq+1MDll5rHJroJ7zmIw8DokTUT/fdj8VhgR+KxjbHHKjpwT
+         E0GhSN81jl0M2m+WUfkkw7htHpF2v0KpNH8g0=
+Message-ID: <86802c440809070103g44ef6e57kb85ad9a7a7dd30ad@mail.gmail.com>
+Date: Sun, 7 Sep 2008 01:03:28 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alain Knaff" <alain@knaff.lu>, "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] init: bzip2 or lzma -compressed kernels and initrds
+Cc: "H. Peter Anvin" <hpa@zytor.com>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48C38540.4050201@knaff.lu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
-	 <20080906235038.421559000@polaris-admin.engr.sgi.com>
+References: <200809062119.m86LJ5Of026101@hitchhiker.org.lu>
+	 <48C34803.60006@zytor.com> <48C38540.4050201@knaff.lu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 7, 2008 at 01:50, Mike Travis <travis@sgi.com> wrote:
->  * Step 3 "target_cpus" of cleaning up io_apic.c modifies the TARGET_CPUS
->    interface to pass a pointer to the returned mask for arch X86_64,
->    removing yet another "cpumask_t variable on the stack".
+On Sun, Sep 7, 2008 at 12:39 AM, Alain Knaff <alain@knaff.lu> wrote:
+> H. Peter Anvin wrote:
+>> Alain Knaff wrote:
+>>>
+>>> This version applies to kernel 2.6.26.3
+>>>
+>>
+>> Could you produce a version against the -tip tree, either the master
+>> branch or the x86/setup branch?
+>>
+>>     -hpa
 >
->        target_cpus = TARGET_CPUS;
->
->    becomes:
->
->        TARGET_CPUS(target_cpus);
->
->    For x86_32 this is expanded to:
->
->        target_cpus = (genapic->target_cpus());
->
->    For x86_64 this is expanded to:
->
->        target_cpus = (genapic->target_cpus)(&(target_cpus));
-But its expended to:
-         (genapic->target_cpus)(&(target_cpus));
+> Thanks for the note... but where/how can I download the -tip tree from?
 
-> -#define TARGET_CPUS      (genapic->target_cpus())
-> +#define TARGET_CPUS(retval) (genapic->target_cpus)(&(retval))
+http://people.redhat.com/mingo/tip.git/readme.txt
 
-
-> +#ifdef CONFIG_X86_64
-> +#define TARGET_CPUS(retval)      (genapic->target_cpus)(&(retval))
-> +#else
-> +#define TARGET_CPUS(retval)      retval = (genapic->target_cpus())
-> +#endif
-
-Bert
+YH
