@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYIGPdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYIGPfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYIGPdp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 11:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYIGPdg
+	id S1755723AbYIGPfk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 11:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbYIGPfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 11:33:36 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:48846 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751531AbYIGPdg (ORCPT
+	Sun, 7 Sep 2008 11:35:32 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48778 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbYIGPfb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 11:33:36 -0400
-Message-ID: <48C3F444.4060908@linux.vnet.ibm.com>
-Date: Sun, 07 Sep 2008 21:03:24 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][mmotm]memcg: handle null dereference of mm->owner
-References: <20080905165017.b2715fe4.nishimura@mxp.nes.nec.co.jp> <20080905174021.9fa29b01.kamezawa.hiroyu@jp.fujitsu.com> <6599ad830809050903s7e1a1004i6b31660502c0dcf2@mail.gmail.com>
-In-Reply-To: <6599ad830809050903s7e1a1004i6b31660502c0dcf2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 7 Sep 2008 11:35:31 -0400
+Subject: [2.6.27 PATCH] Blacklist DMAR on Intel G31/G33 chipsets
+From: David Woodhouse <dwmw2@infradead.org>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, arjan@infradead.org,
+       torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080905183459.GC14258@elte.hu>
+References: <1220439231.2985.103.camel@pmac.infradead.org>
+	 <1220518477.2985.163.camel@pmac.infradead.org>
+	 <20080905183459.GC14258@elte.hu>
+Content-Type: text/plain
+Date: Sun, 07 Sep 2008 16:35:26 +0100
+Message-Id: <1220801726.2985.450.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Fri, Sep 5, 2008 at 1:40 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> BTW, I have a question to Balbir and Paul. (I'm sorry I missed the discussion.)
->> Recently I wonder why we need MM_OWNER.
->>
->> - What's bad with thread's cgroup ?
-> 
-> Because lots of mm operations take place in a context where we don't
-> have a thread pointer, and hence no cgroup.
-> 
+Some BIOSes (the Intel DG33BU, for example) wrongly claim to have DMAR
+when they don't. Avoid the resulting crashes when it doesn't work as
+expected.
 
-Right, Thanks! Allocating memory is not that big a problem (we usually know the
-context), while freeing memory, we can't assume that current is freeing it
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 8d0e60a..c3edcdc 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2348,11 +2348,34 @@ static void __init iommu_exit_mempool(void)
+ 
+ }
+ 
++static int blacklist_iommu(const struct dmi_system_id *id)
++{
++	printk(KERN_INFO "%s detected; disabling IOMMU\n",
++	       id->ident);
++	dmar_disabled = 1;
++	return 0;
++}
++
++static struct dmi_system_id __initdata intel_iommu_dmi_table[] = {
++	{	/* Some DG33BU BIOS revisions advertised non-existent VT-d */
++		.callback = blacklist_iommu,
++		.ident = "Intel DG33BU",
++		{	DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
++			DMI_MATCH(DMI_BOARD_NAME, "DG33BU"),
++		}
++	},
++	{ }
++};
++
++
+ void __init detect_intel_iommu(void)
+ {
+ 	if (swiotlb || no_iommu || iommu_detected || dmar_disabled)
+ 		return;
+ 	if (early_dmar_detect()) {
++		dmi_check_system(intel_iommu_dmi_table);
++		if (dmar_disabled)
++			return;
+ 		iommu_detected = 1;
+ 	}
+ }
+
 
 -- 
-	Balbir
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
+
+
