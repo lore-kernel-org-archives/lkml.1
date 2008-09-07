@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYIGD5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYIGEJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbYIGD5J (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 23:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683AbYIGD4z
+	id S1754021AbYIGEJQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 00:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYIGEJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 23:56:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:46048 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbYIGD4x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 23:56:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=mRaJOp1+iw1fhvSUUG3pmBpBCKSBthYfYJNM7/M5cI3Y+5djgbiZLV4+Pu1i+t03Hv
-         T1x1edS40Ky+/PpOEEefKzpZzrkfl9r1HRyAEYI7dYlTkROxM4iLB9JkDFNkflWa/2rq
-         G5t/Gvlll65CIN20ZDYKCIPn/KUGxp4L0H3Ps=
-Date: Sat, 6 Sep 2008 23:56:48 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.27-rc5
-Message-ID: <20080907035647.GA24245@anvil.corenet.prv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 7 Sep 2008 00:09:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35811 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715AbYIGEJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 00:09:00 -0400
+Date: Sun, 7 Sep 2008 14:08:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH -mm] Fix dev_load() compilation again
+Message-Id: <20080907140841.9ff05dc6.sfr@canb.auug.org.au>
+In-Reply-To: <48C18E8B.9050201@ct.jp.nec.com>
+References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
+	<20080905193244.GD11569@x200.localdomain>
+	<48C18E8B.9050201@ct.jp.nec.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+--Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Please pull from:
+Hi Hiroshi,
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+On Fri, 05 Sep 2008 12:54:51 -0700 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec=
+.com> wrote:
+>
+> Alexey Dobriyan wrote:
+> > dev_load() doesn't exist if MODULES=3Dn.
+>=20
+> Hi,
+>=20
+> in -next tree, this patch fixes the compilation error instead of
+> my patch. So, there is a conflict.
 
-to receive updates for the input subsystem. You will get an update to
-the new bcm5974 touchpad driver. While is it bigger than I would like at
-this stage the changes are needed for mousedev to bind to the touchpad
-and provide basic mouse emulation (until user installs Synaptics X
-driver). Another change is refining quirk for Lenovo N3000 to activate
-for a specific board version only.
+My patch is a temporary work around and will be dropped if the fix turns
+up in any of the trees that I merge.
 
-Changelog:
----------
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Henrik Rydberg (4):
-      Input: bcm5974 - add maintainer entry
-      Input: bcm5974 - small formatting cleanup
-      Input: bcm5974 - improve finger tracking and counting
-      Input: bcm5974 - add BTN_TOUCH event for mousedev benefit
+--Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q
+Content-Type: application/pgp-signature
 
-Jiri Kosina (1):
-      Input: i8042 - make Lenovo 3000 N100 blacklist entry more specific
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkjDU8kACgkQjjKRsyhoI8ybVwCdF45xa1p6DKZ6mBWjpYKF4AOu
+PvoAoLHxhb8NxnE5cHZ4puiVY4W5Mmkt
+=ThS0
+-----END PGP SIGNATURE-----
 
-Diffstat:
---------
-
- drivers/input/mouse/bcm5974.c         |   74 +++++++++++++++++++++++++--------
- drivers/input/serio/i8042-x86ia64io.h |    2 +-
- 2 files changed, 58 insertions(+), 18 deletions(-)
-
-
--- 
-Dmitry
+--Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q--
