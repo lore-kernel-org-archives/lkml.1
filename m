@@ -1,91 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbYIGKau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbYIGKfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbYIGKau (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 06:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYIGKam
+	id S1755073AbYIGKfs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 06:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYIGKfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 06:30:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60303 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752986AbYIGKal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 06:30:41 -0400
-Date: Sun, 7 Sep 2008 10:30:38 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.36.7
-Message-ID: <20080907103038.GA11570@hera.kernel.org>
-Reply-To: w@1wt.eu
+	Sun, 7 Sep 2008 06:35:40 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:36387 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753090AbYIGKfj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 06:35:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=H5sPORENfwXi8W99i+dEKdroT0D3YAqneFGqrqjxpKcKHzV0Vu1wXd7/bSiJ303W9v
+         jhHeB2oKlmDqKvwsj1fjVU+3rvIQxlTkGbJ4eDXmK8jZGBcYThZVJXb05pM0PWiC5SeY
+         DaDuwrZW8ZySRv5ak/fGg/8lqlGFxJ+B4U9nM=
+Message-ID: <48C3AE68.5010902@gmail.com>
+Date: Sun, 07 Sep 2008 12:35:20 +0200
+From: Anders Aagaard <aagaande@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080901)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Sep 2008 10:30:40 +0000 (UTC)
+To: suspend-devel@lists.sourceforge.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [Suspend-devel] Resume performance
+References: <48C10908.60101@gmail.com> <200809051308.14079.rjw@sisk.pl> <48C13827.1010409@gmail.com> <200809052043.38677.rjw@sisk.pl>
+In-Reply-To: <200809052043.38677.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Rafael J. Wysocki wrote:
+> On Friday, 5 of September 2008, Anders Aagaard wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Friday, 5 of September 2008, Anders Aagaard wrote:
+>>>> Hi
+>>> Hi,
+>>>
+>>> This is a kernel problem, so let's CC the LKML.
+>>>
+>>>> I have a intel P35 board with a quad core cpu in it, it's currently 
+>>>> running as a server for a small network, and I'd like to be able to shut 
+>>>> it down when idle, and use wake on lan to wake it up when it's needed. 
+>>>> Now I got that part working quite well, but for some reason I have a 
+>>>> long delay in resume.
+>>>>
+>>>> I seem to remember being able to resume this computer in 2-3 seconds 
+>>>> when I was testing it, now it needs 35 seconds to resume.  It seems 
+>>>> regardless of resume options used, and it always resumes to a working 
+>>>> state without problems.
+>>> What kernel are you using at the moment and which one was used for the
+>>> testing?
+>> I'm using gentoo's 2.6.25-r7, I've also tried vanilla sources.
+> 
+> Would it be possible to test 2.6.27-rc5-gi7 from kernel.org?
 
-I've just released Linux 2.4.36.7.
+Tested, makes no difference.
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/patch-2.4.36.7.bz2
-  ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.36.7
+> 
+>>>> I've tried quite a lot of things, booting with noapic/nosmp, booting a 
+>>>> kernel without usb/network drivers, disabling ahci (using ata_piix 
+>>>> driver instead of ahci), and there's always that one long delay.  And 
+>>>> I'm not quite sure how the kernel printk timing information works, so 
+>>>> I'm not sure whats causing that delay.
+>>>>
+>>>> Output from dmesg when booting with nosmp (to get accurate timing data):
+>>>> scripts/show_delta -b "Force enabled HPET at resume"
+>>>> [349.821150 < 7.039261 >] ata3.00: configured for UDMA/133
+>>>> [349.821160 < 7.039271 >] sd 2:0:0:0: [sdc] 976773168 512-byte hardware 
+>>>> sectors (500108 MB)
+>>>> [349.821165 < 7.039276 >] sd 2:0:0:0: [sdc] Write Protect is off
+>>>> [349.821166 < 7.039277 >] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+>>>> [349.821173 < 7.039284 >] sd 2:0:0:0: [sdc] Write cache: enabled, read 
+>>>> cache: enabled, doesn't support DPO or FUA
+>>>> [349.972801 < 7.190912 >] ata1: SATA link up 3.0 Gbps (SStatus 123 
+>>>> SControl 300)
+>>>> [349.979060 < 7.197171 >] ata1.00: configured for UDMA/133
+>>>> [349.979070 < 7.197181 >] sd 0:0:0:0: [sda] 976771055 512-byte hardware 
+>>>> sectors (500107 MB)
+>>>> [349.979075 < 7.197186 >] sd 0:0:0:0: [sda] Write Protect is off
+>>>> [349.979076 < 7.197187 >] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+>>>> [349.979083 < 7.197194 >] sd 0:0:0:0: [sda] Write cache: enabled, read 
+>>>> cache: enabled, doesn't support DPO or FUA
+>>> It looks like this happens here.  Can you try to unload the network driver
+>>> before suspend, please?
+>> I tried to build a kernel without it, and it still takes the exact same 
+>> amount to boot, I've also tried unloading usb drivers and it takes the 
+>> exact same amount of time.
+> 
+> Can you try to boot with init=/bin/bash and suspend to RAM?  (Please have a
+> look at section 2 of Documentation/power/basic-pm-debugging.txt in the newer
+> kernel sources).
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.36.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.36.y.git
+I checked without X before, but forgot to unload the nvidia module, that 
+apparently makes a big difference, I did some numbers with 
+scripts/show_delta -b "Back to C".
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.36.y.git
+Nvidia and X : 32 seconds
+No X (same result as booting with init=/bin/bash) : 8.3 seconds
+Git kernel : 8.2 seconds
+Light kernel (no sound, network card and usb drivers) : 8.17 seconds
+ATI card instead of nvidia : 8.22 seconds
 
-This release fixes several minor security issues and a few not other issues.
-There's normally no emergency to upgrade, but I wanted to flush the patch
-queue. I've also fixed an uninitialized variable in the sky2 backport. It
-might have caused random trouble to some users.
+I think we found the problem, I already replaced nvidia hardware in one 
+computer to resolve another issue.  Really appreciate your help on this 
+issue, this resume time works pretty well for me, it was a bit 
+ridiculous when I could boot faster than resume.
 
-Given that most distros today ship with a version of GCC which is not
-compatible with kernel 2.4, I have added a small documentation explaining
-how to build an older GCC when you only have a newer one. Building a
-stripped-down GCC only takes between 1 and 2 minutes on recent machines,
-so it's really worth it. This doc does not cover cross-compilation.
+Is 8 seconds fairly expected?  My other computer (same ati card) boots 
+in about 2 seconds, but there's a lot less hardware in it (6 hd's and a 
+ton of usb devices in one computer, 1 hd and 1 usb device in the other). 
+  I checked cold booting with and without usb devices, my light kernel 
+boots to /bin/bash in 2.5 seconds, normal kernel about 7-8.  But I dont 
+see anything about usb on resume.
 
-For those interested, please check Documentation/using-newer-gcc.txt.
+Thanks a lot, Anders
 
-Willy
---
-Summary of changes from v2.4.36.6 to v2.4.36.7
-============================================
 
-David S. Miller (1):
-      sctp: Make sure N * sizeof(union sctp_addr) does not overflow (CVE-2008-2826)
-
-Eugene Teo (1):
-      wan: Missing capability checks in sbni_ioctl() (CVE-2008-3525)
-
-Florin Malita (1):
-      [PPPOE]: Missing result check in __pppoe_xmit().
-
-Gilbert Ashley Gilbert (1):
-      udf: fix uid/gid permissions
-
-Herbert Xu (1):
-      net pppoe: Check packet length on all receive paths
-
-Stephen Hemminger (1):
-      ipv6: use timer pending
-
-Vlad Yasevich (2):
-      sctp: Do not leak memory on multiple listen() calls
-      sctp: Allow only 1 listening socket with SO_REUSEADDR
-
-Willy Tarreau (4):
-      doc: explain how to build a suitable gcc in Documentation/using-newer-gcc.txt
-      sound: fix warning due to incorrect error code checking in ad1889
-      sky2: fix uninitialized "mss" variable in sky2_xmit_frame()
-      Change VERSION to 2.4.36.7
-
-Xiong Wu (1):
-      Correct the upto value during list conntrack information
+> 
+> Thanks,
+> Rafael
+> 
 
