@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbYIGW0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbYIGW1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbYIGW0s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 18:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbYIGWYT
+	id S1757759AbYIGW1W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 18:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbYIGW1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 18:24:19 -0400
-Received: from gw.goop.org ([64.81.55.164]:39674 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755122AbYIGWYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 18:24:15 -0400
-Content-Type: text/plain; charset="us-ascii"
+	Sun, 7 Sep 2008 18:27:04 -0400
+Received: from ns2.mvista.com ([63.81.120.155]:18975 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755532AbYIGW1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 18:27:01 -0400
+Message-ID: <48C4552F.9070806@ru.mvista.com>
+Date: Mon, 08 Sep 2008 02:26:55 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/18] ide: add ->read_sff_dma_status method
+References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <200809032013.08489.bzolnier@gmail.com> <48C41A2E.8040907@ru.mvista.com> <200809072123.33695.bzolnier@gmail.com>
+In-Reply-To: <200809072123.33695.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 7 of 7] x86: always explicitly map acpi memory
-X-Mercurial-Node: 6f23bad119ae2ed00f1cfc55079a1a3692423872
-Message-Id: <6f23bad119ae2ed00f1c.1220826079@localhost>
-In-Reply-To: <patchbomb.1220826072@localhost>
-Date: Sun, 07 Sep 2008 15:21:19 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Xen Devel <xen-devel@lists.xensource.com>,
-       Andi Kleen <andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Always map acpi tables, rather than assuming we can use the normal
-linear mapping to access the acpi tables.  This is necessary in a
-virtual environment where the linear mappings are to pseudo-physical
-memory, but the acpi tables exist at a real physical address.  It
-doesn't hurt to map in the normal non-virtual case, so just do it
-unconditionally.
+Hello.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/kernel/acpi/boot.c |    3 ---
- 1 file changed, 3 deletions(-)
+Bartlomiej Zolnierkiewicz wrote:
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -126,9 +126,6 @@
- 
- 	if (!phys || !size)
- 		return NULL;
--
--	if (phys+size <= (max_low_pfn_mapped << PAGE_SHIFT))
--		return __va(phys);
- 
- 	if (prev_map)
- 		early_iounmap(prev_map, prev_size);
+>>>>> static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
+>>>>> {
+>>>>> 	ide_hwif_t *hwif = drive->hwif;
+>>>>> @@ -323,6 +331,8 @@ static void ata_output_data(ide_drive_t 
+>>>>>
+>>>>> void default_hwif_transport(ide_hwif_t *hwif)
+>>>>> {
+>>>>> +	hwif->read_sff_dma_status = ide_read_sff_dma_status;
+>>>>> +
+>>>>> 	hwif->tf_load	  = ide_tf_load;
+>>>>> 	hwif->tf_read	  = ide_tf_read;
+>>>>>           
+>>>>    I also didn't understand the motivation behind putting this method 
+>>>> together with the transport operations... IMO, DMA programming interface 
+>>>> hardly has anything to do with transporting the data over IDE bus.
+>>>>         
+>>> The motivation was that hwif->dma_ops is not available yet when
+>>> ->read_sff_dma_status is used in ide_pci_check_simplex().
+>>>       
+>>> However I agree that it should somehow find its way into ->dma_ops
+>>> (as usual patches are stongly preffered :).
+>>>       
+>>     Unless I'm missing something changing the place where hwif->dma_ops is 
+>> initialized to sff_dma_ops (along the lines it was changed for hwif->dma_base) 
+>> seems pretty trivial, so I wonder why you didn't do it in the same patch...
+>>     
+
+   Ah, I forgot for a moment that there were two patches and it would 
+have make no sense to do that in the patch that factored out 
+ide_pci_check_simplex()... And then tre was a patch introducing 'struct 
+ide_tp_ops' which incorporated the read_sff_dma_status() method.
+
+> Indeed, it should be trivial now, one just needs to be careful to:
+>
+> * move 'if (d->dma_ops) ...' from ide_init_port() into
+>   ->init_dma/ide_hwif_setup_dma()
+>
+> * unset ->dma_ops on ->init_dma/ide_hwif_setup_dma() failures
+>   
+
+   Sure.
+
+> I guess I overlooked it ATM of making the patch (or the code evolved
+> greatly in the meantime)...
+>   
+
+   I think I understand now: it's sticking read_sff_dma_status() method 
+into 'struct ide_tp_ops' that was a wrong move that's worth undoing (by 
+putting it where it really belongs).
+
+> [ It is really time consuming and difficult to recall the every small
+>   detail of every patch after few months (the patch was posted 10 weeks
+>   
+
+   Heh, as if it wasn't time consuming to untange that after a few 
+months (when I'm suposed to spend time elsewhere :-)...
+
+>   ago and merged 6 weeks ago)...  The most efficient way of handling
+>   such issues upon discovery is with sending patches... ]
+>   
+
+    Sigh, I'll see what I can do in my currently very limieted time...
+
+> Thanks,
+> Bart
+>   
+
+MBR, Sergei
 
 
