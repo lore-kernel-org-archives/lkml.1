@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYIGSOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYIGS1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYIGSOn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 14:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYIGSOe
+	id S1756020AbYIGS1l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 14:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYIGS10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 14:14:34 -0400
-Received: from h155.mvista.com ([63.81.120.155]:17718 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754561AbYIGSOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 14:14:33 -0400
-Message-ID: <48C41A2E.8040907@ru.mvista.com>
-Date: Sun, 07 Sep 2008 22:15:10 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sun, 7 Sep 2008 14:27:26 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:42294 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754468AbYIGS1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 14:27:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=ImlVu8AvMlHri530Bu9PmioYuHOzE3LuDrTW8QKM4QqbeoiE/NTAPYvNUVG9yDKLyZ
+         vxxHH+vKEV3yaqJobPkAnZAtTdAZAKsU2nVVbp+Y5LHm77V1YGVLWcldOPsZxecNSq1a
+         9BV7JWco9Gqtru/BzeVMgL/E7Eg9UpcYxnqXo=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] Fix pointer arithmetic in hpt3xx driver code (3rd try)
+Date: Sun, 7 Sep 2008 20:10:03 +0200
+User-Agent: KMail/1.9.9
+Cc: Masoud Sharbiani <masouds@google.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20080906171850.GF26371@google.com> <48C39D2F.4010701@ru.mvista.com> <48C3B909.3030405@ru.mvista.com>
+In-Reply-To: <48C3B909.3030405@ru.mvista.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/18] ide: add ->read_sff_dma_status method
-References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <48BE8EFD.70103@ru.mvista.com> <200809032013.08489.bzolnier@gmail.com>
-In-Reply-To: <200809032013.08489.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Message-Id: <200809072010.04122.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Bartlomiej Zolnierkiewicz wrote:
+Hi,
 
->>> static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
->>> {
->>> 	ide_hwif_t *hwif = drive->hwif;
->>>@@ -323,6 +331,8 @@ static void ata_output_data(ide_drive_t 
->>> 
->>> void default_hwif_transport(ide_hwif_t *hwif)
->>> {
->>>+	hwif->read_sff_dma_status = ide_read_sff_dma_status;
->>>+
->>> 	hwif->tf_load	  = ide_tf_load;
->>> 	hwif->tf_read	  = ide_tf_read;
->>
->>    I also didn't understand the motivation behind putting this method 
->>together with the transport operations... IMO, DMA programming interface 
->>hardly has anything to do with transporting the data over IDE bus.
+Masoud/Sergei: sorry for the bug and thanks for fixing it.
 
-> The motivation was that hwif->dma_ops is not available yet when
-> ->read_sff_dma_status is used in ide_pci_check_simplex().
+On Sunday 07 September 2008, Sergei Shtylyov wrote:
+> Hello, I wrote:
+> >> diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
+> >> index eb107ee..4eae284 100644
+> >> --- a/drivers/ide/pci/hpt366.c
+> >> +++ b/drivers/ide/pci/hpt366.c
+> >> @@ -613,6 +613,14 @@ static int check_in_drive_list(ide_drive_t 
+> >> *drive, const char **list)
+> >>      return 0;
+> >>  }
+> >>  
+> >> +static struct hpt_info *hpt3xx_get_info(struct device *dev)
+> >> +{
+> >> +    struct ide_host *host    = pci_get_drvdata(to_pci_dev(pci_dev));
+> >>   
+> >
+> >   Oops, this just won't compile. :-/
+> 
+>    BTW, there's no need to invoke to_pci_dev() at all since 
+> pci_get_drvdata(dev) boils down to dev_get_drvdata(&dev->dev) call. So, 
+> in order not to waste time on useless pointer tricks, we should just 
+> invoke the latter here.
 
-> However I agree that it should somehow find its way into ->dma_ops
-> (as usual patches are stongly preffered :).
-
-    Unless I'm missing something changing the place where hwif->dma_ops is 
-initialized to sff_dma_ops (along the lines it was changed for hwif->dma_base) 
-seems pretty trivial, so I wonder why you didn't do it in the same patch...
-    Hm, I guess I'm seeing a real issue with this patch...
-
-> Thanks,
-> Bart
-
-MBR, Sergei
+I corrected this and applied the patch.
