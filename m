@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYIGSLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYIGSOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbYIGSLo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 14:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbYIGSLf
+	id S1756020AbYIGSOn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 14:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbYIGSOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 14:11:35 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39791 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754138AbYIGSLe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 14:11:34 -0400
-Date: Sun, 7 Sep 2008 11:11:37 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@tglx.de, torvalds@linux-foundation.org,
-       peterz@infradead.org
-Subject: update on hrtimer based select/poll and range-hrtimers
-Message-ID: <20080907111137.76a10b1e@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 7 Sep 2008 14:14:34 -0400
+Received: from h155.mvista.com ([63.81.120.155]:17718 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754561AbYIGSOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 14:14:33 -0400
+Message-ID: <48C41A2E.8040907@ru.mvista.com>
+Date: Sun, 07 Sep 2008 22:15:10 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/18] ide: add ->read_sff_dma_status method
+References: <20080620213323.13202.71450.sendpatchset@localhost.localdomain> <48BE8EFD.70103@ru.mvista.com> <200809032013.08489.bzolnier@gmail.com>
+In-Reply-To: <200809032013.08489.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello.
 
-since the last lkml posting I've merged a few fixes and added comments
-from Peter, and I've redone the "estimate_accuracy" function.
+Bartlomiej Zolnierkiewicz wrote:
 
-Rather than reposting the entire series, I'll point to the git tree at
+>>> static void ide_tf_load(ide_drive_t *drive, ide_task_t *task)
+>>> {
+>>> 	ide_hwif_t *hwif = drive->hwif;
+>>>@@ -323,6 +331,8 @@ static void ata_output_data(ide_drive_t 
+>>> 
+>>> void default_hwif_transport(ide_hwif_t *hwif)
+>>> {
+>>>+	hwif->read_sff_dma_status = ide_read_sff_dma_status;
+>>>+
+>>> 	hwif->tf_load	  = ide_tf_load;
+>>> 	hwif->tf_read	  = ide_tf_read;
+>>
+>>    I also didn't understand the motivation behind putting this method 
+>>together with the transport operations... IMO, DMA programming interface 
+>>hardly has anything to do with transporting the data over IDE bus.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-hrtimer.git
+> The motivation was that hwif->dma_ops is not available yet when
+> ->read_sff_dma_status is used in ide_pci_check_simplex().
 
-and I've pasted the new function below.
-Rather than having the hardcoded steps from the "Linus" function, I've
-turned it into:
-0 for realtime tasks
-"0.1% of the time" for not-nice, not realtime tasks
-"0.5% of the time" for nice, not realtime tasks
-with a cap of 100msec for both.
+> However I agree that it should somehow find its way into ->dma_ops
+> (as usual patches are stongly preffered :).
 
-I would like to request feedback on this approach; I think this is
-better than the "hardcoded steps" as before, but maybe someone can come
-up with an ever better idea....
+    Unless I'm missing something changing the place where hwif->dma_ops is 
+initialized to sff_dma_ops (along the lines it was changed for hwif->dma_base) 
+seems pretty trivial, so I wonder why you didn't do it in the same patch...
+    Hm, I guess I'm seeing a real issue with this patch...
 
-static unsigned long __estimate_accuracy(struct timespec *tv)
-{
-        unsigned long slack;
-        int divfactor = 1000;
-  
-        if (task_nice(current))
-                divfactor = divfactor / 5;
+> Thanks,
+> Bart
 
-        slack = tv->tv_nsec / divfactor; 
-        slack += tv->tv_sec * (NSEC_PER_SEC/divfactor);
-
-        if (slack > 100 * NSEC_PER_MSEC)
-                slack =  100 * NSEC_PER_MSEC;
-        return slack;
-}
-
-static unsigned long estimate_accuracy(struct timespec *tv)
-{
-        unsigned long ret;
-        struct timespec now;
-
-        /*
-         * Realtime tasks get a slack of 0 for obvious reasons.
-         */
-
-        if (current->policy == SCHED_FIFO ||
-                current->policy == SCHED_RR)
-                return 0;
-
-        ktime_get_ts(&now);
-        now = timespec_sub(*tv, now);
-        ret = __estimate_accuracy(&now);
-        if (ret < current->timer_slack_ns)
-                return current->timer_slack_ns;
-        return ret;
-}
+MBR, Sergei
