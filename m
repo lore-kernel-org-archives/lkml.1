@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYIGMw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYIGNJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYIGMw0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 08:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYIGMwR
+	id S1755464AbYIGNJW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 09:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYIGNJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 08:52:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36524 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753714AbYIGMwQ (ORCPT
+	Sun, 7 Sep 2008 09:09:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54196 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753194AbYIGNJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 08:52:16 -0400
-Date: Sun, 7 Sep 2008 14:53:31 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Willy Tarreau <w@1wt.eu>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, pageexec@freemail.hu,
-       Andi Kleen <andi@firstfloor.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       tglx@tglx.de, hpa@zytor.com
-Subject: Re: [patch] Add basic sanity checks to the syscall execution patch
-Message-ID: <20080907125331.GA1707@elf.ucw.cz>
-References: <20080903195122.73905236@infradead.org> <48C0FF43.30940.2C3EFC0@pageexec.freemail.hu> <1220609647.4879.169.camel@pasglop> <48C10EC5.24400.3008276@pageexec.freemail.hu> <1220612231.4879.175.camel@pasglop> <20080905114233.GA27878@elte.hu> <20080905204134.GI19337@1wt.eu> <20080906154551.GB1774@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080906154551.GB1774@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 7 Sep 2008 09:09:13 -0400
+Subject: Re: [RFC 07/13] sched: Reduce stack size requirements in
+ kernel/sched.c
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20080907040009.611ac986.akpm@linux-foundation.org>
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
+	 <20080906235037.880702000@polaris-admin.engr.sgi.com>
+	 <1220783087.8687.73.camel@twins.programming.kicks-ass.net>
+	 <20080907040009.611ac986.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 07 Sep 2008 15:05:50 +0200
+Message-Id: <1220792750.8687.88.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2008-09-06 17:45:51, Ingo Molnar wrote:
+On Sun, 2008-09-07 at 04:00 -0700, Andrew Morton wrote:
+> On Sun, 07 Sep 2008 12:24:47 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> * Willy Tarreau <w@1wt.eu> wrote:
+> > get_online_cpus() can sleep, but you just disabled preemption with those
+> > get_cpumask_var() horribles!
 > 
-> > Then they will simply proceed like this :
-> >   - patch /boot/vmlinuz
-> >   - sync
-> >   - crash system
-> > 
-> > => user says "oh crap" and presses the reset button. Patched kernel boots.
-> >    Game over. Patching vmlinuz for known targetted distros is even easier
-> >    because the attacker just has to embed binary changes for the most
-> >    common distro kernels.
+> make cpu_hotplug.refcount an atomic_t.
+
+A much easier fix is just re-ordering those operations and do the
+get_online_cpus() before disabling preemption. But it does indicate this
+patch series isn't carefully constructed.
+
+> > Couldn't be arsed to look through the rest, but I really hate this
+> > cpumask_ptr() stuff that relies on disabling preemption.
 > 
-> a reboot often raises attention. But yes, in terms of end user boxes, 
-> probably not. Anyway, my points were about transparent rootkits 
-> installed on a running system without anyone noticing - obviously if the 
-> attacker can modify the kernel image and the user does not mind a reboot 
-> it's game over.
+> that's harder to fix ;)
 
-Well, install a rootkit in /boot/vmlinuz, sync, then wait for user to
-reboot its system?
+Looking at more patches than just the sched one convinced me more that
+this approach isn't a good one. It seems to make code much more
+fragile. 
 
-Even well-kept servers are rebooted from time to time.
+See patch 9, there it was needed to draw out the callgraph in order to
+map stuff to these global variables - we're adding global dependencies
+to code that didn't have any, increasing complexity.
 
-I agree -- the only way to win is not to play this game.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
