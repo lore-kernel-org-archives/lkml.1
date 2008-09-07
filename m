@@ -1,166 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYIGT0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756108AbYIGTrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYIGT0p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 15:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbYIGT0g
+	id S1756108AbYIGTrd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 15:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbYIGTrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 15:26:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:63607 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755367AbYIGT0e (ORCPT
+	Sun, 7 Sep 2008 15:47:25 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53112 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755569AbYIGTrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 15:26:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Dr4HykUQsiKbZctbg66SXnKRwtAl/fdIkSN0nCCNdvTrvyWCRYrcENIC5A73Kfy4vT
-         6nSDFL+/hLzRa5FmDLqfhK1EkbiW08rdo9SnVv8tvTAJMMkQqfBuirxHyQMNXBzrLNxA
-         BH/TjI01YoPC7XfqKbKZysSRV6lIa7zxK+6yE=
-Date: Sun, 7 Sep 2008 23:26:25 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [RFC] x86: io-apic - convert DO_ACTION macro into function
-Message-ID: <20080907192625.GC7515@lenovo>
+	Sun, 7 Sep 2008 15:47:24 -0400
+Date: Sun, 7 Sep 2008 12:46:28 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org
+Subject: Re: [RFC, PATCH] Add a CPU_STARTING notifier (was: Re: [PATCH,
+	RFC] v4 scalable classic RCU implementation)
+Message-ID: <20080907194628.GC6941@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <48C3AA6A.3060402@colorfullife.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <48C3AA6A.3060402@colorfullife.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert DO_ACTION macro into more obvious io_apic_modify_irq
-function with callers
----
+On Sun, Sep 07, 2008 at 12:18:18PM +0200, Manfred Spraul wrote:
+> Paul E. McKenney wrote:
+>> +/*
+>> + * If the specified CPU is offline, tell the caller that it is in
+>> + * a quiescent state.  Otherwise, whack it with a reschedule IPI.
+>> + * Grace periods can end up waiting on an offline CPU when that
+>> + * CPU is in the process of coming online -- it will be added to the
+>> + * rcu_node bitmasks before it actually makes it online.  Because this
+>> + * race is quite rare, we check for it after detecting that the grace
+>> + * period has been delayed rather than checking each and every CPU
+>> + * each and every time we start a new grace period.
+>> + */
+>> +static int rcu_implicit_offline_qs(struct rcu_data *rdp)
+>> +{
+>> +	/*
+>> +	 * If the CPU is offline, it is in a quiescent state.  We can
+>> +	 * trust its state not to change because interrupts are disabled.
+>> +	 */
+>> +	if (cpu_is_offline(rdp->cpu)) {
+>> +		rdp->offline_fqs++;
+>> +		return 1;
+>> +	}
+>>   
+> I fear that this won't work.
+> E.g. look at x86, smp_callin() [arch/x86/kernel/smpboot.c]:
+> The boot code must enable local interrupts around calibrate_delay(), 
+> otherwise the NMI watchdog would complain.
+> That means the first interrupts, the first read side critical sections can 
+> run way before the cpu bit is set within cpu_online_map.
+> cpus are just started, we are not within stop_machine. Thus we cannot make 
+> any assumption about what the remaining cpus are doing.
 
- I found it more readable then original was. Especialy we could grep
-the callers in normal way. It's just an attempt - free to drop this
-patch. I hope I don't messed with all these masks :) So the question
-is rather NOT about details but idea in general.
+Ouch!  Very good catch!!!  ;-)
 
- io_apic.c |  102 ++++++++++++++++++++++++++++++--------------------------------
- 1 file changed, 50 insertions(+), 52 deletions(-)
+> What about introducing a CPU_STARTING notifier call, similar to CPU_DYING:
+> - called with disabled interrupts
+> - called before interrupts are enabled
+> - must not sleep
+> - called on the new cpu.
 
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-07 22:18:55.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-07 23:17:31.000000000 +0400
-@@ -641,65 +641,63 @@ static void __init replace_pin_at_irq(un
- 		add_pin_to_irq(irq, newapic, newpin);
- }
- 
--#define __DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)		\
--									\
--{									\
--	int pin;							\
--	struct irq_cfg *cfg;						\
--	struct irq_pin_list *entry;					\
--									\
--	cfg = irq_cfg(irq);						\
--	entry = cfg->irq_2_pin;						\
--	for (;;) {							\
--		unsigned int reg;					\
--		if (!entry)						\
--			break;						\
--		pin = entry->pin;					\
--		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
--		reg ACTION_DISABLE;					\
--		reg ACTION_ENABLE;					\
--		io_apic_modify(entry->apic, 0x10 + R + pin*2, reg);	\
--		FINAL;							\
--		if (!entry->next)					\
--			break;						\
--		entry = entry->next;					\
--	}								\
--}
--
--#define DO_ACTION(name,R, ACTION_ENABLE, ACTION_DISABLE, FINAL)		\
--									\
--	static void name##_IO_APIC_irq (unsigned int irq)		\
--	__DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)
-+/* modify chained irqs */
-+static void io_apic_modify_irq(unsigned int irq, int io_reg,
-+				int mask_and, int mask_or,
-+				int mask_and_not, int read_after_mod)
-+{
-+	int pin;
-+	struct irq_cfg *cfg;
-+	struct irq_pin_list *entry;
- 
--/* mask = 0 */
--DO_ACTION(__unmask,	0, |= 0, &= ~IO_APIC_REDIR_MASKED, )
-+	cfg = irq_cfg(irq);
-+	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
-+		unsigned int reg;
-+		pin = entry->pin;
-+		reg = io_apic_read(entry->apic, 0x10 + io_reg + pin * 2);
-+		if (mask_and)
-+			reg &= mask_and;
-+		if (mask_or)
-+			reg |= mask_or;
-+		if (mask_and_not)
-+			reg &= !mask_and_not;
-+		io_apic_modify(entry->apic, 0x10 + io_reg + pin * 2, reg);
-+		if (read_after_mod) {
-+			/* dummy read to sync IO-APIC and CPU */
-+			struct io_apic __iomem *p = io_apic_base(entry->apic);
-+			readl(&p->data);
-+		}
-+	}
-+}
- 
--#ifdef CONFIG_X86_64
--/*
-- * Synchronize the IO-APIC and the CPU by doing
-- * a dummy read from the IO-APIC
-- */
--static inline void io_apic_sync(unsigned int apic)
-+static void __unmask_IO_APIC_irq(unsigned int irq)
- {
--	struct io_apic __iomem *io_apic = io_apic_base(apic);
--	readl(&io_apic->data);
-+	io_apic_modify_irq(irq, 0, ~IO_APIC_REDIR_MASKED, 0, 0, 0);
- }
- 
--/* mask = 1 */
--DO_ACTION(__mask,	0, |= IO_APIC_REDIR_MASKED, &= ~0, io_apic_sync(entry->apic))
--
--#else
--
--/* mask = 1 */
--DO_ACTION(__mask,	0, |= IO_APIC_REDIR_MASKED, &= ~0, )
--
--/* mask = 1, trigger = 0 */
--DO_ACTION(__mask_and_edge, 0, |= IO_APIC_REDIR_MASKED, &= ~IO_APIC_REDIR_LEVEL_TRIGGER, )
-+#ifdef CONFIG_X86_64
-+static void __mask_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, 0, ~0, IO_APIC_REDIR_MASKED, 0, 1);
-+}
-+#else /* CONFIG_X86_32 */
-+static void __mask_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, 0, ~0, IO_APIC_REDIR_MASKED, 0, 0);
-+}
- 
--/* mask = 0, trigger = 1 */
--DO_ACTION(__unmask_and_level, 0, |= IO_APIC_REDIR_LEVEL_TRIGGER, &= ~IO_APIC_REDIR_MASKED, )
-+static void __mask_and_edge_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, 0, ~IO_APIC_REDIR_LEVEL_TRIGGER,
-+			IO_APIC_REDIR_MASKED, 0, 0);
-+}
- 
--#endif
-+static void __unmask_and_level_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, 0, ~IO_APIC_REDIR_MASKED,
-+			IO_APIC_REDIR_LEVEL_TRIGGER, 0, 0);
-+}
-+#endif /* CONFIG_X86_32 */
- 
- static void mask_IO_APIC_irq (unsigned int irq)
- {
+I suppose another approach would be to make calibrate_delay() kick the
+watchdog timer every so often, but the effort explaining to people why
+their machine's bogomips had decreased would probably far exceed any
+possible benefit...
+
+So given a CPU_STARTING notifier, RCU could set a bit in a coming-online
+bitmap, which would be reset rcu_online_cpu().  Then RCU would consider
+a CPU offline only if it is marked offline in cpu_online_map -and- it is
+not marked as coming-online.
+
+> This might also be useful for something like kvm. I'm not sure if it's 
+> guaranteed that hardware_enable() runs early enough.
+>
+> Attached is a patch proposal. Note that it doesn't work correctly: On 
+> x86-64, I have seen that CPU_STARTING is called after CPU_ONLINE. Thus 
+> frozen_cpus could already be cleared, then _FROZEN would be wrong.
+
+Then notify_cpu_starting() is invoked right before smp_callin() in
+start_secondary()?
+
+							Thanx, Paul
+
+> --
+> Manfred
+
+> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> index d7faf88..c2747ac 100644
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -69,6 +69,7 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+>  #endif
+> 
+>  int cpu_up(unsigned int cpu);
+> +void notify_cpu_starting(unsigned int cpu);
+>  extern void cpu_hotplug_init(void);
+>  extern void cpu_maps_update_begin(void);
+>  extern void cpu_maps_update_done(void);
+> diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+> index da2698b..8e47661 100644
+> --- a/include/linux/notifier.h
+> +++ b/include/linux/notifier.h
+> @@ -213,9 +213,16 @@ static inline int notifier_to_errno(int ret)
+>  #define CPU_DOWN_FAILED		0x0006 /* CPU (unsigned)v NOT going down */
+>  #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
+>  #define CPU_DYING		0x0008 /* CPU (unsigned)v not running any task,
+> -				        * not handling interrupts, soon dead */
+> +				        * not handling interrupts, soon dead.
+> +				        * Called on the dying cpu, interrupts
+> +				        * are already disabled. Must not
+> +				        * sleep, must not fail */
+>  #define CPU_POST_DEAD		0x0009 /* CPU (unsigned)v dead, cpu_hotplug
+>  					* lock is dropped */
+> +#define CPU_STARTING		0x000A /* CPU (unsigned)v soon running.
+> +					* Called on the new cpu, just before
+> +					* enabling interrupts. Must not sleep,
+> +					* must not fail */
+> 
+>  /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
+>   * operation in progress
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 5b7c88f..2300fc0 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -455,6 +455,25 @@ out:
+>  }
+>  #endif /* CONFIG_PM_SLEEP_SMP */
+> 
+> +/**
+> + * notify_cpu_starting(cpu) - call the CPU_STARTING notifiers
+> + * @cpu: cpu that just started
+> + *
+> + * This function calls the cpu_chain notifiers with CPU_STARTING.
+> + * It must be called by the arch code on the new cpu, immediately
+> + * before enabling interrupts.
+> + */
+> +void notify_cpu_starting(unsigned int cpu)
+> +{
+> +	unsigned long val = CPU_STARTING;
+> +
+> +#ifdef CONFIG_PM_SLEEP_SMP
+> +	if (cpu_isset(cpu, frozen_cpus))
+> +		val = CPU_STARTING_FROZEN;
+> +#endif /* CONFIG_PM_SLEEP_SMP */
+> +	raw_notifier_call_chain(&cpu_chain, val, (void*)(long)cpu);
+> +}
+> +
+>  #endif /* CONFIG_SMP */
+> 
+>  /*
+
