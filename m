@@ -1,140 +1,329 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbYIGCpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbYIGDLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbYIGCpX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Sep 2008 22:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYIGCpL
+	id S1754995AbYIGDLX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Sep 2008 23:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbYIGDLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Sep 2008 22:45:11 -0400
-Received: from ganymede.vroon.org ([195.66.242.11]:43933 "EHLO
-	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbYIGCpJ (ORCPT
+	Sat, 6 Sep 2008 23:11:14 -0400
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:40117 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753960AbYIGDLM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Sep 2008 22:45:09 -0400
-X-Greylist: delayed 856 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Sep 2008 22:45:09 EDT
-Subject: Request for MCE decode (AMD Barcelona, fam 10h)
-From: Tony Vroon <tony@vroon.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8CABu2hVQwLkh0zFpS5a"
-Date: Sun, 07 Sep 2008 03:32:22 +0100
-Message-Id: <1220754742.8530.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sat, 6 Sep 2008 23:11:12 -0400
+Message-ID: <48C345D2.1020603@cs.columbia.edu>
+Date: Sat, 06 Sep 2008 23:09:06 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: [RFC v3][PATCH 5/9] Memory managemnet (restore)
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>	 <Pine.LNX.4.64.0809040404060.5982@takamine.ncl.cs.columbia.edu> <1220551683.23386.32.camel@nimitz>
+In-Reply-To: <1220551683.23386.32.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-8CABu2hVQwLkh0zFpS5a
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On a Tyan-based system with intermittent but persistent instability, I
-have finally received a message that something might actually be wrong
-in hardware. Could you decode:
+Dave Hansen wrote:
+> On Thu, 2008-09-04 at 04:04 -0400, Oren Laadan wrote:
+>> +asmlinkage int sys_modify_ldt(int func, void __user *ptr, unsigned long bytecount);
+> 
+> This needs to go into a header.
+> 
+>> +int cr_read_mm_context(struct cr_ctx *ctx, struct mm_struct *mm, int parent)
+>> +{
+>> +	struct cr_hdr_mm_context *hh = cr_hbuf_get(ctx, sizeof(*hh));
+>> +	int n, rparent;
+>> +
+>> +	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_MM_CONTEXT);
+>> +	cr_debug("parent %d rparent %d nldt %d\n", parent, rparent, hh->nldt);
+>> +	if (rparent < 0)
+>> +		return rparent;
+>> +	if (rparent != parent)
+>> +		return -EINVAL;
+>> +
+>> +	if (hh->nldt < 0 || hh->ldt_entry_size != LDT_ENTRY_SIZE)
+>> +		return -EINVAL;
+>> +
+>> +	/* to utilize the syscall modify_ldt() we first convert the data
+>> +	 * in the checkpoint image from 'struct desc_struct' to 'struct
+>> +	 * user_desc' with reverse logic of inclue/asm/desc.h:fill_ldt() */
+> 
+> Typo in the filename there ^^.
+> 
+>> +	for (n = 0; n < hh->nldt; n++) {
+>> +		struct user_desc info;
+>> +		struct desc_struct desc;
+>> +		mm_segment_t old_fs;
+>> +		int ret;
+>> +
+>> +		ret = cr_kread(ctx, &desc, LDT_ENTRY_SIZE);
+>> +		if (ret < 0)
+>> +			return ret;
+>> +
+>> +		info.entry_number = n;
+>> +		info.base_addr = desc.base0 | (desc.base1 << 16);
+>> +		info.limit = desc.limit0;
+>> +		info.seg_32bit = desc.d;
+>> +		info.contents = desc.type >> 2;
+>> +		info.read_exec_only = (desc.type >> 1) ^ 1;
+>> +		info.limit_in_pages = desc.g;
+>> +		info.seg_not_present = desc.p ^ 1;
+>> +		info.useable = desc.avl;
+> 
+> Wouldn't it just be better to save the checkpoint image in the format
+> that the syscall takes in the first place?
 
-MCE 0
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 4 MISC c000000001000000=20
-STATUS fa00002000020c0f MCGSTATUS 0
-MCE 1
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 4 BANK 4 MISC c000000001000000=20
-STATUS fa00000000070f0f MCGSTATUS 0
+Because the syscall accepts a different format (user_desc) than it gives
+back (desc_struct, which is the kernel format), conversion must occur,
+either during checkpoint or during restart.
+I prefer in restart: because checkpoint is more performance critical,
+because it allows - in the future - to directly insert the data bypassing
+the syscall (like openvz), and because we may need conversions anyway in
+restart, e.g. to restart a 32 bit app on a 64 bit kernel.
 
-This appeared while the 3Ware 9550SXU-8LP RAID controller reported a
-disk corruption:
-3w-9xxx: scsi0: AEN: INFO (0x04:0x0029): Verify started:unit=3D0.
-Machine check events logged
-3w-9xxx: scsi0: AEN: WARNING (0x04:0x0023): Sector repair
-completed:port=3D2, LBA=3D0x74907F9.
+> 
 
-This is on:
-Linux prometheus 2.6.27-rc5-00283-g70bb089 #1 SMP Sat Sep 6 13:52:51 BST
-2008 x86_64 Quad-Core AMD Opteron(tm) Processor 2354 AuthenticAMD
-GNU/Linux
+[...]
 
-This is a 2x Opteron 2354 (so 8 core) system, on a Tyan S2915-E
-mainboard with the v2.07 BIOS. The system is equipped with 16GB RAM,
-populated as 8x Kingston KVR667D2D4P5/2G.
+>> +static int cr_vma_read_pages_addr(struct cr_ctx *ctx, int npages)
+>> +{
+>> +	struct cr_pgarr *pgarr;
+>> +	int nr, ret;
+>> +
+>> +	while (npages) {
+>> +		pgarr = cr_pgarr_prep(ctx);
+>> +		if (!pgarr)
+>> +			return -ENOMEM;
+>> +		nr = min(npages, (int) pgarr->nleft);
+> 
+> Do you find it any easier to read this as:
+> 
+> 	nr = npages;
+> 	if (nr > pgarr->nleft)
+> 		nr = pgarr->nleft;
+> 
+> ?
 
-Configuration for the RAID controller, in case it is relevant:
-/c0 Driver Version =3D 2.26.02.011
-/c0 Model =3D 9550SXU-8LP
-/c0 Available Memory =3D 112MB
-/c0 Firmware Version =3D FE9X 3.08.00.029
-/c0 Bios Version =3D BE9X 3.10.00.003
-/c0 Boot Loader Version =3D BL9X 3.02.00.001
-/c0 Serial Number =3D [scrubbed]
-/c0 PCB Version =3D Rev 032
-/c0 PCHIP Version =3D 1.60
-/c0 ACHIP Version =3D 1.90
-/c0 Number of Ports =3D 8
-/c0 Number of Drives =3D 6
-/c0 Number of Units =3D 1
-/c0 Total Optimal Units =3D 1
-/c0 Not Optimal Units =3D 0=20
-/c0 JBOD Export Policy =3D off
-/c0 Disk Spinup Policy =3D 2
-/c0 Spinup Stagger Time Policy (sec) =3D 1
-/c0 Auto-Carving Policy =3D off
-/c0 Auto-Carving Size =3D 2048 GB
-/c0 Auto-Rebuild Policy =3D on
-/c0 Controller Bus Type =3D PCIX
-/c0 Controller Bus Width =3D 64 bits
-/c0 Controller Bus Speed =3D 133 Mhz
+Just shorter.
 
-Unit  UnitType  Status         %RCmpl  %V/I/M  Stripe  Size(GB)  Cache
-AVrfy
----------------------------------------------------------------------------=
----
-u0    RAID-5    VERIFYING      -       12      256K    3492.41   ON
-OFF   =20
+>> +		ret = cr_kread(ctx, pgarr->addrs, nr * sizeof(unsigned long));
+>> +		if (ret < 0)
+>> +			return ret;
+>> +		pgarr->nleft -= nr;
+>> +		pgarr->nused += nr;
+>> +		npages -= nr;
+>> +	}
+>> +	return 0;
+>> +}
+>> +
+>> +/**
+>> + * cr_vma_read_pages_data - read in data of pages in page-array chain
+>> + * @ctx - restart context
+>> + * @npages - number of pages
+>> + */
+>> +static int cr_vma_read_pages_data(struct cr_ctx *ctx, int npages)
+>> +{
+>> +	struct cr_pgarr *pgarr;
+>> +	unsigned long *addrs;
+>> +	int nr, ret;
+>> +
+>> +	for (pgarr = ctx->pgarr; npages; pgarr = pgarr->next) {
+>> +		addrs = pgarr->addrs;
+>> +		nr = pgarr->nused;
+>> +		npages -= nr;
+>> +		while (nr--) {
+>> +			ret = cr_uread(ctx, (void *) *(addrs++), PAGE_SIZE);
+> 
+> The void cast is unnecessary, right?
 
-Port   Status           Unit   Size        Blocks        Serial
----------------------------------------------------------------
-p0     OK               u0     698.63 GB   1465149168   [scrubbed]     =20
-p1     OK               u0     698.63 GB   1465149168   [scrubbed]=20
-p2     OK               u0     698.63 GB   1465149168   [scrubbed]=20
-p3     OK               u0     698.63 GB   1465149168   [scrubbed]=20
-p4     OK               u0     698.63 GB   1465149168   [scrubbed]=20
-p5     OK               u0     698.63 GB   1465149168   [scrubbed]=20
-p6     NOT-PRESENT      -      -           -             -
-p7     NOT-PRESENT      -      -           -             -
+It is: cr_uread() expects "void *", while "*addrs" is "unsigned long".
 
-Name  OnlineState  BBUReady  Status    Volt     Temp     Hours
-LastCapTest
----------------------------------------------------------------------------
-bbu   On           Yes       OK        OK       OK       255
-04-Jun-2008 =20
+> 
+>> +			if (ret < 0)
+>> +				return ret;
+>> +		}
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+> 
+> I'm having some difficulty parsing this function.  Could we
+> s/data/contents/ in the function name?  It also looks like addrs is
+> being used like an array here.  Can we use it explicitly that way?  I'd
+> also like to see it called vaddr or something explicit about what kinds
+> of addresses they are.
+> 
+>> +/* change the protection of an address range to be writable/non-writable.
+>> + * this is useful when restoring the memory of a read-only vma */
+>> +static int cr_vma_writable(struct mm_struct *mm, unsigned long start,
+>> +			   unsigned long end, int writable)
+> 
+> "cr_vma_writable" is a question to me.  This needs to be
+> "cr_vma_make_writable" or something to indicate that it is modifying the
+> vma.
+> 
+>> +{
+>> +	struct vm_area_struct *vma, *prev;
+>> +	unsigned long flags = 0;
+>> +	int ret = -EINVAL;
+>> +
+>> +	cr_debug("vma %#lx-%#lx writable %d\n", start, end, writable);
+>> +
+>> +	down_write(&mm->mmap_sem);
+>> +	vma = find_vma_prev(mm, start, &prev);
+>> +	if (unlikely(!vma || vma->vm_start > end || vma->vm_end < start))
+>> +		goto out;
+> 
+> Kill the unlikely(), please.  It's unnecessary and tends to make things
+> slower when not used correctly.  Can you please check all the future
+> patches and make sure that you don't accidentally introduce these later?
+> 
+>> +	if (writable && !(vma->vm_flags & VM_WRITE))
+>> +		flags = vma->vm_flags | VM_WRITE;
+>> +	else if (!writable && (vma->vm_flags & VM_WRITE))
+>> +		flags = vma->vm_flags & ~VM_WRITE;
+>> +	cr_debug("flags %#lx\n", flags);
+>> +	if (flags)
+>> +		ret = mprotect_fixup(vma, &prev, vma->vm_start,
+>> +				     vma->vm_end, flags);
+> 
+> Is this to fixup the same things that setup_arg_pages() uses it for?  We
+> should probably consolidate those calls somehow.  
 
-I have stripped the machine down to its bare minimum configuration, but
-the instability continues. On an older BIOS, enabling the IOMMU option
-in the BIOS seemed to cause hard crashes with an alarming frequency.
-However, this all but disappeared in in v2.05 and upwards.
-As disabling the IOMMU option costs me RAM, I have not yet done so.
-However, I will happily flip BIOS settings and run further tests for
-you. I'm not getting any work done on this workstation and that needs to
-stop.
-I realize that the linux kernel may be entirely blameless in this
-situation, but I'd like to have some peer insight before I run after
-vendors.
+This is needed for a VMA that has modified pages but is read-only: e.g. a
+task modifies memory then calls mprotect() to make it read-only.
+Since during restart we will recreate this VMA as read-only, we need to
+temporarily make it read-write to be able to read the saved contents into
+it, and then restore the read-only protection.
 
-Regards,
-Tony V.
+setup_arg_pages() is unrelated, and the code doesn't seem to have much in
+common.
 
---=-8CABu2hVQwLkh0zFpS5a
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> 
+>> + out:
+>> +	up_write(&mm->mmap_sem);
+>> +	return ret;
+>> +}
+>> +
+>> +/**
+>> + * cr_vma_read_pages - read in pages for to restore a vma
+>> + * @ctx - restart context
+>> + * @cr_vma - vma descriptor from restart
+>> + */
+>> +static int cr_vma_read_pages(struct cr_ctx *ctx, struct cr_hdr_vma *cr_vma)
+>> +{
+>> +	struct mm_struct *mm = current->mm;
+>> +	int ret = 0;
+>> +
+>> +	if (!cr_vma->nr_pages)
+>> +		return 0;
+> 
+> Looking at this code, I can now tell that we need to be more explicit
+> about what nr_pages is.  Is it the nr_pages that the vma spans,
+> contains, maps....??  Why do we need to check it here?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+nr_pages is the number of pages _saved_ for this VMA, that is, the number
+of pages to follow to read in. If it's zero, we don't read anything (the
+VMA is had no dirty pages). Otherwise, we need to read that many addresses
+followed by that many pages.
 
-iEYEABECAAYFAkjDPTYACgkQp5vW4rUFj5o1qQCgqNbVEfGzkpDASQghwiBICLaa
-YXkAn0/Uo9eWxN/P+lCZSo1gc+x8dw0q
-=0ECy
------END PGP SIGNATURE-----
+> 
+>> +	/* in the unlikely case that this vma is read-only */
+>> +	if (!(cr_vma->vm_flags & VM_WRITE))
+>> +		ret = cr_vma_writable(mm, cr_vma->vm_start, cr_vma->vm_end, 1);
+>> +	if (ret < 0)
+>> +		goto out;
+>> +	ret = cr_vma_read_pages_addr(ctx, cr_vma->nr_pages);
+> 
+> The english here is a bit funky.  I think this needs to be
+> cr_vma_read_page_addrs().  The other way makes it sound like you're
+> reading the "page's addr", meaning a singular page.  Same for data.
+> 
+>> +	if (ret < 0)
+>> +		goto out;
+>> +	ret = cr_vma_read_pages_data(ctx, cr_vma->nr_pages);
+>> +	if (ret < 0)
+>> +		goto out;
+>> +
+>> +	cr_pgarr_release(ctx);	/* reset page-array chain */
+> 
+> Where did this sucker get allocated?  This is going to be a bit
+> difficult to audit since it isn't allocated and freed (or released) at
+> the same level.  Seems like it would be much nicer if it was allocated
+> at the beginning of this function.
 
---=-8CABu2hVQwLkh0zFpS5a--
+The name is misleading, should be:  cr_pgarr_reset().  What happens is
+that we allocate the chain of cr_pgarr on demand. Once done with one MM,
+we reset the state and reuse the same chain until we need to expand it.
+I renamed and added comments about it in the next version.
+
+> 
+>> +	/* restore original protection for this vma */
+>> +	if (!(cr_vma->vm_flags & VM_WRITE))
+>> +		ret = cr_vma_writable(mm, cr_vma->vm_start, cr_vma->vm_end, 0);
+>> +
+>> + out:
+>> +	return ret;
+>> +}
+> 
+> Ugh.  Is this a security hole?  What if the user was not allowed to
+> write to the file being mmap()'d by this VMA?  Is this a window where
+> someone could come in and (using ptrace or something similar) write to
+> the file?
+
+Not a security hole: this is only for private memory, so it never
+modifies the underlying file. This is related to what I explained before
+about read-only VMAs that have modified pages.
+
+The process is restarting, inside a container that is restarting. All
+tasks inside should be calling sys_restart() (by design) and no other
+process from outside should be allowed to ptrace them at this point.
+
+(In any case, if some other tasks ptraces this task, it can make it do
+anything anyhow).
+
+> 
+> We copy into the process address space all the time when not in its
+> context explicitly.  
+
+Huh ?
+
+> 
+>> +/**
+>> + * cr_calc_map_prot_bits - convert vm_flags to mmap protection
+>> + * orig_vm_flags: source vm_flags
+
+[...]
+
+>> +	switch (hh->vma_type) {
+>> +	case CR_VMA_ANON:
+>> +	case CR_VMA_FILE:
+>> +		/* standard case: read the data into the memory */
+>> +		ret = cr_vma_read_pages(ctx, hh);
+>> +		break;
+>> +	}
+>> +
+>> +	if (ret < 0)
+>> +		return ret;
+>> +
+>> +	if (vm_prot & PROT_EXEC)
+>> +		flush_icache_range(hh->vm_start, hh->vm_end);
+> 
+> Why the heck is this here?  Isn't this a fresh mm?  We shouldn't have to
+> do this unless we had a VMA here previously.  Maybe it would be more
+> efficient to do this when tearing down the old vmas.
+
+Good point, thanks.
+
+[...]
+
+Oren.
 
