@@ -1,177 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYIGKAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbYIGKSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbYIGKAU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 06:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYIGKAH
+	id S1755145AbYIGKSb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 06:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYIGKSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 06:00:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:29142 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752973AbYIGKAF (ORCPT
+	Sun, 7 Sep 2008 06:18:22 -0400
+Received: from qb-out-0506.google.com ([72.14.204.224]:34164 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752908AbYIGKSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 06:00:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KAsGDdczPlKi591oyFnkOx1+/nMRlJnds/KWZnmCM/pNdVc293Obp5GXce6v6PJfym
-         nVxPU39de/Tbiltie1JVwTjmmt3Vz4ngh+lv2t2erzvbul/2bO92gNJ0uOp+sLGWjECb
-         4qExNS8bdVxUhS5btj8aGLzhdqEu8M6a/VGm8=
-Date: Sun, 7 Sep 2008 14:00:00 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, yhlu.kernel@gmail.com
-Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for
-	setup_IO_APIC_irqs
-Message-ID: <20080907100000.GA7515@lenovo>
-References: <20080904183748.950151853@gmail.com>> <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com> <20080905080447.GC12409@elte.hu> <20080905180126.GA19334@lenovo> <20080905181111.GG27395@elte.hu> <20080905183347.GB19334@lenovo> <20080905183835.GA19215@elte.hu> <20080906101533.GA7273@lenovo> <Pine.LNX.4.55.0809061938250.13851@cliff.in.clinika.pl> <20080906184914.GG21872@elte.hu>
+	Sun, 7 Sep 2008 06:18:21 -0400
+Message-ID: <48C3AA6A.3060402@colorfullife.com>
+Date: Sun, 07 Sep 2008 12:18:18 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080906184914.GG21872@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org
+Subject: [RFC, PATCH] Add a CPU_STARTING notifier (was: Re: [PATCH, RFC] v4
+ scalable classic RCU implementation)
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com>
+In-Reply-To: <20080905152930.GA8124@linux.vnet.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------080701070004000200020903"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Sat, Sep 06, 2008 at 08:49:14PM +0200]
-| 
-| * Maciej W. Rozycki <macro@linux-mips.org> wrote:
-| 
-| > On Sat, 6 Sep 2008, Cyrill Gorcunov wrote:
-| > 
-| > > Ingo, how about the following approach? We don't introduce new
-| > > functions but rather srink the code by new printout form.
-| > 
-| >  Honestly, this one should probably use sprintf() or suchlike to avoid the
-| > mess of printk() calls building a line of output from pieces.  It's quite
-| > easy to calculate here what the maximum size of the buffer required could
-| > be and automatic arrays can have variable size, so no need for the hassle
-| > of heap management.  Calls to printk() without a trailing newline should
-| > be avoided where possible as it messes up logging priority if a message
-| > pops up from an interrupt inbetween.
-| 
-| hm, is it worth the trouble? This is during very early init.
-| 
-| 	Ingo
-| 
+This is a multi-part message in MIME format.
+--------------080701070004000200020903
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Ingo, Maciej,
+Paul E. McKenney wrote:
+> +/*
+> + * If the specified CPU is offline, tell the caller that it is in
+> + * a quiescent state.  Otherwise, whack it with a reschedule IPI.
+> + * Grace periods can end up waiting on an offline CPU when that
+> + * CPU is in the process of coming online -- it will be added to the
+> + * rcu_node bitmasks before it actually makes it online.  Because this
+> + * race is quite rare, we check for it after detecting that the grace
+> + * period has been delayed rather than checking each and every CPU
+> + * each and every time we start a new grace period.
+> + */
+> +static int rcu_implicit_offline_qs(struct rcu_data *rdp)
+> +{
+> +	/*
+> +	 * If the CPU is offline, it is in a quiescent state.  We can
+> +	 * trust its state not to change because interrupts are disabled.
+> +	 */
+> +	if (cpu_is_offline(rdp->cpu)) {
+> +		rdp->offline_fqs++;
+> +		return 1;
+> +	}
+>   
+I fear that this won't work.
+E.g. look at x86, smp_callin() [arch/x86/kernel/smpboot.c]:
+The boot code must enable local interrupts around calibrate_delay(), 
+otherwise the NMI watchdog would complain.
+That means the first interrupts, the first read side critical sections 
+can run way before the cpu bit is set within cpu_online_map.
+cpus are just started, we are not within stop_machine. Thus we cannot 
+make any assumption about what the remaining cpus are doing.
 
-here is an another attempt to satisfy the requirements :)
-Please review and comment if it looks better or worse now.
+What about introducing a CPU_STARTING notifier call, similar to CPU_DYING:
+- called with disabled interrupts
+- called before interrupts are enabled
+- must not sleep
+- called on the new cpu.
 
-		- Cyrill -
+This might also be useful for something like kvm. I'm not sure if it's 
+guaranteed that hardware_enable() runs early enough.
 
----
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: [PATCH] x86: io-apic - cleanup of setup_IO_APIC_irqs v3
+Attached is a patch proposal. Note that it doesn't work correctly: On 
+x86-64, I have seen that CPU_STARTING is called after CPU_ONLINE. Thus 
+frozen_cpus could already be cleared, then _FROZEN would be wrong.
 
-Use local buffer to accumulate all not connected pin info
-on each io-apic and printout it if needed.
+--
+Manfred
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+--------------080701070004000200020903
+Content-Type: text/plain;
+ name="patch-CPU_STARTING-wip"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch-CPU_STARTING-wip"
 
-
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-07 10:10:15.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-07 13:50:46.000000000 +0400
-@@ -1514,46 +1514,69 @@ static void setup_IO_APIC_irq(int apic, 
- 	ioapic_write_entry(apic, pin, entry);
- }
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index d7faf88..c2747ac 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -69,6 +69,7 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+ #endif
  
-+/* check and setup io-apic irq */
-+static int __init setup_ioapic_irq(int apic, int pin)
+ int cpu_up(unsigned int cpu);
++void notify_cpu_starting(unsigned int cpu);
+ extern void cpu_hotplug_init(void);
+ extern void cpu_maps_update_begin(void);
+ extern void cpu_maps_update_done(void);
+diff --git a/include/linux/notifier.h b/include/linux/notifier.h
+index da2698b..8e47661 100644
+--- a/include/linux/notifier.h
++++ b/include/linux/notifier.h
+@@ -213,9 +213,16 @@ static inline int notifier_to_errno(int ret)
+ #define CPU_DOWN_FAILED		0x0006 /* CPU (unsigned)v NOT going down */
+ #define CPU_DEAD		0x0007 /* CPU (unsigned)v dead */
+ #define CPU_DYING		0x0008 /* CPU (unsigned)v not running any task,
+-				        * not handling interrupts, soon dead */
++				        * not handling interrupts, soon dead.
++				        * Called on the dying cpu, interrupts
++				        * are already disabled. Must not
++				        * sleep, must not fail */
+ #define CPU_POST_DEAD		0x0009 /* CPU (unsigned)v dead, cpu_hotplug
+ 					* lock is dropped */
++#define CPU_STARTING		0x000A /* CPU (unsigned)v soon running.
++					* Called on the new cpu, just before
++					* enabling interrupts. Must not sleep,
++					* must not fail */
+ 
+ /* Used for CPU hotplug events occuring while tasks are frozen due to a suspend
+  * operation in progress
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 5b7c88f..2300fc0 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -455,6 +455,25 @@ out:
+ }
+ #endif /* CONFIG_PM_SLEEP_SMP */
+ 
++/**
++ * notify_cpu_starting(cpu) - call the CPU_STARTING notifiers
++ * @cpu: cpu that just started
++ *
++ * This function calls the cpu_chain notifiers with CPU_STARTING.
++ * It must be called by the arch code on the new cpu, immediately
++ * before enabling interrupts.
++ */
++void notify_cpu_starting(unsigned int cpu)
 +{
-+	int idx, irq;
++	unsigned long val = CPU_STARTING;
 +
-+	idx = find_irq_entry(apic, pin, mp_INT);
-+	if (idx == -1)
-+		return -1;
-+
-+	irq = pin_2_irq(idx, apic, pin);
-+
-+#ifdef CONFIG_X86_32
-+	if (multi_timer_check(apic, irq))
-+		return 0;
-+#endif
-+
-+	add_pin_to_irq(irq, apic, pin);
-+	setup_IO_APIC_irq(apic, pin, irq,
-+			irq_trigger(idx), irq_polarity(idx));
-+	return 0;
++#ifdef CONFIG_PM_SLEEP_SMP
++	if (cpu_isset(cpu, frozen_cpus))
++		val = CPU_STARTING_FROZEN;
++#endif /* CONFIG_PM_SLEEP_SMP */
++	raw_notifier_call_chain(&cpu_chain, val, (void*)(long)cpu);
 +}
 +
- static void __init setup_IO_APIC_irqs(void)
- {
--	int apic, pin, idx, irq;
--	int notcon = 0;
-+	int apic, pin;
-+	char buf[64], *p;
-+	int len;
- 
- 	apic_printk(APIC_VERBOSE, KERN_DEBUG "init IO_APIC IRQs\n");
- 
-+	p = buf, buf[0] = 0, len = 0;
-+
- 	for (apic = 0; apic < nr_ioapics; apic++) {
- 		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++) {
- 
--			idx = find_irq_entry(apic, pin, mp_INT);
--			if (idx == -1) {
--				apic_printk(APIC_VERBOSE,
--					KERN_DEBUG " %d-%d",
--					mp_ioapics[apic].mp_apicid, pin);
--				if (!notcon)
--					notcon = 1;
-+			if (!setup_ioapic_irq(apic, pin))
- 				continue;
--			}
- 
--			irq = pin_2_irq(idx, apic, pin);
--#ifdef CONFIG_X86_32
--			if (multi_timer_check(apic, irq))
-+			/*
-+			 * pin is not connected
-+			 *  - we try to save this info in the buffer
-+			 *    and print it out later
-+			 *  - we don't expect too much not connected
-+			 *    pins (as MP specification says the maximum
-+			 *    value is 2 not connected pins) but if we
-+			 *    have buggy BIOS or just get too many of them -
-+			 *    truncate output with "..."
-+			 */
-+			if (!p)
- 				continue;
--#endif
--			add_pin_to_irq(irq, apic, pin);
--
--			setup_IO_APIC_irq(apic, pin, irq,
--					irq_trigger(idx), irq_polarity(idx));
-+			len += snprintf(p + len, sizeof(buf) - len, " %d-%d",
-+					mp_ioapics[apic].mp_apicid, pin);
-+			if (len >= sizeof(buf)) {
-+				memcpy(&buf[sizeof(buf) - 4], "...", 3);
-+				p = NULL;
-+			}
- 		}
--		if (notcon) {
--			apic_printk(APIC_VERBOSE,
--				KERN_DEBUG " (apicid-pin) not connected\n");
--			notcon = 0;
-+		if (buf[0]) {
-+			apic_printk(APIC_VERBOSE, KERN_DEBUG
-+				" (apicid-pin) not connected:%s\n", buf);
-+			p = buf, buf[0] = 0, len = 0;
- 		}
- 	}
--
--	if (notcon)
--		apic_printk(APIC_VERBOSE,
--			KERN_DEBUG " (apicid-pin) not connected\n");
- }
+ #endif /* CONFIG_SMP */
  
  /*
+
+--------------080701070004000200020903--
