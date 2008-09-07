@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbYIGEJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYIGEUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbYIGEJQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 00:09:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYIGEJB
+	id S1754023AbYIGEUr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 00:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbYIGEUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 00:09:01 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35811 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbYIGEJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 00:09:00 -0400
-Date: Sun, 7 Sep 2008 14:08:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH -mm] Fix dev_load() compilation again
-Message-Id: <20080907140841.9ff05dc6.sfr@canb.auug.org.au>
-In-Reply-To: <48C18E8B.9050201@ct.jp.nec.com>
-References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
-	<20080905193244.GD11569@x200.localdomain>
-	<48C18E8B.9050201@ct.jp.nec.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Sun, 7 Sep 2008 00:20:38 -0400
+Received: from ganymede.vroon.org ([195.66.242.11]:33128 "EHLO
+	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbYIGEUh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 00:20:37 -0400
+Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
+From: Tony Vroon <tony@vroon.org>
+To: Jeroen van Rijn <jvrnix@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <8ee0b8e80809062016r12388b59nea95f820079c39f8@mail.gmail.com>
+References: <1220754742.8530.12.camel@localhost>
+	 <8ee0b8e80809062016r12388b59nea95f820079c39f8@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+DtZTRs8Y/2F16PNPuxj"
+Date: Sun, 07 Sep 2008 05:22:07 +0100
+Message-Id: <1220761327.8530.15.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q"
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-+DtZTRs8Y/2F16PNPuxj
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Hiroshi,
+On Sun, 2008-09-07 at 05:16 +0200, Jeroen van Rijn wrote:
+> Still, before I sign off, have you tried running "mcelog
+> --ascii"? It needs to be run on the machine the check occured on. It
+> might give you something to go on before the cavalry arrives.
 
-On Fri, 05 Sep 2008 12:54:51 -0700 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec=
-.com> wrote:
->
-> Alexey Dobriyan wrote:
-> > dev_load() doesn't exist if MODULES=3Dn.
->=20
-> Hi,
->=20
-> in -next tree, this patch fixes the compilation error instead of
-> my patch. So, there is a conflict.
+That worked, thank you. Had to feed it back in as /dev/mcelog was empty,
+but it made a bit more sense of it:
 
-My patch is a temporary work around and will be dropped if the fix turns
-up in any of the trees that I merge.
+MCE 0
+HARDWARE ERROR. This is *NOT* a software problem!
+Please contact your hardware vendor
+CPU 0 0 data cache        bit57 =3D processor context corrupt
+       bit59 =3D misc error valid
+       bit61 =3D error uncorrected
+       bit62 =3D error overflow (multiple errors)
+  bus error 'local node observed, request didn't time out
+      generic error mem transaction
+      generic access, level generic'
+STATUS fa00002000020c0f MCGSTATUS 0
+MCE 1
+HARDWARE ERROR. This is *NOT* a software problem!
+Please contact your hardware vendor
+CPU 4 0 data cache        bit57 =3D processor context corrupt
+       bit59 =3D misc error valid
+       bit61 =3D error uncorrected
+       bit62 =3D error overflow (multiple errors)
+  bus error 'generic participation, request timed out
+      generic error mem transaction
+      generic access, level generic'
+STATUS fa00000000070f0f MCGSTATUS 0
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> Best regards,
+>   Jeroen.
 
---Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q
-Content-Type: application/pgp-signature
+Regards,
+Tony V.
+
+--=-+DtZTRs8Y/2F16PNPuxj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-iEYEARECAAYFAkjDU8kACgkQjjKRsyhoI8ybVwCdF45xa1p6DKZ6mBWjpYKF4AOu
-PvoAoLHxhb8NxnE5cHZ4puiVY4W5Mmkt
-=ThS0
+iEYEABECAAYFAkjDVu8ACgkQp5vW4rUFj5qQagCgicbpvVJX66dPgxoGfPkN4sRx
+ot4An0YsKhy/Y1X2MMtbhMeeOD5s2OjG
+=pHii
 -----END PGP SIGNATURE-----
 
---Signature=_Sun__7_Sep_2008_14_08_41_+1000_jA9N7vz/MwWt7A2q--
+--=-+DtZTRs8Y/2F16PNPuxj--
+
