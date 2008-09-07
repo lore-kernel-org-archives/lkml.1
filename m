@@ -1,276 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYIGJhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbYIGJhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYIGJhZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 05:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbYIGJhJ
+	id S1755628AbYIGJhq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 05:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbYIGJhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 05:37:09 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:14469 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750871AbYIGJhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 05:37:07 -0400
-Message-ID: <48C3A0A9.3000206@panasas.com>
-Date: Sun, 07 Sep 2008 12:36:41 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 7 Sep 2008 05:37:35 -0400
+Received: from gw.goop.org ([64.81.55.164]:32894 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755506AbYIGJhe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 05:37:34 -0400
+Message-ID: <48C3A0DC.8000206@goop.org>
+Date: Sun, 07 Sep 2008 02:37:32 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Chris Leech <christopher.leech@intel.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       devel@open-fcoe.org, Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte
- arrays as integers
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>
-In-Reply-To: <20080905165732.16689.50256.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Hugh Dickens <hugh@veritas.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       =?ISO-8859-1?Q?Rafa=3F_Mi=3F?= =?ISO-8859-1?Q?ecki?= 
+	<zajec5@gmail.com>
+Subject: [PATCH 4/3] x86: default corruption check to off, but put parameter
+ default in Kconfig
+References: <patchbomb.1220777491@localhost> <72081a970effa1a32861.1220777494@localhost> <20080907091112.GA5574@elte.hu>
+In-Reply-To: <20080907091112.GA5574@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Sep 2008 09:35:50.0524 (UTC) FILETIME=[1D73D3C0:01C910CD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Leech wrote:
-> Both iSCSI and Fibre Channel make use of 24-bit big-endian values in
-> frame headers.  This patch defines __be24 and __le24 typedefs for a
-> structure wrapped around a 3-byte array, and macros to convert back and
-> forth to a 32-bit integer.
-> 
-> The undefs in iscsi_proto.h are because of the different calling
-> convention for the existing hton24 macro in the iSCSI code.  iSCSI will
-> be converted in a subsequent patch.
-> 
-> Signed-off-by: Chris Leech <christopher.leech@intel.com>
+Default the low memory corruption check to off, but make the default setting of
+the memory_corruption_check kernel parameter a config parameter.
 
-I like what this patch wants to accomplish, but I disagree with the
-implementation.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/Kconfig        |    9 ++++++++-
+ arch/x86/kernel/setup.c |   13 ++++++++++++-
+ 2 files changed, 20 insertions(+), 2 deletions(-)
 
-First why is the double definition, one in include/linux/byteorder.h
-and one in include/linux/byteorder/generic.h ?
+===================================================================
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1139,7 +1139,6 @@
+ 
+ config X86_CHECK_BIOS_CORRUPTION
+         bool "Check for low memory corruption"
+-	default y
+ 	help
+ 	 Periodically check for memory corruption in low memory, which
+ 	 is suspected to be caused by BIOS.  Even when enabled in the
+@@ -1159,6 +1158,14 @@
+ 	 BIOS-originated corruption always affects the same memory,
+ 	 you can use memmap= to prevent the kernel from using that
+ 	 memory.
++
++config X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK
++        bool "Set the default setting of memory_corruption_check"
++	depends on X86_CHECK_BIOS_CORRUPTION
++	default y
++	help
++	 Set whether the default state of memory_corruption_check is
++	 on or off.
+ 
+ config MATH_EMULATION
+ 	bool
+===================================================================
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -590,7 +590,8 @@
+ #ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
+ #define MAX_SCAN_AREAS	8
+ 
+-static int __read_mostly memory_corruption_check = 0;
++static int __read_mostly memory_corruption_check = -1;
++
+ static unsigned __read_mostly corruption_check_size = 64*1024;
+ static unsigned __read_mostly corruption_check_period = 60; /* seconds */
+ 
+@@ -636,6 +637,16 @@
+ static void __init setup_bios_corruption_check(void)
+ {
+ 	u64 addr = PAGE_SIZE;	/* assume first page is reserved anyway */
++
++	if (memory_corruption_check == -1) {
++		memory_corruption_check =
++#ifdef CONFIG_X86_BOOTPARAM_MEMORY_CORRUPTION_CHECK
++			1
++#else
++			0
++#endif
++			;
++	}
+ 
+ 	if (corruption_check_size == 0)
+ 		memory_corruption_check = 0;
 
-Second and most important, in both these files all routines are inline's
-not MACROs, and rightly so. There is no place for a macro and the MACRO
-works bad for these. One - the definition of a local variable in a {} scope
-in the middle of anywhere. Second - type safety.
-
-I CC: Harvey Harrison which did lots of work in these area's.
-
-For me this patch is totally unacceptable.
-
-Thanks for working on this
-Boaz
-> ---
-> 
->  include/linux/byteorder.h         |   56 ++++++++++++++++++++++++++++++++++++
->  include/linux/byteorder/generic.h |   57 +++++++++++++++++++++++++++++++++++++
->  include/linux/types.h             |    2 +
->  include/scsi/iscsi_proto.h        |    2 +
->  4 files changed, 117 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
-> index 29f002d..e41c17b 100644
-> --- a/include/linux/byteorder.h
-> +++ b/include/linux/byteorder.h
-> @@ -62,6 +62,54 @@
->  # define __cpu_to_le64(x) ((__force __le64)__swab64(x))
->  #endif
->  
-> +/**
-> + * __le24_to_cpu - read a 3-byte array as a 24-bit little-endian integer
-> + * @x: __le24, a structure wrapper around a 3-byte array
-> + *
-> + * Evaluates to a __u32 integer type
-> + */
-> +#define __le24_to_cpu(x) \
-> +({ \
-> +	__le24 _x = (x); \
-> +	(__u32) ((_x.b[2] << 16) | (_x.b[1] << 8) | (_x.b[0])); \
-> +})
-> +
-> +/**
-> + * __cpu_to_le24 - store a value in a 3-byte array in little-endian format
-> + * @x: __u32, there is no checking to ensure only the lower 24 bits are set
-> + *
-> + * Evaluates to an __le24 compound literal
-> + */
-> +#define __cpu_to_le24(x) \
-> +({ \
-> +	__u32 _x = (x); \
-> +	(__le24) { .b = { _x & 0xff, (_x >> 8) & 0xff, (_x >> 16) & 0xff } }; \
-> +})
-> +
-> +/**
-> + * __be24_to_cpu - read a 3-byte array as a 24-bit big-endian integer
-> + * @x: __be24, a structure wrapper around a 3-byte array
-> + *
-> + * Evaluates to a __u32 integer type
-> + */
-> +#define __be24_to_cpu(x) \
-> +({ \
-> +	__be24 _x = (x); \
-> +	(__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2])); \
-> +})
-> +
-> +/**
-> + * __cpu_to_be24 - store a value in a 3-byte array in big-endian format
-> + * @x: __u32, there is no checking to ensure only the lower 24 bits are set
-> + *
-> + * Evaluates to an __be24 compound literal
-> + */
-> +#define __cpu_to_be24(x) \
-> +({ \
-> +	__u32 _x = (x); \
-> +	(__be24) { .b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } }; \
-> +})
-> +
->  /*
->   * These helpers could be phased out over time as the base version
->   * handles constant folding.
-> @@ -280,15 +328,19 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
->  #ifdef __KERNEL__
->  
->  # define le16_to_cpu __le16_to_cpu
-> +# define le24_to_cpu __le24_to_cpu
->  # define le32_to_cpu __le32_to_cpu
->  # define le64_to_cpu __le64_to_cpu
->  # define be16_to_cpu __be16_to_cpu
-> +# define be24_to_cpu __be24_to_cpu
->  # define be32_to_cpu __be32_to_cpu
->  # define be64_to_cpu __be64_to_cpu
->  # define cpu_to_le16 __cpu_to_le16
-> +# define cpu_to_le24 __cpu_to_le24
->  # define cpu_to_le32 __cpu_to_le32
->  # define cpu_to_le64 __cpu_to_le64
->  # define cpu_to_be16 __cpu_to_be16
-> +# define cpu_to_be24 __cpu_to_be24
->  # define cpu_to_be32 __cpu_to_be32
->  # define cpu_to_be64 __cpu_to_be64
->  
-> @@ -332,11 +384,15 @@ static inline __be64 __cpu_to_be64p(const __u64 *p)
->  # define ___htons(x) __cpu_to_be16(x)
->  # define ___ntohl(x) __be32_to_cpu(x)
->  # define ___ntohs(x) __be16_to_cpu(x)
-> +# define ___hton24(x) __cpu_to_be24(x)
-> +# define ___ntoh24(x) __be24_to_cpu(x)
->  
->  # define htonl(x) ___htonl(x)
->  # define ntohl(x) ___ntohl(x)
->  # define htons(x) ___htons(x)
->  # define ntohs(x) ___ntohs(x)
-> +# define hton24(x) ___hton24(x)
-> +# define ntoh24(x) ___ntoh24(x)
->  
->  static inline void le16_add_cpu(__le16 *var, u16 val)
->  {
-> diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
-> index 0846e6b..a57fbc3 100644
-> --- a/include/linux/byteorder/generic.h
-> +++ b/include/linux/byteorder/generic.h
-> @@ -119,6 +119,59 @@
->  #define cpu_to_be16s __cpu_to_be16s
->  #define be16_to_cpus __be16_to_cpus
->  
-> +/**
-> + * __le24_to_cpu - read a 3-byte array as a 24-bit little-endian integer
-> + * @x: __le24, a structure wrapper around a 3-byte array
-> + *
-> + * Evaluates to a __u32 integer type
-> + */
-> +#define __le24_to_cpu(x) \
-> +({ \
-> +	__le24 _x = (x); \
-> +	(__u32) ((_x.b[2] << 16) | (_x.b[1] << 8) | (_x.b[0])); \
-> +})
-> +
-> +/**
-> + * __cpu_to_le24 - store a value in a 3-byte array in little-endian format
-> + * @x: __u32, there is no checking to ensure only the lower 24 bits are set
-> + *
-> + * Evaluates to an __le24 compound literal
-> + */
-> +#define __cpu_to_le24(x) \
-> +({ \
-> +	__u32 _x = (x); \
-> +	(__le24) { .b = { _x & 0xff, (_x >> 8) & 0xff, (_x >> 16) & 0xff } }; \
-> +})
-> +
-> +/**
-> + * __be24_to_cpu - read a 3-byte array as a 24-bit big-endian integer
-> + * @x: __be24, a structure wrapper around a 3-byte array
-> + *
-> + * Evaluates to a __u32 integer type
-> + */
-> +#define __be24_to_cpu(x) \
-> +({ \
-> +	__be24 _x = (x); \
-> +	(__u32) ((_x.b[0] << 16) | (_x.b[1] << 8) | (_x.b[2])); \
-> +})
-> +
-> +/**
-> + * __cpu_to_be24 - store a value in a 3-byte array in big-endian format
-> + * @x: __u32, there is no checking to ensure only the lower 24 bits are set
-> + *
-> + * Evaluates to an __be24 compound literal
-> + */
-> +#define __cpu_to_be24(x) \
-> +({ \
-> +	__u32 _x = (x); \
-> +	(__be24) { .b = { (_x >> 16) & 0xff, (_x >> 8) & 0xff, _x & 0xff } }; \
-> +})
-> +
-> +#define le24_to_cpu __le24_to_cpu
-> +#define cpu_to_le24 __cpu_to_le24
-> +#define be24_to_cpu __be24_to_cpu
-> +#define cpu_to_be24 __cpu_to_be24
-> +
->  /*
->   * They have to be macros in order to do the constant folding
->   * correctly - if the argument passed into a inline function
-> @@ -134,11 +187,15 @@
->  #define ___htons(x) __cpu_to_be16(x)
->  #define ___ntohl(x) __be32_to_cpu(x)
->  #define ___ntohs(x) __be16_to_cpu(x)
-> +#define ___hton24(x) __cpu_to_be24(x)
-> +#define ___ntoh24(x) __be24_to_cpu(x)
->  
->  #define htonl(x) ___htonl(x)
->  #define ntohl(x) ___ntohl(x)
->  #define htons(x) ___htons(x)
->  #define ntohs(x) ___ntohs(x)
-> +#define hton24(x) ___hton24(x)
-> +#define ntoh24(x) ___ntoh24(x)
->  
->  static inline void le16_add_cpu(__le16 *var, u16 val)
->  {
-> diff --git a/include/linux/types.h b/include/linux/types.h
-> index d4a9ce6..85fcff7 100644
-> --- a/include/linux/types.h
-> +++ b/include/linux/types.h
-> @@ -188,6 +188,8 @@ typedef __u64 __bitwise __be64;
->  typedef __u16 __bitwise __sum16;
->  typedef __u32 __bitwise __wsum;
->  
-> +typedef struct { __u8 b[3]; } __be24, __le24;
-> +
->  #ifdef __KERNEL__
->  typedef unsigned __bitwise__ gfp_t;
->  
-> diff --git a/include/scsi/iscsi_proto.h b/include/scsi/iscsi_proto.h
-> index f2a2c11..429c5ff 100644
-> --- a/include/scsi/iscsi_proto.h
-> +++ b/include/scsi/iscsi_proto.h
-> @@ -35,6 +35,8 @@
->  /*
->   * useful common(control and data pathes) macro
->   */
-> +#undef ntoh24
-> +#undef hton24
->  #define ntoh24(p) (((p)[0] << 16) | ((p)[1] << 8) | ((p)[2]))
->  #define hton24(p, v) { \
->          p[0] = (((v) >> 16) & 0xFF); \
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
