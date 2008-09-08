@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbYIHPEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbYIHPGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbYIHPEo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYIHPEf
+	id S1754558AbYIHPGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYIHPGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:04:35 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35094 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbYIHPEe (ORCPT
+	Mon, 8 Sep 2008 11:06:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44938 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbYIHPGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:04:34 -0400
-Date: Mon, 8 Sep 2008 11:04:31 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Sujit Karataparambil <sjt.kar@gmail.com>
-cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       xavier droubay <xavier.droubay@gmail.com>,
-       Chirag Jog <chirag@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Convert tlbstate_lock spin_lock to raw_spin_lock
-In-Reply-To: <921ca19c0809080715m6379b322x79edb239f6971560@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0809081056530.23508@gandalf.stny.rr.com>
-References: <2c6d8d720809071806i54e58093vf87bec5175d9b074@mail.gmail.com>  <20080908073732.GC5798@linux.vnet.ibm.com> <921ca19c0809080715m6379b322x79edb239f6971560@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Sep 2008 11:06:12 -0400
+Subject: Re: [RFC 07/13] sched: Reduce stack size requirements in
+ kernel/sched.c
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <48C53C91.70604@sgi.com>
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
+	 <20080906235037.880702000@polaris-admin.engr.sgi.com>
+	 <1220783087.8687.73.camel@twins.programming.kicks-ass.net>
+	 <48C53C91.70604@sgi.com>
+Content-Type: text/plain
+Date: Mon, 08 Sep 2008 17:05:35 +0200
+Message-Id: <1220886335.12278.31.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-09-08 at 07:54 -0700, Mike Travis wrote:
+> Peter Zijlstra wrote:
 
-[ Refrain from using "unlisted-recipients" please! ]
-
-
-On Mon, 8 Sep 2008, Sujit Karataparambil wrote:
-
-> Chirag,
+> > get_online_cpus() can sleep, but you just disabled preemption with those
+> > get_cpumask_var() horribles!
+> > 
+> > Couldn't be arsed to look through the rest, but I really hate this
+> > cpumask_ptr() stuff that relies on disabling preemption.
+> > 
+> > NAK
 > 
->   Kindly understand what xavier is trying to do. He is Trying to disable smp.
-> The RT - Linux Code is dependent on the mutex lock to perform some
-> soft/hard real time processing. This is an problem with the mutex lock.
+> Yeah, I really agree as well.  But I wanted to start playing with using
+> cpumask_t pointers in some fairly straight forward manner.  Linus's and
+> Ingo's suggestion to just bite the bullet and redefine the cpumask_t 
+> would force a lot of changes to be made, but perhaps that's really the
+> way to go.
 
-It is not a problem with the mutex lock.
+I much prefer that approach!
 
+> As to obtaining temp cpumask_t's (both early and late), perhaps a pool of
+> them would be better?  I believe it could be done similar to alloc_bootmem
+> (but much simpler), and I don't think there's enough nesting to require a
+> very large pool.  (4 was the largest depth I could find in io_apic.c.)  Of
+> course, with preemption enabled then other problems arise...
 > 
-> Kindly check with some one before signing off patches.
+> One other really big use was for the "allbutself" cpumask in the send_IPI
+> functions.  I think here, preemption is ok because the ownership of the
+> cpumask temp is very short lived.
 
-The patch is legit.
+The thing is, you add serialization requirements (be it preempt_disable,
+or a lock for some preemptable form) to code that didn't had any for a
+case that hardly anyone will ever encounter in real life - I mean,
+really, who has 4096 cpus?
 
-The problem is simply that functions like flush_tlb_current_task and 
-flush_tlb_mm disable preemption and then call flush_tlb_others.
-This function locks the tlbstate_lock which is currently a rtmutex. An 
-rtmutex can not be called with preemption disabled. The tlbstate_lock is 
-static, small and confined. I'm not sure we can change this code (flushing 
-the TLB) in a way where we can allow preemption. This may just be a 
-latency that we must hit.
+Stuffing the cpumap_t in an already existing structure that has suitable
+serialization requirements is of course the preferred situation, but
+lacking that a dynamic cpumap_t is best, since it keeps the references
+local, and thus doesn't add requirements to the existing code.
 
--- Steve
+You could also consider adding 1 cpumap_t to task_struct and use that as
+temporary scratch pad - but seeing you needed at least 4 that might not
+be a feasible solution either.
+
