@@ -1,131 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYIHGIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYIHGlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbYIHGIt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 02:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbYIHGIk
+	id S1753451AbYIHGlE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 02:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYIHGkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 02:08:40 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:45156 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752270AbYIHGIk (ORCPT
+	Mon, 8 Sep 2008 02:40:53 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46280 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837AbYIHGkx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 02:08:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=34243KmEKnHRjDrTJcdT0o60Z+HW4fUbpt7wxO5Jh7QVrlHTevRIgwyDHv0o1q6FsPCnq8nk6dgbvOUv6s4pRIx8Ti10QpiYyMbDKdINTVbuqKZwvVd6wlnlj8Pl/jw2mGLHjDxypSWEwWsX2KDT9PAJX27hNAz9MxExWNzdStw=  ;
-X-YMail-OSG: vMGuYo0VM1nJxi49TxwQV.TjiDGoTCpVX19NZySJUjPSuU0kAxaHNLW4c6A_SJs2hpLJ2BugUBjUSBx2uzRBSLX1Ikws2UKN33aia82cy1Gw3r.eFEe0wRJoBWpevTacIjZEJXQephw1FhX8hQgBcVJ3
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 0/4] Reclaim page capture v3
-Date: Mon, 8 Sep 2008 16:08:03 +1000
-User-Agent: KMail/1.9.5
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>
-References: <1220610002-18415-1-git-send-email-apw@shadowen.org>
-In-Reply-To: <1220610002-18415-1-git-send-email-apw@shadowen.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 8 Sep 2008 02:40:53 -0400
+Subject: Re: [Bug #11209] 2.6.27-rc1 process time accounting
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Lukas Hejtmanek <xhejtman@ics.muni.cz>
+In-Reply-To: <200809080002.09381.rjw@sisk.pl>
+References: <s3QDdfEDq6.A.wlH.MowwIB@albercik>
+	 <Wz8EH5sroeE.A.mUD.WswwIB@albercik>
+	 <1220778273.8687.20.camel@twins.programming.kicks-ass.net>
+	 <200809080002.09381.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 08 Sep 2008 08:40:46 +0200
+Message-Id: <1220856046.8687.106.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809081608.03793.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 September 2008 20:19, Andy Whitcroft wrote:
-> For sometime we have been looking at mechanisms for improving the
-> availability of larger allocations under load.  One of the options we have
-> explored is the capturing of pages freed under direct reclaim in order to
-> increase the chances of free pages coelescing before they are subject to
-> reallocation by racing allocators.
->
-> Following this email is a patch stack implementing page capture during
-> direct reclaim.  It consits of four patches.  The first two simply pull
-> out existing code into helpers for reuse.  The third makes buddy's use
-> of struct page explicit.  The fourth contains the meat of the changes,
-> and its leader contains a much fuller description of the feature.
->
-> This update represents a rebase to -mm and incorporates feedback from
-> KOSAKI Motohiro.  It also incorporates an accounting fix which was
-> preventing some captures.
->
-> I have done a lot of comparitive testing with and without this patch
-> set and in broad brush I am seeing improvements in hugepage allocations
-> (worst case size) success on all of my test systems.  These tests consist
-> of placing a constant stream of high order allocations on the system,
-> at varying rates.  The results for these various runs are then averaged
-> to give an overall improvement.
->
-> 		Absolute	Effective
-> x86-64		2.48%		 4.58%
-> powerpc		5.55%		25.22%
+On Mon, 2008-09-08 at 00:02 +0200, Rafael J. Wysocki wrote:
+> On Sunday, 7 of September 2008, Peter Zijlstra wrote:
+> > On Sat, 2008-09-06 at 23:30 +0200, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.26.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11209
+> > > Subject		: 2.6.27-rc1 process time accounting
+> > > Submitter	: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+> > > Date		: 2008-07-31 10:43 (38 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=121750102917490&w=4
+> > > Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > 
+> > Should be fixed in the latest -git
+> 
+> Thanks for the update.
+> 
+> Does any specific commit fix it or just a series of recent commits?
 
-These are the numbers for the improvement of hugepage allocation success?
-Then what do you mean by absolute and effective?
+commit 49048622eae698e5c4ae61f7e71200f265ccc529
+Author: Balbir Singh <balbir@linux.vnet.ibm.com>
+Date:   Fri Sep 5 18:12:23 2008 +0200
 
-What sort of constant stream of high order allocations are you talking
-about? In what "real" situations are you seeing higher order page allocation
-failures, and in those cases, how much do these patches help?
+    sched: fix process time monotonicity
 
-I must say I don't really like this approach. IMO it might be better to put
-some sort of queue in the page allocator, so if memory becomes low, then
-processes will start queueing up and not be allowed to jump the queue and
-steal memory that has been freed by hard work of a direct reclaimer. That
-would improve a lot of fairness problems as well as improve coalescing for
-higher order allocations without introducing this capture stuff.
+    Spencer reported a problem where utime and stime were going negative despite
+    the fixes in commit b27f03d4bdc145a09fb7b0c0e004b29f1ee555fa. The suspected
+    reason for the problem is that signal_struct maintains it's own utime and
+    stime (of exited tasks), these are not updated using the new task_utime()
+    routine, hence sig->utime can go backwards and cause the same problem
+    to occur (sig->utime, adds tsk->utime and not task_utime()). This patch
+    fixes the problem
+
+commit 56c7426b3951e4f35a71d695f1c982989399d6fd
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Mon Sep 1 16:44:23 2008 +0200
+
+    sched_clock: fix NOHZ interaction
+
+    If HLT stops the TSC, we'll fail to account idle time, thereby inflating the
+    actual process times. Fix this by re-calibrating the clock against GTOD when
+    leaving nohz mode.
 
 
->
-> x86-64 has a relatively small huge page size and so is always much more
-> effective at allocating huge pages.  Even there we get a measurable
-> improvement.  On powerpc the huge pages are much larger and much harder
-> to recover.  Here we see a full 25% increase in page recovery.
->
-> It should be noted that these are worst case testing, and very agressive
-> taking every possible page in the system.  It would be helpful to get
-> wider testing in -mm.
->
-> Against: 2.6.27-rc1-mm1
->
-> Andrew, please consider for -mm.
->
-> -apw
->
-> Changes since V2:
->  - Incorporates review feedback from Christoph Lameter,
->  - Incorporates review feedback from Peter Zijlstra, and
->  - Checkpatch fixes.
->
-> Changes since V1:
->  - Incorporates review feedback from KOSAKI Motohiro,
->  - fixes up accounting when checking watermarks for captured pages,
->  - rebase 2.6.27-rc1-mm1,
->  - Incorporates review feedback from Mel.
->
->
-> Andy Whitcroft (4):
->   pull out the page pre-release and sanity check logic for reuse
->   pull out zone cpuset and watermark checks for reuse
->   buddy: explicitly identify buddy field use in struct page
->   capture pages freed during direct reclaim for allocation by the
->     reclaimer
->
->  include/linux/mm_types.h   |    4 +
->  include/linux/page-flags.h |    4 +
->  mm/internal.h              |    8 +-
->  mm/page_alloc.c            |  263
-> ++++++++++++++++++++++++++++++++++++++------ mm/vmscan.c                | 
-> 115 ++++++++++++++++----
->  5 files changed, 338 insertions(+), 56 deletions(-)
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+
