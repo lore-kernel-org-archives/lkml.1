@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYIHLBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYIHLNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbYIHLBy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYIHLBp
+	id S1753419AbYIHLNu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYIHLNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:01:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60088 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752254AbYIHLBo (ORCPT
+	Mon, 8 Sep 2008 07:13:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:33953 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbYIHLNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:01:44 -0400
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 09/13] genapic: reduce stack pressuge in io_apic.c step 1 temp cpumask_ts
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080906235036.891970000@polaris-admin.engr.sgi.com>
-	<20080906235038.148283000@polaris-admin.engr.sgi.com>
-Date: Mon, 08 Sep 2008 13:01:44 +0200
-In-Reply-To: <20080906235038.148283000@polaris-admin.engr.sgi.com> (Mike Travis's message of "Sat, 06 Sep 2008 16:50:45 -0700")
-Message-ID: <8763p6vr3b.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 8 Sep 2008 07:13:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YaQ9VzwnK4Ml69JdxMMZXe6032rdDJ0/V88uMs+Pjo3iI8r7kVXHNdSx2mvJUjvkTf
+         i32wPoBtJsfU1NuSkBjWZsGh68xxFfG4fGAjgOoRPMu46vqtV+g6KvUSP7HUD2UoaoxA
+         LVt1alBJnTNtHyg3uLOtS1H0itMgVGRqfi6Ao=
+Message-ID: <8ee0b8e80809080413r1eb75a2bu1b29ffdf06daa319@mail.gmail.com>
+Date: Mon, 8 Sep 2008 13:13:39 +0200
+From: "Jeroen van Rijn" <jvrnix@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
+Cc: "Tony Vroon" <tony@vroon.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <87abeivrdf.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220754742.8530.12.camel@localhost>
+	 <87abeivrdf.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis <travis@sgi.com> writes:
+On Mon, Sep 8, 2008 at 12:55 PM, Andi Kleen <andi@firstfloor.org> wrote:
+> Tony Vroon <tony@vroon.org> writes:
+>
+>> HARDWARE ERROR. This is *NOT* a software problem!
+>  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>> Please contact your hardware vendor
+>  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>
+>> I realize that the linux kernel may be entirely blameless in this
+>> situation,
+>
+> It is, like mcelog told you.
+>
+>> but I'd like to have some peer insight before I run after
+>> vendors.
+>
+> It unfortunately turns out that mcelog logging is a tricky
+> psychological problem. How should the warning above have
+> looked like so that you would not have required "peer insight"
+> and actually just contacted your hardware vendor?
 
->   * Step 1 of cleaning up io_apic.c removes local cpumask_t variables
->     from the stack.
+I suppose mcelog might be extended to point at possible tools to get a
+second opinion, in case the admin would like to to be entirely
+certain. In their position I can understand them when their vendor
+asks them if it's the hardware and what tests they've run to rule out
+software.
 
-Sorry that patch seems incredibly messy. Global variables
-and a tricky ordering and while it's at least commented it's still a mess
-and maintenance unfriendly.
+Think for example a machine check that might point to faulty RAM, it
+might direct the admin to run memcheck if mcelog alone isn't
+compelling enough.
 
-Also I think set_affinity is the only case where a truly arbitary cpu
-mask can be passed in anyways. And it's passed in from elsewhere. 
+> Thank you.
+>
+> -Andi (who wonders if <blink> tags in syslog would be useful
+> to solve this)
 
-The other cases generally just want to handle a subset of CPUs which
-are nearby. How about you define a new cpumask like type that 
-consists of a start/stop CPU and a mask for that range only 
-and is not larger than a few words?
+Yikes, ixnay to the <blinkay>. Next people will ask for flash support
+to get all-singing and -dancing error messages.
 
-I think with that the nearby assignments could be handled 
-reasonably cleanly with arguments and local variables.
-
-And I suspect with some restructuring set_affinity could
-be also made to support such a model.
-
--Andi
+-- Jeroen.
