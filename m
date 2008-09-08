@@ -1,100 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbYIHVne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbYIHVwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755642AbYIHVne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 17:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbYIHVnZ
+	id S1754889AbYIHVwv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 17:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYIHVwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 17:43:25 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48645 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754326AbYIHVnZ (ORCPT
+	Mon, 8 Sep 2008 17:52:43 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:32985 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbYIHVwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 17:43:25 -0400
-Message-ID: <48C59C6F.2000408@zytor.com>
-Date: Mon, 08 Sep 2008 14:43:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: linux@sandersweb.net
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       kbuild devel <kbuild-devel@lists.sourceforge.net>
-Subject: Re: [git pull] x86 fixes
-References: <200809081932.m88JWVZG013061@askone.hos.anvin.org> <200809081634.24257.linux@sandersweb.net>
-In-Reply-To: <200809081634.24257.linux@sandersweb.net>
-Content-Type: multipart/mixed;
- boundary="------------000500020409050307070907"
+	Mon, 8 Sep 2008 17:52:42 -0400
+Subject: [PATCH] Cleanup to make  remove_memory() arch neutral
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20080905181754.GA14258@elte.hu>
+References: <20080905172132.GA11692@us.ibm.com>
+	 <20080905174449.GC27395@elte.hu> <1220638478.25932.20.camel@badari-desktop>
+	 <20080905181754.GA14258@elte.hu>
+Content-Type: text/plain
+Date: Mon, 08 Sep 2008 14:52:34 -0700
+Message-Id: <1220910754.25932.57.camel@badari-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000500020409050307070907
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+There is nothing architecture specific about remove_memory().
+remove_memory() function is common for all architectures which
+support hotplug memory remove. Instead of duplicating it in every
+architecture, collapse them into arch neutral function.
 
-David Sanders wrote:
-> On Monday 08 September 2008 15:32, H. Peter Anvin wrote:
->> diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
->> index e372b58..b72b4f7 100644
->> --- a/arch/x86/Makefile_32.cpu
->> +++ b/arch/x86/Makefile_32.cpu
->> @@ -45,3 +45,8 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
->>  # cpu entries
->>  cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
-> Peter, I'm getting this error:
-> as: unrecognized option `-mtune=generic32'
-> I have binutils 2.17.
-> David
-> 
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
 
-Does this patch fix that for you?
+ arch/ia64/mm/init.c   |   17 -----------------
+ arch/powerpc/mm/mem.c |   17 -----------------
+ arch/s390/mm/init.c   |   11 -----------
+ mm/memory_hotplug.c   |   10 ++++++++++
+ 4 files changed, 10 insertions(+), 45 deletions(-)
 
-	-hpa
-
---------------000500020409050307070907
-Content-Type: text/x-patch;
- name="0001-kbuild-use-c-instead-of-S-in-cc-option-and-cc-opt.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001-kbuild-use-c-instead-of-S-in-cc-option-and-cc-opt.patch"
-
->From b3e54432266565b6d844d6fa3766ba5518173a8e Mon Sep 17 00:00:00 2001
-From: H. Peter Anvin <hpa@zytor.com>
-Date: Mon, 8 Sep 2008 14:41:53 -0700
-Subject: [PATCH] kbuild: use -c instead of -S in cc-option and cc-option-yn
-
-Use -c instead of -S in cc-option and cc-option-yn, so we can probe
-options related to the assembler.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- scripts/Kbuild.include |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index d64e6ba..982dcae 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -105,12 +105,12 @@ as-instr = $(call try-run,\
- # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
+Index: linux-2.6.27-rc5/arch/ia64/mm/init.c
+===================================================================
+--- linux-2.6.27-rc5.orig/arch/ia64/mm/init.c	2008-08-28 15:52:02.000000000 -0700
++++ linux-2.6.27-rc5/arch/ia64/mm/init.c	2008-09-08 12:38:59.000000000 -0700
+@@ -701,23 +701,6 @@ int arch_add_memory(int nid, u64 start, 
  
- cc-option = $(call try-run,\
--	$(CC) $(KBUILD_CFLAGS) $(1) -S -xc /dev/null -o "$$TMP",$(1),$(2))
-+	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
+ 	return ret;
+ }
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-int remove_memory(u64 start, u64 size)
+-{
+-	unsigned long start_pfn, end_pfn;
+-	unsigned long timeout = 120 * HZ;
+-	int ret;
+-	start_pfn = start >> PAGE_SHIFT;
+-	end_pfn = start_pfn + (size >> PAGE_SHIFT);
+-	ret = offline_pages(start_pfn, end_pfn, timeout);
+-	if (ret)
+-		goto out;
+-	/* we can free mem_map at this point */
+-out:
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(remove_memory);
+-#endif /* CONFIG_MEMORY_HOTREMOVE */
+ #endif
  
- # cc-option-yn
- # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
- cc-option-yn = $(call try-run,\
--	$(CC) $(KBUILD_CFLAGS) $(1) -S -xc /dev/null -o "$$TMP",y,n)
-+	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
+ /*
+Index: linux-2.6.27-rc5/arch/powerpc/mm/mem.c
+===================================================================
+--- linux-2.6.27-rc5.orig/arch/powerpc/mm/mem.c	2008-08-28 15:52:02.000000000 -0700
++++ linux-2.6.27-rc5/arch/powerpc/mm/mem.c	2008-09-08 12:39:19.000000000 -0700
+@@ -135,23 +135,6 @@ int arch_add_memory(int nid, u64 start, 
  
- # cc-option-align
- # Prefix align with either -falign or -malign
--- 
-1.5.5.1
+ 	return __add_pages(zone, start_pfn, nr_pages);
+ }
+-
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-int remove_memory(u64 start, u64 size)
+-{
+-	unsigned long start_pfn, end_pfn;
+-	int ret;
+-
+-	start_pfn = start >> PAGE_SHIFT;
+-	end_pfn = start_pfn + (size >> PAGE_SHIFT);
+-	ret = offline_pages(start_pfn, end_pfn, 120 * HZ);
+-	if (ret)
+-		goto out;
+-	/* Arch-specific calls go here - next patch */
+-out:
+-	return ret;
+-}
+-#endif /* CONFIG_MEMORY_HOTREMOVE */
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+ /*
+Index: linux-2.6.27-rc5/arch/s390/mm/init.c
+===================================================================
+--- linux-2.6.27-rc5.orig/arch/s390/mm/init.c	2008-08-28 15:52:02.000000000 -0700
++++ linux-2.6.27-rc5/arch/s390/mm/init.c	2008-09-08 12:40:41.000000000 -0700
+@@ -189,14 +189,3 @@ int arch_add_memory(int nid, u64 start, 
+ 	return rc;
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+-
+-#ifdef CONFIG_MEMORY_HOTREMOVE
+-int remove_memory(u64 start, u64 size)
+-{
+-	unsigned long start_pfn, end_pfn;
+-
+-	start_pfn = PFN_DOWN(start);
+-	end_pfn = start_pfn + PFN_DOWN(size);
+-	return offline_pages(start_pfn, end_pfn, 120 * HZ);
+-}
+-#endif /* CONFIG_MEMORY_HOTREMOVE */
+Index: linux-2.6.27-rc5/mm/memory_hotplug.c
+===================================================================
+--- linux-2.6.27-rc5.orig/mm/memory_hotplug.c	2008-08-28 15:52:02.000000000 -0700
++++ linux-2.6.27-rc5/mm/memory_hotplug.c	2008-09-08 12:41:37.000000000 -0700
+@@ -26,6 +26,7 @@
+ #include <linux/delay.h>
+ #include <linux/migrate.h>
+ #include <linux/page-isolation.h>
++#include <linux/pfn.h>
+ 
+ #include <asm/tlbflush.h>
+ 
+@@ -849,6 +850,15 @@ failed_removal:
+ 
+ 	return ret;
+ }
++
++int remove_memory(u64 start, u64 size)
++{
++	unsigned long start_pfn, end_pfn;
++
++	start_pfn = PFN_DOWN(start);
++	end_pfn = start_pfn + PFN_DOWN(size);
++	return offline_pages(start_pfn, end_pfn, 120 * HZ);
++}
+ #else
+ int remove_memory(u64 start, u64 size)
+ {
 
 
---------------000500020409050307070907--
