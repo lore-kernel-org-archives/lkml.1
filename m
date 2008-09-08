@@ -1,56 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbYIHRr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYIHRrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbYIHRr1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 13:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752895AbYIHRrS
+	id S1754813AbYIHRrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 13:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYIHRrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 13:47:18 -0400
-Received: from ns2.suse.de ([195.135.220.15]:32858 "EHLO mx2.suse.de"
+	Mon, 8 Sep 2008 13:47:20 -0400
+Received: from ns.suse.de ([195.135.220.2]:37771 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750887AbYIHRrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 13:47:18 -0400
-Date: Mon, 8 Sep 2008 10:46:04 -0700
+	id S1752247AbYIHRrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 13:47:19 -0400
+Date: Mon, 8 Sep 2008 10:46:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.26.5
-Message-ID: <20080908174604.GA22061@suse.de>
+Subject: Re: Linux 2.6.26.5
+Message-ID: <20080908174638.GB22061@suse.de>
+References: <20080908174604.GA22061@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080908174604.GA22061@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.26.5
-kernel.
 
-It fixes the build error introduced in 2.6.26.4 due to me applying a
-stale patch to the tree.  Thanks to David Miller for providing the
-correct patch and Randy Dunlap for pointing out my error.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.26.4 and 2.6.26.5
-
-The updated 2.6.26.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
-
-thanks,
-
-greg k-h
-
-------------
-
- Makefile                |    2 +-
- include/linux/mroute.h  |   25 ++++---------------------
- include/linux/mroute6.h |    1 +
- include/linux/pim.h     |   27 +++++++++++++++++++++++++++
- 4 files changed, 33 insertions(+), 22 deletions(-)
-
-Greg Kroah-Hartman (2):
-      NET: fix build error caused by Greg K-H
-      Linux 2.6.26.5
-
+diff --git a/Makefile b/Makefile
+index 63c96c6..56fb747 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 26
+-EXTRAVERSION = .4
++EXTRAVERSION = .5
+ NAME = Rotary Wombat
+ 
+ # *DOCUMENTATION*
+diff --git a/include/linux/mroute.h b/include/linux/mroute.h
+index 35a8277..5e30ac3 100644
+--- a/include/linux/mroute.h
++++ b/include/linux/mroute.h
+@@ -2,7 +2,10 @@
+ #define __LINUX_MROUTE_H
+ 
+ #include <linux/sockios.h>
++#include <linux/types.h>
++#ifdef __KERNEL__
+ #include <linux/in.h>
++#endif
+ 
+ /*
+  *	Based on the MROUTING 3.5 defines primarily to keep
+@@ -126,6 +129,7 @@ struct igmpmsg
+  */
+ 
+ #ifdef __KERNEL__
++#include <linux/pim.h>
+ #include <net/sock.h>
+ 
+ #ifdef CONFIG_IP_MROUTE
+@@ -210,27 +214,6 @@ struct mfc_cache
+ #define IGMPMSG_WHOLEPKT	3		/* For PIM Register processing */
+ 
+ #ifdef __KERNEL__
+-
+-#define PIM_V1_VERSION		__constant_htonl(0x10000000)
+-#define PIM_V1_REGISTER		1
+-
+-#define PIM_VERSION		2
+-#define PIM_REGISTER		1
+-
+-#define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
+-
+-/* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
+-
+-struct pimreghdr
+-{
+-	__u8	type;
+-	__u8	reserved;
+-	__be16	csum;
+-	__be32	flags;
+-};
+-
+-extern int pim_rcv_v1(struct sk_buff *);
+-
+ struct rtmsg;
+ extern int ipmr_get_route(struct sk_buff *skb, struct rtmsg *rtm, int nowait);
+ #endif
+diff --git a/include/linux/mroute6.h b/include/linux/mroute6.h
+index e798959..90010dd 100644
+--- a/include/linux/mroute6.h
++++ b/include/linux/mroute6.h
+@@ -115,6 +115,7 @@ struct sioc_mif_req6
+ 
+ #ifdef __KERNEL__
+ 
++#include <linux/pim.h>
+ #include <linux/skbuff.h>	/* for struct sk_buff_head */
+ 
+ #ifdef CONFIG_IPV6_MROUTE
+diff --git a/include/linux/pim.h b/include/linux/pim.h
+new file mode 100644
+index 0000000..1ba0661
+--- /dev/null
++++ b/include/linux/pim.h
+@@ -0,0 +1,27 @@
++#ifndef __LINUX_PIM_H
++#define __LINUX_PIM_H
++
++#include <asm/byteorder.h>
++
++/* Message types - V1 */
++#define PIM_V1_VERSION		__constant_htonl(0x10000000)
++#define PIM_V1_REGISTER		1
++
++/* Message types - V2 */
++#define PIM_VERSION		2
++#define PIM_REGISTER		1
++
++#define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
++
++/* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
++struct pimreghdr
++{
++	__u8	type;
++	__u8	reserved;
++	__be16	csum;
++	__be32	flags;
++};
++
++struct sk_buff;
++extern int pim_rcv_v1(struct sk_buff *);
++#endif
