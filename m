@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYIHSA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYIHSBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbYIHSA4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYIHSAs
+	id S1754859AbYIHSBn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYIHSBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:00:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52391 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752387AbYIHSAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:00:48 -0400
-Subject: Re: 2.6.27-rc5 OLTP performance regression
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Ma, Chinang" <chinang.ma@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Mon, 08 Sep 2008 20:00:33 +0200
-Message-Id: <1220896833.18239.141.camel@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Sep 2008 14:01:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47008 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751767AbYIHSBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 14:01:35 -0400
+Date: Mon, 8 Sep 2008 20:01:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rambaldi <rambaldi@xs4all.nl>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc5 xen balloon driver warnings
+Message-ID: <20080908180126.GB29264@elte.hu>
+References: <48C0F09C.1000101@xs4all.nl> <48C457DC.9050904@goop.org> <48C546B2.50108@xs4all.nl> <48C558D9.9030006@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C558D9.9030006@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0729]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-08 at 10:58 -0700, Ma, Chinang wrote:
-> We found the group scheduler in 2.6.27-rc5 has negative performance
-> impact on TPC Online Transaction Processing workload. The test was
-> conducted on a dual-socket quad-core Xeon server. OLTP workload is
-> disk i/o intensive and we have over 200 database shadow processes
-> running in the server during this test.  Enabling group scheduler
-> (CONFIG_GROUP_SCHED=y) reduced performance by 2.0%. Oprofile data
-> indicates significant amount of cycles are spent in tg_shares_up().
->  This is new regression as we did not find the same issue with 2.6.26
-> kernel group scheduler. Is anybody looking into group scheduler
-> performance and any idea for reducing the performance impact? 
 
-Because the .26 group scheduler wasn't SMP aware. The extra cost comes
-from the fact that .27 is.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
+> Rambaldi wrote:
+> > I used the complete patch, I had some compile warnings.
+> 
+> Well, the compile warning are bad news.  Just use the first hunk.
+> 
+> Ingo, could you send this up to Linus?  It's a subset of a patch you've
+> already got in your tree.
+
+i cherry-picked the whole thing as that's the tested commit. Is that 
+fine too?
+
+	Ingo
