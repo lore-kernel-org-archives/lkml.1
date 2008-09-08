@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbYIHUYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYIHUZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbYIHUYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 16:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbYIHUYh
+	id S1755525AbYIHUZZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 16:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYIHUZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 16:24:37 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:49501 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753543AbYIHUYg (ORCPT
+	Mon, 8 Sep 2008 16:25:11 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:2527 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752899AbYIHUZK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 16:24:36 -0400
-X-Sasl-enc: 0WFZdZmAXOECPXvKagMPOm+WLg+sgWk50V3Hx9D4nPPm 1220905475
-Date: Mon, 8 Sep 2008 17:24:32 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Renato S. Yamane" <yamane@diamondcut.com.br>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Daniel Barkalow <barkalow@iabervon.org>, linux-kernel@vger.kernel.org,
-       Christopher Desjardins <cddesjardins@gmail.com>
-Subject: Re: Lenovo 3000 N100 i8042 problems
-Message-ID: <20080908202432.GA9908@khazad-dum.debian.net>
-References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net> <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz> <20080903101947.ZZRA012@mailhub.coreip.homeip.net> <20080903213258.GC14620@khazad-dum.debian.net> <48C57FDE.2010306@diamondcut.com.br>
+	Mon, 8 Sep 2008 16:25:10 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C57FDE.2010306@diamondcut.com.br>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+x-originalarrivaltime: 08 Sep 2008 20:24:17.0787 (UTC) FILETIME=[DE66C4B0:01C911F0]
+Content-class: urn:content-classes:message
+Subject: Re: Linux 2.6.25.17
+Date: Mon, 8 Sep 2008 16:24:08 -0400
+Message-ID: <Pine.LNX.4.61.0809081619410.12154@chaos.analogic.com>
+In-Reply-To: <20080908210352.2b0cd70e@lxorguk.ukuu.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Linux 2.6.25.17
+Thread-Index: AckR8N5wAVDR1TLtTci/G5izc6Qo+A==
+References: <20080908143516.GA7311@suse.de><Pine.LNX.4.61.0809081535280.5096@chaos.analogic.com> <20080908210352.2b0cd70e@lxorguk.ukuu.org.uk>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "Greg KH" <gregkh@suse.de>, "Linux kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <torvalds@linux-foundation.org>, <stable@kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Sep 2008, Renato S. Yamane wrote:
-> Henrique de Moraes Holschuh wrote:
-> > I fell I need to warn you guys that you are likely breaking machines that
-> > match that DMI info but have a newer BIOS, unless they use different BIOSes
-> > (not enough data without a full dmidecode output from the other machine).
-> 
-> dmidecode just from 3000-N100?
 
-No, we'd need the dmidecode output of the two *specific* 3000-N100
-machines involved in the issue, so that we can know the specific BIOS
-version they are running.
+On Mon, 8 Sep 2008, Alan Cox wrote:
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+>> If I remove one of the CPUs, there is no file-system corruption
+>> so I fear that there is some lock missing somewhere in the
+>> serial ATA driver code (ata_piix or sata_sil).
+>
+> All the logic and locking is in the core code so would show up on all
+> sorts of boxes. You say you are using sata_sil - is this on an Nvidia
+> board ?
+>
+>> If anybody has anything to test with my setup, I can readily
+>> test both with and without the two CPUs.
+>
+> Can you duplicate this with the drives just on the ata_piix ?
+>
+> Alan
+>
+
+The drives are on the ata_piix. I have no clue why the 'install'
+added the sata_sil driver because I have never used on on this
+machine! I note thet /etc/modprobe.conf has an alias for it so
+at one time a Fedora install thought it found one!
+
+
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.25.17 on an i686 machine (4786.48 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
