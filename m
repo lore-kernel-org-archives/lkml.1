@@ -1,91 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYIHTai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYIHTco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbYIHTai (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYIHTab
+	id S1754793AbYIHTco (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYIHTcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:30:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40831 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751767AbYIHTaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:30:30 -0400
-Date: Mon, 8 Sep 2008 12:30:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-In-Reply-To: <20080908190249.GA21998@elte.hu>
-Message-ID: <alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org> <48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org> <48C57439.3040903@zytor.com>
- <20080908190249.GA21998@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Sep 2008 15:32:31 -0400
+Received: from relay.2ka.mipt.ru ([194.85.80.65]:45340 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752421AbYIHTca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 15:32:30 -0400
+Date: Mon, 8 Sep 2008 23:31:32 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Sven Wegener <sven.wegener@stealer.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: New distributed storage release.
+Message-ID: <20080908193132.GB15405@2ka.mipt.ru>
+References: <20080908152201.GA14015@2ka.mipt.ru> <alpine.LNX.2.00.0809081818001.19109@titan.stealer.net> <20080908174324.GA18400@2ka.mipt.ru> <alpine.LNX.2.00.0809081948450.19109@titan.stealer.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0809081948450.19109@titan.stealer.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 8 Sep 2008, Ingo Molnar wrote:
+On Mon, Sep 08, 2008 at 08:19:23PM +0200, Sven Wegener (sven.wegener@stealer.net) wrote:
+> > > drivers/block/dst/trans.c:160: warning: format '%llu' expects type 'long long unsigned int', but argument 4 has type 'sector_t'
+> > 
+> > Yup, sector_t is diffrent depending on arch and config options (u64 vs unsigned long),
+> > so it is not possible to represent it correctly without dereferencing
+> > to another type.
 > 
-> but 486 and higher is certainly quite reasonable, and is still being 
-> tested.
+> Yup, cast it. That are a lot of warnings and best to avoid them.
+
+Yes, warnings have to be removed.
+
+> > > uhm, menuconfig, and then just the debug option there seems wrong.
+> > 
+> > In case of extended functionality there will be no need to change config
+> > options, now it looks like single string in the higher layer config.
 > 
-> ... and _in practice_ 99% of all systems that run Linux today understand 
-> CMOV.
+> If there is coming more funtionality, ok, but currently it's irritating to 
+> have a submenu and then just a single debug option in there.
 
-cmov, cmpxchg and xadd are the noticeable things.
+Nothing is actually planned, I do not care which config option will be
+used for that, just do not want to get a new claims on that it should be
+changed.
 
-I think there are realistically three classes:
+> Yeah, the dprintk()s are ok, but I was after the printk()s that follow. 
+> They are unconditional and will always print the key.
 
- - _really_ old, to the point of being totally useless for SMP.
+Ugh, you are right, I missed that hunk.
 
-   This is really just 386 and clones. We _need_ a working WP for a 
-   race-free access_ok(), and we need cmpxchg (and lately xadd).
+> > > sizeof(*req) is preferred, likewise for other sizeof() uses in the code.
+> > 
+> > No, I do belive that grepping over |struct ablkcipher_request| when
+> > something is about to be changed is more convenient, than searching for
+> > the structure name and then object name itself.
+> > It is matter of a taste though.
+> 
+> Yeah, but in nearly all cases you don't need to change anything in that 
+> line, when you use sizeof(*ptr), because it always gets you the correct 
+> size you want. There are cases we could argue about, because you might 
+> want to do a limited memset() or memcpy() with a different size, but for 
+> most cases like memset() to zero or kmalloc, sizeof(*ptr) makes it clear 
+> that you want to clear out the whole structure or you want enough memory 
+> to store the type of ptr in it. Don't know how strict the policy is, but 
+> it's part of CodingStyle.
 
-   SMP cannot really realistically work reasonably (ys, there were SMP 
-   machines. No, they don't matter), and you'd have to be insane to care 
-   about this as a vendor even on UP. Probably nobody really cares (ie if 
-   you have hardware that old, you are likely much better off with an 
-   older kernel too)
+Fortunately I missed that flamewar about coding style.
 
-   Smaller pains even on UP: bswap doesn't exist. invlpg doesn't exist. 
+> > I just want to shut up the compiler, since failing to register
+> > informational attribute is not critical. But it could also be
+> > used to fall the initialization.
+> 
+> For just shutting up the compiler, use the void cast. I think removing a 
+> failed attribute is ok.
 
- - old. pre-cmov. i486 and pentium, and some clones.
+If I will ut (void) casting there, I'm pretty sure I will be blamed
+not to check th return values, now I check it :)
 
-   It's workable, but code generation differences are really big enough 
-   that it's worth having a totally separate architecture option for newer 
-   CPUs where the kernel simply won't work.
+> > 36 bytes iirc - not that small for stack allocation I think.
+> 
+> In other cases you allocate u8 iv[32] on the stack, so I guess this point 
+> is void. And I think 36 bytes isn't that much and it looks like you're 
+> called from user space, so I don't think you have a deep callchain here.
 
-   And most newer distros probably simply don't care, although there may 
-   be individual cases where this makes sense (embedded places still use 
-   pentium clones etc, and there are probably a fair amount of individuals 
-   that want to still use this)
+That's a fast path, so I optimized a bit, but I agree, iv initializaion
+could be also moved to the preallocated area.
+I think connector message can be allocated on stack, since I know the
+whole callchain in that path.
 
-   Other pains: TSC doesn't necessarily exist.
+I will updated the patch.
 
- - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
-   granted.
-
-Yes, there are graduations to the above, but reasonably, those three are I 
-think the "architectural" big versions. The rest should be:
-
- - pure "tuning" options. A Pentium 4 is different from Core 2 in tuning, 
-   and the best code sequences can be very very different, but the binary 
-   should work on both.
-
- - with *dynamic* choices for the differences that are architecturally 
-   visible.
-
-   Ie the whole choice of syscall/sysenter/int80 is dynamic, not specified 
-   statically at compile time with a config option. So are things like the 
-   different XMM versions etc.
-
-Hmm? Doesn't that sound like a sane model?
-
-		Linus
+-- 
+	Evgeniy Polyakov
