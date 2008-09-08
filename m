@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYIHN4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbYIHN5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbYIHN4o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYIHN4g
+	id S1753093AbYIHN5H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYIHN4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:56:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38949 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbYIHN4f (ORCPT
+	Mon, 8 Sep 2008 09:56:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45481 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752852AbYIHN4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:56:35 -0400
-Subject: Re: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: svaidy@linux.vnet.ibm.com
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>
-In-Reply-To: <20080908134843.GA4053@dirshya.in.ibm.com>
-References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
-	 <1220880346.12278.17.camel@twins.programming.kicks-ass.net>
-	 <20080908134843.GA4053@dirshya.in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 08 Sep 2008 15:56:09 +0200
-Message-Id: <1220882169.12278.23.camel@twins.programming.kicks-ass.net>
+	Mon, 8 Sep 2008 09:56:53 -0400
+Date: Mon, 8 Sep 2008 16:00:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Andi Kleen <andi@firstfloor.org>, Tony Vroon <tony@vroon.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
+Message-ID: <20080908140027.GI26079@one.firstfloor.org>
+References: <1220754742.8530.12.camel@localhost> <87abeivrdf.fsf@basil.nowhere.org> <20080908135558.GA31784@elf.ucw.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080908135558.GA31784@elf.ucw.cz>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-08 at 19:18 +0530, Vaidyanathan Srinivasan wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-09-08 15:25:46]:
+On Mon, Sep 08, 2008 at 03:55:58PM +0200, Pavel Machek wrote:
+> On Mon 2008-09-08 12:55:40, Andi Kleen wrote:
+> > Tony Vroon <tony@vroon.org> writes:
+> > 
+> > > HARDWARE ERROR. This is *NOT* a software problem!
+> >   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > > Please contact your hardware vendor
+> >   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > 
+> > > I realize that the linux kernel may be entirely blameless in this
+> > > situation,
+> > 
+> > It is, like mcelog told you.
 > 
-> > May I again ask to first clean up the current power saving code before
-> > stacking more on top of it?
-> 
-> :) I understand that you have asked for two things with respect to the
-> current power save balance code:
-> 
-> 1. Detailed documentation
+> Ugh, actually this is not right. AFAIK MCEs can be triggered by stuff
+> like PCI aborts, which in turn can be caused by software.
 
-Preferably in the form of in-code comments and code structure, this
-Documentation/* stuff always gets lost on me.
+PCI aborts don't normally cause machine checks, no.
 
-> 2. Cleanup the group_min and group_leader stuff in
->    find_busiest_group()
-> 
-> Did I get the requirements correct?
-
-That would be much appreciated. 
-
-But I also prefer to get rid of that power savings tweak in
-cpu_coregroup_map(). 
-
-But above all, readable code ;-)
-
-find_busiest_group() is the stuff of nightmares.
-
+-Andi
+-- 
+ak@linux.intel.com
