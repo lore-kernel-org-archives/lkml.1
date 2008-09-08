@@ -1,66 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYIHNkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYIHNmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbYIHNkv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:40:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYIHNkf
+	id S1754103AbYIHNmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYIHNmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:40:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55433 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754175AbYIHNkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:40:35 -0400
-Date: Mon, 8 Sep 2008 15:40:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
-Message-ID: <20080908134019.GB11993@elte.hu>
-References: <48C13D1C.76E4.0078.0@novell.com> <20080905150030.GD10292@elte.hu> <48C51F8D.76E4.0078.0@novell.com>
+	Mon, 8 Sep 2008 09:42:14 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59473 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297AbYIHNmN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 09:42:13 -0400
+Date: Mon, 8 Sep 2008 19:13:17 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [RFC PATCH v2 5/7] sched: nominate preferred wakeup cpu
+Message-ID: <20080908134317.GL4801@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>
+References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com> <20080908132132.3221.6102.stgit@drishya.in.ibm.com> <1220880091.12278.16.camel@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <48C51F8D.76E4.0078.0@novell.com>
+In-Reply-To: <1220880091.12278.16.camel@twins.programming.kicks-ass.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-09-08 15:21:31]:
 
-* Jan Beulich <jbeulich@novell.com> wrote:
-
-> >>> Ingo Molnar <mingo@elte.hu> 05.09.08 17:00 >>>
-> >
-> >* Jan Beulich <jbeulich@novell.com> wrote:
-> >
-> >> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-> >> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
-> >> 
-> >> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> >> 
-> >> ---
-> >>  arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
-> >>  arch/x86/mm/ioremap.c        |   15 ++++++---------
-> >>  include/asm-x86/processor.h  |    4 ++--
-> >>  3 files changed, 25 insertions(+), 11 deletions(-)
-> >
-> >hm, the cpu/common.c bits just got reworked massively in tip/master. 
-> >I've tried a blind merge (see the patch below) but at least the first 
-> >hunk looks wrong. Mind looking at how to merge this?
+> On Mon, 2008-09-08 at 18:51 +0530, Vaidyanathan Srinivasan wrote:
+> > When the system utilisation is low and more cpus are idle,
+> > then the process waking up from sleep should prefer to
+> > wakeup an idle cpu from semi-idle cpu package (multi core
+> > package) rather than a completely idle cpu package which
+> > would waste power.
+> > 
+> > Use the sched_mc balance logic in find_busiest_group() to
+> > nominate a preferred wakeup cpu.
+> > 
+> > This info can be sored in appropriate sched_domain, but
+> > updating this info in all copies of sched_domain is not
+> > practical.  For now lets try with a global variable.
+> > 
+> > Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> > ---
+> > 
+> >  kernel/sched.c |   10 ++++++++++
+> >  1 files changed, 10 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 569fc8d..4ae79f5 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -3380,6 +3380,9 @@ out_balanced:
+> >  
+> >  	if (this == group_leader && group_leader != group_min) {
+> >  		*imbalance = min_load_per_task;
+> > +		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP)
+> > +			sched_mc_preferred_wakeup_cpu =
+> > +					first_cpu(group_leader->cpumask);
+> >  		return group_min;
+> >  	}
+> >  #endif
+> > @@ -6911,6 +6914,13 @@ static void sched_domain_node_span(int node, cpumask_t *span)
+> >  int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
+> >  
+> >  /*
+> > + * Preferred wake up cpu nominated by sched_mc balance that will be used when
+> > + * most cpus are idle in the system indicating overall very low system
+> > + * utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP (2).
+> > + */
+> > +unsigned int sched_mc_preferred_wakeup_cpu;
 > 
-> This is my take at it:
-> 
-> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
+> This cannot be a global variable, what happens when we have two disjoint
+> load-balance domains?
 
-applied to tip/x86/mm-debug - thanks Jan!
+Agreed this is certainly a problem.  I tried adding this to the
+sched_domain, but accessing the correct 'copy' for sched_domain that
+holds this variable from any cpu is not fast.  
 
-	Ingo
+Thank you for pointing this out.  I will find a alternative
+implementation.
+
+--Vaidy
