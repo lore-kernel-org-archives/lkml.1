@@ -1,137 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYIHRrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbYIHRwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbYIHRrk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 13:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYIHRrU
+	id S1754101AbYIHRwv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 13:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYIHRwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 13:47:20 -0400
-Received: from ns.suse.de ([195.135.220.2]:37771 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbYIHRrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 13:47:19 -0400
-Date: Mon, 8 Sep 2008 10:46:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.26.5
-Message-ID: <20080908174638.GB22061@suse.de>
-References: <20080908174604.GA22061@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080908174604.GA22061@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 8 Sep 2008 13:52:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37424 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbYIHRwm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 13:52:42 -0400
+Date: Mon, 8 Sep 2008 10:52:06 -0700
+Message-Id: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [git pull] x86 fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-diff --git a/Makefile b/Makefile
-index 63c96c6..56fb747 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 26
--EXTRAVERSION = .4
-+EXTRAVERSION = .5
- NAME = Rotary Wombat
+Please pull the latest x86-fixes-for-linus git tree from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+
+ Thanks,
+
+	-hpa
+
+------------------>
+H. Peter Anvin (1):
+      x86: enable CONFIG_X86_GENERIC by default
+
+
+ arch/x86/Kconfig.cpu |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 2c518fb..46d0acf 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -279,17 +279,18 @@ config GENERIC_CPU
+ endchoice
  
- # *DOCUMENTATION*
-diff --git a/include/linux/mroute.h b/include/linux/mroute.h
-index 35a8277..5e30ac3 100644
---- a/include/linux/mroute.h
-+++ b/include/linux/mroute.h
-@@ -2,7 +2,10 @@
- #define __LINUX_MROUTE_H
- 
- #include <linux/sockios.h>
-+#include <linux/types.h>
-+#ifdef __KERNEL__
- #include <linux/in.h>
-+#endif
- 
- /*
-  *	Based on the MROUTING 3.5 defines primarily to keep
-@@ -126,6 +129,7 @@ struct igmpmsg
-  */
- 
- #ifdef __KERNEL__
-+#include <linux/pim.h>
- #include <net/sock.h>
- 
- #ifdef CONFIG_IP_MROUTE
-@@ -210,27 +214,6 @@ struct mfc_cache
- #define IGMPMSG_WHOLEPKT	3		/* For PIM Register processing */
- 
- #ifdef __KERNEL__
+ config X86_GENERIC
+-	bool "Generic x86 support"
++	bool "Generic x86 support" if EMBEDDED
+ 	depends on X86_32
++	default y
+ 	help
+-	  Instead of just including optimizations for the selected
+-	  x86 variant (e.g. PII, Crusoe or Athlon), include some more
+-	  generic optimizations as well. This will make the kernel
+-	  perform better on x86 CPUs other than that selected.
 -
--#define PIM_V1_VERSION		__constant_htonl(0x10000000)
--#define PIM_V1_REGISTER		1
+-	  This is really intended for distributors who need more
+-	  generic optimizations.
 -
--#define PIM_VERSION		2
--#define PIM_REGISTER		1
--
--#define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
--
--/* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
--
--struct pimreghdr
--{
--	__u8	type;
--	__u8	reserved;
--	__be16	csum;
--	__be32	flags;
--};
--
--extern int pim_rcv_v1(struct sk_buff *);
--
- struct rtmsg;
- extern int ipmr_get_route(struct sk_buff *skb, struct rtmsg *rtm, int nowait);
- #endif
-diff --git a/include/linux/mroute6.h b/include/linux/mroute6.h
-index e798959..90010dd 100644
---- a/include/linux/mroute6.h
-+++ b/include/linux/mroute6.h
-@@ -115,6 +115,7 @@ struct sioc_mif_req6
- 
- #ifdef __KERNEL__
- 
-+#include <linux/pim.h>
- #include <linux/skbuff.h>	/* for struct sk_buff_head */
- 
- #ifdef CONFIG_IPV6_MROUTE
-diff --git a/include/linux/pim.h b/include/linux/pim.h
-new file mode 100644
-index 0000000..1ba0661
---- /dev/null
-+++ b/include/linux/pim.h
-@@ -0,0 +1,27 @@
-+#ifndef __LINUX_PIM_H
-+#define __LINUX_PIM_H
++	  Instead of just including optimizations and workarounds for
++	  the selected x86 variant (e.g. PII, Crusoe or Athlon),
++	  include some more generic optimizations and workarounds as
++	  well.  Without this option, the kernel is not guaranteed to
++	  run on anything other than the exact CPU selected.
 +
-+#include <asm/byteorder.h>
-+
-+/* Message types - V1 */
-+#define PIM_V1_VERSION		__constant_htonl(0x10000000)
-+#define PIM_V1_REGISTER		1
-+
-+/* Message types - V2 */
-+#define PIM_VERSION		2
-+#define PIM_REGISTER		1
-+
-+#define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
-+
-+/* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
-+struct pimreghdr
-+{
-+	__u8	type;
-+	__u8	reserved;
-+	__be16	csum;
-+	__be32	flags;
-+};
-+
-+struct sk_buff;
-+extern int pim_rcv_v1(struct sk_buff *);
-+#endif
++	  Disable this if you want to run the kernel on a specific CPU
++	  *only* and want maximum optimizations for that CPU.
+ endif
+ 
+ config X86_CPU
