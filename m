@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYIHTdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbYIHTgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYIHTdi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYIHTd0
+	id S1755028AbYIHTgD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYIHTfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:33:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36371
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752999AbYIHTd0 (ORCPT
+	Mon, 8 Sep 2008 15:35:54 -0400
+Received: from rn-out-0910.google.com ([64.233.170.189]:60668 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753624AbYIHTfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:33:26 -0400
-Date: Mon, 08 Sep 2008 12:33:19 -0700 (PDT)
-Message-Id: <20080908.123319.141509323.davem@davemloft.net>
-To: randy.dunlap@oracle.com
-Cc: gregkh@suse.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable@kernel.org
-Subject: Re: Linux 2.6.26.4
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080908095608.4dae8a2e.randy.dunlap@oracle.com>
-References: <20080908152114.GA8941@suse.de>
-	<20080908163801.GA13827@suse.de>
-	<20080908095608.4dae8a2e.randy.dunlap@oracle.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 8 Sep 2008 15:35:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vNNii2ZyjJQm133rEtaHHozVi0r5lwuVBYJZnbFUSfU0U1e4N/JAti5zKFwyjSJp2G
+         lPi6J805e0ey06bVECV2pp1qSkVmIWfx93fhzN2GciB/lkj1HNjGnzJNaDt9XvAi0PW5
+         XUE4B2Qb4Z+vd6BPQid4moAAAuBHFztUvvnWk=
+Message-ID: <86802c440809081235q57470134t51c61e2a6b97dc87@mail.gmail.com>
+Date: Mon, 8 Sep 2008 12:35:51 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Luca Tettamanti" <kronos.it@gmail.com>
+Subject: Re: [2.6.27] overlapping early reservations [was: early exception - lockdep related?]
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+In-Reply-To: <68676e00809081214h49eb07d4tb6145e8b47b00768@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <68676e00809051217h3da02a6bld4412b4a2ee3b728@mail.gmail.com>
+	 <1220642738.11202.21.camel@twins.programming.kicks-ass.net>
+	 <48C19415.9060108@kernel.org>
+	 <68676e00809060620k35679302s42fc0a74aa1dc2d3@mail.gmail.com>
+	 <20080906145122.GA7693@elte.hu>
+	 <86802c440809060906h721d6243t4a3b5fb604a9d7b3@mail.gmail.com>
+	 <68676e00809081054j3fb9c5bq76c9a6aceea35aa2@mail.gmail.com>
+	 <86802c440809081104i23b477e1w62bd5967b79529cb@mail.gmail.com>
+	 <68676e00809081214h49eb07d4tb6145e8b47b00768@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Date: Mon, 8 Sep 2008 09:56:08 -0700
+On Mon, Sep 8, 2008 at 12:14 PM, Luca Tettamanti <kronos.it@gmail.com> wrote:
+> On Mon, Sep 8, 2008 at 8:04 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> On Mon, Sep 8, 2008 at 10:54 AM, Luca Tettamanti <kronos.it@gmail.com> wrote:
+>>
+>> can you post boot log with working kernel + "debug"?
+>
+> This is the map of the early reservations (will send the dmesg + debug later):
+>
+> [    0.000000] (6 early reservations) ==> bootmem [0000000000 - 00bbf90000]
+> [    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==>
+> [0000000000 - 0000001000]
+> [    0.000000]   #1 [0000006000 - 0000008000]       TRAMPOLINE ==>
+> [0000006000 - 0000008000]
+> [    0.000000]   #2 [0000200000 - 0000d012b8]    TEXT DATA BSS ==>
+> [0000200000 - 0000d012b8]
+> [    0.000000]   #3 [00037dc000 - 00040fe2d9]          RAMDISK ==>
+> [00037dc000 - 00040fe2d9]
+> [    0.000000]   #4 [000009c800 - 0000100000]    BIOS reserved ==>
+> [000009c800 - 0000100000]
+> [    0.000000]   #5 [0000008000 - 000000b000]          PGTABLE ==>
+> [0000008000 - 000000b000]
+>
+> As a side note: I've bigger older (2.6.26) kernels that boots fine,
+> and smaller 2.6.27 kernels that do not work, e.g. this one:
 
-> On Mon, 8 Sep 2008 09:38:01 -0700 Greg KH wrote:
-> 
-> > On Mon, Sep 08, 2008 at 08:21:14AM -0700, Greg KH wrote:
-> > > On Mon, Sep 08, 2008 at 08:12:53AM -0700, Randy Dunlap wrote:
-> > > > On Mon, 8 Sep 2008 07:36:25 -0700 Greg KH wrote:
-> > > > 
-> > > > > We (the -stable team) are announcing the release of the 2.6.26.4
-> > > > > kernel.
-> > > > > 
-> > > > > It contains lots of bugfixes, all over the map.  Any users of the 2.6.26
-> > > > > kernel series should upgrade to this version.  For details on the fixes,
-> > > > > see the changelog entries and the diffstat below.
-> > > > > 
-> > > > > I'll also be replying to this message with a copy of the patch between
-> > > > > 2.6.26.3 and 2.6.26.4
-> > > > > 
-> > > > > The updated 2.6.26.y git tree can be found at:
-> > > > >         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
-> > > > > and can be browsed at the normal kernel.org git web browser:
-> > > > >         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
-> > > > 
-> > > > >  include/linux/pim.h                |   45 -----------------
-> > > > 
-> > > > That file is still used by ./net/ipv6/ip6mr.c:#include <linux/pim.h>
-> > > > so there are build errors...
-> > > 
-> > > Crap, I messed up, David sent me the fixed patch and I forgot it.
-> > 
-> > Randy, does the patch below fix the problem?  It's an interdiff between
-> > what I applied and what David sent me as the correct patch.
-> 
-> Yes, that fixes the build error.  Thanks.
+that could explain sth. big kernel use more,  and lilo put ramdisk
+high from 0x37dc000
 
-Sorry for creating such a confusing situation Greg :)
+>
+> Overlapping early reservations b71000-effb43 RAMDISK to 200000-c84ecf
+> TEXT DATA BSS
+
+need to figure out, lilo put ramdisk so low...
+
+need to know e820 table layout...
+
+YH
