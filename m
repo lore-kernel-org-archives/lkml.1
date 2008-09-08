@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYIHTc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYIHTdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYIHTc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754065AbYIHTci
+	id S1755473AbYIHTdi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYIHTd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:32:38 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33506 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754001AbYIHTch (ORCPT
+	Mon, 8 Sep 2008 15:33:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36371
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752999AbYIHTd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:32:37 -0400
-Date: Mon, 8 Sep 2008 12:32:31 -0700
-Message-Id: <200809081932.m88JWVZG013061@askone.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [git pull] x86 fixes
+	Mon, 8 Sep 2008 15:33:26 -0400
+Date: Mon, 08 Sep 2008 12:33:19 -0700 (PDT)
+Message-Id: <20080908.123319.141509323.davem@davemloft.net>
+To: randy.dunlap@oracle.com
+Cc: gregkh@suse.de, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: Linux 2.6.26.4
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080908095608.4dae8a2e.randy.dunlap@oracle.com>
+References: <20080908152114.GA8941@suse.de>
+	<20080908163801.GA13827@suse.de>
+	<20080908095608.4dae8a2e.randy.dunlap@oracle.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Mon, 8 Sep 2008 09:56:08 -0700
 
-Please pull the latest x86-fixes-for-linus git tree from:
+> On Mon, 8 Sep 2008 09:38:01 -0700 Greg KH wrote:
+> 
+> > On Mon, Sep 08, 2008 at 08:21:14AM -0700, Greg KH wrote:
+> > > On Mon, Sep 08, 2008 at 08:12:53AM -0700, Randy Dunlap wrote:
+> > > > On Mon, 8 Sep 2008 07:36:25 -0700 Greg KH wrote:
+> > > > 
+> > > > > We (the -stable team) are announcing the release of the 2.6.26.4
+> > > > > kernel.
+> > > > > 
+> > > > > It contains lots of bugfixes, all over the map.  Any users of the 2.6.26
+> > > > > kernel series should upgrade to this version.  For details on the fixes,
+> > > > > see the changelog entries and the diffstat below.
+> > > > > 
+> > > > > I'll also be replying to this message with a copy of the patch between
+> > > > > 2.6.26.3 and 2.6.26.4
+> > > > > 
+> > > > > The updated 2.6.26.y git tree can be found at:
+> > > > >         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
+> > > > > and can be browsed at the normal kernel.org git web browser:
+> > > > >         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
+> > > > 
+> > > > >  include/linux/pim.h                |   45 -----------------
+> > > > 
+> > > > That file is still used by ./net/ipv6/ip6mr.c:#include <linux/pim.h>
+> > > > so there are build errors...
+> > > 
+> > > Crap, I messed up, David sent me the fixed patch and I forgot it.
+> > 
+> > Randy, does the patch below fix the problem?  It's an interdiff between
+> > what I applied and what David sent me as the correct patch.
+> 
+> Yes, that fixes the build error.  Thanks.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
-
- Thanks,
-
-	-hpa
-
------------------->
-H. Peter Anvin (1):
-      x86: prevent binutils from being "smart" and generating NOPLs for us
-
-Jeremy Fitzhardinge (1):
-      xen: fix 2.6.27-rc5 xen balloon driver warnings
-
-Linus Torvalds (1):
-      x86: disable static NOPLs on 32 bits
-
-
- arch/x86/Kconfig.cpu     |   13 ++++++++-----
- arch/x86/Makefile_32.cpu |    5 +++++
- drivers/xen/balloon.c    |    2 +-
- 3 files changed, 14 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 2c518fb..b225219 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -382,14 +382,17 @@ config X86_OOSTORE
- # P6_NOPs are a relatively minor optimization that require a family >=
- # 6 processor, except that it is broken on certain VIA chips.
- # Furthermore, AMD chips prefer a totally different sequence of NOPs
--# (which work on all CPUs).  As a result, disallow these if we're
--# compiling X86_GENERIC but not X86_64 (these NOPs do work on all
--# x86-64 capable chips); the list of processors in the right-hand clause
--# are the cores that benefit from this optimization.
-+# (which work on all CPUs).  In addition, it looks like Virtual PC
-+# does not understand them.
-+#
-+# As a result, disallow these if we're not compiling for X86_64 (these
-+# NOPs do work on all x86-64 capable chips); the list of processors in
-+# the right-hand clause are the cores that benefit from this optimization.
- #
- config X86_P6_NOP
- 	def_bool y
--	depends on (X86_64 || !X86_GENERIC) && (M686 || MPENTIUMII || MPENTIUMIII || MPENTIUMM || MCORE2 || MPENTIUM4 || MPSC)
-+	depends on X86_64
-+	depends on (MCORE2 || MPENTIUM4 || MPSC)
- 
- config X86_TSC
- 	def_bool y
-diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
-index e372b58..b72b4f7 100644
---- a/arch/x86/Makefile_32.cpu
-+++ b/arch/x86/Makefile_32.cpu
-@@ -45,3 +45,8 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
- # cpu entries
- cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
- 
-+# Bug fix for binutils: this option is required in order to keep
-+# binutils from generating NOPL instructions against our will.
-+ifneq ($(CONFIG_X86_P6_NOP),y)
-+cflags-y			+= $(call cc-option,-Wa$(comma)-mtune=generic32,)
-+endif
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index d4427cb..2e15da5 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -60,7 +60,7 @@
- 
- #define PAGES2KB(_p) ((_p)<<(PAGE_SHIFT-10))
- 
--#define BALLOON_CLASS_NAME "memory"
-+#define BALLOON_CLASS_NAME "xen_memory"
- 
- struct balloon_stats {
- 	/* We aim for 'current allocation' == 'target allocation'. */
+Sorry for creating such a confusing situation Greg :)
