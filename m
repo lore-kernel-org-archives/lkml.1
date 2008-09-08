@@ -1,66 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYIHOKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbYIHOLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbYIHOKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 10:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750835AbYIHOJ7
+	id S1753950AbYIHOLd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 10:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYIHOLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 10:09:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60193 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbYIHOJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 10:09:58 -0400
-Date: Mon, 8 Sep 2008 16:09:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sheng Yang <sheng.yang@intel.com>
-Cc: Avi Kivity <avi@qumranet.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][PATCH 0/2] x86: Add "virt flags"
-Message-ID: <20080908140939.GH11993@elte.hu>
-References: <12208705553277-git-send-email-sheng.yang@intel.com>
+	Mon, 8 Sep 2008 10:11:25 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:63473 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbYIHOLY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 10:11:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YnpuJAFaEBGZvkl/6cDGQVg9mWkYuKT3zfV7/xvjIJZ4Io6eWT9OXqUcuX56yFD4+N
+         7LqqkvMTvIWYffjGcqDDoN/wHRa3gjl6gGTvWDycXkyN1JQFOdxTEmu2HmvbobsGt+9k
+         AF1HeLXJ2/LXTpq4/sbB90YSTW0/iMZA5EUKo=
+Message-ID: <44c63dc40809080711v98f4fdbs19081aa7cb81634d@mail.gmail.com>
+Date: Mon, 8 Sep 2008 23:11:22 +0900
+From: "MinChan Kim" <barrioskmc@gmail.com>
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH 1/4] pull out the page pre-release and sanity check logic for reuse
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>, "Mel Gorman" <mel@csn.ul.ie>
+In-Reply-To: <1220610002-18415-2-git-send-email-apw@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <12208705553277-git-send-email-sheng.yang@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1220610002-18415-1-git-send-email-apw@shadowen.org>
+	 <1220610002-18415-2-git-send-email-apw@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 5, 2008 at 7:19 PM, Andy Whitcroft <apw@shadowen.org> wrote:
+> When we are about to release a page we perform a number of actions
+> on that page.  We clear down any anonymous mappings, confirm that
+> the page is safe to release, check for freeing locks, before mapping
+> the page should that be required.  Pull this processing out into a
+> helper function for reuse in a later patch.
+>
+> Note that we do not convert the similar cleardown in free_hot_cold_page()
+> as the optimiser is unable to squash the loops during the inline.
+>
+> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> ---
+>  mm/page_alloc.c |   43 ++++++++++++++++++++++++++++++-------------
+>  1 files changed, 30 insertions(+), 13 deletions(-)
+>
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index f52fcf1..b2a2c2b 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -489,6 +489,35 @@ static inline int free_pages_check(struct page *page)
+>  }
+>
+>  /*
+> + * Prepare this page for release to the buddy.  Sanity check the page.
+> + * Returns 1 if the page is safe to free.
+> + */
+> +static inline int free_page_prepare(struct page *page, int order)
+> +{
+> +       int i;
+> +       int reserved = 0;
+> +
+> +       if (PageAnon(page))
+> +               page->mapping = NULL;
 
-* Sheng Yang <sheng.yang@intel.com> wrote:
+Why do you need to clear down anonymous mapping ?
+I think if you don't convert this cleardown in free_hot_cold_page(),
+you don't need it.
 
-> Hi, Ingo
-> 
-> (sorry for former noises, I mistake the address... Report to lkml) 
-> I've sent this patchset before, but got no comments from upstream at 
-> that time.  So I'd like to resend this.
-> 
-> The virt flags is used for the important hardware virtualization 
-> features, like EPT of incoming Nehalem. Because the feature 
-> availability are read from MSRs, and I think virtualization features 
-> should not at the same level as "vmx", so I added a new flags catagory 
-> here.
-> 
-> But I still have concern, for this may broke some not that reliable 
-> userspace programs. So Avi suggested that we can add more fields to 
-> flags rather than a new catagory.  What's your opinion? We indeed need 
-> a generic user visible way to tell the HW virtualization features.
+If you do it, bad_page can't do his role.
 
-hm, i think extending the already existing flags category sounds like a 
-better solution than the separate virtual CPU flags line in 
-/proc/cpuinfo. We already have self-invented flag entries (such as 
-X86_FEATURE_NOPL), and adding more for virtualization would be quite 
-natural to do, as long as it's reasonably close to the meaning of a 'CPU 
-feature'.
+> +       for (i = 0 ; i < (1 << order) ; ++i)
+> +               reserved += free_pages_check(page + i);
+> +       if (reserved)
+> +               return 0;
+> +
+> +       if (!PageHighMem(page)) {
+> +               debug_check_no_locks_freed(page_address(page),
+> +                                                       PAGE_SIZE << order);
+> +               debug_check_no_obj_freed(page_address(page),
+> +                                          PAGE_SIZE << order);
+> +       }
+> +       arch_free_page(page, order);
+> +       kernel_map_pages(page, 1 << order, 0);
+> +
+> +       return 1;
+> +}
+> +
+> +/*
+>  * Frees a list of pages.
+>  * Assumes all pages on list are in same zone, and of same order.
+>  * count is the number of pages to free.
+> @@ -529,22 +558,10 @@ static void free_one_page(struct zone *zone, struct page *page, int order)
+>  static void __free_pages_ok(struct page *page, unsigned int order)
+>  {
+>        unsigned long flags;
+> -       int i;
+> -       int reserved = 0;
+>
+> -       for (i = 0 ; i < (1 << order) ; ++i)
+> -               reserved += free_pages_check(page + i);
+> -       if (reserved)
+> +       if (!free_page_prepare(page, order))
+>                return;
+>
+> -       if (!PageHighMem(page)) {
+> -               debug_check_no_locks_freed(page_address(page),PAGE_SIZE<<order);
+> -               debug_check_no_obj_freed(page_address(page),
+> -                                          PAGE_SIZE << order);
+> -       }
+> -       arch_free_page(page, order);
+> -       kernel_map_pages(page, 1 << order, 0);
+> -
+>        local_irq_save(flags);
+>        __count_vm_events(PGFREE, 1 << order);
+>        free_one_page(page_zone(page), page, order);
+> --
+> 1.6.0.rc1.258.g80295
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
 
-Peter, what would be your preference?
 
-	Ingo
+
+-- 
+Thanks,
+MinChan Kim
