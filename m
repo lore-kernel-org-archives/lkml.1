@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbYIHAYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbYIHAhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752505AbYIHAYW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 20:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751215AbYIHAYO
+	id S1752409AbYIHAhW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 20:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYIHAhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 20:24:14 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:48049 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbYIHAYN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 20:24:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bdnZlzPaUFGXzJPVWsJqm8KOBKBcngvBtPP/VPOcQYq6UrdBeHViIN4OcA185pbS7L
-         Cu8PmRblH1Ssw+rJ5MZK83Jo1misNHfjTDA1FEb/20ohrpsK75kz2m5ETz54oY30HZHE
-         WmsJd2wF94xRFTe6XlUel4zdHCETu9Aj327BA=
-Message-ID: <86802c440809071724i35a1e26frb01c401bee693ad@mail.gmail.com>
-Date: Sun, 7 Sep 2008 17:24:12 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for setup_IO_APIC_irqs
-Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, macro@linux-mips.org
-In-Reply-To: <20080906131217.GA4910@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 7 Sep 2008 20:37:10 -0400
+Received: from smtp.knology.net ([24.214.63.101]:59506 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751369AbYIHAhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 20:37:09 -0400
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+From: David Dillow <dave@thedillows.org>
+To: Yan Li <elliot.li.tech@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, joerg.roedel@amd.com,
+       rjmaomao@gmail.com
+In-Reply-To: <20080907234510.GA24133@yantp.cn.ibm.com>
+References: <20080221115452.GB13948@elte.hu>
+	 <20080907234510.GA24133@yantp.cn.ibm.com>
+Content-Type: text/plain
+Date: Sun, 07 Sep 2008 20:36:56 -0400
+Message-Id: <1220834216.1837.11.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080904183748.950151853@gmail.com>
-	 <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com>
-	 <20080905080447.GC12409@elte.hu> <20080905180126.GA19334@lenovo>
-	 <20080905181111.GG27395@elte.hu> <20080905183347.GB19334@lenovo>
-	 <20080905183835.GA19215@elte.hu> <20080906101533.GA7273@lenovo>
-	 <20080906131217.GA4910@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 6, 2008 at 6:12 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
->
->> By changing printout form we are able to shrink code a bit.
->>
->> Former printout example:
->>
->>       init IO_APIC IRQs
->>        IO-APIC (apicid-pin) 1-1, 1-2, 1-3 not connected.
->>        IO-APIC (apicid-pin) 2-1, 2-2, 2-3 not connected.
->>
->> New printout example:
->>
->>       init IO_APIC IRQs
->>        1-1 1-2 1-3 (apicid-pin) not connected
->>        2-1 2-2 2-3 (apicid-pin) not connected
->
-> applied to tip/irq/sparseirq - thanks Cyrill.
+On Mon, 2008-09-08 at 07:45 +0800, Yan Li wrote:
+> +int is_vmware_guest(void)
+> +{
+> +	u32 version[3];
+> +
+> +	getVersion(&version[0]);
+> +
+> +	if (version[1] != BDOOR_MAGIC) {
+> +		/* Incorrect virtual machine version */
+> +		return 0;
+> +	}
+> +
+> +	if (version[0] != VERSION_MAGIC) {
+> +		/* Incorrect version magic */
+> +		return 0;
+> +	}
+> +
+> +	/* Yes, we are running as VMware Guest */
+> +	printk(KERN_INFO "vmware detected\n");
+> +	return 1;
+> +}
 
-got
- 0-16<7> 0-17<7> 0-18<7> 0-19<7> 0-20<7> 0-21<7> 0-22<7> 0-23<7>
-(apicid-pin) not connected
- 1-0<7> 1-1<7> 1-2<7> 1-3<7> 1-4<7> 1-5<7> 1-6<7> 1-7<7> 1-8<7> 1-9<7>
-1-10<7> 1-11<7> 1-12<7> 1-13<7> 1-14<7> 1-15<7> 1-16<7> 1-17<7>
-1-18<7> 1-19<7> 1-20<7> 1-21<7> 1-22<7> 1-23<7> (apicid-pin) not
-connected
+If you want this to be used by more callsites, it probably doesn't make
+sense to have it print out a message each time.
 
-can you remove the extra <7>?
+In fact would it make more sense to have a framework (cpu feature flag?)
+to detect that we're in any virtualized environment and make this one of
+the detection routines, and perhaps cache the result. Especially if this
+detection would be used to manage anything near a hot-path in the page
+cache as you suggested.
 
-YH
+But maybe that's overkill.
+
