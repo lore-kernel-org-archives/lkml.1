@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbYIHSON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYIHSO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276AbYIHSON (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYIHSN6
+	id S1754911AbYIHSO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYIHSOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:13:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:36151 "EHLO mail.goop.org"
+	Mon, 8 Sep 2008 14:14:50 -0400
+Received: from gw.goop.org ([64.81.55.164]:36163 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753036AbYIHSN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:13:58 -0400
-Message-ID: <48C56B60.8050604@goop.org>
-Date: Mon, 08 Sep 2008 11:13:52 -0700
+	id S1752167AbYIHSOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 14:14:50 -0400
+Message-ID: <48C56B99.9020307@goop.org>
+Date: Mon, 08 Sep 2008 11:14:49 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Rambaldi <rambaldi@xs4all.nl>, linux-kernel <linux-kernel@vger.kernel.org>
 Subject: Re: 2.6.27-rc5 xen balloon driver warnings
-References: <48C0F09C.1000101@xs4all.nl> <48C457DC.9050904@goop.org> <20080908175906.GA29264@elte.hu>
-In-Reply-To: <20080908175906.GA29264@elte.hu>
+References: <48C0F09C.1000101@xs4all.nl> <48C457DC.9050904@goop.org> <48C546B2.50108@xs4all.nl> <48C558D9.9030006@goop.org> <20080908180126.GB29264@elte.hu>
+In-Reply-To: <20080908180126.GB29264@elte.hu>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -32,28 +32,19 @@ Ingo Molnar wrote:
 >   
 >> Rambaldi wrote:
 >>     
->>> Hi,
->>>
->>> when running the 2.6.27-rc5 kernel as 64 bits dumU I get the following
->>> warnings:
+>>> I used the complete patch, I had some compile warnings.
 >>>       
->> This patch, change 167e6cf62979df03513898966f9227847d192327 in tip.git,
->> should fix this.  I'm not sure if the other sysfs changes apply to
->> mainline git or not.
+>> Well, the compile warning are bad news.  Just use the first hunk.
 >>
->> Could you try this and see how it goes?  The first chunk should be
->> sufficient to fix your problem.
+>> Ingo, could you send this up to Linus?  It's a subset of a patch you've
+>> already got in your tree.
 >>     
 >
-> We could certainly propagate it to x86/urgent, if it fixes a real issue. 
-> It cherry-picks just fine.
->   
+> i cherry-picked the whole thing as that's the tested commit. Is that 
+> fine too?
 
-The rest of that patch updates the sysfs entries in line with Andi's
-changes, but I don't think they're in mainline yet.
-
-The sysfs namespace clash means that Xen balloon and hotplug memory try
-to register the same name, which is bad because one of them is going to
-lose.
+No, because it caused compile-time warnings.  The signatures on sysfs
+access functions changed, so that patch will break unless the rest of
+the sysfs changes went in.
 
     J
