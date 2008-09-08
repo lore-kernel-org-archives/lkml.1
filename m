@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYIHPx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbYIHPzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbYIHPx6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbYIHPxs
+	id S1755182AbYIHPzT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYIHPzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:53:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51181 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753251AbYIHPxr (ORCPT
+	Mon, 8 Sep 2008 11:55:04 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:58893 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbYIHPzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:53:47 -0400
-Date: Mon, 8 Sep 2008 17:57:21 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux@sandersweb.net,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-Message-ID: <20080908155721.GO26079@one.firstfloor.org>
-References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <20080908155021.GN26079@one.firstfloor.org> <48C549D6.10002@zytor.com>
-Mime-Version: 1.0
+	Mon, 8 Sep 2008 11:55:03 -0400
+Date: Mon, 8 Sep 2008 16:54:58 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       ACPI mailing list <linux-acpi@vger.kernel.org>
+Subject: Re: Controlling backlight on thinkpad x60
+Message-ID: <20080908155457.GA30619@srcf.ucam.org>
+References: <20080908151058.GA1650@elf.ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48C549D6.10002@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080908151058.GA1650@elf.ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 08:50:46AM -0700, H. Peter Anvin wrote:
-> Andi Kleen wrote:
-> >>The help text is indeed out of date.  I did a patch yesterday to, among 
-> >>other things, update it; I also want to verify that we are disabling all 
-> >>options that can cause gcc or binutils to generate nopl's; I plan to 
-> >>push it today.
-> >
-> >You (or whoever did those changes) likely broke a lot of distribution 
-> >setups subtly then. Hopefully the changes were worth that.
-> 
-> Likely broke a lot of distribution setups how?
+On Mon, Sep 08, 2008 at 05:10:58PM +0200, Pavel Machek wrote:
 
-Previously they could set CPU x and it would still run on other CPUs
-even if that option was not set. If that's not the case anymore then
-they will have some unhappy users once they update their kernels.
+> (I do have CONFIG_ACPI_VIDEO disabled, it killed my machine last time
+> I enabled it, is it mandatory now?)
 
--Andi
+On Thinkpads with ACPI video support, yes.
+
 -- 
-ak@linux.intel.com
+Matthew Garrett | mjg59@srcf.ucam.org
