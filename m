@@ -1,115 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbYIHOPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYIHOW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbYIHOPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 10:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYIHOPp
+	id S1753070AbYIHOW0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 10:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYIHOWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 10:15:45 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:35436 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYIHOPo (ORCPT
+	Mon, 8 Sep 2008 10:22:17 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55519 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbYIHOWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 10:15:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CiP8IcoYZyJO2O7tYK91/X+OK5G85JQKX9ueKhR90muzQGb1csS/yIxjGIXv4XV8ZD
-         dDN9bifIfdNmthjcZh6N3F23Nii11u+uYXumsSSBsEmNokZEXfmhqckaDyLQlr/MEW9A
-         eHU/UFXaplSkXs2wsoOe9RUjWo2N4s8BB/c1E=
-Message-ID: <921ca19c0809080715m6379b322x79edb239f6971560@mail.gmail.com>
-Date: Mon, 8 Sep 2008 19:45:43 +0530
-From: "Sujit Karataparambil" <sjt.kar@gmail.com>
-Subject: Re: [PATCH] Convert tlbstate_lock spin_lock to raw_spin_lock
-Cc: linux-rt-users@vger.kernel.org
-In-Reply-To: <20080908073732.GC5798@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Sep 2008 10:22:16 -0400
+Date: Mon, 8 Sep 2008 07:22:20 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the task
+ struct
+Message-ID: <20080908072220.75fc3dfd@infradead.org>
+In-Reply-To: <20080908141555.GB31784@elf.ucw.cz>
+References: <20080901160343.75a89ec9@infradead.org>
+	<20080901161423.59ebf2fc@infradead.org>
+	<20080902100439.GA11383@elf.ucw.cz>
+	<20080902060323.70245b83@infradead.org>
+	<20080908132713.GA18486@elf.ucw.cz>
+	<20080908064002.7abc2a22@infradead.org>
+	<20080908141555.GB31784@elf.ucw.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2c6d8d720809071806i54e58093vf87bec5175d9b074@mail.gmail.com>
-	 <20080908073732.GC5798@linux.vnet.ibm.com>
-To: unlisted-recipients:; (no To-header on input)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chirag,
+On Mon, 8 Sep 2008 16:15:55 +0200
+Pavel Machek <pavel@suse.cz> wrote:
 
-  Kindly understand what xavier is trying to do. He is Trying to disable smp.
-The RT - Linux Code is dependent on the mutex lock to perform some
-soft/hard real time processing. This is an problem with the mutex lock.
+> On Mon 2008-09-08 06:40:02, Arjan van de Ven wrote:
+> > On Mon, 8 Sep 2008 15:27:16 +0200
+> > Pavel Machek <pavel@suse.cz> wrote:
+> > > > 
+> > > > ... which nobody uses today.
+> > > > It's not just new syscalls, it's a new glibc api as well at that
+> > > > point.
+> > > 
+> > > ...and new applications, yes. I believe applications should
+> > > explicitely enable slacking timers.
+> > 
+> > timers are slacking today, at least for select() and poll(), and
+> > are a great deal more so than the defaults in this patchkit.
+> 
+> Ok, so select()/poll() may default to non-zero slack for legacy apps.
 
-Kindly check with some one before signing off patches.
+that's whats there
+> 
+> > The great advantage of the prctl() approach (which is usable) over
+> > new system calls and glibc APIs is that it will get used, because
+> > the admin can use it just like he uses the "nice" command, on
+> > existing software.
+> 
+> Yes, it is a great advantage, but it feels like a hack. Maybe it is
+> better done with LD_PRELOAD or something?
 
-Thanks,
-Sujit
+that's not working very well in general, and doesn't work across exec
+etc.
 
+> 
+> I'd certianly want the applications to specify slack themselves in
+> like 10 years.
 
-On 9/8/08, Chirag Jog <chirag@linux.vnet.ibm.com> wrote:
-> * xavier droubay <xavier.droubay@gmail.com> [2008-09-08 03:06:51]:
->
-> > Hello,
-> >
-> > I experienced this "rtmutex.c:743" known bug with rt3 patch, using
-> >
-> >  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.3.tar.bz2
-> >  http://rt.et.redhat.com/download/patch-2.6.26.3-rt3.bz2
-> >
-> > I compiled this kernel with the "make-kpkg" debian utility.
-> >
-> > I first compiled this kernel with NO SMP, NO HIGHMEM, and partial ACPI
-> > (without fan, processor, ... modules). Attached file
-> > "config-2.6.26.3-rt3lowlty.frwr.gz".
-> > I didn't experience any problem with this kernel.
-> >
-> > I then enabled SMP and HIGHMEM, and experienced  "rtmutex.c:743" BUG.
-> > Attached files
-> > "config-2.6.26.3-rt3rt-smp-hm.gz" and  "dmesg.gz" for some BUGGY message.
-> >
-> >
-> > I have seen somewhere on the archive, that some people still
-> > experienced problems with SMP.
-> > I guess no fix has been done from rt3 to rt7 patch. Can you confirm?
-> >
-> > If so, which recent kernel should I use in order to get smp and rt
-> > running without problems?
-> >
-> This simple patch should solve the above problem. Seeing the config, its
-> seems to be a 32bit box.
->
->
-> It convert tlbstate_lock spin_lock to raw_spin_lock.
-> Preemption has already been disabled, hence this change shouldn't
-> affect latency numbers.
->
->
-> Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
->
->
-> diff --git a/arch/x86/kernel/tlb_32.c b/arch/x86/kernel/tlb_32.c
-> index 9bb2363..228849c 100644
-> --- a/arch/x86/kernel/tlb_32.c
-> +++ b/arch/x86/kernel/tlb_32.c
-> @@ -23,7 +23,7 @@ DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate)
->  static cpumask_t flush_cpumask;
->  static struct mm_struct *flush_mm;
->  static unsigned long flush_va;
-> -static DEFINE_SPINLOCK(tlbstate_lock);
-> +static DEFINE_RAW_SPINLOCK(tlbstate_lock);
->
->  /*
->  * We cannot call mmdrop() because we are in interrupt context,
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+We've been talking to Ulrich to figure out what the right API for this
+is (eg how to extend select/poll for this) and I still plan to work on
+this, but both Linus and Ulrich seem to be very ademant that it means
+only few apps will use it (and I agree with that, just look at how many
+apps use linux specific APIs such as sendfile(), linux AIO etc... )
 
 
 -- 
---linux(2.4/2.6),bsd(4.5.x+),solaris(2.5+)
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
