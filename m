@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbYIHBty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbYIHBvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbYIHBty (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 21:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYIHBtr
+	id S1752904AbYIHBvy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 21:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYIHBvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 21:49:47 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:17123 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYIHBtq (ORCPT
+	Sun, 7 Sep 2008 21:51:47 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:58361 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751640AbYIHBvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 21:49:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=s2Y9sI9ejIrNPMdsnadzHhar/8b75zQ2m+9JA1kJk9rqNtax1JLlnQ1JCv9i9w6mhR
-         nrkUi1ZfiFKhMRihVdeqmpoc++0Rec0c1wGRyuFKdU3sOu9TtfzrthnZ+RyB9MxEwHMG
-         XU4F0hkstbscCN3OawpBNsPIGdkrAPYfcr69E=
-Date: Mon, 8 Sep 2008 09:49:40 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: David Dillow <dave@thedillows.org>
-Cc: Yan Li <elliot.li.tech@gmail.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, joerg.roedel@amd.com, rjmaomao@gmail.com
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-Message-ID: <20080908014939.GA11873@yantp.cn.ibm.com>
-References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <1220834216.1837.11.camel@obelisk.thedillows.org>
+	Sun, 7 Sep 2008 21:51:46 -0400
+X-AuditID: 0ac90650-aa0c8ba000006fc9-e5-48c48530cefe
+Message-ID: <48C48520.9070206@hitachi.com>
+Date: Mon, 08 Sep 2008 10:51:28 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220834216.1837.11.camel@obelisk.thedillows.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>, William Irwin <wli@holomorphy.com>,
+       Adam Litke <agl@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
+References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com> 
+    <20080902134850.GA26372@csn.ul.ie>
+In-Reply-To: <20080902134850.GA26372@csn.ul.ie>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 07, 2008 at 08:36:56PM -0400, David Dillow wrote:
-> On Mon, 2008-09-08 at 07:45 +0800, Yan Li wrote:
-> > +int is_vmware_guest(void)
-> > +{
-> > skipped....
-> > +	/* Yes, we are running as VMware Guest */
-> > +	printk(KERN_INFO "vmware detected\n");
-> > +	return 1;
-> > +}
+[Added CC to Roland McGrath]
+
+Mel Gorman wrote:
+
+>>--- a/Documentation/filesystems/proc.txt
+>>+++ b/Documentation/filesystems/proc.txt
+>>@@ -2389,11 +2389,12 @@ will be dumped when the <pid> process is
+>> of memory types. If a bit of the bitmask is set, memory segments of the
+>> corresponding memory type are dumped, otherwise they are not dumped.
+>> 
+>>-The following 4 memory types are supported:
+>>+The following 5 memory types are supported:
+>>   - (bit 0) anonymous private memory
+>>   - (bit 1) anonymous shared memory
+>>   - (bit 2) file-backed private memory
+>>   - (bit 3) file-backed shared memory
+>>+  - (bit 5) hugetlb memory
 > 
-> If you want this to be used by more callsites, it probably doesn't make
-> sense to have it print out a message each time.
+> It's not your fault, but the meaning of bit 4 appears to be
+> undocumented. Offhand, does anyone know if this is intentional?
 
-Sure.  Another possible solution is to print that message at the first
-call only, it's good for debugging to keep that in dmesg.
+I think it was just forgotten to be updated.  Bit 4 was introduced
+by Roland McGrath, and it means elf header pages in file-backed
+private VMAs are dumped even if bit 2 is cleared.
 
-If it's not possible to do live migration in/out of a running VMware
-environment, we can also safely do this detection only at the first
-call to reduce overhead.
+Thanks,
 
-> In fact would it make more sense to have a framework (cpu feature flag?)
-> to detect that we're in any virtualized environment and make this one of
-> the detection routines, and perhaps cache the result. Especially if this
-> detection would be used to manage anything near a hot-path in the page
-> cache as you suggested.
-> 
-> But maybe that's overkill.
 
-That sounds good too. And I think the current routines for detecting
-KVM, Xen and VMWare are all ready. I can do that if there are more
-positive feedbacks.
+Subject: [PATCH] coredump_filter: add description of bit 4
 
-Thanks.
+There is no description of bit 4 of coredump_filter in the
+documentation.  This patch adds it.
 
--- 
-Li, Yan
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+CC: Roland McGrath <roland@redhat.com>
+---
+ Documentation/filesystems/proc.txt |    2 ++
+ 1 file changed, 2 insertions(+)
 
-"Everything that is really great and inspiring is created by the
-individual who can labor in freedom."
-              - Albert Einstein, in Out of My Later Years (1950)
+Index: linux-2.6.27-rc5/Documentation/filesystems/proc.txt
+===================================================================
+--- linux-2.6.27-rc5.orig/Documentation/filesystems/proc.txt
++++ linux-2.6.27-rc5/Documentation/filesystems/proc.txt
+@@ -2394,6 +2394,8 @@ The following 4 memory types are support
+   - (bit 1) anonymous shared memory
+   - (bit 2) file-backed private memory
+   - (bit 3) file-backed shared memory
++  - (bit 4) ELF header pages in file-backed private memory areas (it is
++            effective only if the bit 2 is cleared)
+ 
+   Note that MMIO pages such as frame buffer are never dumped and vDSO pages
+   are always dumped regardless of the bitmask status.
+
+
+
