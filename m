@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbYIHOW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbYIHO0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbYIHOW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 10:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYIHOWR
+	id S1753453AbYIHO0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 10:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYIHO0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 10:22:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55519 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbYIHOWQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 10:22:16 -0400
-Date: Mon, 8 Sep 2008 07:22:20 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Pavel Machek <pavel@suse.cz>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
-Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the task
- struct
-Message-ID: <20080908072220.75fc3dfd@infradead.org>
-In-Reply-To: <20080908141555.GB31784@elf.ucw.cz>
-References: <20080901160343.75a89ec9@infradead.org>
-	<20080901161423.59ebf2fc@infradead.org>
-	<20080902100439.GA11383@elf.ucw.cz>
-	<20080902060323.70245b83@infradead.org>
-	<20080908132713.GA18486@elf.ucw.cz>
-	<20080908064002.7abc2a22@infradead.org>
-	<20080908141555.GB31784@elf.ucw.cz>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 8 Sep 2008 10:26:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38155 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbYIHO0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 10:26:34 -0400
+Date: Mon, 8 Sep 2008 16:26:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Xen Devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 6 of 7] x86: use early_ioremap in __acpi_map_table
+Message-ID: <20080908142619.GA10580@elte.hu>
+References: <patchbomb.1220826072@localhost> <944fe7ea3da7707eb90f.1220826078@localhost> <20080907234418.GB26079@one.firstfloor.org> <48C46BCB.2060209@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C46BCB.2060209@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 16:15:55 +0200
-Pavel Machek <pavel@suse.cz> wrote:
 
-> On Mon 2008-09-08 06:40:02, Arjan van de Ven wrote:
-> > On Mon, 8 Sep 2008 15:27:16 +0200
-> > Pavel Machek <pavel@suse.cz> wrote:
-> > > > 
-> > > > ... which nobody uses today.
-> > > > It's not just new syscalls, it's a new glibc api as well at that
-> > > > point.
-> > > 
-> > > ...and new applications, yes. I believe applications should
-> > > explicitely enable slacking timers.
-> > 
-> > timers are slacking today, at least for select() and poll(), and
-> > are a great deal more so than the defaults in this patchkit.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> >> However, unlike early_ioremap(), __acpi_map_table() just maintains 
+> >> a single mapping which gets replaced each call, and has no 
+> >> corresponding unmap function.  Implement this by just removing the 
+> >> previous mapping each time its called.  Unfortunately, this will 
+> >> leave a stray mapping at the end.
+> >
+> > It would be better to just fix the ACPI code to unmap.
 > 
-> Ok, so select()/poll() may default to non-zero slack for legacy apps.
+> I was concerned that would cause lots of cross-arch churn, but of 
+> course the only other relevant architecture is ia64.  I'll prep a 
+> followup patch.
 
-that's whats there
-> 
-> > The great advantage of the prctl() approach (which is usable) over
-> > new system calls and glibc APIs is that it will get used, because
-> > the admin can use it just like he uses the "nice" command, on
-> > existing software.
-> 
-> Yes, it is a great advantage, but it feels like a hack. Maybe it is
-> better done with LD_PRELOAD or something?
+uhm, there's a nasty trap in that route: it can potentially cause a lot 
+of breakage.
 
-that's not working very well in general, and doesn't work across exec
-etc.
+It's not robust to assume that the ACPI code is sane wrt. 
+mapping/unmapping, because it currently simply doesnt rely on robust 
+unmapping (in the linear range).
 
-> 
-> I'd certianly want the applications to specify slack themselves in
-> like 10 years.
+I tried it in the past and i found tons of crappy ACPI code all around 
+that just never unmapped tables. Leaking ACPI maps are hard to find as 
+well, and it can occur anytime during bootup.
 
-We've been talking to Ulrich to figure out what the right API for this
-is (eg how to extend select/poll for this) and I still plan to work on
-this, but both Linus and Ulrich seem to be very ademant that it means
-only few apps will use it (and I agree with that, just look at how many
-apps use linux specific APIs such as sendfile(), linux AIO etc... )
+As a general principle it might be worth fixing those places, and we've 
+hardened up the early-ioremap code for leaks during the PAT rewrite, 
+still please realize that it can become non-trivial and it might cause a 
+lot of unhappy users.
 
+So i'd suggest a different, more carful approach: keep the new code you 
+wrote, but print a WARN()ing if prev_map is not unmapped yet when the 
+next mapping is acquired. That way the ACPI code can be fixed gradually 
+and without breaking existing functionality.
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+There's another complication: ACPI might rely on multiple mappings being 
+present at once, so unmapping the previous one might not be safe. But it 
+_should_ be fine most of the time as __acpi_map_table() is only used 
+inearly init code - and we fixed most of these things in the PAT 
+patchset in any case.
+
+	Ingo
