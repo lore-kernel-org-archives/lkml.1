@@ -1,110 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYIHMms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbYIHMp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbYIHMms (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 08:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYIHMm3
+	id S1751458AbYIHMp0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 08:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYIHMpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 08:42:29 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:34933 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbYIHMm1 (ORCPT
+	Mon, 8 Sep 2008 08:45:17 -0400
+Received: from stinky.trash.net ([213.144.137.162]:41095 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbYIHMpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 08:42:27 -0400
-X-IronPort-AV: E=Sophos;i="4.32,358,1217822400"; 
-   d="scan'208";a="18945368"
-From: Alex Nixon <alex.nixon@citrix.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alex Nixon <alex.nixon@citrix.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 2/2] Xen: Make CPU hotplug functions static
-Date: Mon,  8 Sep 2008 13:43:34 +0100
-Message-Id: <1220877814-4934-2-git-send-email-alex.nixon@citrix.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1220877814-4934-1-git-send-email-alex.nixon@citrix.com>
-References: <>
- <1220877814-4934-1-git-send-email-alex.nixon@citrix.com>
-X-OriginalArrivalTime: 08 Sep 2008 12:42:26.0407 (UTC) FILETIME=[5921BF70:01C911B0]
+	Mon, 8 Sep 2008 08:45:16 -0400
+Message-ID: <48C51E58.7080900@trash.net>
+Date: Mon, 08 Sep 2008 14:45:12 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Keith Owens <kaos@ocs.com.au>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Recent copy of libpcap from CVS
+References: <963.1220876861@ocs10w>
+In-Reply-To: <963.1220876861@ocs10w>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's no need for these functions to be accessed from outside of xen/smp.c
+Keith Owens wrote:
+> Does anybody have a recent copy of the source to libpcap from its CVS
+> repository?
+> 
+> The normal site for libpcap (tcpdump.org) appears to have suffered a
+> filesystem crash and CVS is not working.  I am looking for a version of
+> libpcap that supports data capture for USB interfaces, the code will
+> probably have references to /dev/usbmon or a pcap-usb-linux.c file for
+> Linux.  libpcap0.8_0.9.8-2 is not recent enough.
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/xen/smp.c     |   12 ++++++------
- arch/x86/xen/xen-ops.h |    4 ----
- 2 files changed, 6 insertions(+), 10 deletions(-)
+Dave put a recent copy up at:
 
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index bf51a46..d77da61 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -333,7 +333,7 @@ static void xen_smp_cpus_done(unsigned int max_cpus)
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
--int xen_cpu_disable(void)
-+static int xen_cpu_disable(void)
- {
- 	unsigned int cpu = smp_processor_id();
- 	if (cpu == 0)
-@@ -345,7 +345,7 @@ int xen_cpu_disable(void)
- 	return 0;
- }
- 
--void xen_cpu_die(unsigned int cpu)
-+static void xen_cpu_die(unsigned int cpu)
- {
- 	while (HYPERVISOR_vcpu_op(VCPUOP_is_up, cpu, NULL)) {
- 		current->state = TASK_UNINTERRUPTIBLE;
-@@ -362,7 +362,7 @@ void xen_cpu_die(unsigned int cpu)
- 		alternatives_smp_switch(0);
- }
- 
--void xen_play_dead(void)
-+static void xen_play_dead(void)
- {
- 	play_dead_common();
- 	HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL);
-@@ -370,17 +370,17 @@ void xen_play_dead(void)
- }
- 
- #else /* !CONFIG_HOTPLUG_CPU */
--int xen_cpu_disable(void)
-+static int xen_cpu_disable(void)
- {
- 	return -ENOSYS;
- }
- 
--void xen_cpu_die(unsigned int cpu)
-+static void xen_cpu_die(unsigned int cpu)
- {
- 	BUG();
- }
- 
--void xen_play_dead(void)
-+static void xen_play_dead(void)
- {
- 	BUG();
- }
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 8dbd97f..d7422dc 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -51,10 +51,6 @@ void xen_mark_init_mm_pinned(void);
- 
- void __init xen_setup_vcpu_info_placement(void);
- 
--void xen_play_dead(void);
--void xen_cpu_die(unsigned int cpu);
--int xen_cpu_disable(void);
--
- #ifdef CONFIG_SMP
- void xen_smp_init(void);
- 
--- 
-1.5.4.3
-
+git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
