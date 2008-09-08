@@ -1,120 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYIHHoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbYIHHwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbYIHHoe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 03:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYIHHo1
+	id S1752962AbYIHHwl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 03:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYIHHwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 03:44:27 -0400
-Received: from rrzmta1.rz.uni-regensburg.de ([194.94.155.51]:1297 "EHLO
-	rrzmta1.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750835AbYIHHo0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 03:44:26 -0400
-From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
-Organization: Universitaetsklinikum Regensburg
-To: Robert Hancock <hancockr@shaw.ca>
-Date: Mon, 08 Sep 2008 09:44:06 +0200
+	Mon, 8 Sep 2008 03:52:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50350 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083AbYIHHwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 03:52:30 -0400
+Date: Sun, 7 Sep 2008 21:44:24 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, jbarnes@virtuousgeek.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Rufus &amp; Azrael" <rufus-azrael@numericable.fr>
+Subject: Re: [Bug #11439] [2.6.27-rc4-git4] compilation warnings
+Message-ID: <20080908044424.GB4052@suse.de>
+References: <s3QDdfEDq6.A.wlH.MowwIB@albercik> <Wz8EH5sroeE.A.W7.LpwwIB@albercik>
 MIME-Version: 1.0
-Subject: Re: Q: (2.6.16 & ext3) bad SMP load balancing when writing to ext3 on slow device
-CC: linux-kernel@vger.kernel.org
-Message-ID: <48C4F3E9.20586.6C3971@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-In-reply-to: <48C2C8C3.8080706@shaw.ca>
-References: <fa.iG3Mum/QrNI8vr+DNw6zItBIFJM@ifi.uio.no>, <48C2C8C3.8080706@shaw.ca>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Content-Conformance: HerringScan-0.27/Sophos-P=4.29.0+V=4.29+U=2.07.201+R=05 May 2008+T=405569@20080908.073803Z
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Wz8EH5sroeE.A.W7.LpwwIB@albercik>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6 Sep 2008 at 12:15, Robert Hancock wrote:
-
-> Ulrich Windl wrote:
-> > Hi,
-> > 
-> > while copying large remote files for an USB memory stick formatted with ext3 using 
-> > scp, I noticed a stall in wrie speed. Looking at the system with top I saw:
-> > top - 09:25:25 up 55 days, 23:49,  2 users,  load average: 11.09, 7.41, 4.43
-> > Tasks: 128 total,   1 running, 127 sleeping,   0 stopped,   0 zombie
-> > Cpu0  :  7.6%us,  0.3%sy,  0.0%ni,  0.0%id, 90.4%wa,  0.3%hi,  1.3%si,  0.0%st
-> > Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Cpu3  :  0.0%us,  1.7%sy,  0.0%ni,  0.0%id, 98.3%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Mem:   1028044k total,  1017956k used,    10088k free,    34784k buffers
-> > Swap:  2097140k total,      616k used,  2096524k free,   733100k cached
-> > 
-> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> > 11284 root      18   0 29168 1960 1504 D    2  0.2   0:11.81 scp
-> >   137 root      15   0     0    0    0 D    0  0.0  14:16.59 pdflush
-> > 10865 root      15   0     0    0    0 D    0  0.0   0:00.50 kjournald
-> > 11355 root      15   0     0    0    0 D    0  0.0   0:00.09 pdflush
-> > 11396 root      15   0     0    0    0 D    0  0.0   0:00.12 pdflush
-> > 11397 root      15   0     0    0    0 D    0  0.0   0:00.06 pdflush
-> > 12007 root      15   0     0    0    0 D    0  0.0   0:00.02 pdflush
-> > 12070 root      16   0 23976 2376 1744 R    0  0.2   0:00.28 top
-> > 12294 root      15   0     0    0    0 D    0  0.0   0:00.00 pdflush
-> > 12295 root      15   0     0    0    0 D    0  0.0   0:00.02 pdflush
-> > 12296 root      15   0     0    0    0 D    0  0.0   0:00.02 pdflush
-> > 27490 root      10  -5     0    0    0 D    0  0.0   0:02.93 usb-storage
-> > 
-> > First, it's impressive that a singly copy job can raise the load to above 10, and 
-> > the next thing is that writing to a slow device can make 4 CPUs (actually two with 
-> > hyperthreading) busy. The pdflush daemons are expected to bring dirty blocks onto 
-> > the device, I guess. Does it make any sense to make four CPUs busy with doing so?
+On Sat, Sep 06, 2008 at 11:30:42PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> They're not busy. IO wait means they have nothing to do other than wait 
-> for IO to complete. It's a bit surprising that you get so many pdflush 
-> threads started up, however..
-
-Robert,
-
-back to the question: Assuming the I/O is limited by the controller, communication 
-channel and device, does it ever make any sense to start additional I/O daemons 
-for a device that is already handled by a daemon and doesn't have an alternate 
-communication channel (to make more dirty block go onto the device)? (Assuming no 
-daemon servers more than one device).
-
-Regards,
-Ulrich
-
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> > 
-> > Here's another snapshot showing the assigned CPU also:
-> > 
-> > top - 09:32:18 up 55 days, 23:56,  2 users,  load average: 10.63, 9.99, 6.78
-> > Tasks: 127 total,   1 running, 126 sleeping,   0 stopped,   0 zombie
-> > Cpu0  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,  1.7%id, 98.3%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
-> > Mem:   1028044k total,  1017896k used,    10148k free,    18044k buffers
-> > Swap:  2097140k total,      616k used,  2096524k free,   741616k cached
-> > 
-> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
-> >   137 root      15   0     0    0    0 D    0  0.0  14:16.71 1 pdflush
-> >  4299 root      17   0  5860  752  596 D    0  0.1   9:36.19 1 syslogd
-> > 10865 root      15   0     0    0    0 D    0  0.0   0:00.62 1 kjournald
-> > 11284 root      18   0 29168 1960 1504 D    0  0.2   0:14.76 3 scp
-> > 11355 root      15   0     0    0    0 D    0  0.0   0:00.19 0 pdflush
-> > 11396 root      15   0     0    0    0 D    0  0.0   0:00.24 1 pdflush
-> > 11397 root      15   0     0    0    0 D    0  0.0   0:00.22 1 pdflush
-> > 12294 root      15   0     0    0    0 D    0  0.0   0:00.11 1 pdflush
-> > 12295 root      15   0     0    0    0 D    0  0.0   0:00.14 1 pdflush
-> > 12296 root      15   0     0    0    0 D    0  0.0   0:00.13 1 pdflush
-> > 12591 root      16   0 23976 2376 1744 R    0  0.2   0:00.07 3 top
-> > 27490 root      10  -5     0    0    0 D    0  0.0   0:03.13 3 usb-storage
-> > 
-> > At times like shown, the scp seems to come to a complete halt. (Previously I had 
-> > been using VFAT filesystem on the stick, and copy went much smoother, but the 
-> > filesystem was full, so I tried another filesystem.)
-> > 
-> > Would anybody bee so kind to explain why the system looks like that? I'm not 
-> > subscribed, so please honor the CC:.
-> > 
-> > Regards,
-> > Ulrich Windl
 > 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11439
+> Subject		: [2.6.27-rc4-git4] compilation warnings
+> Submitter	: Rufus &amp; Azrael <rufus-azrael@numericable.fr>
+> Date		: 2008-08-26 9:37 (12 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121974353815440&w=4
+> Handled-By	: Greg KH <gregkh@suse.de>
+> Patch		: http://marc.info/?l=linux-kernel&m=121976424221858&w=4
 
+Jesse, have you queued up this patch to send to Linus for 2.6.27?
 
+thanks,
+
+greg k-h
