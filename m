@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYIHSWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbYIHSWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbYIHSWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbYIHSWD
+	id S1755256AbYIHSWr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYIHSWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:22:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43070 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753390AbYIHSWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:22:01 -0400
-Date: Mon, 8 Sep 2008 20:21:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rambaldi <rambaldi@xs4all.nl>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27-rc5 xen balloon driver warnings
-Message-ID: <20080908182144.GB8536@elte.hu>
-References: <48C0F09C.1000101@xs4all.nl> <48C457DC.9050904@goop.org> <48C546B2.50108@xs4all.nl> <48C558D9.9030006@goop.org> <20080908180126.GB29264@elte.hu> <48C56B99.9020307@goop.org>
+	Mon, 8 Sep 2008 14:22:38 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51713 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbYIHSWh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 14:22:37 -0400
+Message-ID: <48C56D60.7010405@zytor.com>
+Date: Mon, 08 Sep 2008 11:22:24 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C56B99.9020307@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] x86 fixes
+References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Ingo Molnar wrote:
-> > * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >
-> >   
-> >> Rambaldi wrote:
-> >>     
-> >>> I used the complete patch, I had some compile warnings.
-> >>>       
-> >> Well, the compile warning are bad news.  Just use the first hunk.
-> >>
-> >> Ingo, could you send this up to Linus?  It's a subset of a patch you've
-> >> already got in your tree.
-> >>     
-> >
-> > i cherry-picked the whole thing as that's the tested commit. Is that 
-> > fine too?
+Linus Torvalds wrote:
 > 
-> No, because it caused compile-time warnings.  The signatures on sysfs 
-> access functions changed, so that patch will break unless the rest of 
-> the sysfs changes went in.
+> On Mon, 8 Sep 2008, H. Peter Anvin wrote:
+>>  
+>>  config X86_GENERIC
+>> -	bool "Generic x86 support"
+>> +	bool "Generic x86 support" if EMBEDDED
+> 
+> Ok, so after having realized that this seems to be more about a bug with 
+> gcc, I'm really not as convinced any more.
+> 
+> As far as I can tell, there are three issues:
+> 
+>  - "-mtune=core/core2/pentium4/.." is buggy in some gas/gcc versions on 
+>    x86-32, and makes architectural choices.
+> 
+>    Any actual _released_ versions? Maybe it's just a current SVN issue?
 
-ok - i've picked up your narrowed patch into tip/x86/urgent.
+binutils-2.18.50.0.6-5, which is the current version on Fedora 9, does this.
 
-	Ingo
+>    Workaround: don't use it. And yes, X86_GENERIC=y will do that, although 
+>    quite frankly that seems to be dubious in itself. But quite frankly, 
+>    it's a gcc bug, and we should see it as such.
+> 
+>    The better workaround may well be "-Wa,-mtune=generic" as you pointed 
+>    out.
+> 
+>  - We do the CONFIG_P6_NOPL thing ourselves, and we should just stop 
+>    doing that on 32-bit. There simply isn't a good enough reason to do so. 
+>    I already posteed the Kconfig.cpu patch to just stop doing it.
+
+As far as I can tell, -Wa,-mtune=generic *should* work.  It doesn't look 
+to me as if cc1 will generate the long NOPs.  That one we can do 
+unconditionally, of course.
+
+>  - X86_GENERIC means _other_ things too, like doing a 128-bit cacheline 
+>    just so that it won't suck horribly on P4's even if it's otherwise 
+>    tuned for a good microarchitecture.
+> 
+> And they really do seem to be _separate_ issues. Do we really want to tie 
+> these things together under X86_GENERIC? 
+
+Well, the argument in favour would be that if you want a kernel that can 
+cross between different microarchitectures, then you want the "don't 
+suck horribly on any of them".  We can, of course, divide them down 
+further, but is it useful?
+
+The "ideal" way to do any of this would probably to have checkboxes for 
+all the CPUs you want to support and then a drop-down box for the CPU to 
+optimize for.  However, the combinatorics of that would be horrible, and 
+it would be very unlikely we would avoid bugs.
+
+	-hpa
