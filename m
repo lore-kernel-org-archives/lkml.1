@@ -1,150 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYIHLo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbYIHLxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbYIHLo3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYIHLoV
+	id S1753608AbYIHLxi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYIHLxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:44:21 -0400
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:52538 "EHLO
-	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbYIHLoU (ORCPT
+	Mon, 8 Sep 2008 07:53:23 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39971 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752093AbYIHLxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:44:20 -0400
-Date: Mon, 8 Sep 2008 12:44:23 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/4] Reclaim page capture v3
-Message-ID: <20080908114423.GE18694@brain>
-References: <1220610002-18415-1-git-send-email-apw@shadowen.org> <200809081608.03793.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
+	Mon, 8 Sep 2008 07:53:21 -0400
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] Implement generic freeze feature
+Message-Id: <20080908205245t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Mon, 8 Sep 2008 20:52:45 +0900
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809081608.03793.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 04:08:03PM +1000, Nick Piggin wrote:
-> On Friday 05 September 2008 20:19, Andy Whitcroft wrote:
-> > For sometime we have been looking at mechanisms for improving the
-> > availability of larger allocations under load.  One of the options we have
-> > explored is the capturing of pages freed under direct reclaim in order to
-> > increase the chances of free pages coelescing before they are subject to
-> > reallocation by racing allocators.
-> >
-> > Following this email is a patch stack implementing page capture during
-> > direct reclaim.  It consits of four patches.  The first two simply pull
-> > out existing code into helpers for reuse.  The third makes buddy's use
-> > of struct page explicit.  The fourth contains the meat of the changes,
-> > and its leader contains a much fuller description of the feature.
-> >
-> > This update represents a rebase to -mm and incorporates feedback from
-> > KOSAKI Motohiro.  It also incorporates an accounting fix which was
-> > preventing some captures.
-> >
-> > I have done a lot of comparitive testing with and without this patch
-> > set and in broad brush I am seeing improvements in hugepage allocations
-> > (worst case size) success on all of my test systems.  These tests consist
-> > of placing a constant stream of high order allocations on the system,
-> > at varying rates.  The results for these various runs are then averaged
-> > to give an overall improvement.
-> >
-> > 		Absolute	Effective
-> > x86-64		2.48%		 4.58%
-> > powerpc		5.55%		25.22%
-> 
-> These are the numbers for the improvement of hugepage allocation success?
-> Then what do you mean by absolute and effective?
+The ioctls for the generic freeze feature are below.
+o Freeze the filesystem
+  int ioctl(int fd, int FIFREEZE, arg)
+    fd: The file descriptor of the mountpoint
+    FIFREEZE: request code for the freeze
+    arg: Ignored
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-The absolute improvement is the literal change in success percentage,
-the literal percentage of all memory which may be allocated as huge
-pages.  The effective improvement is percentage of the baseline success
-rates that this change represents; for the powerpc results we get some
-20% of memory allocatable without the patches, and 25% with, 25% more
-pages are allocatable with the patches.
+o Unfreeze the filesystem
+  int ioctl(int fd, int FITHAW, arg)
+    fd: The file descriptor of the mountpoint
+    FITHAW: request code for unfreeze
+    arg: Ignored
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-> What sort of constant stream of high order allocations are you talking
-> about? In what "real" situations are you seeing higher order page allocation
-> failures, and in those cases, how much do these patches help?
+Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
+---
+ fs/block_dev.c              |    2 +
+ fs/buffer.c                 |   34 ++++++++++++++++++++++++++++++-
+ fs/ioctl.c                  |   47 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/buffer_head.h |    2 -
+ include/linux/fs.h          |    7 ++++++
+ 5 files changed, 90 insertions(+), 2 deletions(-)
 
-The test case simulates a constant demand for huge pages, at various
-rates.  This is intended to replicate the scenario where a system is
-used with mixed small page and huge page applications, with a dynamic
-huge page pool.  Particularly we are examining the effect of starting a
-very large huge page job on a busy system.  Obviously starting hugepage
-applications depends on hugepage availability as they are not swappable.
-This test was chosen because it both tests the initial large page demand
-and then pushes the system to the limit.
-
-> I must say I don't really like this approach. IMO it might be better to put
-> some sort of queue in the page allocator, so if memory becomes low, then
-> processes will start queueing up and not be allowed to jump the queue and
-> steal memory that has been freed by hard work of a direct reclaimer. That
-> would improve a lot of fairness problems as well as improve coalescing for
-> higher order allocations without introducing this capture stuff.
-
-The problem with queuing all allocators is two fold.  Firstly allocations
-are obviously required for reclaim and those would have to be exempt
-from the queue, and these are as likely to prevent coelesce of pages
-as any other.  Secondly where a very large allocation is requested
-all allocators would be held while reclaim at that size is performed,
-majorly increasing latency for those allocations.  Reclaim for an order
-0 page may target of the order of 32 pages, whereas reclaim for x86_64
-hugepages is 1024 pages minimum.  It would be grosly unfair for a single
-large allocation to hold up normal allocations.
-
-> > x86-64 has a relatively small huge page size and so is always much more
-> > effective at allocating huge pages.  Even there we get a measurable
-> > improvement.  On powerpc the huge pages are much larger and much harder
-> > to recover.  Here we see a full 25% increase in page recovery.
-> >
-> > It should be noted that these are worst case testing, and very agressive
-> > taking every possible page in the system.  It would be helpful to get
-> > wider testing in -mm.
-> >
-> > Against: 2.6.27-rc1-mm1
-> >
-> > Andrew, please consider for -mm.
-> >
-> > -apw
-> >
-> > Changes since V2:
-> >  - Incorporates review feedback from Christoph Lameter,
-> >  - Incorporates review feedback from Peter Zijlstra, and
-> >  - Checkpatch fixes.
-> >
-> > Changes since V1:
-> >  - Incorporates review feedback from KOSAKI Motohiro,
-> >  - fixes up accounting when checking watermarks for captured pages,
-> >  - rebase 2.6.27-rc1-mm1,
-> >  - Incorporates review feedback from Mel.
-> >
-> >
-> > Andy Whitcroft (4):
-> >   pull out the page pre-release and sanity check logic for reuse
-> >   pull out zone cpuset and watermark checks for reuse
-> >   buddy: explicitly identify buddy field use in struct page
-> >   capture pages freed during direct reclaim for allocation by the
-> >     reclaimer
-> >
-> >  include/linux/mm_types.h   |    4 +
-> >  include/linux/page-flags.h |    4 +
-> >  mm/internal.h              |    8 +-
-> >  mm/page_alloc.c            |  263
-> > ++++++++++++++++++++++++++++++++++++++------ mm/vmscan.c                | 
-> > 115 ++++++++++++++++----
-> >  5 files changed, 338 insertions(+), 56 deletions(-)
-> >
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
--apw
+diff -uprN -X linux-2.6.27-rc5.org/Documentation/dontdiff linux-2.6.27-rc5.org/fs/block_dev.c linux-2.6.27-rc5-freeze/fs
+/block_dev.c
+--- linux-2.6.27-rc5.org/fs/block_dev.c	2008-08-29 07:52:02.000000000 +0900
++++ linux-2.6.27-rc5-freeze/fs/block_dev.c	2008-09-05 20:00:29.000000000 +0900
+@@ -285,6 +285,8 @@ static void init_once(void *foo)
+ 	INIT_LIST_HEAD(&bdev->bd_holder_list);
+ #endif
+ 	inode_init_once(&ei->vfs_inode);
++	/* Initialize mutex for freeze. */
++	mutex_init(&bdev->bd_fsfreeze_mutex);
+ }
+ 
+ static inline void __bd_forget(struct inode *inode)
+diff -uprN -X linux-2.6.27-rc5.org/Documentation/dontdiff linux-2.6.27-rc5.org/fs/buffer.c linux-2.6.27-rc5-freeze/fs/bu
+ffer.c
+--- linux-2.6.27-rc5.org/fs/buffer.c	2008-08-29 07:52:02.000000000 +0900
++++ linux-2.6.27-rc5-freeze/fs/buffer.c	2008-09-05 20:23:13.000000000 +0900
+@@ -196,11 +196,25 @@ int fsync_bdev(struct block_device *bdev
+  * happen on bdev until thaw_bdev() is called.
+  * If a superblock is found on this device, we take the s_umount semaphore
+  * on it to make sure nobody unmounts until the snapshot creation is done.
++ * The reference counter (bd_fsfreeze_count) guarantees that only the last
++ * unfreeze process can unfreeze the frozen filesystem actually when multiple
++ * freeze requests arrive simultaneously. It counts up in freeze_bdev() and
++ * count down in thaw_bdev(). When it becomes 0, thaw_bdev() will unfreeze
++ * actually.
+  */
+ struct super_block *freeze_bdev(struct block_device *bdev)
+ {
+ 	struct super_block *sb;
+ 
++	mutex_lock(&bdev->bd_fsfreeze_mutex);
++	if (bdev->bd_fsfreeze_count > 0) {
++		bdev->bd_fsfreeze_count++;
++		sb = get_super(bdev);
++		mutex_unlock(&bdev->bd_fsfreeze_mutex);
++		return sb;
++	}
++	bdev->bd_fsfreeze_count++;
++
+ 	down(&bdev->bd_mount_sem);
+ 	sb = get_super(bdev);
+ 	if (sb && !(sb->s_flags & MS_RDONLY)) {
+@@ -219,6 +233,8 @@ struct super_block *freeze_bdev(struct b
+ 	}
+ 
+ 	sync_blockdev(bdev);
++	mutex_unlock(&bdev->bd_fsfreeze_mutex);
++
+ 	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
+ }
+ EXPORT_SYMBOL(freeze_bdev);
+@@ -230,8 +246,22 @@ EXPORT_SYMBOL(freeze_bdev);
+  *
+  * Unlocks the filesystem and marks it writeable again after freeze_bdev().
+  */
+-void thaw_bdev(struct block_device *bdev, struct super_block *sb)
++int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+ {
++	mutex_lock(&bdev->bd_fsfreeze_mutex);
++	if (!bdev->bd_fsfreeze_count) {
++		mutex_unlock(&bdev->bd_fsfreeze_mutex);
++		return 0;
++	}
++
++	bdev->bd_fsfreeze_count--;
++	if (bdev->bd_fsfreeze_count > 0) {
++		if (sb)
++			drop_super(sb);
++		mutex_unlock(&bdev->bd_fsfreeze_mutex);
++		return 0;
++	}
++
+ 	if (sb) {
+ 		BUG_ON(sb->s_bdev != bdev);
+ 
+@@ -244,6 +274,8 @@ void thaw_bdev(struct block_device *bdev
+ 	}
+ 
+ 	up(&bdev->bd_mount_sem);
++	mutex_unlock(&bdev->bd_fsfreeze_mutex);
++	return 0;
+ }
+ EXPORT_SYMBOL(thaw_bdev);
+ 
+diff -uprN -X linux-2.6.27-rc5.org/Documentation/dontdiff linux-2.6.27-rc5.org/fs/ioctl.c linux-2.6.27-rc5-freeze/fs/ioc
+tl.c
+--- linux-2.6.27-rc5.org/fs/ioctl.c	2008-08-29 07:52:02.000000000 +0900
++++ linux-2.6.27-rc5-freeze/fs/ioctl.c	2008-09-05 20:22:46.000000000 +0900
+@@ -13,6 +13,7 @@
+ #include <linux/security.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
++#include <linux/buffer_head.h>
+ 
+ #include <asm/ioctls.h>
+ 
+@@ -140,6 +141,43 @@ static int ioctl_fioasync(unsigned int f
+ 	return error;
+ }
+ 
++static int ioctl_freeze(struct file *filp)
++{
++	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* If filesystem doesn't support freeze feature, return. */
++	if (sb->s_op->write_super_lockfs == NULL)
++		return -EOPNOTSUPP;
++
++	/* If a blockdevice-backed filesystem isn't specified, return. */
++	if (sb->s_bdev == NULL)
++		return -EINVAL;
++
++	/* Freeze */
++	sb = freeze_bdev(sb->s_bdev);
++	if (IS_ERR(sb))
++		return PTR_ERR(sb);
++	return 0;
++}
++
++static int ioctl_thaw(struct file *filp)
++{
++	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* If a blockdevice-backed filesystem isn't specified, return EINVAL. */
++	if (sb->s_bdev == NULL)
++		return -EINVAL;
++
++	/* Thaw */
++	return thaw_bdev(sb->s_bdev, sb);
++}
++
+ /*
+  * When you add any new common ioctls to the switches above and below
+  * please update compat_sys_ioctl() too.
+@@ -181,6 +219,15 @@ int do_vfs_ioctl(struct file *filp, unsi
+ 		} else
+ 			error = -ENOTTY;
+ 		break;
++
++	case FIFREEZE:
++		error = ioctl_freeze(filp);
++		break;
++
++	case FITHAW:
++		error = ioctl_thaw(filp);
++		break;
++
+ 	default:
+ 		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
+ 			error = file_ioctl(filp, cmd, arg);
+diff -uprN -X linux-2.6.27-rc5.org/Documentation/dontdiff linux-2.6.27-rc5.org/include/linux/buffer_head.h linux-2.6.27-
+rc5-freeze/include/linux/buffer_head.h
+--- linux-2.6.27-rc5.org/include/linux/buffer_head.h	2008-08-29 07:52:02.000000000 +0900
++++ linux-2.6.27-rc5-freeze/include/linux/buffer_head.h	2008-09-05 20:16:12.000000000 +0900
+@@ -170,7 +170,7 @@ void __wait_on_buffer(struct buffer_head
+ wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
+ int fsync_bdev(struct block_device *);
+ struct super_block *freeze_bdev(struct block_device *);
+-void thaw_bdev(struct block_device *, struct super_block *);
++int thaw_bdev(struct block_device *, struct super_block *);
+ int fsync_super(struct super_block *);
+ int fsync_no_super(struct block_device *);
+ struct buffer_head *__find_get_block(struct block_device *bdev, sector_t block,
+diff -uprN -X linux-2.6.27-rc5.org/Documentation/dontdiff linux-2.6.27-rc5.org/include/linux/fs.h linux-2.6.27-rc5-freez
+e/include/linux/fs.h
+--- linux-2.6.27-rc5.org/include/linux/fs.h	2008-08-29 07:52:02.000000000 +0900
++++ linux-2.6.27-rc5-freeze/include/linux/fs.h	2008-09-05 20:18:21.000000000 +0900
+@@ -226,6 +226,8 @@ extern int dir_notify_enable;
+ #define BMAP_IOCTL 1		/* obsolete - kept for compatibility */
+ #define FIBMAP	   _IO(0x00,1)	/* bmap access */
+ #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
++#define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
++#define FITHAW		_IOWR('X', 120, int)	/* Thaw */
+ 
+ #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
+ #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
+@@ -574,6 +576,11 @@ struct block_device {
+ 	 * care to not mess up bd_private for that case.
+ 	 */
+ 	unsigned long		bd_private;
++
++	/* The counter of freeze processes */
++	int			bd_fsfreeze_count;
++	/* Mutex for freeze */
++	struct mutex		bd_fsfreeze_mutex;
+ };
+ 
+ /*
