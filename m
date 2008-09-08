@@ -1,43 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYIHOrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYIHOtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbYIHOrn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 10:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYIHOre
+	id S1754068AbYIHOtD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 10:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbYIHOsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 10:47:34 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:44375 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbYIHOrd (ORCPT
+	Mon, 8 Sep 2008 10:48:53 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:42877 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750882AbYIHOsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 10:47:33 -0400
-Date: Mon, 8 Sep 2008 15:45:59 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Paulo Marques <pmarques@grupopie.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: -mm: please drop h8300 kallsyms patch
-Message-ID: <Pine.LNX.4.64.0809081521270.19968@blonde.site>
+	Mon, 8 Sep 2008 10:48:53 -0400
+Date: Mon, 8 Sep 2008 10:47:47 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext4: miss an unlock in ext4_check_descriptors()
+Message-ID: <20080908144747.GI8161@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Li Zefan <lizf@cn.fujitsu.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <48C4D54E.60909@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C4D54E.60909@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please drop h8300-kallsyms-exclude-local-symbols.patch from mm for now.
+Thanks, I've applied it to the ext4 patch queue.
 
-I'm all in favour of its intent, cutting local .Lfoo symbols out of the
-the symbol table.  But at present it's cutting out all .symbols - which
-is very unfriendly to powerpc, whose every function is a .symbol!
-The undotted symbol being the descriptor that points to the function.
-
-My 2.6.27-rc5 powerpc System.map doesn't actually contain any .Lsymbols,
-but I expect someone else's does: I doubt excluding .Lsymbols is the
-right answer, though it would be an improvement.
-
-Maybe Paulo or Sam has a grasp on what the different architectures'
-toolchains do, and can suggest the right patch.
-
-Thanks,
-Hugh
+						- Ted
