@@ -1,50 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYIHJzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbYIHJ4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbYIHJzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 05:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYIHJzT
+	id S1753580AbYIHJ4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 05:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbYIHJzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 05:55:19 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:54242 "EHLO mo10.iij4u.or.jp"
+	Mon, 8 Sep 2008 05:55:20 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:48721 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751945AbYIHJzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 05:55:17 -0400
+	id S1752078AbYIHJzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 05:55:18 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@redhat.com, tony.luck@intel.com,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 2/3] swiotlb: use unmap_single instead of swiotlb_unmap_single in swiotlb_free_coherent
-Date: Mon,  8 Sep 2008 18:53:49 +0900
-Message-Id: <1220867630-1995-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 3/3] swiotlb: add is_swiotlb_buffer helper function
+Date: Mon,  8 Sep 2008 18:53:50 +0900
+Message-Id: <1220867630-1995-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.4.2
-In-Reply-To: <1220867630-1995-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1220867630-1995-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1220867630-1995-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
  <1220867630-1995-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1220867630-1995-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We don't need any check in swiotlb_unmap_single here. unmap_single is
-appropriate.
+This adds is_swiotlb_buffer() helper function to see whether a buffer
+belongs to the swiotlb buffer or not.
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- lib/swiotlb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ lib/swiotlb.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 2fb485d..bf61c73 100644
+index bf61c73..b5f5d11 100644
 --- a/lib/swiotlb.c
 +++ b/lib/swiotlb.c
-@@ -513,7 +513,7 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+@@ -283,6 +283,11 @@ address_needs_mapping(struct device *hwdev, dma_addr_t addr)
+ 	return (addr & ~mask) != 0;
+ }
+ 
++static int is_swiotlb_buffer(char *addr)
++{
++	return addr >= io_tlb_start && addr < io_tlb_end;
++}
++
+ /*
+  * Allocates bounce buffer and returns its kernel virtual address.
+  */
+@@ -508,8 +513,7 @@ swiotlb_free_coherent(struct device *hwdev, size_t size, void *vaddr,
+ 		      dma_addr_t dma_handle)
+ {
+ 	WARN_ON(irqs_disabled());
+-	if (!(vaddr >= (void *)io_tlb_start
+-                    && vaddr < (void *)io_tlb_end))
++	if (!is_swiotlb_buffer(vaddr))
  		free_pages((unsigned long) vaddr, get_order(size));
  	else
  		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
--		swiotlb_unmap_single (hwdev, dma_handle, size, DMA_TO_DEVICE);
-+		unmap_single(hwdev, vaddr, size, DMA_TO_DEVICE);
- }
+@@ -602,7 +606,7 @@ swiotlb_unmap_single_attrs(struct device *hwdev, dma_addr_t dev_addr,
+ 	char *dma_addr = bus_to_virt(dev_addr);
  
- static void
+ 	BUG_ON(dir == DMA_NONE);
+-	if (dma_addr >= io_tlb_start && dma_addr < io_tlb_end)
++	if (is_swiotlb_buffer(dma_addr))
+ 		unmap_single(hwdev, dma_addr, size, dir);
+ 	else if (dir == DMA_FROM_DEVICE)
+ 		dma_mark_clean(dma_addr, size);
+@@ -632,7 +636,7 @@ swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
+ 	char *dma_addr = bus_to_virt(dev_addr);
+ 
+ 	BUG_ON(dir == DMA_NONE);
+-	if (dma_addr >= io_tlb_start && dma_addr < io_tlb_end)
++	if (is_swiotlb_buffer(dma_addr))
+ 		sync_single(hwdev, dma_addr, size, dir, target);
+ 	else if (dir == DMA_FROM_DEVICE)
+ 		dma_mark_clean(dma_addr, size);
+@@ -663,7 +667,7 @@ swiotlb_sync_single_range(struct device *hwdev, dma_addr_t dev_addr,
+ 	char *dma_addr = bus_to_virt(dev_addr) + offset;
+ 
+ 	BUG_ON(dir == DMA_NONE);
+-	if (dma_addr >= io_tlb_start && dma_addr < io_tlb_end)
++	if (is_swiotlb_buffer(dma_addr))
+ 		sync_single(hwdev, dma_addr, size, dir, target);
+ 	else if (dir == DMA_FROM_DEVICE)
+ 		dma_mark_clean(dma_addr, size);
 -- 
 1.5.5.GIT
 
