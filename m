@@ -1,72 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYIHVhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755642AbYIHVne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYIHVhv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 17:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYIHVhn
+	id S1755642AbYIHVne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 17:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754340AbYIHVnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 17:37:43 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:59873 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751785AbYIHVhn (ORCPT
+	Mon, 8 Sep 2008 17:43:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48645 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754326AbYIHVnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 17:37:43 -0400
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 8 Sep 2008 17:43:25 -0400
+Message-ID: <48C59C6F.2000408@zytor.com>
+Date: Mon, 08 Sep 2008 14:43:11 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: linux@sandersweb.net
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Parisc List <linux-parisc@vger.kernel.org>
-In-Reply-To: <200809081429.57805.david-b@pacbell.net>
-References: <1220889205.8074.16.camel@localhost.localdomain>
-	 <200809081213.37705.david-b@pacbell.net>
-	 <1220905689.8074.68.camel@localhost.localdomain>
-	 <200809081429.57805.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Mon, 08 Sep 2008 16:37:40 -0500
-Message-Id: <1220909860.8074.77.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+       x86 maintainers <x86@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       kbuild devel <kbuild-devel@lists.sourceforge.net>
+Subject: Re: [git pull] x86 fixes
+References: <200809081932.m88JWVZG013061@askone.hos.anvin.org> <200809081634.24257.linux@sandersweb.net>
+In-Reply-To: <200809081634.24257.linux@sandersweb.net>
+Content-Type: multipart/mixed;
+ boundary="------------000500020409050307070907"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-08 at 14:29 -0700, David Brownell wrote:
-> > No, it's a regression.  ...  This turns off the ability to select
-> > GEN_RTC if you've said yes to RTC_CLASS.  Since RTC_CLASS is currently
-> > unsupported on parisc, we need to fix that by making the RTC_CLASS
-> > option unselectable on parisc.
+This is a multi-part message in MIME format.
+--------------000500020409050307070907
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+David Sanders wrote:
+> On Monday 08 September 2008 15:32, H. Peter Anvin wrote:
+>> diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
+>> index e372b58..b72b4f7 100644
+>> --- a/arch/x86/Makefile_32.cpu
+>> +++ b/arch/x86/Makefile_32.cpu
+>> @@ -45,3 +45,8 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
+>>  # cpu entries
+>>  cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
+> Peter, I'm getting this error:
+> as: unrecognized option `-mtune=generic32'
+> I have binutils 2.17.
+> David
 > 
-> So you affirmed that there was no override, AND that it was
-> previously treated as junk DNA (ignored).  So just what were
-> you disagreeing with me about??
 
-The fact that the override you put in to disable GEN_RTC is causing a
-regression.
+Does this patch fix that for you?
 
-> I have a hard time calling something a regression which
-> was never really a supported configuration.  And which
-> still *JUST WORKS* in those defconfigs ... given all that,
-> it's hard to argue that something is actually broken.
+	-hpa
 
-On 2.6.25 the parisc users got a working realtime clock.  On 2.6.26 they
-can find themselves without one using the same .config file.  This is
-the regression.  The fix is to disable RTC_CLASS until we have it
-working for parisc.
+--------------000500020409050307070907
+Content-Type: text/x-patch;
+ name="0001-kbuild-use-c-instead-of-S-in-cc-option-and-cc-opt.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-kbuild-use-c-instead-of-S-in-cc-option-and-cc-opt.patch"
 
-> Kconfig is not about letting Aunt Tillie configure kernels
-> without being able to shoot herself in the foot.  That
-> discussion has been had (at length!) before.  Result, we
-> have a much better kernel config framework ... but still
-> don't facilitate "Kconfig-4-dummiez" audiences.
+>From b3e54432266565b6d844d6fa3766ba5518173a8e Mon Sep 17 00:00:00 2001
+From: H. Peter Anvin <hpa@zytor.com>
+Date: Mon, 8 Sep 2008 14:41:53 -0700
+Subject: [PATCH] kbuild: use -c instead of -S in cc-option and cc-option-yn
 
-Kconfig is complex enough that we try not to trip users up by hiding
-things, especially when it's the wrong thing to hide on this platform.
-If an option specifically doesn't work or causes harm on a platform, it
-shouldn't be selectable on that platform.  This isn't Aunt Tillieism,
-this is called common sense.
+Use -c instead of -S in cc-option and cc-option-yn, so we can probe
+options related to the assembler.
 
-James
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ scripts/Kbuild.include |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+index d64e6ba..982dcae 100644
+--- a/scripts/Kbuild.include
++++ b/scripts/Kbuild.include
+@@ -105,12 +105,12 @@ as-instr = $(call try-run,\
+ # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
+ 
+ cc-option = $(call try-run,\
+-	$(CC) $(KBUILD_CFLAGS) $(1) -S -xc /dev/null -o "$$TMP",$(1),$(2))
++	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",$(1),$(2))
+ 
+ # cc-option-yn
+ # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
+ cc-option-yn = $(call try-run,\
+-	$(CC) $(KBUILD_CFLAGS) $(1) -S -xc /dev/null -o "$$TMP",y,n)
++	$(CC) $(KBUILD_CFLAGS) $(1) -c -xc /dev/null -o "$$TMP",y,n)
+ 
+ # cc-option-align
+ # Prefix align with either -falign or -malign
+-- 
+1.5.5.1
 
 
+--------------000500020409050307070907--
