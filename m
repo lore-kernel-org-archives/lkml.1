@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbYIHQ6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYIHQ7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbYIHQ6c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYIHQ6X
+	id S1754479AbYIHQ7s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 12:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYIHQ7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:58:23 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:34225 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752126AbYIHQ6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:58:23 -0400
-Subject: Re: [RFC v3][PATCH 8/9] File descriprtors (dump)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-In-Reply-To: <48C35DFC.9080903@cs.columbia.edu>
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0809040405250.5982@takamine.ncl.cs.columbia.edu>
-	 <1220553660.23386.60.camel@nimitz>  <48C35DFC.9080903@cs.columbia.edu>
-Content-Type: text/plain
-Date: Mon, 08 Sep 2008 09:57:42 -0700
-Message-Id: <1220893062.23386.176.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Sep 2008 12:59:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752706AbYIHQ7j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 12:59:39 -0400
+Date: Mon, 8 Sep 2008 09:59:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: david@lang.hm
+cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
+       linux@sandersweb.net, linux-kernel@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+In-Reply-To: <alpine.DEB.1.10.0809080925400.10413@asgard.lang.hm>
+Message-ID: <alpine.LFD.1.10.0809080954370.3117@nehalem.linux-foundation.org>
+References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org>
+ <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com> <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org>
+ <alpine.DEB.1.10.0809080925400.10413@asgard.lang.hm>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-09-07 at 00:52 -0400, Oren Laadan wrote:
-> >> +	for (i = 0; i < fdt->max_fds; i++) {
-> >> +		if (!fcheck_files(files, i)
-> >> 			continue;
-> >> 		if (n == max) {
-> >> +			spin_unlock(&files->file_lock);
-> >> +			kfree(fdlist);
-> >> +			max *= 2;
-> >> +			if (max < 0) {	/* overflow ? */
-> >> +				n = -EMFILE;
-> >> +				break;
-> >> +			}
-> >> +			goto repeat;
-> >> +		}
-> >> +		fdlist[n++] = i;
-> >> +	}
-> > 
-> > My gut also says that there has to be a better way to find a good size
-> > for fdlist() than growing it this way.  
+
+
+On Mon, 8 Sep 2008, david@lang.hm wrote:
 > 
-> Can you suggest a better way to find the open files of a task ?
-> 
-> Either I loop twice (loop to count, then allocate, then loop to fill),
-> or optimistically try an initial guess and expand on demand.
+> I always understood the CPU selection to be "this CPU and ones compatible with
+> it will work, others won't" unless generic was enabled.
 
-I'd suggest the double loop.  I think it is much more straightforward
-code.
+No.
 
-> >> +	hh->f_version = file->f_version;
-> >> +	/* FIX: need also file->f_owner */
-> >> +
-> >> +	switch (inode->i_mode & S_IFMT) {
-> >> +	case S_IFREG:
-> >> +		fd_type = CR_FD_FILE;
-> >> +		break;
-> >> +	case S_IFDIR:
-> >> +		fd_type = CR_FD_DIR;
-> >> +		break;
-> >> +	case S_IFLNK:
-> >> +		fd_type = CR_FD_LINK;
-> >> +		break;
-> >> +	default:
-> >> +		return -EBADF;
-> >> +	}
-> > 
-> > Why don't we just store (and use) (inode->i_mode & S_IFMT) in fd_type
-> > instead of making our own types?
-> 
-> There will be others that cannot be inferred from inode->i_mode,
-> e.g. CR_FD_FILE_UNLINKED, CR_FD_DIR_UNLINKED, CR_FD_SOCK_UNIX,
-> CR_FD_SOCK_INET_V4, CR_FD_EVENTPOLL etc.
+Read the help text.. 
 
-I think we have a basically different philosophy on these.  I'd say
-don't define them unless absolutely necessary.  The less you spell out
-explicitly, the more flexibility you have in the future, and the less
-code you spend doing simple conversions.
+Yes, we care about features that MATTER. But if compiles start using 
+features that don't really matter, and make a specific kernel _too_ 
+specific, then we need to reign in the madness.
 
-Anyway, I see why you're doing it this way.
+IOW, it's a balance. On one hand, yes, the uarch makes sense. On the 
+other, it's just stupid to have to worry about details that don't 
+realistically make any difference at all - except whether the machine 
+works or not.
 
--- Dave
+And yes, we could just put this up as a Virtual PC bug. It clearly is. But 
+in the end, it _still_ all boils down to a balance between "do we actually 
+win anything by using NOPL statically" vs "do we lose anything by being 
+too damn inconvenient".
 
+		Linus
