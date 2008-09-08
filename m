@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYIHSqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbYIHSuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbYIHSqe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYIHSq0
+	id S1754486AbYIHSuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYIHSuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:46:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43812 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbYIHSqZ (ORCPT
+	Mon, 8 Sep 2008 14:50:07 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:4493 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbYIHSuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:46:25 -0400
-Date: Mon, 8 Sep 2008 11:46:19 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080908114619.741b6786@infradead.org>
-In-Reply-To: <48C56D60.7010405@zytor.com>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>
-	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
-	<48C56D60.7010405@zytor.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Sep 2008 14:50:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=kF3b9q3Y6d3TdQtBnkL05tV7YzIcIUUzRAfIv5WIvHWdZ4+X62Q4XbGDGsw8qcNnH0
+         mbkKvBIkoqq4jv2r14wj7Fs3t0KJcc/+L0wmp+QzfY70CrRegcaIFJuJ1oV/OHgxUeKQ
+         qzd+mtU5wBxh5R50PhVSK5laB4b5LXsYP462A=
+Message-ID: <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com>
+Date: Mon, 8 Sep 2008 20:50:03 +0200
+From: "Bert Wesarg" <bert.wesarg@googlemail.com>
+To: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+Subject: Re: [ANNOUNCE] Guilt v0.31
+Cc: "Git Mailing List" <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       guilt@lists.josefsipek.net, "Brandon Philips" <brandon@ifup.org>
+In-Reply-To: <20080908184322.GE27550@josefsipek.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080908135244.GB27550@josefsipek.net>
+	 <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com>
+	 <20080908184322.GE27550@josefsipek.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Sep 2008 11:22:24 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
+On Mon, Sep 8, 2008 at 20:43, Josef 'Jeff' Sipek <jeffpc@josefsipek.net> wrote:
+> On Mon, Sep 08, 2008 at 08:33:23PM +0200, Bert Wesarg wrote:
+>> Hi,
+>>
+>> On Mon, Sep 8, 2008 at 15:52, Josef 'Jeff' Sipek <jeffpc@josefsipek.net> wrote:
+>> > Guilt v0.31 is available for download.
+>>
+>> Is it possible to include pre-generated docs in the tarballs?
+>>
+>> I downloaded one and run 'make doc' and get these messages:
+>>
+>> fatal: Not a git repository
+>>
+>> which looks like it comes from this line in Documentation/Makefile:
+>>
+>> VERSION=$(shell git describe)
+>>
+>> Its not critical, but looks awkward.
+>
+> 1) I already commit generated man pages for each release - on the man branch
+>   (there's also html branch with the html-formated man pages).
+>
+> 2) I'm aware of the git error you saw, and it is on my todo list
+>
+> 3) I just checked the git tarballs, and they don't include man pages either.
+>   Should I include the manpages in the source tarball, or should I just
+>   create another tarball with the manpages? (The git error will get fixed
+>   regardless - that's the only invocation of git during the manpage build
+>   process, and it's there only to get a nice looking version number to
+>   include in the manpages.)
+I must admit, that I don't like these extra tarballs with docs. I
+always expect, that the manpages are nicely installed if I type 'make
+install' (or at least with a install-doc target). But I need to
+download this extra package, and extract it to the right place, there
+is no Makefile whatsoever. In case of git its really annoying, because
+the help mechanism is relying on the manpages (i.e. git help <cmd> or
+git <cmd> --help, but you know this).
 
-> 
-> The "ideal" way to do any of this would probably to have checkboxes
-> for all the CPUs you want to support and then a drop-down box for the
-> CPU to optimize for.  However, the combinatorics of that would be
-> horrible, and it would be very unlikely we would avoid bugs.
-
-the ideal case would be "support them all"
-
-the second-most ideal case would be "support all as of <year>" I suppose
-
-a third one for advanced users not distros would be "support only
-<vendor>" since that would be the biggest part of code to drop
-
-between models of the same vendor.. not too much to win there.
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks
+Bert
+>
+> Josef 'Jeff' Sipek.
