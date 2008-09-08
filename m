@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbYIHWji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbYIHWmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbYIHWji (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 18:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbYIHWj1
+	id S1755459AbYIHWmb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 18:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYIHWmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 18:39:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58863 "EHLO
+	Mon, 8 Sep 2008 18:42:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55933 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755768AbYIHWj0 (ORCPT
+	by vger.kernel.org with ESMTP id S1753828AbYIHWmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 18:39:26 -0400
-Date: Mon, 8 Sep 2008 15:39:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: linux-kernel@vger.kernel.org, kirill@shutemov.name, xemul@openvz.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] Allow recursion in binfmt_script and binfmt_misc
-Message-Id: <20080908153921.94780d5c.akpm@linux-foundation.org>
-In-Reply-To: <1220713795-5313-2-git-send-email-kirill@shutemov.name>
-References: <20080902110648.GA5027@localhost.localdomain>
-	<1220713795-5313-1-git-send-email-kirill@shutemov.name>
-	<1220713795-5313-2-git-send-email-kirill@shutemov.name>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Sep 2008 18:42:22 -0400
+Date: Mon, 8 Sep 2008 15:42:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux@sandersweb.net,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+In-Reply-To: <48C57884.30607@zytor.com>
+Message-ID: <alpine.LFD.1.10.0809081539280.3117@nehalem.linux-foundation.org>
+References: <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org>
+ <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com> <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org> <20080908170029.GP26079@one.firstfloor.org>
+ <alpine.LFD.1.10.0809081000490.3117@nehalem.linux-foundation.org> <48C55C0A.7070203@zytor.com> <alpine.LFD.1.10.0809081028590.3117@nehalem.linux-foundation.org> <48C57884.30607@zytor.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat,  6 Sep 2008 18:09:55 +0300
-"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 
-> binfmt_script and binfmt_misc disallow recursion to avoid stack overflow
-> using sh_bang and misc_bang. It causes problem in some cases:
-> 
-> $ echo '#!/bin/ls' > /tmp/t0
-> $ echo '#!/tmp/t0' > /tmp/t1
-> $ echo '#!/tmp/t1' > /tmp/t2
-> $ chmod +x /tmp/t*
-> $ /tmp/t2
-> zsh: exec format error: /tmp/t2
-> 
-> Similar problem with binfmt_misc.
-> 
-> This patch introduces field 'recursion_depth' into struct linux_binprm
-> to track recursion level in binfmt_misc and binfmt_script. If recursion
-> level more then BINPRM_MAX_RECURSION it generates -ENOEXEC.
-> 
+
+On Mon, 8 Sep 2008, H. Peter Anvin wrote:
 >
-> ...
->
-> --- a/include/linux/binfmts.h
-> +++ b/include/linux/binfmts.h
-> @@ -34,8 +34,7 @@ struct linux_binprm{
->  #endif
->  	struct mm_struct *mm;
->  	unsigned long p; /* current top of mem */
-> -	unsigned int sh_bang:1,
-> -		     misc_bang:1;
-> +	unsigned char recursion_depth;
->  #ifdef __alpha__
->  	unsigned int taso:1;
->  #endif
+> OK, digging some more into this garbage...
+> 
+> Apparently the situation isn't quite as dire as it first seems.
+> At least gcc 4.3.0 doesn't actually pass -mtune= to gas; it just drops the
+> option on the floor.  This means this bug isn't manifest when calling from gcc
+> (as opposed to invoking as directly.)
 
-That's a strange position in which to add the new field.  It will prevent
-the compiler from using the same word for sh_bang, misc_bang and taso.
+Ok, goodie. And we don't pass the -mtune=xyz option when we use gas 
+directly, so we should be all ok.
 
-I fixed that up while fixing linux-next rejects.
+> However, I would still like to push the following patch to be on the safe
+> side, ok?
 
-> @@ -61,6 +60,7 @@ struct linux_binprm{
->  #define BINPRM_FLAGS_EXECFD_BIT 1
->  #define BINPRM_FLAGS_EXECFD (1 << BINPRM_FLAGS_EXECFD_BIT)
->  
-> +#define BINPRM_MAX_RECURSION 4
+I have no problem with it, with the fix to actually assemble things. But I 
+also don't think it's a huge deal (ie not 2.6.27 stuff - we don't know 
+if some odd version of as does something odd with -mtune=generic, or 
+whether this can interact oddly with some version of gcc perhaps passing 
+the _correct_ -mtune to the assembler?).
 
-Why "4"?
-
-Why make linux_binprm.recursion_depth a u8?  There would be 
-practically (or actually) zero cost to making it 32-bit.
-Admittedly a depth >256 would be a bit odd, but did we gain 
-anything from this restriction?
+		Linus
