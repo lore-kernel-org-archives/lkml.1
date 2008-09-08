@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYIHLT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbYIHLXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbYIHLT5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIHLTt
+	id S1753623AbYIHLXb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYIHLXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:19:49 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:30562 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751913AbYIHLTs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:19:48 -0400
+	Mon, 8 Sep 2008 07:23:23 -0400
+Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:43798 "HELO
+	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752254AbYIHLXX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 07:23:23 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Dl/bv/l+/8dt35VMfl+kJen+O0SLGMXjLrFnauX4EhfIU5ErAK/iWwCTPWB1j7Um6EV8SQmshvX5QPLHuJKnxyGYZnQbj2FTwB+bPZkX4nAo+VpWqho+tgPQ58JqdbScb88QHRJuarE26o2FxcubXCdAPw3IfLBXLz7VEd371U0=  ;
-X-YMail-OSG: ic62vuQVM1nwuyGtwE6lMShWyonrJ2vb1afMPohbbSFHGO5e85vl3VeYGVLex.2Lg64EcSiC_tv8Fz0zFwKLu5xXTYsAMsZOAFd8hb7rBwCy7yG2ryZEQvmjEjES7ZOamUw-
+  b=RTpg0b+ITlYIC0egiBBB8YCyI7lIZnfax4JrgEW2NCglilbFtHctKo1TmmTaXF1I29weoHge484nSMZ6J5McOpHIdqXc0Y1aaicykH0c71kB5NYV8jBjWg013JbKHbOBv8F7mKjUSSTfruB5iUVXtZvWr5eKBVp3SYrnBrA9LGQ=  ;
+X-YMail-OSG: zdjbr4EVM1noRqB1vlqrCoTJAeI7sfXeEqnWES5_i7tZFp795DRRFi1ZHLyptgkvdeEUrpNd3eTZnzHEi8od.TV_AXZHyJu8Fo0Nf3UvMMo.EcZIwzjWH8Lw0Tjm7sqM.EM-
 X-Yahoo-Newman-Property: ymail-3
 From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
-Date: Mon, 8 Sep 2008 21:19:32 +1000
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [PATCH 0 of 3] Low memory corruption detection and workaround
+Date: Mon, 8 Sep 2008 21:23:04 +1000
 User-Agent: KMail/1.9.5
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Gary Hade <garyhade@us.ibm.com>,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <20080905215452.GF11692@us.ibm.com> <200809081946.31521.nickpiggin@yahoo.com.au> <20080908103015.GE26079@one.firstfloor.org>
-In-Reply-To: <20080908103015.GE26079@one.firstfloor.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Hugh Dickens <hugh@veritas.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
+References: <patchbomb.1220777491@localhost> <48C3F237.1020503@tuffmail.co.uk>
+In-Reply-To: <48C3F237.1020503@tuffmail.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200809082119.32725.nickpiggin@yahoo.com.au>
+Message-Id: <200809082123.04780.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 September 2008 20:30, Andi Kleen wrote:
-> On Mon, Sep 08, 2008 at 07:46:30PM +1000, Nick Piggin wrote:
-> > On Monday 08 September 2008 19:36, Andi Kleen wrote:
-> > > > You use non-linear mappings for the kernel, so that kernel data is
-> > > > not tied to a specific physical address. AFAIK, that is the only way
-> > > > to really do it completely (like the fragmentation problem).
-> > >
-> > > Even with that there are lots of issues, like keeping track of
-> > > DMAs or handling executing kernel code.
+On Monday 08 September 2008 01:24, Alan Jenkins wrote:
+> Jeremy Fitzhardinge wrote:
+> > Hi Ingo,
 > >
-> > Right, but the "high level" software solution is to have nonlinear
-> > kernel mappings. Executing kernel code should not be so hard because
-> > it could be handled just like executing user code (ie. the CPU that
-> > is executing will subsequently fault and be blocked until the
-> > relocation is complete).
->
-> First blocking arbitary code is hard. There is some code parts
-> which are not allowed to block arbitarily. Machine check or NMI
-> handlers come to mind, but there are likely more.
+> > This series implements a check and workaround for memory corruption in
+> > low memory.
+> >
+> > The first patch adds the basic mechanism.  The second adds some
+> > enchancements from Hugh, namely periodic scanning for badness.  The
+> > third tidies the user interface up by adding a proper Kconfig option
+> > and several kernel command-line parameters to enable the feature and
+> > control the amount of memory it scans and how often.  It also uses a
+> > WARN() with the intention of getting any output into ksymoops.org.
+> >
+> > I've tested it as far as I can, but none of my systems seem to exhibit
+> > this type of corruption so I haven't seen the failure case output.  I
+> > hope Alan and Rafał can test this version of the patch and report it
+> > does the expected thing.
+> >
+> > [ Hugh - I took the liberty of splitting your patch up into a delta on
+> >   top of mine, moving the pure bugfixes into my base patch, and
+> >   putting your additional code into the new patch From you with your
+> >   sign-off from the original patch, and adding my own sob to reflect
+> >   the changes I made.  I hope you don't mind. ]
 
-Sorry, by "block", I really mean spin I guess. I mean that the CPU will
-be forced to stop executing due to the page fault during this sequence:
+Why not high memory as well? We put page tables there too...
 
-for prot RO:
-alloc new page
-memcpy(new, old)
-ptep_clear_flush(ptep)         <--- from here
-set_pte(ptep, newpte)          <--- until here
-
-for prot RW, the window also would include the memcpy, however if that
-adds too much latency for execute/reads, then it can be mapped RO first,
-then memcpy, then flushed and switched.
- 
-
-> Then that would be essentially a hypervisor or micro kernel approach.
-
-What would be? Blocking in interrupts? Or non-linear kernel mapping in
-general? Nonlinear kernel mapping I don't think anyone disputes is the
-only way to defragment (for unplug or large allocations) arbitrary
-physical memory with any sort of guarantee. In the future if TLB costs
-grow very much larger, I think this might be worth considering.
-
-But until that becomes inevitable, I really don't want to hack the VM
-with crap like transparent variable order mappings etc. but rather
-"encourage" CPU manufacturers to have big fast TLBs :)
-
-
-> e.g. Xen does that already kind of, but even there it would
-> be quite hard to do fully in a general way. And for hardware hotplug
-> only the fully generally way is actually useful unfortunately.
-
-Yeah I don't really get the hardware hotplug thing. For reliability or
-anything it should all be done in hardware (eg. warm/hot spare memory
-module). For power I guess there is some argument, but I would prefer
-to wait the trends out longer before committing to something big: non
-volatile ram replacement for dram for example might be achieved in
-future.
-
-But if anybody disagrees, they are sure free to implement non-linear
-kernel mappings and physical defragmentation and shut me up with
-real numbers!
-
+(rant: why can we still buy non-ECC memory?)
