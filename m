@@ -1,148 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYIHNrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYIHNtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbYIHNrX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbYIHNq7
+	id S1754300AbYIHNtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYIHNsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:46:59 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:50939 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754527AbYIHNq6 (ORCPT
+	Mon, 8 Sep 2008 09:48:52 -0400
+Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:46935 "HELO
+	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751713AbYIHNsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:46:58 -0400
-Date: Mon, 8 Sep 2008 14:46:56 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Christer Weinigel <christer@weinigel.se>
-Cc: ben-linux@fluff.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/3] s3cmci - call pio_tasklet from IRQ
-Message-ID: <20080908134656.GB30478@trinity.fluff.org>
-References: <20080908124848.541807034@zoo.weinigel.se> <20080908124909.554600509@zoo.weinigel.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 8 Sep 2008 09:48:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=G7y2a6xmaP+fwOhyC93LaunjRVnAY5Jq7B1uTMCYxt8YE04PY0bpJVlsR5406cK4+zkuQK0wBWC0tzVMmXtGc3tQ+l06e3b0vBIrtNQD36F/KIxdXrNWXqzyS2ahRanK3gt+yjMs+8Ke0I3UbOv38fJITWtZiQ5rjnefdlF/IUU=  ;
+X-YMail-OSG: dvxnwCEVM1n3yMFIrCsFONbZC5gAvJDT2wHdZRWyVUze1Bg3Ub4AKeDg6r3UemSFFpvqKbiul6ntnyaTuPrEM_Q0sIJI5PQcrwHyAhjh4r8fP4r9NkyrcZnX0zGGKDlz5Fc-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
+Date: Mon, 8 Sep 2008 23:48:33 +1000
+User-Agent: KMail/1.9.5
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <20080905215452.GF11692@us.ibm.com> <200809082119.32725.nickpiggin@yahoo.com.au> <20080908113025.GF26079@one.firstfloor.org>
+In-Reply-To: <20080908113025.GF26079@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080908124909.554600509@zoo.weinigel.se>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+Message-Id: <200809082348.34674.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 02:48:50PM +0200, Christer Weinigel wrote:
-> Scheduling a tasklet to perform the pio transfer introduces a bit of
-> extra processing, just call pio_tasklet directly from the interrupt
-> instead.  Writing up to 64 bytes to a FIFO is probably uses less CPU
-> than scheduling a tasklet anyway.
+On Monday 08 September 2008 21:30, Andi Kleen wrote:
+> > Sorry, by "block", I really mean spin I guess. I mean that the CPU will
+> > be forced to stop executing due to the page fault during this sequence:
+>
+> It's hard for NMIs at least. They cannot execute faults.
 
-Hmm, i'd be interested to find out how long these are taking... I might
-try and rig up something to test the time being taken via an SMDK.
+Well, just for executing code (and reading RO data), then it shouldn't
+matter at all actually if the CPU starts executing from the new page
+or the old page, so long as there is a way to quiesce NMIs before freeing
+the old page.
 
-If the fifo read/writes are taking significant amounts of time, then the
-pio tasklet will at least improve the interrupt latencies invloved, as
-iirc we're currently running the main irq handler in IRQ_DISABLED mode
-to stop any problems with re-enternancy.... I'll check this and see what
-is going on.
- 
-> Signed-off-by: Christer Weinigel <christer@weinigel.se>
-> 
-> Index: linux-2.6.26.2/drivers/mmc/host/s3cmci.c
-> ===================================================================
-> --- linux-2.6.26.2.orig/drivers/mmc/host/s3cmci.c
-> +++ linux-2.6.26.2/drivers/mmc/host/s3cmci.c
-> @@ -361,11 +361,8 @@ static void do_pio_write(struct s3cmci_h
->  	enable_imask(host, S3C2410_SDIIMSK_TXFIFOHALF);
->  }
->  
-> -static void pio_tasklet(unsigned long data)
-> +static void pio_tasklet(struct s3cmci_host *host)
->  {
-> -	struct s3cmci_host *host = (struct s3cmci_host *) data;
-> -
-> -
->  	disable_irq(host->irq);
->  
->  	if (host->pio_active == XFER_WRITE)
-> @@ -460,10 +457,10 @@ static irqreturn_t s3cmci_irq(int irq, v
->  	if (!host->dodma) {
->  		if ((host->pio_active == XFER_WRITE) &&
->  		    (mci_fsta & S3C2410_SDIFSTA_TFDET)) {
-> -
->  			disable_imask(host, S3C2410_SDIIMSK_TXFIFOHALF);
-> -			tasklet_schedule(&host->pio_tasklet);
-> +			pio_tasklet(host);
->  			host->status = "pio tx";
-> +			goto irq_out;
->  		}
->  
->  		if ((host->pio_active == XFER_READ) &&
-> @@ -473,8 +470,9 @@ static irqreturn_t s3cmci_irq(int irq, v
->  				      S3C2410_SDIIMSK_RXFIFOHALF |
->  				      S3C2410_SDIIMSK_RXFIFOLAST);
->  
-> -			tasklet_schedule(&host->pio_tasklet);
-> +			pio_tasklet(host);
->  			host->status = "pio rx";
-> +			goto irq_out;
->  		}
->  	}
->  
-> @@ -595,7 +593,7 @@ close_transfer:
->  	host->complete_what = COMPLETION_FINALIZE;
->  
->  	clear_imask(host);
-> -	tasklet_schedule(&host->pio_tasklet);
-> +	pio_tasklet(host);
->  
->  	goto irq_out;
->  
-> @@ -666,7 +664,7 @@ void s3cmci_dma_done_callback(struct s3c
->  	host->complete_what = COMPLETION_FINALIZE;
->  
->  out:
-> -	tasklet_schedule(&host->pio_tasklet);
-> +	pio_tasklet(host);
->  	spin_unlock_irqrestore(&host->complete_lock, iflags);
->  	return;
->  
-> @@ -1198,7 +1196,6 @@ static int __devinit s3cmci_probe(struct
->  	}
->  
->  	spin_lock_init(&host->complete_lock);
-> -	tasklet_init(&host->pio_tasklet, pio_tasklet, (unsigned long) host);
->  
->  	if (is2440) {
->  		host->sdiimsk	= S3C2440_SDIIMSK;
-> @@ -1381,7 +1378,6 @@ static int __devexit s3cmci_remove(struc
->  
->  	clk_put(host->clk);
->  
-> -	tasklet_disable(&host->pio_tasklet);
->  	s3c2410_dma_free(S3CMCI_DMA, &s3cmci_dma_client);
->  
->  	free_irq(host->irq, host);
-> Index: linux-2.6.26.2/drivers/mmc/host/s3cmci.h
-> ===================================================================
-> --- linux-2.6.26.2.orig/drivers/mmc/host/s3cmci.h
-> +++ linux-2.6.26.2/drivers/mmc/host/s3cmci.h
-> @@ -66,5 +66,4 @@ struct s3cmci_host {
->  	char			*status;
->  
->  	unsigned int		ccnt, dcnt;
-> -	struct tasklet_struct	pio_tasklet;
->  };
-> 
-> -- 
-> "Just how much can I get away with and still go to heaven?"
-> 
-> Christer Weinigel <christer@weinigel.se>  http://www.weinigel.se
+So the NMI can run, and read data, but it may have a problem with stores.
+At least, some kind of redesign of NMI handlers might be required so that
+they can make a note of the pending operation and try to do something
+sane in that case. Or, there could be a small region of memory; a page or
+two, which does not get migrated and NMIs can write to it. I don't think
+you need to go so far as saying the entire kernel image must be non
+movable just for NMIs.
 
--- 
--- 
-Ben
 
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+> In the end you would need to define a core kernel which
+> cannot be remapped and the rest which can and you end up
+> with even more micro kernel like mess.
 
+Are there any important NMIs that really can't fit with this?
+
+
+> > ptep_clear_flush(ptep)         <--- from here
+> > set_pte(ptep, newpte)          <--- until here
+> >
+> > for prot RW, the window also would include the memcpy, however if that
+> > adds too much latency for execute/reads, then it can be mapped RO first,
+> > then memcpy, then flushed and switched.
+> >
+> > > Then that would be essentially a hypervisor or micro kernel approach.
+> >
+> > What would be? Blocking in interrupts? Or non-linear kernel mapping in
+>
+> Well in general someone remapping all the memory beyond you.
+> That's essentially a hypervisor in my book.
+
+I don't see it. It is among one of the things a hypervisor may do.
+But anyway, call it what you will.
