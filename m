@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYIHPtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbYIHPux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYIHPtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYIHPtG
+	id S1754697AbYIHPux (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYIHPun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:49:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:47356 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406AbYIHPtF (ORCPT
+	Mon, 8 Sep 2008 11:50:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38435 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752412AbYIHPun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:49:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=S2bd5KagXE5w4cACmFgMqzNZC6w6EzreKW1ZINanN2hYenJfKDapxpVXexQ/XAVMKt
-         wGMg45Qxk2m/SKZ6vL7ScRZja4SSjzONcIqURbnZQVybJIOeg34TmI325kk/aao6OOdA
-         Ze5qI7J35Ix0PT0bQ+lDYwT4KMNSOzqpi3l6U=
-Date: Mon, 8 Sep 2008 19:38:06 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH] x86: io-apic - do not use KERN_DEBUG marker too much
-Message-ID: <20080908153806.GB7278@lenovo>
+	Mon, 8 Sep 2008 11:50:43 -0400
+Message-ID: <48C549AC.1030406@kernel.org>
+Date: Mon, 08 Sep 2008 08:50:04 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, linux@sandersweb.net,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com>
+In-Reply-To: <48C54839.8050304@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not use KERN_DEBUG several times on the same line being printed.
-Introduced by mine previous patch, sorry.
+H. Peter Anvin wrote:
+> 
+> The help text is indeed out of date.  I did a patch yesterday to, among 
+> other things, update it; I also want to verify that we are disabling all 
+> options that can cause gcc or binutils to generate nopl's; I plan to 
+> push it today.
+> 
 
-Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+OK, turns out that is already happending, by virtue of:
 
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-08 19:32:34.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-08 19:34:10.000000000 +0400
-@@ -1526,11 +1526,16 @@ static void __init setup_IO_APIC_irqs(vo
- 
- 			idx = find_irq_entry(apic, pin, mp_INT);
- 			if (idx == -1) {
--				apic_printk(APIC_VERBOSE,
--					KERN_DEBUG " %d-%d",
--					mp_ioapics[apic].mp_apicid, pin);
--				if (!notcon)
-+				if (!notcon) {
- 					notcon = 1;
-+					apic_printk(APIC_VERBOSE,
-+						KERN_DEBUG " %d-%d",
-+						mp_ioapics[apic].mp_apicid,
-+						pin);
-+				} else
-+					apic_printk(APIC_VERBOSE, " %d-%d",
-+						mp_ioapics[apic].mp_apicid,
-+						pin);
- 				continue;
- 			}
- 
-@@ -1546,14 +1551,14 @@ static void __init setup_IO_APIC_irqs(vo
- 		}
- 		if (notcon) {
- 			apic_printk(APIC_VERBOSE,
--				KERN_DEBUG " (apicid-pin) not connected\n");
-+				" (apicid-pin) not connected\n");
- 			notcon = 0;
- 		}
- 	}
- 
- 	if (notcon)
- 		apic_printk(APIC_VERBOSE,
--			KERN_DEBUG " (apicid-pin) not connected\n");
-+			" (apicid-pin) not connected\n");
- }
- 
- /*
+# add at the end to overwrite eventual tuning options from earlier
+# cpu entries
+cflags-$(CONFIG_X86_GENERIC)    += $(call tune,generic,$(call tune,i686))
+
+-mtune=generic on 32-bit CPUs disable NOPL generation, and any 
+gcc/binutils combo too old to have -mtune=generic won't generate them at 
+all.
+
+I think I verified this some time in the past, but I just had to refresh 
+my memory.  This was a major reason to put this functionality on 
+CONFIG_X86_GENERIC.
+
+	-hpa
