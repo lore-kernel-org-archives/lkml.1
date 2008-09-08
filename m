@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbYIHLgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbYIHLjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbYIHLgV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbYIHLgM
+	id S1753294AbYIHLjv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYIHLjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:36:12 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55512 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYIHLgM (ORCPT
+	Mon, 8 Sep 2008 07:39:42 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:38747 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbYIHLjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:36:12 -0400
-Date: Mon, 8 Sep 2008 12:35:47 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
- corruption
-In-Reply-To: <48B80C26.2080002@goop.org>
-Message-ID: <Pine.LNX.4.64.0809081157020.14401@blonde.site>
-References: <48B701FB.2020905@goop.org> <Pine.LNX.4.64.0808290817190.21494@blonde.site>
- <48B80C26.2080002@goop.org>
+	Mon, 8 Sep 2008 07:39:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=PczJQnGRSdb1YMflqG9pED1M2PjP/Y5GfEnuPawFuSGl8EP/FMGQRJyJ3htLD2Uet9
+         CJ4iwN65E8uolP907SXrS/4+LHL2cTzTMZS39y6n5ASOtcqFXAsPwDg0GK1Qhys64SlB
+         j1Vx/eBDcysTUIkxWlhL3NI77z3OuSKK8pVmg=
+Message-ID: <48C50EA4.2020700@gmail.com>
+Date: Mon, 08 Sep 2008 13:38:12 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] SATA: Blacklist systems that spin off disks during ACPI
+ power off
+References: <200808290002.55026.rjw@sisk.pl> <200808291241.04183.rjw@sisk.pl> <48B7D286.7050104@gmail.com> <200809061923.29020.rjw@sisk.pl>
+In-Reply-To: <200809061923.29020.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 29 Aug 2008, Jeremy Fitzhardinge wrote:
-> Hugh Dickins wrote:
+Rafael J. Wysocki wrote:
+> SATA: Blacklist systems that spin off disks during ACPI power off
 > 
-> > Is this the right moment for me to mention again that I'm not sure
-> > your reuse of existing pagetables was quite right anyway: NX being
-> > excluded from level2_ident_pgt, but wanted in the direct map?
+> Some notebooks from HP have the problem that their BIOSes attempt to
+> spin down hard drives before entering ACPI system states S4 and S5.
+> This leads to a yo-yo effect during system power-off shutdown and the
+> last phase of hibernation when the disk is first spun down by the
+> kernel and then almost immediately turned on and off by the BIOS.
+> This, in turn, may result in shortening the disk's life times.
 > 
-> We could add NX.  What's the behaviour of setting NX in a
-> non-NX-supporting CPU?  I don't think it would trigger a "reserved bit"
-> exception (the other high pte flags don't).  Or failing that, we could
-> mask out NX once we've worked out the CPU doesn't support it (at the
-> same time it relocates the pagetables to the kernel's load-time address).
+> To prevent this from happening we can blacklist the affected systems
+> using DMI information.  However, only the on-board controlles should
+> be blacklisted and their PCI slot numbers can be used for this
+> purpose.  Unfortunately the existing interface for checking DMI
+> information of the system is not very convenient for this purpose,
+> because to use it, we would have to define special callback functions
+> or create a separate struct dmi_system_id table for each blacklisted
+> system.
+> 
+> To overcome this difficulty introduce a new function
+> dmi_first_match() returning a pointer to the first entry in an array
+> of struct dmi_system_id elements that matches the system DMI
+> information.  Then, we can use this pointer to access the entry's
+> .driver_data field containing the additional information, such as
+> the PCI slot number, allowing us to do the desired blacklisting.
+> 
+> Introduce a new libata flag ATA_FLAG_NO_POWEROFF_SPINDOWN that, if
+> set, will prevent disks from being spun off during system power off
+> and hibernation (to handle the hibernation case we need a new system
+> state SYSTEM_HIBERNATE_ENTER that can be checked against by libata,
+> in analogy with SYSTEM_POWER_OFF).  Use dmi_first_match() to set this
+> flag for some systems affected by the problem described above (HP nx6325,
+> HP nx6310, HP 2510p).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I've no experience of what happens if NX is set to a non-NX-supporting
-CPU, so can't advise on that at all.  But I think you're looking at
-it the wrong way round - or else I am.
+libata part looks good to me but I think it would be better to
+separate out DMI changes into a separate patch.
 
-Here's the declaration and comment on level2_ident_pgt in head_64.S:
+Thanks.
 
-NEXT_PAGE(level2_ident_pgt)
-	/* Since I easily can, map the first 1G.
-	 * Don't set NX because code runs from these pages.
-	 */
-	PMDS(0, __PAGE_KERNEL_LARGE_EXEC, PTRS_PER_PMD)
-
-(The "Since I easily can" comment is there because it used to map
-only a subset needed for early kernel startup, not the whole 1G.)
-
-So it's very intentionally leaving NX out there.  I believe the
-level2_ident_pgt page appears twice or more in the pagetable layout,
-used to map two or more areas of virtual address space - once to
-provide the direct map at ffff880000000000 and once to provide
-the kernel image virtual mapping at ffffffff80200000.
-
-I think we don't want NX on Linux kernel text ;-?
-
-Before your 2.6.27-rc changes, init_memory_mapping subsequently
-replaced the direct map usage by a separately constructed pagetable,
-similar to it but with NX set throughout.  After your 2.6.27-rc
-changes, level2_ident_pgt is found there already so left untouched -
-leaving NX out of that first 1G of the direct map forever (when CPA
-splits it up, the smaller pages inherit the lack of NX too).
-
-I noticed when changing /proc/meminfo to show DirectMap in kB,
-and tried to fix it, but only gave myself a non-booting system
-(I probably shrank my direct map to 0 while implicitly using it).
-And at that stage I didn't realize at all that it was a recent
-regression arising from your mods.
-
-I'm reluctant to delve in there again at present, and unsure
-what the right fix should be: perhaps the code which checks if
-an entry is already there, should check if it has the desired
-flags?
-
-Hugh
+-- 
+tejun
