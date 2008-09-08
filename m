@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYIHUE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYIHUFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbYIHUE2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 16:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYIHUEV
+	id S1755504AbYIHUFA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 16:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbYIHUEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 16:04:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58175 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753417AbYIHUEU (ORCPT
+	Mon, 8 Sep 2008 16:04:52 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55808 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753425AbYIHUEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 16:04:20 -0400
-Date: Mon, 8 Sep 2008 21:03:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Cc: "Greg KH" <gregkh@suse.de>, "Linux kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <torvalds@linux-foundation.org>, <stable@kernel.org>
-Subject: Re: Linux 2.6.25.17
-Message-ID: <20080908210352.2b0cd70e@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.61.0809081535280.5096@chaos.analogic.com>
-References: <20080908143516.GA7311@suse.de>
-	<Pine.LNX.4.61.0809081535280.5096@chaos.analogic.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Sep 2008 16:04:51 -0400
+Date: Mon, 8 Sep 2008 21:04:34 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH tip] x86: unsigned long pte_pfn
+Message-ID: <Pine.LNX.4.64.0809082100090.30216@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If I remove one of the CPUs, there is no file-system corruption
-> so I fear that there is some lock missing somewhere in the
-> serial ATA driver code (ata_piix or sata_sil).
+pte_pfn() has always been of type unsigned long, even on 32-bit PAE;
+but in the current tip/next/mm tree it's unsigned long long on 64-bit,
+which gives an irritating warning if you try to printk a pfn with the
+usual %lx.  Copy the inline function used by 32-bit's pgtable-3level.h.
 
-All the logic and locking is in the core code so would show up on all
-sorts of boxes. You say you are using sata_sil - is this on an Nvidia
-board ?
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
-> If anybody has anything to test with my setup, I can readily
-> test both with and without the two CPUs.
+ include/asm-x86/pgtable_64.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Can you duplicate this with the drives just on the ata_piix ?
-
-Alan
+--- 2.6.27-rc5-mm1/include/asm-x86/pgtable_64.h	2008-09-05 10:08:04.000000000 +0100
++++ linux/include/asm-x86/pgtable_64.h	2008-09-08 19:12:39.000000000 +0100
+@@ -182,7 +182,11 @@ static inline int pmd_bad(pmd_t pmd)
+ 
+ #define pages_to_mb(x)	((x) >> (20 - PAGE_SHIFT))   /* FIXME: is this right? */
+ #define pte_page(x)	pfn_to_page(pte_pfn((x)))
+-#define pte_pfn(x)	((pte_val((x)) & __PHYSICAL_MASK) >> PAGE_SHIFT)
++
++static inline unsigned long pte_pfn(pte_t pte)
++{
++	return (pte_val(pte) & PTE_PFN_MASK) >> PAGE_SHIFT;
++}
+ 
+ /*
+  * Macro to mark a page protection value as "uncacheable".
