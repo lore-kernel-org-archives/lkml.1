@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755272AbYIHTUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYIHTZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755272AbYIHTUy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYIHTUo
+	id S1754693AbYIHTZG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbYIHTYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:20:44 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:42174 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292AbYIHTUo (ORCPT
+	Mon, 8 Sep 2008 15:24:55 -0400
+Received: from the2masters.de ([213.146.113.64]:49007 "EHLO
+	smtp.the2masters.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbYIHTYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:20:44 -0400
-Message-ID: <48C57B07.6000701@grupopie.com>
-Date: Mon, 08 Sep 2008 20:20:39 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
+	Mon, 8 Sep 2008 15:24:55 -0400
+X-Greylist: delayed 3005 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Sep 2008 15:24:55 EDT
+Message-ID: <48C57046.5090509@the2masters.de>
+Date: Mon, 08 Sep 2008 20:34:46 +0200
+From: Stefan Hellermann <stefan@the2masters.de>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080822)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Yoshinori Sato <ysato@users.sourceforge.jp>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] exclude h8300 local symbols (Re: kallsyms exclude local
- symbols)
-References: <87fxphzan5.wl%ysato@users.sourceforge.jp>	<489AE3C5.2000807@grupopie.com>	<87zlnotn2l.wl%ysato@users.sourceforge.jp> <20080907235627.293b0a4b.akpm@linux-foundation.org>
-In-Reply-To: <20080907235627.293b0a4b.akpm@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [regression] __tick_program_event of hpet is stuck
+References: <200809080114.36106.elendil@planet.nl> <200809080313.48910.elendil@planet.nl>
+In-Reply-To: <200809080313.48910.elendil@planet.nl>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> This patch broke kallsyms on powerpc.  Please see
-> http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062549.html
+Frans Pop schrieb:
+> On Monday 08 September 2008, Frans Pop wrote:
+>   
+>> With current git head (v2.6.27-rc5-319-g7686ad5) I'm seeing repeated
+>> occurrences of the following on my HP Compaq 2510p laptop. Not seen
+>> with earlier kernels, including 2.6.27-rc5.
+>>     
+>
+> I meant repeated as in "after different boots", but I now also see repeats 
+> when I leave the system on for some time. It keeps increasing the 
+> min_delta_ns to ever higher values.
+>
+> CE: __tick_program_event of hpet is stuck 1468f1b3c9 1468f1c751
+> CE: increasing min_delta_ns 5000 to 10000 nsec
+> [...]
+> CE: __tick_program_event of hpet is stuck 33576032f74 33576035684
+> CE: increasing min_delta_ns 10000 to 20000 nsec
+> [...]
+> CE: __tick_program_event of hpet is stuck 63242b30d28 63242b35b48
+> CE: increasing min_delta_ns 20000 to 40000 nsec
+>
+> The call trace is basically the same each time.
+>   
+Exactly the same problem here. This is a Lenovo Thinkpad R61 with 
+current git head (7686ad56).
 
-I've just looked at that post and it seems that there are a lot of 
-regular symbols that start with '.' on powerpc (see: 
-http://userweb.kernel.org/~akpm/nm-n.txt ).
+Cheers,
+Stefan Hellermann
 
-I guess the best solution would be to change the patch to use that 
-filter only when the target architecture is h8300, so that it doesn't 
-mess with other architectures.
-
--- 
-Paulo Marques - www.grupopie.com
-
-"To be, or not to be? That is ..... liable to be removed at -O2 and above."
