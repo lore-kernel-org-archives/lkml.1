@@ -1,83 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYIHNtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYIHNxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbYIHNtA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYIHNsw
+	id S1753454AbYIHNxp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYIHNxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:48:52 -0400
-Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:46935 "HELO
-	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751713AbYIHNsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:48:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=G7y2a6xmaP+fwOhyC93LaunjRVnAY5Jq7B1uTMCYxt8YE04PY0bpJVlsR5406cK4+zkuQK0wBWC0tzVMmXtGc3tQ+l06e3b0vBIrtNQD36F/KIxdXrNWXqzyS2ahRanK3gt+yjMs+8Ke0I3UbOv38fJITWtZiQ5rjnefdlF/IUU=  ;
-X-YMail-OSG: dvxnwCEVM1n3yMFIrCsFONbZC5gAvJDT2wHdZRWyVUze1Bg3Ub4AKeDg6r3UemSFFpvqKbiul6ntnyaTuPrEM_Q0sIJI5PQcrwHyAhjh4r8fP4r9NkyrcZnX0zGGKDlz5Fc-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
-Date: Mon, 8 Sep 2008 23:48:33 +1000
-User-Agent: KMail/1.9.5
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Gary Hade <garyhade@us.ibm.com>,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <20080905215452.GF11692@us.ibm.com> <200809082119.32725.nickpiggin@yahoo.com.au> <20080908113025.GF26079@one.firstfloor.org>
-In-Reply-To: <20080908113025.GF26079@one.firstfloor.org>
+	Mon, 8 Sep 2008 09:53:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36757 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752168AbYIHNxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 09:53:36 -0400
+Date: Mon, 8 Sep 2008 15:52:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>, tony.luck@intel.com
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 0/5] fix exhaustion of ZONE_DMA with swiotlb (in x86
+	tree)
+Message-ID: <20080908135256.GE11993@elte.hu>
+References: <1220865014-1169-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20080908120017.GI3189@amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809082348.34674.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080908120017.GI3189@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 September 2008 21:30, Andi Kleen wrote:
-> > Sorry, by "block", I really mean spin I guess. I mean that the CPU will
-> > be forced to stop executing due to the page fault during this sequence:
->
-> It's hard for NMIs at least. They cannot execute faults.
 
-Well, just for executing code (and reading RO data), then it shouldn't
-matter at all actually if the CPU starts executing from the new page
-or the old page, so long as there is a way to quiesce NMIs before freeing
-the old page.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-So the NMI can run, and read data, but it may have a problem with stores.
-At least, some kind of redesign of NMI handlers might be required so that
-they can make a note of the pending operation and try to do something
-sane in that case. Or, there could be a small region of memory; a page or
-two, which does not get migrated and NMIs can write to it. I don't think
-you need to go so far as saying the entire kernel image must be non
-movable just for NMIs.
+> On Mon, Sep 08, 2008 at 06:10:09PM +0900, FUJITA Tomonori wrote:
+> > This patchset (against tip/master) fixes the problem that swiotlb
+> > exhausts ZONE_DMA:
+> > 
+> > http://lkml.org/lkml/2008/8/31/16
+> > 
+> > The root problem is that swiotlb_alloc_coherent always use ZONE_DMA,
+> > which is fine for IA64 but not for x86_64.
+> > 
+> > This patchset makes the callers set up the gfp flags so that
+> > swiotlb_alloc_coherent can stop playing with the gfp flags.
+> > 
+> > I think that it would be better to remove the allocation code in
+> > swiotlb_alloc_coherent theoretically (what swiotlb should do is taking
+> > care of the swiotlb memory. And swiotlb_alloc_coherent is not useful
+> > since we use it only when we can't allocate memory reachable by the
+> > device or we are in out of memory). But that code works for both x86
+> > and IA64 so it's not so bad, I guess.
+> > 
+> > #1 is for IA64, #2-4 for x86, and #5 is for swiotlb.
+> 
+> Cool :-)
+> 
+> This is much better than our last two tries to solve this problem. 
+> Doing no gfp handling at all in swiotlb_alloc_coherent is a nice and 
+> clean solution.
 
+i've applied Fujita's patches to tip/x86/iommu:
 
-> In the end you would need to define a core kernel which
-> cannot be remapped and the rest which can and you end up
-> with even more micro kernel like mess.
+ 68e91d6: swiotlb: remove GFP_DMA hack in swiotlb_alloc_coherent
+ 823e7e8: x86: dma_alloc_coherent sets gfp flags properly
+ 8a53ad6: x86: fix nommu_alloc_coherent allocation with NULL device argument
+ de9f521: x86: move pci-nommu's dma_mask check to common code
+ 3a80b6a: ia64: dma_alloc_coherent always use GFP_DMA
 
-Are there any important NMIs that really can't fit with this?
+Tony, do you have any problem with us carrying the ia64 commit above 
+(3a80b6a, also attached below) in tip/x86/iommu tree? It's really small 
+and straightforward.
 
+	Ingo
 
-> > ptep_clear_flush(ptep)         <--- from here
-> > set_pte(ptep, newpte)          <--- until here
-> >
-> > for prot RW, the window also would include the memcpy, however if that
-> > adds too much latency for execute/reads, then it can be mapped RO first,
-> > then memcpy, then flushed and switched.
-> >
-> > > Then that would be essentially a hypervisor or micro kernel approach.
-> >
-> > What would be? Blocking in interrupts? Or non-linear kernel mapping in
->
-> Well in general someone remapping all the memory beyond you.
-> That's essentially a hypervisor in my book.
+----------------->
+>From 3a80b6aa271eb08a3da1a04b5cbdcdc19d4a5ae0 Mon Sep 17 00:00:00 2001
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 8 Sep 2008 18:10:10 +0900
+Subject: [PATCH] ia64: dma_alloc_coherent always use GFP_DMA
 
-I don't see it. It is among one of the things a hypervisor may do.
-But anyway, call it what you will.
+This patch makes dma_alloc_coherent use GFP_DMA at all times. This is
+necessary for swiotlb, which requires the callers to set up the gfp
+flags properly.
+
+swiotlb_alloc_coherent tries to allocate pages with the gfp flags. If
+the allocated memory isn't fit for dev->coherent_dma_mask,
+swiotlb_alloc_coherent reserves some of the swiotlb memory area, which
+is precious resource. So the callers need to set up the gfp flags
+properly.
+
+This patch means that other IA64 IOMMUs' dma_alloc_coherent also use
+GFP_DMA. These IOMMUs (e.g. SBA IOMMU) don't need GFP_DMA since they
+can map a memory to any address. But IA64's GFP_DMA is large,
+generally drivers allocate small memory with dma_alloc_coherent only
+at startup. So I chose the simplest way to set up the gfp flags for
+swiotlb.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/ia64/include/asm/dma-mapping.h |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+index 9f0df9b..06ff1ba 100644
+--- a/arch/ia64/include/asm/dma-mapping.h
++++ b/arch/ia64/include/asm/dma-mapping.h
+@@ -8,7 +8,9 @@
+ #include <asm/machvec.h>
+ #include <linux/scatterlist.h>
+ 
+-#define dma_alloc_coherent	platform_dma_alloc_coherent
++#define dma_alloc_coherent(dev, size, handle, gfp)	\
++	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
++
+ /* coherent mem. is cheap */
+ static inline void *
+ dma_alloc_noncoherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
