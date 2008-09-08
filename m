@@ -1,140 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYIHRLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbYIHRMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbYIHRLw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 13:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYIHRLa
+	id S1754894AbYIHRMf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 13:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYIHRM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 13:11:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41287 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753143AbYIHRL0 (ORCPT
+	Mon, 8 Sep 2008 13:12:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42650 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbYIHRM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 13:11:26 -0400
-Date: Mon, 8 Sep 2008 10:08:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Zhao, Yu" <yu.zhao@intel.com>
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, <linux-pci@vger.kernel.org>,
-       "Greg KH" <greg@kroah.com>,
-       "Grant Grundler" <grundler@parisc-linux.org>,
-       "Matthew Wilcox" <matthew@wil.cx>, <linux-kernel@vger.kernel.org>,
-       <kvm@vger.kernel.org>, <virtualization@lists.linux-foundation.org>,
-       <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH 4/4 v2] PCI: document the change
-Message-Id: <20080908100800.a3f4c6b3.randy.dunlap@oracle.com>
-In-Reply-To: <7A25B56E4BE99C4283EB931CD1A40E110177EB70@pdsmsx414.ccr.corp.intel.com>
-References: <7A25B56E4BE99C4283EB931CD1A40E110177EB70@pdsmsx414.ccr.corp.intel.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Sep 2008 13:12:26 -0400
+Message-ID: <48C55CEC.1080900@kernel.org>
+Date: Mon, 08 Sep 2008 10:12:12 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, linux@sandersweb.net,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+References: <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com> <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org> <20080908170029.GP26079@one.firstfloor.org> <alpine.LFD.1.10.0809081000490.3117@nehalem.linux-foundation.org> <48C55C0A.7070203@zytor.com>
+In-Reply-To: <48C55C0A.7070203@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Sep 2008 19:21:06 +0800 Zhao, Yu wrote:
-
-> Complete the hotplug ABI document, and add SR-IOV HOWTO.
+H. Peter Anvin wrote:
 > 
-> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
-> Signed-off-by: Eddie Dong <eddie.dong@intel.com>
+> Yes, it does:
 > 
-> ---
->  Documentation/ABI/testing/sysfs-bus-pci |   67 ++++++++++++
->  Documentation/DocBook/kernel-api.tmpl   |    3 +
->  Documentation/PCI/pci-iov-howto.txt     |  177 +++++++++++++++++++++++++++++++
->  3 files changed, 247 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/PCI/pci-iov-howto.txt
+>   /* We need to decide which NOP sequence to use for 32bit and
+>      64bit. When -mtune= is used:
+> 
+>      1. For PROCESSOR_I386, PROCESSOR_I486, PROCESSOR_PENTIUM and
+>      PROCESSOR_GENERIC32, f32_patt will be used.
+>      2. For PROCESSOR_PENTIUMPRO, PROCESSOR_PENTIUM4, PROCESSOR_NOCONA,
+>      PROCESSOR_CORE, PROCESSOR_CORE2, and PROCESSOR_GENERIC64,
+>      alt_long_patt will be used.
+>      3. For PROCESSOR_ATHLON, PROCESSOR_K6, PROCESSOR_K8 and
+>      PROCESSOR_AMDFAM10, alt_short_patt will be used.
+> 
+>      When -mtune= isn't used, alt_long_patt will be used if
+>      cpu_arch_isa_flags has Cpu686. Otherwise, f32_patt will
+>      be used.
+> 
+> "alt_long_patt" uses NOPL and its variants.
+> 
 
-> diff --git a/Documentation/PCI/pci-iov-howto.txt b/Documentation/PCI/pci-iov-howto.txt
-> new file mode 100644
-> index 0000000..147e80f
-> --- /dev/null
-> +++ b/Documentation/PCI/pci-iov-howto.txt
-> @@ -0,0 +1,177 @@
-> +		PCI Express Single Root I/O Virtualization HOWTO
-> +			Copyright (C) 2008 Intel Corporation
-> +			    Yu Zhao <yu.zhao@intel.com>
-> +
-> +
-> +1. Overview
-> +
-> +1.1 What is SR-IOV
-> +
+I should point out that the code above is from binutils (gas), not from 
+gcc.  It is entirely possible that doing something like
+"-mtune=core2 -Wa,-mtune=generic" might actually work, but I have not 
+dug through the gcc code proper to figure out if that (a) would work, 
+and (b) will remain the case...
 
-...
-
-> +
-> +1.2 What is ARI
-> +
-
-...
-
-> +
-> +
-> +2. User Guide
-> +
-> +2.1 How can I manage SR-IOV
-> +
-> +If a device supports SR-IOV, then there should be some entires under
-
-                                                          entries
-
-> +/sys/bus/pci/slots/. The names of the entires are XXXX:BB:DD.F-iov-NNNN,
-
-                                         entries
-
-> +where the first part (XXXX:BB:DD.F) is the domain, bus, device and function
-> +number of the device, and the third part (NNNN) is the index of a Virtual
-> +Function. There are three files under the entry: power, param and address.
-> +	- Writing 1 to the "power" will enable the Virtual Function,
-> +	and 0 will disable the Virtual Function; Reading it will get
-> +	status of the Virtual Function.
-> +	- Reading the "address" will get the bus, device and function
-> +	number of the Virtual Function.
-> +	- The "param" is the device specific parameters which may be
-> +	used by the Physical or Virtual Functions drivers.
-> +
-> +2.2 How can I use Virtual Functions
-> +
-> +Virtual Functions is treated as hot-plugged PCI devices in the kernel,
-
-                     are
-
-> +so they should be able to work in the same way as real PCI devices.
-> +NOTE: Virtual Function device driver must be loaded to make it work.
-> +
-> +
-> +3. Developer Guide
-> +
-> +3.1 SR-IOV APIs
-> +
-
-...
-
-> +3.2 Usage example
-> +
-
-...
-
-> +
-> +#ifdef CONFIG_PM
-> +/*
-> + * If the device supports the power management, then the SR-IOV
-> + * may be disabled before the adapter goes to sleep, because
-> + * Virtual Functions may not work when the adapter is in the\
-
-drop trailing '\'
-
-> + * power-saving mode.
-> + * The SR-IOV can be enabled again after the adapter wakes up.
-> + */
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+	-hpa
