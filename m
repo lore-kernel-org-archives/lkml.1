@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYIHQUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbYIHQZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615AbYIHQUh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYIHQUX
+	id S1753417AbYIHQZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 12:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYIHQZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:20:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46548 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754219AbYIHQUU (ORCPT
+	Mon, 8 Sep 2008 12:25:42 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:14724 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbYIHQZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:20:20 -0400
-Date: Mon, 8 Sep 2008 09:20:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux@sandersweb.net,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-In-Reply-To: <48C54F1B.8040604@zytor.com>
-Message-ID: <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org>
-References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org>
- <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 8 Sep 2008 12:25:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=I6oTvta2/dmwQUIyFab1qnH2Vcu6VWQEKMFcYAZS135P8izKySKNaeIV+zdame0WIn
+         pTvKoj5diZ8dLtW7L11a6+6CMJlp7PtboKVbAztJRyk8P5R8Dk+QepNamjBLJu4CznqU
+         lzktpG08KkSXpy84oxNR3Rr9B302Vth9jtjNI=
+Message-ID: <8ee0b8e80809080925h47470253hc124ea54d239c931@mail.gmail.com>
+Date: Mon, 8 Sep 2008 18:25:39 +0200
+From: "Jeroen van Rijn" <jvrnix@gmail.com>
+To: "Tony Vroon" <tony@vroon.org>
+Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
+Cc: "Andi Kleen" <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1220889138.27320.53.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220754742.8530.12.camel@localhost>
+	 <87abeivrdf.fsf@basil.nowhere.org>
+	 <1220876559.27320.2.camel@localhost>
+	 <20080908140417.GJ26079@one.firstfloor.org>
+	 <1220889138.27320.53.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Sep 8, 2008 at 5:52 PM, Tony Vroon <tony@vroon.org> wrote:
+> On Mon, 2008-09-08 at 16:04 +0200, Andi Kleen wrote:
+>> Ok so you wanted linux-kernel to diagnose your hardware for you?
+>
+> I was hoping for some help in narrowing it down, yes. Jeroen's reply was
+> very helpful, and more among the line of what I was expecting. I have
+> contacted all vendors involved now, and it looks like the system RAM is
+> not fully compatible with the mainboard.
 
+I'm happy to see you've got it narrowed down enough.
 
-On Mon, 8 Sep 2008, H. Peter Anvin wrote:
-> 
-> And yes, it should be the default.  The patch I have makes it
-> "default y" as well as change the help text.
+> With regard to the message, I would suggest an alternate wording like
+> such:
+>
+> A hardware component in your system is failing.
+> Please contact your hardware vendor(s).
+> If unsure, contact your CPU vendor first.
 
-It sounds like it shouldn't be a default at all, it should just _always_ 
-be on, if there really are gcc's that care that much. Most of our 
-optimizations have historically really been about _optimizing_, not about 
-"it won't work", even if we have had exceptions (but as mentioned, I think 
-those exceptions have been way more imporant than NOPL).
+Or this:
+"A hardware component in your system is failing.
+[insert specific bit if MCE is certain enough about what part]
+If you can, try to narrow it down by placing it in another mainboard
+(assuming you have one available), or run [memcheck, another tool].
+Then contact the hardware vendor(s) in question, if uncertain, try
+your CPU vendor first."
 
-> Would it make you happier if this option was forced enabled unless
-> CONFIG_EMBEDDED was on?
+> Regards,
+> Tony V.
 
-Yes, putting it behind EMBEDDED will certainly fix the issue. Anybody who 
-actually enables EMBEDDED and does all his choices by hand should no 
-longer expect to not have to know _exactly_ what he is doing.
-
-So if it's behind EMBEDDED, and defaults to "on", then I have no problem 
-with changing the help text to say "If you do this, we'll statically do 
-things that really _require_ you to have a CPU that looks _exactly_ like 
-the CPU you claimed".
-
-		Linus
+Jeroen.
