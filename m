@@ -1,97 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYIHOyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbYIHOyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbYIHOyB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 10:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYIHOxx
+	id S1752691AbYIHOyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 10:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYIHOyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 10:53:53 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:54651 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbYIHOxw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 10:53:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=EJiggOVF16XiVaBcRy7DsYXDWsBC3EluEuMyYHa1ALyR8GQnO+KsEFjU68JaeTMWjF
-         d7hXJYUXjcDf20WZYdkpSieQjmkCKaoOjJmuFr4yLq6bBCcFVP8fsmIu8wvlMHyy+wzx
-         vmM7p4IC9P4uGUDgk0OTsYZEit55ex1QJIkGc=
-Message-ID: <86802c440809080753u5c42d052l65c7690b45854115@mail.gmail.com>
-Date: Mon, 8 Sep 2008 07:53:48 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
-Cc: "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-In-Reply-To: <48C51F8D.76E4.0078.0@novell.com>
+	Mon, 8 Sep 2008 10:54:14 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35159 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752238AbYIHOyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 10:54:12 -0400
+Message-ID: <48C53C91.70604@sgi.com>
+Date: Mon, 08 Sep 2008 07:54:09 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 07/13] sched: Reduce stack size requirements in kernel/sched.c
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com>	 <20080906235037.880702000@polaris-admin.engr.sgi.com> <1220783087.8687.73.camel@twins.programming.kicks-ass.net>
+In-Reply-To: <1220783087.8687.73.camel@twins.programming.kicks-ass.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48C13D1C.76E4.0078.0@novell.com> <20080905150030.GD10292@elte.hu>
-	 <48C51F8D.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 8, 2008 at 3:50 AM, Jan Beulich <jbeulich@novell.com> wrote:
->>>> Ingo Molnar <mingo@elte.hu> 05.09.08 17:00 >>>
+Peter Zijlstra wrote:
+> On Sat, 2008-09-06 at 16:50 -0700, Mike Travis wrote:
+>> plain text document attachment (stack-hogs-kernel_sched_c)
+>> * Make the following changes to kernel/sched.c functions:
 >>
->>* Jan Beulich <jbeulich@novell.com> wrote:
+>>     - use node_to_cpumask_ptr in place of node_to_cpumask
+>>     - use get_cpumask_var for temporary cpumask_t variables
+>>     - use alloc_cpumask_ptr where available
 >>
->>> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
->>> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
->>>
->>> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->>>
->>> ---
->>>  arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
->>>  arch/x86/mm/ioremap.c        |   15 ++++++---------
->>>  include/asm-x86/processor.h  |    4 ++--
->>>  3 files changed, 25 insertions(+), 11 deletions(-)
+>>   * Remove special code for SCHED_CPUMASK_ALLOC and use CPUMASK_ALLOC
+>>     from linux/cpumask.h.
 >>
->>hm, the cpu/common.c bits just got reworked massively in tip/master.
->>I've tried a blind merge (see the patch below) but at least the first
->>hunk looks wrong. Mind looking at how to merge this?
->
-> This is my take at it:
->
-> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
->
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->
-> ---
->  arch/x86/kernel/cpu/common.c |   22 +++++++++++++++++++++-
->  arch/x86/mm/ioremap.c        |   13 ++++++-------
->  include/asm-x86/processor.h  |    4 ++--
->  3 files changed, 29 insertions(+), 10 deletions(-)
->
-> --- linux-x86.orig/arch/x86/kernel/cpu/common.c
-> +++ linux-x86/arch/x86/kernel/cpu/common.c
-> @@ -472,14 +472,20 @@ static void __cpuinit get_cpu_cap(struct
->                if (xlvl >= 0x80860001)
->                        c->x86_capability[2] = cpuid_edx(0x80860001);
->        }
-> +#endif
->
->        if (c->extended_cpuid_level >= 0x80000008) {
->                u32 eax = cpuid_eax(0x80000008);
->
->                c->x86_virt_bits = (eax >> 8) & 0xff;
->                c->x86_phys_bits = eax & 0xff;
-> +               /* CPUID workaround for Intel 0F33/0F34 CPU */
-> +               if (c->x86_vendor == X86_VENDOR_INTEL
-> +                   && c->x86 == 0xF && c->x86_model == 0x3
-> +                   && (c->x86_mask == 0x3
-> +                       || c->x86_mask == 0x4))
-> +                       c->x86_phys_bits = 36;
+>>   * The resultant stack savings are:
+>>
+>>     ====== Stack (-l 100)
+>>
+>> 	1 - initial
+>> 	2 - stack-hogs-kernel_sched_c
+>> 	'.' is less than the limit(100)
+>>
+>>        .1.    .2.    ..final..
+>>       2216  -1536 680   -69%  __build_sched_domains
+>>       1592  -1592   .  -100%  move_task_off_dead_cpu
+>>       1096  -1096   .  -100%  sched_balance_self
+>>       1032  -1032   .  -100%  sched_setaffinity
+>>        616   -616   .  -100%  rebalance_domains
+>>        552   -552   .  -100%  free_sched_groups
+>>        512   -512   .  -100%  cpu_to_allnodes_group
+>>       7616  -6936 680   -91%  Totals
+>>
+>>
+>> Applies to linux-2.6.tip/master.
+>>
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+>> ---
+>>  kernel/sched.c |  151 ++++++++++++++++++++++++++++++---------------------------
+>>  1 file changed, 81 insertions(+), 70 deletions(-)
+>>
+>> --- linux-2.6.tip.orig/kernel/sched.c
+>> +++ linux-2.6.tip/kernel/sched.c
+>> @@ -70,6 +70,7 @@
+>>  #include <linux/bootmem.h>
+>>  #include <linux/debugfs.h>
+>>  #include <linux/ctype.h>
+>> +#include <linux/cpumask_ptr.h>
+>>  #include <linux/ftrace.h>
+>>  #include <trace/sched.h>
+>>  
+>> @@ -117,6 +118,12 @@
+>>   */
+>>  #define RUNTIME_INF	((u64)~0ULL)
+>>  
+>> +/*
+>> + * temp cpumask variables
+>> + */
+>> +static DEFINE_PER_CPUMASK(temp_cpumask_1);
+>> +static DEFINE_PER_CPUMASK(temp_cpumask_2);
+> 
+> Yuck, that relies on turning preemption off everywhere you want to use
+> those.
+> 
+> 
+>> @@ -5384,11 +5400,14 @@ out_unlock:
+>>  
+>>  long sched_setaffinity(pid_t pid, const cpumask_t *in_mask)
+>>  {
+>> -	cpumask_t cpus_allowed;
+>> -	cpumask_t new_mask = *in_mask;
+>> +	cpumask_ptr cpus_allowed;
+>> +	cpumask_ptr new_mask;
+>>  	struct task_struct *p;
+>>  	int retval;
+>>  
+>> +	get_cpumask_var(cpus_allowed, temp_cpumask_1);
+>> +	get_cpumask_var(new_mask, temp_cpumask_2);
+>> +	*new_mask = *in_mask;
+>>  	get_online_cpus();
+>>  	read_lock(&tasklist_lock);
+> 
+> BUG!
+> 
+> get_online_cpus() can sleep, but you just disabled preemption with those
+> get_cpumask_var() horribles!
+> 
+> Couldn't be arsed to look through the rest, but I really hate this
+> cpumask_ptr() stuff that relies on disabling preemption.
+> 
+> NAK
 
-these lines should be in early_init_intel/init_intel.
-also need to be checked if it could be overwriten by others functions later..
+Yeah, I really agree as well.  But I wanted to start playing with using
+cpumask_t pointers in some fairly straight forward manner.  Linus's and
+Ingo's suggestion to just bite the bullet and redefine the cpumask_t 
+would force a lot of changes to be made, but perhaps that's really the
+way to go.
 
-BTW, did you address Peter's concern?
+As to obtaining temp cpumask_t's (both early and late), perhaps a pool of
+them would be better?  I believe it could be done similar to alloc_bootmem
+(but much simpler), and I don't think there's enough nesting to require a
+very large pool.  (4 was the largest depth I could find in io_apic.c.)  Of
+course, with preemption enabled then other problems arise...
 
-YH
+One other really big use was for the "allbutself" cpumask in the send_IPI
+functions.  I think here, preemption is ok because the ownership of the
+cpumask temp is very short lived.
+
+But thanks for pointing out the get_online_cpus problem.  I did try and
+chase down as many call trees as I could, but I obviously missed one
+important one.
+
+And thanks for looking it over!
+Mike
+
