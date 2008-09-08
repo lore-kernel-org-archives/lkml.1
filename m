@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753294AbYIHLjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbYIHLlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753294AbYIHLjv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbYIHLjm
+	id S1753645AbYIHLlw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYIHLlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:39:42 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:38747 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbYIHLjk (ORCPT
+	Mon, 8 Sep 2008 07:41:45 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:56382 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751193AbYIHLlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:39:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=PczJQnGRSdb1YMflqG9pED1M2PjP/Y5GfEnuPawFuSGl8EP/FMGQRJyJ3htLD2Uet9
-         CJ4iwN65E8uolP907SXrS/4+LHL2cTzTMZS39y6n5ASOtcqFXAsPwDg0GK1Qhys64SlB
-         j1Vx/eBDcysTUIkxWlhL3NI77z3OuSKK8pVmg=
-Message-ID: <48C50EA4.2020700@gmail.com>
-Date: Mon, 08 Sep 2008 13:38:12 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 8 Sep 2008 07:41:44 -0400
+X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K6VKGW-03-CUB-01
+Date: Mon, 8 Sep 2008 13:41:19 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: use __GFP_NORETRY in the case of GFP_DMA with pci-nommu
+Message-ID: <20080908114119.GH3189@amd.com>
+References: <1220605129-18359-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20080905104305.GA3189@amd.com> <20080906211813F.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] SATA: Blacklist systems that spin off disks during ACPI
- power off
-References: <200808290002.55026.rjw@sisk.pl> <200808291241.04183.rjw@sisk.pl> <48B7D286.7050104@gmail.com> <200809061923.29020.rjw@sisk.pl>
-In-Reply-To: <200809061923.29020.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080906211813F.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 08 Sep 2008 11:41:19.0454 (UTC) FILETIME=[CF751FE0:01C911A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> SATA: Blacklist systems that spin off disks during ACPI power off
+On Sat, Sep 06, 2008 at 09:18:37PM +0900, FUJITA Tomonori wrote:
+> On Fri, 5 Sep 2008 12:43:05 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> Some notebooks from HP have the problem that their BIOSes attempt to
-> spin down hard drives before entering ACPI system states S4 and S5.
-> This leads to a yo-yo effect during system power-off shutdown and the
-> last phase of hibernation when the disk is first spun down by the
-> kernel and then almost immediately turned on and off by the BIOS.
-> This, in turn, may result in shortening the disk's life times.
+> > On Fri, Sep 05, 2008 at 05:58:48PM +0900, FUJITA Tomonori wrote:
+> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > ---
+> > >  arch/x86/kernel/pci-nommu.c |    3 +++
+> > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+> > > index 526b2db..3495f88 100644
+> > > --- a/arch/x86/kernel/pci-nommu.c
+> > > +++ b/arch/x86/kernel/pci-nommu.c
+> > > @@ -102,6 +102,9 @@ nommu_alloc_coherent(struct device *hwdev, size_t size,
+> > >  	if (dma_mask == DMA_24BIT_MASK)
+> > >  		gfp |= GFP_DMA;
+> > >  again:
+> > > +	if (gfp & GFP_DMA)
+> > > +		gfp |= __GFP_NORETRY;
+> > > +
+> > 
+> > Huh? Why that? The __GFP_NORETRY is a hint from the caller to the page
+> > allocator on how aggressive it should try to allocate memory. I don't
+> > think the DMA code should touch those flags unless there is a very very
+> > good reason for it.
 > 
-> To prevent this from happening we can blacklist the affected systems
-> using DMI information.  However, only the on-board controlles should
-> be blacklisted and their PCI slot numbers can be used for this
-> purpose.  Unfortunately the existing interface for checking DMI
-> information of the system is not very convenient for this purpose,
-> because to use it, we would have to define special callback functions
-> or create a separate struct dmi_system_id table for each blacklisted
-> system.
+> The current comment is reasonable for me:
 > 
-> To overcome this difficulty introduce a new function
-> dmi_first_match() returning a pointer to the first entry in an array
-> of struct dmi_system_id elements that matches the system DMI
-> information.  Then, we can use this pointer to access the entry's
-> .driver_data field containing the additional information, such as
-> the PCI slot number, allowing us to do the desired blacklisting.
-> 
-> Introduce a new libata flag ATA_FLAG_NO_POWEROFF_SPINDOWN that, if
-> set, will prevent disks from being spun off during system power off
-> and hibernation (to handle the hibernation case we need a new system
-> state SYSTEM_HIBERNATE_ENTER that can be checked against by libata,
-> in analogy with SYSTEM_POWER_OFF).  Use dmi_first_match() to set this
-> flag for some systems affected by the problem described above (HP nx6325,
-> HP nx6310, HP 2510p).
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> /* Don't invoke OOM killer or retry in lower 16MB DMA zone */
+> if (gfp & __GFP_DMA)
+>      noretry = 1;
 
-libata part looks good to me but I think it would be better to
-separate out DMI changes into a separate patch.
+Ok, so please add a comment to this so we know in the future why this is
+there.
 
-Thanks.
+Joerg
 
 -- 
-tejun
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
