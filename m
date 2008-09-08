@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYIHKWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYIHK0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbYIHKWF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 06:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYIHKVy
+	id S1753266AbYIHK0u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 06:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYIHK0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 06:21:54 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59805 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751983AbYIHKVx (ORCPT
+	Mon, 8 Sep 2008 06:26:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49595 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751916AbYIHK0m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 06:21:53 -0400
-Date: Mon, 8 Sep 2008 11:21:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pascal GREGIS <pgs@synerway.com>
-Cc: linux-kernel@vger.kernel.org, Mark Lord <lkml@rtr.ca>
-Subject: Re: SCSI or libata problem with an RDX removable disk
-Message-ID: <20080908112134.7bca9dea@lxorguk.ukuu.org.uk>
-In-Reply-To: <20080904135216.GF2814@venus.synerway.com>
-References: <20080904095447.GE2814@venus.synerway.com>
-	<20080904123418.4fab9ea3@lxorguk.ukuu.org.uk>
-	<20080904135216.GF2814@venus.synerway.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 8 Sep 2008 06:26:42 -0400
+Date: Mon, 8 Sep 2008 12:30:15 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
+Message-ID: <20080908103015.GE26079@one.firstfloor.org>
+References: <20080905215452.GF11692@us.ibm.com> <200809081552.50126.nickpiggin@yahoo.com.au> <20080908093619.GC26079@one.firstfloor.org> <200809081946.31521.nickpiggin@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809081946.31521.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sep  4 08:03:08 devsni1 kernel: ata4: port is slow to respond, please be patient (Status 0xd0)
-> Sep  4 08:03:31 devsni1 kernel: ata4: port failed to respond (30 secs, Status 0xd0)
-> Sep  4 08:03:31 devsni1 kernel: ata4: soft resetting port
-> Sep  4 08:03:32 devsni1 kernel: ATA: abnormal status 0xD0 on port 0x0001d807
-> Sep  4 08:03:32 devsni1 last message repeated 4 times
+On Mon, Sep 08, 2008 at 07:46:30PM +1000, Nick Piggin wrote:
+> On Monday 08 September 2008 19:36, Andi Kleen wrote:
+> > > You use non-linear mappings for the kernel, so that kernel data is
+> > > not tied to a specific physical address. AFAIK, that is the only way
+> > > to really do it completely (like the fragmentation problem).
+> >
+> > Even with that there are lots of issues, like keeping track of
+> > DMAs or handling executing kernel code.
+> 
+> Right, but the "high level" software solution is to have nonlinear
+> kernel mappings. Executing kernel code should not be so hard because
+> it could be handled just like executing user code (ie. the CPU that
+> is executing will subsequently fault and be blocked until the
+> relocation is complete).
 
-Your disk went offline and then refused to come back when the link was
-reset. The initial trigger appears to have been the drive, the fact it
-didn't come back could either be the drive or a controller problem. We've
-seen a few cases where devices or controllers fail to recover from one
-end being stuck expecting data.
+First blocking arbitary code is hard. There is some code parts
+which are not allowed to block arbitarily. Machine check or NMI
+handlers come to mind, but there are likely more.
 
-Mark Lord did some patches to try and drain data in this case but I don't
-remember if they were merged yet.
+Then that would be essentially a hypervisor or micro kernel approach.
+e.g. Xen does that already kind of, but even there it would
+be quite hard to do fully in a general way. And for hardware hotplug
+only the fully generally way is actually useful unfortunately.
 
-Alan
+-Andi
