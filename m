@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYIHNzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYIHN4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754568AbYIHNzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYIHNzc
+	id S1754219AbYIHN4o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYIHN4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:55:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41542 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbYIHNzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:55:31 -0400
-Date: Mon, 8 Sep 2008 15:55:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, tony.luck@intel.com
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, tony.luck@intel.com,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 0/3] minor cleanups for swiotlb
-Message-ID: <20080908135510.GF11993@elte.hu>
-References: <1220867630-1995-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1220867630-1995-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 8 Sep 2008 09:56:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38949 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYIHN4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 09:56:35 -0400
+Subject: Re: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: svaidy@linux.vnet.ibm.com
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+In-Reply-To: <20080908134843.GA4053@dirshya.in.ibm.com>
+References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
+	 <1220880346.12278.17.camel@twins.programming.kicks-ass.net>
+	 <20080908134843.GA4053@dirshya.in.ibm.com>
+Content-Type: text/plain
+Date: Mon, 08 Sep 2008 15:56:09 +0200
+Message-Id: <1220882169.12278.23.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> This patchset is minor cleanups for swiotlb. It doesn't confilict with
-> the swiotlb fixes for the x86 tree (that I've just sent):
+On Mon, 2008-09-08 at 19:18 +0530, Vaidyanathan Srinivasan wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-09-08 15:25:46]:
 > 
-> http://lkml.org/lkml/2008/9/8/30
+> > May I again ask to first clean up the current power saving code before
+> > stacking more on top of it?
 > 
-> This can be cleanly applied to tip/master and tip/x86/iommu.
+> :) I understand that you have asked for two things with respect to the
+> current power save balance code:
 > 
-> Ingo, can you apply this to your tree?
+> 1. Detailed documentation
 
-applied to tip/x86/iommu, thanks!
+Preferably in the form of in-code comments and code structure, this
+Documentation/* stuff always gets lost on me.
 
-Tony, since ia64 makes use of CONFIG_SWIOTLB, do you have any objections 
-to carrying these patches in tip/x86/iommu?
+> 2. Cleanup the group_min and group_leader stuff in
+>    find_busiest_group()
+> 
+> Did I get the requirements correct?
 
-	Ingo
+That would be much appreciated. 
+
+But I also prefer to get rid of that power savings tweak in
+cpu_coregroup_map(). 
+
+But above all, readable code ;-)
+
+find_busiest_group() is the stuff of nightmares.
+
