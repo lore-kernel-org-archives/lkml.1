@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYIHLNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbYIHLT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419AbYIHLNu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYIHLNl
+	id S1753541AbYIHLT5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:19:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIHLTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:13:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:33953 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbYIHLNl (ORCPT
+	Mon, 8 Sep 2008 07:19:49 -0400
+Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:30562 "HELO
+	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751913AbYIHLTs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:13:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YaQ9VzwnK4Ml69JdxMMZXe6032rdDJ0/V88uMs+Pjo3iI8r7kVXHNdSx2mvJUjvkTf
-         i32wPoBtJsfU1NuSkBjWZsGh68xxFfG4fGAjgOoRPMu46vqtV+g6KvUSP7HUD2UoaoxA
-         LVt1alBJnTNtHyg3uLOtS1H0itMgVGRqfi6Ao=
-Message-ID: <8ee0b8e80809080413r1eb75a2bu1b29ffdf06daa319@mail.gmail.com>
-Date: Mon, 8 Sep 2008 13:13:39 +0200
-From: "Jeroen van Rijn" <jvrnix@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
-Cc: "Tony Vroon" <tony@vroon.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <87abeivrdf.fsf@basil.nowhere.org>
+	Mon, 8 Sep 2008 07:19:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Dl/bv/l+/8dt35VMfl+kJen+O0SLGMXjLrFnauX4EhfIU5ErAK/iWwCTPWB1j7Um6EV8SQmshvX5QPLHuJKnxyGYZnQbj2FTwB+bPZkX4nAo+VpWqho+tgPQ58JqdbScb88QHRJuarE26o2FxcubXCdAPw3IfLBXLz7VEd371U0=  ;
+X-YMail-OSG: ic62vuQVM1nwuyGtwE6lMShWyonrJ2vb1afMPohbbSFHGO5e85vl3VeYGVLex.2Lg64EcSiC_tv8Fz0zFwKLu5xXTYsAMsZOAFd8hb7rBwCy7yG2ryZEQvmjEjES7ZOamUw-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
+Date: Mon, 8 Sep 2008 21:19:32 +1000
+User-Agent: KMail/1.9.5
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
+References: <20080905215452.GF11692@us.ibm.com> <200809081946.31521.nickpiggin@yahoo.com.au> <20080908103015.GE26079@one.firstfloor.org>
+In-Reply-To: <20080908103015.GE26079@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1220754742.8530.12.camel@localhost>
-	 <87abeivrdf.fsf@basil.nowhere.org>
+Message-Id: <200809082119.32725.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 8, 2008 at 12:55 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> Tony Vroon <tony@vroon.org> writes:
+On Monday 08 September 2008 20:30, Andi Kleen wrote:
+> On Mon, Sep 08, 2008 at 07:46:30PM +1000, Nick Piggin wrote:
+> > On Monday 08 September 2008 19:36, Andi Kleen wrote:
+> > > > You use non-linear mappings for the kernel, so that kernel data is
+> > > > not tied to a specific physical address. AFAIK, that is the only way
+> > > > to really do it completely (like the fragmentation problem).
+> > >
+> > > Even with that there are lots of issues, like keeping track of
+> > > DMAs or handling executing kernel code.
+> >
+> > Right, but the "high level" software solution is to have nonlinear
+> > kernel mappings. Executing kernel code should not be so hard because
+> > it could be handled just like executing user code (ie. the CPU that
+> > is executing will subsequently fault and be blocked until the
+> > relocation is complete).
 >
->> HARDWARE ERROR. This is *NOT* a software problem!
->  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->> Please contact your hardware vendor
->  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->
->> I realize that the linux kernel may be entirely blameless in this
->> situation,
->
-> It is, like mcelog told you.
->
->> but I'd like to have some peer insight before I run after
->> vendors.
->
-> It unfortunately turns out that mcelog logging is a tricky
-> psychological problem. How should the warning above have
-> looked like so that you would not have required "peer insight"
-> and actually just contacted your hardware vendor?
+> First blocking arbitary code is hard. There is some code parts
+> which are not allowed to block arbitarily. Machine check or NMI
+> handlers come to mind, but there are likely more.
 
-I suppose mcelog might be extended to point at possible tools to get a
-second opinion, in case the admin would like to to be entirely
-certain. In their position I can understand them when their vendor
-asks them if it's the hardware and what tests they've run to rule out
-software.
+Sorry, by "block", I really mean spin I guess. I mean that the CPU will
+be forced to stop executing due to the page fault during this sequence:
 
-Think for example a machine check that might point to faulty RAM, it
-might direct the admin to run memcheck if mcelog alone isn't
-compelling enough.
+for prot RO:
+alloc new page
+memcpy(new, old)
+ptep_clear_flush(ptep)         <--- from here
+set_pte(ptep, newpte)          <--- until here
 
-> Thank you.
->
-> -Andi (who wonders if <blink> tags in syslog would be useful
-> to solve this)
+for prot RW, the window also would include the memcpy, however if that
+adds too much latency for execute/reads, then it can be mapped RO first,
+then memcpy, then flushed and switched.
+ 
 
-Yikes, ixnay to the <blinkay>. Next people will ask for flash support
-to get all-singing and -dancing error messages.
+> Then that would be essentially a hypervisor or micro kernel approach.
 
--- Jeroen.
+What would be? Blocking in interrupts? Or non-linear kernel mapping in
+general? Nonlinear kernel mapping I don't think anyone disputes is the
+only way to defragment (for unplug or large allocations) arbitrary
+physical memory with any sort of guarantee. In the future if TLB costs
+grow very much larger, I think this might be worth considering.
+
+But until that becomes inevitable, I really don't want to hack the VM
+with crap like transparent variable order mappings etc. but rather
+"encourage" CPU manufacturers to have big fast TLBs :)
+
+
+> e.g. Xen does that already kind of, but even there it would
+> be quite hard to do fully in a general way. And for hardware hotplug
+> only the fully generally way is actually useful unfortunately.
+
+Yeah I don't really get the hardware hotplug thing. For reliability or
+anything it should all be done in hardware (eg. warm/hot spare memory
+module). For power I guess there is some argument, but I would prefer
+to wait the trends out longer before committing to something big: non
+volatile ram replacement for dram for example might be achieved in
+future.
+
+But if anybody disagrees, they are sure free to implement non-linear
+kernel mappings and physical defragmentation and shut me up with
+real numbers!
+
