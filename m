@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbYIHQ7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYIHRCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbYIHQ7s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYIHQ7k
+	id S1754158AbYIHRCZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 13:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYIHRCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:59:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49258 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752706AbYIHQ7j (ORCPT
+	Mon, 8 Sep 2008 13:02:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34081 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751458AbYIHRCN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:59:39 -0400
-Date: Mon, 8 Sep 2008 09:59:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: david@lang.hm
-cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       linux@sandersweb.net, linux-kernel@vger.kernel.org,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-In-Reply-To: <alpine.DEB.1.10.0809080925400.10413@asgard.lang.hm>
-Message-ID: <alpine.LFD.1.10.0809080954370.3117@nehalem.linux-foundation.org>
-References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org>
- <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com> <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org>
- <alpine.DEB.1.10.0809080925400.10413@asgard.lang.hm>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Sep 2008 13:02:13 -0400
+Date: Mon, 8 Sep 2008 18:01:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Hugh Dickens <hugh@veritas.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+Subject: Re: [PATCH 0 of 3] Low memory corruption detection and workaround
+Message-ID: <20080908180125.7e7ef369@lxorguk.ukuu.org.uk>
+In-Reply-To: <48C5570B.7050109@goop.org>
+References: <patchbomb.1220777491@localhost>
+	<48C3F237.1020503@tuffmail.co.uk>
+	<200809082123.04780.nickpiggin@yahoo.com.au>
+	<48C5570B.7050109@goop.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 08 Sep 2008 09:47:07 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-
-On Mon, 8 Sep 2008, david@lang.hm wrote:
+> Nick Piggin wrote:
+> > Why not high memory as well? We put page tables there too...
+> >   
 > 
-> I always understood the CPU selection to be "this CPU and ones compatible with
-> it will work, others won't" unless generic was enabled.
+> Well, the specific problem is that the BIOS appears to corrupt low
+> memory.  It might corrupt other memory anywhere, but that would be
+> pretty pathologically evil.  The assumption is that it gets away with it
+> because its memory that Windows doesn't otherwise use or something.
 
-No.
+Or that its hitting stuff that doesn't kill the OS...
 
-Read the help text.. 
+What has the vendor had to say and if they are not being helpful has
+anyone considered delivered them a report of the corruption and trace info
+by say registered post with a suggestion that they might now be knowingly
+exposing customers to unneccessary risk through their inaction ...
 
-Yes, we care about features that MATTER. But if compiles start using 
-features that don't really matter, and make a specific kernel _too_ 
-specific, then we need to reign in the madness.
-
-IOW, it's a balance. On one hand, yes, the uarch makes sense. On the 
-other, it's just stupid to have to worry about details that don't 
-realistically make any difference at all - except whether the machine 
-works or not.
-
-And yes, we could just put this up as a Virtual PC bug. It clearly is. But 
-in the end, it _still_ all boils down to a balance between "do we actually 
-win anything by using NOPL statically" vs "do we lose anything by being 
-too damn inconvenient".
-
-		Linus
+Alan
