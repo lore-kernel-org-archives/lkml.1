@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYIHUej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbYIHUgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbYIHUej (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 16:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYIHUeb
+	id S1755357AbYIHUgg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 16:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbYIHUg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 16:34:31 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:2727 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753168AbYIHUea (ORCPT
+	Mon, 8 Sep 2008 16:36:29 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:59082 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239AbYIHUg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 16:34:30 -0400
-From: David Sanders <linux@sandersweb.net>
-Reply-To: linux@sandersweb.net
-To: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] x86 fixes
-Date: Mon, 8 Sep 2008 16:34:23 -0400
-User-Agent: KMail/1.9.5
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>
-References: <200809081932.m88JWVZG013061@askone.hos.anvin.org>
-In-Reply-To: <200809081932.m88JWVZG013061@askone.hos.anvin.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809081634.24257.linux@sandersweb.net>
+	Mon, 8 Sep 2008 16:36:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :date:message-id:mime-version:x-mailer;
+        b=XigakGYXMtHv6RwznnV65BcQE32QVBHSh1hXa0MjFP8mrGsQzKYzhPQnwiDENSjAQM
+         bOkT0w69KiT501Wckc1rByu7FA40OYx491MsDeTiHsZkzWUjidn7LjlcvpgsZbWiDPub
+         unLxeQ/fSmkuiVGyQ6KX+iS/VbVptBkiQkhMU=
+Subject: Re: Various OOps with 2.6.27-rc5
+From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<alejandro.riveira@gmail.com>
+Reply-To: alejandro.riveira@gmail.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080908124641.9ec6887a.randy.dunlap@oracle.com>
+References: <1220815296.11776.4.camel@Varda>
+	 <20080908124641.9ec6887a.randy.dunlap@oracle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NTInUJupjba9tZNw31Wr"
+Date: Mon, 08 Sep 2008 22:36:22 +0200
+Message-Id: <1220906182.15312.1.camel@Varda>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 September 2008 15:32, H. Peter Anvin wrote:
-> diff --git a/arch/x86/Makefile_32.cpu b/arch/x86/Makefile_32.cpu
-> index e372b58..b72b4f7 100644
-> --- a/arch/x86/Makefile_32.cpu
-> +++ b/arch/x86/Makefile_32.cpu
-> @@ -45,3 +45,8 @@ cflags-$(CONFIG_MGEODEGX1)	+= -march=pentium-mmx
->  # cpu entries
->  cflags-$(CONFIG_X86_GENERIC) 	+= $(call tune,generic,$(call tune,i686))
-Peter, I'm getting this error:
-as: unrecognized option `-mtune=generic32'
-I have binutils 2.17.
-David
+
+--=-NTInUJupjba9tZNw31Wr
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+El lun, 08-09-2008 a las 12:46 -0700, Randy Dunlap escribi=C3=B3:
+
+[ ... ]
+> > The dmesg including oopses
+>=20
+> Actually they are INFO: messages with getnstimeofday() being stuck,
+> similar to a few other reports on lkml.
+
+ So is it useful to report them or i just do:
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+ And forget about it ??
+
+
+> [ ... ]
+>=20
+
+ Thanks for the answer,
+ Cheers
+
+--=20
+The idea that Bill Gates has appeared like a knight in shining armour to
+lead all customers out of a mire of technological chaos neatly ignores
+the fact that it was he who, by peddling second-rate technology, led
+them into it in the first place.=20
+                                     Douglas Adams
+
+--=-NTInUJupjba9tZNw31Wr
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Esta parte del mensaje =?ISO-8859-1?Q?est=E1?= firmada
+	digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iEYEABECAAYFAkjFjMYACgkQ3GEkiSnUSOFifgCfT1cDNK+Ka/+wcnX0xs0w+M+w
+gKQAnjX6A1XrPz7rvwO86h1NhWzPW2+A
+=9Bfp
+-----END PGP SIGNATURE-----
+
+--=-NTInUJupjba9tZNw31Wr--
+
