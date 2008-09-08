@@ -1,123 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbYIHEaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbYIHEeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753282AbYIHEaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 00:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYIHEa1
+	id S1753424AbYIHEeU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 00:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYIHEeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 00:30:27 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:42626 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbYIHEa0 (ORCPT
+	Mon, 8 Sep 2008 00:34:03 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:47924 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751138AbYIHEeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 00:30:26 -0400
-Message-ID: <1870.166.70.238.45.1220846439.squirrel@webmail.wolfmountaingroup.com>
-Date: Sun, 7 Sep 2008 22:00:39 -0600 (MDT)
-Subject: [ANNOUNCE] mdb:  Merkey's Linux Kernel Debugger Release 2.6.27-rc6
-From: jmerkey@wolfmountaingroup.com
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-References: 
-In-Reply-To: 
+	Mon, 8 Sep 2008 00:34:00 -0400
+Message-Id: <6.0.0.20.2.20080908132950.04ab2d50@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Mon, 08 Sep 2008 13:31:25 +0900
+To: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: [PATCH] NFS: Pagecache usage optimization on nfs
+Cc: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-I am tired of waiting for rc6, so if there are ground shaking changes over
-rc6-git9, I will update the patches.
+The new address_space_ops is_partially_uptodate was added at 2.6.27-rc1.
+On ext3, this aops checks whether buffer_heads that are attached to a page are
+uptodate or not when a page is not uptodate. When all buffers which correspond
+to a portion we want to read are uptodate even if a page is not uptodate, 
+we can avoid actual read IO.
 
-ChangeLog, 09/07/2008
+See
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=8ab22b9abb5c55413802e4adc9aa6223324547c3;hp=d84a52f62f6a396ed77aa0052da74ca9e760b28a
 
-Corrected dword, word, and byte dereference in the mdb-logic.c
-documentation to match the disassembly display.
+I wrote is_partially_uptodate aops for nfs named nfs_is_partially_uptodate.This aops
+checks whether read IO to a page is between wb_pgbase and wb_pgbase + wb_bytes of
+nfs_page that is attached to this page. If this aops succeed, we do not have to do actual read.
+I think random read/write mixed workloads or random read after random write 
+workloads can be optimized with this patch.
 
-Changed oops_in_progress entry point to a counter variable to preserve
-state when mdb is called from exceptions where it may have been previously
-set.
+Thanks.
 
-Cleaned up several hundred more checkpatch.pl messages.
+Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
 
-Cleanup error check cases in mdb-logic.c
-
-back ported modularization, and use of notify_die handlers, sysrq handler
-to previous Linux kernel mdb patch versions 2.6.18 up through 2.6.27-rc6.
-
-removed dependencies on broken thread migration routines in reboot.c  with
-processor migration during reboot request.  It's busted if multiple
-processors are in the debugger.
-
-TO-DO
-
-x86_64 systems received, merge in process
-IA64 systems slated for receipt in November for testing. code merge in
-process with software simulator.
-Nested TSS gates for X86 and X86_64 in process
-
-MDB repositories
-
-http://sourceforge.net/projects/merkeydebugger
-http://code.google.com/p/merkeydebugger
-http://www.wolfmountaingroup.org
-
-mdb-2.6.27-rc6 patches
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.27-rc6-ia32-09-07-08.patch
-
-back ports of mdb linux kernel patches
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.18-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.19-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.20-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.21-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.22-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.23-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.24-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.25-ia32-09-07-08.patch
-ftp://ftp.wolfmountaingroup.org/pub/mdb/mdb-2.6.26-ia32-09-07-08.patch
-
-Jeffrey Vernon Merkey
-Wolf Mountain Group, Inc.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+diff -Nrup linux-2.6.27-rc5.org/fs/nfs/file.c linux-2.6.27-rc5.nfs/fs/nfs/file.c
+--- linux-2.6.27-rc5.org/fs/nfs/file.c	2008-09-03 14:56:16.000000000 +0900
++++ linux-2.6.27-rc5.nfs/fs/nfs/file.c	2008-09-08 10:53:00.000000000 +0900
+@@ -446,6 +446,7 @@ const struct address_space_operations nf
+ 	.releasepage = nfs_release_page,
+ 	.direct_IO = nfs_direct_IO,
+ 	.launder_page = nfs_launder_page,
++	.is_partially_uptodate = nfs_is_partially_uptodate,
+ };
+ 
+ static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
+diff -Nrup linux-2.6.27-rc5.org/fs/nfs/read.c linux-2.6.27-rc5.nfs/fs/nfs/read.c
+--- linux-2.6.27-rc5.org/fs/nfs/read.c	2008-07-14 06:51:29.000000000 +0900
++++ linux-2.6.27-rc5.nfs/fs/nfs/read.c	2008-09-08 11:02:59.000000000 +0900
+@@ -605,6 +605,33 @@ out:
+ 	return ret;
+ }
+ 
++int nfs_is_partially_uptodate(struct page *page, read_descriptor_t *desc,
++					unsigned long from)
++{
++	struct inode *inode = page->mapping->host;
++	unsigned to;
++	struct nfs_page *req = NULL;
++
++	spin_lock(&inode->i_lock);
++	if (PagePrivate(page)) {
++		req = (struct nfs_page *)page_private(page);
++		if (req)
++			kref_get(&req->wb_kref);
++	}
++	spin_unlock(&inode->i_lock);
++	if (!req)
++		return 0;
++
++	to = min_t(unsigned, PAGE_CACHE_SIZE - from, desc->count);
++	to = from + to;
++	if (from >= req->wb_pgbase && to <= req->wb_pgbase + req->wb_bytes) {
++		nfs_release_request(req);
++		return 1;
++	}
++	nfs_release_request(req);
++	return 0;
++}
++
+ int __init nfs_init_readpagecache(void)
+ {
+ 	nfs_rdata_cachep = kmem_cache_create("nfs_read_data",
+diff -Nrup linux-2.6.27-rc5.org/include/linux/nfs_fs.h linux-2.6.27-rc5.nfs/include/linux/nfs_fs.h
+--- linux-2.6.27-rc5.org/include/linux/nfs_fs.h	2008-09-03 14:56:20.000000000 +0900
++++ linux-2.6.27-rc5.nfs/include/linux/nfs_fs.h	2008-09-08 11:04:28.000000000 +0900
+@@ -504,6 +504,8 @@ extern int  nfs_readpages(struct file *,
+ 		struct list_head *, unsigned);
+ extern int  nfs_readpage_result(struct rpc_task *, struct nfs_read_data *);
+ extern void nfs_readdata_release(void *data);
++extern int  nfs_is_partially_uptodate(struct page *, read_descriptor_t *,
++		unsigned long);
+ 
+ /*
+  * Allocate nfs_read_data structures
 
