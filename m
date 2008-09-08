@@ -1,104 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYIHEIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbYIHEST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbYIHEIz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 00:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbYIHEIs
+	id S1753261AbYIHEST (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 00:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYIHESG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 00:08:48 -0400
-Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:58421 "EHLO
-	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750804AbYIHEIr (ORCPT
+	Mon, 8 Sep 2008 00:18:06 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:2099 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbYIHESF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 00:08:47 -0400
-Message-ID: <17946.166.70.238.45.1220845139.squirrel@webmail.wolfmountaingroup.com>
-Date: Sun, 7 Sep 2008 21:38:59 -0600 (MDT)
-Subject: [ANNOUNCE] Merkey's LinuxWare 1.0 MS-DOS Loader
-From: jmerkey@wolfmountaingroup.com
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.6
+	Mon, 8 Sep 2008 00:18:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=g2qBpMAwGgZtUeRwUC9IZpZjbGih3DPQJesGh/Wp7nKRBG7aaoFgGMrrNRqyW9D2YH
+         UoVF33AGoE6TVtTmf0V5HLliH1RfBuXfdTwFj8lnChKQV0YKJ93lm+Bs0EByCD0o8b9m
+         1p/gBtsI0Xx67LMjw5EcNNEIr1wn4TjWtbqCY=
+Message-ID: <aa79d98a0809072118o11f175d0g6ca02799e91f0508@mail.gmail.com>
+Date: Mon, 8 Sep 2008 08:18:04 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [patch 3/3] x86: io-apic - code style cleaning for setup_IO_APIC_irqs
+Cc: "Ingo Molnar" <mingo@elte.hu>, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, macro@linux-mips.org
+In-Reply-To: <86802c440809071724i35a1e26frb01c401bee693ad@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-References: 
-In-Reply-To: 
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_60208_11521770.1220847484770"
+References: <20080904183748.950151853@gmail.com>
+	 <48c02b6a.0637560a.15e9.ffffa39d@mx.google.com>
+	 <20080905080447.GC12409@elte.hu> <20080905180126.GA19334@lenovo>
+	 <20080905181111.GG27395@elte.hu> <20080905183347.GB19334@lenovo>
+	 <20080905183835.GA19215@elte.hu> <20080906101533.GA7273@lenovo>
+	 <20080906131217.GA4910@elte.hu>
+	 <86802c440809071724i35a1e26frb01c401bee693ad@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am pleased to announce the release of Merkey's LinuxWare, an MS-DOS (or
-DR-DOS) loader that allows you to compile a Linux kernel as an MS-DOS
-Executable, boot and load Linux from MS-DOS (while DOS stays resident).
+------=_Part_60208_11521770.1220847484770
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This in essence is exactly the same as old Legacy Netware, and in fact, I
-wrote a linker that does what the old NetWare custom linker did when it 
-compiled the NetWare kernel and linked it as a DOS Application.  Linux
-works
-just like it does normally, except you can quit Linux and exit back to  DOS.
+On Mon, Sep 8, 2008 at 4:24 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Sat, Sep 6, 2008 at 6:12 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+>>
+>>> By changing printout form we are able to shrink code a bit.
+>>>
+>>> Former printout example:
+>>>
+>>>       init IO_APIC IRQs
+>>>        IO-APIC (apicid-pin) 1-1, 1-2, 1-3 not connected.
+>>>        IO-APIC (apicid-pin) 2-1, 2-2, 2-3 not connected.
+>>>
+>>> New printout example:
+>>>
+>>>       init IO_APIC IRQs
+>>>        1-1 1-2 1-3 (apicid-pin) not connected
+>>>        2-1 2-2 2-3 (apicid-pin) not connected
+>>
+>> applied to tip/irq/sparseirq - thanks Cyrill.
+>
+> got
+>  0-16<7> 0-17<7> 0-18<7> 0-19<7> 0-20<7> 0-21<7> 0-22<7> 0-23<7>
+> (apicid-pin) not connected
+>  1-0<7> 1-1<7> 1-2<7> 1-3<7> 1-4<7> 1-5<7> 1-6<7> 1-7<7> 1-8<7> 1-9<7>
+> 1-10<7> 1-11<7> 1-12<7> 1-13<7> 1-14<7> 1-15<7> 1-16<7> 1-17<7>
+> 1-18<7> 1-19<7> 1-20<7> 1-21<7> 1-22<7> 1-23<7> (apicid-pin) not
+> connected
+>
+> can you remove the extra <7>?
+>
+> YH
+>
 
+Thanks Yinghai! The patch enveloped.
+I'm overzealous with KERN_DEBUG marker. Sorry.
+(Can't send it inlined - hope it's not a big problem)
 
-Now who in the hell would want this?  Well, it's damn convenient to have  
-(or was at one time) a DOS loadable program.
+Cyrill
 
-One cool thing inside LinuxWare is the loader debugger which is able to 
-initialize the kallsyms tables BEFORE LINUX IS LOADED and allow you to
-walk through early loader init of Linux (like where it loads the GDT for
-the first time).
+------=_Part_60208_11521770.1220847484770
+Content-Type: application/octet-stream; name=io-apic.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fkul26dl0
+Content-Disposition: attachment; filename=io-apic.patch
 
-So there is a lot of cool, innovative (not boring) and powerful code
-within, that can be used to make it easier to debug and develop linux. 
-This tool was designed by me (and used by me) to take Linux apart and
-study it thoroughly, and to shore up a sagging (and now deceased) DR-DOS
-market.
-
-I stopped using it after 2.6 so its only up to 2.4.18, and there is an
-early MDB integrated with KDB.
-
-BORLAND compiler was used to build the DOS side, but DJGPP would probably
-still work.   As part of a lawsuit settlement, this code and IP reverted
-back to my ownsership, and since its dead as a doornail DOS, might as well
-see if there's stuff in here folks might could salvage -- one man's trash,
-another man's treasure ...
-
-ftp://ftp.wolfmountaingroup.org/pub/linuxware/linuxware-09072008.tar.gz
-ftp://ftp.wolfmountaingroup.org/pub/linuxware
-http://www.wolfmountaingroup.org/
-
-Jeff
-
-
-FAQ.
-
-So why would someone as hated as you even want to work on Linux?   A. 
-It's a free country.   I have some good stuff that helps people, so why
-the hell not.  Who made you people god (with a small g) anyway?
-
-So why are you acting like an arrogant, self promoting prick in naming all
-this stuff after you -- geez.
-
-A.  Linus = Linux, Reiser = ReiserFS, why the hell not.  everyone else is
-doing it.  If Hans and Linus get to do it, so do I !!!!
-
-Isn't Linus and the Linux community opposed to your work in several areas,
-like another OS and some of your public anti-linux statements?
-
-A.  I have no idea.  I do it because I enjoy it and it helps a lot of
-folks, me included.  I ignore most of what is said on the internet.  When
-people say or write something about you, it's not a reflection on you, its
-a reflection on them ...'   The same applies to this big mouth on this
-end.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+RnJvbTogQ3lyaWxsIEdvcmN1bm92IDxnb3JjdW5vdkBnbWFpbC5jb20+DQpTdWJqZWN0OiBbUEFU
+Q0hdIHg4NjogaW8tYXBpYyAtIGRvIG5vdCB1c2UgS0VSTl9ERUJVRyBtYXJrZXIgdG9vIG11Y2gN
+Cg0KRG8gbm90IHVzZSBLRVJOX0RFQlVHIHNldmVyYWwgdGltZXMgb24gdGhlIHNhbWUgbGluZSBi
+ZWluZyBwcmludGVkLg0KSW50cm9kdWNlZCBieSBtaW5lIHByZXZpb3VzIHBhdGNoLCBzb3JyeS4N
+Cg0KUmVwb3J0ZWQtYnk6IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdtYWlsLmNvbT4NClNpZ25l
+ZC1vZmYtYnk6IEN5cmlsbCBHb3JjdW5vdiA8Z29yY3Vub3ZAZ21haWwuY29tPg0KLS0tDQoNCi0t
+LSBhL2FyY2gveDg2L2tlcm5lbC9pb19hcGljLmMJTW9uIFNlcCAwOCAwNzozNDoxNiAyMDA4DQor
+KysgYi9hcmNoL3g4Ni9rZXJuZWwvaW9fYXBpYy5jCU1vbiBTZXAgMDggMDg6MDY6MzAgMjAwOA0K
+QEAgLTE1MjYsMTEgKzE1MjYsMTYgQEAgc3RhdGljIHZvaWQgX19pbml0IHNldHVwX0lPX0FQSUNf
+aXJxcyh2bw0KIA0KIAkJCWlkeCA9IGZpbmRfaXJxX2VudHJ5KGFwaWMsIHBpbiwgbXBfSU5UKTsN
+CiAJCQlpZiAoaWR4ID09IC0xKSB7DQotCQkJCWFwaWNfcHJpbnRrKEFQSUNfVkVSQk9TRSwNCi0J
+CQkJCUtFUk5fREVCVUcgIiAlZC0lZCIsDQotCQkJCQltcF9pb2FwaWNzW2FwaWNdLm1wX2FwaWNp
+ZCwgcGluKTsNCi0JCQkJaWYgKCFub3Rjb24pDQorCQkJCWlmICghbm90Y29uKSB7DQogCQkJCQlu
+b3Rjb24gPSAxOw0KKwkJCQkJYXBpY19wcmludGsoQVBJQ19WRVJCT1NFLA0KKwkJCQkJCUtFUk5f
+REVCVUcgIiAlZC0lZCIsDQorCQkJCQkJbXBfaW9hcGljc1thcGljXS5tcF9hcGljaWQsDQorCQkJ
+CQkJcGluKTsNCisJCQkJfSBlbHNlDQorCQkJCQlhcGljX3ByaW50ayhBUElDX1ZFUkJPU0UsICIg
+JWQtJWQiLA0KKwkJCQkJCW1wX2lvYXBpY3NbYXBpY10ubXBfYXBpY2lkLA0KKwkJCQkJCXBpbik7
+DQogCQkJCWNvbnRpbnVlOw0KIAkJCX0NCiANCkBAIC0xNTQ2LDE0ICsxNTUxLDE0IEBAIHN0YXRp
+YyB2b2lkIF9faW5pdCBzZXR1cF9JT19BUElDX2lycXModm8NCiAJCX0NCiAJCWlmIChub3Rjb24p
+IHsNCiAJCQlhcGljX3ByaW50ayhBUElDX1ZFUkJPU0UsDQotCQkJCUtFUk5fREVCVUcgIiAoYXBp
+Y2lkLXBpbikgbm90IGNvbm5lY3RlZFxuIik7DQorCQkJCSIgKGFwaWNpZC1waW4pIG5vdCBjb25u
+ZWN0ZWRcbiIpOw0KIAkJCW5vdGNvbiA9IDA7DQogCQl9DQogCX0NCiANCiAJaWYgKG5vdGNvbikN
+CiAJCWFwaWNfcHJpbnRrKEFQSUNfVkVSQk9TRSwNCi0JCQlLRVJOX0RFQlVHICIgKGFwaWNpZC1w
+aW4pIG5vdCBjb25uZWN0ZWRcbiIpOw0KKwkJCSIgKGFwaWNpZC1waW4pIG5vdCBjb25uZWN0ZWRc
+biIpOw0KIH0NCiANCiAvKg0K
+------=_Part_60208_11521770.1220847484770--
