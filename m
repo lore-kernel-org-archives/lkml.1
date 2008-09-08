@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbYIHQ0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYIHQ3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbYIHQ0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYIHQ0o
+	id S1753621AbYIHQ3W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 12:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYIHQ3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:26:44 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:47458 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbYIHQ0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:26:43 -0400
-From: David Sanders <linux@sandersweb.net>
-Reply-To: linux@sandersweb.net
-To: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-Date: Mon, 8 Sep 2008 12:26:35 -0400
-User-Agent: KMail/1.9.5
-Cc: "H. Peter Anvin" <hpa@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-References: <200808311422.12525.linux@sandersweb.net> <48C54F1B.8040604@zytor.com> <48C54FA0.10302@kernel.org>
-In-Reply-To: <48C54FA0.10302@kernel.org>
+	Mon, 8 Sep 2008 12:29:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:39948 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750894AbYIHQ3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 12:29:14 -0400
+Message-ID: <48C552D8.3050405@goop.org>
+Date: Mon, 08 Sep 2008 09:29:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Xen Devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 6 of 7] x86: use early_ioremap in __acpi_map_table
+References: <patchbomb.1220826072@localhost> <944fe7ea3da7707eb90f.1220826078@localhost> <20080907234418.GB26079@one.firstfloor.org> <48C46BCB.2060209@goop.org> <20080908142619.GA10580@elte.hu>
+In-Reply-To: <20080908142619.GA10580@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809081226.37283.linux@sandersweb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 September 2008 12:15, H. Peter Anvin wrote:
-> H. Peter Anvin wrote:
-> > The issue at hand is that at least with the current toolchain, we need
-> > to pass -march=generic in order for these instructions to be generated.
-> >  We have an option for this, CONFIG_X86_GENERIC, which distributions
-> > really *should* be using anyway.
+Ingo Molnar wrote:
+> uhm, there's a nasty trap in that route: it can potentially cause a lot 
+> of breakage.
 >
-> That should have been "-mtune=generic".  Sorry.
->
-> > And yes, it should be the default.  The patch I have makes it
-> > "default y" as well as change the help text.
-> >
-> > Would it make you happier if this option was forced enabled unless
-> > CONFIG_EMBEDDED was on?
->
-> I guess the other option is to create a new option for selecting the
-> dangerous -mtune= variants, and possibly lock *that* option to
-> CONFIG_EMBEDDED.
->
-> 	-hpa
+> It's not robust to assume that the ACPI code is sane wrt. 
+> mapping/unmapping, because it currently simply doesnt rely on robust 
+> unmapping (in the linear range).
+>   
 
-The option that works best for users is for the kernel to not use NOPLs on 
-32-bit cpu's.  That is what Linus's patch accomplishes.  I am not having any 
-issues with gcc or gas generating NOPLs.  The kernel should work out of the 
-box for PentiumPro or later cpu's running in 32-bit mode.  I think you are 
-trying to over-engineer the issue.  Just apply the patch and move on.
-David
+You mean there's code which just assumes that it can keep using a
+linear-mapped acpi even after __acpi_map_table() should have implicitly
+unmapped it?
+> I tried it in the past and i found tons of crappy ACPI code all around 
+> that just never unmapped tables. Leaking ACPI maps are hard to find as 
+> well, and it can occur anytime during bootup.
+>   
+
+__acpi_map_table() is called by acpi_map_table(), which does have a
+acpi_unmap_table() counterpart.  But it only calls iounmap() once we're
+past the stage of calling early_*().  I could easily make it call
+__acpi_unmap_table()->early_iounmap().  But if the concern is that the
+early boot callers of acpi_map_table() "know" that they never need to
+unmap, then yes, I see the problem.
+
+> As a general principle it might be worth fixing those places, and we've 
+> hardened up the early-ioremap code for leaks during the PAT rewrite, 
+> still please realize that it can become non-trivial and it might cause a 
+> lot of unhappy users.
+>
+> So i'd suggest a different, more carful approach: keep the new code you 
+> wrote, but print a WARN()ing if prev_map is not unmapped yet when the 
+> next mapping is acquired. That way the ACPI code can be fixed gradually 
+> and without breaking existing functionality.
+>   
+
+Yep.
+
+> There's another complication: ACPI might rely on multiple mappings being 
+> present at once, so unmapping the previous one might not be safe. But it 
+> _should_ be fine most of the time as __acpi_map_table() is only used 
+> inearly init code - and we fixed most of these things in the PAT 
+> patchset in any case.
+
+And the current behaviour of __acpi_map_table() is to remove the
+previous mapping (implicitly, by overwriting the same fixmap slots), so
+its only an issue if the callers assume they can keep using
+linear-mapped acpi tables after a subsequent call to __acpi_map_table().
+
+    J
