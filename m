@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYIHRJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbYIHRKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbYIHRJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 13:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYIHRJM
+	id S1754646AbYIHRKr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 13:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbYIHRKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 13:09:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54908 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbYIHRJL (ORCPT
+	Mon, 8 Sep 2008 13:10:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52360 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbYIHRKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 13:09:11 -0400
-Message-ID: <48C55C0A.7070203@zytor.com>
-Date: Mon, 08 Sep 2008 10:08:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 8 Sep 2008 13:10:35 -0400
+Date: Mon, 8 Sep 2008 13:10:26 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Takashi Sato <t-sato@yk.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "mtk.manpages@googlemail.com" <mtk.manpages@googlemail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Implement generic freeze feature
+Message-ID: <20080908171020.GA22521@infradead.org>
+References: <20080908205245t-sato@mail.jp.nec.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andi Kleen <andi@firstfloor.org>, linux@sandersweb.net,
-       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <andi-suse@firstfloor.org>
-Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
-References: <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com> <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org> <20080908170029.GP26079@one.firstfloor.org> <alpine.LFD.1.10.0809081000490.3117@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809081000490.3117@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080908205245t-sato@mail.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> Peter - does gcc actually use NOPL in _32-bit_ code too? It really seems 
-> to be a stupid decision to make a binary not run on other CPU's over 
-> something as trivial as that. That's something I'd expect out of an Intel 
-> compiler just to mess with AMD, not out of gcc.
-> 
+On Mon, Sep 08, 2008 at 08:52:45PM +0900, Takashi Sato wrote:
+> diff -uprN -X linux-2.6.27-rc5.org/Documentation/dontdiff linux-2.6.27-rc5.org/fs/block_dev.c linux-2.6.27-rc5-freeze/fs
+> /block_dev.c
+> --- linux-2.6.27-rc5.org/fs/block_dev.c	2008-08-29 07:52:02.000000000 +0900
+> +++ linux-2.6.27-rc5-freeze/fs/block_dev.c	2008-09-05 20:00:29.000000000 +0900
+> @@ -285,6 +285,8 @@ static void init_once(void *foo)
+>  	INIT_LIST_HEAD(&bdev->bd_holder_list);
+>  #endif
+>  	inode_init_once(&ei->vfs_inode);
+> +	/* Initialize mutex for freeze. */
+> +	mutex_init(&bdev->bd_fsfreeze_mutex);
 
-Yes, it does:
+Why not just freeze_mutex?
 
-   /* We need to decide which NOP sequence to use for 32bit and
-      64bit. When -mtune= is used:
 
-      1. For PROCESSOR_I386, PROCESSOR_I486, PROCESSOR_PENTIUM and
-      PROCESSOR_GENERIC32, f32_patt will be used.
-      2. For PROCESSOR_PENTIUMPRO, PROCESSOR_PENTIUM4, PROCESSOR_NOCONA,
-      PROCESSOR_CORE, PROCESSOR_CORE2, and PROCESSOR_GENERIC64,
-      alt_long_patt will be used.
-      3. For PROCESSOR_ATHLON, PROCESSOR_K6, PROCESSOR_K8 and
-      PROCESSOR_AMDFAM10, alt_short_patt will be used.
+>  struct super_block *freeze_bdev(struct block_device *bdev)
+>  {
+>  	struct super_block *sb;
+>  
+> +	mutex_lock(&bdev->bd_fsfreeze_mutex);
+> +	if (bdev->bd_fsfreeze_count > 0) {
+> +		bdev->bd_fsfreeze_count++;
+> +		sb = get_super(bdev);
+> +		mutex_unlock(&bdev->bd_fsfreeze_mutex);
+> +		return sb;
+> +	}
+> +	bdev->bd_fsfreeze_count++;
+> +
+>  	down(&bdev->bd_mount_sem);
 
-      When -mtune= isn't used, alt_long_patt will be used if
-      cpu_arch_isa_flags has Cpu686. Otherwise, f32_patt will
-      be used.
+Note that we still have duplication with the bd_mount_sem.  I think
+you should look into getting rid of it and instead do a check of
+the freeze_count under proper freeze_mutex protection.
 
-"alt_long_patt" uses NOPL and its variants.
+> +int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+>  {
+> +	mutex_lock(&bdev->bd_fsfreeze_mutex);
+> +	if (!bdev->bd_fsfreeze_count) {
+> +		mutex_unlock(&bdev->bd_fsfreeze_mutex);
+> +		return 0;
+> +	}
+> +
+> +	bdev->bd_fsfreeze_count--;
+> +	if (bdev->bd_fsfreeze_count > 0) {
+> +		if (sb)
+> +			drop_super(sb);
+> +		mutex_unlock(&bdev->bd_fsfreeze_mutex);
+> +		return 0;
+> +	}
+> +
+>  	if (sb) {
+>  		BUG_ON(sb->s_bdev != bdev);
+>  
+> @@ -244,6 +274,8 @@ void thaw_bdev(struct block_device *bdev
+>  	}
+>  
+>  	up(&bdev->bd_mount_sem);
+> +	mutex_unlock(&bdev->bd_fsfreeze_mutex);
+> +	return 0;
 
-	-hpa
+Why do you add a return value here if we always return 0 anyway?
+
