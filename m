@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYIHUMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYIHUSm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbYIHUMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 16:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYIHUMF
+	id S1754757AbYIHUSm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 16:18:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYIHUSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 16:12:05 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:60663 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752421AbYIHUME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 16:12:04 -0400
-Message-ID: <48C5870F.6050509@sgi.com>
-Date: Mon, 08 Sep 2008 13:11:59 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 8 Sep 2008 16:18:34 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35709 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752814AbYIHUSd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 16:18:33 -0400
+Message-ID: <48C587A1.5010206@zytor.com>
+Date: Mon, 08 Sep 2008 13:14:25 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: nickpiggin@yahoo.com.au, mingo@elte.hu, akpm@linux-foundation.org,
-       steiner@sgi.com, jes@sgi.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] smp: reduce stack requirements for smp_call_function_mask
-References: <20080906132944.GC4910@elte.hu>	<48C2C810.3070809@sgi.com>	<200809082030.41987.nickpiggin@yahoo.com.au> <20080908.125153.263452187.davem@davemloft.net>
-In-Reply-To: <20080908.125153.263452187.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] x86 fixes
+References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>	<48C56D60.7010405@zytor.com>	<20080908114619.741b6786@infradead.org>	<48C57439.3040903@zytor.com>	<20080908190249.GA21998@elte.hu>	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org> <20080908125525.72bc1ad2@infradead.org>
+In-Reply-To: <20080908125525.72bc1ad2@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Mon, 8 Sep 2008 20:30:41 +1000
+Arjan van de Ven wrote:
 > 
->> Is that being tried? Setting it to 8192 or even higher during QA seems
->> like a good idea to me.
+> I'd lump all cpus that don't have cpuid in this bucket too (eg half the
+> 486es) simply because not having cpuid is painful in pretty much the
+> same way.
 > 
-> This is a great idea, especially since it will make it even more
-> painfully obvious that essentially any function local cpumask_t
-> variable is a bug.
 
-Yes, that's what I have done in the past ... but putting it into the QA
-testing would really trigger those stack overflow problems... ;-)
+Not really.  Detecting CPUID is pretty trivial, and we just initialize 
+the feature vector to zero if it isn't there.
 
+>>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
+>>    granted.
 > 
-> Really, it seems sensible to do something like:
-> 
-> 1) Make cpumask_t a pointer.
-> 
-> 2) Add cpumask_data_t which is what cpumask_t is now.  This gets
->    used when for the actual storage, and will only get applied to
->    datastructures that are dynamically allocated.  For example, for
->    the cpu_vm_mask in mm_struct.
-> 
-> 3) Type make and fix build failures until they are all gone.
+> again makes sense; question is if it makes sense to take PSE and PAE
+> for granted as well (although PSE we can do runtime I suppose)
 
-I was wondering if we'd need to be able to default a cpumask_t pointer
-argument to be a const and then use a different method for those cases
-where it shouldn't be?  This would strengthen the compiler type checking
-of functions calls.
+Well, PAE implies PSE.  Unfortunately Intel released a series of 
+Pentium-Ms without PAE support.  We *should* be able to take PSE for 
+granted, but there is Xen damage.
 
-For example:
-
-	proto(cpumask_t mask)
-
-would imply that *mask is a const, whereas
-
-	proto(cpumask_var mask)
-
-would indicate it to be non-const?
-
-But then we couldn't use "cpumask_t" as a local declarator... So perhaps
-we need something completely different for declaring cpumask arguments?
-
-(I'm trying to figure out how to structure this with the least amount of
-source editing.)
-
-Thanks!
-Mike
-
-
+	-hpa
