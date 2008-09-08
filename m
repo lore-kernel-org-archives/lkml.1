@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYIHP7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbYIHP7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbYIHP7F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYIHP6v
+	id S1754243AbYIHP7X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbYIHP7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:58:51 -0400
-Received: from josefsipek.net ([141.211.133.196]:42157 "EHLO josefsipek.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753048AbYIHP6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:58:51 -0400
-Date: Mon, 8 Sep 2008 11:58:50 -0400
-From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-To: Michael J Gruber <michaeljgruber+gmane@fastmail.fm>
-Cc: Git Mailing List <git@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       guilt@lists.josefsipek.net
-Subject: Re: [ANNOUNCE] Guilt v0.31
-Message-ID: <20080908155850.GD27550@josefsipek.net>
-References: <20080908135244.GB27550@josefsipek.net> <48C54728.1030809@fastmail.fm>
+	Mon, 8 Sep 2008 11:59:04 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:11242 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754635AbYIHP7B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 11:59:01 -0400
+From: Chuck Lever <chuck.lever@oracle.com>
+Subject: [PATCH] NFS: Restore missing hunk in NFS mount option parser
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Date: Mon, 08 Sep 2008 11:58:13 -0400
+Message-ID: <20080908155812.4817.77312.stgit@ingres.1015granger.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C54728.1030809@fastmail.fm>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 05:39:20PM +0200, Michael J Gruber wrote:
-> Josef 'Jeff' Sipek venit, vidit, dixit 08.09.2008 15:52:
-> > Guilt v0.31 is available for download.
-> > 
-> > Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
-> > queues-like functionality and interface to git.
-> > 
-> > Tarballs:
-> > http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
-> > 
-> > Git repo:
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
-> > 
-> > 
-> > This is a mostly bugfixes-only release to get the fixes that accumulated
-> > over the past several months out of the door.
-> > 
-> > As always, patches, and other feedback is welcome.
-> > 
-> > Josef "Jeff" Sipek.
-> 
-> Guilt insists on being used with git 1.5.*. Is this intended?
+Automounter maps can contain mount options valid for other NFS
+implementations but not for Linux.  The Linux automounter uses the
+mount command's "-s" command line option ("s" for "sloppy") so that
+mount requests containing such options are not rejected.
 
-Ok, I committed v0.31.1.
+Commit f45663ce5fb30f76a3414ab3ac69f4dd320e760a attempted to address a
+known regression with text-based NFS mount option parsing.  Unrecognized
+mount options would cause mount requests to fail, even if the "-s"
+option was used on the mount command line.
 
-Thanks for noticing!
+Unfortunately, this commit was not complete as submitted.  It adds a
+new mount option, "sloppy".  But it is missing a hunk, so it now allows
+NFS mounts with unrecognized mount options, even if the "sloppy" option
+is not present.  This could be a problem if a required critical mount
+option such as "sync" is misspelled, for example, and is considered a
+regression from 2.6.26.
 
-Josef 'Jeff' Sipek.
+This patch restores the missing hunk.  Now, the default behavior of
+text-based NFS mount options is as before: any unrecognized mount option
+will cause the mount to fail.
 
--- 
-The reasonable man adapts himself to the world; the unreasonable one
-persists in trying to adapt the world to himself. Therefore all progress
-depends on the unreasonable man.
-		- George Bernard Shaw
+Please include this in 2.6.27-rc.
+
+Thanks to Neil Brown for reporting this.
+
+Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Acked-by: J. Bruce Fields <bfields@citi.umich.edu>
+---
+
+ fs/nfs/super.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 5b2aa04..e3ac650 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -1279,6 +1279,12 @@ static int nfs_parse_mount_options(char *raw,
+ 		}
+ 	}
+ 
++	if (errors > 0) {
++		dfprintk(MOUNT, "NFS: parsing encountered %d error%s\n",
++				errors, (errors == 1 ? "" : "s"));
++		if (!sloppy)
++			return 0;
++	}
+ 	return 1;
+ 
+ out_nomem:
+
