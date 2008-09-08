@@ -1,144 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbYIHOLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYIHOOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950AbYIHOLd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 10:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYIHOLZ
+	id S1753550AbYIHOOn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 10:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYIHOOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 10:11:25 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:63473 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751243AbYIHOLY (ORCPT
+	Mon, 8 Sep 2008 10:14:36 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48524 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYIHOOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 10:11:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YnpuJAFaEBGZvkl/6cDGQVg9mWkYuKT3zfV7/xvjIJZ4Io6eWT9OXqUcuX56yFD4+N
-         7LqqkvMTvIWYffjGcqDDoN/wHRa3gjl6gGTvWDycXkyN1JQFOdxTEmu2HmvbobsGt+9k
-         AF1HeLXJ2/LXTpq4/sbB90YSTW0/iMZA5EUKo=
-Message-ID: <44c63dc40809080711v98f4fdbs19081aa7cb81634d@mail.gmail.com>
-Date: Mon, 8 Sep 2008 23:11:22 +0900
-From: "MinChan Kim" <barrioskmc@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH 1/4] pull out the page pre-release and sanity check logic for reuse
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Peter Zijlstra" <peterz@infradead.org>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>, "Mel Gorman" <mel@csn.ul.ie>
-In-Reply-To: <1220610002-18415-2-git-send-email-apw@shadowen.org>
+	Mon, 8 Sep 2008 10:14:35 -0400
+Date: Mon, 8 Sep 2008 16:15:55 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the
+	task struct
+Message-ID: <20080908141555.GB31784@elf.ucw.cz>
+References: <20080901160343.75a89ec9@infradead.org> <20080901161423.59ebf2fc@infradead.org> <20080902100439.GA11383@elf.ucw.cz> <20080902060323.70245b83@infradead.org> <20080908132713.GA18486@elf.ucw.cz> <20080908064002.7abc2a22@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1220610002-18415-1-git-send-email-apw@shadowen.org>
-	 <1220610002-18415-2-git-send-email-apw@shadowen.org>
+In-Reply-To: <20080908064002.7abc2a22@infradead.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 5, 2008 at 7:19 PM, Andy Whitcroft <apw@shadowen.org> wrote:
-> When we are about to release a page we perform a number of actions
-> on that page.  We clear down any anonymous mappings, confirm that
-> the page is safe to release, check for freeing locks, before mapping
-> the page should that be required.  Pull this processing out into a
-> helper function for reuse in a later patch.
->
-> Note that we do not convert the similar cleardown in free_hot_cold_page()
-> as the optimiser is unable to squash the loops during the inline.
->
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> ---
->  mm/page_alloc.c |   43 ++++++++++++++++++++++++++++++-------------
->  1 files changed, 30 insertions(+), 13 deletions(-)
->
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index f52fcf1..b2a2c2b 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -489,6 +489,35 @@ static inline int free_pages_check(struct page *page)
->  }
->
->  /*
-> + * Prepare this page for release to the buddy.  Sanity check the page.
-> + * Returns 1 if the page is safe to free.
-> + */
-> +static inline int free_page_prepare(struct page *page, int order)
-> +{
-> +       int i;
-> +       int reserved = 0;
-> +
-> +       if (PageAnon(page))
-> +               page->mapping = NULL;
+On Mon 2008-09-08 06:40:02, Arjan van de Ven wrote:
+> On Mon, 8 Sep 2008 15:27:16 +0200
+> Pavel Machek <pavel@suse.cz> wrote:
+> > > 
+> > > ... which nobody uses today.
+> > > It's not just new syscalls, it's a new glibc api as well at that
+> > > point.
+> > 
+> > ...and new applications, yes. I believe applications should
+> > explicitely enable slacking timers.
+> 
+> timers are slacking today, at least for select() and poll(), and are a
+> great deal more so than the defaults in this patchkit.
 
-Why do you need to clear down anonymous mapping ?
-I think if you don't convert this cleardown in free_hot_cold_page(),
-you don't need it.
+Ok, so select()/poll() may default to non-zero slack for legacy apps.
 
-If you do it, bad_page can't do his role.
+> The great advantage of the prctl() approach (which is usable) over new
+> system calls and glibc APIs is that it will get used, because the admin
+> can use it just like he uses the "nice" command, on existing software.
 
-> +       for (i = 0 ; i < (1 << order) ; ++i)
-> +               reserved += free_pages_check(page + i);
-> +       if (reserved)
-> +               return 0;
-> +
-> +       if (!PageHighMem(page)) {
-> +               debug_check_no_locks_freed(page_address(page),
-> +                                                       PAGE_SIZE << order);
-> +               debug_check_no_obj_freed(page_address(page),
-> +                                          PAGE_SIZE << order);
-> +       }
-> +       arch_free_page(page, order);
-> +       kernel_map_pages(page, 1 << order, 0);
-> +
-> +       return 1;
-> +}
-> +
-> +/*
->  * Frees a list of pages.
->  * Assumes all pages on list are in same zone, and of same order.
->  * count is the number of pages to free.
-> @@ -529,22 +558,10 @@ static void free_one_page(struct zone *zone, struct page *page, int order)
->  static void __free_pages_ok(struct page *page, unsigned int order)
->  {
->        unsigned long flags;
-> -       int i;
-> -       int reserved = 0;
->
-> -       for (i = 0 ; i < (1 << order) ; ++i)
-> -               reserved += free_pages_check(page + i);
-> -       if (reserved)
-> +       if (!free_page_prepare(page, order))
->                return;
->
-> -       if (!PageHighMem(page)) {
-> -               debug_check_no_locks_freed(page_address(page),PAGE_SIZE<<order);
-> -               debug_check_no_obj_freed(page_address(page),
-> -                                          PAGE_SIZE << order);
-> -       }
-> -       arch_free_page(page, order);
-> -       kernel_map_pages(page, 1 << order, 0);
-> -
->        local_irq_save(flags);
->        __count_vm_events(PGFREE, 1 << order);
->        free_one_page(page_zone(page), page, order);
-> --
-> 1.6.0.rc1.258.g80295
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+Yes, it is a great advantage, but it feels like a hack. Maybe it is
+better done with LD_PRELOAD or something?
 
+I'd certianly want the applications to specify slack themselves in
+like 10 years.
 
-
+									Pavel
 -- 
-Thanks,
-MinChan Kim
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
