@@ -1,92 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbYIHHlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbYIHHoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753146AbYIHHlU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 03:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbYIHHlK
+	id S1752969AbYIHHoe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 03:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYIHHo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 03:41:10 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:52876 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751237AbYIHHlI (ORCPT
+	Mon, 8 Sep 2008 03:44:27 -0400
+Received: from rrzmta1.rz.uni-regensburg.de ([194.94.155.51]:1297 "EHLO
+	rrzmta1.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750835AbYIHHo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 03:41:08 -0400
-Date: Mon, 8 Sep 2008 13:07:32 +0530
-From: Chirag Jog <chirag@linux.vnet.ibm.com>
-To: xavier droubay <xavier.droubay@gmail.com>
-Cc: linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] Convert tlbstate_lock spin_lock to raw_spin_lock
-Message-ID: <20080908073732.GC5798@linux.vnet.ibm.com>
-Reply-To: Chirag Jog <chirag@linux.vnet.ibm.com>
-Mail-Followup-To: xavier droubay <xavier.droubay@gmail.com>,
-	linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <2c6d8d720809071806i54e58093vf87bec5175d9b074@mail.gmail.com>
+	Mon, 8 Sep 2008 03:44:26 -0400
+From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
+Organization: Universitaetsklinikum Regensburg
+To: Robert Hancock <hancockr@shaw.ca>
+Date: Mon, 08 Sep 2008 09:44:06 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <2c6d8d720809071806i54e58093vf87bec5175d9b074@mail.gmail.com>
-Organization: IBM LTC
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: Q: (2.6.16 & ext3) bad SMP load balancing when writing to ext3 on slow device
+CC: linux-kernel@vger.kernel.org
+Message-ID: <48C4F3E9.20586.6C3971@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+In-reply-to: <48C2C8C3.8080706@shaw.ca>
+References: <fa.iG3Mum/QrNI8vr+DNw6zItBIFJM@ifi.uio.no>, <48C2C8C3.8080706@shaw.ca>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Content-Conformance: HerringScan-0.27/Sophos-P=4.29.0+V=4.29+U=2.07.201+R=05 May 2008+T=405569@20080908.073803Z
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* xavier droubay <xavier.droubay@gmail.com> [2008-09-08 03:06:51]:
+On 6 Sep 2008 at 12:15, Robert Hancock wrote:
 
-> Hello,
+> Ulrich Windl wrote:
+> > Hi,
+> > 
+> > while copying large remote files for an USB memory stick formatted with ext3 using 
+> > scp, I noticed a stall in wrie speed. Looking at the system with top I saw:
+> > top - 09:25:25 up 55 days, 23:49,  2 users,  load average: 11.09, 7.41, 4.43
+> > Tasks: 128 total,   1 running, 127 sleeping,   0 stopped,   0 zombie
+> > Cpu0  :  7.6%us,  0.3%sy,  0.0%ni,  0.0%id, 90.4%wa,  0.3%hi,  1.3%si,  0.0%st
+> > Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Cpu3  :  0.0%us,  1.7%sy,  0.0%ni,  0.0%id, 98.3%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Mem:   1028044k total,  1017956k used,    10088k free,    34784k buffers
+> > Swap:  2097140k total,      616k used,  2096524k free,   733100k cached
+> > 
+> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+> > 11284 root      18   0 29168 1960 1504 D    2  0.2   0:11.81 scp
+> >   137 root      15   0     0    0    0 D    0  0.0  14:16.59 pdflush
+> > 10865 root      15   0     0    0    0 D    0  0.0   0:00.50 kjournald
+> > 11355 root      15   0     0    0    0 D    0  0.0   0:00.09 pdflush
+> > 11396 root      15   0     0    0    0 D    0  0.0   0:00.12 pdflush
+> > 11397 root      15   0     0    0    0 D    0  0.0   0:00.06 pdflush
+> > 12007 root      15   0     0    0    0 D    0  0.0   0:00.02 pdflush
+> > 12070 root      16   0 23976 2376 1744 R    0  0.2   0:00.28 top
+> > 12294 root      15   0     0    0    0 D    0  0.0   0:00.00 pdflush
+> > 12295 root      15   0     0    0    0 D    0  0.0   0:00.02 pdflush
+> > 12296 root      15   0     0    0    0 D    0  0.0   0:00.02 pdflush
+> > 27490 root      10  -5     0    0    0 D    0  0.0   0:02.93 usb-storage
+> > 
+> > First, it's impressive that a singly copy job can raise the load to above 10, and 
+> > the next thing is that writing to a slow device can make 4 CPUs (actually two with 
+> > hyperthreading) busy. The pdflush daemons are expected to bring dirty blocks onto 
+> > the device, I guess. Does it make any sense to make four CPUs busy with doing so?
 > 
-> I experienced this "rtmutex.c:743" known bug with rt3 patch, using
-> 
->  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.3.tar.bz2
->  http://rt.et.redhat.com/download/patch-2.6.26.3-rt3.bz2
-> 
-> I compiled this kernel with the "make-kpkg" debian utility.
-> 
-> I first compiled this kernel with NO SMP, NO HIGHMEM, and partial ACPI
-> (without fan, processor, ... modules). Attached file
-> "config-2.6.26.3-rt3lowlty.frwr.gz".
-> I didn't experience any problem with this kernel.
-> 
-> I then enabled SMP and HIGHMEM, and experienced  "rtmutex.c:743" BUG.
-> Attached files
-> "config-2.6.26.3-rt3rt-smp-hm.gz" and  "dmesg.gz" for some BUGGY message.
-> 
-> 
-> I have seen somewhere on the archive, that some people still
-> experienced problems with SMP.
-> I guess no fix has been done from rt3 to rt7 patch. Can you confirm?
-> 
-> If so, which recent kernel should I use in order to get smp and rt
-> running without problems?
-> 
-This simple patch should solve the above problem. Seeing the config, its
-seems to be a 32bit box.
+> They're not busy. IO wait means they have nothing to do other than wait 
+> for IO to complete. It's a bit surprising that you get so many pdflush 
+> threads started up, however..
 
+Robert,
 
-It convert tlbstate_lock spin_lock to raw_spin_lock.
-Preemption has already been disabled, hence this change shouldn't
-affect latency numbers.
+back to the question: Assuming the I/O is limited by the controller, communication 
+channel and device, does it ever make any sense to start additional I/O daemons 
+for a device that is already handled by a daemon and doesn't have an alternate 
+communication channel (to make more dirty block go onto the device)? (Assuming no 
+daemon servers more than one device).
 
+Regards,
+Ulrich
 
-Signed-Off-By: Chirag <chirag@linux.vnet.ibm.com>
-
-
-diff --git a/arch/x86/kernel/tlb_32.c b/arch/x86/kernel/tlb_32.c
-index 9bb2363..228849c 100644
---- a/arch/x86/kernel/tlb_32.c
-+++ b/arch/x86/kernel/tlb_32.c
-@@ -23,7 +23,7 @@ DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate)
- static cpumask_t flush_cpumask;
- static struct mm_struct *flush_mm;
- static unsigned long flush_va;
--static DEFINE_SPINLOCK(tlbstate_lock);
-+static DEFINE_RAW_SPINLOCK(tlbstate_lock);
- 
- /*
-  * We cannot call mmdrop() because we are in interrupt context,
-
+> 
+> > 
+> > Here's another snapshot showing the assigned CPU also:
+> > 
+> > top - 09:32:18 up 55 days, 23:56,  2 users,  load average: 10.63, 9.99, 6.78
+> > Tasks: 127 total,   1 running, 126 sleeping,   0 stopped,   0 zombie
+> > Cpu0  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Cpu1  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Cpu2  :  0.0%us,  0.0%sy,  0.0%ni,  1.7%id, 98.3%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Cpu3  :  0.0%us,  0.0%sy,  0.0%ni,  0.0%id,100.0%wa,  0.0%hi,  0.0%si,  0.0%st
+> > Mem:   1028044k total,  1017896k used,    10148k free,    18044k buffers
+> > Swap:  2097140k total,      616k used,  2096524k free,   741616k cached
+> > 
+> >   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  P COMMAND
+> >   137 root      15   0     0    0    0 D    0  0.0  14:16.71 1 pdflush
+> >  4299 root      17   0  5860  752  596 D    0  0.1   9:36.19 1 syslogd
+> > 10865 root      15   0     0    0    0 D    0  0.0   0:00.62 1 kjournald
+> > 11284 root      18   0 29168 1960 1504 D    0  0.2   0:14.76 3 scp
+> > 11355 root      15   0     0    0    0 D    0  0.0   0:00.19 0 pdflush
+> > 11396 root      15   0     0    0    0 D    0  0.0   0:00.24 1 pdflush
+> > 11397 root      15   0     0    0    0 D    0  0.0   0:00.22 1 pdflush
+> > 12294 root      15   0     0    0    0 D    0  0.0   0:00.11 1 pdflush
+> > 12295 root      15   0     0    0    0 D    0  0.0   0:00.14 1 pdflush
+> > 12296 root      15   0     0    0    0 D    0  0.0   0:00.13 1 pdflush
+> > 12591 root      16   0 23976 2376 1744 R    0  0.2   0:00.07 3 top
+> > 27490 root      10  -5     0    0    0 D    0  0.0   0:03.13 3 usb-storage
+> > 
+> > At times like shown, the scp seems to come to a complete halt. (Previously I had 
+> > been using VFAT filesystem on the stick, and copy went much smoother, but the 
+> > filesystem was full, so I tried another filesystem.)
+> > 
+> > Would anybody bee so kind to explain why the system looks like that? I'm not 
+> > subscribed, so please honor the CC:.
+> > 
+> > Regards,
+> > Ulrich Windl
+> 
 
 
