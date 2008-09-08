@@ -1,147 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYIHQPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753017AbYIHQPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbYIHQPF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYIHQOy
+	id S1753017AbYIHQPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 12:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYIHQPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:14:54 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:41413 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbYIHQOx (ORCPT
+	Mon, 8 Sep 2008 12:15:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33569 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbYIHQPl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:14:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-References: <48C52B29.4020204@fr.ibm.com>
-Date: Mon, 08 Sep 2008 09:09:20 -0700
-In-Reply-To: <48C52B29.4020204@fr.ibm.com> (Cedric Le Goater's message of
-	"Mon, 08 Sep 2008 15:39:53 +0200")
-Message-ID: <m163p6pqkv.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 8 Sep 2008 12:15:41 -0400
+Message-ID: <48C54FA0.10302@kernel.org>
+Date: Mon, 08 Sep 2008 09:15:28 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: *;Cedric Le Goater <clg@fr.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	*  3.5 FB_DOUBLE_0WORDS BODY: Looks like double 0 words
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1475]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace is unshared
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, linux@sandersweb.net,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com>
+In-Reply-To: <48C54F1B.8040604@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric Le Goater <clg@fr.ibm.com> writes:
+H. Peter Anvin wrote:
+> 
+> The issue at hand is that at least with the current toolchain, we need 
+> to pass -march=generic in order for these instructions to be generated. 
+>  We have an option for this, CONFIG_X86_GENERIC, which distributions 
+> really *should* be using anyway.
+> 
 
-> On a system with nfs mounts, if a task unshares its mount namespace,
-> a oops can occur when the system is rebooted if the task is the last
-> to unreference the nfs mount. It will try to create a rpc request
-> using utsname() which has been invalidated by free_nsproxy().
->
-> The patch fixes the issue by using the global init_utsname() but at
-> the same time, it breaks the capability of identifying rpc clients
-> per uts namespace.
->
-> Any better suggestions ?
+That should have been "-mtune=generic".  Sorry.
 
-Can we push utsname into rpc_create_args and push the access
-of utsname up the food chain?
+> And yes, it should be the default.  The patch I have makes it
+> "default y" as well as change the help text.
+> 
+> Would it make you happier if this option was forced enabled unless 
+> CONFIG_EMBEDDED was on?
 
-My gut feeling says we should capture the utsname or the
-uts_ns when we mount the nfs filesystem so we stay in sync
-for the life of the mount.
+I guess the other option is to create a new option for selecting the 
+dangerous -mtune= variants, and possibly lock *that* option to 
+CONFIG_EMBEDDED.
 
-Eric
-
-> BUG: unable to handle kernel NULL pointer dereference at 00000004
-> IP: [<c024c9ab>] rpc_create+0x332/0x42f
-> Oops: 0000 [#1] DEBUG_PAGEALLOC
->
-> Pid: 1857, comm: uts-oops Not tainted (2.6.27-rc5-00319-g7686ad5 #4)
-> EIP: 0060:[<c024c9ab>] EFLAGS: 00210287 CPU: 0
-> EIP is at rpc_create+0x332/0x42f
-> EAX: 00000000 EBX: df26adf0 ECX: c0251887 EDX: 00000001
-> ESI: df26ae58 EDI: c02f293c EBP: dda0fc9c ESP: dda0fc2c
->  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> Process uts-oops (pid: 1857, ti=dda0e000 task=dd9a0778 task.ti=dda0e000)
-> Stack: c0104532 dda0fffc dda0fcac dda0e000 dda0e000 dd93b7f0 00000009 c02f2880
->        df26aefc dda0fc68 c01096b7 00000000 c0266ee0 c039a070 c039a070 dda0fc74
->        c012ca67 c039a064 dda0fc8c c012cb20 c03daf74 00000011 00000000 c0275c90
-> Call Trace:
->  [<c0104532>] ? dump_trace+0xc2/0xe2
->  [<c01096b7>] ? save_stack_trace+0x1c/0x3a
->  [<c012ca67>] ? save_trace+0x37/0x8c
->  [<c012cb20>] ? add_lock_to_list+0x64/0x96
->  [<c0256fc4>] ? rpcb_register_call+0x62/0xbb
->  [<c02570c8>] ? rpcb_register+0xab/0xb3
->  [<c0252f4d>] ? svc_register+0xb4/0x128
->  [<c0253114>] ? svc_destroy+0xec/0x103
->  [<c02531b2>] ? svc_exit_thread+0x87/0x8d
->  [<c01a75cd>] ? lockd_down+0x61/0x81
->  [<c01a577b>] ? nlmclnt_done+0xd/0xf
->  [<c01941fe>] ? nfs_destroy_server+0x14/0x16
->  [<c0194328>] ? nfs_free_server+0x4c/0xaa
->  [<c019a066>] ? nfs_kill_super+0x23/0x27
->  [<c0158585>] ? deactivate_super+0x3f/0x51
->  [<c01695d1>] ? mntput_no_expire+0x95/0xb4
->  [<c016965b>] ? release_mounts+0x6b/0x7a
->  [<c01696cc>] ? __put_mnt_ns+0x62/0x70
->  [<c0127501>] ? free_nsproxy+0x25/0x80
->  [<c012759a>] ? switch_task_namespaces+0x3e/0x43
->  [<c01275a9>] ? exit_task_namespaces+0xa/0xc
->  [<c0117fed>] ? do_exit+0x4fd/0x666
->  [<c01181b3>] ? do_group_exit+0x5d/0x83
->  [<c011fa8c>] ? get_signal_to_deliver+0x2c8/0x2e0
->  [<c0102630>] ? do_notify_resume+0x69/0x700
->  [<c011d85a>] ? do_sigaction+0x134/0x145
->  [<c0127205>] ? hrtimer_nanosleep+0x8f/0xce
->  [<c0126d1a>] ? hrtimer_wakeup+0x0/0x1c
->  [<c0103488>] ? work_notifysig+0x13/0x1b
->  =======================
-> Code: 70 20 68 cb c1 2c c0 e8 75 4e 01 00 8b 83 ac 00 00 00 59 3d 00 f0 ff ff 5f
-> 77 63 eb 57 a1 00 80 2d c0 8b 80 a8 02 00 00 8d 73 68 <8b> 40 04 83 c0 45 e8 41
-> 46 f7 ff ba 20 00 00 00 83 f8 21 0f 4c
-> EIP: [<c024c9ab>] rpc_create+0x332/0x42f SS:ESP 0068:dda0fc2c
->
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
-> ---
->  net/sunrpc/clnt.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-> index 76739e9..a59cdf4 100644
-> --- a/net/sunrpc/clnt.c
-> +++ b/net/sunrpc/clnt.c
-> @@ -213,10 +213,10 @@ static struct rpc_clnt * rpc_new_client(const struct
-> rpc_create_args *args, stru
->  	}
->  
->  	/* save the nodename */
-> -	clnt->cl_nodelen = strlen(utsname()->nodename);
-> +	clnt->cl_nodelen = strlen(init_utsname()->nodename);
->  	if (clnt->cl_nodelen > UNX_MAXNODENAME)
->  		clnt->cl_nodelen = UNX_MAXNODENAME;
-> -	memcpy(clnt->cl_nodename, utsname()->nodename, clnt->cl_nodelen);
-> +	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
->  	rpc_register_client(clnt);
->  	return clnt;
->  
-> -- 
-> 1.5.5.1
+	-hpa
