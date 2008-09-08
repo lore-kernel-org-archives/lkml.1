@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbYIHU4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYIHU5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbYIHU4b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 16:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbYIHU4W
+	id S1755519AbYIHU5n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 16:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYIHU5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 16:56:22 -0400
-Received: from www.tglx.de ([62.245.132.106]:54294 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753239AbYIHU4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 16:56:21 -0400
-Date: Mon, 8 Sep 2008 22:56:15 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stefan Hellermann <stefan@the2masters.de>
-cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [regression] __tick_program_event of hpet is stuck
-In-Reply-To: <48C57046.5090509@the2masters.de>
-Message-ID: <alpine.LFD.1.10.0809082254550.3271@apollo.tec.linutronix.de>
-References: <200809080114.36106.elendil@planet.nl> <200809080313.48910.elendil@planet.nl> <48C57046.5090509@the2masters.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Sep 2008 16:57:35 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39544 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753543AbYIHU5f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 16:57:35 -0400
+Date: Mon, 8 Sep 2008 13:57:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: alejandro.riveira@gmail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Various OOps with 2.6.27-rc5
+Message-Id: <20080908135736.5d0c3ef8.randy.dunlap@oracle.com>
+In-Reply-To: <1220906182.15312.1.camel@Varda>
+References: <1220815296.11776.4.camel@Varda>
+	<20080908124641.9ec6887a.randy.dunlap@oracle.com>
+	<1220906182.15312.1.camel@Varda>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008, Stefan Hellermann wrote:
-> Frans Pop schrieb:
-> > On Monday 08 September 2008, Frans Pop wrote:
-> >   
-> > > With current git head (v2.6.27-rc5-319-g7686ad5) I'm seeing repeated
-> > > occurrences of the following on my HP Compaq 2510p laptop. Not seen
-> > > with earlier kernels, including 2.6.27-rc5.
-> > >     
-> > 
-> > I meant repeated as in "after different boots", but I now also see repeats
-> > when I leave the system on for some time. It keeps increasing the
-> > min_delta_ns to ever higher values.
-> > 
-> > CE: __tick_program_event of hpet is stuck 1468f1b3c9 1468f1c751
-> > CE: increasing min_delta_ns 5000 to 10000 nsec
-> > [...]
-> > CE: __tick_program_event of hpet is stuck 33576032f74 33576035684
-> > CE: increasing min_delta_ns 10000 to 20000 nsec
-> > [...]
-> > CE: __tick_program_event of hpet is stuck 63242b30d28 63242b35b48
-> > CE: increasing min_delta_ns 20000 to 40000 nsec
-> > 
-> > The call trace is basically the same each time.
-> >   
-> Exactly the same problem here. This is a Lenovo Thinkpad R61 with current git
-> head (7686ad56).
+On Mon, 08 Sep 2008 22:36:22 +0200 Alejandro Riveira Fernández wrote:
 
-Can you both please provide the full dmesg output and the out put from
-lspci -vvv please ?
+> El lun, 08-09-2008 a las 12:46 -0700, Randy Dunlap escribió:
+> 
+> [ ... ]
+> > > The dmesg including oopses
+> > 
+> > Actually they are INFO: messages with getnstimeofday() being stuck,
+> > similar to a few other reports on lkml.
+> 
+>  So is it useful to report them or i just do:
+>  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+>  And forget about it ??
 
-Thanks,
+I'm not sure.  I haven't followed the other problem reports very
+closely.  AFAIK, it represents a real bug, but if your system is
+running OK, you could just ignore it...
 
-	tglx
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
