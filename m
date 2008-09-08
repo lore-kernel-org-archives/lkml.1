@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbYIHSkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYIHSnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbYIHSkF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYIHSjw
+	id S1754326AbYIHSnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYIHSnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:39:52 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:46640 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753078AbYIHSjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:39:51 -0400
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Parisc List <linux-parisc@vger.kernel.org>
-In-Reply-To: <200809081119.45074.david-b@pacbell.net>
-References: <1220889205.8074.16.camel@localhost.localdomain>
-	 <200809081119.45074.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Mon, 08 Sep 2008 13:39:49 -0500
-Message-Id: <1220899189.8074.58.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Sep 2008 14:43:23 -0400
+Received: from josefsipek.net ([141.211.133.196]:44235 "EHLO josefsipek.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750871AbYIHSnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 14:43:22 -0400
+Date: Mon, 8 Sep 2008 14:43:22 -0400
+From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
+To: Bert Wesarg <bert.wesarg@googlemail.com>
+Cc: Git Mailing List <git@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       guilt@lists.josefsipek.net, Brandon Philips <brandon@ifup.org>
+Subject: Re: [ANNOUNCE] Guilt v0.31
+Message-ID: <20080908184322.GE27550@josefsipek.net>
+References: <20080908135244.GB27550@josefsipek.net> <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-08 at 11:19 -0700, David Brownell wrote:
-> On Monday 08 September 2008, James Bottomley wrote:
-> > Put it back again by making RTC_CLASS 
-> > unselectable if the architecture is parisc.
+On Mon, Sep 08, 2008 at 08:33:23PM +0200, Bert Wesarg wrote:
+> Hi,
 > 
-> Easier if those distros just wouldn't select RTC_CLASS then.  :)
-
-Yes, but think of distro config people rather like users ... if you can
-prevent them from doing something stupid, it's a good idea.  In this
-case, there's currently no way anyone should ever select RTC_CLASS on
-parisc, so we should make that clear in the Kconfig file.
-
-> And long term, better to work with RTC_CLASS.  Eliminate that
-> crufty asm-parisc/rtc.h file and one more GEN_RTC user; and
-> share more widely-used infrastructure.
+> On Mon, Sep 8, 2008 at 15:52, Josef 'Jeff' Sipek <jeffpc@josefsipek.net> wrote:
+> > Guilt v0.31 is available for download.
 > 
-> If I read things right, that would be easy:  the PARISC RTC is
-> two firmware calls, ptc_tod_{read,set}(), which would map to
-> RTC class {read,set}_time() methods of about six lines each.
-> The RTC framework can do UIE emulation, if needed.
+> Is it possible to include pre-generated docs in the tarballs?
+> 
+> I downloaded one and run 'make doc' and get these messages:
+> 
+> fatal: Not a git repository
+> 
+> which looks like it comes from this line in Documentation/Makefile:
+> 
+> VERSION=$(shell git describe)
+> 
+> Its not critical, but looks awkward.
 
-OK, I can look at that, but in the mean time could we make the option
-that causes the damage unselectable?  This is technically a regression
-because before your patch GEN_RTC would override RTC_CLASS, now it's the
-other way around.
+1) I already commit generated man pages for each release - on the man branch
+   (there's also html branch with the html-formated man pages).
 
-James
+2) I'm aware of the git error you saw, and it is on my todo list
 
+3) I just checked the git tarballs, and they don't include man pages either.
+   Should I include the manpages in the source tarball, or should I just
+   create another tarball with the manpages? (The git error will get fixed
+   regardless - that's the only invocation of git during the manpage build
+   process, and it's there only to get a nice looking version number to
+   include in the manpages.)
 
+Josef 'Jeff' Sipek.
+
+-- 
+Bad pun of the week: The formula 1 control computer suffered from a race
+condition
