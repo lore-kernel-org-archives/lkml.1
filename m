@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYIHTzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYIHT4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbYIHTzt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYIHTzk
+	id S1755558AbYIHT4F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYIHTzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:55:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48476 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbYIHTzk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:55:40 -0400
-Date: Mon, 8 Sep 2008 12:55:25 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080908125525.72bc1ad2@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>
-	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
-	<48C56D60.7010405@zytor.com>
-	<20080908114619.741b6786@infradead.org>
-	<48C57439.3040903@zytor.com>
-	<20080908190249.GA21998@elte.hu>
-	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 8 Sep 2008 15:55:48 -0400
+Received: from iabervon.org ([66.92.72.58]:60096 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754597AbYIHTzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 15:55:47 -0400
+Date: Mon, 8 Sep 2008 15:55:44 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: "Renato S. Yamane" <yamane@diamondcut.com.br>
+cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       Christopher Desjardins <cddesjardins@gmail.com>
+Subject: Re: Lenovo 3000 N100 i8042 problems
+In-Reply-To: <48C57FDE.2010306@diamondcut.com.br>
+Message-ID: <alpine.LNX.1.00.0809081544410.19665@iabervon.org>
+References: <alpine.LNX.1.00.0808240148580.19665@iabervon.org> <Pine.LNX.4.64.0809020120130.29111@twin.jikos.cz> <alpine.LNX.1.00.0809012014280.19665@iabervon.org> <alpine.LNX.1.10.0809021121410.23448@jikos.suse.cz> <20080902083940.ZZRA012@mailhub.coreip.homeip.net>
+ <alpine.LNX.1.10.0809031349081.23448@jikos.suse.cz> <20080903101947.ZZRA012@mailhub.coreip.homeip.net> <20080903213258.GC14620@khazad-dum.debian.net> <48C57FDE.2010306@diamondcut.com.br>
+User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 12:30:02 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Mon, 8 Sep 2008, Renato S. Yamane wrote:
+
+> Henrique de Moraes Holschuh wrote:
+> > I fell I need to warn you guys that you are likely breaking machines that
+> > match that DMI info but have a newer BIOS, unless they use different BIOSes
+> > (not enough data without a full dmidecode output from the other machine).
 > 
-> I think there are realistically three classes:
-> 
->  - _really_ old, to the point of being totally useless for SMP.
-> 
->    This is really just 386 and clones. We _need_ a working WP for a 
->    race-free access_ok(), and we need cmpxchg (and lately xadd).
-> 
->    Smaller pains even on UP: bswap doesn't exist. invlpg doesn't
-> exist. 
+> dmidecode just from 3000-N100?
+> Attached a dmidecode from a Lenovo Thinkpad T61.
+> I have a Lenovo 3000-V200 too. You want a dmidecode from it?
 
-I'd lump all cpus that don't have cpuid in this bucket too (eg half the
-486es) simply because not having cpuid is painful in pretty much the
-same way.
+It's almost certainly only 3000 series that's interesting; I think they 
+test the Thinkpads with Linux and wouldn't ship with a quirky BIOS there. 
+The 3000 series only officially supports Windows, and so there can be 
+problems (evidently, mine does something odd with the legacy mux, and 
+newer ones do something odd with the active mux).
 
->  - old. pre-cmov. i486 and pentium, and some clones.
+You might want to poke at the quirk in the patch in this thread and see if 
+one or the other mode works better, or if they're the same on your 
+machines. In any case, neither the patch that got into 2.6.25 nor the 
+narrowing patch in this thread would affect either of your machines.
 
-makes sense
- 
->  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
->    granted.
-
-again makes sense; question is if it makes sense to take PSE and PAE
-for granted as well (although PSE we can do runtime I suppose)
-
-> Hmm? Doesn't that sound like a sane model?
-
-it does to me; the only question is if we hit a new bucket with the
-various fancy string instructions that are in upcoming models; doing
-string/copy operations inlined for those guys will make a fourth bucket.
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	-Daniel
+*This .sig left intentionally blank*
