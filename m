@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYIHJzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbYIHKWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYIHJzx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 05:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYIHJzT
+	id S1753111AbYIHKWF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 06:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbYIHKVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 05:55:19 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:54243 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbYIHJzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 05:55:18 -0400
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@redhat.com, tony.luck@intel.com,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH 1/3] swiotlb: use map_single instead of swiotlb_map_single in swiotlb_alloc_coherent
-Date: Mon,  8 Sep 2008 18:53:48 +0900
-Message-Id: <1220867630-1995-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.4.2
-In-Reply-To: <1220867630-1995-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1220867630-1995-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Mon, 8 Sep 2008 06:21:54 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59805 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751983AbYIHKVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 06:21:53 -0400
+Date: Mon, 8 Sep 2008 11:21:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pascal GREGIS <pgs@synerway.com>
+Cc: linux-kernel@vger.kernel.org, Mark Lord <lkml@rtr.ca>
+Subject: Re: SCSI or libata problem with an RDX removable disk
+Message-ID: <20080908112134.7bca9dea@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080904135216.GF2814@venus.synerway.com>
+References: <20080904095447.GE2814@venus.synerway.com>
+	<20080904123418.4fab9ea3@lxorguk.ukuu.org.uk>
+	<20080904135216.GF2814@venus.synerway.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We always need swiotlb memory here so address_needs_mapping and
-swiotlb_force testings are irrelevant. map_single should be used here
-instead of swiotlb_map_single.
+> Sep  4 08:03:08 devsni1 kernel: ata4: port is slow to respond, please be patient (Status 0xd0)
+> Sep  4 08:03:31 devsni1 kernel: ata4: port failed to respond (30 secs, Status 0xd0)
+> Sep  4 08:03:31 devsni1 kernel: ata4: soft resetting port
+> Sep  4 08:03:32 devsni1 kernel: ATA: abnormal status 0xD0 on port 0x0001d807
+> Sep  4 08:03:32 devsni1 last message repeated 4 times
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- lib/swiotlb.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+Your disk went offline and then refused to come back when the link was
+reset. The initial trigger appears to have been the drive, the fact it
+didn't come back could either be the drive or a controller problem. We've
+seen a few cases where devices or controllers fail to recover from one
+end being stuck expecting data.
 
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 3066ffe..2fb485d 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -483,12 +483,9 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 		 * swiotlb_map_single(), which will grab memory from
- 		 * the lowest available address range.
- 		 */
--		dma_addr_t handle;
--		handle = swiotlb_map_single(NULL, NULL, size, DMA_FROM_DEVICE);
--		if (swiotlb_dma_mapping_error(hwdev, handle))
-+		ret = map_single(hwdev, NULL, size, DMA_FROM_DEVICE);
-+		if (!ret)
- 			return NULL;
--
--		ret = bus_to_virt(handle);
- 	}
- 
- 	memset(ret, 0, size);
--- 
-1.5.5.GIT
+Mark Lord did some patches to try and drain data in this case but I don't
+remember if they were merged yet.
 
+Alan
