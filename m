@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbYIHXA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYIHXE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755164AbYIHXA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 19:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbYIHXAu
+	id S1755438AbYIHXE4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 19:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYIHXEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 19:00:50 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54780 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752492AbYIHXAu (ORCPT
+	Mon, 8 Sep 2008 19:04:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47850
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753514AbYIHXEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 19:00:50 -0400
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Miller <davem@davemloft.net>
+	Mon, 8 Sep 2008 19:04:48 -0400
+Date: Mon, 08 Sep 2008 16:04:41 -0700 (PDT)
+Message-Id: <20080908.160441.124972717.davem@davemloft.net>
+To: James.Bottomley@HansenPartnership.com
 Cc: david-b@pacbell.net, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
        linux-parisc@vger.kernel.org
-In-Reply-To: <20080908.143504.121592746.davem@davemloft.net>
-References: <200809081213.37705.david-b@pacbell.net>
-	 <1220905689.8074.68.camel@localhost.localdomain>
-	 <200809081429.57805.david-b@pacbell.net>
-	 <20080908.143504.121592746.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 08 Sep 2008 18:00:47 -0500
-Message-Id: <1220914847.8074.81.camel@localhost.localdomain>
+Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1220914847.8074.81.camel@localhost.localdomain>
+References: <200809081429.57805.david-b@pacbell.net>
+	<20080908.143504.121592746.davem@davemloft.net>
+	<1220914847.8074.81.camel@localhost.localdomain>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-08 at 14:35 -0700, David Miller wrote:
-> From: David Brownell <david-b@pacbell.net>
-> Date: Mon, 8 Sep 2008 14:29:57 -0700
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Mon, 08 Sep 2008 18:00:47 -0500
+
+> On Mon, 2008-09-08 at 14:35 -0700, David Miller wrote:
+> > The RTC layer is very nice and it even allows writing drivers for
+> > very simplistic RTC devices (even ones that cannot be written)
+> > with ease.  I had two such cases to handle on sparc64.
 > 
-> > On Monday 08 September 2008, James Bottomley wrote:
-> > > All the PDC real time clock calls can do are read and set, nothing else,
-> > > so it's idealy suited to the GEN_RTC infrastructure ... what's the
-> > > benefit in moving it to RTC_CLASS?
-> > 
-> > The same benefit always found in sharing infrastructure.  Lots
-> > of little differences/bugs go away.  Infrastructure improvements
-> > and bugfixes get leveraged.  Dead and crufticious code can vanish.
-> > And so forth.
-> 
-> I absolutely and positively agree with David here.
-> 
-> I just last week converted all of both sparc ports to the generic
-> RTC layer and what a huge burdon has been moved off of my shoulders.
-> 
-> The RTC layer is very nice and it even allows writing drivers for
-> very simplistic RTC devices (even ones that cannot be written)
-> with ease.  I had two such cases to handle on sparc64.
+> I'm guessing they're not upstream yet (since I can't find them)?
 
-I'm guessing they're not upstream yet (since I can't find them)?
+It's in my sparc next tree:
 
-However, if you based them on rtc-ppc.c then yes, I agree, it looks
-reasonably easy:  it's just a matter of converting over the GEN_RTC
-PDT_TOD helpers.
+	master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git
 
-On a related note ... I could do this specifically for parisc, but I
-could also do a GEN_RTC conversion to PDC_CLASS ... would that be more
-helpful?
+> However, if you based them on rtc-ppc.c then yes, I agree, it looks
+> reasonably easy:  it's just a matter of converting over the GEN_RTC
+> PDT_TOD helpers.
 
-James
+That's not what I do, I use the real RAW chip drivers provided by the
+RTC layer.
 
+That's the way to do this.
 
+I think the powerpc folks did the wrong thing and should just register
+generic platform_device objects in their platform code, and let the
+RTC layer drive the individual devices in response.
+
+All the powerpc folks are doing is providing a dummy shim into the
+RTC layer using their machine description vector, and not really using
+the RTC layer drivers at all.
