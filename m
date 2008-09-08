@@ -1,52 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752220AbYIHNPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbYIHNQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752220AbYIHNPR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbYIHNO4
+	id S1753284AbYIHNQU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbYIHNQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:14:56 -0400
-Received: from lazybastard.de ([212.112.238.170]:35882 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbYIHNOz (ORCPT
+	Mon, 8 Sep 2008 09:16:11 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:40397 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751824AbYIHNQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:14:55 -0400
-Date: Mon, 8 Sep 2008 15:14:40 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Rob Landley <rob@landley.net>
-Cc: Alain Knaff <alain@knaff.lu>,
-       Leon Woestenberg <leon.woestenberg@gmail.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] init: bzip2 or lzma -compressed kernels and initrds
-Message-ID: <20080908131440.GA14563@logfs.org>
-References: <200809062119.m86LJ5Of026101@hitchhiker.org.lu> <c384c5ea0809061529g2c7280d8j216f7791ceeb439a@mail.gmail.com> <48C30B4D.7030700@knaff.lu> <200809070117.56503.rob@landley.net>
+	Mon, 8 Sep 2008 09:16:10 -0400
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 3/7] sched: Framework for sched_mc/smt_power_savings=N
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Mon, 08 Sep 2008 18:48:57 +0530
+Message-ID: <20080908131857.3221.37989.stgit@drishya.in.ibm.com>
+In-Reply-To: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
+References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200809070117.56503.rob@landley.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 September 2008 01:17:55 -0500, Rob Landley wrote:
-> 
-> I vaguely recall that lzma requires more memory to decompress than bzip2 does, 
-> although I don't remember the details.  I know that bzip2 takes around 4 megs 
-> (although you need space for the decompressed kernel on _top_ of that, so you 
-> should be able to do it in about 8 megs total).  gunzip uses a 64k sliding 
-> window plus dictionary and the whole mess should fit in about 1/4 of a meg.
+From: Gautham R Shenoy <ego@in.ibm.com>
 
-Less, actually.  Iirc gzip takes about 280k for compression and
-somewhere below 100k for decompression with the kernel runtime zlib.
-The various copies that unpack kernels at boottime may be worse - they
-are certainly rather old copies of zlib and haven't seen much
-maintenance since.
+***  RFC patch of work in progress and not for inclusion. ***
 
-Jörn
+Currently the sched_mc/smt_power_savings variable is a boolean, which either
+enables or disables topology based power savings. This extends the behaviour of
+the variable from boolean to multivalued, such that based on the value, we
+decide how aggressively do we want to perform topology based powersavings
+balance.
 
--- 
-Don't worry about people stealing your ideas. If your ideas are any good,
-you'll have to ram them down people's throats.
--- Howard Aiken quoted by Ken Iverson quoted by Jim Horning quoted by
-   Raph Levien, 1979
+Variable levels of power saving tunable would benefit end user to match the
+required level of power savings vs performance trade off depending on the
+system configuration and workloads.
+
+This initial version makes the sched_mc_power_savings global variable to take
+more values (0,1,2).
+
+Later version is expected to add new member sd->powersavings_level at the multi
+core CPU level sched_domain. This make all sd->flags check for
+SD_POWERSAVINGS_BALANCE into a different macro that will check for
+powersavings_level.
+
+The power savings level setting should be in one place either in the
+sched_mc_power_savings global variable or contained within the appropriate
+sched_domain structure.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+---
+
+ include/linux/sched.h |   11 +++++++++++
+ kernel/sched.c        |   16 +++++++++++++---
+ 2 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index cfb0d87..7c12240 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -721,6 +721,17 @@ enum cpu_idle_type {
+ #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+ #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
+ 
++enum powersavings_balance_level {
++	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
++	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
++					 * first for long running threads
++					 */
++	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
++					 * cpu package for power savings
++					 */
++	MAX_POWERSAVINGS_BALANCE_LEVELS
++};
++
+ #define BALANCE_FOR_MC_POWER	\
+ 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5a38540..e535f98 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7719,14 +7719,24 @@ int arch_reinit_sched_domains(void)
+ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ {
+ 	int ret;
++	unsigned int level = 0;
+ 
+-	if (buf[0] != '0' && buf[0] != '1')
++	sscanf(buf, "%u", &level);
++
++	/*
++	 * level is always be positive so don't check for
++	 * level < POWERSAVINGS_BALANCE_NONE which is 0
++	 * What happens on 0 or 1 byte write,
++	 * need to check for count as well?
++	 */
++
++	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
+ 		return -EINVAL;
+ 
+ 	if (smt)
+-		sched_smt_power_savings = (buf[0] == '1');
++		sched_smt_power_savings = level;
+ 	else
+-		sched_mc_power_savings = (buf[0] == '1');
++		sched_mc_power_savings = level;
+ 
+ 	ret = arch_reinit_sched_domains();
+ 
+
