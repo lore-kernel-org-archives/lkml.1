@@ -1,245 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYIHNAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594AbYIHNMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753884AbYIHNAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbYIHM7K
+	id S1752594AbYIHNMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYIHNMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 08:59:10 -0400
-Received: from 2-1-3-15a.ens.sth.bostream.se ([82.182.31.214]:39429 "EHLO
-	zoo.weinigel.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755AbYIHM7G (ORCPT
+	Mon, 8 Sep 2008 09:12:24 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:33287 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbYIHNMX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 08:59:06 -0400
-Message-Id: <20080908124909.040168156@zoo.weinigel.se>
-References: <20080908124848.541807034@zoo.weinigel.se>
-User-Agent: quilt/0.46-1
-Date: Mon, 08 Sep 2008 14:48:49 +0200
-From: Christer Weinigel <christer@weinigel.se>
-To: ben-linux@fluff.org
-Cc: linux-kernel@vger.kernel.org, christer@weinigel.se
-Subject: [patch 1/3] s3cmci -- support odd block transfers
-Content-Disposition: inline; filename=s3c_mci-odd-sizes.patch
+	Mon, 8 Sep 2008 09:12:23 -0400
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Mon, 08 Sep 2008 18:44:39 +0530
+Message-ID: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To be able to do SDIO the s3cmci driver has to support non-word-sized
-transfers.  Change pio_words into pio_bytes and fix up all the places
-where it is used.  
+Hi,
 
-This variant of the patch will not overrun the buffer when reading an
-odd number of bytes.  When writing, this variant will still read past
-the end of the buffer, but since the driver can't support non-word-
-aligned transfers anyway, this should not be a problem, since a
-word-aligned transfer will never cross a page boundary.
+The existing power saving loadbalancer CONFIG_SCHED_MC attempts to run
+the workload in the system on minimum number of CPU packages and tries
+to keep rest of the CPU packages idle for longer duration. Thus
+consolidating workloads to fewer packages help other packages to be in
+idle state and save power.  The current implementation is very
+conservative and does not work effectively across different workloads.
+Initial idea of tunable sched_mc_power_savings=n was proposed to
+enable tuning of the power saving load balancer based on the system
+configuration, workload characteristics and end user requirements.
 
-This has been tested with a CSR SDIO Bluetooth Type A device on a
-Samsung S3C24A0 processor.
+Please refer to the following discussions and article for details.
 
-Signed-off-by: Christer Weinigel <christer@weinigel.se>
+Making power policy just work
+http://lwn.net/Articles/287924/ 
+[RFC v1] Tunable sched_mc_power_savings=n
+http://lwn.net/Articles/287882/
 
-Index: linux-2.6.26.2/drivers/mmc/host/s3cmci.c
-===================================================================
---- linux-2.6.26.2.orig/drivers/mmc/host/s3cmci.c
-+++ linux-2.6.26.2/drivers/mmc/host/s3cmci.c
-@@ -191,7 +191,7 @@ static inline void clear_imask(struct s3
- }
- 
- static inline int get_data_buffer(struct s3cmci_host *host,
--				  u32 *words, u32 **pointer)
-+				  u32 *bytes, u32 **pointer)
- {
- 	struct scatterlist *sg;
- 
-@@ -208,7 +208,7 @@ static inline int get_data_buffer(struct
- 	}
- 	sg = &host->mrq->data->sg[host->pio_sgptr];
- 
--	*words = sg->length >> 2;
-+	*bytes = sg->length;
- 	*pointer = sg_virt(sg);
- 
- 	host->pio_sgptr++;
-@@ -224,7 +224,7 @@ static inline u32 fifo_count(struct s3cm
- 	u32 fifostat = readl(host->base + S3C2410_SDIFSTA);
- 
- 	fifostat &= S3C2410_SDIFSTA_COUNTMASK;
--	return fifostat >> 2;
-+	return fifostat;
- }
- 
- static inline u32 fifo_free(struct s3cmci_host *host)
-@@ -232,13 +232,14 @@ static inline u32 fifo_free(struct s3cmc
- 	u32 fifostat = readl(host->base + S3C2410_SDIFSTA);
- 
- 	fifostat &= S3C2410_SDIFSTA_COUNTMASK;
--	return (63 - fifostat) >> 2;
-+	return 63 - fifostat;
- }
- 
- static void do_pio_read(struct s3cmci_host *host)
- {
- 	int res;
- 	u32 fifo;
-+	u32 fifo_words;
- 	void __iomem *from_ptr;
- 
- 	/* write real prescaler to host, it might be set slow to fix */
-@@ -247,8 +248,8 @@ static void do_pio_read(struct s3cmci_ho
- 	from_ptr = host->base + host->sdidata;
- 
- 	while ((fifo = fifo_count(host))) {
--		if (!host->pio_words) {
--			res = get_data_buffer(host, &host->pio_words,
-+		if (!host->pio_bytes) {
-+			res = get_data_buffer(host, &host->pio_bytes,
- 					      &host->pio_ptr);
- 			if (res) {
- 				host->pio_active = XFER_NONE;
-@@ -261,26 +262,45 @@ static void do_pio_read(struct s3cmci_ho
- 
- 			dbg(host, dbg_pio,
- 			    "pio_read(): new target: [%i]@[%p]\n",
--			    host->pio_words, host->pio_ptr);
-+			    host->pio_bytes, host->pio_ptr);
- 		}
- 
- 		dbg(host, dbg_pio,
- 		    "pio_read(): fifo:[%02i] buffer:[%03i] dcnt:[%08X]\n",
--		    fifo, host->pio_words,
-+		    fifo, host->pio_bytes,
- 		    readl(host->base + S3C2410_SDIDCNT));
- 
--		if (fifo > host->pio_words)
--			fifo = host->pio_words;
-+		/* If we have reached the end of the block, we can
-+		 * read a word and get 1 to 3 bytes.  If we in the
-+		 * middle of the block, we have to read full words,
-+		 * otherwise we will write garbage, so round down to
-+		 * an even multiple of 4. */
-+		if (fifo >= host->pio_bytes)
-+			fifo = host->pio_bytes;
-+		else
-+			fifo -= fifo & 3;
- 
--		host->pio_words -= fifo;
-+		host->pio_bytes -= fifo;
- 		host->pio_count += fifo;
- 
--		while (fifo--)
-+		fifo_words = fifo >> 2;
-+		while (fifo_words--)
- 			*(host->pio_ptr++) = readl(from_ptr);
-+
-+		if (fifo & 3) {
-+			u32 n = fifo & 3;
-+			u32 data = readl(from_ptr);
-+			u8 *p = (u8 *)host->pio_ptr;
-+
-+			while (n--) {
-+				*p++ = data;
-+				data >>= 8;
-+			}
-+		}
- 	}
- 
--	if (!host->pio_words) {
--		res = get_data_buffer(host, &host->pio_words, &host->pio_ptr);
-+	if (!host->pio_bytes) {
-+		res = get_data_buffer(host, &host->pio_bytes, &host->pio_ptr);
- 		if (res) {
- 			dbg(host, dbg_pio,
- 			    "pio_read(): complete (no more buffers).\n");
-@@ -304,8 +324,8 @@ static void do_pio_write(struct s3cmci_h
- 	to_ptr = host->base + host->sdidata;
- 
- 	while ((fifo = fifo_free(host))) {
--		if (!host->pio_words) {
--			res = get_data_buffer(host, &host->pio_words,
-+		if (!host->pio_bytes) {
-+			res = get_data_buffer(host, &host->pio_bytes,
- 							&host->pio_ptr);
- 			if (res) {
- 				dbg(host, dbg_pio,
-@@ -317,16 +337,23 @@ static void do_pio_write(struct s3cmci_h
- 
- 			dbg(host, dbg_pio,
- 			    "pio_write(): new source: [%i]@[%p]\n",
--			    host->pio_words, host->pio_ptr);
-+			    host->pio_bytes, host->pio_ptr);
- 
- 		}
- 
--		if (fifo > host->pio_words)
--			fifo = host->pio_words;
-+		/* If we have reached the end of the block, we have to
-+		 * write exactly the remaining number of bytes.  If we
-+		 * in the middle of the block, we have to write full
-+		 * words, so round down to an even multiple of 4. */
-+		if (fifo >= host->pio_bytes)
-+			fifo = host->pio_bytes;
-+		else
-+			fifo -= fifo & 3;
- 
--		host->pio_words -= fifo;
-+		host->pio_bytes -= fifo;
- 		host->pio_count += fifo;
- 
-+		fifo = (fifo + 3) >> 2;
- 		while (fifo--)
- 			writel(*(host->pio_ptr++), to_ptr);
- 	}
-@@ -351,9 +378,9 @@ static void pio_tasklet(unsigned long da
- 		clear_imask(host);
- 		if (host->pio_active != XFER_NONE) {
- 			dbg(host, dbg_err, "unfinished %s "
--			    "- pio_count:[%u] pio_words:[%u]\n",
-+			    "- pio_count:[%u] pio_bytes:[%u]\n",
- 			    (host->pio_active == XFER_READ) ? "read" : "write",
--			    host->pio_count, host->pio_words);
-+			    host->pio_count, host->pio_bytes);
- 
- 			if (host->mrq->data)
- 				host->mrq->data->error = -EINVAL;
-@@ -813,11 +840,10 @@ static int s3cmci_setup_data(struct s3cm
- 		/* We cannot deal with unaligned blocks with more than
- 		 * one block being transfered. */
- 
--		if (data->blocks > 1)
-+		if (data->blocks > 1) {
-+			pr_warning("%s: can't do non-word sized block transfers (blksz %d)\n", __func__, data->blksz);
- 			return -EINVAL;
--
--		/* No support yet for non-word block transfers. */
--		return -EINVAL;
-+		}
- 	}
- 
- 	while (readl(host->base + S3C2410_SDIDSTA) &
-@@ -897,7 +923,7 @@ static int s3cmci_prepare_pio(struct s3c
- 	BUG_ON((data->flags & BOTH_DIR) == BOTH_DIR);
- 
- 	host->pio_sgptr = 0;
--	host->pio_words = 0;
-+	host->pio_bytes = 0;
- 	host->pio_count = 0;
- 	host->pio_active = rw ? XFER_WRITE : XFER_READ;
- 
-Index: linux-2.6.26.2/drivers/mmc/host/s3cmci.h
-===================================================================
---- linux-2.6.26.2.orig/drivers/mmc/host/s3cmci.h
-+++ linux-2.6.26.2/drivers/mmc/host/s3cmci.h
-@@ -51,7 +51,7 @@ struct s3cmci_host {
- 	int			dma_complete;
- 
- 	u32			pio_sgptr;
--	u32			pio_words;
-+	u32			pio_bytes;
- 	u32			pio_count;
- 	u32			*pio_ptr;
- #define XFER_NONE 0
+The following series of patch demonstrates the basic framework for
+tunable sched_mc_power_savings.
+
+The power savings and performance of the given workload in an under
+utilised system can be controlled by setting values of 0, 1 or 2 to
+/sys/devices/system/cpu/sched_mc_power_savings with 0 being highest
+performance and least power savings and level 2 indicating maximum
+power savings even at the cost of slight performance degradation.
+
+enum powersavings_balance_level {
+	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
+	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package 
+					 * first for long running threads 
+					 */ 
+	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
+					 * cpu package for power savings
+					 */
+	MAX_POWERSAVINGS_BALANCE_LEVELS
+};
+
+sched_mc_power_savings values of 0 and 1 are implemented and available
+in the default kernel.  The new level of 2 support task wakeup biasing
+that helps in consolidating very short running bursty jobs in an
+almost idle system.  This level of task consolidation packs most
+workloads to one cpu package and extends the tickless idle time for
+unused cpu packages.
+
+Changes from default kernels's power save balance implementation:
+
+* Nominate wakeup cpu during power saving load balance operation
+* Use the nominated cpu for power efficient wakeup cpu selection
+* Perform active load balance for newly idle cpu for aggressive task
+  consolidation.
+* This patch is against 2.6.27-rc5 with two fixes for basic
+  sched_mc_power_saving balance bugs in mainline kernel. (They have
+  already been independently posted in LKML)
+
+Results:
+--------
+
+sched_mc_power_saving=2 is expected to provide power and/or energy
+savings when the overall system utilisation is less than ~50%.  At
+higher system utilisation in the case of a small two socket system, the
+opportunity for power savings decrease and hence this level may not
+provide any further benefit compared to sched_mc_power_saving=1.
+
+KERNBENCH Runs: make -j4 on a x86 8 cpu, dual socket quad core cpu
+package
+
+SchedMC Run Time     Package Idle    Energy  Power
+0	76.88s      51.634% 53.809%  1.00x J 1.00y W
+1	78.50s      42.020% 64.687%  0.97x J 0.95y W 
+2	73.31s      17.305% 87.765%  0.92x J 0.97y W
+
+The above test run has normalised power and energy values for
+a 4 job make on an 8 cpu system.  Typical system utilisation will be
+~50%.  The package idle percentage are the idle time of each of the
+quad core cpu package in the test system.  Energy and average power
+for the test duration has been measured and normalised.
+
+sched_mc=0 is the baseline reference run.  In this particular system
+setup, sched_mc=1 actually degraded performance by making the jobs
+jump cpus.  While sched_mc=2 was able to consolidate better due to
+task wakeup biasing and thereby improving performance for this
+particular test.  sched_mc=2 wins by least energy and maximum
+performance.  The average power is higher than sched_mc=1 (but still
+less than baseline run) because the ondemand governor would have
+increased the cpu frequency based on utilisation. The cpu package idle
+percentage given an indication of the level of consolidation that was
+obtained.  This info is from /proc/stat snapshot on all cpus and
+averaged for all cores in a package (after taking care of topology). 
+
+SPECjbb runs: 2 warehouse on x86 8 cpu, dual socket quad core cpu
+package, average system utilisation around ~25%
+
+SchedMC SPECjbb OPS     Watts   
+0	1.00x		1.00y	
+1	0.98x		0.98y	
+2	0.95x		0.95y	
+
+We can see a linear reduction in performance and average power
+consumed.  sched_mc tunable can be used to trade performance for
+average power consumed for this workload.
+
+However the results are not as good for 4 warehouse in the same system
+where the system utilisation is slightly above 50%
+SchedMC	SPECjbb ops	 Package Idle	Power
+0	1.00x		48.483% 51.306%	1.00z
+1	0.92x		21.398% 79.095% 0.93z
+2	0.84x		28.778% 93.282% 0.92z
+
+There is significant reduction in performance for a marginal 1%
+reduction in power for sched_mc=2.
+
+These results are illustrative of basic idea and possibilities with the
+tunable sched_mc_power_savings settings.  More work needs to be done
+to tune the various heuristics for different workloads.  The power and
+performance tradoffs are machine configuration dependent and hence
+more experimentation is needed in order to get the correct design.
+
+Processor power saving features like deep sleep states on server
+processors will significantly improve power savings (proportional to
+package idle time).  This technique is primarily intended for multi
+socket systems with multi-core cpus where the power (voltage) control
+is at a per socket level.
+
+I will post more experimental data for different workloads and
+benchmarks.  
+
+Please let me know your comments and suggestions.
+
+Thanks,
+Vaidy
+---
+
+Gautham R Shenoy (2):
+      sched: Framework for sched_mc/smt_power_savings=N
+      sched: Fix __load_balance_iterator() for cfq with only one task.
+
+Max Krasnyansky (1):
+      sched: arch_reinit_sched_domains() must destroy domains to force rebuild
+
+Vaidyanathan Srinivasan (4):
+      sched: activate active load balancing in new idle cpus
+      sched: bias task wakeups to preferred semi-idle packages
+      sched: nominate preferred wakeup cpu
+      sched: favour lower logical cpu number for sched_mc balance
+
+
+ include/linux/cpuset.h |    2 +
+ include/linux/sched.h  |   11 +++++++
+ kernel/sched.c         |   79 +++++++++++++++++++++++++++++++++++++++++-------
+ kernel/sched_fair.c    |   15 +++++++++
+ 4 files changed, 94 insertions(+), 13 deletions(-)
 
 -- 
-"Just how much can I get away with and still go to heaven?"
-
-Christer Weinigel <christer@weinigel.se>  http://www.weinigel.se
