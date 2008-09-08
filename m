@@ -1,114 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbYIHG5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbYIHHej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbYIHG5M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 02:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYIHG45
+	id S1753170AbYIHHej (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 03:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751504AbYIHHea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 02:56:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35496 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751942AbYIHG44 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 02:56:56 -0400
-Date: Sun, 7 Sep 2008 23:56:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Paulo Marques <pmarques@grupopie.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] exclude h8300 local symbols (Re: kallsyms exclude local
- symbols)
-Message-Id: <20080907235627.293b0a4b.akpm@linux-foundation.org>
-In-Reply-To: <87zlnotn2l.wl%ysato@users.sourceforge.jp>
-References: <87fxphzan5.wl%ysato@users.sourceforge.jp>
-	<489AE3C5.2000807@grupopie.com>
-	<87zlnotn2l.wl%ysato@users.sourceforge.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Sep 2008 03:34:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54454 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751032AbYIHHe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 03:34:29 -0400
+Message-ID: <48C4D54E.60909@cn.fujitsu.com>
+Date: Mon, 08 Sep 2008 15:33:34 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: "Theodore Ts'o" <tytso@mit.edu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ext4: miss an unlock in ext4_check_descriptors()
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Aug 2008 19:36:18 -0400 Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
+ # mkfs.ext3 -m 0 /dev/sda6
+ # tune2fs -E test_fs -O extents,uninit_bg
+ (no e2fsck after tune2fs)
+ # mount -t ext4dev /dev/sda6
 
-> At Thu, 07 Aug 2008 13:00:05 +0100,
-> Paulo Marques wrote:
-> > 
-> > Yoshinori Sato wrote:
-> > > h8300's nm output include '.Lfoo' local symbols.
-> > > [...]
-> > >  	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
-> > > -	else if (str[0] == '$')
-> > > +	else if (str[0] == '$' || str[0] == '.')
-> > 
-> > The comment above needs some updating too. Something along these lines:
-> > 
-> > /* exclude also MIPS ELF local symbols (eg. $L123) and h8300 (eg .LM10) */
-> > 
-> > Other than that, the patch seems fine.
-> > 
-> > -- 
-> > Paulo Marques - www.grupopie.com
-> > 
-> > "...so she told me it was either her or the ham radio, over."
-> 
-> Thanks reply.
-> 
-> Update comment.
-> And same problem in modpost.
-> 
-> Warning message dirty.
-> WARNING: vmlinux.o(.text+0x304b): Section mismatch in reference from the variable .LM10 to the variable .init.text:_free_area_init
-> The function .LM10() references
-> the variable __init _free_area_init.
-> This is often because .LM10 lacks a __init
-> annotation or the annotation of _free_area_init is wrong.
-> 
-> fix it.
-> WARNING: vmlinux.o(.text+0x304b): Section mismatch in reference from the variable _paging_init to the variable .init.text:___alloc_bootmem
-> The function _paging_init() references
-> the variable __init ___alloc_bootmem.
-> This is often because _paging_init lacks a __init
-> annotation or the annotation of ___alloc_bootmem is wrong.
-> 
-> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
-> 
-> ---
->  scripts/kallsyms.c    |    5 +++--
->  scripts/mod/modpost.c |    4 +++-
->  2 files changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-> index ad2434b..64ad9cf 100644
-> --- a/scripts/kallsyms.c
-> +++ b/scripts/kallsyms.c
-> @@ -105,8 +105,9 @@ static int read_symbol(FILE *in, struct sym_entry *s)
->  	else if (toupper(stype) == 'U' ||
->  		 is_arm_mapping_symbol(sym))
->  		return -1;
-> -	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
-> -	else if (str[0] == '$')
-> +	/* exclude also MIPS ELF (e.g. $L123) and h8300 elf (e.g. .LM123)
-> +	   local symbols */
-> + 	else if (str[0] == '$' || str[0] == '.')
->  		return -1;
->  	/* exclude debugging symbols */
->  	else if (stype == 'N')
-> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> index 418cd7d..e07f4ba 100644
-> --- a/scripts/mod/modpost.c
-> +++ b/scripts/mod/modpost.c
-> @@ -1042,7 +1042,9 @@ static inline int is_valid_name(struct elf_info *elf, Elf_Sym *sym)
->  {
->  	const char *name = elf->strtab + sym->st_name;
->  
-> -	if (!name || !strlen(name))
-> +	if (!name || !strlen(name) ||
-> +	/* exclude h8300 elf local symbols (e.g. .LM123) */
-> +	    name[0] == '.')
->  		return 0;
->  	return !is_arm_mapping_symbol(name);
->  }
+oops immediately:
 
-This patch broke kallsyms on powerpc.  Please see
-http://ozlabs.org/pipermail/linuxppc-dev/2008-September/062549.html
+EXT4-fs: ext4_check_descriptors: Checksum for group 0 failed (20091!=0)
+EXT4-fs: group descriptors corrupted!
+
+=========================
+[ BUG: held lock freed! ]
+-------------------------
+mount/9422 is freeing memory c6ca0000-c6ca7fff, with a lock still held there!
+ (&bgl->locks[i].lock#2){--..}, at: [<f8996589>] ext4_fill_super+0xde8/0x1dcf [ext4dev]
+2 locks held by mount/9422:
+ #0:  (&type->s_umount_key#19){----}, at: [<c0488258>] sget+0x1dd/0x31c
+ #1:  (&bgl->locks[i].lock#2){--..}, at: [<f8996589>] ext4_fill_super+0xde8/0x1dcf [ext4dev]
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ fs/ext4/super.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 566344b..24e7df6 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -1623,8 +1623,10 @@ static int ext4_check_descriptors(struct super_block *sb)
+ 			       "Checksum for group %lu failed (%u!=%u)\n",
+ 			       i, le16_to_cpu(ext4_group_desc_csum(sbi, i,
+ 			       gdp)), le16_to_cpu(gdp->bg_checksum));
+-			if (!(sb->s_flags & MS_RDONLY))
++			if (!(sb->s_flags & MS_RDONLY)) {
++				spin_unlock(sb_bgl_lock(sbi, i));
+ 				return 0;
++			}
+ 		}
+ 		spin_unlock(sb_bgl_lock(sbi, i));
+ 		if (!flexbg_flag)
+-- 1.5.4.rc3 
