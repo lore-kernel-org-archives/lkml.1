@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbYIHNRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbYIHNSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbYIHNRb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbYIHNRY
+	id S1753448AbYIHNSe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYIHNS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:17:24 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:39902 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751719AbYIHNRX (ORCPT
+	Mon, 8 Sep 2008 09:18:26 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:52593 "EHLO
+	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751938AbYIHNSZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:17:23 -0400
+	Mon, 8 Sep 2008 09:18:25 -0400
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 4/7] sched: favour lower logical cpu number for
-	sched_mc balance
+Subject: [RFC PATCH v2 5/7] sched: nominate preferred wakeup cpu
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
@@ -24,8 +23,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Tim Connors <tconnors@astro.swin.edu.au>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Mon, 08 Sep 2008 18:50:18 +0530
-Message-ID: <20080908132018.3221.58500.stgit@drishya.in.ibm.com>
+Date: Mon, 08 Sep 2008 18:51:32 +0530
+Message-ID: <20080908132132.3221.6102.stgit@drishya.in.ibm.com>
 In-Reply-To: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
 References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -36,42 +35,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just in case two groups have identical load, prefer to move load to lower
-logical cpu number rather than the present logic of moving to higher logical
-number.
+When the system utilisation is low and more cpus are idle,
+then the process waking up from sleep should prefer to
+wakeup an idle cpu from semi-idle cpu package (multi core
+package) rather than a completely idle cpu package which
+would waste power.
 
-find_busiest_group() tries to look for a group_leader that has spare capacity
-to take more tasks and freeup an appropriate least loaded group.  Just in case
-there is a tie and the load is equal, then the group with higher logical number
-is favoured.  This conflicts with user space irqbalance daemon that will move
-interrupts to lower logical number if the system utilisation is very low.
+Use the sched_mc balance logic in find_busiest_group() to
+nominate a preferred wakeup cpu.
+
+This info can be sored in appropriate sched_domain, but
+updating this info in all copies of sched_domain is not
+practical.  For now lets try with a global variable.
 
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 ---
 
- kernel/sched.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/sched.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index e535f98..569fc8d 100644
+index 569fc8d..4ae79f5 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -3237,7 +3237,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		 */
- 		if ((sum_nr_running < min_nr_running) ||
- 		    (sum_nr_running == min_nr_running &&
--		     first_cpu(group->cpumask) <
-+		     first_cpu(group->cpumask) >
- 		     first_cpu(group_min->cpumask))) {
- 			group_min = group;
- 			min_nr_running = sum_nr_running;
-@@ -3253,7 +3253,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		if (sum_nr_running <= group_capacity - 1) {
- 			if (sum_nr_running > leader_nr_running ||
- 			    (sum_nr_running == leader_nr_running &&
--			     first_cpu(group->cpumask) >
-+			     first_cpu(group->cpumask) <
- 			      first_cpu(group_leader->cpumask))) {
- 				group_leader = group;
- 				leader_nr_running = sum_nr_running;
+@@ -3380,6 +3380,9 @@ out_balanced:
+ 
+ 	if (this == group_leader && group_leader != group_min) {
+ 		*imbalance = min_load_per_task;
++		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP)
++			sched_mc_preferred_wakeup_cpu =
++					first_cpu(group_leader->cpumask);
+ 		return group_min;
+ 	}
+ #endif
+@@ -6911,6 +6914,13 @@ static void sched_domain_node_span(int node, cpumask_t *span)
+ int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
+ 
+ /*
++ * Preferred wake up cpu nominated by sched_mc balance that will be used when
++ * most cpus are idle in the system indicating overall very low system
++ * utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP (2).
++ */
++unsigned int sched_mc_preferred_wakeup_cpu;
++
++/*
+  * SMT sched-domains:
+  */
+ #ifdef CONFIG_SCHED_SMT
 
