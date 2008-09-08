@@ -1,73 +1,499 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYIHP35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYIHPa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbYIHP35 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYIHP3t
+	id S1755198AbYIHPa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYIHPaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:29:49 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:58811 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752852AbYIHP3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:29:49 -0400
-Message-ID: <48C544EA.9050106@sgi.com>
-Date: Mon, 08 Sep 2008 08:29:46 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 8 Sep 2008 11:30:12 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:58468 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752529AbYIHPaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 11:30:09 -0400
+Date: Mon, 8 Sep 2008 20:58:10 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+Message-ID: <20080908152810.GA12065@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+	menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
+References: <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com> <200809011743.42658.nickpiggin@yahoo.com.au> <48BD0641.4040705@linux.vnet.ibm.com> <20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com> <48BD0E4A.5040502@linux.vnet.ibm.com> <20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com> <48BD119B.8020605@linux.vnet.ibm.com> <20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com> <48BD337E.40001@linux.vnet.ibm.com> <20080903123306.316beb9d.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Bert Wesarg <bert.wesarg@googlemail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 11/13] genapic: reduce stack pressuge in io_apic.c step
- 3 target_cpus
-References: <20080906235036.891970000@polaris-admin.engr.sgi.com>	 <20080906235038.421559000@polaris-admin.engr.sgi.com> <36ca99e90809070055u3b3b8415i2a5dbfb6bf617d35@mail.gmail.com>
-In-Reply-To: <36ca99e90809070055u3b3b8415i2a5dbfb6bf617d35@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080903123306.316beb9d.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bert Wesarg wrote:
-> On Sun, Sep 7, 2008 at 01:50, Mike Travis <travis@sgi.com> wrote:
->>  * Step 3 "target_cpus" of cleaning up io_apic.c modifies the TARGET_CPUS
->>    interface to pass a pointer to the returned mask for arch X86_64,
->>    removing yet another "cpumask_t variable on the stack".
->>
->>        target_cpus = TARGET_CPUS;
->>
->>    becomes:
->>
->>        TARGET_CPUS(target_cpus);
->>
->>    For x86_32 this is expanded to:
->>
->>        target_cpus = (genapic->target_cpus());
->>
->>    For x86_64 this is expanded to:
->>
->>        target_cpus = (genapic->target_cpus)(&(target_cpus));
-> But its expended to:
->          (genapic->target_cpus)(&(target_cpus));
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-09-03 12:33:06]:
 
-Umm, right, my cut and paste error...
+> On Tue, 02 Sep 2008 18:07:18 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > I understand your concern and I am not trying to reduce memcg's performance - or
+> > add a fancy feature. I am trying to make memcg more friendly for distros. I see
+> > your point about the overhead. I just got back my results - I see a 4% overhead
+> > with the patches. Let me see if I can rework them for better performance.
+> > 
+> Just an idea, by using atomic_ops page_cgroup patch, you can encode page_cgroup->lock
+> to page_cgroup->flags and use bit_spinlock(), I think.
+> (my new patch set use bit_spinlock on page_cgroup->flags for avoiding some race.)
+> 
+> This will save extra 4 bytes.
 
-Thanks,
-Mike
-> 
->> -#define TARGET_CPUS      (genapic->target_cpus())
->> +#define TARGET_CPUS(retval) (genapic->target_cpus)(&(retval))
-> 
-> 
->> +#ifdef CONFIG_X86_64
->> +#define TARGET_CPUS(retval)      (genapic->target_cpus)(&(retval))
->> +#else
->> +#define TARGET_CPUS(retval)      retval = (genapic->target_cpus())
->> +#endif
-> 
-> Bert
+Sorry for the delay in sending out the new patch, I am traveling and
+thus a little less responsive. Here is the update patch
 
+
+v3...v2
+1. Convert flags to unsigned long
+2. Move page_cgroup->lock to a bit spin lock in flags
+
+v2...v1
+
+1. Fix a small bug, don't call radix_tree_preload_end(), if preload fails
+
+This is a rewrite of a patch I had written long back to remove struct page
+(I shared the patches with Kamezawa, but never posted them anywhere else).
+I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
+
+I've tested the patches on an x86_64 box, I've run a simple test running
+under the memory control group and the same test running concurrently under
+two different groups (and creating pressure within their groups). I've also
+compiled the patch with CGROUP_MEM_RES_CTLR turned off.
+
+Advantages of the patch
+
+1. It removes the extra pointer in struct page
+
+Disadvantages
+
+1. Radix tree lookup is not an O(1) operation, once the page is known
+   getting to the page_cgroup (pc) is a little more expensive now.
+
+This is an initial RFC for comments
+
+TODOs
+
+1. Test the page migration changes
+
+Performance
+
+In a unixbench run, these patches had a performance impact of 2% (slowdown).
+
+Comments/Reviews?
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ include/linux/memcontrol.h |   23 +++++
+ include/linux/mm_types.h   |    4 
+ mm/memcontrol.c            |  187 +++++++++++++++++++++++++++++----------------
+ 3 files changed, 144 insertions(+), 70 deletions(-)
+
+diff -puN mm/memcontrol.c~memcg_move_to_radix_tree mm/memcontrol.c
+--- linux-2.6.27-rc5/mm/memcontrol.c~memcg_move_to_radix_tree	2008-09-04 15:45:54.000000000 +0530
++++ linux-2.6.27-rc5-balbir/mm/memcontrol.c	2008-09-08 20:15:30.000000000 +0530
+@@ -24,6 +24,7 @@
+ #include <linux/smp.h>
+ #include <linux/page-flags.h>
+ #include <linux/backing-dev.h>
++#include <linux/radix-tree.h>
+ #include <linux/bit_spinlock.h>
+ #include <linux/rcupdate.h>
+ #include <linux/slab.h>
+@@ -40,6 +41,9 @@ struct cgroup_subsys mem_cgroup_subsys _
+ static struct kmem_cache *page_cgroup_cache __read_mostly;
+ #define MEM_CGROUP_RECLAIM_RETRIES	5
+ 
++static struct radix_tree_root mem_cgroup_tree;
++static spinlock_t mem_cgroup_tree_lock;
++
+ /*
+  * Statistics for memory cgroup.
+  */
+@@ -137,20 +141,6 @@ struct mem_cgroup {
+ static struct mem_cgroup init_mem_cgroup;
+ 
+ /*
+- * We use the lower bit of the page->page_cgroup pointer as a bit spin
+- * lock.  We need to ensure that page->page_cgroup is at least two
+- * byte aligned (based on comments from Nick Piggin).  But since
+- * bit_spin_lock doesn't actually set that lock bit in a non-debug
+- * uniprocessor kernel, we should avoid setting it here too.
+- */
+-#define PAGE_CGROUP_LOCK_BIT 	0x0
+-#if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
+-#define PAGE_CGROUP_LOCK 	(1 << PAGE_CGROUP_LOCK_BIT)
+-#else
+-#define PAGE_CGROUP_LOCK	0x0
+-#endif
+-
+-/*
+  * A page_cgroup page is associated with every page descriptor. The
+  * page_cgroup helps us identify information about the cgroup
+  */
+@@ -158,12 +148,17 @@ struct page_cgroup {
+ 	struct list_head lru;		/* per cgroup LRU list */
+ 	struct page *page;
+ 	struct mem_cgroup *mem_cgroup;
+-	int flags;
++	unsigned long flags;
+ };
+-#define PAGE_CGROUP_FLAG_CACHE	   (0x1)	/* charged as cache */
+-#define PAGE_CGROUP_FLAG_ACTIVE    (0x2)	/* page is active in this cgroup */
+-#define PAGE_CGROUP_FLAG_FILE	   (0x4)	/* page is file system backed */
+-#define PAGE_CGROUP_FLAG_UNEVICTABLE (0x8)	/* page is unevictableable */
++
++/*
++ * LOCK_BIT is 0, with value 1
++ */
++#define PAGE_CGROUP_FLAG_LOCK_BIT   (0x0)  /* lock bit */
++#define PAGE_CGROUP_FLAG_CACHE	   (0x2)   /* charged as cache */
++#define PAGE_CGROUP_FLAG_ACTIVE    (0x4)   /* page is active in this cgroup */
++#define PAGE_CGROUP_FLAG_FILE	   (0x8)   /* page is file system backed */
++#define PAGE_CGROUP_FLAG_UNEVICTABLE (0x10)/* page is unevictableable */
+ 
+ static int page_cgroup_nid(struct page_cgroup *pc)
+ {
+@@ -248,35 +243,81 @@ struct mem_cgroup *mem_cgroup_from_task(
+ 				struct mem_cgroup, css);
+ }
+ 
+-static inline int page_cgroup_locked(struct page *page)
++static inline void lock_page_cgroup(struct page_cgroup *pc)
+ {
+-	return bit_spin_is_locked(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	bit_spin_lock(PAGE_CGROUP_FLAG_LOCK_BIT, &pc->flags);
+ }
+ 
+-static void page_assign_page_cgroup(struct page *page, struct page_cgroup *pc)
++static inline int trylock_page_cgroup(struct page_cgroup *pc)
+ {
+-	VM_BUG_ON(!page_cgroup_locked(page));
+-	page->page_cgroup = ((unsigned long)pc | PAGE_CGROUP_LOCK);
++	return bit_spin_trylock(PAGE_CGROUP_FLAG_LOCK_BIT, &pc->flags);
+ }
+ 
+-struct page_cgroup *page_get_page_cgroup(struct page *page)
++static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ {
+-	return (struct page_cgroup *) (page->page_cgroup & ~PAGE_CGROUP_LOCK);
++	bit_spin_unlock(PAGE_CGROUP_FLAG_LOCK_BIT, &pc->flags);
+ }
+ 
+-static void lock_page_cgroup(struct page *page)
++static int page_assign_page_cgroup(struct page *page, struct page_cgroup *pc,
++					gfp_t gfp_mask)
+ {
+-	bit_spin_lock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
+-}
++	unsigned long pfn = page_to_pfn(page);
++	unsigned long flags;
++	int err = 0;
++	struct page_cgroup *old_pc;
+ 
+-static int try_lock_page_cgroup(struct page *page)
+-{
+-	return bit_spin_trylock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	if (pc) {
++		err = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
++		if (err) {
++			printk(KERN_WARNING "could not preload radix tree "
++				"in %s\n", __func__);
++			goto done;
++		}
++	}
++
++	spin_lock_irqsave(&mem_cgroup_tree_lock, flags);
++	old_pc = radix_tree_lookup(&mem_cgroup_tree, pfn);
++	if (pc && old_pc) {
++		err = -EEXIST;
++		goto pc_race;
++	}
++	if (pc) {
++		err = radix_tree_insert(&mem_cgroup_tree, pfn, pc);
++		if (err)
++			printk(KERN_WARNING "Inserting into radix tree failed "
++				"in %s\n", __func__);
++	} else
++		radix_tree_delete(&mem_cgroup_tree, pfn);
++pc_race:
++	spin_unlock_irqrestore(&mem_cgroup_tree_lock, flags);
++	if (pc)
++		radix_tree_preload_end();
++done:
++	return err;
+ }
+ 
+-static void unlock_page_cgroup(struct page *page)
++struct page_cgroup *__page_get_page_cgroup(struct page *page, bool lock,
++						bool trylock)
+ {
+-	bit_spin_unlock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++	unsigned long pfn = page_to_pfn(page);
++	struct page_cgroup *pc;
++	int ret;
++
++	rcu_read_lock();
++	pc = radix_tree_lookup(&mem_cgroup_tree, pfn);
++
++	if (pc && lock)
++		lock_page_cgroup(pc);
++
++	if (pc && trylock) {
++		ret = trylock_page_cgroup(pc);
++		if (!ret)
++			pc = NULL;
++	}
++
++	rcu_read_unlock();
++
++	return pc;
+ }
+ 
+ static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
+@@ -377,17 +418,15 @@ void mem_cgroup_move_lists(struct page *
+ 	 * safely get to page_cgroup without it, so just try_lock it:
+ 	 * mem_cgroup_isolate_pages allows for page left on wrong list.
+ 	 */
+-	if (!try_lock_page_cgroup(page))
++	pc = page_get_page_cgroup_trylock(page);
++	if (!pc)
+ 		return;
+ 
+-	pc = page_get_page_cgroup(page);
+-	if (pc) {
+-		mz = page_cgroup_zoneinfo(pc);
+-		spin_lock_irqsave(&mz->lru_lock, flags);
+-		__mem_cgroup_move_lists(pc, lru);
+-		spin_unlock_irqrestore(&mz->lru_lock, flags);
+-	}
+-	unlock_page_cgroup(page);
++	mz = page_cgroup_zoneinfo(pc);
++	spin_lock_irqsave(&mz->lru_lock, flags);
++	__mem_cgroup_move_lists(pc, lru);
++	spin_unlock_irqrestore(&mz->lru_lock, flags);
++	unlock_page_cgroup(pc);
+ }
+ 
+ /*
+@@ -516,7 +555,7 @@ static int mem_cgroup_charge_common(stru
+ 				struct mem_cgroup *memcg)
+ {
+ 	struct mem_cgroup *mem;
+-	struct page_cgroup *pc;
++	struct page_cgroup *pc, *old_pc;
+ 	unsigned long flags;
+ 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 	struct mem_cgroup_per_zone *mz;
+@@ -569,35 +608,49 @@ static int mem_cgroup_charge_common(stru
+ 
+ 	pc->mem_cgroup = mem;
+ 	pc->page = page;
++	pc->flags = 0;		/* No lock, no other bits either */
++
+ 	/*
+ 	 * If a page is accounted as a page cache, insert to inactive list.
+ 	 * If anon, insert to active list.
+ 	 */
+ 	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE) {
+-		pc->flags = PAGE_CGROUP_FLAG_CACHE;
++		pc->flags |= PAGE_CGROUP_FLAG_CACHE;
+ 		if (page_is_file_cache(page))
+ 			pc->flags |= PAGE_CGROUP_FLAG_FILE;
+ 		else
+ 			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
+ 	} else
+-		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
++		pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
++
++	old_pc = page_get_page_cgroup_locked(page);
++	if (old_pc) {
++		unlock_page_cgroup(old_pc);
++		res_counter_uncharge(&mem->res, PAGE_SIZE);
++		css_put(&mem->css);
++		kmem_cache_free(page_cgroup_cache, pc);
++		goto done;
++	}
+ 
+-	lock_page_cgroup(page);
+-	if (unlikely(page_get_page_cgroup(page))) {
+-		unlock_page_cgroup(page);
++	lock_page_cgroup(pc);
++	/*
++	 * page_get_page_cgroup() does not necessarily guarantee that
++	 * there will be no race in checking for pc, page_assign_page_pc()
++	 * will definitely catch it.
++	 */
++	if (page_assign_page_cgroup(page, pc, gfp_mask)) {
++		unlock_page_cgroup(pc);
+ 		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 		css_put(&mem->css);
+ 		kmem_cache_free(page_cgroup_cache, pc);
+ 		goto done;
+ 	}
+-	page_assign_page_cgroup(page, pc);
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	__mem_cgroup_add_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+-
+-	unlock_page_cgroup(page);
++	unlock_page_cgroup(pc);
+ done:
+ 	return 0;
+ out:
+@@ -645,15 +698,13 @@ int mem_cgroup_cache_charge(struct page 
+ 	if (!(gfp_mask & __GFP_WAIT)) {
+ 		struct page_cgroup *pc;
+ 
+-		lock_page_cgroup(page);
+-		pc = page_get_page_cgroup(page);
++		pc = page_get_page_cgroup_locked(page);
+ 		if (pc) {
+ 			VM_BUG_ON(pc->page != page);
+ 			VM_BUG_ON(!pc->mem_cgroup);
+-			unlock_page_cgroup(page);
++			unlock_page_cgroup(pc);
+ 			return 0;
+ 		}
+-		unlock_page_cgroup(page);
+ 	}
+ 
+ 	if (unlikely(!mm))
+@@ -673,6 +724,7 @@ __mem_cgroup_uncharge_common(struct page
+ 	struct mem_cgroup *mem;
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
++	int ret;
+ 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return;
+@@ -680,8 +732,7 @@ __mem_cgroup_uncharge_common(struct page
+ 	/*
+ 	 * Check if our page_cgroup is valid
+ 	 */
+-	lock_page_cgroup(page);
+-	pc = page_get_page_cgroup(page);
++	pc = page_get_page_cgroup_locked(page);
+ 	if (unlikely(!pc))
+ 		goto unlock;
+ 
+@@ -697,8 +748,9 @@ __mem_cgroup_uncharge_common(struct page
+ 	__mem_cgroup_remove_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 
+-	page_assign_page_cgroup(page, NULL);
+-	unlock_page_cgroup(page);
++	ret = page_assign_page_cgroup(page, NULL, GFP_KERNEL);
++	VM_BUG_ON(ret);
++	unlock_page_cgroup(pc);
+ 
+ 	mem = pc->mem_cgroup;
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+@@ -707,7 +759,14 @@ __mem_cgroup_uncharge_common(struct page
+ 	kmem_cache_free(page_cgroup_cache, pc);
+ 	return;
+ unlock:
+-	unlock_page_cgroup(page);
++	unlock_page_cgroup(pc);
++}
++
++void page_reset_bad_cgroup(struct page *page)
++{
++	int ret;
++	ret = page_assign_page_cgroup(page, NULL, GFP_KERNEL);
++	VM_BUG_ON(ret);
+ }
+ 
+ void mem_cgroup_uncharge_page(struct page *page)
+@@ -734,15 +793,14 @@ int mem_cgroup_prepare_migration(struct 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return 0;
+ 
+-	lock_page_cgroup(page);
+-	pc = page_get_page_cgroup(page);
++	pc = page_get_page_cgroup_locked(page);
+ 	if (pc) {
+ 		mem = pc->mem_cgroup;
+ 		css_get(&mem->css);
+ 		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
+ 			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
++		unlock_page_cgroup(pc);
+ 	}
+-	unlock_page_cgroup(page);
+ 	if (mem) {
+ 		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
+ 			ctype, mem);
+@@ -1107,6 +1165,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 	if (unlikely((cont->parent) == NULL)) {
+ 		mem = &init_mem_cgroup;
+ 		page_cgroup_cache = KMEM_CACHE(page_cgroup, SLAB_PANIC);
++		spin_lock_init(&mem_cgroup_tree_lock);
+ 	} else {
+ 		mem = mem_cgroup_alloc();
+ 		if (!mem)
+diff -puN include/linux/memcontrol.h~memcg_move_to_radix_tree include/linux/memcontrol.h
+--- linux-2.6.27-rc5/include/linux/memcontrol.h~memcg_move_to_radix_tree	2008-09-04 15:45:54.000000000 +0530
++++ linux-2.6.27-rc5-balbir/include/linux/memcontrol.h	2008-09-04 15:45:54.000000000 +0530
+@@ -27,9 +27,28 @@ struct mm_struct;
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 
+-#define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
++extern void page_reset_bad_cgroup(struct page *page);
++extern struct page_cgroup *__page_get_page_cgroup(struct page *page, bool lock,
++							bool trylock);
++
++static __always_inline
++struct page_cgroup *page_get_page_cgroup(struct page *page)
++{
++	return __page_get_page_cgroup(page, false, false);
++}
++
++static __always_inline
++struct page_cgroup *page_get_page_cgroup_trylock(struct page *page)
++{
++	return __page_get_page_cgroup(page, false, true);
++}
++
++static __always_inline
++struct page_cgroup *page_get_page_cgroup_locked(struct page *page)
++{
++	return __page_get_page_cgroup(page, true, false);
++}
+ 
+-extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+ extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ extern int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+diff -puN include/linux/mm_types.h~memcg_move_to_radix_tree include/linux/mm_types.h
+--- linux-2.6.27-rc5/include/linux/mm_types.h~memcg_move_to_radix_tree	2008-09-04 15:45:54.000000000 +0530
++++ linux-2.6.27-rc5-balbir/include/linux/mm_types.h	2008-09-04 15:45:54.000000000 +0530
+@@ -92,10 +92,6 @@ struct page {
+ 	void *virtual;			/* Kernel virtual address (NULL if
+ 					   not kmapped, ie. highmem) */
+ #endif /* WANT_PAGE_VIRTUAL */
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+-	unsigned long page_cgroup;
+-#endif
+-
+ #ifdef CONFIG_KMEMCHECK
+ 	void *shadow;
+ #endif
+diff -puN mm/page_alloc.c~memcg_move_to_radix_tree mm/page_alloc.c
+_
+
+-- 
+	Balbir
