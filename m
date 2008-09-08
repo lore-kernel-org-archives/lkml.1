@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754901AbYIHTNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbYIHTO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754901AbYIHTNs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbYIHTNk
+	id S1755351AbYIHTO2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbYIHTOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:13:40 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:30594 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753005AbYIHTNk (ORCPT
+	Mon, 8 Sep 2008 15:14:21 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:58713 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753581AbYIHTOU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:13:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=mhMzQs+y6Qy4kjVhyP7NrAIlsRS9zC1Ax7EQa+PFXjIujJ0Ma5yiGHQD8iz6cQ5TNLjKKQlhAm5VC6IibFZf5/zdwYxTUJr8tNB9TTi0qgB185cCvfVMOqoabhAX7PFH5QJ0r64X0CcEEHbgpjz/l5PcA2dEDRx6+LC+ysRq7NI=  ;
-X-YMail-OSG: ABwjWCkVM1lmRe5mFGTpyNI99kuShUY4UmMVKwUxDMmKCvVqoaCmAiJPpKNoTM8RLSZrwsx0kWcO0NANwzkfYEDOixnJ12k69eu8QpT8nw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-Date: Mon, 8 Sep 2008 12:13:37 -0700
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Parisc List <linux-parisc@vger.kernel.org>
-References: <1220889205.8074.16.camel@localhost.localdomain> <200809081119.45074.david-b@pacbell.net> <1220899189.8074.58.camel@localhost.localdomain>
-In-Reply-To: <1220899189.8074.58.camel@localhost.localdomain>
+	Mon, 8 Sep 2008 15:14:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=sLV8sZ+EZxD0Kw8zkrHD2mZ6dh36vkR9LPxtmC5YFE4Y+div2nm0UBz62vMfjqddI5
+         07+jy3WPnDHdxkIY5CQLBjUS9tY9w48FRPzEBlza0taxUU1ev95WqwdJe573zUjIjFyJ
+         YRkOwwGvf+L9VOAJ24Gqbiw/1eQPg268miHpk=
+Message-ID: <68676e00809081214h49eb07d4tb6145e8b47b00768@mail.gmail.com>
+Date: Mon, 8 Sep 2008 21:14:18 +0200
+From: "Luca Tettamanti" <kronos.it@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [2.6.27] overlapping early reservations [was: early exception - lockdep related?]
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       "Peter Zijlstra" <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@redhat.com
+In-Reply-To: <86802c440809081104i23b477e1w62bd5967b79529cb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809081213.37705.david-b@pacbell.net>
+References: <68676e00809051217h3da02a6bld4412b4a2ee3b728@mail.gmail.com>
+	 <1220642738.11202.21.camel@twins.programming.kicks-ass.net>
+	 <48C19415.9060108@kernel.org>
+	 <68676e00809060620k35679302s42fc0a74aa1dc2d3@mail.gmail.com>
+	 <20080906145122.GA7693@elte.hu>
+	 <86802c440809060906h721d6243t4a3b5fb604a9d7b3@mail.gmail.com>
+	 <68676e00809081054j3fb9c5bq76c9a6aceea35aa2@mail.gmail.com>
+	 <86802c440809081104i23b477e1w62bd5967b79529cb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 September 2008, James Bottomley wrote:
-> On Mon, 2008-09-08 at 11:19 -0700, David Brownell wrote:
-> > On Monday 08 September 2008, James Bottomley wrote:
-> > > Put it back again by making RTC_CLASS 
-> > > unselectable if the architecture is parisc.
-> > 
-> > Easier if those distros just wouldn't select RTC_CLASS then.  :)
-> 
-> Yes, but think of distro config people rather like users ... if you can
-> prevent them from doing something stupid, it's a good idea.  In this
-> case, there's currently no way anyone should ever select RTC_CLASS on
-> parisc, so we should make that clear in the Kconfig file.
+On Mon, Sep 8, 2008 at 8:04 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Mon, Sep 8, 2008 at 10:54 AM, Luca Tettamanti <kronos.it@gmail.com> wrote:
+>
+> can you post boot log with working kernel + "debug"?
 
-Preventing them from doing stupid stuff is exactly why we
-have Kconfig prevent both legacy *AND* framework RTC code
-from being selected.  :)
+This is the map of the early reservations (will send the dmesg + debug later):
 
-Of course stupidity is infinite, and we didn't know about
-this particular instance in advance...
+[    0.000000] (6 early reservations) ==> bootmem [0000000000 - 00bbf90000]
+[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==>
+[0000000000 - 0000001000]
+[    0.000000]   #1 [0000006000 - 0000008000]       TRAMPOLINE ==>
+[0000006000 - 0000008000]
+[    0.000000]   #2 [0000200000 - 0000d012b8]    TEXT DATA BSS ==>
+[0000200000 - 0000d012b8]
+[    0.000000]   #3 [00037dc000 - 00040fe2d9]          RAMDISK ==>
+[00037dc000 - 00040fe2d9]
+[    0.000000]   #4 [000009c800 - 0000100000]    BIOS reserved ==>
+[000009c800 - 0000100000]
+[    0.000000]   #5 [0000008000 - 000000b000]          PGTABLE ==>
+[0000008000 - 000000b000]
 
+As a side note: I've bigger older (2.6.26) kernels that boots fine,
+and smaller 2.6.27 kernels that do not work, e.g. this one:
 
-> > And long term, better to work with RTC_CLASS.  Eliminate that
-> > crufty asm-parisc/rtc.h file and one more GEN_RTC user; and
-> > share more widely-used infrastructure.
-> > 
-> > If I read things right, that would be easy:  the PARISC RTC is
-> > two firmware calls, ptc_tod_{read,set}(), which would map to
-> > RTC class {read,set}_time() methods of about six lines each.
-> > The RTC framework can do UIE emulation, if needed.
-> 
-> OK, I can look at that, but in the mean time could we make the option
-> that causes the damage unselectable?
+Overlapping early reservations b71000-effb43 RAMDISK to 200000-c84ecf
+TEXT DATA BSS
 
-I'd worry if "the mean time" takes too long.  But lacking a
-PARISC laptop to fix this on, I'm unlikely to complain much.
-
-
->	 This is technically a regression 
-> because before your patch GEN_RTC would override RTC_CLASS, now it's the
-> other way around.
-
-Well, previously there was no override ... I think you mean
-that parisc just completely ignored RTC_CLASS, treating it
-like junk DNA.
-
-- Dave
+Luca
