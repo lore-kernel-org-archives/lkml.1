@@ -1,100 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYIHBBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550AbYIHBCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYIHBBt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Sep 2008 21:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYIHA7U
+	id S1753550AbYIHBCO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Sep 2008 21:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbYIHBBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Sep 2008 20:59:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:51963 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594AbYIHA7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Sep 2008 20:59:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Ig0iJ/j/Lt/HqlLjqS9D6010BW8Wtwp4rbk0fVc0fgTcsP4N1aIeWhKguwc1VJNV1r
-         rj8dTGZUEjOhg5XedcefAN/3SL/jySXB7mkk0smUCc8oAdGUOKUpuqGt5aFw5FTXiXtc
-         sFnv4n0WSruSdvaVKyh3iO7RexMIH10j2HCOk=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 9/9] x86: little clean up intel.c/intel_64.c
-Date: Sun,  7 Sep 2008 17:58:58 -0700
-Message-Id: <1220835538-18280-9-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1220835538-18280-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1220835538-18280-1-git-send-email-yhlu.kernel@gmail.com>
+	Sun, 7 Sep 2008 21:01:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:57232 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754031AbYIHBBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Sep 2008 21:01:52 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
+Date: Mon, 8 Sep 2008 03:01:24 +0200
+User-Agent: KMail/1.9.9
+Cc: toshiba_acpi@memebeam.org, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200809061108.34877.arvidjaar@mail.ru> <200809061120.00224.arvidjaar@mail.ru>
+In-Reply-To: <200809061120.00224.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809080301.24907.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/kernel/cpu/intel.c    |    7 +++----
- arch/x86/kernel/cpu/intel_64.c |    8 +++-----
- 2 files changed, 6 insertions(+), 9 deletions(-)
+On Saturday 06 September 2008 09:19:59 am Andrey Borzenkov wrote:
+> On Saturday 06 September 2008, Andrey Borzenkov wrote:
+> > I have now two different devices that refer to the same hardware:
+> >
+> > lrwxrwxrwx 1 root root 0 2008-09-06 11:04 acpi_video0 ->
+> > ../../devices/virtual/backlight/acpi_video0/ lrwxrwxrwx 1 root root 0
+> > 2008-09-06 11:04 toshiba -> ../../devices/virtual/backlight/toshiba/
+> >
+> > Unfortunately, due to ACPI implementation the acpi_video0 one is much
+> > inferior (as it provides only effectively two levels instead of 8);
+> > and user level tools are apparently quite confused which one to select.
+> >
+> > Is there any mechanism that would allow tochiba_acpi to claim brightness
+> > for internal LCD screen that video would not attempt to grab it too?
+> >
+> > Of course manually disabling brightness handling in video is always
+> > possible,
+>
+> Actually it is not. brightness_switch_enabled only disables event handling;
+> it still resets actual brightness on loading and creates sysfs files to
+> confuse user space.
+>
+> > still is nice for this to be handled automatically.
+It is in latest ACPI test branch queued for 2.6.28.
+The problem in bug:
+http://bugzilla.kernel.org/show_bug.cgi?id=9614
+is another. But the patchset pointed to in comment #43 should fix several, 
+also your problem.
 
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index bafa3a6..a669895 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -76,7 +76,7 @@ static void __cpuinit Intel_errata_workarounds(struct cpuinfo_x86 *c)
- /*
-  * find out the number of processor cores on the die
-  */
--static int __cpuinit num_cpu_cores(struct cpuinfo_x86 *c)
-+static int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c)
- {
- 	unsigned int eax, ebx, ecx, edx;
- 
-@@ -183,7 +183,7 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 		 * let's use the legacy cpuid vector 0x1 and 0x4 for topology
- 		 * detection.
- 		 */
--		c->x86_max_cores = num_cpu_cores(c);
-+		c->x86_max_cores = intel_num_cpu_cores(c);
- 		detect_ht(c);
- 	}
- 
-@@ -210,9 +210,8 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 
- 	if (cpu_has_xmm2)
- 		set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
--	if (c->x86 == 15) {
-+	if (c->x86 == 15)
- 		set_cpu_cap(c, X86_FEATURE_P4);
--	}
- 	if (c->x86 == 6)
- 		set_cpu_cap(c, X86_FEATURE_P3);
- 	if (cpu_has_ds) {
-diff --git a/arch/x86/kernel/cpu/intel_64.c b/arch/x86/kernel/cpu/intel_64.c
-index 14a2cd9..aef4f28 100644
---- a/arch/x86/kernel/cpu/intel_64.c
-+++ b/arch/x86/kernel/cpu/intel_64.c
-@@ -71,17 +71,15 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 			set_cpu_cap(c, X86_FEATURE_BTS);
- 		if (!(l1 & (1<<12)))
- 			set_cpu_cap(c, X86_FEATURE_PEBS);
--	}
--
--
--	if (cpu_has_bts)
- 		ds_init_intel(c);
-+	}
- 
- 	if (c->x86 == 15)
- 		c->x86_cache_alignment = c->x86_clflush_size * 2;
- 	if (c->x86 == 6)
- 		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
--	set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
-+	if (cpu_has_xmm2)
-+		set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
- 
- 	detect_extended_topology(c);
- 	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY))
--- 
-1.5.4.5
+If not, please tell me and open a new bug.
 
+Thanks,
+
+       Thomas
