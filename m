@@ -1,41 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751458AbYIHMp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbYIHM5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751458AbYIHMp0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 08:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYIHMpR
+	id S1753737AbYIHM5T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 08:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbYIHM5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 08:45:17 -0400
-Received: from stinky.trash.net ([213.144.137.162]:41095 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbYIHMpQ (ORCPT
+	Mon, 8 Sep 2008 08:57:09 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58429 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbYIHM5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 08:45:16 -0400
-Message-ID: <48C51E58.7080900@trash.net>
-Date: Mon, 08 Sep 2008 14:45:12 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+	Mon, 8 Sep 2008 08:57:08 -0400
+Message-ID: <48C520A5.8060001@jp.fujitsu.com>
+Date: Mon, 08 Sep 2008 21:55:01 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Keith Owens <kaos@ocs.com.au>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Recent copy of libpcap from CVS
-References: <963.1220876861@ocs10w>
-In-Reply-To: <963.1220876861@ocs10w>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Alex Chiang <achiang@hp.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: hotplug create_slot hang
+References: <86802c440809061015v21b6c1eat8718618a6ae25e47@mail.gmail.com> <20080906215041.GD27298@ldl.fc.hp.com> <86802c440809061518w1c74c0f4u4ccc7b6b0da7b398@mail.gmail.com> <20080907045954.GA1946@ldl.fc.hp.com>
+In-Reply-To: <20080907045954.GA1946@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Keith Owens wrote:
-> Does anybody have a recent copy of the source to libpcap from its CVS
-> repository?
+Alex Chiang wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com>:
+>> On Sat, Sep 6, 2008 at 2:50 PM, Alex Chiang <achiang@hp.com> wrote:
+>>> * Yinghai Lu <yhlu.kernel@gmail.com>:
+>>>> calling  pci_hotplug_init+0x0/0x1d
+>>>> pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+>>>> initcall pci_hotplug_init+0x0/0x1d returned 0 after 11 msecs
+>>>>
+>>>> calling  acpiphp_init+0x0/0x5f
+>>>> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+>>>> decode_hpp: Could not get hotplug parameters. Use defaults
+>>>> pci_create_slot: created pci_slot on 0000:07:00
+>>>> acpiphp: Slot [1] registered
+>>>> decode_hpp: Could not get hotplug parameters. Use defaults
+>>>> pci_create_slot: created pci_slot on 0000:0d:00
+>>>> acpiphp: Slot [2] registered
+>>>> initcall acpiphp_init+0x0/0x5f returned 0 after 105 msecs
+>>> Is this the hang?
+>>>
+>>>> calling  pcied_init+0x0/0x7b
+>>>> pciehp: HPC vendor_id 8086 device_id 340a ss_vid 0 ss_did 0
+>>>> pci_create_slot: inc refcount to 2 on 0000:07:00
+>>>> pci_destroy_slot: dec refcount to 1 on 0000:07:00
+>>>> pciehp: pci_hp_register failed with error -16
+>>>> pciehp: pciehp: slot already registered by another hotplug driver
+>>> This failure is by design -- we only allow one hotplug driver to
+>>> claim a slot now, and it's "first one loaded wins".
+>>>
+>>> Unless you're talking about something else?
+>> after
+>>
+>> pciehp: pciehp: slot already registered by another hotplug driver
+>>
+>> never go on...
 > 
-> The normal site for libpcap (tcpdump.org) appears to have suffered a
-> filesystem crash and CVS is not working.  I am looking for a version of
-> libpcap that supports data capture for USB interfaces, the code will
-> probably have references to /dev/usbmon or a pcap-usb-linux.c file for
-> Linux.  libpcap0.8_0.9.8-2 is not recent enough.
+> You said that it worked a few days ago, but is hanging now.
+> 
+> Can you bisect it?
+> 
+> Kenji-san, any ideas?
+> 
 
-Dave put a recent copy up at:
+I'm sorry, but I don't have any idea so far.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
+Yinghai, does this happen even when pciehp is not configured?
+
+Thanks,
+Kenji Kaneshige
+
