@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYIHTPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbYIHTSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbYIHTPe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 15:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYIHTPZ
+	id S1755139AbYIHTSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 15:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYIHTSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 15:15:25 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:43345 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbYIHTPY (ORCPT
+	Mon, 8 Sep 2008 15:18:00 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:48769 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbYIHTSA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 15:15:24 -0400
-Date: Mon, 8 Sep 2008 20:14:50 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Rafa=3F_Mi=3Fecki?= <zajec5@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RFC] x86: check for and defend against BIOS memory
- corruption
-In-Reply-To: <48C55E07.5000406@goop.org>
-Message-ID: <Pine.LNX.4.64.0809081956390.23187@blonde.site>
-References: <48B701FB.2020905@goop.org> <Pine.LNX.4.64.0808290817190.21494@blonde.site>
- <48B80C26.2080002@goop.org> <Pine.LNX.4.64.0809081157020.14401@blonde.site>
- <48C55E07.5000406@goop.org>
+	Mon, 8 Sep 2008 15:18:00 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: "Bert Wesarg" <bert.wesarg@googlemail.com>
+Cc: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       "Git Mailing List" <git@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       guilt@lists.josefsipek.net, "Brandon Philips" <brandon@ifup.org>
+Subject: Re: [ANNOUNCE] Guilt v0.31
+References: <20080908135244.GB27550@josefsipek.net>
+ <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com>
+ <20080908184322.GE27550@josefsipek.net>
+ <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com>
+Date: Mon, 08 Sep 2008 12:17:25 -0700
+In-Reply-To: <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com>
+ (Bert Wesarg's message of "Mon, 8 Sep 2008 20:50:03 +0200")
+Message-ID: <7vmyiifnwa.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: D9180734-7DDA-11DD-825F-3113EBD4C077-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008, Jeremy Fitzhardinge wrote:
-> 
-> Well, if we never want the direct map to be non-executable (which I
+"Bert Wesarg" <bert.wesarg@googlemail.com> writes:
 
-One too many negatives?
+> I must admit, that I don't like these extra tarballs with docs. I
+> always expect, that the manpages are nicely installed if I type 'make
+> install' (or at least with a install-doc target). But I need to
+> download this extra package, and extract it to the right place, there
+> is no Makefile whatsoever. In case of git its really annoying, because
+> the help mechanism is relying on the manpages (i.e. git help <cmd> or
+> git <cmd> --help, but you know this).
 
-> think would be OK, since all the code is either core kernel or modules
-> which are mapped elsewhere),
+There is no need to feel "it[']s really annoying", as install-doc from the
+tarball distribution works out of the box.
 
-I had thought so until just before replying.
+I used 1.6.0.1 in the demonstration below, but this is nothing new in that
+version but has been like this for quite some time (it is how sample RPMs
+binary packages are built, so the procedure ought to work):
 
-> then we can set NX on the level4 for the
-> linear mapping which will make everything below non-executable.
+    $ ls -1 /usr/bin/git ;# to show there is no other "git" on this box
+    ls: /usr/bin/git: No such file or directory
+    $ mkdir /var/tmp/16
+    $ cd /var/tmp/16
+    $ wget http://www.kernel.org/pub/software/scm/git/git-1.6.0.1.tar.gz
+    $ tar xf git-1.6.0.1.tar.gz
+    $ cd git-1.6.0.1
+    $ make prefix=/var/tmp/16test install install-doc
+    $ PATH=/var/tmp/16test/bin:/usr/bin:/bin
+    $ export PATH
+    $ unset MANPATH
+    $ git help cat-file | cat -s | tail -n 8
+    Reformatting git-cat-file(1), please wait...
+    DOCUMENTATION
+           Documentation by David Greaves, Junio C Hamano and the git-list
+           <git@vger.kernel.org>.
 
-That would be much the neatest answer: I hadn't realized
-that inheritance (perhaps I'm still living in early-i386 days,
-when IIRC there was a bug in inheriting WP from higher levels).
+    GIT
+           Part of the git(1) suite
 
-But then I stumbled across static_protections() in pageattr.c
-(takes both addr and pfn, latter seems weird), whose BIOS_BEGIN
-and BIOS_END seem to echo the ISA_START_ADDR and ISA_END_ADDR
-used by is_ISA_range() in ioremap.c.
+    Git 1.6.0.1                       09/08/2008                   GIT-CAT-FILE(1)
 
-And peering at the pagetables I've got here for that area of the
-direct map in 2.6.26 x86_64, yes, I'm missing NX from 0xc0000 to
-0xfffff (presumably nothing tried to ioremap 0xa0000 to 0xbffff).
 
-A simple answer might be to go the way you suggest, but remove
-the special casing from pageattr.c and ioremap.c; but I fear
-that will slow something down, or introduce further bugs.
+The extra tarballs for documentation are also given as courtesy because
+they are supposed to be platform independent and some people do not want
+to generate them themselves (even though they could).
 
-Hugh
+Either be thankful for the availability of tarballs, or ignore them and
+generate them yourself --- it's your choice.
