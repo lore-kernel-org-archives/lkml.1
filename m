@@ -1,116 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYIHNkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYIHNkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbYIHNkh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYIHNkX
+	id S1754466AbYIHNkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbYIHNkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:40:23 -0400
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:46191 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbYIHNkV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:40:21 -0400
-Message-ID: <48C52B29.4020204@fr.ibm.com>
-Date: Mon, 08 Sep 2008 15:39:53 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 8 Sep 2008 09:40:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55433 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754175AbYIHNkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 09:40:35 -0400
+Date: Mon, 8 Sep 2008 15:40:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
+Message-ID: <20080908134019.GB11993@elte.hu>
+References: <48C13D1C.76E4.0078.0@novell.com> <20080905150030.GD10292@elte.hu> <48C51F8D.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Subject: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace
- is unshared
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C51F8D.76E4.0078.0@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a system with nfs mounts, if a task unshares its mount namespace,
-a oops can occur when the system is rebooted if the task is the last
-to unreference the nfs mount. It will try to create a rpc request
-using utsname() which has been invalidated by free_nsproxy().
 
-The patch fixes the issue by using the global init_utsname() but at
-the same time, it breaks the capability of identifying rpc clients
-per uts namespace.
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-Any better suggestions ?
+> >>> Ingo Molnar <mingo@elte.hu> 05.09.08 17:00 >>>
+> >
+> >* Jan Beulich <jbeulich@novell.com> wrote:
+> >
+> >> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
+> >> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
+> >> 
+> >> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> >> 
+> >> ---
+> >>  arch/x86/kernel/cpu/common.c |   17 +++++++++++++++++
+> >>  arch/x86/mm/ioremap.c        |   15 ++++++---------
+> >>  include/asm-x86/processor.h  |    4 ++--
+> >>  3 files changed, 25 insertions(+), 11 deletions(-)
+> >
+> >hm, the cpu/common.c bits just got reworked massively in tip/master. 
+> >I've tried a blind merge (see the patch below) but at least the first 
+> >hunk looks wrong. Mind looking at how to merge this?
+> 
+> This is my take at it:
+> 
+> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
+> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
 
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<c024c9ab>] rpc_create+0x332/0x42f
-Oops: 0000 [#1] DEBUG_PAGEALLOC
+applied to tip/x86/mm-debug - thanks Jan!
 
-Pid: 1857, comm: uts-oops Not tainted (2.6.27-rc5-00319-g7686ad5 #4)
-EIP: 0060:[<c024c9ab>] EFLAGS: 00210287 CPU: 0
-EIP is at rpc_create+0x332/0x42f
-EAX: 00000000 EBX: df26adf0 ECX: c0251887 EDX: 00000001
-ESI: df26ae58 EDI: c02f293c EBP: dda0fc9c ESP: dda0fc2c
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process uts-oops (pid: 1857, ti=dda0e000 task=dd9a0778 task.ti=dda0e000)
-Stack: c0104532 dda0fffc dda0fcac dda0e000 dda0e000 dd93b7f0 00000009 c02f2880
-       df26aefc dda0fc68 c01096b7 00000000 c0266ee0 c039a070 c039a070 dda0fc74
-       c012ca67 c039a064 dda0fc8c c012cb20 c03daf74 00000011 00000000 c0275c90
-Call Trace:
- [<c0104532>] ? dump_trace+0xc2/0xe2
- [<c01096b7>] ? save_stack_trace+0x1c/0x3a
- [<c012ca67>] ? save_trace+0x37/0x8c
- [<c012cb20>] ? add_lock_to_list+0x64/0x96
- [<c0256fc4>] ? rpcb_register_call+0x62/0xbb
- [<c02570c8>] ? rpcb_register+0xab/0xb3
- [<c0252f4d>] ? svc_register+0xb4/0x128
- [<c0253114>] ? svc_destroy+0xec/0x103
- [<c02531b2>] ? svc_exit_thread+0x87/0x8d
- [<c01a75cd>] ? lockd_down+0x61/0x81
- [<c01a577b>] ? nlmclnt_done+0xd/0xf
- [<c01941fe>] ? nfs_destroy_server+0x14/0x16
- [<c0194328>] ? nfs_free_server+0x4c/0xaa
- [<c019a066>] ? nfs_kill_super+0x23/0x27
- [<c0158585>] ? deactivate_super+0x3f/0x51
- [<c01695d1>] ? mntput_no_expire+0x95/0xb4
- [<c016965b>] ? release_mounts+0x6b/0x7a
- [<c01696cc>] ? __put_mnt_ns+0x62/0x70
- [<c0127501>] ? free_nsproxy+0x25/0x80
- [<c012759a>] ? switch_task_namespaces+0x3e/0x43
- [<c01275a9>] ? exit_task_namespaces+0xa/0xc
- [<c0117fed>] ? do_exit+0x4fd/0x666
- [<c01181b3>] ? do_group_exit+0x5d/0x83
- [<c011fa8c>] ? get_signal_to_deliver+0x2c8/0x2e0
- [<c0102630>] ? do_notify_resume+0x69/0x700
- [<c011d85a>] ? do_sigaction+0x134/0x145
- [<c0127205>] ? hrtimer_nanosleep+0x8f/0xce
- [<c0126d1a>] ? hrtimer_wakeup+0x0/0x1c
- [<c0103488>] ? work_notifysig+0x13/0x1b
- =======================
-Code: 70 20 68 cb c1 2c c0 e8 75 4e 01 00 8b 83 ac 00 00 00 59 3d 00 f0 ff ff 5f 77 63 eb 57 a1 00 80 2d c0 8b 80 a8 02 00 00 8d 73 68 <8b> 40 04 83 c0 45 e8 41 46 f7 ff ba 20 00 00 00 83 f8 21 0f 4c
-EIP: [<c024c9ab>] rpc_create+0x332/0x42f SS:ESP 0068:dda0fc2c
-
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- net/sunrpc/clnt.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-index 76739e9..a59cdf4 100644
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -213,10 +213,10 @@ static struct rpc_clnt * rpc_new_client(const struct rpc_create_args *args, stru
- 	}
- 
- 	/* save the nodename */
--	clnt->cl_nodelen = strlen(utsname()->nodename);
-+	clnt->cl_nodelen = strlen(init_utsname()->nodename);
- 	if (clnt->cl_nodelen > UNX_MAXNODENAME)
- 		clnt->cl_nodelen = UNX_MAXNODENAME;
--	memcpy(clnt->cl_nodename, utsname()->nodename, clnt->cl_nodelen);
-+	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
- 	rpc_register_client(clnt);
- 	return clnt;
- 
--- 
-1.5.5.1
-
+	Ingo
