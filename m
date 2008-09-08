@@ -1,140 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbYIHRSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYIHRTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbYIHRSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 13:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYIHRSm
+	id S1755095AbYIHRTm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 13:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbYIHRTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 13:18:42 -0400
-Received: from mga11.intel.com ([192.55.52.93]:9141 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752080AbYIHRSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 13:18:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,359,1217833200"; 
-   d="scan'208";a="377971253"
-Date: Mon, 8 Sep 2008 10:18:40 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [RFC 0/4] Using HPET in MSI mode and setting up per CPU HPET timers
-Message-ID: <20080908171840.GA31009@linux-os.sc.intel.com>
-References: <20080906010214.229910000@intel.com> <20080906124234.GG30964@elte.hu> <20080906130353.GA30340@elte.hu>
+	Mon, 8 Sep 2008 13:19:33 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:45004 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752439AbYIHRTc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 13:19:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=MNES57+uZW554YmB/6SBXCvRCkzVQuTlNd4XlnD+WtZ3bezJqkNuj2ioemKfl1rS5s
+         YeXalr/wKHqjWGwYTXHWT86ftKzUMa0rVwqIT23zrQA3j6pG80zCK/Ir3nw7t0p5fqvA
+         RQJjYm4771DVExl3oOM+yjExc+oeR0iXa4QzY=
+Date: Mon, 8 Sep 2008 20:19:23 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] Tracing/ftrace: Adds a marker to allow user comments
+Message-ID: <20080908201923.192373d3@daedalus.pq.iki.fi>
+In-Reply-To: <alpine.DEB.1.10.0809071315370.6716@gandalf.stny.rr.com>
+References: <48B1D5CA.8000607@gmail.com>
+	<c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
+	<20080827212130.4b8365a8@daedalus.pq.iki.fi>
+	<c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
+	<20080828214256.296e34ec@daedalus.pq.iki.fi>
+	<c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
+	<20080904203058.7e57729e@daedalus.pq.iki.fi>
+	<20080907171143.3acdbedd@daedalus.pq.iki.fi>
+	<alpine.DEB.1.10.0809071315370.6716@gandalf.stny.rr.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.10; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080906130353.GA30340@elte.hu>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 06, 2008 at 06:03:53AM -0700, Ingo Molnar wrote:
+On Sun, 7 Sep 2008 13:29:40 -0400 (EDT)
+Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> it crashes two testsystems, the fault on a NULL pointer in hpet init,
-> with:
+> On Sun, 7 Sep 2008, Pekka Paalanen wrote:
 > 
-> initcall print_all_ICs+0x0/0x520 returned 0 after 26 msecs
-> calling  hpet_late_init+0x0/0x1c0
-> BUG: unable to handle kernel NULL pointer dereference at 000000000000008c
-> IP: [<ffffffff80d228be>] hpet_late_init+0xfe/0x1c0
-> PGD 0
-> Oops: 0000 [1] SMP
-> CPU 0
-> Modules linked in:
-> Pid: 1, comm: swapper Not tainted 2.6.27-rc5 #29725
-> RIP: 0010:[<ffffffff80d228be>]  [<ffffffff80d228be>] hpet_late_init+0xfe/0x1c0
-> RSP: 0018:ffff88003fa07dd0  EFLAGS: 00010246
-> RAX: 0000000000000000 RBX: 0000000000000003 RCX: 0000000000000000
-> RDX: ffffc20000000160 RSI: 0000000000000000 RDI: 0000000000000003
-> RBP: ffff88003fa07e90 R08: 0000000000000000 R09: ffff88003fa07dd0
-> R10: 0000000000000001 R11: 0000000000000000 R12: ffff88003fa07dd0
-> R13: 0000000000000002 R14: ffffc20000000000 R15: 000000006f57e511
-> FS:  0000000000000000(0000) GS:ffffffff80cf6a80(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 000000000000008c CR3: 0000000000201000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process swapper (pid: 1, threadinfo ffff88003fa06000, task ffff88003fa08000)
-> Stack:  00000000fed00000 ffffc20000000000 0000000100000003 0000000800000002
->  0000000000000000 0000000000000000 0000000000000000 0000000000000000
->  0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> Call Trace:
->  [<ffffffff80d227c0>] ? hpet_late_init+0x0/0x1c0
->  [<ffffffff80209045>] do_one_initcall+0x45/0x190
->  [<ffffffff80296f39>] ? register_irq_proc+0x19/0xe0
->  [<ffffffff80d0d140>] ? early_idt_handler+0x0/0x73
->  [<ffffffff80d0dabc>] kernel_init+0x14c/0x1b0
->  [<ffffffff80942ac1>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8020dbd9>] child_rip+0xa/0x11
->  [<ffffffff8020ceee>] ? restore_args+0x0/0x30
->  [<ffffffff80d0d970>] ? kernel_init+0x0/0x1b0
->  [<ffffffff8020dbcf>] ? child_rip+0x0/0x11
-> Code: 20 48 83 c1 01 48 39 f1 75 e3 44 89 e8 4c 8b 05 29 29 22 00 31 f6 48 8d 78 01 66 66 90 89 f0 48 8d 04 80 48 c1 e0 05 4a 8d 0c 00 <f6> 81 8c 00 00 00 08 74 26 8b 81 80 00 00 00 8b 91 88 00 00 00
-> RIP  [<ffffffff80d228be>] hpet_late_init+0xfe/0x1c0
->  RSP <ffff88003fa07dd0>
-> CR2: 000000000000008c
-> Kernel panic - not syncing: Fatal exception
+> > Steven,
+> > 
+> > is there a logic behind trace_seq_print_cont() printing the terminating
+> > newline only, when there actually is no TRACE_CONT entry?
+> 
+> Actually, that case is more of an anomaly than the correct. It means
+> that somehow the print statement wanted to continue, but did not. This 
+> means that the print statement probably did not finish the line, and
+> that we should do a newline to make sure the next entry starts on a
+> new line.
 
+Oh, I never thought it from that point of view.
 
-There was one code path, with CONFIG_PCI_MSI disabled, where we were accessing
-hpet_devs without initialization. That resulted in the above crash. The change
-below adds a check for hpet_devs.
+> > static void
+> > trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
+> > {
+> > 	struct trace_array *tr = iter->tr;
+> > 	struct trace_array_cpu *data = tr->data[iter->cpu];
+> > 	struct trace_entry *ent;
+> > 
+> > 	ent = trace_entry_idx(tr, data, iter, iter->cpu);
+> > 	if (!ent || ent->type != TRACE_CONT) {
+> > 		trace_seq_putc(s, '\n');
+> > 		return;
+> > 	}
+> > 
+> > 	do {
+> > 		trace_seq_printf(s, "%s", ent->cont.buf);
+> > 		__trace_iterator_increment(iter, iter->cpu);
+> > 		ent = trace_entry_idx(tr, data, iter, iter->cpu);
+> > 	} while (ent && ent->type == TRACE_CONT);
+> > }
+> 
+> Because we do a merge sort of the entries in each CPU buffer, after we
+> get the next entry to print, we increment that iteration buffer. This
+> means that trace_entry_idx() will return the next entry field after
+> we got the iter->ent. This is also why we use iter->ent instead of
+> just calling trace_entry_idx. This keeps the merge sort simpler.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Yes, I forgot the per-cpu buffers. When merging you want the first one
+wrt. timestamp, and when continuing you want the next on that cpu's
+buffer.
 
----
- arch/x86/kernel/hpet.c |   28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+> > Here it uses trace_entry_idx() to get 'ent'. What's the difference to
+> > iter->ent? I don't understand how trace_entry_idx() works, but looking
+> > at how it is used, it must return the pointer to the *next* entry in
+> > the ring buffer. So I don't understand the name of the function, and I
+> > don't see a call to __trace_iterator_increment(), which is confusing.
+> 
+> iter->ent is the entry to be used in the "show" function. When we found 
+> that entry, we incremented the buffer to get it ready for the next
+> merge sort.
+> 
+> When we get to show, iter->ent is the entry to print, and if we use
+> iter_entry_idx() that will point to the next entry in that buffer that
+> will be used next time. I also did this to make it easier for the latency 
+> format be able to calculate the notations (like the '!').
+> 
+> > If contrary to the assumption, 'ent' is not a continuation, it prints
+> > the terminating newline. This is an exceptional case, as the original
+> > entry was marked as having continuation entries.
+> 
+> Right, this is somehow an entry was flagged as continue, but it did not.
+> It is probably a bug in the code, and instead of writing a strange format,
+> where the next entry continued on the same line, I chose to let the
+> entry go onto the next line.
+> 
+> > The normal case then is to execute the do-while, until it hits a
+> > non-continuation entry. Here it does *not* print the terminating newline.
+> 
+> Correct. The reason is that the ftrace_printk() call should have contained
+> its own new line. I could also add a check (and probably will) to see if
+> the printk did end with a newline, and add one if it did not.
 
-Index: tip/arch/x86/kernel/hpet.c
-===================================================================
---- tip.orig/arch/x86/kernel/hpet.c	2008-09-08 09:20:00.000000000 -0700
-+++ tip/arch/x86/kernel/hpet.c	2008-09-08 09:44:23.000000000 -0700
-@@ -124,6 +124,24 @@ EXPORT_SYMBOL_GPL(is_hpet_enabled);
-  * timer 0 and timer 1 in case of RTC emulation.
-  */
- #ifdef CONFIG_HPET
-+static void hpet_reserve_msi_timers(struct hpet_data *hd)
-+{
-+	int i;
-+
-+	if (!hpet_devs)
-+		return;
-+
-+	for (i = 0; i < hpet_num_timers; i++) {
-+		struct hpet_dev *hdev = &hpet_devs[i];
-+
-+		if (!(hdev->flags & HPET_DEV_VALID))
-+			continue;
-+
-+		hd->hd_irq[hdev->num] = hdev->irq;
-+		hpet_reserve_timer(hd, hdev->num);
-+	}
-+}
-+
- static void hpet_reserve_platform_timers(unsigned long id)
- {
- 	struct hpet __iomem *hpet = hpet_virt_address;
-@@ -156,15 +174,7 @@ static void hpet_reserve_platform_timers
- 			Tn_INT_ROUTE_CNF_SHIFT;
- 	}
- 
--	for (i = 0; i < nrtimers; i++) {
--		struct hpet_dev *hdev = &hpet_devs[i];
--
--		if (!(hdev->flags & HPET_DEV_VALID))
--			continue;
--
--		hd.hd_irq[hdev->num] = hdev->irq;
--		hpet_reserve_timer(&hd, hdev->num);
--	}
-+	hpet_reserve_msi_timers(&hd);
- 
- 	hpet_alloc(&hd);
- 
+My first idea was to filter out all newlines from messages, making a
+message a single line, and then force a newline, but now I realize
+that would be an exception to the printk convention. Maybe I should
+just start a new line in the output, when I get a newline :-)
+Although that probably means my version of trace_seq_print_cont() must
+live in trace.c, which IMHO is over-crowded already.
+
+But then there's a small chance the whole output of a single
+TRACE_PRINT entry might not fit into one trace_seq ever, since each
+line in mmiotrace has a prologue. Oh well, can't win always, I'll just
+drop what doesn't fit into output.
+
+Hmm, it already does that, doesn't it, if the output does not fit into
+trace_seq buffer. There might be a corner case...
+
+> > Steven, could you explain what is going on here?
+> 
+> Just did ;-)
+> 
+> Hope it helps,
+
+Oh yes, thank you very much :-)
+
+btw. How do you feel about moving the #ifdef CONFIG_MMIOTRACE functions
+from trace.c to trace_mmiotrace.c and unstatifying all the functions
+they need? Seems some of them are inline, and the spinlock stuff just
+looks so... raw :-)
+
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
