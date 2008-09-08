@@ -1,134 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYIHL5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbYIHMAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYIHL5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYIHL5H
+	id S1753911AbYIHMAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 08:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYIHMA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:57:07 -0400
-Received: from ozlabs.org ([203.10.76.45]:56942 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751656AbYIHL5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:57:06 -0400
+	Mon, 8 Sep 2008 08:00:29 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:52690 "EHLO
+	SG2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbYIHMA2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 08:00:28 -0400
+X-BigFish: VPS-34(zz1418M1432R98dR1805M936fQzz10d3izz2f39iz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K6VLCH-03-DE7-01
+Date: Mon, 8 Sep 2008 14:00:17 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, iommu@lists.linux-foundation.org
+Subject: Re: [PATCH 0/5] fix exhaustion of ZONE_DMA with swiotlb (in x86 tree)
+Message-ID: <20080908120017.GI3189@amd.com>
+References: <1220865014-1169-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Message-ID: <18629.4872.843131.680579@cargo.ozlabs.ibm.com>
-Date: Mon, 8 Sep 2008 21:56:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git merge branch
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1220865014-1169-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 08 Sep 2008 12:00:17.0768 (UTC) FILETIME=[75F20E80:01C911AA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, Sep 08, 2008 at 06:10:09PM +0900, FUJITA Tomonori wrote:
+> This patchset (against tip/master) fixes the problem that swiotlb
+> exhausts ZONE_DMA:
+> 
+> http://lkml.org/lkml/2008/8/31/16
+> 
+> The root problem is that swiotlb_alloc_coherent always use ZONE_DMA,
+> which is fine for IA64 but not for x86_64.
+> 
+> This patchset makes the callers set up the gfp flags so that
+> swiotlb_alloc_coherent can stop playing with the gfp flags.
+> 
+> I think that it would be better to remove the allocation code in
+> swiotlb_alloc_coherent theoretically (what swiotlb should do is taking
+> care of the swiotlb memory. And swiotlb_alloc_coherent is not useful
+> since we use it only when we can't allocate memory reachable by the
+> device or we are in out of memory). But that code works for both x86
+> and IA64 so it's not so bad, I guess.
+> 
+> #1 is for IA64, #2-4 for x86, and #5 is for swiotlb.
 
-Please pull from the 'merge' branch of
+Cool :-)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+This is much better than our last two tries to solve this problem. Doing
+no gfp handling at all in swiotlb_alloc_coherent is a nice and clean
+solution.
 
-There is one commit there from Hugh Dickins that fixes a build
-problem, plus three from the Cell guys fixing a couple of races and a
-reference count leak in arch/powerpc/platforms/cell/spufs/sched.c.
-The reference count leak is a regression from 2.6.26, and the races
-can apparently lead to an unkillable process (looping in the kernel)
-or to a panic.
+Joerg
 
-Thanks,
-Paul.
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
- arch/powerpc/boot/Makefile                |    2 +-
- arch/powerpc/platforms/cell/spufs/sched.c |   29 +++++++++++++++++++++++------
- 2 files changed, 24 insertions(+), 7 deletions(-)
-
-commit 4ff23fa93011e2367fea056e72c92709178972d9
-Author: Hugh Dickins <hugh@veritas.com>
-Date:   Sun Sep 7 00:35:48 2008 +0100
-
-    powerpc: Fix rare boot build breakage
-    
-    A make -j20 powerpc kernel build broke a couple of months ago saying:
-    In file included from arch/powerpc/boot/gunzip_util.h:13,
-                     from arch/powerpc/boot/prpmc2800.c:21:
-    arch/powerpc/boot/zlib.h:85: error: expected ?:?, ?,?, ?;?, ?}? or ?__attribute__? before ?*? token
-    arch/powerpc/boot/zlib.h:630: warning: type defaults to ?int? in declaration of ?Byte?
-    arch/powerpc/boot/zlib.h:630: error: expected ?;?, ?,? or ?)? before ?*? token
-    
-    It happened again yesterday: too rare for me to confirm the fix, but
-    it looks like the list of dependants on gunzip_util.h was incomplete.
-    
-    Signed-off-by: Hugh Dickins <hugh@veritas.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit b2e601d14deb2083e2a537b47869ab3895d23a28
-Author: Andre Detsch <adetsch@br.ibm.com>
-Date:   Thu Sep 4 21:16:27 2008 +0000
-
-    powerpc/spufs: Fix possible scheduling of a context to multiple SPEs
-    
-    We currently have a race when scheduling a context to a SPE -
-    after we have found a runnable context in spusched_tick, the same
-    context may have been scheduled by spu_activate().
-    
-    This may result in a panic if we try to unschedule a context that has
-    been freed in the meantime.
-    
-    This change exits spu_schedule() if the context has already been
-    scheduled, so we don't end up scheduling it twice.
-    
-    Signed-off-by: Andre Detsch <adetsch@br.ibm.com>
-    Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
-commit b65fe0356b5b732d7e1e0224c6a1cf2eb5255984
-Author: Jeremy Kerr <jk@ozlabs.org>
-Date:   Thu Sep 4 15:02:47 2008 +1000
-
-    powerpc/spufs: Fix race for a free SPU
-    
-    We currently have a race for a free SPE. With one thread doing a
-    spu_yield(), and another doing a spu_activate():
-    
-    thread 1				thread 2
-    spu_yield(oldctx)			spu_activate(ctx)
-      __spu_deactivate(oldctx)
-      spu_unschedule(oldctx, spu)
-      spu->alloc_state = SPU_FREE
-    					spu = spu_get_idle(ctx)
-    					    - searches for a SPE in
-    					      state SPU_FREE, gets
-    					      the context just
-    					      freed by thread 1
-    					spu_schedule(ctx, spu)
-    					  spu->alloc_state = SPU_USED
-    spu_schedule(newctx, spu)
-      - assumes spu is still free
-      - tries to schedule context on
-        already-used spu
-    
-    This change introduces a 'free_spu' flag to spu_unschedule, to indicate
-    whether or not the function should free the spu after descheduling the
-    context. We only set this flag if we're not going to re-schedule
-    another context on this SPU.
-    
-    Add a comment to document this behaviour.
-    
-    Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
-commit 9f43e3914dceb0f8191875b3cdf4325b48d0d70a
-Author: Jeremy Kerr <jk@ozlabs.org>
-Date:   Tue Sep 2 11:57:09 2008 +1000
-
-    powerpc/spufs: Fix multiple get_spu_context()
-    
-    Commit 8d5636fbca202f61fdb808fc9e20c0142291d802 introduced a reference
-    count on SPU contexts during find_victim, but this may cause a leak in
-    the reference count if we later find a better contender for a context to
-    unschedule.
-    
-    Change the reference to after we've found our victim context, so we
-    don't do the extra get_spu_context().
-    
-    Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
