@@ -1,232 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbYIHVfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYIHVhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbYIHVfp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 17:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbYIHVfX
+	id S1755858AbYIHVhv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 17:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYIHVhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 17:35:23 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:37274 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754600AbYIHVfV (ORCPT
+	Mon, 8 Sep 2008 17:37:43 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:59873 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751785AbYIHVhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 17:35:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZdWUhBoOKFn6a39j1ciy+3zDkK+8BNgk/aUBYlDt2XvgO7Aht7skMOLcAVB3uDKGmI
-         x4enRlT/sMO5A/RvYNcbZ0EWf8bMnl2f1H2zGHGLj/EasrEJRcpimAmo7Ga9uuw6reWh
-         ByyBfP316TWoiCLKjUN+KTf5/hlFqnQdBtoh8=
-Message-ID: <a08621850809081435g6c0c9d5bwdd8cf937eec9e2db@mail.gmail.com>
-Date: Mon, 8 Sep 2008 23:35:19 +0200
-From: "Dushan Tcholich" <dusanc@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] bridge: don't allow setting hello time to zero
-Cc: shemminger@vyatta.com, romieu@fr.zoreil.com, hancockr@shaw.ca,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bridge@lists.linux-foundation.org
-In-Reply-To: <20080908.134650.26179244.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 8 Sep 2008 17:37:43 -0400
+Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Parisc List <linux-parisc@vger.kernel.org>
+In-Reply-To: <200809081429.57805.david-b@pacbell.net>
+References: <1220889205.8074.16.camel@localhost.localdomain>
+	 <200809081213.37705.david-b@pacbell.net>
+	 <1220905689.8074.68.camel@localhost.localdomain>
+	 <200809081429.57805.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Mon, 08 Sep 2008 16:37:40 -0500
+Message-Id: <1220909860.8074.77.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080831100537.6929c51e@extreme> <20080831104309.780cc01f@extreme>
-	 <20080904154709.48fe0775@extreme>
-	 <20080908.134650.26179244.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 8, 2008 at 10:46 PM, David Miller <davem@davemloft.net> wrote:
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> Date: Thu, 4 Sep 2008 15:47:09 -0700
->
->> The bridge hello time can't be safely set to values less than 1 second,
->> otherwise it is possible to end up with a runaway timer.
->>
->> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->
-> Applied, thanks Stephen.
->
-> I added more information to the commit message so that Dushan's
-> incredibly contribution to this bug getting fixed are mentioned.
-> I don't see how we would have figured out Bridging as even the
-> cause without his detective work.  So it's definitely wrong not
-> to give him at least some mention in the commit message :-/
->
+On Mon, 2008-09-08 at 14:29 -0700, David Brownell wrote:
+> > No, it's a regression.  ...  This turns off the ability to select
+> > GEN_RTC if you've said yes to RTC_CLASS.  Since RTC_CLASS is currently
+> > unsupported on parisc, we need to fix that by making the RTC_CLASS
+> > option unselectable on parisc.
+> 
+> So you affirmed that there was no override, AND that it was
+> previously treated as junk DNA (ignored).  So just what were
+> you disagreeing with me about??
 
-I don't know what to say :)
+The fact that the override you put in to disable GEN_RTC is causing a
+regression.
 
-Thank you
-> bridge: don't allow setting hello time to zero
->
-> Dushan Tcholich reports that on his system ksoftirqd can consume
-> between %6 to %10 of cpu time, and cause ~200 context switches per
-> second.
->
-A little nitpick: 200 times greater context switch rate :), like
-100000 per second.
+> I have a hard time calling something a regression which
+> was never really a supported configuration.  And which
+> still *JUST WORKS* in those defconfigs ... given all that,
+> it's hard to argue that something is actually broken.
 
-> He then correlated this with a report by bdupree@techfinesse.com:
->
->        http://marc.info/?l=linux-kernel&m=119613299024398&w=2
->
-> and the culprit cause seems to be starting the bridge interface.
-> In particular, when starting the bridge interface, his scripts
-> are specifying a hello timer interval of "0".
->
-> The bridge hello time can't be safely set to values less than 1
-> second, otherwise it is possible to end up with a runaway timer.
+On 2.6.25 the parisc users got a working realtime clock.  On 2.6.26 they
+can find themselves without one using the same .config file.  This is
+the regression.  The fix is to disable RTC_CLASS until we have it
+working for parisc.
 
-Btw. is there a way to make the command to turn STP off work too?
-brctl stp br0 off
-Because AFAIK if I shut down STP the hello timer should shut down too,
-but it still continues to work.
+> Kconfig is not about letting Aunt Tillie configure kernels
+> without being able to shoot herself in the foot.  That
+> discussion has been had (at length!) before.  Result, we
+> have a much better kernel config framework ... but still
+> don't facilitate "Kconfig-4-dummiez" audiences.
 
-Thank you for your time and effort
+Kconfig is complex enough that we try not to trip users up by hiding
+things, especially when it's the wrong thing to hide on this platform.
+If an option specifically doesn't work or causes harm on a platform, it
+shouldn't be selectable on that platform.  This isn't Aunt Tillieism,
+this is called common sense.
 
-Dushan Tcholich
+James
 
->
-> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> ---
->  net/bridge/br_ioctl.c    |    8 +++++++-
->  net/bridge/br_sysfs_br.c |   26 ++++++++++++++++++--------
->  2 files changed, 25 insertions(+), 9 deletions(-)
->
-> diff --git a/net/bridge/br_ioctl.c b/net/bridge/br_ioctl.c
-> index eeee218..5bbf073 100644
-> --- a/net/bridge/br_ioctl.c
-> +++ b/net/bridge/br_ioctl.c
-> @@ -188,15 +188,21 @@ static int old_dev_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
->                return 0;
->
->        case BRCTL_SET_BRIDGE_HELLO_TIME:
-> +       {
-> +               unsigned long t = clock_t_to_jiffies(args[1]);
->                if (!capable(CAP_NET_ADMIN))
->                        return -EPERM;
->
-> +               if (t < HZ)
-> +                       return -EINVAL;
-> +
->                spin_lock_bh(&br->lock);
-> -               br->bridge_hello_time = clock_t_to_jiffies(args[1]);
-> +               br->bridge_hello_time = t;
->                if (br_is_root_bridge(br))
->                        br->hello_time = br->bridge_hello_time;
->                spin_unlock_bh(&br->lock);
->                return 0;
-> +       }
->
->        case BRCTL_SET_BRIDGE_MAX_AGE:
->                if (!capable(CAP_NET_ADMIN))
-> diff --git a/net/bridge/br_sysfs_br.c b/net/bridge/br_sysfs_br.c
-> index 27d6a51..158dee8 100644
-> --- a/net/bridge/br_sysfs_br.c
-> +++ b/net/bridge/br_sysfs_br.c
-> @@ -29,11 +29,12 @@
->  */
->  static ssize_t store_bridge_parm(struct device *d,
->                                 const char *buf, size_t len,
-> -                                void (*set)(struct net_bridge *, unsigned long))
-> +                                int (*set)(struct net_bridge *, unsigned long))
->  {
->        struct net_bridge *br = to_bridge(d);
->        char *endp;
->        unsigned long val;
-> +       int err;
->
->        if (!capable(CAP_NET_ADMIN))
->                return -EPERM;
-> @@ -43,9 +44,9 @@ static ssize_t store_bridge_parm(struct device *d,
->                return -EINVAL;
->
->        spin_lock_bh(&br->lock);
-> -       (*set)(br, val);
-> +       err = (*set)(br, val);
->        spin_unlock_bh(&br->lock);
-> -       return len;
-> +       return err ? err : len;
->  }
->
->
-> @@ -56,12 +57,13 @@ static ssize_t show_forward_delay(struct device *d,
->        return sprintf(buf, "%lu\n", jiffies_to_clock_t(br->forward_delay));
->  }
->
-> -static void set_forward_delay(struct net_bridge *br, unsigned long val)
-> +static int set_forward_delay(struct net_bridge *br, unsigned long val)
->  {
->        unsigned long delay = clock_t_to_jiffies(val);
->        br->forward_delay = delay;
->        if (br_is_root_bridge(br))
->                br->bridge_forward_delay = delay;
-> +       return 0;
->  }
->
->  static ssize_t store_forward_delay(struct device *d,
-> @@ -80,12 +82,17 @@ static ssize_t show_hello_time(struct device *d, struct device_attribute *attr,
->                       jiffies_to_clock_t(to_bridge(d)->hello_time));
->  }
->
-> -static void set_hello_time(struct net_bridge *br, unsigned long val)
-> +static int set_hello_time(struct net_bridge *br, unsigned long val)
->  {
->        unsigned long t = clock_t_to_jiffies(val);
-> +
-> +       if (t < HZ)
-> +               return -EINVAL;
-> +
->        br->hello_time = t;
->        if (br_is_root_bridge(br))
->                br->bridge_hello_time = t;
-> +       return 0;
->  }
->
->  static ssize_t store_hello_time(struct device *d,
-> @@ -104,12 +111,13 @@ static ssize_t show_max_age(struct device *d, struct device_attribute *attr,
->                       jiffies_to_clock_t(to_bridge(d)->max_age));
->  }
->
-> -static void set_max_age(struct net_bridge *br, unsigned long val)
-> +static int set_max_age(struct net_bridge *br, unsigned long val)
->  {
->        unsigned long t = clock_t_to_jiffies(val);
->        br->max_age = t;
->        if (br_is_root_bridge(br))
->                br->bridge_max_age = t;
-> +       return 0;
->  }
->
->  static ssize_t store_max_age(struct device *d, struct device_attribute *attr,
-> @@ -126,9 +134,10 @@ static ssize_t show_ageing_time(struct device *d,
->        return sprintf(buf, "%lu\n", jiffies_to_clock_t(br->ageing_time));
->  }
->
-> -static void set_ageing_time(struct net_bridge *br, unsigned long val)
-> +static int set_ageing_time(struct net_bridge *br, unsigned long val)
->  {
->        br->ageing_time = clock_t_to_jiffies(val);
-> +       return 0;
->  }
->
->  static ssize_t store_ageing_time(struct device *d,
-> @@ -180,9 +189,10 @@ static ssize_t show_priority(struct device *d, struct device_attribute *attr,
->                       (br->bridge_id.prio[0] << 8) | br->bridge_id.prio[1]);
->  }
->
-> -static void set_priority(struct net_bridge *br, unsigned long val)
-> +static int set_priority(struct net_bridge *br, unsigned long val)
->  {
->        br_stp_set_bridge_priority(br, (u16) val);
-> +       return 0;
->  }
->
->  static ssize_t store_priority(struct device *d, struct device_attribute *attr,
-> --
-> 1.5.6.5.GIT
->
->
+
