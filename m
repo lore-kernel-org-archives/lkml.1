@@ -1,177 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbYIHQ51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbYIHQ6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbYIHQ51 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYIHQ5H
+	id S1752989AbYIHQ6c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 12:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbYIHQ6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:57:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:38006 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753802AbYIHQ5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:57:05 -0400
-Date: Mon, 8 Sep 2008 09:56:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: netdev <netdev@vger.kernel.org>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.26.4
-Message-Id: <20080908095608.4dae8a2e.randy.dunlap@oracle.com>
-In-Reply-To: <20080908163801.GA13827@suse.de>
-References: <20080908143625.GC7311@suse.de>
-	<20080908081253.d3100d88.randy.dunlap@oracle.com>
-	<20080908152114.GA8941@suse.de>
-	<20080908163801.GA13827@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 8 Sep 2008 12:58:23 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34225 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752126AbYIHQ6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 12:58:23 -0400
+Subject: Re: [RFC v3][PATCH 8/9] File descriprtors (dump)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+In-Reply-To: <48C35DFC.9080903@cs.columbia.edu>
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
+	 <Pine.LNX.4.64.0809040405250.5982@takamine.ncl.cs.columbia.edu>
+	 <1220553660.23386.60.camel@nimitz>  <48C35DFC.9080903@cs.columbia.edu>
+Content-Type: text/plain
+Date: Mon, 08 Sep 2008 09:57:42 -0700
+Message-Id: <1220893062.23386.176.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 09:38:01 -0700 Greg KH wrote:
-
-> On Mon, Sep 08, 2008 at 08:21:14AM -0700, Greg KH wrote:
-> > On Mon, Sep 08, 2008 at 08:12:53AM -0700, Randy Dunlap wrote:
-> > > On Mon, 8 Sep 2008 07:36:25 -0700 Greg KH wrote:
-> > > 
-> > > > We (the -stable team) are announcing the release of the 2.6.26.4
-> > > > kernel.
-> > > > 
-> > > > It contains lots of bugfixes, all over the map.  Any users of the 2.6.26
-> > > > kernel series should upgrade to this version.  For details on the fixes,
-> > > > see the changelog entries and the diffstat below.
-> > > > 
-> > > > I'll also be replying to this message with a copy of the patch between
-> > > > 2.6.26.3 and 2.6.26.4
-> > > > 
-> > > > The updated 2.6.26.y git tree can be found at:
-> > > >         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
-> > > > and can be browsed at the normal kernel.org git web browser:
-> > > >         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
-> > > 
-> > > >  include/linux/pim.h                |   45 -----------------
-> > > 
-> > > That file is still used by ./net/ipv6/ip6mr.c:#include <linux/pim.h>
-> > > so there are build errors...
+On Sun, 2008-09-07 at 00:52 -0400, Oren Laadan wrote:
+> >> +	for (i = 0; i < fdt->max_fds; i++) {
+> >> +		if (!fcheck_files(files, i)
+> >> 			continue;
+> >> 		if (n == max) {
+> >> +			spin_unlock(&files->file_lock);
+> >> +			kfree(fdlist);
+> >> +			max *= 2;
+> >> +			if (max < 0) {	/* overflow ? */
+> >> +				n = -EMFILE;
+> >> +				break;
+> >> +			}
+> >> +			goto repeat;
+> >> +		}
+> >> +		fdlist[n++] = i;
+> >> +	}
 > > 
-> > Crap, I messed up, David sent me the fixed patch and I forgot it.
+> > My gut also says that there has to be a better way to find a good size
+> > for fdlist() than growing it this way.  
 > 
-> Randy, does the patch below fix the problem?  It's an interdiff between
-> what I applied and what David sent me as the correct patch.
-
-Yes, that fixes the build error.  Thanks.
-
-
-> thanks,
+> Can you suggest a better way to find the open files of a task ?
 > 
-> greg k-h
-> 
-> -------------
-> 
-> diff -u b/include/linux/mroute.h b/include/linux/mroute.h
-> --- b/include/linux/mroute.h
-> +++ b/include/linux/mroute.h
-> @@ -2,7 +2,10 @@
->  #define __LINUX_MROUTE_H
->  
->  #include <linux/sockios.h>
-> +#include <linux/types.h>
-> +#ifdef __KERNEL__
->  #include <linux/in.h>
-> +#endif
->  
->  /*
->   *	Based on the MROUTING 3.5 defines primarily to keep
-> @@ -126,6 +129,7 @@
->   */
->  
->  #ifdef __KERNEL__
-> +#include <linux/pim.h>
->  #include <net/sock.h>
->  
->  #ifdef CONFIG_IP_MROUTE
-> @@ -210,27 +214,6 @@
->  #define IGMPMSG_WHOLEPKT	3		/* For PIM Register processing */
->  
->  #ifdef __KERNEL__
-> -
-> -#define PIM_V1_VERSION		__constant_htonl(0x10000000)
-> -#define PIM_V1_REGISTER		1
-> -
-> -#define PIM_VERSION		2
-> -#define PIM_REGISTER		1
-> -
-> -#define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
-> -
-> -/* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
-> -
-> -struct pimreghdr
-> -{
-> -	__u8	type;
-> -	__u8	reserved;
-> -	__be16	csum;
-> -	__be32	flags;
-> -};
-> -
-> -extern int pim_rcv_v1(struct sk_buff *);
-> -
->  struct rtmsg;
->  extern int ipmr_get_route(struct sk_buff *skb, struct rtmsg *rtm, int nowait);
->  #endif
-> diff -u /dev/null b/include/linux/pim.h
-> --- /dev/null
-> +++ b/include/linux/pim.h
-> @@ -0,0 +1,27 @@
-> +#ifndef __LINUX_PIM_H
-> +#define __LINUX_PIM_H
-> +
-> +#include <asm/byteorder.h>
-> +
-> +/* Message types - V1 */
-> +#define PIM_V1_VERSION		__constant_htonl(0x10000000)
-> +#define PIM_V1_REGISTER		1
-> +
-> +/* Message types - V2 */
-> +#define PIM_VERSION		2
-> +#define PIM_REGISTER		1
-> +
-> +#define PIM_NULL_REGISTER	__constant_htonl(0x40000000)
-> +
-> +/* PIMv2 register message header layout (ietf-draft-idmr-pimvsm-v2-00.ps */
-> +struct pimreghdr
-> +{
-> +	__u8	type;
-> +	__u8	reserved;
-> +	__be16	csum;
-> +	__be32	flags;
-> +};
-> +
-> +struct sk_buff;
-> +extern int pim_rcv_v1(struct sk_buff *);
-> +#endif
-> only in patch2:
-> unchanged:
-> --- a/include/linux/mroute6.h
-> +++ b/include/linux/mroute6.h
-> @@ -115,6 +115,7 @@ struct sioc_mif_req6
->  
->  #ifdef __KERNEL__
->  
-> +#include <linux/pim.h>
->  #include <linux/skbuff.h>	/* for struct sk_buff_head */
->  
->  #ifdef CONFIG_IPV6_MROUTE
-> --
+> Either I loop twice (loop to count, then allocate, then loop to fill),
+> or optimistically try an initial guess and expand on demand.
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+I'd suggest the double loop.  I think it is much more straightforward
+code.
+
+> >> +	hh->f_version = file->f_version;
+> >> +	/* FIX: need also file->f_owner */
+> >> +
+> >> +	switch (inode->i_mode & S_IFMT) {
+> >> +	case S_IFREG:
+> >> +		fd_type = CR_FD_FILE;
+> >> +		break;
+> >> +	case S_IFDIR:
+> >> +		fd_type = CR_FD_DIR;
+> >> +		break;
+> >> +	case S_IFLNK:
+> >> +		fd_type = CR_FD_LINK;
+> >> +		break;
+> >> +	default:
+> >> +		return -EBADF;
+> >> +	}
+> > 
+> > Why don't we just store (and use) (inode->i_mode & S_IFMT) in fd_type
+> > instead of making our own types?
+> 
+> There will be others that cannot be inferred from inode->i_mode,
+> e.g. CR_FD_FILE_UNLINKED, CR_FD_DIR_UNLINKED, CR_FD_SOCK_UNIX,
+> CR_FD_SOCK_INET_V4, CR_FD_EVENTPOLL etc.
+
+I think we have a basically different philosophy on these.  I'd say
+don't define them unless absolutely necessary.  The less you spell out
+explicitly, the more flexibility you have in the future, and the less
+code you spend doing simple conversions.
+
+Anyway, I see why you're doing it this way.
+
+-- Dave
+
