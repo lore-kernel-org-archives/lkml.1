@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbYIHXon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYIHX57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbYIHXon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 19:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYIHXof
+	id S1755359AbYIHX57 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 19:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYIHX5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 19:44:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48731
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753250AbYIHXoe (ORCPT
+	Mon, 8 Sep 2008 19:57:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57730 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752538AbYIHX5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 19:44:34 -0400
-Date: Mon, 08 Sep 2008 16:44:27 -0700 (PDT)
-Message-Id: <20080908.164427.216880550.davem@davemloft.net>
-To: david-b@pacbell.net
-Cc: James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org, alessandro.zummo@towertech.it
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200809081629.21125.david-b@pacbell.net>
-References: <1220914847.8074.81.camel@localhost.localdomain>
-	<20080908.160441.124972717.davem@davemloft.net>
-	<200809081629.21125.david-b@pacbell.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 8 Sep 2008 19:57:51 -0400
+Message-ID: <48C5BBEC.5060405@zytor.com>
+Date: Mon, 08 Sep 2008 16:57:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Hugh Dickins <hugh@veritas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: ifdef Quicklists in /proc/meminfo
+References: <Pine.LNX.4.64.0809081351240.4983@blonde.site> <20080909084241.41A0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080909084241.41A0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <david-b@pacbell.net>
-Date: Mon, 8 Sep 2008 16:29:20 -0700
+KOSAKI Motohiro wrote:
+>> A "Quicklists:          0 kB" line has just started appearing in
+>> /proc/meminfo, but most architectures (including x86) don't have
+>> them configured: may we please #ifdef it, like the highmem lines?
+>>
+>> And those architectures which do have quicklists configured are
+>> using them for page tables: so let's place it next to PageTables.
+>>
+>> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+>> ---
+> 
+> Oh, I see.
+> Thanks Hugh.
+> 
+> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-> That said, there's a bit of unresolved stuff around NTP hooks
-> in the kernel.  Some patches are pending to let thtem work with
-> the RTC framework -- where writing an RTC may need to sleep,
-> for example because the RTC is on an I2C or SPI bus.  And
-> then there's the discussion of whether that shouldn't all be
-> handled by NTPD anyway, no special kernel support desired.
-> Alessandro has opinions there.  ;)
+x86 *does* use quicklists, at least with PAE.
 
-My update_persistent_clock() on sparc64 is:
-
-int update_persistent_clock(struct timespec now)
-{
-	struct rtc_device *rtc = rtc_class_open("rtc0");
-
-	if (rtc)
-		return rtc_set_mmss(rtc, now.tv_sec);
-
-	return -1;
-}
-
-and that should handle this NTP shouldn't it?
+	-hpa
