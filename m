@@ -1,79 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbYIHLlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbYIHLo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbYIHLlw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 07:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYIHLlp
+	id S1753666AbYIHLo3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 07:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYIHLoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 07:41:45 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:56382 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751193AbYIHLlo (ORCPT
+	Mon, 8 Sep 2008 07:44:21 -0400
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:52538 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbYIHLoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 07:41:44 -0400
-X-BigFish: VPS-30(zz1432R98dR1805M936fQzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K6VKGW-03-CUB-01
-Date: Mon, 8 Sep 2008 13:41:19 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: use __GFP_NORETRY in the case of GFP_DMA with pci-nommu
-Message-ID: <20080908114119.GH3189@amd.com>
-References: <1220605129-18359-2-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1220605129-18359-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20080905104305.GA3189@amd.com> <20080906211813F.fujita.tomonori@lab.ntt.co.jp>
+	Mon, 8 Sep 2008 07:44:20 -0400
+Date: Mon, 8 Sep 2008 12:44:23 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/4] Reclaim page capture v3
+Message-ID: <20080908114423.GE18694@brain>
+References: <1220610002-18415-1-git-send-email-apw@shadowen.org> <200809081608.03793.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080906211813F.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 08 Sep 2008 11:41:19.0454 (UTC) FILETIME=[CF751FE0:01C911A7]
+In-Reply-To: <200809081608.03793.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 06, 2008 at 09:18:37PM +0900, FUJITA Tomonori wrote:
-> On Fri, 5 Sep 2008 12:43:05 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Mon, Sep 08, 2008 at 04:08:03PM +1000, Nick Piggin wrote:
+> On Friday 05 September 2008 20:19, Andy Whitcroft wrote:
+> > For sometime we have been looking at mechanisms for improving the
+> > availability of larger allocations under load.  One of the options we have
+> > explored is the capturing of pages freed under direct reclaim in order to
+> > increase the chances of free pages coelescing before they are subject to
+> > reallocation by racing allocators.
+> >
+> > Following this email is a patch stack implementing page capture during
+> > direct reclaim.  It consits of four patches.  The first two simply pull
+> > out existing code into helpers for reuse.  The third makes buddy's use
+> > of struct page explicit.  The fourth contains the meat of the changes,
+> > and its leader contains a much fuller description of the feature.
+> >
+> > This update represents a rebase to -mm and incorporates feedback from
+> > KOSAKI Motohiro.  It also incorporates an accounting fix which was
+> > preventing some captures.
+> >
+> > I have done a lot of comparitive testing with and without this patch
+> > set and in broad brush I am seeing improvements in hugepage allocations
+> > (worst case size) success on all of my test systems.  These tests consist
+> > of placing a constant stream of high order allocations on the system,
+> > at varying rates.  The results for these various runs are then averaged
+> > to give an overall improvement.
+> >
+> > 		Absolute	Effective
+> > x86-64		2.48%		 4.58%
+> > powerpc		5.55%		25.22%
 > 
-> > On Fri, Sep 05, 2008 at 05:58:48PM +0900, FUJITA Tomonori wrote:
-> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > ---
-> > >  arch/x86/kernel/pci-nommu.c |    3 +++
-> > >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
-> > > index 526b2db..3495f88 100644
-> > > --- a/arch/x86/kernel/pci-nommu.c
-> > > +++ b/arch/x86/kernel/pci-nommu.c
-> > > @@ -102,6 +102,9 @@ nommu_alloc_coherent(struct device *hwdev, size_t size,
-> > >  	if (dma_mask == DMA_24BIT_MASK)
-> > >  		gfp |= GFP_DMA;
-> > >  again:
-> > > +	if (gfp & GFP_DMA)
-> > > +		gfp |= __GFP_NORETRY;
-> > > +
-> > 
-> > Huh? Why that? The __GFP_NORETRY is a hint from the caller to the page
-> > allocator on how aggressive it should try to allocate memory. I don't
-> > think the DMA code should touch those flags unless there is a very very
-> > good reason for it.
-> 
-> The current comment is reasonable for me:
-> 
-> /* Don't invoke OOM killer or retry in lower 16MB DMA zone */
-> if (gfp & __GFP_DMA)
->      noretry = 1;
+> These are the numbers for the improvement of hugepage allocation success?
+> Then what do you mean by absolute and effective?
 
-Ok, so please add a comment to this so we know in the future why this is
-there.
+The absolute improvement is the literal change in success percentage,
+the literal percentage of all memory which may be allocated as huge
+pages.  The effective improvement is percentage of the baseline success
+rates that this change represents; for the powerpc results we get some
+20% of memory allocatable without the patches, and 25% with, 25% more
+pages are allocatable with the patches.
 
-Joerg
+> What sort of constant stream of high order allocations are you talking
+> about? In what "real" situations are you seeing higher order page allocation
+> failures, and in those cases, how much do these patches help?
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+The test case simulates a constant demand for huge pages, at various
+rates.  This is intended to replicate the scenario where a system is
+used with mixed small page and huge page applications, with a dynamic
+huge page pool.  Particularly we are examining the effect of starting a
+very large huge page job on a busy system.  Obviously starting hugepage
+applications depends on hugepage availability as they are not swappable.
+This test was chosen because it both tests the initial large page demand
+and then pushes the system to the limit.
 
+> I must say I don't really like this approach. IMO it might be better to put
+> some sort of queue in the page allocator, so if memory becomes low, then
+> processes will start queueing up and not be allowed to jump the queue and
+> steal memory that has been freed by hard work of a direct reclaimer. That
+> would improve a lot of fairness problems as well as improve coalescing for
+> higher order allocations without introducing this capture stuff.
+
+The problem with queuing all allocators is two fold.  Firstly allocations
+are obviously required for reclaim and those would have to be exempt
+from the queue, and these are as likely to prevent coelesce of pages
+as any other.  Secondly where a very large allocation is requested
+all allocators would be held while reclaim at that size is performed,
+majorly increasing latency for those allocations.  Reclaim for an order
+0 page may target of the order of 32 pages, whereas reclaim for x86_64
+hugepages is 1024 pages minimum.  It would be grosly unfair for a single
+large allocation to hold up normal allocations.
+
+> > x86-64 has a relatively small huge page size and so is always much more
+> > effective at allocating huge pages.  Even there we get a measurable
+> > improvement.  On powerpc the huge pages are much larger and much harder
+> > to recover.  Here we see a full 25% increase in page recovery.
+> >
+> > It should be noted that these are worst case testing, and very agressive
+> > taking every possible page in the system.  It would be helpful to get
+> > wider testing in -mm.
+> >
+> > Against: 2.6.27-rc1-mm1
+> >
+> > Andrew, please consider for -mm.
+> >
+> > -apw
+> >
+> > Changes since V2:
+> >  - Incorporates review feedback from Christoph Lameter,
+> >  - Incorporates review feedback from Peter Zijlstra, and
+> >  - Checkpatch fixes.
+> >
+> > Changes since V1:
+> >  - Incorporates review feedback from KOSAKI Motohiro,
+> >  - fixes up accounting when checking watermarks for captured pages,
+> >  - rebase 2.6.27-rc1-mm1,
+> >  - Incorporates review feedback from Mel.
+> >
+> >
+> > Andy Whitcroft (4):
+> >   pull out the page pre-release and sanity check logic for reuse
+> >   pull out zone cpuset and watermark checks for reuse
+> >   buddy: explicitly identify buddy field use in struct page
+> >   capture pages freed during direct reclaim for allocation by the
+> >     reclaimer
+> >
+> >  include/linux/mm_types.h   |    4 +
+> >  include/linux/page-flags.h |    4 +
+> >  mm/internal.h              |    8 +-
+> >  mm/page_alloc.c            |  263
+> > ++++++++++++++++++++++++++++++++++++++------ mm/vmscan.c                | 
+> > 115 ++++++++++++++++----
+> >  5 files changed, 338 insertions(+), 56 deletions(-)
+> >
+> > --
+> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > the body to majordomo@kvack.org.  For more info on Linux MM,
+> > see: http://www.linux-mm.org/ .
+> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+-apw
