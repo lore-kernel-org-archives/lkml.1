@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYIHXE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYIHXRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYIHXE4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 19:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYIHXEs
+	id S1754936AbYIHXRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 19:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYIHXRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 19:04:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47850
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753514AbYIHXEs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 19:04:48 -0400
-Date: Mon, 08 Sep 2008 16:04:41 -0700 (PDT)
-Message-Id: <20080908.160441.124972717.davem@davemloft.net>
-To: James.Bottomley@HansenPartnership.com
-Cc: david-b@pacbell.net, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1220914847.8074.81.camel@localhost.localdomain>
-References: <200809081429.57805.david-b@pacbell.net>
-	<20080908.143504.121592746.davem@davemloft.net>
-	<1220914847.8074.81.camel@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Sep 2008 19:17:22 -0400
+Received: from khc.piap.pl ([195.187.100.11]:49202 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753543AbYIHXRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 19:17:22 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] x86 fixes
+References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>
+	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
+	<48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org>
+	<48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu>
+	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 09 Sep 2008 01:17:19 +0200
+In-Reply-To: <alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org> (Linus Torvalds's message of "Mon\, 8 Sep 2008 12\:30\:02 -0700 \(PDT\)")
+Message-ID: <m3vdx6xm68.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Mon, 08 Sep 2008 18:00:47 -0500
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> On Mon, 2008-09-08 at 14:35 -0700, David Miller wrote:
-> > The RTC layer is very nice and it even allows writing drivers for
-> > very simplistic RTC devices (even ones that cannot be written)
-> > with ease.  I had two such cases to handle on sparc64.
-> 
-> I'm guessing they're not upstream yet (since I can't find them)?
+>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
+>    granted.
 
-It's in my sparc next tree:
-
-	master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git
-
-> However, if you based them on rtc-ppc.c then yes, I agree, it looks
-> reasonably easy:  it's just a matter of converting over the GEN_RTC
-> PDT_TOD helpers.
-
-That's not what I do, I use the real RAW chip drivers provided by the
-RTC layer.
-
-That's the way to do this.
-
-I think the powerpc folks did the wrong thing and should just register
-generic platform_device objects in their platform code, and let the
-RTC layer drive the individual devices in response.
-
-All the powerpc folks are doing is providing a dummy shim into the
-RTC layer using their machine description vector, and not really using
-the RTC layer drivers at all.
+VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
+theatres etc) can't CMOV.
+-- 
+Krzysztof Halasa
