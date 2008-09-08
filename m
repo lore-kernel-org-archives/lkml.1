@@ -1,48 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYIHJbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755AbYIHJba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYIHJbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 05:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYIHJbD
+	id S1753755AbYIHJba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 05:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYIHJbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 05:31:03 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37699 "EHLO pasmtpA.tele.dk"
+	Mon, 8 Sep 2008 05:31:13 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:50568 "EHLO mo10.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752008AbYIHJbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 05:31:01 -0400
-Date: Mon, 8 Sep 2008 11:30:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5-mm1: list corruption during blk_add_timer()
-Message-ID: <20080908093058.GI20055@kernel.dk>
-References: <20080904224004.d3dd3076.akpm@linux-foundation.org> <20080905172602.GC11569@x200.localdomain> <20080905124039.2c9ebf20.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080905124039.2c9ebf20.akpm@linux-foundation.org>
+	id S1752875AbYIHJbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 05:31:12 -0400
+Date: Mon, 8 Sep 2008 18:31:05 +0900
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: tony.luck@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: [PATCH] ia64: remove duplicated swiotbl externs
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080908183053D.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 05 2008, Andrew Morton wrote:
-> On Fri, 5 Sep 2008 21:26:02 +0400
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > Jens, send to Andrew whatever you fixed in git://git.kernel.dk/linux-2.6-block.git for-2.6.28
-> 
-> I went looking, but afaict the whole thing got removed from today's
-> linux-next.  block/blk-timeout.c isn't there any more.
+We can safely remove the following duplication?
 
-It's back in there since friday, hopefully this time more solid :-)
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] ia64: remove duplicated swiotbl externs
 
-> 
-> > 
-> > [   24.567512] ------------[ cut here ]------------
-> > [   24.567619] WARNING: at lib/list_debug.c:30 __list_add+0x95/0xa0()
-> > [   24.567722] list_add corruption. prev->next should be next (ffff88017f9b8420), but was ffff88017f9b8588. (prev=ffff88017f9b8858).
-> 
-> 
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/hp/common/hwsw_iommu.c |   11 -----------
+ arch/ia64/hp/common/sba_iommu.c  |    2 --
+ arch/ia64/include/asm/machvec.h  |    5 ++---
+ 3 files changed, 2 insertions(+), 16 deletions(-)
 
+diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
+index 88b6e6f..a309bb3 100644
+--- a/arch/ia64/hp/common/hwsw_iommu.c
++++ b/arch/ia64/hp/common/hwsw_iommu.c
+@@ -16,17 +16,6 @@
+ 
+ #include <asm/machvec.h>
+ 
+-/* swiotlb declarations & definitions: */
+-extern int swiotlb_late_init_with_default_size (size_t size);
+-extern ia64_mv_dma_alloc_coherent	swiotlb_alloc_coherent;
+-extern ia64_mv_dma_free_coherent	swiotlb_free_coherent;
+-extern ia64_mv_dma_map_single_attrs	swiotlb_map_single_attrs;
+-extern ia64_mv_dma_unmap_single_attrs	swiotlb_unmap_single_attrs;
+-extern ia64_mv_dma_map_sg_attrs		swiotlb_map_sg_attrs;
+-extern ia64_mv_dma_unmap_sg_attrs	swiotlb_unmap_sg_attrs;
+-extern ia64_mv_dma_supported		swiotlb_dma_supported;
+-extern ia64_mv_dma_mapping_error	swiotlb_dma_mapping_error;
+-
+ /* hwiommu declarations & definitions: */
+ 
+ extern ia64_mv_dma_alloc_coherent	sba_alloc_coherent;
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 4956be4..8b69363 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -45,8 +45,6 @@
+ 
+ #include <asm/acpi-ext.h>
+ 
+-extern int swiotlb_late_init_with_default_size (size_t size);
+-
+ #define PFX "IOC: "
+ 
+ /*
+diff --git a/arch/ia64/include/asm/machvec.h b/arch/ia64/include/asm/machvec.h
+index 2b850cc..4cd6064 100644
+--- a/arch/ia64/include/asm/machvec.h
++++ b/arch/ia64/include/asm/machvec.h
+@@ -293,9 +293,8 @@ extern void machvec_init_from_cmdline(const char *cmdline);
+ #  error Unknown configuration.  Update arch/ia64/include/asm/machvec.h.
+ # endif /* CONFIG_IA64_GENERIC */
+ 
+-/*
+- * Declare default routines which aren't declared anywhere else:
+- */
++/* swiotlb declarations & definitions: */
++extern int swiotlb_late_init_with_default_size (size_t size);
+ extern ia64_mv_dma_init			swiotlb_init;
+ extern ia64_mv_dma_alloc_coherent	swiotlb_alloc_coherent;
+ extern ia64_mv_dma_free_coherent	swiotlb_free_coherent;
 -- 
-Jens Axboe
+1.5.4.2
 
