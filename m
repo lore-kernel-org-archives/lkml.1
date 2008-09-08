@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbYIHPoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbYIHPoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbYIHPoM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYIHPn5
+	id S1753323AbYIHPoZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbYIHPoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:43:57 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:49888 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752768AbYIHPn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:43:56 -0400
-Date: Mon, 8 Sep 2008 10:43:53 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount
-	namespace is unshared
-Message-ID: <20080908154353.GA21168@us.ibm.com>
-References: <48C52B29.4020204@fr.ibm.com> <20080908151932.GA19023@us.ibm.com> <48C546C0.504@fr.ibm.com>
+	Mon, 8 Sep 2008 11:44:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43707 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754402AbYIHPoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 11:44:11 -0400
+Message-ID: <48C54839.8050304@zytor.com>
+Date: Mon, 08 Sep 2008 08:43:53 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C546C0.504@fr.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, linux@sandersweb.net,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org> <20080908154535.GL26079@one.firstfloor.org>
+In-Reply-To: <20080908154535.GL26079@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Cedric Le Goater (clg@fr.ibm.com):
-> Serge E. Hallyn wrote:
-> > Quoting Cedric Le Goater (clg@fr.ibm.com):
-> >> On a system with nfs mounts, if a task unshares its mount namespace,
-> >> a oops can occur when the system is rebooted if the task is the last
-> >> to unreference the nfs mount. It will try to create a rpc request
-> >> using utsname() which has been invalidated by free_nsproxy().
-> >>
-> >> The patch fixes the issue by using the global init_utsname() but at
-> >> the same time, it breaks the capability of identifying rpc clients
-> >> per uts namespace.
-> >>
-> >> Any better suggestions ?
-> > 
-> > But the utsname gets freed after the mnt_ns, so the analysis seems
-> > wrong somehow.
+Andi Kleen wrote:
+> On Mon, Sep 08, 2008 at 08:09:48AM -0700, Linus Torvalds wrote:
+>> On Sun, 7 Sep 2008, H. Peter Anvin wrote:
+>>> Under that logic we shouldn't even have CPU configurables, since you want it
+>>> to "just work" whatever crap you're running on.  That is EXACTLY what
+>>> CONFIG_X86_GENERIC means
+>> I dunno.. Event he help-text doesn't actually agree with that:
 > 
-> yes but switch_task_namespaces() assigns ->nsproxy to NULL. the result
-> is the same.
+> The help text matches in how I wrote this option originally.
+> The original use case was the 128 byte P4 cache lines.
 > 
-> > I trust addr2line or whatever verified that rpc_create+0x332/0x42f is
-> > exactly at the call to utsname()?
-> 
-> yes. it points to net/sunrpc/clnt.c:216
-> 
-> 	clnt->cl_nodelen = strlen(utsname()->nodename);
 
-Pavel, at the mini-summit you mentioned sunrpc transports as one
-example of the mini-namespaces openvz currently implements.  We
-then apparently went off on a bit of a tangent
-(http://wiki.openvz.org/Containers/Mini-summit_2008_notes#Namespaces_and_containers)
-after Dave asked for a list of mini-namespaces openvz implements.
+The help text is indeed out of date.  I did a patch yesterday to, among 
+other things, update it; I also want to verify that we are disabling all 
+options that can cause gcc or binutils to generate nopl's; I plan to 
+push it today.
 
-What exactly is openvz doing with sunrpc transports, and would it
-be a better solution to this problem?
-
-thanks,
--serge
+	-hpa
