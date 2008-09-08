@@ -1,50 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbYIHJc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbYIHJhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568AbYIHJc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 05:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYIHJcs
+	id S1753445AbYIHJhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 05:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYIHJhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 05:32:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57158 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbYIHJcr (ORCPT
+	Mon, 8 Sep 2008 05:37:33 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:30919 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752161AbYIHJhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 05:32:47 -0400
-Date: Mon, 8 Sep 2008 11:36:19 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andi Kleen <andi@firstfloor.org>, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] [RESEND] x86_64: add memory hotremove config option
-Message-ID: <20080908093619.GC26079@one.firstfloor.org>
-References: <20080905215452.GF11692@us.ibm.com> <20080906153855.7260.E1E9C6FF@jp.fujitsu.com> <20080906085320.GE18288@one.firstfloor.org> <200809081552.50126.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809081552.50126.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 8 Sep 2008 05:37:32 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=r+zYVVz6xFbQrPS2rxKb4j1sOHkBYD1kYF2wbpIG6DHfXTKIE98AvswPA0+ggw+RI0BY4n3XKO/c727MOex+R+YorXVCOnT1Xby7d7GO2LigfOBXZKUGPZ9np3tiu0gKejIDzOUZ28NFbSSjgQ0F6UPZ9yB3T/nE5KJygsrX7JI=  ;
+X-YMail-OSG: 2lkwgWYVM1ksYsmXcopuSszmWxgQhx6B3JxaP9SJXsxzk9QqkwvhSqbnoGIYnhbKKZvEzRskCMFer7RYXR.r6yzpMiwzALpBrzTVgLKyGnFUx6XDLXZNLIiAvG2GvzriJ8vigFR4qlYJ5bVwqE9_e6vx
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.27-rc5-mm1: 3 WARN_ON dumps during boot (acpi + vmap_pte_range)
+Date: Mon, 8 Sep 2008 19:37:16 +1000
+User-Agent: KMail/1.9.5
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
+       Dave Airlie <airlied@linux.ie>, Rusty Russell <rusty@rustcorp.com.au>
+References: <20080906084558.dff614d4.krzysztof.h1@poczta.fm> <20080905235014.fc31b2b0.akpm@linux-foundation.org>
+In-Reply-To: <20080905235014.fc31b2b0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_MJPxIn75azxtDli"
+Message-Id: <200809081937.16427.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You use non-linear mappings for the kernel, so that kernel data is
-> not tied to a specific physical address. AFAIK, that is the only way
-> to really do it completely (like the fragmentation problem).
+--Boundary-00=_MJPxIn75azxtDli
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Even with that there are lots of issues, like keeping track of 
-DMAs or handling executing kernel code.
+On Saturday 06 September 2008 16:50, Andrew Morton wrote:
+> On Sat, 6 Sep 2008 08:45:58 +0200 Krzysztof Helt <krzysztof.h1@poczta.fm> 
+wrote:
+> > Hi,
+> >
+> > There is a dmesg dump  below from my Compaq AP550 workstation.
+> > It has 3 WARN_ON() dumps: 1 from acpi layer and 2 from vmap_pte_range()
+> > There is no such thing in 2.6.27-rc4 which I use daily so I assume
+> > it is something in the -mm tree.
+>
+> yup thanks.  The acpi guys and Rusty are still scratching each others
+> heads over the acpi procfs one.
+>
+> > Intel 82802 RNG detected
+> > Linux agpgart interface v0.103
+> > agpgart-intel 0000:00:00.0: Intel i840 Chipset
+> > ------------[ cut here ]------------
+> > WARNING: at mm/vmalloc.c:105 vmap_pte_range+0xcb/0x100()
+> > Modules linked in:
+> > Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc5-mm1 #1
+> >  [<c012526f>] warn_on_slowpath+0x5f/0x90
+> >  [<c0217a5e>] fbcon_clear+0x13e/0x1a0
+> >  [<c0111da1>] xapic_wait_icr_idle+0x11/0x20
+> >  [<c01460cc>] generic_exec_single+0x9c/0xa0
+> >  [<c0109776>] read_tsc+0x6/0x30
+> >  [<c013e4f8>] getnstimeofday+0x38/0x150
+> >  [<c015496c>] buffered_rmqueue+0x12c/0x210
+> >  [<c011b53c>] update_curr+0x4c/0x70
+> >  [<c016768b>] vmap_pte_range+0xcb/0x100
+> >  [<c01676ed>] vmap_pmd_range+0x2d/0x40
+> >  [<c016772d>] vmap_pud_range+0x2d/0x40
+> >  [<c01677a6>] vmap_page_range+0x66/0x90
+> >  [<c016844f>] map_vm_area+0x2f/0x50
+> >  [<c0168996>] __vmalloc_area_node+0xb6/0x110
+> >  [<c0168a95>] __vmalloc_node+0x85/0xb0
+> >  [<c02603a2>] agp_backend_initialize+0x82/0x230
+> >  [<c0168b01>] vmalloc+0x21/0x30
+> >  [<c02603a2>] agp_backend_initialize+0x82/0x230
+> >  [<c02603a2>] agp_backend_initialize+0x82/0x230
+> >  [<c027f790>] __driver_attach+0x0/0xc0
+> >  [<c02606b5>] agp_add_bridge+0x55/0x1a0
+> >  [<c020955a>] pci_call_probe+0xa/0x10
+> >  [<c02095ae>] __pci_device_probe+0x4e/0x60
+> >  [<c02095e6>] pci_device_probe+0x26/0x60
+> >  [<c027f5cb>] really_probe+0x9b/0x130
+> >  [<c02094b0>] pci_match_device+0x10/0xb0
+> >  [<c027f6af>] driver_probe_device+0x3f/0x60
+> >  [<c027f819>] __driver_attach+0x89/0xc0
+> >  [<c027e519>] bus_for_each_dev+0x39/0x60
+> >  [<c027f866>] driver_attach+0x16/0x20
+> >  [<c027f790>] __driver_attach+0x0/0xc0
+> >  [<c027ed29>] bus_add_driver+0x109/0x1a0
+> >  [<c01f85ed>] kset_find_obj+0x2d/0x60
+> >  [<c0209660>] pci_device_shutdown+0x0/0x20
+> >  [<c0209660>] pci_device_shutdown+0x0/0x20
+> >  [<c027fcff>] driver_register+0x3f/0xd0
+> >  [<c0125b17>] printk+0x17/0x20
+> >  [<c0482250>] agp_intel_init+0x0/0x20
+> >  [<c02096c7>] __pci_register_driver+0x47/0x80
+> >  [<c0482250>] agp_intel_init+0x0/0x20
+> >  [<c0101032>] _stext+0x32/0x180
+> >  [<c0111da1>] xapic_wait_icr_idle+0x11/0x20
+> >  [<c011aeb4>] resched_task+0x54/0x60
+> >  [<c011e76e>] try_to_wake_up+0x12e/0x140
+> >  [<c0135211>] __create_workqueue_key+0x131/0x150
+> >  [<c046a8d3>] do_initcalls+0x53/0xd0
+> >  [<c046a9a0>] kernel_init+0x0/0xb0
+> >  [<c046a9f5>] kernel_init+0x55/0xb0
+> >  [<c0103f3b>] kernel_thread_helper+0x7/0x1c
+> >  =======================
+> > ---[ end trace 4eaa2a86a8e2da22 ]---
+> > agpgart-intel 0000:00:00.0: can't allocate memory for key lists
+> > agpgart-intel 0000:00:00.0: agp_backend_initialize() failed
+> > agpgart-intel: probe of 0000:00:00.0 failed with error -12
+>
+> This one I reported to Nick and Dave yesterday - no response as yet.
+>
+> > ------------[ cut here ]------------
+> > WARNING: at mm/vmalloc.c:105 vmap_pte_range+0xcb/0x100()
+> > Modules linked in:
+> > Pid: 776, comm: modprobe Tainted: G        W 2.6.27-rc5-mm1 #1
+> >  [<c012526f>] warn_on_slowpath+0x5f/0x90
+> >  [<c01617e9>] handle_mm_fault+0x1d9/0x210
+> >  [<c01bd0a0>] ext3_get_block+0x0/0x100
+> >  [<c011759b>] do_page_fault+0x12b/0x4f0
+> >  [<c0105dde>] do_IRQ+0x7e/0xd0
+> >  [<c0154ce4>] __alloc_pages_internal+0x94/0x410
+> >  [<c0117470>] do_page_fault+0x0/0x4f0
+> >  [<c038506a>] error_code+0x72/0x78
+> >  [<c015496c>] buffered_rmqueue+0x12c/0x210
+> >  [<c014fbab>] find_get_page+0x2b/0xa0
+> >  [<c016768b>] vmap_pte_range+0xcb/0x100
+> >  [<c01676ed>] vmap_pmd_range+0x2d/0x40
+> >  [<c016772d>] vmap_pud_range+0x2d/0x40
+> >  [<c01677a6>] vmap_page_range+0x66/0x90
+> >  [<c016844f>] map_vm_area+0x2f/0x50
+> >  [<c0168996>] __vmalloc_area_node+0xb6/0x110
+> >  [<c0168a95>] __vmalloc_node+0x85/0xb0
+> >  [<c0148eb9>] load_module+0x89/0xd90
+> >  [<c0168b01>] vmalloc+0x21/0x30
+> >  [<c0148eb9>] load_module+0x89/0xd90
+> >  [<c0148eb9>] load_module+0x89/0xd90
+> >  [<c01380e0>] autoremove_wake_function+0x0/0x50
+> >  [<c0177db0>] vfs_read+0x90/0x150
+> >  [<c0149c44>] sys_init_module+0x44/0x1a0
+> >  [<c0178111>] sys_read+0x41/0x70
+> >  [<c01031fa>] syscall_call+0x7/0xb
+> >  =======================
+> > ---[ end trace 4eaa2a86a8e2da22 ]---
+> > Intel ICH 0000:00:1f.5: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+> > Intel ICH 0000:00:1f.5: setting latency timer to 64
+>
+> That's coming out of the module loader and is a new one.  It's the same
+>
+> warning as the agp one:
+> : static int vmap_pte_range(pmd_t *pmd, unsigned long addr,
+> : 		unsigned long end, pgprot_t prot, struct page **pages, int *nr)
+> : {
+> : 	pte_t *pte;
+> :
+> : 	/*
+> : 	 * nr is a running index into the array which helps higher level
+> : 	 * callers keep track of where we're up to.
+> : 	 */
+> :
+> : 	pte = pte_alloc_kernel(pmd, addr);
+> : 	if (!pte)
+> : 		return -ENOMEM;
+> : 	do {
+> : 		struct page *page = pages[*nr];
+> :
+> : -->>		if (WARN_ON(!pte_none(*pte)))
+> : 			return -EBUSY;
+> : 		if (WARN_ON(!page))
+> : 			return -ENOMEM;
+> : 		set_pte_at(&init_mm, addr, pte, mk_pte(page, prot));
+> : 		(*nr)++;
+> : 	} while (pte++, addr += PAGE_SIZE, addr != end);
+> : 	return 0;
+> : }
+>
+> I'm suspecting an overactive assertion in the new vmap code?
 
-> 
-> Of course, I don't think that would be a good idea to do that in the
-> forseeable future.
+OK, would it be possible to test the following patch on the failing
+machine(s), and send me the complete dmesg trace afterwards, please?
 
-Agreed.
+The patch does a little bit of extra page table checking, and also
+prints a trace of operations on the vmap-space.
 
--Andi
+Thanks,
+Nick
 
--- 
-ak@linux.intel.com
+
+--Boundary-00=_MJPxIn75azxtDli
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="vmap-debug-1.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="vmap-debug-1.patch"
+
+Index: linux-2.6/mm/vmalloc.c
+===================================================================
+--- linux-2.6.orig/mm/vmalloc.c
++++ linux-2.6/mm/vmalloc.c
+@@ -31,6 +31,61 @@
+ 
+ /*** Page table manipulation functions ***/
+ 
++static void check_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
++{
++	pte_t *pte;
++
++	pte = pte_offset_kernel(pmd, addr);
++	do {
++		WARN_ON_ONCE(!pte_none(*pte));
++	} while (pte++, addr += PAGE_SIZE, addr != end);
++}
++
++static void check_pmd_range(pud_t *pud, unsigned long addr, unsigned long end)
++{
++	pmd_t *pmd;
++	unsigned long next;
++
++	pmd = pmd_offset(pud, addr);
++	do {
++		next = pmd_addr_end(addr, end);
++		if (pmd_none_or_clear_bad(pmd))
++			continue;
++		check_pte_range(pmd, addr, next);
++	} while (pmd++, addr = next, addr != end);
++}
++
++static void check_pud_range(pgd_t *pgd, unsigned long addr, unsigned long end)
++{
++	pud_t *pud;
++	unsigned long next;
++
++	pud = pud_offset(pgd, addr);
++	do {
++		next = pud_addr_end(addr, end);
++		if (pud_none_or_clear_bad(pud))
++			continue;
++		check_pmd_range(pud, addr, next);
++	} while (pud++, addr = next, addr != end);
++}
++
++static void check_page_range(unsigned long addr, unsigned long end)
++{
++	pgd_t *pgd;
++	unsigned long next;
++
++	BUG_ON(addr >= end);
++	pgd = pgd_offset_k(addr);
++	flush_cache_vunmap(addr, end);
++	do {
++		next = pgd_addr_end(addr, end);
++		if (pgd_none_or_clear_bad(pgd))
++			continue;
++		check_pud_range(pgd, addr, next);
++	} while (pgd++, addr = next, addr != end);
++}
++
++
+ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end)
+ {
+ 	pte_t *pte;
+@@ -75,6 +130,8 @@ static void vunmap_page_range(unsigned l
+ 	pgd_t *pgd;
+ 	unsigned long next;
+ 
++	printk("vunmap_page_range (%lx-%lx size=%lx)\n", addr, end, end-addr);
++
+ 	BUG_ON(addr >= end);
+ 	pgd = pgd_offset_k(addr);
+ 	flush_cache_vunmap(addr, end);
+@@ -160,6 +217,8 @@ static int vmap_page_range(unsigned long
+ 	int err = 0;
+ 	int nr = 0;
+ 
++	printk("vmap_page_range (%lx-%lx size=%lx)\n", addr, end, end-addr);
++
+ 	BUG_ON(addr >= end);
+ 	pgd = pgd_offset_k(addr);
+ 	do {
+@@ -371,6 +430,10 @@ found:
+ 	va->va_end = addr + size;
+ 	va->flags = 0;
+ 	__insert_vmap_area(va);
++
++	printk("alloc_vmap_area within(%lx-%lx) size=%lx returns=(%lx-%lx)\n", vstart, vend, size, addr, addr+size);
++	check_page_range(va->va_start, va->va_end);
++
+ 	spin_unlock(&vmap_area_lock);
+ 
+ 	return va;
+@@ -385,6 +448,9 @@ static void rcu_free_va(struct rcu_head 
+ 
+ static void __free_vmap_area(struct vmap_area *va)
+ {
++	printk("free_vmap_area (%lx-%lx size=%lx)\n", va->va_start, va->va_end, va->va_end - va->va_start);
++	check_page_range(va->va_start, va->va_end);
++
+ 	BUG_ON(RB_EMPTY_NODE(&va->rb_node));
+ 	rb_erase(&va->rb_node, &vmap_area_root);
+ 	RB_CLEAR_NODE(&va->rb_node);
+
+--Boundary-00=_MJPxIn75azxtDli--
