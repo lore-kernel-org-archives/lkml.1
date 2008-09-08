@@ -1,164 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYIHSHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYIHSIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYIHSHi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYIHSH3
+	id S1755207AbYIHSIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239AbYIHSIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:07:29 -0400
-Received: from sh.osrg.net ([192.16.179.4]:51912 "EHLO sh.osrg.net"
+	Mon, 8 Sep 2008 14:08:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41375 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752421AbYIHSH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:07:28 -0400
-Date: Tue, 9 Sep 2008 03:06:44 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@redhat.com, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 0/3] fix alloc_coherent allocation issues
-	(tip/x86/iommu)
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080908173525.GA23419@elte.hu>
-References: <20080905181155W.fujita.tomonori@lab.ntt.co.jp>
-	<20080905104518.GA17776@elte.hu>
-	<20080908173525.GA23419@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080909030508F.fujita.tomonori@lab.ntt.co.jp>
+	id S1753229AbYIHSIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 14:08:13 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, axboe@kernel.dk,
+       andmike@linux.vnet.ibm.com, mike.miller@hp.com, genanr@emsphone.com
+Subject: Re: [PATCH 0/6] detect online disk resize
+References: <20080829231254.25065.66052.stgit@bluto.andrew>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 08 Sep 2008 14:01:14 -0400
+In-Reply-To: <20080829231254.25065.66052.stgit@bluto.andrew> (Andrew
+	Patterson's message of "Fri, 29 Aug 2008 17:12:54 -0600")
+Message-ID: <x49prnett3p.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 19:35:25 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Andrew Patterson <andrew.patterson@hp.com> writes:
 
-> 
-> btw., the build became very noisy - see the messages below.
-> 
-> 	Ingo
-> 
-> ---------->
-> init/initramfs.c:517: warning: 'clean_rootfs' defined but not used
-> In file included from include/linux/dma-mapping.h:53,
->                  from include/linux/dmaengine.h:30,
->                  from include/linux/skbuff.h:30,
->                  from include/linux/netlink.h:156,
->                  from include/linux/genetlink.h:5,
->                  from include/net/genetlink.h:5,
->                  from include/linux/taskstats_kern.h:13,
->                  from init/main.c:48:
-> include/asm/dma-mapping.h: In function 'dma_alloc_coherent_gfp_flags':
-> include/asm/dma-mapping.h:258: warning: unused variable 'dma_mask'
-> In file included from include/linux/dma-mapping.h:53,
->                  from arch/x86/kernel/pci-dma.c:2:
+> This is version 2 of a patch series I submitted back in May 2008. This
+> version now checks for device size changes in the rescan_partitions()
+> routine.  Which in turn is called when a device is opened and in the
+> BLKRRPART ioctl.
+>
+> I am resubmitting this patch series as I got little response the
+> previous time.  Al Viro has told me offline that he would look at it this
+> time.
 
-Very sorry, I should have compile this on X86_32...
+[...]
 
-Can you replace the fourth patch with this?
+> I have tested this patch on SCSI and SmartArray (cciss)
+> devices. Device mapper still does not recognize device size changes
+> until the device is restarted.
+>
+> Jeff Moyer and Andy Ryan have done some light testing on the previous
+> version of this series.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86: dma_alloc_coherent sets gfp flags properly
+I re-tested this new patch series using an iSCSI target via the
+following steps:
 
-Non real IOMMU implemenations (which doesn't do virtual mappings,
-e.g. swiotlb, pci-nommu, etc) need to use proper gfp flags and
-dma_mask to allocate pages in their own dma_alloc_coherent()
-(allocated page need to be suitable for device's coherent_dma_mask).
+1) Connect to iSCSI storage, creating the /dev/sd* devices.
+2) Create a file system on the block device
+3) Mount the file system, and leave a shell active on the mount point.
+4) resize the iSCSI LUN
+5) rescan the iSCSI session
+6) resize the file system
 
-This patch makes dma_alloc_coherent do this job so that IOMMUs don't
-need to take care of it any more.
+This procedure worked fine.
 
-Real IOMMU implemenataions can simply ignore the gfp flags.
+Cheers,
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/kernel/pci-nommu.c   |   19 ++-----------------
- include/asm-x86/dma-mapping.h |   32 ++++++++++++++++++++++++++++----
- 2 files changed, 30 insertions(+), 21 deletions(-)
-
-diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
-index ada1c87..8e398b5 100644
---- a/arch/x86/kernel/pci-nommu.c
-+++ b/arch/x86/kernel/pci-nommu.c
-@@ -80,26 +80,11 @@ nommu_alloc_coherent(struct device *hwdev, size_t size,
- 	int node;
- 	struct page *page;
- 
--	gfp |= __GFP_ZERO;
--
--	dma_mask = hwdev->coherent_dma_mask;
--	if (!dma_mask)
--		dma_mask = *(hwdev->dma_mask);
-+	dma_mask = dma_alloc_coherent_mask(hwdev, gfp);
- 
--	if (dma_mask < DMA_24BIT_MASK)
--		return NULL;
-+	gfp |= __GFP_ZERO;
- 
- 	node = dev_to_node(hwdev);
--
--#ifdef CONFIG_X86_64
--	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA))
--		gfp |= GFP_DMA32;
--#endif
--
--	/* No alloc-free penalty for ISA devices */
--	if (dma_mask == DMA_24BIT_MASK)
--		gfp |= GFP_DMA;
--
- again:
- 	page = alloc_pages_node(node, gfp, get_order(size));
- 	if (!page)
-diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
-index 9d6dcf4..8bb3108 100644
---- a/include/asm-x86/dma-mapping.h
-+++ b/include/asm-x86/dma-mapping.h
-@@ -241,6 +241,29 @@ static inline int dma_get_cache_alignment(void)
- 	return boot_cpu_data.x86_clflush_size;
- }
- 
-+static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
-+						    gfp_t gfp)
-+{
-+	unsigned long dma_mask = 0;
-+
-+	dma_mask = dev->coherent_dma_mask;
-+	if (!dma_mask)
-+		dma_mask = (gfp & GFP_DMA) ? DMA_24BIT_MASK : DMA_32BIT_MASK;
-+
-+	return dma_mask;
-+}
-+
-+static inline gfp_t dma_alloc_coherent_gfp_flags(struct device *dev, gfp_t gfp)
-+{
-+#ifdef CONFIG_X86_64
-+	unsigned long dma_mask = dma_alloc_coherent_mask(dev, gfp);
-+
-+	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA))
-+		gfp |= GFP_DMA32;
-+#endif
-+       return gfp;
-+}
-+
- static inline void *
- dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		gfp_t gfp)
-@@ -261,10 +284,11 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 	if (!dev->dma_mask)
- 		return NULL;
- 
--	if (ops->alloc_coherent)
--		return ops->alloc_coherent(dev, size,
--				dma_handle, gfp);
--	return NULL;
-+	if (!ops->alloc_coherent)
-+		return NULL;
-+
-+	return ops->alloc_coherent(dev, size, dma_handle,
-+				   dma_alloc_coherent_gfp_flags(dev, gfp));
- }
- 
- static inline void dma_free_coherent(struct device *dev, size_t size,
--- 
-1.5.5.GIT
-
-
+Jeff
