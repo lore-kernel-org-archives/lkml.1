@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbYIHQUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYIHQUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbYIHQUR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 12:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbYIHQUE
+	id S1754615AbYIHQUh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 12:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYIHQUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 12:20:04 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:63481 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbYIHQUD (ORCPT
+	Mon, 8 Sep 2008 12:20:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46548 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754219AbYIHQUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 12:20:03 -0400
-Message-ID: <48C54DDC.3090704@fr.ibm.com>
-Date: Mon, 08 Sep 2008 18:07:56 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 8 Sep 2008 12:20:20 -0400
+Date: Mon, 8 Sep 2008 09:20:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Andi Kleen <andi@firstfloor.org>, linux@sandersweb.net,
+       linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <andi-suse@firstfloor.org>
+Subject: Re: [BUG] x86 kenel won't boot under Virtual PC
+In-Reply-To: <48C54F1B.8040604@zytor.com>
+Message-ID: <alpine.LFD.1.10.0809080916550.3117@nehalem.linux-foundation.org>
+References: <200808311422.12525.linux@sandersweb.net> <200809071922.32974.linux@sandersweb.net> <48C48467.40703@zytor.com> <200809072249.17280.linux@sandersweb.net> <48C4A46B.90705@zytor.com> <alpine.LFD.1.10.0809080805240.3117@nehalem.linux-foundation.org>
+ <20080908154535.GL26079@one.firstfloor.org> <48C54839.8050304@zytor.com> <alpine.LFD.1.10.0809080857450.3117@nehalem.linux-foundation.org> <48C54F1B.8040604@zytor.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrey Mirkin <amirkin@parallels.com>
-CC: devel@openvz.org, jeremy@goop.org, arnd@arndb.de,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, Andrey Mirkin <major@openvz.org>
-Subject: Re: [Devel] Re: [RFC v3][PATCH 1/9] Create syscalls: sys_checkpoint,
- sys_restart
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>	<Pine.LNX.4.64.0809040401320.5982@takamine.ncl.cs.columbia.edu>	<20080904144223.GA19364@us.ibm.com> <200809081902.33709.amirkin@parallels.com>
-In-Reply-To: <200809081902.33709.amirkin@parallels.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> --- /dev/null
->>> +++ b/checkpoint/sys.c
->>> @@ -0,0 +1,35 @@
->>> +/*
->>> + *  Generic container checkpoint-restart
->>> + *
->>> + *  Copyright (C) 2008 Oren Laadan
->>> + *
->>> + *  This file is subject to the terms and conditions of the GNU General
->>> Public + *  License.  See the file COPYING in the main directory of the
->>> Linux + *  distribution for more details.
->>> + */
->>> +
->>> +#include <linux/sched.h>
->>> +#include <linux/kernel.h>
->>> +
->>> +/**
->>> + * sys_checkpoint - checkpoint a container
->>> + * @pid: pid of the container init(1) process
->>> + * @fd: file to which dump the checkpoint image
->>> + * @flags: checkpoint operation flags
->>> + */
->>> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
->>> +{
->>> +	pr_debug("sys_checkpoint not implemented yet\n");
->>> +	return -ENOSYS;
->>> +}
->>> +/**
->>> + * sys_restart - restart a container
->>> + * @crid: checkpoint image identifier
->> So can we compare your api to Andrey's?
-
-Jumping in the API thread : how will this API interact with the namespaces ? 
-
-I think the exact question is how are we seeing the restart sequence ?
-shall we (1) restart from inside a set of pre established namespaces or 
-(2) restore the state of the namespaces upon restart ? 
-
-I think (1) is the best option in semantic, because it's closer to what
-the kernel does:  create a directory (a container) and then fill it with
-files (tasks). That's how the cgroup framework works and I have the
-feeling we will be using this framework to build the 'super' container
-object. nop ?
-
-This direction has an impact on the API because the restart sequence 
-will depend on a set of preliminary settings to create an 'empty' 
-container which can then be used to exec() tasks or restart() tasks. This 
-is a very different API than a magical restart() syscall creating 
-hundreds of namespaces and zillions of tasks from scratch using an 
-opaque binary blob. less attractive for sure but it feels more kernel 
-friendly :)
 
 
-But, may be you have addressed this topic at the summit and the question
-is closed ?
+On Mon, 8 Sep 2008, H. Peter Anvin wrote:
+> 
+> And yes, it should be the default.  The patch I have makes it
+> "default y" as well as change the help text.
 
-C. 
+It sounds like it shouldn't be a default at all, it should just _always_ 
+be on, if there really are gcc's that care that much. Most of our 
+optimizations have historically really been about _optimizing_, not about 
+"it won't work", even if we have had exceptions (but as mentioned, I think 
+those exceptions have been way more imporant than NOPL).
+
+> Would it make you happier if this option was forced enabled unless
+> CONFIG_EMBEDDED was on?
+
+Yes, putting it behind EMBEDDED will certainly fix the issue. Anybody who 
+actually enables EMBEDDED and does all his choices by hand should no 
+longer expect to not have to know _exactly_ what he is doing.
+
+So if it's behind EMBEDDED, and defaults to "on", then I have no problem 
+with changing the help text to say "If you do this, we'll statically do 
+things that really _require_ you to have a CPU that looks _exactly_ like 
+the CPU you claimed".
+
+		Linus
