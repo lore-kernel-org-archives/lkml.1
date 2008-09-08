@@ -1,60 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIHMWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbYIHM1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYIHMWs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 08:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbYIHMWk
+	id S1753514AbYIHM1v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 08:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYIHM1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 08:22:40 -0400
-Received: from ganymede.vroon.org ([195.66.242.11]:54594 "EHLO
-	ganymede.vroon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbYIHMWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 08:22:39 -0400
-Subject: Re: Request for MCE decode (AMD Barcelona, fam 10h)
-From: Tony Vroon <tony@vroon.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <87abeivrdf.fsf@basil.nowhere.org>
-References: <1220754742.8530.12.camel@localhost>
-	 <87abeivrdf.fsf@basil.nowhere.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-TrO4oSsidJgfvC5P1qQO"
-Date: Mon, 08 Sep 2008 13:22:39 +0100
-Message-Id: <1220876559.27320.2.camel@localhost>
+	Mon, 8 Sep 2008 08:27:43 -0400
+Received: from mail.ocs.com.au ([202.134.241.204]:25105 "EHLO mail.ocs.com.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751458AbYIHM1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 08:27:43 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 (debian 1:2.7.2-12) with nmh-1.2
+From: Keith Owens <kaos@ocs.com.au>
+To: linux-kernel@vger.kernel.org
+Subject: Recent copy of libpcap from CVS
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
+Date: Mon, 08 Sep 2008 22:27:41 +1000
+Message-ID: <963.1220876861@ocs10w>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Does anybody have a recent copy of the source to libpcap from its CVS
+repository?
 
---=-TrO4oSsidJgfvC5P1qQO
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2008-09-08 at 12:55 +0200, Andi Kleen wrote:
-> It unfortunately turns out that mcelog logging is a tricky
-> psychological problem. How should the warning above have
-> looked like so that you would not have required "peer insight"
-> and actually just contacted your hardware vendor?=20
-
-Indication of the faulty part, so I know whether to contact AMD or Tyan.
-Without a clear idea of which it could quickly turn into an infinite
-redirect loop between the two.
-
-Regards,
-Tony V.
-
---=-TrO4oSsidJgfvC5P1qQO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEABECAAYFAkjFGQ8ACgkQp5vW4rUFj5o+TwCffNZKD3Jvu5UzndLpd16WD2As
-/5IAnR9iUyzwjK3JquhKaA01Daeec5rR
-=mzQh
------END PGP SIGNATURE-----
-
---=-TrO4oSsidJgfvC5P1qQO--
+The normal site for libpcap (tcpdump.org) appears to have suffered a
+filesystem crash and CVS is not working.  I am looking for a version of
+libpcap that supports data capture for USB interfaces, the code will
+probably have references to /dev/usbmon or a pcap-usb-linux.c file for
+Linux.  libpcap0.8_0.9.8-2 is not recent enough.
 
