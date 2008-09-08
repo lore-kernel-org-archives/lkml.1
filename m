@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbYIHPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYIHPOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbYIHPOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYIHPOE
+	id S1754892AbYIHPOd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYIHPOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:14:04 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:23335 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbYIHPOD (ORCPT
+	Mon, 8 Sep 2008 11:14:23 -0400
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:41240 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754765AbYIHPOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:14:03 -0400
-Date: Mon, 8 Sep 2008 08:12:53 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>, netdev <netdev@vger.kernel.org>,
-       davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.26.4
-Message-Id: <20080908081253.d3100d88.randy.dunlap@oracle.com>
-In-Reply-To: <20080908143625.GC7311@suse.de>
-References: <20080908143625.GC7311@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 8 Sep 2008 11:14:22 -0400
+Date: Mon, 8 Sep 2008 16:14:13 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: MinChan Kim <barrioskmc@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/4] pull out the page pre-release and sanity check
+	logic for reuse
+Message-ID: <20080908151413.GB9190@brain>
+References: <1220610002-18415-1-git-send-email-apw@shadowen.org> <1220610002-18415-2-git-send-email-apw@shadowen.org> <44c63dc40809080711v98f4fdbs19081aa7cb81634d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <44c63dc40809080711v98f4fdbs19081aa7cb81634d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 07:36:25 -0700 Greg KH wrote:
-
-> We (the -stable team) are announcing the release of the 2.6.26.4
-> kernel.
+On Mon, Sep 08, 2008 at 11:11:22PM +0900, MinChan Kim wrote:
+> On Fri, Sep 5, 2008 at 7:19 PM, Andy Whitcroft <apw@shadowen.org> wrote:
+> > When we are about to release a page we perform a number of actions
+> > on that page.  We clear down any anonymous mappings, confirm that
+> > the page is safe to release, check for freeing locks, before mapping
+> > the page should that be required.  Pull this processing out into a
+> > helper function for reuse in a later patch.
+> >
+> > Note that we do not convert the similar cleardown in free_hot_cold_page()
+> > as the optimiser is unable to squash the loops during the inline.
+> >
+> > Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+> > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Reviewed-by: Rik van Riel <riel@redhat.com>
+> > ---
+> >  mm/page_alloc.c |   43 ++++++++++++++++++++++++++++++-------------
+> >  1 files changed, 30 insertions(+), 13 deletions(-)
+> >
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index f52fcf1..b2a2c2b 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -489,6 +489,35 @@ static inline int free_pages_check(struct page *page)
+> >  }
+> >
+> >  /*
+> > + * Prepare this page for release to the buddy.  Sanity check the page.
+> > + * Returns 1 if the page is safe to free.
+> > + */
+> > +static inline int free_page_prepare(struct page *page, int order)
+> > +{
+> > +       int i;
+> > +       int reserved = 0;
+> > +
+> > +       if (PageAnon(page))
+> > +               page->mapping = NULL;
 > 
-> It contains lots of bugfixes, all over the map.  Any users of the 2.6.26
-> kernel series should upgrade to this version.  For details on the fixes,
-> see the changelog entries and the diffstat below.
+> Why do you need to clear down anonymous mapping ?
+> I think if you don't convert this cleardown in free_hot_cold_page(),
+> you don't need it.
 > 
-> I'll also be replying to this message with a copy of the patch between
-> 2.6.26.3 and 2.6.26.4
-> 
-> The updated 2.6.26.y git tree can be found at:
->         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
-> and can be browsed at the normal kernel.org git web browser:
->         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
+> If you do it, bad_page can't do his role.
 
->  include/linux/pim.h                |   45 -----------------
+Yeah that has slipped through from where originally this patch used to
+merge two different instances of this code.  Good spot.  Will sort that
+out.
 
-That file is still used by ./net/ipv6/ip6mr.c:#include <linux/pim.h>
-so there are build errors...
+> > +       for (i = 0 ; i < (1 << order) ; ++i)
+> > +               reserved += free_pages_check(page + i);
+> > +       if (reserved)
+> > +               return 0;
+> > +
+> > +       if (!PageHighMem(page)) { > > +               debug_check_no_locks_freed(page_address(page),
+> > +                                                       PAGE_SIZE << order);
+> > +               debug_check_no_obj_freed(page_address(page),
+> > +                                          PAGE_SIZE << order);
+> > +       }
+> > +       arch_free_page(page, order);
+> > +       kernel_map_pages(page, 1 << order, 0);
+> > +
+> > +       return 1;
+> > +}
+> > +
+> > +/*
+> >  * Frees a list of pages.
+> >  * Assumes all pages on list are in same zone, and of same order.
+> >  * count is the number of pages to free.
+> > @@ -529,22 +558,10 @@ static void free_one_page(struct zone *zone, struct page *page, int order)
+> >  static void __free_pages_ok(struct page *page, unsigned int order)
+> >  {
+> >        unsigned long flags;
+> > -       int i;
+> > -       int reserved = 0;
+> >
+> > -       for (i = 0 ; i < (1 << order) ; ++i)
+> > -               reserved += free_pages_check(page + i);
+> > -       if (reserved)
+> > +       if (!free_page_prepare(page, order))
+> >                return;
+> >
+> > -       if (!PageHighMem(page)) {
+> > -               debug_check_no_locks_freed(page_address(page),PAGE_SIZE<<order);
+> > -               debug_check_no_obj_freed(page_address(page),
+> > -                                          PAGE_SIZE << order);
+> > -       }
+> > -       arch_free_page(page, order);
+> > -       kernel_map_pages(page, 1 << order, 0);
+> > -
+> >        local_irq_save(flags);
+> >        __count_vm_events(PGFREE, 1 << order);
+> >        free_one_page(page_zone(page), page, order);
 
-net/ipv6/ip6mr.c:48:23: error: linux/pim.h: No such file or directory
-net/ipv6/ip6mr.c:354: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:358: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:358: error: 'PIM_VERSION' undeclared (first use in this function)
-net/ipv6/ip6mr.c:358: error: (Each undeclared identifier is reported only once
-net/ipv6/ip6mr.c:358: error: for each function it appears in.)
-net/ipv6/ip6mr.c:358: error: 'PIM_REGISTER' undeclared (first use in this function)
-net/ipv6/ip6mr.c:359: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:359: error: 'PIM_NULL_REGISTER' undeclared (first use in this function)
-net/ipv6/ip6mr.c:360: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:366: error: dereferencing pointer to incomplete type
-net/ipv6/ip6mr.c:370: error: dereferencing pointer to incomplete type
-make[2]: *** [net/ipv6/ip6mr.o] Error 1
-
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+-apw
