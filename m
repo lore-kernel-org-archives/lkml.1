@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbYIHPVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbYIHPWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754918AbYIHPVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 11:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYIHPVR
+	id S1755082AbYIHPWD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 11:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750887AbYIHPVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 11:21:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:47921 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbYIHPVQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 11:21:16 -0400
-Date: Mon, 8 Sep 2008 17:10:58 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: kernel list <linux-kernel@vger.kernel.org>
-Cc: ACPI mailing list <linux-acpi@vger.kernel.org>
-Subject: Controlling backlight on thinkpad x60
-Message-ID: <20080908151058.GA1650@elf.ucw.cz>
+	Mon, 8 Sep 2008 11:21:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51625 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752529AbYIHPVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 11:21:51 -0400
+Date: Mon, 8 Sep 2008 08:21:14 -0700
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: netdev <netdev@vger.kernel.org>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.26.4
+Message-ID: <20080908152114.GA8941@suse.de>
+References: <20080908143625.GC7311@suse.de> <20080908081253.d3100d88.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080908081253.d3100d88.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Sep 08, 2008 at 08:12:53AM -0700, Randy Dunlap wrote:
+> On Mon, 8 Sep 2008 07:36:25 -0700 Greg KH wrote:
+> 
+> > We (the -stable team) are announcing the release of the 2.6.26.4
+> > kernel.
+> > 
+> > It contains lots of bugfixes, all over the map.  Any users of the 2.6.26
+> > kernel series should upgrade to this version.  For details on the fixes,
+> > see the changelog entries and the diffstat below.
+> > 
+> > I'll also be replying to this message with a copy of the patch between
+> > 2.6.26.3 and 2.6.26.4
+> > 
+> > The updated 2.6.26.y git tree can be found at:
+> >         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.26.y.git
+> > and can be browsed at the normal kernel.org git web browser:
+> >         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.26.y.git;a=summary
+> 
+> >  include/linux/pim.h                |   45 -----------------
+> 
+> That file is still used by ./net/ipv6/ip6mr.c:#include <linux/pim.h>
+> so there are build errors...
 
-Some time ago, FN-Home/End just adjusted the brightness, and
-/proc/acpi/ibm contained backlight control.
+Crap, I messed up, David sent me the fixed patch and I forgot it.
 
-In 2.6.27-rc5, /proc/acpi/ibm does not contain backlight control and
-/sys/class/backlight is empty...
+I'll go do a new release in a few hours...
 
-(I do have CONFIG_ACPI_VIDEO disabled, it killed my machine last time
-I enabled it, is it mandatory now?)
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+thanks,
+
+greg k-h
