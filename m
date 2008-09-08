@@ -1,131 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYIHSjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYIHSje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbYIHSjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 14:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbYIHSjJ
+	id S1755030AbYIHSje (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 14:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbYIHSjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 14:39:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:12231 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbYIHSjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 14:39:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XyjXTD1u3ODGYAg75mfe1PqjBNTowRpXmD48bqQcZQkHmWTsFEKYm1fW/iuOi5l74j
-         izVLWMnwZ4XS+db5+yCTtmoUkbyl1Je2Is1niNRTYjnp6m40P2XsAn1zmkPxllvXtb3r
-         12+AKerLlWZghshc0jtdMunm9M+mLqY5dWUo8=
-Message-ID: <dac45060809081139u31c1570bm13ff39ac97bef11@mail.gmail.com>
-Date: Mon, 8 Sep 2008 21:39:06 +0300
-From: "Mark Ryden" <markryde@gmail.com>
-To: "Benjamin Thery" <benjamin.thery@bull.net>
-Subject: Re: [PATCH 1/8] sysfs: Implement sysfs tagged directory support.
-Cc: "David Shwatrz" <dshwatrz@gmail.com>, "Greg KH" <gregkh@suse.de>,
-       "Greg KH" <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Tejun Heo" <htejun@gmail.com>, "Daniel Lezcano" <dlezcano@fr.ibm.com>,
-       linux-kernel@vger.kernel.org, "Al Viro" <viro@ftp.linux.org.uk>,
-       "Linux Containers" <containers@lists.osdl.org>, netdev@vger.kernel.org
-In-Reply-To: <48BF83E1.5040000@bull.net>
+	Mon, 8 Sep 2008 14:39:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39975 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754524AbYIHSjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 14:39:23 -0400
+Date: Mon, 8 Sep 2008 20:38:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 07/13] sched: Reduce stack size requirements in
+	kernel/sched.c
+Message-ID: <20080908183852.GA3713@elte.hu>
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com> <20080906235037.880702000@polaris-admin.engr.sgi.com> <1220783087.8687.73.camel@twins.programming.kicks-ass.net> <48C53C91.70604@sgi.com> <1220886335.12278.31.camel@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <m18wwiihbn.fsf_-_@frodo.ebiederm.org>
-	 <20080820021754.GA25182@kroah.com>
-	 <m1od3m282j.fsf_-_@frodo.ebiederm.org>
-	 <m1hc9e27ya.fsf_-_@frodo.ebiederm.org> <48B57058.9000101@bull.net>
-	 <dac45060809020654g62afb3c9yd104682b93b43bee@mail.gmail.com>
-	 <48BD47A8.1080909@bull.net> <20080902170148.GA9305@suse.de>
-	 <31436f4a0809032233r2c46de8od8a94460ce3b5ed2@mail.gmail.com>
-	 <48BF83E1.5040000@bull.net>
+In-Reply-To: <1220886335.12278.31.camel@twins.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Well, I believe that again it was somehow forgotten or was not applied for
-other reasons, since polling the following URL several times in last
-days did not
-show this patch (url:
-git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/patches.git)
 
-Regards,
-MR
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
+> > > NAK
+> > 
+> > Yeah, I really agree as well.  But I wanted to start playing with 
+> > using cpumask_t pointers in some fairly straight forward manner.  
+> > Linus's and Ingo's suggestion to just bite the bullet and redefine 
+> > the cpumask_t would force a lot of changes to be made, but perhaps 
+> > that's really the way to go.
+> 
+> I much prefer that approach!
 
+seconded. Mike, since none of this is v2.6.27 material, lets do it right 
+with a v2.6.28 target. You know all the cpumask_t using code sites 
+inside out already, so the know-how is all available already :-) Please 
+make it finegrained series of patches so that we can resolve conflicts 
+with other trees more easily.
 
+perhaps propose the new cpumask_t API early (in this thread?), so that 
+people can comment on it before NAKs come flying against a full patchset 
+;-)
 
-On Thu, Sep 4, 2008 at 9:44 AM, Benjamin Thery <benjamin.thery@bull.net> wrote:
-> David Shwatrz wrote:
->>
->> Hi,
->>>
->>> go into my tree this week,
->>
->> I am also interested in this patch; may I ask  - what do you mean by
->> "my  tree" ?I am a little newbie in the kernel, as you might understand.
->> I looked into
->> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
->> for candidates for this git tree you are talking about.
->>
->>  May I ask: what is the **exact** URL for this git tree you are talking
->> about ?
->
-> Greg's tree is there:
-> http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=summary
->
-> You can clone it from here:
-> git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/patches.git
->
-> It contains the patches serie to be applied on top of
-> linux-2.6 (with 'quilt' for example).
->
-> Benjamin
->
->>
->> Thanks,
->>
->> Regards,
->> DS
->>
->>
->> On Tue, Sep 2, 2008 at 8:01 PM, Greg KH <gregkh@suse.de> wrote:
->>>
->>> On Tue, Sep 02, 2008 at 04:03:20PM +0200, Benjamin Thery wrote:
->>>>
->>>> Mark Ryden wrote:
->>>>>
->>>>> Hello,
->>>>>  I hope that this patch (from 4.7.08) was not forgetten... I don't see
->>>>> it for example in linux-net (I have an up-to-date linux-next git
->>>>> tree).
->>>>
->>>> I was about to ask the same thing.
->>>>
->>>> Greg, what is the plan with these remaining patches for sysfs tagged
->>>> dirs? Will you have some time to merge them in your tree soon?
->>>
->>> Yes, they should go into my tree this week, sorry been busy with 2.6.27
->>> work and Novell's Hackweek.
->>>
->>> thanks,
->>>
->>> greg k-h
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe netdev" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
->>
->>
->
->
-> --
-> B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
->
->   http://www.bull.com
->
+	Ingo
