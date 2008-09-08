@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbYIHNNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbYIHNOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbYIHNNj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 09:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYIHNNb
+	id S1753062AbYIHNOz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 09:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYIHNOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 09:13:31 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:37957 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751504AbYIHNNa (ORCPT
+	Mon, 8 Sep 2008 09:14:47 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:37390 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751504AbYIHNOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 09:13:30 -0400
+	Mon, 8 Sep 2008 09:14:47 -0400
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 1/7] sched: arch_reinit_sched_domains() must destroy
-	domains to force rebuild
+Subject: [RFC PATCH v2 2/7] sched: Fix __load_balance_iterator() for cfq with
+	only one task.
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
@@ -24,8 +24,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Tim Connors <tconnors@astro.swin.edu.au>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Mon, 08 Sep 2008 18:46:14 +0530
-Message-ID: <20080908131614.3221.36675.stgit@drishya.in.ibm.com>
+Date: Mon, 08 Sep 2008 18:47:40 +0530
+Message-ID: <20080908131740.3221.99223.stgit@drishya.in.ibm.com>
 In-Reply-To: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
 References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -36,127 +36,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Max Krasnyansky <maxk@qualcomm.com>
+From: Gautham R Shenoy <ego@in.ibm.com>
 
-What I realized recently is that calling rebuild_sched_domains() in
-arch_reinit_sched_domains() by itself is not enough when cpusets are enabled.
-partition_sched_domains() code is trying to avoid unnecessary domain rebuilds
-and will not actually rebuild anything if new domain masks match the old ones.
+The __load_balance_iterator() returns a NULL when there's only one
+sched_entity which is a task. It is caused by the following code-path.
 
-What this means is that doing
-     echo 1 > /sys/devices/system/cpu/sched_mc_power_savings
-on a system with cpusets enabled will not take affect untill something changes
-in the cpuset setup (ie new sets created or deleted).
 
-This patch fixes restore correct behaviour where domains must be rebuilt in
-order to enable MC powersaving flags.
+	/* Skip over entities that are not tasks */
+	do {
+		se = list_entry(next, struct sched_entity, group_node);
+		next = next->next;
+	} while (next != &cfs_rq->tasks && !entity_is_task(se));
 
-Test on quad-core Core2 box with both CONFIG_CPUSETS and !CONFIG_CPUSETS.
-Also tested on dual-core Core2 laptop. Lockdep is happy and things are working
-as expected.
+	if (next == &cfs_rq->tasks)
+		return NULL;
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      This will return NULL even when se is a task.
 
-Ingo, please apply.
-btw We also need to push my other cpuset patch into mainline. We currently
-calling rebuild_sched_domains() without cgroup lock which is bad. When I made
-original sched: changes the assumption was that cpuset patch will also go in.
-I'm talking about
-	"cpuset: Rework sched domains and CPU hotplug handling"
-It's been ACKed by Paul has been in the -tip for awhile now.
+As a side-effect, there was a regression in sched_mc behavior since 2.6.25,
+since iter_move_one_task() when it calls load_balance_start_fair(),
+would not get any tasks to move!
 
-Reference LKML threads:
+Fix this by checking if the last entity was a task or not.
 
-http://lkml.org/lkml/2008/8/29/191
-http://lkml.org/lkml/2008/8/29/343
+Reference:
+http://lkml.org/lkml/2008/9/5/135
 
-Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
-Cc: svaidy@linux.vnet.ibm.com
-Cc: peterz@infradead.org
-Cc: mingo@elte.hu
-Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
 
- include/linux/cpuset.h |    2 +-
- kernel/sched.c         |   19 +++++++++++++------
- 2 files changed, 14 insertions(+), 7 deletions(-)
+ kernel/sched_fair.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-index e8f450c..2691926 100644
---- a/include/linux/cpuset.h
-+++ b/include/linux/cpuset.h
-@@ -160,7 +160,7 @@ static inline int current_cpuset_is_being_rebound(void)
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index fb8994c..f1c96e3 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1451,7 +1451,7 @@ __load_balance_iterator(struct cfs_rq *cfs_rq, struct list_head *next)
+ 		next = next->next;
+ 	} while (next != &cfs_rq->tasks && !entity_is_task(se));
  
- static inline void rebuild_sched_domains(void)
- {
--	partition_sched_domains(0, NULL, NULL);
-+	partition_sched_domains(1, NULL, NULL);
- }
+-	if (next == &cfs_rq->tasks)
++	if (next == &cfs_rq->tasks && !entity_is_task(se))
+ 		return NULL;
  
- #endif /* !CONFIG_CPUSETS */
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 9a1ddb8..5a38540 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7637,24 +7637,27 @@ static int dattrs_equal(struct sched_domain_attr *cur, int idx_cur,
-  * and partition_sched_domains() will fallback to the single partition
-  * 'fallback_doms', it also forces the domains to be rebuilt.
-  *
-+ * If doms_new==NULL it will be replaced with cpu_online_map.
-+ * ndoms_new==0 is a special case for destroying existing domains.
-+ * It will not create the default domain.
-+ *
-  * Call with hotplug lock held
-  */
- void partition_sched_domains(int ndoms_new, cpumask_t *doms_new,
- 			     struct sched_domain_attr *dattr_new)
- {
--	int i, j;
-+	int i, j, n;
- 
- 	mutex_lock(&sched_domains_mutex);
- 
- 	/* always unregister in case we don't destroy any domains */
- 	unregister_sched_domain_sysctl();
- 
--	if (doms_new == NULL)
--		ndoms_new = 0;
-+	n = doms_new ? ndoms_new : 0;
- 
- 	/* Destroy deleted domains */
- 	for (i = 0; i < ndoms_cur; i++) {
--		for (j = 0; j < ndoms_new; j++) {
-+		for (j = 0; j < n; j++) {
- 			if (cpus_equal(doms_cur[i], doms_new[j])
- 			    && dattrs_equal(dattr_cur, i, dattr_new, j))
- 				goto match1;
-@@ -7667,7 +7670,6 @@ match1:
- 
- 	if (doms_new == NULL) {
- 		ndoms_cur = 0;
--		ndoms_new = 1;
- 		doms_new = &fallback_doms;
- 		cpus_andnot(doms_new[0], cpu_online_map, cpu_isolated_map);
- 		dattr_new = NULL;
-@@ -7704,8 +7706,13 @@ match2:
- int arch_reinit_sched_domains(void)
- {
- 	get_online_cpus();
-+
-+	/* Destroy domains first to force the rebuild */
-+	partition_sched_domains(0, NULL, NULL);
-+
- 	rebuild_sched_domains();
- 	put_online_cpus();
-+
- 	return 0;
- }
- 
-@@ -7789,7 +7796,7 @@ static int update_sched_domains(struct notifier_block *nfb,
- 	case CPU_ONLINE_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
--		partition_sched_domains(0, NULL, NULL);
-+		partition_sched_domains(1, NULL, NULL);
- 		return NOTIFY_OK;
- 
- 	default:
+ 	cfs_rq->balance_iterator = next;
 
