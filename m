@@ -1,62 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757113AbYIIXfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYIIXl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757113AbYIIXfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 19:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbYIIXfZ
+	id S1753626AbYIIXl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 19:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbYIIXlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 19:35:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:53006 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755039AbYIIXfY (ORCPT
+	Tue, 9 Sep 2008 19:41:16 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:15126 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYIIXlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 19:35:24 -0400
+	Tue, 9 Sep 2008 19:41:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=x87XpUIzUHktbsNCbDCa2FNydAX9vFNSMlNNKZin6qVYwdwAAcyLepmRe9cLWVGhoI
-         hy0R+dL96TD5puWBjxCW9xwoYHgSxG1oynKh8fTNsHeVe1LroXIi4LCp/Zq1cI5bmcZy
-         vKNRppwfACGVj94wiQp/H4I7YSbjHYg9Bjomc=
-Message-ID: <f7848160809091635n52d57675s65f4db31b3a9ba20@mail.gmail.com>
-Date: Tue, 9 Sep 2008 19:35:22 -0400
-From: "Parag Warudkar" <parag.lkml@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: sysfs - kill owner field from attribute
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, htejun@gmail.com,
-       gregkh@suse.de
-In-Reply-To: <20080909162602.e45970ec.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f7848160809091611w50270265hc149baeaf267775e@mail.gmail.com>
-	 <20080909162602.e45970ec.akpm@linux-foundation.org>
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=qE6RhSyHz9ffnqRT8qLxSyPTugoeNxli/+WKXXnHRWWWbktoSin0RKl0L+cSgRyr6X
+         iJzhU/riUUEgFDw8h7fCamwXXOw3kssaZM3v7KsCrksS5U2xTePyu7HpfZeMUF8rMAd5
+         L0DF8OhrnvHvJAdRkbakg1UJtlZgVyrEJd+Bo=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 1/5] x86: make intel.c has 64bit support code
+Date: Tue,  9 Sep 2008 16:40:35 -0700
+Message-Id: <1221003639-15912-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 9, 2008 at 7:26 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+---
+ arch/x86/kernel/cpu/intel.c |  119 ++++++++++++++++++++++++++++++-------------
+ 1 files changed, 83 insertions(+), 36 deletions(-)
 
-> The patch was wordwrapped - please fix that up before sending any more
-> patches.
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index a669895..365a008 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -15,6 +15,11 @@
+ #include <asm/ds.h>
+ #include <asm/bugs.h>
+ 
++#ifdef CONFIG_X86_64
++#include <asm/topology.h>
++#include <asm/numa_64.h>
++#endif
++
+ #include "cpu.h"
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+@@ -25,14 +30,20 @@
+ 
+ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ {
+-	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
+-	if (c->x86 == 15 && c->x86_cache_alignment == 64)
+-		c->x86_cache_alignment = 128;
+ 	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
+ 		(c->x86 == 0x6 && c->x86_model >= 0x0e))
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
++
++#ifdef CONFIG_X86_64
++	set_cpu_cap(c, X86_FEATURE_SYSENTER32);
++#else
++	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
++	if (c->x86 == 15 && c->x86_cache_alignment == 64)
++		c->x86_cache_alignment = 128;
++#endif
+ }
+ 
++#ifdef CONFIG_X86_32
+ /*
+  *	Early probe support logic for ppro memory erratum #50
+  *
+@@ -73,6 +84,40 @@ static void __cpuinit Intel_errata_workarounds(struct cpuinfo_x86 *c)
+ }
+ 
+ 
++
++#ifdef CONFIG_X86_F00F_BUG
++static void __cpuinit trap_init_f00f_bug(void)
++{
++	__set_fixmap(FIX_F00F_IDT, __pa(&idt_table), PAGE_KERNEL_RO);
++
++	/*
++	 * Update the IDT descriptor and reload the IDT so that
++	 * it uses the read-only mapped virtual address.
++	 */
++	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
++	load_idt(&idt_descr);
++}
++#endif
++#endif
++
++static void __cpuinit srat_detect_node(void)
++{
++#if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
++	unsigned node;
++	int cpu = smp_processor_id();
++	int apicid = hard_smp_processor_id();
++
++	/* Don't do the funky fallback heuristics the AMD version employs
++	   for now. */
++	node = apicid_to_node[apicid];
++	if (node == NUMA_NO_NODE || !node_online(node))
++		node = first_node(node_online_map);
++	numa_set_node(cpu, node);
++
++	printk(KERN_INFO "CPU %d/%x -> Node %d\n", cpu, apicid, node);
++#endif
++}
++
+ /*
+  * find out the number of processor cores on the die
+  */
+@@ -91,20 +136,6 @@ static int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c)
+ 		return 1;
+ }
+ 
+-#ifdef CONFIG_X86_F00F_BUG
+-static void __cpuinit trap_init_f00f_bug(void)
+-{
+-	__set_fixmap(FIX_F00F_IDT, __pa(&idt_table), PAGE_KERNEL_RO);
+-
+-	/*
+-	 * Update the IDT descriptor and reload the IDT so that
+-	 * it uses the read-only mapped virtual address.
+-	 */
+-	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
+-	load_idt(&idt_descr);
+-}
+-#endif
+-
+ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int l2 = 0;
+@@ -139,6 +170,7 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ 			set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
+ 	}
+ 
++#ifdef CONFIG_X86_32
+ 	/* SEP CPUID bug: Pentium Pro reports SEP but doesn't have it until model 3 mask 3 */
+ 	if ((c->x86<<8 | c->x86_model<<4 | c->x86_mask) < 0x633)
+ 		clear_cpu_cap(c, X86_FEATURE_SEP);
+@@ -176,18 +208,6 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ 	if (p)
+ 		strcpy(c->x86_model_id, p);
+ 
+-	detect_extended_topology(c);
+-
+-	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY)) {
+-		/*
+-		 * let's use the legacy cpuid vector 0x1 and 0x4 for topology
+-		 * detection.
+-		 */
+-		c->x86_max_cores = intel_num_cpu_cores(c);
+-		detect_ht(c);
+-	}
+-
+-	/* Work around errata */
+ 	Intel_errata_workarounds(c);
+ 
+ #ifdef CONFIG_X86_INTEL_USERCOPY
+@@ -208,12 +228,10 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ 	}
+ #endif
+ 
++#endif
++
+ 	if (cpu_has_xmm2)
+ 		set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
+-	if (c->x86 == 15)
+-		set_cpu_cap(c, X86_FEATURE_P4);
+-	if (c->x86 == 6)
+-		set_cpu_cap(c, X86_FEATURE_P3);
+ 	if (cpu_has_ds) {
+ 		unsigned int l1;
+ 		rdmsr(MSR_IA32_MISC_ENABLE, l1, l2);
+@@ -224,6 +242,17 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ 		ds_init_intel(c);
+ 	}
+ 
++#ifdef CONFIG_X86_64
++	if (c->x86 == 15)
++		c->x86_cache_alignment = c->x86_clflush_size * 2;
++	if (c->x86 == 6)
++		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
++#else
++	if (c->x86 == 15)
++		set_cpu_cap(c, X86_FEATURE_P4);
++	if (c->x86 == 6)
++		set_cpu_cap(c, X86_FEATURE_P3);
++
+ 	if (cpu_has_bts)
+ 		ptrace_bts_init_intel(c);
+ 
+@@ -240,8 +269,25 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
+ #ifdef CONFIG_X86_NUMAQ
+ 	numaq_tsc_disable();
+ #endif
++#endif
++
++	detect_extended_topology(c);
++	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY)) {
++		/*
++		 * let's use the legacy cpuid vector 0x1 and 0x4 for topology
++		 * detection.
++		 */
++		c->x86_max_cores = intel_num_cpu_cores(c);
++#ifdef CONFIG_X86_32
++		detect_ht(c);
++#endif
++	}
++
++	/* Work around errata */
++	srat_detect_node();
+ }
+ 
++#ifdef CONFIG_X86_32
+ static unsigned int __cpuinit intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
+ {
+ 	/*
+@@ -254,10 +300,12 @@ static unsigned int __cpuinit intel_size_cache(struct cpuinfo_x86 *c, unsigned i
+ 		size = 256;
+ 	return size;
+ }
++#endif
+ 
+ static struct cpu_dev intel_cpu_dev __cpuinitdata = {
+ 	.c_vendor	= "Intel",
+ 	.c_ident	= { "GenuineIntel" },
++#ifdef CONFIG_X86_32
+ 	.c_models = {
+ 		{ .vendor = X86_VENDOR_INTEL, .family = 4, .model_names =
+ 		  {
+@@ -307,13 +355,12 @@ static struct cpu_dev intel_cpu_dev __cpuinitdata = {
+ 		  }
+ 		},
+ 	},
++	.c_size_cache	= intel_size_cache,
++#endif
+ 	.c_early_init   = early_init_intel,
+ 	.c_init		= init_intel,
+-	.c_size_cache	= intel_size_cache,
+ 	.c_x86_vendor	= X86_VENDOR_INTEL,
+ };
+ 
+ cpu_dev_register(intel_cpu_dev);
+ 
+-/* arch_initcall(intel_cpu_init); */
+-
+-- 
+1.5.4.5
 
-Yep, sorry. Fighting with git-send-email right now - once I win
-hopefully there will be no more trouble.
-
-> This is simpler, no?
-
-Yes, of course. Thanks.
-
->
-> --- a/include/linux/sysfs.h~x86-sysfs-kill-owner-field-from-attribute-fix
-> +++ a/include/linux/sysfs.h
-> @@ -27,7 +27,7 @@ struct module;
->  */
->  struct attribute {
->        const char              *name;
-> -#if !defined(CONFIG_X86_64) && !defined(CONFIG_X86_32)
-> +#ifndef CONFIG_X86
->        struct module           *owner;
->  #endif
->        mode_t                  mode;
