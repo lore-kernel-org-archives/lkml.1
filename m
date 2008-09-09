@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322AbYIIP1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbYIIP3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322AbYIIP1G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYIIP0y
+	id S1755379AbYIIP3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYIIP3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:26:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33131 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753454AbYIIP0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:26:53 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Christoph Hellwig <hch@infradead.org>, Janne Grunau <j@jannau.net>
-Subject: Re: [PATCH 0/18] linux infrared remote control drivers
-Date: Tue, 9 Sep 2008 11:23:56 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>,
-       Eric Sandeen <esandeen@redhat.com>,
-       Mario Limonciello <superm1@ubuntu.com>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <20080909124608.GA27837@infradead.org>
-In-Reply-To: <20080909124608.GA27837@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091123.57109.jwilson@redhat.com>
+	Tue, 9 Sep 2008 11:29:13 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:54161 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbYIIP3N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 11:29:13 -0400
+X-IronPort-AV: E=Sophos;i="4.32,366,1217808000"; 
+   d="scan'208";a="1741477"
+User-Agent: Microsoft-Entourage/11.4.0.080122
+Date: Tue, 09 Sep 2008 16:29:04 +0100
+Subject: Re: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag
+ for IO mappings
+From: Keir Fraser <keir.fraser@eu.citrix.com>
+To: Avi Kivity <avi@qumranet.com>, Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Xen Devel <xen-devel@lists.xensource.com>,
+       Andi Kleen <andi@firstfloor.org>, <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Message-ID: <C4EC54D0.26EEA%keir.fraser@eu.citrix.com>
+Thread-Topic: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag
+ for IO mappings
+Thread-Index: AckSkMqTCThv/n6EEd2WrgAX8io7RQ==
+In-Reply-To: <48C68EA3.4050508@qumranet.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 09 Sep 2008 15:29:11.0052 (UTC) FILETIME=[CEC72CC0:01C91290]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 08:46:09 Christoph Hellwig wrote:
-> On Tue, Sep 09, 2008 at 12:05:45AM -0400, Jarod Wilson wrote:
-> > The following patch series adds 17 new drivers for assorted infrared
-> > and/or RF remote control receivers and/or transmitters. These drivers
-> > have long lived out-of-tree at http://www.lirc.org/, packaged as
-> > 3rd-party modules by many distributions, and more recently, patched into
-> > the kernels of at least Fedora and Ubuntu. The primary maintainer of
-> > lirc, Christoph Bartelmus simply hasn't had the time to send these bits
-> > upstream, and a few months back, gave me the go-ahead to take on the
-> > task.
->
-> Any reason this is a separate subsystem instead of just a bunch new
-> drivers for the input subsystem?
+On 9/9/08 15:56, "Avi Kivity" <avi@qumranet.com> wrote:
 
-IR device handling is often a bit, shall we say, "special", for a number of 
-devices... Some receivers decode the waveform and give us something sensible 
-the input layer could use (and some IR receivers do work that way), while 
-other receivers pass along raw IR codes, which we require the use of the lirc 
-daemon to decode and convert into something sensible. To complicate the matter 
-further, a number of devices are either output-only devices, or both input and 
-output devices.
+>> I'm not sure; I still don't really understand how _PAGE_SPECIAL gets
+>> used, other than being user-mode mapping only.  But in principle,
+>> _PAGE_IOMAP could be set on both kernel and user mappings (if you direct
+>> map a device into a process address space), so I think they would
+>> conflict then?
+> 
+> It's a "don't refcount me" flag, which is not sematically the same as
+> I/O, but may be close enough.
 
-There's been talk about converting lirc drivers over to using evdev in the 
-long run, but evdev would need a decent amount of extending to be able to 
-support everything lircd does right now.
+That's basically what our _PAGE_IO flag (in our old Linux patchset) means.
+We use it to cause pte_pfn() to return an invalid pfn and hence avoid
+reference counting that way. Since kernel mappings are never reference
+counted (I think?) perhaps we could use _PAGE_SPECIAL even if it is
+restricted to use on user mappings.
 
-> > Not all drivers have been tested with this codebase and certainly not all
-> > devices they support, but its a solid place to start with these
-> > in-kernel. Patches are against 2.6.27-rc5-git9 or so, and have been
-> > tested running the same, at least in the cases where hardware was
-> > available. These patches are also in the latest nightly Fedora rawhide
-> > kernel, for those who want instant gratification[3]. Note that you also
-> > need the lirc userspace to really do any meaningful testing...
->
-> Can you first only send the actually tested drivers?  That way review
-> an cleanup can focus on the core and those few and we might get them
-> ready for 2.6.28.  Other drivers can than be added when testing and
-> review is done.
+ -- Keir
 
-I meant to include that the ordering of the patches was more or less from 
-most-used/most-tested to least-used/least-tested, and a few of the patches do 
-include Tested-by: lines in them. Basically, the first four or five drivers 
-probably cover the majority of users, so getting them in first would provide 
-the most bang-for-your-buck. But I can certainly re-send with only the tested 
-drivers after we get through the first round of comments, if that's preferred 
-over my approach of putting the higher-prio ones to the front of the ordering.
-
--- 
-Jarod Wilson
-jarod@redhat.com
 
