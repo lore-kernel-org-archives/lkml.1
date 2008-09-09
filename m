@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYIIDa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYIIDbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbYIIDa2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 23:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYIIDaU
+	id S1754845AbYIIDbj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 23:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYIIDb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 23:30:20 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55678 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752207AbYIIDaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 23:30:20 -0400
-X-Sasl-enc: NHAQrwoTU0ZEvfFUKJeGBop3HbjpOpUnEBc+q6PLAgLZ 1220931018
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: stable@kernel.org
-Cc: linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: [stable 2.6.26 PATCH] ACPI: Fix thermal shutdowns
-Date: Tue,  9 Sep 2008 00:30:16 -0300
-Message-Id: <1220931016-9557-1-git-send-email-hmh@hmh.eng.br>
-X-Mailer: git-send-email 1.5.6.5
+	Mon, 8 Sep 2008 23:31:29 -0400
+Received: from hostap.isc.org ([149.20.54.63]:57638 "EHLO hostap.isc.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752665AbYIIDb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 23:31:28 -0400
+Date: Mon, 8 Sep 2008 19:55:25 -0700
+From: Jouni Malinen <j@w1.fi>
+To: David Miller <davem@davemloft.net>
+Cc: jouni.malinen@atheros.com, alex.williamson@hp.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, j@w1.fi
+Subject: Re: [GIT]: Networking
+Message-ID: <20080909025525.GB25148@hostap.isc.org>
+References: <20080827.164649.87042354.davem@davemloft.net> <1220627292.7260.3.camel@2710p.home> <48C5E2FC.4090304@atheros.com> <20080908.194627.169864643.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080908.194627.169864643.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Milan Broz <mbroz@redhat.com>
+On Mon, Sep 08, 2008 at 07:46:27PM -0700, David Miller wrote:
+> I'm so entirely tired of reading these 300+ column emails today that
+> I'm just flat out refusing to read this one.
+> 
+> People, fix your setup please!  And if you have to get your email
+> client to auto format your outgoing email text for you, that's fine.
+> Although I can't understand why folks are too lazy to type enter every
+> 80 columns or so.
 
-Do not use unsigned int if there is test for negative number...
+Hmm.. I was using my temporary thunderbird setup and it is configured to
+wordwrap at 72 character lines.. The mail server may have done something
+odd, though. The version of the message I received directly at w1.fi was
+word wrapped, so I have no idea what happened here. Anyway, since the
+message was discussing your patchset, here's another version from mutt
+(and another mail server) and which will hopefully show up in more
+reasonable format.
 
-See drivers/acpi/processor_perflib.c
-  static unsigned int ignore_ppc = -1;
-...
-  if (event == CPUFREQ_START && ignore_ppc <= 0) {
-       ignore_ppc = 0;
-...
 
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
----
- cherry-picked from mainline 9f497bcc695fb828da023d74ad3c966b1e58ad21
+Alex Williamson wrote:
+> On Wed, 2008-08-27 at 16:46 -0700, David Miller wrote:
+> 
+>> 22) Two mac80211 bug fixes from Jouni Malinen:
+>>     a) Use IWEVCUSTOM so that we don't hit the 256 byte limit that
+>>        IWEVASSOCREQIE has
 
- Let's see if this time it will make it for 2.6.26.6?  Without this
- patch, anything that needs passive cooling will just heat up until
- it either suffers an emergency thermal shutdown, or burns to cinders.
+By the way, that description is incorrect; the change was in the other 
+direction (i.e., to use IWSSOCREQIE).
 
- PLEASE apply to 2.6.26 stable.  Thank you very much.
+> This one breaks wireless with 32bit userspace/64bit kernel.  Bisected
+> back to changeset 087d833e5a9f67ba933cb32eaf5a2279c1a5b47c:
+> 
+> mac80211: Use IWEVASSOCREQIE instead of IWEVCUSTOM
 
- drivers/acpi/processor_perflib.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Great.. I was hoping that the WEXT compat ioctl fixes from Dave resolved 
+all WEXT cases. This code is (and was) using wireless_send_event() and I 
+did not find clear changes to its use in Dave's patch set. Was that 
+supposed to be fixed with the compat ioctl patches? I'm not very 
+familiar with this area and don't have an easy way to test this now (I'm 
+traveling and don't have access to a 64/32-bit setup).
 
-diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-index 8c06a53..6f4a5e1 100644
---- a/drivers/acpi/processor_perflib.c
-+++ b/drivers/acpi/processor_perflib.c
-@@ -70,7 +70,7 @@ static DEFINE_MUTEX(performance_mutex);
-  *  0 -> cpufreq low level drivers initialized -> consider _PPC values
-  *  1 -> ignore _PPC totally -> forced by user through boot param
-  */
--static unsigned int ignore_ppc = -1;
-+static int ignore_ppc = -1;
- module_param(ignore_ppc, uint, 0644);
- MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
- 		 "limited by BIOS, this should help");
+As far as I can tell, the commit mentioned here is correct in itself, 
+but it looks like the WEXT code would not handle something properly for 
+wireless_send_event(). I'm not sure why IWEVCUSTOM would work any 
+better, but well, maybe it does not have some fields that get wrong in 
+64/32 case or the previous working case ended up getting the 
+too-long-buffer error which prevented the message from being processed 
+in userspace).
+
+What exactly does "breaks wireless" mean here?
+
+As far as resolving this quickly is concerned, reverting the change is 
+fine; this is not a critical issue with most use cases. Anyway, this 
+should really be fixed eventually, but it looks like someone would need 
+to fix WEXT for wireless_send_event() first..
+
+- Jouni
+
 -- 
-1.5.6.5
-
+Jouni Malinen                                            PGP id EFC895FA
