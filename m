@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbYIID3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYIIDa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbYIID3Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 23:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYIID27
+	id S1754903AbYIIDa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 23:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYIIDaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 23:28:59 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47720 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752877AbYIID26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 23:28:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,362,1217833200"; 
-   d="scan'208";a="437235843"
-From: "Yang, Sheng" <sheng.yang@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [RFC][PATCH 0/2] x86: Add "virt flags"
-Date: Tue, 9 Sep 2008 11:32:14 +0800
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <12208705553277-git-send-email-sheng.yang@intel.com> <48C54527.5040205@zytor.com> <48C55E0E.2090200@zytor.com>
-In-Reply-To: <48C55E0E.2090200@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091132.14717.sheng.yang@intel.com>
+	Mon, 8 Sep 2008 23:30:20 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:55678 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752207AbYIIDaU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 23:30:20 -0400
+X-Sasl-enc: NHAQrwoTU0ZEvfFUKJeGBop3HbjpOpUnEBc+q6PLAgLZ 1220931018
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, Milan Broz <mbroz@redhat.com>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: [stable 2.6.26 PATCH] ACPI: Fix thermal shutdowns
+Date: Tue,  9 Sep 2008 00:30:16 -0300
+Message-Id: <1220931016-9557-1-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 01:17:02 H. Peter Anvin wrote:
-> H. Peter Anvin wrote:
-> > Ingo Molnar wrote:
-> >> hm, i think extending the already existing flags category sounds like
-> >> a better solution than the separate virtual CPU flags line in
-> >> /proc/cpuinfo. We already have self-invented flag entries (such as
-> >> X86_FEATURE_NOPL), and adding more for virtualization would be quite
-> >> natural to do, as long as it's reasonably close to the meaning of a
-> >> 'CPU feature'.
-> >>
-> >> Peter, what would be your preference?
-> >
-> > It probably makes sense to separate these out as a separate word,
-> > especially if they come from the hardware in any reasonable way.  But
-> > yes, adding them to the feature array makes sense.
->
-> Just to clarify:
->
-> I'm suggesting adding these to the existing feature flags array, in a
-> separate binary word.
->
+From: Milan Broz <mbroz@redhat.com>
 
-Thanks! I will update the patch to add another category, and merge the array.  
+Do not use unsigned int if there is test for negative number...
 
+See drivers/acpi/processor_perflib.c
+  static unsigned int ignore_ppc = -1;
+...
+  if (event == CPUFREQ_START && ignore_ppc <= 0) {
+       ignore_ppc = 0;
+...
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+---
+ cherry-picked from mainline 9f497bcc695fb828da023d74ad3c966b1e58ad21
+
+ Let's see if this time it will make it for 2.6.26.6?  Without this
+ patch, anything that needs passive cooling will just heat up until
+ it either suffers an emergency thermal shutdown, or burns to cinders.
+
+ PLEASE apply to 2.6.26 stable.  Thank you very much.
+
+ drivers/acpi/processor_perflib.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index 8c06a53..6f4a5e1 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -70,7 +70,7 @@ static DEFINE_MUTEX(performance_mutex);
+  *  0 -> cpufreq low level drivers initialized -> consider _PPC values
+  *  1 -> ignore _PPC totally -> forced by user through boot param
+  */
+-static unsigned int ignore_ppc = -1;
++static int ignore_ppc = -1;
+ module_param(ignore_ppc, uint, 0644);
+ MODULE_PARM_DESC(ignore_ppc, "If the frequency of your machine gets wrongly" \
+ 		 "limited by BIOS, this should help");
 -- 
-regards
-Yang, Sheng
-> 	-hpa
-
+1.5.6.5
 
