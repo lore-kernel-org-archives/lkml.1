@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYIIPHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbYIIPIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbYIIPHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYIIPHW
+	id S1755376AbYIIPIp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYIIPIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:07:22 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:55586 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbYIIPHU (ORCPT
+	Tue, 9 Sep 2008 11:08:36 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57446 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbYIIPIg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:07:20 -0400
-Date: Tue, 9 Sep 2008 07:54:53 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       sparclinux@vger.kernel.org, manfred@colorfullife.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] prevent sparc64 from invoking irq handlers on offline
-	CPUs
-Message-ID: <20080909145453.GA6711@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080903004211.GD6748@linux.vnet.ibm.com> <20080903.022138.31681256.davem@davemloft.net> <20080903154217.GA6807@linux.vnet.ibm.com> <20080908.171708.43575256.davem@davemloft.net>
+	Tue, 9 Sep 2008 11:08:36 -0400
+Date: Tue, 9 Sep 2008 09:08:35 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com
+Subject: Re: [PATCH v2 06/13] PCI: cpqphp: stop managing hotplug_slot->name
+Message-ID: <20080909150835.GA2772@parisc-linux.org>
+References: <20080909091813.29542.85613.stgit@bob.kio> <20080909100032.29542.18371.stgit@bob.kio>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080908.171708.43575256.davem@davemloft.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080909100032.29542.18371.stgit@bob.kio>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 05:17:08PM -0700, David Miller wrote:
-> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Date: Wed, 3 Sep 2008 08:42:17 -0700
-> > o	Timer irqs.  Not sure what happens to add_timer() calls from
-> > 	a CPU that is going offline.  The hope would be that they get
-> > 	queued to some other CPU?
-> 
-> This case is interesting, and I'm no sure what happens here.
+On Tue, Sep 09, 2008 at 04:00:32AM -0600, Alex Chiang wrote:
+> -static inline void make_slot_name(char *buffer, int buffer_size, struct slot *slot)
+> -{
+> -	snprintf(buffer, buffer_size, "%d", slot->number);
+> -}
 
-It turns out that there is a timer_cpu_modifier() that invokes
-migrate_timers() upon CPU_DEAD or CPU_DEAD_FROZEN.  And migrate_timers()
-looks like it does what its name says.  And I believe that CPU_DEAD
-happens after sparc64's local_irq_enable() window, so we should be OK.
+> +
+> +		scnprintf(name, SLOT_NAME_SIZE, "%d", slot->number);
 
-							Thanx, Paul
+So ... we're using %d here and %u in acpiphp.  Obviously we don't expect
+to get a number above 2 billion, but I think if we do have some utterly
+bogus firmware that gives us a number above 2 billion, printing a
+positive number is a better user experience than a negative number.
+
+We clearly have a common pattern here where hotplug drivers have a
+number insteaqd of a name (I would venture this is the most common).
+Maybe we need a common helper?  I think this is a subject for the
+long-term todo list, not something that needs to be addressed in the
+context of this patch series.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
