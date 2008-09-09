@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbYIJGar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbYIJGcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbYIJGar (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 02:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYIJGaj
+	id S1753570AbYIJGcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 02:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYIJGcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 02:30:39 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41230 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbYIJGai (ORCPT
+	Wed, 10 Sep 2008 02:32:12 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:9215 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbYIJGcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 02:30:38 -0400
-Date: Tue, 9 Sep 2008 23:29:51 -0700
-From: Greg KH <greg@kroah.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroups: fix probable race with put_css_set[_taskexit]
-	and find_css_set
-Message-ID: <20080910062951.GA6779@kroah.com>
-References: <48AA684B.7000704@cn.fujitsu.com> <6599ad830809091728m426a7219h1977001f86cb5f31@mail.gmail.com> <48C72E7C.8080302@cn.fujitsu.com> <20080910050112.GA2897@kroah.com> <6599ad830809092231h90712a6mc95b81229d64d6bc@mail.gmail.com> <20080910061717.GA6301@kroah.com> <48C76875.50007@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C76875.50007@cn.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 10 Sep 2008 02:32:11 -0400
+From: heukelum@fastmail.fm
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 21/24] i386: add TRACE_IRQS_OFF for exception 1 (debug)
+Date: Tue,  9 Sep 2008 21:56:15 +0200
+Message-Id: <1220990178-29773-22-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1220990178-29773-21-git-send-email-heukelum@fastmail.fm>
+References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-8-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-9-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-10-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-11-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-12-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-13-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-14-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-15-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-16-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-17-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-18-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-19-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-20-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-21-git-send-email-heukelum@fastmail.fm>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 10 Sep 2008 08:31:58 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 02:25:57PM +0800, Li Zefan wrote:
-> Greg KH wrote:
-> > On Tue, Sep 09, 2008 at 10:31:24PM -0700, Paul Menage wrote:
-> >> On Tue, Sep 9, 2008 at 10:01 PM, Greg KH <greg@kroah.com> wrote:
-> >>> What are you trying to solve here with this change?  I agree, it does
-> >>> seem a bit "chaotic" :)
-> >> There's a place in cgroups that uses kref_put() to release an object;
-> >> the release function *then* takes a write-lock and removes the object
-> >> from a lookup table; it could race with another thread that searches
-> >> the lookup table (while holding a read-lock) and does kref_get() on
-> >> the same object.
-> > 
-> > Ick, yeah that's not good.
-> > 
-> > What about the way everyone else solves this, grab the lock before you
-> > call kref_put()?
-> > 
-> 
-> do_exit()
->   cgroup_exit()
->     put_css_set_taskexit()
->       kref_put()
-> 
-> If we grab the lock before kref_put(), we add overhead to do_exit(), which
-> is what we are trying to avoid here.
+From: Alexander van Heukelum <heukelum@fastmail.fm>
 
-But you can't put such logic in the release() function as you are
-finding out, that's not going to work either.
+At this point interrupts are off, so let's inform the tracing
+code of that fact before calling into C.
 
-Maybe you need to just "open-code" an atomic counter here and not use
-kref as it sounds like you are needing to do something very "special"
-here.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/entry_32.S |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-thanks,
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 49438e5..a278505 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -804,6 +804,7 @@ debug_stack_correct:
+ 	pushl $-1			# mark this as an int
+ 	CFI_ADJUST_CFA_OFFSET 4
+ 	SAVE_ALL
++	TRACE_IRQS_OFF
+ 	xorl %edx,%edx			# error code 0
+ 	movl %esp,%eax			# pt_regs pointer
+ 	call do_debug
+-- 
+1.5.4.3
 
-greg k-h
