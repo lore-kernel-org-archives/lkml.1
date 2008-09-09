@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYIIWnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYIIWwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbYIIWnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 18:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbYIIWn1
+	id S1755298AbYIIWwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 18:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbYIIWwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 18:43:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:35018 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754164AbYIIWn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 18:43:26 -0400
-Message-ID: <48C6FC0D.9040009@goop.org>
-Date: Tue, 09 Sep 2008 15:43:25 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Alex Nixon <alex.nixon@citrix.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] xen: fix pinning when not using split pte locks
-References: <> <1220959508-13806-1-git-send-email-alex.nixon@citrix.com> <48C6BB00.9040607@goop.org> <48C6CCD7.8030800@citrix.com> <48C6DE6E.1070804@goop.org> <48C6F80E.8010509@citrix.com>
-In-Reply-To: <48C6F80E.8010509@citrix.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 9 Sep 2008 18:52:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51457 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753879AbYIIWwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 18:52:45 -0400
+Message-ID: <16115967.1221000743809.kaneshige.kenji@jp.fujitsu.com>
+Date: Wed, 10 Sep 2008 07:52:23 +0900 (JST)
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Re: [2.6 patch] fix pciehp_free_irq()
+Cc: Adrian Bunk <bunk@kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+In-Reply-To: <200809091140.41791.jbarnes@virtuousgeek.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <200809091140.41791.jbarnes@virtuousgeek.org>
+ <20080827220526.GR11734@cs181140183.pp.htv.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We only pin PTE pages when using split PTE locks, so don't do the
-pin/unpin when attaching/detaching pte pages to a pinned pagetable.
+----- Original Message -----
+>From: Jesse Barnes <jbarnes@virtuousgeek.org>
+>To: Adrian Bunk <bunk@kernel.org>
+>Subject: Re: [2.6 patch] fix pciehp_free_irq()
+>Date: Tue, 9 Sep 2008 11:40:41 -0700
+>Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+>   linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+>
+>
+>On Wednesday, August 27, 2008 3:05 pm Adrian Bunk wrote:
+>> This patch fixes an obvious bug (loop was never entered) caused by
+>> commit 820943b6fc4781621dee52ba026106758a727dd3
+>> (pciehp: cleanup pcie_poll_cmd).
+>>
+>> Reported-by: Adrian Bunk <bunk@kernel.org>
+>> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>
+>Applied to my linux-next branch.  Kenji-san do you think this should go into 
+>2.6.27?  I haven't heard any regression reports about it, but it does seem 
+>like a good and simple fix...
+>
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/enlighten.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Though regression was not reported, it is actually a regression internally.
+It doesn't have a big impact against the hotplug controller that supports 
+"command completed interrupt", but it might have a impact against the
+controller that doesn't support "command completed interrupt". So I think
+it should go into 2.6.27. As you said, the patch looks good and simple.
 
-===================================================================
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -864,7 +864,7 @@
- 
- 		if (!PageHighMem(page)) {
- 			make_lowmem_page_readonly(__va(PFN_PHYS((unsigned long)pfn)));
--			if (level == PT_PTE)
-+			if (level == PT_PTE && USE_SPLIT_PTLOCKS)
- 				pin_pagetable_pfn(MMUEXT_PIN_L1_TABLE, pfn);
- 		} else
- 			/* make sure there are no stray mappings of
-@@ -932,7 +932,7 @@
- 
- 	if (PagePinned(page)) {
- 		if (!PageHighMem(page)) {
--			if (level == PT_PTE)
-+			if (level == PT_PTE && USE_SPLIT_PTLOCKS)
- 				pin_pagetable_pfn(MMUEXT_UNPIN_TABLE, pfn);
- 			make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
- 		}
-
+Thanks,
+Kenji Kaneshige
 
