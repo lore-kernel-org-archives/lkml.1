@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYIITZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYIIT2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbYIITZM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 15:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYIITY7
+	id S1756198AbYIIT2h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 15:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYIIT23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 15:24:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40015 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbYIITY7 (ORCPT
+	Tue, 9 Sep 2008 15:28:29 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:2835 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbYIIT22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 15:24:59 -0400
-To: "Keith A. Prickett" <keithp@marvell.com>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: Building Kernel with -O0
-From: Andi Kleen <andi@firstfloor.org>
-References: <1220550653.15123.6.camel@CV-LAB2>
-	<20080909160452.GB30160@cs181140183.pp.htv.fi>
-	<1220980240.17292.15.camel@CV-LAB2>
-Date: Tue, 09 Sep 2008 21:24:58 +0200
-In-Reply-To: <1220980240.17292.15.camel@CV-LAB2> (Keith A. Prickett's message of "Tue, 09 Sep 2008 10:10:40 -0700")
-Message-ID: <87vdx5ruk5.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 9 Sep 2008 15:28:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Gbjb0K2JHGm5ihZOVdOjt5c4iL9LHr59mWuWnalK+UZCau4MOeUAkaRApDSb3QAdCL
+         7H9sT/DK7jCmkDFvesiDIcr2wMyUiMBPi1yFtCu7RUbvI0n8rLd7qSpcCDy1FiJ5jbmp
+         Zltw9o8vlk+leD9xfB3jUpNs9x1OiR0sUvv98=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] pci: fix merging left out for BAR print out v2
+Date: Tue,  9 Sep 2008 12:27:52 -0700
+Message-Id: <1220988472-24139-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.4.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Keith A. Prickett" <keithp@marvell.com> writes:
->
-> All of this could, potentially be changed by a configuration parameter
-> and added into the kernel release.  Does someone have a primer on why
-> this kind of behavior is not desired or "possible"?
+print out for Device BAR address before kernel try to update them.
 
-Traditionally it was not allowed because -O0 didn't inline and
-the kernel relied on inlining in some cases. But with always_inline
-that is obsolete -- all functions that rely on inlining should be 
-marked __always_inline.
+also change it to KERN_DEBUG instead...
 
-I think a few more cases crept in where it was common to write
-build time asserts as
+v2: update to linux-pci next
+   also add (unsigned long long) cast
 
-      if (some condition the compiler evaluates at runtime)
-         __error_condition_xyz_is_false(); 
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index d8d3f90..e3bddc5 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -304,6 +304,9 @@ static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 		} else {
+ 			res->start = l64;
+ 			res->end = l64 + sz64;
++			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
++				pci_name(dev), pos, (unsigned long long)res->start,
++				(unsigned long long)res->end);
+ 		}
+ 	} else {
+ 		sz = pci_size(l, sz, mask);
+@@ -313,6 +316,9 @@ static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
  
-and this obviously relies on the optimizer to build. But these
-are all slowly moving over the BUILD_BUG_ON() which also doesn't
-rely on the optimizer, so it's also obsolete.
-
-Then there's the issue that some of the kernel macros will
-generate absolutely terrible code without optimizer
-(good examples are the macros in asm-x86/uaccess.h). But I guess
-that could be tolerated too.
-
-Then another reason was that traditionally no source level
-debugger was included and if you do assembly level debugging
-optimized code is typically easier to read and debug because
-the unoptimized gcc code is so terrible.
-
-And with kgdb now being a standard option that has also changed.
-And I agree with you that sometimes stepping through code
-is very educational. And gdb tends to be a lot happier 
-with -O0 code indeed.
-
-So if you can make it all work cleanly, ideally tested on
-other architectures too and a bit broader (e.g. with allyesconfig) 
-and track down whatever the mm/* issue 
-is correctly I don't see any real reason to not submit
-a mainline patch that enables this as a CONFIG. Of course
-it has to be very clean and not contain hacks.
-
-If you're not familiar with submitting kernel patches
-please read Documentation/{SubmittingPatches,SubmitChecklist} 
-first.
-
-Hope this helps,
-
--Andi
-
--- 
-ak@linux.intel.com
+ 		res->start = l;
+ 		res->end = l + sz;
++		printk(KERN_DEBUG "PCI: %s reg %x %s: [%llx, %llx]\n", pci_name(dev),
++			pos, (res->flags & IORESOURCE_IO) ? "io port":"32bit mmio",
++			(unsigned long long)res->start, (unsigned long long)res->end);
+ 	}
+ 
+  out:
+@@ -383,7 +389,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 			res->start = base;
+ 		if (!res->end)
+ 			res->end = limit + 0xfff;
+-		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n",
++		printk(KERN_DEBUG "PCI: bridge %s io port: [%llx, %llx]\n",
+ 			pci_name(dev), (unsigned long long) res->start,
+ 			(unsigned long long) res->end);
+ 	}
+@@ -397,8 +403,9 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+-		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev),
+-			(unsigned long long) res->start, (unsigned long long) res->end);
++		printk(KERN_DEBUG "PCI: bridge %s 32bit mmio: [%llx, %llx]\n",
++			pci_name(dev), (unsigned long long) res->start,
++			(unsigned long long) res->end);
+ 	}
+ 
+ 	res = child->resource[2];
+@@ -434,7 +441,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
+ 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
+ 		res->start = base;
+ 		res->end = limit + 0xfffff;
+-		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
++		printk(KERN_DEBUG "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
+ 			pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
+ 			(unsigned long long) res->start, (unsigned long long) res->end);
+ 	}
