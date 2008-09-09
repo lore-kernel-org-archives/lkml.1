@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbYIIXNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbYIIXRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbYIIXNV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 19:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYIIXNM
+	id S1755592AbYIIXRP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 19:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYIIXQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 19:13:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45803
+	Tue, 9 Sep 2008 19:16:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39147
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754035AbYIIXNL (ORCPT
+	by vger.kernel.org with ESMTP id S1750921AbYIIXQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 19:13:11 -0400
-Date: Tue, 09 Sep 2008 16:13:05 -0700 (PDT)
-Message-Id: <20080909.161305.140912606.davem@davemloft.net>
+	Tue, 9 Sep 2008 19:16:55 -0400
+Date: Tue, 09 Sep 2008 16:16:49 -0700 (PDT)
+Message-Id: <20080909.161649.255531084.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
+Subject: [GIT]: Netwokring
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,22 +26,54 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I had always gotten strange wedges when hot plugging cpus on
-Niagara boxes via the hypervisor, and I think the following
-bug spotted by Paul McKenney finally nails it.
+1) Three bluetooth regression fixes from Marcel Holtmann.
+
+2) In 2.6.27 we added a faster and more reliable IPSEC policy and
+   state dumping mechanism, but this new code leaves out larval and
+   socket local policies which is an unintended user visible change.
+
+   Fixed by Herbert Xu.
+
+3) As per kernel bugzilla, ip6_dst_lookup_tail() can OOPS when the
+   optimistic DAD config option is enabled because said code assumes
+   there is always a neighbour attached to a route at this point,
+   but that is not necessarily true.
+
+   Thanks to analysis by Eveniy Polyakov and final patch by Neil
+   Horman who wrote the optimistic DAD bits.
 
 Please pull, thanks a lot.
 
-The following changes since commit 4d084617fb0d025c42c242362d1f27d337e2d407:
-  Paul E. McKenney (1):
-        sparc64: Prevent sparc64 from invoking irq handlers on offline CPUs
+The following changes since commit 82a28c794f27aac17d7a3ebd7f14d731a11a5532:
+  Linus Torvalds (1):
+        Merge branch 'master' of git://git.kernel.org/.../hskinnemoen/avr32-2.6
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
 David S. Miller (1):
-      sparc64: Disable timer interrupts in fixup_irqs().
+      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
 
- arch/sparc64/kernel/irq.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Herbert Xu (1):
+      ipsec: Restore larval states and socket policies in dump
+
+Marcel Holtmann (3):
+      [Bluetooth] Fix reference counting during ACL config stage
+      [Bluetooth] Enforce correct authentication requirements
+      [Bluetooth] Reject L2CAP connections on an insecure ACL link
+
+Neil Horman (1):
+      ipv6: Fix OOPS in ip6_dst_lookup_tail().
+
+ include/net/bluetooth/hci_core.h |    3 +-
+ net/bluetooth/af_bluetooth.c     |    2 +-
+ net/bluetooth/hci_conn.c         |   21 ++++++++++--
+ net/bluetooth/hci_event.c        |   11 ++----
+ net/bluetooth/l2cap.c            |   34 ++++++++++++++++---
+ net/bluetooth/sco.c              |    2 +-
+ net/ipv6/ip6_output.c            |   64 +++++++++++++++++++-------------------
+ net/xfrm/xfrm_policy.c           |    1 +
+ net/xfrm/xfrm_state.c            |    2 +
+ 9 files changed, 89 insertions(+), 51 deletions(-)
+
