@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYIINAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbYIINCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755983AbYIINAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 09:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYIINAk
+	id S1755614AbYIINCY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 09:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYIINCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 09:00:40 -0400
-Received: from shadow.wildlava.net ([67.40.138.81]:49822 "EHLO
-	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbYIINAk (ORCPT
+	Tue, 9 Sep 2008 09:02:12 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:53489 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751176AbYIINCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 09:00:40 -0400
-Message-ID: <48C67374.1000108@skyrush.com>
-Date: Tue, 09 Sep 2008 07:00:36 -0600
-From: Joe Peterson <joe@skyrush.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
+	Tue, 9 Sep 2008 09:02:12 -0400
+X-Sasl-enc: Wyq1G4d6rzPqSoShiuIF1a5ZsLj5rX/NP8bI9/Y+nD7O 1220965330
+Message-ID: <48C673CF.2000107@fastmail.fm>
+Date: Tue, 09 Sep 2008 15:02:07 +0200
+From: Michael J Gruber <michaeljgruber+gmane@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
- attached)
-References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>	<48AC3A16.4080209@skyrush.com>	<48B3F9F7.2050503@skyrush.com>	<48C54EC2.4060901@skyrush.com> <20080908173250.2452c5b8.akpm@linux-foundation.org>
-In-Reply-To: <20080908173250.2452c5b8.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
+CC: Junio C Hamano <gitster@pobox.com>,
+       Bert Wesarg <bert.wesarg@googlemail.com>,
+       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       guilt@lists.josefsipek.net, Brandon Philips <brandon@ifup.org>
+Subject: Re: [ANNOUNCE] Guilt v0.31
+References: <20080908135244.GB27550@josefsipek.net> <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com> <20080908184322.GE27550@josefsipek.net> <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com> <7vmyiifnwa.fsf@gitster.siamese.dyndns.org> <48C64B8B.5000606@fastmail.fm>
+In-Reply-To: <48C64B8B.5000606@fastmail.fm>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 08 Sep 2008 10:11:46 -0600
-> Joe Peterson <joe@skyrush.com> wrote:
+Michael J Gruber venit, vidit, dixit 09.09.2008 12:10:
+> Junio C Hamano venit, vidit, dixit 08.09.2008 21:17:
+...
+>> Either be thankful for the availability of tarballs, or ignore them and
+>> generate them yourself --- it's your choice.
 > 
->> +	spin_lock_irqsave(&tty->echo_lock, flags);
->>  	lock_kernel();
+> He might want an install target which installs doc from the doc-tarball
+> or from the man- and html-branches. Be it a Makefile in those
+> convenience branches. I know it's just a tar or cpio away, of course. I
+> might look at a Makefile for the doc branches.
 > 
-> Taking a spinlock outside lock_kernel() isn't good, and is quite unusual.
-> - It might be ab/ba deadlockable (I didn't check) (I trust you always
->   test with lockdep enabled?)
+> Michael
 
-Indeed - and, as Alan said, lock_kernel() can sleep (a nuance I had not
-realized until looking more into the kernel locking mechanisms just
-now).  Although I have seen no issues during testing (and I do have
-lockdep in the kernel), you are 100% right.
+Following up on my own mumble: There are some lesser known make targets for git which almost do that already.
 
-I had wanted to keep from disturbing the locking situation in n_tty, but
-maybe it is time to get rid of the BKL there.
+make install-html uses only asciidoc and xsltproc, but not xmlto, for generating (and installing) html doc, which makes some people happier already.
 
-My echo buffer patches actually isolate the tty column state stuff to
-the output processing functions now anyway, so the BLK may not really be
-necessary at this point.  This inspires me to look into this.
+make quick-install-doc installs the man pages (and only the man pages, not the html version) by using the "man" branch provided by "the man" (JC).
 
-> swapping the above two lines would presumably be an easy fix, but one
-> wonders whether we still need lock_kernel() in there once you've added
-> this lock.
+I would go about renaming quick-install-doc to quick-install-man, introducing quick-install-html doing the analogous using the "html" branch and quick-install-doc doing both, which would be more in line with the install-doc target.
 
-I don't think this is a good idea either, since I don't want to spinlock
-during the output processing, which calls the driver output func.  I
-think a mutex is more appropriate anyway (and there are some already
-defined and in use for tty write locking, etc.) - let me know if you
-think otherwise.  I will play around with this and re-post a patch for
-review soon.
+Are there any objections to renaming quick-install-doc to quick-install-man?
 
-						-Thanks, Joe
+Michael
