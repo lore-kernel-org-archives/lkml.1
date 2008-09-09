@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYIIRRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYIIRSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624AbYIIRRf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYIIRR0
+	id S1756141AbYIIRSr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYIIRSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:17:26 -0400
-Received: from rtr.ca ([76.10.145.34]:34593 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753736AbYIIRRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:17:25 -0400
-Message-ID: <48C6AFA4.1050206@rtr.ca>
-Date: Tue, 09 Sep 2008 13:17:24 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 9 Sep 2008 13:18:40 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:28786 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753782AbYIIRSj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 13:18:39 -0400
+Date: Tue, 9 Sep 2008 11:18:37 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH v2 01/13] PCI Hotplug core: add 'name' param
+	pci_hp_register interface
+Message-ID: <20080909171837.GB4671@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Matthew Wilcox <matthew@wil.cx>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+	kristen.c.accardi@intel.com, kaneshige.kenji@jp.fujitsu.com
+References: <20080909091813.29542.85613.stgit@bob.kio> <20080909100007.29542.27510.stgit@bob.kio> <20080909120514.GU2772@parisc-linux.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>	<48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org>	<48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu>	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>	<m3vdx6xm68.fsf@maximus.localdomain> <87d4jdty5b.fsf@basil.nowhere.org>
-In-Reply-To: <87d4jdty5b.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080909120514.GU2772@parisc-linux.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Krzysztof Halasa <khc@pm.waw.pl> writes:
+* Matthew Wilcox <matthew@wil.cx>:
+> On Tue, Sep 09, 2008 at 04:00:07AM -0600, Alex Chiang wrote:
+> > -extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr);
+> > +extern int pci_hp_register(struct hotplug_slot *,
+> > +			   struct pci_bus *,
+> > +			   int nr,
+> > +			   const char *name);
 > 
->> Linus Torvalds <torvalds@linux-foundation.org> writes:
->>
->>>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
->>>    granted.
->> VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
->> theatres etc) can't CMOV.
+> Not a huge fan of this style ... the usual style would be:
 > 
-> AFAIK they fixed that in newer BIOS with a microcode update. It's 
-> slow, but it works.
-..
+> extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr,
+> 				const char *name);
 
-Our firewall here uses a Via C3-600 CPU, and CMOV has never worked on it.
-But based upon your posting, I have today upgraded the BIOS to the
-latest (2004) version.
+Ok, will fix.
 
-Now.. how can I check whether CMOV works or not?  It's not listed in /proc/cpuinfo.
+> Otherwise Acked-by: Matthew Wilcox <willy@linux.intel.com>
 
-Thanks
+Thanks.
+
+/ac
+
