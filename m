@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYIIRtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYIIRul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbYIIRtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYIIRsw
+	id S1756537AbYIIRul (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYIIRuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:48:52 -0400
-Received: from rtr.ca ([76.10.145.34]:35582 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753736AbYIIRsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:48:52 -0400
-Message-ID: <48C6B703.6070003@rtr.ca>
-Date: Tue, 09 Sep 2008 13:48:51 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>	<48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org>	<48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu>	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>	<m3vdx6xm68.fsf@maximus.localdomain> <87d4jdty5b.fsf@basil.nowhere.org> <48C6AFA4.1050206@rtr.ca>
-In-Reply-To: <48C6AFA4.1050206@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 9 Sep 2008 13:50:32 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:59457 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbYIIRuc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 13:50:32 -0400
+Subject: Re: [RFC v4][PATCH 9/9] File descriprtors (restore)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+In-Reply-To: <1220946154-15174-10-git-send-email-orenl@cs.columbia.edu>
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+	 <1220946154-15174-10-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain
+Date: Tue, 09 Sep 2008 09:26:20 -0700
+Message-Id: <1220977581.23386.216.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Andi Kleen wrote:
->> Krzysztof Halasa <khc@pm.waw.pl> writes:
->>
->>> Linus Torvalds <torvalds@linux-foundation.org> writes:
->>>
->>>>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
->>>>    granted.
->>> VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
->>> theatres etc) can't CMOV.
->>
->> AFAIK they fixed that in newer BIOS with a microcode update. It's 
->> slow, but it works.
-> ..
+On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
 > 
-> Our firewall here uses a Via C3-600 CPU, and CMOV has never worked on it.
-> But based upon your posting, I have today upgraded the BIOS to the
-> latest (2004) version.
-> 
-> Now.. how can I check whether CMOV works or not?  It's not listed in 
-> /proc/cpuinfo.
-..
+> +static int cr_close_all_fds(struct files_struct *files)
+> +{
+> +       int *fdtable;
+> +       int n;
+> +
+> +       do {
+> +               n = cr_scan_fds(files, &fdtable);
+> +               if (n < 0)
+> +                       return n;
+> +               while (n--)
+> +                       sys_close(fdtable[n]);
+> +               kfree(fdtable);
+> +       } while (n != -1);
+> +
+> +       return 0;
+> +}
 
-H. Peter Anvin wrote:
->
-> Compile just about any C program with -march=i686.
-..
+This needs to use an ERR_PTR().  It will save using the double-pointer.
 
-Okay, done.  And the binary does indeed have a ton of CMOV instructions.
-When running it, this appears immediately:
+-- Dave
 
-    Illegal instruction
-
-So much for the "BIOS upgrade fixes CMOV microcode" theory.
-
-Cheers
