@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbYIIXRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYIIXWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbYIIXRP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 19:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYIIXQ4
+	id S1755232AbYIIXWb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 19:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYIIXWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 19:16:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39147
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750921AbYIIXQz (ORCPT
+	Tue, 9 Sep 2008 19:22:22 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:41493 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbYIIXWW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 19:16:55 -0400
-Date: Tue, 09 Sep 2008 16:16:49 -0700 (PDT)
-Message-Id: <20080909.161649.255531084.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Netwokring
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 9 Sep 2008 19:22:22 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <48C70526.1030701@citrix.com>
+Date: Wed, 10 Sep 2008 00:22:14 +0100
+From: Alex Nixon <alex.nixon@citrix.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] xen: fix pinning when not using split pte locks
+References: <> <1220959508-13806-1-git-send-email-alex.nixon@citrix.com> <48C6BB00.9040607@goop.org> <48C6CCD7.8030800@citrix.com> <48C6DE6E.1070804@goop.org> <48C6F80E.8010509@citrix.com> <48C6FC0D.9040009@goop.org>
+In-Reply-To: <48C6FC0D.9040009@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> We only pin PTE pages when using split PTE locks, so don't do the
+> pin/unpin when attaching/detaching pte pages to a pinned pagetable.
+>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+>   
+Cheers Jeremy - a better solution.  Worth mentioning - this doesn't 
+exist peacefully alongside my patch 965fe78fe
 
-1) Three bluetooth regression fixes from Marcel Holtmann.
+Ingo - could you revert that please?
 
-2) In 2.6.27 we added a faster and more reliable IPSEC policy and
-   state dumping mechanism, but this new code leaves out larval and
-   socket local policies which is an unintended user visible change.
-
-   Fixed by Herbert Xu.
-
-3) As per kernel bugzilla, ip6_dst_lookup_tail() can OOPS when the
-   optimistic DAD config option is enabled because said code assumes
-   there is always a neighbour attached to a route at this point,
-   but that is not necessarily true.
-
-   Thanks to analysis by Eveniy Polyakov and final patch by Neil
-   Horman who wrote the optimistic DAD bits.
-
-Please pull, thanks a lot.
-
-The following changes since commit 82a28c794f27aac17d7a3ebd7f14d731a11a5532:
-  Linus Torvalds (1):
-        Merge branch 'master' of git://git.kernel.org/.../hskinnemoen/avr32-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../holtmann/bluetooth-2.6
-
-Herbert Xu (1):
-      ipsec: Restore larval states and socket policies in dump
-
-Marcel Holtmann (3):
-      [Bluetooth] Fix reference counting during ACL config stage
-      [Bluetooth] Enforce correct authentication requirements
-      [Bluetooth] Reject L2CAP connections on an insecure ACL link
-
-Neil Horman (1):
-      ipv6: Fix OOPS in ip6_dst_lookup_tail().
-
- include/net/bluetooth/hci_core.h |    3 +-
- net/bluetooth/af_bluetooth.c     |    2 +-
- net/bluetooth/hci_conn.c         |   21 ++++++++++--
- net/bluetooth/hci_event.c        |   11 ++----
- net/bluetooth/l2cap.c            |   34 ++++++++++++++++---
- net/bluetooth/sco.c              |    2 +-
- net/ipv6/ip6_output.c            |   64 +++++++++++++++++++-------------------
- net/xfrm/xfrm_policy.c           |    1 +
- net/xfrm/xfrm_state.c            |    2 +
- 9 files changed, 89 insertions(+), 51 deletions(-)
-
+Thanks,
+- Alex
