@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbYIINKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYIINMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbYIINKm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 09:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYIINKa
+	id S1756332AbYIINMl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 09:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYIINMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 09:10:30 -0400
-Received: from scing.com ([217.160.110.58]:49371 "EHLO scing.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753068AbYIINKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 09:10:30 -0400
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-From: Janne Grunau <j@jannau.net>
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>
-Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
-Date: Tue, 9 Sep 2008 15:10:26 +0200
-User-Agent: KMail/1.9.9
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Jarod Wilson <jarod@redhat.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>,
-       Mario Limonciello <superm1@ubuntu.com>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <200809091153.49184.j@jannau.net> <20080909123335.GA27260@Chamillionaire.breakpoint.cc>
-In-Reply-To: <20080909123335.GA27260@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 9 Sep 2008 09:12:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49562 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751176AbYIINMd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 09:12:33 -0400
+Date: Tue, 9 Sep 2008 14:12:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Joe Peterson <joe@skyrush.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
+ attached)
+Message-ID: <20080909141210.4fd546a1@lxorguk.ukuu.org.uk>
+In-Reply-To: <48C67374.1000108@skyrush.com>
+References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>
+	<48AC3A16.4080209@skyrush.com>
+	<48B3F9F7.2050503@skyrush.com>
+	<48C54EC2.4060901@skyrush.com>
+	<20080908173250.2452c5b8.akpm@linux-foundation.org>
+	<48C67374.1000108@skyrush.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091510.26418.j@jannau.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 14:33:35 Sebastian Siewior wrote:
-> * Janne Grunau | 2008-09-09 11:53:48 [+0200]:
-> >> >+
-> >> >+	bytes_in_key = p->code_length/8 + (p->code_length%8 ? 1 : 0);
-> >>
-> >> did you actually pass checkpatch.pl ?
-> >
-> >yes, and while this is ugly I see no obvious CodingStyle violation.
-> >
-> >is following better?
-> >
-> >bytes_in_key = p->code_length/8;
-> >if (p->code_length%8)
-> >	bytes_in_key++;
->
-> bytes_in_key = p->code_length / 8;
-> if (p->code_length % 8)
-> 	bytes_in_key++;
->
-> I meant the missing spaces around / and %. Looking now at it, it
-> seems that it behaves like DIV_ROUND_UP(). The magic of spaces :)
+> I don't think this is a good idea either, since I don't want to spinlock
+> during the output processing, which calls the driver output func.  I
+> think a mutex is more appropriate anyway (and there are some already
+> defined and in use for tty write locking, etc.) - let me know if you
+> think otherwise.  I will play around with this and re-post a patch for
+> review soon.
 
-There is also BITS_TO_LONGS(x) which does the intended. I found it only 
-since it uses DIV_ROUND_UP. Will use that. Thanks.
+The driver output side can sleep, and it has to be able to sleep because
+the drivers like USB need to be able to sleep.
 
-Janne
+If you have the column handling isolated and locked that is a big step
+towards exterminating the BKL in the n_tty code. It also illustrates why
+locking people always say "lock data not code".
+
+Alan
