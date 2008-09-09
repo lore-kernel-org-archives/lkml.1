@@ -1,51 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYIISou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYIISpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbYIISou (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 14:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYIISom
+	id S1757288AbYIISpm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 14:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbYIISpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 14:44:42 -0400
-Received: from outbound-mail-03.bluehost.com ([69.89.21.13]:51176 "HELO
-	outbound-mail-03.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754743AbYIISol (ORCPT
+	Tue, 9 Sep 2008 14:45:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:17751 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754132AbYIISpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 14:44:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=noiWneZTBHwnU2Fp15kOIy+SObqdpQBGiP1zmwhhkB05TZ8ovbLnvg8Euv5Zbs+dqqzdY1vU8Kk8p3IAijxqakZhSY/tzy5iodypnim087Q22JZoneDrnBCyzQpmx2nC;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Seth Heasley <seth.heasley@intel.com>
-Subject: Re: [PATCH 2.6.27-rc4][RESEND] irq: irq and pci_ids patch for Intel Ibex Peak DeviceIDs
-Date: Tue, 9 Sep 2008 11:44:34 -0700
-User-Agent: KMail/1.9.9
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, khali@linux-fr.org
-References: <200808281540.59657.seth.heasley@intel.com>
-In-Reply-To: <200808281540.59657.seth.heasley@intel.com>
+	Tue, 9 Sep 2008 14:45:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=sDMqGEGlr2q8yj9aNzpPF+kmesIzQHcaOtJYx5uVrwMfS9aqyKxtnTXYVf/eUMINUv
+         4ozw8/lvLwuteATxNfAGlhWB/NPMEVn7Y+VRu00QdReUbHSPneL/WiPXkXH8L7gQBm+4
+         fT4B1KYcC76zH60RksW1Pb5YZcICJW3IU65bE=
+Message-ID: <cfd18e0f0809091145v2e078a26lce61f299e166de6e@mail.gmail.com>
+Date: Tue, 9 Sep 2008 20:45:31 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Chris Friesen" <cfriesen@nortel.com>
+Subject: Re: [PATCH] make setpriority POSIX compliant; introduce PRIO_THREAD extension
+Cc: "Denys Vlasenko" <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <48C6A78A.8090401@nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809091144.35020.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
+References: <1220278355.3866.21.camel@localhost.localdomain>
+	 <517f3f820809090845o5dc772f8r2308a6c010f69561@mail.gmail.com>
+	 <48C6A78A.8090401@nortel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, August 28, 2008 3:40 pm Seth Heasley wrote:
-> This patch updates the Intel Ibex Peak (PCH) LPC and SMBus Controller
-> DeviceIDs.
->
-> The LPC Controller ID is set by Firmware within the range of 0x3b00-3b1f. 
-> This range is included in pci_ids.h using min and max values, and irq.c now
-> has code to handle the range (in lieu of 32 additions to a SWITCH
-> statement).
->
-> The SMBus Controller ID is a fixed-value and will not change.
->
-> Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+Chris,
 
-Thanks for fixing this up, Seth.  I just applied it to my linux-next branch.
+On Tue, Sep 9, 2008 at 6:42 PM, Chris Friesen <cfriesen@nortel.com> wrote:
+> Michael Kerrisk wrote:
+>
+>> On 9/1/08, Denys Vlasenko <dvlasenk@redhat.com> wrote:
+>>>
+>>> Since there may be programs which use the fact that
+>>>
+>>> setpriority(PRIO_PROCESS, tid, value)
+>>>
+>>> prior to this patch was setting priority for selected thread,
+>>> this behavior is retained in case when tid != pid.
+>>>
+>>> IOW: with PRIO_PROCESS, if pid specifies a thread group leader,
+>>> all threads' prios are set. Otherwise, only selected thread's priority
+>>> is set. (Alternative can be to just fail with ESRCH).
+>
+>
+>> I would expect
+>> setpriority(PRIO_PROCESS, getpid())
+>> and
+>> setpriority(PRIO_PROCESS, 0)
+>> to have the same affect (because: which == PRIO_PRCESS, who == 0
+>> conventionally means "the calling process").
+>>
+>> But they do not: the latter call only changes the priority of the
+>> calling thread.  Is this intended?
+>
+> The patch interprets 0 as the current pid rather than the current tgid.
+> It's up for discussion whether we should preserve old behaviour when
+> specifying 0, or use a new and arguably more logical behaviour but possibly
+> break old apps.
 
-Jesse
+AFAICS, interpreting 0 as the TGID would be more consistent with those
+parts of the interface that are specified by POSIX.1.
+
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
