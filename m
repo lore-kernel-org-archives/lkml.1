@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYIIQBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYIIQDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbYIIQBq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 12:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbYIIQBf
+	id S1756526AbYIIQDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 12:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYIIQDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 12:01:35 -0400
-Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:34434 "EHLO
-	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754013AbYIIQBe (ORCPT
+	Tue, 9 Sep 2008 12:03:04 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:55875 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbYIIQDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 12:01:34 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] e100: Use pci_pme_active for clearing wake-up events and disabling PME#
-Date: Tue, 9 Sep 2008 18:01:30 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, kernel-testers@vger.kernel.org,
-       jesse.brandeburg@intel.com, Andrew Morton <akpm@linux-foundation.org>
-References: <200809090812.37649.elendil@planet.nl> <200809091514.23817.rjw@sisk.pl>
-In-Reply-To: <200809091514.23817.rjw@sisk.pl>
+	Tue, 9 Sep 2008 12:03:03 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Michael J Gruber <michaeljgruber+gmane@fastmail.fm>
+Cc: Bert Wesarg <bert.wesarg@googlemail.com>,
+       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       guilt@lists.josefsipek.net, Brandon Philips <brandon@ifup.org>
+Subject: Re: [ANNOUNCE] Guilt v0.31
+References: <20080908135244.GB27550@josefsipek.net>
+ <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com>
+ <20080908184322.GE27550@josefsipek.net>
+ <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com>
+ <7vmyiifnwa.fsf@gitster.siamese.dyndns.org> <48C64B8B.5000606@fastmail.fm>
+ <48C673CF.2000107@fastmail.fm> <7vd4jd8i9b.fsf@gitster.siamese.dyndns.org>
+ <48C698DF.7010401@fastmail.fm>
+Date: Tue, 09 Sep 2008 09:02:42 -0700
+In-Reply-To: <48C698DF.7010401@fastmail.fm> (Michael J. Gruber's message of
+ "Tue, 09 Sep 2008 17:40:15 +0200")
+Message-ID: <7vtzcp71el.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091801.31732.elendil@planet.nl>
-X-OriginalArrivalTime: 09 Sep 2008 16:01:31.0897 (UTC) FILETIME=[539C9E90:01C91295]
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: C6C59D54-7E88-11DD-AE70-D0CFFE4BC1C1-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008, Rafael J. Wysocki wrote:
-> The appended patch should fix the problem (ISTR sending it some time
-> ago already).
+Michael J Gruber <michaeljgruber+gmane@fastmail.fm> writes:
 
-Patch works for me.
+> I keep hearing this argument, and I'm even more surprised to hear it
+> right after a major release. If not now then when's a good time for
+> cleaning up confusing inconsistencies?
 
-Thanks Rafael!
+Actually, after a major release is the worst time to push for such an
+agenda.
 
-> e100: Use pci_pme_active for clearing wake-up events and disabling PME#
->
-> Currently e100 uses pci_enable_wake() to clear pending wake-up events
-> and disable PME# during intitialization, but that function is not
-> suitable for this purpose, because it immediately returns error code
-> if device_may_wakeup() returns false for given device.
->
-> Make e100 use pci_pme_active(), which carries out exactly the
-> required operations, instead.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Especially when that release burned the maintainer with numerous complains
+against a major change in it, that has been advertised for a long time,
+which was pushed by other people for no good reason other than "such a
+clean-up would make things much tidier".
 
-Tested-by: Frans Pop <elendil@planet.nl>
+Grrr ;-).
+
+
+
