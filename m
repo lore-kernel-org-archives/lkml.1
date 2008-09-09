@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIILzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbYIIMBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYIILzU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 07:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYIILzG
+	id S1755190AbYIIMBh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 08:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbYIIMB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 07:55:06 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:52201 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752744AbYIILzD (ORCPT
+	Tue, 9 Sep 2008 08:01:28 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:4094 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbYIIMB2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 07:55:03 -0400
-Message-ID: <48C663FF.8020308@fr.ibm.com>
-Date: Tue, 09 Sep 2008 13:54:39 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 9 Sep 2008 08:01:28 -0400
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount
- namespace is unshared
-References: <48C52B29.4020204@fr.ibm.com> <m163p6pqkv.fsf@frodo.ebiederm.org>
-In-Reply-To: <m163p6pqkv.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+x-originalarrivaltime: 09 Sep 2008 11:59:36.0071 (UTC) FILETIME=[87815970:01C91273]
+Content-class: urn:content-classes:message
+Subject: Re: Linux 2.6.25.17
+Date: Tue, 9 Sep 2008 07:59:45 -0400
+Message-ID: <Pine.LNX.4.61.0809090753120.19620@chaos.analogic.com>
+In-Reply-To: <20080908210656.GA3852@suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Linux 2.6.25.17
+Thread-Index: AckSc4eN2pZwAmUmQbqFlB3N7rUKjg==
+References: <20080908143516.GA7311@suse.de> <Pine.LNX.4.61.0809081535280.5096@chaos.analogic.com> <20080908210656.GA3852@suse.de>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Greg KH" <gregkh@suse.de>
+Cc: "Linux kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <torvalds@linux-foundation.org>, <stable@kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Cedric Le Goater <clg@fr.ibm.com> writes:
-> 
->> On a system with nfs mounts, if a task unshares its mount namespace,
->> a oops can occur when the system is rebooted if the task is the last
->> to unreference the nfs mount. It will try to create a rpc request
->> using utsname() which has been invalidated by free_nsproxy().
+
+On Mon, 8 Sep 2008, Greg KH wrote:
+
+> On Mon, Sep 08, 2008 at 03:44:53PM -0400, linux-os (Dick Johnson) wrote:
 >>
->> The patch fixes the issue by using the global init_utsname() but at
->> the same time, it breaks the capability of identifying rpc clients
->> per uts namespace.
+>> On Mon, 8 Sep 2008, Greg KH wrote:
 >>
->> Any better suggestions ?
-> 
-> Can we push utsname into rpc_create_args and push the access
-> of utsname up the food chain?
+>>> We (the -stable team) are announcing the release of the 2.6.25.17
+>>> kernel.
+>> [SNIPPED...]
+>>
+>> I have a dual AMD Dell that I installed 2.6.25.17 into. It
+>> produces severe FS corruption on a Serial ATA drive if I
+>> build a kernel on it. I can build the kernel on one of my
+>> SCSI drives with no problems.
+>
+> Is this something new with 2.6.25.17, or has it always been the same for
+> all 2.6.25 kernels?
+>
+> thanks,
+>
+> greg k-h
+>
 
-struct rpc_create_args seems to be used only as a stack argument 
-for rpc_create() it's not kept in any nfs or sunrpc objects.
- 
-> My gut feeling says we should capture the utsname or the
-> uts_ns when we mount the nfs filesystem so we stay in sync
-> for the life of the mount.
+The previous kernel I used was linux-2.6.22.1  and this kernel doesn't
+have the problem. I discovered the problem when I built and installed
+the "latest stable" 2.6.25.17. My main working disk, a new SATA,
+showed severe errors during each reboot. I can duplicate this at
+will and remove the errors by removing my second CPU!
 
-I see. It make sense but, looking at the code, the nfs and sunrpc 
-will need some heavy changes ...
 
-Thanks,
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.25.17 on an i686 machine (4786.48 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-C.
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
