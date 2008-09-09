@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbYIIEKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbYIIELX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752644AbYIIEKj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIIEIb
+	id S1756333AbYIIELX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbYIIEIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42575 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42576 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbYIIEIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753491AbYIIEIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Sep 2008 00:08:00 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 15/18] lirc driver for the SIR IrDA port
-Date: Tue,  9 Sep 2008 00:06:00 -0400
-Message-Id: <1220933164-10160-16-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-15-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 08/18] lirc driver for the Soundgraph IMON IR Receivers
+Date: Tue,  9 Sep 2008 00:05:53 -0400
+Message-Id: <1220933164-10160-9-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-8-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
@@ -25,1362 +25,1338 @@ References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-6-git-send-email-jwilson@redhat.com>
  <1220933164-10160-7-git-send-email-jwilson@redhat.com>
  <1220933164-10160-8-git-send-email-jwilson@redhat.com>
- <1220933164-10160-9-git-send-email-jwilson@redhat.com>
- <1220933164-10160-10-git-send-email-jwilson@redhat.com>
- <1220933164-10160-11-git-send-email-jwilson@redhat.com>
- <1220933164-10160-12-git-send-email-jwilson@redhat.com>
- <1220933164-10160-13-git-send-email-jwilson@redhat.com>
- <1220933164-10160-14-git-send-email-jwilson@redhat.com>
- <1220933164-10160-15-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Successfully tested earlier tonight, see:
+	https://bugzilla.redhat.com/show_bug.cgi?id=459523
+
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
+Tested-by: Tom Horsley <tom.horsley@att.net>
 ---
- drivers/input/lirc/Kconfig    |    7 +
- drivers/input/lirc/Makefile   |    1 +
- drivers/input/lirc/lirc_sir.c | 1302 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 1310 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_sir.c
+ drivers/input/lirc/Kconfig     |    7 +
+ drivers/input/lirc/Makefile    |    1 +
+ drivers/input/lirc/lirc_imon.c | 1280 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1288 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_imon.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 42e9bc3..b2bdbfb 100644
+index 67802fe..7e37b2d 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -96,6 +96,13 @@ config LIRC_SERIAL
- 	help
- 	  Driver for Homebrew Serial Port Receivers
+@@ -40,6 +40,13 @@ config LIRC_I2C
+ 	  Driver for I2C-based IR receivers, such as those commonly
+ 	  found onboard Hauppauge PVR-150/250/350 video capture cards
  
-+config LIRC_SIR
-+	tristate "Built-in SIR IrDA port"
++config LIRC_IMON
++	tristate "Soundgraph IMON Receiver"
 +	default n
 +	depends on LIRC_DEV
 +	help
-+	  Driver for the SIR IrDA port
++	  Driver for the Soundgraph IMON IR Receiver
 +
- config LIRC_STREAMZAP
- 	tristate "Streamzap PC Receiver"
+ config LIRC_MCEUSB
+ 	tristate "Microsoft Media Center Ed. Receiver, v1"
  	default n
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index 4ee32f3..761cb47 100644
+index 86df97d..f39fa06 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -17,5 +17,6 @@ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
+@@ -9,6 +9,7 @@ obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
+ obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb.o
+ obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
+ obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
++obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
+ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
  obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
- obj-$(CONFIG_LIRC_SASEM)	+= lirc_sasem.o
  obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
-+obj-$(CONFIG_LIRC_SIR)		+= lirc_sir.o
- obj-$(CONFIG_LIRC_STREAMZAP)	+= lirc_streamzap.o
- obj-$(CONFIG_LIRC_TTUSBIR)	+= lirc_ttusbir.o
-diff --git a/drivers/input/lirc/lirc_sir.c b/drivers/input/lirc/lirc_sir.c
+diff --git a/drivers/input/lirc/lirc_imon.c b/drivers/input/lirc/lirc_imon.c
 new file mode 100644
-index 0000000..ea192b2
+index 0000000..bdfd953
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_sir.c
-@@ -0,0 +1,1302 @@
++++ b/drivers/input/lirc/lirc_imon.c
+@@ -0,0 +1,1280 @@
 +/*
-+ * LIRC SIR driver, (C) 2000 Milan Pikula <www@fornax.sk>
++ *   lirc_imon.c:  LIRC plugin/VFD driver for Ahanix/Soundgraph IMON IR/VFD
 + *
-+ * lirc_sir - Device driver for use with SIR (serial infra red)
-+ * mode of IrDA on many notebooks.
++ *   Version 0.3
++ *		Supports newer iMON models that send decoded IR signals.
++ *			This includes the iMON PAD model.
++ *		Removed module option for vfd_proto_6p. This driver supports
++ *			multiple iMON devices so it is meaningless to have
++ *			a global option to set protocol variants.
 + *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
++ *   Version 0.2 beta 2 [January 31, 2005]
++ *		USB disconnect/reconnect no longer causes problems for lircd
++ *
++ *   Version 0.2 beta 1 [January 29, 2005]
++ *		Added support for original iMON receiver(ext USB)
++ *
++ *   Version 0.2 alpha 2 [January 24, 2005]
++ *		Added support for VFDs with 6-packet protocol
++ *
++ *   Version 0.2 alpha 1 [January 23, 2005]
++ *		Added support for 2.6 kernels
++ *		Reworked disconnect handling
++ *		Incorporated Changwoo Ryu's algorithm
++ *
++ *   Version 0.1 alpha 1[July 5, 2004]
++ *
++ *   Copyright(C) 2004  Venky Raju(dev@venky.ws)
++ *
++ *   lirc_imon is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
 + *  (at your option) any later version.
 + *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
 + *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 + *
-+ *
-+ * 2000/09/16 Frank Przybylski <mail@frankprzybylski.de> :
-+ *  added timeout and relaxed pulse detection, removed gap bug
-+ *
-+ * 2000/12/15 Christoph Bartelmus <lirc@bartelmus.de> :
-+ *   added support for Tekram Irmate 210 (sending does not work yet,
-+ *   kind of disappointing that nobody was able to implement that
-+ *   before),
-+ *   major clean-up
-+ *
-+ * 2001/02/27 Christoph Bartelmus <lirc@bartelmus.de> :
-+ *   added support for StrongARM SA1100 embedded microprocessor
-+ *   parts cut'n'pasted from sa1100_ir.c (C) 2000 Russell King
 + */
-+
-+
 +#include <linux/version.h>
-+#include <linux/module.h>
-+
 +#include <linux/autoconf.h>
 +
-+#include <linux/module.h>
-+#include <linux/sched.h>
 +#include <linux/errno.h>
-+#include <linux/signal.h>
-+#include <linux/fs.h>
-+#include <linux/interrupt.h>
-+#include <linux/ioport.h>
++#include <linux/init.h>
 +#include <linux/kernel.h>
-+#include <linux/major.h>
-+#include <linux/serial_reg.h>
-+#include <linux/time.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/wait.h>
-+#include <linux/mm.h>
-+#include <linux/delay.h>
-+#include <linux/poll.h>
-+#include <asm/system.h>
++#include <linux/module.h>
++#include <linux/slab.h>
 +#include <linux/uaccess.h>
-+#include <linux/io.h>
-+#include <asm/irq.h>
-+#include <linux/fcntl.h>
-+#ifdef LIRC_ON_SA1100
-+#include <asm/hardware.h>
-+#ifdef CONFIG_SA1100_COLLIE
-+#include <asm/arch/tc35143.h>
-+#include <asm/ucb1200.h>
-+#endif
-+#endif
-+
-+#include <linux/timer.h>
++#include <linux/usb.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+/* SECTION: Definitions */
 +
-+/**************************** Tekram dongle ***************************/
-+#ifdef LIRC_SIR_TEKRAM
-+/* stolen from kernel source */
-+/* definitions for Tekram dongle */
-+#define TEKRAM_115200 0x00
-+#define TEKRAM_57600  0x01
-+#define TEKRAM_38400  0x02
-+#define TEKRAM_19200  0x03
-+#define TEKRAM_9600   0x04
-+#define TEKRAM_2400   0x08
++#define MOD_AUTHOR	"Venky Raju <dev@venky.ws>"
++#define MOD_DESC	"Driver for Soundgraph iMON MultiMedia IR/VFD"
++#define MOD_NAME	"lirc_imon"
++#define MOD_VERSION	"0.3"
 +
-+#define TEKRAM_PW 0x10 /* Pulse select bit */
++#define VFD_MINOR_BASE	144	/* Same as LCD */
++#define DEVICE_NAME	"lcd%d"
 +
-+/* 10bit * 1s/115200bit in miliseconds = 87ms*/
-+#define TIME_CONST (10000000ul/115200ul)
++#define BUF_CHUNK_SIZE	4
++#define BUF_SIZE	128
 +
-+#endif
++#define BIT_DURATION	250	/* each bit received is 250us */
 +
-+#ifdef LIRC_SIR_ACTISYS_ACT200L
-+static void init_act200(void);
-+#elif defined(LIRC_SIR_ACTISYS_ACT220L)
-+static void init_act220(void);
-+#endif
-+
-+/******************************* SA1100 ********************************/
-+#ifdef LIRC_ON_SA1100
-+struct sa1100_ser2_registers {
-+	/* HSSP control register */
-+	unsigned char hscr0;
-+	/* UART registers */
-+	unsigned char utcr0;
-+	unsigned char utcr1;
-+	unsigned char utcr2;
-+	unsigned char utcr3;
-+	unsigned char utcr4;
-+	unsigned char utdr;
-+	unsigned char utsr0;
-+	unsigned char utsr1;
-+} sr;
-+
-+static int irq = IRQ_Ser2ICP;
-+
-+#define LIRC_ON_SA1100_TRANSMITTER_LATENCY 0
-+
-+/* pulse/space ratio of 50/50 */
-+static unsigned long pulse_width = (13-LIRC_ON_SA1100_TRANSMITTER_LATENCY);
-+/* 1000000/freq-pulse_width */
-+static unsigned long space_width = (13-LIRC_ON_SA1100_TRANSMITTER_LATENCY);
-+static unsigned int freq = 38000;      /* modulation frequency */
-+static unsigned int duty_cycle = 50;   /* duty cycle of 50% */
-+
-+#endif
-+
-+#define RBUF_LEN 1024
-+#define WBUF_LEN 1024
-+
-+#define LIRC_DRIVER_NAME "lirc_sir"
-+
-+#define PULSE '['
-+
-+#ifndef LIRC_SIR_TEKRAM
-+/* 9bit * 1s/115200bit in milli seconds = 78.125ms*/
-+#define TIME_CONST (9000000ul/115200ul)
-+#endif
++#define SUCCESS		0
++#define	TRUE		1
++#define FALSE		0
 +
 +
-+/* timeout for sequences in jiffies (=5/100s) */
-+/* must be longer than TIME_CONST */
-+#define SIR_TIMEOUT	(HZ*5/100)
++/* ------------------------------------------------------------
++ *		     P R O T O T Y P E S
++ * ------------------------------------------------------------
++ */
 +
-+#ifndef LIRC_ON_SA1100
-+#ifndef LIRC_IRQ
-+#define LIRC_IRQ 4
-+#endif
-+#ifndef LIRC_PORT
-+#define LIRC_PORT 0x3e8
-+#endif
++/* USB Callback prototypes */
++static int imon_probe(struct usb_interface *interface,
++		      const struct usb_device_id *id);
++static void imon_disconnect(struct usb_interface *interface);
++static void usb_rx_callback(struct urb *urb);
++static void usb_tx_callback(struct urb *urb);
 +
-+static int io = LIRC_PORT;
-+static int irq = LIRC_IRQ;
-+static int threshold = 3;
-+#endif
++/* VFD file_operations function prototypes */
++static int vfd_open(struct inode *inode, struct file *file);
++static int vfd_close(struct inode *inode, struct file *file);
++static ssize_t vfd_write(struct file *file, const char *buf,
++			 size_t n_bytes, loff_t *pos);
 +
-+static DEFINE_SPINLOCK(timer_lock);
-+static struct timer_list timerlist;
-+/* time of last signal change detected */
-+static struct timeval last_tv = {0, 0};
-+/* time of last UART data ready interrupt */
-+static struct timeval last_intr_tv = {0, 0};
-+static int last_value;
++/* LCD file_operations override function prototypes */
++static ssize_t lcd_write(struct file *file, const char *buf,
++			 size_t n_bytes, loff_t *pos);
 +
-+static DECLARE_WAIT_QUEUE_HEAD(lirc_read_queue);
++/* LIRC plugin function prototypes */
++static int ir_open(void *data);
++static void ir_close(void *data);
 +
-+static DEFINE_SPINLOCK(hardware_lock);
-+static DEFINE_SPINLOCK(dev_lock);
++/* Driver init/exit prototypes */
++static int __init imon_init(void);
++static void __exit imon_exit(void);
 +
-+static int rx_buf[RBUF_LEN];
-+static unsigned int rx_tail, rx_head;
-+static int tx_buf[WBUF_LEN];
++/* ------------------------------------------------------------
++ *		     G L O B A L S
++ * ------------------------------------------------------------
++ */
++
++struct imon_context {
++	struct usb_device *dev;
++	int vfd_supported;		/* not all controllers do */
++	int vfd_isopen;			/* VFD port has been opened */
++	int ir_isopen;			/* IR port open	*/
++	int ir_isassociating;		/* IR port open for association */
++	int dev_present;		/* USB device presence */
++	struct mutex lock;		/* to lock this object */
++	wait_queue_head_t remove_ok;	/* For unexpected USB disconnects */
++
++	int vfd_proto_6p;		/* VFD requires 6th packet */
++	int ir_onboard_decode;		/* IR signals decoded onboard */
++
++	struct lirc_plugin *plugin;
++	struct usb_endpoint_descriptor *rx_endpoint;
++	struct usb_endpoint_descriptor *tx_endpoint;
++	struct urb *rx_urb;
++	struct urb *tx_urb;
++	int tx_control;
++	unsigned char usb_rx_buf[8];
++	unsigned char usb_tx_buf[8];
++
++	struct rx_data {
++		int count;		/* length of 0 or 1 sequence */
++		int prev_bit;		/* logic level of sequence */
++		int initial_space;	/* initial space flag */
++	} rx;
++
++	struct tx_t {
++		unsigned char data_buf[35];	/* user data buffer */
++		struct completion finished;	/* wait for write to finish */
++		atomic_t busy;			/* write in progress */
++		int status;			/* status of tx completion */
++	} tx;
++};
++
++#define LOCK_CONTEXT	mutex_lock(&context->lock)
++#define UNLOCK_CONTEXT	mutex_unlock(&context->lock)
++
++/* VFD file operations */
++static struct file_operations vfd_fops = {
++	.owner		= THIS_MODULE,
++	.open		= &vfd_open,
++	.write		= &vfd_write,
++	.release	= &vfd_close
++};
++
++/* USB Device ID for IMON USB Control Board */
++static struct usb_device_id imon_usb_id_table[] = {
++	/* IMON USB Control Board (IR & VFD) */
++	{ USB_DEVICE(0x0aa8, 0xffda) },
++	/* IMON USB Control Board (IR only) */
++	{ USB_DEVICE(0x0aa8, 0x8001) },
++	/* IMON USB Control Board (IR & VFD) */
++	{ USB_DEVICE(0x15c2, 0xffda) },
++	/* IMON USB Control Board (IR & VFD) */
++	{ USB_DEVICE(0x15c2, 0xffdc) },
++	/* IMON USB Control Board (IR & LCD) */
++	{ USB_DEVICE(0x15c2, 0x0038) },
++	/* IMON USB Control Board (ext IR only) */
++	{ USB_DEVICE(0x04e8, 0xff30) },
++	{}
++};
++
++/* Some iMON VFD models requires a 6th packet */
++static struct usb_device_id vfd_proto_6p_list[] = {
++	{ USB_DEVICE(0x15c2, 0xffda) },
++	{ USB_DEVICE(0x15c2, 0xffdc) },
++	{ USB_DEVICE(0x15c2, 0x0038) },
++	{}
++};
++static unsigned char vfd_packet6[] = {
++	0x01, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF };
++
++/* Some iMON LCD models use control endpoint */
++static struct usb_device_id lcd_control_endpoint_list[] = {
++	{ USB_DEVICE(0x15c2, 0x0038) },
++	{}
++};
++
++/* Newer iMON models decode the signal onboard */
++static struct usb_device_id ir_onboard_decode_list[] = {
++	{ USB_DEVICE(0x15c2, 0xffdc) },
++	{ USB_DEVICE(0x15c2, 0x0038) },
++	{}
++};
++
++/* USB Device data */
++static struct usb_driver imon_driver = {
++	.name		= MOD_NAME,
++	.probe		= imon_probe,
++	.disconnect	= imon_disconnect,
++	.id_table	= imon_usb_id_table,
++};
++
++static struct usb_class_driver imon_class = {
++	.name		= DEVICE_NAME,
++	.fops		= &vfd_fops,
++	.minor_base	= VFD_MINOR_BASE,
++};
++
++/* to prevent races between open() and disconnect() */
++static DECLARE_MUTEX(disconnect_sem);
 +
 +static int debug;
-+#define dprintk(fmt, args...)						\
-+	do {								\
-+		if (debug)						\
-+			printk(KERN_DEBUG LIRC_DRIVER_NAME ": "		\
-+				fmt, ## args);				\
-+	} while (0)
 +
-+/* SECTION: Prototypes */
++/* lcd or vfd? */
++static int is_lcd;
 +
-+/* Communication with user-space */
-+static int lirc_open(struct inode *inode, struct file *file);
-+static int lirc_close(struct inode *inode, struct file *file);
-+static unsigned int lirc_poll(struct file *file, poll_table *wait);
-+static ssize_t lirc_read(struct file *file, char *buf, size_t count,
-+		loff_t *ppos);
-+static ssize_t lirc_write(struct file *file, const char *buf, size_t n,
-+		loff_t *pos);
-+static int lirc_ioctl(struct inode *node, struct file *filep, unsigned int cmd,
-+		unsigned long arg);
-+static void add_read_queue(int flag, unsigned long val);
-+#ifdef MODULE
-+static int init_chrdev(void);
-+static void drop_chrdev(void);
-+#endif
-+	/* Hardware */
-+static irqreturn_t sir_interrupt(int irq, void *dev_id);
-+static void send_space(unsigned long len);
-+static void send_pulse(unsigned long len);
-+static int init_hardware(void);
-+static void drop_hardware(void);
-+	/* Initialisation */
-+static int init_port(void);
-+static void drop_port(void);
 +
-+#ifdef LIRC_ON_SA1100
-+static inline void on(void)
++/* ------------------------------------------------------------
++ *		     M O D U L E   C O D E
++ * ------------------------------------------------------------
++ */
++
++MODULE_AUTHOR(MOD_AUTHOR);
++MODULE_DESCRIPTION(MOD_DESC);
++MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(usb, imon_usb_id_table);
++module_param(debug, int, 0);
++MODULE_PARM_DESC(debug, "Debug messages: 0=no, 1=yes(default: no)");
++module_param(is_lcd, int, 0);
++MODULE_PARM_DESC(is_lcd, "The device is an LCD: 0=no (it's a VFD), "
++		 "1=yes (default: no)");
++
++static inline void delete_context(struct imon_context *context)
 +{
-+	PPSR |= PPC_TXD2;
++	if (context->vfd_supported)
++		usb_free_urb(context->tx_urb);
++	usb_free_urb(context->rx_urb);
++	lirc_buffer_free(context->plugin->rbuf);
++	kfree(context->plugin->rbuf);
++	kfree(context->plugin);
++	kfree(context);
++
++	if (debug)
++		info("%s: context deleted", __func__);
 +}
 +
-+static inline void off(void)
++static inline void deregister_from_lirc(struct imon_context *context)
 +{
-+	PPSR &= ~PPC_TXD2;
-+}
-+#else
-+static inline unsigned int sinp(int offset)
-+{
-+	return inb(io + offset);
++	int retval;
++	int minor = context->plugin->minor;
++
++	retval = lirc_unregister_plugin(minor);
++	if (retval)
++		err("%s: unable to deregister from lirc(%d)",
++			__func__, retval);
++	else
++		info("Deregistered iMON plugin(minor:%d)", minor);
++
 +}
 +
-+static inline void soutp(int offset, int value)
++/**
++ * Called when the VFD device(e.g. /dev/usb/lcd)
++ * is opened by the application.
++ */
++static int vfd_open(struct inode *inode, struct file *file)
 +{
-+	outb(value, io + offset);
-+}
-+#endif
++	struct usb_interface *interface;
++	struct imon_context *context = NULL;
++	int subminor;
++	int retval = SUCCESS;
 +
-+#ifndef MAX_UDELAY_MS
-+#define MAX_UDELAY_US 5000
-+#else
-+#define MAX_UDELAY_US (MAX_UDELAY_MS*1000)
-+#endif
++	/* prevent races with disconnect */
++	down(&disconnect_sem);
 +
-+static inline void safe_udelay(unsigned long usecs)
-+{
-+	while (usecs > MAX_UDELAY_US) {
-+		udelay(MAX_UDELAY_US);
-+		usecs -= MAX_UDELAY_US;
++	subminor = iminor(inode);
++	interface = usb_find_interface(&imon_driver, subminor);
++	if (!interface) {
++		err("%s: could not find interface for minor %d",
++		    __func__, subminor);
++		retval = -ENODEV;
++		goto exit;
 +	}
-+	udelay(usecs);
-+}
++	context = usb_get_intfdata(interface);
 +
-+/* SECTION: Communication with user-space */
-+
-+static int lirc_open(struct inode *inode, struct file *file)
-+{
-+	spin_lock(&dev_lock);
-+	if (module_refcount(THIS_MODULE)) {
-+		spin_unlock(&dev_lock);
-+		return -EBUSY;
++	if (!context) {
++		err("%s: no context found for minor %d",
++					__func__, subminor);
++		retval = -ENODEV;
++		goto exit;
 +	}
-+	spin_unlock(&dev_lock);
-+	return 0;
++
++	LOCK_CONTEXT;
++
++	if (!context->vfd_supported) {
++		err("%s: VFD not supported by device", __func__);
++		retval = -ENODEV;
++	} else if (context->vfd_isopen) {
++		err("%s: VFD port is already open", __func__);
++		retval = -EBUSY;
++	} else {
++		context->vfd_isopen = TRUE;
++		file->private_data = context;
++		info("VFD port opened");
++	}
++
++	UNLOCK_CONTEXT;
++
++exit:
++	up(&disconnect_sem);
++	return retval;
 +}
 +
-+static int lirc_close(struct inode *inode, struct file *file)
++/**
++ * Called when the VFD device(e.g. /dev/usb/lcd)
++ * is closed by the application.
++ */
++static int vfd_close(struct inode *inode, struct file *file)
 +{
-+	return 0;
-+}
++	struct imon_context *context = NULL;
++	int retval = SUCCESS;
 +
-+static unsigned int lirc_poll(struct file *file, poll_table *wait)
-+{
-+	poll_wait(file, &lirc_read_queue, wait);
-+	if (rx_head != rx_tail)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
++	context = (struct imon_context *) file->private_data;
 +
-+static ssize_t lirc_read(struct file *file, char *buf, size_t count,
-+		loff_t *ppos)
-+{
-+	int n = 0;
-+	int retval = 0;
-+	DECLARE_WAITQUEUE(wait, current);
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
++	}
 +
-+	if (n % sizeof(int))
-+		return -EINVAL;
++	LOCK_CONTEXT;
 +
-+	add_wait_queue(&lirc_read_queue, &wait);
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	while (n < count) {
-+		if (rx_head != rx_tail) {
-+			if (copy_to_user((void *) buf + n,
-+					(void *) (rx_buf + rx_head),
-+					sizeof(int))) {
-+				retval = -EFAULT;
-+				break;
-+			}
-+			rx_head = (rx_head + 1) & (RBUF_LEN - 1);
-+			n += sizeof(int);
-+		} else {
-+			if (file->f_flags & O_NONBLOCK) {
-+				retval = -EAGAIN;
-+				break;
-+			}
-+			if (signal_pending(current)) {
-+				retval = -ERESTARTSYS;
-+				break;
-+			}
-+			schedule();
-+			set_current_state(TASK_INTERRUPTIBLE);
++	if (!context->vfd_supported) {
++		err("%s: VFD not supported by device", __func__);
++		retval = -ENODEV;
++	} else if (!context->vfd_isopen) {
++		err("%s: VFD is not open", __func__);
++		retval = -EIO;
++	} else {
++		context->vfd_isopen = FALSE;
++		info("VFD port closed");
++		if (!context->dev_present && !context->ir_isopen) {
++			/* Device disconnected before close and IR port is not
++			 * open. If IR port is open, context will be deleted by
++			 * ir_close. */
++			UNLOCK_CONTEXT;
++			delete_context(context);
++			return retval;
 +		}
 +	}
-+	remove_wait_queue(&lirc_read_queue, &wait);
-+	set_current_state(TASK_RUNNING);
-+	return n ? n : retval;
-+}
-+static ssize_t lirc_write(struct file *file, const char *buf, size_t n,
-+				loff_t *pos)
-+{
-+	unsigned long flags;
-+	int i;
 +
-+	if (n % sizeof(int) || (n / sizeof(int)) > WBUF_LEN)
-+		return -EINVAL;
-+	if (copy_from_user(tx_buf, buf, n))
-+		return -EFAULT;
-+	i = 0;
-+	n /= sizeof(int);
-+#ifdef LIRC_ON_SA1100
-+	/* disable receiver */
-+	Ser2UTCR3 = 0;
-+#endif
-+	local_irq_save(flags);
-+	while (1) {
-+		if (i >= n)
-+			break;
-+		if (tx_buf[i])
-+			send_pulse(tx_buf[i]);
-+		i++;
-+		if (i >= n)
-+			break;
-+		if (tx_buf[i])
-+			send_space(tx_buf[i]);
-+		i++;
-+	}
-+	local_irq_restore(flags);
-+#ifdef LIRC_ON_SA1100
-+	off();
-+	udelay(1000); /* wait 1ms for IR diode to recover */
-+	Ser2UTCR3 = 0;
-+	/* clear status register to prevent unwanted interrupts */
-+	Ser2UTSR0 &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
-+	/* enable receiver */
-+	Ser2UTCR3 = UTCR3_RXE|UTCR3_RIE;
-+#endif
-+	return n;
++	UNLOCK_CONTEXT;
++	return retval;
 +}
 +
-+static int lirc_ioctl(struct inode *node, struct file *filep, unsigned int cmd,
-+		unsigned long arg)
++/**
++ * Sends a packet to the VFD.
++ */
++static inline int send_packet(struct imon_context *context)
 +{
-+	int retval = 0;
-+	unsigned long value = 0;
-+#ifdef LIRC_ON_SA1100
-+	unsigned int ivalue;
++	unsigned int pipe;
++	int interval = 0;
++	int retval = SUCCESS;
++	struct usb_ctrlrequest *control_req = NULL;
 +
-+	if (cmd == LIRC_GET_FEATURES)
-+		value = LIRC_CAN_SEND_PULSE |
-+			LIRC_CAN_SET_SEND_DUTY_CYCLE |
-+			LIRC_CAN_SET_SEND_CARRIER |
-+			LIRC_CAN_REC_MODE2;
-+	else if (cmd == LIRC_GET_SEND_MODE)
-+		value = LIRC_MODE_PULSE;
-+	else if (cmd == LIRC_GET_REC_MODE)
-+		value = LIRC_MODE_MODE2;
-+#else
-+	if (cmd == LIRC_GET_FEATURES)
-+		value = LIRC_CAN_SEND_PULSE | LIRC_CAN_REC_MODE2;
-+	else if (cmd == LIRC_GET_SEND_MODE)
-+		value = LIRC_MODE_PULSE;
-+	else if (cmd == LIRC_GET_REC_MODE)
-+		value = LIRC_MODE_MODE2;
-+#endif
++	/* Check if we need to use control or interrupt urb */
++	if (!context->tx_control) {
++		pipe = usb_sndintpipe(context->dev,
++				      context->tx_endpoint->bEndpointAddress);
++		interval = context->tx_endpoint->bInterval;
 +
-+	switch (cmd) {
-+	case LIRC_GET_FEATURES:
-+	case LIRC_GET_SEND_MODE:
-+	case LIRC_GET_REC_MODE:
-+		retval = put_user(value, (unsigned long *) arg);
-+		break;
++		usb_fill_int_urb(context->tx_urb, context->dev, pipe,
++				 context->usb_tx_buf,
++				 sizeof(context->usb_tx_buf),
++				 usb_tx_callback, context, interval);
 +
-+	case LIRC_SET_SEND_MODE:
-+	case LIRC_SET_REC_MODE:
-+		retval = get_user(value, (unsigned long *) arg);
-+		break;
-+#ifdef LIRC_ON_SA1100
-+	case LIRC_SET_SEND_DUTY_CYCLE:
-+		retval = get_user(ivalue, (unsigned int *) arg);
-+		if (retval)
-+			return reetval;
-+		if (ivalue <= 0 || ivalue > 100)
-+			return -EINVAL;
-+		/* (ivalue/100)*(1000000/freq) */
-+		duty_cycle = ivalue;
-+		pulse_width = (unsigned long) duty_cycle*10000/freq;
-+		space_width = (unsigned long) 1000000L/freq-pulse_width;
-+		if (pulse_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
-+			pulse_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
-+		if (space_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
-+			space_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
-+		break;
-+	case LIRC_SET_SEND_CARRIER:
-+		retval = get_user(ivalue, (unsigned int *) arg);
-+		if (retval)
-+			return retval;
-+		if (ivalue > 500000 || ivalue < 20000)
-+			return -EINVAL;
-+		freq = ivalue;
-+		pulse_width = (unsigned long) duty_cycle*10000/freq;
-+		space_width = (unsigned long) 1000000L/freq-pulse_width;
-+		if (pulse_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
-+			pulse_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
-+		if (space_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
-+			space_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
-+		break;
-+#endif
-+	default:
-+		retval = -ENOIOCTLCMD;
++		context->tx_urb->actual_length = 0;
++	} else {
++		/* fill request into kmalloc'ed space: */
++		control_req = kmalloc(sizeof(struct usb_ctrlrequest), GFP_NOIO);
++		if (control_req == NULL)
++			return -ENOMEM;
 +
++		/* setup packet is '21 09 0200 0001 0008' */
++		control_req->bRequestType = 0x21;
++		control_req->bRequest = 0x09;
++		control_req->wValue = cpu_to_le16(0x0002);
++		control_req->wIndex = cpu_to_le16(0x0100);
++		control_req->wLength = cpu_to_le16(0x0800);
++
++		/* control pipe is endpoint 0x00 */
++		pipe = usb_sndctrlpipe(context->dev, 0);
++
++		/* build the control urb */
++		usb_fill_control_urb(context->tx_urb, context->dev, pipe,
++				     (unsigned char *)control_req,
++				     context->usb_tx_buf,
++				     sizeof(context->usb_tx_buf),
++				     usb_tx_callback, context);
++		context->tx_urb->actual_length = 0;
 +	}
 +
-+	if (retval)
-+		return retval;
-+	if (cmd == LIRC_SET_REC_MODE) {
-+		if (value != LIRC_MODE_MODE2)
-+			retval = -ENOSYS;
-+	} else if (cmd == LIRC_SET_SEND_MODE) {
-+		if (value != LIRC_MODE_PULSE)
-+			retval = -ENOSYS;
++	init_completion(&context->tx.finished);
++	atomic_set(&(context->tx.busy), 1);
++
++	retval =  usb_submit_urb(context->tx_urb, GFP_KERNEL);
++	if (retval != SUCCESS) {
++		atomic_set(&(context->tx.busy), 0);
++		err("%s: error submitting urb(%d)", __func__, retval);
++	} else {
++		/* Wait for tranmission to complete(or abort) */
++		UNLOCK_CONTEXT;
++		wait_for_completion(&context->tx.finished);
++		LOCK_CONTEXT;
++
++		retval = context->tx.status;
++		if (retval != SUCCESS)
++			err("%s: packet tx failed(%d)", __func__, retval);
 +	}
++
++	kfree(control_req);
 +
 +	return retval;
 +}
 +
-+static void add_read_queue(int flag, unsigned long val)
++/**
++ * Sends an associate packet to the iMON 2.4G.
++ *
++ * This might not be such a good idea, since it has an id
++ * collition with some versions of the "IR & VFD" combo.
++ * The only way to determine if it is a RF version is to look
++ * at the product description string.(Which we currently do
++ * not fetch).
++ */
++static inline int send_associate_24g(struct imon_context *context)
 +{
-+	unsigned int new_rx_tail;
-+	int newval;
++	int retval;
++	const unsigned char packet[8] = { 0x01, 0x00, 0x00, 0x00,
++					  0x00, 0x00, 0x00, 0x20 };
 +
-+	dprintk("add flag %d with val %lu\n", flag, val);
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
++	}
 +
-+	newval = val & PULSE_MASK;
++	LOCK_CONTEXT;
 +
-+	/* statistically pulses are ~TIME_CONST/2 too long: we could
-+	   maybe make this more exactly but this is good enough */
-+	if (flag) {
-+		/* pulse */
-+		if (newval > TIME_CONST/2)
-+			newval -= TIME_CONST/2;
-+		else /* should not ever happen */
-+			newval = 1;
-+		newval |= PULSE_BIT;
++	if (!context->dev_present) {
++		err("%s: no iMON device present", __func__);
++		retval = -ENODEV;
++		goto exit;
++	}
++
++	memcpy(context->usb_tx_buf, packet, sizeof(packet));
++	retval = send_packet(context);
++
++exit:
++	UNLOCK_CONTEXT;
++
++	return retval;
++}
++
++/**
++ * This is the sysfs functions to handle the association og the iMON 2.4G LT.
++ *
++ *
++ */
++
++static ssize_t show_associate_remote(struct device *d,
++				     struct device_attribute *attr,
++				     char *buf)
++{
++	struct imon_context *context = dev_get_drvdata(d);
++
++	if (!context)
++		return -ENODEV;
++
++	if (context->ir_isassociating) {
++		strcpy(buf, "The device it associating press some button "
++			    "on the remote.\n");
++	} else if (context->ir_isopen) {
++		strcpy(buf, "Device is open and ready to associate.\n"
++			    "Echo something into this file to start "
++			    "the process.\n");
 +	} else {
-+		newval += TIME_CONST/2;
++		strcpy(buf, "Device is closed, you need to open it to "
++			    "associate the remote(you can use irw).\n");
 +	}
-+	new_rx_tail = (rx_tail + 1) & (RBUF_LEN - 1);
-+	if (new_rx_tail == rx_head) {
-+		dprintk("Buffer overrun.\n");
-+		return;
-+	}
-+	rx_buf[rx_tail] = newval;
-+	rx_tail = new_rx_tail;
-+	wake_up_interruptible(&lirc_read_queue);
++	return strlen(buf);
 +}
 +
-+static struct file_operations lirc_fops = {
-+	.read		= lirc_read,
-+	.write		= lirc_write,
-+	.poll		= lirc_poll,
-+	.ioctl		= lirc_ioctl,
-+	.open		= lirc_open,
-+	.release	= lirc_close,
++static ssize_t store_associate_remote(struct device *d,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
++{
++	struct imon_context *context;
++
++	context = dev_get_drvdata(d);
++
++	if (!context)
++		return -ENODEV;
++
++	if (!context->ir_isopen)
++		return -EINVAL;
++
++	if (context->ir_isopen) {
++		context->ir_isassociating = TRUE;
++		send_associate_24g(context);
++	}
++
++	return count;
++}
++
++static DEVICE_ATTR(associate_remote, S_IWUSR | S_IRUGO, show_associate_remote,
++		   store_associate_remote);
++
++static struct attribute *imon_sysfs_entries[] = {
++	&dev_attr_associate_remote.attr,
++	NULL
 +};
 +
-+static int set_use_inc(void *data)
-+{
-+       return 0;
-+}
-+
-+static void set_use_dec(void *data)
-+{
-+}
-+
-+static struct lirc_plugin plugin = {
-+       .name		= LIRC_DRIVER_NAME,
-+       .minor		= -1,
-+       .code_length	= 1,
-+       .sample_rate	= 0,
-+       .data		= NULL,
-+       .add_to_buf	= NULL,
-+       .get_queue	= NULL,
-+       .set_use_inc	= set_use_inc,
-+       .set_use_dec	= set_use_dec,
-+       .fops		= &lirc_fops,
-+       .dev		= NULL,
-+       .owner		= THIS_MODULE,
++static struct attribute_group imon_attribute_group = {
++	.attrs = imon_sysfs_entries
 +};
 +
 +
-+#ifdef MODULE
-+static int init_chrdev(void)
++
++
++/**
++ * Writes data to the VFD.  The IMON VFD is 2x16 characters
++ * and requires data in 5 consecutive USB interrupt packets,
++ * each packet but the last carrying 7 bytes.
++ *
++ * I don't know if the VFD board supports features such as
++ * scrolling, clearing rows, blanking, etc. so at
++ * the caller must provide a full screen of data.  If fewer
++ * than 32 bytes are provided spaces will be appended to
++ * generate a full screen.
++ */
++static ssize_t vfd_write(struct file *file, const char *buf,
++			 size_t n_bytes, loff_t *pos)
 +{
-+	plugin.minor = lirc_register_plugin(&plugin);
-+	if (plugin.minor < 0) {
-+		printk(KERN_ERR LIRC_DRIVER_NAME ": init_chrdev() failed.\n");
-+		return -EIO;
-+	}
-+	return 0;
-+}
++	int i;
++	int offset;
++	int seq;
++	int retval = SUCCESS;
++	struct imon_context *context;
 +
-+static void drop_chrdev(void)
-+{
-+	lirc_unregister_plugin(plugin.minor);
-+}
-+#endif
-+
-+/* SECTION: Hardware */
-+static long delta(struct timeval *tv1, struct timeval *tv2)
-+{
-+	unsigned long deltv;
-+
-+	deltv = tv2->tv_sec - tv1->tv_sec;
-+	if (deltv > 15)
-+		deltv = 0xFFFFFF;
-+	else
-+		deltv = deltv*1000000 +
-+			tv2->tv_usec -
-+			tv1->tv_usec;
-+	return deltv;
-+}
-+
-+static void sir_timeout(unsigned long data)
-+{
-+	/* if last received signal was a pulse, but receiving stopped
-+	   within the 9 bit frame, we need to finish this pulse and
-+	   simulate a signal change to from pulse to space. Otherwise
-+	   upper layers will receive two sequences next time. */
-+
-+	unsigned long flags;
-+	unsigned long pulse_end;
-+
-+	/* avoid interference with interrupt */
-+	spin_lock_irqsave(&timer_lock, flags);
-+	if (last_value) {
-+#ifndef LIRC_ON_SA1100
-+		/* clear unread bits in UART and restart */
-+		outb(UART_FCR_CLEAR_RCVR, io + UART_FCR);
-+#endif
-+		/* determine 'virtual' pulse end: */
-+		pulse_end = delta(&last_tv, &last_intr_tv);
-+		dprintk("timeout add %d for %lu usec\n", last_value, pulse_end);
-+		add_read_queue(last_value, pulse_end);
-+		last_value = 0;
-+		last_tv = last_intr_tv;
-+	}
-+	spin_unlock_irqrestore(&timer_lock, flags);
-+}
-+
-+static irqreturn_t sir_interrupt(int irq, void *dev_id)
-+{
-+	unsigned char data;
-+	struct timeval curr_tv;
-+	static unsigned long deltv;
-+#ifdef LIRC_ON_SA1100
-+	int status;
-+	static int n;
-+
-+	status = Ser2UTSR0;
-+	/*
-+	 * Deal with any receive errors first.  The bytes in error may be
-+	 * the only bytes in the receive FIFO, so we do this first.
-+	 */
-+	while (status & UTSR0_EIF) {
-+		int bstat;
-+
-+		if (debug) {
-+			dprintk("EIF\n");
-+			bstat = Ser2UTSR1;
-+
-+			if (bstat & UTSR1_FRE)
-+				dprintk("frame error\n");
-+			if (bstat & UTSR1_ROR)
-+				dprintk("receive fifo overrun\n");
-+			if (bstat & UTSR1_PRE)
-+				dprintk("parity error\n");
-+		}
-+
-+		bstat = Ser2UTDR;
-+		n++;
-+		status = Ser2UTSR0;
++	context = (struct imon_context *) file->private_data;
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
 +	}
 +
-+	if (status & (UTSR0_RFS | UTSR0_RID)) {
-+		do_gettimeofday(&curr_tv);
-+		deltv = delta(&last_tv, &curr_tv);
-+		do {
-+			data = Ser2UTDR;
-+			dprintk("%d data: %u\n", n, (unsigned int) data);
-+			n++;
-+		} while (status & UTSR0_RID && /* do not empty fifo in
-+						order to get UTSR0_RID in
-+						any case */
-+		      Ser2UTSR1 & UTSR1_RNE); /* data ready */
++	LOCK_CONTEXT;
 +
-+		if (status&UTSR0_RID) {
-+			add_read_queue(0 , deltv - n * TIME_CONST); /*space*/
-+			add_read_queue(1, n * TIME_CONST); /*pulse*/
-+			n = 0;
-+			last_tv = curr_tv;
-+		}
++	if (!context->dev_present) {
++		err("%s: no iMON device present", __func__);
++		retval = -ENODEV;
++		goto exit;
 +	}
 +
-+	if (status & UTSR0_TFS)
-+		printk(KERN_ERR "transmit fifo not full, shouldn't happen\n");
-+
-+	/*
-+	 * We must clear certain bits.
-+	 */
-+	status &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
-+	if (status)
-+		Ser2UTSR0 = status;
-+#else
-+	unsigned long deltintrtv;
-+	unsigned long flags;
-+	int iir, lsr;
-+
-+	while ((iir = inb(io + UART_IIR) & UART_IIR_ID)) {
-+		switch (iir&UART_IIR_ID) { /* FIXME toto treba preriedit */
-+		case UART_IIR_MSI:
-+			(void) inb(io + UART_MSR);
-+			break;
-+		case UART_IIR_RLSI:
-+			(void) inb(io + UART_LSR);
-+			break;
-+		case UART_IIR_THRI:
-+#if 0
-+			if (lsr & UART_LSR_THRE) /* FIFO is empty */
-+				outb(data, io + UART_TX)
-+#endif
-+			break;
-+		case UART_IIR_RDI:
-+			/* avoid interference with timer */
-+			spin_lock_irqsave(&timer_lock, flags);
-+			do {
-+				del_timer(&timerlist);
-+				data = inb(io + UART_RX);
-+				do_gettimeofday(&curr_tv);
-+				deltv = delta(&last_tv, &curr_tv);
-+				deltintrtv = delta(&last_intr_tv, &curr_tv);
-+				dprintk("t %lu, d %d\n", deltintrtv, (int)data);
-+				/* if nothing came in last X cycles,
-+				   it was gap */
-+				if (deltintrtv > TIME_CONST * threshold) {
-+					if (last_value) {
-+						dprintk("GAP\n");
-+						/* simulate signal change */
-+						add_read_queue(last_value,
-+							       deltv -
-+							       deltintrtv);
-+						last_value = 0;
-+						last_tv.tv_sec =
-+							last_intr_tv.tv_sec;
-+						last_tv.tv_usec =
-+							last_intr_tv.tv_usec;
-+						deltv = deltintrtv;
-+					}
-+				}
-+				data = 1;
-+				if (data ^ last_value) {
-+					/* deltintrtv > 2*TIME_CONST,
-+						remember ? */
-+					/* the other case is timeout */
-+					add_read_queue(last_value,
-+						       deltv-TIME_CONST);
-+					last_value = data;
-+					last_tv = curr_tv;
-+					if (last_tv.tv_usec >= TIME_CONST) {
-+						last_tv.tv_usec -= TIME_CONST;
-+					} else {
-+						last_tv.tv_sec--;
-+						last_tv.tv_usec += 1000000 -
-+							TIME_CONST;
-+					}
-+				}
-+				last_intr_tv = curr_tv;
-+				if (data) {
-+					/* start timer for end of
-+					 * sequence detection */
-+					timerlist.expires = jiffies +
-+								SIR_TIMEOUT;
-+					add_timer(&timerlist);
-+				}
-+
-+				lsr = inb(io + UART_LSR);
-+			} while (lsr & UART_LSR_DR); /* data ready */
-+			spin_unlock_irqrestore(&timer_lock, flags);
-+			break;
-+		default:
-+			break;
-+		}
++	if (n_bytes <= 0 || n_bytes > 32) {
++		err("%s: invalid payload size", __func__);
++		retval = -EINVAL;
++		goto exit;
 +	}
-+#endif
-+	return IRQ_RETVAL(IRQ_HANDLED);
-+}
 +
-+#ifdef LIRC_ON_SA1100
-+static void send_pulse(unsigned long length)
-+{
-+	unsigned long k, delay;
-+	int flag;
++	if (copy_from_user(context->tx.data_buf, buf, n_bytes)) {
++		retval = -EFAULT;
++		goto exit;
++	}
 +
-+	if (length == 0)
-+		return;
-+	/* this won't give us the carrier frequency we really want
-+	   due to integer arithmetic, but we can accept this inaccuracy */
++	/* Pad with spaces */
++	for (i = n_bytes; i < 32; ++i)
++		context->tx.data_buf[i] = ' ';
 +
-+	for (k = flag = 0; k < length; k += delay, flag = !flag) {
-+		if (flag) {
-+			off();
-+			delay = space_width;
++	for (i = 32; i < 35; ++i)
++		context->tx.data_buf[i] = 0xFF;
++
++	offset = 0;
++	seq = 0;
++
++	do {
++		memcpy(context->usb_tx_buf, context->tx.data_buf + offset, 7);
++		context->usb_tx_buf[7] = (unsigned char) seq;
++
++		retval = send_packet(context);
++		if (retval != SUCCESS) {
++			err("%s: send packet failed for packet #%d",
++					__func__, seq/2);
++			goto exit;
 +		} else {
-+			on();
-+			delay = pulse_width;
++			seq += 2;
++			offset += 7;
 +		}
-+		safe_udelay(delay);
++
++	} while (offset < 35);
++
++	if (context->vfd_proto_6p) {
++		/* Send packet #6 */
++		memcpy(context->usb_tx_buf, vfd_packet6, 7);
++		context->usb_tx_buf[7] = (unsigned char) seq;
++		retval = send_packet(context);
++		if (retval != SUCCESS)
++			err("%s: send packet failed for packet #%d",
++					__func__, seq/2);
 +	}
-+	off();
++
++exit:
++	UNLOCK_CONTEXT;
++
++	return (retval == SUCCESS) ? n_bytes : retval;
 +}
 +
-+static void send_space(unsigned long length)
++/**
++ * Writes data to the LCD.  The iMON OEM LCD screen excepts 8-byte
++ * packets. We accept data as 16 hexadecimal digits, followed by a
++ * newline (to make it easy to drive the device from a command-line
++ * -- even though the actual binary data is a bit complicated).
++ *
++ * The device itself is not a "traditional" text-mode display. It's
++ * actually a 16x96 pixel bitmap display. That means if you want to
++ * display text, you've got to have your own "font" and translate the
++ * text into bitmaps for display. This is really flexible (you can
++ * display whatever diacritics you need, and so on), but it's also
++ * a lot more complicated than most LCDs...
++ */
++static ssize_t lcd_write(struct file *file, const char *buf,
++			 size_t n_bytes, loff_t *pos)
 +{
-+	if (length == 0)
++	int retval = SUCCESS;
++	struct imon_context *context;
++
++	context = (struct imon_context *) file->private_data;
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
++	}
++
++	LOCK_CONTEXT;
++
++	if (!context->dev_present) {
++		err("%s: no iMON device present", __func__);
++		retval = -ENODEV;
++		goto exit;
++	}
++
++	if (n_bytes != 8) {
++		err("%s: invalid payload size: %d (expecting 8)",
++		    __func__, (int) n_bytes);
++		retval = -EINVAL;
++		goto exit;
++	}
++
++	if (copy_from_user(context->usb_tx_buf, buf, 8)) {
++		retval = -EFAULT;
++		goto exit;
++	}
++
++	retval = send_packet(context);
++	if (retval != SUCCESS) {
++		err("%s: send packet failed!", __func__);
++		goto exit;
++	} else if (debug) {
++		info("%s: write %d bytes to LCD", __func__, (int) n_bytes);
++	}
++exit:
++	UNLOCK_CONTEXT;
++	return (retval == SUCCESS) ? n_bytes : retval;
++}
++
++/**
++ * Callback function for USB core API: transmit data
++ */
++static void usb_tx_callback(struct urb *urb)
++{
++	struct imon_context *context;
++
++	if (!urb)
 +		return;
-+	off();
-+	safe_udelay(length);
++	context = (struct imon_context *) urb->context;
++	if (!context)
++		return;
++
++	context->tx.status = urb->status;
++
++	/* notify waiters that write has finished */
++	atomic_set(&context->tx.busy, 0);
++	complete(&context->tx.finished);
++
++	return;
 +}
-+#else
-+static void send_space(unsigned long len)
++
++/**
++ * Called by lirc_dev when the application opens /dev/lirc
++ */
++static int ir_open(void *data)
 +{
-+	safe_udelay(len);
++	int retval = SUCCESS;
++	struct imon_context *context;
++
++	/* prevent races with disconnect */
++	down(&disconnect_sem);
++
++	context = (struct imon_context *) data;
++
++	LOCK_CONTEXT;
++
++	if (context->ir_isopen) {
++		err("%s: IR port is already open", __func__);
++		retval = -EBUSY;
++		goto exit;
++	}
++
++	/* initial IR protocol decode variables */
++	context->rx.count = 0;
++	context->rx.initial_space = 1;
++	context->rx.prev_bit = 0;
++
++	usb_fill_int_urb(context->rx_urb, context->dev,
++		usb_rcvintpipe(context->dev,
++				context->rx_endpoint->bEndpointAddress),
++		context->usb_rx_buf, sizeof(context->usb_rx_buf),
++		usb_rx_callback, context, context->rx_endpoint->bInterval);
++
++	retval = usb_submit_urb(context->rx_urb, GFP_KERNEL);
++
++	if (retval)
++		err("%s: usb_submit_urb failed for ir_open(%d)",
++		    __func__, retval);
++	else {
++		context->ir_isopen = TRUE;
++		info("IR port opened");
++	}
++
++exit:
++	UNLOCK_CONTEXT;
++
++	up(&disconnect_sem);
++	return SUCCESS;
 +}
 +
-+static void send_pulse(unsigned long len)
++/**
++ * Called by lirc_dev when the application closes /dev/lirc
++ */
++static void ir_close(void *data)
 +{
-+	long bytes_out = len / TIME_CONST;
-+	long time_left;
++	struct imon_context *context;
 +
-+	time_left = (long)len - (long)bytes_out * (long)TIME_CONST;
-+	if (bytes_out == 0) {
-+		bytes_out++;
-+		time_left = 0;
++	context = (struct imon_context *)data;
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return;
 +	}
-+	while (bytes_out--) {
-+		outb(PULSE, io + UART_TX);
-+		/* FIXME treba seriozne cakanie z char/serial.c */
-+		while (!(inb(io + UART_LSR) & UART_LSR_THRE))
-+			;
++
++	LOCK_CONTEXT;
++
++	usb_kill_urb(context->rx_urb);
++	context->ir_isopen = FALSE;
++	context->ir_isassociating = FALSE;
++	info("IR port closed");
++
++	if (!context->dev_present) {
++		/* Device disconnected while IR port was
++		 * still open. Plugin was not deregistered
++		 * at disconnect time, so do it now. */
++		deregister_from_lirc(context);
++
++		if (!context->vfd_isopen) {
++			UNLOCK_CONTEXT;
++			delete_context(context);
++			return;
++		}
++		/* If VFD port is open, context will be deleted by vfd_close */
 +	}
-+#if 0
-+	if (time_left > 0)
-+		safe_udelay(time_left);
-+#endif
++
++	UNLOCK_CONTEXT;
++	return;
 +}
-+#endif
 +
-+#ifdef CONFIG_SA1100_COLLIE
-+static inline int sa1100_irda_set_power_collie(int state)
++/**
++ * Convert bit count to time duration(in us) and submit
++ * the value to lirc_dev.
++ */
++static inline void submit_data(struct imon_context *context)
 +{
-+	if (state) {
-+		/*
-+		 *  0 - off
-+		 *  1 - short range, lowest power
-+		 *  2 - medium range, medium power
-+		 *  3 - maximum range, high power
-+		 */
-+		ucb1200_set_io_direction(TC35143_GPIO_IR_ON,
-+					 TC35143_IODIR_OUTPUT);
-+		ucb1200_set_io(TC35143_GPIO_IR_ON, TC35143_IODAT_LOW);
-+		udelay(100);
-+	} else {
-+		/* OFF */
-+		ucb1200_set_io_direction(TC35143_GPIO_IR_ON,
-+					 TC35143_IODIR_OUTPUT);
-+		ucb1200_set_io(TC35143_GPIO_IR_ON, TC35143_IODAT_HIGH);
-+	}
-+	return 0;
++	unsigned char buf[4];
++	int value = context->rx.count;
++	int i;
++
++	if (debug)
++		info("submitting data to LIRC\n");
++
++	value *= BIT_DURATION;
++	value &= PULSE_MASK;
++	if (context->rx.prev_bit)
++		value |= PULSE_BIT;
++
++	for (i = 0; i < 4; ++i)
++		buf[i] = value>>(i*8);
++
++	lirc_buffer_write_1(context->plugin->rbuf, buf);
++	wake_up(&context->plugin->rbuf->wait_poll);
++	return;
 +}
-+#endif
 +
-+static int init_hardware(void)
++/**
++ * Process the incoming packet
++ */
++static inline void incoming_packet(struct imon_context *context,
++				   struct urb *urb)
 +{
-+	unsigned long flags;
++	int len = urb->actual_length;
++	unsigned char *buf = urb->transfer_buffer;
++	int octet, bit;
++	unsigned char mask;
++	int chunk_num;
++#ifdef DEBUG
++	int i;
++#endif
 +
-+	spin_lock_irqsave(&hardware_lock, flags);
-+	/* reset UART */
-+#ifdef LIRC_ON_SA1100
-+#ifdef CONFIG_SA1100_BITSY
-+	if (machine_is_bitsy()) {
-+		printk(KERN_INFO "Power on IR module\n");
-+		set_bitsy_egpio(EGPIO_BITSY_IR_ON);
++	if (len != 8) {
++		warn("%s: invalid incoming packet size(%d)",
++		     __func__, len);
++		return;
 +	}
++
++	/* iMON 2.4G associate frame */
++	if (buf[0] == 0x00 &&
++	    buf[2] == 0xFF &&				/* REFID */
++	    buf[3] == 0xFF &&
++	    buf[4] == 0xFF &&
++	    buf[5] == 0xFF &&				/* iMON 2.4G */
++	   ((buf[6] == 0x4E && buf[7] == 0xDF) ||	/* LT */
++	    (buf[6] == 0x5E && buf[7] == 0xDF))) {	/* DT */
++		warn("%s: remote associated refid=%02X", __func__, buf[1]);
++		context->ir_isassociating = FALSE;
++	}
++
++	chunk_num = buf[7];
++
++	if (chunk_num == 0xFF)
++		return;		/* filler frame, no data here */
++
++	if (buf[0] == 0xFF &&
++	    buf[1] == 0xFF &&
++	    buf[2] == 0xFF &&
++	    buf[3] == 0xFF &&
++	    buf[4] == 0xFF &&
++	    buf[5] == 0xFF &&				/* iMON 2.4G */
++	    ((buf[6] == 0x4E && buf[7] == 0xAF) ||	/* LT */
++	     (buf[6] == 0x5E && buf[7] == 0xAF)))	/* DT */
++		return;		/* filler frame, no data here */
++
++#ifdef DEBUG
++	for (i = 0; i < 8; ++i)
++		printk(KERN_INFO "%02x ", buf[i]);
++	printk(KERN_INFO "\n");
 +#endif
-+#ifdef CONFIG_SA1100_COLLIE
-+	sa1100_irda_set_power_collie(3);	/* power on */
-+#endif
-+	sr.hscr0 = Ser2HSCR0;
 +
-+	sr.utcr0 = Ser2UTCR0;
-+	sr.utcr1 = Ser2UTCR1;
-+	sr.utcr2 = Ser2UTCR2;
-+	sr.utcr3 = Ser2UTCR3;
-+	sr.utcr4 = Ser2UTCR4;
++	if (context->ir_onboard_decode) {
++		/* The signals have been decoded onboard the iMON controller */
++		lirc_buffer_write_1(context->plugin->rbuf, buf);
++		wake_up(&context->plugin->rbuf->wait_poll);
++		return;
++	}
 +
-+	sr.utdr = Ser2UTDR;
-+	sr.utsr0 = Ser2UTSR0;
-+	sr.utsr1 = Ser2UTSR1;
++	/* Translate received data to pulse and space lengths.
++	 * Received data is active low, i.e. pulses are 0 and
++	 * spaces are 1.
++	 *
++	 * My original algorithm was essentially similar to
++	 * Changwoo Ryu's with the exception that he switched
++	 * the incoming bits to active high and also fed an
++	 * initial space to LIRC at the start of a new sequence
++	 * if the previous bit was a pulse.
++	 *
++	 * I've decided to adopt his algorithm. */
 +
-+	/* configure GPIO */
-+	/* output */
-+	PPDR |= PPC_TXD2;
-+	PSDR |= PPC_TXD2;
-+	/* set output to 0 */
-+	off();
++	if (chunk_num == 1 && context->rx.initial_space) {
++		/* LIRC requires a leading space */
++		context->rx.prev_bit = 0;
++		context->rx.count = 4;
++		submit_data(context);
++		context->rx.count = 0;
++	}
++
++	for (octet = 0; octet < 5; ++octet) {
++		mask = 0x80;
++		for (bit = 0; bit < 8; ++bit) {
++			int curr_bit = !(buf[octet] & mask);
++			if (curr_bit != context->rx.prev_bit) {
++				if (context->rx.count) {
++					submit_data(context);
++					context->rx.count = 0;
++				}
++				context->rx.prev_bit = curr_bit;
++			}
++			++context->rx.count;
++			mask >>= 1;
++		}
++	}
++
++	if (chunk_num == 10) {
++		if (context->rx.count) {
++			submit_data(context);
++			context->rx.count = 0;
++		}
++		context->rx.initial_space = context->rx.prev_bit;
++	}
++}
++
++/**
++ * Callback function for USB core API: receive data
++ */
++static void usb_rx_callback(struct urb *urb)
++{
++	struct imon_context *context;
++
++	if (!urb)
++		return;
++	context = (struct imon_context *) urb->context;
++	if (!context)
++		return;
++
++	switch (urb->status) {
++	case -ENOENT:		/* usbcore unlink successful! */
++		return;
++	case SUCCESS:
++		if (context->ir_isopen)
++			incoming_packet(context, urb);
++		break;
++	default:
++		warn("%s: status(%d): ignored", __func__, urb->status);
++		break;
++	}
++
++	usb_submit_urb(context->rx_urb, GFP_ATOMIC);
++	return;
++}
++
++
++
++/**
++ * Callback function for USB core API: Probe
++ */
++static int imon_probe(struct usb_interface *interface,
++		      const struct usb_device_id *id)
++{
++	struct usb_device *dev = NULL;
++	struct usb_host_interface *iface_desc = NULL;
++	struct usb_endpoint_descriptor *rx_endpoint = NULL;
++	struct usb_endpoint_descriptor *tx_endpoint = NULL;
++	struct urb *rx_urb = NULL;
++	struct urb *tx_urb = NULL;
++	struct lirc_plugin *plugin = NULL;
++	struct lirc_buffer *rbuf = NULL;
++	int lirc_minor = 0;
++	int num_endpoints;
++	int retval = SUCCESS;
++	int vfd_ep_found;
++	int ir_ep_found;
++	int alloc_status;
++	int vfd_proto_6p = FALSE;
++	int ir_onboard_decode = FALSE;
++	int tx_control = FALSE;
++	struct imon_context *context = NULL;
++	int i;
++
++	info("%s: found IMON device", __func__);
 +
 +	/*
-+	 * Enable HP-SIR modulation, and ensure that the port is disabled.
++	 * If it's the LCD, as opposed to the VFD, we just need to replace
++	 * the "write" file op.
 +	 */
-+	Ser2UTCR3 = 0;
-+	Ser2HSCR0 = sr.hscr0 & (~HSCR0_HSSP);
++	if (is_lcd)
++		vfd_fops.write = &lcd_write;
 +
-+	/* clear status register to prevent unwanted interrupts */
-+	Ser2UTSR0 &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
++	dev = usb_get_dev(interface_to_usbdev(interface));
++	iface_desc = interface->cur_altsetting;
++	num_endpoints = iface_desc->desc.bNumEndpoints;
 +
-+	/* 7N1 */
-+	Ser2UTCR0 = UTCR0_1StpBit|UTCR0_7BitData;
-+	/* 115200 */
-+	Ser2UTCR1 = 0;
-+	Ser2UTCR2 = 1;
-+	/* use HPSIR, 1.6 usec pulses */
-+	Ser2UTCR4 = UTCR4_HPSIR|UTCR4_Z1_6us;
++	/*
++	 * Scan the endpoint list and set:
++	 *	first input endpoint = IR endpoint
++	 *	first output endpoint = VFD endpoint
++	 */
 +
-+	/* enable receiver, receive fifo interrupt */
-+	Ser2UTCR3 = UTCR3_RXE|UTCR3_RIE;
++	ir_ep_found = FALSE;
++	vfd_ep_found = FALSE;
 +
-+	/* clear status register to prevent unwanted interrupts */
-+	Ser2UTSR0 &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
++	for (i = 0; i < num_endpoints && !(ir_ep_found && vfd_ep_found); ++i) {
++		struct usb_endpoint_descriptor *ep;
++		int ep_dir;
++		int ep_type;
++		ep = &iface_desc->endpoint[i].desc;
++		ep_dir = ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK;
++		ep_type = ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
 +
-+#elif defined(LIRC_SIR_TEKRAM)
-+	/* disable FIFO */
-+	soutp(UART_FCR,
-+	      UART_FCR_CLEAR_RCVR|
-+	      UART_FCR_CLEAR_XMIT|
-+	      UART_FCR_TRIGGER_1);
++		if (!ir_ep_found &&
++			ep_dir == USB_DIR_IN &&
++			ep_type == USB_ENDPOINT_XFER_INT) {
 +
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
++			rx_endpoint = ep;
++			ir_ep_found = TRUE;
++			if (debug)
++				info("%s: found IR endpoint", __func__);
 +
-+	/* First of all, disable all interrupts */
-+	soutp(UART_IER, sinp(UART_IER) &
-+	      (~(UART_IER_MSI|UART_IER_RLSI|UART_IER_THRI|UART_IER_RDI)));
-+
-+	/* Set DLAB 1. */
-+	soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
-+
-+	/* Set divisor to 12 => 9600 Baud */
-+	soutp(UART_DLM, 0);
-+	soutp(UART_DLL, 12);
-+
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
-+
-+	/* power supply */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
-+	safe_udelay(50*1000);
-+
-+	/* -DTR low -> reset PIC */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
-+	udelay(1*1000);
-+
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
-+	udelay(100);
-+
-+
-+	/* -RTS low -> send control byte */
-+	soutp(UART_MCR, UART_MCR_DTR|UART_MCR_OUT2);
-+	udelay(7);
-+	soutp(UART_TX, TEKRAM_115200|TEKRAM_PW);
-+
-+	/* one byte takes ~1042 usec to transmit at 9600,8N1 */
-+	udelay(1500);
-+
-+	/* back to normal operation */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
-+	udelay(50);
-+
-+	udelay(1500);
-+
-+	/* read previous control byte */
-+	printk(KERN_INFO LIRC_DRIVER_NAME
-+	       ": 0x%02x\n", sinp(UART_RX));
-+
-+	/* Set DLAB 1. */
-+	soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
-+
-+	/* Set divisor to 1 => 115200 Baud */
-+	soutp(UART_DLM, 0);
-+	soutp(UART_DLL, 1);
-+
-+	/* Set DLAB 0, 8 Bit */
-+	soutp(UART_LCR, UART_LCR_WLEN8);
-+	/* enable interrupts */
-+	soutp(UART_IER, sinp(UART_IER)|UART_IER_RDI);
-+#else
-+	outb(0, io + UART_MCR);
-+	outb(0, io + UART_IER);
-+	/* init UART */
-+		/* set DLAB, speed = 115200 */
-+	outb(UART_LCR_DLAB | UART_LCR_WLEN7, io + UART_LCR);
-+	outb(1, io + UART_DLL); outb(0, io + UART_DLM);
-+		/* 7N1+start = 9 bits at 115200 ~ 3 bits at 44000 */
-+	outb(UART_LCR_WLEN7, io + UART_LCR);
-+		/* FIFO operation */
-+	outb(UART_FCR_ENABLE_FIFO, io + UART_FCR);
-+		/* interrupts */
-+	/* outb(UART_IER_RLSI|UART_IER_RDI|UART_IER_THRI, io + UART_IER); */
-+	outb(UART_IER_RDI, io + UART_IER);
-+	/* turn on UART */
-+	outb(UART_MCR_DTR|UART_MCR_RTS|UART_MCR_OUT2, io + UART_MCR);
-+#ifdef LIRC_SIR_ACTISYS_ACT200L
-+	init_act200();
-+#elif defined(LIRC_SIR_ACTISYS_ACT220L)
-+	init_act220();
-+#endif
-+#endif
-+	spin_unlock_irqrestore(&hardware_lock, flags);
-+	return 0;
-+}
-+
-+static void drop_hardware(void)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&hardware_lock, flags);
-+
-+#ifdef LIRC_ON_SA1100
-+	Ser2UTCR3 = 0;
-+
-+	Ser2UTCR0 = sr.utcr0;
-+	Ser2UTCR1 = sr.utcr1;
-+	Ser2UTCR2 = sr.utcr2;
-+	Ser2UTCR4 = sr.utcr4;
-+	Ser2UTCR3 = sr.utcr3;
-+
-+	Ser2HSCR0 = sr.hscr0;
-+#ifdef CONFIG_SA1100_BITSY
-+	if (machine_is_bitsy())
-+		clr_bitsy_egpio(EGPIO_BITSY_IR_ON);
-+#endif
-+#ifdef CONFIG_SA1100_COLLIE
-+	sa1100_irda_set_power_collie(0);	/* power off */
-+#endif
-+#else
-+	/* turn off interrupts */
-+	outb(0, io + UART_IER);
-+#endif
-+	spin_unlock_irqrestore(&hardware_lock, flags);
-+}
-+
-+/* SECTION: Initialisation */
-+
-+static int init_port(void)
-+{
-+	int retval;
-+
-+	/* get I/O port access and IRQ line */
-+#ifndef LIRC_ON_SA1100
-+	if (request_region(io, 8, LIRC_DRIVER_NAME) == NULL) {
-+		printk(KERN_ERR LIRC_DRIVER_NAME
-+		       ": i/o port 0x%.4x already in use.\n", io);
-+		return -EBUSY;
-+	}
-+#endif
-+	retval = request_irq(irq, sir_interrupt, IRQF_DISABLED,
-+			     LIRC_DRIVER_NAME, NULL);
-+	if (retval < 0) {
-+#               ifndef LIRC_ON_SA1100
-+		release_region(io, 8);
-+#               endif
-+		printk(KERN_ERR LIRC_DRIVER_NAME
-+			": IRQ %d already in use.\n",
-+			irq);
-+		return retval;
-+	}
-+#ifndef LIRC_ON_SA1100
-+	printk(KERN_INFO LIRC_DRIVER_NAME
-+		": I/O port 0x%.4x, IRQ %d.\n",
-+		io, irq);
-+#endif
-+
-+	init_timer(&timerlist);
-+	timerlist.function = sir_timeout;
-+	timerlist.data = 0xabadcafe;
-+
-+	return 0;
-+}
-+
-+static void drop_port(void)
-+{
-+	free_irq(irq, NULL);
-+	del_timer_sync(&timerlist);
-+#ifndef LIRC_ON_SA1100
-+	release_region(io, 8);
-+#endif
-+}
-+
-+#ifdef LIRC_SIR_ACTISYS_ACT200L
-+/******************************************************/
-+/* Crystal/Cirrus CS8130 IR transceiver, used in Actisys Act200L dongle */
-+/* some code borrowed from Linux IRDA driver */
-+
-+/* Regsiter 0: Control register #1 */
-+#define ACT200L_REG0    0x00
-+#define ACT200L_TXEN    0x01 /* Enable transmitter */
-+#define ACT200L_RXEN    0x02 /* Enable receiver */
-+#define ACT200L_ECHO    0x08 /* Echo control chars */
-+
-+/* Register 1: Control register #2 */
-+#define ACT200L_REG1    0x10
-+#define ACT200L_LODB    0x01 /* Load new baud rate count value */
-+#define ACT200L_WIDE    0x04 /* Expand the maximum allowable pulse */
-+
-+/* Register 3: Transmit mode register #2 */
-+#define ACT200L_REG3    0x30
-+#define ACT200L_B0      0x01 /* DataBits, 0=6, 1=7, 2=8, 3=9(8P)  */
-+#define ACT200L_B1      0x02 /* DataBits, 0=6, 1=7, 2=8, 3=9(8P)  */
-+#define ACT200L_CHSY    0x04 /* StartBit Synced 0=bittime, 1=startbit */
-+
-+/* Register 4: Output Power register */
-+#define ACT200L_REG4    0x40
-+#define ACT200L_OP0     0x01 /* Enable LED1C output */
-+#define ACT200L_OP1     0x02 /* Enable LED2C output */
-+#define ACT200L_BLKR    0x04
-+
-+/* Register 5: Receive Mode register */
-+#define ACT200L_REG5    0x50
-+#define ACT200L_RWIDL   0x01 /* fixed 1.6us pulse mode */
-+    /*.. other various IRDA bit modes, and TV remote modes..*/
-+
-+/* Register 6: Receive Sensitivity register #1 */
-+#define ACT200L_REG6    0x60
-+#define ACT200L_RS0     0x01 /* receive threshold bit 0 */
-+#define ACT200L_RS1     0x02 /* receive threshold bit 1 */
-+
-+/* Register 7: Receive Sensitivity register #2 */
-+#define ACT200L_REG7    0x70
-+#define ACT200L_ENPOS   0x04 /* Ignore the falling edge */
-+
-+/* Register 8,9: Baud Rate Dvider register #1,#2 */
-+#define ACT200L_REG8    0x80
-+#define ACT200L_REG9    0x90
-+
-+#define ACT200L_2400    0x5f
-+#define ACT200L_9600    0x17
-+#define ACT200L_19200   0x0b
-+#define ACT200L_38400   0x05
-+#define ACT200L_57600   0x03
-+#define ACT200L_115200  0x01
-+
-+/* Register 13: Control register #3 */
-+#define ACT200L_REG13   0xd0
-+#define ACT200L_SHDW    0x01 /* Enable access to shadow registers */
-+
-+/* Register 15: Status register */
-+#define ACT200L_REG15   0xf0
-+
-+/* Register 21: Control register #4 */
-+#define ACT200L_REG21   0x50
-+#define ACT200L_EXCK    0x02 /* Disable clock output driver */
-+#define ACT200L_OSCL    0x04 /* oscillator in low power, medium accuracy mode */
-+
-+static void init_act200(void)
-+{
-+	int i;
-+	__u8 control[] = {
-+		ACT200L_REG15,
-+		ACT200L_REG13 | ACT200L_SHDW,
-+		ACT200L_REG21 | ACT200L_EXCK | ACT200L_OSCL,
-+		ACT200L_REG13,
-+		ACT200L_REG7  | ACT200L_ENPOS,
-+		ACT200L_REG6  | ACT200L_RS0  | ACT200L_RS1,
-+		ACT200L_REG5  | ACT200L_RWIDL,
-+		ACT200L_REG4  | ACT200L_OP0  | ACT200L_OP1 | ACT200L_BLKR,
-+		ACT200L_REG3  | ACT200L_B0,
-+		ACT200L_REG0  | ACT200L_TXEN | ACT200L_RXEN,
-+		ACT200L_REG8 |  (ACT200L_115200       & 0x0f),
-+		ACT200L_REG9 | ((ACT200L_115200 >> 4) & 0x0f),
-+		ACT200L_REG1 | ACT200L_LODB | ACT200L_WIDE
-+	};
-+
-+	/* Set DLAB 1. */
-+	soutp(UART_LCR, UART_LCR_DLAB | UART_LCR_WLEN8);
-+
-+	/* Set divisor to 12 => 9600 Baud */
-+	soutp(UART_DLM, 0);
-+	soutp(UART_DLL, 12);
-+
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, UART_LCR_WLEN8);
-+	/* Set divisor to 12 => 9600 Baud */
-+
-+	/* power supply */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
-+	for (i = 0; i < 50; i++)
-+		safe_udelay(1000);
-+
-+		/* Reset the dongle : set RTS low for 25 ms */
-+	soutp(UART_MCR, UART_MCR_DTR|UART_MCR_OUT2);
-+	for (i = 0; i < 25; i++)
-+		udelay(1000);
-+
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
-+	udelay(100);
-+
-+	/* Clear DTR and set RTS to enter command mode */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
-+	udelay(7);
-+
-+/* send out the control register settings for 115K 7N1 SIR operation */
-+	for (i = 0; i < sizeof(control); i++) {
-+		soutp(UART_TX, control[i]);
-+		/* one byte takes ~1042 usec to transmit at 9600,8N1 */
-+		udelay(1500);
++		} else if (!vfd_ep_found &&
++			   ep_dir == USB_DIR_OUT &&
++			   ep_type == USB_ENDPOINT_XFER_INT) {
++			tx_endpoint = ep;
++			vfd_ep_found = TRUE;
++			if (debug)
++				info("%s: found VFD endpoint", __func__);
++		}
 +	}
 +
-+	/* back to normal operation */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
-+	udelay(50);
-+
-+	udelay(1500);
-+	soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
-+
-+	/* Set DLAB 1. */
-+	soutp(UART_LCR, UART_LCR_DLAB | UART_LCR_WLEN7);
-+
-+	/* Set divisor to 1 => 115200 Baud */
-+	soutp(UART_DLM, 0);
-+	soutp(UART_DLL, 1);
-+
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
-+
-+	/* Set DLAB 0, 7 Bit */
-+	soutp(UART_LCR, UART_LCR_WLEN7);
-+
-+	/* enable interrupts */
-+	soutp(UART_IER, sinp(UART_IER)|UART_IER_RDI);
-+}
-+#endif
-+
-+#ifdef LIRC_SIR_ACTISYS_ACT220L
-+/* Derived from linux IrDA driver (net/irda/actisys.c)
-+ * Drop me a mail for any kind of comment: maxx@spaceboyz.net */
-+
-+void init_act220(void)
-+{
-+	int i;
-+
-+	/* DLAB 1 */
-+	soutp(UART_LCR, UART_LCR_DLAB|UART_LCR_WLEN7);
-+
-+	/* 9600 baud */
-+	soutp(UART_DLM, 0);
-+	soutp(UART_DLL, 12);
-+
-+	/* DLAB 0 */
-+	soutp(UART_LCR, UART_LCR_WLEN7);
-+
-+	/* reset the dongle, set DTR low for 10us */
-+	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
-+	udelay(10);
-+
-+	/* back to normal (still 9600) */
-+	soutp(UART_MCR, UART_MCR_DTR|UART_MCR_RTS|UART_MCR_OUT2);
-+
-+	/* send RTS pulses until we reach 115200
-+	 * i hope this is really the same for act220l/act220l+ */
-+	for (i = 0; i < 3; i++) {
-+		udelay(10);
-+		/* set RTS low for 10 us */
-+		soutp(UART_MCR, UART_MCR_DTR|UART_MCR_OUT2);
-+		udelay(10);
-+		/* set RTS high for 10 us */
-+		soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	/*
++	 * If we didn't find a vfd endpoint, and we have a next-gen LCD,
++	 * use control urb instead of interrupt
++	 */
++	if (!vfd_ep_found) {
++		if (usb_match_id(interface, lcd_control_endpoint_list)) {
++			tx_control = 1;
++			vfd_ep_found = TRUE;
++			if (debug)
++				info("%s: LCD device uses control endpoint, "
++				     "not interface OUT endpoint", __func__);
++		}
 +	}
 +
-+	/* back to normal operation */
-+	udelay(1500); /* better safe than sorry ;) */
++	/* Input endpoint is mandatory */
++	if (!ir_ep_found) {
++		err("%s: no valid input(IR) endpoint found.", __func__);
++		retval = -ENODEV;
++		goto exit;
++	} else {
++		/* Determine if the IR signals are decoded onboard */
++		if (usb_match_id(interface, ir_onboard_decode_list))
++			ir_onboard_decode = TRUE;
 +
-+	/* Set DLAB 1. */
-+	soutp(UART_LCR, UART_LCR_DLAB | UART_LCR_WLEN7);
++		if (debug)
++			info("ir_onboard_decode: %d", ir_onboard_decode);
++	}
 +
-+	/* Set divisor to 1 => 115200 Baud */
-+	soutp(UART_DLM, 0);
-+	soutp(UART_DLL, 1);
++	/* Determine if VFD requires 6 packets */
++	if (vfd_ep_found) {
++		if (usb_match_id(interface, vfd_proto_6p_list))
++			vfd_proto_6p = TRUE;
 +
-+	/* Set DLAB 0, 7 Bit */
-+	/* The dongle doesn't seem to have any problems with operation
-+	   at 7N1 */
-+	soutp(UART_LCR, UART_LCR_WLEN7);
++		if (debug)
++			info("vfd_proto_6p: %d", vfd_proto_6p);
++	}
 +
-+	/* enable interrupts */
-+	soutp(UART_IER, UART_IER_RDI);
++
++	/* Allocate memory */
++
++	alloc_status = SUCCESS;
++
++	context = kmalloc(sizeof(struct imon_context), GFP_KERNEL);
++	if (!context) {
++		err("%s: kmalloc failed for context", __func__);
++		alloc_status = 1;
++		goto alloc_status_switch;
++	}
++	plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL);
++	if (!plugin) {
++		err("%s: kmalloc failed for lirc_plugin", __func__);
++		alloc_status = 2;
++		goto alloc_status_switch;
++	}
++	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
++	if (!rbuf) {
++		err("%s: kmalloc failed for lirc_buffer", __func__);
++		alloc_status = 3;
++		goto alloc_status_switch;
++	}
++	if (lirc_buffer_init(rbuf, BUF_CHUNK_SIZE, BUF_SIZE)) {
++		err("%s: lirc_buffer_init failed", __func__);
++		alloc_status = 4;
++		goto alloc_status_switch;
++	}
++	rx_urb = usb_alloc_urb(0, GFP_KERNEL);
++	if (!rx_urb) {
++		err("%s: usb_alloc_urb failed for IR urb", __func__);
++		alloc_status = 5;
++		goto alloc_status_switch;
++	}
++	if (vfd_ep_found) {
++		tx_urb = usb_alloc_urb(0, GFP_KERNEL);
++		if (!tx_urb) {
++			err("%s: usb_alloc_urb failed for VFD urb",
++			    __func__);
++			alloc_status = 6;
++			goto alloc_status_switch;
++		}
++	}
++
++	/* clear all members of imon_context and lirc_plugin */
++	memset(context, 0, sizeof(struct imon_context));
++	mutex_init(&context->lock);
++	context->vfd_proto_6p = vfd_proto_6p;
++	context->ir_onboard_decode = ir_onboard_decode;
++
++	memset(plugin, 0, sizeof(struct lirc_plugin));
++
++	strcpy(plugin->name, MOD_NAME);
++	plugin->minor = -1;
++	plugin->code_length = (ir_onboard_decode) ?
++		32 : sizeof(int) * 8;
++	plugin->sample_rate = 0;
++	plugin->features = (ir_onboard_decode) ?
++		LIRC_CAN_REC_LIRCCODE : LIRC_CAN_REC_MODE2;
++	plugin->data = context;
++	plugin->rbuf = rbuf;
++	plugin->set_use_inc = ir_open;
++	plugin->set_use_dec = ir_close;
++	plugin->dev = &dev->dev;
++	plugin->owner = THIS_MODULE;
++
++	LOCK_CONTEXT;
++
++	lirc_minor = lirc_register_plugin(plugin);
++	if (lirc_minor < 0) {
++		err("%s: lirc_register_plugin failed", __func__);
++		alloc_status = 7;
++		UNLOCK_CONTEXT;
++		goto alloc_status_switch;
++	} else
++		info("%s: Registered iMON plugin(minor:%d)",
++		     __func__, lirc_minor);
++
++	/* Needed while unregistering! */
++	plugin->minor = lirc_minor;
++
++	context->dev = dev;
++	context->dev_present = TRUE;
++	context->rx_endpoint = rx_endpoint;
++	context->rx_urb = rx_urb;
++	if (vfd_ep_found) {
++		context->vfd_supported = TRUE;
++		context->tx_endpoint = tx_endpoint;
++		context->tx_urb = tx_urb;
++		context->tx_control = tx_control;
++	}
++	context->plugin = plugin;
++
++	usb_set_intfdata(interface, context);
++
++	if (cpu_to_le16(dev->descriptor.idProduct) == 0xffdc) {
++		int err;
++
++		err = sysfs_create_group(&interface->dev.kobj,
++					 &imon_attribute_group);
++		if (err)
++			err("%s: Could not create sysfs entries(%d)",
++			    __func__, err);
++	}
++
++	if (vfd_ep_found) {
++		if (debug)
++			info("Registering VFD with sysfs");
++		if (usb_register_dev(interface, &imon_class)) {
++			/* Not a fatal error, so ignore */
++			info("%s: could not get a minor number for VFD",
++				__func__);
++		}
++	}
++
++	info("%s: iMON device on usb<%d:%d> initialized",
++			__func__, dev->bus->busnum, dev->devnum);
++
++	UNLOCK_CONTEXT;
++
++alloc_status_switch:
++
++	switch (alloc_status) {
++	case 7:
++		if (vfd_ep_found)
++			usb_free_urb(tx_urb);
++	case 6:
++		usb_free_urb(rx_urb);
++	case 5:
++		lirc_buffer_free(rbuf);
++	case 4:
++		kfree(rbuf);
++	case 3:
++		kfree(plugin);
++	case 2:
++		kfree(context);
++		context = NULL;
++	case 1:
++		retval = -ENOMEM;
++	case SUCCESS:
++		;
++	}
++
++exit:
++	return retval;
 +}
-+#endif
 +
-+static int init_lirc_sir(void)
++/**
++ * Callback function for USB core API: disonnect
++ */
++static void imon_disconnect(struct usb_interface *interface)
 +{
-+	int retval;
++	struct imon_context *context;
 +
-+	init_waitqueue_head(&lirc_read_queue);
-+	retval = init_port();
-+	if (retval < 0)
-+		return retval;
-+	init_hardware();
-+	printk(KERN_INFO LIRC_DRIVER_NAME
-+		": Installed.\n");
-+	return 0;
++	/* prevent races with ir_open()/vfd_open() */
++	down(&disconnect_sem);
++
++	context = usb_get_intfdata(interface);
++	LOCK_CONTEXT;
++
++	info("%s: iMON device disconnected", __func__);
++
++	/* sysfs_remove_group is safe to call even if sysfs_create_group
++	 * hasn't been called */
++	sysfs_remove_group(&interface->dev.kobj,
++			   &imon_attribute_group);
++	usb_set_intfdata(interface, NULL);
++	context->dev_present = FALSE;
++
++	/* Stop reception */
++	usb_kill_urb(context->rx_urb);
++
++	/* Abort ongoing write */
++	if (atomic_read(&context->tx.busy)) {
++		usb_kill_urb(context->tx_urb);
++		wait_for_completion(&context->tx.finished);
++	}
++
++	/* De-register from lirc_dev if IR port is not open */
++	if (!context->ir_isopen)
++		deregister_from_lirc(context);
++
++	if (context->vfd_supported)
++		usb_deregister_dev(interface, &imon_class);
++
++	UNLOCK_CONTEXT;
++
++	if (!context->ir_isopen && !context->vfd_isopen)
++		delete_context(context);
++
++	up(&disconnect_sem);
++}
++
++static int __init imon_init(void)
++{
++	int rc;
++
++	info(MOD_DESC ", v" MOD_VERSION);
++	info(MOD_AUTHOR);
++
++	rc = usb_register(&imon_driver);
++	if (rc) {
++		err("%s: usb register failed(%d)", __func__, rc);
++		return -ENODEV;
++	}
++	return SUCCESS;
++}
++
++static void __exit imon_exit(void)
++{
++	usb_deregister(&imon_driver);
++	info("module removed. Goodbye!");
 +}
 +
 +#ifdef MODULE
++module_init(imon_init);
++module_exit(imon_exit);
 +
-+static int __init lirc_sir_init(void)
-+{
-+	int retval;
-+
-+	retval = init_chrdev();
-+	if (retval < 0)
-+		return retval;
-+	retval = init_lirc_sir();
-+	if (retval) {
-+		drop_chrdev();
-+		return retval;
-+	}
-+	return 0;
-+}
-+
-+static void __exit lirc_sir_exit(void)
-+{
-+	drop_hardware();
-+	drop_chrdev();
-+	drop_port();
-+	printk(KERN_INFO LIRC_DRIVER_NAME ": Uninstalled.\n");
-+}
-+
-+module_init(lirc_sir_init);
-+module_exit(lirc_sir_exit);
-+
-+#ifdef LIRC_SIR_TEKRAM
-+MODULE_DESCRIPTION("Infrared receiver driver for Tekram Irmate 210");
-+MODULE_AUTHOR("Christoph Bartelmus");
-+#elif defined(LIRC_ON_SA1100)
-+MODULE_DESCRIPTION("LIRC driver for StrongARM SA1100 embedded microprocessor");
-+MODULE_AUTHOR("Christoph Bartelmus");
-+#elif defined(LIRC_SIR_ACTISYS_ACT200L)
-+MODULE_DESCRIPTION("LIRC driver for Actisys Act200L");
-+MODULE_AUTHOR("Karl Bongers");
-+#elif defined(LIRC_SIR_ACTISYS_ACT220L)
-+MODULE_DESCRIPTION("LIRC driver for Actisys Act220L(+)");
-+MODULE_AUTHOR("Jan Roemisch");
 +#else
-+MODULE_DESCRIPTION("Infrared receiver driver for SIR type serial ports");
-+MODULE_AUTHOR("Milan Pikula");
-+#endif
-+MODULE_LICENSE("GPL");
-+
-+#ifdef LIRC_ON_SA1100
-+module_param(irq, int, 0444);
-+MODULE_PARM_DESC(irq, "Interrupt (16)");
-+#else
-+module_param(io, int, 0444);
-+MODULE_PARM_DESC(io, "I/O address base (0x3f8 or 0x2f8)");
-+
-+module_param(irq, int, 0444);
-+MODULE_PARM_DESC(irq, "Interrupt (4 or 3)");
-+
-+module_param(threshold, int, 0444);
-+MODULE_PARM_DESC(threshold, "space detection threshold (3)");
-+#endif
-+
-+module_param(debug, bool, 0644);
-+MODULE_PARM_DESC(debug, "Enable debugging messages");
++subsys_initcall(imon_init);
 +
 +#endif /* MODULE */
 -- 
