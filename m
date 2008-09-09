@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYIIPEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbYIIPHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530AbYIIPEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbYIIPEP
+	id S1754927AbYIIPHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYIIPHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:04:15 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53357 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbYIIPEL (ORCPT
+	Tue, 9 Sep 2008 11:07:22 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:55586 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbYIIPHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:04:11 -0400
-Date: Tue, 9 Sep 2008 09:04:10 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
-       scottm@somanetworks.com
-Subject: Re: [PATCH v2 05/13] PCI: cpci_hotplug: stop managing hotplug_slot->name
-Message-ID: <20080909150410.GZ2772@parisc-linux.org>
-References: <20080909091813.29542.85613.stgit@bob.kio> <20080909100027.29542.66879.stgit@bob.kio>
+	Tue, 9 Sep 2008 11:07:20 -0400
+Date: Tue, 9 Sep 2008 07:54:53 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
+       sparclinux@vger.kernel.org, manfred@colorfullife.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] prevent sparc64 from invoking irq handlers on offline
+	CPUs
+Message-ID: <20080909145453.GA6711@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080903004211.GD6748@linux.vnet.ibm.com> <20080903.022138.31681256.davem@davemloft.net> <20080903154217.GA6807@linux.vnet.ibm.com> <20080908.171708.43575256.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080909100027.29542.66879.stgit@bob.kio>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080908.171708.43575256.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 04:00:27AM -0600, Alex Chiang wrote:
-> We no longer need to manage our version of hotplug_slot->name
-> since the PCI and hotplug core manage it on our behalf.
+On Mon, Sep 08, 2008 at 05:17:08PM -0700, David Miller wrote:
+> From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> Date: Wed, 3 Sep 2008 08:42:17 -0700
+> > o	Timer irqs.  Not sure what happens to add_timer() calls from
+> > 	a CPU that is going offline.  The hope would be that they get
+> > 	queued to some other CPU?
 > 
-> Now, we simply advise the PCI core of the name that we would
-> like, and let the core take care of the rest.
+> This case is interesting, and I'm no sure what happens here.
 
-> -static void
-> -make_slot_name(struct slot *slot)
-> -{
-> -	snprintf(slot->hotplug_slot->name,
-> -		 SLOT_NAME_SIZE, "%02x:%02x", slot->bus->number, slot->number);
-> -}
->  
->  
-> +		scnprintf(name, SLOT_NAME_SIZE, "%02x:%02x", bus->number, i);
-> +
->  		hotplug_slot->private = slot;
+It turns out that there is a timer_cpu_modifier() that invokes
+migrate_timers() upon CPU_DEAD or CPU_DEAD_FROZEN.  And migrate_timers()
+looks like it does what its name says.  And I believe that CPU_DEAD
+happens after sparc64's local_irq_enable() window, so we should be OK.
 
-Unfortunately, our name is kind of crappy.  Can we not give the user
-anything better than this?  I can't seem to find the CompactPCI
-specification to see if we have a better name available.
-
-I wonder if we can use DMI data on this class of machine.  Scott?
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+							Thanx, Paul
