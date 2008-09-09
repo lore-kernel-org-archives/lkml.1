@@ -1,102 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYIIUhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757713AbYIIUhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbYIIUhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 16:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbYIIUhF
+	id S1757713AbYIIUhr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 16:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYIIUhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 16:37:05 -0400
-Received: from gw.goop.org ([64.81.55.164]:45785 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751814AbYIIUhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 16:37:03 -0400
-Message-ID: <48C6DE6E.1070804@goop.org>
-Date: Tue, 09 Sep 2008 13:37:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 9 Sep 2008 16:37:38 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:52912 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751956AbYIIUhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 16:37:37 -0400
+From: David Sanders <linux@sandersweb.net>
+Reply-To: linux@sandersweb.net
+To: linux-kernel@vger.kernel.org
+Subject: Re: [git pull] x86 fixes
+Date: Tue, 9 Sep 2008 16:37:32 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>
+References: <200809081932.m88JWVZG013061@askone.hos.anvin.org> <200809091518.16311.linux@sandersweb.net> <alpine.LFD.1.10.0809091255420.3117@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809091255420.3117@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Alex Nixon <alex.nixon@citrix.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Xen: Fix pte unpin BUG when !CONFIG_SMP
-References: <> <1220959508-13806-1-git-send-email-alex.nixon@citrix.com> <48C6BB00.9040607@goop.org> <48C6CCD7.8030800@citrix.com>
-In-Reply-To: <48C6CCD7.8030800@citrix.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809091637.32650.linux@sandersweb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Nixon wrote:
-> Jeremy Fitzhardinge wrote:
->> Alex Nixon wrote:
->>  
->>> We still need to pin PTEs, even if there are no PTE locks. 
->>> Otherwise we'll BUG whenever there aren't PTE locks (i.e. whenever
->>> NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS), as we try to unpin PTEs which
->>> were never pinned in the first place.
->>>       
->>
->> Where does the unpin happen?  xen_unpin_page() also checks to see if it
->> took the lock before trying to unpin, symmetric with xen_pin_page().
->>
->>     J
->>   
-> Here's the backtrace of the BUG() the patch addresses.  Now you've
-> pointed it out - I see the asymmetry - and also suspect some ptes are
-> being left pinned.
+On Tuesday 09 September 2008 15:56, Linus Torvalds wrote:
+> On Tue, 9 Sep 2008, David Sanders wrote:
+> > I haven't seen this come across the wire in Linus's 2.6.27 tree.  We're
+> > still going to do this right?
 >
-> I'm having trouble finding a cleaner solution which solves this but
-> doesn't incite more BUGs.
-> Perhaps you have an idea?
+> Latest version is out there now (leaving the gas-error-proofing for
+> later),
 
-Right, I see.  We shouldn't be pinning ptes on attachment in
-xen_alloc_ptpage() if we're not using split pte locks.
-
-    J
-
->
-> - Alex
->
->
-> ------------[ cut here ]------------
-> kernel BUG at
-> /local/scratch/hotplug.linux.trees.git/arch/x86/xen/enlighten.c:847!
-> invalid opcode: 0000 [#1]
-> Modules linked in:
->
-> Pid: 1, comm: init Tainted: G        W (2.6.27-rc5-tip #352)
-> EIP: 0061:[<c10038fe>] EFLAGS: 00010282 CPU: 0
-> EIP is at pin_pagetable_pfn+0x3f/0x4b
-> EAX: ffffffea EBX: df82bd7c ECX: 00000001 EDX: 00000000
-> ESI: 00007ff0 EDI: c1a579e0 EBP: df82bd94 ESP: df82bd7c
-> DS: 007b ES: 007b FS: 0000 GS: 0000 SS: e021
-> Process init (pid: 1, ti=df82a000 task=df82c000 task.ti=df82a000)
-> Stack: 00000004 0014a0a1 00000000 0001fb4f c1a579e0 c1a579e0 df82bda4
-> c1003dd3
->       003f69e0 c157e024 df82bdac c1003e0e df82bdc8 c101b577 00000000
-> 00000000
->       003f69e0 c1661000 dfb4e000 df82be28 c1062d35 1fb4f067 00000000
-> dfb4e000
-> Call Trace:
-> [<c1003dd3>] ? xen_release_ptpage+0x61/0x80
-> [<c1003e0e>] ? xen_release_pte+0xd/0xf
-> [<c101b577>] ? __pte_free_tlb+0x46/0x5f
-> [<c1062d35>] ? free_pgd_range+0x1dc/0x391
-> [<c10794e5>] ? setup_arg_pages+0x1b8/0x22b
-> [<c109b3cb>] ? load_elf_binary+0x3f1/0x10c6
-> [<c1062206>] ? get_user_pages+0x316/0x394
-> [<c1078bef>] ? get_arg_page+0x2c/0x7e
-> [<c1078bc1>] ? put_arg_page+0x8/0xa
-> [<c1078d97>] ? copy_strings+0x156/0x160
-> [<c1078e51>] ? search_binary_handler+0x7b/0x1c0
-> [<c1079e20>] ? do_execve+0x13a/0x1c4
-> [<c1007164>] ? sys_execve+0x29/0x4b
-> [<c1008a2e>] ? syscall_call+0x7/0xb
-> [<c100b11f>] ? kernel_execve+0x17/0x1c
-> [<c1003140>] ? run_init_process+0x17/0x19
-> [<c10031e8>] ? init_post+0xa6/0xf6
-> [<c100965f>] ? kernel_thread_helper+0x7/0x10
-> =======================
->
-
+The Kconfig.cpu change wasn't in my git pull.
+David
