@@ -1,142 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbYIIS3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYIISgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbYIIS3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 14:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYIIS3e
+	id S1756087AbYIISgj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 14:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYIISgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 14:29:34 -0400
-Received: from smtp2f.orange.fr ([80.12.242.152]:25386 "EHLO smtp2f.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754906AbYIIS3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 14:29:33 -0400
-X-ME-UUID: 20080909173523421.66E1E70000A3@mwinf2f28.orange.fr
-Message-ID: <48C6B3DA.3040904@wanadoo.fr>
-Date: Tue, 09 Sep 2008 19:35:22 +0200
-From: Thierry <thierry.bultel@wanadoo.fr>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Suggested patch: Sending the FQDN when booting via DHCP
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Antivirus: avast! (VPS 080908-0, 08/09/2008), Outbound message
-X-Antivirus-Status: Clean
+	Tue, 9 Sep 2008 14:36:31 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46720 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbYIISga (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 14:36:30 -0400
+Date: Tue, 9 Sep 2008 20:40:08 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Andi Kleen <andi@firstfloor.org>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20080909184008.GA7714@one.firstfloor.org>
+References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org> <48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org> <48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu> <alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org> <m3vdx6xm68.fsf@maximus.localdomain> <87d4jdty5b.fsf@basil.nowhere.org> <48C6AFA4.1050206@rtr.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C6AFA4.1050206@rtr.ca>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[re-sent without HTML encoding, and to the right aliases ...]
+> Our firewall here uses a Via C3-600 CPU, and CMOV has never worked on it.
+> But based upon your posting, I have today upgraded the BIOS to the
+> latest (2004) version.
 
-Hi all,
+That's probably not new enough. 
 
-the following patch can be useful, in order to let the DHCP server 
-accordingly update the DNS, when booting via DHCP.
+> 
+> Now.. how can I check whether CMOV works or not?  It's not listed in 
+> /proc/cpuinfo.
 
-This can be useful for 2 reasons:
-1) on small systems, the embedded filesystem may even not have udhcpd
-2) when booting nfsroot, the nfs server does not like when udhcpd in 
-invoked, even when requested the same IP address.
+If it's not in cpuinfo it won't work.
 
-Here is the patch, for 2.6.27-rc5. (Notice that it is the very first 
-time I deliver a patch for Linux, and I may
-have missed some points on the procedure, if it is the case I apologize 
-for that). What do you think about it ?
+-Andi
 
-Any ideas or comments are welcome.
-
-Thanks,
-Thierry
-
-diff --git a/net/ipv4/Kconfig b/net/ipv4/Kconfig
-index 591ea23..74111da 100644
---- a/net/ipv4/Kconfig
-+++ b/net/ipv4/Kconfig
-@@ -162,6 +162,16 @@ config IP_PNP_DHCP
-      must be operating on your network.  Read
-      for details.
-
-+config IP_PNP_DHCP_FQDN
-+    bool "IP: DHCP FQDN"
-+    default y
-+    depends on IP_PNP_DHCP
-+    ---help---
-+       If you want your Linux box to send its FQDN in the DHCP request,
-+       in order to let the DHCP server know how to update the DNS, you
-+       can say Y here.
-+
-+
-config IP_PNP_BOOTP
-    bool "IP: BOOTP support"
-    depends on IP_PNP
-diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-index 42065ff..6a2b159 100644
---- a/net/ipv4/ipconfig.c
-+++ b/net/ipv4/ipconfig.c
-@@ -565,6 +565,19 @@ struct bootp_pkt {        /* BOOTP packet format */
-#define DHCPRELEASE    7
-#define DHCPINFORM    8
-
-+/* DHCP options        */
-+
-+#define DHCP_OPT_REQUESTED_IP    50
-+#define DHCP_OPT_MESSAGE_TYPE    53
-+#define DHCP_OPT_SERVER_ID    54
-+#define DHCP_OPT_VEND_CLASS_ID    60
-+#define DHCP_OPT_FQDN        81
-+
-+#define DHCP_FQDN_FLAGS_S    0x1    /* Server update */
-+#define DHCP_FQDN_FLAGS_O    0x2
-+#define DHCP_FQDN_FLAGS_E    0x4
-+#define DHCP_FQDN_FLAGS_N    0x8
-+
-static int ic_bootp_recv(struct sk_buff *skb, struct net_device *dev, 
-struct packet_type *pt, struct net_device *orig_dev);
-
-static struct packet_type bootp_packet_type __initdata = {
-@@ -596,20 +609,35 @@ ic_dhcp_init_options(u8 *options)
-    memcpy(e, ic_bootp_cookie, 4);    /* RFC1048 Magic Cookie */
-    e += 4;
-
--    *e++ = 53;        /* DHCP message type */
-+    *e++ = DHCP_OPT_MESSAGE_TYPE;        /* DHCP message type */
-    *e++ = 1;
-    *e++ = mt;
-
-    if (mt == DHCPREQUEST) {
--        *e++ = 54;    /* Server ID (IP address) */
--        *e++ = 4;
-+#ifdef CONFIG_IP_PNP_DHCP_FQDN
-+        char * hostname = utsname()->nodename;
-+        int    len    = strlen(hostname);       +
-+        *e++ = DHCP_OPT_FQDN;
-+        *e++ = len + 3;    /* Len with flags and R1+R2 */
-+        *e++ = DHCP_FQDN_FLAGS_S;
-+        e += 2;
-+        memcpy(e,hostname,len);
-+        e += len;
-+#endif /* CONFIG_IP_PNP_DHCP_FQDN */
-+
-+        *e++ = DHCP_OPT_SERVER_ID;    /* Server ID (IP address) */
-+        *e++ = 4;    /* Len */
-        memcpy(e, &ic_servaddr, 4);
-        e += 4;
-
--        *e++ = 50;    /* Requested IP address */
-+        *e++ = DHCP_OPT_REQUESTED_IP;    /* Requested IP address */
-        *e++ = 4;
-        memcpy(e, &ic_myaddr, 4);
-        e += 4;
-+
-    }
-
-    /* always? */
-@@ -632,7 +660,7 @@ ic_dhcp_init_options(u8 *options)
-        if (*vendor_class_identifier) {
-            printk(KERN_INFO "DHCP: sending class identifier \"%s\"\n",
-                   vendor_class_identifier);
--            *e++ = 60;    /* Class-identifier */
-+            *e++ = DHCP_OPT_VEND_CLASS_ID;    /* Class-identifier */
-            len = strlen(vendor_class_identifier);
-            *e++ = len;
-            memcpy(e, vendor_class_identifier, len);
-
+-- 
+ak@linux.intel.com
