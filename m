@@ -1,100 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbYIIIwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630AbYIIIz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbYIIIwl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 04:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYIIIwc
+	id S1755630AbYIIIz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 04:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753769AbYIIIzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 04:52:32 -0400
-Received: from mail4.hitachi.co.jp ([133.145.228.5]:43292 "EHLO
-	mail4.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbYIIIwb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 04:52:31 -0400
-X-AuditID: 0ac90647-ab63cba0000039ee-aa-48c6394ca8b0
-Message-ID: <48C63947.5040602@hitachi.com>
-Date: Tue, 09 Sep 2008 17:52:23 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com, adilger@sun.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
-Subject: [PATCH 2/2][RESEND] jbd: ordered data integrity fix
-References: <48C6388E.4010402@hitachi.com>
-In-Reply-To: <48C6388E.4010402@hitachi.com>
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 9 Sep 2008 04:55:18 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:46493 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753471AbYIIIzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 04:55:16 -0400
+Date: Tue, 9 Sep 2008 10:55:13 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Matt Fleming" <mattjfleming@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
+Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
+Message-ID: <20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
+In-Reply-To: <5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
+References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
+	<20080907123832.5ba79c12@mjolnir.drzeus.cx>
+	<5ff4a1e50809080628i65bd7c7blfac70659a9f9229c@mail.gmail.com>
+	<20080909092216.46a6eba1@mjolnir.drzeus.cx>
+	<5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
+	<20080909094438.6423b8ef@mjolnir.drzeus.cx>
+	<5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In ordered mode, if a file data buffer being dirtied exists in
-the committing transaction, we write the buffer to the disk, move
-it from the committing transaction to the running transaction,
-then dirty it.  But we don't have to remove the buffer from the
-committing transaction when the buffer couldn't be written out,
-otherwise it would miss the error and the committing transaction
-would not abort.
+On Tue, 9 Sep 2008 08:59:11 +0100
+"Matt Fleming" <mattjfleming@googlemail.com> wrote:
 
-This patch adds an error check before removing the buffer from the
-committing transaction.
+> 
+> OK, just to be clear, where are those fields not used? They are used
+> in the new mmc_get_timeout() function.
+> 
 
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-Acked-by: Jan Kara <jack@suse.cz>
----
-This patch is the same as patch 2/5 of possible filesystem corruption
-fixes (take 2).  It can be found at:
-http://kerneltrap.org/mailarchive/linux-kernel/2008/6/2/2002144
+Sorry, you're right. I just noticed the !host->mmc->card part and
+assumed you had your own logic in there.
 
- fs/jbd/transaction.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+Why do you have that part though? What case have you found where you
+need the timeouts and do not have properly set timeout fields?
 
-Index: linux-2.6.27-rc5/fs/jbd/transaction.c
-===================================================================
---- linux-2.6.27-rc5.orig/fs/jbd/transaction.c
-+++ linux-2.6.27-rc5/fs/jbd/transaction.c
-@@ -954,9 +954,10 @@ int journal_dirty_data(handle_t *handle,
- 	journal_t *journal = handle->h_transaction->t_journal;
- 	int need_brelse = 0;
- 	struct journal_head *jh;
-+	int ret = 0;
- 
- 	if (is_handle_aborted(handle))
--		return 0;
-+		return ret;
- 
- 	jh = journal_add_journal_head(bh);
- 	JBUFFER_TRACE(jh, "entry");
-@@ -1067,7 +1068,16 @@ int journal_dirty_data(handle_t *handle,
- 				   time if it is redirtied */
- 			}
- 
--			/* journal_clean_data_list() may have got there first */
-+			/*
-+			 * We cannot remove the buffer with io error from the
-+			 * committing transaction, because otherwise it would
-+			 * miss the error and the commit would not abort.
-+			 */
-+			if (unlikely(!buffer_uptodate(bh))) {
-+				ret = -EIO;
-+				goto no_journal;
-+			}
-+
- 			if (jh->b_transaction != NULL) {
- 				JBUFFER_TRACE(jh, "unfile from commit");
- 				__journal_temp_unlink_buffer(jh);
-@@ -1108,7 +1118,7 @@ no_journal:
- 	}
- 	JBUFFER_TRACE(jh, "exit");
- 	journal_put_journal_head(jh);
--	return 0;
-+	return ret;
- }
- 
- /**
+-- 
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
