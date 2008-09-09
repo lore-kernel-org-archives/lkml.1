@@ -1,416 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbYIIPix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbYIIPkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbYIIPix (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbYIIPip
+	id S1755986AbYIIPkf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYIIPkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:38:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:23490 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYIIPio (ORCPT
+	Tue, 9 Sep 2008 11:40:23 -0400
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:54707 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753370AbYIIPkW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:38:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=UEQPN170qDDUQOac/evjrmqsJovGPmkezxhb5H6Z61Ke5a+ijTeSCl2IcYc4HKY04U
-         w2X+qYfSp8KTepsOwWweJ7fY6hoCqtgZwi6gO++XRQrEJOTSO/bjqrFHEbpNXkUuSMWT
-         sk/lMJskwkcQxcSsxwfIyPHagh5BTXLxKWA2Y=
-Message-ID: <48C6987D.2050905@gmail.com>
-Date: Tue, 09 Sep 2008 17:38:37 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 9 Sep 2008 11:40:22 -0400
+X-Sasl-enc: mEVASSH+ZFfktXkKDmv1/fD2a+ukEYeNhsiQfHvPj+HZ 1220974820
+Message-ID: <48C698DF.7010401@fastmail.fm>
+Date: Tue, 09 Sep 2008 17:40:15 +0200
+From: Michael J Gruber <michaeljgruber+gmane@fastmail.fm>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Carl Henrik Lunde <chlunde@ping.uio.no>,
-       Divyesh Shah <dpshah@google.com>, Naveen Gupta <ngupta@google.com>,
-       =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Marco Innocenti <m.innocenti@cineca.it>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Vivek Goyal <vgoyal@redhat.com>,
-       Matt Heaton <matt@bluehost.com>, David Radford <dradford@bluehost.com>,
-       containers@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: [RFC] [PATCH -mm] cgroup: limit the amount of dirty file pages
-X-Enigmail-Version: 0.95.0
+To: Junio C Hamano <gitster@pobox.com>
+CC: Bert Wesarg <bert.wesarg@googlemail.com>,
+       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
+       Git Mailing List <git@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       guilt@lists.josefsipek.net, Brandon Philips <brandon@ifup.org>
+Subject: Re: [ANNOUNCE] Guilt v0.31
+References: <20080908135244.GB27550@josefsipek.net> <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com> <20080908184322.GE27550@josefsipek.net> <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com> <7vmyiifnwa.fsf@gitster.siamese.dyndns.org> <48C64B8B.5000606@fastmail.fm> <48C673CF.2000107@fastmail.fm> <7vd4jd8i9b.fsf@gitster.siamese.dyndns.org>
+In-Reply-To: <7vd4jd8i9b.fsf@gitster.siamese.dyndns.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a totally experimental patch against 2.6.27-rc5-mm1.
+Junio C Hamano venit, vidit, dixit 09.09.2008 17:13:
+> Michael J Gruber <michaeljgruber+gmane@fastmail.fm> writes:
+> 
+>> I would go about renaming quick-install-doc to quick-install-man, introducing quick-install-html doing the analogous using the "html" branch and quick-install-doc doing both, which would be more in line with the install-doc target.
+>>
+>> Are there any objections to renaming quick-install-doc to quick-install-man?
+> 
+> What does it improve?
 
-It allows to control how much dirty file pages a cgroup can have at any
-given time. This feature is supposed to be strictly connected to a
-generic cgroup IO controller (see below).
+It makes it more systematic.
 
-Interface: a new entry "filedirty" is added to the file memory.stat,
-reporting the number of dirty file pages (in pages), and a new file
-memory.file_dirty_limit_in_pages is added in the cgroup filesystem to
-show/set the current limit.
+Right now:
 
-The overall design is the following.
+Documentation/Makefile:
+all: builds html and man
+install: installs only man (depends on man)
+install-{info,html}: installs $foo (depends on $foo)
+quick-install: installs man from man branch
 
-The dirty file pages are accounted for each cgroup using the memory
-controller statistics. The memory controller also allows to define an
-upper bound on the number of dirty file pages. When this upper bound is
-exceeded the tasks in the cgroup are forced to writeback dirty pages to
-return within the cgroup limit.
+Makefile:
+doc: builds html and man (-C D all)
+install-doc: installs only man (-C D install)
+install-{info,html}: installs $foo (-C D install-$foo)
+quick-install-doc: installs man from man branch (-C D install-$foo)
 
-With this functionality a generic cgroup IO controller can apply any
-kind of limitation or shaping policy directly to the IO requests
-(elevator, IO scheduler, ...) and it shouldn't care about how fast the
-userspace apps are dirtying pages in memory generating a lot of
-hard/slow to reclaim pages (or even potential OOM conditions), because
-the apps will be actually throttled by the IO controller when they'll
-start to writeback pages.
+So there is a distinct asymmetry between build targets and install
+targets. Wouldn't you expect "make install" to install what "make"
+builds? That is true, but "make install-doc" doesn't install what "make
+doc" builds.
 
-[ Honestly, I don't like this implementation in memcgroup. I'm using the
-memcgroup statistics to account the dirty file pages, but I'm also
-adding a variable to struct mem_cgroup to implement the dirty file pages
-limit. So it seems it would be more appropriate a struct res_counter,
-but I can't use res_counter_[un]charge() interface, because the dirty
-file pages limit is a soft-limit and can be exceeded without any
-problem; if it's exceeded the task is simply forced to perform a
-writeback of the dirty pages to return back to the allowed dirty limit.
-Suggestions are welcome. ]
+Put it differently:
+doc = man + html for build targets
+doc = man for install targets
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- fs/buffer.c                |    1 +
- fs/reiser4/as_ops.c        |    4 ++-
- fs/reiser4/page_cache.c    |    4 ++-
- include/linux/memcontrol.h |   12 ++++++
- mm/filemap.c               |    1 +
- mm/memcontrol.c            |   83 ++++++++++++++++++++++++++++++++++++++++++++
- mm/page-writeback.c        |   37 +++++++++++++++++++
- mm/truncate.c              |    2 +
- 8 files changed, 142 insertions(+), 2 deletions(-)
+What's worse: "make doc" fails if you don't have xmlto, even though
+"make install-doc" may succeed; but you'll never try it when the build
+fails. Until a few hours ago I thought I couldn't build man pages at
+work (asciidoc, but no xmlto), and I had never heard about
+quick-install-doc until I looked at the Makefiles in detail.
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 8274f5e..9c40a16 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -718,6 +718,7 @@ static int __set_page_dirty(struct page *page,
- 		WARN_ON_ONCE(warn && !PageUptodate(page));
- 
- 		if (mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_file_dirty(page, 1);
- 			__inc_zone_page_state(page, NR_FILE_DIRTY);
- 			__inc_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
-diff --git a/fs/reiser4/as_ops.c b/fs/reiser4/as_ops.c
-index decb9eb..671432a 100644
---- a/fs/reiser4/as_ops.c
-+++ b/fs/reiser4/as_ops.c
-@@ -82,9 +82,11 @@ int reiser4_set_page_dirty(struct page *page)
- 			/* check for race with truncate */
- 			if (page->mapping) {
- 				assert("vs-1652", page->mapping == mapping);
--				if (mapping_cap_account_dirty(mapping))
-+				if (mapping_cap_account_dirty(mapping)) {
-+					mem_cgroup_charge_file_dirty(page, 1);
- 					inc_zone_page_state(page,
- 							NR_FILE_DIRTY);
-+				}
- 				radix_tree_tag_set(&mapping->page_tree,
- 						   page->index,
- 						   PAGECACHE_TAG_REISER4_MOVED);
-diff --git a/fs/reiser4/page_cache.c b/fs/reiser4/page_cache.c
-index 654e7ae..2d5dfac 100644
---- a/fs/reiser4/page_cache.c
-+++ b/fs/reiser4/page_cache.c
-@@ -467,8 +467,10 @@ int reiser4_set_page_dirty_internal(struct page *page)
- 	BUG_ON(mapping == NULL);
- 
- 	if (!TestSetPageDirty(page)) {
--		if (mapping_cap_account_dirty(mapping))
-+		if (mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_file_dirty(page, 1);
- 			inc_zone_page_state(page, NR_FILE_DIRTY);
-+		}
- 
- 		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
- 	}
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index ee1b2fc..6677097 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -29,6 +29,9 @@ struct mm_struct;
- 
- #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
- 
-+extern void mem_cgroup_charge_file_dirty(struct page *page, int charge);
-+extern s64 mem_cgroup_check_file_dirty(void);
-+
- extern struct page_cgroup *page_get_page_cgroup(struct page *page);
- extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask);
-@@ -132,6 +135,15 @@ static inline void mem_cgroup_end_migration(struct page *page)
- {
- }
- 
-+static inline void mem_cgroup_charge_file_dirty(struct page *page, int charge)
-+{
-+}
-+
-+static inline s64 mem_cgroup_check_file_dirty(void)
-+{
-+	return 0;
-+}
-+
- static inline int mem_cgroup_calc_mapped_ratio(struct mem_cgroup *mem)
- {
- 	return 0;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 0df6e1f..ca20f51 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -131,6 +131,7 @@ void __remove_from_page_cache(struct page *page)
- 	 * having removed the page entirely.
- 	 */
- 	if (PageDirty(page) && mapping_cap_account_dirty(mapping)) {
-+		mem_cgroup_charge_file_dirty(page, -1);
- 		dec_zone_page_state(page, NR_FILE_DIRTY);
- 		dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
- 	}
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 2979d22..55eb445 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -49,6 +49,7 @@ enum mem_cgroup_stat_index {
- 	 */
- 	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
- 	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
-+	MEM_CGROUP_STAT_FILE_DIRTY,	/* # of dirty pages in page cache */
- 	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
- 	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
- 
-@@ -73,6 +74,14 @@ static void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat *stat,
- 	stat->cpustat[cpu].count[idx] += val;
- }
- 
-+static void __mem_cgroup_stat_add(struct mem_cgroup_stat *stat,
-+		enum mem_cgroup_stat_index idx, int val)
-+{
-+	int cpu = get_cpu();
-+	stat->cpustat[cpu].count[idx] += val;
-+	put_cpu();
-+}
-+
- static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
- 		enum mem_cgroup_stat_index idx)
- {
-@@ -133,6 +142,9 @@ struct mem_cgroup {
- 	 * statistics.
- 	 */
- 	struct mem_cgroup_stat stat;
-+
-+	/* file dirty limit */
-+	s64 file_dirty_limit;
- };
- static struct mem_cgroup init_mem_cgroup;
- 
-@@ -358,6 +370,52 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
- 	return ret;
- }
- 
-+static struct mem_cgroup *get_mem_cgroup_from_page(struct page *page)
-+{
-+	struct page_cgroup *pc;
-+	struct mem_cgroup *mem = NULL;
-+
-+	lock_page_cgroup(page);
-+	pc = page_get_page_cgroup(page);
-+	if (pc) {
-+		css_get(&pc->mem_cgroup->css);
-+		mem = pc->mem_cgroup;
-+	}
-+	unlock_page_cgroup(page);
-+	return mem;
-+}
-+
-+void mem_cgroup_charge_file_dirty(struct page *page, int charge)
-+{
-+	struct mem_cgroup *mem;
-+
-+	mem = get_mem_cgroup_from_page(page);
-+	if (mem) {
-+		__mem_cgroup_stat_add(&mem->stat, MEM_CGROUP_STAT_FILE_DIRTY,
-+					charge);
-+		css_put(&mem->css);
-+	}
-+}
-+
-+s64 mem_cgroup_check_file_dirty(void)
-+{
-+	struct mem_cgroup *mem;
-+	s64 ret = 0;
-+
-+	rcu_read_lock();
-+	mem = mem_cgroup_from_task(current);
-+	if (likely(mem)) {
-+		css_get(&mem->css);
-+		ret = mem_cgroup_read_stat(&mem->stat,
-+				MEM_CGROUP_STAT_FILE_DIRTY);
-+		ret -= mem->file_dirty_limit;
-+		css_put(&mem->css);
-+	}
-+	rcu_read_unlock();
-+
-+	return (ret > 0) ? ret : 0;
-+}
-+
- /*
-  * This routine assumes that the appropriate zone's lru lock is already held
-  */
-@@ -953,12 +1011,31 @@ static int mem_force_empty_write(struct cgroup *cont, unsigned int event)
- 	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont));
- }
- 
-+static s64 mem_cgroup_file_dirty_read(struct cgroup *cont, struct cftype *cft)
-+{
-+	return mem_cgroup_from_cont(cont)->file_dirty_limit;
-+}
-+
-+static int mem_cgroup_file_dirty_write(struct cgroup *cont, struct cftype *cft,
-+			const char *buffer)
-+{
-+	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-+	long long val;
-+	int ret;
-+
-+	ret = strict_strtoll(buffer, 10, &val);
-+	if (!ret)
-+		mem->file_dirty_limit = val;
-+	return ret;
-+}
-+
- static const struct mem_cgroup_stat_desc {
- 	const char *msg;
- 	u64 unit;
- } mem_cgroup_stat_desc[] = {
- 	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
- 	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
-+	[MEM_CGROUP_STAT_FILE_DIRTY] = { "filedirty", 1, },
- 	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
- 	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
- };
-@@ -1023,6 +1100,11 @@ static struct cftype mem_cgroup_files[] = {
- 		.read_u64 = mem_cgroup_read,
- 	},
- 	{
-+		.name = "file_dirty_limit_in_pages",
-+		.write_string = mem_cgroup_file_dirty_write,
-+		.read_s64 = mem_cgroup_file_dirty_read,
-+	},
-+	{
- 		.name = "failcnt",
- 		.private = RES_FAILCNT,
- 		.trigger = mem_cgroup_reset,
-@@ -1114,6 +1196,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 	}
- 
- 	res_counter_init(&mem->res);
-+	mem->file_dirty_limit = LLONG_MAX;
- 
- 	for_each_node_state(node, N_POSSIBLE)
- 		if (alloc_mem_cgroup_per_zone_info(mem, node))
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index c6d6088..ae89950 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -25,6 +25,7 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
-+#include <linux/memcontrol.h>
- #include <linux/rmap.h>
- #include <linux/percpu.h>
- #include <linux/notifier.h>
-@@ -412,6 +413,34 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
- 	}
- }
- 
-+static void mem_cgroup_balance_dirty_pages(struct address_space *mapping,
-+				long long dirty_pages)
-+{
-+	struct writeback_control wbc = {
-+		.bdi		= mapping->backing_dev_info,
-+		.sync_mode	= WB_SYNC_NONE,
-+		.older_than_this = NULL,
-+		.nr_to_write	= 0,
-+		.range_cyclic	= 1,
-+	};
-+	unsigned long write_chunk = sync_writeback_pages();
-+
-+	while (dirty_pages > 0) {
-+		wbc.more_io = 0;
-+		wbc.encountered_congestion = 0;
-+		wbc.nr_to_write = write_chunk;
-+		wbc.pages_skipped = 0;
-+		writeback_inodes(&wbc);
-+		dirty_pages -= write_chunk - wbc.nr_to_write;
-+		if (wbc.nr_to_write > 0 || wbc.pages_skipped > 0) {
-+			if (wbc.encountered_congestion || wbc.more_io)
-+				congestion_wait(WRITE, HZ/10);
-+			else
-+				break;
-+		}
-+	}
-+}
-+
- /*
-  * balance_dirty_pages() must be called by processes which are generating dirty
-  * data.  It looks at the number of dirty pages in the machine and will force
-@@ -556,6 +585,12 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
- 	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
- 	unsigned long ratelimit;
- 	unsigned long *p;
-+	long long memcg_dirty_pages = mem_cgroup_check_file_dirty();
-+
-+	if (memcg_dirty_pages) {
-+		mem_cgroup_balance_dirty_pages(mapping, memcg_dirty_pages);
-+		return;
-+	}
- 
- 	ratelimit = ratelimit_pages;
- 	if (mapping->backing_dev_info->dirty_exceeded)
-@@ -1090,6 +1125,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 			BUG_ON(mapping2 != mapping);
- 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
- 			if (mapping_cap_account_dirty(mapping)) {
-+				mem_cgroup_charge_file_dirty(page, 1);
- 				__inc_zone_page_state(page, NR_FILE_DIRTY);
- 				__inc_bdi_stat(mapping->backing_dev_info,
- 						BDI_RECLAIMABLE);
-@@ -1234,6 +1270,7 @@ int clear_page_dirty_for_io(struct page *page)
- 		 * for more comments.
- 		 */
- 		if (TestClearPageDirty(page)) {
-+			mem_cgroup_charge_file_dirty(page, -1);
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
- 			dec_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
-diff --git a/mm/truncate.c b/mm/truncate.c
-index e2bdd70..8ca6893 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -72,7 +72,9 @@ void cancel_dirty_page(struct page *page, unsigned int account_size)
- {
- 	if (TestClearPageDirty(page)) {
- 		struct address_space *mapping = page->mapping;
-+
- 		if (mapping && mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_file_dirty(page, -1);
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
- 			dec_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
+> IOW, can't you do what you want to do (I am assuming that what you want to
+> do is to be able to copy out the pregenerated contents from convenience
+> branches) without such a rename?
+
+Sure I can. "Namen sind Schall und Rauch". Names don't matter.
+quick-install-html would follow the above logic. I just think that the
+doc logic is flawed.
+
+So, my suggestion is that doc = man + html, whether it appears in a
+build target or an install target.
+
+> If you rename the target, I am reasonably sure you would break somebody's
+> build procedure.  It is a separate topic if there are large number of such
+> somebody, or just a limited few.
+
+I keep hearing this argument, and I'm even more surprised to hear it
+right after a major release. If not now then when's a good time for
+cleaning up confusing inconsistencies?
+
+Michael
