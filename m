@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbYIIUzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbYIIVC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757791AbYIIUzf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 16:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbYIIUzG
+	id S1757226AbYIIVC7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 17:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYIIVCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 16:55:06 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:12286 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751956AbYIIUzF (ORCPT
+	Tue, 9 Sep 2008 17:02:51 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:13162 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbYIIVCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 16:55:05 -0400
-From: heukelum@fastmail.fm
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 1/24] i386: remove kprobes' restore_interrupts in favour of conditional_sti
-Date: Tue,  9 Sep 2008 21:55:55 +0200
-Message-Id: <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
-References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Tue, 09 Sep 2008 21:55:30 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
+	Tue, 9 Sep 2008 17:02:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=nuWdgRVv2pEOhd6Ya0CcBGInLnmhr+hpSPQCjQg1GEyeKFIPER2DxlhTbEt9xM1RqC
+         Bu4iur07FUCygJgXTsp/v93kn5WbaXtBTtInnMA2xsCY1fVcB6194NjAdnV9+Wl1+3HE
+         fd6/ivW/WnhwNeVWLgkvpzuLZrCty69YAk0us=
+Message-ID: <48C6E473.9070408@gmail.com>
+Date: Tue, 09 Sep 2008 23:02:43 +0200
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: lethal@linux-sh.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] sh: intc_prio_data() test before subtraction on unsigned
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander van Heukelum <heukelum@fastmail.fm>
+bit is unsigned, so test before subtraction
 
-x86_64 uses a helper function conditional_sti in traps_64.c which
-is equal to restore_interrupts in kprobes.h. The only user of
-restore_interrupts is in traps_32.c. Introduce conditional_sti
-for i386 and remove restore_interrupts.
-
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
- arch/x86/kernel/traps_32.c |    8 +++++++-
- include/asm-x86/kprobes.h  |    9 ---------
- 2 files changed, 7 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 03df8e4..c8096f7 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -84,6 +84,12 @@ static unsigned int code_bytes = 64;
- static int ignore_nmis;
- static int die_counter;
+diff --git a/arch/sh/kernel/cpu/irq/intc.c b/arch/sh/kernel/cpu/irq/intc.c
+index 8c70e20..94536d3 100644
+--- a/arch/sh/kernel/cpu/irq/intc.c
++++ b/arch/sh/kernel/cpu/irq/intc.c
+@@ -464,9 +464,10 @@ static unsigned int __init intc_prio_data(struct intc_desc *desc,
+ 			}
  
-+static inline void conditional_sti(struct pt_regs *regs)
-+{
-+	if (regs->flags & X86_EFLAGS_IF)
-+		local_irq_enable();
-+}
+ 			fn += (pr->reg_width >> 3) - 1;
+-			bit = pr->reg_width - ((j + 1) * pr->field_width);
+ 
+-			BUG_ON(bit < 0);
++			BUG_ON((j + 1) * pr->field_width > pr->reg_width);
 +
- void printk_address(unsigned long address, int reliable)
- {
- #ifdef CONFIG_KALLSYMS
-@@ -859,7 +865,7 @@ void __kprobes do_int3(struct pt_regs *regs, long error_code)
- 	 * This is an interrupt gate, because kprobes wants interrupts
- 	 * disabled. Normal trap handlers don't.
- 	 */
--	restore_interrupts(regs);
-+	conditional_sti(regs);
++			bit = pr->reg_width - ((j + 1) * pr->field_width);
  
- 	do_trap(3, SIGTRAP, "int3", 1, regs, error_code, NULL);
- }
-diff --git a/include/asm-x86/kprobes.h b/include/asm-x86/kprobes.h
-index 54980b0..93a7f49 100644
---- a/include/asm-x86/kprobes.h
-+++ b/include/asm-x86/kprobes.h
-@@ -82,15 +82,6 @@ struct kprobe_ctlblk {
- 	struct prev_kprobe prev_kprobe;
- };
+ 			return _INTC_MK(fn, mode,
+ 					intc_get_reg(d, reg_e),
+@@ -531,9 +532,10 @@ static unsigned int __init intc_sense_data(struct intc_desc *desc,
  
--/* trap3/1 are intr gates for kprobes.  So, restore the status of IF,
-- * if necessary, before executing the original int3/1 (trap) handler.
-- */
--static inline void restore_interrupts(struct pt_regs *regs)
--{
--	if (regs->flags & X86_EFLAGS_IF)
--		local_irq_enable();
--}
--
- extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
- extern int kprobe_exceptions_notify(struct notifier_block *self,
- 				    unsigned long val, void *data);
--- 
-1.5.4.3
-
+ 			fn = REG_FN_MODIFY_BASE;
+ 			fn += (sr->reg_width >> 3) - 1;
+-			bit = sr->reg_width - ((j + 1) * sr->field_width);
+ 
+-			BUG_ON(bit < 0);
++			BUG_ON((j + 1) * sr->field_width > sr->reg_width);
++
++			bit = sr->reg_width - ((j + 1) * sr->field_width);
+ 
+ 			return _INTC_MK(fn, 0, intc_get_reg(d, sr->reg),
+ 					0, sr->field_width, bit);
