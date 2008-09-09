@@ -1,463 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbYIIRl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYIIRoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbYIIRl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756570AbYIIRlQ
+	id S1756714AbYIIRoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYIIRoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:41:16 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:37842 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756445AbYIIRlO (ORCPT
+	Tue, 9 Sep 2008 13:44:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44370 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753904AbYIIRoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:41:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=xTxGpnKjK0LzbVb1lck0SWmE69pwX6LJvUlYrHccCLx2Ul0QhxnFaDioQv2BDnsF7k
-         JKyIJ2GCb8MyEEM72zkVmk77C9aOdsQtB7TPNcIiGoRO4flnIYwEEyE4fbweNhPl09c0
-         BixBA+5rfQ3CkLJ8dbczUHDjq89w4wYOUeHR8=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 3/3] x86: let intel 64bit use intel.c
-Date: Tue,  9 Sep 2008 10:40:30 -0700
-Message-Id: <1220982030-10424-3-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1220982030-10424-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1220982030-10424-1-git-send-email-yhlu.kernel@gmail.com>
+	Tue, 9 Sep 2008 13:44:05 -0400
+Date: Tue, 9 Sep 2008 10:43:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Joe Peterson <joe@skyrush.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
+ attached)
+Message-Id: <20080909104325.4653190b.akpm@linux-foundation.org>
+In-Reply-To: <20080909115536.1664d57a@lxorguk.ukuu.org.uk>
+References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>
+	<48AC3A16.4080209@skyrush.com>
+	<48B3F9F7.2050503@skyrush.com>
+	<48C54EC2.4060901@skyrush.com>
+	<20080908173250.2452c5b8.akpm@linux-foundation.org>
+	<20080909115536.1664d57a@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
----
- arch/x86/Kconfig.cpu           |   10 -
- arch/x86/kernel/cpu/Makefile   |    3 
- arch/x86/kernel/cpu/intel_64.c |  366 -----------------------------------------
- include/asm-x86/bugs.h         |    2 
- 4 files changed, 3 insertions(+), 378 deletions(-)
- delete mode 100644 arch/x86/kernel/cpu/intel_64.c
+On Tue, 9 Sep 2008 11:55:36 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Index: linux-2.6/arch/x86/Kconfig.cpu
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig.cpu
-+++ linux-2.6/arch/x86/Kconfig.cpu
-@@ -426,17 +426,9 @@ menuconfig PROCESSOR_SELECT
- 	  This lets you choose what x86 vendor support code your kernel
- 	  will include.
- 
--config CPU_SUP_INTEL_32
-+config CPU_SUP_INTEL
- 	default y
- 	bool "Support Intel processors" if PROCESSOR_SELECT
--	depends on !64BIT
--	help
--	  This enables extended support for Intel processors
--
--config CPU_SUP_INTEL_64
--	default y
--	bool "Support Intel processors" if PROCESSOR_SELECT
--	depends on 64BIT
- 	help
- 	  This enables extended support for Intel processors
- 
-Index: linux-2.6/arch/x86/kernel/cpu/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/Makefile
-+++ linux-2.6/arch/x86/kernel/cpu/Makefile
-@@ -8,8 +8,7 @@ obj-y			+= proc.o capflags.o powerflags.
- obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
- obj-$(CONFIG_X86_64)	+= bugs_64.o
- 
--obj-$(CONFIG_CPU_SUP_INTEL_32)		+= intel.o
--obj-$(CONFIG_CPU_SUP_INTEL_64)		+= intel_64.o
-+obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o
- obj-$(CONFIG_CPU_SUP_AMD)		+= amd.o
- obj-$(CONFIG_CPU_SUP_CYRIX_32)		+= cyrix.o
- obj-$(CONFIG_CPU_SUP_CENTAUR_32)	+= centaur.o
-Index: linux-2.6/arch/x86/kernel/cpu/intel_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/intel_64.c
-+++ /dev/null
-@@ -1,366 +0,0 @@
--#include <linux/init.h>
--#include <linux/kernel.h>
--
--#include <linux/string.h>
--#include <linux/bitops.h>
--#include <linux/smp.h>
--#include <linux/thread_info.h>
--#include <linux/module.h>
--
--#include <asm/processor.h>
--#include <asm/pgtable.h>
--#include <asm/msr.h>
--#include <asm/uaccess.h>
--#include <asm/ptrace.h>
--#include <asm/ds.h>
--#include <asm/bugs.h>
--
--#ifdef CONFIG_X86_64
--#include <asm/topology.h>
--#include <asm/numa_64.h>
--#endif
--
--#include "cpu.h"
--
--#ifdef CONFIG_X86_LOCAL_APIC
--#include <asm/mpspec.h>
--#include <asm/apic.h>
--#include <mach_apic.h>
--#endif
--
--static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
--{
--	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
--		(c->x86 == 0x6 && c->x86_model >= 0x0e))
--		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
--
--#ifdef CONFIG_X86_64
--	set_cpu_cap(c, X86_FEATURE_SYSENTER32);
--#else
--	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
--	if (c->x86 == 15 && c->x86_cache_alignment == 64)
--		c->x86_cache_alignment = 128;
--#endif
--}
--
--#ifdef CONFIG_X86_32
--/*
-- *	Early probe support logic for ppro memory erratum #50
-- *
-- *	This is called before we do cpu ident work
-- */
--
--int __cpuinit ppro_with_ram_bug(void)
--{
--	/* Uses data from early_cpu_detect now */
--	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
--	    boot_cpu_data.x86 == 6 &&
--	    boot_cpu_data.x86_model == 1 &&
--	    boot_cpu_data.x86_mask < 8) {
--		printk(KERN_INFO "Pentium Pro with Errata#50 detected. Taking evasive action.\n");
--		return 1;
--	}
--	return 0;
--}
--
--
--/*
-- * P4 Xeon errata 037 workaround.
-- * Hardware prefetcher may cause stale data to be loaded into the cache.
-- */
--static void __cpuinit Intel_errata_workarounds(struct cpuinfo_x86 *c)
--{
--	unsigned long lo, hi;
--
--	if ((c->x86 == 15) && (c->x86_model == 1) && (c->x86_mask == 1)) {
--		rdmsr(MSR_IA32_MISC_ENABLE, lo, hi);
--		if ((lo & (1<<9)) == 0) {
--			printk (KERN_INFO "CPU: C0 stepping P4 Xeon detected.\n");
--			printk (KERN_INFO "CPU: Disabling hardware prefetching (Errata 037)\n");
--			lo |= (1<<9);	/* Disable hw prefetching */
--			wrmsr (MSR_IA32_MISC_ENABLE, lo, hi);
--		}
--	}
--}
--
--
--
--#ifdef CONFIG_X86_F00F_BUG
--static void __cpuinit trap_init_f00f_bug(void)
--{
--	__set_fixmap(FIX_F00F_IDT, __pa(&idt_table), PAGE_KERNEL_RO);
--
--	/*
--	 * Update the IDT descriptor and reload the IDT so that
--	 * it uses the read-only mapped virtual address.
--	 */
--	idt_descr.address = fix_to_virt(FIX_F00F_IDT);
--	load_idt(&idt_descr);
--}
--#endif
--#endif
--
--static void __cpuinit srat_detect_node(void)
--{
--#if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
--	unsigned node;
--	int cpu = smp_processor_id();
--	int apicid = hard_smp_processor_id();
--
--	/* Don't do the funky fallback heuristics the AMD version employs
--	   for now. */
--	node = apicid_to_node[apicid];
--	if (node == NUMA_NO_NODE || !node_online(node))
--		node = first_node(node_online_map);
--	numa_set_node(cpu, node);
--
--	printk(KERN_INFO "CPU %d/%x -> Node %d\n", cpu, apicid, node);
--#endif
--}
--
--/*
-- * find out the number of processor cores on the die
-- */
--static int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c)
--{
--	unsigned int eax, ebx, ecx, edx;
--
--	if (c->cpuid_level < 4)
--		return 1;
--
--	/* Intel has a non-standard dependency on %ecx for this CPUID level. */
--	cpuid_count(4, 0, &eax, &ebx, &ecx, &edx);
--	if (eax & 0x1f)
--		return ((eax >> 26) + 1);
--	else
--		return 1;
--}
--
--static void __cpuinit init_intel(struct cpuinfo_x86 *c)
--{
--	unsigned int l2 = 0;
--	char *p = NULL;
--
--	early_init_intel(c);
--
--#ifdef CONFIG_X86_F00F_BUG
--	/*
--	 * All current models of Pentium and Pentium with MMX technology CPUs
--	 * have the F0 0F bug, which lets nonprivileged users lock up the system.
--	 * Note that the workaround only should be initialized once...
--	 */
--	c->f00f_bug = 0;
--	if (!paravirt_enabled() && c->x86 == 5) {
--		static int f00f_workaround_enabled;
--
--		c->f00f_bug = 1;
--		if (!f00f_workaround_enabled) {
--			trap_init_f00f_bug();
--			printk(KERN_NOTICE "Intel Pentium with F0 0F bug - workaround enabled.\n");
--			f00f_workaround_enabled = 1;
--		}
--	}
--#endif
--
--	l2 = init_intel_cacheinfo(c);
--	if (c->cpuid_level > 9) {
--		unsigned eax = cpuid_eax(10);
--		/* Check for version and the number of counters */
--		if ((eax & 0xff) && (((eax>>8) & 0xff) > 1))
--			set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
--	}
--
--#ifdef CONFIG_X86_32
--	/* SEP CPUID bug: Pentium Pro reports SEP but doesn't have it until model 3 mask 3 */
--	if ((c->x86<<8 | c->x86_model<<4 | c->x86_mask) < 0x633)
--		clear_cpu_cap(c, X86_FEATURE_SEP);
--
--	/*
--	 * Names for the Pentium II/Celeron processors
--	 * detectable only by also checking the cache size.
--	 * Dixon is NOT a Celeron.
--	 */
--	if (c->x86 == 6) {
--		switch (c->x86_model) {
--		case 5:
--			if (c->x86_mask == 0) {
--				if (l2 == 0)
--					p = "Celeron (Covington)";
--				else if (l2 == 256)
--					p = "Mobile Pentium II (Dixon)";
--			}
--			break;
--
--		case 6:
--			if (l2 == 128)
--				p = "Celeron (Mendocino)";
--			else if (c->x86_mask == 0 || c->x86_mask == 5)
--				p = "Celeron-A";
--			break;
--
--		case 8:
--			if (l2 == 128)
--				p = "Celeron (Coppermine)";
--			break;
--		}
--	}
--
--	if (p)
--		strcpy(c->x86_model_id, p);
--
--	Intel_errata_workarounds(c);
--
--#ifdef CONFIG_X86_INTEL_USERCOPY
--	/*
--	 * Set up the preferred alignment for movsl bulk memory moves
--	 */
--	switch (c->x86) {
--	case 4:		/* 486: untested */
--		break;
--	case 5:		/* Old Pentia: untested */
--		break;
--	case 6:		/* PII/PIII only like movsl with 8-byte alignment */
--		movsl_mask.mask = 7;
--		break;
--	case 15:	/* P4 is OK down to 8-byte alignment */
--		movsl_mask.mask = 7;
--		break;
--	}
--#endif
--
--#endif
--
--	if (cpu_has_xmm2)
--		set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
--	if (cpu_has_ds) {
--		unsigned int l1;
--		rdmsr(MSR_IA32_MISC_ENABLE, l1, l2);
--		if (!(l1 & (1<<11)))
--			set_cpu_cap(c, X86_FEATURE_BTS);
--		if (!(l1 & (1<<12)))
--			set_cpu_cap(c, X86_FEATURE_PEBS);
--		ds_init_intel(c);
--	}
--
--#ifdef CONFIG_X86_64
--	if (c->x86 == 15)
--		c->x86_cache_alignment = c->x86_clflush_size * 2;
--	if (c->x86 == 6)
--		set_cpu_cap(c, X86_FEATURE_REP_GOOD);
--#else
--	if (c->x86 == 15)
--		set_cpu_cap(c, X86_FEATURE_P4);
--	if (c->x86 == 6)
--		set_cpu_cap(c, X86_FEATURE_P3);
--
--	if (cpu_has_bts)
--		ptrace_bts_init_intel(c);
--
--	/*
--	 * See if we have a good local APIC by checking for buggy Pentia,
--	 * i.e. all B steppings and the C2 stepping of P54C when using their
--	 * integrated APIC (see 11AP erratum in "Pentium Processor
--	 * Specification Update").
--	 */
--	if (cpu_has_apic && (c->x86<<8 | c->x86_model<<4) == 0x520 &&
--	    (c->x86_mask < 0x6 || c->x86_mask == 0xb))
--		set_cpu_cap(c, X86_FEATURE_11AP);
--
--#ifdef CONFIG_X86_NUMAQ
--	numaq_tsc_disable();
--#endif
--#endif
--
--	detect_extended_topology(c);
--	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY)) {
--		/*
--		 * let's use the legacy cpuid vector 0x1 and 0x4 for topology
--		 * detection.
--		 */
--		c->x86_max_cores = intel_num_cpu_cores(c);
--#ifdef CONFIG_X86_32
--		detect_ht(c);
--#endif
--	}
--
--	/* Work around errata */
--	srat_detect_node();
--}
--
--#ifdef CONFIG_X86_32
--static unsigned int __cpuinit intel_size_cache(struct cpuinfo_x86 *c, unsigned int size)
--{
--	/*
--	 * Intel PIII Tualatin. This comes in two flavours.
--	 * One has 256kb of cache, the other 512. We have no way
--	 * to determine which, so we use a boottime override
--	 * for the 512kb model, and assume 256 otherwise.
--	 */
--	if ((c->x86 == 6) && (c->x86_model == 11) && (size == 0))
--		size = 256;
--	return size;
--}
--#endif
--
--static struct cpu_dev intel_cpu_dev __cpuinitdata = {
--	.c_vendor	= "Intel",
--	.c_ident	= { "GenuineIntel" },
--#ifdef CONFIG_X86_32
--	.c_models = {
--		{ .vendor = X86_VENDOR_INTEL, .family = 4, .model_names =
--		  {
--			  [0] = "486 DX-25/33",
--			  [1] = "486 DX-50",
--			  [2] = "486 SX",
--			  [3] = "486 DX/2",
--			  [4] = "486 SL",
--			  [5] = "486 SX/2",
--			  [7] = "486 DX/2-WB",
--			  [8] = "486 DX/4",
--			  [9] = "486 DX/4-WB"
--		  }
--		},
--		{ .vendor = X86_VENDOR_INTEL, .family = 5, .model_names =
--		  {
--			  [0] = "Pentium 60/66 A-step",
--			  [1] = "Pentium 60/66",
--			  [2] = "Pentium 75 - 200",
--			  [3] = "OverDrive PODP5V83",
--			  [4] = "Pentium MMX",
--			  [7] = "Mobile Pentium 75 - 200",
--			  [8] = "Mobile Pentium MMX"
--		  }
--		},
--		{ .vendor = X86_VENDOR_INTEL, .family = 6, .model_names =
--		  {
--			  [0] = "Pentium Pro A-step",
--			  [1] = "Pentium Pro",
--			  [3] = "Pentium II (Klamath)",
--			  [4] = "Pentium II (Deschutes)",
--			  [5] = "Pentium II (Deschutes)",
--			  [6] = "Mobile Pentium II",
--			  [7] = "Pentium III (Katmai)",
--			  [8] = "Pentium III (Coppermine)",
--			  [10] = "Pentium III (Cascades)",
--			  [11] = "Pentium III (Tualatin)",
--		  }
--		},
--		{ .vendor = X86_VENDOR_INTEL, .family = 15, .model_names =
--		  {
--			  [0] = "Pentium 4 (Unknown)",
--			  [1] = "Pentium 4 (Willamette)",
--			  [2] = "Pentium 4 (Northwood)",
--			  [4] = "Pentium 4 (Foster)",
--			  [5] = "Pentium 4 (Foster)",
--		  }
--		},
--	},
--	.c_size_cache	= intel_size_cache,
--#endif
--	.c_early_init   = early_init_intel,
--	.c_init		= init_intel,
--	.c_x86_vendor	= X86_VENDOR_INTEL,
--};
--
--cpu_dev_register(intel_cpu_dev);
--
-Index: linux-2.6/include/asm-x86/bugs.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/bugs.h
-+++ linux-2.6/include/asm-x86/bugs.h
-@@ -3,7 +3,7 @@
- 
- extern void check_bugs(void);
- 
--#ifdef CONFIG_CPU_SUP_INTEL_32
-+#if defined(CONFIG_CPU_SUP_INTEL) && defined(CONFIG_X86_32)
- int ppro_with_ram_bug(void);
- #else
- static inline int ppro_with_ram_bug(void) { return 0; }
+> On Mon, 8 Sep 2008 17:32:50 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Mon, 08 Sep 2008 10:11:46 -0600
+> > Joe Peterson <joe@skyrush.com> wrote:
+> > 
+> > > +	spin_lock_irqsave(&tty->echo_lock, flags);
+> > >  	lock_kernel();
+> > 
+> > Taking a spinlock outside lock_kernel() isn't good, and is quite unusual.
+> > 
+> > - It might be ab/ba deadlockable (I didn't check) (I trust you always
+> >   test with lockdep enabled?)
+> 
+> lock_kernel can sleep.
+
+That used to be the case, but the mutex_lock() version of the bkl got
+removed.  It may of course come back.
+
+> Its not allowed...
+> 
+
+yup.
