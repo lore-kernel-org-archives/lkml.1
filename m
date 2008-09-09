@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbYIIH2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbYIIHcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755055AbYIIH2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYIIH2L
+	id S1755016AbYIIHcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbYIIHcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:28:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52000 "EHLO mx2.mail.elte.hu"
+	Tue, 9 Sep 2008 03:32:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53757 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbYIIH2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:28:10 -0400
-Date: Tue, 9 Sep 2008 09:27:51 +0200
+	id S1753177AbYIIHcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:32:13 -0400
+Date: Tue, 9 Sep 2008 09:31:53 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Valdis.Kletnieks@vt.edu
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080909072751.GA8264@elte.hu>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org> <48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org> <48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu> <38118.1220905541@turing-police.cc.vt.edu>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
+Message-ID: <20080909073153.GA10049@elte.hu>
+References: <48C13D1C.76E4.0078.0@novell.com> <20080905150030.GD10292@elte.hu> <48C51F8D.76E4.0078.0@novell.com> <20080908134019.GB11993@elte.hu> <20080908185417.GA17654@elte.hu> <48C6406E.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <38118.1220905541@turing-police.cc.vt.edu>
+In-Reply-To: <48C6406E.76E4.0078.0@novell.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,48 +35,50 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Valdis.Kletnieks@vt.edu <Valdis.Kletnieks@vt.edu> wrote:
+* Jan Beulich <jbeulich@novell.com> wrote:
 
-> On Mon, 08 Sep 2008 21:02:49 +0200, Ingo Molnar said:
+> >>> Ingo Molnar <mingo@elte.hu> 08.09.08 20:54 >>>
+> >
+> >-tip testing found various kernel crashes on 32-bit testboxes and i've 
+> >bisected it down to:
+> >
+> >...
+> >
+> >a typical crash is like the one attached below. It's due to the ioremap 
+> >failing. The drivers/char/rio/rio_linux.c driver probes these addresses:
+> >
+> >   static int rio_probe_addrs[] = { 0xc0000, 0xd0000, 0xe0000 };
+> >
+> >which is questionable ...
 > 
-> > ... and so on it goes with this argument. Everyone has a different 
-> > target audience and there's no firm limit. Maybe what makes more sense 
-> > is to have some sort of time dependency:
-> > 
-> >   support all x86 CPUs released in the last year
-> >   support all x86 CPUs released in the past 5 years
-> >   support all x86 CPUs released in the past 10 years
-> >   support all x86 CPUs released ever
-> >   [ ... or configure a specific model ]
-> > 
-> > and people/distributions would use _those_ switches. That means we could 
-> > continuously tweak those targets, as systems become obsolete and new 
-> > CPUs arrive.
+> No, they look absolutely valid, they're ISA ROM addresses.
+
+yeah - questionable in the sense of assuming that it's all non-RAM. But 
+there's no better way to probe for ROMs i guess.
+
+> > for now i've reverted it from current tip/master, see commit 
+> > e3fdd129901. (you can reinstate the commit by doing "git revert 
+> > e3fdd1299"
+> >
+> > Even if we decided to fail these ioremaps it would be better to emit 
+> > a warning instead of crashing the box.
 > 
-> That's just *asking* for flame mail if somebody builds a kernel for a 
-> system that's 4 year 9 months old, and he builds a kernel 6 months 
-> later, and it fails to boot because the CPU is now 3 months out and 
-> we've deprecated it...
+> We shouldn't fail them, they're valid. What the crash means is that 
+> even addresses below 1Mb are considered out of range, which I can only 
+> take as x86_phys_bits being zero (or a bogus very small number) on 
+> secondary (or all) CPUs. However, looking at the call tree I can't see 
+> how that could happen (provided CPUID doesn't produce garbage output):
+> 
+> - smp_store_cpu_info(), as it always did, pre-initializes the new CPU's
+>   info with boot_cpu_data, and calls identify_secondary_cpu()
+> - identify_secondary_cpu() calls identify_cpu()
+> - identify_cpu() pre-sets x86_phys_bits to 32, and since the field didn't
+>   exist for 32-bits before, nothing should be able to clear or otherwise
+>   alter it
 
-yeah, in terms of precision of the definition it's certainly more 
-towards the 'vague' end of the spectrum. OTOH, we do change our defaults 
-slowly but surely to match the hardware. So this would give a practical 
-definition. If someone _does_ complain legitimately, it doesnt cost us 
-much to revert a tweak and delay it some more.
-
-So the idea is to have some sort of independent platform, instead of the 
-current practice of distros like Debian chosing pretty much random 
-options. No strong opinion though. We can cover 90% of the real 
-advantages via dynamic methods, it's quite rare that we have to make 
-hard .config choices.
-
-Pretty much the only hardcoded aspect that hurts in practice is the 
-cache alignment parameter - all the rest is either dynamic already or 
-insignificant. Ever since distros have discovered 
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y, even the various compiler optimization 
-parameters have less of a role. We just have to wait a year or two for 
-P4's to not matter that much anymore, then we can do generic kernels 
-with 64 byte alignment and cmov, that will just work almost everywhere 
-rather optimally.
+there's nothing weird about this testbox (it's a usual whitebox) - and 
+two other testboxes failed as well after some time (no crashlog 
+available from them). A 64-bit testbox didnt fail so it seems 32-bit 
+only.
 
 	Ingo
