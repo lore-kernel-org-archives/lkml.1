@@ -1,94 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbYIIInl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYIIIoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755786AbYIIInl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 04:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYIIInd
+	id S1756138AbYIIIoj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 04:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYIIIoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 04:43:33 -0400
-Received: from mail7.hitachi.co.jp ([133.145.228.42]:44734 "EHLO
-	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbYIIInb (ORCPT
+	Tue, 9 Sep 2008 04:44:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44917 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753068AbYIIIob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 04:43:31 -0400
-X-AuditID: 0ac90650-ab4caba000006fc9-93-48c637308242
-Message-ID: <48C63701.6090700@hitachi.com>
-Date: Tue, 09 Sep 2008 17:42:41 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
-    Gecko/20030624 Netscape/7.1 (ax)
-X-Accept-Language: ja
-MIME-Version: 1.0
-To: akpm@linux-foundation.org, sct@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
-       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, adilger@sun.com,
-       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com,
-       nickpiggin@yahoo.com.au
-Subject: [PATCH -mm] jbd: test BH_Write_EIO to detect errors on metadata
-    buffers
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 9 Sep 2008 04:44:31 -0400
+Date: Tue, 9 Sep 2008 01:43:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, quilt-dev@nongnu.org,
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: Re: mmotm 2008-09-08-18-32 uploaded
+Message-Id: <20080909014354.764eb9ed.akpm@linux-foundation.org>
+In-Reply-To: <20080909173753.c48a5ca7.kamezawa.hiroyu@jp.fujitsu.com>
+References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
+	<20080909173753.c48a5ca7.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__try_to_free_cp_buf(), __process_buffer(), and __wait_cp_io()
-test BH_Uptodate flag to detect write I/O errors on metadata
-buffers.  But by commit 95450f5a7e53d5752ce1a0d0b8282e10fe745ae0
-"ext3: don't read inode block if the buffer has a write error"(*),
-BH_Uptodate flag can be set to inode buffers with BH_Write_EIO
-in order to avoid reading old inode data.  So now, we have to
-test BH_Write_EIO flag of checkpointing inode buffers instead
-of BH_Uptodate.  This patch does it.
+On Tue, 9 Sep 2008 17:37:53 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-(*) http://lkml.org/lkml/2008/6/23/126
+> On Mon, 08 Sep 2008 18:35:16 -0700
+> akpm@linux-foundation.org wrote:
+> 
+> > The mm-of-the-moment snapshot 2008-09-08-18-32 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > It contains the following patches against 2.6.27-rc5:
+> > 
+> Hmm, I'm not sure this is a trouble or not..
+> 
+> ==
+> %quilt push -a
+> <snip>
+> |commit 5ca7e4a6b0929c7a0763f9b2481e063d9f047db0
+> |Author: Hans de Goede <j.w.r.degoede@hhs.nl>
+> |Date:   Wed Sep 3 17:12:20 2008 -0300
+> |
+> |    V4L/DVB (8831): gspca: Resolve webcam conflicts between some drivers.
+> |
+> |    -remove USB-id's from zc0301 for cams for which zc0301.c does not support
+> |      the sensor
+> |    -remove USB-id's from sn9c102 for cams where sn9c102 does not support the
+> |      bridge sensor combination
+> |    -no longer make inclusion of usb id's removed from zc0301 and sn9c102
+> |      conditional in gspca
+> |    -fix conditional inclusion of USB-id's in gspca to also work when the
+> |      conflicting drivers are build as a module
+> |    -add a number of USB-id's to gspca from various windows .inf files:
+> --------------------------
+> No file to patch.  Skipping patch.
+> patch: **** /tmp/po8iQmOc : No such file or directory
+> Patch ../patches/linux-next.patch does not apply (enforce with -f)
+> 
+> This stop is caused by following line in changelog.
+> 
+>     c45:608f from generic sonix sn9c103 inf file (+ ov7630 which we support)
+>     041e:4022 from creative webcam nx pro, same as already supported 041e:401e
+>     0ac8:0301 from generic zc0301 driver which supports many sensors
+>     10fd:804d from typhoon webshot driver (also FlyCAM-USB 300 plus)
+> and this line .
+>       converting those not to depend on consecutive minor numbers in commit
+>   ->  5a6411b1178baf534aa9138052864dfa89d3eada and later when dev0 was added
+> 
+> When I added a charactor in front of the number, linux-next.patch is applied.
+> Start from a number is bad ? (or my environment is bad ?)
 
-This patch depends on the following patch set in -mm:
+urgh, that's patch(1) being silly and interpreting that text as part of
+a patch.  IIRC it's interpreting it as a context diff.
 
-#1 jbd: abort when failed to log metadata buffers
-   http://lkml.org/lkml/2008/7/24/160
-#2 jbd: fix error handling for checkpoint io
-   http://lkml.org/lkml/2008/7/24/163
-#3 ext3: add checks for errors from jbd
-   http://lkml.org/lkml/2008/7/29/539
-#4 jbd: don't dirty original metadata buffer on abort
-   http://lkml.org/lkml/2008/7/24/168
-
-Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
----
- fs/jbd/checkpoint.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
-===================================================================
---- linux-2.6.27-rc5-mm1.orig/fs/jbd/checkpoint.c
-+++ linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
-@@ -94,7 +94,7 @@ static int __try_to_free_cp_buf(struct j
- 	struct buffer_head *bh = jh2bh(jh);
- 
- 	if (jh->b_jlist == BJ_None && !buffer_locked(bh) &&
--	    !buffer_dirty(bh) && buffer_uptodate(bh)) {
-+	    !buffer_dirty(bh) && !buffer_write_io_error(bh)) {
- 		JBUFFER_TRACE(jh, "remove from checkpoint list");
- 		ret = __journal_remove_checkpoint(jh) + 1;
- 		jbd_unlock_bh_state(bh);
-@@ -214,7 +214,7 @@ restart:
- 			spin_lock(&journal->j_list_lock);
- 			goto restart;
- 		}
--		if (unlikely(!buffer_uptodate(bh)))
-+		if (unlikely(buffer_write_io_error(bh)))
- 			ret = -EIO;
- 
- 		/*
-@@ -283,7 +283,7 @@ static int __process_buffer(journal_t *j
- 		ret = 1;
- 	} else if (!buffer_dirty(bh)) {
- 		ret = 1;
--		if (unlikely(!buffer_uptodate(bh)))
-+		if (unlikely(buffer_write_io_error(bh)))
- 			ret = -EIO;
- 		J_ASSERT_JH(jh, !buffer_jbddirty(bh));
- 		BUFFER_TRACE(bh, "remove from checkpoint");
-
-
+Adding `-u' to the `patch' command will shut it up.  That change should
+be made to quilt (IMO).  
