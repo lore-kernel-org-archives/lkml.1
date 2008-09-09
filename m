@@ -1,120 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbYIIUbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYIIUcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755968AbYIIUbJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 16:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYIIUaz
+	id S1757283AbYIIUcD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 16:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYIIUby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 16:30:55 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:22361 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751663AbYIIUay (ORCPT
+	Tue, 9 Sep 2008 16:31:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:32264 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbYIIUbx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 16:30:54 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=DeY0rySojx1ensGXo/A8hyN2VQMGOoI3exdChG40p8zV1iBL3Kqm/pXGdLHdbQcDh
-	Ti0CW5hhMKrhkL52ca4oQ==
-Subject: Re: [PATCH 2.6.27-rc5] Fix itimer/many thread hang.
-From: Frank Mayhar <fmayhar@google.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080909160152.GA714@tv-sign.ru>
-References: <1220906643.31846.21.camel@bobble.smo.corp.google.com>
-	 <20080909070329.GD2086@elte.hu>  <20080909160152.GA714@tv-sign.ru>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Tue, 09 Sep 2008 13:29:32 -0700
-Message-Id: <1220992172.23059.20.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 9 Sep 2008 16:31:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=lE9cw+71a5dlFSa9SjURjwzzALrtk3luV373LqGXpTCOTPAzgWf5jfwdct/MNITBu4
+         ao02G17SJ4e0Lmh0SepqyCl+JB24t7qmakOgdD5V4voJYK7bhyWXhnm1Hj2zgG4O0cSy
+         HfxuUIp9lkLBf9ObsPaxpmO47//O5f1uBmkdQ=
+Message-ID: <48C6DD3D.9030503@gmail.com>
+Date: Tue, 09 Sep 2008 22:31:57 +0200
+From: Anders Aagaard <aagaande@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080901)
+MIME-Version: 1.0
+To: suspend-devel@lists.sourceforge.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [Suspend-devel] Resume performance
+References: <48C10908.60101@gmail.com> <200809091613.44959.rjw@sisk.pl> <48C6D806.7020506@gmail.com> <200809092231.02510.rjw@sisk.pl>
+In-Reply-To: <200809092231.02510.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 20:01 +0400, Oleg Nesterov wrote:
-> The patch has a lot of
+Rafael J. Wysocki wrote:
+> On Tuesday, 9 of September 2008, Anders Aagaard wrote:
+>> Rafael J. Wysocki wrote:
+>>> On Sunday, 7 of September 2008, Anders Aagaard wrote:
+>>>> Rafael J. Wysocki wrote:
+>>>>> On Friday, 5 of September 2008, Anders Aagaard wrote:
+>>>>>> Rafael J. Wysocki wrote:
+>>>>>>> On Friday, 5 of September 2008, Anders Aagaard wrote:
+>>>>>>>> Hi
+>>>>>>> Hi,
+>>>>>>>
+>>>>>>> This is a kernel problem, so let's CC the LKML.
+>>>>>>>
+>>>>>>>> I have a intel P35 board with a quad core cpu in it, it's currently 
+>>>>>>>> running as a server for a small network, and I'd like to be able to shut 
+>>>>>>>> it down when idle, and use wake on lan to wake it up when it's needed. 
+>>>>>>>> Now I got that part working quite well, but for some reason I have a 
+>>>>>>>> long delay in resume.
+>>>>>>>>
+>>>>>>>> I seem to remember being able to resume this computer in 2-3 seconds 
+>>>>>>>> when I was testing it, now it needs 35 seconds to resume.  It seems 
+>>>>>>>> regardless of resume options used, and it always resumes to a working 
+>>>>>>>> state without problems.
+>>>>>>> What kernel are you using at the moment and which one was used for the
+>>>>>>> testing?
+>>>>>> I'm using gentoo's 2.6.25-r7, I've also tried vanilla sources.
+>>>>> Would it be possible to test 2.6.27-rc5-gi7 from kernel.org?
+>>>> Tested, makes no difference.
+>>>>
+>>>>>>>> I've tried quite a lot of things, booting with noapic/nosmp, booting a 
+>>>>>>>> kernel without usb/network drivers, disabling ahci (using ata_piix 
+>>>>>>>> driver instead of ahci), and there's always that one long delay.  And 
+>>>>>>>> I'm not quite sure how the kernel printk timing information works, so 
+>>>>>>>> I'm not sure whats causing that delay.
+>>>>>>>>
+>>>>>>>> Output from dmesg when booting with nosmp (to get accurate timing data):
+>>>>>>>> scripts/show_delta -b "Force enabled HPET at resume"
+>>>>>>>> [349.821150 < 7.039261 >] ata3.00: configured for UDMA/133
+>>>>>>>> [349.821160 < 7.039271 >] sd 2:0:0:0: [sdc] 976773168 512-byte hardware 
+>>>>>>>> sectors (500108 MB)
+>>>>>>>> [349.821165 < 7.039276 >] sd 2:0:0:0: [sdc] Write Protect is off
+>>>>>>>> [349.821166 < 7.039277 >] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+>>>>>>>> [349.821173 < 7.039284 >] sd 2:0:0:0: [sdc] Write cache: enabled, read 
+>>>>>>>> cache: enabled, doesn't support DPO or FUA
+>>>>>>>> [349.972801 < 7.190912 >] ata1: SATA link up 3.0 Gbps (SStatus 123 
+>>>>>>>> SControl 300)
+>>>>>>>> [349.979060 < 7.197171 >] ata1.00: configured for UDMA/133
+>>>>>>>> [349.979070 < 7.197181 >] sd 0:0:0:0: [sda] 976771055 512-byte hardware 
+>>>>>>>> sectors (500107 MB)
+>>>>>>>> [349.979075 < 7.197186 >] sd 0:0:0:0: [sda] Write Protect is off
+>>>>>>>> [349.979076 < 7.197187 >] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+>>>>>>>> [349.979083 < 7.197194 >] sd 0:0:0:0: [sda] Write cache: enabled, read 
+>>>>>>>> cache: enabled, doesn't support DPO or FUA
+>>>>>>> It looks like this happens here.  Can you try to unload the network driver
+>>>>>>> before suspend, please?
+>>>>>> I tried to build a kernel without it, and it still takes the exact same 
+>>>>>> amount to boot, I've also tried unloading usb drivers and it takes the 
+>>>>>> exact same amount of time.
+>>>>> Can you try to boot with init=/bin/bash and suspend to RAM?  (Please have a
+>>>>> look at section 2 of Documentation/power/basic-pm-debugging.txt in the newer
+>>>>> kernel sources).
+>>>> I checked without X before, but forgot to unload the nvidia module, that 
+>>>> apparently makes a big difference, I did some numbers with 
+>>>> scripts/show_delta -b "Back to C".
+>>>>
+>>>> Nvidia and X : 32 seconds
+>>>> No X (same result as booting with init=/bin/bash) : 8.3 seconds
+>>>> Git kernel : 8.2 seconds
+>>>> Light kernel (no sound, network card and usb drivers) : 8.17 seconds
+>>>> ATI card instead of nvidia : 8.22 seconds
+>>>>
+>>>> I think we found the problem, I already replaced nvidia hardware in one 
+>>>> computer to resolve another issue.  Really appreciate your help on this 
+>>>> issue, this resume time works pretty well for me, it was a bit 
+>>>> ridiculous when I could boot faster than resume.
+>>>>
+>>>> Is 8 seconds fairly expected?
+>>> Well, it should be a bit less than that.  Usually, the resume shouldn't take
+>>> more than 5 sec.
+>>>
+>>>> My other computer (same ati card) boots  
+>>>> in about 2 seconds, but there's a lot less hardware in it (6 hd's and a 
+>>>> ton of usb devices in one computer, 1 hd and 1 usb device in the other).
+>>> That may matter a lot.  It would be interesting to check if detaching any of
+>>> those devices from the first machine helps. ;-)
+>>>
+>>>>   I checked cold booting with and without usb devices, my light kernel 
+>>>> boots to /bin/bash in 2.5 seconds, normal kernel about 7-8.  But I dont 
+>>>> see anything about usb on resume.
+>>> Of course the USB devices are also resumed and that takes time (comparable
+>>> to the boot time).
+>> Pulling out all my usb devices takes the resume time to 30.4
 > 
-> 	rcu_read_lock();
-> 	sig = rcu_dereference(tsk->signal);
+> This is with the NVidia driver I guess?  So your resume appears to be 1.6 s
+> faster without the USB devices.  Perhaps the disks also add to the latency.
+
+Correct, and I'm also thinking it's the disks, I'll try that as soon as 
+I have time to power this thing off.
+
 > 
-> This is bogus, task_struct->signal is not protected by RCU.
+> If you have CONFIG_PCIEASPM set in the kernel config, you can try to unset it
+> and see if that changes anything.
 
-Roland suggested this approach; I just want to snapshot the field
-atomically.  I guess I can just do an atomic read...
+I'm back to my normal kernel, so I didn't have that config option.
 
-> However, at first glance the code (this and other funcs) looks correct...
-> Either tsk == current, or the code runs under ->siglock. Or we know that
-> ->signal can't go away (wait_task_zombie).
 > 
-> As for this particular function, it seems to me that ->signal == NULL
-> is not possible, no?
-
-That's not completely clear to me.  I'm allowing for the possibility
-that it might be called during, say, process teardown.  It's used in so
-many places that I'm uncomfortable leaving the == NULL check out.
-
-> Please remove the false RCU stuff.
-
-OK.
-
-> Btw, this function has a lot of callers, perhaps it is better to
-> uninline it.
-
-If that's the consensus I'll do so.  I assumed that speed was more
-important than space in this case.  Am I mistaken?
-
-> >  static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
-> >  {
-> >  	struct signal_struct *sig;
-> >  	int ret;
-> >
-> >  	if (clone_flags & CLONE_THREAD) {
-> > -		atomic_inc(&current->signal->count);
-> > -		atomic_inc(&current->signal->live);
-> > -		return 0;
-> > +		ret = thread_group_cputime_clone_thread(current, tsk);
-> > +		if (likely(!ret)) {
-> > +			atomic_inc(&current->signal->count);
-> > +			atomic_inc(&current->signal->live);
-> > +		}
+> Thanks,
+> Rafael
 > 
-> So, the first CLONE_THREAD creates ->cputime.totals. After that
-> thread_group_cputime_account_xxx() start to use it even if the task
-> doesn't have the attached cpu timers.
-> 
-> Stupid question: can't we allocate .totals in posix_cpu_timer_create() /
-> set_process_cpu_timer() ?
-
-That was the original plan but we (that is, Roland and I) decided to
-eliminate the separate storage for the dead-threads totals.  It's now
-all kept in the totals field, for the whole thread group.  Note that
-this doesn't affect single-threaded processes at all.  Multithreaded
-processes, though, now keep their times in the new field, eliminating
-the old dead-thread fields from the signal structure, reducing the bloat
-this patch generates by just a bit.
-
-> Let's suppose the task doesn't have cpu timers. Currently, in this case
-> run_posix_cpu_timers() quickly checks UNEXPIRED() and returns. With this
-> patch we call fastpath_timer_check(). The first task_cputime_expired()
-> returns 0, so we are doing thread_group_cputime()->for_each_possible_cpu().
-> 
-> Not good, this code runs every timer tick. Perhaps it makes sense
-> to add a fastpath check.
-
-After looking at the code again, you're right.  I paid so much attention
-to fast-pathing the unexpired timer case that I forgot to handle the
-_no_-timer case.  I've added code to fastpath_timer_check() to handle
-that case.
-
-I'll be addressing the rest of your comments (particularly the RCU
-stuff) and producing a new patch fairly shortly.
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
 
