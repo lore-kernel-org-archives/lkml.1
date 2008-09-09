@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752389AbYIIXxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbYIIXyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752389AbYIIXxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 19:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYIIXxh
+	id S1753175AbYIIXyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 19:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYIIXyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 19:53:37 -0400
-Received: from smtp-out1.tiscali.nl ([195.241.79.176]:59950 "EHLO
-	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbYIIXxh convert rfc822-to-8bit (ORCPT
+	Tue, 9 Sep 2008 19:54:05 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60124 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbYIIXyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 19:53:37 -0400
-X-Greylist: delayed 990 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Sep 2008 19:53:36 EDT
-Subject: Re: [PATCHSCRIPT] MAINTAINERS: sort and merge P and M fields
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080908221139.GA10991@cassiopeia.tralala>
-References: <20080908221139.GA10991@cassiopeia.tralala>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Sep 2008 01:37:02 +0200
-Message-Id: <1221003422.3604.14.camel@test.thuisdomein>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
-Content-Transfer-Encoding: 8BIT
+	Tue, 9 Sep 2008 19:54:05 -0400
+Message-ID: <48C70BCC.8090707@zytor.com>
+Date: Tue, 09 Sep 2008 16:50:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: ifdef Quicklists in /proc/meminfo
+References: <Pine.LNX.4.64.0809081351240.4983@blonde.site> <20080909084241.41A0.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48C5BBEC.5060405@zytor.com> <48C70B46.5030309@goop.org>
+In-Reply-To: <48C70B46.5030309@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 00:11 +0200, Uwe Kleine-König wrote:
-> some time ago I sent two patch scripts to LKML that changed the
-> MAINTAINERS file.  One fixed the alphabetic ordering and another
-> merged the P and M fields to ease copy'n'paste.
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> x86 *does* use quicklists, at least with PAE.
 > 
-> See
-> 	http://thread.gmane.org/gmane.linux.kernel/702194
-> for the details.
+> No, not for a while now.
 
-If the MAINTAINERS file in the repository mentioned in that thread
-(http://www.modarm9.com/git/people/ukleinek/linux-2.6.git?a=shortlog;h=refs/heads/maintainers) is the result of the current script, you need to clean up some of the results of merging the P and M fields (false positives not removed):
-$ grep "P:.*," MAINTAINERS 
-P:	Cirrus Logic Corporation (kernel 2.2 driver) <Cirrus Logic
-Corporation, Thomas Woller <twoller@crystal.cirrus.com>>
-P:	Hans Verkuil, Andy Walls <hverkuil@xs4all.nl, awalls@radix.net>
-P:	Digi International, Inc <Eng.Linux@digi.com>
-P:	Mike Halcrow, Phillip Hellewell <mhalcrow@us.ibm.com,
-phillip@hellewell.homeip.net>
-P:	Christopher Hoover <ch@murgatroid.com, ch@hpl.hp.com>
-P:	Stephen Tweedie, Andrew Morton <sct@redhat.com,
-akpm@linux-foundation.org, adilger@sun.com>
-P:	Stephen Tweedie, Andrew Morton <sct@redhat.com,
-akpm@linux-foundation.org, adilger@sun.com>
-P:	Kristian Hoegsberg, Stefan Richter <krh@redhat.com,
-stefanr@s5r6.in-berlin.de>
-P:	Jean Delvare (PC drivers, core) <khali@linux-fr.org>
-P:	Stephen Tweedie, Andrew Morton <sct@redhat.com,
-akpm@linux-foundation.org>
-P:	Wong Hoi Sing, Edison <hswong3i@gmail.com>
-P:	Hung Hing Lun, Mike <hlhung3i@gmail.com>
-P:	Carlos Aguiar, Anderson Briglia and Syed Khasim
-<linux-omap-open-source@linux.omap.com (subscribers only)>
+Sorry, stale cache...
 
-Regards,
-
-
-Paul Bolle
-
+	-hpa
