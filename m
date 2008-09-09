@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYIIS5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYIITES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756141AbYIIS5Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 14:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYIIS5R
+	id S1756143AbYIITES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 15:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYIITEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 14:57:17 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:3892 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090AbYIIS5Q convert rfc822-to-8bit (ORCPT
+	Tue, 9 Sep 2008 15:04:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53640 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754335AbYIITEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 14:57:16 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-x-mimeole: Produced By Microsoft Exchange V6.5
-x-originalarrivaltime: 09 Sep 2008 18:55:51.0620 (UTC) FILETIME=[AE17B040:01C912AD]
-Content-class: urn:content-classes:message
-Subject: Re: Building Kernel with -O0
-Date: Tue, 9 Sep 2008 14:55:50 -0400
-Message-ID: <Pine.LNX.4.61.0809091442340.5579@chaos.analogic.com>
-In-Reply-To: <1220980240.17292.15.camel@CV-LAB2>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Building Kernel with -O0
-Thread-Index: AckSra4hVlQ0J+H3RxGi/aPtiekaog==
-References: <1220550653.15123.6.camel@CV-LAB2> <20080909160452.GB30160@cs181140183.pp.htv.fi> <1220980240.17292.15.camel@CV-LAB2>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Keith A. Prickett" <keithp@marvell.com>
-Cc: "Adrian Bunk" <bunk@kernel.org>,
-       "Linux kernel" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+	Tue, 9 Sep 2008 15:04:05 -0400
+Date: Tue, 9 Sep 2008 12:03:58 -0700
+Message-Id: <200809091903.m89J3wFd027106@askone.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [git pull] x86 fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-On Tue, 9 Sep 2008, Keith A. Prickett wrote:
+Please pull the latest x86-fixes-for-linus git tree from:
 
-> On Tue, 2008-09-09 at 19:04 +0300, Adrian Bunk wrote:
->> On Thu, Sep 04, 2008 at 10:50:53AM -0700, Keith A. Prickett wrote:
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-Microsoft and "Writing Solid Code" are mutually exclusive.
+This includes your patch for disabling static NOPL entirely on 32
+bits; as discussed yesterday the -Wa,-mtune=generic32 patches are
+deferred to post-27.
 
-> make this work is well worth the return.  In the book "Writing Solid
-> Code" (http://www.amazon.com/Writing-Solid-Code-Microsofts-Programming/dp/1556155514) one technique discussed is: stepping through your code.  In order to be able to do this effectively you need optimizations turned off.
+ Thanks,
 
-Sorry, I couldn't resist after being required to write code in
-VC++/MFC, where memory leaks are "normal," and pointers passed
-to "methods" don't remain valid if there is any other activity
-besides yours occurring in the machine.
+	-hpa
 
-If you have to single-step through kernel procedures, you
-are not writing proper code for a kernel. Furthermore, even
-when using the kernel debugger, you are not executing the
-exact same path that would be executed without the debugger
-attached.
+------------------>
+Jeremy Fitzhardinge (1):
+      xen: fix 2.6.27-rc5 xen balloon driver warnings
 
-These are some of the reasons why any attempt to compile
-with no optimization will usually fall upon deaf ears. There
-is a lot of in-line assembly that can't work with -O0 and if
-you change the code so that it does, it will not be the same
-as "normal" code so whatever it is that you are trying to
-accomplish will probably fail to work as planned.
+Linus Torvalds (1):
+      x86: disable static NOPLs on 32 bits
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.25.17 on an i686 machine (4786.16 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+Prarit Bhargava (1):
+      x86: fix memmap=exactmap boot argument
 
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+ arch/x86/Kconfig.cpu   |   13 ++++++++-----
+ arch/x86/kernel/e820.c |    2 +-
+ drivers/xen/balloon.c  |    2 +-
+ 3 files changed, 10 insertions(+), 7 deletions(-)
 
-Thank you.
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 2c518fb..b225219 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -382,14 +382,17 @@ config X86_OOSTORE
+ # P6_NOPs are a relatively minor optimization that require a family >=
+ # 6 processor, except that it is broken on certain VIA chips.
+ # Furthermore, AMD chips prefer a totally different sequence of NOPs
+-# (which work on all CPUs).  As a result, disallow these if we're
+-# compiling X86_GENERIC but not X86_64 (these NOPs do work on all
+-# x86-64 capable chips); the list of processors in the right-hand clause
+-# are the cores that benefit from this optimization.
++# (which work on all CPUs).  In addition, it looks like Virtual PC
++# does not understand them.
++#
++# As a result, disallow these if we're not compiling for X86_64 (these
++# NOPs do work on all x86-64 capable chips); the list of processors in
++# the right-hand clause are the cores that benefit from this optimization.
+ #
+ config X86_P6_NOP
+ 	def_bool y
+-	depends on (X86_64 || !X86_GENERIC) && (M686 || MPENTIUMII || MPENTIUMIII || MPENTIUMM || MCORE2 || MPENTIUM4 || MPSC)
++	depends on X86_64
++	depends on (MCORE2 || MPENTIUM4 || MPSC)
+ 
+ config X86_TSC
+ 	def_bool y
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 9af8907..66e48aa 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -1203,7 +1203,7 @@ static int __init parse_memmap_opt(char *p)
+ 	if (!p)
+ 		return -EINVAL;
+ 
+-	if (!strcmp(p, "exactmap")) {
++	if (!strncmp(p, "exactmap", 8)) {
+ #ifdef CONFIG_CRASH_DUMP
+ 		/*
+ 		 * If we are doing a crash dump, we still need to know
+diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+index d4427cb..2e15da5 100644
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -60,7 +60,7 @@
+ 
+ #define PAGES2KB(_p) ((_p)<<(PAGE_SHIFT-10))
+ 
+-#define BALLOON_CLASS_NAME "memory"
++#define BALLOON_CLASS_NAME "xen_memory"
+ 
+ struct balloon_stats {
+ 	/* We aim for 'current allocation' == 'target allocation'. */
