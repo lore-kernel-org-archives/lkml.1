@@ -1,121 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYIIHwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYIIHzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbYIIHwg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:52:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYIIHw1
+	id S1756002AbYIIHzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYIIHzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:52:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:2950 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753492AbYIIHw1 (ORCPT
+	Tue, 9 Sep 2008 03:55:41 -0400
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:20968 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753070AbYIIHzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:52:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=N32cZfWzcKVSMBsQUv1kuTi/JZyYP1dElfeUjFv8nZSn+GxWQuL3zKdiV0LnNYpxlK
-         oMP6Uu1BpeHJtMUUQZvwBXwaB+Ch+Mntat5MSVehgnAbS8EtOr5yp/cS2C9KUqlmVt+q
-         DJGsvkNpPTyid0cnWcqNr7o6syTbjKXkbBR60=
-Message-ID: <86802c440809090052t2e626ce8h4fda865b8cbce00b@mail.gmail.com>
-Date: Tue, 9 Sep 2008 00:52:26 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Sheng Yang" <sheng.yang@intel.com>
-Subject: Re: [PATCH 2/2] x86: Extended cpuinfo to show virtualization HW features
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Avi Kivity" <avi@qumranet.com>, "Andi Kleen" <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <1220943294312-git-send-email-sheng.yang@intel.com>
+	Tue, 9 Sep 2008 03:55:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=jD53m5EXkUYkgZ+QHwy05fvRlrtHYQuMnWqEXRHG2BZUWLgx+gIeOtAzJWmTTZi69jVI8VCkLrxdM9fOhLAsdnaeJnDA3XEtf3bhv3EKinP84BN52gGqgv6rjAcc2E/w5gMNACKipa21xNAGwXAokzCLzRa7AVINXPtVOblTQKw=  ;
+X-YMail-OSG: lmjNFwAVM1nRtNSPFzG1DlsvH39IGUp3AgV2zANdONDXyWH.0DzLlv2xaA3FMo.Wt6S2DgKFI2M5un04wK7U3mWVCtmTPsldEBG01.u6L5cbxksTfkus4EfQKG1jA4djNaFXxkcWosPLF3LqC1Jch820
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: 2.6.27-rc5-mm1: 3 WARN_ON dumps during boot (acpi + vmap_pte_range)
+Date: Tue, 9 Sep 2008 17:55:23 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dave Airlie <airlied@linux.ie>, Rusty Russell <rusty@rustcorp.com.au>
+References: <20080906084558.dff614d4.krzysztof.h1@poczta.fm> <200809091304.47769.nickpiggin@yahoo.com.au> <20080909070501.244d06ab.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080909070501.244d06ab.krzysztof.h1@poczta.fm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <12209432941440-git-send-email-sheng.yang@intel.com>
-	 <1220943294312-git-send-email-sheng.yang@intel.com>
+Message-Id: <200809091755.23379.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 8, 2008 at 11:54 PM, Sheng Yang <sheng.yang@intel.com> wrote:
-> The hardware virtualization technology evolves very fast. But currently
-> it's hard to tell if your CPU support a certain kind of HW technology
-> without digging into the source code.
+On Tuesday 09 September 2008 15:05, Krzysztof Helt wrote:
+> On Tue, 9 Sep 2008 13:04:47 +1000
 >
-> The patch add a new catagory in "flags" under /proc/cpuinfo. Now "flags"
-> can indicate the (important) HW virtulization features the CPU supported
-> as well.
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > On Tuesday 09 September 2008 03:52, Krzysztof Helt wrote:
+> > > alloc_vmap_area within(e07f0000-fffb7000) size=801000
+> > > returns=(e0880000-e1081000)
+> > > alloc_vmap_area within(e07f0000-fffb7000) size=2000
+> > > returns=(e07f0000-e07f2000)
+> > > alloc_vmap_area within(e07f0000-fffb7000) size=2000
+> > > returns=(e0822000-e0824000)
+> > > vunmap_page_range (e07f0000-e07f2000 size=2000)
+> > > free_vmap_area (e07f0000-e07f2000 size=2000)
+> > >
+> > > alloc_vmap_area within(e07f0000-fffb7000) size=5000
+> > > returns=(e07f0000-e07f5000)
+> > > ------------[ cut here ]------------
+> > > WARNING: at mm/vmalloc.c:40 check_pte_range+0x83/0x90()
+> >
+> > Thanks for that, it clearly shows the virtual address allocator
+> > is allowing an overlapping allocation after a vm_unmap_aliases()
+> > call. Unfortunately, my "random" test case happened not to
+> > trigger that... I should have paid more attention to edge cases
+> > rather than just random testing.
+> >
+> > Anyway, I hope this fix should solve the problem for you? (it
+> > fixes it here)
 >
-> Current implementation just cover Intel VMX side.
+> Your patch fixes two WARN_ON dumps from my original dmesg (agp
+> related and module loading related).
+> The remaining one is the acpi kobject duplication.
 >
-> Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-> ---
->  arch/x86/kernel/cpu/common.c |   45 ++++++++++++++++++++++++++++++++++++++++++
->  include/asm-x86/cpufeature.h |    9 +++++++-
->  2 files changed, 53 insertions(+), 1 deletions(-)
+> Tested-by: Krzysztof Helt <krzysztof.h1@wp.pl>
 >
-> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> index f7c1964..01432e2 100644
-> --- a/arch/x86/kernel/cpu/common.c
-> +++ b/arch/x86/kernel/cpu/common.c
-> @@ -581,6 +581,50 @@ static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
->        }
->  }
->
-> +static void __cpuinit detect_vmx_virtcap(struct cpuinfo_x86 *c)
-> +{
-> +       /* Intel VMX MSR indicated features */
-> +#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW   0x00200000
-> +#define X86_VMX_FEATURE_PROC_CTLS_VNMI         0x00400000
-> +#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS     0x80000000
-> +#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC   0x00000001
-> +#define X86_VMX_FEATURE_PROC_CTLS2_EPT         0x00000002
-> +#define X86_VMX_FEATURE_PROC_CTLS2_VPID                0x00000020
-> +
-> +       u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
-> +
-> +       clear_cpu_cap(c, X86_FEATURE_TPR_SHADOW);
-> +       clear_cpu_cap(c, X86_FEATURE_VNMI);
-> +       clear_cpu_cap(c, X86_FEATURE_FLEXPRIORITY);
-> +       clear_cpu_cap(c, X86_FEATURE_EPT);
-> +       clear_cpu_cap(c, X86_FEATURE_VPID);
-> +
-> +       rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
-> +       msr_ctl = vmx_msr_high | vmx_msr_low;
-> +       if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
-> +               set_cpu_cap(c, X86_FEATURE_TPR_SHADOW);
-> +       if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
-> +               set_cpu_cap(c, X86_FEATURE_VNMI);
-> +       if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
-> +               rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
-> +                     vmx_msr_low, vmx_msr_high);
-> +               msr_ctl2 = vmx_msr_high | vmx_msr_low;
-> +               if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
-> +                   (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
-> +                       set_cpu_cap(c, X86_FEATURE_FLEXPRIORITY);
-> +               if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
-> +                       set_cpu_cap(c, X86_FEATURE_EPT);
-> +               if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
-> +                       set_cpu_cap(c, X86_FEATURE_VPID);
-> +       }
-> +}
-> +
-> +static void __cpuinit detect_virtcap(struct cpuinfo_x86 *c)
-> +{
-> +       if (cpu_has(c, X86_FEATURE_VMX))
-> +               detect_vmx_virtcap(c);
-> +}
-> +
->  static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
->  {
->        if (!have_cpuid_p())
-> @@ -613,6 +657,7 @@ static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
->
->        init_scattered_cpuid_features(c);
->        detect_nopl(c);
-> +       detect_virtcap(c);
+> Thanks a lot Nick,
+> Krzysztof
 
-it should go into intel_64.c and intel.c
-
-YH
+Great, thanks very much for reporting and testing.
