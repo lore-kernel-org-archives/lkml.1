@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYIIFqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbYIIFsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbYIIFqX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 01:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbYIIFqQ
+	id S1755066AbYIIFsW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 01:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYIIFsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 01:46:16 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:42226 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbYIIFqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 01:46:14 -0400
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Date: Tue, 09 Sep 2008 10:22:27 +0300
-Message-Id: <20080909072227.22097.92318.sendpatchset@gollum>
-Subject: [GIT PULL] [Resend] UBIFS updates for 2.6.27-rc6
-X-OriginalArrivalTime: 09 Sep 2008 05:44:30.0190 (UTC) FILETIME=[20F470E0:01C9123F]
-X-Nokia-AV: Clean
+	Tue, 9 Sep 2008 01:48:12 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39651 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752682AbYIIFsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 01:48:11 -0400
+Date: Mon, 8 Sep 2008 22:48:05 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2 v5] cfg80211: Add new wireless regulatory
+	infrastructure
+Message-ID: <20080909054805.GB15742@tesla>
+References: <1220643824-11398-1-git-send-email-lrodriguez@atheros.com> <1220668394.6714.109.camel@californication>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1220668394.6714.109.camel@californication>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Fri, Sep 05, 2008 at 07:33:14PM -0700, Marcel Holtmann wrote:
+> can we get a small document in Documentation/ that describes what has to
+> be done for CRDA. That would help to ease the adaption and would allow
+> us to point people to it. Nothing fancy, but some quick notes where to
+> find it and what to put where.
 
-please pull from
+Sure, I'm putting this together now.
 
-git://git.infradead.org/~dedekind/ubifs-2.6.git linux-next
+> > Each driver can regulatory_hint() a regulatory domain
+> > based on either their EEPROM mapped regulatory domain value to a
+> > respective ISO/IEC 3166-1 country code or pass an internally built
+> > regulatory domain. We also add support to let the user set the
+> > regulatory domain through userspace in case of faulty EEPROMs to
+> > further help compliance.
+> 
+> Do we have an example for all the possible ways? I think about something
+> to help driver maintainers to move over and use the infrastructure the
+> right way.
 
-The following changes since commit 6a55617ed5d1aa62b850de2cf66f5ede2eef4825:
-  Linus Torvalds (1):
-        Linux v2.6.27-rc4
+The only case I didn't test was the case for Intel's drivers, all other
+drivers would use regulatory_hint() based on an alpha2 and that worked
+swell. I found some issues with the case of providing a built regulatory
+domain so I'm updating it now and am also updating some other parts of the
+code for the old regulatory infrastructure, it seems there were a few
+obvious issues we didn't catch there yet.
 
-are available:
+I hope to have the new doc for you with a few fixes and an example as to
+what Intel drivers can do soon. I was hoping to get it all done by today but
+that didn't happen.
 
-Adrian Hunter (2):
-      UBIFS: always read hashed-key nodes under TNC mutex
-      UBIFS: allow for racing between GC and TNC
-
-Artem Bityutskiy (13):
-      UBIFS: fix zero-length truncations
-      UBIFS: do not update min_idx_lebs in stafs
-      UBIFS: push empty flash hack down
-      UBIFS: remove incorrect index space check
-      UBIFS: improve statfs reporting
-      UBIFS: fix assertion
-      UBIFS: add forgotten gc_idx_lebs component
-      UBIFS: introduce LEB overhead
-      UBIFS: improve statfs reporting even more
-      UBIFS: fill f_fsid
-      UBIFS: amend f_fsid
-      UBIFS: fix division by zero
-      UBIFS: make minimum fanout 3
-
- fs/ubifs/budget.c      |  114 ++++++++++++++++++++++++++++++++++++-----------
- fs/ubifs/dir.c         |    1 -
- fs/ubifs/file.c        |   20 +++++++--
- fs/ubifs/find.c        |   18 +++----
- fs/ubifs/gc.c          |    6 +++
- fs/ubifs/misc.h        |   49 +++++++-------------
- fs/ubifs/super.c       |   22 ++++++---
- fs/ubifs/tnc.c         |  116 +++++++++++++++++++++++++-----------------------
- fs/ubifs/ubifs-media.h |    2 +-
- fs/ubifs/ubifs.h       |   14 +++++-
- 10 files changed, 221 insertions(+), 141 deletions(-)
-
-
-Few notes. We included only the stuff we consider to be fixes and
-improvement/new feature patches were not included. These patches:
-
-UBIFS: do not update min_idx_lebs in stafs
-UBIFS: push empty flash hack down
-UBIFS: improve statfs reporting
-UBIFS: introduce LEB overhead
-UBIFS: improve statfs reporting even more
-
-which may look like non-fixes actually fix this complaint:
-http://lists.infradead.org/pipermail/linux-mtd/2008-August/022579.html
-
-The
-UBIFS: fill f_fsid
-UBIFS: amend f_fsid
-
-patches we also consider as fixes because it's not really OK
-to avoid filling f_fsid, and we need f_fsid for NFS support.
-
-Thanks.
+  Luis
