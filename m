@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYIIQDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYIIQFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756526AbYIIQDU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 12:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYIIQDE
+	id S1756141AbYIIQFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 12:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYIIQFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 12:03:04 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:55875 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbYIIQDD (ORCPT
+	Tue, 9 Sep 2008 12:05:10 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:50630 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbYIIQFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 12:03:03 -0400
-From: Junio C Hamano <gitster@pobox.com>
-To: Michael J Gruber <michaeljgruber+gmane@fastmail.fm>
-Cc: Bert Wesarg <bert.wesarg@googlemail.com>,
-       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
-       Git Mailing List <git@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       guilt@lists.josefsipek.net, Brandon Philips <brandon@ifup.org>
-Subject: Re: [ANNOUNCE] Guilt v0.31
-References: <20080908135244.GB27550@josefsipek.net>
- <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com>
- <20080908184322.GE27550@josefsipek.net>
- <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com>
- <7vmyiifnwa.fsf@gitster.siamese.dyndns.org> <48C64B8B.5000606@fastmail.fm>
- <48C673CF.2000107@fastmail.fm> <7vd4jd8i9b.fsf@gitster.siamese.dyndns.org>
- <48C698DF.7010401@fastmail.fm>
-Date: Tue, 09 Sep 2008 09:02:42 -0700
-In-Reply-To: <48C698DF.7010401@fastmail.fm> (Michael J. Gruber's message of
- "Tue, 09 Sep 2008 17:40:15 +0200")
-Message-ID: <7vtzcp71el.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: C6C59D54-7E88-11DD-AE70-D0CFFE4BC1C1-77302942!a-sasl-fastnet.pobox.com
+	Tue, 9 Sep 2008 12:05:09 -0400
+X-IronPort-AV: E=Sophos;i="4.32,366,1217808000"; 
+   d="scan'208";a="1742281"
+User-Agent: Microsoft-Entourage/11.4.0.080122
+Date: Tue, 09 Sep 2008 17:05:00 +0100
+Subject: Re: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag
+ for IO mappings
+From: Keir Fraser <keir.fraser@eu.citrix.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
+       Xen Devel <xen-devel@lists.xensource.com>,
+       Andi Kleen <andi@firstfloor.org>, <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Message-ID: <C4EC5D3C.26EF1%keir.fraser@eu.citrix.com>
+Thread-Topic: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag
+ for IO mappings
+Thread-Index: AckSlc+mDfS05H6JEd2WrgAX8io7RQ==
+In-Reply-To: <48C69AB6.20500@goop.org>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 09 Sep 2008 16:05:07.0033 (UTC) FILETIME=[D3D7C490:01C91295]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael J Gruber <michaeljgruber+gmane@fastmail.fm> writes:
+On 9/9/08 16:48, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
 
-> I keep hearing this argument, and I'm even more surprised to hear it
-> right after a major release. If not now then when's a good time for
-> cleaning up confusing inconsistencies?
+> Keir Fraser wrote:
+>> That's basically what our _PAGE_IO flag (in our old Linux patchset) means.
+>> We use it to cause pte_pfn() to return an invalid pfn and hence avoid
+>> reference counting that way. Since kernel mappings are never reference
+>> counted (I think?) perhaps we could use _PAGE_SPECIAL even if it is
+>> restricted to use on user mappings.
+> 
+> Well, _PAGE_IOMAP's most important semantic from Xen's perspective is
+> that the frame number is considered to already be an MFN and so isn't
+> converted.  It may be that _PAGE_SPECIAL is also useful for its "no
+> refcount" properties, but we could set both in that case.
 
-Actually, after a major release is the worst time to push for such an
-agenda.
+Oh, yes, our _PAGE_IO has the same meaning.
 
-Especially when that release burned the maintainer with numerous complains
-against a major change in it, that has been advertised for a long time,
-which was pushed by other people for no good reason other than "such a
-clean-up would make things much tidier".
-
-Grrr ;-).
-
+ -- Keir
 
 
