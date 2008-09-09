@@ -1,95 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbYIIT2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYIITbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbYIIT2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 15:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYIIT23
+	id S1756794AbYIITbz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 15:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYIITbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 15:28:29 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:2835 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751814AbYIIT22 (ORCPT
+	Tue, 9 Sep 2008 15:31:46 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.155]:59486 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752677AbYIITbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 15:28:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Gbjb0K2JHGm5ihZOVdOjt5c4iL9LHr59mWuWnalK+UZCau4MOeUAkaRApDSb3QAdCL
-         7H9sT/DK7jCmkDFvesiDIcr2wMyUiMBPi1yFtCu7RUbvI0n8rLd7qSpcCDy1FiJ5jbmp
-         Zltw9o8vlk+leD9xfB3jUpNs9x1OiR0sUvv98=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] pci: fix merging left out for BAR print out v2
-Date: Tue,  9 Sep 2008 12:27:52 -0700
-Message-Id: <1220988472-24139-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.4.5
+	Tue, 9 Sep 2008 15:31:45 -0400
+Message-ID: <48C6CF48.5060309@ru.mvista.com>
+Date: Tue, 09 Sep 2008 23:32:24 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jeremy Higdon <jeremy@sgi.com>
+Subject: Re: [PATCH 5/7] sgiioc4: use ->init_dma method
+References: <200803091631.48968.bzolnier@gmail.com>
+In-Reply-To: <200803091631.48968.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-print out for Device BAR address before kernel try to update them.
+Bartlomiej Zolnierkiewicz wrote:
 
-also change it to KERN_DEBUG instead...
+> * Move dma_base check from sgiioc4_ide_setup_pci_device()
+>   to ide_dma_sgiioc4().
 
-v2: update to linux-pci next
-   also add (unsigned long long) cast
+    This check should've been thrown out -- it's never true.
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> * Replace ide_dma_sgiioc4() 'unsigned long dma_base' argument
+>   by 'const struct ide_port_info *d'.
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index d8d3f90..e3bddc5 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -304,6 +304,9 @@ static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 		} else {
- 			res->start = l64;
- 			res->end = l64 + sz64;
-+			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-+				pci_name(dev), pos, (unsigned long long)res->start,
-+				(unsigned long long)res->end);
- 		}
- 	} else {
- 		sz = pci_size(l, sz, mask);
-@@ -313,6 +316,9 @@ static int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
- 
- 		res->start = l;
- 		res->end = l + sz;
-+		printk(KERN_DEBUG "PCI: %s reg %x %s: [%llx, %llx]\n", pci_name(dev),
-+			pos, (res->flags & IORESOURCE_IO) ? "io port":"32bit mmio",
-+			(unsigned long long)res->start, (unsigned long long)res->end);
- 	}
- 
-  out:
-@@ -383,7 +389,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
--		printk(KERN_INFO "PCI: bridge %s io port: [%llx, %llx]\n",
-+		printk(KERN_DEBUG "PCI: bridge %s io port: [%llx, %llx]\n",
- 			pci_name(dev), (unsigned long long) res->start,
- 			(unsigned long long) res->end);
- 	}
-@@ -397,8 +403,9 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_INFO "PCI: bridge %s 32bit mmio: [%llx, %llx]\n", pci_name(dev),
--			(unsigned long long) res->start, (unsigned long long) res->end);
-+		printk(KERN_DEBUG "PCI: bridge %s 32bit mmio: [%llx, %llx]\n",
-+			pci_name(dev), (unsigned long long) res->start,
-+			(unsigned long long) res->end);
- 	}
- 
- 	res = child->resource[2];
-@@ -434,7 +441,7 @@ void __devinit pci_read_bridge_bases(struct pci_bus *child)
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_INFO "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
-+		printk(KERN_DEBUG "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
- 			pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
- 			(unsigned long long) res->start, (unsigned long long) res->end);
- 	}
+> * Move hwif->INB setup from ide_init_sgiioc4() to
+>   sgiioc4_ide_setup_pci_device().
+
+> * Move ide_init_sgiioc4() call from sgiioc4_ide_setup_pci_device()
+>   to ide_dma_sgiioc4().
+
+> * Convert the driver to use ->init_dma method.
+
+> Cc: Jeremy Higdon <jeremy@sgi.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+> Index: b/drivers/ide/pci/sgiioc4.c
+> ===================================================================
+> --- a/drivers/ide/pci/sgiioc4.c
+> +++ b/drivers/ide/pci/sgiioc4.c
+> @@ -327,15 +327,21 @@ sgiioc4_INB(unsigned long port)
+>  	return reg;
+>  }
+>  
+> +static void __devinit ide_init_sgiioc4(ide_hwif_t *);
+> +
+>  /* Creates a dma map for the scatter-gather list entries */
+>  static int __devinit
+> -ide_dma_sgiioc4(ide_hwif_t * hwif, unsigned long dma_base)
+> +ide_dma_sgiioc4(ide_hwif_t *hwif, const struct ide_port_info *d)
+>  {
+>  	struct pci_dev *dev = to_pci_dev(hwif->dev);
+> +	unsigned long dma_base = pci_resource_start(dev, 0) + IOC4_DMA_OFFSET;
+>  	void __iomem *virt_dma_base;
+>  	int num_ports = sizeof (ioc4_dma_regs_t);
+>  	void *pad;
+>  
+> +	if (dma_base == 0)
+> +		return -1;
+> +
+
+    It should be quite obvious that 'dma_base' will never be 0 since 
+IOC4_DMA_OFFSET == 0x140.
+
+>  	printk(KERN_INFO "%s: BM-DMA at 0x%04lx-0x%04lx\n", hwif->name,
+>  	       dma_base, dma_base + num_ports - 1);
+
+    It should print "MMIO-DMA" since the registers are memory-mapped.
+
+    Making another notch...
+
+MBR, Sergei
