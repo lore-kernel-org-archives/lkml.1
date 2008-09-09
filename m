@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYIINMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYIINOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbYIINMl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 09:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYIINMe
+	id S1756456AbYIINOg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 09:14:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbYIINO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 09:12:34 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49562 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751176AbYIINMd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 09:12:33 -0400
-Date: Tue, 9 Sep 2008 14:12:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
- attached)
-Message-ID: <20080909141210.4fd546a1@lxorguk.ukuu.org.uk>
-In-Reply-To: <48C67374.1000108@skyrush.com>
-References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>
-	<48AC3A16.4080209@skyrush.com>
-	<48B3F9F7.2050503@skyrush.com>
-	<48C54EC2.4060901@skyrush.com>
-	<20080908173250.2452c5b8.akpm@linux-foundation.org>
-	<48C67374.1000108@skyrush.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 9 Sep 2008 09:14:28 -0400
+Received: from mail.windriver.com ([147.11.1.11]:62598 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753081AbYIINO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 09:14:27 -0400
+Message-ID: <48C676AB.2070101@windriver.com>
+Date: Tue, 09 Sep 2008 08:14:19 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Atsuo Igarashi <atsuo_igarashi@tripeaks.co.jp>
+CC: linux-kernel@vger.kernel.org, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Tom Rini <trini@kernel.crashing.org>
+Subject: Re: [PATCH] kgdb: could not write to the last of valid memory with
+ kgdb.
+References: <48C5BDA0.90105@tripeaks.co.jp>
+In-Reply-To: <48C5BDA0.90105@tripeaks.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Sep 2008 13:14:20.0007 (UTC) FILETIME=[F823AF70:01C9127D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't think this is a good idea either, since I don't want to spinlock
-> during the output processing, which calls the driver output func.  I
-> think a mutex is more appropriate anyway (and there are some already
-> defined and in use for tty write locking, etc.) - let me know if you
-> think otherwise.  I will play around with this and re-post a patch for
-> review soon.
+Atsuo Igarashi wrote:
+> Hi,
+>
+> I'm using i.MX31 ARM11 board which has 104Mbyte valid memory.  When
+> I'd invoked a print command to write the last of valid memory from
+> gdb, there was no response from kgdb.
+> It seems that the following line causes this problem.
+>
+> kernel/kgdb.c: write_mem_msg()
+> ...
+>  491             flush_icache_range(addr, addr + length + 1);
+>
+> If the last byte of valid memory is specified, the last cache line
+> and the next cache line will be flushed by the ARM11 V6's function
+> from flush_icache_range().  I'm not sure why the 2nd parameter has
+> +1, I assume this +1 is unnecessary for ARM11 V6's cache.  I send a
+> patch to remove this +1, does anyone know necessity for other
+> architectures?
 
-The driver output side can sleep, and it has to be able to sleep because
-the drivers like USB need to be able to sleep.
+I had to go digging through the archives to find out where the "+1"
+came from, as it pre-dates my involvement with kgdb.  It turns out
+this actually appeared in the initial version of the 'X' 'M' gdb
+serial packet write.
 
-If you have the column handling isolated and locked that is a big step
-towards exterminating the BKL in the n_tty code. It also illustrates why
-locking people always say "lock data not code".
+You can see historical first version if you scroll to line 973 at:
 
-Alan
+http://kgdb.cvs.sourceforge.net/kgdb/kgdb-2/core-lite.patch?annotate=1.40
+
+That means we have carried this for 3 years, 10 months with no one
+noticing it. :-)
+
+The flush_icache_range() is a "start" to "end" address so there should
+be no need for the +1, as it is already computed by adding the length.
+I will queue this patch for some testing and pushing into the
+mainline.
+
+Thanks,
+Jason.
+
+
