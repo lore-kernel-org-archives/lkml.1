@@ -1,69 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYIIS2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbYIIS3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYIIS2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 14:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbYIIS2a
+	id S1756939AbYIIS3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 14:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYIIS3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 14:28:30 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:57256 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753223AbYIIS23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 14:28:29 -0400
-Message-ID: <48C6C0ED.2000409@keyaccess.nl>
-Date: Tue, 09 Sep 2008 20:31:09 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
+	Tue, 9 Sep 2008 14:29:34 -0400
+Received: from smtp2f.orange.fr ([80.12.242.152]:25386 "EHLO smtp2f.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754906AbYIIS3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 14:29:33 -0400
+X-ME-UUID: 20080909173523421.66E1E70000A3@mwinf2f28.orange.fr
+Message-ID: <48C6B3DA.3040904@wanadoo.fr>
+Date: Tue, 09 Sep 2008 19:35:22 +0200
+From: Thierry <thierry.bultel@wanadoo.fr>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Rene Herman <rene.herman@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap"
- messages
-References: <200809091250.08620.elendil@planet.nl> <200809090930.27583.bjorn.helgaas@hp.com> <200809091826.18876.elendil@planet.nl> <200809091140.25597.bjorn.helgaas@hp.com>
-In-Reply-To: <200809091140.25597.bjorn.helgaas@hp.com>
-Content-Type: multipart/mixed;
- boundary="------------000600020605000707020708"
-X-Spam-Score: -1.0 (-)
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Suggested patch: Sending the FQDN when booting via DHCP
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Antivirus: avast! (VPS 080908-0, 08/09/2008), Outbound message
+X-Antivirus-Status: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000600020605000707020708
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+[re-sent without HTML encoding, and to the right aliases ...]
 
-On 09-09-08 19:40, Bjorn Helgaas wrote:
+Hi all,
 
-> If the PCI device isn't fully initialized, it doesn't seem right to
-> check it for resource conflicts.  But I don't know how to tell that.
+the following patch can be useful, in order to let the DHCP server 
+accordingly update the DNS, when booting via DHCP.
 
-His pci_resource_start() values are 0. How about just checking for that?
+This can be useful for 2 reasons:
+1) on small systems, the embedded filesystem may even not have udhcpd
+2) when booting nfsroot, the nfs server does not like when udhcpd in 
+invoked, even when requested the same IP address.
 
-Rene.
+Here is the patch, for 2.6.27-rc5. (Notice that it is the very first 
+time I deliver a patch for Linux, and I may
+have missed some points on the procedure, if it is the case I apologize 
+for that). What do you think about it ?
 
---------------000600020605000707020708
-Content-Type: text/plain;
- name="quirk_system_pci_resources.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="quirk_system_pci_resources.diff"
+Any ideas or comments are welcome.
 
-diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-index 0bdf9b8..d0120a5 100644
---- a/drivers/pnp/quirks.c
-+++ b/drivers/pnp/quirks.c
-@@ -253,6 +253,9 @@ static void quirk_system_pci_resources(struct pnp_dev *dev)
- 				continue;
- 
- 			pci_start = pci_resource_start(pdev, i);
-+			if (!pci_start)
-+				continue;
+Thanks,
+Thierry
+
+diff --git a/net/ipv4/Kconfig b/net/ipv4/Kconfig
+index 591ea23..74111da 100644
+--- a/net/ipv4/Kconfig
++++ b/net/ipv4/Kconfig
+@@ -162,6 +162,16 @@ config IP_PNP_DHCP
+      must be operating on your network.  Read
+      for details.
+
++config IP_PNP_DHCP_FQDN
++    bool "IP: DHCP FQDN"
++    default y
++    depends on IP_PNP_DHCP
++    ---help---
++       If you want your Linux box to send its FQDN in the DHCP request,
++       in order to let the DHCP server know how to update the DNS, you
++       can say Y here.
 +
- 			pci_end = pci_resource_end(pdev, i);
- 			for (j = 0;
- 			     (res = pnp_get_resource(dev, type, j)); j++) {
++
+config IP_PNP_BOOTP
+    bool "IP: BOOTP support"
+    depends on IP_PNP
+diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
+index 42065ff..6a2b159 100644
+--- a/net/ipv4/ipconfig.c
++++ b/net/ipv4/ipconfig.c
+@@ -565,6 +565,19 @@ struct bootp_pkt {        /* BOOTP packet format */
+#define DHCPRELEASE    7
+#define DHCPINFORM    8
 
---------------000600020605000707020708--
++/* DHCP options        */
++
++#define DHCP_OPT_REQUESTED_IP    50
++#define DHCP_OPT_MESSAGE_TYPE    53
++#define DHCP_OPT_SERVER_ID    54
++#define DHCP_OPT_VEND_CLASS_ID    60
++#define DHCP_OPT_FQDN        81
++
++#define DHCP_FQDN_FLAGS_S    0x1    /* Server update */
++#define DHCP_FQDN_FLAGS_O    0x2
++#define DHCP_FQDN_FLAGS_E    0x4
++#define DHCP_FQDN_FLAGS_N    0x8
++
+static int ic_bootp_recv(struct sk_buff *skb, struct net_device *dev, 
+struct packet_type *pt, struct net_device *orig_dev);
+
+static struct packet_type bootp_packet_type __initdata = {
+@@ -596,20 +609,35 @@ ic_dhcp_init_options(u8 *options)
+    memcpy(e, ic_bootp_cookie, 4);    /* RFC1048 Magic Cookie */
+    e += 4;
+
+-    *e++ = 53;        /* DHCP message type */
++    *e++ = DHCP_OPT_MESSAGE_TYPE;        /* DHCP message type */
+    *e++ = 1;
+    *e++ = mt;
+
+    if (mt == DHCPREQUEST) {
+-        *e++ = 54;    /* Server ID (IP address) */
+-        *e++ = 4;
++#ifdef CONFIG_IP_PNP_DHCP_FQDN
++        char * hostname = utsname()->nodename;
++        int    len    = strlen(hostname);       +
++        *e++ = DHCP_OPT_FQDN;
++        *e++ = len + 3;    /* Len with flags and R1+R2 */
++        *e++ = DHCP_FQDN_FLAGS_S;
++        e += 2;
++        memcpy(e,hostname,len);
++        e += len;
++#endif /* CONFIG_IP_PNP_DHCP_FQDN */
++
++        *e++ = DHCP_OPT_SERVER_ID;    /* Server ID (IP address) */
++        *e++ = 4;    /* Len */
+        memcpy(e, &ic_servaddr, 4);
+        e += 4;
+
+-        *e++ = 50;    /* Requested IP address */
++        *e++ = DHCP_OPT_REQUESTED_IP;    /* Requested IP address */
+        *e++ = 4;
+        memcpy(e, &ic_myaddr, 4);
+        e += 4;
++
+    }
+
+    /* always? */
+@@ -632,7 +660,7 @@ ic_dhcp_init_options(u8 *options)
+        if (*vendor_class_identifier) {
+            printk(KERN_INFO "DHCP: sending class identifier \"%s\"\n",
+                   vendor_class_identifier);
+-            *e++ = 60;    /* Class-identifier */
++            *e++ = DHCP_OPT_VEND_CLASS_ID;    /* Class-identifier */
+            len = strlen(vendor_class_identifier);
+            *e++ = len;
+            memcpy(e, vendor_class_identifier, len);
+
