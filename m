@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbYIIVMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYIIVRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbYIIVMd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 17:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbYIIVMM
+	id S1755731AbYIIVRi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 17:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbYIIVRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 17:12:12 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:16640 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbYIIVML (ORCPT
+	Tue, 9 Sep 2008 17:17:30 -0400
+Received: from mailhost.somanetworks.com ([216.126.67.42]:56354 "EHLO
+	mail.somanetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbYIIVR3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 17:12:11 -0400
-From: heukelum@fastmail.fm
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 10/24] i386: convert hardware exception 10 to an interrupt gate
-Date: Tue,  9 Sep 2008 21:56:04 +0200
-Message-Id: <1220990178-29773-11-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1220990178-29773-10-git-send-email-heukelum@fastmail.fm>
-References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-8-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-9-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-10-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Tue, 09 Sep 2008 23:11:58 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
+	Tue, 9 Sep 2008 17:17:29 -0400
+Date: Tue, 9 Sep 2008 17:11:33 -0400 (EDT)
+From: Scott Murray <scottm@somanetworks.com>
+X-X-Sender: scottm@rancor
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Alex Chiang <achiang@hp.com>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       kristen.c.accardi@intel.com
+Subject: Re: [PATCH v2 05/13] PCI: cpci_hotplug: stop managing
+ hotplug_slot->name
+In-Reply-To: <20080909150410.GZ2772@parisc-linux.org>
+Message-ID: <alpine.LFD.1.10.0809091702270.6809@rancor>
+References: <20080909091813.29542.85613.stgit@bob.kio> <20080909100027.29542.66879.stgit@bob.kio> <20080909150410.GZ2772@parisc-linux.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander van Heukelum <heukelum@fastmail.fm>
+On Tue, 9 Sep 2008, Matthew Wilcox wrote:
 
-Handle invalid TSS exception with interrupt initially off.
+> On Tue, Sep 09, 2008 at 04:00:27AM -0600, Alex Chiang wrote:
+> > We no longer need to manage our version of hotplug_slot->name
+> > since the PCI and hotplug core manage it on our behalf.
+> >
+> > Now, we simply advise the PCI core of the name that we would
+> > like, and let the core take care of the rest.
+>
+> > -static void
+> > -make_slot_name(struct slot *slot)
+> > -{
+> > -	snprintf(slot->hotplug_slot->name,
+> > -		 SLOT_NAME_SIZE, "%02x:%02x", slot->bus->number, slot->number);
+> > -}
+> >
+> >
+> > +		scnprintf(name, SLOT_NAME_SIZE, "%02x:%02x", bus->number, i);
+> > +
+> >  		hotplug_slot->private = slot;
+>
+> Unfortunately, our name is kind of crappy.  Can we not give the user
+> anything better than this?  I can't seem to find the CompactPCI
+> specification to see if we have a better name available.
+>
+> I wonder if we can use DMI data on this class of machine.  Scott?
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/traps_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+This is about all that can be done, unfortunately.  I've never seen
+anything useful with regards to this in DMI on the boards I've looked
+at, and we would have to rework the board driver -> CPCI hotplug core
+interface to pass that information along even if we could get it for
+some boards.  In general, it is a difficult problem to solve since the
+same set of system master and peripheral boards in a different chassis
+could very well be at different geographic addresses depending on where
+the chassis vendor has placed the system master slot(s).
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 477946a..8ace1e2 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -638,7 +638,7 @@ DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
- DO_VM86_ERROR(5, SIGSEGV, "bounds", bounds)
- DO_ERROR_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
- DO_ERROR(9, SIGFPE, "coprocessor segment overrun", coprocessor_segment_overrun)
--DO_TRAP(10, SIGSEGV, "invalid TSS", invalid_TSS)
-+DO_ERROR(10, SIGSEGV, "invalid TSS", invalid_TSS)
- DO_TRAP(11, SIGBUS, "segment not present", segment_not_present)
- DO_TRAP(12, SIGBUS, "stack segment", stack_segment)
- DO_TRAP_INFO(17, SIGBUS, "alignment check", alignment_check, BUS_ADRALN, 0, 0)
-@@ -1268,7 +1268,7 @@ void __init trap_init(void)
- 	set_intr_gate(7, &device_not_available);
- 	set_task_gate(8, GDT_ENTRY_DOUBLEFAULT_TSS);
- 	set_intr_gate(9, &coprocessor_segment_overrun);
--	set_trap_gate(10, &invalid_TSS);
-+	set_intr_gate(10, &invalid_TSS);
- 	set_trap_gate(11, &segment_not_present);
- 	set_trap_gate(12, &stack_segment);
- 	set_trap_gate(13, &general_protection);
+Scott
+
+
 -- 
-1.5.4.3
-
+Scott Murray
+SOMA Networks, Inc.
+Toronto, Ontario
+e-mail: scottm@somanetworks.com
