@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbYIIELi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYIIELz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756498AbYIIELi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbYIIEIn
+	id S1755512AbYIIELz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYIIEIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42579 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42582 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753528AbYIIEIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 00:08:00 -0400
+	id S1750853AbYIIEIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 00:08:01 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 17/18] lirc driver for homebrew parallel port receivers
-Date: Tue,  9 Sep 2008 00:06:02 -0400
-Message-Id: <1220933164-10160-18-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-17-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 10/18] lirc driver for Igor Cesko's USB IR receiver
+Date: Tue,  9 Sep 2008 00:05:55 -0400
+Message-Id: <1220933164-10160-11-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-10-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
@@ -27,13 +27,6 @@ References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-8-git-send-email-jwilson@redhat.com>
  <1220933164-10160-9-git-send-email-jwilson@redhat.com>
  <1220933164-10160-10-git-send-email-jwilson@redhat.com>
- <1220933164-10160-11-git-send-email-jwilson@redhat.com>
- <1220933164-10160-12-git-send-email-jwilson@redhat.com>
- <1220933164-10160-13-git-send-email-jwilson@redhat.com>
- <1220933164-10160-14-git-send-email-jwilson@redhat.com>
- <1220933164-10160-15-git-send-email-jwilson@redhat.com>
- <1220933164-10160-16-git-send-email-jwilson@redhat.com>
- <1220933164-10160-17-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -42,810 +35,667 @@ Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
 ---
- drivers/input/lirc/Kconfig         |    7 +
- drivers/input/lirc/Makefile        |    1 +
- drivers/input/lirc/lirc_parallel.c |  728 ++++++++++++++++++++++++++++++++++++
- drivers/input/lirc/lirc_parallel.h |   26 ++
- 4 files changed, 762 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_parallel.c
- create mode 100644 drivers/input/lirc/lirc_parallel.h
+ drivers/input/lirc/Kconfig            |    7 +
+ drivers/input/lirc/Makefile           |    1 +
+ drivers/input/lirc/lirc_igorplugusb.c |  619 +++++++++++++++++++++++++++++++++
+ 3 files changed, 627 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_igorplugusb.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 2af6278..fb8ba38 100644
+index c105ac6..8579f96 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -89,6 +89,13 @@ config LIRC_MCEUSB2
- 	help
- 	  Driver for the Microsoft Media Center Ed. Receiver, v2
+@@ -40,6 +40,13 @@ config LIRC_I2C
+ 	  Driver for I2C-based IR receivers, such as those commonly
+ 	  found onboard Hauppauge PVR-150/250/350 video capture cards
  
-+config LIRC_PARALLEL
-+	tristate "Homebrew Parallel Port Receiver"
++config LIRC_IGORPLUGUSB
++	tristate "Igor Cesko's USB IR Receiver"
 +	default n
-+	depends on LIRC_DEV && !SMP
++	depends on LIRC_DEV
 +	help
-+	  Driver for Homebrew Parallel Port Receivers
++	  Driver for Igor Cesko's USB IR Receiver
 +
- config LIRC_SASEM
- 	tristate "Sasem USB IR Remote"
+ config LIRC_IMON
+ 	tristate "Soundgraph IMON Receiver"
  	default n
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index c5f71fa..3a1469c 100644
+index b348110..68f8da2 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_LIRC_IT87)		+= lirc_it87.o
- obj-$(CONFIG_LIRC_ITE8709)	+= lirc_ite8709.o
+@@ -9,6 +9,7 @@ obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
+ obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb.o
+ obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
+ obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
++obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
+ obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
  obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
  obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
-+obj-$(CONFIG_LIRC_PARALLEL)	+= lirc_parallel.o
- obj-$(CONFIG_LIRC_SASEM)	+= lirc_sasem.o
- obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
- obj-$(CONFIG_LIRC_SIR)		+= lirc_sir.o
-diff --git a/drivers/input/lirc/lirc_parallel.c b/drivers/input/lirc/lirc_parallel.c
+diff --git a/drivers/input/lirc/lirc_igorplugusb.c b/drivers/input/lirc/lirc_igorplugusb.c
 new file mode 100644
-index 0000000..912cad2
+index 0000000..ab9bdd6
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_parallel.c
-@@ -0,0 +1,728 @@
-+/****************************************************************************
-+ ** lirc_parallel.c *********************************************************
-+ ****************************************************************************
++++ b/drivers/input/lirc/lirc_igorplugusb.c
+@@ -0,0 +1,619 @@
++/* lirc_igorplugusb - USB remote support for LIRC
 + *
-+ * lirc_parallel - device driver for infra-red signal receiving and
-+ *                 transmitting unit built by the author
++ * Supports the standard homebrew IgorPlugUSB receiver with Igor's firmware.
++ * See http://www.cesko.host.sk/IgorPlugUSB/IgorPlug-USB%20(AVR)_eng.htm
 + *
-+ * Copyright (C) 1998 Christoph Bartelmus <lirc@bartelmus.de>
++ * The device can only record bursts of up to 36 pulses/spaces.
++ * Works fine with RC5. Longer commands lead to device buffer overrun.
++ * (Maybe a better firmware or a microcontroller with more ram can help?)
 + *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
++ * Version 0.1  [beta status]
 + *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
++ * Copyright (C) 2004 Jan M. Hochstein
++ *	<hochstein@algo.informatik.tu-darmstadt.de>
 + *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ * This driver was derived from:
++ *   Paul Miller <pmiller9@users.sourceforge.net>
++ *      "lirc_atiusb" module
++ *   Vladimir Dergachev <volodya@minspring.com>'s 2002
++ *      "USB ATI Remote support" (input device)
++ *   Adrian Dewhurst <sailor-lk@sailorfrag.net>'s 2002
++ *      "USB StreamZap remote driver" (LIRC)
++ *   Artur Lipowski <alipowski@kki.net.pl>'s 2002
++ *      "lirc_dev" and "lirc_gpio" LIRC modules
 + *
 + */
 +
-+/***********************************************************************
-+ *************************       Includes        ***********************
-+ ***********************************************************************/
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ *
++ */
 +
 +#include <linux/version.h>
 +
 +#include <linux/autoconf.h>
-+
-+#ifdef CONFIG_SMP
-+#error "--- Sorry, this driver is not SMP safe. ---"
-+#endif
-+
 +#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/kmod.h>
 +#include <linux/sched.h>
 +#include <linux/errno.h>
-+#include <linux/signal.h>
-+#include <linux/autoconf.h>
++#include <linux/ioctl.h>
 +#include <linux/fs.h>
-+#include <linux/kernel.h>
-+#include <linux/ioport.h>
-+#include <linux/time.h>
-+#include <linux/mm.h>
-+#include <linux/delay.h>
-+
-+#include <linux/io.h>
-+#include <linux/signal.h>
-+#include <linux/irq.h>
-+#include <linux/uaccess.h>
-+#include <asm/div64.h>
-+
++#include <linux/usb.h>
 +#include <linux/poll.h>
-+#include <linux/parport.h>
++#include <linux/smp_lock.h>
++#include <linux/time.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+#include "lirc_parallel.h"
 +
-+#define LIRC_DRIVER_NAME "lirc_parallel"
++/* module identification */
++#define DRIVER_VERSION		"0.1"
++#define DRIVER_AUTHOR		\
++	"Jan M. Hochstein <hochstein@algo.informatik.tu-darmstadt.de>"
++#define DRIVER_DESC		"USB remote driver for LIRC"
++#define DRIVER_NAME		"lirc_igorplugusb"
 +
-+#ifndef LIRC_IRQ
-+#define LIRC_IRQ 7
-+#endif
-+#ifndef LIRC_PORT
-+#define LIRC_PORT 0x378
-+#endif
-+#ifndef LIRC_TIMER
-+#define LIRC_TIMER 65536
-+#endif
-+
-+/***********************************************************************
-+ *************************   Globale Variablen   ***********************
-+ ***********************************************************************/
-+
++/* debugging support */
++#ifdef CONFIG_USB_DEBUG
++static int debug = 1;
++#else
 +static int debug;
-+static int check_pselecd;
-+
-+unsigned int irq = LIRC_IRQ;
-+unsigned int io = LIRC_PORT;
-+#ifdef LIRC_TIMER
-+unsigned int timer;
-+unsigned int default_timer = LIRC_TIMER;
 +#endif
 +
-+#define WBUF_SIZE (256)
-+#define RBUF_SIZE (256) /* this must be a power of 2 larger than 1 */
++#define dprintk(fmt, args...)					\
++	do {							\
++		if (debug)					\
++			printk(KERN_DEBUG fmt, ## args);	\
++	} while (0)
 +
-+static int wbuf[WBUF_SIZE];
-+static int rbuf[RBUF_SIZE];
++/* general constants */
++#define SUCCESS		 0
 +
-+DECLARE_WAIT_QUEUE_HEAD(lirc_wait);
++/* One mode2 pulse/space has 4 bytes. */
++#define CODE_LENGTH	     sizeof(int)
 +
-+unsigned int rptr;
-+unsigned int wptr;
-+unsigned int lost_irqs;
-+int is_open;
++/* Igor's firmware cannot record bursts longer than 36. */
++#define DEVICE_BUFLEN	   36
 +
-+struct parport *pport;
-+struct pardevice *ppdevice;
-+int is_claimed;
++/** Header at the beginning of the device's buffer:
++	unsigned char data_length
++	unsigned char data_start    (!=0 means ring-buffer overrun)
++	unsigned char counter       (incremented by each burst)
++**/
++#define DEVICE_HEADERLEN	3
 +
-+unsigned int tx_mask = 1;
++/* This is for the gap */
++#define ADDITIONAL_LIRC_BYTES   2
 +
-+/***********************************************************************
-+ *************************   Interne Funktionen  ***********************
-+ ***********************************************************************/
++/* times to poll per second */
++#define SAMPLE_RATE	     100
++static int sample_rate = SAMPLE_RATE;
 +
-+static inline unsigned int in(int offset)
-+{
-+	switch (offset) {
-+	case LIRC_LP_BASE:
-+		return parport_read_data(pport);
-+	case LIRC_LP_STATUS:
-+		return parport_read_status(pport);
-+	case LIRC_LP_CONTROL:
-+		return parport_read_control(pport);
-+	}
-+	return 0; /* make compiler happy */
-+}
 +
-+static inline void out(int offset, int value)
-+{
-+	switch (offset) {
-+	case LIRC_LP_BASE:
-+		parport_write_data(pport, value);
-+		break;
-+	case LIRC_LP_CONTROL:
-+		parport_write_control(pport, value);
-+		break;
-+	case LIRC_LP_STATUS:
-+		printk(KERN_INFO "%s: attempt to write to status register\n",
-+		       LIRC_DRIVER_NAME);
-+		break;
-+	}
-+}
++/**** Igor's USB Request Codes */
 +
-+static inline unsigned int lirc_get_timer(void)
-+{
-+	return in(LIRC_PORT_TIMER) & LIRC_PORT_TIMER_BIT;
-+}
++#define SET_INFRABUFFER_EMPTY   1
++/**
++ * Params: none
++ * Answer: empty
++ *
++**/
 +
-+static inline  unsigned int lirc_get_signal(void)
-+{
-+	return in(LIRC_PORT_SIGNAL) & LIRC_PORT_SIGNAL_BIT;
-+}
++#define GET_INFRACODE	   2
++/**
++ * Params:
++ *   wValue: offset to begin reading infra buffer
++ *
++ * Answer: infra data
++ *
++**/
 +
-+static inline void lirc_on(void)
-+{
-+	out(LIRC_PORT_DATA, tx_mask);
-+}
++#define SET_DATAPORT_DIRECTION  3
++/**
++ * Params:
++ *   wValue: (byte) 1 bit for each data port pin (0=in, 1=out)
++ *
++ * Answer: empty
++ *
++**/
 +
-+static inline void lirc_off(void)
-+{
-+	out(LIRC_PORT_DATA, 0);
-+}
++#define GET_DATAPORT_DIRECTION  4
++/**
++ * Params: none
++ *
++ * Answer: (byte) 1 bit for each data port pin (0=in, 1=out)
++ *
++**/
 +
-+static unsigned int init_lirc_timer(void)
-+{
-+	struct timeval tv, now;
-+	unsigned int level, newlevel, timeelapsed, newtimer;
-+	int count = 0;
++#define SET_OUT_DATAPORT	5
++/**
++ * Params:
++ *   wValue: byte to write to output data port
++ *
++ * Answer: empty
++ *
++**/
 +
-+	do_gettimeofday(&tv);
-+	tv.tv_sec++;                     /* wait max. 1 sec. */
-+	level = lirc_get_timer();
-+	do {
-+		newlevel = lirc_get_timer();
-+		if (level == 0 && newlevel != 0)
-+			count++;
-+		level = newlevel;
-+		do_gettimeofday(&now);
-+	} while (count < 1000 && (now.tv_sec < tv.tv_sec
-+			     || (now.tv_sec == tv.tv_sec
-+				 && now.tv_usec < tv.tv_usec)));
++#define GET_OUT_DATAPORT	6
++/**
++ * Params: none
++ *
++ * Answer: least significant 3 bits read from output data port
++ *
++**/
 +
-+	timeelapsed = ((now.tv_sec + 1 - tv.tv_sec)*1000000
-+		     + (now.tv_usec - tv.tv_usec));
-+	if (count >= 1000 && timeelapsed > 0) {
-+		if (default_timer == 0) {
-+			/* autodetect timer */
-+			newtimer = (1000000*count)/timeelapsed;
-+			printk(KERN_INFO "%s: %u Hz timer detected\n",
-+			       LIRC_DRIVER_NAME, newtimer);
-+			return newtimer;
-+		}  else {
-+			newtimer = (1000000*count)/timeelapsed;
-+			if (abs(newtimer - default_timer) > default_timer/10) {
-+				/* bad timer */
-+				printk(KERN_NOTICE "%s: bad timer: %u Hz\n",
-+				       LIRC_DRIVER_NAME, newtimer);
-+				printk(KERN_NOTICE "%s: using default timer: "
-+				       "%u Hz\n",
-+				       LIRC_DRIVER_NAME, default_timer);
-+				return default_timer;
-+			} else {
-+				printk(KERN_INFO "%s: %u Hz timer detected\n",
-+				       LIRC_DRIVER_NAME, newtimer);
-+				return newtimer; /* use detected value */
-+			}
-+		}
-+	} else {
-+		printk(KERN_NOTICE "%s: no timer detected\n", LIRC_DRIVER_NAME);
-+		return 0;
-+	}
-+}
++#define GET_IN_DATAPORT	 7
++/**
++ * Params: none
++ *
++ * Answer: least significant 3 bits read from input data port
++ *
++**/
 +
-+static int lirc_claim(void)
-+{
-+	if (parport_claim(ppdevice) != 0) {
-+		printk(KERN_WARNING "%s: could not claim port\n",
-+		       LIRC_DRIVER_NAME);
-+		printk(KERN_WARNING "%s: waiting for port becoming available"
-+		       "\n", LIRC_DRIVER_NAME);
-+		if (parport_claim_or_block(ppdevice) < 0) {
-+			printk(KERN_NOTICE "%s: could not claim port, giving"
-+			       " up\n", LIRC_DRIVER_NAME);
-+			return 0;
-+		}
-+	}
-+	out(LIRC_LP_CONTROL, LP_PSELECP|LP_PINITP);
-+	is_claimed = 1;
-+	return 1;
-+}
++#define READ_EEPROM	     8
++/**
++ * Params:
++ *   wValue: offset to begin reading EEPROM
++ *
++ * Answer: EEPROM bytes
++ *
++**/
 +
-+/***********************************************************************
-+ *************************   interrupt handler  ************************
-+ ***********************************************************************/
++#define WRITE_EEPROM	    9
++/**
++ * Params:
++ *   wValue: offset to EEPROM byte
++ *   wIndex: byte to write
++ *
++ * Answer: empty
++ *
++**/
 +
-+static inline void rbuf_write(int signal)
-+{
-+	unsigned int nwptr;
++#define SEND_RS232	      10
++/**
++ * Params:
++ *   wValue: byte to send
++ *
++ * Answer: empty
++ *
++**/
 +
-+	nwptr = (wptr + 1) & (RBUF_SIZE - 1);
-+	if (nwptr == rptr) {
-+		/* no new signals will be accepted */
-+		lost_irqs++;
-+		printk(KERN_NOTICE "%s: buffer overrun\n", LIRC_DRIVER_NAME);
-+		return;
-+	}
-+	rbuf[wptr] = signal;
-+	wptr = nwptr;
-+}
++#define RECV_RS232	      11
++/**
++ * Params: none
++ *
++ * Answer: byte received
++ *
++**/
 +
-+static void irq_handler(void *blah)
-+{
-+	struct timeval tv;
-+	static struct timeval lasttv;
-+	static int init;
-+	long signal;
-+	int data;
-+	unsigned int level, newlevel;
-+	unsigned int timeout;
++#define SET_RS232_BAUD	  12
++/**
++ * Params:
++ *   wValue: byte to write to UART bit rate register (UBRR)
++ *
++ * Answer: empty
++ *
++**/
 +
-+	if (!module_refcount(THIS_MODULE))
-+		return;
++#define GET_RS232_BAUD	  13
++/**
++ * Params: none
++ *
++ * Answer: byte read from UART bit rate register (UBRR)
++ *
++**/
 +
-+	if (!is_claimed)
-+		return;
 +
-+	/* disable interrupt */
-+	/*
-+	  disable_irq(irq);
-+	  out(LIRC_PORT_IRQ, in(LIRC_PORT_IRQ) & (~LP_PINTEN));
-+	*/
-+	if (check_pselecd && (in(1) & LP_PSELECD))
-+		return;
++/* data structure for each usb remote */
++struct irctl {
 +
-+#ifdef LIRC_TIMER
-+	if (init) {
-+		do_gettimeofday(&tv);
++	/* usb */
++	struct usb_device *usbdev;
++	struct urb *urb_in;
++	int devnum;
 +
-+		signal = tv.tv_sec - lasttv.tv_sec;
-+		if (signal > 15)
-+			/* really long time */
-+			data = PULSE_MASK;
-+		else
-+			data = (int) (signal*1000000 +
-+					 tv.tv_usec - lasttv.tv_usec +
-+					 LIRC_SFH506_DELAY);
++	unsigned char *buf_in;
++	unsigned int len_in;
++	int in_space;
++	struct timeval last_time;
 +
-+		rbuf_write(data); /* space */
-+	} else {
-+		if (timer == 0) {
-+			/* wake up; we'll lose this signal
-+			 * but it will be garbage if the device
-+			 * is turned on anyway */
-+			timer = init_lirc_timer();
-+			/* enable_irq(irq); */
-+			return;
-+		}
-+		init = 1;
-+	}
++	dma_addr_t dma_in;
 +
-+	timeout = timer/10;	/* timeout after 1/10 sec. */
-+	signal = 1;
-+	level = lirc_get_timer();
-+	do {
-+		newlevel = lirc_get_timer();
-+		if (level == 0 && newlevel != 0)
-+			signal++;
-+		level = newlevel;
++	/* lirc */
++	struct lirc_plugin *p;
 +
-+		/* giving up */
-+		if (signal > timeout
-+		    || (check_pselecd && (in(1) & LP_PSELECD))) {
-+			signal = 0;
-+			printk(KERN_NOTICE "%s: timeout\n", LIRC_DRIVER_NAME);
-+			break;
-+		}
-+	} while (lirc_get_signal());
-+
-+	if (signal != 0) {
-+		/* ajust value to usecs */
-+		unsigned long long helper;
-+
-+		helper = ((unsigned long long) signal)*1000000;
-+		do_div(helper, timer);
-+		signal = (long) helper;
-+
-+		if (signal > LIRC_SFH506_DELAY)
-+			data = signal - LIRC_SFH506_DELAY;
-+		else
-+			data = 1;
-+		rbuf_write(PULSE_BIT|data); /* pulse */
-+	}
-+	do_gettimeofday(&lasttv);
-+#else
-+	/* add your code here */
-+#endif
-+
-+	wake_up_interruptible(&lirc_wait);
-+
-+	/* enable interrupt */
-+	/*
-+	  enable_irq(irq);
-+	  out(LIRC_PORT_IRQ, in(LIRC_PORT_IRQ)|LP_PINTEN);
-+	*/
-+}
-+
-+/***********************************************************************
-+ **************************   file_operations   ************************
-+ ***********************************************************************/
-+
-+static loff_t lirc_lseek(struct file *filep, loff_t offset, int orig)
-+{
-+	return -ESPIPE;
-+}
-+
-+static ssize_t lirc_read(struct file *filep, char *buf, size_t n, loff_t *ppos)
-+{
-+	int result = 0;
-+	int count = 0;
-+	DECLARE_WAITQUEUE(wait, current);
-+
-+	if (n % sizeof(int))
-+		return -EINVAL;
-+
-+	add_wait_queue(&lirc_wait, &wait);
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	while (count < n) {
-+		if (rptr != wptr) {
-+			if (copy_to_user(buf+count, (char *) &rbuf[rptr],
-+					 sizeof(int))) {
-+				result = -EFAULT;
-+				break;
-+			}
-+			rptr = (rptr + 1) & (RBUF_SIZE - 1);
-+			count += sizeof(int);
-+		} else {
-+			if (filep->f_flags & O_NONBLOCK) {
-+				result = -EAGAIN;
-+				break;
-+			}
-+			if (signal_pending(current)) {
-+				result = -ERESTARTSYS;
-+				break;
-+			}
-+			schedule();
-+			set_current_state(TASK_INTERRUPTIBLE);
-+		}
-+	}
-+	remove_wait_queue(&lirc_wait, &wait);
-+	set_current_state(TASK_RUNNING);
-+	return count ? count : result;
-+}
-+
-+static ssize_t lirc_write(struct file *filep, const char *buf, size_t n,
-+			  loff_t *ppos)
-+{
-+	int count;
-+	unsigned int i;
-+	unsigned int level, newlevel;
-+	unsigned long flags;
-+	int counttimer;
-+
-+	if (!is_claimed)
-+		return -EBUSY;
-+
-+	if (n % sizeof(int))
-+		return -EINVAL;
-+
-+	count = n / sizeof(int);
-+
-+	if (count > WBUF_SIZE || count % 2 == 0)
-+		return -EINVAL;
-+
-+	if (copy_from_user(wbuf, buf, n))
-+		return -EFAULT;
-+
-+#ifdef LIRC_TIMER
-+	if (timer == 0) {
-+		/* try again if device is ready */
-+		timer = init_lirc_timer();
-+		if (timer == 0)
-+			return -EIO;
-+	}
-+
-+	/* ajust values from usecs */
-+	for (i = 0; i < count; i++) {
-+		unsigned long long helper;
-+
-+		helper = ((unsigned long long) wbuf[i])*timer;
-+		do_div(helper, 1000000);
-+		wbuf[i] = (int) helper;
-+	}
-+
-+	local_irq_save(flags);
-+	i = 0;
-+	while (i < count) {
-+		level = lirc_get_timer();
-+		counttimer = 0;
-+		lirc_on();
-+		do {
-+			newlevel = lirc_get_timer();
-+			if (level == 0 && newlevel != 0)
-+				counttimer++;
-+			level = newlevel;
-+			if (check_pselecd && (in(1) & LP_PSELECD)) {
-+				lirc_off();
-+				local_irq_restore(flags);
-+				return -EIO;
-+			}
-+		} while (counttimer < wbuf[i]);
-+		i++;
-+
-+		lirc_off();
-+		if (i == count)
-+			break;
-+		counttimer = 0;
-+		do {
-+			newlevel = lirc_get_timer();
-+			if (level == 0 && newlevel != 0)
-+				counttimer++;
-+			level = newlevel;
-+			if (check_pselecd && (in(1) & LP_PSELECD)) {
-+				local_irq_restore(flags);
-+				return -EIO;
-+			}
-+		} while (counttimer < wbuf[i]);
-+		i++;
-+	}
-+	local_irq_restore(flags);
-+#else
-+	/* place code that handles write
-+	 * without external timer here */
-+#endif
-+	return n;
-+}
-+
-+static unsigned int lirc_poll(struct file *file, poll_table *wait)
-+{
-+	poll_wait(file, &lirc_wait, wait);
-+	if (rptr != wptr)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
-+
-+static int lirc_ioctl(struct inode *node, struct file *filep, unsigned int cmd,
-+		      unsigned long arg)
-+{
-+	int result;
-+	unsigned long features = LIRC_CAN_SET_TRANSMITTER_MASK |
-+				 LIRC_CAN_SEND_PULSE | LIRC_CAN_REC_MODE2;
-+	unsigned long mode;
-+	unsigned int ivalue;
-+
-+	switch (cmd) {
-+	case LIRC_GET_FEATURES:
-+		result = put_user(features, (unsigned long *) arg);
-+		if (result)
-+			return result;
-+		break;
-+	case LIRC_GET_SEND_MODE:
-+		result = put_user(LIRC_MODE_PULSE, (unsigned long *) arg);
-+		if (result)
-+			return result;
-+		break;
-+	case LIRC_GET_REC_MODE:
-+		result = put_user(LIRC_MODE_MODE2, (unsigned long *) arg);
-+		if (result)
-+			return result;
-+		break;
-+	case LIRC_SET_SEND_MODE:
-+		result = get_user(mode, (unsigned long *) arg);
-+		if (result)
-+			return result;
-+		if (mode != LIRC_MODE_PULSE)
-+			return -EINVAL;
-+		break;
-+	case LIRC_SET_REC_MODE:
-+		result = get_user(mode, (unsigned long *) arg);
-+		if (result)
-+			return result;
-+		if (mode != LIRC_MODE_MODE2)
-+			return -ENOSYS;
-+		break;
-+	case LIRC_SET_TRANSMITTER_MASK:
-+		result = get_user(ivalue, (unsigned int *) arg);
-+		if (result)
-+			return result;
-+		if ((ivalue & LIRC_PARALLEL_TRANSMITTER_MASK) != ivalue)
-+			return LIRC_PARALLEL_MAX_TRANSMITTERS;
-+		tx_mask = ivalue;
-+		break;
-+	default:
-+		return -ENOIOCTLCMD;
-+	}
-+	return 0;
-+}
-+
-+static int lirc_open(struct inode *node, struct file *filep)
-+{
-+	if (module_refcount(THIS_MODULE) || !lirc_claim())
-+		return -EBUSY;
-+
-+	parport_enable_irq(pport);
-+
-+	/* init read ptr */
-+	rptr = 0;
-+	wptr = 0;
-+	lost_irqs = 0;
-+
-+	is_open = 1;
-+	return 0;
-+}
-+
-+static int lirc_close(struct inode *node, struct file *filep)
-+{
-+	if (is_claimed) {
-+		is_claimed = 0;
-+		parport_release(ppdevice);
-+	}
-+	is_open = 0;
-+	return 0;
-+}
-+
-+static struct file_operations lirc_fops = {
-+	.llseek		= lirc_lseek,
-+	.read		= lirc_read,
-+	.write		= lirc_write,
-+	.poll		= lirc_poll,
-+	.ioctl		= lirc_ioctl,
-+	.open		= lirc_open,
-+	.release	= lirc_close
++	/* handle sending (init strings) */
++	int send_flags;
++	wait_queue_head_t wait_out;
 +};
++
++static int unregister_from_lirc(struct irctl *ir)
++{
++	struct lirc_plugin *p = ir->p;
++	int devnum;
++
++	if (!ir->p)
++		return -EINVAL;
++
++	devnum = ir->devnum;
++	dprintk(DRIVER_NAME "[%d]: unregister from lirc called\n", devnum);
++
++	lirc_unregister_plugin(p->minor);
++
++	printk(DRIVER_NAME "[%d]: usb remote disconnected\n", devnum);
++
++	lirc_buffer_free(p->rbuf);
++	kfree(p->rbuf);
++	kfree(p);
++	kfree(ir);
++	ir->p = NULL;
++	return SUCCESS;
++}
 +
 +static int set_use_inc(void *data)
 +{
-+	return 0;
++	struct irctl *ir = data;
++
++	if (!ir) {
++		printk(DRIVER_NAME "[?]: set_use_inc called with no context\n");
++		return -EIO;
++	}
++	dprintk(DRIVER_NAME "[%d]: set use inc\n", ir->devnum);
++
++	if (!ir->usbdev)
++		return -ENODEV;
++
++	return SUCCESS;
 +}
 +
 +static void set_use_dec(void *data)
 +{
++	struct irctl *ir = data;
++
++	if (!ir) {
++		printk(DRIVER_NAME "[?]: set_use_dec called with no context\n");
++		return;
++	}
++	dprintk(DRIVER_NAME "[%d]: set use dec\n", ir->devnum);
 +}
 +
-+static struct lirc_plugin plugin = {
-+       .name		= LIRC_DRIVER_NAME,
-+       .minor		= -1,
-+       .code_length	= 1,
-+       .sample_rate	= 0,
-+       .data		= NULL,
-+       .add_to_buf	= NULL,
-+       .get_queue	= NULL,
-+       .set_use_inc	= set_use_inc,
-+       .set_use_dec	= set_use_dec,
-+       .fops		= &lirc_fops,
-+       .dev		= NULL,
-+       .owner		= THIS_MODULE,
++
++/**
++ * Called in user context.
++ * return 0 if data was added to the buffer and
++ * -ENODATA if none was available. This should add some number of bits
++ * evenly divisible by code_length to the buffer
++**/
++static int usb_remote_poll(void *data, struct lirc_buffer *buf)
++{
++	int ret;
++	struct irctl *ir = (struct irctl *)data;
++
++	if (!ir->usbdev)  /* Has the device been removed? */
++		return -ENODEV;
++
++	memset(ir->buf_in, 0, ir->len_in);
++
++	ret = usb_control_msg(
++	      ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
++	      GET_INFRACODE, USB_TYPE_VENDOR|USB_DIR_IN,
++	      0/* offset */, /*unused*/0,
++	      ir->buf_in, ir->len_in,
++	      /*timeout*/HZ * USB_CTRL_GET_TIMEOUT);
++	if (ret > 0) {
++		int i = DEVICE_HEADERLEN;
++		int code, timediff;
++		struct timeval now;
++
++		if (ret <= 1)  /* ACK packet has 1 byte --> ignore */
++			return -ENODATA;
++
++		dprintk(DRIVER_NAME ": Got %d bytes. Header: %02x %02x %02x\n",
++			ret, ir->buf_in[0], ir->buf_in[1], ir->buf_in[2]);
++
++		if (ir->buf_in[2] != 0) {
++			printk(DRIVER_NAME "[%d]: Device buffer overrun.\n",
++				ir->devnum);
++			/* start at earliest byte */
++			i = DEVICE_HEADERLEN + ir->buf_in[2];
++			/* where are we now? space, gap or pulse? */
++		}
++
++		do_gettimeofday(&now);
++		timediff = now.tv_sec - ir->last_time.tv_sec;
++		if (timediff + 1 > PULSE_MASK / 1000000)
++			timediff = PULSE_MASK;
++		else {
++			timediff *= 1000000;
++			timediff += now.tv_usec - ir->last_time.tv_usec;
++		}
++		ir->last_time.tv_sec = now.tv_sec;
++		ir->last_time.tv_usec = now.tv_usec;
++
++		/* create leading gap  */
++		code = timediff;
++		lirc_buffer_write_n(buf, (unsigned char *)&code, 1);
++		ir->in_space = 1;   /* next comes a pulse */
++
++		/* MODE2: pulse/space (PULSE_BIT) in 1us units */
++
++		while (i < ret) {
++			/* 1 Igor-tick = 85.333333 us */
++			code = (unsigned int)ir->buf_in[i] * 85
++				+ (unsigned int)ir->buf_in[i] / 3;
++			if (ir->in_space)
++				code |= PULSE_BIT;
++			lirc_buffer_write_n(buf, (unsigned char *)&code, 1);
++			/* 1 chunk = CODE_LENGTH bytes */
++			ir->in_space ^= 1;
++			++i;
++		}
++
++		ret = usb_control_msg(
++		      ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
++		      SET_INFRABUFFER_EMPTY, USB_TYPE_VENDOR|USB_DIR_IN,
++		      /*unused*/0, /*unused*/0,
++		      /*dummy*/ir->buf_in, /*dummy*/ir->len_in,
++		      /*timeout*/HZ * USB_CTRL_GET_TIMEOUT);
++		if (ret < 0)
++			printk(DRIVER_NAME "[%d]: SET_INFRABUFFER_EMPTY: "
++			       "error %d\n", ir->devnum, ret);
++		return SUCCESS;
++	} else
++		printk(DRIVER_NAME "[%d]: GET_INFRACODE: error %d\n",
++			ir->devnum, ret);
++
++	return -ENODATA;
++}
++
++
++
++static int usb_remote_probe(struct usb_interface *intf,
++				const struct usb_device_id *id)
++{
++	struct usb_device *dev = NULL;
++	struct usb_host_interface *idesc = NULL;
++	struct usb_host_endpoint *ep_ctl2;
++	struct irctl *ir = NULL;
++	struct lirc_plugin *plugin = NULL;
++	struct lirc_buffer *rbuf = NULL;
++	int devnum, pipe, maxp, bytes_in_key;
++	int minor = 0;
++	char buf[63], name[128] = "";
++	int mem_failure = 0;
++	int ret;
++
++	dprintk(DRIVER_NAME ": usb probe called.\n");
++
++	dev = interface_to_usbdev(intf);
++
++	idesc = intf->cur_altsetting;  /* in 2.6.6 */
++
++	if (idesc->desc.bNumEndpoints != 1)
++		return -ENODEV;
++	ep_ctl2 = idesc->endpoint;
++	if (((ep_ctl2->desc.bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++	    != USB_DIR_IN)
++	    || (ep_ctl2->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
++	    != USB_ENDPOINT_XFER_CONTROL)
++		return -ENODEV;
++	pipe = usb_rcvctrlpipe(dev, ep_ctl2->desc.bEndpointAddress);
++	devnum = dev->devnum;
++	maxp = usb_maxpacket(dev, pipe, usb_pipeout(pipe));
++
++	bytes_in_key = CODE_LENGTH;
++
++	dprintk(DRIVER_NAME "[%d]: bytes_in_key=%d maxp=%d\n",
++		devnum, bytes_in_key, maxp);
++
++
++	/* allocate kernel memory */
++	mem_failure = 0;
++	ir = kmalloc(sizeof(struct irctl), GFP_KERNEL);
++	if (!ir) {
++		mem_failure = 1;
++		goto mem_failure_switch;
++	}
++
++	memset(ir, 0, sizeof(struct irctl));
++
++	plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL);
++	if (!plugin) {
++		mem_failure = 2;
++		goto mem_failure_switch;
++	}
++
++	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
++	if (!rbuf) {
++		mem_failure = 3;
++		goto mem_failure_switch;
++	}
++
++	if (lirc_buffer_init(rbuf, bytes_in_key,
++			DEVICE_BUFLEN+ADDITIONAL_LIRC_BYTES)) {
++		mem_failure = 4;
++		goto mem_failure_switch;
++	}
++
++	ir->buf_in = usb_buffer_alloc(dev,
++			      DEVICE_BUFLEN+DEVICE_HEADERLEN,
++			      GFP_ATOMIC, &ir->dma_in);
++	if (!ir->buf_in) {
++		mem_failure = 5;
++		goto mem_failure_switch;
++	}
++
++	memset(plugin, 0, sizeof(struct lirc_plugin));
++
++	strcpy(plugin->name, DRIVER_NAME " ");
++	plugin->minor = -1;
++	plugin->code_length = bytes_in_key*8; /* in bits */
++	plugin->features = LIRC_CAN_REC_MODE2;
++	plugin->data = ir;
++	plugin->rbuf = rbuf;
++	plugin->set_use_inc = &set_use_inc;
++	plugin->set_use_dec = &set_use_dec;
++	plugin->sample_rate = sample_rate;    /* per second */
++	plugin->add_to_buf = &usb_remote_poll;
++	plugin->dev = &dev->dev;
++	plugin->owner = THIS_MODULE;
++
++	init_waitqueue_head(&ir->wait_out);
++
++	minor = lirc_register_plugin(plugin);
++	if (minor < 0)
++		mem_failure = 9;
++
++mem_failure_switch:
++
++	/* free allocated memory in case of failure */
++	switch (mem_failure) {
++	case 9:
++		usb_buffer_free(dev, DEVICE_BUFLEN+DEVICE_HEADERLEN,
++			ir->buf_in, ir->dma_in);
++	case 5:
++		lirc_buffer_free(rbuf);
++	case 4:
++		kfree(rbuf);
++	case 3:
++		kfree(plugin);
++	case 2:
++		kfree(ir);
++	case 1:
++		printk(DRIVER_NAME "[%d]: out of memory (code=%d)\n",
++			devnum, mem_failure);
++		return -ENOMEM;
++	}
++
++	plugin->minor = minor;
++	ir->p = plugin;
++	ir->devnum = devnum;
++	ir->usbdev = dev;
++	ir->len_in = DEVICE_BUFLEN+DEVICE_HEADERLEN;
++	ir->in_space = 1; /* First mode2 event is a space. */
++	do_gettimeofday(&ir->last_time);
++
++	if (dev->descriptor.iManufacturer
++		&& usb_string(dev, dev->descriptor.iManufacturer, buf, 63) > 0)
++		strncpy(name, buf, 128);
++	if (dev->descriptor.iProduct
++		&& usb_string(dev, dev->descriptor.iProduct, buf, 63) > 0)
++		snprintf(name, 128, "%s %s", name, buf);
++	printk(DRIVER_NAME "[%d]: %s on usb%d:%d\n", devnum, name,
++	       dev->bus->busnum, devnum);
++
++	/* clear device buffer */
++	ret = usb_control_msg(ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
++		SET_INFRABUFFER_EMPTY, USB_TYPE_VENDOR|USB_DIR_IN,
++		/*unused*/0, /*unused*/0,
++		/*dummy*/ir->buf_in, /*dummy*/ir->len_in,
++		/*timeout*/HZ * USB_CTRL_GET_TIMEOUT);
++	if (ret < 0)
++		printk(DRIVER_NAME "[%d]: SET_INFRABUFFER_EMPTY: error %d\n",
++			devnum, ret);
++
++	usb_set_intfdata(intf, ir);
++	return SUCCESS;
++}
++
++
++static void usb_remote_disconnect(struct usb_interface *intf)
++{
++	struct usb_device *dev = interface_to_usbdev(intf);
++	struct irctl *ir = usb_get_intfdata(intf);
++	usb_set_intfdata(intf, NULL);
++
++	if (!ir || !ir->p)
++		return;
++
++	ir->usbdev = NULL;
++	wake_up_all(&ir->wait_out);
++
++	usb_buffer_free(dev, ir->len_in, ir->buf_in, ir->dma_in);
++
++	unregister_from_lirc(ir);
++}
++
++static struct usb_device_id usb_remote_id_table[] = {
++	/* Igor Plug USB (Atmel's Manufact. ID) */
++	{ USB_DEVICE(0x03eb, 0x0002) },
++
++	/* Terminating entry */
++	{ }
 +};
 +
++static struct usb_driver usb_remote_driver = {
++	.name =		DRIVER_NAME,
++	.probe =	usb_remote_probe,
++	.disconnect =	usb_remote_disconnect,
++	.id_table =	usb_remote_id_table
++};
++
++static int __init usb_remote_init(void)
++{
++	int i;
++
++	printk(KERN_INFO "\n"
++	       DRIVER_NAME ": " DRIVER_DESC " v" DRIVER_VERSION "\n");
++	printk(DRIVER_NAME ": " DRIVER_AUTHOR "\n");
++	dprintk(DRIVER_NAME ": debug mode enabled\n");
++
 +#ifdef MODULE
-+
-+static int pf(void *handle);
-+static void kf(void *handle);
-+
-+static struct timer_list poll_timer;
-+static void poll_state(unsigned long ignored);
-+
-+static void poll_state(unsigned long ignored)
-+{
-+	printk(KERN_NOTICE "%s: time\n",
-+	       LIRC_DRIVER_NAME);
-+	del_timer(&poll_timer);
-+	if (is_claimed)
-+		return;
-+	kf(NULL);
-+	if (!is_claimed) {
-+		printk(KERN_NOTICE "%s: could not claim port, giving up\n",
-+		       LIRC_DRIVER_NAME);
-+		init_timer(&poll_timer);
-+		poll_timer.expires = jiffies + HZ;
-+		poll_timer.data = (unsigned long)current;
-+		poll_timer.function = poll_state;
-+		add_timer(&poll_timer);
-+	}
-+}
-+
-+static int pf(void *handle)
-+{
-+	parport_disable_irq(pport);
-+	is_claimed = 0;
-+	return 0;
-+}
-+
-+static void kf(void *handle)
-+{
-+	if (!is_open)
-+		return;
-+	if (!lirc_claim())
-+		return;
-+	parport_enable_irq(pport);
-+	lirc_off();
-+	/* this is a bit annoying when you actually print...*/
-+	/*
-+	printk(KERN_INFO "%s: reclaimed port\n", LIRC_DRIVER_NAME);
-+	*/
-+}
-+
-+/***********************************************************************
-+ ******************   init_module()/cleanup_module()  ******************
-+ ***********************************************************************/
-+
-+int init_module(void)
-+{
-+	pport = parport_find_base(io);
-+	if (pport == NULL) {
-+		printk(KERN_NOTICE "%s: no port at %x found\n",
-+		       LIRC_DRIVER_NAME, io);
-+		return -ENXIO;
-+	}
-+	ppdevice = parport_register_device(pport, LIRC_DRIVER_NAME,
-+					   pf, kf, irq_handler, 0, NULL);
-+	parport_put_port(pport);
-+	if (ppdevice == NULL) {
-+		printk(KERN_NOTICE "%s: parport_register_device() failed\n",
-+		       LIRC_DRIVER_NAME);
-+		return -ENXIO;
-+	}
-+	if (parport_claim(ppdevice) != 0)
-+		goto skip_init;
-+	is_claimed = 1;
-+	out(LIRC_LP_CONTROL, LP_PSELECP|LP_PINITP);
-+
-+#ifdef LIRC_TIMER
-+	if (debug)
-+		out(LIRC_PORT_DATA, tx_mask);
-+
-+	timer = init_lirc_timer();
-+
-+#if 0	/* continue even if device is offline */
-+	if (timer == 0) {
-+		is_claimed = 0;
-+		parport_release(pport);
-+		parport_unregister_device(ppdevice);
-+		return -EIO;
-+	}
-+
-+#endif
-+	if (debug)
-+		out(LIRC_PORT_DATA, 0);
++	request_module("lirc_dev");
 +#endif
 +
-+	is_claimed = 0;
-+	parport_release(ppdevice);
-+ skip_init:
-+	plugin.minor = lirc_register_plugin(&plugin);
-+	if (plugin.minor < 0) {
-+		printk(KERN_NOTICE "%s: register_chrdev() failed\n",
-+		       LIRC_DRIVER_NAME);
-+		parport_unregister_device(ppdevice);
-+		return -EIO;
++	i = usb_register(&usb_remote_driver);
++	if (i < 0) {
++		printk(DRIVER_NAME ": usb register failed, result = %d\n", i);
++		return -ENODEV;
 +	}
-+	printk(KERN_INFO "%s: installed using port 0x%04x irq %d\n",
-+	       LIRC_DRIVER_NAME, io, irq);
-+	return 0;
++
++	return SUCCESS;
 +}
 +
-+void cleanup_module(void)
++static void __exit usb_remote_exit(void)
 +{
-+	parport_unregister_device(ppdevice);
-+	lirc_unregister_plugin(plugin.minor);
++	usb_deregister(&usb_remote_driver);
 +}
 +
-+MODULE_DESCRIPTION("Infrared receiver driver for parallel ports.");
-+MODULE_AUTHOR("Christoph Bartelmus");
++#ifdef MODULE
++module_init(usb_remote_init);
++module_exit(usb_remote_exit);
++
++#include <linux/vermagic.h>
++MODULE_INFO(vermagic, VERMAGIC_STRING);
++
++MODULE_DESCRIPTION(DRIVER_DESC);
++MODULE_AUTHOR(DRIVER_AUTHOR);
 +MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(usb, usb_remote_id_table);
 +
-+module_param(io, int, 0444);
-+MODULE_PARM_DESC(io, "I/O address base (0x3bc, 0x378 or 0x278)");
++module_param(sample_rate, int, 0644);
++MODULE_PARM_DESC(sample_rate, "Sampling rate in Hz (default: 100)");
 +
-+module_param(irq, int, 0444);
-+MODULE_PARM_DESC(irq, "Interrupt (7 or 5)");
-+
-+module_param(tx_mask, int, 0444);
-+MODULE_PARM_DESC(tx_maxk, "Transmitter mask (default: 0x01)");
-+
-+module_param(debug, bool, 0644);
-+MODULE_PARM_DESC(debug, "Enable debugging messages");
-+
-+module_param(check_pselecd, bool, 0644);
-+MODULE_PARM_DESC(debug, "Check for printer (default: 0)");
++#else /* not MODULE */
++subsys_initcall(usb_remote_driver);
 +
 +#endif /* MODULE */
-diff --git a/drivers/input/lirc/lirc_parallel.h b/drivers/input/lirc/lirc_parallel.h
-new file mode 100644
-index 0000000..4bed6af
---- /dev/null
-+++ b/drivers/input/lirc/lirc_parallel.h
-@@ -0,0 +1,26 @@
-+/* lirc_parallel.h */
 +
-+#ifndef _LIRC_PARALLEL_H
-+#define _LIRC_PARALLEL_H
-+
-+#include <linux/lp.h>
-+
-+#define LIRC_PORT_LEN 3
-+
-+#define LIRC_LP_BASE    0
-+#define LIRC_LP_STATUS  1
-+#define LIRC_LP_CONTROL 2
-+
-+#define LIRC_PORT_DATA           LIRC_LP_BASE    /* base */
-+#define LIRC_PORT_TIMER        LIRC_LP_STATUS    /* status port */
-+#define LIRC_PORT_TIMER_BIT          LP_PBUSY    /* busy signal */
-+#define LIRC_PORT_SIGNAL       LIRC_LP_STATUS    /* status port */
-+#define LIRC_PORT_SIGNAL_BIT          LP_PACK    /* ack signal */
-+#define LIRC_PORT_IRQ         LIRC_LP_CONTROL    /* control port */
-+
-+#define LIRC_SFH506_DELAY 0             /* delay t_phl in usecs */
-+
-+#define LIRC_PARALLEL_MAX_TRANSMITTERS 8
-+#define LIRC_PARALLEL_TRANSMITTER_MASK ((1<<LIRC_PARALLEL_MAX_TRANSMITTERS) - 1)
-+
-+#endif
++/*
++ * Overrides for Emacs so that we follow Linus's tabbing style.
++ * ---------------------------------------------------------------------------
++ * Local variables:
++ * c-basic-offset: 8
++ * End:
++ */
 -- 
 1.6.0.1
 
