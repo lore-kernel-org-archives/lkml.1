@@ -1,151 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYIIJyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYIIKAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbYIIJyE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 05:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbYIIJxy
+	id S1753802AbYIIKAZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 06:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724AbYIIKAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 05:53:54 -0400
-Received: from scing.com ([217.160.110.58]:46728 "EHLO scing.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbYIIJxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 05:53:53 -0400
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-From: Janne Grunau <j@jannau.net>
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>
-Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
-Date: Tue, 9 Sep 2008 11:53:48 +0200
-User-Agent: KMail/1.9.9
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Jarod Wilson <jarod@redhat.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>,
-       Mario Limonciello <superm1@ubuntu.com>, Janne Grunau <j@jannau.net>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com> <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
-In-Reply-To: <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
+	Tue, 9 Sep 2008 06:00:07 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:39923 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbYIIKAF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 06:00:05 -0400
+From: Alex Chiang <achiang@hp.com>
+Subject: [PATCH v2 00/13] PCI: let the core manage slot names
+To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Tue, 09 Sep 2008 04:00:02 -0600
+Message-ID: <20080909091813.29542.85613.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091153.49184.j@jannau.net>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 09:40:18 Sebastian Siewior wrote:
-> >diff --git a/drivers/input/lirc/Makefile
-> > b/drivers/input/lirc/Makefile new file mode 100644
-> >index 0000000..cdb4c45
-> >--- /dev/null
-> >+++ b/drivers/input/lirc/Makefile
-> >@@ -0,0 +1,8 @@
-> >+# Makefile for the lirc drivers.
-> >+#
-> >+
-> >+# Each configuration option enables a list of files.
-> >+
-> >+EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER
-> > -I$(src)
+Hi Jesse,
 
-> LIRC_SERIAL_TRANSMITTER is used in patch 2 and just to enable a
-> module options. Since it is always the case, please remove it.
+This is v2 of the series that implements a series of changes
+that allows the PCI core to manage slot names, rather than
+individual hotplug drivers.
 
-Added CONFIG_LIRC_SERIAL_TRANSMITTER to Kconfig and removed this from 
-the Makefile
+It addresses comments raised during the first round of review,
+most notably the bug that Kenji-san found of possible false name
+collisions.
 
-> I haven't found the source of $src. It is probably a relic.
+This series applies against linux-next.
 
-removed
+I'm including the previous explanation/justification to remind
+folks of the raison d'etre for this patchset.
 
-> >+obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
-> >diff --git a/drivers/input/lirc/lirc_dev.c
-> > b/drivers/input/lirc/lirc_dev.c new file mode 100644
-> >index 0000000..c8f325c
-> >--- /dev/null
-> >+++ b/drivers/input/lirc/lirc_dev.c
-> >@@ -0,0 +1,809 @@
-...
-> >+
-> >+#include <linux/version.h>
->
-> You souldn't need this one
->
-> >+
-> >+#include <linux/autoconf.h>
->
-> this as well.
+Thanks.
 
-fixed, in all other files as well.
+/ac
 
-> >+#include <linux/semaphore.h>
->
-> haven't found any call of down(). Do you really need this?
+There are several benefits to this approach:
 
-A relict. Lirc used many single holder semaphore and I forgot to remove 
-the include after converting them to mutexes. I'll check the other 
-files too.
+        1) The core can prevent duplicate slot names on systems
+           with broken firmware.
 
-> >+#define __KERNEL_SYSCALLS__
->
-> this define shouldn't be here, should it?
+        2) Since the kobject core keeps a copy of the slot name,
+           there is no need for each driver to manage a separate
+           copy, especially since the core can rename slots from
+           underneath drivers. We save runtime memory by only
+           referencing the kobject name.
 
-Probably not, but it doesn't make a difference for the current kernel.
-The only other hit for this symbol is arch/xtensa/kernel/syscall.c
-38:#undef  __KERNEL_SYSCALLS__
+        2.a) The PCI hotplug core doesn't need its own reference
+             for slot name either.
 
-...
+        3) Individual hotplug drivers become just a little bit
+           simpler by pushing as many kzalloc() calls for 'name'
+           down into the PCI core as possible.
 
-> >+static inline void init_irctl(struct irctl *ir)
->
-> this inline can go in my opinion. The others here as well. It is not
-> *that* performance critical.
+---
 
-There is only one other inline. I doubt it makes a difference there but 
-I won't change it without test. It does for the object size since the 
-function is only called from one place.
-
-...
-
-> >+
-> >+	bytes_in_key = p->code_length/8 + (p->code_length%8 ? 1 : 0);
->
-> did you actually pass checkpatch.pl ?
-
-yes, and while this is ugly I see no obvious CodingStyle violation.
-
-is following better?
-
-bytes_in_key = p->code_length/8;
-if (p->code_length%8)
-	bytes_in_key++;
-
-> >+EXPORT_SYMBOL(lirc_register_plugin);
->
-> Is EXPORT_SYMBOL_GPL() possible?
-
-Afaik yes, all drivers using this symbol are in this patchset and under 
-GPL. If it is desireable to to use EXPORT_SYMBOL_GPL() has someone else 
-to decide. Christoph?
+Alex Chiang (13):
+      PCI: Hotplug core: remove 'name'
+      PCI: shcphp: remove 'name' parameter
+      PCI: SGI Hotplug: stop managing bss_hotplug_slot->name
+      PCI: rpaphp: stop managing hotplug_slot->name
+      PCI: pciehp: remove 'name' parameter
+      PCI: ibmphp: stop managing hotplug_slot->name
+      PCI: fakephp: remove 'name' parameter
+      PCI: cpqphp: stop managing hotplug_slot->name
+      PCI: cpci_hotplug: stop managing hotplug_slot->name
+      PCI: acpiphp: remove 'name' parameter
+      PCI, PCI Hotplug: introduce slot_name helpers
+      PCI: prevent duplicate slot names
+      PCI Hotplug core: add 'name' param pci_hp_register interface
 
 
-> >+/*
-> >+ * Overrides for Emacs so that we follow Linus's tabbing style.
-> >+ *
-> > -------------------------------------------------------------------
-> >-------- + * Local variables:
-> >+ * c-basic-offset: 8
-> >+ * End:
-> >+ */
->
-> Please don't enforce formating that way.
+ drivers/pci/hotplug/acpiphp.h           |    9 +-
+ drivers/pci/hotplug/acpiphp_core.c      |   32 +++++---
+ drivers/pci/hotplug/cpci_hotplug.h      |    6 ++
+ drivers/pci/hotplug/cpci_hotplug_core.c |   74 +++++++-------------
+ drivers/pci/hotplug/cpci_hotplug_pci.c  |    4 +
+ drivers/pci/hotplug/cpqphp.h            |   13 +--
+ drivers/pci/hotplug/cpqphp_core.c       |   40 +++++------
+ drivers/pci/hotplug/fakephp.c           |   18 +++--
+ drivers/pci/hotplug/ibmphp.h            |    5 +
+ drivers/pci/hotplug/ibmphp_ebda.c       |   19 ++---
+ drivers/pci/hotplug/pci_hotplug_core.c  |   38 ++++++----
+ drivers/pci/hotplug/pciehp.h            |    9 ++
+ drivers/pci/hotplug/pciehp_core.c       |   40 ++++-------
+ drivers/pci/hotplug/pciehp_ctrl.c       |   48 ++++++-------
+ drivers/pci/hotplug/pciehp_hpc.c        |    1 
+ drivers/pci/hotplug/rpaphp.h            |   10 ++-
+ drivers/pci/hotplug/rpaphp_core.c       |    6 +-
+ drivers/pci/hotplug/rpaphp_pci.c        |    4 +
+ drivers/pci/hotplug/rpaphp_slot.c       |   26 ++-----
+ drivers/pci/hotplug/sgi_hotplug.c       |   18 ++---
+ drivers/pci/hotplug/shpchp.h            |    9 ++
+ drivers/pci/hotplug/shpchp_core.c       |   42 ++++-------
+ drivers/pci/hotplug/shpchp_ctrl.c       |   48 ++++++-------
+ drivers/pci/slot.c                      |  117 ++++++++++++++++++++++++++-----
+ include/linux/pci.h                     |    8 ++
+ include/linux/pci_hotplug.h             |   13 ++-
+ 26 files changed, 354 insertions(+), 303 deletions(-)
 
-Removed, from all other files as well.
-
-Thanks for the review. We will address the misssing comments later
-
-Janne
