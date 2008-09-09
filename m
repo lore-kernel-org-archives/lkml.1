@@ -1,93 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYIIHoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbYIIHpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbYIIHoz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYIIHoc
+	id S1756860AbYIIHpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbYIIHoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:44:32 -0400
-Received: from tlcvr-overload.infracom.it ([217.12.176.9]:32976 "EHLO poppero1"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754077AbYIIHob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:44:31 -0400
-X-Greylist: delayed 416 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Sep 2008 03:44:31 EDT
-Date: Tue, 9 Sep 2008 09:37:32 +0200
-From: Roberto Oppedisano <roppedisano@infracomspa.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net,
-       Dave Airlie <airlied@linux.ie>
-Subject: Re: [PATCH] rate limit drm:radeon_cp_idle/reset errors
-Message-ID: <20080909073732.GA7563@infracomspa.it>
-References: <20080906091919.GA5021@infracomspa.it> <20080908210836.fc5df672.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080908210836.fc5df672.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 9 Sep 2008 03:44:37 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:35575 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756315AbYIIHog (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:44:36 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: dave@linux.vnet.ibm.com
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v4][PATCH 1/9] Create syscalls: sys_checkpoint, sys_restart
+Date: Tue,  9 Sep 2008 03:42:26 -0400
+Message-Id: <1220946154-15174-2-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 09:08:36PM -0700, Andrew Morton wrote:
-> On Sat, 6 Sep 2008 11:19:19 +0200 Roberto Oppedisano <roppedisano@infracomspa.it> wrote:
-> 
-> > When switching from kwin composite wm (KDE 4.1) to compiz I often hit the
-> > following error:
-> > 
-> > Sep  6 10:24:31 poppero1 kernel: [  186.138203] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.138568] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
-> > 
-> > probably due to broken X drivers/apps; after hitting this the error my laptop
-> > (hp nx7010) is totally unresponsitive to keyboard/mouse, also if it can be 
-> > shut down via the power button:
-> > 
-> > Sep  6 10:24:59 poppero1 powersave-wm_shutdown[4843]: DIAG: Process script for event button.power ID 10
-> > Sep  6 10:24:59 poppero1 powersave-wm_shutdown[4843]: INFO: Event: BUTTON_POWER occured.
-> > Sep  6 10:24:59 poppero1 powersave-wm_shutdown[4843]: INFO: Parameters: Event - button.power; Current Active Scheme: scheme_performance - ACPI event line: button/power PWRF 00000080
-> > 00000001
-> > Sep  6 10:25:00 poppero1 shutdown[4852]: shutting down for system halt
-> > ...
-> > 
-> > Without the attached patch, which rate limits DRM_ERROR, the syslog is flooded
-> > by thuosands of messages; here's the output with the patch applied.
-> > 
-> > Sep  6 10:24:31 poppero1 kernel: [  186.138774] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.138968] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.139214] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.139408] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.139601] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.139866] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.140072] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:31 poppero1 kernel: [  186.140467] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:36 poppero1 kernel: [  191.139019] __ratelimit: 253431 callbacks suppressed
-> > Sep  6 10:24:36 poppero1 kernel: [  191.139030] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
-> > Sep  6 10:24:36 poppero1 kernel: [  191.139314] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
-> > 
-> > Also if it doesn't solve a bug I think it may still be worth applying it. 
-> > Patch is against current git.
-> > 
-> > Signed-off-by: Roberto Oppedisano <roberto.oppedisano@infracom.it>
-> > 
-> > diff --git a/include/drm/drmP.h b/include/drm/drmP.h
-> > index 1c1b13e..1107361 100644
-> > --- a/include/drm/drmP.h
-> > +++ b/include/drm/drmP.h
-> > @@ -162,7 +162,8 @@ struct drm_device;
-> >   * \param arg arguments
-> >   */
-> >  #define DRM_ERROR(fmt, arg...) \
-> > -	printk(KERN_ERR "[" DRM_NAME ":%s] *ERROR* " fmt , __func__ , ##arg)
-> > +	if (printk_ratelimit()) \
-> > +		printk(KERN_ERR "[" DRM_NAME ":%s] *ERROR* " fmt , __func__ , ##arg)
-> >  
-> >  /**
-> >   * Memory error output.
-> > 
-> 
-> Which kernel version(s)?
+Create trivial sys_checkpoint and sys_restore system calls. They will
+enable to checkpoint and restart an entire container, to and from a
+checkpoint image file descriptor.
 
-This is against vanilla current git. 
+The syscalls take a file descriptor (for the image file) and flags as
+arguments. For sys_checkpoint the first argument identifies the target
+container; for sys_restart it will identify the checkpoint image.
 
-Linux poppero1 2.6.27-rc5-00000-g7686ad5-dirty #1 PREEMPT Sun Sep 7 08:47:08 CEST 2008 i686 GNU/Linux
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+---
+ arch/x86/kernel/syscall_table_32.S |    2 ++
+ checkpoint/Kconfig                 |   11 +++++++++++
+ checkpoint/Makefile                |    5 +++++
+ checkpoint/sys.c                   |   35 +++++++++++++++++++++++++++++++++++
+ include/asm-x86/unistd_32.h        |    2 ++
+ include/linux/syscalls.h           |    2 ++
+ init/Kconfig                       |    2 ++
+ kernel/sys_ni.c                    |    4 ++++
+ 8 files changed, 63 insertions(+), 0 deletions(-)
+ create mode 100644 checkpoint/Kconfig
+ create mode 100644 checkpoint/Makefile
+ create mode 100644 checkpoint/sys.c
 
-R
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index d44395f..5543136 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -332,3 +332,5 @@ ENTRY(sys_call_table)
+ 	.long sys_dup3			/* 330 */
+ 	.long sys_pipe2
+ 	.long sys_inotify_init1
++	.long sys_checkpoint
++	.long sys_restart
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+new file mode 100644
+index 0000000..a9f22ef
+--- /dev/null
++++ b/checkpoint/Kconfig
+@@ -0,0 +1,11 @@
++config CHECKPOINT_RESTART
++	prompt "Enable checkpoint/restart (EXPERIMENTAL)"
++	def_bool y
++	depends on X86_32 && EXPERIMENTAL
++	help
++	  Application checkpoint/restart is the ability to save the
++	  state of a running application so that it can later resume
++	  its execution from the time at which it was checkpointed.
++
++	  Turning this option on will enable checkpoint and restart
++	  functionality in the kernel.
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+new file mode 100644
+index 0000000..07d018b
+--- /dev/null
++++ b/checkpoint/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for linux checkpoint/restart.
++#
++
++obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+new file mode 100644
+index 0000000..b9018a4
+--- /dev/null
++++ b/checkpoint/sys.c
+@@ -0,0 +1,35 @@
++/*
++ *  Generic container checkpoint-restart
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++
++/**
++ * sys_checkpoint - checkpoint a container
++ * @pid: pid of the container init(1) process
++ * @fd: file to which dump the checkpoint image
++ * @flags: checkpoint operation flags
++ */
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
++{
++	pr_debug("sys_checkpoint not implemented yet\n");
++	return -ENOSYS;
++}
++/**
++ * sys_restart - restart a container
++ * @crid: checkpoint image identifier
++ * @fd: file from which read the checkpoint image
++ * @flags: restart operation flags
++ */
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
++{
++	pr_debug("sys_restart not implemented yet\n");
++	return -ENOSYS;
++}
+diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
+index d739467..88bdec4 100644
+--- a/include/asm-x86/unistd_32.h
++++ b/include/asm-x86/unistd_32.h
+@@ -338,6 +338,8 @@
+ #define __NR_dup3		330
+ #define __NR_pipe2		331
+ #define __NR_inotify_init1	332
++#define __NR_checkpoint		333
++#define __NR_restart		334
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index d6ff145..edc218b 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -622,6 +622,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
+ asmlinkage long sys_eventfd(unsigned int count);
+ asmlinkage long sys_eventfd2(unsigned int count, int flags);
+ asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
++asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index c11da38..fd5f7bf 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -779,6 +779,8 @@ config MARKERS
+ 
+ source "arch/Kconfig"
+ 
++source "checkpoint/Kconfig"
++
+ config PROC_PAGE_MONITOR
+  	default y
+ 	depends on PROC_FS && MMU
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 08d6e1b..ca95c25 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -168,3 +168,7 @@ cond_syscall(compat_sys_timerfd_settime);
+ cond_syscall(compat_sys_timerfd_gettime);
+ cond_syscall(sys_eventfd);
+ cond_syscall(sys_eventfd2);
++
++/* checkpoint/restart */
++cond_syscall(sys_checkpoint);
++cond_syscall(sys_restart);
+-- 
+1.5.4.3
 
