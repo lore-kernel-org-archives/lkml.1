@@ -1,117 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbYIJAgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752411AbYIJAmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752068AbYIJAgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 20:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYIJAgJ
+	id S1752411AbYIJAmV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 20:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYIJAmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 20:36:09 -0400
-Received: from scing.com ([217.160.110.58]:60237 "EHLO scing.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750882AbYIJAgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 20:36:08 -0400
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-From: Janne Grunau <j@jannau.net>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 04/18] lirc driver for 2nd-gen and later Media Center Ed. USB IR transceivers
-Date: Wed, 10 Sep 2008 02:36:03 +0200
-User-Agent: KMail/1.9.9
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Christoph Bartelmus <lirc@bartelmus.de>, Janne Grunau <j@jannau.net>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-5-git-send-email-jwilson@redhat.com> <20080909173057.6d93a7ef@bike.lwn.net>
-In-Reply-To: <20080909173057.6d93a7ef@bike.lwn.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809100236.04016.j@jannau.net>
+	Tue, 9 Sep 2008 20:42:12 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:15790 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYIJAmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 20:42:11 -0400
+From: heukelum@fastmail.fm
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 4/24] i386: expand exception 3 DO_TRAP macro
+Date: Tue,  9 Sep 2008 21:55:58 +0200
+Message-Id: <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
+References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 10 Sep 2008 02:41:58 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 September 2008 01:30:57 Jonathan Corbet wrote:
-> On Tue,  9 Sep 2008 00:05:49 -0400
->
-> Jarod Wilson <jwilson@redhat.com> wrote:
-> > +/*
-> > + * LIRC driver for Philips eHome USB Infrared Transceiver
-> > + * and the Microsoft MCE 2005 Remote Control
-> > + *
-> > + * (C) by Martin A. Blatter <martin_a_blatter@yahoo.com>
-> > + *
-> > + * Transmitter support and reception code cleanup.
-> > + * (C) by Daniel Melander <lirc@rajidae.se>
->
-> As I understand it, proper assertions of copyright need the word
-> "copyright" and a year; the "(C)" trigraph doesn't have any legal
-> meaning.
+From: Alexander van Heukelum <heukelum@fastmail.fm>
 
-Depends on the country. I won't touch copyright notices or attributions.
+The int3 exception was already takes as an interrupt and
+do_int3 does not fit in the new DO_ERROR macro. This patch
+just expands the DO_TRAP macro and rearranges the code a
+bit.
 
-> > + * This driver will only work reliably with kernel version 2.6.10
-> > + * or higher, probably because of differences in USB device
-> > enumeration + * in the kernel code. Device initialization fails
-> > most of the time + * with earlier kernel versions.
->
-> My guess is that this will not be a major impediment to mainline
-> inclusion; this comment can probably go.
+No functional changes intended.
 
-Already removed.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/traps_32.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-> > +/* lock irctl structure */
-> > +#define IRLOCK		mutex_lock(&ir->lock)
-> > +#define IRUNLOCK	mutex_unlock(&ir->lock)
->
-> Might I request that these go away?  They can only obfuscate the
-> code.
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 97d193c..944641a 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -633,9 +633,6 @@ void do_##name(struct pt_regs *regs, long error_code)			\
+ }
+ 
+ DO_VM86_ERROR_INFO(0, SIGFPE, "divide error", divide_error, FPE_INTDIV, regs->ip)
+-#ifndef CONFIG_KPROBES
+-DO_VM86_TRAP(3, SIGTRAP, "int3", int3)
+-#endif
+ DO_VM86_TRAP(4, SIGSEGV, "overflow", overflow)
+ DO_VM86_TRAP(5, SIGSEGV, "bounds", bounds)
+ DO_TRAP_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
+@@ -907,9 +904,9 @@ void restart_nmi(void)
+ 	acpi_nmi_enable();
+ }
+ 
+-#ifdef CONFIG_KPROBES
+ void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ {
++#ifdef CONFIG_KPROBES
+ 	trace_hardirqs_fixup();
+ 
+ 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
+@@ -920,10 +917,14 @@ void __kprobes do_int3(struct pt_regs *regs, long error_code)
+ 	 * disabled. Normal trap handlers don't.
+ 	 */
+ 	conditional_sti(regs);
++#else
++	if (notify_die(DIE_TRAP, "int3", regs, error_code, 3, SIGTRAP)
++			== NOTIFY_STOP)
++		return;
++#endif
+ 
+ 	do_trap(3, SIGTRAP, "int3", 1, regs, error_code, NULL);
+ }
+-#endif
+ 
+ /*
+  * Our handling of the processor debug registers is non-trivial.
+-- 
+1.5.4.3
 
-yes, I will manually expand similar macros in the other drivers too.
-
-> Also, set_use_inc() is returning a normal zero-or-negative-error
-> status to an outside caller.  It shouldn't return a locally-defined
-> symbol like SUCCESS.  I'd just use "return 0;".
-
-fixed
-
-> > +#ifdef MODULE
-> > +static int __init usb_remote_init(void)
-> > +{
->
-> I'm curious: you don't need to initialize if not compiled as a
-> module?
-
-Already fixed in all drivers, relict from out of tree lirc.
-
-> > +	int i;
-> > +
-> > +	printk(KERN_INFO "\n");
-> > +	printk(KERN_INFO DRIVER_NAME ": " DRIVER_DESC " " DRIVER_VERSION
-> > "\n"); +	printk(KERN_INFO DRIVER_NAME ": " DRIVER_AUTHOR "\n");
-> > +	dprintk(DRIVER_NAME ": debug mode enabled\n");
-> > +
-> > +	request_module("lirc_dev");
->
-> You're calling functions from lirc_dev.c, so modprobe will not load
-> this module until lirc_dev is already there.  There's no point in
-> trying to load it explicitly with request_module().
-
-True, request_module("lirc_dev"); removed from all drivers.
-
-> > +	i = usb_register(&usb_remote_driver);
-> > +	if (i < 0) {
-> > +		printk(DRIVER_NAME ": usb register failed, result = %d\n", i);
-> > +		return -ENODEV;
-> > +	}
-> > +
-> > +	return SUCCESS;
-> > +}
->
-> "return 0;" please.
-
-fixed for all drivers
-
-Janne
