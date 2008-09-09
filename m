@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYIIHlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbYIIHma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbYIIHlq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbYIIHlg
+	id S1756454AbYIIHma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYIIHmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:41:36 -0400
-Received: from edu.joroinen.fi ([194.89.68.130]:60853 "EHLO edu.joroinen.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754127AbYIIHle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:41:34 -0400
-Date: Tue, 9 Sep 2008 10:41:32 +0300
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-scsi@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, axboe@kernel.dk, andmike@linux.vnet.ibm.com,
-       mike.miller@hp.com, genanr@emsphone.com
-Subject: Re: [PATCH 0/6] detect online disk resize
-Message-ID: <20080909074132.GV13941@edu.joroinen.fi>
-References: <20080829231254.25065.66052.stgit@bluto.andrew> <x49prnett3p.fsf@segfault.boston.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49prnett3p.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 9 Sep 2008 03:42:21 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39362 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbYIIHmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:42:21 -0400
+Date: Tue, 9 Sep 2008 16:37:21 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page
+Message-Id: <20080909163721.76a2249d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48C5F91D.5070500@linux.vnet.ibm.com>
+References: <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com>
+	<200809011743.42658.nickpiggin@yahoo.com.au>
+	<48BD0641.4040705@linux.vnet.ibm.com>
+	<20080902190256.1375f593.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BD0E4A.5040502@linux.vnet.ibm.com>
+	<20080902190723.841841f0.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BD119B.8020605@linux.vnet.ibm.com>
+	<20080902195717.224b0822.kamezawa.hiroyu@jp.fujitsu.com>
+	<48BD337E.40001@linux.vnet.ibm.com>
+	<20080903123306.316beb9d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080908152810.GA12065@balbir.in.ibm.com>
+	<20080909125751.37042345.kamezawa.hiroyu@jp.fujitsu.com>
+	<48C5F91D.5070500@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 02:01:14PM -0400, Jeff Moyer wrote:
-> Andrew Patterson <andrew.patterson@hp.com> writes:
-> 
-> > This is version 2 of a patch series I submitted back in May 2008. This
-> > version now checks for device size changes in the rescan_partitions()
-> > routine.  Which in turn is called when a device is opened and in the
-> > BLKRRPART ioctl.
-> >
-> > I am resubmitting this patch series as I got little response the
-> > previous time.  Al Viro has told me offline that he would look at it this
-> > time.
-> 
-> [...]
-> 
-> > I have tested this patch on SCSI and SmartArray (cciss)
-> > devices. Device mapper still does not recognize device size changes
-> > until the device is restarted.
-> >
-> > Jeff Moyer and Andy Ryan have done some light testing on the previous
-> > version of this series.
-> 
-> I re-tested this new patch series using an iSCSI target via the
-> following steps:
-> 
-> 1) Connect to iSCSI storage, creating the /dev/sd* devices.
-> 2) Create a file system on the block device
-> 3) Mount the file system, and leave a shell active on the mount point.
-> 4) resize the iSCSI LUN
-> 5) rescan the iSCSI session
-> 6) resize the file system
-> 
-> This procedure worked fine.
-> 
+On Mon, 08 Sep 2008 21:18:37 -0700
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-So now we just need a sane way to resize dm-multipath devices online :)
+> KAMEZAWA Hiroyuki wrote:
+> > On Mon, 8 Sep 2008 20:58:10 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >> Sorry for the delay in sending out the new patch, I am traveling and
+> >> thus a little less responsive. Here is the update patch
+> >>
+> >>
+> > Hmm.. I've considered this approach for a while and my answer is that
+> > this is not what you really want.
+> > 
+> > Because you just moves the placement of pointer from memmap to
+> > radix_tree both in GFP_KERNEL, total kernel memory usage is not changed.
+> 
+> Agreed, but we do reduce the sizeof(struct page) without adding on to
+> page_cgroup's size. So why don't we want this?
+> 
+Because it's depends on CONFIG.
 
--- Pasi
+But ok, I'll recall my patches from grave. Maybe it can be a hint for you.
+
+Thanks,
+-Kame
+
