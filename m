@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbYIJEG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbYIJEIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752487AbYIJEG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 00:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbYIJEGu
+	id S1753124AbYIJEIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 00:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750905AbYIJEH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 00:06:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40464 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbYIJEGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 00:06:49 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, Frank Mayhar <fmayhar@google.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2.6.27-rc5] Fix itimer/many thread hang.
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 9 September 2008 20:01:52 +0400 <20080909160152.GA714@tv-sign.ru>
-References: <1220906643.31846.21.camel@bobble.smo.corp.google.com>
-	<20080909070329.GD2086@elte.hu>
-	<20080909160152.GA714@tv-sign.ru>
-X-Shopping-List: (1) Luminescent honey scenarios
-   (2) Abrupt perspiration rectractors
-   (3) Chimerical suspicion excitements
-   (4) Muscular perilous capture detergents
-Message-Id: <20080910040404.245301541FE@magilla.localdomain>
-Date: Tue,  9 Sep 2008 21:04:04 -0700 (PDT)
+	Wed, 10 Sep 2008 00:07:56 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:51029 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819AbYIJEHz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 00:07:55 -0400
+From: Steven Noonan <steven@uplinklabs.net>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, Steven Noonan <steven@uplinklabs.net>
+Subject: [PATCH] drivers/ide/ide-probe.c: uninitialized variable 'rc'
+Date: Tue,  9 Sep 2008 14:07:41 -0700
+Message-Id: <1220994461-15962-1-git-send-email-steven@uplinklabs.net>
+X-Mailer: git-send-email 1.6.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As for this particular function, it seems to me that ->signal == NULL
-> is not possible, no?
+Fixed the warning by initializing 'rc' to zero.
 
-The concern is to make sure that the timer tick path is always safe for a
-tick that hits during release_task(current) in exit_notify().  A timer tick
-there can come with current->signal == NULL.  We just need to make sure one
-way or another that this is safe.
+Signed-off-by: Steven Noonan <steven@uplinklabs.net>
+---
+ drivers/ide/ide-probe.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 994e410..e53c645 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1492,7 +1492,7 @@ static struct device_attribute *ide_port_attrs[] = {
+ 
+ static int ide_sysfs_register_port(ide_hwif_t *hwif)
+ {
+-	int i, rc;
++	int i, rc = 0;
+ 
+ 	for (i = 0; ide_port_attrs[i]; i++) {
+ 		rc = device_create_file(hwif->portdev, ide_port_attrs[i]);
+-- 
+1.6.0.1
 
-Thanks,
-Roland
