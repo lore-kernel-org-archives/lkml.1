@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbYIITo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbYIITqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbYIITo7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 15:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYIITov
+	id S1756269AbYIITqy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 15:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYIITqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 15:44:51 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:56342 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753385AbYIITou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 15:44:50 -0400
-Date: Tue, 9 Sep 2008 22:43:05 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Keith A. Prickett" <keithp@marvell.com>, linux-kernel@vger.kernel.org
-Subject: Re: Building Kernel with -O0
-Message-ID: <20080909194305.GG30160@cs181140183.pp.htv.fi>
-References: <1220550653.15123.6.camel@CV-LAB2> <20080909160452.GB30160@cs181140183.pp.htv.fi> <1220980240.17292.15.camel@CV-LAB2> <87vdx5ruk5.fsf@basil.nowhere.org>
+	Tue, 9 Sep 2008 15:46:45 -0400
+Received: from quackingmoose.com ([63.73.180.143]:58075 "EHLO
+	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753427AbYIITqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 15:46:45 -0400
+Date: Tue, 9 Sep 2008 12:46:44 -0700
+From: Aaron Straus <aaron@merfinllc.com>
+To: chucklever@gmail.com
+Cc: Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Message-ID: <20080909194644.GI5290@merfinllc.com>
+References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080908190212.GF28123@merfinllc.com> <76bd70e30809081415h6b55a8dfl8171634c576ac946@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="tSiBuZsJmMXpnp7T"
 Content-Disposition: inline
-In-Reply-To: <87vdx5ruk5.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <76bd70e30809081415h6b55a8dfl8171634c576ac946@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 09:24:58PM +0200, Andi Kleen wrote:
-> "Keith A. Prickett" <keithp@marvell.com> writes:
-> >
-> > All of this could, potentially be changed by a configuration parameter
-> > and added into the kernel release.  Does someone have a primer on why
-> > this kind of behavior is not desired or "possible"?
-> 
-> Traditionally it was not allowed because -O0 didn't inline and
-> the kernel relied on inlining in some cases. But with always_inline
-> that is obsolete -- all functions that rely on inlining should be 
-> marked __always_inline.
-> 
-> I think a few more cases crept in where it was common to write
-> build time asserts as
-> 
->       if (some condition the compiler evaluates at runtime)
-                                                     ^^^^^^^
-buildtime
 
->          __error_condition_xyz_is_false(); 
->  
-> and this obviously relies on the optimizer to build. But these
-> are all slowly moving over the BUILD_BUG_ON() which also doesn't
-> rely on the optimizer, so it's also obsolete.
->...
+--tSiBuZsJmMXpnp7T
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The reason why it works for Keith at all seems to be that even with -O0 
-gcc already does this kind of optimizations.
+Hi,
 
-Check e.g. the assembler generated for the following
-(userspace) program with -O0:
+On Sep 08 05:15 PM, Chuck Lever wrote:
+> I think I saw some recent work in Trond's development branch that
+> makes some changes in this area.  I will wait for him to respond to
+> this thread.
 
-<--  snip  -->
+One other piece of information.
 
-int foobar;
+Of the bisected offending commit:
 
-int main()
-{ 
-	if (1) return 0;
+commit e261f51f25b98c213e0b3d7f2109b117d714f69d
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Tue Dec 5 00:35:41 2006 -0500
 
-	foobar = 12345;
+    NFS: Make nfs_updatepage() mark the page as dirty.
+   =20
+    This will ensure that we can call set_page_writeback() from within
+    nfs_writepage(), which is always called with the page lock set.
+   =20
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-	return 42;
-}
 
-<--  snip  -->
+It seems to be this hunk which introduces the problem:
 
-> Hope this helps,
-> 
-> -Andi
 
-cu
-Adrian
+@@ -628,7 +667,6 @@ static struct nfs_page * nfs_update_request(struct nfs_=
+open_context* ctx,
+ 				return ERR_PTR(error);
+ 			}
+ 			spin_unlock(&nfsi->req_lock);
+-			nfs_mark_request_dirty(new);
+ 			return new;
+ 		}
+ 		spin_unlock(&nfsi->req_lock);
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+If I add that function call back in... the problem disappears.  I don't
+know if this just papers over the real problem though? =20
+
+
+					Thanks,
+					=3Da=3D
+
+
+
+
+
+--=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Aaron Straus
+aaron@merfinllc.com
+
+--tSiBuZsJmMXpnp7T
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQFIxtKkr/o4YuvB+jgRAt+CAKDi6826th7ohL2HY/9z4yxvIpw53gCghZHe
+MRq7nJqH7u83oKHTAZYgcYo=
+=MR8a
+-----END PGP SIGNATURE-----
+
+--tSiBuZsJmMXpnp7T--
