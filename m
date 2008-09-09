@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYIIDIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYIIDMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYIIDIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 23:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIIDIO
+	id S1754072AbYIIDMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 23:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIIDMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 23:08:14 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:13798 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbYIIDIN (ORCPT
+	Mon, 8 Sep 2008 23:12:15 -0400
+Received: from stinky.trash.net ([213.144.137.162]:59340 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbYIIDMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 23:08:13 -0400
-Subject: Re: [GIT]: Networking
-From: Alex Williamson <alex.williamson@hp.com>
-To: Jouni Malinen <jouni.malinen@atheros.com>
-Cc: David Miller <davem@davemloft.net>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, j@w1.fi
-In-Reply-To: <48C5E2FC.4090304@atheros.com>
-References: <20080827.164649.87042354.davem@davemloft.net>
-	 <1220627292.7260.3.camel@2710p.home>  <48C5E2FC.4090304@atheros.com>
-Content-Type: text/plain
-Organization: HP OSLO R&D
-Date: Mon, 08 Sep 2008 21:08:08 -0600
-Message-Id: <1220929688.7265.4.camel@2710p.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 8 Sep 2008 23:12:14 -0400
+Message-ID: <48C5E97F.3040800@trash.net>
+Date: Tue, 09 Sep 2008 05:11:59 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: kaos@ocs.com.au, linux-kernel@vger.kernel.org
+Subject: Re: Recent copy of libpcap from CVS
+References: <48C51E58.7080900@trash.net>	<19419.1220918852@ocs10w> <20080908.171055.170770457.davem@davemloft.net>
+In-Reply-To: <20080908.171055.170770457.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 05:44 +0300, Jouni Malinen wrote:
-> 
-> What exactly does "breaks wireless" mean here?
+David Miller wrote:
+> From: Keith Owens <kaos@ocs.com.au>
+> Date: Tue, 09 Sep 2008 10:07:32 +1000
+>
+>   
+>> Patrick McHardy (on Mon, 08 Sep 2008 14:45:12 +0200) wrote:
+>>     
+>>> Dave put a recent copy up at:
+>>>
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
+>>>       
+>> Thanks, but that is still version 0.9.8 with no support for usb.
+>> It defines DLT_USB and DLT_USB_LINUX but has no code to actually
+>> read from /dev/usbmon.  I need the CVS version of libpcap.
+>>     
+>
+> Sorry that's the most recent CVS tree Patrick had when I built that
+> GIT repo.
 
-NetworkManager can see access points, but doesn't get much further than
-that.  From an end user perspective, similar to how it behaved in
-2.6.26, before Dave's wext compat fixes.
+Thats odd, the version I had has USB support and that one also appears
+to be missing my VLAN patches that are in current CVS.
 
-Alex
-
-
+I'll try to figure out what went wrong and send you both a new tarball.
