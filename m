@@ -1,280 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYIIJH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbYIIJHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756490AbYIIJH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 05:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbYIIJHM
+	id S1756721AbYIIJHw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 05:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYIIJHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 05:07:12 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:41833 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747AbYIIJHI (ORCPT
+	Tue, 9 Sep 2008 05:07:43 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:44777 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754690AbYIIJHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 05:07:08 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: 2.6.27-rc5-mm1: rmmod ide-cd_mod: tried to init an initialized  object, something is seriously wrong.
-Date: Tue, 9 Sep 2008 11:07:04 +0200
-User-Agent: KMail/1.9.9
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rjw@sisk.pl,
-       akpm@linux-foundation.org, bzolnier@gmail.com,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <200809051528.54213.rjw@sisk.pl> <20080908084312.GF20055@kernel.dk> <20080908092717.GH20055@kernel.dk>
-In-Reply-To: <20080908092717.GH20055@kernel.dk>
+	Tue, 9 Sep 2008 05:07:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=eINmvFJ9cdvXUF4z6dikHlL9hIXaPGnNac5lLRK9AAVqViHpvjRRXZX1uADWUUWfgo
+         Tuj2HPiihOeULZabzdakRZtvlPEivxQxmV5AKTdW1iYAA8jxCLdJQzlY3ZbIwXBvwjMH
+         a98aQNLc/H+PVA2z19ndQIwFghVKySiN4/gMM=
+Message-ID: <5ff4a1e50809090207o5846f5udf709eeda81653eb@mail.gmail.com>
+Date: Tue, 9 Sep 2008 10:07:41 +0100
+From: "Matt Fleming" <mattjfleming@googlemail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
+In-Reply-To: <20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091107.04629.m.kozlowski@tuxland.pl>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_24530_14899448.1220951261365"
+References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
+	 <20080907123832.5ba79c12@mjolnir.drzeus.cx>
+	 <5ff4a1e50809080628i65bd7c7blfac70659a9f9229c@mail.gmail.com>
+	 <20080909092216.46a6eba1@mjolnir.drzeus.cx>
+	 <5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
+	 <20080909094438.6423b8ef@mjolnir.drzeus.cx>
+	 <5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
+	 <20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Witam, 
+------=_Part_24530_14899448.1220951261365
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Mon, Sep 08 2008, Jens Axboe wrote:
-> > On Sat, Sep 06 2008, FUJITA Tomonori wrote:
-> > > On Fri, 5 Sep 2008 18:25:04 +0200
-> > > Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> > > 
-> > > > Hello,
-> > > > 
-> > > > > > > 	Again 100% reproducible rmmod ide-cd_mod problem. Kernel is tainted because
-> > > > > > > of earlier sysfs acpi problems similar (probably identical) to those reported
-> > > > > > > by Li Zefan here http://marc.info/?l=linux-kernel&m=121921059026064&w=2
-> > > > > > > 
-> > > > > > > Steps to reproduce: unload ide-cd_mod
-> > > > > > > 
-> > > > > > > kobject (dd9e4a7c): tried to init an initialized object, something is seriously wrong.
-> > > > > > > Pid: 4734, comm: modprobe Tainted: G        W 2.6.27-rc5-mm1 #1
-> > > > > > >  [<c01ec982>] kobject_init+0xc4/0xc9
-> > > > > > >  [<c02cb84a>] ? _spin_unlock+0x27/0x3f
-> > > > > > >  [<c01aff2e>] ? sysfs_find_dirent+0x21/0x2b
-> > > > > > >  [<c01aff7e>] ? __sysfs_add_one+0x46/0x6d
-> > > > > > >  [<c01affb4>] ? sysfs_add_one+0xf/0x44
-> > > > > > >  [<c01b0036>] ? sysfs_addrm_start+0x4d/0x90
-> > > > > > >  [<c01b0f31>] ? sysfs_do_create_link+0x9a/0x14c
-> > > > > > >  [<c01ec9c5>] kobject_init_and_add+0x14/0x30
-> > > > > > >  [<c01b1009>] ? sysfs_create_link+0x12/0x19
-> > > > > > >  [<c01e8bad>] blk_register_filter+0x3b/0x46
-> > > > > > >  [<ded9e40a>] ide_cd_probe+0x253/0x5a8 [ide_cd_mod]
-> > > > > > >  [<c01b0000>] ? sysfs_addrm_start+0x17/0x90
-> > > > > > >  [<c01b0f31>] ? sysfs_do_create_link+0x9a/0x14c
-> > > > > > >  [<c01b004e>] ? sysfs_addrm_start+0x65/0x90
-> > > > > > >  [<c025145f>] generic_ide_probe+0x1f/0x21
-> > > > > > >  [<c024c002>] driver_probe_device+0x77/0x15b
-> > > > > > >  [<c02cb91b>] ? _spin_unlock_irqrestore+0x39/0x60
-> > > > > > >  [<c024c146>] __driver_attach+0x60/0x62
-> > > > > > >  [<c024b7bd>] bus_for_each_dev+0x44/0x62
-> > > > > > >  [<c0251461>] ? generic_ide_remove+0x0/0x1e
-> > > > > > >  [<c024bead>] driver_attach+0x19/0x1b
-> > > > > > >  [<c024c0e6>] ? __driver_attach+0x0/0x62
-> > > > > > >  [<c024bca8>] bus_add_driver+0x1ab/0x213
-> > > > > > >  [<c0251461>] ? generic_ide_remove+0x0/0x1e
-> > > > > > >  [<c024c291>] driver_register+0x4f/0x118
-> > > > > > >  [<de7bf000>] ? ide_cdrom_init+0x0/0xf [ide_cd_mod]
-> > > > > > >  [<de7bf00d>] ide_cdrom_init+0xd/0xf [ide_cd_mod]
-> > > > > > >  [<c0101114>] do_one_initcall+0x24/0x12f
-> > > > > > >  [<c02c9d8e>] ? mutex_unlock+0x8/0xa
-> > > > > > >  [<c01455ca>] sys_init_module+0xa5/0x1c1
-> > > > > > >  [<c0176a0a>] ? sys_read+0x3d/0x64
-> > > > > > >  [<c01030f1>] sysenter_do_call+0x12/0x35
-> > > > > > >  [<c012007b>] ? __set_special_pids+0x43/0x71
-> > > > > > > 
-> > > > > > > First time I modprobe/rmmod ide-cd_mod the system works but quickly gets unstable.
-> > > > > > > Second modprobe/rmmod is 100% fatal. Memory gets corruped seriously I guess.
-> > > > > > > pcspeaker beeps all the time, kernel throws dumps on the screen until
-> > > > > > > its really dead, sadly blinking 'leds of panic' ;)
-> > > > > > 
-> > > > > > Can you please verify if that happens with the current mainline?
-> > > > > 
-> > > > > Oops. How come I didn't find it earlier? hmm...
-> > > > 
-> > > > It's relatively new, that's why :) And this is the culprit:
-> > > > 
-> > > > abf5439370491dd6fbb4fe1a7939680d2a9bc9d4 is first bad commit
-> > > > commit abf5439370491dd6fbb4fe1a7939680d2a9bc9d4
-> > > > Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > Date:   Sat Aug 16 14:10:05 2008 +0900
-> > > > 
-> > > >     block: move cmdfilter from gendisk to request_queue
-> > > >     
-> > > >     cmd_filter works only for the block layer SG_IO with SCSI block
-> > > >     devices. It breaks scsi/sg.c, bsg, and the block layer SG_IO with SCSI
-> > > >     character devices (such as st). We hit a kernel crash with them.
-> > > >     
-> > > >     The problem is that cmd_filter code accesses to gendisk (having struct
-> > > >     blk_scsi_cmd_filter) via inode->i_bdev->bd_disk. It works for only
-> > > >     SCSI block device files. With character device files, inode->i_bdev
-> > > >     leads you to struct cdev. inode->i_bdev->bd_disk->blk_scsi_cmd_filter
-> > > >     isn't safe.
-> > > >     
-> > > >     SCSI ULDs don't expose gendisk; they keep it private. bsg needs to be
-> > > >     independent on any protocols. We shouldn't change ULDs to expose their
-> > > >     gendisk.
-> > > >     
-> > > >     This patch moves struct blk_scsi_cmd_filter from gendisk to
-> > > >     request_queue, a common object, which eveyone can access to.
-> > > >     
-> > > >     The user interface doesn't change; users can change the filters via
-> > > >     /sys/block/. gendisk has a pointer to request_queue so the cmd_filter
-> > > >     code accesses to struct blk_scsi_cmd_filter.
-> > > >     
-> > > >     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > > > 
-> > > > > This is current mainline:
-> > > > > 
-> > > > > kobject (ddb049fc): tried to init an initialized object, something is seriously wrong.
-> > > > > Pid: 4650, comm: modprobe Not tainted 2.6.27-rc5-00132-gb380b0d #8
-> > > > >  [<c01e3196>] kobject_init+0x6a/0x6c
-> > > > >  [<c01e35cb>] kobject_init_and_add+0x14/0x30
-> > > > >  [<c01e32f7>] ? kobject_get+0x12/0x17
-> > > > >  [<c01df89c>] blk_register_filter+0x4b/0x5a
-> > > > >  [<de839310>] ide_cd_probe+0x289/0x5ae [ide_cd_mod]
-> > > > >  [<c01aad99>] ? sysfs_addrm_start+0x65/0x90
-> > > > >  [<c01aba69>] ? sysfs_do_create_link+0x9a/0x11c
-> > > > >  [<c024f7a0>] generic_ide_probe+0x1f/0x21
-> > > > >  [<c024a672>] driver_probe_device+0x77/0x15b
-> > > > >  [<c02c8bdb>] ? _spin_unlock_irqrestore+0x39/0x60
-> > > > >  [<c024a7b6>] __driver_attach+0x60/0x62
-> > > > >  [<c0249e2a>] bus_for_each_dev+0x44/0x62
-> > > > >  [<c024f7a2>] ? generic_ide_remove+0x0/0x1e
-> > > > >  [<c024a51d>] driver_attach+0x19/0x1b
-> > > > >  [<c024a756>] ? __driver_attach+0x0/0x62
-> > > > >  [<c024a318>] bus_add_driver+0x1ae/0x216
-> > > > >  [<c024f7a2>] ? generic_ide_remove+0x0/0x1e
-> > > > >  [<c024a901>] driver_register+0x4f/0x118
-> > > > >  [<dee3500d>] ide_cdrom_init+0xd/0xf [ide_cd_mod]
-> > > > >  [<c010111a>] do_one_initcall+0x2a/0x14c
-> > > > >  [<c0108560>] ? native_sched_clock+0x58/0xa1
-> > > > >  [<dee35000>] ? ide_cdrom_init+0x0/0xf [ide_cd_mod]
-> > > > >  [<c013d042>] ? trace_hardirqs_on+0xb/0xd
-> > > > >  [<c013cfaf>] ? trace_hardirqs_on_caller+0xac/0x134
-> > > > >  [<c0147083>] sys_init_module+0x7e/0x19f
-> > > > >  [<c013cfaf>] ? trace_hardirqs_on_caller+0xac/0x134
-> > > > >  [<c01e8144>] ? trace_hardirqs_on_thunk+0xc/0x10
-> > > > >  [<c0103035>] sysenter_do_call+0x12/0x35
-> > > > >  [<c012007b>] ? put_fs_struct+0x5/0x2e
-> > > 
-> > > ide-cd uses multiple gendisks share one request_queue?
-> > > 
-> > > Here's a patch for mainline.
-> > 
-> > Hmm, I don't think that it does. There's a queue per drive in the old
-> > IDE driver, so there should be a 1:1 relation between queues and gendisk
-> > there.
-> 
-> I think the problem here is due to the usage of kobject_init_and_add().
-> When we hit the add the second time, the ->state_initalised in the kojb
-> is still 1. The below should fix it.
-> 
-> The ->state_initalised stuff is a disaster imho, it should be shot and
-> killed.
-> 
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index 6cb3c6d..820132b 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -495,6 +495,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
->  	INIT_LIST_HEAD(&q->timeout_list);
->  
->  	kobject_init(&q->kobj, &blk_queue_ktype);
-> +	kobject_init(&q->cmd_filter.kobj, &rcf_ktype);
->  
->  	mutex_init(&q->sysfs_lock);
->  	spin_lock_init(&q->__queue_lock);
-> diff --git a/block/blk.h b/block/blk.h
-> index eb13740..47d6b22 100644
-> --- a/block/blk.h
-> +++ b/block/blk.h
-> @@ -9,6 +9,7 @@
->  
->  extern struct kmem_cache *blk_requestq_cachep;
->  extern struct kobj_type blk_queue_ktype;
-> +extern struct kobj_type rcf_ktype;
->  
->  void init_request_from_bio(struct request *req, struct bio *bio);
->  void blk_rq_bio_prep(struct request_queue *q, struct request *rq,
-> diff --git a/block/cmd-filter.c b/block/cmd-filter.c
-> index da7f7a4..9556e85 100644
-> --- a/block/cmd-filter.c
-> +++ b/block/cmd-filter.c
-> @@ -201,7 +201,7 @@ static struct sysfs_ops rcf_sysfs_ops = {
->  	.store = rcf_attr_store,
->  };
->  
-> -static struct kobj_type rcf_ktype = {
-> +struct kobj_type rcf_ktype = {
->  	.sysfs_ops = &rcf_sysfs_ops,
->  	.default_attrs = default_attrs,
->  };
-> @@ -211,8 +211,7 @@ int blk_register_filter(struct gendisk *disk)
->  	int ret;
->  	struct blk_cmd_filter *filter = &disk->queue->cmd_filter;
->  
-> -	ret = kobject_init_and_add(&filter->kobj, &rcf_ktype,
-> -				   &disk_to_dev(disk)->kobj,
-> +	ret = kobject_add(&filter->kobj, &disk_to_dev(disk)->kobj,
->  				   "%s", "cmd_filter");
->  	if (ret < 0)
->  		return ret;
-> 
+2008/9/9 Pierre Ossman <drzeus-mmc@drzeus.cx>:
+> On Tue, 9 Sep 2008 08:59:11 +0100
+> "Matt Fleming" <mattjfleming@googlemail.com> wrote:
+>
+>>
+>> OK, just to be clear, where are those fields not used? They are used
+>> in the new mmc_get_timeout() function.
+>>
+>
+> Sorry, you're right. I just noticed the !host->mmc->card part and
+> assumed you had your own logic in there.
+>
 
-I applied your fix to 2.6.27-rc5-mm1 (it doesn't apply to mainline) and the result 
-is that when I first rmmod ide-cd_mod it's ok, but it seems that the module is not
-unregistered because when you rmmod ide-cd_mod again immediately you will see this:
+No worries.
 
-BUG: atomic counter underflow at:
-Pid: 4920, comm: rmmod Tainted: G        W 2.6.27-rc5-mm1 #4
- [<c01ec579>] ? kobject_release+0x0/0x59
- [<c01ed300>] kref_put+0x4c/0x7c
- [<c01ec4cc>] kobject_put+0x20/0x4e
- [<c01aed10>] ? sysfs_hash_and_remove+0x50/0x57
- [<c01e8d4b>] blk_unregister_filter+0x13/0x15
- [<dedd822b>] ide_cd_remove+0xf/0x21 [ide_cd_mod]
- [<c025147b>] generic_ide_remove+0x1a/0x1e
- [<c024bdaf>] __device_release_driver+0x59/0x7f
- [<c024be6c>] driver_detach+0x97/0x99
- [<c024b26e>] bus_remove_driver+0x6f/0x8b
- [<c024c231>] driver_unregister+0x2f/0x33
- [<deddb341>] ide_cdrom_exit+0xd/0xf [ide_cd_mod]
- [<c0143da5>] sys_delete_module+0x10d/0x1e2
- [<c0162cbc>] ? do_munmap+0x1d7/0x234
- [<c0163d13>] ? sys_munmap+0x30/0x36
- [<c01030f1>] sysenter_do_call+0x12/0x35
- =======================
-hdc: ATAPI 24X DVD-ROM CD-R/RW drive, 2048kB Cache
+> Why do you have that part though? What case have you found where you
+> need the timeouts and do not have properly set timeout fields?
+>
 
-Btw I found something interesting. On earlier kernels - 2.6.25 I can not remove ide-cd_mod
-at all - it's still there when I lsmod modules:
+This check was put in place because the function was being called
+before the card structure was setup properly. I didn't actually work
+out the call path but it stopped the kmmcd thread oopsing :)
 
-# modprobe ide-cd_mod
-# rmmod ide-cd_mod
-# rmmod ide-cd_mod
-# rmmod ide-cd_mod
-# rmmod ide-cd_mod
-# rmmod ide-cd_mod
-# rmmod ide-cd_mod
-# rmmod ide-cd_mod
-# lsmod | grep ide_cd
-ide_cd_mod             29600  0 
-cdrom                  32160  1 ide_cd_mod
+How does this patch look for the SDIO case?
 
-On the other hand on newer kernels (post 2.6.26 - these which did not blow up) right
-after boot I have to run rmmod ide-cd_mod exactly three times to have ide-cd_mod
-unloaded. If I modprobe and rmmod again it works as expected. Why is this?
 
-laptop mako # modprobe ide-cd_mod
-laptop mako # rmmod ide-cd_mod
-laptop mako # rmmod ide-cd_mod
-laptop mako # rmmod ide-cd_mod
-laptop mako # rmmod ide-cd_mod
-ERROR: Module ide_cd_mod does not exist in /proc/modules
-laptop mako # modprobe ide-cd_mod
-laptop mako # rmmod ide-cd_mod
-laptop mako # rmmod ide-cd_mod
-ERROR: Module ide_cd_mod does not exist in /proc/modules
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 044d84e..5ebfe35 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -249,8 +249,10 @@ void mmc_set_data_timeout(struct mmc_data *data,
+const struct mmc_card *card)
+         * SDIO cards only define an upper 1 s limit on access.
+         */
+        if (mmc_card_sdio(card)) {
+-               data->timeout_ns = 1000000000;
+-               data->timeout_clks = 0;
++               if (data->timeout_ns > 1000000000) {
++                       data->timeout_ns = 1000000000;
++                       data->timeout_clks = 0;
++               }
+                return;
+        }
 
-	Mariusz
+------=_Part_24530_14899448.1220951261365
+Content-Type: text/x-diff; name=mmc-sdio-use-csr-timeout.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fkwatiqt0
+Content-Disposition: attachment; filename=mmc-sdio-use-csr-timeout.patch
+
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbW1jL2NvcmUvY29yZS5jIGIvZHJpdmVycy9tbWMvY29yZS9j
+b3JlLmMKaW5kZXggMDQ0ZDg0ZS4uNWViZmUzNSAxMDA2NDQKLS0tIGEvZHJpdmVycy9tbWMvY29y
+ZS9jb3JlLmMKKysrIGIvZHJpdmVycy9tbWMvY29yZS9jb3JlLmMKQEAgLTI0OSw4ICsyNDksMTAg
+QEAgdm9pZCBtbWNfc2V0X2RhdGFfdGltZW91dChzdHJ1Y3QgbW1jX2RhdGEgKmRhdGEsIGNvbnN0
+IHN0cnVjdCBtbWNfY2FyZCAqY2FyZCkKIAkgKiBTRElPIGNhcmRzIG9ubHkgZGVmaW5lIGFuIHVw
+cGVyIDEgcyBsaW1pdCBvbiBhY2Nlc3MuCiAJICovCiAJaWYgKG1tY19jYXJkX3NkaW8oY2FyZCkp
+IHsKLQkJZGF0YS0+dGltZW91dF9ucyA9IDEwMDAwMDAwMDA7Ci0JCWRhdGEtPnRpbWVvdXRfY2xr
+cyA9IDA7CisJCWlmIChkYXRhLT50aW1lb3V0X25zID4gMTAwMDAwMDAwMCkgeworCQkJZGF0YS0+
+dGltZW91dF9ucyA9IDEwMDAwMDAwMDA7CisJCQlkYXRhLT50aW1lb3V0X2Nsa3MgPSAwOworCQl9
+CiAJCXJldHVybjsKIAl9CiAK
+------=_Part_24530_14899448.1220951261365--
