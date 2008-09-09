@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYIIMFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYIIMFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754806AbYIIMFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 08:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYIIMFG
+	id S1756172AbYIIMFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 08:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYIIMFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 08:05:06 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34423 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbYIIMFF (ORCPT
+	Tue, 9 Sep 2008 08:05:33 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56741 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752212AbYIIMFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 08:05:05 -0400
-Date: Tue, 9 Sep 2008 13:04:08 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Keiichiro Tokunaga <tokunaga.keiich@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: ifdef Quicklists in /proc/meminfo
-In-Reply-To: <48C5BBEC.5060405@zytor.com>
-Message-ID: <Pine.LNX.4.64.0809091246210.25571@blonde.site>
-References: <Pine.LNX.4.64.0809081351240.4983@blonde.site>
- <20080909084241.41A0.KOSAKI.MOTOHIRO@jp.fujitsu.com> <48C5BBEC.5060405@zytor.com>
+	Tue, 9 Sep 2008 08:05:32 -0400
+Date: Tue, 9 Sep 2008 06:05:14 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+       kaneshige.kenji@jp.fujitsu.com
+Subject: Re: [PATCH v2 01/13] PCI Hotplug core: add 'name' param pci_hp_register interface
+Message-ID: <20080909120514.GU2772@parisc-linux.org>
+References: <20080909091813.29542.85613.stgit@bob.kio> <20080909100007.29542.27510.stgit@bob.kio>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080909100007.29542.27510.stgit@bob.kio>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008, H. Peter Anvin wrote:
-> 
-> x86 *does* use quicklists, at least with PAE.
+On Tue, Sep 09, 2008 at 04:00:07AM -0600, Alex Chiang wrote:
+> -extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr);
+> +extern int pci_hp_register(struct hotplug_slot *,
+> +			   struct pci_bus *,
+> +			   int nr,
+> +			   const char *name);
 
-Are you harking back to the good old days of 2.6.24?
-Or looking ahead to a bright new future?
+Not a huge fan of this style ... the usual style would be:
 
-There was a defect, in the TLB flushing sequence IIRC,
-which got them kicked out in a hurry.  They might return
-- but I think everybody would prefer to have a better way
-of applying the existing allocators than this extra pool.
+extern int pci_hp_register(struct hotplug_slot *, struct pci_bus *, int nr,
+				const char *name);
 
-Hugh
+Otherwise Acked-by: Matthew Wilcox <willy@linux.intel.com>
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
