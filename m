@@ -1,497 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbYIIBFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYIIBUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbYIIBFF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 21:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYIIBEy
+	id S1755535AbYIIBUF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 21:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbYIIBTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 21:04:54 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:48833 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754505AbYIIBEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 21:04:53 -0400
-X-Greylist: delayed 372 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Sep 2008 21:04:53 EDT
-Message-Id: <20080909005116.366359298@polymtl.ca>
-References: <20080909003403.836661865@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Mon, 08 Sep 2008 20:34:05 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>, Joe Perches <joe@perches.com>,
-       Wei Weng <wweng@acedsl.com>, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC PATCH 2/5] Priority Sifting Reader-Writer Lock Documentation
-Content-Disposition: inline; filename=psrwlock-documentation.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue,  9 Sep 2008 00:55:58 +0000
+	Mon, 8 Sep 2008 21:19:54 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:23515 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbYIIBTx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 21:19:53 -0400
+Date: Mon, 8 Sep 2008 18:14:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, garyhade@us.ibm.com,
+       linux-mm@kvack.org, y-goto@jp.fujitsu.com, mel@csn.ul.ie,
+       lcm@us.ibm.com, linux-kernel@vger.kernel.org, x86@kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH] Cleanup to make  remove_memory() arch neutral
+Message-Id: <20080908181454.4aec7d49.randy.dunlap@oracle.com>
+In-Reply-To: <20080908175621.6dfad0a6.akpm@linux-foundation.org>
+References: <20080905172132.GA11692@us.ibm.com>
+	<20080905174449.GC27395@elte.hu>
+	<1220638478.25932.20.camel@badari-desktop>
+	<20080905181754.GA14258@elte.hu>
+	<1220910754.25932.57.camel@badari-desktop>
+	<20080908175621.6dfad0a6.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Design goal, algorithmic description and performance tests.
+On Mon, 8 Sep 2008 17:56:21 -0700 Andrew Morton wrote:
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: Peter Zijlstra <peterz@infradead.org>
-CC: Joe Perches <joe@perches.com>
-CC: Wei Weng <wweng@acedsl.com>
+> On Mon, 08 Sep 2008 14:52:34 -0700
+> Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> 
+> > There is nothing architecture specific about remove_memory().
+> > remove_memory() function is common for all architectures which
+> > support hotplug memory remove. Instead of duplicating it in every
+> > architecture, collapse them into arch neutral function.
+> > 
+> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > 
+> >  arch/ia64/mm/init.c   |   17 -----------------
+> >  arch/powerpc/mm/mem.c |   17 -----------------
+> >  arch/s390/mm/init.c   |   11 -----------
+> >  mm/memory_hotplug.c   |   10 ++++++++++
+> >  4 files changed, 10 insertions(+), 45 deletions(-)
+> 
+> I spent some time trying to build-test this on ia64 and gave up.  How
+> the heck do you turn on memory hotplug on ia64?
+
+After using ia64 defconfig, all I had to do was enable Sparse Memory model
+instead of Discontiguous.
+
+
 ---
- Documentation/psrwlock.txt |  440 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 440 insertions(+)
-
-Index: linux-2.6-lttng/Documentation/psrwlock.txt
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/Documentation/psrwlock.txt	2008-09-08 20:29:13.000000000 -0400
-@@ -0,0 +1,440 @@
-+                 Priority Sifting Reader-Writer Locks
-+                     Design and Performance tests
-+                       Mathieu Desnoyers, 2008
-+
-+
-+****** Design Goal ******
-+
-+The main design goal is to lessen the rwlock impact on the irq and softirq
-+latency of the system.
-+
-+A typical case leading to long interrupt latencies :
-+
-+- rwlock shared between
-+  - Rare update in thread context
-+  - Frequent slow read in thread context (task list iteration)
-+  - Fast interrupt handler read
-+
-+The slow write must therefore disable interrupts around the write lock, but will
-+therefore add up to the global interrupt latency; worse case being the duration
-+of the slow read.
-+
-+
-+****** Description of the psrwlock algorithm ******
-+
-+The writer fast path uses a single bit to indicate that a fast path writer is
-+active (UC_WRITER). The uncontended case is done by upgrading the priority to
-+the priority of the highest priority reader (e.g. by disabling interrupts) and
-+by doing a cmpxchg which sets the UC_WRITER bit atomically only if there is no
-+other writer nor reader in their critical section. If there is contention caused
-+by either a reader or a writer, the writer falls in the slow path.
-+
-+The writer slow path first sets the UC_SLOW_WRITER bit and increments the WS
-+(writers in slow path) counter (the two operations are made atomic by using the
-+WS_COUNT_MUTEX bit as a mutex) and then subscribes to the preemptable lock,
-+which locks out the preemptable reader threads. It waits for all the preemptable
-+reader threads in the slow path to exit their critical section. It then waits
-+for all the "in-flight" fast path readers to exit their critical section. Then,
-+it upgrades its priority by disabling preemption and does the same
-+(subscription, wait for slow path readers, wait for fast path readers) for
-+preemptable readers. The same is then done for bottom halves and interrupt
-+contexts. One all the reader contexts has been excluded, the writer takes the
-+slow path mutex, accesses the data structure.
-+
-+In its unlock, the writer detects if it was a fast or slow path writer by
-+checking the UC_WRITER bit. A fast path writer has to clear the UC_WRITER bit
-+and bring its priority back to its original state (e.g. reenabling interrupts).
-+The slow path writer must unlock the mutex, lower its priority stage by stage
-+(reenabling interrupt, bh, preemption). At each stage, it unsubscribes from the
-+specific context. Then, it checks if it is the last writer in the slow path by
-+decrementing and testing the WS counter (writers in slow path) bit. If it is the
-+last writer, it clears the UC_SLOW_WRITER bit (count and bit are made atomic by
-+the WS_COUNT_MUTEX bit used as a mutex).
-+
-+The reader does an atomic cmpxchg to check if there is any contention on the
-+lock (other readers or writers in their critical section). If not, it increments
-+the reader count. If there are other active readers, the first cmpxchg will
-+fail, but a second cmpxchg will be taken at the beginning of the slow path if
-+there are no writers contending the lock. A cmpxchg is used to take the reader
-+lock instead of a simple addition because we cannot afford to take the read
-+fast-path lock, even for a short period of time, while we are in a lower
-+execution context while there is a writer in an higher priority execution
-+context waiting for the lock. Failure to do so would result in priority
-+inversion.
-+
-+The reader slow path waits for the slow path writer subscription count in its
-+particular context to become 0. When it does, the reader atomically increments
-+the reader count for this context. Then, it waits for all the fast path writers
-+to exit their critical section and increments the fast path reader count. Before
-+returning from the reader lock primitive, it decrements the slow path reader
-+count for the context it subscribed to, behaving exactly as a fast path reader.
-+
-+The unlock primitive is then exactly the same for the fast and slow path
-+readers: They only have to decrement the fastpath reader count.
-+
-+WS_WQ_MUTEX protects the waitqueue and UC_WQ_ACTIVE changes. WS_WQ_MUTEX must be
-+taken with interrupts off. The ordering of operations dealing with preemptable
-+threads involves that any code path which can cause a thread to be added to the
-+wait queue must end with a check for UC_WQ_ACTIVE flag which leads to a wake up
-+if there are pending threads in the wait queue. Also, any point where a thread
-+can be woken up from the wait queue must be followed by a UC_WQ_ACTIVE check.
-+Given that the UC_WQ_ACTIVE flag is tested without taking the WS_WQ_MUTEX, we
-+must make sure that threads added to the waitqueue first set the UC_WQ_ACTIVE
-+flag and then re-test for the condition which led them to be put to sleep.
-+
-+Upon unlock, the following sequence is done :
-+- atomically unlock and return the lock value, which contains the UC_WQ_ACTIVE
-+  bit status at the moment the unlock is done.
-+- if UC_WQ_ACTIVE is set :
-+  - take WS_WQ_MUTEX
-+  - wake a thread
-+  - release WS_WQ_MUTEX
-+
-+When a thread is ready to be added to the wait queue :
-+- the last busy-looping iteration fails.
-+- take the WS_WQ_MUTEX
-+- set the UC_WQ_ACTIVE bit if the list about to pass from inactive to active.
-+- check again for the failed condition, since its status may have changed
-+  since the busy-loop failed. If the condition now succeeds, return to
-+  busy-looping after putting the UC_WQ_ACTIVE bit back to its original state and
-+  releasing the WS_WQ_MUTEX.
-+- add the current thread to the wait queue, change state.
-+- release WS_WQ_MUTEX.
-+
-+Upon wakeup :
-+- take WS_WQ_MUTEX
-+- set state to running, remove from the wait queue.
-+- clear UC_WQ_ACTIVE if the list passed to inactive.
-+- release WS_WQ_MUTEX.
-+
-+A sequence similar to the unlock must be done when a trylock fails.
-+
-+
-+****** Performance tests ******
-+
-+The test module is available at :
-+
-+http://ltt.polymtl.ca/svn/trunk/tests/kernel/test-psrwlock.c
-+
-+Dual quad-core Xeon 2.0GHz E5405
-+
-+
-+**** Latency ****
-+
-+This section presents the detailed breakdown of latency preemption, softirq and
-+interrupt latency generated by the psrwlock. In the "High contention" section,
-+is compares the "irqoff latency tracer" results between standard Linux kernel
-+rwlocks and the psrwlocks (tests done on wbias-rwlock v8).
-+
-+get_cycles takes [min,avg,max] 72,75,78 cycles, results calibrated on avg
-+
-+** Single writer test, no contention **
-+SINGLE_WRITER_TEST_DURATION 10s
-+
-+IRQ latency for cpu 6 disabled 99490 times, [min,avg,max] 471,485,1527 cycles
-+SoftIRQ latency for cpu 6 disabled 99490 times, [min,avg,max] 693,704,3969 cycles
-+Preemption latency for cpu 6 disabled 99490 times, [min,avg,max] 909,917,4593 cycles
-+
-+
-+** Single trylock writer test, no contention **
-+SINGLE_WRITER_TEST_DURATION 10s
-+
-+IRQ latency for cpu 2 disabled 10036 times, [min,avg,max] 393,396,849 cycles
-+SoftIRQ latency for cpu 2 disabled 10036 times, [min,avg,max] 609,614,1317 cycles
-+Preemption latency for cpu 2 disabled 10036 times, [min,avg,max] 825,826,1971 cycles
-+
-+
-+** Single reader test, no contention **
-+SINGLE_READER_TEST_DURATION 10s
-+
-+Preemption latency for cpu 2 disabled 31596702 times, [min,avg,max] 502,508,54256 cycles
-+
-+
-+** Multiple readers test, no contention (4 readers, busy-loop) **
-+MULTIPLE_READERS_TEST_DURATION 10s
-+NR_READERS 4
-+
-+Preemption latency for cpu 1 disabled 9302974 times, [min,avg,max] 502,2039,88060 cycles
-+Preemption latency for cpu 3 disabled 9270742 times, [min,avg,max] 508,2045,61342 cycles
-+Preemption latency for cpu 6 disabled 13331943 times, [min,avg,max] 508,1387,309088 cycles
-+Preemption latency for cpu 7 disabled 4781453 times, [min,avg,max] 508,4092,230752 cycles
-+
-+
-+** High contention test **
-+TEST_DURATION 60s
-+NR_WRITERS 2
-+NR_TRYLOCK_WRITERS 1
-+NR_READERS 4
-+NR_TRYLOCK_READERS 1
-+WRITER_DELAY 100us
-+TRYLOCK_WRITER_DELAY 1000us
-+TRYLOCK_WRITERS_FAIL_ITER 100
-+THREAD_READER_DELAY 0   /* busy loop */
-+INTERRUPT_READER_DELAY 100ms
-+
-+Standard Linux rwlock
-+
-+irqsoff latency trace v1.1.5 on 2.6.27-rc3-trace
-+--------------------------------------------------------------------
-+ latency: 2902 us, #3/3, CPU#5 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:8)
-+    -----------------
-+    | task: wbiasrwlock_wri-4984 (uid:0 nice:-5 policy:0 rt_prio:0)
-+    -----------------
-+ => started at: _write_lock_irq
-+ => ended at:   _write_unlock_irq
-+
-+#                _------=> CPU#
-+#               / _-----=> irqs-off
-+#              | / _----=> need-resched
-+#              || / _---=> hardirq/softirq
-+#              ||| / _--=> preempt-depth
-+#              |||| /
-+#              |||||     delay
-+#  cmd     pid ||||| time  |   caller
-+#     \   /    |||||   \   |   /
-+wbiasrwl-4984  5d..1    0us!: _write_lock_irq (0)
-+wbiasrwl-4984  5d..2 2902us : _write_unlock_irq (0)
-+wbiasrwl-4984  5d..3 2903us : trace_hardirqs_on (_write_unlock_irq)
-+
-+
-+Writer-biased rwlock, same test routine
-+
-+irqsoff latency trace v1.1.5 on 2.6.27-rc3-trace
-+--------------------------------------------------------------------
-+ latency: 33 us, #3/3, CPU#7 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:8)
-+    -----------------
-+    | task: events/7-27 (uid:0 nice:-5 policy:0 rt_prio:0)
-+    -----------------
-+ => started at: _spin_lock_irqsave
-+ => ended at:   _spin_unlock_irqrestore
-+
-+#                _------=> CPU#
-+#               / _-----=> irqs-off
-+#              | / _----=> need-resched
-+#              || / _---=> hardirq/softirq
-+#              ||| / _--=> preempt-depth
-+#              |||| /
-+#              |||||     delay
-+#  cmd     pid ||||| time  |   caller
-+#     \   /    |||||   \   |   /
-+events/7-27    7d...    0us+: _spin_lock_irqsave (0)
-+events/7-27    7d..1   33us : _spin_unlock_irqrestore (0)
-+events/7-27    7d..2   33us : trace_hardirqs_on (_spin_unlock_irqrestore)
-+
-+(latency unrelated to the tests, therefore irq latency <= 33us)
-+
-+wbias rwlock instrumentation (below) shows that interrupt latency has been 14176
-+cycles, for a total of 7us.
-+
-+Detailed psrwlock latency breakdown :
-+
-+IRQ latency for cpu 0 disabled 1086419 times, [min,avg,max] 316,2833,14176 cycles
-+IRQ latency for cpu 1 disabled 1099517 times, [min,avg,max] 316,1820,8254 cycles
-+IRQ latency for cpu 3 disabled 159088 times, [min,avg,max] 316,1409,5632 cycles
-+IRQ latency for cpu 4 disabled 161 times, [min,avg,max] 340,1882,5206 cycles
-+SoftIRQ latency for cpu 0 disabled 1086419 times, [min,avg,max] 2212,5350,166402 cycles
-+SoftIRQ latency for cpu 1 disabled 1099517 times, [min,avg,max] 2230,4265,138988 cycles
-+SoftIRQ latency for cpu 3 disabled 159088 times, [min,avg,max] 2212,3319,14992 cycles
-+SoftIRQ latency for cpu 4 disabled 161 times, [min,avg,max] 2266,3802,7138 cycles
-+Preemption latency for cpu 3 disabled 59855 times, [min,avg,max] 5266,15706,53494 cycles
-+Preemption latency for cpu 4 disabled 72 times, [min,avg,max] 5728,14132,28042 cycles
-+Preemption latency for cpu 5 disabled 55586612 times, [min,avg,max] 196,2080,126526 cycles
-+
-+Note : preemptable critical sections has been implemented after the previous
-+latency tests. It should be noted that the worse latency obtained in wbias
-+rwlock comes from the busy-loop for the wait queue protection mutex (100us) :
-+
-+IRQ latency for cpu 3 disabled 2822178 times, [min,avg,max] 256,8892,209926 cycles
-+disable : [<ffffffff803acff5>] rwlock_wait+0x265/0x2c0
-+
-+
-+
-+**** Lock contention delays ****
-+
-+Number of cycles required to take the lock are benchmarked for each context.
-+
-+
-+** get_cycles calibration **
-+get_cycles takes [min,avg,max] 72,75,78 cycles, results calibrated on avg
-+
-+
-+** Single writer test, no contention **
-+
-+* Writer-biased rwlocks v13
-+
-+writer_thread/0 iterations : 100274, lock delay [min,avg,max] 27,33,249 cycles
-+writer_thread/0 iterations : 100274, unlock delay [min,avg,max] 27,30,10407 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+writer_thread/0 iterations : 100322, lock delay [min,avg,max] 37,40,4537 cycles
-+writer_thread/0 iterations : 100322, unlock delay [min,avg,max] 37,40,25435 cycles
-+
-+
-+** Single preemptable reader test, no contention **
-+
-+Writer-biased rwlock has a twice faster lock and unlock uncontended fast path.
-+Note that wbias rwlock support preemptable readers. Standard rwlocks disables
-+preemption.
-+
-+* Writer-biased rwlocks v13
-+
-+preader_thread/0 iterations : 33856510, lock delay [min,avg,max] 27,29,34035 cycles
-+preader_thread/0 iterations : 33856510, unlock delay [min,avg,max] 15,20,34701 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+N/A : preemption must be disabled with standard rwlocks.
-+
-+
-+** Single non-preemptable reader test, no contention **
-+wbias rwlock read is still twice faster than standard rwlock even for read done
-+in non-preemptable context.
-+
-+* Writer-biased rwlocks v13
-+
-+npreader_thread/0 iterations : 33461225, lock delay [min,avg,max] 27,30,16329 cycles
-+npreader_thread/0 iterations : 33461225, unlock delay [min,avg,max] 15,19,21657 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+npreader_thread/0 iterations : 31639225, lock delay [min,avg,max] 37,39,127111 cycles
-+npreader_thread/0 iterations : 31639225, unlock delay [min,avg,max] 37,42,215587 cycles
-+
-+
-+** Multiple p(reemptable)/n(on-)p(reemptable) readers test, no contention **
-+This contended case where multiple readers try to access the data structure in
-+loop, without any writer, shows that standard rwlock average is a little bit
-+better than wbias rwlock. It could be explained by the fact that wbias rwlock
-+cmpxchg operation, which is used to keep the count of active readers, may fail
-+if there is contention and must therefore be retried. The fastpath actually
-+expects the number of readers to be 0, which isn't the case here.
-+
-+* Writer-biased rwlocks v13
-+
-+npreader_thread/0 iterations : 16885001, lock delay [min,avg,max] 27,425,40239 cycles
-+npreader_thread/0 iterations : 16885001, unlock delay [min,avg,max] 15,220,18153 cycles
-+npreader_thread/1 iterations : 16832690, lock delay [min,avg,max] 33,433,26841 cycles
-+npreader_thread/1 iterations : 16832690, unlock delay [min,avg,max] 15,219,22329 cycles
-+preader_thread/0 iterations : 17185174, lock delay [min,avg,max] 27,438,31437 cycles
-+preader_thread/0 iterations : 17185174, unlock delay [min,avg,max] 15,211,30465 cycles
-+preader_thread/1 iterations : 17293655, lock delay [min,avg,max] 27,435,53301 cycles
-+preader_thread/1 iterations : 17293655, unlock delay [min,avg,max] 15,209,63921 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+npreader_thread/0 iterations : 19248438, lock delay [min,avg,max] 37,273,364459 cycles
-+npreader_thread/0 iterations : 19248438, unlock delay [min,avg,max] 43,216,272539 cycles
-+npreader_thread/1 iterations : 19251717, lock delay [min,avg,max] 37,242,365719 cycles
-+npreader_thread/1 iterations : 19251717, unlock delay [min,avg,max] 43,249,162847 cycles
-+preader_thread/0 iterations : 19557931, lock delay [min,avg,max] 37,250,334921 cycles
-+preader_thread/0 iterations : 19557931, unlock delay [min,avg,max] 37,245,266377 cycles
-+preader_thread/1 iterations : 19671318, lock delay [min,avg,max] 37,258,390913 cycles
-+preader_thread/1 iterations : 19671318, unlock delay [min,avg,max] 37,234,604507 cycles
-+
-+
-+
-+** High contention test **
-+
-+In high contention test :
-+
-+TEST_DURATION 60s
-+NR_WRITERS 2
-+NR_TRYLOCK_WRITERS 1
-+NR_PREEMPTABLE_READERS 2
-+NR_NON_PREEMPTABLE_READERS 2
-+NR_TRYLOCK_READERS 1
-+WRITER_DELAY 100us
-+TRYLOCK_WRITER_DELAY 1000us
-+TRYLOCK_WRITERS_FAIL_ITER 100
-+THREAD_READER_DELAY 0   /* busy loop */
-+INTERRUPT_READER_DELAY 100ms
-+
-+
-+* Preemptable writers
-+
-+* Writer-biased rwlocks v13
-+
-+writer_thread/0 iterations : 537678, lock delay [min,avg,max] 123,14021,8580813 cycles
-+writer_thread/0 iterations : 537678, unlock delay [min,avg,max] 387,9070,1450053 cycles
-+writer_thread/1 iterations : 536944, lock delay [min,avg,max] 123,13179,8687331 cycles
-+writer_thread/1 iterations : 536944, unlock delay [min,avg,max] 363,10430,1400835 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+writer_thread/0 iterations : 222797, lock delay [min,avg,max] 127,336611,4710367 cycles
-+writer_thread/0 iterations : 222797, unlock delay [min,avg,max] 151,2009,714115 cycles
-+writer_thread/1 iterations : 6845, lock delay [min,avg,max] 139,17271138,352848961 cycles
-+writer_thread/1 iterations : 6845, unlock delay [min,avg,max] 217,93935,1991509 cycles
-+
-+
-+* Non-preemptable readers
-+
-+* Writer-biased rwlocks v13
-+
-+npreader_thread/0 iterations : 64652609, lock delay [min,avg,max] 27,828,67497 cycles
-+npreader_thread/0 iterations : 64652609, unlock delay [min,avg,max] 15,485,202773 cycles
-+npreader_thread/1 iterations : 65143310, lock delay [min,avg,max] 27,817,64569 cycles
-+npreader_thread/1 iterations : 65143310, unlock delay [min,avg,max] 15,484,133611 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+npreader_thread/0 iterations : 68298472, lock delay [min,avg,max] 37,640,733423 cycles
-+npreader_thread/0 iterations : 68298472, unlock delay [min,avg,max] 37,565,672241 cycles
-+npreader_thread/1 iterations : 70331311, lock delay [min,avg,max] 37,603,393925 cycles
-+npreader_thread/1 iterations : 70331311, unlock delay [min,avg,max] 37,558,373477 cycles
-+
-+
-+* Preemptable readers
-+
-+* Writer-biased rwlocks v13
-+
-+preader_thread/0 iterations : 38484022, lock delay [min,avg,max] 27,2207,89363619 cycles
-+preader_thread/0 iterations : 38484022, unlock delay [min,avg,max] 15,392,1965315 cycles
-+preader_thread/1 iterations : 44661191, lock delay [min,avg,max] 27,1672,8708253 cycles
-+preader_thread/1 iterations : 44661191, unlock delay [min,avg,max] 15,495,142119 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3
-+
-+N/A : preemption must be disabled with standard rwlocks.
-+
-+
-+* Interrupt context readers
-+
-+* Writer-biased rwlocks v13 (note : the highest unlock delays (32us) are
-+  caused by the wakeup of the wait queue done at the exit of the critical section
-+  if the waitqueue is active)
-+
-+interrupt readers on CPU 0, lock delay [min,avg,max] 135,1603,28119 cycles
-+interrupt readers on CPU 0, unlock delay [min,avg,max] 9,1712,35355 cycles
-+interrupt readers on CPU 1, lock delay [min,avg,max] 39,1756,18285 cycles
-+interrupt readers on CPU 1, unlock delay [min,avg,max] 9,2628,58257 cycles
-+interrupt readers on CPU 2, lock delay [min,avg,max] 129,1450,16533 cycles
-+interrupt readers on CPU 2, unlock delay [min,avg,max] 27,2354,49647 cycles
-+interrupt readers on CPU 3, lock delay [min,avg,max] 75,1758,27051 cycles
-+interrupt readers on CPU 3, unlock delay [min,avg,max] 9,2446,63603 cycles
-+interrupt readers on CPU 4, lock delay [min,avg,max] 159,1707,27903 cycles
-+interrupt readers on CPU 4, unlock delay [min,avg,max] 9,1822,39957 cycles
-+interrupt readers on CPU 6, lock delay [min,avg,max] 105,1635,24489 cycles
-+interrupt readers on CPU 6, unlock delay [min,avg,max] 9,2390,36771 cycles
-+interrupt readers on CPU 7, lock delay [min,avg,max] 135,1614,22995 cycles
-+interrupt readers on CPU 7, unlock delay [min,avg,max] 9,2052,43479 cycles
-+
-+* Standard rwlock, kernel 2.6.27-rc3 (note : these numbers seems good, but
-+  they do not take interrupt latency in account. See interrupt latency tests
-+  above for discussion of this issue)
-+
-+interrupt readers on CPU 0, lock delay [min,avg,max] 55,573,4417 cycles
-+interrupt readers on CPU 0, unlock delay [min,avg,max] 43,529,1591 cycles
-+interrupt readers on CPU 1, lock delay [min,avg,max] 139,591,5731 cycles
-+interrupt readers on CPU 1, unlock delay [min,avg,max] 31,534,2395 cycles
-+interrupt readers on CPU 2, lock delay [min,avg,max] 127,671,6043 cycles
-+interrupt readers on CPU 2, unlock delay [min,avg,max] 37,401,1567 cycles
-+interrupt readers on CPU 3, lock delay [min,avg,max] 151,676,5569 cycles
-+interrupt readers on CPU 3, unlock delay [min,avg,max] 127,536,2797 cycles
-+interrupt readers on CPU 5, lock delay [min,avg,max] 127,531,15397 cycles
-+interrupt readers on CPU 5, unlock delay [min,avg,max] 31,323,1747 cycles
-+interrupt readers on CPU 6, lock delay [min,avg,max] 121,548,29125 cycles
-+interrupt readers on CPU 6, unlock delay [min,avg,max] 31,435,2089 cycles
-+interrupt readers on CPU 7, lock delay [min,avg,max] 37,613,5485 cycles
-+interrupt readers on CPU 7, unlock delay [min,avg,max] 49,541,1645 cycles
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
