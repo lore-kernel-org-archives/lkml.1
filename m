@@ -1,85 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYIIN4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbYIIOJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYIIN4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 09:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYIIN4N
+	id S1755148AbYIIOJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 10:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYIIOJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 09:56:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46626 "EHLO mx1.redhat.com"
+	Tue, 9 Sep 2008 10:09:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51553 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751617AbYIIN4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 09:56:12 -0400
-Date: Tue, 9 Sep 2008 09:56:08 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, dzickus@redhat.com, nhorman@redhat.com,
-       vgoyal@redhat.com
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20080909134858.20868.51265.sendpatchset@prarit.bos.redhat.com>
-Subject: [PATCH] Fix memmap=exactmap boot argument
+	id S1751617AbYIIOJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 10:09:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Anders Aagaard <aagaande@gmail.com>
+Subject: Re: [Suspend-devel] Resume performance
+Date: Tue, 9 Sep 2008 16:13:44 +0200
+User-Agent: KMail/1.9.9
+Cc: suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <48C10908.60101@gmail.com> <200809052043.38677.rjw@sisk.pl> <48C3AE68.5010902@gmail.com>
+In-Reply-To: <48C3AE68.5010902@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809091613.44959.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using kdump modifying the e820 map is yielding strange results.
+On Sunday, 7 of September 2008, Anders Aagaard wrote:
+> Rafael J. Wysocki wrote:
+> > On Friday, 5 of September 2008, Anders Aagaard wrote:
+> >> Rafael J. Wysocki wrote:
+> >>> On Friday, 5 of September 2008, Anders Aagaard wrote:
+> >>>> Hi
+> >>> Hi,
+> >>>
+> >>> This is a kernel problem, so let's CC the LKML.
+> >>>
+> >>>> I have a intel P35 board with a quad core cpu in it, it's currently 
+> >>>> running as a server for a small network, and I'd like to be able to shut 
+> >>>> it down when idle, and use wake on lan to wake it up when it's needed. 
+> >>>> Now I got that part working quite well, but for some reason I have a 
+> >>>> long delay in resume.
+> >>>>
+> >>>> I seem to remember being able to resume this computer in 2-3 seconds 
+> >>>> when I was testing it, now it needs 35 seconds to resume.  It seems 
+> >>>> regardless of resume options used, and it always resumes to a working 
+> >>>> state without problems.
+> >>> What kernel are you using at the moment and which one was used for the
+> >>> testing?
+> >> I'm using gentoo's 2.6.25-r7, I've also tried vanilla sources.
+> > 
+> > Would it be possible to test 2.6.27-rc5-gi7 from kernel.org?
+> 
+> Tested, makes no difference.
+> 
+> > 
+> >>>> I've tried quite a lot of things, booting with noapic/nosmp, booting a 
+> >>>> kernel without usb/network drivers, disabling ahci (using ata_piix 
+> >>>> driver instead of ahci), and there's always that one long delay.  And 
+> >>>> I'm not quite sure how the kernel printk timing information works, so 
+> >>>> I'm not sure whats causing that delay.
+> >>>>
+> >>>> Output from dmesg when booting with nosmp (to get accurate timing data):
+> >>>> scripts/show_delta -b "Force enabled HPET at resume"
+> >>>> [349.821150 < 7.039261 >] ata3.00: configured for UDMA/133
+> >>>> [349.821160 < 7.039271 >] sd 2:0:0:0: [sdc] 976773168 512-byte hardware 
+> >>>> sectors (500108 MB)
+> >>>> [349.821165 < 7.039276 >] sd 2:0:0:0: [sdc] Write Protect is off
+> >>>> [349.821166 < 7.039277 >] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
+> >>>> [349.821173 < 7.039284 >] sd 2:0:0:0: [sdc] Write cache: enabled, read 
+> >>>> cache: enabled, doesn't support DPO or FUA
+> >>>> [349.972801 < 7.190912 >] ata1: SATA link up 3.0 Gbps (SStatus 123 
+> >>>> SControl 300)
+> >>>> [349.979060 < 7.197171 >] ata1.00: configured for UDMA/133
+> >>>> [349.979070 < 7.197181 >] sd 0:0:0:0: [sda] 976771055 512-byte hardware 
+> >>>> sectors (500107 MB)
+> >>>> [349.979075 < 7.197186 >] sd 0:0:0:0: [sda] Write Protect is off
+> >>>> [349.979076 < 7.197187 >] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> >>>> [349.979083 < 7.197194 >] sd 0:0:0:0: [sda] Write cache: enabled, read 
+> >>>> cache: enabled, doesn't support DPO or FUA
+> >>> It looks like this happens here.  Can you try to unload the network driver
+> >>> before suspend, please?
+> >> I tried to build a kernel without it, and it still takes the exact same 
+> >> amount to boot, I've also tried unloading usb drivers and it takes the 
+> >> exact same amount of time.
+> > 
+> > Can you try to boot with init=/bin/bash and suspend to RAM?  (Please have a
+> > look at section 2 of Documentation/power/basic-pm-debugging.txt in the newer
+> > kernel sources).
+> 
+> I checked without X before, but forgot to unload the nvidia module, that 
+> apparently makes a big difference, I did some numbers with 
+> scripts/show_delta -b "Back to C".
+> 
+> Nvidia and X : 32 seconds
+> No X (same result as booting with init=/bin/bash) : 8.3 seconds
+> Git kernel : 8.2 seconds
+> Light kernel (no sound, network card and usb drivers) : 8.17 seconds
+> ATI card instead of nvidia : 8.22 seconds
+> 
+> I think we found the problem, I already replaced nvidia hardware in one 
+> computer to resolve another issue.  Really appreciate your help on this 
+> issue, this resume time works pretty well for me, it was a bit 
+> ridiculous when I could boot faster than resume.
+> 
+> Is 8 seconds fairly expected?
 
-For example starting with
+Well, it should be a bit less than that.  Usually, the resume shouldn't take
+more than 5 sec.
 
-BIOS-provided physical RAM map:
-BIOS-e820: 0000000000000100 - 0000000000093400 (usable)
-BIOS-e820: 0000000000093400 - 00000000000a0000 (reserved)
-BIOS-e820: 0000000000100000 - 000000003fee0000 (usable)
-BIOS-e820: 000000003fee0000 - 000000003fef3000 (ACPI data)
-BIOS-e820: 000000003fef3000 - 000000003ff80000 (ACPI NVS)
-BIOS-e820: 000000003ff80000 - 0000000040000000 (reserved)
-BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
-BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-BIOS-e820: 00000000ff000000 - 0000000100000000 (reserved)
+> My other computer (same ati card) boots  
+> in about 2 seconds, but there's a lot less hardware in it (6 hd's and a 
+> ton of usb devices in one computer, 1 hd and 1 usb device in the other).
 
-and booting with args
+That may matter a lot.  It would be interesting to check if detaching any of
+those devices from the first machine helps. ;-)
 
-memmap=exactmap memmap=640K@0K memmap=5228K@16384K memmap=125188K@22252K memmap=76K#1047424K memmap=564K#1047500K
+>   I checked cold booting with and without usb devices, my light kernel 
+> boots to /bin/bash in 2.5 seconds, normal kernel about 7-8.  But I dont 
+> see anything about usb on resume.
 
-resulted in:
+Of course the USB devices are also resumed and that takes time (comparable
+to the boot time).
 
-user-defined physical RAM map:
-user: 0000000000000000 - 0000000000093400 (usable)
-user: 0000000000093400 - 00000000000a0000 (reserved)
-user: 0000000000100000 - 000000003fee0000 (usable)
-user: 000000003fee0000 - 000000003fef3000 (ACPI data)
-user: 000000003fef3000 - 000000003ff80000 (ACPI NVS)
-user: 000000003ff80000 - 0000000040000000 (reserved)
-user: 00000000e0000000 - 00000000f0000000 (reserved)
-user: 00000000fec00000 - 00000000fec10000 (reserved)
-user: 00000000fee00000 - 00000000fee01000 (reserved)
-user: 00000000ff000000 - 0000000100000000 (reserved)
-
-But should have resulted in:
-
-user-defined physical RAM map:
-user: 0000000000000000 - 00000000000a0000 (usable)
-user: 0000000001000000 - 000000000151b000 (usable)
-user: 00000000015bb000 - 0000000008ffc000 (usable)
-user: 000000003fee0000 - 000000003ff80000 (ACPI data)
-
-This is happening because of an improper usage of strcmp() in the
-e820 parsing code.  The strcmp() always returns !0 and never resets the
-value for e820.nr_map and returns an incorrect user-defined map.
-
-This patch fixes the problem.
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 9af8907..66e48aa 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1203,7 +1203,7 @@ static int __init parse_memmap_opt(char *p)
- 	if (!p)
- 		return -EINVAL;
- 
--	if (!strcmp(p, "exactmap")) {
-+	if (!strncmp(p, "exactmap", 8)) {
- #ifdef CONFIG_CRASH_DUMP
- 		/*
- 		 * If we are doing a crash dump, we still need to know
+Thanks,
+Rafael
