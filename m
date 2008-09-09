@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbYIIUcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbYIIUdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757663AbYIIUcp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 16:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYIIUcX
+	id S1757722AbYIIUdV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 16:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbYIIUdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 16:32:23 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:16586 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbYIIUcW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 16:32:22 -0400
-From: heukelum@fastmail.fm
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 11/24] i386: convert hardware exception 11 to an interrupt gate
-Date: Tue,  9 Sep 2008 21:56:05 +0200
-Message-Id: <1220990178-29773-12-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1220990178-29773-11-git-send-email-heukelum@fastmail.fm>
-References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-8-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-9-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-10-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-11-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Tue, 09 Sep 2008 22:31:59 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
+	Tue, 9 Sep 2008 16:33:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:46016 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754594AbYIIUdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 16:33:06 -0400
+Date: Tue, 9 Sep 2008 22:32:39 +0200 (CEST)
+From: Thomas Gleixner <tglx@tglx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT pull] timer updates for 2.6.27
+Message-ID: <alpine.LFD.1.10.0809092213010.13819@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander van Heukelum <heukelum@fastmail.fm>
+Linus,
 
-Handle segment not present exception with interrupt initially off.
+Please pull the latest timers-fixes-for-linus git tree from:
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/traps_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index 8ace1e2..572ea9f 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -639,7 +639,7 @@ DO_VM86_ERROR(5, SIGSEGV, "bounds", bounds)
- DO_ERROR_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
- DO_ERROR(9, SIGFPE, "coprocessor segment overrun", coprocessor_segment_overrun)
- DO_ERROR(10, SIGSEGV, "invalid TSS", invalid_TSS)
--DO_TRAP(11, SIGBUS, "segment not present", segment_not_present)
-+DO_ERROR(11, SIGBUS, "segment not present", segment_not_present)
- DO_TRAP(12, SIGBUS, "stack segment", stack_segment)
- DO_TRAP_INFO(17, SIGBUS, "alignment check", alignment_check, BUS_ADRALN, 0, 0)
- DO_TRAP_INFO(32, SIGILL, "iret exception", iret_error, ILL_BADSTK, 0, 1)
-@@ -1269,7 +1269,7 @@ void __init trap_init(void)
- 	set_task_gate(8, GDT_ENTRY_DOUBLEFAULT_TSS);
- 	set_intr_gate(9, &coprocessor_segment_overrun);
- 	set_intr_gate(10, &invalid_TSS);
--	set_trap_gate(11, &segment_not_present);
-+	set_intr_gate(11, &segment_not_present);
- 	set_trap_gate(12, &stack_segment);
- 	set_trap_gate(13, &general_protection);
- 	set_intr_gate(14, &page_fault);
--- 
-1.5.4.3
+This removes a WARN_ON which I (ab)used to gather information about
+the HPET reprogramming issue. It served it's purpose and can be
+removed now.
 
+Thanks,
+
+	tglx
+
+------------------>
+Thomas Gleixner (1):
+      clockevents: remove WARN_ON which was used to gather information
+
+
+ kernel/time/tick-oneshot.c |   18 ++++++++----------
+ 1 files changed, 8 insertions(+), 10 deletions(-)
+
+diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
+index 2e35501..2e8de67 100644
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -43,19 +43,17 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
+ 		 * and emit a warning.
+ 		 */
+ 		if (++i > 2) {
+-			printk(KERN_WARNING "CE: __tick_program_event of %s is "
+-			       "stuck %llx %llx\n", dev->name ? dev->name : "?",
+-			       now.tv64, expires.tv64);
+-			printk(KERN_WARNING
+-			       "CE: increasing min_delta_ns %ld to %ld nsec\n",
+-			       dev->min_delta_ns, dev->min_delta_ns << 1);
+-			WARN_ON(1);
+-
+-			/* Double the min. delta and try again */
++			/* Increase the min. delta and try again */
+ 			if (!dev->min_delta_ns)
+ 				dev->min_delta_ns = 5000;
+ 			else
+-				dev->min_delta_ns <<= 1;
++				dev->min_delta_ns += dev->min_delta_ns >> 1;
++
++			printk(KERN_WARNING
++			       "CE: %s increasing min_delta_ns to %lu nsec\n",
++			       dev->name ? dev->name : "?",
++			       dev->min_delta_ns << 1);
++
+ 			i = 0;
+ 		}
+ 
