@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbYIIRf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYIIRiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbYIIRf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYIIRfv
+	id S1756196AbYIIRiZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbYIIRiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:35:51 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:51251 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753778AbYIIRfv (ORCPT
+	Tue, 9 Sep 2008 13:38:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33450 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753585AbYIIRiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:35:51 -0400
-Message-ID: <48C6B3F4.5050406@suse.de>
-Date: Tue, 09 Sep 2008 21:35:48 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: jmerkey@wolfmountaingroup.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5 acpi: EC Storm error message on bootup
-References: <1254.69.2.248.210.1220390835.squirrel@webmail.wolfmountaingroup.com>       <48C60685.60303@suse.de>    <1044.69.2.248.210.1220971907.squirrel@webmail.wolfmountaingroup.com> <1702.69.2.248.210.1220972366.squirrel@webmail.wolfmountaingroup.com>
-In-Reply-To: <1702.69.2.248.210.1220972366.squirrel@webmail.wolfmountaingroup.com>
-Content-Type: multipart/mixed;
- boundary="------------090108090102090107000208"
+	Tue, 9 Sep 2008 13:38:16 -0400
+Date: Tue, 9 Sep 2008 10:37:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2008-09-08-18-32 uploaded
+Message-Id: <20080909103741.6e10ee87.akpm@linux-foundation.org>
+In-Reply-To: <20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
+References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
+	<20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090108090102090107000208
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 9 Sep 2008 19:25:44 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
+> On Mon, 08 Sep 2008 18:35:16 -0700
+> akpm@linux-foundation.org wrote:
+> 
+> > The mm-of-the-moment snapshot 2008-09-08-18-32 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > It contains the following patches against 2.6.27-rc5:
+> > 
+> 
+> I'll dig if I have time. This is just a report.
+> 
+> I tries UnixBench4.1 on x86_64/2cpu/1socket machine. (memory cgroup is enabled)
+> 
+> Following is comparison with a mmtom based on rc4.
+> ===
+> [rc4mm1]
+> Execl Throughput                           3004.4 lps   (29.6 secs, 3 samples)
+> C Compiler Throughput                      1017.9 lpm   (60.0 secs, 3 samples)
+> Shell Scripts (1 concurrent)               5726.3 lpm   (60.0 secs, 3 samples)
+> Shell Scripts (8 concurrent)               1124.3 lpm   (60.0 secs, 3 samples)
+> Shell Scripts (16 concurrent)               576.0 lpm   (60.0 secs, 3 samples)
+> Dc: sqrt(2) to 99 decimal places         125446.5 lpm   (30.0 secs, 3 samples)
+> 
+> [rc5mm1]
+> Execl Throughput                           3006.5 lps   (29.8 secs, 3 samples)
+> C Compiler Throughput                      1006.7 lpm   (60.0 secs, 3 samples)
+> Shell Scripts (1 concurrent)               4863.7 lpm   (60.0 secs, 3 samples)
+> Shell Scripts (8 concurrent)                943.7 lpm   (60.0 secs, 3 samples)
+> Shell Scripts (16 concurrent)               482.7 lpm   (60.0 secs, 3 samples)
+> Dc: sqrt(2) to 99 decimal places         124804.9 lpm   (30.0 secs, 3 samples)
+> ==
+> 15% down in shell script test. Any idea ? (scheduler ?)
 
-jmerkey@wolfmountaingroup.com wrote:
-> Oh shit, my mistake.  I applied it to a 2.2.26.4 tree.  please disregard. 
-> I will test it shortly.
-Thanks!
-I've found more slippery place, could you please add attached patch if the first one doesn't work?
+Dunno.  There is a largel number of debugging patches at the tail of
+the series so they should be the first thing to eliminate.
 
-Regards,
-Alex.
-
---------------090108090102090107000208
-Content-Type: text/x-diff;
- name="1.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="1.diff"
-
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 97168d4..961b327 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -538,7 +538,7 @@ static u32 acpi_ec_gpe_handler(void *data)
- 	state = acpi_ec_read_status(ec);
- 
- 	gpe_transaction(ec, state);
--	if ((status & ACPI_EC_FLAG_IBF) == 0)
-+	if (ec_transaction_done(ec) && (status & ACPI_EC_FLAG_IBF) == 0)
- 		wake_up(&ec->wait);
- 
- 	status = ec_check_sci(ec, state);
-
---------------090108090102090107000208--
