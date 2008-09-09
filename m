@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbYIIWxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYIIWy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbYIIWxa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 18:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYIIWxW
+	id S1755977AbYIIWy0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 18:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbYIIWyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 18:53:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52705 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754005AbYIIWxV (ORCPT
+	Tue, 9 Sep 2008 18:54:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:9563 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754088AbYIIWyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 18:53:21 -0400
-Date: Tue, 9 Sep 2008 15:53:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: alex.nixon@citrix.com, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 2/2] xen: fix pinning when not using split pte locks
-Message-Id: <20080909155306.921d453b.akpm@linux-foundation.org>
-In-Reply-To: <48C6FC0D.9040009@goop.org>
-References: <1220959508-13806-1-git-send-email-alex.nixon@citrix.com>
-	<48C6BB00.9040607@goop.org>
-	<48C6CCD7.8030800@citrix.com>
-	<48C6DE6E.1070804@goop.org>
-	<48C6F80E.8010509@citrix.com>
-	<48C6FC0D.9040009@goop.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 9 Sep 2008 18:54:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=pvoas14qgMcQuGw+gD4HQiWU9YKFwYWa1MAJOwkBWvIOtSAovCcPq4XWzOtr2J+fc5
+         fu3ai5qfyViRHwZjsdrqVOzHTi0tw5dxTI91MMvAkwFbDdFnR8f84ckvMpSdmWGiXA2A
+         8LM8/kECS324CctwLPXpgpEox2+kpnJmFwwbo=
+Message-ID: <86802c440809091554y349366fdu8e4ca59797ab4205@mail.gmail.com>
+Date: Tue, 9 Sep 2008 15:54:16 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: TARGET_CPUS in assign_irq_vector
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48C6F913.1010509@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48C6F913.1010509@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Sep 2008 15:43:25 -0700
-Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Tue, Sep 9, 2008 at 3:30 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> On x86-64, the genapic implementations of target_cpus returns
+> cpu_online_map.  What if more cpus have yet to come online?  Shouldn't
+> it be cpu_possible_map?
+>
+> Though I'm probably confused.  I don't really know what the intent of
+> target_cpus and vector_allocation_domain is.
+>
+logical mode, vector_allocation_domain will return all online cpus aka
+the 8 cpus.
 
-> We only pin PTE pages when using split PTE locks, so don't do the
-> pin/unpin when attaching/detaching pte pages to a pinned pagetable.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  arch/x86/xen/enlighten.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> ===================================================================
-> --- a/arch/x86/xen/enlighten.c
-> +++ b/arch/x86/xen/enlighten.c
-> @@ -864,7 +864,7 @@
->  
->  		if (!PageHighMem(page)) {
->  			make_lowmem_page_readonly(__va(PFN_PHYS((unsigned long)pfn)));
-> -			if (level == PT_PTE)
-> +			if (level == PT_PTE && USE_SPLIT_PTLOCKS)
->  				pin_pagetable_pfn(MMUEXT_PIN_L1_TABLE, pfn);
->  		} else
->  			/* make sure there are no stray mappings of
-> @@ -932,7 +932,7 @@
->  
->  	if (PagePinned(page)) {
->  		if (!PageHighMem(page)) {
-> -			if (level == PT_PTE)
-> +			if (level == PT_PTE && USE_SPLIT_PTLOCKS)
->  				pin_pagetable_pfn(MMUEXT_UNPIN_TABLE, pfn);
->  			make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
->  		}
+phys_flat mode, vector_allotcation_domain will only the cpumask with
+the cpu set..
 
-What are the effects of the bug which you fixed?
+target_cpus is the cpus that could be possible to used to take vector
+and process that irq. so at least it should be online.
 
-Do you consider this to be 2.6.27 material?  2.6.26.x?  2.6.25.x?
+YH
