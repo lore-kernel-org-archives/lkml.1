@@ -1,96 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbYIITWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYIITZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbYIITWP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 15:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbYIITV5
+	id S1756226AbYIITZM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 15:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbYIITY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 15:21:57 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:59762 "EHLO
-	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbYIITV4 (ORCPT
+	Tue, 9 Sep 2008 15:24:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40015 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751742AbYIITY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 15:21:56 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <48C6CCD7.8030800@citrix.com>
-Date: Tue, 09 Sep 2008 20:21:59 +0100
-From: Alex Nixon <alex.nixon@citrix.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 9 Sep 2008 15:24:59 -0400
+To: "Keith A. Prickett" <keithp@marvell.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Building Kernel with -O0
+From: Andi Kleen <andi@firstfloor.org>
+References: <1220550653.15123.6.camel@CV-LAB2>
+	<20080909160452.GB30160@cs181140183.pp.htv.fi>
+	<1220980240.17292.15.camel@CV-LAB2>
+Date: Tue, 09 Sep 2008 21:24:58 +0200
+In-Reply-To: <1220980240.17292.15.camel@CV-LAB2> (Keith A. Prickett's message of "Tue, 09 Sep 2008 10:10:40 -0700")
+Message-ID: <87vdx5ruk5.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Xen: Fix pte unpin BUG when !CONFIG_SMP
-References: <> <1220959508-13806-1-git-send-email-alex.nixon@citrix.com> <48C6BB00.9040607@goop.org>
-In-Reply-To: <48C6BB00.9040607@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Alex Nixon wrote:
->   
->> We still need to pin PTEs, even if there are no PTE locks.  Otherwise we'll BUG whenever there aren't PTE locks (i.e. whenever NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS), as we try to unpin PTEs which were never pinned in the first place.
->>   
->>     
+"Keith A. Prickett" <keithp@marvell.com> writes:
 >
-> Where does the unpin happen?  xen_unpin_page() also checks to see if it
-> took the lock before trying to unpin, symmetric with xen_pin_page().
->
->     J
->   
-Here's the backtrace of the BUG() the patch addresses.  Now you've 
-pointed it out - I see the asymmetry - and also suspect some ptes are 
-being left pinned.
+> All of this could, potentially be changed by a configuration parameter
+> and added into the kernel release.  Does someone have a primer on why
+> this kind of behavior is not desired or "possible"?
 
-I'm having trouble finding a cleaner solution which solves this but 
-doesn't incite more BUGs. 
+Traditionally it was not allowed because -O0 didn't inline and
+the kernel relied on inlining in some cases. But with always_inline
+that is obsolete -- all functions that rely on inlining should be 
+marked __always_inline.
 
-Perhaps you have an idea?
+I think a few more cases crept in where it was common to write
+build time asserts as
 
-- Alex
+      if (some condition the compiler evaluates at runtime)
+         __error_condition_xyz_is_false(); 
+ 
+and this obviously relies on the optimizer to build. But these
+are all slowly moving over the BUILD_BUG_ON() which also doesn't
+rely on the optimizer, so it's also obsolete.
 
+Then there's the issue that some of the kernel macros will
+generate absolutely terrible code without optimizer
+(good examples are the macros in asm-x86/uaccess.h). But I guess
+that could be tolerated too.
 
-------------[ cut here ]------------
-kernel BUG at 
-/local/scratch/hotplug.linux.trees.git/arch/x86/xen/enlighten.c:847!
-invalid opcode: 0000 [#1]
-Modules linked in:
+Then another reason was that traditionally no source level
+debugger was included and if you do assembly level debugging
+optimized code is typically easier to read and debug because
+the unoptimized gcc code is so terrible.
 
-Pid: 1, comm: init Tainted: G        W (2.6.27-rc5-tip #352)
-EIP: 0061:[<c10038fe>] EFLAGS: 00010282 CPU: 0
-EIP is at pin_pagetable_pfn+0x3f/0x4b
-EAX: ffffffea EBX: df82bd7c ECX: 00000001 EDX: 00000000
-ESI: 00007ff0 EDI: c1a579e0 EBP: df82bd94 ESP: df82bd7c
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: e021
-Process init (pid: 1, ti=df82a000 task=df82c000 task.ti=df82a000)
-Stack: 00000004 0014a0a1 00000000 0001fb4f c1a579e0 c1a579e0 df82bda4 
-c1003dd3
-       003f69e0 c157e024 df82bdac c1003e0e df82bdc8 c101b577 00000000 
-00000000
-       003f69e0 c1661000 dfb4e000 df82be28 c1062d35 1fb4f067 00000000 
-dfb4e000
-Call Trace:
- [<c1003dd3>] ? xen_release_ptpage+0x61/0x80
- [<c1003e0e>] ? xen_release_pte+0xd/0xf
- [<c101b577>] ? __pte_free_tlb+0x46/0x5f
- [<c1062d35>] ? free_pgd_range+0x1dc/0x391
- [<c10794e5>] ? setup_arg_pages+0x1b8/0x22b
- [<c109b3cb>] ? load_elf_binary+0x3f1/0x10c6
- [<c1062206>] ? get_user_pages+0x316/0x394
- [<c1078bef>] ? get_arg_page+0x2c/0x7e
- [<c1078bc1>] ? put_arg_page+0x8/0xa
- [<c1078d97>] ? copy_strings+0x156/0x160
- [<c1078e51>] ? search_binary_handler+0x7b/0x1c0
- [<c1079e20>] ? do_execve+0x13a/0x1c4
- [<c1007164>] ? sys_execve+0x29/0x4b
- [<c1008a2e>] ? syscall_call+0x7/0xb
- [<c100b11f>] ? kernel_execve+0x17/0x1c
- [<c1003140>] ? run_init_process+0x17/0x19
- [<c10031e8>] ? init_post+0xa6/0xf6
- [<c100965f>] ? kernel_thread_helper+0x7/0x10
- =======================
+And with kgdb now being a standard option that has also changed.
+And I agree with you that sometimes stepping through code
+is very educational. And gdb tends to be a lot happier 
+with -O0 code indeed.
 
+So if you can make it all work cleanly, ideally tested on
+other architectures too and a bit broader (e.g. with allyesconfig) 
+and track down whatever the mm/* issue 
+is correctly I don't see any real reason to not submit
+a mainline patch that enables this as a CONFIG. Of course
+it has to be very clean and not contain hacks.
+
+If you're not familiar with submitting kernel patches
+please read Documentation/{SubmittingPatches,SubmitChecklist} 
+first.
+
+Hope this helps,
+
+-Andi
+
+-- 
+ak@linux.intel.com
