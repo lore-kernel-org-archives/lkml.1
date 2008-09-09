@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYIIWNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYIIWVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYIIWNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 18:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYIIWNq
+	id S1754806AbYIIWVh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 18:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752212AbYIIWV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 18:13:46 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51476 "EHLO smtps.tip.net.au"
+	Tue, 9 Sep 2008 18:21:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34876 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbYIIWNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 18:13:45 -0400
-Date: Wed, 10 Sep 2008 08:13:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next releases
-Message-Id: <20080910081330.c2c96945.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__10_Sep_2008_08_13_30_+1000_x1R_y6ITzwjfpjSf"
+	id S1750926AbYIIWV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 18:21:27 -0400
+Message-ID: <48C6F644.9080905@redhat.com>
+Date: Tue, 09 Sep 2008 18:18:44 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@osdl.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ahci: Fix long standing Marvell regressions
+References: <20080903000538.7500eaf8@lxorguk.ukuu.org.uk>	<48BDCF09.7000603@garzik.org>	<20080903142941.3f25d235@lxorguk.ukuu.org.uk> <20080903144834.35276de7@lxorguk.ukuu.org.uk> <48C54EFF.3060603@garzik.org>
+In-Reply-To: <48C54EFF.3060603@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__10_Sep_2008_08_13_30_+1000_x1R_y6ITzwjfpjSf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jeff Garzik wrote:
+> applied.  I edited the text a bit, for formatting and clarity only (see 
+> attached)
+> 
+ >   ahci, pata_marvell: play nicely together
 
-Hi all,
+I can't see how that's going to work with a 6145 adapter and no PATA devices
+attached. The AHCI driver will always defer to pata_marvell (unless
+marvell_enable=1 is passed) and pata_marvell will defer to ahci when it doesn't
+see any PATA devices.
 
-There will be no linux-next release for Sep 9 (as my body and brain are in
-two widely distant time zones) or Sep 10 (as I am travelling again).
-Hopefully normal releases will start again on Thursday (US west coast
-time).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__10_Sep_2008_08_13_30_+1000_x1R_y6ITzwjfpjSf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjG9QoACgkQjjKRsyhoI8xbSACfZ8O1yWZ7OuoWdEKr6957q7z5
-W5IAoJasjogiSV4K6bcaJbEXXRxEDOBj
-=yxB2
------END PGP SIGNATURE-----
-
---Signature=_Wed__10_Sep_2008_08_13_30_+1000_x1R_y6ITzwjfpjSf--
