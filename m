@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYIICcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYIICmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754046AbYIICcM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 22:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbYIICb7
+	id S1754192AbYIICmO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 22:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYIICmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 22:31:59 -0400
-Received: from smtpoutwbe07.prod.mesa1.secureserver.net ([208.109.78.209]:54612
-	"HELO smtpoutwbe07.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751811AbYIICb7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 22:31:59 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Sep 2008 22:31:58 EDT
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="utf-8"
-X-Originating-IP: 206.15.73.2
-User-Agent: Web-Based Email 4.14.3
-Message-Id: <20080908192518.2473bd03aebb90616c9dd57ad0673876.061e21e3ac.wbe@email.secureserver.net>
-From: q-newsgroup@qypea.com
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Re: fbcon: replace =?UTF-8?Q?mono=5Fcol=20macro=20with=20static?=
- =?UTF-8?Q?=20inline?=
-Date: Mon, 08 Sep 2008 19:25:18 -0700
-Mime-Version: 1.0
+	Mon, 8 Sep 2008 22:42:06 -0400
+Received: from mail.atheros.com ([12.36.123.2]:39793 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751973AbYIICmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 22:42:05 -0400
+Message-ID: <48C5E2FC.4090304@atheros.com>
+Date: Tue, 9 Sep 2008 05:44:12 +0300
+From: Jouni Malinen <jouni.malinen@atheros.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@hp.com>
+CC: David Miller <davem@davemloft.net>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       <j@w1.fi>
+Subject: Re: [GIT]: Networking
+References: <20080827.164649.87042354.davem@davemloft.net> <1220627292.7260.3.camel@2710p.home>
+In-Reply-To: <1220627292.7260.3.camel@2710p.home>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alex Williamson wrote:
+> On Wed, 2008-08-27 at 16:46 -0700, David Miller wrote:
+> 
+>> 22) Two mac80211 bug fixes from Jouni Malinen:
+>>     a) Use IWEVCUSTOM so that we don't hit the 256 byte limit that
+>>        IWEVASSOCREQIE has
 
-Commit 22af89aa0c0b4012a7431114a340efd3665a7617 changed the order of
-operations for computing monochrome color values. This generates
-0xffff000f instead of 0x0000000f for a 4 bit monochrome color, leading
-to image corruption if it is passed to cfb_imageblit or other similar
-functions.
-Here's a quick patch to fix it up.
-David Winn
+By the way, that description is incorrect; the change was in the other 
+direction (i.e., to use IWSSOCREQIE).
 
-PS: Please CC me with any replies. Thanks
+> This one breaks wireless with 32bit userspace/64bit kernel.  Bisected
+> back to changeset 087d833e5a9f67ba933cb32eaf5a2279c1a5b47c:
+> 
+> mac80211: Use IWEVASSOCREQIE instead of IWEVCUSTOM
 
-diff --git a/drivers/video/console/fbcon.h
-b/drivers/video/console/fbcon.h
-index a6e38e9..89a3468 100644
---- a/drivers/video/console/fbcon.h
-+++ b/drivers/video/console/fbcon.h
-@@ -110,7 +110,7 @@ static inline int mono_col(const struct fb_info
-*info)
-        __u32 max_len;
-        max_len = max(info->var.green.length, info->var.red.length);
-        max_len = max(info->var.blue.length, max_len);
--       return ~(0xfff << (max_len & 0xff));
-+       return (~(0xfff << max_len)) & 0xff;
- }
+Great.. I was hoping that the WEXT compat ioctl fixes from Dave resolved 
+all WEXT cases. This code is (and was) using wireless_send_event() and I 
+did not find clear changes to its use in Dave's patch set. Was that 
+supposed to be fixed with the compat ioctl patches? I'm not very 
+familiar with this area and don't have an easy way to test this now (I'm 
+traveling and don't have access to a 64/32-bit setup).
 
- static inline int attr_col_ec(int shift, struct vc_data *vc,
+As far as I can tell, the commit mentioned here is correct in itself, 
+but it looks like the WEXT code would not handle something properly for 
+wireless_send_event(). I'm not sure why IWEVCUSTOM would work any 
+better, but well, maybe it does not have some fields that get wrong in 
+64/32 case or the previous working case ended up getting the 
+too-long-buffer error which prevented the message from being processed 
+in userspace).
 
+What exactly does "breaks wireless" mean here?
+
+As far as resolving this quickly is concerned, reverting the change is 
+fine; this is not a critical issue with most use cases. Anyway, this 
+should really be fixed eventually, but it looks like someone would need 
+to fix WEXT for wireless_send_event() first..
+
+- Jouni
