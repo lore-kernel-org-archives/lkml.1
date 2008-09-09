@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYIITve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201AbYIIT4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbYIITve (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 15:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYIITvZ
+	id S1756201AbYIIT4d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 15:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYIIT4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 15:51:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48442 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754955AbYIITvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 15:51:24 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX19tT0J7Qjxt/3zpRezBN9CVwRw+vOhmeIP/Llf5CI
-	KuqOfyMBNw/7GW
-From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Tue, 9 Sep 2008 21:51:12 +0200
-User-Agent: KMail/1.9.9
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Jarod Wilson <jarod@redhat.com>, Janne Grunau <j@jannau.net>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-3-git-send-email-jwilson@redhat.com> <20080909101422.329bd351@bike.lwn.net>
-In-Reply-To: <20080909101422.329bd351@bike.lwn.net>
+	Tue, 9 Sep 2008 15:56:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51198 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753796AbYIIT4X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 15:56:23 -0400
+Date: Tue, 9 Sep 2008 12:56:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Sanders <linux@sandersweb.net>
+cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>
+Subject: Re: [git pull] x86 fixes
+In-Reply-To: <200809091518.16311.linux@sandersweb.net>
+Message-ID: <alpine.LFD.1.10.0809091255420.3117@nehalem.linux-foundation.org>
+References: <200809081932.m88JWVZG013061@askone.hos.anvin.org> <200809091518.16311.linux@sandersweb.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809092151.18332.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.61
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-On Dienstag, 9. September 2008, Jonathan Corbet wrote:
-> > +config LIRC_SERIAL
-> > +	tristate "Homebrew Serial Port Receiver"
-> > +	default n
-> > +	depends on LIRC_DEV
-> > +	help
-> > +	  Driver for Homebrew Serial Port Receivers
+
+On Tue, 9 Sep 2008, David Sanders wrote:
 > 
-> What receivers might these be?  Do any actually exist?
-[...]
+> I haven't seen this come across the wire in Linus's 2.6.27 tree.  We're still 
+> going to do this right?
 
-This might actually be the most common setup, as it is very easy to 
-build[1] with minimal soldering skills and has also been used by various 
-vendors (older models of the TechniSat SkyStar2 DVB-S budget card, to name 
-just one example; it is only slowly being replaced by alternative means, 
-as serial ports are becoming rare on newer systems.
+Latest version is out there now (leaving the gas-error-proofing for 
+later),
 
-Regards
-	Stefan Lippers-Hollmann
-
-[1]	http://www.lirc.org/receivers.html
+		Linus
