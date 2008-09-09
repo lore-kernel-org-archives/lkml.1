@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbYIJBri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbYIJBwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbYIJBri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 21:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYIJBr2
+	id S1753033AbYIJBwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 21:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYIJBwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 21:47:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52421 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751537AbYIJBr1 (ORCPT
+	Tue, 9 Sep 2008 21:52:12 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:23444 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbYIJBwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 21:47:27 -0400
-Date: Tue, 9 Sep 2008 18:46:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2008-09-08-18-32 uploaded
-Message-Id: <20080909184650.360d31f3.akpm@linux-foundation.org>
-In-Reply-To: <20080910100142.e74ff1e5.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
-	<20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080909103741.6e10ee87.akpm@linux-foundation.org>
-	<20080910100142.e74ff1e5.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Sep 2008 21:52:11 -0400
+From: heukelum@fastmail.fm
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 5/24] i386: convert hardware exception 4 to an interrupt gate
+Date: Tue,  9 Sep 2008 21:55:59 +0200
+Message-Id: <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
+References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 10 Sep 2008 03:51:58 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008 10:01:42 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+From: Alexander van Heukelum <heukelum@fastmail.fm>
 
-> On Tue, 9 Sep 2008 10:37:41 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > Following is comparison with a mmtom based on rc4.
-> > > ===
-> > > [rc4mm1]
-> > > Execl Throughput                           3004.4 lps   (29.6 secs, 3 samples)
-> > > C Compiler Throughput                      1017.9 lpm   (60.0 secs, 3 samples)
-> > > Shell Scripts (1 concurrent)               5726.3 lpm   (60.0 secs, 3 samples)
-> > > Shell Scripts (8 concurrent)               1124.3 lpm   (60.0 secs, 3 samples)
-> > > Shell Scripts (16 concurrent)               576.0 lpm   (60.0 secs, 3 samples)
-> > > Dc: sqrt(2) to 99 decimal places         125446.5 lpm   (30.0 secs, 3 samples)
-> > > 
-> > > [rc5mm1]
-> > > Execl Throughput                           3006.5 lps   (29.8 secs, 3 samples)
-> > > C Compiler Throughput                      1006.7 lpm   (60.0 secs, 3 samples)
-> > > Shell Scripts (1 concurrent)               4863.7 lpm   (60.0 secs, 3 samples)
-> > > Shell Scripts (8 concurrent)                943.7 lpm   (60.0 secs, 3 samples)
-> > > Shell Scripts (16 concurrent)               482.7 lpm   (60.0 secs, 3 samples)
-> > > Dc: sqrt(2) to 99 decimal places         124804.9 lpm   (30.0 secs, 3 samples)
-> > > ==
-> > > 15% down in shell script test. Any idea ? (scheduler ?)
-> > 
-> > Dunno.  There is a largel number of debugging patches at the tail of
-> > the series so they should be the first thing to eliminate.
-> > 
-> But I compare mmtom and mmtom, both includes debug series at the tail of series.
+Handle overflow exception with interrupt initially off.
 
-oh, sorry, I didn't read closely enough.
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/traps_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Yes, someone broke something.
-
-> I'll revisit this later.
-
-I'd suggest testing linux-next as a first step.
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 944641a..5d762a8 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -633,7 +633,7 @@ void do_##name(struct pt_regs *regs, long error_code)			\
+ }
+ 
+ DO_VM86_ERROR_INFO(0, SIGFPE, "divide error", divide_error, FPE_INTDIV, regs->ip)
+-DO_VM86_TRAP(4, SIGSEGV, "overflow", overflow)
++DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
+ DO_VM86_TRAP(5, SIGSEGV, "bounds", bounds)
+ DO_TRAP_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
+ DO_TRAP(9, SIGFPE, "coprocessor segment overrun", coprocessor_segment_overrun)
+@@ -1250,7 +1250,7 @@ void __init trap_init(void)
+ 	set_intr_gate(1, &debug);
+ 	set_intr_gate(2, &nmi);
+ 	set_system_intr_gate(3, &int3); /* int3 can be called from all */
+-	set_system_gate(4, &overflow); /* int4 can be called from all */
++	set_system_intr_gate(4, &overflow); /* int4 can be called from all */
+ 	set_trap_gate(5, &bounds);
+ 	set_trap_gate(6, &invalid_op);
+ 	set_trap_gate(7, &device_not_available);
+-- 
+1.5.4.3
 
