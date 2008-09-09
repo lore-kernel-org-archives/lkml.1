@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYIIRpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYIIRtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292AbYIIRpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbYIIRpl
+	id S1756645AbYIIRtA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbYIIRsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:45:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:54585 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754852AbYIIRpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:45:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hEtGOVOB7vc7toaElb7mz6uIeIUfPoN8E8saHWsHDc/5Z2PNJ/ZHFsixZkgfGgrwdR
-         9uCfIKw9ZJklw0hoqo3LMi+hq70CtWCaMgvZZpAyZLY9YwINP826cXWq7kUstVLCfXE/
-         MWDy+zfEYs6eIYeopye1uBWDZYli6yWYAxkBo=
-Message-ID: <86802c440809091045h2d4f1776g94355e1b1dd1b29e@mail.gmail.com>
-Date: Tue, 9 Sep 2008 10:45:39 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Yang, Sheng" <sheng.yang@intel.com>
-Subject: Re: [PATCH 2/2] x86: Extended cpuinfo to show virtualization HW features
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Avi Kivity" <avi@qumranet.com>, "Andi Kleen" <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-In-Reply-To: <200809091605.42121.sheng.yang@intel.com>
+	Tue, 9 Sep 2008 13:48:52 -0400
+Received: from rtr.ca ([76.10.145.34]:35582 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753736AbYIIRsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 13:48:52 -0400
+Message-ID: <48C6B703.6070003@rtr.ca>
+Date: Tue, 09 Sep 2008 13:48:51 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] x86 fixes
+References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>	<48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org>	<48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu>	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>	<m3vdx6xm68.fsf@maximus.localdomain> <87d4jdty5b.fsf@basil.nowhere.org> <48C6AFA4.1050206@rtr.ca>
+In-Reply-To: <48C6AFA4.1050206@rtr.ca>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <12209432941440-git-send-email-sheng.yang@intel.com>
-	 <1220943294312-git-send-email-sheng.yang@intel.com>
-	 <86802c440809090052t2e626ce8h4fda865b8cbce00b@mail.gmail.com>
-	 <200809091605.42121.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 9, 2008 at 1:05 AM, Yang, Sheng <sheng.yang@intel.com> wrote:
->
-> Yeah, I've considered that, but seems duplicate for both files? The feature
-> detection code is the same. Any way to merge them?
->
+Mark Lord wrote:
+> Andi Kleen wrote:
+>> Krzysztof Halasa <khc@pm.waw.pl> writes:
+>>
+>>> Linus Torvalds <torvalds@linux-foundation.org> writes:
+>>>
+>>>>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
+>>>>    granted.
+>>> VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
+>>> theatres etc) can't CMOV.
+>>
+>> AFAIK they fixed that in newer BIOS with a microcode update. It's 
+>> slow, but it works.
+> ..
+> 
+> Our firewall here uses a Via C3-600 CPU, and CMOV has never worked on it.
+> But based upon your posting, I have today upgraded the BIOS to the
+> latest (2004) version.
+> 
+> Now.. how can I check whether CMOV works or not?  It's not listed in 
+> /proc/cpuinfo.
+..
 
-just merged intel_64.c into intel.c...
+H. Peter Anvin wrote:
+>
+> Compile just about any C program with -march=i686.
+..
 
-YH
+Okay, done.  And the binary does indeed have a ton of CMOV instructions.
+When running it, this appears immediately:
+
+    Illegal instruction
+
+So much for the "BIOS upgrade fixes CMOV microcode" theory.
+
+Cheers
