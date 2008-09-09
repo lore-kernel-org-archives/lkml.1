@@ -1,97 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYIIEJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbYIIEJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755346AbYIIEJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYIIEIJ
+	id S1755576AbYIIEJc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYIIEIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42573 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42574 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751029AbYIIEH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753492AbYIIEH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Sep 2008 00:07:58 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 04/18] lirc driver for 2nd-gen and later Media Center Ed. USB IR transceivers
-Date: Tue,  9 Sep 2008 00:05:49 -0400
-Message-Id: <1220933164-10160-5-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-4-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 06/18] lirc driver for the ATI USB RF remote receiver
+Date: Tue,  9 Sep 2008 00:05:51 -0400
+Message-Id: <1220933164-10160-7-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-6-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
  <1220933164-10160-4-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-5-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-6-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Successfully tested with the mce v2 receiver and remote that shipped with my
-Hauppauge HVR-1500 expresscard tuner.
-
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
-Tested-by: Jarod Wilson <jarod@redhat.com>
 ---
- drivers/input/lirc/Kconfig        |    7 +
- drivers/input/lirc/Makefile       |    1 +
- drivers/input/lirc/lirc_mceusb2.c | 1119 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 1127 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_mceusb2.c
+ drivers/input/lirc/Kconfig       |    7 +
+ drivers/input/lirc/Makefile      |    1 +
+ drivers/input/lirc/lirc_atiusb.c | 1321 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1329 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_atiusb.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 7dbf1a5..0a0b059 100644
+index ba30d2e..e17b39a 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -25,6 +25,13 @@ config LIRC_MCEUSB
+@@ -18,6 +18,13 @@ config LIRC_DEV
  	help
- 	  Driver for the Microsoft Media Center Ed. Receiver, v1
+ 	  LIRC device loadable module support, required for most LIRC drivers
  
-+config LIRC_MCEUSB2
-+	tristate "Microsoft Media Center Ed. Receiver, v2"
++config LIRC_ATIUSB
++	tristate "ATI RF USB Receiver support"
 +	default n
 +	depends on LIRC_DEV
 +	help
-+	  Driver for the Microsoft Media Center Ed. Receiver, v2
++	  Driver for the ATI USB RF remote receiver
 +
- config LIRC_SERIAL
- 	tristate "Homebrew Serial Port Receiver"
+ config LIRC_I2C
+ 	tristate "I2C Based IR Receivers"
  	default n
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index fafdd25..f6accb9 100644
+index 99765d9..ba8d445 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -7,4 +7,5 @@ EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
+@@ -6,6 +6,7 @@
+ EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
  
  obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
++obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb.o
+ obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
  obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
-+obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
- obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
-diff --git a/drivers/input/lirc/lirc_mceusb2.c b/drivers/input/lirc/lirc_mceusb2.c
+ obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
+diff --git a/drivers/input/lirc/lirc_atiusb.c b/drivers/input/lirc/lirc_atiusb.c
 new file mode 100644
-index 0000000..1e683d3
+index 0000000..0e07204
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_mceusb2.c
-@@ -0,0 +1,1119 @@
++++ b/drivers/input/lirc/lirc_atiusb.c
+@@ -0,0 +1,1321 @@
++/* lirc_atiusb - USB remote support for LIRC
++ * (currently only supports X10 USB remotes)
++ * (supports ATI Remote Wonder and ATI Remote Wonder II, too)
++ *
++ * Copyright (C) 2003-2004 Paul Miller <pmiller9@users.sourceforge.net>
++ *
++ * This driver was derived from:
++ *   Vladimir Dergachev <volodya@minspring.com>'s 2002
++ *      "USB ATI Remote support" (input device)
++ *   Adrian Dewhurst <sailor-lk@sailorfrag.net>'s 2002
++ *      "USB StreamZap remote driver" (LIRC)
++ *   Artur Lipowski <alipowski@kki.net.pl>'s 2002
++ *      "lirc_dev" and "lirc_gpio" LIRC modules
++ *   Michael Wojciechowski
++ *      initial xbox support
++ *   Vassilis Virvilis <vasvir@iit.demokritos.gr> 2006
++ *      reworked the patch for lirc submission
++ *
++ */
++
 +/*
-+ * LIRC driver for Philips eHome USB Infrared Transceiver
-+ * and the Microsoft MCE 2005 Remote Control
-+ *
-+ * (C) by Martin A. Blatter <martin_a_blatter@yahoo.com>
-+ *
-+ * Transmitter support and reception code cleanup.
-+ * (C) by Daniel Melander <lirc@rajidae.se>
-+ *
-+ * Derived from ATI USB driver by Paul Miller and the original
-+ * MCE USB driver by Dan Corti
-+ *
-+ * This driver will only work reliably with kernel version 2.6.10
-+ * or higher, probably because of differences in USB device enumeration
-+ * in the kernel code. Device initialization fails most of the time
-+ * with earlier kernel versions.
-+ *
-+ **********************************************************************
-+ *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
 + * the Free Software Foundation; either version 2 of the License, or
@@ -124,36 +126,29 @@ index 0000000..1e683d3
 +#include <linux/usb.h>
 +#include <linux/poll.h>
 +#include <linux/wait.h>
-+#include <linux/time.h>
++#include <linux/list.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+#define DRIVER_VERSION	"1.48"
-+#define DRIVER_AUTHOR	"Daniel Melander <lirc@rajidae.se>, " \
-+			"Martin Blatter <martin_a_blatter@yahoo.com>"
-+#define DRIVER_DESC	"Philips eHome USB IR Transceiver and Microsoft " \
-+			"MCE 2005 Remote Control driver for LIRC"
-+#define DRIVER_NAME	"lirc_mceusb2"
++#define DRIVER_VERSION		"1.71"
++#define DRIVER_AUTHOR		"Paul Miller <pmiller9@users.sourceforge.net>"
++#define DRIVER_DESC		"USB remote driver for LIRC"
++#define DRIVER_NAME		"lirc_atiusb"
 +
-+#define USB_BUFLEN	16	/* USB reception buffer length */
-+#define LIRCBUF_SIZE	256	/* LIRC work buffer length */
++#define CODE_LENGTH		(code_length[ir->remote_type])
++#define CODE_MIN_LENGTH		(code_min_length[ir->remote_type])
++#define DECODE_LENGTH		(decode_length[ir->remote_type])
 +
-+/* MCE constants */
-+#define MCE_CMDBUF_SIZE	384 /* MCE Command buffer length */
-+#define MCE_TIME_UNIT	50 /* Approx 50us resolution */
-+#define MCE_CODE_LENGTH	5 /* Normal length of packet (with header) */
-+#define MCE_PACKET_SIZE	4 /* Normal length of packet (without header) */
-+#define MCE_PACKET_HEADER 0x84 /* Actual header format is 0x80 + num_bytes */
-+#define MCE_CONTROL_HEADER 0x9F /* MCE status header */
-+#define MCE_TX_HEADER_LENGTH 3 /* # of bytes in the initializing tx header */
-+#define MCE_MAX_CHANNELS 2 /* Two transmitters, hardware dependent? */
-+#define MCE_DEFAULT_TX_MASK 0x03 /* Val opts: TX1=0x01, TX2=0x02, ALL=0x03 */
-+#define MCE_PULSE_BIT	0x80 /* Pulse bit, MSB set == PULSE else SPACE */
-+#define MCE_PULSE_MASK	0x7F /* Pulse mask */
-+#define MCE_MAX_PULSE_LENGTH 0x7F /* Longest transmittable pulse symbol */
-+#define MCE_PACKET_LENGTH_MASK  0x7F /* Pulse mask */
++#define RW2_MODENAV_KEYCODE	0x3F
++#define RW2_NULL_MODE		0xFF
++/* Fake (virtual) keycode indicating compass mouse usage */
++#define RW2_MOUSE_KEYCODE	0xFF
++#define RW2_PRESSRELEASE_KEYCODE	0xFE
 +
++#define RW2_PRESS_CODE		1
++#define RW2_HOLD_CODE		2
++#define RW2_RELEASE_CODE	0
 +
 +/* module parameters */
 +#ifdef CONFIG_USB_DEBUG
@@ -167,301 +162,242 @@ index 0000000..1e683d3
 +			printk(KERN_DEBUG fmt, ## args);	\
 +	} while (0)
 +
++/* ATI, ATI2, XBOX */
++static const int code_length[] = {5, 3, 6};
++static const int code_min_length[] = {3, 3, 6};
++static const int decode_length[] = {5, 3, 1};
++/* USB_BUFF_LEN must be the maximum value of the code_length array.
++ * It is used for static arrays. */
++#define USB_BUFF_LEN 6
++
++static int mask = 0xFFFF;	/* channel acceptance bit mask */
++static int unique;		/* enable channel-specific codes */
++static int repeat = 10;		/* repeat time in 1/100 sec */
++static int emit_updown;		/* send seperate press/release codes (rw2) */
++static int emit_modekeys; /* send keycodes for aux1-4, pc, and mouse (rw2) */
++static unsigned long repeat_jiffies; /* repeat timeout */
++static int mdeadzone;		/* mouse sensitivity >= 0 */
++static int mgradient = 375;	/* 1000*gradient from cardinal direction */
++
++/* get hi and low bytes of a 16-bits int */
++#define HI(a)			((unsigned char)((a) >> 8))
++#define LO(a)			((unsigned char)((a) & 0xff))
++
 +/* lock irctl structure */
-+#define IRLOCK		mutex_lock(&ir->lock)
-+#define IRUNLOCK	mutex_unlock(&ir->lock)
++#define IRLOCK			mutex_lock(&ir->lock)
++#define IRUNLOCK		mutex_unlock(&ir->lock)
 +
 +/* general constants */
 +#define SUCCESS			0
 +#define SEND_FLAG_IN_PROGRESS	1
 +#define SEND_FLAG_COMPLETE	2
-+#define RECV_FLAG_IN_PROGRESS	3
-+#define RECV_FLAG_COMPLETE	4
++#define FREE_ALL		0xFF
 +
-+#define PHILUSB_INBOUND		1
-+#define PHILUSB_OUTBOUND	2
++/* endpoints */
++#define EP_KEYS			0
++#define EP_MOUSE		1
++#define EP_MOUSE_ADDR		0x81
++#define EP_KEYS_ADDR		0x82
 +
-+#define VENDOR_PHILIPS		0x0471
-+#define VENDOR_SMK		0x0609
-+#define VENDOR_TATUNG		0x1460
-+#define VENDOR_GATEWAY		0x107b
-+#define VENDOR_SHUTTLE		0x1308
-+#define VENDOR_SHUTTLE2		0x051c
-+#define VENDOR_MITSUMI		0x03ee
-+#define VENDOR_TOPSEED		0x1784
-+#define VENDOR_RICAVISION	0x179d
-+#define VENDOR_ITRON		0x195d
-+#define VENDOR_FIC		0x1509
-+#define VENDOR_LG		0x043e
-+#define VENDOR_MICROSOFT	0x045e
-+#define VENDOR_FORMOSA		0x147a
-+#define VENDOR_FINTEK		0x1934
-+#define VENDOR_PINNACLE		0x2304
++#define VENDOR_ATI1		0x0bc7
++#define VENDOR_ATI2		0x0471
++#define VENDOR_MS1		0x040b
++#define VENDOR_MS2		0x045e
++#define VENDOR_MS3		0xFFFF
 +
 +static struct usb_device_id usb_remote_table[] = {
-+	/* Philips eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_PHILIPS, 0x0815) },
-+	/* Philips Infrared Transceiver - HP branded */
-+	{ USB_DEVICE(VENDOR_PHILIPS, 0x060c) },
-+	/* Philips SRM5100 */
-+	{ USB_DEVICE(VENDOR_PHILIPS, 0x060d) },
-+	/* Philips Infrared Transceiver - Omaura */
-+	{ USB_DEVICE(VENDOR_PHILIPS, 0x060f) },
-+	/* SMK/Toshiba G83C0004D410 */
-+	{ USB_DEVICE(VENDOR_SMK, 0x031d) },
-+	/* SMK eHome Infrared Transceiver (Sony VAIO) */
-+	{ USB_DEVICE(VENDOR_SMK, 0x0322) },
-+	/* bundled with Hauppauge PVR-150 */
-+	{ USB_DEVICE(VENDOR_SMK, 0x0334) },
-+	/* Tatung eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_TATUNG, 0x9150) },
-+	/* Shuttle eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_SHUTTLE, 0xc001) },
-+	/* Shuttle eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_SHUTTLE2, 0xc001) },
-+	/* Gateway eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_GATEWAY, 0x3009) },
-+	/* Mitsumi */
-+	{ USB_DEVICE(VENDOR_MITSUMI, 0x2501) },
-+	/* Topseed eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0001) },
-+	/* Topseed HP eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0006) },
-+	/* Topseed eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0007) },
-+	/* Topseed eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0008) },
-+	/* Ricavision internal Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_RICAVISION, 0x0010) },
-+	/* Itron ione Libra Q-11 */
-+	{ USB_DEVICE(VENDOR_ITRON, 0x7002) },
-+	/* FIC eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_FIC, 0x9242) },
-+	/* LG eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_LG, 0x9803) },
-+	/* Microsoft MCE Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_MICROSOFT, 0x00a0) },
-+	/* Formosa eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_FORMOSA, 0xe015) },
-+	/* Formosa21 / eHome Infrared Receiver */
-+	{ USB_DEVICE(VENDOR_FORMOSA, 0xe016) },
-+	/* Formosa aim / Trust MCE Infrared Receiver */
-+	{ USB_DEVICE(VENDOR_FORMOSA, 0xe017) },
-+	/* Formosa Industrial Computing / Beanbag Emulation Device */
-+	{ USB_DEVICE(VENDOR_FORMOSA, 0xe018) },
-+	/* Fintek eHome Infrared Transceiver */
-+	{ USB_DEVICE(VENDOR_FINTEK, 0x0602) },
-+	/* Pinnacle Remote Kit */
-+	{ USB_DEVICE(VENDOR_PINNACLE, 0x0225) },
++	/* X10 USB Firecracker Interface */
++	{ USB_DEVICE(VENDOR_ATI1, 0x0002) },
++
++	/* X10 VGA Video Sender */
++	{ USB_DEVICE(VENDOR_ATI1, 0x0003) },
++
++	/* ATI Wireless Remote Receiver */
++	{ USB_DEVICE(VENDOR_ATI1, 0x0004) },
++
++	/* NVIDIA Wireless Remote Receiver */
++	{ USB_DEVICE(VENDOR_ATI1, 0x0005) },
++
++	/* ATI Wireless Remote Receiver */
++	{ USB_DEVICE(VENDOR_ATI1, 0x0006) },
++
++	/* X10 USB Wireless Transceivers */
++	{ USB_DEVICE(VENDOR_ATI1, 0x0007) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x0008) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x0009) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x000A) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x000B) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x000C) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x000D) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x000E) },
++	{ USB_DEVICE(VENDOR_ATI1, 0x000F) },
++
++	/* ATI Remote Wonder 2: Input Device */
++	{ USB_DEVICE(VENDOR_ATI2, 0x0602) },
++
++	/* ATI Remote Wonder 2: Controller (???) */
++	{ USB_DEVICE(VENDOR_ATI2, 0x0603) },
++
++	/* Gamester Xbox DVD Movie Playback Kit IR */
++	{ USB_DEVICE(VENDOR_MS1, 0x6521) },
++
++	/* Microsoft Xbox DVD Movie Playback Kit IR */
++	{ USB_DEVICE(VENDOR_MS2, 0x0284) },
++
++	/* Some chinese manufacterer -- conflicts with the joystick from the
++	 * same manufacterer */
++	{ USB_DEVICE(VENDOR_MS3, 0xFFFF) },
++
 +	/* Terminating entry */
 +	{ }
 +};
 +
-+static struct usb_device_id pinnacle_list[] = {
-+	{ USB_DEVICE(VENDOR_PINNACLE, 0x0225) },
-+	{}
-+};
 +
-+static struct usb_device_id transmitter_mask_list[] = {
-+	{ USB_DEVICE(VENDOR_SMK, 0x031d) },
-+	{ USB_DEVICE(VENDOR_SMK, 0x0322) },
-+	{ USB_DEVICE(VENDOR_SMK, 0x0334) },
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0001) },
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0007) },
-+	{ USB_DEVICE(VENDOR_TOPSEED, 0x0008) },
-+	{ USB_DEVICE(VENDOR_PINNACLE, 0x0225) },
-+	{}
-+};
++/* init strings */
++#define USB_OUTLEN		7
 +
-+/* data structure for each usb remote */
-+struct irctl {
++static char init1[] = {0x01, 0x00, 0x20, 0x14};
++static char init2[] = {0x01, 0x00, 0x20, 0x14, 0x20, 0x20, 0x20};
 +
-+	/* usb */
-+	struct usb_device *usbdev;
-+	struct urb *urb_in;
-+	int devnum;
-+	struct usb_endpoint_descriptor *usb_ep_in;
-+	struct usb_endpoint_descriptor *usb_ep_out;
++struct in_endpt {
++	/* inner link in list of endpoints for the remote specified by ir */
++	struct list_head iep_list_link;
++	struct irctl *ir;
++	struct urb *urb;
++	struct usb_endpoint_descriptor *ep;
++	int type;
 +
 +	/* buffers and dma */
-+	unsigned char *buf_in;
-+	unsigned int len_in;
-+	dma_addr_t dma_in;
-+	dma_addr_t dma_out;
++	unsigned char *buf;
++	unsigned int len;
++	dma_addr_t dma;
 +
-+	/* lirc */
-+	struct lirc_plugin *p;
-+	int lircdata;
-+	unsigned char is_pulse;
-+	struct {
-+		u32 connected:1;
-+		u32 pinnacle:1;
-+		u32 transmitter_mask_inverted:1;
-+		u32 reserved:29;
-+	} flags;
++	/* handle repeats */
++	unsigned char old[USB_BUFF_LEN];
++	unsigned long old_jiffies;
++};
 +
-+	unsigned char transmitter_mask;
-+	unsigned int carrier_freq;
++struct out_endpt {
++	struct irctl *ir;
++	struct urb *urb;
++	struct usb_endpoint_descriptor *ep;
++
++	/* buffers and dma */
++	unsigned char *buf;
++	dma_addr_t dma;
 +
 +	/* handle sending (init strings) */
 +	int send_flags;
-+	wait_queue_head_t wait_out;
++	wait_queue_head_t wait;
++};
 +
++
++/* data structure for each usb remote */
++struct irctl {
++	/* inner link in list of all remotes managed by this module */
++	struct list_head remote_list_link;
++	/* Number of usb interfaces associated with this device */
++	int dev_refcount;
++
++	/* usb */
++	struct usb_device *usbdev;
++	/* Head link to list of all inbound endpoints in this remote */
++	struct list_head iep_listhead;
++	struct out_endpt *out_init;
++	int devnum;
++
++	/* remote type based on usb_device_id tables */
++	enum {
++		ATI1_COMPATIBLE,
++		ATI2_COMPATIBLE,
++		XBOX_COMPATIBLE
++	} remote_type;
++
++	/* rw2 current mode (mirror's remote's state) */
++	int mode;
++
++	/* lirc */
++	struct lirc_plugin *p;
++	int connected;
++
++	/* locking */
 +	struct mutex lock;
 +};
 +
-+/* init strings */
-+static char init1[] = {0x00, 0xff, 0xaa, 0xff, 0x0b};
-+static char init2[] = {0xff, 0x18};
++/* list of all registered devices via the remote_list_link in irctl */
++static struct list_head remote_list;
 +
-+static char pin_init1[] = { 0x9f, 0x07};
-+static char pin_init2[] = { 0x9f, 0x13};
-+static char pin_init3[] = { 0x9f, 0x0d};
++/* Convenience macros to retrieve a pointer to the surrounding struct from
++ * the given list_head reference within, pointed at by link. */
++#define get_iep_from_link(link) \
++		list_entry((link), struct in_endpt, iep_list_link);
++#define get_irctl_from_link(link) \
++		list_entry((link), struct irctl, remote_list_link);
 +
-+static void usb_remote_printdata(struct irctl *ir, char *buf, int len)
++/* send packet - used to initialize remote */
++static void send_packet(struct out_endpt *oep, u16 cmd, unsigned char *data)
 +{
-+	char codes[USB_BUFLEN*3 + 1];
-+	int i;
++	struct irctl *ir = oep->ir;
++	DECLARE_WAITQUEUE(wait, current);
++	int timeout = HZ; /* 1 second */
++	unsigned char buf[USB_OUTLEN];
 +
-+	if (len <= 0)
-+		return;
++	dprintk(DRIVER_NAME "[%d]: send called (%#x)\n", ir->devnum, cmd);
 +
-+	for (i = 0; i < len && i < USB_BUFLEN; i++)
-+		snprintf(codes+i*3, 4, "%02x ", buf[i] & 0xFF);
++	IRLOCK;
++	oep->urb->transfer_buffer_length = LO(cmd) + 1;
++	oep->urb->dev = oep->ir->usbdev;
++	oep->send_flags = SEND_FLAG_IN_PROGRESS;
 +
-+	printk(KERN_INFO "" DRIVER_NAME "[%d]: data received %s (length=%d)\n",
-+		ir->devnum, codes, len);
-+}
++	memcpy(buf+1, data, LO(cmd));
++	buf[0] = HI(cmd);
++	memcpy(oep->buf, buf, LO(cmd)+1);
 +
-+static void usb_async_callback(struct urb *urb, struct pt_regs *regs)
-+{
-+	struct irctl *ir;
-+	int len;
++	set_current_state(TASK_INTERRUPTIBLE);
++	add_wait_queue(&oep->wait, &wait);
 +
-+	if (!urb)
-+		return;
-+
-+	ir = urb->context;
-+	if (ir) {
-+		len = urb->actual_length;
-+
-+		dprintk(DRIVER_NAME
-+			"[%d]: callback called (status=%d len=%d)\n",
-+			ir->devnum, urb->status, len);
-+
-+		if (debug)
-+			usb_remote_printdata(ir, urb->transfer_buffer, len);
-+	}
-+
-+}
-+
-+
-+/* request incoming or send outgoing usb packet - used to initialize remote */
-+static void request_packet_async(struct irctl *ir,
-+				 struct usb_endpoint_descriptor *ep,
-+				 unsigned char *data, int size, int urb_type)
-+{
-+	int res;
-+	struct urb *async_urb;
-+	unsigned char *async_buf;
-+
-+	if (urb_type) {
-+		async_urb = usb_alloc_urb(0, GFP_KERNEL);
-+		if (async_urb) {
-+			/* alloc buffer */
-+			async_buf = kmalloc(size, GFP_KERNEL);
-+			if (async_buf) {
-+				if (urb_type == PHILUSB_OUTBOUND) {
-+					/* outbound data */
-+					usb_fill_int_urb(async_urb, ir->usbdev,
-+						usb_sndintpipe(ir->usbdev,
-+							ep->bEndpointAddress),
-+					async_buf,
-+					size,
-+					(usb_complete_t) usb_async_callback,
-+					ir, ep->bInterval);
-+
-+					memcpy(async_buf, data, size);
-+				} else {
-+					/* inbound data */
-+					usb_fill_int_urb(async_urb, ir->usbdev,
-+						usb_rcvintpipe(ir->usbdev,
-+							ep->bEndpointAddress),
-+					async_buf, size,
-+					(usb_complete_t) usb_async_callback,
-+					ir, ep->bInterval);
-+				}
-+			} else {
-+				usb_free_urb(async_urb);
-+				return;
-+			}
-+		}
-+	} else {
-+		/* standard request */
-+		async_urb = ir->urb_in;
-+		ir->send_flags = RECV_FLAG_IN_PROGRESS;
-+	}
-+	dprintk(DRIVER_NAME "[%d]: receive request called (size=%#x)\n",
-+		ir->devnum, size);
-+
-+	async_urb->transfer_buffer_length = size;
-+	async_urb->dev = ir->usbdev;
-+
-+	res = usb_submit_urb(async_urb, GFP_ATOMIC);
-+	if (res) {
-+		dprintk(DRIVER_NAME "[%d]: receive request FAILED! (res=%d)\n",
-+			ir->devnum, res);
++	if (usb_submit_urb(oep->urb, GFP_ATOMIC)) {
++		set_current_state(TASK_RUNNING);
++		remove_wait_queue(&oep->wait, &wait);
++		IRUNLOCK;
 +		return;
 +	}
-+	dprintk(DRIVER_NAME "[%d]: receive request complete (res=%d)\n",
-+		ir->devnum, res);
++	IRUNLOCK;
++
++	while (timeout && (oep->urb->status == -EINPROGRESS)
++	       && !(oep->send_flags & SEND_FLAG_COMPLETE)) {
++		timeout = schedule_timeout(timeout);
++		rmb();
++	}
++
++	dprintk(DRIVER_NAME "[%d]: send complete (%#x)\n", ir->devnum, cmd);
++
++	set_current_state(TASK_RUNNING);
++	remove_wait_queue(&oep->wait, &wait);
++	usb_unlink_urb(oep->urb);
 +}
 +
 +static int unregister_from_lirc(struct irctl *ir)
 +{
 +	struct lirc_plugin *p = ir->p;
 +	int devnum;
-+	int rtn;
 +
 +	devnum = ir->devnum;
 +	dprintk(DRIVER_NAME "[%d]: unregister from lirc called\n", devnum);
 +
-+	rtn = lirc_unregister_plugin(p->minor);
-+	if (rtn > 0) {
-+		printk(DRIVER_NAME "[%d]: error in lirc_unregister minor: %d\n"
-+			"Trying again...\n", devnum, p->minor);
-+		if (rtn == -EBUSY) {
-+			printk(DRIVER_NAME
-+				"[%d]: device is opened, will unregister"
-+				" on close\n", devnum);
-+			return -EAGAIN;
-+		}
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ);
-+
-+		rtn = lirc_unregister_plugin(p->minor);
-+		if (rtn > 0)
-+			printk(DRIVER_NAME "[%d]: lirc_unregister failed\n",
-+			devnum);
-+	}
-+
-+	if (rtn != SUCCESS) {
-+		printk(DRIVER_NAME "[%d]: didn't free resources\n", devnum);
-+		return -EAGAIN;
-+	}
++	lirc_unregister_plugin(p->minor);
 +
 +	printk(DRIVER_NAME "[%d]: usb remote disconnected\n", devnum);
-+
-+	lirc_buffer_free(p->rbuf);
-+	kfree(p->rbuf);
-+	kfree(p);
-+	kfree(ir);
 +	return SUCCESS;
 +}
++
 +
 +static int set_use_inc(void *data)
 +{
 +	struct irctl *ir = data;
++	struct list_head *pos, *n;
++	struct in_endpt *iep;
++	int rtn;
 +
 +	if (!ir) {
 +		printk(DRIVER_NAME "[?]: set_use_inc called with no context\n");
@@ -469,11 +405,33 @@ index 0000000..1e683d3
 +	}
 +	dprintk(DRIVER_NAME "[%d]: set use inc\n", ir->devnum);
 +
-+	if (!ir->flags.connected) {
-+		if (!ir->usbdev)
++	IRLOCK;
++	if (!ir->connected) {
++		if (!ir->usbdev) {
++			IRUNLOCK;
++			dprintk(DRIVER_NAME "[%d]: !ir->usbdev\n", ir->devnum);
 +			return -ENOENT;
-+		ir->flags.connected = 1;
++		}
++
++		/* Iterate through the inbound endpoints */
++		list_for_each_safe(pos, n, &ir->iep_listhead) {
++			/* extract the current in_endpt */
++			iep = get_iep_from_link(pos);
++			iep->urb->dev = ir->usbdev;
++			dprintk(DRIVER_NAME "[%d]: linking iep 0x%02x (%p)\n",
++				ir->devnum, iep->ep->bEndpointAddress, iep);
++			rtn = usb_submit_urb(iep->urb, GFP_ATOMIC);
++			if (rtn) {
++				printk(DRIVER_NAME "[%d]: open result = %d "
++				       "error submitting urb\n",
++				       ir->devnum, rtn);
++				IRUNLOCK;
++				return -EIO;
++			}
++		}
++		ir->connected = 1;
 +	}
++	IRUNLOCK;
 +
 +	return SUCCESS;
 +}
@@ -481,6 +439,8 @@ index 0000000..1e683d3
 +static void set_use_dec(void *data)
 +{
 +	struct irctl *ir = data;
++	struct list_head *pos, *n;
++	struct in_endpt *iep;
 +
 +	if (!ir) {
 +		printk(DRIVER_NAME "[?]: set_use_dec called with no context\n");
@@ -488,132 +448,326 @@ index 0000000..1e683d3
 +	}
 +	dprintk(DRIVER_NAME "[%d]: set use dec\n", ir->devnum);
 +
-+	if (ir->flags.connected) {
-+		IRLOCK;
-+		ir->flags.connected = 0;
-+		IRUNLOCK;
++	IRLOCK;
++	if (ir->connected) {
++		/* Free inbound usb urbs */
++		list_for_each_safe(pos, n, &ir->iep_listhead) {
++			iep = get_iep_from_link(pos);
++			dprintk(DRIVER_NAME "[%d]: unlinking iep 0x%02x (%p)\n",
++				ir->devnum, iep->ep->bEndpointAddress, iep);
++			usb_kill_urb(iep->urb);
++		}
++		ir->connected = 0;
 +	}
++	IRUNLOCK;
 +}
 +
-+static void send_packet_to_lirc(struct irctl *ir)
++static void print_data(struct in_endpt *iep, char *buf, int len)
 +{
-+	if (ir->lircdata != 0) {
-+		lirc_buffer_write_1(ir->p->rbuf,
-+				    (unsigned char *) &ir->lircdata);
-+		wake_up(&ir->p->rbuf->wait_poll);
-+		ir->lircdata = 0;
-+	}
++	const int clen = code_length[iep->ir->remote_type];
++	char codes[clen * 3 + 1];
++	int i;
++
++	if (len <= 0)
++		return;
++
++	for (i = 0; i < len && i < clen; i++)
++		snprintf(codes+i*3, 4, "%02x ", buf[i] & 0xFF);
++	printk(DRIVER_NAME "[%d]: data received %s (ep=0x%x length=%d)\n",
++		iep->ir->devnum, codes, iep->ep->bEndpointAddress, len);
 +}
 +
-+static void usb_remote_recv(struct urb *urb, struct pt_regs *regs)
++static int code_check_ati1(struct in_endpt *iep, int len)
 +{
-+	struct irctl *ir;
-+	int buf_len, packet_len;
-+	int i, j;
++	struct irctl *ir = iep->ir;
++	int i, chan;
 +
-+	if (!urb)
-+		return;
++	/* ATI RW1: some remotes emit both 4 and 5 byte length codes. */
++	/* ATI RW2: emit 3 byte codes */
++	if (len < CODE_MIN_LENGTH || len > CODE_LENGTH)
++		return -1;
 +
-+	ir = urb->context;
-+	if (!ir) {
-+		usb_unlink_urb(urb);
-+		return;
++	/* *** channel not tested with 4/5-byte Dutch remotes *** */
++	chan = ((iep->buf[len-1]>>4) & 0x0F);
++
++	/* strip channel code */
++	if (!unique) {
++		iep->buf[len-1] &= 0x0F;
++		iep->buf[len-3] -= (chan<<4);
 +	}
 +
-+	buf_len = urb->actual_length;
-+	packet_len = 0;
++	if (!((1U<<chan) & mask)) {
++		dprintk(DRIVER_NAME "[%d]: ignore channel %d\n",
++			ir->devnum, chan+1);
++		return -1;
++	}
++	dprintk(DRIVER_NAME "[%d]: accept channel %d\n", ir->devnum, chan+1);
 +
-+	if (debug)
-+		usb_remote_printdata(ir, urb->transfer_buffer, buf_len);
-+
-+	if (ir->send_flags == RECV_FLAG_IN_PROGRESS) {
-+		ir->send_flags = SEND_FLAG_COMPLETE;
-+		dprintk(DRIVER_NAME "[%d]: setup answer received %d bytes\n",
-+			ir->devnum, buf_len);
++	if (ir->remote_type == ATI1_COMPATIBLE) {
++		for (i = len; i < CODE_LENGTH; i++)
++			iep->buf[i] = 0;
++		/* check for repeats */
++		if (memcmp(iep->old, iep->buf, len) == 0) {
++			if (iep->old_jiffies + repeat_jiffies > jiffies)
++				return -1;
++		} else
++			memcpy(iep->old, iep->buf, CODE_LENGTH);
++		iep->old_jiffies = jiffies;
 +	}
 +
-+	switch (urb->status) {
-+	/* success */
-+	case SUCCESS:
-+		for (i = 0; i < buf_len; i++) {
-+			/* decode mce packets of the form (84),AA,BB,CC,DD */
-+			switch (ir->buf_in[i]) {
++	return SUCCESS;
++}
 +
-+			/* data headers */
-+			case 0x90: /* used Pinnacle Remote Kit */
-+			case 0x8F:
-+			case 0x8E:
-+			case 0x8D:
-+			case 0x8C:
-+			case 0x8B:
-+			case 0x8A:
-+			case 0x89:
-+			case 0x88:
-+			case 0x87:
-+			case 0x86:
-+			case 0x85:
-+			case 0x84:
-+			case 0x83:
-+			case 0x82:
-+			case 0x81:
-+			case 0x80:
-+				/* decode packet data */
-+				packet_len = ir->buf_in[i] &
-+					MCE_PACKET_LENGTH_MASK;
-+				for (j = 1;
-+				     j <= packet_len && (i+j < buf_len);
-+				     j++) {
-+					/* rising/falling flank */
-+					if (ir->is_pulse !=
-+					    (ir->buf_in[i + j] &
-+					     MCE_PULSE_BIT)) {
-+						send_packet_to_lirc(ir);
-+						ir->is_pulse =
-+							ir->buf_in[i + j] &
-+								MCE_PULSE_BIT;
-+					}
++/*
++ * Since the ATI Remote Wonder II has quite a different structure from the
++ * prior version, this function was seperated out to clarify the sanitization
++ * process.
++ *
++ * Here is a summary of the main differences:
++ *
++ * a. The rw2 has no sense of a transmission channel.  But, it does have an
++ *    auxilliary mode state, which is set by the mode buttons Aux1 through
++ *    Aux4 and "PC".  These map respectively to 0-4 in the first byte of the
++ *    recv buffer.  Any subsequent button press sends this mode number as its
++ *    "channel code."  Annoyingly enough, the mode setting buttons all send
++ *    the same key code (0x3f), and can only be distinguished via their mode
++ *    byte.
++ *
++ *    Because of this, old-style "unique"-parameter-enabled channel squashing
++ *    kills the functionality of the aux1-aux4 and PC buttons.  However, to
++ *    not do so would cause each remote key to send a different code depending
++ *    on the active aux.  Further complicating matters, using the mouse norb
++ *    also sends an identical code as would pushing the active aux button.  To
++ *    handle this we need a seperate parameter, like rw2modes, with the
++ *    following values and meanings:
++ *
++ *	0: Don't squash any channel info
++ *	1: Only squash channel data for non-mode setting keys
++ *	2: Ignore aux keypresses, but don't squash channel
++ *	3: Ignore aux keypresses and squash channel data
++ *
++ *    Option 1 may seem useless since the mouse sends the same code, but one
++ *    need only ignore in userspace any press of a mode-setting code that only
++ *    reaffirms the current mode.  The 3rd party lirccd should be able to
++ *    handle this easily enough, but lircd doesn't keep the state necessary
++ *    for this.  TODO We could work around this in the driver by emitting a
++ *    single 02 (press) code for a mode key only if that mode is not currently
++ *    active.
++ *
++ *    Option 2 would be useful for those wanting super configurability,
++ *    offering the ability to program 5 times the number actions based on the
++ *    current mode.
++ *
++ * b. The rw2 has its own built in repeat handling; the keys endpoint
++ *    encodes this in the second byte as 1 for press, 2 for hold, and 0 for
++ *    release.  This is generally much more responsive than lirc's built-in
++ *    timeout handling.
++ *
++ *    The problem is that the remote can send the release-recieve pair
++ *    (0,1) while one is still holding down the same button if the
++ *    transmission is momentarilly interrupted.  (It seems that the receiver
++ *    manages this count instead of the remote.)  By default, this information
++ *    is squashed to 2.
++ *
++ *    In order to expose the built-in repeat code, set the emit_updown
++ *    parameter as described below.
++ *
++ * c. The mouse norb is much more sensitive than on the rw1.  It emulates
++ *    a joystick-like controller with the second byte representing the x-axis
++ *    and the third, the y-axis.  Treated as signed integers, these axes range
++ *    approximately as follows:
++ *
++ *	x: (left) -46 ... 46 (right) (0xd2..0x2e)
++ *	y: (up)   -46 ... 46 (down)  (0xd2..0x2e)
++ *
++ *    NB these values do not correspond to the pressure with which the mouse
++ *    norb is pushed in a given direction, but rather seems to indicate the
++ *    duration for which a given direction is held.
++ *
++ *    These are normalized to 8 cardinal directions for easy configuration via
++ *    lircd.conf.  The normalization can be fined tuned with the mdeadzone and
++ *    mgradient parameters as described below.
++ *
++ * d. The interrupt rate of the mouse vs. the normal keys is different.
++ *
++ *	mouse: ~27Hz (37ms between interrupts)
++ *	keys:  ~10Hz (100ms between interrupts)
++ *
++ *    This means that the normal gap mechanism for lircd won't work as
++ *    expected; is emit_updown>0 if you can get away with it.
++ */
++static int code_check_ati2(struct in_endpt *iep, int len)
++{
++	struct irctl *ir = iep->ir;
++	int mode, i;
++	char *buf = iep->buf;
 +
-+					/* accumulate mce pulse/space values */
-+					ir->lircdata +=
-+						(ir->buf_in[i + j] &
-+						 MCE_PULSE_MASK)*MCE_TIME_UNIT;
-+					ir->lircdata |=
-+						(ir->is_pulse ? PULSE_BIT : 0);
++	if (len != CODE_LENGTH) {
++		dprintk(DRIVER_NAME
++			"[%d]: Huh?  Abnormal length (%d) buffer recieved.\n",
++			ir->devnum, len);
++		return -1;
++	}
++	for (i = len; i < CODE_LENGTH; i++)
++		iep->buf[i] = 0;
++
++	mode = buf[0];
++
++	/* Squash the mode indicator if unique wasn't set non-zero */
++	if (!unique)
++		buf[0] = 0;
++
++	if (iep->ep->bEndpointAddress == EP_KEYS_ADDR) {
++		/* ignore mouse navigation indicator key and
++		 * mode-set (aux) keys */
++		if (buf[2] == RW2_MODENAV_KEYCODE) {
++			if (emit_modekeys >= 2) /* emit raw */
++				buf[0] = mode;
++			else if (emit_modekeys == 1) {
++				/* translate */
++				buf[0] = mode;
++				if (ir->mode != mode) {
++					buf[1] = 0x03;
++					ir->mode = mode;
++					return SUCCESS;
 +				}
-+
-+				i += packet_len;
-+				break;
-+
-+				/* status header (0x9F) */
-+			case MCE_CONTROL_HEADER:
-+				/* A transmission containing one or
-+				   more consecutive ir commands always
-+				   ends with a GAP of 100ms followed by the
-+				   sequence 0x9F 0x01 0x01 0x9F 0x15
-+				   0x00 0x00 0x80 */
-+
-+		/*
-+		Uncomment this if the last 100ms
-+		"infinity"-space should be transmitted
-+		to lirc directly instead of at the beginning
-+		of the next transmission. Changes pulse/space order.
-+
-+				if (++i < buf_len && ir->buf_in[i]==0x01)
-+					send_packet_to_lirc(ir);
-+
-+		*/
-+
-+				/* end decode loop */
-+				i = buf_len;
-+				break;
-+			default:
-+				break;
++			} else {
++				dprintk(DRIVER_NAME
++					"[%d]: ignore dummy code 0x%x "
++					"(ep=0x%x)\n", ir->devnum,
++					buf[2], iep->ep->bEndpointAddress);
++				return -1;
 +			}
 +		}
 +
++		if (buf[1] != 2) {
++			/* handle press/release codes */
++			if (emit_updown == 0) /* ignore */
++				return -1;
++			else if (emit_updown == 1) /* normalize keycode */
++				 buf[2] = RW2_PRESSRELEASE_KEYCODE;
++			/* else emit raw */
++		}
++
++	} else {
++		int x = (signed char)buf[1];
++		int y = (signed char)buf[2];
++		int code = 0x00;
++		int dir_ew, dir_ns;
++
++		buf[2] = RW2_MOUSE_KEYCODE;
++
++		/* sensitivity threshold (use L2norm^2) */
++		if (mdeadzone > (x*x+y*y)) {
++			buf[1] = 0x00;
++			return SUCCESS;
++		}
++
++/* Nybble encoding: xy, 2 is -1 (S or W); 1 (N or E) */
++#define MOUSE_N		0x01
++#define MOUSE_NE	0x11
++#define MOUSE_E		0x10
++#define MOUSE_SE	0x12
++#define MOUSE_S		0x02
++#define MOUSE_SW	0x22
++#define MOUSE_W		0x20
++#define MOUSE_NW	0x21
++
++		/* cardinal leanings: positive x -> E, positive y -> S */
++		dir_ew = (x > 0) ? MOUSE_E : MOUSE_W;
++		dir_ns = (y > 0) ? MOUSE_S : MOUSE_N;
++
++		/* convert coordintes(angle) into compass direction */
++		if (x == 0)
++			code = dir_ns;
++		else if (y == 0)
++			code = dir_ew;
++		else {
++			if (abs(1000*y/x) > mgradient)
++				code = dir_ns;
++			if (abs(1000*x/y) > mgradient)
++				code |= dir_ew;
++		}
++
++		buf[1] = code;
++		dprintk(DRIVER_NAME "[%d]: mouse compass=0x%x %s%s (%d,%d)\n",
++			ir->devnum, code,
++			(code & MOUSE_S ? "S" : (code & MOUSE_N ? "N" : "")),
++			(code & MOUSE_E ? "E" : (code & MOUSE_W ? "W" : "")),
++			x, y);
++	}
++
++	return SUCCESS;
++}
++
++static int code_check_xbox(struct in_endpt *iep, int len)
++{
++	struct irctl *ir = iep->ir;
++	const int clen = CODE_LENGTH;
++
++	if (len != clen) {
++		dprintk(DRIVER_NAME ": We got %d instead of %d bytes from xbox "
++			"ir.. ?\n", len, clen);
++		return -1;
++	}
++
++	/* check for repeats */
++	if (memcmp(iep->old, iep->buf, len) == 0) {
++		if (iep->old_jiffies + repeat_jiffies > jiffies)
++			return -1;
++	} else {
++		/* the third byte of xbox ir packet seems to contain key info
++		 * the last two bytes are.. some kind of clock? */
++		iep->buf[0] = iep->buf[2];
++		memset(iep->buf + 1, 0, len - 1);
++		memcpy(iep->old, iep->buf, len);
++	}
++	iep->old_jiffies = jiffies;
++
++	return SUCCESS;
++}
++
++static void usb_remote_recv(struct urb *urb)
++{
++	struct in_endpt *iep;
++	int len, result = -1;
++
++	if (!urb)
++		return;
++	iep = urb->context;
++	if (!iep) {
++		usb_unlink_urb(urb);
++		return;
++	}
++	if (!iep->ir->usbdev)
++		return;
++
++	len = urb->actual_length;
++	if (debug)
++		print_data(iep, urb->transfer_buffer, len);
++
++	switch (urb->status) {
++
++	/* success */
++	case SUCCESS:
++		switch (iep->ir->remote_type) {
++		case XBOX_COMPATIBLE:
++			result = code_check_xbox(iep, len);
++			break;
++		case ATI2_COMPATIBLE:
++			result = code_check_ati2(iep, len);
++			break;
++		case ATI1_COMPATIBLE:
++		default:
++			result = code_check_ati1(iep, len);
++		}
++		if (result < 0)
++			break;
++		lirc_buffer_write_1(iep->ir->p->rbuf, iep->buf);
++		wake_up(&iep->ir->p->rbuf->wait_poll);
 +		break;
 +
-+		/* unlink */
++	/* unlink */
 +	case -ECONNRESET:
 +	case -ENOENT:
 +	case -ESHUTDOWN:
@@ -629,222 +783,417 @@ index 0000000..1e683d3
 +	usb_submit_urb(urb, GFP_ATOMIC);
 +}
 +
-+
-+static ssize_t lirc_write(struct file *file, const char *buf,
-+			  size_t n, loff_t *ppos)
++static void usb_remote_send(struct urb *urb)
 +{
-+	int i, count = 0, cmdcount = 0;
-+	struct irctl *ir = NULL;
-+	int wbuf[LIRCBUF_SIZE]; /* Workbuffer with values from lirc */
-+	unsigned char cmdbuf[MCE_CMDBUF_SIZE]; /* MCE command buffer */
-+	unsigned long signal_duration = 0; /* Singnal length in us */
-+	struct timeval start_time, end_time;
++	struct out_endpt *oep;
 +
-+	do_gettimeofday(&start_time);
++	if (!urb)
++		return;
++	oep = urb->context;
++	if (!oep) {
++		usb_unlink_urb(urb);
++		return;
++	}
++	if (!oep->ir->usbdev)
++		return;
 +
-+	/* Retrieve lirc_plugin data for the device */
-+	ir = lirc_get_pdata(file);
-+	if (!ir && !ir->usb_ep_out)
-+		return -EFAULT;
++	dprintk(DRIVER_NAME "[%d]: usb out called\n", oep->ir->devnum);
 +
-+	if (n % sizeof(int))
-+		return -EINVAL;
-+	count = n / sizeof(int);
++	if (urb->status)
++		return;
 +
-+	/* Check if command is within limits */
-+	if (count > LIRCBUF_SIZE || count%2 == 0)
-+		return -EINVAL;
-+	if (copy_from_user(wbuf, buf, n))
-+		return -EFAULT;
++	oep->send_flags |= SEND_FLAG_COMPLETE;
++	wmb();
++	if (waitqueue_active(&oep->wait))
++		wake_up(&oep->wait);
++}
 +
-+	/* MCE tx init header */
-+	cmdbuf[cmdcount++] = MCE_CONTROL_HEADER;
-+	cmdbuf[cmdcount++] = 0x08;
-+	cmdbuf[cmdcount++] = ir->transmitter_mask;
 +
-+	/* Generate mce packet data */
-+	for (i = 0; (i < count) && (cmdcount < MCE_CMDBUF_SIZE); i++) {
-+		signal_duration += wbuf[i];
-+		wbuf[i] = wbuf[i] / MCE_TIME_UNIT;
++/***************************************************************************
++ * Initialization and removal
++ ***************************************************************************/
 +
-+		do { /* loop to support long pulses/spaces > 127*50us=6.35ms */
++/*
++ * Free iep according to mem_failure which specifies a checkpoint into the
++ * initialization sequence for rollback recovery.
++ */
++static void free_in_endpt(struct in_endpt *iep, int mem_failure)
++{
++	struct irctl *ir;
++	dprintk(DRIVER_NAME ": free_in_endpt(%p, %d)\n", iep, mem_failure);
++	if (!iep)
++		return;
 +
-+			/* Insert mce packet header every 4th entry */
-+			if ((cmdcount < MCE_CMDBUF_SIZE) &&
-+			    (cmdcount - MCE_TX_HEADER_LENGTH) %
-+			     MCE_CODE_LENGTH == 0)
-+				cmdbuf[cmdcount++] = MCE_PACKET_HEADER;
++	ir = iep->ir;
++	if (!ir) {
++		dprintk(DRIVER_NAME ": free_in_endpt: WARNING! null ir\n");
++		return;
++	}
++	IRLOCK;
++	switch (mem_failure) {
++	case FREE_ALL:
++	case 5:
++		list_del(&iep->iep_list_link);
++		dprintk(DRIVER_NAME "[%d]: free_in_endpt removing ep=0x%0x "
++			"from list\n", ir->devnum, iep->ep->bEndpointAddress);
++	case 4:
++		if (iep->urb) {
++			usb_unlink_urb(iep->urb);
++			usb_free_urb(iep->urb);
++			iep->urb = 0;
++		} else
++			dprintk(DRIVER_NAME "[%d]: free_in_endpt null urb!\n",
++				ir->devnum);
++	case 3:
++		usb_buffer_free(iep->ir->usbdev, iep->len, iep->buf, iep->dma);
++		iep->buf = 0;
++	case 2:
++		kfree(iep);
++	}
++	IRUNLOCK;
++}
 +
-+			/* Insert mce packet data */
-+			if (cmdcount < MCE_CMDBUF_SIZE)
-+				cmdbuf[cmdcount++] =
-+					(wbuf[i] < MCE_PULSE_BIT ?
-+					 wbuf[i] : MCE_MAX_PULSE_LENGTH) |
-+					 (i & 1 ? 0x00 : MCE_PULSE_BIT);
-+			else
-+				return -EINVAL;
-+		} while ((wbuf[i] > MCE_MAX_PULSE_LENGTH) &&
-+			 (wbuf[i] -= MCE_MAX_PULSE_LENGTH));
++/*
++ * Construct a new inbound endpoint for this remote, and add it to the list of
++ * in_epts in ir.
++ */
++static struct in_endpt *new_in_endpt(struct irctl *ir,
++				     struct usb_endpoint_descriptor *ep)
++{
++	struct usb_device *dev = ir->usbdev;
++	struct in_endpt *iep;
++	int pipe, maxp, len, addr;
++	int mem_failure;
++
++	addr = ep->bEndpointAddress;
++	pipe = usb_rcvintpipe(dev, addr);
++	maxp = usb_maxpacket(dev, pipe, usb_pipeout(pipe));
++
++/*	len = (maxp > USB_BUFLEN) ? USB_BUFLEN : maxp;
++ *	len -= (len % CODE_LENGTH); */
++	len = CODE_LENGTH;
++
++	dprintk(DRIVER_NAME "[%d]: acceptable inbound endpoint (0x%x) found "
++		"(maxp=%d len=%d)\n", ir->devnum, addr, maxp, len);
++
++	mem_failure = 0;
++	iep = kmalloc(sizeof(*iep), GFP_KERNEL);
++	if (!iep) {
++		mem_failure = 1;
++		goto new_in_endpt_failure_check;
++	}
++	memset(iep, 0, sizeof(*iep));
++	iep->ir = ir;
++	iep->ep = ep;
++	iep->len = len;
++
++	iep->buf = usb_buffer_alloc(dev, len, GFP_ATOMIC, &iep->dma);
++	if (!iep->buf) {
++		mem_failure = 2;
++		goto new_in_endpt_failure_check;
 +	}
 +
-+	/* Fix packet length in last header */
-+	cmdbuf[cmdcount - (cmdcount - MCE_TX_HEADER_LENGTH) % MCE_CODE_LENGTH] =
-+		0x80 + (cmdcount - MCE_TX_HEADER_LENGTH) % MCE_CODE_LENGTH - 1;
++	iep->urb = usb_alloc_urb(0, GFP_KERNEL);
++	if (!iep->urb)
++		mem_failure = 3;
 +
-+	/* Check if we have room for the empty packet at the end */
-+	if (cmdcount >= MCE_CMDBUF_SIZE)
-+		return -EINVAL;
++new_in_endpt_failure_check:
 +
-+	/* All mce commands end with an empty packet (0x80) */
-+	cmdbuf[cmdcount++] = 0x80;
-+
-+	/* Transmit the command to the mce device */
-+	request_packet_async(ir, ir->usb_ep_out, cmdbuf,
-+			     cmdcount, PHILUSB_OUTBOUND);
-+
-+	/* The lircd gap calculation expects the write function to
-+	   wait the time it takes for the ircommand to be sent before
-+	   it returns. */
-+	do_gettimeofday(&end_time);
-+	signal_duration -= (end_time.tv_usec - start_time.tv_usec) +
-+			   (end_time.tv_sec - start_time.tv_sec) * 1000000;
-+
-+	/* delay with the closest number of ticks */
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	schedule_timeout(usecs_to_jiffies(signal_duration));
-+
-+	return n;
++	if (mem_failure) {
++		free_in_endpt(iep, mem_failure);
++		printk(DRIVER_NAME "[%d]: ep=0x%x out of memory (code=%d)\n",
++		       ir->devnum, addr, mem_failure);
++		return NULL;
++	}
++	list_add_tail(&iep->iep_list_link, &ir->iep_listhead);
++	dprintk(DRIVER_NAME "[%d]: adding ep=0x%0x to list\n",
++		ir->devnum, iep->ep->bEndpointAddress);
++	return iep;
 +}
 +
-+static void set_transmitter_mask(struct irctl *ir, unsigned int mask)
++static void free_out_endpt(struct out_endpt *oep, int mem_failure)
 +{
-+	if (ir->flags.transmitter_mask_inverted)
-+		ir->transmitter_mask = (mask != 0x03 ? mask ^ 0x03 : mask) << 1;
-+	else
-+		ir->transmitter_mask = mask;
-+}
++	struct irctl *ir;
++	dprintk(DRIVER_NAME ": free_out_endpt(%p, %d)\n", oep, mem_failure);
++	if (!oep)
++		return;
 +
++	wake_up_all(&oep->wait);
 +
-+/* Sets the send carrier frequency */
-+static int set_send_carrier(struct irctl *ir, int carrier)
-+{
-+	int clk = 10000000;
-+	int prescaler = 0, divisor = 0;
-+	unsigned char cmdbuf[] = { 0x9F, 0x06, 0x01, 0x80 };
-+
-+	/* Carrier is changed */
-+	if (ir->carrier_freq != carrier) {
-+
-+		if (carrier <= 0) {
-+			ir->carrier_freq = carrier;
-+			dprintk(DRIVER_NAME "[%d]: SET_CARRIER disabling "
-+				"carrier modulation\n", ir->devnum);
-+			request_packet_async(ir, ir->usb_ep_out,
-+					     cmdbuf, sizeof(cmdbuf),
-+					     PHILUSB_OUTBOUND);
-+			return carrier;
++	ir = oep->ir;
++	if (!ir) {
++		dprintk(DRIVER_NAME ": free_out_endpt: WARNING! null ir\n");
++		return;
++	}
++	IRLOCK;
++	switch (mem_failure) {
++	case FREE_ALL:
++	case 4:
++		if (oep->urb) {
++			usb_unlink_urb(oep->urb);
++			usb_free_urb(oep->urb);
++			oep->urb = 0;
++		} else {
++			dprintk(DRIVER_NAME "[%d]: free_out_endpt: null urb!\n",
++				ir->devnum);
 +		}
++	case 3:
++		usb_buffer_free(oep->ir->usbdev, USB_OUTLEN,
++				oep->buf, oep->dma);
++		oep->buf = 0;
++	case 2:
++		kfree(oep);
++	}
++	IRUNLOCK;
++}
 +
-+		for (prescaler = 0; prescaler < 4; ++prescaler) {
-+			divisor = (clk >> (2 * prescaler)) / carrier;
-+			if (divisor <= 0xFF) {
-+				ir->carrier_freq = carrier;
-+				cmdbuf[2] = prescaler;
-+				cmdbuf[3] = divisor;
-+				dprintk(DRIVER_NAME "[%d]: SET_CARRIER "
-+					"requesting %d Hz\n",
-+					ir->devnum, carrier);
++static struct out_endpt *new_out_endpt(struct irctl *ir,
++				       struct usb_endpoint_descriptor *ep)
++{
++	struct usb_device *dev = ir->usbdev;
++	struct out_endpt *oep;
++	int mem_failure;
 +
-+				/* Transmit the new carrier to the mce
-+				   device */
-+				request_packet_async(ir, ir->usb_ep_out,
-+						     cmdbuf, sizeof(cmdbuf),
-+						     PHILUSB_OUTBOUND);
-+				return carrier;
++	dprintk(DRIVER_NAME "[%d]: acceptable outbound endpoint (0x%x) found\n",
++		ir->devnum, ep->bEndpointAddress);
++
++	mem_failure = 0;
++	oep = kmalloc(sizeof(*oep), GFP_KERNEL);
++	if (!oep)
++		mem_failure = 1;
++	else {
++		memset(oep, 0, sizeof(*oep));
++		oep->ir = ir;
++		oep->ep = ep;
++		init_waitqueue_head(&oep->wait);
++
++		oep->buf = usb_buffer_alloc(dev, USB_OUTLEN,
++					    GFP_ATOMIC, &oep->dma);
++		if (!oep->buf)
++			mem_failure = 2;
++		else {
++			oep->urb = usb_alloc_urb(0, GFP_KERNEL);
++			if (!oep->urb)
++				mem_failure = 3;
++		}
++	}
++	if (mem_failure) {
++		free_out_endpt(oep, mem_failure);
++		printk(DRIVER_NAME "[%d]: ep=0x%x out of memory (code=%d)\n",
++		       ir->devnum, ep->bEndpointAddress, mem_failure);
++		return NULL;
++	}
++	return oep;
++}
++
++static void free_irctl(struct irctl *ir, int mem_failure)
++{
++	struct list_head *pos, *n;
++	struct in_endpt *in;
++	dprintk(DRIVER_NAME ": free_irctl(%p, %d)\n", ir, mem_failure);
++
++	if (!ir)
++		return;
++
++	list_for_each_safe(pos, n, &ir->iep_listhead) {
++		in = get_iep_from_link(pos);
++		free_in_endpt(in, FREE_ALL);
++	}
++	if (ir->out_init) {
++		free_out_endpt(ir->out_init, FREE_ALL);
++		ir->out_init = NULL;
++	}
++
++	IRLOCK;
++	switch (mem_failure) {
++	case FREE_ALL:
++	case 6:
++		if (!--ir->dev_refcount) {
++			list_del(&ir->remote_list_link);
++			dprintk(DRIVER_NAME "[%d]: free_irctl: removing "
++				"remote from list\n", ir->devnum);
++		} else {
++			dprintk(DRIVER_NAME "[%d]: free_irctl: refcount at %d,"
++				"aborting free_irctl\n",
++				ir->devnum, ir->dev_refcount);
++			IRUNLOCK;
++			return;
++		}
++	case 5:
++	case 4:
++	case 3:
++		if (ir->p) {
++			switch (mem_failure) {
++			case 5:
++				lirc_buffer_free(ir->p->rbuf);
++			case 4:
++				kfree(ir->p->rbuf);
++			case 3:
++				kfree(ir->p);
 +			}
-+		}
++		} else
++			printk(DRIVER_NAME "[%d]: ir->p is a null pointer!\n",
++			       ir->devnum);
++	case 2:
++		IRUNLOCK;
++		kfree(ir);
++		return;
++	}
++	IRUNLOCK;
++}
 +
-+		return -EINVAL;
++static struct irctl *new_irctl(struct usb_device *dev)
++{
++	struct irctl *ir;
++	struct lirc_plugin *plugin;
++	int type, devnum, dclen;
++	int mem_failure;
 +
++	devnum = dev->devnum;
++
++	/* determine remote type */
++	switch (cpu_to_le16(dev->descriptor.idVendor)) {
++	case VENDOR_ATI1:
++		type = ATI1_COMPATIBLE;
++		break;
++	case VENDOR_ATI2:
++		type = ATI2_COMPATIBLE;
++		break;
++	case VENDOR_MS1:
++	case VENDOR_MS2:
++	case VENDOR_MS3:
++		type = XBOX_COMPATIBLE;
++		break;
++	default:
++		dprintk(DRIVER_NAME "[%d]: unknown type\n", devnum);
++		return NULL;
++	}
++	dprintk(DRIVER_NAME "[%d]: remote type = %d\n", devnum, type);
++
++	/* allocate kernel memory */
++	mem_failure = 0;
++	ir = kmalloc(sizeof(*ir), GFP_KERNEL);
++	if (!ir) {
++		mem_failure = 1;
++		goto new_irctl_failure_check;
 +	}
 +
-+	return carrier;
++	/* at this stage we cannot use the macro [DE]CODE_LENGTH: ir
++	 * is not yet setup */
++	dclen = decode_length[type];
++	memset(ir, 0, sizeof(*ir));
++	/* add this infrared remote struct to remote_list, keeping track
++	 * of the number of drivers registered. */
++	dprintk(DRIVER_NAME "[%d]: adding remote to list\n", devnum);
++	list_add_tail(&ir->remote_list_link, &remote_list);
++	ir->dev_refcount = 1;
++
++	plugin = kmalloc(sizeof(*plugin), GFP_KERNEL);
++	if (!plugin) {
++		mem_failure = 2;
++		goto new_irctl_failure_check;
++	}
++
++	memset(plugin, 0, sizeof(*plugin));
++	ir->p = plugin;
++	plugin->rbuf = kmalloc(sizeof(*(plugin->rbuf)), GFP_KERNEL);
++	if (!plugin->rbuf) {
++		mem_failure = 3;
++		goto new_irctl_failure_check;
++	}
++
++	if (lirc_buffer_init(plugin->rbuf, dclen, 1)) {
++		mem_failure = 4;
++		goto new_irctl_failure_check;
++	}
++
++	strcpy(plugin->name, DRIVER_NAME " ");
++	plugin->minor = -1;
++	plugin->code_length = dclen * 8;
++	plugin->features = LIRC_CAN_REC_LIRCCODE;
++	plugin->data = ir;
++	plugin->set_use_inc = &set_use_inc;
++	plugin->set_use_dec = &set_use_dec;
++	plugin->dev = &dev->dev;
++	plugin->owner = THIS_MODULE;
++	ir->usbdev = dev;
++	ir->remote_type = type;
++	ir->devnum = devnum;
++	ir->mode = RW2_NULL_MODE;
++
++	mutex_init(&ir->lock);
++	INIT_LIST_HEAD(&ir->iep_listhead);
++
++new_irctl_failure_check:
++
++	if (mem_failure) {
++		free_irctl(ir, mem_failure);
++		printk(DRIVER_NAME "[%d]: out of memory (code=%d)\n",
++		       devnum, mem_failure);
++		return NULL;
++	}
++	return ir;
 +}
 +
 +
-+static int lirc_ioctl(struct inode *node, struct file *filep,
-+		      unsigned int cmd, unsigned long arg)
++/*
++ * Scan the global list of remotes to see if the device listed is one of them.
++ * If it is, the corresponding irctl is returned, with its dev_refcount
++ * incremented.  Otherwise, returns null.
++ */
++static struct irctl *get_prior_reg_ir(struct usb_device *dev)
 +{
-+	int result;
-+	unsigned int ivalue;
-+	unsigned long lvalue;
++	struct list_head *pos;
 +	struct irctl *ir = NULL;
 +
-+	/* Retrieve lirc_plugin data for the device */
-+	ir = lirc_get_pdata(filep);
-+	if (!ir && !ir->usb_ep_out)
-+		return -EFAULT;
-+
-+
-+	switch (cmd) {
-+	case LIRC_SET_TRANSMITTER_MASK:
-+
-+		result = get_user(ivalue, (unsigned int *) arg);
-+		if (result)
-+			return result;
-+		switch (ivalue) {
-+		case 0x01: /* Transmitter 1     => 0x04 */
-+		case 0x02: /* Transmitter 2     => 0x02 */
-+		case 0x03: /* Transmitter 1 & 2 => 0x06 */
-+			set_transmitter_mask(ir, ivalue);
++	dprintk(DRIVER_NAME "[%d]: scanning remote_list...\n", dev->devnum);
++	list_for_each(pos, &remote_list) {
++		ir = get_irctl_from_link(pos);
++		if (ir->usbdev != dev) {
++			dprintk(DRIVER_NAME "[%d]: device %d isn't it...",
++				dev->devnum, ir->devnum);
++		    ir = NULL;
++		} else {
++			dprintk(DRIVER_NAME "[%d]: prior instance found.\n",
++				dev->devnum);
++			ir->dev_refcount++;
 +			break;
-+
-+		default: /* Unsupported transmitter mask */
-+			return MCE_MAX_CHANNELS;
 +		}
-+
-+		dprintk(DRIVER_NAME ": SET_TRANSMITTERS mask=%d\n", ivalue);
-+		break;
-+
-+	case LIRC_GET_SEND_MODE:
-+
-+		result = put_user(LIRC_SEND2MODE(LIRC_CAN_SEND_PULSE &
-+						 LIRC_CAN_SEND_MASK),
-+				  (unsigned long *) arg);
-+
-+		if (result)
-+			return result;
-+		break;
-+
-+	case LIRC_SET_SEND_MODE:
-+
-+		result = get_user(lvalue, (unsigned long *) arg);
-+
-+		if (result)
-+			return result;
-+		if (lvalue != (LIRC_MODE_PULSE&LIRC_CAN_SEND_MASK))
-+			return -EINVAL;
-+		break;
-+
-+	case LIRC_SET_SEND_CARRIER:
-+
-+		result = get_user(ivalue, (unsigned int *) arg);
-+		if (result)
-+			return result;
-+
-+		set_send_carrier(ir, ivalue);
-+		break;
-+
-+	default:
-+		return -ENOIOCTLCMD;
 +	}
-+
-+	return 0;
++	return ir;
 +}
 +
-+static struct file_operations lirc_fops = {
-+	.write	= lirc_write,
-+};
++/* If the USB interface has an out endpoint for control (eg, the first Remote
++ * Wonder) send the appropriate initialization packets. */
++static void send_outbound_init(struct irctl *ir)
++{
++	if (ir->out_init) {
++		struct out_endpt *oep = ir->out_init;
++		dprintk(DRIVER_NAME "[%d]: usb_remote_probe: initializing "
++			"outbound ep\n", ir->devnum);
++		usb_fill_int_urb(oep->urb, ir->usbdev,
++			usb_sndintpipe(ir->usbdev, oep->ep->bEndpointAddress),
++			oep->buf, USB_OUTLEN, usb_remote_send,
++			oep, oep->ep->bInterval);
++
++		send_packet(oep, 0x8004, init1);
++		send_packet(oep, 0x8007, init2);
++	}
++}
++
++/* Log driver and usb info */
++static void log_usb_dev_info(struct usb_device *dev)
++{
++	char buf[63], name[128] = "";
++	if (dev->descriptor.iManufacturer
++	    && usb_string(dev, dev->descriptor.iManufacturer, buf, 63) > 0)
++		strncpy(name, buf, 128);
++	if (dev->descriptor.iProduct
++	    && usb_string(dev, dev->descriptor.iProduct, buf, 63) > 0)
++		snprintf(name, 128, "%s %s", name, buf);
++	printk(DRIVER_NAME "[%d]: %s on usb%d:%d\n", dev->devnum, name,
++	       dev->bus->busnum, dev->devnum);
++}
 +
 +
 +static int usb_remote_probe(struct usb_interface *intf,
@@ -852,323 +1201,124 @@ index 0000000..1e683d3
 +{
 +	struct usb_device *dev = interface_to_usbdev(intf);
 +	struct usb_host_interface *idesc;
-+	struct usb_endpoint_descriptor *ep = NULL;
-+	struct usb_endpoint_descriptor *ep_in = NULL;
-+	struct usb_endpoint_descriptor *ep_out = NULL;
-+	struct usb_host_config *config;
-+	struct irctl *ir = NULL;
-+	struct lirc_plugin *plugin = NULL;
-+	struct lirc_buffer *rbuf = NULL;
-+	int devnum, pipe, maxp;
-+	int minor = 0;
-+	int i;
-+	char buf[63], name[128] = "";
-+	int mem_failure = 0;
-+	int is_pinnacle;
++	struct usb_endpoint_descriptor *ep;
++	struct in_endpt *iep;
++	struct irctl *ir;
++	int i, type;
 +
-+	dprintk(DRIVER_NAME ": usb probe called\n");
-+
-+	usb_reset_device(dev);
-+
-+	config = dev->actconfig;
++	dprintk(DRIVER_NAME "[%d]: usb_remote_probe: dev:%p, intf:%p, id:%p)\n",
++		dev->devnum, dev, intf, id);
 +
 +	idesc = intf->cur_altsetting;
 +
-+	is_pinnacle = usb_match_id(intf, pinnacle_list) ? 1 : 0;
++	/* Check if a usb remote has already been registered for this device */
++	ir = get_prior_reg_ir(dev);
 +
-+	/* step through the endpoints to find first bulk in and out endpoint */
++	if (!ir) {
++		ir = new_irctl(dev);
++		if (!ir)
++			return -ENOMEM;
++	}
++	type = ir->remote_type;
++
++	/* step through the endpoints to find first in and first out endpoint
++	 * of type interrupt transfer */
 +	for (i = 0; i < idesc->desc.bNumEndpoints; ++i) {
 +		ep = &idesc->endpoint[i].desc;
++		dprintk(DRIVER_NAME "[%d]: processing endpoint %d\n",
++			dev->devnum, i);
++		if (((ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK) ==
++		     USB_DIR_IN) &&
++		     ((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
++		      USB_ENDPOINT_XFER_INT)) {
 +
-+		if ((ep_in == NULL)
-+			&& ((ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
-+			    == USB_DIR_IN)
-+			&& (((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+			    == USB_ENDPOINT_XFER_BULK)
-+			|| ((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+			    == USB_ENDPOINT_XFER_INT))) {
-+
-+			dprintk(DRIVER_NAME ": acceptable inbound endpoint "
-+				"found\n");
-+			ep_in = ep;
-+			ep_in->bmAttributes = USB_ENDPOINT_XFER_INT;
-+			if (is_pinnacle)
-+				/*
-+				 * setting seems to 1 seem to cause issues with
-+				 * Pinnacle timing out on transfer.
-+				 */
-+				ep_in->bInterval = ep->bInterval;
-+			else
-+				ep_in->bInterval = 1;
++			iep = new_in_endpt(ir, ep);
++			if (iep)
++				usb_fill_int_urb(iep->urb, dev,
++					usb_rcvintpipe(dev,
++						iep->ep->bEndpointAddress),
++					iep->buf, iep->len, usb_remote_recv,
++					iep, iep->ep->bInterval);
 +		}
 +
-+		if ((ep_out == NULL)
-+			&& ((ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
-+			    == USB_DIR_OUT)
-+			&& (((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+			    == USB_ENDPOINT_XFER_BULK)
-+			|| ((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+			    == USB_ENDPOINT_XFER_INT))) {
-+
-+			dprintk(DRIVER_NAME ": acceptable outbound endpoint "
-+				"found\n");
-+			ep_out = ep;
-+			ep_out->bmAttributes = USB_ENDPOINT_XFER_INT;
-+			if (is_pinnacle)
-+				/*
-+				 * setting seems to 1 seem to cause issues with
-+				 * Pinnacle timing out on transfer.
-+				 */
-+				ep_out->bInterval = ep->bInterval;
-+			else
-+				ep_out->bInterval = 1;
-+		}
++		if (((ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK) ==
++		     USB_DIR_OUT) &&
++		     ((ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK) ==
++		      USB_ENDPOINT_XFER_INT) &&
++		      (ir->out_init == NULL))
++			ir->out_init = new_out_endpt(ir, ep);
 +	}
-+	if (ep_in == NULL) {
-+		dprintk(DRIVER_NAME ": inbound and/or endpoint not found\n");
++	if (list_empty(&ir->iep_listhead)) {
++		printk(DRIVER_NAME "[%d]: inbound endpoint not found\n",
++		       ir->devnum);
++		free_irctl(ir, FREE_ALL);
 +		return -ENODEV;
 +	}
++	if (ir->dev_refcount == 1) {
++		ir->p->minor = lirc_register_plugin(ir->p);
++		if (ir->p->minor < 0) {
++			free_irctl(ir, FREE_ALL);
++			return -ENODEV;
++		}
 +
-+	devnum = dev->devnum;
-+	pipe = usb_rcvintpipe(dev, ep_in->bEndpointAddress);
-+	maxp = usb_maxpacket(dev, pipe, usb_pipeout(pipe));
++		/* Note new driver registration in kernel logs */
++		log_usb_dev_info(dev);
 +
-+	/* allocate kernel memory */
-+	mem_failure = 0;
-+	ir = kmalloc(sizeof(struct irctl), GFP_KERNEL);
-+	if (!ir) {
-+		mem_failure = 1;
-+		goto mem_failure_switch;
-+	}
-+
-+	memset(ir, 0, sizeof(struct irctl));
-+
-+	plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL);
-+	if (!plugin) {
-+		mem_failure = 2;
-+		goto mem_failure_switch;
-+	}
-+
-+	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
-+	if (!rbuf) {
-+		mem_failure = 3;
-+		goto mem_failure_switch;
-+	}
-+
-+	if (lirc_buffer_init(rbuf, sizeof(int), LIRCBUF_SIZE)) {
-+		mem_failure = 4;
-+		goto mem_failure_switch;
-+	}
-+
-+	ir->buf_in = usb_buffer_alloc(dev, maxp, GFP_ATOMIC, &ir->dma_in);
-+	if (!ir->buf_in) {
-+		mem_failure = 5;
-+		goto mem_failure_switch;
-+	}
-+
-+	ir->urb_in = usb_alloc_urb(0, GFP_KERNEL);
-+	if (!ir->urb_in) {
-+		mem_failure = 7;
-+		goto mem_failure_switch;
-+	}
-+
-+	memset(plugin, 0, sizeof(struct lirc_plugin));
-+
-+	strcpy(plugin->name, DRIVER_NAME " ");
-+	plugin->minor = -1;
-+	plugin->features = LIRC_CAN_SEND_PULSE |
-+		LIRC_CAN_SET_TRANSMITTER_MASK |
-+		LIRC_CAN_REC_MODE2 |
-+		LIRC_CAN_SET_SEND_CARRIER;
-+	plugin->data = ir;
-+	plugin->rbuf = rbuf;
-+	plugin->set_use_inc = &set_use_inc;
-+	plugin->set_use_dec = &set_use_dec;
-+	plugin->code_length = sizeof(int) * 8;
-+	plugin->ioctl = lirc_ioctl;
-+	plugin->fops  = &lirc_fops;
-+	plugin->dev   = &dev->dev;
-+	plugin->owner = THIS_MODULE;
-+
-+	mutex_init(&ir->lock);
-+	init_waitqueue_head(&ir->wait_out);
-+
-+	minor = lirc_register_plugin(plugin);
-+	if (minor < 0)
-+		mem_failure = 9;
-+
-+mem_failure_switch:
-+
-+	/* free allocated memory incase of failure */
-+	switch (mem_failure) {
-+	case 9:
-+		usb_free_urb(ir->urb_in);
-+	case 7:
-+		usb_buffer_free(dev, maxp, ir->buf_in, ir->dma_in);
-+	case 5:
-+		lirc_buffer_free(rbuf);
-+	case 4:
-+		kfree(rbuf);
-+	case 3:
-+		kfree(plugin);
-+	case 2:
-+		kfree(ir);
-+	case 1:
-+		printk(DRIVER_NAME "[%d]: out of memory (code=%d)\n",
-+			devnum, mem_failure);
-+		return -ENOMEM;
-+	}
-+
-+	plugin->minor = minor;
-+	ir->p = plugin;
-+	ir->devnum = devnum;
-+	ir->usbdev = dev;
-+	ir->len_in = maxp;
-+	ir->flags.connected = 0;
-+	ir->flags.pinnacle = is_pinnacle;
-+	ir->flags.transmitter_mask_inverted =
-+		usb_match_id(intf, transmitter_mask_list) ? 0 : 1;
-+
-+	ir->lircdata = PULSE_MASK;
-+	ir->is_pulse = 0;
-+
-+	/* ir->flags.transmitter_mask_inverted must be set */
-+	set_transmitter_mask(ir, MCE_DEFAULT_TX_MASK);
-+	/* Saving usb interface data for use by the transmitter routine */
-+	ir->usb_ep_in = ep_in;
-+	ir->usb_ep_out = ep_out;
-+
-+	if (dev->descriptor.iManufacturer
-+		&& usb_string(dev, dev->descriptor.iManufacturer, buf, 63) > 0)
-+		strncpy(name, buf, 128);
-+	if (dev->descriptor.iProduct
-+		&& usb_string(dev, dev->descriptor.iProduct, buf, 63) > 0)
-+		snprintf(name, 128, "%s %s", name, buf);
-+	printk(DRIVER_NAME "[%d]: %s on usb%d:%d\n", devnum, name,
-+	       dev->bus->busnum, devnum);
-+
-+	/* inbound data */
-+	usb_fill_int_urb(ir->urb_in, dev, pipe, ir->buf_in,
-+		maxp, (usb_complete_t) usb_remote_recv, ir, ep_in->bInterval);
-+
-+	/* initialize device */
-+	if (ir->flags.pinnacle) {
-+		int usbret;
-+
-+		/*
-+		 * I have no idea why but this reset seems to be crucial to
-+		 * getting the device to do outbound IO correctly - without
-+		 * this the device seems to hang, ignoring all input - although
-+		 * IR signals are correctly sent from the device, no input is
-+		 * interpreted by the device and the host never does the
-+		 * completion routine
-+		 */
-+
-+		usbret = usb_reset_configuration(dev);
-+		printk(DRIVER_NAME "[%d]: usb reset config ret %x\n",
-+		       devnum, usbret);
-+
-+		/*
-+		 * its possible we really should wait for a return
-+		 * for each of these...
-+		 */
-+		request_packet_async(ir, ep_in, NULL, maxp, PHILUSB_INBOUND);
-+		request_packet_async(ir, ep_out, pin_init1, sizeof(pin_init1),
-+				     PHILUSB_OUTBOUND);
-+		request_packet_async(ir, ep_in, NULL, maxp, PHILUSB_INBOUND);
-+		request_packet_async(ir, ep_out, pin_init2, sizeof(pin_init2),
-+				     PHILUSB_OUTBOUND);
-+		request_packet_async(ir, ep_in, NULL, maxp, PHILUSB_INBOUND);
-+		request_packet_async(ir, ep_out, pin_init3, sizeof(pin_init3),
-+				     PHILUSB_OUTBOUND);
-+		/* if we dont issue the correct number of receives
-+		 * (PHILUSB_INBOUND) for each outbound, then the first few ir
-+		 * pulses will be interpreted by the usb_async_callback routine
-+		 * - we should ensure we have the right amount OR less - as the
-+		 * usb_remote_recv routine will handle the control packets OK -
-+		 * they start with 0x9f - but the async callback doesnt handle
-+		 * ir pulse packets
-+		 */
-+		request_packet_async(ir, ep_in, NULL, maxp, 0);
-+	} else {
-+		request_packet_async(ir, ep_in, NULL, maxp, PHILUSB_INBOUND);
-+		request_packet_async(ir, ep_in, NULL, maxp, PHILUSB_INBOUND);
-+		request_packet_async(ir, ep_out, init1,
-+				     sizeof(init1), PHILUSB_OUTBOUND);
-+		request_packet_async(ir, ep_in, NULL, maxp, PHILUSB_INBOUND);
-+		request_packet_async(ir, ep_out, init2,
-+				     sizeof(init2), PHILUSB_OUTBOUND);
-+		request_packet_async(ir, ep_in, NULL, maxp, 0);
++		/* outbound data (initialization) */
++		send_outbound_init(ir);
 +	}
 +
 +	usb_set_intfdata(intf, ir);
-+
 +	return SUCCESS;
 +}
 +
-+
 +static void usb_remote_disconnect(struct usb_interface *intf)
 +{
-+	struct usb_device *dev = interface_to_usbdev(intf);
++/*	struct usb_device *dev = interface_to_usbdev(intf); */
 +	struct irctl *ir = usb_get_intfdata(intf);
-+
 +	usb_set_intfdata(intf, NULL);
 +
++	dprintk(DRIVER_NAME ": disconnecting remote %d:\n",
++		ir ? ir->devnum : -1);
 +	if (!ir || !ir->p)
 +		return;
 +
-+	ir->usbdev = NULL;
-+	wake_up_all(&ir->wait_out);
++	if (ir->usbdev) {
++		/* Only unregister once */
++		ir->usbdev = NULL;
++		unregister_from_lirc(ir);
++	}
 +
-+	IRLOCK;
-+	usb_kill_urb(ir->urb_in);
-+	usb_free_urb(ir->urb_in);
-+	usb_buffer_free(dev, ir->len_in, ir->buf_in, ir->dma_in);
-+	IRUNLOCK;
-+
-+	unregister_from_lirc(ir);
-+}
-+
-+static int usb_remote_suspend(struct usb_interface *intf, pm_message_t message)
-+{
-+	struct irctl *ir = usb_get_intfdata(intf);
-+	printk(DRIVER_NAME "[%d]: suspend\n", ir->devnum);
-+	usb_kill_urb(ir->urb_in);
-+	return 0;
-+}
-+
-+static int usb_remote_resume(struct usb_interface *intf)
-+{
-+	struct irctl *ir = usb_get_intfdata(intf);
-+	printk(DRIVER_NAME "[%d]: resume\n", ir->devnum);
-+	if (usb_submit_urb(ir->urb_in, GFP_ATOMIC))
-+		return -EIO;
-+	return 0;
++	/* This also removes the current remote from remote_list */
++	free_irctl(ir, FREE_ALL);
 +}
 +
 +static struct usb_driver usb_remote_driver = {
-+	.name =		DRIVER_NAME,
-+	.probe =	usb_remote_probe,
-+	.disconnect =	usb_remote_disconnect,
-+	.suspend =	usb_remote_suspend,
-+	.resume =	usb_remote_resume,
-+	.id_table =	usb_remote_table
++	.name		= DRIVER_NAME,
++	.probe		= usb_remote_probe,
++	.disconnect	= usb_remote_disconnect,
++	.id_table	= usb_remote_table
 +};
 +
-+#ifdef MODULE
 +static int __init usb_remote_init(void)
 +{
 +	int i;
 +
-+	printk(KERN_INFO "\n");
-+	printk(KERN_INFO DRIVER_NAME ": " DRIVER_DESC " " DRIVER_VERSION "\n");
-+	printk(KERN_INFO DRIVER_NAME ": " DRIVER_AUTHOR "\n");
++	INIT_LIST_HEAD(&remote_list);
++
++	printk(KERN_INFO "\n" DRIVER_NAME ": " DRIVER_DESC " "
++	       DRIVER_VERSION "\n");
++	printk(DRIVER_NAME ": " DRIVER_AUTHOR "\n");
 +	dprintk(DRIVER_NAME ": debug mode enabled\n");
 +
++#ifdef MODULE
 +	request_module("lirc_dev");
++#endif
++
++	repeat_jiffies = repeat*HZ/100;
 +
 +	i = usb_register(&usb_remote_driver);
-+	if (i < 0) {
++	if (i) {
 +		printk(DRIVER_NAME ": usb register failed, result = %d\n", i);
 +		return -ENODEV;
 +	}
@@ -1181,6 +1331,7 @@ index 0000000..1e683d3
 +	usb_deregister(&usb_remote_driver);
 +}
 +
++#ifdef MODULE
 +module_init(usb_remote_init);
 +module_exit(usb_remote_exit);
 +
@@ -1190,8 +1341,59 @@ index 0000000..1e683d3
 +MODULE_DEVICE_TABLE(usb, usb_remote_table);
 +
 +module_param(debug, bool, 0644);
-+MODULE_PARM_DESC(debug, "Debug enabled or not");
++MODULE_PARM_DESC(debug, "Debug enabled or not (default: 0)");
++
++module_param(mask, int, 0644);
++MODULE_PARM_DESC(mask, "Set channel acceptance bit mask (default: 0xFFFF)");
++
++module_param(unique, bool, 0644);
++MODULE_PARM_DESC(unique, "Enable channel-specific codes (default: 0)");
++
++module_param(repeat, int, 0644);
++MODULE_PARM_DESC(repeat, "Repeat timeout (1/100 sec) (default: 10)");
++
++module_param(mdeadzone, int, 0644);
++MODULE_PARM_DESC(mdeadzone, "rw2 mouse sensitivity threshold (default: 0)");
++
++/*
++ * Enabling this will cause the built-in Remote Wonder II repeate coding to
++ * not be squashed.  The second byte of the keys output will then be:
++ *
++ *	1 initial press (button down)
++ *	2 holding (button remains pressed)
++ *	0 release (button up)
++ *
++ * By default, the driver emits 2 for both 1 and 2, and emits nothing for 0.
++ * This is good for people having trouble getting their rw2 to send a good
++ * consistent signal to the receiver.
++ *
++ * However, if you have no troubles with the driver outputting up-down pairs
++ * at random points while you're still holding a button, then you can enable
++ * this parameter to get finer grain repeat control out of your remote:
++ *
++ *	1 Emit a single (per-channel) virtual code for all up/down events
++ *	2 Emit the actual rw2 output
++ *
++ * 1 is easier to write lircd configs for; 2 allows full control.
++ */
++module_param(emit_updown, int, 0644);
++MODULE_PARM_DESC(emit_updown, "emit press/release codes (rw2): 0:don't "
++		 "(default), 1:emit 2 codes only, 2:code for each button");
++
++module_param(emit_modekeys, int, 0644);
++MODULE_PARM_DESC(emit_modekeys, "emit keycodes for aux1-aux4, pc, and mouse "
++		 "(rw2): 0:don't (default), 1:emit translated codes: one for "
++		 "mode switch, one for same mode, 2:raw codes");
++
++module_param(mgradient, int, 0644);
++MODULE_PARM_DESC(mgradient, "rw2 mouse: 1000*gradient from E to NE (default: "
++		 "500 => .5 => ~27 degrees)");
++
++#else /* not MODULE */
++subsys_initcall(usb_remote_init);
++
 +#endif /* MODULE */
++
 -- 
 1.6.0.1
 
