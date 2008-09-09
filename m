@@ -1,253 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYIIPvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYIIPwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYIIPvp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYIIPuY
+	id S1756644AbYIIPwe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYIIPwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:50:24 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:38201 "EHLO relay.sgi.com"
+	Tue, 9 Sep 2008 11:52:23 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57296 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754148AbYIIPuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:50:15 -0400
-Message-Id: <20080909155014.068091000@polaris-admin.engr.sgi.com>
-References: <20080909155013.455071000@polaris-admin.engr.sgi.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 09 Sep 2008 08:50:16 -0700
-From: Mike Travis <travis@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jack Steiner <steiner@sgi.com>, Jes Sorensen <jes@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] sched: Optimize cpumask temp stack usage in kernel/sched.c
-Content-Disposition: inline; filename=stack-hogs-kernel_sched_c
+	id S1754603AbYIIPwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 11:52:22 -0400
+Date: Tue, 9 Sep 2008 17:52:20 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: akpm@linux-foundation.org, sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
+       cmm@us.ibm.com, tytso@mit.edu, adilger@sun.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH -mm] jbd: test BH_Write_EIO to detect errors on
+	metadata buffers
+Message-ID: <20080909155219.GA16358@duck.suse.cz>
+References: <48C63701.6090700@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C63701.6090700@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  * Make the following changes to kernel/sched.c functions:
+On Tue 09-09-08 17:42:41, Hidehiro Kawai wrote:
+> __try_to_free_cp_buf(), __process_buffer(), and __wait_cp_io()
+> test BH_Uptodate flag to detect write I/O errors on metadata
+> buffers.  But by commit 95450f5a7e53d5752ce1a0d0b8282e10fe745ae0
+> "ext3: don't read inode block if the buffer has a write error"(*),
+> BH_Uptodate flag can be set to inode buffers with BH_Write_EIO
+> in order to avoid reading old inode data.  So now, we have to
+> test BH_Write_EIO flag of checkpointing inode buffers instead
+> of BH_Uptodate.  This patch does it.
+  Your changes look sane. Thanks for fixing this.
+You can add Acked-by: Jan Kara <jack@suse.cz>
 
-    - use node_to_cpumask_ptr in place of node_to_cpumask
-
-  * Remove special code for SCHED_CPUMASK_ALLOC and use CPUMASK_ALLOC
-    from linux/cpumask.h.
-
-Applies to linux-2.6.tip/master.
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- kernel/sched.c |   81 +++++++++++++++++++++++----------------------------------
- 1 file changed, 33 insertions(+), 48 deletions(-)
-
---- linux-2.6.tip.orig/kernel/sched.c
-+++ linux-2.6.tip/kernel/sched.c
-@@ -6110,8 +6110,9 @@ static void move_task_off_dead_cpu(int d
- 
- 	do {
- 		/* On same node? */
--		mask = node_to_cpumask(cpu_to_node(dead_cpu));
--		cpus_and(mask, mask, p->cpus_allowed);
-+		node_to_cpumask_ptr(pnodemask, cpu_to_node(dead_cpu));
-+
-+		cpus_and(mask, *pnodemask, p->cpus_allowed);
- 		dest_cpu = any_online_cpu(mask);
- 
- 		/* On any allowed CPU? */
-@@ -7117,9 +7118,9 @@ static int cpu_to_allnodes_group(int cpu
- 				 struct sched_group **sg, cpumask_t *nodemask)
- {
- 	int group;
-+	node_to_cpumask_ptr(pnodemask, cpu_to_node(cpu));
- 
--	*nodemask = node_to_cpumask(cpu_to_node(cpu));
--	cpus_and(*nodemask, *nodemask, *cpu_map);
-+	cpus_and(*nodemask, *pnodemask, *cpu_map);
- 	group = first_cpu(*nodemask);
- 
- 	if (sg)
-@@ -7169,9 +7170,9 @@ static void free_sched_groups(const cpum
- 
- 		for (i = 0; i < nr_node_ids; i++) {
- 			struct sched_group *oldsg, *sg = sched_group_nodes[i];
-+			node_to_cpumask_ptr(pnodemask, i);
- 
--			*nodemask = node_to_cpumask(i);
--			cpus_and(*nodemask, *nodemask, *cpu_map);
-+			cpus_and(*nodemask, *pnodemask, *cpu_map);
- 			if (cpus_empty(*nodemask))
- 				continue;
- 
-@@ -7294,19 +7295,6 @@ struct allmasks {
- #endif
- };
- 
--#if	NR_CPUS > 128
--#define	SCHED_CPUMASK_ALLOC		1
--#define	SCHED_CPUMASK_FREE(v)		kfree(v)
--#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
--#else
--#define	SCHED_CPUMASK_ALLOC		0
--#define	SCHED_CPUMASK_FREE(v)
--#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
--#endif
--
--#define	SCHED_CPUMASK_VAR(v, a) 	cpumask_t *v = (cpumask_t *) \
--			((unsigned long)(a) + offsetof(struct allmasks, v))
--
- static int default_relax_domain_level = -1;
- 
- static int __init setup_relax_domain_level(char *str)
-@@ -7351,8 +7339,9 @@ static int __build_sched_domains(const c
- {
- 	int i;
- 	struct root_domain *rd;
--	SCHED_CPUMASK_DECLARE(allmasks);
--	cpumask_t *tmpmask;
-+	CPUMASK_ALLOC(allmasks);
-+	CPUMASK_PTR(tmpmask, allmasks);
-+
- #ifdef CONFIG_NUMA
- 	struct sched_group **sched_group_nodes = NULL;
- 	int sd_allnodes = 0;
-@@ -7364,6 +7353,7 @@ static int __build_sched_domains(const c
- 				    GFP_KERNEL);
- 	if (!sched_group_nodes) {
- 		printk(KERN_WARNING "Can not alloc sched group node list\n");
-+		CPUMASK_FREE(allmasks);
- 		return -ENOMEM;
- 	}
- #endif
-@@ -7374,13 +7364,11 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_NUMA
- 		kfree(sched_group_nodes);
- #endif
-+		CPUMASK_FREE(allmasks);
- 		return -ENOMEM;
- 	}
- 
--#if SCHED_CPUMASK_ALLOC
--	/* get space for all scratch cpumask variables */
--	allmasks = kmalloc(sizeof(*allmasks), GFP_KERNEL);
--	if (!allmasks) {
-+	if (allmasks == NULL) {
- 		printk(KERN_WARNING "Cannot alloc cpumask array\n");
- 		kfree(rd);
- #ifdef CONFIG_NUMA
-@@ -7388,9 +7376,6 @@ static int __build_sched_domains(const c
- #endif
- 		return -ENOMEM;
- 	}
--#endif
--	tmpmask = (cpumask_t *)allmasks;
--
- 
- #ifdef CONFIG_NUMA
- 	sched_group_nodes_bycpu[first_cpu(*cpu_map)] = sched_group_nodes;
-@@ -7401,10 +7386,10 @@ static int __build_sched_domains(const c
- 	 */
- 	for_each_cpu_mask_nr(i, *cpu_map) {
- 		struct sched_domain *sd = NULL, *p;
--		SCHED_CPUMASK_VAR(nodemask, allmasks);
-+		CPUMASK_PTR(nodemask, allmasks);
-+		node_to_cpumask_ptr(pnodemask, cpu_to_node(i));
- 
--		*nodemask = node_to_cpumask(cpu_to_node(i));
--		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		cpus_and(*nodemask, *pnodemask, *cpu_map);
- 
- #ifdef CONFIG_NUMA
- 		if (cpus_weight(*cpu_map) >
-@@ -7467,8 +7452,8 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_SCHED_SMT
- 	/* Set up CPU (sibling) groups */
- 	for_each_cpu_mask_nr(i, *cpu_map) {
--		SCHED_CPUMASK_VAR(this_sibling_map, allmasks);
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(this_sibling_map, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
- 
- 		*this_sibling_map = per_cpu(cpu_sibling_map, i);
- 		cpus_and(*this_sibling_map, *this_sibling_map, *cpu_map);
-@@ -7484,8 +7469,8 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_SCHED_MC
- 	/* Set up multi-core groups */
- 	for_each_cpu_mask_nr(i, *cpu_map) {
--		SCHED_CPUMASK_VAR(this_core_map, allmasks);
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(this_core_map, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
- 
- 		*this_core_map = cpu_coregroup_map(i);
- 		cpus_and(*this_core_map, *this_core_map, *cpu_map);
-@@ -7500,11 +7485,11 @@ static int __build_sched_domains(const c
- 
- 	/* Set up physical groups */
- 	for (i = 0; i < nr_node_ids; i++) {
--		SCHED_CPUMASK_VAR(nodemask, allmasks);
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(nodemask, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
-+		node_to_cpumask_ptr(pnodemask, i);
- 
--		*nodemask = node_to_cpumask(i);
--		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		cpus_and(*nodemask, *pnodemask, *cpu_map);
- 		if (cpus_empty(*nodemask))
- 			continue;
- 
-@@ -7516,7 +7501,7 @@ static int __build_sched_domains(const c
- #ifdef CONFIG_NUMA
- 	/* Set up node groups */
- 	if (sd_allnodes) {
--		SCHED_CPUMASK_VAR(send_covered, allmasks);
-+		CPUMASK_PTR(send_covered, allmasks);
- 
- 		init_sched_build_groups(cpu_map, cpu_map,
- 					&cpu_to_allnodes_group,
-@@ -7526,15 +7511,15 @@ static int __build_sched_domains(const c
- 	for (i = 0; i < nr_node_ids; i++) {
- 		/* Set up node groups */
- 		struct sched_group *sg, *prev;
--		SCHED_CPUMASK_VAR(nodemask, allmasks);
--		SCHED_CPUMASK_VAR(domainspan, allmasks);
--		SCHED_CPUMASK_VAR(covered, allmasks);
-+		CPUMASK_PTR(nodemask, allmasks);
-+		CPUMASK_PTR(domainspan, allmasks);
-+		CPUMASK_PTR(covered, allmasks);
-+		node_to_cpumask_ptr(pnodemask, i);
- 		int j;
- 
--		*nodemask = node_to_cpumask(i);
- 		cpus_clear(*covered);
- 
--		cpus_and(*nodemask, *nodemask, *cpu_map);
-+		cpus_and(*nodemask, *pnodemask, *cpu_map);
- 		if (cpus_empty(*nodemask)) {
- 			sched_group_nodes[i] = NULL;
- 			continue;
-@@ -7563,7 +7548,7 @@ static int __build_sched_domains(const c
- 		prev = sg;
- 
- 		for (j = 0; j < nr_node_ids; j++) {
--			SCHED_CPUMASK_VAR(notcovered, allmasks);
-+			CPUMASK_PTR(notcovered, allmasks);
- 			int n = (i + j) % nr_node_ids;
- 			node_to_cpumask_ptr(pnodemask, n);
- 
-@@ -7642,13 +7627,13 @@ static int __build_sched_domains(const c
- 		cpu_attach_domain(sd, rd, i);
- 	}
- 
--	SCHED_CPUMASK_FREE((void *)allmasks);
-+	CPUMASK_FREE(allmasks);
- 	return 0;
- 
- #ifdef CONFIG_NUMA
- error:
- 	free_sched_groups(cpu_map, tmpmask);
--	SCHED_CPUMASK_FREE((void *)allmasks);
-+	CPUMASK_FREE(allmasks);
- 	return -ENOMEM;
- #endif
- }
-
+							Honza
+> 
+> (*) http://lkml.org/lkml/2008/6/23/126
+> 
+> This patch depends on the following patch set in -mm:
+> 
+> #1 jbd: abort when failed to log metadata buffers
+>    http://lkml.org/lkml/2008/7/24/160
+> #2 jbd: fix error handling for checkpoint io
+>    http://lkml.org/lkml/2008/7/24/163
+> #3 ext3: add checks for errors from jbd
+>    http://lkml.org/lkml/2008/7/29/539
+> #4 jbd: don't dirty original metadata buffer on abort
+>    http://lkml.org/lkml/2008/7/24/168
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> ---
+>  fs/jbd/checkpoint.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
+> ===================================================================
+> --- linux-2.6.27-rc5-mm1.orig/fs/jbd/checkpoint.c
+> +++ linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
+> @@ -94,7 +94,7 @@ static int __try_to_free_cp_buf(struct j
+>  	struct buffer_head *bh = jh2bh(jh);
+>  
+>  	if (jh->b_jlist == BJ_None && !buffer_locked(bh) &&
+> -	    !buffer_dirty(bh) && buffer_uptodate(bh)) {
+> +	    !buffer_dirty(bh) && !buffer_write_io_error(bh)) {
+>  		JBUFFER_TRACE(jh, "remove from checkpoint list");
+>  		ret = __journal_remove_checkpoint(jh) + 1;
+>  		jbd_unlock_bh_state(bh);
+> @@ -214,7 +214,7 @@ restart:
+>  			spin_lock(&journal->j_list_lock);
+>  			goto restart;
+>  		}
+> -		if (unlikely(!buffer_uptodate(bh)))
+> +		if (unlikely(buffer_write_io_error(bh)))
+>  			ret = -EIO;
+>  
+>  		/*
+> @@ -283,7 +283,7 @@ static int __process_buffer(journal_t *j
+>  		ret = 1;
+>  	} else if (!buffer_dirty(bh)) {
+>  		ret = 1;
+> -		if (unlikely(!buffer_uptodate(bh)))
+> +		if (unlikely(buffer_write_io_error(bh)))
+>  			ret = -EIO;
+>  		J_ASSERT_JH(jh, !buffer_jbddirty(bh));
+>  		BUFFER_TRACE(bh, "remove from checkpoint");
+> 
+> 
 -- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
