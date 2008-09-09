@@ -1,107 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbYIIJHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbYIIJPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbYIIJHw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 05:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYIIJHn
+	id S1755732AbYIIJPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 05:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYIIJPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 05:07:43 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:44777 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754690AbYIIJHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 05:07:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=eINmvFJ9cdvXUF4z6dikHlL9hIXaPGnNac5lLRK9AAVqViHpvjRRXZX1uADWUUWfgo
-         Tuj2HPiihOeULZabzdakRZtvlPEivxQxmV5AKTdW1iYAA8jxCLdJQzlY3ZbIwXBvwjMH
-         a98aQNLc/H+PVA2z19ndQIwFghVKySiN4/gMM=
-Message-ID: <5ff4a1e50809090207o5846f5udf709eeda81653eb@mail.gmail.com>
-Date: Tue, 9 Sep 2008 10:07:41 +0100
-From: "Matt Fleming" <mattjfleming@googlemail.com>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-In-Reply-To: <20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
+	Tue, 9 Sep 2008 05:15:36 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:39929 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753184AbYIIJPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 05:15:36 -0400
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_24530_14899448.1220951261365"
-References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
-	 <20080907123832.5ba79c12@mjolnir.drzeus.cx>
-	 <5ff4a1e50809080628i65bd7c7blfac70659a9f9229c@mail.gmail.com>
-	 <20080909092216.46a6eba1@mjolnir.drzeus.cx>
-	 <5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
-	 <20080909094438.6423b8ef@mjolnir.drzeus.cx>
-	 <5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
-	 <20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18630.16047.62853.611215@harpo.it.uu.se>
+Date: Tue, 9 Sep 2008 11:15:27 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: invalid tests on unsigned
+In-Reply-To: <48C685F6.8020108@gmail.com>
+References: <48C685F6.8020108@gmail.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_24530_14899448.1220951261365
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+roel kluin writes:
+ > Using spatch I have found the following occurrences where there is
+ > an invalid test on an unsigned.
+ > 
+ > Some may be not seriously, but just redundant, others may indicate
+ > an incorrect assumption (that the variable can be negative).
+ > I haven't found time to sort out these.
+ > 
+ > If I have time I will write patches, but feel free to write one
+ > yourself if you want.
+ > 
+ > Roel
+ > 
+ > What is shown below is not meant as patch, just for reporting.
+ > 
+ > ----[ arch/arm/mach-davinci/psc.c, unsigned ]----
+ > --- arch/arm/mach-davinci/psc.c	2008-07-19 23:16:48.000000000 +0200
+ > @@ -70,7 +70,7 @@ void davinci_psc_config(unsigned int dom
+ >  {
+ >  	u32 epcpr, ptcmd, ptstat, pdstat, pdctl1, mdstat, mdctl, mdstat_mask;
+ >  
+ > -	if (id < 0)
+ >  		return;
+ >  
+ >  	mdctl = davinci_readl(DAVINCI_PWR_SLEEP_CNTRL_BASE + MDCTL + 4 * id);
 
-2008/9/9 Pierre Ossman <drzeus-mmc@drzeus.cx>:
-> On Tue, 9 Sep 2008 08:59:11 +0100
-> "Matt Fleming" <mattjfleming@googlemail.com> wrote:
->
->>
->> OK, just to be clear, where are those fields not used? They are used
->> in the new mmc_get_timeout() function.
->>
->
-> Sorry, you're right. I just noticed the !host->mmc->card part and
-> assumed you had your own logic in there.
->
+This and similar ones may be objectionable.
 
-No worries.
+ > ----[ arch/sparc64/kernel/process.c, unsigned long ]----
+ > --- arch/sparc64/kernel/process.c	2008-08-07 17:53:01.000000000 +0200
+ > @@ -593,7 +593,7 @@ asmlinkage long sparc_do_fork(unsigned l
+ >  	 * the parent's %o1.  So detect that case and restore it
+ >  	 * here.
+ >  	 */
+ > -	if ((unsigned long)ret >= -ERESTART_RESTARTBLOCK)
+ >  		regs->u_regs[UREG_I1] = orig_i1;
+ >  
+ >  	return ret;
 
-> Why do you have that part though? What case have you found where you
-> need the timeouts and do not have properly set timeout fields?
->
+This and similar ones are not wrong. The -constant is converted
+to unsigned (which is a well-defined operation) after which an >=u
+(greater-or-equal unsigned) is performed.
 
-This check was put in place because the function was being called
-before the card structure was setup properly. I didn't actually work
-out the call path but it stopped the kmmcd thread oopsing :)
+Also, when posting a patch that touches files in several areas
+it's useful to prefix it with a 'diffstat', as that allows people
+to quickly see if the patch touches something they're interested in.
 
-How does this patch look for the SDIO case?
-
-
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 044d84e..5ebfe35 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -249,8 +249,10 @@ void mmc_set_data_timeout(struct mmc_data *data,
-const struct mmc_card *card)
-         * SDIO cards only define an upper 1 s limit on access.
-         */
-        if (mmc_card_sdio(card)) {
--               data->timeout_ns = 1000000000;
--               data->timeout_clks = 0;
-+               if (data->timeout_ns > 1000000000) {
-+                       data->timeout_ns = 1000000000;
-+                       data->timeout_clks = 0;
-+               }
-                return;
-        }
-
-------=_Part_24530_14899448.1220951261365
-Content-Type: text/x-diff; name=mmc-sdio-use-csr-timeout.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fkwatiqt0
-Content-Disposition: attachment; filename=mmc-sdio-use-csr-timeout.patch
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbW1jL2NvcmUvY29yZS5jIGIvZHJpdmVycy9tbWMvY29yZS9j
-b3JlLmMKaW5kZXggMDQ0ZDg0ZS4uNWViZmUzNSAxMDA2NDQKLS0tIGEvZHJpdmVycy9tbWMvY29y
-ZS9jb3JlLmMKKysrIGIvZHJpdmVycy9tbWMvY29yZS9jb3JlLmMKQEAgLTI0OSw4ICsyNDksMTAg
-QEAgdm9pZCBtbWNfc2V0X2RhdGFfdGltZW91dChzdHJ1Y3QgbW1jX2RhdGEgKmRhdGEsIGNvbnN0
-IHN0cnVjdCBtbWNfY2FyZCAqY2FyZCkKIAkgKiBTRElPIGNhcmRzIG9ubHkgZGVmaW5lIGFuIHVw
-cGVyIDEgcyBsaW1pdCBvbiBhY2Nlc3MuCiAJICovCiAJaWYgKG1tY19jYXJkX3NkaW8oY2FyZCkp
-IHsKLQkJZGF0YS0+dGltZW91dF9ucyA9IDEwMDAwMDAwMDA7Ci0JCWRhdGEtPnRpbWVvdXRfY2xr
-cyA9IDA7CisJCWlmIChkYXRhLT50aW1lb3V0X25zID4gMTAwMDAwMDAwMCkgeworCQkJZGF0YS0+
-dGltZW91dF9ucyA9IDEwMDAwMDAwMDA7CisJCQlkYXRhLT50aW1lb3V0X2Nsa3MgPSAwOworCQl9
-CiAJCXJldHVybjsKIAl9CiAK
-------=_Part_24530_14899448.1220951261365--
+/Mikael
