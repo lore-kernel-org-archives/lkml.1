@@ -1,140 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbYIIUN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbYIIUPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbYIIUN4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 16:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYIIUNr
+	id S1757447AbYIIUPT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 16:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYIIUPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 16:13:47 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:59433 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754124AbYIIUNq (ORCPT
+	Tue, 9 Sep 2008 16:15:05 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:42918 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754591AbYIIUPD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 16:13:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qkTA47PLRYobWc6jqxLKh1SKtAifr6hls3kMtM0lIu4v0uvna66XHjoZnJsNlEBh9j
-         gH3Zi2DsD7PrIeuPhbI19o1HfwvNy2L3YoTG8iRxMGqY7f7O4JhKdmNAIZqA1PbfF/FR
-         q+0k1V7uggnTOECmWKoj4uNvBb7LxkFXe5LuM=
-Message-ID: <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
-Date: Tue, 9 Sep 2008 13:13:45 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
-Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080909184615.GA7303@lenovo>
+	Tue, 9 Sep 2008 16:15:03 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
+References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com>
+	<m18wu1nyon.fsf@frodo.ebiederm.org>
+	<20080909152952.GA21207@us.ibm.com>
+	<DE845309-1684-472A-8269-78AB3A2823A9@oracle.com>
+	<m1fxo9mba5.fsf@frodo.ebiederm.org>
+	<869FF00C-4DAF-4D19-80AF-9230617A9223@oracle.com>
+Date: Tue, 09 Sep 2008 13:08:29 -0700
+In-Reply-To: <869FF00C-4DAF-4D19-80AF-9230617A9223@oracle.com> (Chuck Lever's
+	message of "Tue, 9 Sep 2008 15:00:55 -0400")
+Message-ID: <m17i9lm69u.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080909184615.GA7303@lenovo>
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Chuck Lever <chuck.lever@oracle.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
+	*      [score: 0.3399]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace is unshared
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 9, 2008 at 11:46 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> Replace __DO_ACTION macro with io_apic_modify_irq function.
-> This allow us to 'grep' definitions being hided by
-> the macro, ie the following:
->
->        __unmask_IO_APIC_irq
->        __mask_IO_APIC_irq
->        __mask_and_edge_IO_APIC_irq
->        __unmask_and_level_IO_APIC_irq
->
-> Also I removed R parameter which was to define offset inside
-> route table but always being zero for now and I don't think
-> if it ever will be other then that.
->
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> ---
->
-> Please review. This modification doesn't map object file into the
-> same former state 'cause of 'for(entry)' cycle form changed and
-> new mask 'mask_and_not' added to be able to fill register with
-> pure zeros - ie clear register completely.
->
-> Any comments are quite welcome!
->
-> Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-> ===================================================================
-> --- linux-2.6.git.orig/arch/x86/kernel/io_apic.c        2008-09-09 22:27:57.000000000 +0400
-> +++ linux-2.6.git/arch/x86/kernel/io_apic.c     2008-09-09 22:34:03.000000000 +0400
-> @@ -643,65 +643,66 @@ static void __init replace_pin_at_irq(un
->                add_pin_to_irq(irq, newapic, newpin);
->  }
->
-> -#define __DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)           \
-> -                                                                       \
-> -{                                                                      \
-> -       int pin;                                                        \
-> -       struct irq_cfg *cfg;                                            \
-> -       struct irq_pin_list *entry;                                     \
-> -                                                                       \
-> -       cfg = irq_cfg(irq);                                             \
-> -       entry = cfg->irq_2_pin;                                         \
-> -       for (;;) {                                                      \
-> -               unsigned int reg;                                       \
-> -               if (!entry)                                             \
-> -                       break;                                          \
-> -               pin = entry->pin;                                       \
-> -               reg = io_apic_read(entry->apic, 0x10 + R + pin*2);      \
-> -               reg ACTION_DISABLE;                                     \
-> -               reg ACTION_ENABLE;                                      \
-> -               io_apic_modify(entry->apic, 0x10 + R + pin*2, reg);     \
-> -               FINAL;                                                  \
-> -               if (!entry->next)                                       \
-> -                       break;                                          \
-> -               entry = entry->next;                                    \
-> -       }                                                               \
-> -}
-> -
-> -#define DO_ACTION(name,R, ACTION_ENABLE, ACTION_DISABLE, FINAL)                \
-> -                                                                       \
-> -       static void name##_IO_APIC_irq (unsigned int irq)               \
-> -       __DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)
-> +static inline void io_apic_modify_irq(unsigned int irq,
-> +                               int mask_and, int mask_or,
-> +                               int mask_and_not, int read_after_mod)
-> +{
-> +       int pin;
-> +       struct irq_cfg *cfg;
-> +       struct irq_pin_list *entry;
->
-> -/* mask = 0 */
-> -DO_ACTION(__unmask,    0, |= 0, &= ~IO_APIC_REDIR_MASKED, )
-> +       cfg = irq_cfg(irq);
-> +       for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
-> +               unsigned int reg;
-> +               pin = entry->pin;
-> +               reg = io_apic_read(entry->apic, 0x10 + pin * 2);
-> +               if (mask_and)
-> +                       reg &= mask_and;
+Chuck Lever <chuck.lever@oracle.com> writes:
 
-if mask_and == 0, you don't need to clear it ?
+> On Sep 9, 2008, at Sep 9, 2008, 2:20 PM, ebiederm@xmission.com wrote:
+>> Chuck Lever <chuck.lever@oracle.com> writes:
+>>
+>>> If the upper layers are responsible for providing the utsname, you will need
+>>> to
+>>> fix up lockd and the NFS server's callback client too, at  least.
+>>
+>> Actually looking at the code.  It looks like a proper fix may be even simpler.
+>> Why do we have both clnt->cl_server and clnt->cl_nodename?    Or is cl_server
+>> the other side of the connection?
+>
+> cl_server is the server-side.  cl_nodename is the "machine name" of the client.
 
-> +               if (mask_or)
-> +                       reg |= mask_or;
-> +               if (mask_and_not)
-> +                       reg &= !mask_and_not;
+Thanks, Darn.  Looks like we need to capture both names at the same or a
+similar point.
 
-it seems you should use ~ instead of !
+I'm wondering if we need to capture a network namespace as well.
 
-> +               io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
-> +               if (read_after_mod) {
-> +                       /*
-> +                        * Synchronize the IO-APIC and the CPU by doing
-> +                        * a dummy read from the IO-APIC
-> +                        */
-> +                       struct io_apic __iomem *io_apic;
-> +                       io_apic = io_apic_base(entry->apic);
-> +                       readl(&io_apic->data);
+>>> I don't like the idea of an oops in here.  Instead, (for now) it should warn
+>>> and
+>>> fail to create the client, IMO.
+>>
+>> Which is interesting when the problem happens during NFS unmount.  Although
+>> frankly it could fail anyway.
+>>
+>> It seems strange that we are creating a client during unmount anyway.
+>
+> It's worth investigating.  Just enable RPC tracing (/usr/sbin/rpcdebug -m rpc -s
+> all) before shutting down the client.
+>
+> NFS unmounting is historically difficult because during a system shutdown,
+> unmounting is the last thing to occur, and usually happens  after most system
+> services (such as the portmapper service) have become unavailable.  That's fine
+> for local file systems, but it makes  for a rather dodgy situation for NFS.
 
-hope we can keep using MACRO..
+Interesting.
 
-YH
+Eric
+
