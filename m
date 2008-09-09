@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbYIIKoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYIIKuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753673AbYIIKoV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 06:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYIIKoN
+	id S1753951AbYIIKuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 06:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbYIIKuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 06:44:13 -0400
-Received: from gourmet.spamgourmet.com ([216.75.35.164]:53945 "EHLO
-	gourmet.spamgourmet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbYIIKoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 06:44:12 -0400
-X-Greylist: delayed 3269 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Sep 2008 06:44:12 EDT
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Tue, 09 Sep 2008 11:49:22 +0200
-From: l5ynlwlcyku9kvaqc2jf.j.HadVabVobs@antichef.net
-Message-ID: <20080909094922.291360@gmx.net>
+	Tue, 9 Sep 2008 06:50:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:54021 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751412AbYIIKuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 06:50:04 -0400
+Date: Tue, 9 Sep 2008 12:49:40 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Frans Pop <elendil@planet.nl>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [regression] __tick_program_event of hpet is stuck
+In-Reply-To: <200809080313.48910.elendil@planet.nl>
+Message-ID: <alpine.LFD.1.10.0809091248590.3271@apollo.tec.linutronix.de>
+References: <200809080114.36106.elendil@planet.nl> <200809080313.48910.elendil@planet.nl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Subject: Feature Request
-To: linux-kernel@vger.kernel.org
-X-Authenticated: #125961
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX18twNgTaRAtNPrAx/8p+WB7By23EKMrq2NrAln5mr
- uk0vJfefBzJUYXMS5rkl+w2UAm5rTZWgHTOw== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: m37wAZg2QEV/Aj7aaHVpWDdCNzg2NUIf
-X-Spamgourmet: 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 8 Sep 2008, Frans Pop wrote:
 
-I run linux on an AMD/VIA combination that appears to be prone to producing extremely anoying buzz on the sound card (and also in the image I get from my bt848 TV board) when I run the kernel with "make idle calls to CPU when not busy". The way out is to supply a "no-hlt"-append in lilo.conf. Doing so makes the noise go away.
+> On Monday 08 September 2008, Frans Pop wrote:
+> > With current git head (v2.6.27-rc5-319-g7686ad5) I'm seeing repeated
+> > occurrences of the following on my HP Compaq 2510p laptop. Not seen
+> > with earlier kernels, including 2.6.27-rc5.
+> 
+> I meant repeated as in "after different boots", but I now also see repeats 
+> when I leave the system on for some time. It keeps increasing the 
+> min_delta_ns to ever higher values.
+> 
+> CE: __tick_program_event of hpet is stuck 1468f1b3c9 1468f1c751
+> CE: increasing min_delta_ns 5000 to 10000 nsec
+> [...]
+> CE: __tick_program_event of hpet is stuck 33576032f74 33576035684
+> CE: increasing min_delta_ns 10000 to 20000 nsec
+> [...]
+> CE: __tick_program_event of hpet is stuck 63242b30d28 63242b35b48
+> CE: increasing min_delta_ns 20000 to 40000 nsec
 
-Unfortunately but unevitably, it then also pulls 5-10 Watts more from the grid. I thought it might be an idea to make this "no-hlt" flexible via a /proc entry, so that it can be switched off again when the machine does something where the services from my sound card are not needed (building the kernel, e.g. ;-) ). In the Windows world there used to be a utility called "waterfall" where one could flick such a switch.
+Frans,
 
-I am using a 2.4 kernel. Please, cc: me since I am not subscribed to the list.
+what's the highest value which you have seen ?
 
-Regards
-Andreas
+Thanks,
 
-
-
--- 
-GMX Kostenlose Spiele: Einfach online spielen und Spaﬂ haben mit Pastry Passion!
-http://games.entertainment.gmx.net/de/entertainment/games/free/puzzle/6169196
+	tglx
