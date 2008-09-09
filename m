@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756141AbYIIQFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYIIQGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756141AbYIIQFW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 12:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYIIQFK
+	id S1756638AbYIIQGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 12:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYIIQGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 12:05:10 -0400
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:50630 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbYIIQFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 12:05:09 -0400
-X-IronPort-AV: E=Sophos;i="4.32,366,1217808000"; 
-   d="scan'208";a="1742281"
-User-Agent: Microsoft-Entourage/11.4.0.080122
-Date: Tue, 09 Sep 2008 17:05:00 +0100
-Subject: Re: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag
- for IO mappings
-From: Keir Fraser <keir.fraser@eu.citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
-       Xen Devel <xen-devel@lists.xensource.com>,
-       Andi Kleen <andi@firstfloor.org>, <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Message-ID: <C4EC5D3C.26EF1%keir.fraser@eu.citrix.com>
-Thread-Topic: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag
- for IO mappings
-Thread-Index: AckSlc+mDfS05H6JEd2WrgAX8io7RQ==
-In-Reply-To: <48C69AB6.20500@goop.org>
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-OriginalArrivalTime: 09 Sep 2008 16:05:07.0033 (UTC) FILETIME=[D3D7C490:01C91295]
+	Tue, 9 Sep 2008 12:06:37 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:42126 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752958AbYIIQGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 12:06:36 -0400
+Date: Tue, 9 Sep 2008 19:04:52 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Keith A. Prickett" <keithp@marvell.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Building Kernel with -O0
+Message-ID: <20080909160452.GB30160@cs181140183.pp.htv.fi>
+References: <1220550653.15123.6.camel@CV-LAB2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1220550653.15123.6.camel@CV-LAB2>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/9/08 16:48, "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
-
-> Keir Fraser wrote:
->> That's basically what our _PAGE_IO flag (in our old Linux patchset) means.
->> We use it to cause pte_pfn() to return an invalid pfn and hence avoid
->> reference counting that way. Since kernel mappings are never reference
->> counted (I think?) perhaps we could use _PAGE_SPECIAL even if it is
->> restricted to use on user mappings.
+On Thu, Sep 04, 2008 at 10:50:53AM -0700, Keith A. Prickett wrote:
+>...
+> It seems building with optimization
+> level 0 should be a natural thing for kernel driver developers to do for
+> debugging purposes.
 > 
-> Well, _PAGE_IOMAP's most important semantic from Xen's perspective is
-> that the frame number is considered to already be an MFN and so isn't
-> converted.  It may be that _PAGE_SPECIAL is also useful for its "no
-> refcount" properties, but we could set both in that case.
+> In summary: I want to compile with optimizations off and the compile is
+> failing now when I try this.  How can this be resolved?
+>...
 
-Oh, yes, our _PAGE_IO has the same meaning.
+There are several places in the kernel where we e.g. rely on gcc 
+removing dead code, and otherwise the linking of the kernel fails.
 
- -- Keir
+Compiling with -O0 never worked, and is not likely to ever work.
 
+> Thanks in advance,
+> Keith Prickett
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
