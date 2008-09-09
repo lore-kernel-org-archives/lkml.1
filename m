@@ -1,153 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYIIJrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbYIIJyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbYIIJrA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 05:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYIIJqw
+	id S1753325AbYIIJyE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 05:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751004AbYIIJxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 05:46:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49104 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbYIIJqw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 05:46:52 -0400
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>,
-       Mario Limonciello <superm1@ubuntu.com>
+	Tue, 9 Sep 2008 05:53:54 -0400
+Received: from scing.com ([217.160.110.58]:46728 "EHLO scing.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbYIIJxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 05:53:53 -0400
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+From: Janne Grunau <j@jannau.net>
+To: Sebastian Siewior <lkml@ml.breakpoint.cc>
 Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
-From: Andi Kleen <andi@firstfloor.org>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
-	<1220933164-10160-2-git-send-email-jwilson@redhat.com>
-Date: Tue, 09 Sep 2008 11:46:48 +0200
-In-Reply-To: <1220933164-10160-2-git-send-email-jwilson@redhat.com> (Jarod Wilson's message of "Tue,  9 Sep 2008 00:05:46 -0400")
-Message-ID: <87hc8ptzw7.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+Date: Tue, 9 Sep 2008 11:53:48 +0200
+User-Agent: KMail/1.9.9
+Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
+       Jarod Wilson <jarod@redhat.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>,
+       Mario Limonciello <superm1@ubuntu.com>, Janne Grunau <j@jannau.net>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com> <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
+In-Reply-To: <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809091153.49184.j@jannau.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarod Wilson <jwilson@redhat.com> writes:
+On Tuesday 09 September 2008 09:40:18 Sebastian Siewior wrote:
+> >diff --git a/drivers/input/lirc/Makefile
+> > b/drivers/input/lirc/Makefile new file mode 100644
+> >index 0000000..cdb4c45
+> >--- /dev/null
+> >+++ b/drivers/input/lirc/Makefile
+> >@@ -0,0 +1,8 @@
+> >+# Makefile for the lirc drivers.
+> >+#
+> >+
+> >+# Each configuration option enables a list of files.
+> >+
+> >+EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER
+> > -I$(src)
 
-Just some quick comments, no complete review
+> LIRC_SERIAL_TRANSMITTER is used in patch 2 and just to enable a
+> module options. Since it is always the case, please remove it.
 
-> +EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
+Added CONFIG_LIRC_SERIAL_TRANSMITTER to Kconfig and removed this from 
+the Makefile
 
-Put the Ds into some include instead?
+> I haven't found the source of $src. It is probably a relic.
 
-> +
-> +static int debug;
-> +#define dprintk(fmt, args...)					\
-> +	do {							\
-> +		if (debug)					\
-> +			printk(KERN_DEBUG fmt, ## args);	\
-> +	} while (0)
+removed
 
-There's some effort to replace that all with pr_printk
+> >+obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
+> >diff --git a/drivers/input/lirc/lirc_dev.c
+> > b/drivers/input/lirc/lirc_dev.c new file mode 100644
+> >index 0000000..c8f325c
+> >--- /dev/null
+> >+++ b/drivers/input/lirc/lirc_dev.c
+> >@@ -0,0 +1,809 @@
+...
+> >+
+> >+#include <linux/version.h>
+>
+> You souldn't need this one
+>
+> >+
+> >+#include <linux/autoconf.h>
+>
+> this as well.
 
-> +	dprintk(LOGHEAD "poll thread started\n", ir->p.name, ir->p.minor);
-> +
-> +	do {
-> +		if (ir->open) {
-> +			if (ir->jiffies_to_wait) {
-> +				set_current_state(TASK_INTERRUPTIBLE);
-> +				schedule_timeout(ir->jiffies_to_wait);
-> +			} else {
-> +				interruptible_sleep_on(
-> +					ir->p.get_queue(ir->p.data));
+fixed, in all other files as well.
 
-sleep_on is really discouraged, consider replacing it with wait_event()
+> >+#include <linux/semaphore.h>
+>
+> haven't found any call of down(). Do you really need this?
 
-> +			}
-> +			if (kthread_should_stop())
-> +				break;
-> +			if (!add_to_buf(ir))
-> +				wake_up_interruptible(&ir->buf->wait_poll);
-> +		} else {
-> +			/* if device not opened so we can sleep half a second */
-> +			set_current_state(TASK_INTERRUPTIBLE);
-> +			schedule_timeout(HZ/2);
+A relict. Lirc used many single holder semaphore and I forgot to remove 
+the include after converting them to mutexes. I'll check the other 
+files too.
 
-This means you always wake up every half a second? That will not make 
-the powertop users happy. When there's nothing to do it should just sleep.
+> >+#define __KERNEL_SYSCALLS__
+>
+> this define shouldn't be here, should it?
+
+Probably not, but it doesn't make a difference for the current kernel.
+The only other hit for this symbol is arch/xtensa/kernel/syscall.c
+38:#undef  __KERNEL_SYSCALLS__
+
+...
+
+> >+static inline void init_irctl(struct irctl *ir)
+>
+> this inline can go in my opinion. The others here as well. It is not
+> *that* performance critical.
+
+There is only one other inline. I doubt it makes a difference there but 
+I won't change it without test. It does for the object size since the 
+function is only called from one place.
+
+...
+
+> >+
+> >+	bytes_in_key = p->code_length/8 + (p->code_length%8 ? 1 : 0);
+>
+> did you actually pass checkpatch.pl ?
+
+yes, and while this is ugly I see no obvious CodingStyle violation.
+
+is following better?
+
+bytes_in_key = p->code_length/8;
+if (p->code_length%8)
+	bytes_in_key++;
+
+> >+EXPORT_SYMBOL(lirc_register_plugin);
+>
+> Is EXPORT_SYMBOL_GPL() possible?
+
+Afaik yes, all drivers using this symbol are in this patchset and under 
+GPL. If it is desireable to to use EXPORT_SYMBOL_GPL() has someone else 
+to decide. Christoph?
 
 
-The checks in plugin_register seem a bit extreme.
-At least make that all WARN_ONs
+> >+/*
+> >+ * Overrides for Emacs so that we follow Linus's tabbing style.
+> >+ *
+> > -------------------------------------------------------------------
+> >-------- + * Local variables:
+> >+ * c-basic-offset: 8
+> >+ * End:
+> >+ */
+>
+> Please don't enforce formating that way.
 
-> +
-> +	/* end up polling thread */
-> +	if (ir->task) {
-> +		wake_up_process(ir->task);
-> +		kthread_stop(ir->task);
-> +	}
-> +
-> +	dprintk("lirc_dev: plugin %s unregistered from minor number = %d\n",
-> +		ir->p.name, ir->p.minor);
-> +
-> +	ir->attached = 0;
-> +	if (ir->open) {
-> +		dprintk(LOGHEAD "releasing opened plugin\n",
-> +			ir->p.name, ir->p.minor);
-> +		wake_up_interruptible(&ir->buf->wait_poll);
+Removed, from all other files as well.
 
-This seems racy with some users who are lockless
+Thanks for the review. We will address the misssing comments later
 
-> +		mutex_lock(&ir->buffer_lock);
-> +		ir->p.set_use_dec(ir->p.data);
-> +		module_put(ir->p.owner);
-> +		mutex_unlock(&ir->buffer_lock);
-> +	} else
-> +		cleanup(ir);
-> +	mutex_unlock(&plugin_lock);
-> +
-> +/*
-> + * Recent kernels should handle this autmatically by increasing/decreasing
-> + * use count when a dependant module is loaded/unloaded.
-> + */
-
-All kernels are recent now.
-
-> +#ifdef MODULE
-> +
-> +/*
-> + *
-> + */
-> +int init_module(void)
-> +{
-> +	return lirc_dev_init();
-> +}
-> +
-> +/*
-> + *
-> + */
-> +void cleanup_module(void)
-> +{
-> +	/* unregister_chrdev returns void now */
-> +	unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
-> +	class_destroy(lirc_class);
-> +	dprintk("lirc_dev: module unloaded\n");
-> +}
-> +
-> +MODULE_DESCRIPTION("LIRC base driver module");
-> +MODULE_AUTHOR("Artur Lipowski");
-> +MODULE_LICENSE("GPL");
-> +MODULE_ALIAS_CHARDEV_MAJOR(IRCTL_DEV_MAJOR);
-> +
-> +module_param(debug, bool, 0644);
-> +MODULE_PARM_DESC(debug, "Enable debugging messages");
-> +
-> +#else /* not a MODULE */
-> +subsys_initcall(lirc_dev_init);
-> +
-> +#endif /* MODULE */
-
-Always use the #ifdef MODULE path, it does DTRT when compiled in too.
-Remove the init_module wrapper, replace with module_init() 
-
-... not read further ...
--Andi
-
--- 
-ak@linux.intel.com
+Janne
