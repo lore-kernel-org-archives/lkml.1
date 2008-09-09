@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYIISi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbYIISj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756778AbYIISi2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 14:38:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYIISiV
+	id S1756981AbYIISj5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 14:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbYIISjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 14:38:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52063 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753617AbYIISiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 14:38:20 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Re: [PATCH 0/18] linux infrared remote control drivers
-Date: Tue, 9 Sep 2008 14:34:59 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: Christoph Hellwig <hch@infradead.org>, Janne Grunau <j@jannau.net>,
-       linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>,
-       Eric Sandeen <esandeen@redhat.com>,
-       Mario Limonciello <superm1@ubuntu.com>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <200809091123.57109.jwilson@redhat.com> <20080909182710.GA31271@csclub.uwaterloo.ca>
-In-Reply-To: <20080909182710.GA31271@csclub.uwaterloo.ca>
+	Tue, 9 Sep 2008 14:39:49 -0400
+Received: from outbound-mail-149.bluehost.com ([67.222.38.39]:49544 "HELO
+	outbound-mail-149.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753954AbYIISjt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 14:39:49 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=XA2vRqtmcfLflWkiLHb0xB+JxRwGQGCCASo1qievdORC2ikXaoEkpzca9iCGwl/0dbQSSoB9LjoAxtQ/cpOWgmZtwKcgFNgh/UoUhNT1c/RMR556i/APQ4ozIvhCrNoL;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [2.6.27 PATCH] Blacklist DMAR on Intel G31/G33 chipsets
+Date: Tue, 9 Sep 2008 11:39:35 -0700
+User-Agent: KMail/1.9.9
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, arjan@infradead.org, sfr@canb.auug.org.au,
+       Ingo Molnar <mingo@elte.hu>
+References: <1220439231.2985.103.camel@pmac.infradead.org> <20080905183459.GC14258@elte.hu> <1220801726.2985.450.camel@pmac.infradead.org>
+In-Reply-To: <1220801726.2985.450.camel@pmac.infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809091434.59647.jwilson@redhat.com>
+Message-Id: <200809091139.35503.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.210.190 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 14:27:10 Lennart Sorensen wrote:
-> On Tue, Sep 09, 2008 at 11:23:56AM -0400, Jarod Wilson wrote:
-> > I meant to include that the ordering of the patches was more or less from
-> > most-used/most-tested to least-used/least-tested, and a few of the
-> > patches do include Tested-by: lines in them. Basically, the first four or
-> > five drivers probably cover the majority of users, so getting them in
-> > first would provide the most bang-for-your-buck. But I can certainly
-> > re-send with only the tested drivers after we get through the first round
-> > of comments, if that's preferred over my approach of putting the
-> > higher-prio ones to the front of the ordering.
->
-> The soundgraph imon driver is number 8, but it works great for me, and lots
-> of cases include that one (at least silverstone cases).  I think more
-> than the first 4 or 5 are in very active use.
+On Sunday, September 07, 2008 8:35 am David Woodhouse wrote:
+> Some BIOSes (the Intel DG33BU, for example) wrongly claim to have DMAR
+> when they don't. Avoid the resulting crashes when it doesn't work as
+> expected.
 
-Yeah, I realized imon was much lower in the sort order after my reply there, 
-which was a bad initial move by me, since its actually one of the ones that 
-has definite positive testing feedback already. I believe quite a number of 
-vendors of HTPC cases use imon lcd (or vfd) and ir combo devices.
+Applied.  I'll include it in my next 2.6.27 pull request after fixing up my 
+trees.
 
--- 
-Jarod Wilson
-jarod@redhat.com
-
+Thanks,
+Jesse
