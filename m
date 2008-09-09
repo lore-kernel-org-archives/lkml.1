@@ -1,218 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYIIVLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbYIIVMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbYIIVLS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 17:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYIIVLH
+	id S1757428AbYIIVMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 17:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbYIIVMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 17:11:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:32751 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753457AbYIIVLE (ORCPT
+	Tue, 9 Sep 2008 17:12:12 -0400
+Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:16639 "EHLO
+	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753656AbYIIVML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 17:11:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=HDgTJijgPJRaibsdT0ElflHt9KhFj3aNTzhTiNnXcMdvhf3lxuHSHwyOoLKiOHvpOP
-         oKHlo+U0CEWb0mG8WUZUq4Zb7el35ZPWfAFZLoBJbPretOr+9WTLbHRoYLkTe85+L5Nu
-         UNrWGUDBbvjeFd+520BSCsz/DnDp1kUXJ02e8=
-Message-ID: <48C6E660.8010800@gmail.com>
-Date: Tue, 09 Sep 2008 23:10:56 +0200
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: invalid tests on unsigned
-References: <48C685F6.8020108@gmail.com>
-In-Reply-To: <48C685F6.8020108@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Sep 2008 17:12:11 -0400
+From: heukelum@fastmail.fm
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: [PATCH 12/24] i386: convert hardware exception 12 to an interrupt gate
+Date: Tue,  9 Sep 2008 21:56:06 +0200
+Message-Id: <1220990178-29773-13-git-send-email-heukelum@fastmail.fm>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1220990178-29773-12-git-send-email-heukelum@fastmail.fm>
+References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-8-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-9-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-10-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-11-git-send-email-heukelum@fastmail.fm>
+ <1220990178-29773-12-git-send-email-heukelum@fastmail.fm>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Tue, 09 Sep 2008 23:11:58 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-roel kluin wrote:
-> Using spatch I have found the following occurrences where there is
-> an invalid test on an unsigned.
-> 
-> Some may be not seriously, but just redundant, others may indicate
-> an incorrect assumption (that the variable can be negative).
-> I haven't found time to sort out these.
-> 
-> If I have time I will write patches, but feel free to write one
-> yourself if you want.
-> 
-> Roel
-> 
-> What is shown below is not meant as patch, just for reporting.
+From: Alexander van Heukelum <heukelum@fastmail.fm>
 
+Handle stack segment exception with interrupt initially off.
 
-Some more (not yet reported):
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+---
+ arch/x86/kernel/traps_32.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-----[ drivers/video/atmel_lcdfb.c, unsigned long ]----
---- drivers/video/atmel_lcdfb.c	2008-08-07 17:53:08.000000000 +0200
-@@ -843,7 +843,7 @@ static int __init atmel_lcdfb_probe(stru
- 	}
+diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
+index 572ea9f..e535324 100644
+--- a/arch/x86/kernel/traps_32.c
++++ b/arch/x86/kernel/traps_32.c
+@@ -640,7 +640,7 @@ DO_ERROR_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
+ DO_ERROR(9, SIGFPE, "coprocessor segment overrun", coprocessor_segment_overrun)
+ DO_ERROR(10, SIGSEGV, "invalid TSS", invalid_TSS)
+ DO_ERROR(11, SIGBUS, "segment not present", segment_not_present)
+-DO_TRAP(12, SIGBUS, "stack segment", stack_segment)
++DO_ERROR(12, SIGBUS, "stack segment", stack_segment)
+ DO_TRAP_INFO(17, SIGBUS, "alignment check", alignment_check, BUS_ADRALN, 0, 0)
+ DO_TRAP_INFO(32, SIGILL, "iret exception", iret_error, ILL_BADSTK, 0, 1)
  
- 	sinfo->irq_base = platform_get_irq(pdev, 0);
--	if (sinfo->irq_base < 0) {
- 		dev_err(dev, "unable to get irq
-");
- 		ret = sinfo->irq_base;
- 		goto stop_clk;
-----[ drivers/video/aty/radeon_base.c, __u32 ]----
---- drivers/video/aty/radeon_base.c	2008-08-07 17:53:08.000000000 +0200
-@@ -819,9 +819,9 @@ static int radeonfb_check_var (struct fb
- 	if (v.xres_virtual < v.xres)
- 		v.xres = v.xres_virtual;
- 
--	if (v.xoffset < 0)
-                 v.xoffset = 0;
--        if (v.yoffset < 0)
-                 v.yoffset = 0;
-          
-         if (v.xoffset > v.xres_virtual - v.xres)
-----[ drivers/video/fbmem.c, __u32 ]----
---- drivers/video/fbmem.c	2008-08-07 17:53:08.000000000 +0200
-@@ -1083,7 +1083,7 @@ fb_ioctl(struct inode *inode, struct fil
- 			return - EFAULT;
- 		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
- 		    return -EINVAL;
--		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
- 		    return -EINVAL;
- #ifdef CONFIG_KMOD
- 		if (!registered_fb[con2fb.framebuffer])
-----[ drivers/video/fsl-diu-fb.c, __u32 ]----
---- drivers/video/fsl-diu-fb.c	2008-08-07 17:53:08.000000000 +0200
-@@ -551,10 +551,10 @@ static int fsl_diu_check_var(struct fb_v
- 	if (var->yres_virtual < var->yres)
- 		var->yres_virtual = var->yres;
- 
--	if (var->xoffset < 0)
- 		var->xoffset = 0;
- 
--	if (var->yoffset < 0)
- 		var->yoffset = 0;
- 
- 	if (var->xoffset + info->var.xres > info->var.xres_virtual)
-@@ -908,7 +908,7 @@ static int fsl_diu_pan_display(struct fb
- 	    (info->var.yoffset == var->yoffset))
- 		return 0;	/* No change, do nothing */
- 
--	if (var->xoffset < 0 || var->yoffset < 0
- 	    || var->xoffset + info->var.xres > info->var.xres_virtual
- 	    || var->yoffset + info->var.yres > info->var.yres_virtual)
- 		return -EINVAL;
-----[ drivers/video/intelfb/intelfbdrv.c, __u32 ]----
---- drivers/video/intelfb/intelfbdrv.c	2008-07-19 23:16:53.000000000 +0200
-@@ -1324,9 +1324,9 @@ static int intelfb_check_var(struct fb_v
- 		break;
- 	}
- 
--	if (v.xoffset < 0)
- 		v.xoffset = 0;
--	if (v.yoffset < 0)
- 		v.yoffset = 0;
- 
- 	if (v.xoffset > v.xres_virtual - v.xres)
-----[ drivers/video/omap/omapfb_main.c, u_int ]----
---- drivers/video/omap/omapfb_main.c	2008-08-07 17:53:08.000000000 +0200
-@@ -276,7 +276,7 @@ static int _setcolreg(struct fb_info *in
- 		if (r != 0)
- 			break;
- 
--		if (regno < 0) {
- 			r = -EINVAL;
- 			break;
- 		}
-----[ drivers/video/sm501fb.c, unsigned ]----
---- drivers/video/sm501fb.c	2008-08-07 17:53:09.000000000 +0200
-@@ -172,7 +172,7 @@ static int sm501_alloc_mem(struct sm501f
- 		if (fbi && ptr < fbi->fix.smem_len)
- 			return -ENOMEM;
- 
--		if (ptr < 0)
- 			return -ENOMEM;
- 
- 		break;
-----[ drivers/watchdog/wdt285.c, unsigned ]----
---- drivers/watchdog/wdt285.c	2008-08-31 16:16:33.000000000 +0200
-@@ -161,7 +161,7 @@ static long watchdog_ioctl(struct file *
- 			break;
- 
- 		/* Arbitrary, can't find the card's limits */
--		if (new_margin < 0 || new_margin > 60) {
- 			ret = -EINVAL;
- 			break;
- 		}
-----[ fs/adfs/inode.c, sector_t ]----
---- fs/adfs/inode.c	2008-07-19 23:16:53.000000000 +0200
-@@ -28,7 +28,7 @@ static int
- adfs_get_block(struct inode *inode, sector_t block, struct buffer_head *bh,
- 	       int create)
- {
--	if (block < 0)
- 		goto abort_negative;
- 
- 	if (!create) {
-----[ fs/befs/linuxvfs.c, sector_t ]----
---- fs/befs/linuxvfs.c	2008-08-07 17:53:09.000000000 +0200
-@@ -127,7 +127,7 @@ befs_get_block(struct inode *inode, sect
- 	befs_debug(sb, "---> befs_get_block() for inode %lu, block %ld",
- 		   inode->i_ino, block);
- 
--	if (block < 0) {
- 		befs_error(sb, "befs_get_block() was asked for a block "
- 			   "number less than zero: block %ld in inode %lu",
- 			   block, inode->i_ino);
-----[ fs/ext4/ialloc.c, ext4_group_t ]----
---- fs/ext4/ialloc.c	2008-08-07 17:53:09.000000000 +0200
-@@ -351,7 +351,7 @@ find_close_to_parent:
- 			goto found_flexbg;
- 		}
- 
--		if (best_flex < 0 ||
- 		    (flex_group[i].free_blocks >
- 		     flex_group[best_flex].free_blocks &&
- 		     flex_group[i].free_inodes))
-----[ fs/hugetlbfs/inode.c, unsigned long ]----
---- fs/hugetlbfs/inode.c	2008-08-07 17:53:09.000000000 +0200
-@@ -281,7 +281,7 @@ static ssize_t hugetlbfs_read(struct fil
- 			 */
- 			ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
- 		}
--		if (ret < 0) {
- 			if (retval == 0)
- 				retval = ret;
- 			if (page)
-----[ fs/udf/super.c, sector_t ]----
---- fs/udf/super.c	2008-08-07 17:53:10.000000000 +0200
-@@ -721,7 +721,7 @@ static sector_t udf_scan_anchors(struct 
- 	 *  however, if the disc isn't closed, it could be 512 */
- 
- 	for (i = 0; i < ARRAY_SIZE(last); i++) {
--		if (last[i] < 0)
- 			continue;
- 		if (last[i] >= sb->s_bdev->bd_inode->i_size >>
- 				sb->s_blocksize_bits)
-----[ fs/ufs/inode.c, sector_t ]----
---- fs/ufs/inode.c	2008-07-19 23:16:54.000000000 +0200
-@@ -56,7 +56,7 @@ static int ufs_block_to_path(struct inod
- 
- 
- 	UFSD("ptrs=uspi->s_apb = %d,double_blocks=%ld 
-",ptrs,double_blocks);
--	if (i_block < 0) {
- 		ufs_warning(inode->i_sb, "ufs_block_to_path", "block < 0");
- 	} else if (i_block < direct_blocks) {
- 		offsets[n++] = i_block;
-@@ -440,7 +440,7 @@ int ufs_getfrag_block(struct inode *inod
- 	lock_kernel();
- 
- 	UFSD("ENTER, ino %lu, fragment %llu
-", inode->i_ino, (unsigned long long)fragment);
--	if (fragment < 0)
- 		goto abort_negative;
- 	if (fragment >
- 	    ((UFS_NDADDR + uspi->s_apb + uspi->s_2apb + uspi->s_3apb)
+@@ -1270,7 +1270,7 @@ void __init trap_init(void)
+ 	set_intr_gate(9, &coprocessor_segment_overrun);
+ 	set_intr_gate(10, &invalid_TSS);
+ 	set_intr_gate(11, &segment_not_present);
+-	set_trap_gate(12, &stack_segment);
++	set_intr_gate(12, &stack_segment);
+ 	set_trap_gate(13, &general_protection);
+ 	set_intr_gate(14, &page_fault);
+ 	set_trap_gate(15, &spurious_interrupt_bug);
+-- 
+1.5.4.3
+
