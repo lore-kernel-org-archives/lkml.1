@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYIIELz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYIIEMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYIIELz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYIIEIp
+	id S1756620AbYIIEMX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYIIEIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42582 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42581 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbYIIEIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751020AbYIIEIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Sep 2008 00:08:01 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 10/18] lirc driver for Igor Cesko's USB IR receiver
-Date: Tue,  9 Sep 2008 00:05:55 -0400
-Message-Id: <1220933164-10160-11-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-10-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 11/18] lirc driver for the Technotrend USB IR receiver
+Date: Tue,  9 Sep 2008 00:05:56 -0400
+Message-Id: <1220933164-10160-12-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-11-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
@@ -27,6 +27,7 @@ References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-8-git-send-email-jwilson@redhat.com>
  <1220933164-10160-9-git-send-email-jwilson@redhat.com>
  <1220933164-10160-10-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-11-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,667 +36,442 @@ Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
 ---
- drivers/input/lirc/Kconfig            |    7 +
- drivers/input/lirc/Makefile           |    1 +
- drivers/input/lirc/lirc_igorplugusb.c |  619 +++++++++++++++++++++++++++++++++
- 3 files changed, 627 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_igorplugusb.c
+ drivers/input/lirc/Kconfig        |    6 +
+ drivers/input/lirc/Makefile       |    1 +
+ drivers/input/lirc/lirc_ttusbir.c |  400 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 407 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_ttusbir.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index c105ac6..8579f96 100644
+index 8579f96..7e924fe 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -40,6 +40,13 @@ config LIRC_I2C
- 	  Driver for I2C-based IR receivers, such as those commonly
- 	  found onboard Hauppauge PVR-150/250/350 video capture cards
+@@ -82,4 +82,10 @@ config LIRC_STREAMZAP
+ 	help
+ 	  Driver for the Streamzap PC Receiver
  
-+config LIRC_IGORPLUGUSB
-+	tristate "Igor Cesko's USB IR Receiver"
++config LIRC_TTUSBIR
++	tristate "Technotrend USB IR Receiver"
 +	default n
 +	depends on LIRC_DEV
 +	help
-+	  Driver for Igor Cesko's USB IR Receiver
-+
- config LIRC_IMON
- 	tristate "Soundgraph IMON Receiver"
- 	default n
++	  Driver for the Technotrend USB IR Receiver
+ endif
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index b348110..68f8da2 100644
+index 68f8da2..2ee00d1 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
- obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb.o
- obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
- obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
-+obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
- obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
- obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
+@@ -15,3 +15,4 @@ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
  obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
-diff --git a/drivers/input/lirc/lirc_igorplugusb.c b/drivers/input/lirc/lirc_igorplugusb.c
+ obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
+ obj-$(CONFIG_LIRC_STREAMZAP)	+= lirc_streamzap.o
++obj-$(CONFIG_LIRC_TTUSBIR)	+= lirc_ttusbir.o
+diff --git a/drivers/input/lirc/lirc_ttusbir.c b/drivers/input/lirc/lirc_ttusbir.c
 new file mode 100644
-index 0000000..ab9bdd6
+index 0000000..9ed9c7b
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_igorplugusb.c
-@@ -0,0 +1,619 @@
-+/* lirc_igorplugusb - USB remote support for LIRC
++++ b/drivers/input/lirc/lirc_ttusbir.c
+@@ -0,0 +1,400 @@
++/****************************************************************************
++ ** lirc_ttusbir.c ***********************************************************
++ ****************************************************************************
 + *
-+ * Supports the standard homebrew IgorPlugUSB receiver with Igor's firmware.
-+ * See http://www.cesko.host.sk/IgorPlugUSB/IgorPlug-USB%20(AVR)_eng.htm
++ * lirc_ttusbir - LIRC device driver for the TechnoTrend USB IR Receiver
 + *
-+ * The device can only record bursts of up to 36 pulses/spaces.
-+ * Works fine with RC5. Longer commands lead to device buffer overrun.
-+ * (Maybe a better firmware or a microcontroller with more ram can help?)
++ * Copyright (C) 2007 Stefan Macher <st_maker-lirc@yahoo.de>
 + *
-+ * Version 0.1  [beta status]
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
 + *
-+ * Copyright (C) 2004 Jan M. Hochstein
-+ *	<hochstein@algo.informatik.tu-darmstadt.de>
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
 + *
-+ * This driver was derived from:
-+ *   Paul Miller <pmiller9@users.sourceforge.net>
-+ *      "lirc_atiusb" module
-+ *   Vladimir Dergachev <volodya@minspring.com>'s 2002
-+ *      "USB ATI Remote support" (input device)
-+ *   Adrian Dewhurst <sailor-lk@sailorfrag.net>'s 2002
-+ *      "USB StreamZap remote driver" (LIRC)
-+ *   Artur Lipowski <alipowski@kki.net.pl>'s 2002
-+ *      "lirc_dev" and "lirc_gpio" LIRC modules
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + *
 + */
 +
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ *
++/* This LIRC driver provides access to the TechnoTrend USB IR Receiver.
++ * The receiver delivers the IR signal as raw sampled true/false data in
++ * isochronous USB packets each of size 128 byte.
++ * Currently the driver reduces the sampling rate by factor of 8 as this
++ * is still more than enough to decode RC-5 - others should be analyzed.
++ * But the driver does not rely on RC-5 it should be able to decode every
++ * IR signal that is not too fast.
 + */
 +
 +#include <linux/version.h>
-+
-+#include <linux/autoconf.h>
-+#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/kmod.h>
-+#include <linux/sched.h>
++#include <linux/init.h>
++#include <linux/module.h>
 +#include <linux/errno.h>
-+#include <linux/ioctl.h>
-+#include <linux/fs.h>
++#include <linux/slab.h>
 +#include <linux/usb.h>
-+#include <linux/poll.h>
-+#include <linux/smp_lock.h>
-+#include <linux/time.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
++MODULE_DESCRIPTION("TechnoTrend USB IR device driver for LIRC");
++MODULE_AUTHOR("Stefan Macher (st_maker-lirc@yahoo.de)");
++MODULE_LICENSE("GPL");
 +
-+/* module identification */
-+#define DRIVER_VERSION		"0.1"
-+#define DRIVER_AUTHOR		\
-+	"Jan M. Hochstein <hochstein@algo.informatik.tu-darmstadt.de>"
-+#define DRIVER_DESC		"USB remote driver for LIRC"
-+#define DRIVER_NAME		"lirc_igorplugusb"
-+
-+/* debugging support */
-+#ifdef CONFIG_USB_DEBUG
-+static int debug = 1;
++/* #define DEBUG */
++#ifdef DEBUG
++#define DPRINTK printk
 +#else
-+static int debug;
++#define DPRINTK(_x_, a...)
 +#endif
 +
-+#define dprintk(fmt, args...)					\
-+	do {							\
-+		if (debug)					\
-+			printk(KERN_DEBUG fmt, ## args);	\
-+	} while (0)
++/* function declarations */
++static int probe(struct usb_interface *intf, const struct usb_device_id *id);
++static void disconnect(struct usb_interface *intf);
++static void urb_complete(struct urb *urb);
++static int set_use_inc(void *data);
++static void set_use_dec(void *data);
 +
-+/* general constants */
-+#define SUCCESS		 0
++static int num_urbs = 2;
++module_param(num_urbs, int, 0444);
++MODULE_PARM_DESC(num_urbs,
++		 "Number of URBs in queue. Try to increase to 4 in case "
++		 "of problems (default: 2; minimum: 2)");
 +
-+/* One mode2 pulse/space has 4 bytes. */
-+#define CODE_LENGTH	     sizeof(int)
++/* table of devices that work with this driver */
++static struct usb_device_id device_id_table[] = {
++	/* TechnoTrend USB IR Receiver */
++	{ USB_DEVICE(0x0B48, 0x2003) },
++	/* Terminating entry */
++	{ }
++};
++MODULE_DEVICE_TABLE(usb, device_id_table);
 +
-+/* Igor's firmware cannot record bursts longer than 36. */
-+#define DEVICE_BUFLEN	   36
-+
-+/** Header at the beginning of the device's buffer:
-+	unsigned char data_length
-+	unsigned char data_start    (!=0 means ring-buffer overrun)
-+	unsigned char counter       (incremented by each burst)
-+**/
-+#define DEVICE_HEADERLEN	3
-+
-+/* This is for the gap */
-+#define ADDITIONAL_LIRC_BYTES   2
-+
-+/* times to poll per second */
-+#define SAMPLE_RATE	     100
-+static int sample_rate = SAMPLE_RATE;
-+
-+
-+/**** Igor's USB Request Codes */
-+
-+#define SET_INFRABUFFER_EMPTY   1
-+/**
-+ * Params: none
-+ * Answer: empty
-+ *
-+**/
-+
-+#define GET_INFRACODE	   2
-+/**
-+ * Params:
-+ *   wValue: offset to begin reading infra buffer
-+ *
-+ * Answer: infra data
-+ *
-+**/
-+
-+#define SET_DATAPORT_DIRECTION  3
-+/**
-+ * Params:
-+ *   wValue: (byte) 1 bit for each data port pin (0=in, 1=out)
-+ *
-+ * Answer: empty
-+ *
-+**/
-+
-+#define GET_DATAPORT_DIRECTION  4
-+/**
-+ * Params: none
-+ *
-+ * Answer: (byte) 1 bit for each data port pin (0=in, 1=out)
-+ *
-+**/
-+
-+#define SET_OUT_DATAPORT	5
-+/**
-+ * Params:
-+ *   wValue: byte to write to output data port
-+ *
-+ * Answer: empty
-+ *
-+**/
-+
-+#define GET_OUT_DATAPORT	6
-+/**
-+ * Params: none
-+ *
-+ * Answer: least significant 3 bits read from output data port
-+ *
-+**/
-+
-+#define GET_IN_DATAPORT	 7
-+/**
-+ * Params: none
-+ *
-+ * Answer: least significant 3 bits read from input data port
-+ *
-+**/
-+
-+#define READ_EEPROM	     8
-+/**
-+ * Params:
-+ *   wValue: offset to begin reading EEPROM
-+ *
-+ * Answer: EEPROM bytes
-+ *
-+**/
-+
-+#define WRITE_EEPROM	    9
-+/**
-+ * Params:
-+ *   wValue: offset to EEPROM byte
-+ *   wIndex: byte to write
-+ *
-+ * Answer: empty
-+ *
-+**/
-+
-+#define SEND_RS232	      10
-+/**
-+ * Params:
-+ *   wValue: byte to send
-+ *
-+ * Answer: empty
-+ *
-+**/
-+
-+#define RECV_RS232	      11
-+/**
-+ * Params: none
-+ *
-+ * Answer: byte received
-+ *
-+**/
-+
-+#define SET_RS232_BAUD	  12
-+/**
-+ * Params:
-+ *   wValue: byte to write to UART bit rate register (UBRR)
-+ *
-+ * Answer: empty
-+ *
-+**/
-+
-+#define GET_RS232_BAUD	  13
-+/**
-+ * Params: none
-+ *
-+ * Answer: byte read from UART bit rate register (UBRR)
-+ *
-+**/
-+
-+
-+/* data structure for each usb remote */
-+struct irctl {
-+
-+	/* usb */
-+	struct usb_device *usbdev;
-+	struct urb *urb_in;
-+	int devnum;
-+
-+	unsigned char *buf_in;
-+	unsigned int len_in;
-+	int in_space;
-+	struct timeval last_time;
-+
-+	dma_addr_t dma_in;
-+
-+	/* lirc */
-+	struct lirc_plugin *p;
-+
-+	/* handle sending (init strings) */
-+	int send_flags;
-+	wait_queue_head_t wait_out;
++/* USB driver definition */
++static struct usb_driver driver = {
++	.name = "TTUSBIR",
++	.id_table = &(device_id_table[0]),
++	.probe = probe,
++	.disconnect = disconnect,
 +};
 +
-+static int unregister_from_lirc(struct irctl *ir)
-+{
-+	struct lirc_plugin *p = ir->p;
-+	int devnum;
++/* USB device definition */
++struct ttusbir_device {
++	struct usb_driver *driver;
++	struct usb_device *udev;
++	struct usb_interface *interf;
++	struct usb_class_driver class_driver;
++	unsigned int ifnum; /* Interface number to use */
++	unsigned int alt_setting; /* alternate setting to use */
++	unsigned int endpoint; /* Endpoint to use */
++	struct urb **urb; /* num_urb URB pointers*/
++	char **buffer; /* 128 byte buffer for each URB */
++	struct lirc_buffer rbuf; /* Buffer towards LIRC */
++	struct lirc_plugin plugin;
++	int minor;
++	int last_pulse; /* remembers if last received byte was pulse or space */
++	int last_num; /* remembers how many last bytes appeared */
++	int opened;
++};
 +
-+	if (!ir->p)
-+		return -EINVAL;
-+
-+	devnum = ir->devnum;
-+	dprintk(DRIVER_NAME "[%d]: unregister from lirc called\n", devnum);
-+
-+	lirc_unregister_plugin(p->minor);
-+
-+	printk(DRIVER_NAME "[%d]: usb remote disconnected\n", devnum);
-+
-+	lirc_buffer_free(p->rbuf);
-+	kfree(p->rbuf);
-+	kfree(p);
-+	kfree(ir);
-+	ir->p = NULL;
-+	return SUCCESS;
-+}
-+
++/*************************************
++ * LIRC specific functions
++ */
 +static int set_use_inc(void *data)
 +{
-+	struct irctl *ir = data;
++	int i;
++	struct ttusbir_device *ttusbir = data;
 +
-+	if (!ir) {
-+		printk(DRIVER_NAME "[?]: set_use_inc called with no context\n");
-+		return -EIO;
-+	}
-+	dprintk(DRIVER_NAME "[%d]: set use inc\n", ir->devnum);
++	DPRINTK("Sending first URBs\n");
++	/* @TODO Do I need to check if I am already opened */
++	ttusbir->opened = 1;
 +
-+	if (!ir->usbdev)
-+		return -ENODEV;
++	for (i = 0; i < num_urbs; i++)
++		usb_submit_urb(ttusbir->urb[i], GFP_KERNEL);
 +
-+	return SUCCESS;
++	return 0;
 +}
 +
 +static void set_use_dec(void *data)
 +{
-+	struct irctl *ir = data;
++	struct ttusbir_device *ttusbir = data;
 +
-+	if (!ir) {
-+		printk(DRIVER_NAME "[?]: set_use_dec called with no context\n");
++	DPRINTK("Device closed\n");
++
++	ttusbir->opened = 0;
++}
++
++/*************************************
++ * USB specific functions
++ */
++
++/* This mapping table is used to do a very simple filtering of the
++ * input signal.
++ * For a value with at least 4 bits set it returns 0xFF otherwise
++ * 0x00.  For faster IR signals this can not be used. But for RC-5 we
++ * still have about 14 samples per pulse/space, i.e. we sample with 14
++ * times higher frequency than the signal frequency */
++const unsigned char map_table[] =
++{
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
++	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
++};
++
++static void urb_complete(struct urb *urb)
++{
++	struct ttusbir_device *ttusbir;
++	unsigned char *buf;
++	int i;
++	int l;
++
++	ttusbir = urb->context;
++
++	if (!ttusbir->opened)
 +		return;
++
++	buf = (unsigned char *)urb->transfer_buffer;
++
++	for (i = 0; i < 128; i++) {
++		/* Here we do the filtering and some kind of down sampling */
++		buf[i] = ~map_table[buf[i]];
++		if (ttusbir->last_pulse == buf[i]) {
++			if (ttusbir->last_num < PULSE_MASK/63)
++				ttusbir->last_num++;
++		/* else we are in a idle period and do not need to
++		 * increment any longer */
++		} else {
++			l = ttusbir->last_num * 62; /* about 62 = us/byte */
++			if (ttusbir->last_pulse) /* pulse or space? */
++				l |= PULSE_BIT;
++			if (!lirc_buffer_full(&ttusbir->rbuf)) {
++				lirc_buffer_write_1(&ttusbir->rbuf, (void *)&l);
++				wake_up_interruptible(&ttusbir->rbuf.wait_poll);
++			}
++			ttusbir->last_num = 0;
++			ttusbir->last_pulse = buf[i];
++		}
 +	}
-+	dprintk(DRIVER_NAME "[%d]: set use dec\n", ir->devnum);
++	usb_submit_urb(urb, GFP_ATOMIC); /* keep data rolling :-) */
 +}
 +
-+
-+/**
-+ * Called in user context.
-+ * return 0 if data was added to the buffer and
-+ * -ENODATA if none was available. This should add some number of bits
-+ * evenly divisible by code_length to the buffer
-+**/
-+static int usb_remote_poll(void *data, struct lirc_buffer *buf)
++/* Called whenever the USB subsystem thinks we could be the right driver
++   to handle this device
++*/
++static int probe(struct usb_interface *intf, const struct usb_device_id *id)
 +{
-+	int ret;
-+	struct irctl *ir = (struct irctl *)data;
++	int alt_set, endp;
++	int found = 0;
++	int i, j;
++	int struct_size;
++	struct usb_host_interface *host_interf;
++	struct usb_interface_descriptor *interf_desc;
++	struct usb_host_endpoint *host_endpoint;
++	struct ttusbir_device *ttusbir;
 +
-+	if (!ir->usbdev)  /* Has the device been removed? */
-+		return -ENODEV;
++	DPRINTK("Module ttusbir probe\n");
 +
-+	memset(ir->buf_in, 0, ir->len_in);
++	/* To reduce memory fragmentation we use only one allocation */
++	struct_size =  sizeof(struct ttusbir_device) +
++		(sizeof(struct urb *) * num_urbs) +
++		(sizeof(char *) * num_urbs) +
++		(num_urbs * 128);
++	ttusbir = kmalloc(struct_size, GFP_KERNEL);
++	if (!ttusbir)
++		return -ENOMEM;
++	memset(ttusbir, 0, struct_size);
 +
-+	ret = usb_control_msg(
-+	      ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
-+	      GET_INFRACODE, USB_TYPE_VENDOR|USB_DIR_IN,
-+	      0/* offset */, /*unused*/0,
-+	      ir->buf_in, ir->len_in,
-+	      /*timeout*/HZ * USB_CTRL_GET_TIMEOUT);
-+	if (ret > 0) {
-+		int i = DEVICE_HEADERLEN;
-+		int code, timediff;
-+		struct timeval now;
++	ttusbir->urb = (struct urb **)((char *)ttusbir +
++				      sizeof(struct ttusbir_device));
++	ttusbir->buffer = (char **)((char *)ttusbir->urb +
++				   (sizeof(struct urb *) * num_urbs));
++	for (i = 0; i < num_urbs; i++)
++		ttusbir->buffer[i] = (char *)ttusbir->buffer +
++			(sizeof(char *)*num_urbs) + (i * 128);
 +
-+		if (ret <= 1)  /* ACK packet has 1 byte --> ignore */
-+			return -ENODATA;
++	ttusbir->driver = &driver;
++	ttusbir->alt_setting = -1;
++	/* @TODO check if error can be returned */
++	ttusbir->udev = usb_get_dev(interface_to_usbdev(intf));
++	ttusbir->interf = intf;
++	ttusbir->last_pulse = 0x00;
++	ttusbir->last_num = 0;
 +
-+		dprintk(DRIVER_NAME ": Got %d bytes. Header: %02x %02x %02x\n",
-+			ret, ir->buf_in[0], ir->buf_in[1], ir->buf_in[2]);
-+
-+		if (ir->buf_in[2] != 0) {
-+			printk(DRIVER_NAME "[%d]: Device buffer overrun.\n",
-+				ir->devnum);
-+			/* start at earliest byte */
-+			i = DEVICE_HEADERLEN + ir->buf_in[2];
-+			/* where are we now? space, gap or pulse? */
++	/* Now look for interface setting we can handle
++	   We are searching for the alt setting where end point
++	   0x82 has max packet size 16
++	*/
++	for (alt_set = 0; alt_set < intf->num_altsetting && !found; alt_set++) {
++		host_interf = &intf->altsetting[alt_set];
++		interf_desc = &host_interf->desc;
++		for (endp = 0; endp < interf_desc->bNumEndpoints; endp++) {
++			host_endpoint = &host_interf->endpoint[endp];
++			if ((host_endpoint->desc.bEndpointAddress == 0x82) &&
++			    (host_endpoint->desc.wMaxPacketSize == 0x10)) {
++				ttusbir->alt_setting = alt_set;
++				ttusbir->endpoint = endp;
++				found = 1;
++				break;
++			}
 +		}
-+
-+		do_gettimeofday(&now);
-+		timediff = now.tv_sec - ir->last_time.tv_sec;
-+		if (timediff + 1 > PULSE_MASK / 1000000)
-+			timediff = PULSE_MASK;
-+		else {
-+			timediff *= 1000000;
-+			timediff += now.tv_usec - ir->last_time.tv_usec;
-+		}
-+		ir->last_time.tv_sec = now.tv_sec;
-+		ir->last_time.tv_usec = now.tv_usec;
-+
-+		/* create leading gap  */
-+		code = timediff;
-+		lirc_buffer_write_n(buf, (unsigned char *)&code, 1);
-+		ir->in_space = 1;   /* next comes a pulse */
-+
-+		/* MODE2: pulse/space (PULSE_BIT) in 1us units */
-+
-+		while (i < ret) {
-+			/* 1 Igor-tick = 85.333333 us */
-+			code = (unsigned int)ir->buf_in[i] * 85
-+				+ (unsigned int)ir->buf_in[i] / 3;
-+			if (ir->in_space)
-+				code |= PULSE_BIT;
-+			lirc_buffer_write_n(buf, (unsigned char *)&code, 1);
-+			/* 1 chunk = CODE_LENGTH bytes */
-+			ir->in_space ^= 1;
-+			++i;
-+		}
-+
-+		ret = usb_control_msg(
-+		      ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
-+		      SET_INFRABUFFER_EMPTY, USB_TYPE_VENDOR|USB_DIR_IN,
-+		      /*unused*/0, /*unused*/0,
-+		      /*dummy*/ir->buf_in, /*dummy*/ir->len_in,
-+		      /*timeout*/HZ * USB_CTRL_GET_TIMEOUT);
-+		if (ret < 0)
-+			printk(DRIVER_NAME "[%d]: SET_INFRABUFFER_EMPTY: "
-+			       "error %d\n", ir->devnum, ret);
-+		return SUCCESS;
-+	} else
-+		printk(DRIVER_NAME "[%d]: GET_INFRACODE: error %d\n",
-+			ir->devnum, ret);
-+
-+	return -ENODATA;
-+}
-+
-+
-+
-+static int usb_remote_probe(struct usb_interface *intf,
-+				const struct usb_device_id *id)
-+{
-+	struct usb_device *dev = NULL;
-+	struct usb_host_interface *idesc = NULL;
-+	struct usb_host_endpoint *ep_ctl2;
-+	struct irctl *ir = NULL;
-+	struct lirc_plugin *plugin = NULL;
-+	struct lirc_buffer *rbuf = NULL;
-+	int devnum, pipe, maxp, bytes_in_key;
-+	int minor = 0;
-+	char buf[63], name[128] = "";
-+	int mem_failure = 0;
-+	int ret;
-+
-+	dprintk(DRIVER_NAME ": usb probe called.\n");
-+
-+	dev = interface_to_usbdev(intf);
-+
-+	idesc = intf->cur_altsetting;  /* in 2.6.6 */
-+
-+	if (idesc->desc.bNumEndpoints != 1)
-+		return -ENODEV;
-+	ep_ctl2 = idesc->endpoint;
-+	if (((ep_ctl2->desc.bEndpointAddress & USB_ENDPOINT_DIR_MASK)
-+	    != USB_DIR_IN)
-+	    || (ep_ctl2->desc.bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+	    != USB_ENDPOINT_XFER_CONTROL)
-+		return -ENODEV;
-+	pipe = usb_rcvctrlpipe(dev, ep_ctl2->desc.bEndpointAddress);
-+	devnum = dev->devnum;
-+	maxp = usb_maxpacket(dev, pipe, usb_pipeout(pipe));
-+
-+	bytes_in_key = CODE_LENGTH;
-+
-+	dprintk(DRIVER_NAME "[%d]: bytes_in_key=%d maxp=%d\n",
-+		devnum, bytes_in_key, maxp);
-+
-+
-+	/* allocate kernel memory */
-+	mem_failure = 0;
-+	ir = kmalloc(sizeof(struct irctl), GFP_KERNEL);
-+	if (!ir) {
-+		mem_failure = 1;
-+		goto mem_failure_switch;
++	}
++	if (ttusbir->alt_setting != -1)
++		DPRINTK("alt setting: %d\n", ttusbir->alt_setting);
++	else {
++		err("Could not find alternate setting\n");
++		kfree(ttusbir);
++		return -EINVAL;
 +	}
 +
-+	memset(ir, 0, sizeof(struct irctl));
++	/* OK lets setup this interface setting */
++	usb_set_interface(ttusbir->udev, 0, ttusbir->alt_setting);
 +
-+	plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL);
-+	if (!plugin) {
-+		mem_failure = 2;
-+		goto mem_failure_switch;
-+	}
++	/* Store device info in interface structure */
++	usb_set_intfdata(intf, ttusbir);
 +
-+	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
-+	if (!rbuf) {
-+		mem_failure = 3;
-+		goto mem_failure_switch;
-+	}
-+
-+	if (lirc_buffer_init(rbuf, bytes_in_key,
-+			DEVICE_BUFLEN+ADDITIONAL_LIRC_BYTES)) {
-+		mem_failure = 4;
-+		goto mem_failure_switch;
-+	}
-+
-+	ir->buf_in = usb_buffer_alloc(dev,
-+			      DEVICE_BUFLEN+DEVICE_HEADERLEN,
-+			      GFP_ATOMIC, &ir->dma_in);
-+	if (!ir->buf_in) {
-+		mem_failure = 5;
-+		goto mem_failure_switch;
-+	}
-+
-+	memset(plugin, 0, sizeof(struct lirc_plugin));
-+
-+	strcpy(plugin->name, DRIVER_NAME " ");
-+	plugin->minor = -1;
-+	plugin->code_length = bytes_in_key*8; /* in bits */
-+	plugin->features = LIRC_CAN_REC_MODE2;
-+	plugin->data = ir;
-+	plugin->rbuf = rbuf;
-+	plugin->set_use_inc = &set_use_inc;
-+	plugin->set_use_dec = &set_use_dec;
-+	plugin->sample_rate = sample_rate;    /* per second */
-+	plugin->add_to_buf = &usb_remote_poll;
-+	plugin->dev = &dev->dev;
-+	plugin->owner = THIS_MODULE;
-+
-+	init_waitqueue_head(&ir->wait_out);
-+
-+	minor = lirc_register_plugin(plugin);
-+	if (minor < 0)
-+		mem_failure = 9;
-+
-+mem_failure_switch:
-+
-+	/* free allocated memory in case of failure */
-+	switch (mem_failure) {
-+	case 9:
-+		usb_buffer_free(dev, DEVICE_BUFLEN+DEVICE_HEADERLEN,
-+			ir->buf_in, ir->dma_in);
-+	case 5:
-+		lirc_buffer_free(rbuf);
-+	case 4:
-+		kfree(rbuf);
-+	case 3:
-+		kfree(plugin);
-+	case 2:
-+		kfree(ir);
-+	case 1:
-+		printk(DRIVER_NAME "[%d]: out of memory (code=%d)\n",
-+			devnum, mem_failure);
++	/* Register as a LIRC plugin */
++	if (lirc_buffer_init(&ttusbir->rbuf, sizeof(int), 256) < 0) {
++		err("Could not get memory for LIRC data buffer\n");
++		usb_set_intfdata(intf, NULL);
++		kfree(ttusbir);
 +		return -ENOMEM;
 +	}
-+
-+	plugin->minor = minor;
-+	ir->p = plugin;
-+	ir->devnum = devnum;
-+	ir->usbdev = dev;
-+	ir->len_in = DEVICE_BUFLEN+DEVICE_HEADERLEN;
-+	ir->in_space = 1; /* First mode2 event is a space. */
-+	do_gettimeofday(&ir->last_time);
-+
-+	if (dev->descriptor.iManufacturer
-+		&& usb_string(dev, dev->descriptor.iManufacturer, buf, 63) > 0)
-+		strncpy(name, buf, 128);
-+	if (dev->descriptor.iProduct
-+		&& usb_string(dev, dev->descriptor.iProduct, buf, 63) > 0)
-+		snprintf(name, 128, "%s %s", name, buf);
-+	printk(DRIVER_NAME "[%d]: %s on usb%d:%d\n", devnum, name,
-+	       dev->bus->busnum, devnum);
-+
-+	/* clear device buffer */
-+	ret = usb_control_msg(ir->usbdev, usb_rcvctrlpipe(ir->usbdev, 0),
-+		SET_INFRABUFFER_EMPTY, USB_TYPE_VENDOR|USB_DIR_IN,
-+		/*unused*/0, /*unused*/0,
-+		/*dummy*/ir->buf_in, /*dummy*/ir->len_in,
-+		/*timeout*/HZ * USB_CTRL_GET_TIMEOUT);
-+	if (ret < 0)
-+		printk(DRIVER_NAME "[%d]: SET_INFRABUFFER_EMPTY: error %d\n",
-+			devnum, ret);
-+
-+	usb_set_intfdata(intf, ir);
-+	return SUCCESS;
-+}
-+
-+
-+static void usb_remote_disconnect(struct usb_interface *intf)
-+{
-+	struct usb_device *dev = interface_to_usbdev(intf);
-+	struct irctl *ir = usb_get_intfdata(intf);
-+	usb_set_intfdata(intf, NULL);
-+
-+	if (!ir || !ir->p)
-+		return;
-+
-+	ir->usbdev = NULL;
-+	wake_up_all(&ir->wait_out);
-+
-+	usb_buffer_free(dev, ir->len_in, ir->buf_in, ir->dma_in);
-+
-+	unregister_from_lirc(ir);
-+}
-+
-+static struct usb_device_id usb_remote_id_table[] = {
-+	/* Igor Plug USB (Atmel's Manufact. ID) */
-+	{ USB_DEVICE(0x03eb, 0x0002) },
-+
-+	/* Terminating entry */
-+	{ }
-+};
-+
-+static struct usb_driver usb_remote_driver = {
-+	.name =		DRIVER_NAME,
-+	.probe =	usb_remote_probe,
-+	.disconnect =	usb_remote_disconnect,
-+	.id_table =	usb_remote_id_table
-+};
-+
-+static int __init usb_remote_init(void)
-+{
-+	int i;
-+
-+	printk(KERN_INFO "\n"
-+	       DRIVER_NAME ": " DRIVER_DESC " v" DRIVER_VERSION "\n");
-+	printk(DRIVER_NAME ": " DRIVER_AUTHOR "\n");
-+	dprintk(DRIVER_NAME ": debug mode enabled\n");
-+
-+#ifdef MODULE
-+	request_module("lirc_dev");
-+#endif
-+
-+	i = usb_register(&usb_remote_driver);
-+	if (i < 0) {
-+		printk(DRIVER_NAME ": usb register failed, result = %d\n", i);
-+		return -ENODEV;
++	strcpy(ttusbir->plugin.name, "TTUSBIR");
++	ttusbir->plugin.minor = -1;
++	ttusbir->plugin.code_length = 1;
++	ttusbir->plugin.sample_rate = 0;
++	ttusbir->plugin.data = ttusbir;
++	ttusbir->plugin.add_to_buf = NULL;
++	ttusbir->plugin.get_queue = NULL;
++	ttusbir->plugin.rbuf = &ttusbir->rbuf;
++	ttusbir->plugin.set_use_inc = set_use_inc;
++	ttusbir->plugin.set_use_dec = set_use_dec;
++	ttusbir->plugin.ioctl = NULL;
++	ttusbir->plugin.fops = NULL;
++	ttusbir->plugin.owner = THIS_MODULE;
++	ttusbir->plugin.features = LIRC_CAN_REC_MODE2;
++	ttusbir->minor = lirc_register_plugin(&ttusbir->plugin);
++	if (ttusbir->minor < 0) {
++		err("Error registering as LIRC plugin\n");
++		usb_set_intfdata(intf, NULL);
++		lirc_buffer_free(&ttusbir->rbuf);
++		kfree(ttusbir);
++		return -EIO;
 +	}
 +
-+	return SUCCESS;
++	/* Allocate and setup the URB that we will use to talk to the device */
++	for (i = 0; i < num_urbs; i++) {
++		ttusbir->urb[i] = usb_alloc_urb(8, GFP_KERNEL);
++		if (!ttusbir->urb[i]) {
++			err("Could not allocate memory for the URB\n");
++			for (j = i - 1; j >= 0; j--)
++				kfree(ttusbir->urb[j]);
++			lirc_buffer_free(&ttusbir->rbuf);
++			lirc_unregister_plugin(ttusbir->minor);
++			kfree(ttusbir);
++			usb_set_intfdata(intf, NULL);
++			return -ENOMEM;
++		}
++		ttusbir->urb[i]->dev = ttusbir->udev;
++		ttusbir->urb[i]->context = ttusbir;
++		ttusbir->urb[i]->pipe = usb_rcvisocpipe(ttusbir->udev,
++							ttusbir->endpoint);
++		ttusbir->urb[i]->interval = 1;
++		ttusbir->urb[i]->transfer_flags = URB_ISO_ASAP;
++		ttusbir->urb[i]->transfer_buffer = &ttusbir->buffer[i][0];
++		ttusbir->urb[i]->complete = urb_complete;
++		ttusbir->urb[i]->number_of_packets = 8;
++		ttusbir->urb[i]->transfer_buffer_length = 128;
++		for (j = 0; j < 8; j++) {
++			ttusbir->urb[i]->iso_frame_desc[j].offset = j*16;
++			ttusbir->urb[i]->iso_frame_desc[j].length = 16;
++		}
++	}
++	return 0;
 +}
 +
-+static void __exit usb_remote_exit(void)
++/* Called when the driver is unloaded or the device is unplugged
++ */
++static void disconnect(struct usb_interface *intf)
 +{
-+	usb_deregister(&usb_remote_driver);
++	int i;
++	struct ttusbir_device *ttusbir;
++
++	DPRINTK("Module ttusbir disconnect\n");
++
++	ttusbir = (struct ttusbir_device *) usb_get_intfdata(intf);
++	usb_set_intfdata(intf, NULL);
++	lirc_unregister_plugin(ttusbir->minor);
++	DPRINTK("unregistered\n");
++
++	for (i = 0; i < num_urbs; i++) {
++		usb_kill_urb(ttusbir->urb[i]);
++		usb_free_urb(ttusbir->urb[i]);
++	}
++	DPRINTK("URBs killed\n");
++	lirc_buffer_free(&ttusbir->rbuf);
++	kfree(ttusbir);
++}
++
++static int ttusbir_init_module(void)
++{
++	int result;
++
++	DPRINTK(KERN_DEBUG "Module ttusbir init\n");
++
++	/* register this driver with the USB subsystem */
++	result = usb_register(&driver);
++	if (result)
++		err("usb_register failed. Error number %d", result);
++	return result;
++}
++
++static void ttusbir_exit_module(void)
++{
++	printk(KERN_DEBUG "Module ttusbir exit\n");
++	/* deregister this driver with the USB subsystem */
++	usb_deregister(&driver);
 +}
 +
 +#ifdef MODULE
-+module_init(usb_remote_init);
-+module_exit(usb_remote_exit);
++module_init(ttusbir_init_module);
++module_exit(ttusbir_exit_module);
 +
-+#include <linux/vermagic.h>
-+MODULE_INFO(vermagic, VERMAGIC_STRING);
-+
-+MODULE_DESCRIPTION(DRIVER_DESC);
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_LICENSE("GPL");
-+MODULE_DEVICE_TABLE(usb, usb_remote_id_table);
-+
-+module_param(sample_rate, int, 0644);
-+MODULE_PARM_DESC(sample_rate, "Sampling rate in Hz (default: 100)");
-+
-+#else /* not MODULE */
-+subsys_initcall(usb_remote_driver);
++#else
++subsys_initcall(ttusbir_init_module);
 +
 +#endif /* MODULE */
-+
-+/*
-+ * Overrides for Emacs so that we follow Linus's tabbing style.
-+ * ---------------------------------------------------------------------------
-+ * Local variables:
-+ * c-basic-offset: 8
-+ * End:
-+ */
 -- 
 1.6.0.1
 
