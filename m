@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYIIBWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbYIIBYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756578AbYIIBWx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 21:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYIIBWn
+	id S1756270AbYIIBYF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 21:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYIIBXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 21:22:43 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58424 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754940AbYIIBWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 21:22:42 -0400
-Date: Tue, 09 Sep 2008 10:21:19 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Cleanup to make  remove_memory() arch neutral
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, garyhade@us.ibm.com,
-       linux-mm@kvack.org, mel@csn.ul.ie, lcm@us.ibm.com,
-       linux-kernel@vger.kernel.org, x86@kernel.org, mingo@elte.hu
-In-Reply-To: <20080908175621.6dfad0a6.akpm@linux-foundation.org>
-References: <1220910754.25932.57.camel@badari-desktop> <20080908175621.6dfad0a6.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080909101703.C099.E1E9C6FF@jp.fujitsu.com>
+	Mon, 8 Sep 2008 21:23:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:38268 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753983AbYIIBXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 21:23:53 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Message-ID: <18629.53224.103107.523514@drongo.ozlabs.ibm.com>
+Date: Tue, 9 Sep 2008 11:22:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: David Miller <davem@davemloft.net>
+Cc: david-b@pacbell.net, James.Bottomley@hansenpartnership.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+       alessandro.zummo@towertech.it
+Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
+In-Reply-To: <20080908.164427.216880550.davem@davemloft.net>
+References: <1220914847.8074.81.camel@localhost.localdomain>
+	<20080908.160441.124972717.davem@davemloft.net>
+	<200809081629.21125.david-b@pacbell.net>
+	<20080908.164427.216880550.davem@davemloft.net>
+X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 08 Sep 2008 14:52:34 -0700
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
+David Miller writes:
+
+> int update_persistent_clock(struct timespec now)
+> {
+> 	struct rtc_device *rtc = rtc_class_open("rtc0");
 > 
-> > There is nothing architecture specific about remove_memory().
-> > remove_memory() function is common for all architectures which
-> > support hotplug memory remove. Instead of duplicating it in every
-> > architecture, collapse them into arch neutral function.
-> > 
-> > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > 
-> >  arch/ia64/mm/init.c   |   17 -----------------
-> >  arch/powerpc/mm/mem.c |   17 -----------------
-> >  arch/s390/mm/init.c   |   11 -----------
-> >  mm/memory_hotplug.c   |   10 ++++++++++
-> >  4 files changed, 10 insertions(+), 45 deletions(-)
+> 	if (rtc)
+> 		return rtc_set_mmss(rtc, now.tv_sec);
 > 
-> I spent some time trying to build-test this on ia64 and gave up.  How
-> the heck do you turn on memory hotplug on ia64?
+> 	return -1;
+> }
 > 
+> and that should handle this NTP shouldn't it?
 
-EXPORT_SYMBOL_GPL(remove_memory) is removed.
-It is required by drivers/acpi/acpi_memhotplug.ko.
+Yes as long as your rtc set functions don't need to sleep, since
+update_persistent_clock is called at interrupt level.  Some powerpc
+systems have their RTC at the far end of an I2C bus, and the I2C
+access routines can sleep.
 
-
--- 
-Yasunori Goto 
-
-
+Paul.
