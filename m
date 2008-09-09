@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbYIIGwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbYIIGw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbYIIGwD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 02:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYIIGvk
+	id S1756447AbYIIGw2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 02:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbYIIGwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 02:51:40 -0400
-Received: from mga09.intel.com ([134.134.136.24]:9615 "EHLO mga09.intel.com"
+	Tue, 9 Sep 2008 02:52:01 -0400
+Received: from mga14.intel.com ([143.182.124.37]:9744 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753442AbYIIGvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 02:51:39 -0400
+	id S1756261AbYIIGwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 02:52:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,363,1217833200"; 
-   d="scan'208";a="334308101"
+   d="scan'208";a="43740651"
 From: Sheng Yang <sheng.yang@intel.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@qumranet.com>,
        Andi Kleen <ak@linux.intel.com>, "\"H. Peter Anvin\"" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>, Sheng Yang <sheng.yang@intel.com>
-Subject: [PATCH 2/2] x86: Extended cpuinfo to show virtualization HW features
-Date: Tue,  9 Sep 2008 14:54:54 +0800
-Message-Id: <1220943294312-git-send-email-sheng.yang@intel.com>
+Subject: [PATCH 1/2] x86: Move VMX MSRs to msr-index.h
+Date: Tue,  9 Sep 2008 14:54:53 +0800
+Message-Id: <1220943294558-git-send-email-sheng.yang@intel.com>
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <12209432941440-git-send-email-sheng.yang@intel.com>
 References: <12209432941440-git-send-email-sheng.yang@intel.com>
@@ -27,112 +27,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The hardware virtualization technology evolves very fast. But currently
-it's hard to tell if your CPU support a certain kind of HW technology
-without digging into the source code.
-
-The patch add a new catagory in "flags" under /proc/cpuinfo. Now "flags"
-can indicate the (important) HW virtulization features the CPU supported
-as well.
-
-Current implementation just cover Intel VMX side.
+They are hardware specific MSRs, and we would use them in virtualization
+feature detection later.
 
 Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 ---
- arch/x86/kernel/cpu/common.c |   45 ++++++++++++++++++++++++++++++++++++++++++
- include/asm-x86/cpufeature.h |    9 +++++++-
- 2 files changed, 53 insertions(+), 1 deletions(-)
+ arch/x86/kvm/vmx.h          |   15 ---------------
+ include/asm-x86/msr-index.h |   16 ++++++++++++++++
+ 2 files changed, 16 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index f7c1964..01432e2 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -581,6 +581,50 @@ static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
- 	}
- }
+diff --git a/arch/x86/kvm/vmx.h b/arch/x86/kvm/vmx.h
+index 425a134..b32d4e5 100644
+--- a/arch/x86/kvm/vmx.h
++++ b/arch/x86/kvm/vmx.h
+@@ -331,21 +331,6 @@ enum vmcs_field {
  
-+static void __cpuinit detect_vmx_virtcap(struct cpuinfo_x86 *c)
-+{
-+	/* Intel VMX MSR indicated features */
-+#define X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW	0x00200000
-+#define X86_VMX_FEATURE_PROC_CTLS_VNMI		0x00400000
-+#define X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS	0x80000000
-+#define X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC	0x00000001
-+#define X86_VMX_FEATURE_PROC_CTLS2_EPT		0x00000002
-+#define X86_VMX_FEATURE_PROC_CTLS2_VPID		0x00000020
+ #define AR_RESERVD_MASK 0xfffe0f00
+ 
+-#define MSR_IA32_VMX_BASIC                      0x480
+-#define MSR_IA32_VMX_PINBASED_CTLS              0x481
+-#define MSR_IA32_VMX_PROCBASED_CTLS             0x482
+-#define MSR_IA32_VMX_EXIT_CTLS                  0x483
+-#define MSR_IA32_VMX_ENTRY_CTLS                 0x484
+-#define MSR_IA32_VMX_MISC                       0x485
+-#define MSR_IA32_VMX_CR0_FIXED0                 0x486
+-#define MSR_IA32_VMX_CR0_FIXED1                 0x487
+-#define MSR_IA32_VMX_CR4_FIXED0                 0x488
+-#define MSR_IA32_VMX_CR4_FIXED1                 0x489
+-#define MSR_IA32_VMX_VMCS_ENUM                  0x48a
+-#define MSR_IA32_VMX_PROCBASED_CTLS2            0x48b
+-#define MSR_IA32_VMX_EPT_VPID_CAP               0x48c
+-
+-#define MSR_IA32_FEATURE_CONTROL                0x3a
+ #define MSR_IA32_FEATURE_CONTROL_LOCKED         0x1
+ #define MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED  0x4
+ 
+diff --git a/include/asm-x86/msr-index.h b/include/asm-x86/msr-index.h
+index 3052f05..0bb4330 100644
+--- a/include/asm-x86/msr-index.h
++++ b/include/asm-x86/msr-index.h
+@@ -176,6 +176,7 @@
+ #define MSR_IA32_TSC			0x00000010
+ #define MSR_IA32_PLATFORM_ID		0x00000017
+ #define MSR_IA32_EBL_CR_POWERON		0x0000002a
++#define MSR_IA32_FEATURE_CONTROL        0x0000003a
+ 
+ #define MSR_IA32_APICBASE		0x0000001b
+ #define MSR_IA32_APICBASE_BSP		(1<<8)
+@@ -310,4 +311,19 @@
+ /* Geode defined MSRs */
+ #define MSR_GEODE_BUSCONT_CONF0		0x00001900
+ 
++/* Intel VT MSRs */
++#define MSR_IA32_VMX_BASIC              0x00000480
++#define MSR_IA32_VMX_PINBASED_CTLS      0x00000481
++#define MSR_IA32_VMX_PROCBASED_CTLS     0x00000482
++#define MSR_IA32_VMX_EXIT_CTLS          0x00000483
++#define MSR_IA32_VMX_ENTRY_CTLS         0x00000484
++#define MSR_IA32_VMX_MISC               0x00000485
++#define MSR_IA32_VMX_CR0_FIXED0         0x00000486
++#define MSR_IA32_VMX_CR0_FIXED1         0x00000487
++#define MSR_IA32_VMX_CR4_FIXED0         0x00000488
++#define MSR_IA32_VMX_CR4_FIXED1         0x00000489
++#define MSR_IA32_VMX_VMCS_ENUM          0x0000048a
++#define MSR_IA32_VMX_PROCBASED_CTLS2    0x0000048b
++#define MSR_IA32_VMX_EPT_VPID_CAP       0x0000048c
 +
-+	u32 vmx_msr_low, vmx_msr_high, msr_ctl, msr_ctl2;
-+
-+	clear_cpu_cap(c, X86_FEATURE_TPR_SHADOW);
-+	clear_cpu_cap(c, X86_FEATURE_VNMI);
-+	clear_cpu_cap(c, X86_FEATURE_FLEXPRIORITY);
-+	clear_cpu_cap(c, X86_FEATURE_EPT);
-+	clear_cpu_cap(c, X86_FEATURE_VPID);
-+
-+	rdmsr(MSR_IA32_VMX_PROCBASED_CTLS, vmx_msr_low, vmx_msr_high);
-+	msr_ctl = vmx_msr_high | vmx_msr_low;
-+	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW)
-+		set_cpu_cap(c, X86_FEATURE_TPR_SHADOW);
-+	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_VNMI)
-+		set_cpu_cap(c, X86_FEATURE_VNMI);
-+	if (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_2ND_CTLS) {
-+		rdmsr(MSR_IA32_VMX_PROCBASED_CTLS2,
-+		      vmx_msr_low, vmx_msr_high);
-+		msr_ctl2 = vmx_msr_high | vmx_msr_low;
-+		if ((msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VIRT_APIC) &&
-+		    (msr_ctl & X86_VMX_FEATURE_PROC_CTLS_TPR_SHADOW))
-+			set_cpu_cap(c, X86_FEATURE_FLEXPRIORITY);
-+		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_EPT)
-+			set_cpu_cap(c, X86_FEATURE_EPT);
-+		if (msr_ctl2 & X86_VMX_FEATURE_PROC_CTLS2_VPID)
-+			set_cpu_cap(c, X86_FEATURE_VPID);
-+	}
-+}
-+
-+static void __cpuinit detect_virtcap(struct cpuinfo_x86 *c)
-+{
-+	if (cpu_has(c, X86_FEATURE_VMX))
-+		detect_vmx_virtcap(c);
-+}
-+
- static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
- {
- 	if (!have_cpuid_p())
-@@ -613,6 +657,7 @@ static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
- 
- 	init_scattered_cpuid_features(c);
- 	detect_nopl(c);
-+	detect_virtcap(c);
- }
- 
- /*
-diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
-index 7ac4d93..8d45690 100644
---- a/include/asm-x86/cpufeature.h
-+++ b/include/asm-x86/cpufeature.h
-@@ -6,7 +6,7 @@
- 
- #include <asm/required-features.h>
- 
--#define NCAPINTS	8	/* N 32-bit words worth of info */
-+#define NCAPINTS	9	/* N 32-bit words worth of info */
- 
- /*
-  * Note: If the comment begins with a quoted string, that string is used
-@@ -150,6 +150,13 @@
-  */
- #define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
- 
-+/* Virtualization flags: Linux defined */
-+#define X86_FEATURE_TPR_SHADOW  (8*32+ 0) /* Intel TPR Shadow */
-+#define X86_FEATURE_VNMI        (8*32+ 1) /* Intel Virtual NMI */
-+#define X86_FEATURE_FLEXPRIORITY (8*32+ 2) /* Intel FlexPriority */
-+#define X86_FEATURE_EPT         (8*32+ 3) /* Intel Extended Page Table */
-+#define X86_FEATURE_VPID        (8*32+ 4) /* Intel Virtual Processor ID */
-+
- #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
- 
- #include <linux/bitops.h>
+ #endif /* ASM_X86__MSR_INDEX_H */
 -- 
 1.5.4.5
 
