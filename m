@@ -1,61 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbYIIBnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234AbYIICDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755858AbYIIBnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 21:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYIIBnH
+	id S1754234AbYIICDN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 22:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYIICC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 21:43:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56891 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754419AbYIIBnG (ORCPT
+	Mon, 8 Sep 2008 22:02:58 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:41925 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750791AbYIICC5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 21:43:06 -0400
-Date: Mon, 8 Sep 2008 11:42:34 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080908114234.4d2e92e5@infradead.org>
-In-Reply-To: <m3vdx6xm68.fsf@maximus.localdomain>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>
-	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
-	<48C56D60.7010405@zytor.com>
-	<20080908114619.741b6786@infradead.org>
-	<48C57439.3040903@zytor.com>
-	<20080908190249.GA21998@elte.hu>
-	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>
-	<m3vdx6xm68.fsf@maximus.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 8 Sep 2008 22:02:57 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [Patch] hfs: fix namelength memory corruption
+Date: Tue, 9 Sep 2008 02:02:55 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <ga4lgf$bl6$1@taverner.cs.berkeley.edu>
+References: <20080908133505.GA3031@alice>
+Reply-To: daw-news@cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1220925775 11942 128.32.168.222 (9 Sep 2008 02:02:55 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Tue, 9 Sep 2008 02:02:55 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Sep 2008 01:17:19 +0200
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
-
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
+Eric Sesterhenn  wrote:
+>this is basically the same as
+>hfsplus-fix-buffer-overflow-with-a-corrupted-image.patch.
+>We use the length parameter for a memcopy without checking it and
+>thereby corruption memory. 
+>
+>Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
+>
+>--- linux/fs/hfs/catalog.c.orig	2008-09-08 15:20:15.000000000 +0200
+>+++ linux/fs/hfs/catalog.c	2008-09-08 15:21:02.000000000 +0200
+>@@ -190,6 +190,10 @@ int hfs_cat_find_brec(struct super_block
 > 
-> >  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
-> >    granted.
-> 
-> VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
-> theatres etc) can't CMOV.
+> 	fd->search_key->cat.ParID = rec.thread.ParID;
+> 	len = fd->search_key->cat.CName.len = rec.thread.CName.len;
+>+	if (len > HFS_NAMELEN) {
+>+		printk(KERN_ERR "hfs: bad catalog namelength\n");
+>+		return -EIO;
+>+	}
+> 	memcpy(fd->search_key->cat.CName.name, rec.thread.CName.name, len);
+> 	return hfs_brec_find(fd);
+> }
 
-so your cpu does not fall into this bucket......
-no big deal.
+Ahh.  Took me a second to see that this is saved from
+signed/unsigned attacks by the fact that CName.len is u8.
+In other words:
+len is declared as an "int" (i.e., signed).
+memcpy's third parameter is declared as size_t (i.e., unsigned).
+Fortunately, len can't be negative, because CName.len is u8.
+OK, got it.
 
+I took a glance at some of the rest of fs/hfs/, to see whether
+there are any other issues in there, and I couldn't tell whether
+it's all OK.  e.g.,
 
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+  * hfs_asc2mac() doesn't seem to consistently check for buffer
+    overflow.  If nls_io is non-NULL and nls_disk is false, what
+    prevents this from writing beyond the end of dst?  Did I overlook
+    something?
+
+  * hfs_asc2mac() declares srclen, dstlen as ints, and compares
+    them without checking for wraparound ("dstlen > srclen"): what
+    if srclen is negative?  Couldn't tell if there's anything to
+    worry about here.
+
+  * hfs_cat_build_key doesn't check for integer overflow/wraparound
+    ("6 + key->cat.CName.len"); is that safe?  I didn't check.
+
+  * hfs_compare_dentry() declares len as an int.  This is harmless
+    on typical compilers, but in principle could invoke undefined
+    behavior.  What if s1->len == s2->len and both are > 2^31?  Then
+    len is negative, bypassing the length check ("len >= HFS_NAMELEN"),
+    and allowing the while() loop to cause integer underflow, which
+    technically (according to the C spec) invokes undefined behavior.
+    OK, on typical compilers I suspect this is harmless.
+
+I might be talking nonsense.  Even if not, I suspect some or all of
+these may actually be safe because of some facts about the callers,
+but stylistically, whenever you are handling untrusted data, I wonder
+if it would be safer to use code where it is locally obvious that the
+code is free of buffer overruns and the like.
+
+Would it be a good idea to review the rest of fs/hfs/ for other
+potential signed/unsigned and integer overflow bugs as well?
+
+Would the following practices be a good idea?
+
+  * declare length values as size_t whereever possible.
+
+  * write code where it's locally obvious that it is safe
+    (minimize assumptions about how the rest of the code works,
+    to reduce maintenance hazards, and make bugs more locally
+    apparently by the fact that the code isn't obviously safe).
