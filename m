@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbYIIRKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbYIIRLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756174AbYIIRKO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYIIRKA
+	id S1757347AbYIIRLA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYIIRKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:10:00 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:42179 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbYIIRJ7 (ORCPT
+	Tue, 9 Sep 2008 13:10:51 -0400
+Received: from dakia3.marvell.com ([65.219.4.28]:35493 "EHLO
+	dakia3.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101AbYIIRKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:09:59 -0400
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Message-Id: <DE845309-1684-472A-8269-78AB3A2823A9@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-In-Reply-To: <20080909152952.GA21207@us.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 9 Sep 2008 13:10:50 -0400
+X-ASG-Debug-ID: 1220980247-064102690000-xx1T2L
+X-Barracuda-URL: http://dakia3.marvell.com:80/cgi-bin/mark.cgi
+X-Barracuda-BBL-IP: 10.68.76.198
+X-Barracuda-RBL-IP: 10.68.76.198
+X-ASG-Orig-Subj: Re: Building Kernel with -O0
+Subject: Re: Building Kernel with -O0
+From: "Keith A. Prickett" <keithp@marvell.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080909160452.GB30160@cs181140183.pp.htv.fi>
+References: <1220550653.15123.6.camel@CV-LAB2>
+	 <20080909160452.GB30160@cs181140183.pp.htv.fi>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace is unshared
-Date: Tue, 9 Sep 2008 13:07:40 -0400
-References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com> <m18wu1nyon.fsf@frodo.ebiederm.org> <20080909152952.GA21207@us.ibm.com>
-X-Mailer: Apple Mail (2.928.1)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Date: Tue, 09 Sep 2008 10:10:40 -0700
+Message-Id: <1220980240.17292.15.camel@CV-LAB2>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
+X-Barracuda-Start-Time: 1220980247
+X-Barracuda-Virus-Scanned: by Marvell Mail Gateway at marvell.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 9, 2008, at Sep 9, 2008, 11:29 AM, Serge E. Hallyn wrote:
-> Quoting Eric W. Biederman (ebiederm@xmission.com):
->> "Serge E. Hallyn" <serue@us.ibm.com> writes:
->>
->>> Thanks, Cedric.  Eric is probably right about the long-term fix, but
->>> yeah it might take a while to properly wade through the sunrpc and  
->>> nfs
->>> layers to store the nodename at nfs mount time, and in the  
->>> meantime this
->>> fixes a real oops.
->>
->> A very esoteric oops that hasn't shown up for two years.
->
-> But an easily reproducible one.
->
-> It's not as though we'll stop looking for the right fix just bc we  
-> have
-> this "bad" fix in for a short while.
->
->> Please let's look at this and see what it would take to fix this
->> properly.
->
-> Of course.  Cedric is looking at the best way to fix it...
+On Tue, 2008-09-09 at 19:04 +0300, Adrian Bunk wrote:
+> On Thu, Sep 04, 2008 at 10:50:53AM -0700, Keith A. Prickett wrote:
+> >...
+> > It seems building with optimization
+> > level 0 should be a natural thing for kernel driver developers to do for
+> > debugging purposes.
+> > 
+> > In summary: I want to compile with optimizations off and the compile is
+> > failing now when I try this.  How can this be resolved?
+> >...
+> 
+> There are several places in the kernel where we e.g. rely on gcc 
+> removing dead code, and otherwise the linking of the kernel fails.
+> 
+> Compiling with -O0 never worked, and is not likely to ever work.
+I am currently running the kernel compiled with -O0.  The final problem
+I ran into was some NULL pointer dereference and compiling ONLY files in
+the mm directory with -O2 fixed the issue.
 
-If the upper layers are responsible for providing the utsname, you  
-will need to fix up lockd and the NFS server's callback client too, at  
-least.
+To build with -O0 I had to change a few things (for my ARM
+architecture):
+1. Ensure the __attribute__((always_inline)) was turned off in the
+"inline" #define (compiler.h)
 
->> What are we trying to achieve by reading utsname?
->
-> It looks like it gets copied into the sunrpc messages so I assume it  
-> is
-> a part of the sunrpc spec?
+2. Fix some inline assembly in kprobes (ARM only) that, due to no
+optimization, needed more registers than the compiler had available.
+(Similar to this issue:
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=13850)
 
-It appears to be used only for RPC's AUTH_SYS credentials.  The  
-nodename is used to identify the caller's host.  See RFC 1831,  
-Appendix A:
+3. Implement a fix as described here:
+(http://lists.arm.linux.org.uk/lurker/message/20050201.210458.5cc93c10.en.html)
 
-   http://rfclibrary.hosting.com/rfc/rfc1831/rfc1831-16.asp
+4. Change -O2 to -O0 in the root Makefile
 
-I'm not terribly familiar with uts namespaces, though.  Can someone  
-explain why we need to distinguish between these for AUTH_SYS if the  
-caller is on a remote system?
+5. Add extra cflags in the mm Makefile so it builds with -O2 only in
+that directory.
 
-> I don't want to do this, but we *could* put a conditional in utsname()
-> to have it return init_utsname if current->nsproxy is null...
+All of this could, potentially be changed by a configuration parameter
+and added into the kernel release.  Does someone have a primer on why
+this kind of behavior is not desired or "possible"?
 
-I don't like the idea of an oops in here.  Instead, (for now) it  
-should warn and fail to create the client, IMO.
+Doing this has given me SO much visibility into stack variables data
+values while single-stepping the code.  I feel that the time invested to
+make this work is well worth the return.  In the book "Writing Solid
+Code" (http://www.amazon.com/Writing-Solid-Code-Microsofts-Programming/dp/1556155514) one technique discussed is: stepping through your code.  In order to be able to do this effectively you need optimizations turned off.  
 
--- 
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+
