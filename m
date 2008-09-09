@@ -1,24 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYIIEJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYIIEKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbYIIEJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbYIIEIZ
+	id S1755570AbYIIEKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbYIIEI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42572 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42577 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbYIIEH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 00:07:57 -0400
+	id S1753341AbYIIEIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 00:08:00 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Tue,  9 Sep 2008 00:05:47 -0400
-Message-Id: <1220933164-10160-3-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-2-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 09/18] lirc driver for the Streamzap PC Receiver
+Date: Tue,  9 Sep 2008 00:05:54 -0400
+Message-Id: <1220933164-10160-10-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-9-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-3-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-4-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-5-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-6-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-7-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-8-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-9-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,55 +34,58 @@ Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
 ---
- drivers/input/lirc/Kconfig       |    7 +
- drivers/input/lirc/Makefile      |    1 +
- drivers/input/lirc/lirc_serial.c | 1312 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 1320 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_serial.c
+ drivers/input/lirc/Kconfig          |    7 +
+ drivers/input/lirc/Makefile         |    1 +
+ drivers/input/lirc/lirc_streamzap.c |  795 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 803 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_streamzap.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 2a04d9b..73403b9 100644
+index 7e37b2d..c105ac6 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -18,4 +18,11 @@ config LIRC_DEV
+@@ -68,4 +68,11 @@ config LIRC_SERIAL
  	help
- 	  LIRC device loadable module support, required for most LIRC drivers
+ 	  Driver for Homebrew Serial Port Receivers
  
-+config LIRC_SERIAL
-+	tristate "Homebrew Serial Port Receiver"
++config LIRC_STREAMZAP
++	tristate "Streamzap PC Receiver"
 +	default n
 +	depends on LIRC_DEV
 +	help
-+	  Driver for Homebrew Serial Port Receivers
++	  Driver for the Streamzap PC Receiver
 +
  endif
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index cdb4c45..7d76128 100644
+index f39fa06..b348110 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -6,3 +6,4 @@
- EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
- 
- obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
-+obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
-diff --git a/drivers/input/lirc/lirc_serial.c b/drivers/input/lirc/lirc_serial.c
+@@ -13,3 +13,4 @@ obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
+ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
+ obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
+ obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
++obj-$(CONFIG_LIRC_STREAMZAP)	+= lirc_streamzap.o
+diff --git a/drivers/input/lirc/lirc_streamzap.c b/drivers/input/lirc/lirc_streamzap.c
 new file mode 100644
-index 0000000..465edd9
+index 0000000..69865cb
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_serial.c
-@@ -0,0 +1,1312 @@
-+/****************************************************************************
-+ ** lirc_serial.c ***********************************************************
-+ ****************************************************************************
++++ b/drivers/input/lirc/lirc_streamzap.c
+@@ -0,0 +1,795 @@
++/*
++ * Streamzap Remote Control driver
 + *
-+ * lirc_serial - Device driver that records pulse- and pause-lengths
-+ *	       (space-lengths) between DDCD event on a serial port.
++ * Copyright (c) 2005 Christoph Bartelmus <lirc@bartelmus.de>
 + *
-+ * Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
-+ * Copyright (C) 1998 Trent Piepho <xyzzy@u.washington.edu>
-+ * Copyright (C) 1998 Ben Pfaff <blp@gnu.org>
-+ * Copyright (C) 1999 Christoph Bartelmus <lirc@bartelmus.de>
-+ * Copyright (C) 2007 Andrei Tanas <andrei@tanas.ca> (suspend/resume support)
++ * This driver was based on the work of Greg Wickham and Adrian
++ * Dewhurst. It was substantially rewritten to support correct signal
++ * gaps and now maintains a delay buffer, which is used to present
++ * consistent timing behaviour to user space applications. Without the
++ * delay buffer an ugly hack would be required in lircd, which can
++ * cause sluggish signal decoding in certain situations.
++ *
++ * This driver is based on the USB skeleton driver packaged with the
++ * kernel; copyright (C) 2001-2003 Greg Kroah-Hartman (greg@kroah.com)
++ *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
 + *  the Free Software Foundation; either version 2 of the License, or
@@ -92,1285 +102,765 @@ index 0000000..465edd9
 + *
 + */
 +
-+/* Steve's changes to improve transmission fidelity:
-+     - for systems with the rdtsc instruction and the clock counter, a
-+       send_pule that times the pulses directly using the counter.
-+       This means that the LIRC_SERIAL_TRANSMITTER_LATENCY fudge is
-+       not needed. Measurement shows very stable waveform, even where
-+       PCI activity slows the access to the UART, which trips up other
-+       versions.
-+     - For other system, non-integer-microsecond pulse/space lengths,
-+       done using fixed point binary. So, much more accurate carrier
-+       frequency.
-+     - fine tuned transmitter latency, taking advantage of fractional
-+       microseconds in previous change
-+     - Fixed bug in the way transmitter latency was accounted for by
-+       tuning the pulse lengths down - the send_pulse routine ignored
-+       this overhead as it timed the overall pulse length - so the
-+       pulse frequency was right but overall pulse length was too
-+       long. Fixed by accounting for latency on each pulse/space
-+       iteration.
-+
-+   Steve Davies <steve@daviesfam.org>  July 2001
-+*/
-+
 +#include <linux/version.h>
 +
 +#include <linux/autoconf.h>
-+
-+#include <linux/module.h>
-+#include <linux/errno.h>
-+#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/interrupt.h>
-+#include <linux/ioport.h>
 +#include <linux/kernel.h>
-+#include <linux/major.h>
-+#include <linux/serial_reg.h>
-+#include <linux/time.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/wait.h>
-+#include <linux/mm.h>
-+#include <linux/delay.h>
-+#include <linux/poll.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/system.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/smp_lock.h>
++#include <linux/completion.h>
 +#include <linux/uaccess.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/fcntl.h>
-+
-+#if defined(LIRC_SERIAL_NSLU2)
-+#include <asm/hardware.h>
-+/* From Intel IXP42X Developer's Manual (#252480-005): */
-+/* ftp://download.intel.com/design/network/manuals/25248005.pdf */
-+#define UART_IE_IXP42X_UUE   0x40 /* IXP42X UART Unit enable */
-+#define UART_IE_IXP42X_RTOIE 0x10 /* IXP42X Receiver Data Timeout int.enable */
-+#ifndef NSLU2_LED_GRN_GPIO
-+/* added in 2.6.22 */
-+#define NSLU2_LED_GRN_GPIO NSLU2_LED_GRN
-+#endif
-+#endif
++#include <linux/usb.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+#define LIRC_DRIVER_NAME "lirc_serial"
++#define DRIVER_VERSION	"1.28"
++#define DRIVER_NAME	"lirc_streamzap"
++#define DRIVER_DESC	"Streamzap Remote Control driver"
 +
-+struct lirc_serial {
-+	int signal_pin;
-+	int signal_pin_change;
-+	int on;
-+	int off;
-+	long (*send_pulse)(unsigned long length);
-+	void (*send_space)(long length);
-+	int features;
-+};
++/* ------------------------------------------------------------------ */
 +
-+#define LIRC_HOMEBREW	0
-+#define LIRC_IRDEO	   1
-+#define LIRC_IRDEO_REMOTE    2
-+#define LIRC_ANIMAX	  3
-+#define LIRC_IGOR	    4
-+#define LIRC_NSLU2	   5
-+
-+#ifdef LIRC_SERIAL_IRDEO
-+static int type = LIRC_IRDEO;
-+#elif defined(LIRC_SERIAL_IRDEO_REMOTE)
-+static int type = LIRC_IRDEO_REMOTE;
-+#elif defined(LIRC_SERIAL_ANIMAX)
-+static int type = LIRC_ANIMAX;
-+#elif defined(LIRC_SERIAL_IGOR)
-+static int type = LIRC_IGOR;
-+#elif defined(LIRC_SERIAL_NSLU2)
-+static int type = LIRC_NSLU2;
-+#else
-+static int type = LIRC_HOMEBREW;
-+#endif
-+
-+/* Set defaults for NSLU2 */
-+#if defined(LIRC_SERIAL_NSLU2)
-+#ifndef LIRC_IRQ
-+#define LIRC_IRQ IRQ_IXP4XX_UART2
-+#endif
-+#ifndef LIRC_PORT
-+#define LIRC_PORT (IXP4XX_UART2_BASE_VIRT + REG_OFFSET)
-+#endif
-+#ifndef LIRC_IOMMAP
-+#define LIRC_IOMMAP IXP4XX_UART2_BASE_PHYS
-+#endif
-+#ifndef LIRC_IOSHIFT
-+#define LIRC_IOSHIFT 2
-+#endif
-+#ifndef LIRC_ALLOW_MMAPPED_IO
-+#define LIRC_ALLOW_MMAPPED_IO
-+#endif
-+#endif
-+
-+#if defined(LIRC_ALLOW_MMAPPED_IO)
-+#ifndef LIRC_IOMMAP
-+#define LIRC_IOMMAP 0
-+#endif
-+#ifndef LIRC_IOSHIFT
-+#define LIRC_IOSHIFT 0
-+#endif
-+static int iommap = LIRC_IOMMAP;
-+static int ioshift = LIRC_IOSHIFT;
-+#endif
-+
-+#ifdef LIRC_SERIAL_SOFTCARRIER
-+static int softcarrier = 1;
-+#else
-+static int softcarrier;
-+#endif
-+
-+static int share_irq;
 +static int debug;
 +
++#define USB_STREAMZAP_VENDOR_ID		0x0e9c
++#define USB_STREAMZAP_PRODUCT_ID	0x0000
++
++/* Use our own dbg macro */
 +#define dprintk(fmt, args...)					\
 +	do {							\
 +		if (debug)					\
-+			printk(KERN_DEBUG LIRC_DRIVER_NAME ": "	\
-+			       fmt, ## args);			\
++			printk(KERN_DEBUG DRIVER_NAME "[%d]: "	\
++			       fmt "\n", ## args);		\
 +	} while (0)
 +
-+/* forward declarations */
-+static long send_pulse_irdeo(unsigned long length);
-+static long send_pulse_homebrew(unsigned long length);
-+static void send_space_irdeo(long length);
-+static void send_space_homebrew(long length);
-+
-+static struct lirc_serial hardware[] = {
-+	/* home-brew receiver/transmitter */
-+	{
-+		UART_MSR_DCD,
-+		UART_MSR_DDCD,
-+		UART_MCR_RTS|UART_MCR_OUT2|UART_MCR_DTR,
-+		UART_MCR_RTS|UART_MCR_OUT2,
-+		send_pulse_homebrew,
-+		send_space_homebrew,
-+		(
-+#ifdef LIRC_SERIAL_TRANSMITTER
-+		 LIRC_CAN_SET_SEND_DUTY_CYCLE|
-+		 LIRC_CAN_SET_SEND_CARRIER|
-+		 LIRC_CAN_SEND_PULSE|
-+#endif
-+		 LIRC_CAN_REC_MODE2)
-+	},
-+
-+	/* IRdeo classic */
-+	{
-+		UART_MSR_DSR,
-+		UART_MSR_DDSR,
-+		UART_MCR_OUT2,
-+		UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2,
-+		send_pulse_irdeo,
-+		send_space_irdeo,
-+		(LIRC_CAN_SET_SEND_DUTY_CYCLE|
-+		 LIRC_CAN_SEND_PULSE|
-+		 LIRC_CAN_REC_MODE2)
-+	},
-+
-+	/* IRdeo remote */
-+	{
-+		UART_MSR_DSR,
-+		UART_MSR_DDSR,
-+		UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2,
-+		UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2,
-+		send_pulse_irdeo,
-+		send_space_irdeo,
-+		(LIRC_CAN_SET_SEND_DUTY_CYCLE|
-+		 LIRC_CAN_SEND_PULSE|
-+		 LIRC_CAN_REC_MODE2)
-+	},
-+
-+	/* AnimaX */
-+	{
-+		UART_MSR_DCD,
-+		UART_MSR_DDCD,
-+		0,
-+		UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2,
-+		NULL,
-+		NULL,
-+		LIRC_CAN_REC_MODE2
-+	},
-+
-+	/* home-brew receiver/transmitter (Igor Cesko's variation) */
-+	{
-+		UART_MSR_DSR,
-+		UART_MSR_DDSR,
-+		UART_MCR_RTS|UART_MCR_OUT2|UART_MCR_DTR,
-+		UART_MCR_RTS|UART_MCR_OUT2,
-+		send_pulse_homebrew,
-+		send_space_homebrew,
-+		(
-+#ifdef LIRC_SERIAL_TRANSMITTER
-+		 LIRC_CAN_SET_SEND_DUTY_CYCLE|
-+		 LIRC_CAN_SET_SEND_CARRIER|
-+		 LIRC_CAN_SEND_PULSE|
-+#endif
-+		 LIRC_CAN_REC_MODE2)
-+	},
-+
-+#if defined(LIRC_SERIAL_NSLU2)
-+	/* Modified Linksys Network Storage Link USB 2.0 (NSLU2):
-+	   We receive on CTS of the 2nd serial port (R142,LHS), we
-+	   transmit with a IR diode between GPIO[1] (green status LED),
-+	   and ground (Matthias Goebl <matthias.goebl@goebl.net>).
-+	   See also http://www.nslu2-linux.org for this device */
-+	{
-+		UART_MSR_CTS,
-+		UART_MSR_DCTS,
-+		UART_MCR_RTS|UART_MCR_OUT2|UART_MCR_DTR,
-+		UART_MCR_RTS|UART_MCR_OUT2,
-+		send_pulse_homebrew,
-+		send_space_homebrew,
-+		(
-+#ifdef LIRC_SERIAL_TRANSMITTER
-+		 LIRC_CAN_SET_SEND_DUTY_CYCLE|
-+		 LIRC_CAN_SET_SEND_CARRIER|
-+		 LIRC_CAN_SEND_PULSE|
-+#endif
-+		 LIRC_CAN_REC_MODE2)
-+	},
-+#endif
-+
++/*
++ * table of devices that work with this driver
++ */
++static struct usb_device_id streamzap_table[] = {
++	/* Streamzap Remote Control */
++	{ USB_DEVICE(USB_STREAMZAP_VENDOR_ID, USB_STREAMZAP_PRODUCT_ID) },
++	/* Terminating entry */
++	{ }
 +};
 +
-+#define RS_ISR_PASS_LIMIT 256
++MODULE_DEVICE_TABLE(usb, streamzap_table);
 +
-+/* A long pulse code from a remote might take upto 300 bytes.  The
-+   daemon should read the bytes as soon as they are generated, so take
-+   the number of keys you think you can push before the daemon runs
-+   and multiply by 300.  The driver will warn you if you overrun this
-+   buffer.  If you have a slow computer or non-busmastering IDE disks,
-+   maybe you will need to increase this.  */
++#define STREAMZAP_PULSE_MASK 0xf0
++#define STREAMZAP_SPACE_MASK 0x0f
++#define STREAMZAP_RESOLUTION 256
 +
-+/* This MUST be a power of two!  It has to be larger than 1 as well. */
++/* number of samples buffered */
++#define STREAMZAP_BUFFER_SIZE 128
 +
-+#define RBUF_LEN 256
-+#define WBUF_LEN 256
++enum StreamzapDecoderState {
++	PulseSpace,
++	FullPulse,
++	FullSpace,
++	IgnorePulse
++};
 +
-+static int sense = -1;	/* -1 = auto, 0 = active high, 1 = active low */
-+static int txsense;     /* 0 = active high, 1 = active low */
++/* Structure to hold all of our device specific stuff */
++/* some remarks regarding locking:
++   theoretically this struct can be accessed from three threads:
 +
-+#ifndef LIRC_IRQ
-+#define LIRC_IRQ 4
-+#endif
-+#ifndef LIRC_PORT
-+#define LIRC_PORT 0x3f8
-+#endif
++   - from lirc_dev through set_use_inc/set_use_dec
 +
-+static int io = LIRC_PORT;
-+static int irq = LIRC_IRQ;
++   - from the USB layer throuh probe/disconnect/irq
 +
-+static struct timeval lasttv = {0, 0};
++     Careful placement of lirc_register_plugin/lirc_unregister_plugin
++     calls will prevent conflicts. lirc_dev makes sure that
++     set_use_inc/set_use_dec are not being executed and will not be
++     called after lirc_unregister_plugin returns.
 +
-+static struct lirc_buffer rbuf;
++   - by the timer callback
 +
-+static int wbuf[WBUF_LEN];
-+
-+static unsigned int freq = 38000;
-+static unsigned int duty_cycle = 50;
-+
-+/* Initialized in init_timing_params() */
-+static unsigned long period;
-+static unsigned long pulse_width;
-+static unsigned long space_width;
-+
-+#if defined(__i386__)
-+/*
-+  From:
-+  Linux I/O port programming mini-HOWTO
-+  Author: Riku Saikkonen <Riku.Saikkonen@hut.fi>
-+  v, 28 December 1997
-+
-+  [...]
-+  Actually, a port I/O instruction on most ports in the 0-0x3ff range
-+  takes almost exactly 1 microsecond, so if you're, for example, using
-+  the parallel port directly, just do additional inb()s from that port
-+  to delay.
-+  [...]
++     The timer is only running when the device is connected and the
++     LIRC device is open. Making sure the timer is deleted by
++     set_use_dec will make conflicts impossible.
 +*/
-+/* transmitter latency 1.5625us 0x1.90 - this figure arrived at from
-+ * comment above plus trimming to match actual measured frequency.
-+ * This will be sensitive to cpu speed, though hopefully most of the 1.5us
-+ * is spent in the uart access.  Still - for reference test machine was a
-+ * 1.13GHz Athlon system - Steve
-+ */
++struct usb_streamzap {
 +
-+/* changed from 400 to 450 as this works better on slower machines;
-+   faster machines will use the rdtsc code anyway */
++	/* usb */
++	/* save off the usb device pointer */
++	struct usb_device	*udev;
++	/* the interface for this device */
++	struct usb_interface	*interface;
 +
-+#define LIRC_SERIAL_TRANSMITTER_LATENCY 450
++	/* buffer & dma */
++	unsigned char		*buf_in;
++	dma_addr_t		dma_in;
++	unsigned int		buf_in_len;
 +
-+#else
++	struct usb_endpoint_descriptor *endpoint;
 +
-+/* does anybody have information on other platforms ? */
-+/* 256 = 1<<8 */
-+#define LIRC_SERIAL_TRANSMITTER_LATENCY 256
++	/* IRQ */
++	struct urb		*urb_in;
 +
-+#endif  /* __i386__ */
++	/* lirc */
++	struct lirc_plugin	plugin;
++	struct lirc_buffer	delay_buf;
++	struct lirc_buffer	lirc_buf;
 +
-+static inline unsigned int sinp(int offset)
++	/* timer used to support delay buffering */
++	struct timer_list	delay_timer;
++	int			timer_running;
++	spinlock_t		timer_lock;
++
++	/* tracks whether we are currently receiving some signal */
++	int			idle;
++	/* sum of signal lengths received since signal start */
++	unsigned long		sum;
++	/* start time of signal; necessary for gap tracking */
++	struct timeval		signal_last;
++	struct timeval		signal_start;
++	enum StreamzapDecoderState decoder_state;
++	struct timer_list	flush_timer;
++	int			flush;
++	int			in_use;
++};
++
++
++/* local function prototypes */
++static int streamzap_probe(struct usb_interface *interface,
++			   const struct usb_device_id *id);
++static void streamzap_disconnect(struct usb_interface *interface);
++static void usb_streamzap_irq(struct urb *urb);
++static int streamzap_use_inc(void *data);
++static void streamzap_use_dec(void *data);
++static int streamzap_ioctl(struct inode *node, struct file *filep,
++			   unsigned int cmd, unsigned long arg);
++static int streamzap_suspend(struct usb_interface *intf, pm_message_t message);
++static int streamzap_resume(struct usb_interface *intf);
++
++/* usb specific object needed to register this driver with the usb subsystem */
++
++static struct usb_driver streamzap_driver = {
++	.name =		DRIVER_NAME,
++	.probe =	streamzap_probe,
++	.disconnect =	streamzap_disconnect,
++	.suspend =	streamzap_suspend,
++	.resume =	streamzap_resume,
++	.id_table =	streamzap_table,
++};
++
++static void stop_timer(struct usb_streamzap *sz)
 +{
-+#if defined(LIRC_ALLOW_MMAPPED_IO)
-+	if (iommap != 0) {
-+		/* the register is memory-mapped */
-+		offset <<= ioshift;
-+		return readb(io + offset);
++	unsigned long flags;
++
++	spin_lock_irqsave(&sz->timer_lock, flags);
++	if (sz->timer_running) {
++		sz->timer_running = 0;
++		del_timer_sync(&sz->delay_timer);
 +	}
-+#endif
-+	return inb(io + offset);
++	spin_unlock_irqrestore(&sz->timer_lock, flags);
 +}
 +
-+static inline void soutp(int offset, int value)
++static void flush_timeout(unsigned long arg)
 +{
-+#if defined(LIRC_ALLOW_MMAPPED_IO)
-+	if (iommap != 0) {
-+		/* the register is memory-mapped */
-+		offset <<= ioshift;
-+		writeb(value, io + offset);
-+	}
-+#endif
-+	outb(value, io + offset);
++	struct usb_streamzap *sz = (struct usb_streamzap *) arg;
++
++	/* finally start accepting data */
++	sz->flush = 0;
 +}
-+
-+static inline void on(void)
++static void delay_timeout(unsigned long arg)
 +{
-+#if defined(LIRC_SERIAL_NSLU2)
-+	/* On NSLU2, we put the transmit diode between the output of the green
-+	   status LED and ground */
-+	if (type == LIRC_NSLU2) {
-+		gpio_line_set(NSLU2_LED_GRN_GPIO, IXP4XX_GPIO_LOW);
-+		return;
-+	}
-+#endif
-+	if (txsense)
-+		soutp(UART_MCR, hardware[type].off);
-+	else
-+		soutp(UART_MCR, hardware[type].on);
-+}
-+
-+static inline void off(void)
-+{
-+#if defined(LIRC_SERIAL_NSLU2)
-+	if (type == LIRC_NSLU2) {
-+		gpio_line_set(NSLU2_LED_GRN_GPIO, IXP4XX_GPIO_HIGH);
-+		return;
-+	}
-+#endif
-+	if (txsense)
-+		soutp(UART_MCR, hardware[type].on);
-+	else
-+		soutp(UART_MCR, hardware[type].off);
-+}
-+
-+#ifndef MAX_UDELAY_MS
-+#define MAX_UDELAY_US 5000
-+#else
-+#define MAX_UDELAY_US (MAX_UDELAY_MS*1000)
-+#endif
-+
-+static inline void safe_udelay(unsigned long usecs)
-+{
-+	while (usecs > MAX_UDELAY_US) {
-+		udelay(MAX_UDELAY_US);
-+		usecs -= MAX_UDELAY_US;
-+	}
-+	udelay(usecs);
-+}
-+
-+#ifdef USE_RDTSC
-+/* This is an overflow/precision juggle, complicated in that we can't
-+   do long long divide in the kernel */
-+
-+/* When we use the rdtsc instruction to measure clocks, we keep the
-+ * pulse and space widths as clock cycles.  As this is CPU speed
-+ * dependent, the widths must be calculated in init_port and ioctl
-+ * time
-+ */
-+
-+/* So send_pulse can quickly convert microseconds to clocks */
-+static unsigned long conv_us_to_clocks;
-+
-+static inline int init_timing_params(unsigned int new_duty_cycle,
-+		unsigned int new_freq)
-+{
-+	unsigned long long loops_per_sec, work;
-+
-+	duty_cycle = new_duty_cycle;
-+	freq = new_freq;
-+
-+	loops_per_sec = current_cpu_data.loops_per_jiffy;
-+	loops_per_sec *= HZ;
-+
-+	/* How many clocks in a microsecond?, avoiding long long divide */
-+	work = loops_per_sec;
-+	work *= 4295;  /* 4295 = 2^32 / 1e6 */
-+	conv_us_to_clocks = (work>>32);
-+
-+	/* Carrier period in clocks, approach good up to 32GHz clock,
-+	   gets carrier frequency within 8Hz */
-+	period = loops_per_sec>>3;
-+	period /= (freq>>3);
-+
-+	/* Derive pulse and space from the period */
-+
-+	pulse_width = period*duty_cycle/100;
-+	space_width = period - pulse_width;
-+	dprintk("in init_timing_params, freq=%d, duty_cycle=%d, "
-+		"clk/jiffy=%ld, pulse=%ld, space=%ld, "
-+		"conv_us_to_clocks=%ld\n",
-+		freq, duty_cycle, current_cpu_data.loops_per_jiffy,
-+		pulse_width, space_width, conv_us_to_clocks);
-+	return 0;
-+}
-+#else /* ! USE_RDTSC */
-+static inline int init_timing_params(unsigned int new_duty_cycle,
-+		unsigned int new_freq)
-+{
-+/* period, pulse/space width are kept with 8 binary places -
-+ * IE multiplied by 256. */
-+	if (256*1000000L/new_freq*new_duty_cycle/100 <=
-+	    LIRC_SERIAL_TRANSMITTER_LATENCY)
-+		return -EINVAL;
-+	if (256*1000000L/new_freq*(100-new_duty_cycle)/100 <=
-+	    LIRC_SERIAL_TRANSMITTER_LATENCY)
-+		return -EINVAL;
-+	duty_cycle = new_duty_cycle;
-+	freq = new_freq;
-+	period = 256*1000000L/freq;
-+	pulse_width = period*duty_cycle/100;
-+	space_width = period-pulse_width;
-+	dprintk("in init_timing_params, freq=%d pulse=%ld, "
-+		"space=%ld\n", freq, pulse_width, space_width);
-+	return 0;
-+}
-+#endif /* USE_RDTSC */
-+
-+
-+/* return value: space length delta */
-+
-+static long send_pulse_irdeo(unsigned long length)
-+{
-+	long rawbits;
-+	int i;
-+	unsigned char output;
-+	unsigned char chunk, shifted;
-+
-+	/* how many bits have to be sent ? */
-+	rawbits = length*1152/10000;
-+	if (duty_cycle > 50)
-+		chunk = 3;
-+	else
-+		chunk = 1;
-+	for (i = 0, output = 0x7f; rawbits > 0; rawbits -= 3) {
-+		shifted = chunk<<(i*3);
-+		shifted >>= 1;
-+		output &= (~shifted);
-+		i++;
-+		if (i == 3) {
-+			soutp(UART_TX, output);
-+			while (!(sinp(UART_LSR) & UART_LSR_THRE))
-+				;
-+			output = 0x7f;
-+			i = 0;
-+		}
-+	}
-+	if (i != 0) {
-+		soutp(UART_TX, output);
-+		while (!(sinp(UART_LSR) & UART_LSR_TEMT))
-+			;
-+	}
-+
-+	if (i == 0)
-+		return (-rawbits)*10000/1152;
-+	else
-+		return (3-i)*3*10000/1152 + (-rawbits)*10000/1152;
-+}
-+
-+#ifdef USE_RDTSC
-+/* Version that uses Pentium rdtsc instruction to measure clocks */
-+
-+/* This version does sub-microsecond timing using rdtsc instruction,
-+ * and does away with the fudged LIRC_SERIAL_TRANSMITTER_LATENCY
-+ * Implicitly i586 architecture...  - Steve
-+ */
-+
-+static inline long send_pulse_homebrew_softcarrier(unsigned long length)
-+{
-+	int flag;
-+	unsigned long target, start, now;
-+
-+	/* Get going quick as we can */
-+	rdtscl(start); on();
-+	/* Convert length from microseconds to clocks */
-+	length *= conv_us_to_clocks;
-+	/* And loop till time is up - flipping at right intervals */
-+	now = start;
-+	target = pulse_width;
-+	flag = 1;
-+	while ((now-start) < length) {
-+		/* Delay till flip time */
-+		do {
-+			rdtscl(now);
-+		} while ((now-start) < target);
-+
-+		/* flip */
-+		if (flag) {
-+			rdtscl(now); off();
-+			target += space_width;
-+		} else {
-+			rdtscl(now); on();
-+			target += pulse_width;
-+		}
-+		flag = !flag;
-+	}
-+	rdtscl(now);
-+	return ((now-start)-length) / conv_us_to_clocks;
-+}
-+#else /* ! USE_RDTSC */
-+/* Version using udelay() */
-+
-+/* here we use fixed point arithmetic, with 8
-+   fractional bits.  that gets us within 0.1% or so of the right average
-+   frequency, albeit with some jitter in pulse length - Steve */
-+
-+/* To match 8 fractional bits used for pulse/space length */
-+
-+static inline long send_pulse_homebrew_softcarrier(unsigned long length)
-+{
-+	int flag;
-+	unsigned long actual, target, d;
-+	length <<= 8;
-+
-+	actual = 0; target = 0; flag = 0;
-+	while (actual < length) {
-+		if (flag) {
-+			off();
-+			target += space_width;
-+		} else {
-+			on();
-+			target += pulse_width;
-+		}
-+		d = (target-actual-LIRC_SERIAL_TRANSMITTER_LATENCY+128)>>8;
-+		/* Note - we've checked in ioctl that the pulse/space
-+		   widths are big enough so that d is > 0 */
-+		udelay(d);
-+		actual += (d<<8)+LIRC_SERIAL_TRANSMITTER_LATENCY;
-+		flag = !flag;
-+	}
-+	return (actual-length)>>8;
-+}
-+#endif /* USE_RDTSC */
-+
-+static long send_pulse_homebrew(unsigned long length)
-+{
-+	if (length <= 0)
-+		return 0;
-+
-+	if (softcarrier)
-+		return send_pulse_homebrew_softcarrier(length);
-+	else {
-+		on();
-+		safe_udelay(length);
-+		return 0;
-+	}
-+}
-+
-+static void send_space_irdeo(long length)
-+{
-+	if (length <= 0)
-+		return;
-+
-+	safe_udelay(length);
-+}
-+
-+static void send_space_homebrew(long length)
-+{
-+	off();
-+	if (length <= 0)
-+		return;
-+	safe_udelay(length);
-+}
-+
-+static inline void rbwrite(int l)
-+{
-+	if (lirc_buffer_full(&rbuf)) {
-+		/* no new signals will be accepted */
-+		dprintk("Buffer overrun\n");
-+		return;
-+	}
-+	_lirc_buffer_write_1(&rbuf, (void *)&l);
-+}
-+
-+static inline void frbwrite(int l)
-+{
-+	/* simple noise filter */
-+	static int pulse, space;
-+	static unsigned int ptr;
-+
-+	if (ptr > 0 && (l & PULSE_BIT)) {
-+		pulse += l & PULSE_MASK;
-+		if (pulse > 250) {
-+			rbwrite(space);
-+			rbwrite(pulse | PULSE_BIT);
-+			ptr = 0;
-+			pulse = 0;
-+		}
-+		return;
-+	}
-+	if (!(l & PULSE_BIT)) {
-+		if (ptr == 0) {
-+			if (l > 20000) {
-+				space = l;
-+				ptr++;
-+				return;
-+			}
-+		} else {
-+			if (l > 20000) {
-+				space += pulse;
-+				if (space > PULSE_MASK)
-+					space = PULSE_MASK;
-+				space += l;
-+				if (space > PULSE_MASK)
-+					space = PULSE_MASK;
-+				pulse = 0;
-+				return;
-+			}
-+			rbwrite(space);
-+			rbwrite(pulse | PULSE_BIT);
-+			ptr = 0;
-+			pulse = 0;
-+		}
-+	}
-+	rbwrite(l);
-+}
-+
-+static irqreturn_t irq_handler(int i, void *blah)
-+{
-+	struct timeval tv;
-+	int status, counter, dcd;
-+	long deltv;
++	unsigned long flags;
++	/* deliver data every 10 ms */
++	static unsigned long timer_inc =
++		(10000/(1000000/HZ)) == 0 ? 1 : (10000/(1000000/HZ));
++	struct usb_streamzap *sz = (struct usb_streamzap *) arg;
 +	int data;
-+	static int last_dcd = -1;
 +
-+	if ((sinp(UART_IIR) & UART_IIR_NO_INT)) {
-+		/* not our interrupt */
-+		return IRQ_RETVAL(IRQ_NONE);
++	spin_lock_irqsave(&sz->timer_lock, flags);
++
++	if (!lirc_buffer_empty(&sz->delay_buf) &&
++	    !lirc_buffer_full(&sz->lirc_buf)) {
++		lirc_buffer_read_1(&sz->delay_buf, (unsigned char *) &data);
++		lirc_buffer_write_1(&sz->lirc_buf, (unsigned char *) &data);
++	}
++	if (!lirc_buffer_empty(&sz->delay_buf)) {
++		while (lirc_buffer_available(&sz->delay_buf) <
++		      STREAMZAP_BUFFER_SIZE/2 &&
++		      !lirc_buffer_full(&sz->lirc_buf)) {
++			lirc_buffer_read_1(&sz->delay_buf,
++					   (unsigned char *) &data);
++			lirc_buffer_write_1(&sz->lirc_buf,
++					    (unsigned char *) &data);
++		}
++		if (sz->timer_running) {
++			sz->delay_timer.expires += timer_inc;
++			add_timer(&sz->delay_timer);
++		}
++	} else {
++		sz->timer_running = 0;
 +	}
 +
-+	counter = 0;
-+	do {
-+		counter++;
-+		status = sinp(UART_MSR);
-+		if (counter > RS_ISR_PASS_LIMIT) {
-+			printk(KERN_WARNING LIRC_DRIVER_NAME ": AIEEEE: "
-+			       "We're caught!\n");
-+			break;
++	if (!lirc_buffer_empty(&sz->lirc_buf))
++		wake_up(&sz->lirc_buf.wait_poll);
++
++	spin_unlock_irqrestore(&sz->timer_lock, flags);
++}
++
++static inline void flush_delay_buffer(struct usb_streamzap *sz)
++{
++	int data;
++	int empty = 1;
++
++	while (!lirc_buffer_empty(&sz->delay_buf)) {
++		empty = 0;
++		lirc_buffer_read_1(&sz->delay_buf, (unsigned char *) &data);
++		if (!lirc_buffer_full(&sz->lirc_buf)) {
++			lirc_buffer_write_1(&sz->lirc_buf,
++					    (unsigned char *) &data);
++		} else {
++			dprintk("buffer overflow\n", sz->plugin.minor);
 +		}
-+		if ((status&hardware[type].signal_pin_change) && sense != -1) {
-+			/* get current time */
-+			do_gettimeofday(&tv);
++	}
++	if (!empty)
++		wake_up(&sz->lirc_buf.wait_poll);
++}
 +
-+			/* New mode, written by Trent Piepho
-+			   <xyzzy@u.washington.edu>. */
++static inline void push(struct usb_streamzap *sz, unsigned char *data)
++{
++	unsigned long flags;
 +
-+			/* The old format was not very portable.
-+			   We now use an int to pass pulses
-+			   and spaces to user space.
++	spin_lock_irqsave(&sz->timer_lock, flags);
++	if (lirc_buffer_full(&sz->delay_buf)) {
++		int data;
 +
-+			   If PULSE_BIT is set a pulse has been
-+			   received, otherwise a space has been
-+			   received.  The driver needs to know if your
-+			   receiver is active high or active low, or
-+			   the space/pulse sense could be
-+			   inverted. The bits denoted by PULSE_MASK are
-+			   the length in microseconds. Lengths greater
-+			   than or equal to 16 seconds are clamped to
-+			   PULSE_MASK.  All other bits are unused.
-+			   This is a much simpler interface for user
-+			   programs, as well as eliminating "out of
-+			   phase" errors with space/pulse
-+			   autodetection. */
++		lirc_buffer_read_1(&sz->delay_buf, (unsigned char *) &data);
++		if (!lirc_buffer_full(&sz->lirc_buf)) {
++			lirc_buffer_write_1(&sz->lirc_buf,
++					    (unsigned char *) &data);
++		} else {
++			dprintk("buffer overflow", sz->plugin.minor);
++		}
++	}
 +
-+			/* calculate time since last interrupt in
-+			   microseconds */
-+			dcd = (status & hardware[type].signal_pin) ? 1 : 0;
++	lirc_buffer_write_1(&sz->delay_buf, data);
 +
-+			if (dcd == last_dcd) {
-+				printk(KERN_WARNING LIRC_DRIVER_NAME
-+				": ignoring spike: %d %d %lx %lx %lx %lx\n",
-+				dcd, sense,
-+				tv.tv_sec, lasttv.tv_sec,
-+				tv.tv_usec, lasttv.tv_usec);
-+				continue;
-+			}
++	if (!sz->timer_running) {
++		sz->delay_timer.expires = jiffies + HZ/10;
++		add_timer(&sz->delay_timer);
++		sz->timer_running = 1;
++	}
 +
-+			deltv = tv.tv_sec-lasttv.tv_sec;
-+			if (tv.tv_sec < lasttv.tv_sec ||
-+			    (tv.tv_sec == lasttv.tv_sec &&
-+			     tv.tv_usec < lasttv.tv_usec)) {
-+				printk(KERN_WARNING LIRC_DRIVER_NAME
-+				       ": AIEEEE: your clock just jumped "
-+				       "backwards\n");
-+				printk(KERN_WARNING LIRC_DRIVER_NAME
-+				       ": %d %d %lx %lx %lx %lx\n",
-+				       dcd, sense,
-+				       tv.tv_sec, lasttv.tv_sec,
-+				       tv.tv_usec, lasttv.tv_usec);
-+				data = PULSE_MASK;
-+			} else if (deltv > 15) {
-+				data = PULSE_MASK; /* really long time */
-+				if (!(dcd^sense)) {
-+					/* sanity check */
-+					printk(KERN_WARNING LIRC_DRIVER_NAME
-+					       ": AIEEEE: "
-+					       "%d %d %lx %lx %lx %lx\n",
-+					       dcd, sense,
-+					       tv.tv_sec, lasttv.tv_sec,
-+					       tv.tv_usec, lasttv.tv_usec);
-+					/* detecting pulse while this
-+					   MUST be a space! */
-+					sense = sense ? 0 : 1;
++	spin_unlock_irqrestore(&sz->timer_lock, flags);
++}
++
++static inline void push_full_pulse(struct usb_streamzap *sz,
++				   unsigned char value)
++{
++	int pulse;
++
++	if (sz->idle) {
++		long deltv;
++		int tmp;
++
++		sz->signal_last = sz->signal_start;
++		do_gettimeofday(&sz->signal_start);
++
++		deltv = sz->signal_start.tv_sec-sz->signal_last.tv_sec;
++		if (deltv > 15) {
++			tmp = PULSE_MASK; /* really long time */
++		} else {
++			tmp = (int) (deltv*1000000+
++					sz->signal_start.tv_usec -
++					sz->signal_last.tv_usec);
++			tmp -= sz->sum;
++		}
++		dprintk("ls %u", sz->plugin.minor, tmp);
++		push(sz, (char *)&tmp);
++
++		sz->idle = 0;
++		sz->sum = 0;
++	}
++
++	pulse = ((int) value)*STREAMZAP_RESOLUTION;
++	pulse += STREAMZAP_RESOLUTION/2;
++	sz->sum += pulse;
++	pulse |= PULSE_BIT;
++
++	dprintk("p %u", sz->plugin.minor, pulse&PULSE_MASK);
++	push(sz, (char *)&pulse);
++}
++
++static inline void push_half_pulse(struct usb_streamzap *sz,
++				   unsigned char value)
++{
++	push_full_pulse(sz, (value & STREAMZAP_PULSE_MASK)>>4);
++}
++
++static inline void push_full_space(struct usb_streamzap *sz,
++				   unsigned char value)
++{
++	int space;
++
++	space = ((int) value)*STREAMZAP_RESOLUTION;
++	space += STREAMZAP_RESOLUTION/2;
++	sz->sum += space;
++	dprintk("s %u", sz->plugin.minor, space);
++	push(sz, (char *)&space);
++}
++
++static inline void push_half_space(struct usb_streamzap *sz,
++				   unsigned char value)
++{
++	push_full_space(sz, value & STREAMZAP_SPACE_MASK);
++}
++
++/*
++ * usb_streamzap_irq - IRQ handler
++ *
++ * This procedure is invoked on reception of data from
++ * the usb remote.
++ */
++static void usb_streamzap_irq(struct urb *urb)
++{
++	struct usb_streamzap *sz;
++	int		len;
++	unsigned int	i = 0;
++
++	if (!urb)
++		return;
++
++	sz = urb->context;
++	len = urb->actual_length;
++
++	switch (urb->status) {
++	case -ECONNRESET:
++	case -ENOENT:
++	case -ESHUTDOWN:
++		/* this urb is terminated, clean up */
++		/* sz might already be invalid at this point */
++		dprintk("urb status: %d", -1, urb->status);
++		return;
++	default:
++		break;
++	}
++
++	dprintk("received %d", sz->plugin.minor, urb->actual_length);
++	if (!sz->flush) {
++		for (i = 0; i < urb->actual_length; i++) {
++			dprintk("%d: %x", sz->plugin.minor,
++				i, (unsigned char) sz->buf_in[i]);
++			switch (sz->decoder_state) {
++			case PulseSpace:
++				if ((sz->buf_in[i]&STREAMZAP_PULSE_MASK) ==
++				    STREAMZAP_PULSE_MASK) {
++					sz->decoder_state = FullPulse;
++					continue;
++				} else if ((sz->buf_in[i]&STREAMZAP_SPACE_MASK)
++					   == STREAMZAP_SPACE_MASK) {
++					push_half_pulse(sz, sz->buf_in[i]);
++					sz->decoder_state = FullSpace;
++					continue;
++				} else {
++					push_half_pulse(sz, sz->buf_in[i]);
++					push_half_space(sz, sz->buf_in[i]);
 +				}
-+			} else
-+				data = (int) (deltv*1000000 +
-+					       tv.tv_usec -
-+					       lasttv.tv_usec);
-+			frbwrite(dcd^sense ? data : (data|PULSE_BIT));
-+			lasttv = tv;
-+			last_dcd = dcd;
-+			wake_up_interruptible(&rbuf.wait_poll);
++				break;
++			case FullPulse:
++				push_full_pulse(sz, sz->buf_in[i]);
++				sz->decoder_state = IgnorePulse;
++				break;
++			case FullSpace:
++				if (sz->buf_in[i] == 0xff) {
++					sz->idle = 1;
++					stop_timer(sz);
++					flush_delay_buffer(sz);
++				} else
++					push_full_space(sz, sz->buf_in[i]);
++				sz->decoder_state = PulseSpace;
++				break;
++			case IgnorePulse:
++				if ((sz->buf_in[i]&STREAMZAP_SPACE_MASK) ==
++				    STREAMZAP_SPACE_MASK) {
++					sz->decoder_state = FullSpace;
++					continue;
++				}
++				push_half_space(sz, sz->buf_in[i]);
++				sz->decoder_state = PulseSpace;
++				break;
++			}
 +		}
-+	} while (!(sinp(UART_IIR) & UART_IIR_NO_INT)); /* still pending ? */
-+	return IRQ_RETVAL(IRQ_HANDLED);
++	}
++
++	/* resubmit only for 2.6 */
++	usb_submit_urb(urb, GFP_ATOMIC);
++
++	return;
 +}
 +
-+static void hardware_init_port(void)
++/**
++ *	streamzap_probe
++ *
++ *	Called by usb-core to associated with a candidate device
++ *	On any failure the return value is the ERROR
++ *	On success return 0
++ */
++static int streamzap_probe(struct usb_interface *interface,
++			   const struct usb_device_id *id)
 +{
-+	unsigned long flags;
-+	local_irq_save(flags);
++	struct usb_device *udev = interface_to_usbdev(interface);
++	struct usb_host_interface *iface_host;
++	int retval = -ENOMEM;
++	struct usb_streamzap *sz = NULL;
++	char buf[63], name[128] = "";
 +
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
++	/***************************************************
++	 * Allocate space for device driver specific data
++	 */
++	sz = kmalloc(sizeof(struct usb_streamzap), GFP_KERNEL);
++	if (sz == NULL)
++		goto error;
 +
-+	/* First of all, disable all interrupts */
-+	soutp(UART_IER, sinp(UART_IER) &
-+	      (~(UART_IER_MSI|UART_IER_RLSI|UART_IER_THRI|UART_IER_RDI)));
++	memset(sz, 0, sizeof(*sz));
++	sz->udev = udev;
++	sz->interface = interface;
 +
-+	/* Clear registers. */
-+	sinp(UART_LSR);
-+	sinp(UART_RX);
-+	sinp(UART_IIR);
-+	sinp(UART_MSR);
++	/***************************************************
++	 * Check to ensure endpoint information matches requirements
++	 */
++	iface_host = interface->cur_altsetting;
 +
-+#if defined(LIRC_SERIAL_NSLU2)
-+	if (type == LIRC_NSLU2) {
-+		/* Setup NSLU2 UART */
-+
-+		/* Enable UART */
-+		soutp(UART_IER, sinp(UART_IER) | UART_IE_IXP42X_UUE);
-+		/* Disable Receiver data Time out interrupt */
-+		soutp(UART_IER, sinp(UART_IER) & ~UART_IE_IXP42X_RTOIE);
-+		/* set out2 = interupt unmask; off() doesn't set MCR
-+		   on NSLU2 */
-+		soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
-+	}
-+#endif
-+
-+	/* Set line for power source */
-+	off();
-+
-+	/* Clear registers again to be sure. */
-+	sinp(UART_LSR);
-+	sinp(UART_RX);
-+	sinp(UART_IIR);
-+	sinp(UART_MSR);
-+
-+	switch (type) {
-+	case LIRC_IRDEO:
-+	case LIRC_IRDEO_REMOTE:
-+		/* setup port to 7N1 @ 115200 Baud */
-+		/* 7N1+start = 9 bits at 115200 ~ 3 bits at 38kHz */
-+
-+		/* Set DLAB 1. */
-+		soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
-+		/* Set divisor to 1 => 115200 Baud */
-+		soutp(UART_DLM, 0);
-+		soutp(UART_DLL, 1);
-+		/* Set DLAB 0 +  7N1 */
-+		soutp(UART_LCR, UART_LCR_WLEN7);
-+		/* THR interrupt already disabled at this point */
-+		break;
-+	default:
-+		break;
++	if (iface_host->desc.bNumEndpoints != 1) {
++		err("%s: Unexpected desc.bNumEndpoints (%d)", __func__,
++		    iface_host->desc.bNumEndpoints);
++		retval = -ENODEV;
++		goto error;
 +	}
 +
-+	local_irq_restore(flags);
++	sz->endpoint = &(iface_host->endpoint[0].desc);
++	if ((sz->endpoint->bEndpointAddress & USB_ENDPOINT_DIR_MASK)
++	    != USB_DIR_IN) {
++		err("%s: endpoint doesn't match input device 02%02x",
++		    __func__, sz->endpoint->bEndpointAddress);
++		retval = -ENODEV;
++		goto error;
++	}
++
++	if ((sz->endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
++	    != USB_ENDPOINT_XFER_INT) {
++		err("%s: endpoint attributes don't match xfer 02%02x",
++		    __func__, sz->endpoint->bmAttributes);
++		retval = -ENODEV;
++		goto error;
++	}
++
++	if (sz->endpoint->wMaxPacketSize == 0) {
++		err("%s: endpoint message size==0? ", __func__);
++		retval = -ENODEV;
++		goto error;
++	}
++
++	/***************************************************
++	 * Allocate the USB buffer and IRQ URB
++	 */
++
++	sz->buf_in_len = sz->endpoint->wMaxPacketSize;
++	sz->buf_in = usb_buffer_alloc(sz->udev, sz->buf_in_len,
++				      GFP_ATOMIC, &sz->dma_in);
++	if (sz->buf_in == NULL)
++		goto error;
++
++	sz->urb_in = usb_alloc_urb(0, GFP_KERNEL);
++	if (sz->urb_in == NULL)
++		goto error;
++
++	/***************************************************
++	 * Connect this device to the LIRC sub-system
++	 */
++
++	if (lirc_buffer_init(&sz->lirc_buf, sizeof(int),
++			     STREAMZAP_BUFFER_SIZE))
++		goto error;
++
++	if (lirc_buffer_init(&sz->delay_buf, sizeof(int),
++			     STREAMZAP_BUFFER_SIZE)) {
++		lirc_buffer_free(&sz->lirc_buf);
++		goto error;
++	}
++
++	/***************************************************
++	 * As required memory is allocated now populate the plugin structure
++	 */
++
++	memset(&sz->plugin, 0, sizeof(sz->plugin));
++
++	strcpy(sz->plugin.name, DRIVER_NAME);
++	sz->plugin.minor = -1;
++	sz->plugin.sample_rate = 0;
++	sz->plugin.code_length = sizeof(int) * 8;
++	sz->plugin.features = LIRC_CAN_REC_MODE2 | LIRC_CAN_GET_REC_RESOLUTION;
++	sz->plugin.data = sz;
++	sz->plugin.rbuf = &sz->lirc_buf;
++	sz->plugin.set_use_inc = &streamzap_use_inc;
++	sz->plugin.set_use_dec = &streamzap_use_dec;
++	sz->plugin.ioctl = streamzap_ioctl;
++	sz->plugin.dev = &udev->dev;
++	sz->plugin.owner = THIS_MODULE;
++
++	sz->idle = 1;
++	sz->decoder_state = PulseSpace;
++	init_timer(&sz->delay_timer);
++	sz->delay_timer.function = delay_timeout;
++	sz->delay_timer.data = (unsigned long) sz;
++	sz->timer_running = 0;
++	spin_lock_init(&sz->timer_lock);
++
++	init_timer(&sz->flush_timer);
++	sz->flush_timer.function = flush_timeout;
++	sz->flush_timer.data = (unsigned long) sz;
++	/***************************************************
++	 * Complete final initialisations
++	 */
++
++	usb_fill_int_urb(sz->urb_in, udev,
++		usb_rcvintpipe(udev, sz->endpoint->bEndpointAddress),
++		sz->buf_in, sz->buf_in_len, usb_streamzap_irq, sz,
++		sz->endpoint->bInterval);
++
++	if (udev->descriptor.iManufacturer
++	    && usb_string(udev, udev->descriptor.iManufacturer, buf, 63) > 0)
++		strncpy(name, buf, 128);
++
++	if (udev->descriptor.iProduct
++	    && usb_string(udev,  udev->descriptor.iProduct, buf, 63) > 0)
++		snprintf(name, 128, "%s %s", name, buf);
++
++	printk(KERN_INFO DRIVER_NAME "[%d]: %s on usb%d:%d attached\n",
++	       sz->plugin.minor, name,
++	       udev->bus->busnum, sz->udev->devnum);
++
++	usb_set_intfdata(interface, sz);
++
++	if (lirc_register_plugin(&sz->plugin) < 0) {
++		lirc_buffer_free(&sz->delay_buf);
++		lirc_buffer_free(&sz->lirc_buf);
++		goto error;
++	}
++
++	return 0;
++
++error:
++
++	/***************************************************
++	 * Premise is that a 'goto error' can be invoked from inside the
++	 * probe function and all necessary cleanup actions will be taken
++	 * including freeing any necessary memory blocks
++	 */
++
++	if (retval == -ENOMEM)
++		err("Out of memory");
++
++	if (sz) {
++		usb_free_urb(sz->urb_in);
++		usb_buffer_free(udev, sz->buf_in_len, sz->buf_in, sz->dma_in);
++		kfree(sz);
++	}
++
++	return retval;
 +}
 +
-+static int init_port(void)
++static int streamzap_use_inc(void *data)
 +{
-+	int i, nlow, nhigh;
++	struct usb_streamzap *sz = data;
 +
-+	/* Reserve io region. */
-+#if defined(LIRC_ALLOW_MMAPPED_IO)
-+	/* Future MMAP-Developers: Attention!
-+	   For memory mapped I/O you *might* need to use ioremap() first,
-+	   for the NSLU2 it's done in boot code. */
-+	if (((iommap != 0)
-+	     && (request_mem_region(iommap, 8<<ioshift,
-+				    LIRC_DRIVER_NAME) == NULL))
-+	   || ((iommap == 0)
-+	       && (request_region(io, 8, LIRC_DRIVER_NAME) == NULL))) {
-+#else
-+	if (request_region(io, 8, LIRC_DRIVER_NAME) == NULL) {
-+#endif
-+		printk(KERN_ERR  LIRC_DRIVER_NAME
-+		       ": port %04x already in use\n", io);
-+		printk(KERN_WARNING LIRC_DRIVER_NAME
-+		       ": use 'setserial /dev/ttySX uart none'\n");
-+		printk(KERN_WARNING LIRC_DRIVER_NAME
-+		       ": or compile the serial port driver as module and\n");
-+		printk(KERN_WARNING LIRC_DRIVER_NAME
-+		       ": make sure this module is loaded first\n");
-+		return -EBUSY;
++	if (!sz) {
++		dprintk("%s called with no context", -1, __func__);
++		return -EINVAL;
 +	}
++	dprintk("set use inc", sz->plugin.minor);
 +
-+	hardware_init_port();
++	while (!lirc_buffer_empty(&sz->lirc_buf))
++		lirc_buffer_remove_1(&sz->lirc_buf);
++	while (!lirc_buffer_empty(&sz->delay_buf))
++		lirc_buffer_remove_1(&sz->delay_buf);
 +
-+	/* Initialize pulse/space widths */
-+	init_timing_params(duty_cycle, freq);
++	sz->flush_timer.expires = jiffies + HZ;
++	sz->flush = 1;
++	add_timer(&sz->flush_timer);
 +
-+	/* If pin is high, then this must be an active low receiver. */
-+	if (sense == -1) {
-+		/* wait 1/2 sec for the power supply */
-+
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(HZ/2);
-+
-+		/* probe 9 times every 0.04s, collect "votes" for
-+		   active high/low */
-+		nlow = 0;
-+		nhigh = 0;
-+		for (i = 0; i < 9; i++) {
-+			if (sinp(UART_MSR) & hardware[type].signal_pin)
-+				nlow++;
-+			else
-+				nhigh++;
-+			schedule_timeout(HZ/25);
-+		}
-+		sense = (nlow >= nhigh ? 1 : 0);
-+		printk(KERN_INFO  LIRC_DRIVER_NAME  ": auto-detected active "
-+		       "%s receiver\n", sense ? "low" : "high");
-+	} else
-+		printk(KERN_INFO  LIRC_DRIVER_NAME  ": Manually using active "
-+		       "%s receiver\n", sense ? "low" : "high");
++	sz->urb_in->dev = sz->udev;
++	if (usb_submit_urb(sz->urb_in, GFP_ATOMIC)) {
++		dprintk("open result = -EIO error submitting urb",
++			sz->plugin.minor);
++		return -EIO;
++	}
++	sz->in_use++;
 +
 +	return 0;
 +}
 +
-+static int set_use_inc(void *data)
++static void streamzap_use_dec(void *data)
++{
++	struct usb_streamzap *sz = data;
++
++	if (!sz) {
++		dprintk("%s called with no context", -1, __func__);
++		return;
++	}
++	dprintk("set use dec", sz->plugin.minor);
++
++	if (sz->flush) {
++		sz->flush = 0;
++		del_timer_sync(&sz->flush_timer);
++	}
++
++	stop_timer(sz);
++
++	usb_kill_urb(sz->urb_in);
++
++	sz->in_use--;
++}
++
++static int streamzap_ioctl(struct inode *node, struct file *filep,
++			   unsigned int cmd, unsigned long arg)
 +{
 +	int result;
-+	unsigned long flags;
-+
-+	/* Init read buffer. */
-+	if (lirc_buffer_init(&rbuf, sizeof(int), RBUF_LEN) < 0)
-+		return -ENOMEM;
-+
-+	/* initialize timestamp */
-+	do_gettimeofday(&lasttv);
-+
-+	result = request_irq(irq, irq_handler,
-+			   IRQF_DISABLED | (share_irq ? IRQF_SHARED : 0),
-+			   LIRC_DRIVER_NAME, (void *)&hardware);
-+
-+	switch (result) {
-+	case -EBUSY:
-+		printk(KERN_ERR LIRC_DRIVER_NAME ": IRQ %d busy\n", irq);
-+		lirc_buffer_free(&rbuf);
-+		return -EBUSY;
-+	case -EINVAL:
-+		printk(KERN_ERR LIRC_DRIVER_NAME
-+		       ": Bad irq number or handler\n");
-+		lirc_buffer_free(&rbuf);
-+		return -EINVAL;
-+	default:
-+		dprintk("Interrupt %d, port %04x obtained\n", irq, io);
-+		break;
-+	};
-+
-+	local_irq_save(flags);
-+
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
-+
-+	soutp(UART_IER, sinp(UART_IER)|UART_IER_MSI);
-+
-+	local_irq_restore(flags);
-+
-+	return 0;
-+}
-+
-+static void set_use_dec(void *data)
-+{	unsigned long flags;
-+
-+	local_irq_save(flags);
-+
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
-+
-+	/* First of all, disable all interrupts */
-+	soutp(UART_IER, sinp(UART_IER) &
-+	      (~(UART_IER_MSI|UART_IER_RLSI|UART_IER_THRI|UART_IER_RDI)));
-+	local_irq_restore(flags);
-+
-+	free_irq(irq, (void *)&hardware);
-+
-+	dprintk("freed IRQ %d\n", irq);
-+	lirc_buffer_free(&rbuf);
-+}
-+
-+static ssize_t lirc_write(struct file *file, const char *buf,
-+			 size_t n, loff_t *ppos)
-+{
-+	int i, count;
-+	unsigned long flags;
-+	long delta = 0;
-+
-+	if (!(hardware[type].features&LIRC_CAN_SEND_PULSE))
-+		return -EBADF;
-+
-+	if (n % sizeof(int))
-+		return -EINVAL;
-+	count = n / sizeof(int);
-+	if (count > WBUF_LEN || count % 2 == 0)
-+		return -EINVAL;
-+	if (copy_from_user(wbuf, buf, n))
-+		return -EFAULT;
-+	local_irq_save(flags);
-+	if (type == LIRC_IRDEO) {
-+		/* DTR, RTS down */
-+		on();
-+	}
-+	for (i = 0; i < count; i++) {
-+		if (i%2)
-+			hardware[type].send_space(wbuf[i]-delta);
-+		else
-+			delta = hardware[type].send_pulse(wbuf[i]);
-+	}
-+	off();
-+	local_irq_restore(flags);
-+	return n;
-+}
-+
-+static int lirc_ioctl(struct inode *node, struct file *filep, unsigned int cmd,
-+		      unsigned long arg)
-+{
-+	int result;
-+	unsigned long value;
-+	unsigned int ivalue;
 +
 +	switch (cmd) {
-+	case LIRC_GET_SEND_MODE:
-+		if (!(hardware[type].features&LIRC_CAN_SEND_MASK))
-+			return -ENOIOCTLCMD;
-+
-+		result = put_user(LIRC_SEND2MODE
-+				  (hardware[type].features&LIRC_CAN_SEND_MASK),
-+				  (unsigned long *) arg);
++	case LIRC_GET_REC_RESOLUTION:
++		result = put_user(STREAMZAP_RESOLUTION, (unsigned long *) arg);
 +		if (result)
 +			return result;
 +		break;
-+
-+	case LIRC_SET_SEND_MODE:
-+		if (!(hardware[type].features&LIRC_CAN_SEND_MASK))
-+			return -ENOIOCTLCMD;
-+
-+		result = get_user(value, (unsigned long *) arg);
-+		if (result)
-+			return result;
-+		/* only LIRC_MODE_PULSE supported */
-+		if (value != LIRC_MODE_PULSE)
-+			return -ENOSYS;
-+		break;
-+
-+	case LIRC_GET_LENGTH:
-+		return -ENOSYS;
-+		break;
-+
-+	case LIRC_SET_SEND_DUTY_CYCLE:
-+		dprintk("SET_SEND_DUTY_CYCLE\n");
-+		if (!(hardware[type].features&LIRC_CAN_SET_SEND_DUTY_CYCLE))
-+			return -ENOIOCTLCMD;
-+
-+		result = get_user(ivalue, (unsigned int *) arg);
-+		if (result)
-+			return result;
-+		if (ivalue <= 0 || ivalue > 100)
-+			return -EINVAL;
-+		return init_timing_params(ivalue, freq);
-+		break;
-+
-+	case LIRC_SET_SEND_CARRIER:
-+		dprintk("SET_SEND_CARRIER\n");
-+		if (!(hardware[type].features&LIRC_CAN_SET_SEND_CARRIER))
-+			return -ENOIOCTLCMD;
-+
-+		result = get_user(ivalue, (unsigned int *) arg);
-+		if (result)
-+			return result;
-+		if (ivalue > 500000 || ivalue < 20000)
-+			return -EINVAL;
-+		return init_timing_params(duty_cycle, ivalue);
-+		break;
-+
 +	default:
 +		return -ENOIOCTLCMD;
 +	}
 +	return 0;
 +}
 +
-+static struct file_operations lirc_fops = {
-+	.write	= lirc_write,
-+};
++/**
++ *	streamzap_disconnect
++ *
++ *	Called by the usb core when the device is removed from the system.
++ *
++ *	This routine guarantees that the driver will not submit any more urbs
++ *	by clearing dev->udev.  It is also supposed to terminate any currently
++ *	active urbs.  Unfortunately, usb_bulk_msg(), used in streamzap_read(),
++ *	does not provide any way to do this.
++ */
++static void streamzap_disconnect(struct usb_interface *interface)
++{
++	struct usb_streamzap *sz;
++	int errnum;
++	int minor;
 +
-+static struct lirc_plugin plugin = {
-+	.name		= LIRC_DRIVER_NAME,
-+	.minor		= -1,
-+	.code_length	= 1,
-+	.sample_rate	= 0,
-+	.data		= NULL,
-+	.add_to_buf	= NULL,
-+	.get_queue	= NULL,
-+	.rbuf		= &rbuf,
-+	.set_use_inc	= set_use_inc,
-+	.set_use_dec	= set_use_dec,
-+	.ioctl		= lirc_ioctl,
-+	.fops		= &lirc_fops,
-+	.dev		= NULL,
-+	.owner		= THIS_MODULE,
-+};
++	sz = usb_get_intfdata(interface);
++
++	/*
++	 * unregister from the LIRC sub-system
++	 */
++
++	errnum = lirc_unregister_plugin(sz->plugin.minor);
++	if (errnum != 0)
++		dprintk("error in lirc_unregister: (returned %d)",
++			sz->plugin.minor, errnum);
++
++	lirc_buffer_free(&sz->delay_buf);
++	lirc_buffer_free(&sz->lirc_buf);
++
++	/*
++	 * unregister from the USB sub-system
++	 */
++
++	usb_free_urb(sz->urb_in);
++
++	usb_buffer_free(sz->udev, sz->buf_in_len, sz->buf_in, sz->dma_in);
++
++	minor = sz->plugin.minor;
++	kfree(sz);
++
++	printk(KERN_INFO DRIVER_NAME "[%d]: disconnected\n", minor);
++}
++
++static int streamzap_suspend(struct usb_interface *intf, pm_message_t message)
++{
++	struct usb_streamzap *sz = usb_get_intfdata(intf);
++
++	printk(DRIVER_NAME "[%d]: suspend\n", sz->plugin.minor);
++	if (sz->in_use) {
++		if (sz->flush) {
++			sz->flush = 0;
++			del_timer_sync(&sz->flush_timer);
++		}
++
++		stop_timer(sz);
++
++		usb_kill_urb(sz->urb_in);
++	}
++	return 0;
++}
++
++static int streamzap_resume(struct usb_interface *intf)
++{
++	struct usb_streamzap *sz = usb_get_intfdata(intf);
++
++	while (!lirc_buffer_empty(&sz->lirc_buf))
++		lirc_buffer_remove_1(&sz->lirc_buf);
++	while (!lirc_buffer_empty(&sz->delay_buf))
++		lirc_buffer_remove_1(&sz->delay_buf);
++
++	if (sz->in_use) {
++		sz->flush_timer.expires = jiffies + HZ;
++		sz->flush = 1;
++		add_timer(&sz->flush_timer);
++
++		sz->urb_in->dev = sz->udev;
++		if (usb_submit_urb(sz->urb_in, GFP_ATOMIC)) {
++			dprintk("open result = -EIO error submitting urb",
++				sz->plugin.minor);
++			return -EIO;
++		}
++	}
++	return 0;
++}
 +
 +#ifdef MODULE
 +
-+static struct platform_device *lirc_serial_dev;
-+
-+static int __devinit lirc_serial_probe(struct platform_device *dev)
-+{
-+	return 0;
-+}
-+
-+static int __devexit lirc_serial_remove(struct platform_device *dev)
-+{
-+	return 0;
-+}
-+
-+static int lirc_serial_suspend(struct platform_device *dev,
-+			       pm_message_t state)
-+{
-+	/* Set DLAB 0. */
-+	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
-+
-+	/* Disable all interrupts */
-+	soutp(UART_IER, sinp(UART_IER) &
-+	      (~(UART_IER_MSI|UART_IER_RLSI|UART_IER_THRI|UART_IER_RDI)));
-+
-+	/* Clear registers. */
-+	sinp(UART_LSR);
-+	sinp(UART_RX);
-+	sinp(UART_IIR);
-+	sinp(UART_MSR);
-+
-+	return 0;
-+}
-+
-+static int lirc_serial_resume(struct platform_device *dev)
-+{
-+	unsigned long flags;
-+
-+	hardware_init_port();
-+
-+	local_irq_save(flags);
-+	/* Enable Interrupt */
-+	do_gettimeofday(&lasttv);
-+	soutp(UART_IER, sinp(UART_IER)|UART_IER_MSI);
-+	off();
-+
-+	lirc_buffer_clear(&rbuf);
-+
-+	local_irq_restore(flags);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver lirc_serial_driver = {
-+	.probe		= lirc_serial_probe,
-+	.remove		= __devexit_p(lirc_serial_remove),
-+	.suspend	= lirc_serial_suspend,
-+	.resume		= lirc_serial_resume,
-+	.driver		= {
-+		.name	= "lirc_serial",
-+		.owner	= THIS_MODULE,
-+	},
-+};
-+
-+static int __init lirc_serial_init(void)
++/**
++ *	usb_streamzap_init
++ */
++static int __init usb_streamzap_init(void)
 +{
 +	int result;
 +
-+	result = platform_driver_register(&lirc_serial_driver);
++	/* register this driver with the USB subsystem */
++
++	result = usb_register(&streamzap_driver);
++
 +	if (result) {
-+		printk("lirc register returned %d\n", result);
++		err("usb_register failed. Error number %d",
++		    result);
 +		return result;
 +	}
 +
-+	lirc_serial_dev = platform_device_alloc("lirc_serial", 0);
-+	if (!lirc_serial_dev) {
-+		result = -ENOMEM;
-+		goto exit_driver_unregister;
-+	}
-+
-+	result = platform_device_add(lirc_serial_dev);
-+	if (result)
-+		goto exit_device_put;
-+
++	printk(KERN_INFO DRIVER_NAME " " DRIVER_VERSION " registered\n");
 +	return 0;
-+
-+exit_device_put:
-+	platform_device_put(lirc_serial_dev);
-+exit_driver_unregister:
-+	platform_driver_unregister(&lirc_serial_driver);
-+	return result;
 +}
 +
-+static void __exit lirc_serial_exit(void)
++/**
++ *	usb_streamzap_exit
++ */
++static void __exit usb_streamzap_exit(void)
 +{
-+	platform_device_unregister(lirc_serial_dev);
-+	platform_driver_unregister(&lirc_serial_driver);
++	/* deregister this driver with the USB subsystem */
++	usb_deregister(&streamzap_driver);
 +}
 +
-+int __init init_module(void)
-+{
-+	int result;
 +
-+	result = lirc_serial_init();
-+	if (result)
-+		return result;
-+	switch (type) {
-+	case LIRC_HOMEBREW:
-+	case LIRC_IRDEO:
-+	case LIRC_IRDEO_REMOTE:
-+	case LIRC_ANIMAX:
-+	case LIRC_IGOR:
-+#if defined(LIRC_SERIAL_NSLU2)
-+	case LIRC_NSLU2:
-+#endif
-+		break;
-+	default:
-+		result = -EINVAL;
-+		goto exit_serial_exit;
-+	}
-+	if (!softcarrier) {
-+		switch (type) {
-+		case LIRC_HOMEBREW:
-+		case LIRC_IGOR:
-+		case LIRC_NSLU2:
-+			hardware[type].features &=
-+				~(LIRC_CAN_SET_SEND_DUTY_CYCLE|
-+				  LIRC_CAN_SET_SEND_CARRIER);
-+			break;
-+		}
-+	}
-+	result = init_port();
-+	if (result < 0)
-+		goto exit_serial_exit;
-+	plugin.features = hardware[type].features;
-+	plugin.minor = lirc_register_plugin(&plugin);
-+	if (plugin.minor < 0) {
-+		printk(KERN_ERR  LIRC_DRIVER_NAME
-+		       ": register_chrdev failed!\n");
-+		result = -EIO;
-+		goto exit_release;
-+	}
-+	return 0;
-+exit_release:
-+	release_region(io, 8);
-+exit_serial_exit:
-+	lirc_serial_exit();
-+	return result;
-+}
++module_init(usb_streamzap_init);
++module_exit(usb_streamzap_exit);
 +
-+void __exit cleanup_module(void)
-+{
-+	lirc_serial_exit();
-+#if defined(LIRC_ALLOW_MMAPPED_IO)
-+	if (iommap != 0)
-+		release_mem_region(iommap, 8<<ioshift);
-+	else
-+		release_region(io, 8);
-+#else
-+	release_region(io, 8);
-+#endif
-+	lirc_unregister_plugin(plugin.minor);
-+	dprintk("cleaned up module\n");
-+}
-+
-+MODULE_DESCRIPTION("Infra-red receiver driver for serial ports.");
-+MODULE_AUTHOR("Ralph Metzler, Trent Piepho, Ben Pfaff, "
-+	      "Christoph Bartelmus, Andrei Tanas");
++MODULE_AUTHOR("Christoph Bartelmus, Greg Wickham, Adrian Dewhurst");
++MODULE_DESCRIPTION(DRIVER_DESC);
 +MODULE_LICENSE("GPL");
-+
-+module_param(type, int, 0444);
-+#if defined(LIRC_SERIAL_NSLU2)
-+MODULE_PARM_DESC(type, "Hardware type (0 = home-brew, 1 = IRdeo,"
-+		 " 2 = IRdeo Remote, 3 = AnimaX, 4 = IgorPlug,"
-+		 " 5 = NSLU2 RX:CTS2/TX:GreenLED)");
-+#else
-+MODULE_PARM_DESC(type, "Hardware type (0 = home-brew, 1 = IRdeo,"
-+		 " 2 = IRdeo Remote, 3 = AnimaX, 4 = IgorPlug)");
-+#endif
-+
-+module_param(io, int, 0444);
-+MODULE_PARM_DESC(io, "I/O address base (0x3f8 or 0x2f8)");
-+
-+#if defined(LIRC_ALLOW_MMAPPED_IO)
-+/* some architectures (e.g. intel xscale) have memory mapped registers */
-+module_param(iommap, bool, 0444);
-+MODULE_PARM_DESC(iommap, "physical base for memory mapped I/O"
-+		" (0 = no memory mapped io)");
-+
-+/* some architectures (e.g. intel xscale) align the 8bit serial registers
-+   on 32bit word boundaries.
-+   See linux-kernel/serial/8250.c serial_in()/out() */
-+module_param(ioshift, int, 0444);
-+MODULE_PARM_DESC(ioshift, "shift I/O register offset (0 = no shift)");
-+#endif
-+
-+module_param(irq, int, 0444);
-+MODULE_PARM_DESC(irq, "Interrupt (4 or 3)");
-+
-+module_param(share_irq, bool, 0444);
-+MODULE_PARM_DESC(share_irq, "Share interrupts (0 = off, 1 = on)");
-+
-+module_param(sense, bool, 0444);
-+MODULE_PARM_DESC(sense, "Override autodetection of IR receiver circuit"
-+		 " (0 = active high, 1 = active low )");
-+
-+#ifdef LIRC_SERIAL_TRANSMITTER
-+module_param(txsense, bool, 0444);
-+MODULE_PARM_DESC(txsense, "Sense of transmitter circuit"
-+		 " (0 = active high, 1 = active low )");
-+#endif
-+
-+module_param(softcarrier, bool, 0444);
-+MODULE_PARM_DESC(softcarrier, "Software carrier (0 = off, 1 = on)");
 +
 +module_param(debug, bool, 0644);
 +MODULE_PARM_DESC(debug, "Enable debugging messages");
