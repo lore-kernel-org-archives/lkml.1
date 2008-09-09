@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYIIEMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYIIENI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756679AbYIIEMq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbYIIEIs
+	id S1756002AbYIIENI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755208AbYIIEIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42583 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42584 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751442AbYIIEIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753527AbYIIEIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Sep 2008 00:08:02 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 13/18] lirc driver for ITE8709 CIR port receiver
-Date: Tue,  9 Sep 2008 00:05:58 -0400
-Message-Id: <1220933164-10160-14-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-13-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 12/18] lirc driver for the Sasem OnAir and Dign HV5 receivers
+Date: Tue,  9 Sep 2008 00:05:57 -0400
+Message-Id: <1220933164-10160-13-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-12-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
@@ -29,7 +29,6 @@ References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-10-git-send-email-jwilson@redhat.com>
  <1220933164-10160-11-git-send-email-jwilson@redhat.com>
  <1220933164-10160-12-git-send-email-jwilson@redhat.com>
- <1220933164-10160-13-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,593 +37,1017 @@ Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
 ---
- drivers/input/lirc/Kconfig        |    7 +
- drivers/input/lirc/Makefile       |    1 +
- drivers/input/lirc/lirc_ite8709.c |  545 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 553 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_ite8709.c
+ drivers/input/lirc/Kconfig      |    7 +
+ drivers/input/lirc/Makefile     |    1 +
+ drivers/input/lirc/lirc_sasem.c |  969 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 977 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_sasem.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 2731c40..9783639 100644
+index 7e924fe..2731c40 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -54,6 +54,13 @@ config LIRC_IMON
+@@ -68,6 +68,13 @@ config LIRC_MCEUSB2
  	help
- 	  Driver for the Soundgraph IMON IR Receiver
+ 	  Driver for the Microsoft Media Center Ed. Receiver, v2
  
-+config LIRC_ITE8709
-+	tristate "ITE8709 CIR Port Receiver"
++config LIRC_SASEM
++	tristate "Sasem USB IR Remote"
 +	default n
-+	depends on LIRC_DEV && PNP
++	depends on LIRC_DEV
 +	help
-+	  Driver for the ITE8709 IR Receiver
++	  Driver for the Sasem OnAir Remocon-V or Dign HV5 HTPC IR/VFD Module
 +
- config LIRC_MCEUSB
- 	tristate "Microsoft Media Center Ed. Receiver, v1"
+ config LIRC_SERIAL
+ 	tristate "Homebrew Serial Port Receiver"
  	default n
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index 1b2793d..1da7c5b 100644
+index 2ee00d1..1b2793d 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
- obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
- obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
+@@ -13,6 +13,7 @@ obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
  obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
-+obj-$(CONFIG_LIRC_ITE8709)	+= lirc_ite8709.o
  obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
  obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
- obj-$(CONFIG_LIRC_SASEM)	+= lirc_sasem.o
-diff --git a/drivers/input/lirc/lirc_ite8709.c b/drivers/input/lirc/lirc_ite8709.c
++obj-$(CONFIG_LIRC_SASEM)	+= lirc_sasem.o
+ obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
+ obj-$(CONFIG_LIRC_STREAMZAP)	+= lirc_streamzap.o
+ obj-$(CONFIG_LIRC_TTUSBIR)	+= lirc_ttusbir.o
+diff --git a/drivers/input/lirc/lirc_sasem.c b/drivers/input/lirc/lirc_sasem.c
 new file mode 100644
-index 0000000..d03ecf7
+index 0000000..003f492
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_ite8709.c
-@@ -0,0 +1,545 @@
++++ b/drivers/input/lirc/lirc_sasem.c
+@@ -0,0 +1,969 @@
++/* lirc_sasem.c - USB remote support for LIRC
++ * Version 0.5
++ *
++ * Copyright (C) 2004-2005 Oliver Stabel <oliver.stabel@gmx.de>
++ *			 Tim Davies <tim@opensystems.net.au>
++ *
++ * This driver was derived from:
++ *   Venky Raju <dev@venky.ws>
++ *      "lirc_imon - "LIRC plugin/VFD driver for Ahanix/Soundgraph IMON IR/VFD"
++ *   Paul Miller <pmiller9@users.sourceforge.net>'s 2003-2004
++ *      "lirc_atiusb - USB remote support for LIRC"
++ *   Culver Consulting Services <henry@culcon.com>'s 2003
++ *      "Sasem OnAir VFD/IR USB driver"
++ *
++ *
++ * 2004/06/13   -   0.1
++ *		  initial version
++ *
++ * 2004/06/28   -   0.2
++ *		  added file system support to write data to VFD device (used
++ *		  in conjunction with LCDProc)
++ *
++ * 2004/11/22   -   0.3
++ *		  Ported to 2.6 kernel
++ *			- Tim Davies <tim@opensystems.net.au>
++ *
++ * 2005/03/29   -   0.4
++ *		  A few tidyups and keypress timings
++ *			- Tim Davies <tim@opensystems.net.au>
++ *
++ * 2005/06/23   -   0.5
++ *		  A complete rewrite (shamelessly) based on lirc_imon.c
++ *		  Tim Davies <tim@opensystems.net.au>
++ *
++ * NOTE - The LCDproc iMon driver should work with this module.  More info at
++ *	http://www.frogstorm.info/sasem
++ */
++
 +/*
-+ * LIRC driver for ITE8709 CIR port
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
 + *
-+ * Copyright (C) 2008 Grégory Lardière <spmf2004-lirc@yahoo.fr>
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of the
-+ * License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-+ * USA
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
 +#include <linux/version.h>
-+#include <linux/module.h>
++
 +
 +#include <linux/autoconf.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
 +
-+#include <linux/pnp.h>
-+#include <linux/io.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/uaccess.h>
++#include <linux/usb.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+#define LIRC_DRIVER_NAME "lirc_ite8709"
 +
-+#define BUF_CHUNK_SIZE	sizeof(int)
-+#define BUF_SIZE	(128*BUF_CHUNK_SIZE)
++#define MOD_AUTHOR	"Oliver Stabel <oliver.stabel@gmx.de>, " \
++			"Tim Davies <tim@opensystems.net.au>"
++#define MOD_DESC	"USB Driver for Sasem Remote Controller V1.1"
++#define MOD_NAME	"lirc_sasem"
++#define MOD_VERSION	"0.5"
 +
-+/*******************************************************************************
-+* The ITE8709 device seems to be the combination of IT8512 superIO chip and    *
-+* a specific firmware running on the IT8512's embedded micro-controller.       *
-+* In addition of the embedded micro-controller, the IT8512 chip contains a     *
-+* CIR module and several other modules. A few modules are directly accessible  *
-+* by the host CPU, but most of them are only accessible by the                 *
-+* micro-controller. The CIR module is only accessible by the micro-controller. *
-+* The battery-backed SRAM module is accessible by the host CPU and the         *
-+* micro-controller. So one of the MC's firmware role is to act as a bridge     *
-+* between the host CPU and the CIR module. The firmware implements a kind of   *
-+* communication protocol using the SRAM module as a shared memory. The IT8512  *
-+* specification is publicly available on ITE's web site, but the communication *
-+* protocol is not, so it was reverse-engineered.                               *
-+*******************************************************************************/
++#define VFD_MINOR_BASE	144	/* Same as LCD */
++#define DEVICE_NAME	"lcd%d"
 +
-+/* ITE8709 Registers addresses and values (reverse-engineered) */
-+#define ITE8709_MODE		0x1a
-+#define ITE8709_REG_ADR		0x1b
-+#define ITE8709_REG_VAL		0x1c
-+#define ITE8709_IIR		0x1e  /* Interrupt identification register */
-+#define ITE8709_RFSR		0x1f  /* Receiver FIFO status register */
-+#define ITE8709_FIFO_START	0x20
++#define BUF_CHUNK_SIZE	8
++#define BUF_SIZE	128
 +
-+#define ITE8709_MODE_READY	0X00
-+#define ITE8709_MODE_WRITE	0X01
-+#define ITE8709_MODE_READ	0X02
-+#define ITE8709_IIR_RDAI	0x02  /* Receiver data available interrupt */
-+#define ITE8709_IIR_RFOI	0x04  /* Receiver FIFO overrun interrupt */
-+#define ITE8709_RFSR_MASK	0x3f  /* FIFO byte count mask */
++#define SUCCESS		0
++#define	TRUE		1
++#define FALSE		0
 +
-+/* IT8512 CIR-module registers addresses and values (from IT8512 E/F */
-+/* specification v0.4.1)                                             */
-+#define IT8512_REG_MSTCR	0x01  /* Master control register */
-+#define IT8512_REG_IER		0x02  /* Interrupt enable register */
-+#define IT8512_REG_CFR		0x04  /* Carrier frequency register */
-+#define IT8512_REG_RCR		0x05  /* Receive control register */
-+#define IT8512_REG_BDLR		0x08  /* Baud rate divisor low byte register */
-+#define IT8512_REG_BDHR		0x09  /* Baud rate divisor high byte register */
++#define IOCTL_LCD_CONTRAST 1
 +
-+#define IT8512_MSTCR_RESET	0x01  /* Reset registers to default value */
-+#define IT8512_MSTCR_FIFOCLR	0x02  /* Clear FIFO */
-+#define IT8512_MSTCR_FIFOTL_7	0x04  /* FIFO threshold level : 7 */
-+#define IT8512_MSTCR_FIFOTL_25	0x0c  /* FIFO threshold level : 25 */
-+#define IT8512_IER_RDAIE	0x02  /* Enable data interrupt request */
-+#define IT8512_IER_RFOIE	0x04  /* Enable FIFO overrun interrupt req */
-+#define IT8512_IER_IEC		0x80  /* Enable interrupt request */
-+#define IT8512_CFR_CF_36KHZ	0x09  /* Carrier freq : low speed, 36kHz */
-+#define IT8512_RCR_RXDCR_1	0x01  /* Demodulation carrier range : 1 */
-+#define IT8512_RCR_RXACT	0x08  /* Receiver active */
-+#define IT8512_RCR_RXEN		0x80  /* Receiver enable */
-+#define IT8512_BDR_6		6     /* Baud rate divisor : 6 */
++/* ------------------------------------------------------------
++ *		     P R O T O T Y P E S
++ * ------------------------------------------------------------
++ */
 +
-+/* Actual values used by this driver */
-+#define CFG_FIFOTL	IT8512_MSTCR_FIFOTL_25
-+#define CFG_CR_FREQ	IT8512_CFR_CF_36KHZ
-+#define CFG_DCR		IT8512_RCR_RXDCR_1
-+#define CFG_BDR		IT8512_BDR_6
-+#define CFG_TIMEOUT	100000 /* Rearm interrupt when a space is > 100 ms */
++/* USB Callback prototypes */
++static int sasem_probe(struct usb_interface *interface,
++			const struct usb_device_id *id);
++static void sasem_disconnect(struct usb_interface *interface);
++static void usb_rx_callback(struct urb *urb);
++static void usb_tx_callback(struct urb *urb);
 +
-+static int debug;
++/* VFD file_operations function prototypes */
++static int vfd_open(struct inode *inode, struct file *file);
++static int vfd_ioctl(struct inode *inode, struct file *file,
++				unsigned cmd, unsigned long arg);
++static int vfd_close(struct inode *inode, struct file *file);
++static ssize_t vfd_write(struct file *file, const char *buf,
++				size_t n_bytes, loff_t *pos);
 +
-+struct ite8709_device {
-+	int use_count;
-+	int io;
-+	int irq;
-+	spinlock_t hardware_lock;
-+	unsigned long long acc_pulse;
-+	unsigned long long acc_space;
-+	char lastbit;
-+	struct timeval last_tv;
-+	struct lirc_plugin plugin;
-+	struct lirc_buffer buffer;
-+	struct tasklet_struct tasklet;
-+	char force_rearm;
-+	char rearmed;
-+	char device_busy;
++/* LIRC plugin function prototypes */
++static int ir_open(void *data);
++static void ir_close(void *data);
++
++/* Driver init/exit prototypes */
++static int __init sasem_init(void);
++static void __exit sasem_exit(void);
++
++/* ------------------------------------------------------------
++ *		     G L O B A L S
++ * ------------------------------------------------------------
++ */
++
++struct sasem_context {
++
++	struct usb_device *dev;
++	int vfd_isopen;			/* VFD port has been opened       */
++	unsigned int vfd_contrast;	/* VFD contrast		   */
++	int ir_isopen;			/* IR port has been opened	*/
++	int dev_present;		/* USB device presence	    */
++	struct mutex lock;		/* to lock this object	    */
++	wait_queue_head_t remove_ok;	/* For unexpected USB disconnects */
++
++	struct lirc_plugin *plugin;
++	struct usb_endpoint_descriptor *rx_endpoint;
++	struct usb_endpoint_descriptor *tx_endpoint;
++	struct urb *rx_urb;
++	struct urb *tx_urb;
++	unsigned char usb_rx_buf[8];
++	unsigned char usb_tx_buf[8];
++
++	struct tx_t {
++		unsigned char data_buf[32];  /* user data buffer	  */
++		struct completion finished;  /* wait for write to finish  */
++		atomic_t busy;		     /* write in progress	 */
++		int status;		     /* status of tx completion   */
++	} tx;
++
++	/* for dealing with repeat codes (wish there was a toggle bit!) */
++	struct timeval presstime;
++	char lastcode[8];
++	int codesaved;
 +};
 +
-+#define dprintk(fmt, args...)					\
-+	do {							\
-+		if (debug)					\
-+			printk(KERN_DEBUG LIRC_DRIVER_NAME ": "	\
-+				fmt, ## args);			\
-+	} while (0)
++#define LOCK_CONTEXT	mutex_lock(&context->lock)
++#define UNLOCK_CONTEXT	mutex_unlock(&context->lock)
 +
++/* VFD file operations */
++static struct file_operations vfd_fops = {
 +
-+static unsigned char ite8709_read(struct ite8709_device *dev,
-+					unsigned char port)
-+{
-+	outb(port, dev->io);
-+	return inb(dev->io+1);
-+}
++	.owner		= THIS_MODULE,
++	.open		= &vfd_open,
++	.write		= &vfd_write,
++	.ioctl		= &vfd_ioctl,
++	.release	= &vfd_close
++};
 +
-+static void ite8709_write(struct ite8709_device *dev, unsigned char port,
-+				unsigned char data)
-+{
-+	outb(port, dev->io);
-+	outb(data, dev->io+1);
-+}
-+
-+static void ite8709_wait_device(struct ite8709_device *dev)
-+{
-+	int i = 0;
-+	/* loop until device tells it's ready to continue */
-+	/* iterations count is usually ~750 but can sometimes achieve 13000 */
-+	for (i = 0; i < 15000; i++) {
-+		udelay(2);
-+		if (ite8709_read(dev, ITE8709_MODE) == ITE8709_MODE_READY)
-+			break;
-+	}
-+}
-+
-+static void ite8709_write_register(struct ite8709_device *dev,
-+				unsigned char reg_adr, unsigned char reg_value)
-+{
-+	ite8709_wait_device(dev);
-+
-+	ite8709_write(dev, ITE8709_REG_VAL, reg_value);
-+	ite8709_write(dev, ITE8709_REG_ADR, reg_adr);
-+	ite8709_write(dev, ITE8709_MODE, ITE8709_MODE_WRITE);
-+}
-+
-+static void ite8709_init_hardware(struct ite8709_device *dev)
-+{
-+	spin_lock_irq(&dev->hardware_lock);
-+	dev->device_busy = 1;
-+	spin_unlock_irq(&dev->hardware_lock);
-+
-+	ite8709_write_register(dev, IT8512_REG_BDHR, (CFG_BDR >> 8) & 0xff);
-+	ite8709_write_register(dev, IT8512_REG_BDLR, CFG_BDR & 0xff);
-+	ite8709_write_register(dev, IT8512_REG_CFR, CFG_CR_FREQ);
-+	ite8709_write_register(dev, IT8512_REG_IER,
-+			IT8512_IER_IEC | IT8512_IER_RFOIE | IT8512_IER_RDAIE);
-+	ite8709_write_register(dev, IT8512_REG_RCR, CFG_DCR);
-+	ite8709_write_register(dev, IT8512_REG_MSTCR,
-+					CFG_FIFOTL | IT8512_MSTCR_FIFOCLR);
-+	ite8709_write_register(dev, IT8512_REG_RCR,
-+				IT8512_RCR_RXEN | IT8512_RCR_RXACT | CFG_DCR);
-+
-+	spin_lock_irq(&dev->hardware_lock);
-+	dev->device_busy = 0;
-+	spin_unlock_irq(&dev->hardware_lock);
-+
-+	tasklet_enable(&dev->tasklet);
-+}
-+
-+static void ite8709_drop_hardware(struct ite8709_device *dev)
-+{
-+	tasklet_disable(&dev->tasklet);
-+
-+	spin_lock_irq(&dev->hardware_lock);
-+	dev->device_busy = 1;
-+	spin_unlock_irq(&dev->hardware_lock);
-+
-+	ite8709_write_register(dev, IT8512_REG_RCR, 0);
-+	ite8709_write_register(dev, IT8512_REG_MSTCR,
-+				IT8512_MSTCR_RESET | IT8512_MSTCR_FIFOCLR);
-+
-+	spin_lock_irq(&dev->hardware_lock);
-+	dev->device_busy = 0;
-+	spin_unlock_irq(&dev->hardware_lock);
-+}
-+
-+static int ite8709_set_use_inc(void *data)
-+{
-+	struct ite8709_device *dev;
-+	dev = data;
-+	if (dev->use_count == 0)
-+		ite8709_init_hardware(dev);
-+	dev->use_count++;
-+	return 0;
-+}
-+
-+static void ite8709_set_use_dec(void *data)
-+{
-+	struct ite8709_device *dev;
-+	dev = data;
-+	dev->use_count--;
-+	if (dev->use_count == 0)
-+		ite8709_drop_hardware(dev);
-+}
-+
-+static void ite8709_add_read_queue(struct ite8709_device *dev, int flag,
-+					unsigned long long val)
-+{
-+	int value;
-+
-+	dprintk("add a %llu usec %s\n", val, flag ? "pulse" : "space");
-+
-+	value = (val > PULSE_MASK) ? PULSE_MASK : val;
-+	if (flag)
-+		value |= PULSE_BIT;
-+
-+	if (!lirc_buffer_full(&dev->buffer)) {
-+		lirc_buffer_write_1(&dev->buffer, (void *) &value);
-+		wake_up(&dev->buffer.wait_poll);
-+	}
-+}
-+
-+static irqreturn_t ite8709_interrupt(int irq, void *dev_id)
-+{
-+	unsigned char data;
-+	int iir, rfsr, i;
-+	int fifo = 0;
-+	char bit;
-+	struct timeval curr_tv;
-+
-+	/* Bit duration in microseconds */
-+	const unsigned long bit_duration = 1000000ul / (115200 / CFG_BDR);
-+
-+	struct ite8709_device *dev;
-+	dev = dev_id;
-+
-+	/* If device is busy, we simply discard data because we are in one of */
-+	/* these two cases : shutting down or rearming the device, so this    */
-+	/* doesn't really matter and this avoids waiting too long in IRQ ctx  */
-+	spin_lock(&dev->hardware_lock);
-+	if (dev->device_busy) {
-+		spin_unlock(&dev->hardware_lock);
-+		return IRQ_RETVAL(IRQ_HANDLED);
-+	}
-+
-+	iir = ite8709_read(dev, ITE8709_IIR);
-+
-+	switch (iir) {
-+	case ITE8709_IIR_RFOI:
-+		dprintk("fifo overrun, scheduling forced rearm just in case\n");
-+		dev->force_rearm = 1;
-+		tasklet_schedule(&dev->tasklet);
-+		spin_unlock(&dev->hardware_lock);
-+		return IRQ_RETVAL(IRQ_HANDLED);
-+
-+	case ITE8709_IIR_RDAI:
-+		rfsr = ite8709_read(dev, ITE8709_RFSR);
-+		fifo = rfsr & ITE8709_RFSR_MASK;
-+		if (fifo > 32)
-+			fifo = 32;
-+		dprintk("iir: 0x%x rfsr: 0x%x fifo: %d\n", iir, rfsr, fifo);
-+
-+		if (dev->rearmed) {
-+			do_gettimeofday(&curr_tv);
-+			dev->acc_space += 1000000ull
-+				* (curr_tv.tv_sec - dev->last_tv.tv_sec)
-+				+ (curr_tv.tv_usec - dev->last_tv.tv_usec);
-+			dev->rearmed = 0;
-+		}
-+		for (i = 0; i < fifo; i++) {
-+			data = ite8709_read(dev, i+ITE8709_FIFO_START);
-+			data = ~data;
-+			/* Loop through */
-+			for (bit = 0; bit < 8; ++bit) {
-+				if ((data >> bit) & 1) {
-+					dev->acc_pulse += bit_duration;
-+					if (dev->lastbit == 0) {
-+						ite8709_add_read_queue(dev, 0,
-+							dev->acc_space);
-+						dev->acc_space = 0;
-+					}
-+				} else {
-+					dev->acc_space += bit_duration;
-+					if (dev->lastbit == 1) {
-+						ite8709_add_read_queue(dev, 1,
-+							dev->acc_pulse);
-+						dev->acc_pulse = 0;
-+					}
-+				}
-+				dev->lastbit = (data >> bit) & 1;
-+			}
-+		}
-+		ite8709_write(dev, ITE8709_RFSR, 0);
-+
-+		if (dev->acc_space > CFG_TIMEOUT) {
-+			dprintk("scheduling rearm IRQ\n");
-+			do_gettimeofday(&dev->last_tv);
-+			dev->force_rearm = 0;
-+			tasklet_schedule(&dev->tasklet);
-+		}
-+
-+		spin_unlock(&dev->hardware_lock);
-+		return IRQ_RETVAL(IRQ_HANDLED);
-+
-+	default:
-+		/* not our irq */
-+		dprintk("unknown IRQ (shouldn't happen) !!\n");
-+		spin_unlock(&dev->hardware_lock);
-+		return IRQ_RETVAL(IRQ_NONE);
-+	}
-+}
-+
-+static void ite8709_rearm_irq(unsigned long data)
-+{
-+	struct ite8709_device *dev;
-+	unsigned long flags;
-+	dev = (struct ite8709_device *) data;
-+
-+	spin_lock_irqsave(&dev->hardware_lock, flags);
-+	dev->device_busy = 1;
-+	spin_unlock_irqrestore(&dev->hardware_lock, flags);
-+
-+	if (dev->force_rearm || dev->acc_space > CFG_TIMEOUT) {
-+		dprintk("rearming IRQ\n");
-+		ite8709_write_register(dev, IT8512_REG_RCR,
-+						IT8512_RCR_RXACT | CFG_DCR);
-+		ite8709_write_register(dev, IT8512_REG_MSTCR,
-+					CFG_FIFOTL | IT8512_MSTCR_FIFOCLR);
-+		ite8709_write_register(dev, IT8512_REG_RCR,
-+				IT8512_RCR_RXEN | IT8512_RCR_RXACT | CFG_DCR);
-+		if (!dev->force_rearm)
-+			dev->rearmed = 1;
-+		dev->force_rearm = 0;
-+	}
-+
-+	spin_lock_irqsave(&dev->hardware_lock, flags);
-+	dev->device_busy = 0;
-+	spin_unlock_irqrestore(&dev->hardware_lock, flags);
-+}
-+
-+static int ite8709_cleanup(struct ite8709_device *dev, int stage, int errno,
-+				char *msg)
-+{
-+	if (msg != NULL)
-+		printk(KERN_ERR LIRC_DRIVER_NAME ": %s\n", msg);
-+
-+	switch (stage) {
-+	case 6:
-+		if (dev->use_count > 0)
-+			ite8709_drop_hardware(dev);
-+	case 5:
-+		free_irq(dev->irq, dev);
-+	case 4:
-+		release_region(dev->io, 2);
-+	case 3:
-+		lirc_unregister_plugin(dev->plugin.minor);
-+	case 2:
-+		lirc_buffer_free(dev->plugin.rbuf);
-+	case 1:
-+		kfree(dev);
-+	case 0:
-+		;
-+	}
-+
-+	return errno;
-+}
-+
-+static int __devinit ite8709_pnp_probe(struct pnp_dev *dev,
-+					const struct pnp_device_id *dev_id)
-+{
-+	struct lirc_plugin *plugin;
-+	struct ite8709_device *ite8709_dev;
-+	int ret;
-+
-+	/* Check resources validity */
-+	if (!pnp_irq_valid(dev, 0))
-+		return ite8709_cleanup(NULL, 0, -ENODEV, "invalid IRQ");
-+	if (!pnp_port_valid(dev, 2))
-+		return ite8709_cleanup(NULL, 0, -ENODEV, "invalid IO port");
-+
-+	/* Allocate memory for device struct */
-+	ite8709_dev = kzalloc(sizeof(struct ite8709_device), GFP_KERNEL);
-+	if (ite8709_dev == NULL)
-+		return ite8709_cleanup(NULL, 0, -ENOMEM, "kzalloc failed");
-+	pnp_set_drvdata(dev, ite8709_dev);
-+
-+	/* Initialize device struct */
-+	ite8709_dev->use_count = 0;
-+	ite8709_dev->irq = pnp_irq(dev, 0);
-+	ite8709_dev->io = pnp_port_start(dev, 2);
-+	ite8709_dev->hardware_lock = __SPIN_LOCK_UNLOCKED(
-+					ite8709_dev->hardware_lock);
-+	ite8709_dev->acc_pulse = 0;
-+	ite8709_dev->acc_space = 0;
-+	ite8709_dev->lastbit = 0;
-+	do_gettimeofday(&ite8709_dev->last_tv);
-+	tasklet_init(&ite8709_dev->tasklet, ite8709_rearm_irq,
-+							(long) ite8709_dev);
-+	ite8709_dev->force_rearm = 0;
-+	ite8709_dev->rearmed = 0;
-+	ite8709_dev->device_busy = 0;
-+
-+	/* Initialize plugin struct */
-+	plugin = &ite8709_dev->plugin;
-+	strcpy(plugin->name, LIRC_DRIVER_NAME);
-+	plugin->minor = -1;
-+	plugin->code_length = sizeof(int) * 8;
-+	plugin->sample_rate = 0;
-+	plugin->features = LIRC_CAN_REC_MODE2;
-+	plugin->data = ite8709_dev;
-+	plugin->add_to_buf = NULL;
-+	plugin->get_queue = NULL;
-+	plugin->rbuf = &ite8709_dev->buffer;
-+	plugin->set_use_inc = ite8709_set_use_inc;
-+	plugin->set_use_dec = ite8709_set_use_dec;
-+	plugin->ioctl = NULL;
-+	plugin->fops = NULL;
-+	plugin->dev = &dev->dev;
-+	plugin->owner = THIS_MODULE;
-+
-+	/* Initialize LIRC buffer */
-+	if (lirc_buffer_init(plugin->rbuf, BUF_CHUNK_SIZE, BUF_SIZE))
-+		return ite8709_cleanup(ite8709_dev, 1, -ENOMEM,
-+						"lirc_buffer_init() failed");
-+
-+	/* Register LIRC plugin */
-+	ret = lirc_register_plugin(plugin);
-+	if (ret < 0)
-+		return ite8709_cleanup(ite8709_dev, 2, ret,
-+					"lirc_register_plugin() failed");
-+
-+	/* Reserve I/O port access */
-+	if (!request_region(ite8709_dev->io, 2, LIRC_DRIVER_NAME))
-+		return ite8709_cleanup(ite8709_dev, 3, -EBUSY,
-+						"i/o port already in use");
-+
-+	/* Reserve IRQ line */
-+	ret = request_irq(ite8709_dev->irq, ite8709_interrupt, 0,
-+					LIRC_DRIVER_NAME, ite8709_dev);
-+	if (ret < 0)
-+		return ite8709_cleanup(ite8709_dev, 4, ret,
-+						"IRQ already in use");
-+
-+	/* Initialize hardware */
-+	ite8709_drop_hardware(ite8709_dev); /* Shutdown hw until first use */
-+
-+	printk(KERN_INFO LIRC_DRIVER_NAME ": device found : irq=%d io=0x%x\n",
-+					ite8709_dev->irq, ite8709_dev->io);
-+
-+	return 0;
-+}
-+
-+static void __devexit ite8709_pnp_remove(struct pnp_dev *dev)
-+{
-+	struct ite8709_device *ite8709_dev;
-+	ite8709_dev = pnp_get_drvdata(dev);
-+
-+	ite8709_cleanup(ite8709_dev, 6, 0, NULL);
-+
-+	printk(KERN_INFO LIRC_DRIVER_NAME ": device removed\n");
-+}
-+
-+#ifdef CONFIG_PM
-+static int ite8709_pnp_suspend(struct pnp_dev *dev, pm_message_t state)
-+{
-+	struct ite8709_device *ite8709_dev;
-+	ite8709_dev = pnp_get_drvdata(dev);
-+
-+	if (ite8709_dev->use_count > 0)
-+		ite8709_drop_hardware(ite8709_dev);
-+
-+	return 0;
-+}
-+
-+static int ite8709_pnp_resume(struct pnp_dev *dev)
-+{
-+	struct ite8709_device *ite8709_dev;
-+	ite8709_dev = pnp_get_drvdata(dev);
-+
-+	if (ite8709_dev->use_count > 0)
-+		ite8709_init_hardware(ite8709_dev);
-+
-+	return 0;
-+}
-+#else
-+#define ite8709_pnp_suspend NULL
-+#define ite8709_pnp_resume NULL
-+#endif
-+
-+static const struct pnp_device_id pnp_dev_table[] = {
-+	{"ITE8709", 0},
++/* USB Device ID for Sasem USB Control Board */
++static struct usb_device_id sasem_usb_id_table[] = {
++	/* Sasem USB Control Board */
++	{ USB_DEVICE(0x11ba, 0x0101) },
++	/* Terminiating entry */
 +	{}
 +};
 +
-+MODULE_DEVICE_TABLE(pnp, pnp_dev_table);
-+
-+static struct pnp_driver ite8709_pnp_driver = {
-+	.name           = LIRC_DRIVER_NAME,
-+	.probe          = ite8709_pnp_probe,
-+	.remove         = __devexit_p(ite8709_pnp_remove),
-+	.suspend        = ite8709_pnp_suspend,
-+	.resume         = ite8709_pnp_resume,
-+	.id_table       = pnp_dev_table,
++/* USB Device data */
++static struct usb_driver sasem_driver = {
++	.name		= MOD_NAME,
++	.probe		= sasem_probe,
++	.disconnect	= sasem_disconnect,
++	.id_table	= sasem_usb_id_table,
 +};
 +
-+int init_module(void)
-+{
-+	return pnp_register_driver(&ite8709_pnp_driver);
-+}
++static struct usb_class_driver sasem_class = {
++	.name		= DEVICE_NAME,
++	.fops		= &vfd_fops,
++	.minor_base	= VFD_MINOR_BASE,
++};
 +
-+void cleanup_module(void)
-+{
-+	pnp_unregister_driver(&ite8709_pnp_driver);
-+}
++/* to prevent races between open() and disconnect() */
++static DECLARE_MUTEX(disconnect_sem);
 +
-+MODULE_DESCRIPTION("LIRC driver for ITE8709 CIR port");
-+MODULE_AUTHOR("Grégory Lardière");
-+MODULE_LICENSE("GPL");
++static int debug;
 +
-+module_param(debug, bool, 0644);
-+MODULE_PARM_DESC(debug, "Enable debugging messages");
 +
-+/*
-+ * Overrides for Emacs so that we follow Linus's tabbing style.
-+ * ---------------------------------------------------------------------------
-+ * Local variables:
-+ * c-basic-offset: 8
-+ * End:
++/* ------------------------------------------------------------
++ *		     M O D U L E   C O D E
++ * ------------------------------------------------------------
 + */
++
++MODULE_AUTHOR(MOD_AUTHOR);
++MODULE_DESCRIPTION(MOD_DESC);
++MODULE_LICENSE("GPL");
++module_param(debug, int, 0);
++MODULE_PARM_DESC(debug, "Debug messages: 0=no, 1=yes (default: no)");
++
++static inline void delete_context(struct sasem_context *context)
++{
++	usb_free_urb(context->tx_urb);  /* VFD */
++	usb_free_urb(context->rx_urb);  /* IR */
++	lirc_buffer_free(context->plugin->rbuf);
++	kfree(context->plugin->rbuf);
++	kfree(context->plugin);
++	kfree(context);
++
++	if (debug)
++		info("%s: context deleted", __func__);
++}
++
++static inline void deregister_from_lirc(struct sasem_context *context)
++{
++	int retval;
++	int minor = context->plugin->minor;
++
++	retval = lirc_unregister_plugin(minor);
++	if (retval)
++		err("%s: unable to deregister from lirc (%d)",
++			__func__, retval);
++	else
++		info("Deregistered Sasem plugin (minor:%d)", minor);
++
++}
++
++/**
++ * Called when the VFD device (e.g. /dev/usb/lcd)
++ * is opened by the application.
++ */
++static int vfd_open(struct inode *inode, struct file *file)
++{
++	struct usb_interface *interface;
++	struct sasem_context *context = NULL;
++	int subminor;
++	int retval = SUCCESS;
++
++	/* prevent races with disconnect */
++	down(&disconnect_sem);
++
++	subminor = iminor(inode);
++	interface = usb_find_interface(&sasem_driver, subminor);
++	if (!interface) {
++		err("%s: could not find interface for minor %d",
++		    __func__, subminor);
++		retval = -ENODEV;
++		goto exit;
++	}
++	context = usb_get_intfdata(interface);
++
++	if (!context) {
++		err("%s: no context found for minor %d",
++					__func__, subminor);
++		retval = -ENODEV;
++		goto exit;
++	}
++
++	LOCK_CONTEXT;
++
++	if (context->vfd_isopen) {
++		err("%s: VFD port is already open", __func__);
++		retval = -EBUSY;
++	} else {
++		context->vfd_isopen = TRUE;
++		file->private_data = context;
++		info("VFD port opened");
++	}
++
++	UNLOCK_CONTEXT;
++
++exit:
++	up(&disconnect_sem);
++	return retval;
++}
++
++/**
++ * Called when the VFD device (e.g. /dev/usb/lcd)
++ * is closed by the application.
++ */
++static int vfd_ioctl(struct inode *inode, struct file *file,
++		     unsigned cmd, unsigned long arg)
++{
++	struct sasem_context *context = NULL;
++
++	context = (struct sasem_context *) file->private_data;
++
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
++	}
++
++	LOCK_CONTEXT;
++
++	switch (cmd) {
++	case IOCTL_LCD_CONTRAST:
++		if (arg > 1000)
++			arg = 1000;
++		if (arg < 0)
++			arg = 0;
++		context->vfd_contrast = (unsigned int)arg;
++		break;
++	default:
++		info("Unknown IOCTL command");
++		UNLOCK_CONTEXT;
++		return -ENOIOCTLCMD;  /* not supported */
++	}
++
++	UNLOCK_CONTEXT;
++	return 0;
++}
++
++/**
++ * Called when the VFD device (e.g. /dev/usb/lcd)
++ * is closed by the application.
++ */
++static int vfd_close(struct inode *inode, struct file *file)
++{
++	struct sasem_context *context = NULL;
++	int retval = SUCCESS;
++
++	context = (struct sasem_context *) file->private_data;
++
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
++	}
++
++	LOCK_CONTEXT;
++
++	if (!context->vfd_isopen) {
++		err("%s: VFD is not open", __func__);
++		retval = -EIO;
++	} else {
++		context->vfd_isopen = FALSE;
++		info("VFD port closed");
++		if (!context->dev_present && !context->ir_isopen) {
++
++			/* Device disconnected before close and IR port is
++			 * not open. If IR port is open, context will be
++			 * deleted by ir_close. */
++			UNLOCK_CONTEXT;
++			delete_context(context);
++			return retval;
++		}
++	}
++
++	UNLOCK_CONTEXT;
++	return retval;
++}
++
++/**
++ * Sends a packet to the VFD.
++ */
++static inline int send_packet(struct sasem_context *context)
++{
++	unsigned int pipe;
++	int interval = 0;
++	int retval = SUCCESS;
++
++	pipe = usb_sndintpipe(context->dev,
++			context->tx_endpoint->bEndpointAddress);
++	interval = context->tx_endpoint->bInterval;
++
++	usb_fill_int_urb(context->tx_urb, context->dev, pipe,
++		context->usb_tx_buf, sizeof(context->usb_tx_buf),
++		usb_tx_callback, context, interval);
++
++	context->tx_urb->actual_length = 0;
++
++	init_completion(&context->tx.finished);
++	atomic_set(&(context->tx.busy), 1);
++
++	retval =  usb_submit_urb(context->tx_urb, GFP_KERNEL);
++	if (retval != SUCCESS) {
++		atomic_set(&(context->tx.busy), 0);
++		err("%s: error submitting urb (%d)", __func__, retval);
++	} else {
++		/* Wait for tranmission to complete (or abort) */
++		UNLOCK_CONTEXT;
++		wait_for_completion(&context->tx.finished);
++		LOCK_CONTEXT;
++
++		retval = context->tx.status;
++		if (retval != SUCCESS)
++			err("%s: packet tx failed (%d)", __func__, retval);
++	}
++
++	return retval;
++}
++
++/**
++ * Writes data to the VFD.  The Sasem VFD is 2x16 characters
++ * and requires data in 9 consecutive USB interrupt packets,
++ * each packet carrying 8 bytes.
++ */
++static ssize_t vfd_write(struct file *file, const char *buf,
++				size_t n_bytes, loff_t *pos)
++{
++	int i;
++	int retval = SUCCESS;
++	struct sasem_context *context;
++
++	context = (struct sasem_context *) file->private_data;
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return -ENODEV;
++	}
++
++	LOCK_CONTEXT;
++
++	if (!context->dev_present) {
++		err("%s: no Sasem device present", __func__);
++		retval = -ENODEV;
++		goto exit;
++	}
++
++	if (n_bytes <= 0 || n_bytes > 32) {
++		err("%s: invalid payload size", __func__);
++		retval = -EINVAL;
++		goto exit;
++	}
++
++	retval = copy_from_user(context->tx.data_buf, buf, n_bytes);
++	if (retval < 0)
++		goto exit;
++
++	/* Pad with spaces */
++	for (i = n_bytes; i < 32; ++i)
++		context->tx.data_buf[i] = ' ';
++
++	/* Nine 8 byte packets to be sent */
++	/* NOTE: "\x07\x01\0\0\0\0\0\0" or "\x0c\0\0\0\0\0\0\0"
++	 *       will clear the VFD */
++	for (i = 0; i < 9; i++) {
++		switch (i) {
++		case 0:
++			memcpy(context->usb_tx_buf, "\x07\0\0\0\0\0\0\0", 8);
++			context->usb_tx_buf[1] = (context->vfd_contrast) ?
++				(0x2B - (context->vfd_contrast - 1) / 250)
++				: 0x2B;
++			break;
++		case 1:
++			memcpy(context->usb_tx_buf, "\x09\x01\0\0\0\0\0\0", 8);
++			break;
++		case 2:
++			memcpy(context->usb_tx_buf, "\x0b\x01\0\0\0\0\0\0", 8);
++			break;
++		case 3:
++			memcpy(context->usb_tx_buf, context->tx.data_buf, 8);
++			break;
++		case 4:
++			memcpy(context->usb_tx_buf,
++			       context->tx.data_buf + 8, 8);
++			break;
++		case 5:
++			memcpy(context->usb_tx_buf, "\x09\x01\0\0\0\0\0\0", 8);
++			break;
++		case 6:
++			memcpy(context->usb_tx_buf, "\x0b\x02\0\0\0\0\0\0", 8);
++			break;
++		case 7:
++			memcpy(context->usb_tx_buf,
++			       context->tx.data_buf + 16, 8);
++			break;
++		case 8:
++			memcpy(context->usb_tx_buf,
++			       context->tx.data_buf + 24, 8);
++			break;
++		}
++		retval = send_packet(context);
++		if (retval != SUCCESS) {
++
++			err("%s: send packet failed for packet #%d",
++					__func__, i);
++			goto exit;
++		}
++	}
++exit:
++
++	UNLOCK_CONTEXT;
++
++	return (retval == SUCCESS) ? n_bytes : retval;
++}
++
++/**
++ * Callback function for USB core API: transmit data
++ */
++static void usb_tx_callback(struct urb *urb)
++{
++	struct sasem_context *context;
++
++	if (!urb)
++		return;
++	context = (struct sasem_context *) urb->context;
++	if (!context)
++		return;
++
++	context->tx.status = urb->status;
++
++	/* notify waiters that write has finished */
++	atomic_set(&context->tx.busy, 0);
++	complete(&context->tx.finished);
++
++	return;
++}
++
++/**
++ * Called by lirc_dev when the application opens /dev/lirc
++ */
++static int ir_open(void *data)
++{
++	int retval = SUCCESS;
++	struct sasem_context *context;
++
++	/* prevent races with disconnect */
++	down(&disconnect_sem);
++
++	context = (struct sasem_context *) data;
++
++	LOCK_CONTEXT;
++
++	if (context->ir_isopen) {
++		err("%s: IR port is already open", __func__);
++		retval = -EBUSY;
++		goto exit;
++	}
++
++	usb_fill_int_urb(context->rx_urb, context->dev,
++		usb_rcvintpipe(context->dev,
++				context->rx_endpoint->bEndpointAddress),
++		context->usb_rx_buf, sizeof(context->usb_rx_buf),
++		usb_rx_callback, context, context->rx_endpoint->bInterval);
++
++	retval = usb_submit_urb(context->rx_urb, GFP_KERNEL);
++
++	if (retval)
++		err("%s: usb_submit_urb failed for ir_open (%d)",
++		    __func__, retval);
++	else {
++		context->ir_isopen = TRUE;
++		info("IR port opened");
++	}
++
++exit:
++	UNLOCK_CONTEXT;
++
++	up(&disconnect_sem);
++	return SUCCESS;
++}
++
++/**
++ * Called by lirc_dev when the application closes /dev/lirc
++ */
++static void ir_close(void *data)
++{
++	struct sasem_context *context;
++
++	context = (struct sasem_context *)data;
++	if (!context) {
++		err("%s: no context for device", __func__);
++		return;
++	}
++
++	LOCK_CONTEXT;
++
++	usb_kill_urb(context->rx_urb);
++	context->ir_isopen = FALSE;
++	info("IR port closed");
++
++	if (!context->dev_present) {
++
++		/*
++		 * Device disconnected while IR port was
++		 * still open. Plugin was not deregistered
++		 * at disconnect time, so do it now.
++		 */
++		deregister_from_lirc(context);
++
++		if (!context->vfd_isopen) {
++
++			UNLOCK_CONTEXT;
++			delete_context(context);
++			return;
++		}
++		/* If VFD port is open, context will be deleted by vfd_close */
++	}
++
++	UNLOCK_CONTEXT;
++	return;
++}
++
++/**
++ * Process the incoming packet
++ */
++static inline void incoming_packet(struct sasem_context *context,
++				   struct urb *urb)
++{
++	int len = urb->actual_length;
++	unsigned char *buf = urb->transfer_buffer;
++	long ms;
++	struct timeval tv;
++
++	if (len != 8) {
++		warn("%s: invalid incoming packet size (%d)",
++		     __func__, len);
++		return;
++	}
++
++#ifdef DEBUG
++	int i;
++	for (i = 0; i < 8; ++i)
++		printk(KERN_INFO "%02x ", buf[i]);
++	printk(KERN_INFO "\n");
++#endif
++
++	/* Lirc could deal with the repeat code, but we really need to block it
++	 * if it arrives too late.  Otherwise we could repeat the wrong code. */
++
++	/* get the time since the last button press */
++	do_gettimeofday(&tv);
++	ms = (tv.tv_sec - context->presstime.tv_sec) * 1000 +
++	     (tv.tv_usec - context->presstime.tv_usec) / 1000;
++
++	if (memcmp(buf, "\x08\0\0\0\0\0\0\0", 8) == 0) {
++		/* the repeat code is being sent, so we copy
++		 * the old code to LIRC */
++
++		/* NOTE: Only if the last code was less than 250ms ago
++		 * - no one should be able to push another (undetected) button
++		 *   in that time and then get a false repeat of the previous
++		 *   press but it is long enough for a genuine repeat */
++		if ((ms < 250) && (context->codesaved != 0)) {
++			memcpy(buf, &context->lastcode, 8);
++			context->presstime.tv_sec = tv.tv_sec;
++			context->presstime.tv_usec = tv.tv_usec;
++		}
++	} else {
++		/* save the current valid code for repeats */
++		memcpy(&context->lastcode, buf, 8);
++		/* set flag to signal a valid code was save;
++		 * just for safety reasons */
++		context->codesaved = 1;
++		context->presstime.tv_sec = tv.tv_sec;
++		context->presstime.tv_usec = tv.tv_usec;
++	}
++
++	lirc_buffer_write_1(context->plugin->rbuf, buf);
++	wake_up(&context->plugin->rbuf->wait_poll);
++}
++
++/**
++ * Callback function for USB core API: receive data
++ */
++static void usb_rx_callback(struct urb *urb)
++{
++	struct sasem_context *context;
++
++	if (!urb)
++		return;
++	context = (struct sasem_context *) urb->context;
++	if (!context)
++		return;
++
++	switch (urb->status) {
++
++	case -ENOENT: 		/* usbcore unlink successful! */
++		return;
++
++	case SUCCESS:
++		if (context->ir_isopen)
++			incoming_packet(context, urb);
++		break;
++
++	default:
++		warn("%s: status (%d): ignored",
++			 __func__, urb->status);
++		break;
++	}
++
++	usb_submit_urb(context->rx_urb, GFP_ATOMIC);
++	return;
++}
++
++
++
++/**
++ * Callback function for USB core API: Probe
++ */
++static int sasem_probe(struct usb_interface *interface,
++			const struct usb_device_id *id)
++{
++	struct usb_device *dev = NULL;
++	struct usb_host_interface *iface_desc = NULL;
++	struct usb_endpoint_descriptor *rx_endpoint = NULL;
++	struct usb_endpoint_descriptor *tx_endpoint = NULL;
++	struct urb *rx_urb = NULL;
++	struct urb *tx_urb = NULL;
++	struct lirc_plugin *plugin = NULL;
++	struct lirc_buffer *rbuf = NULL;
++	int lirc_minor = 0;
++	int num_endpoints;
++	int retval = SUCCESS;
++	int vfd_ep_found;
++	int ir_ep_found;
++	int alloc_status;
++	struct sasem_context *context = NULL;
++	int i;
++
++	info("%s: found Sasem device", __func__);
++
++
++	dev = usb_get_dev(interface_to_usbdev(interface));
++	iface_desc = interface->cur_altsetting;
++	num_endpoints = iface_desc->desc.bNumEndpoints;
++
++	/*
++	 * Scan the endpoint list and set:
++	 * 	first input endpoint = IR endpoint
++	 * 	first output endpoint = VFD endpoint
++	 */
++
++	ir_ep_found = FALSE;
++	vfd_ep_found = FALSE;
++
++	for (i = 0; i < num_endpoints && !(ir_ep_found && vfd_ep_found); ++i) {
++
++		struct usb_endpoint_descriptor *ep;
++		int ep_dir;
++		int ep_type;
++		ep = &iface_desc->endpoint [i].desc;
++		ep_dir = ep->bEndpointAddress & USB_ENDPOINT_DIR_MASK;
++		ep_type = ep->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
++
++		if (!ir_ep_found &&
++			ep_dir == USB_DIR_IN &&
++			ep_type == USB_ENDPOINT_XFER_INT) {
++
++			rx_endpoint = ep;
++			ir_ep_found = TRUE;
++			if (debug)
++				info("%s: found IR endpoint", __func__);
++
++		} else if (!vfd_ep_found &&
++			ep_dir == USB_DIR_OUT &&
++			ep_type == USB_ENDPOINT_XFER_INT) {
++
++			tx_endpoint = ep;
++			vfd_ep_found = TRUE;
++			if (debug)
++				info("%s: found VFD endpoint", __func__);
++		}
++	}
++
++	/* Input endpoint is mandatory */
++	if (!ir_ep_found) {
++
++		err("%s: no valid input (IR) endpoint found.", __func__);
++		retval = -ENODEV;
++		goto exit;
++	}
++
++	/* Warning if no VFD endpoint */
++	if (!vfd_ep_found)
++		info("%s: no valid output (VFD) endpoint found.", __func__);
++
++
++	/* Allocate memory */
++	alloc_status = SUCCESS;
++
++	context = kmalloc(sizeof(struct sasem_context), GFP_KERNEL);
++	if (!context) {
++		err("%s: kmalloc failed for context", __func__);
++		alloc_status = 1;
++		goto alloc_status_switch;
++	}
++	plugin = kmalloc(sizeof(struct lirc_plugin), GFP_KERNEL);
++	if (!plugin) {
++		err("%s: kmalloc failed for lirc_plugin", __func__);
++		alloc_status = 2;
++		goto alloc_status_switch;
++	}
++	rbuf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
++	if (!rbuf) {
++		err("%s: kmalloc failed for lirc_buffer", __func__);
++		alloc_status = 3;
++		goto alloc_status_switch;
++	}
++	if (lirc_buffer_init(rbuf, BUF_CHUNK_SIZE, BUF_SIZE)) {
++		err("%s: lirc_buffer_init failed", __func__);
++		alloc_status = 4;
++		goto alloc_status_switch;
++	}
++	rx_urb = usb_alloc_urb(0, GFP_KERNEL);
++	if (!rx_urb) {
++		err("%s: usb_alloc_urb failed for IR urb", __func__);
++		alloc_status = 5;
++		goto alloc_status_switch;
++	}
++	if (vfd_ep_found) {
++		tx_urb = usb_alloc_urb(0, GFP_KERNEL);
++		if (!tx_urb) {
++			err("%s: usb_alloc_urb failed for VFD urb",
++			    __func__);
++			alloc_status = 6;
++			goto alloc_status_switch;
++		}
++	}
++
++	/* clear all members of sasem_context and lirc_plugin */
++	memset(context, 0, sizeof(struct sasem_context));
++	mutex_init(&context->lock);
++
++	memset(plugin, 0, sizeof(struct lirc_plugin));
++
++	strcpy(plugin->name, MOD_NAME);
++	plugin->minor = -1;
++	plugin->code_length = 64;
++	plugin->sample_rate = 0;
++	plugin->features = LIRC_CAN_REC_LIRCCODE;
++	plugin->data = context;
++	plugin->rbuf = rbuf;
++	plugin->set_use_inc = ir_open;
++	plugin->set_use_dec = ir_close;
++	plugin->dev   = &dev->dev;
++	plugin->owner = THIS_MODULE;
++
++	LOCK_CONTEXT;
++
++	lirc_minor = lirc_register_plugin(plugin);
++	if (lirc_minor < 0) {
++		err("%s: lirc_register_plugin failed", __func__);
++		alloc_status = 7;
++		UNLOCK_CONTEXT;
++	} else
++		info("%s: Registered Sasem plugin (minor:%d)",
++			__func__, lirc_minor);
++
++alloc_status_switch:
++
++	switch (alloc_status) {
++
++	case 7:
++		if (vfd_ep_found)
++			usb_free_urb(tx_urb);
++	case 6:
++		usb_free_urb(rx_urb);
++	case 5:
++		lirc_buffer_free(rbuf);
++	case 4:
++		kfree(rbuf);
++	case 3:
++		kfree(plugin);
++	case 2:
++		kfree(context);
++		context = NULL;
++	case 1:
++		retval = -ENOMEM;
++		goto exit;
++	}
++
++	/* Needed while unregistering! */
++	plugin->minor = lirc_minor;
++
++	context->dev = dev;
++	context->dev_present = TRUE;
++	context->rx_endpoint = rx_endpoint;
++	context->rx_urb = rx_urb;
++	if (vfd_ep_found) {
++		context->tx_endpoint = tx_endpoint;
++		context->tx_urb = tx_urb;
++		context->vfd_contrast = 1000;   /* range 0 - 1000 */
++	}
++	context->plugin = plugin;
++
++	usb_set_intfdata(interface, context);
++
++	if (vfd_ep_found) {
++
++		if (debug)
++			info("Registering VFD with sysfs");
++		if (usb_register_dev(interface, &sasem_class))
++			/* Not a fatal error, so ignore */
++			info("%s: could not get a minor number for VFD",
++				__func__);
++	}
++
++	info("%s: Sasem device on usb<%d:%d> initialized",
++			__func__, dev->bus->busnum, dev->devnum);
++
++	UNLOCK_CONTEXT;
++exit:
++	return retval;
++}
++
++/**
++ * Callback function for USB core API: disonnect
++ */
++static void sasem_disconnect(struct usb_interface *interface)
++{
++	struct sasem_context *context;
++
++	/* prevent races with ir_open()/vfd_open() */
++	down(&disconnect_sem);
++
++	context = usb_get_intfdata(interface);
++	LOCK_CONTEXT;
++
++	info("%s: Sasem device disconnected", __func__);
++
++	usb_set_intfdata(interface, NULL);
++	context->dev_present = FALSE;
++
++	/* Stop reception */
++	usb_kill_urb(context->rx_urb);
++
++	/* Abort ongoing write */
++	if (atomic_read(&context->tx.busy)) {
++
++		usb_kill_urb(context->tx_urb);
++		wait_for_completion(&context->tx.finished);
++	}
++
++	/* De-register from lirc_dev if IR port is not open */
++	if (!context->ir_isopen)
++		deregister_from_lirc(context);
++
++	usb_deregister_dev(interface, &sasem_class);
++
++	UNLOCK_CONTEXT;
++
++	if (!context->ir_isopen && !context->vfd_isopen)
++		delete_context(context);
++
++	up(&disconnect_sem);
++}
++
++#ifdef MODULE
++static int __init sasem_init(void)
++{
++	int rc;
++
++	info(MOD_DESC ", v" MOD_VERSION);
++	info(MOD_AUTHOR);
++
++	rc = usb_register(&sasem_driver);
++	if (rc < 0) {
++		err("%s: usb register failed (%d)", __func__, rc);
++		return -ENODEV;
++	}
++	return SUCCESS;
++}
++
++static void __exit sasem_exit(void)
++{
++	usb_deregister(&sasem_driver);
++	info("module removed. Goodbye!");
++}
++
++
++module_init(sasem_init);
++module_exit(sasem_exit);
++
++#endif /* MODULE */
 -- 
 1.6.0.1
 
