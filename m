@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbYIIRp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757292AbYIIRpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbYIIRp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYIIRpT
+	id S1757292AbYIIRpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbYIIRpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:45:19 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:55180 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479AbYIIRpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:45:18 -0400
-Date: Tue, 9 Sep 2008 20:43:33 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080909174333.GE30160@cs181140183.pp.htv.fi>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org> <20080909165728.GD30160@cs181140183.pp.htv.fi> <48C6AC79.3000003@zytor.com>
+	Tue, 9 Sep 2008 13:45:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:54585 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754852AbYIIRpk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 13:45:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=hEtGOVOB7vc7toaElb7mz6uIeIUfPoN8E8saHWsHDc/5Z2PNJ/ZHFsixZkgfGgrwdR
+         9uCfIKw9ZJklw0hoqo3LMi+hq70CtWCaMgvZZpAyZLY9YwINP826cXWq7kUstVLCfXE/
+         MWDy+zfEYs6eIYeopye1uBWDZYli6yWYAxkBo=
+Message-ID: <86802c440809091045h2d4f1776g94355e1b1dd1b29e@mail.gmail.com>
+Date: Tue, 9 Sep 2008 10:45:39 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Yang, Sheng" <sheng.yang@intel.com>
+Subject: Re: [PATCH 2/2] x86: Extended cpuinfo to show virtualization HW features
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Avi Kivity" <avi@qumranet.com>, "Andi Kleen" <ak@linux.intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <200809091605.42121.sheng.yang@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C6AC79.3000003@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <12209432941440-git-send-email-sheng.yang@intel.com>
+	 <1220943294312-git-send-email-sheng.yang@intel.com>
+	 <86802c440809090052t2e626ce8h4fda865b8cbce00b@mail.gmail.com>
+	 <200809091605.42121.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 10:03:53AM -0700, H. Peter Anvin wrote:
-> Adrian Bunk wrote:
->>
->> As far as I understood it it's a gas issue, and X86_GENERIC=y would  
->> therefore *not* fix the bug with gcc < 4.2 and affected binutils
->> since we pass -mtune=i686 for gcc < 4.2 with X86_GENERIC=y.
->>
->> Anything I miss?
+On Tue, Sep 9, 2008 at 1:05 AM, Yang, Sheng <sheng.yang@intel.com> wrote:
 >
-> Well, for one thing, gcc doesn't actually pass the -mtune= option to  
-> gas, it turns out.
+> Yeah, I've considered that, but seems duplicate for both files? The feature
+> detection code is the same. Any way to merge them?
+>
 
-What caused gas to emit the "wrong" NOPs?
+just merged intel_64.c into intel.c...
 
-> But yes, "-Wa,-march=generic32" is really the proper fix.
-
-If I understand the binutils changelog correctly -march=generic32 
-support was added one week before the NOP code in question, so all 
-affected binutils versions support it.
-
-> 	-hpa
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+YH
