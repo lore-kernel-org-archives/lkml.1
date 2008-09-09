@@ -1,216 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbYIIIXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755983AbYIIIZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbYIIIXf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 04:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYIIIX1
+	id S1755983AbYIIIZx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 04:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbYIIIZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 04:23:27 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:31368 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbYIIIX0 (ORCPT
+	Tue, 9 Sep 2008 04:25:46 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37419 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbYIIIZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 04:23:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=a1FBGsddMLvtbqdKN/y1UNJMF7l1yhOScEDbTxz/ZwCgJiRH4DF0XolZby1MLLF3Ry
-         0XLlRl+KRThTj0xfgEN2Cf6h4GOMdX9pf6yZp1FxiM7v1abeSIRrGJlI4zu/KRaURqBt
-         PazJpktG5M/fdTzNpPRKtnN9w1clEJY0565RA=
-Message-ID: <19f34abd0809090123y36c51395pfa694799f7a2afb@mail.gmail.com>
-Date: Tue, 9 Sep 2008 10:23:25 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Oren Laadan" <orenl@cs.columbia.edu>
-Subject: Re: [RFC v4][PATCH 8/9] File descriprtors (dump)
-Cc: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-In-Reply-To: <1220946154-15174-9-git-send-email-orenl@cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 9 Sep 2008 04:25:45 -0400
+Subject: Re: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+In-Reply-To: <200809091759.13327.nickpiggin@yahoo.com.au>
+References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com>
+	 <200809091631.48820.nickpiggin@yahoo.com.au>
+	 <1220943240.18239.977.camel@twins.programming.kicks-ass.net>
+	 <200809091759.13327.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 09 Sep 2008 10:25:23 +0200
+Message-Id: <1220948723.18239.1091.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-	 <1220946154-15174-9-git-send-email-orenl@cs.columbia.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-09-09 at 17:59 +1000, Nick Piggin wrote:
+> On Tuesday 09 September 2008 16:54, Peter Zijlstra wrote:
+> > On Tue, 2008-09-09 at 16:31 +1000, Nick Piggin wrote:
+> > > On Tuesday 09 September 2008 16:18, Peter Zijlstra wrote:
+> > > > I've been looking at the history of that function - it started out
+> > > > quite readable - but has, over the years, grown into a monstrosity.
+> > >
+> > > I agree it is terrible, and subsequent "features" weren't really properly
+> > > written or integrated into the sched domains idea.
+> > >
+> > > > Then there is this whole sched_group stuff, which I intent to have a
+> > > > hard look at, afaict its unneeded and we can iterate over the
+> > > > sub-domains just as well.
+> > >
+> > > What sub-domains? The domains-minus-groups are just a graph (in existing
+> > > setup code AFAIK just a line) of cpumasks. You have to group because you
+> > > want enough control for example not to pull load from an unusually busy
+> > > CPU from one group if it's load should actually be spread out over a
+> > > smaller domain (ie. probably other CPUs within the group we're looking
+> > > at).
+> > >
+> > > It would be nice if you could make it simpler of course, but I just don't
+> > > understand you or maybe you thought of some other way to solve this or
+> > > why it doesn't matter...
+> >
+> > Right, I get the domain stuff - that's good stuff.
+> >
+> > But, let my try and confuse you with ASCII-art ;-)
+> >
+> >              Domain [0-7]
+> >        group [0-3]  group [4-7]
+> >
+> >      Domain [0-3]
+> >   group[0-1]  [group2-3]
+> >
+> > Domain [0-1]
+> > group 0 group 1
+> >
+> > (right hand side not drawn due to lack of space etc...)
+> >
+> > So we have this tree of domains, which is cool stuff. But then we have
+> > these groups in there, which closely match up with the domain's child
+> > domains.
+> 
+> But it's all per-cpu, so you'd have to iterate down other CPU's child
+> domains. Which may get dirtied by that CPU. So you get cacheline
+> bounces.
 
-Below are some concerns, I would be grateful for explanations (or
-pointers if I missed them before).
+Humm, are you saying each cpu has its own domain tree? My understanding
+was that its a global structure, eg. given:
 
-On Tue, Sep 9, 2008 at 9:42 AM, Oren Laadan <orenl@cs.columbia.edu> wrote:
-> +/* cr_write_fd_data - dump the state of a given file pointer */
-> +static int cr_write_fd_data(struct cr_ctx *ctx, struct file *file, int parent)
-> +{
-> +       struct cr_hdr h;
-> +       struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> +       struct dentry *dent = file->f_dentry;
-> +       struct inode *inode = dent->d_inode;
-> +       enum fd_type fd_type;
-> +       int ret;
-> +
-> +       h.type = CR_HDR_FD_DATA;
-> +       h.len = sizeof(*hh);
-> +       h.parent = parent;
-> +
-> +       hh->f_flags = file->f_flags;
-> +       hh->f_mode = file->f_mode;
-> +       hh->f_pos = file->f_pos;
-> +       hh->f_uid = file->f_uid;
-> +       hh->f_gid = file->f_gid;
-> +       hh->f_version = file->f_version;
-> +       /* FIX: need also file->f_owner */
-> +
-> +       switch (inode->i_mode & S_IFMT) {
-> +       case S_IFREG:
-> +               fd_type = CR_FD_FILE;
-> +               break;
-> +       case S_IFDIR:
-> +               fd_type = CR_FD_DIR;
-> +               break;
-> +       case S_IFLNK:
-> +               fd_type = CR_FD_LINK;
-> +               break;
-> +       default:
-> +               return -EBADF;
-> +       }
+   domain[0-1]
 
-Should cr_hbuf_put() come before the return here?
+domain[0] domain[1]
 
-As far as I've understood, "leaking" the buffer size/data isn't
-critical (1. because it's just some extra space, and/or 2. the buffer
-is discarded on error anyway). The code looks really unbalanced
-without it, though. I guess it should at least be documented?
+cpu0's parent domain is the same instance as cpu1's.
 
-> +
-> +       /* FIX: check if the file/dir/link is unlinked */
-> +       hh->fd_type = fd_type;
-> +
-> +       ret = cr_write_obj(ctx, &h, hh);
-> +       cr_hbuf_put(ctx, sizeof(*hh));
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       return cr_write_fname(ctx, &file->f_path, ctx->vfsroot);
-> +}
-> +
-> +/**
-> + * cr_write_fd_ent - dump the state of a given file descriptor
-> + * @ctx: checkpoint context
-> + * @files: files_struct pointer
-> + * @fd: file descriptor
-> + *
-> + * Save the state of the file descriptor; look up the actual file pointer
-> + * in the hash table, and if found save the matching objref, otherwise call
-> + * cr_write_fd_data to dump the file pointer too.
-> + */
-> +static int
-> +cr_write_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int fd)
-> +{
-> +       struct cr_hdr h;
-> +       struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> +       struct file *file = NULL;
-> +       struct fdtable *fdt;
-> +       int coe, objref, new, ret;
-> +
-> +       rcu_read_lock();
-> +       fdt = files_fdtable(files);
-> +       file = fcheck_files(files, fd);
-> +       if (file) {
-> +               coe = FD_ISSET(fd, fdt->close_on_exec);
-> +               get_file(file);
-> +       }
-> +       rcu_read_unlock();
-> +
-> +       /* sanity check (although this shouldn't happen) */
-> +       if (!file)
-> +               return -EBADF;
-> +
-> +       new = cr_obj_add_ptr(ctx, (void *) file, &objref, CR_OBJ_FILE, 0);
-> +       cr_debug("fd %d objref %d file %p c-o-e %d)\n", fd, objref, file, coe);
-> +
-> +       if (new < 0)
-> +               return new;
+> You also lose flexibility (although nobody really takes full advantage
+> of it) of totally arbitrary topology on a per-cpu basis.
 
-fput() and/or cr_hbuf_put()?
+Afaict the only flexibility you loose is that you cannot make groups
+larger/smaller than the child domain - which given that the whole
+premesis of the groups existence is that the inner-group balancing
+should be done by the level below - doesn't make sense anyway.
 
-> +
-> +       h.type = CR_HDR_FD_ENT;
-> +       h.len = sizeof(*hh);
-> +       h.parent = 0;
-> +
-> +       hh->objref = objref;
-> +       hh->fd = fd;
-> +       hh->close_on_exec = coe;
-> +
-> +       ret = cr_write_obj(ctx, &h, hh);
-> +       cr_hbuf_put(ctx, sizeof(*hh));
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       /* new==1 if-and-only-if file was newly added to hash */
-> +       if (new)
-> +               ret = cr_write_fd_data(ctx, file, objref);
-> +
-> +       fput(file);
-> +       return ret;
-> +}
-> +
-> +int cr_write_files(struct cr_ctx *ctx, struct task_struct *t)
-> +{
-> +       struct cr_hdr h;
-> +       struct cr_hdr_files *hh = cr_hbuf_get(ctx, sizeof(*hh));
-> +       struct files_struct *files;
-> +       int *fdtable;
-> +       int nfds, n, ret;
-> +
-> +       h.type = CR_HDR_FILES;
-> +       h.len = sizeof(*hh);
-> +       h.parent = task_pid_vnr(t);
-> +
-> +       files = get_files_struct(t);
-> +
-> +       hh->objref = 0; /* will be meaningful with multiple processes */
-> +
-> +       nfds = cr_scan_fds(files, &fdtable);
-> +       if (nfds < 0) {
-> +               ret = nfds;
+> > So my idea was to ditch the groups and just iterate over the child
+> > domains.
+> 
+> I'm not saying you couldn't do it (reasonably well -- cacheline bouncing
+> might be a problem if you propose to traverse other CPU's domains), but
+> what exactly does that gain you?
 
-cr_hbuf_put()?
+Those cacheline bounces could be mitigated by splitting sched_domain
+into two parts with a cacheline aligned dummy and keep the rarely
+modified data separate from the frequently modified data.
 
-> +               goto out;
-> +       }
-> +
-> +       hh->nfds = nfds;
-> +
-> +       ret = cr_write_obj(ctx, &h, hh);
-> +       cr_hbuf_put(ctx, sizeof(*hh));
-> +       if (ret < 0)
-> +               goto clean;
-> +
-> +       cr_debug("nfds %d\n", nfds);
-> +       for (n = 0; n < nfds; n++) {
-> +               ret = cr_write_fd_ent(ctx, files, n);
-> +               if (ret < 0)
-> +                       break;
-> +       }
-> +
-> + clean:
-> +       kfree(fdtable);
-> + out:
-> +       put_files_struct(files);
-> +
-> +       return ret;
-> +}
+As to the gains - a graph walk with a single type seems more elegant to
+me.
 
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
