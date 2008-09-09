@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbYIIDCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYIIDFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbYIIDCd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 23:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYIIDCW
+	id S1754022AbYIIDFW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 23:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYIIDFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 23:02:22 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:40093 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbYIIDCV (ORCPT
+	Mon, 8 Sep 2008 23:05:10 -0400
+Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:41015 "HELO
+	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751966AbYIIDFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 23:02:21 -0400
-Date: Mon, 8 Sep 2008 22:01:14 -0500
-From: David Fries <david@fries.net>
-To: Paul Gortmaker <paul.gortmaker@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2/2] ne.c Fix suspend and resume for ISA PnP cards.
-Message-ID: <20080909030114.GC28469@spacedout.fries.net>
-References: <20080904030212.GA23493@spacedout.fries.net> <7d1d9c250809050101v9ab3907l649781ee38a5a243@mail.gmail.com> <20080909025434.GB28469@spacedout.fries.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080909025434.GB28469@spacedout.fries.net>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Mon, 08 Sep 2008 22:01:15 -0500 (CDT)
+	Mon, 8 Sep 2008 23:05:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
+  b=FyaV+NW+H6O8UZ5wBzZP6g9DCvzVYpuyt12bRw3qqcs/Zp1iMHtVSF1kWb98MjXQmW1Z0Pr7xwEVg7oMf9q7P4otI7EFI17JAc9RRdKLDuqMzzE7+OxLlzIIQdAIQo/E8x91Cqbvz7kMzccFKD5+F1LSmP6BIW0KbVrhvBX3gIA=  ;
+X-YMail-OSG: t_NM3JcVM1kZeaM1BXoQuVZSGUlNP5d19aP3d9GDPDjQ1tm6OJW8Jcu18r0VTF8orQkkLL1A49euxcearIIS45yh_F0QR4nadT1eI6JnLOMWfHfrzY1Nna1nDrJmMK5q8ac-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: Re: 2.6.27-rc5-mm1: 3 WARN_ON dumps during boot (acpi + vmap_pte_range)
+Date: Tue, 9 Sep 2008 13:04:47 +1000
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Dave Airlie <airlied@linux.ie>, Rusty Russell <rusty@rustcorp.com.au>
+References: <20080906084558.dff614d4.krzysztof.h1@poczta.fm> <200809081937.16427.nickpiggin@yahoo.com.au> <20080908195208.773ecadb.krzysztof.h1@poczta.fm>
+In-Reply-To: <20080908195208.773ecadb.krzysztof.h1@poczta.fm>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_PfexIaD1J9KQr+b"
+Message-Id: <200809091304.47769.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Fries <david@fries.net>
+--Boundary-00=_PfexIaD1J9KQr+b
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-A call to pnp_stop_dev and pnp_start_dev now shuts down and
-initializes plug and play devices for suspend and resume.
+On Tuesday 09 September 2008 03:52, Krzysztof Helt wrote:
 
-Signed-off-by: David Fries <david@fries.net>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>
----
- drivers/net/ne.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+> alloc_vmap_area within(e07f0000-fffb7000) size=801000
+> returns=(e0880000-e1081000)
+> alloc_vmap_area within(e07f0000-fffb7000) size=2000
+> returns=(e07f0000-e07f2000)
+> alloc_vmap_area within(e07f0000-fffb7000) size=2000
+> returns=(e0822000-e0824000) 
+> vunmap_page_range (e07f0000-e07f2000 size=2000)
+> free_vmap_area (e07f0000-e07f2000 size=2000)
 
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index 2bece66..cd31e77 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -876,8 +876,12 @@ static int ne_drv_suspend(struct platform_device *pdev, pm_message_t state)
- {
- 	struct net_device *dev = platform_get_drvdata(pdev);
- 
--	if (netif_running(dev))
-+	if (netif_running(dev)) {
-+		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
- 		netif_device_detach(dev);
-+		if (idev)
-+			pnp_stop_dev(idev);
-+	}
- 	return 0;
- }
- 
-@@ -886,6 +890,9 @@ static int ne_drv_resume(struct platform_device *pdev)
- 	struct net_device *dev = platform_get_drvdata(pdev);
- 
- 	if (netif_running(dev)) {
-+		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
-+		if (idev)
-+			pnp_start_dev(idev);
- 		ne_reset_8390(dev);
- 		NS8390p_init(dev, 1);
- 		netif_device_attach(dev);
--- 
-1.4.4.4
+> alloc_vmap_area within(e07f0000-fffb7000) size=5000
+> returns=(e07f0000-e07f5000)
+> ------------[ cut here ]------------ 
+> WARNING: at mm/vmalloc.c:40 check_pte_range+0x83/0x90()
+
+Thanks for that, it clearly shows the virtual address allocator
+is allowing an overlapping allocation after a vm_unmap_aliases()
+call. Unfortunately, my "random" test case happened not to
+trigger that... I should have paid more attention to edge cases
+rather than just random testing.
+
+Anyway, I hope this fix should solve the problem for you? (it
+fixes it here)
+
+--Boundary-00=_PfexIaD1J9KQr+b
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="vmap-new-infrastructure-fix2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="vmap-new-infrastructure-fix2.patch"
+
+Index: linux-2.6/mm/vmalloc.c
+===================================================================
+--- linux-2.6.orig/mm/vmalloc.c
++++ linux-2.6/mm/vmalloc.c
+@@ -321,7 +321,7 @@ retry:
+ 			struct vmap_area *tmp;
+ 			tmp = rb_entry(n, struct vmap_area, rb_node);
+ 			if (tmp->va_end >= addr) {
+-				if (!first && tmp->va_start <= addr)
++				if (!first && tmp->va_start < addr + size)
+ 					first = tmp;
+ 				n = n->rb_left;
+ 			} else {
+
+--Boundary-00=_PfexIaD1J9KQr+b--
