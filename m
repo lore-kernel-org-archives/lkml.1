@@ -1,196 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbYIIPWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbYIIPWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbYIIPWE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753370AbYIIPVv
+	id S1755993AbYIIPWX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbYIIPV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:21:51 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38726 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751442AbYIIPVu (ORCPT
+	Tue, 9 Sep 2008 11:21:59 -0400
+Received: from 166-70-238-42.ip.xmission.com ([166.70.238.42]:44082 "EHLO
+	ns1.wolfmountaingroup.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754530AbYIIPV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:21:50 -0400
-Date: Tue, 9 Sep 2008 11:21:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Greg KH <greg@kroah.com>, USB list <linux-usb@vger.kernel.org>,
-       <bgmerrell@novell.com>, <hirofuchi@users.sourceforge.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       <usbip-devel@lists.sourceforge.net>
-Subject: Re: USBIP protocol
-In-Reply-To: <20080909005353.GR2772@parisc-linux.org>
-Message-ID: <Pine.LNX.4.44L0.0809091031130.2143-100000@iolanthe.rowland.org>
+	Tue, 9 Sep 2008 11:21:57 -0400
+Message-ID: <1044.69.2.248.210.1220971907.squirrel@webmail.wolfmountaingroup.com>
+In-Reply-To: <48C60685.60303@suse.de>
+References: <1254.69.2.248.210.1220390835.squirrel@webmail.wolfmountaingroup.com>
+    <48C60685.60303@suse.de>
+Date: Tue, 9 Sep 2008 08:51:47 -0600 (MDT)
+Subject: Re: 2.6.27-rc5 acpi: EC Storm error message on bootup
+From: jmerkey@wolfmountaingroup.com
+To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
+Cc: jmerkey@wolfmountaingroup.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008, Matthew Wilcox wrote:
+> It does not disable EC, it disables EC GPE (interrupt from EC).
+> Could you please test patch from comment #81 in bug #9998?
+> http://bugzilla.kernel.org/attachment.cgi?id=17695&action=view
+>
+> Thanks,
+> Alex.
 
-> [Sorry, I meant to send this mail before I left on Friday ... best laid
-> plans, etc]
+Patch does not apply correctly to 2.6.27-rc5 -- do you have a patch a
+little closer to 2.6.27-rc6?
 
-That's okay; I'm not on a deadline.  :-)
+Here is what ended up in the .rej file after I applied it:
 
-> > Sometimes I find the terminology a little confusing.  "Client" and
-> > "server" are clear enough, as is "device-side" (synonymous with
-> > "server").  I guess vhci-hcd runs on the client, right?
-> 
-> 'Client' and 'Server' are totally not clear.  Is the 'server' the big
-> machine in the closet without USB devices, or is the machine with the
-> device attached to it 'serving' the device to the machine without usb
-> devices?
+***************
+*** 140,208 ****
+  	outb(data, ec->data_addr);
+  }
 
-It is unfortunate that these two words have been used in multiple ways, 
-with meanings that are sometimes only subtly different and sometimes 
-grossly conflicting.
+- static inline int acpi_ec_check_status(struct acpi_ec *ec, enum ec_event
+event)
+  {
+- 	if (test_bit(EC_FLAGS_WAIT_GPE, &ec->flags))
+- 		return 0;
+- 	if (event == ACPI_EC_EVENT_OBF_1) {
+- 		if (acpi_ec_read_status(ec) & ACPI_EC_FLAG_OBF)
+- 			return 1;
+- 	} else if (event == ACPI_EC_EVENT_IBF_0) {
+- 		if (!(acpi_ec_read_status(ec) & ACPI_EC_FLAG_IBF))
+- 			return 1;
+- 	}
+-
+  	return 0;
+  }
 
-Isn't it standard in networking circles for "server" to mean the system
-running a daemon that waits for incoming connections and "client" to
-mean the system running an on-demand program that initiates a
-connection?
+- static void ec_schedule_ec_poll(struct acpi_ec *ec)
+  {
+- 	if (test_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags))
+- 		schedule_delayed_work(&ec->work,
+- 				      msecs_to_jiffies(ACPI_EC_DELAY));
+  }
 
-> (I'd like to give a big shout-out to my homies working on X Windows for
-> making this confusion possible)
-> 
-> Controller machine:
-> 
-> Loads vhci-hcd
-> runs usbip --attach machine-b 2-2
-> 
-> Target machine:
-> 
-> Loads usbip
-> runs usbipd
-> runs bind_driver --usbip 2-2
-> 
-> The controller machine now gets a device 9-2 which accesses the target
-> machine's 2-2 device.
-> 
-> I suppose it's my fault for not documenting this clearly in the protocol
-> document.  Fixed now.
+- static void ec_switch_to_poll_mode(struct acpi_ec *ec)
+  {
+  	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
+  	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+- 	acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+- 	set_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+  }
 
-Okay, "controller" and "target".  I'm not sure that "controller" is the
-best word either, since it might be confused with "USB host
-controller".
+- static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int
+force_poll)
+  {
+- 	atomic_set(&ec->irq_count, 0);
+- 	if (likely(test_bit(EC_FLAGS_GPE_MODE, &ec->flags)) &&
+- 	    likely(!force_poll)) {
+- 		if (wait_event_timeout(ec->wait, acpi_ec_check_status(ec, event),
+- 				       msecs_to_jiffies(ACPI_EC_DELAY)))
+- 			return 0;
+- 		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+- 		if (acpi_ec_check_status(ec, event)) {
+- 			/* missing GPEs, switch back to poll mode */
+- 			if (printk_ratelimit())
+- 				pr_info(PREFIX "missing confirmations, "
+- 						"switch off interrupt mode.\n");
+- 			ec_switch_to_poll_mode(ec);
+- 			ec_schedule_ec_poll(ec);
+- 			return 0;
+- 		}
+- 	} else {
+- 		unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+- 		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+- 		while (time_before(jiffies, delay)) {
+- 			if (acpi_ec_check_status(ec, event))
+- 				return 0;
+- 			msleep(1);
+- 		}
+- 		if (acpi_ec_check_status(ec,event))
+- 			return 0;
+  	}
+- 	pr_err(PREFIX "acpi_ec_wait timeout, status = 0x%2.2x, event = %s\n",
+- 		acpi_ec_read_status(ec),
+- 		(event == ACPI_EC_EVENT_OBF_1) ? "\"b0=1\"" : "\"b1=0\"");
+- 	return -ETIME;
+  }
 
-> > But "host" is ambiguous; vhci-hcd is a host controller driver on the
-> > client and [uoe]hci-hcd is a host controller driver on the server.  
-> > Thus both sides are hosts.  Also, "stub" isn't too clear.  Is vhci-hcd
-> > a stub driver?  Or does the stub driver run strictly on the server?
-> 
-> The usbip module is also referred to as the stub driver:
-> 
-> [  402.731706] usbip:Stub Driver for USB/IP:1.0
+  static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+--- 159,219 ----
+  	outb(data, ec->data_addr);
+  }
 
-Hmmm.  Above you said that the controller system runs a program named 
-"usbip" and the target system loads a module named "usbip".  Since the 
-stub driver is the usbip _module_, it must run on the target (AKA 
-server).  Right?
++ static int ec_transaction_done(struct acpi_ec *ec)
+  {
++ 	if (!ec_read_command(ec))
++ 		return 1;
++ 	if (!ec->t.wlen && !ec->t.rlen)
++ 		return 1;
+  	return 0;
+  }
 
-> > Getting back to your question...  All devices have an upstream hub,
-> > except for root hubs.  In this case the device's upstream hub is the
-> > physical hub it is plugged into if it plugged into a hub, or the
-> > physical root hub it is plugged into otherwise.  Either way, the
-> > upstream hub has to be managed by the server, not by the client.  
-> > That's another reason why device reset needs to be treated as a special
-> > call.
-> 
-> OK, I was confused, I didn't realise the *hci included a hub.  I always
-> thought of a hub as an external device.
++ static void gpe_transaction(struct acpi_ec *ec, u8 status)
+  {
++ 	if (!ec_read_command(ec))
++ 		return;
++ 	if (ec->t.wlen > 0) {
++ 		if ((status & ACPI_EC_FLAG_IBF) == 0) {
++ 			acpi_ec_write_data(ec, *(ec->t.wdata++));
++ 			--ec->t.wlen;
++ 		} else
++ 			/* false interrupt, state didn't change */
++ 			atomic_inc(&ec->irq_count);
++
++ 	} else if (ec->t.rlen > 0) {
++ 		if ((status & ACPI_EC_FLAG_OBF) == 1) {
++ 			*(ec->t.rdata++) = acpi_ec_read_data(ec);
++ 			--ec->t.rlen;
++ 		} else
++ 			/* false interrupt, state didn't change */
++ 			atomic_inc(&ec->irq_count);
++ 	}
+  }
 
-Yes; it is referred to as a "virtual root hub", or just "root hub" for 
-short.  We didn't make this up; section 10.2.8 of the USB spec is 
-entitled "Root Hub".
++ static int acpi_ec_wait(struct acpi_ec *ec)
+  {
++ 	if (wait_event_timeout(ec->wait, ec_transaction_done(ec),
++ 			       msecs_to_jiffies(ACPI_EC_DELAY)))
++ 		return 0;
++ 	/* missing GPEs, switch back to poll mode */
++ 	if (printk_ratelimit())
++ 		pr_info(PREFIX "missing confirmations, "
++ 				"switch off interrupt mode.\n");
+  	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
+  	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
++ 	return 1;
+  }
 
-FYI, the *hci-hcd modules are collectively known as "host controller
-drivers", or HCDs for short.  We USB guys sling that term around a lot
--- if you start using it too you'll impress other programmers.  :-)
++ static void acpi_ec_gpe_query(void *ec_cxt);
++
++ static int ec_check_sci(struct acpi_ec *ec, u8 state)
+  {
++ 	if (state & ACPI_EC_FLAG_SCI) {
++ 		if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags))
++ 			return acpi_os_execute(OSL_EC_BURST_HANDLER,
++ 				acpi_ec_gpe_query, ec);
+  	}
++ 	return 0;
+  }
 
+  static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
 
-> > The server's USB stack needs to know about these requests because they
-> > need to affect hardware and software state on the server.  If you tried
-> > to pass one these things directly from the client to the device, you'd
-> > find that suddenly things weren't working.  The hardware and software
-> > on the server would no longer be able to communicate with the device
-> > after the device's state was changed without the server's knowledge.
-> 
-> I'm going to assume you mean 'device server' in this context (now
-> referred to as target machine).
-
-Right.
-
-> I just don't understand why the target machine's stack needs to know
-> which endpoints are available.  Is it for when the controller detaches?
-
-"Detaches" isn't a USB term.  Do you mean it in the sense of a SCSI 
-initiator detaching from its target?
-
-In any event, the answer is that each endpoint has several properties
-associated with it (direction, type, maximum packet size, and so on),
-and these properties have to be known by both the target's USB stack
-and the target's USB host controller hardware.  The hardware uses DMA
-to access various in-memory data structures describing the I/O
-operations it should perform, and the format and contents of these data
-structures depends on the endpoints' properties.  (To make matters
-worse, the hardware will sometimes maintain an internal cache for parts
-of the data structures and some of the properties; when the properties 
-change the cache must be flushed.)
-
-With new configurations or altsettings you end up with a new set of
-endpoints, or the same old endpoints with a new set of properties.  
-Thus the target really needs to know when these things change.
-
-> I would think that a USB reset should be issued to the device when
-> control changes between a real driver (eg usb-storage) and the stub
-> driver.
-
-I suppose the controller system, as part of its normal initialization 
-procedure for new devices, would issue such a reset.  This area is 
-still a little cloudy -- we know that the controller system shouldn't 
-treat a new USBIP device exactly the same as a new normal USB device, 
-but exactly what the difference should be has yet to be fleshed out.
-
-We may even want to have some sort of method table with entries for 
-initialization, reset, suspend, resume, and clear-halt.
-
-> > > When the device-side receives another packet to the same endpoint,
-> > > perhaps?  Does USB permit multiple outstanding commands to the same
-> > > endpoint?
-> > 
-> > This isn't a hardware-level issue; it's a software issue.  Linux's USB 
-> > stack allows multiple outstanding requests to be queued for the same 
-> > endpoint.
-> 
-> I guess the question is where the queueing happens -- does it happen in
-> the *hci driver, or does it happen in the device?
-
-It happens in the HCD, not in the device.
-
->  Either way, we could
-> choose whether to queue the urbs on the controller machine or on the
-> target machine -- it's a complexity / performance tradeoff.  I don't
-> know where the correct balance point is.
-
-There's more to it.  The USB stack behaves qualitatively and 
-quantitatively differently in these two cases:
-
-	An URB completes, the completion handler returns, and then
-	a new URB is submitted.
-
-	A new URB is submitted either before the old one completes
-	or while the old URB's completion handler is running.
-
-With USBIP it's not feasible for an URB queued on the controller
-machine to be submitted as part of the target's completion handler
-processing.  If the URB was queued in the target's usbipd driver then 
-this would be feasible.  And of course, if the URB was queued in the 
-target's HCD then no special treatment would be needed.
-
-For relevant background information, read the kerneldoc for 
-usb_submit_urb() and usb_unlink_urb() in drivers/usb/core/urb.c.
-
-Alan Stern
+Jeff
 
