@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbYIIN1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbYIIN2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbYIIN1v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 09:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYIIN1n
+	id S1756891AbYIIN2c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 09:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbYIIN2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 09:27:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:42947 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbYIIN1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 09:27:42 -0400
-Date: Tue, 9 Sep 2008 15:27:32 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Frans Pop <elendil@planet.nl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [regression] __tick_program_event of hpet is stuck
-In-Reply-To: <200809091438.57158.elendil@planet.nl>
-Message-ID: <alpine.LFD.1.10.0809091503460.3271@apollo.tec.linutronix.de>
-References: <200809080114.36106.elendil@planet.nl> <200809080313.48910.elendil@planet.nl> <alpine.LFD.1.10.0809091248590.3271@apollo.tec.linutronix.de> <200809091438.57158.elendil@planet.nl>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 9 Sep 2008 09:28:24 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35969 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754506AbYIIN2X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 09:28:23 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <48C679B6.4080009@s5r6.in-berlin.de>
+Date: Tue, 09 Sep 2008 15:27:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080722 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sebastian Siewior <lkml@ml.breakpoint.cc>
+CC: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
+       Jarod Wilson <jarod@redhat.com>, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>,
+       Mario Limonciello <superm1@ubuntu.com>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com> <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
+In-Reply-To: <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008, Frans Pop wrote:
-> On Tuesday 09 September 2008, Thomas Gleixner wrote:
-> > > CE: __tick_program_event of hpet is stuck 1468f1b3c9 1468f1c751
-> > > CE: increasing min_delta_ns 5000 to 10000 nsec
-> > > [...]
-> > > CE: __tick_program_event of hpet is stuck 33576032f74 33576035684
-> > > CE: increasing min_delta_ns 10000 to 20000 nsec
-> > > [...]
-> > > CE: __tick_program_event of hpet is stuck 63242b30d28 63242b35b48
-> > > CE: increasing min_delta_ns 20000 to 40000 nsec
-> >
-> > what's the highest value which you have seen ?
-> 
-> These are the highest I've seen, but that's possibly because I haven't 
-> left the system running for longer. There's just under an hour between 
-> the messages (kern.log has 00:59:17, 01:56:38, 02:51:23 for the three 
-> increases listed above) with the first fairly shortly after boot.
-> 
-> I've just awakened the laptop from suspend and will let it sit for the 
-> rest of the day. If I get any higher values I'll let you know.
+Sebastian Siewior wrote:
+>> --- /dev/null
+>> +++ b/drivers/input/lirc/lirc_dev.c
+...
+>> +#include <linux/ioctl.h>
+>> +#include <linux/fs.h>
+>> +#include <linux/poll.h>
+>> +#include <linux/smp_lock.h>
+> if you need this than you use the BKL back. As far as I remember
+> the ioctl() handler in kernel core no longer takes the BKL and I don't
+> see any locking in irctl_ioctl(). 
 
-It's nothing to worry about. I out the WARN_ON() there to get some
-information about the validation of min_delta_ns and to see in which
-range this happens.
+Really?  .open() has been changed to be called without the BKL held, but 
+.ioctl() is still called with BKL protection.  Currently, many .ioctl() 
+implementations are replaced by .unlocked_ioctl() which take the BKL 
+themselves if necessary or if it is not yet clear whether they would 
+work without BKL protection.
 
-I'm going to remove the WARN_ON() and just keep the information that
-we need to increase the min_delta_ns value for safe operation.
+...
+>> +static struct file_operations fops = {
+>> +	.read		= irctl_read,
+>> +	.write		= irctl_write,
+>> +	.poll		= irctl_poll,
+>> +	.ioctl		= irctl_ioctl,
+>> +	.open		= irctl_open,
+>> +	.release	= irctl_close
+>> +};
 
-Thanks,
+This should be audited for the following aspects:
 
-	tglx
+   - Could there be a race condition between irctl_open() and
+     lirc_dev_init()?  If yes, try to rework them to eliminate the race,
+     or as a last resort take the BKL in irctl_open().
+
+   - Does irctl_ioctl() require BKL protection, i.e. does it have to be
+     serialized against itself and against irctl_open()?  If not, replace
+     it by .unlocked_ioctl.  If yes, preferably convert it to
+     .unlocked_ioctl too and add a local mutex for the necessary
+     serialization.
+
+(Added Cc: Jonathan Corbet to correct me if I'm wrong.)
+-- 
+Stefan Richter
+-=====-==--- =--= -=--=
+http://arcgraph.de/sr/
