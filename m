@@ -1,417 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYIIHol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYIIHoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbYIIHol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbYIIHoc
+	id S1756804AbYIIHoz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYIIHoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 9 Sep 2008 03:44:32 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:35570 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbYIIHoa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:44:30 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: dave@linux.vnet.ibm.com
-Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v4][PATCH 7/9] Infrastructure for shared objects
-Date: Tue,  9 Sep 2008 03:42:32 -0400
-Message-Id: <1220946154-15174-8-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+Received: from tlcvr-overload.infracom.it ([217.12.176.9]:32976 "EHLO poppero1"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754077AbYIIHob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:44:31 -0400
+X-Greylist: delayed 416 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Sep 2008 03:44:31 EDT
+Date: Tue, 9 Sep 2008 09:37:32 +0200
+From: Roberto Oppedisano <roppedisano@infracomspa.it>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: [PATCH] rate limit drm:radeon_cp_idle/reset errors
+Message-ID: <20080909073732.GA7563@infracomspa.it>
+References: <20080906091919.GA5021@infracomspa.it> <20080908210836.fc5df672.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080908210836.fc5df672.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Infrastructure to handle objects that may be shared and referenced by
-multiple tasks or other objects, e..g open files, memory address space
-etc.
+On Mon, Sep 08, 2008 at 09:08:36PM -0700, Andrew Morton wrote:
+> On Sat, 6 Sep 2008 11:19:19 +0200 Roberto Oppedisano <roppedisano@infracomspa.it> wrote:
+> 
+> > When switching from kwin composite wm (KDE 4.1) to compiz I often hit the
+> > following error:
+> > 
+> > Sep  6 10:24:31 poppero1 kernel: [  186.138203] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.138568] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
+> > 
+> > probably due to broken X drivers/apps; after hitting this the error my laptop
+> > (hp nx7010) is totally unresponsitive to keyboard/mouse, also if it can be 
+> > shut down via the power button:
+> > 
+> > Sep  6 10:24:59 poppero1 powersave-wm_shutdown[4843]: DIAG: Process script for event button.power ID 10
+> > Sep  6 10:24:59 poppero1 powersave-wm_shutdown[4843]: INFO: Event: BUTTON_POWER occured.
+> > Sep  6 10:24:59 poppero1 powersave-wm_shutdown[4843]: INFO: Parameters: Event - button.power; Current Active Scheme: scheme_performance - ACPI event line: button/power PWRF 00000080
+> > 00000001
+> > Sep  6 10:25:00 poppero1 shutdown[4852]: shutting down for system halt
+> > ...
+> > 
+> > Without the attached patch, which rate limits DRM_ERROR, the syslog is flooded
+> > by thuosands of messages; here's the output with the patch applied.
+> > 
+> > Sep  6 10:24:31 poppero1 kernel: [  186.138774] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.138968] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.139214] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.139408] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.139601] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.139866] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.140072] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:31 poppero1 kernel: [  186.140467] [drm:radeon_cp_idle] *ERROR* radeon_cp_idle called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:36 poppero1 kernel: [  191.139019] __ratelimit: 253431 callbacks suppressed
+> > Sep  6 10:24:36 poppero1 kernel: [  191.139030] [drm:radeon_cp_reset] *ERROR* radeon_cp_reset called without lock held, held  0 owner f726bc80 f68f6840
+> > Sep  6 10:24:36 poppero1 kernel: [  191.139314] [drm:radeon_cp_start] *ERROR* radeon_cp_start called without lock held, held  0 owner f726bc80 f68f6840
+> > 
+> > Also if it doesn't solve a bug I think it may still be worth applying it. 
+> > Patch is against current git.
+> > 
+> > Signed-off-by: Roberto Oppedisano <roberto.oppedisano@infracom.it>
+> > 
+> > diff --git a/include/drm/drmP.h b/include/drm/drmP.h
+> > index 1c1b13e..1107361 100644
+> > --- a/include/drm/drmP.h
+> > +++ b/include/drm/drmP.h
+> > @@ -162,7 +162,8 @@ struct drm_device;
+> >   * \param arg arguments
+> >   */
+> >  #define DRM_ERROR(fmt, arg...) \
+> > -	printk(KERN_ERR "[" DRM_NAME ":%s] *ERROR* " fmt , __func__ , ##arg)
+> > +	if (printk_ratelimit()) \
+> > +		printk(KERN_ERR "[" DRM_NAME ":%s] *ERROR* " fmt , __func__ , ##arg)
+> >  
+> >  /**
+> >   * Memory error output.
+> > 
+> 
+> Which kernel version(s)?
 
-The state of shared objects is saved once. On the first encounter, the
-state is dumped and the object is assigned a unique identifier (objref)
-and also stored in a hash table (indexed by its physical kenrel address).
->From then on the object will be found in the hash and only its identifier
-is saved.
+This is against vanilla current git. 
 
-On restart the identifier is looked up in the hash table; if not found
-then the state is read, the object is created, and added to the hash
-table (this time indexed by its identifier). Otherwise, the object in
-the hash table is used.
+Linux poppero1 2.6.27-rc5-00000-g7686ad5-dirty #1 PREEMPT Sun Sep 7 08:47:08 CEST 2008 i686 GNU/Linux
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
- Documentation/checkpoint.txt |   38 +++++++
- checkpoint/Makefile          |    2 +-
- checkpoint/objhash.c         |  237 ++++++++++++++++++++++++++++++++++++++++++
- checkpoint/sys.c             |    4 +
- include/linux/ckpt.h         |   18 +++
- 5 files changed, 298 insertions(+), 1 deletions(-)
- create mode 100644 checkpoint/objhash.c
-
-diff --git a/Documentation/checkpoint.txt b/Documentation/checkpoint.txt
-index f67aef1..97eee24 100644
---- a/Documentation/checkpoint.txt
-+++ b/Documentation/checkpoint.txt
-@@ -163,6 +163,44 @@ cr_hdr + cr_hdr_task
- cr_hdr + cr_hdr_tail
- 
- 
-+=== Shared resources (objects)
-+
-+Many resources used by tasks may be shared by more than one task (e.g.
-+file descriptors, memory address space, etc), or even have multiple
-+references from other resources (e.g. a single inode that represents
-+two ends of a pipe).
-+
-+Clearly, the state of shared objects need only be saved once, even if
-+they occur multiple times. We use a hash table (ctx->objhash) to keep
-+track of shared objects in the following manner.
-+
-+On the first encounter, the state is dumped and the object is assigned
-+a unique identifier and also stored in the hash table (indexed by its
-+physical kenrel address). From then on the object will be found in the
-+hash and only its identifier is saved.
-+
-+On restart the identifier is looked up in the hash table; if not found
-+then the state is read, the object is created, and added to the hash
-+table (this time indexed by its identifier). Otherwise, the object in
-+the hash table is used.
-+
-+The interface for the hash table is the following:
-+
-+cr_obj_get_by_ptr - find the unique identifier - object reference (objref)
-+  of the object that is pointer to by ptr (or 0 if not found) [checkpoint]
-+
-+cr_obj_add_ptr - add the object pointed to by ptr to the hash table if
-+  it isn't already there, and fill its unique identifier (objref); will
-+  return 0 if already found in the has, or 1 otherwise [checkpoint]
-+
-+cr_obj_get_by_ref - return the pointer to the object whose unique identifier
-+  is equal to objref [restart]
-+
-+cr_obj_add_ref - add the object with unique identifier objref, pointed to by
-+  ptr to the hash table if it isn't already there; will return 0 if already
-+  found in the has, or 1 otherwise [restart]
-+
-+
- === Changelog
- 
- [2008-Sep-04] v4:
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index ac35033..9843fb9 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -2,5 +2,5 @@
- # Makefile for linux checkpoint/restart.
- #
- 
--obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o \
-+obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
- 		ckpt_mem.o rstr_mem.o
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-new file mode 100644
-index 0000000..79d5b70
---- /dev/null
-+++ b/checkpoint/objhash.c
-@@ -0,0 +1,237 @@
-+/*
-+ *  Checkpoint-restart - object hash infrastructure to manage shared objects
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/file.h>
-+#include <linux/hash.h>
-+#include <linux/ckpt.h>
-+
-+struct cr_objref {
-+	int objref;
-+	void *ptr;
-+	unsigned short type;
-+	unsigned short flags;
-+	struct hlist_node hash;
-+};
-+
-+struct cr_objhash {
-+	struct hlist_head *head;
-+	int objref_index;
-+};
-+
-+#define CR_OBJHASH_NBITS  10
-+#define CR_OBJHASH_TOTAL  (1UL << CR_OBJHASH_NBITS)
-+
-+static void cr_obj_ref_drop(struct cr_objref *obj)
-+{
-+	switch (obj->type) {
-+	case CR_OBJ_FILE:
-+		fput((struct file *) obj->ptr);
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+static void cr_obj_ref_grab(struct cr_objref *obj)
-+{
-+	switch (obj->type) {
-+	case CR_OBJ_FILE:
-+		get_file((struct file *) obj->ptr);
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+static void cr_objhash_clear(struct cr_objhash *objhash)
-+{
-+	struct hlist_head *h = objhash->head;
-+	struct hlist_node *n, *t;
-+	struct cr_objref *obj;
-+	int i;
-+
-+	for (i = 0; i < CR_OBJHASH_TOTAL; i++) {
-+		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
-+			cr_obj_ref_drop(obj);
-+			kfree(obj);
-+		}
-+	}
-+}
-+
-+void cr_objhash_free(struct cr_ctx *ctx)
-+{
-+	struct cr_objhash *objhash = ctx->objhash;
-+
-+	if (objhash) {
-+		cr_objhash_clear(objhash);
-+		kfree(objhash->head);
-+		kfree(ctx->objhash);
-+		ctx->objhash = NULL;
-+	}
-+}
-+
-+int cr_objhash_alloc(struct cr_ctx *ctx)
-+{
-+	struct cr_objhash *objhash;
-+	struct hlist_head *head;
-+
-+	objhash = kzalloc(sizeof(*objhash), GFP_KERNEL);
-+	if (!objhash)
-+		return -ENOMEM;
-+	head = kzalloc(CR_OBJHASH_TOTAL * sizeof(*head), GFP_KERNEL);
-+	if (!head) {
-+		kfree(objhash);
-+		return -ENOMEM;
-+	}
-+
-+	objhash->head = head;
-+	objhash->objref_index = 1;
-+
-+	ctx->objhash = objhash;
-+	return 0;
-+}
-+
-+static struct cr_objref *cr_obj_find_by_ptr(struct cr_ctx *ctx, void *ptr)
-+{
-+	struct hlist_head *h;
-+	struct hlist_node *n;
-+	struct cr_objref *obj;
-+
-+	h = &ctx->objhash->head[hash_ptr(ptr, CR_OBJHASH_NBITS)];
-+	hlist_for_each_entry(obj, n, h, hash)
-+		if (obj->ptr == ptr)
-+			return obj;
-+	return NULL;
-+}
-+
-+static struct cr_objref *cr_obj_find_by_objref(struct cr_ctx *ctx, int objref)
-+{
-+	struct hlist_head *h;
-+	struct hlist_node *n;
-+	struct cr_objref *obj;
-+
-+	h = &ctx->objhash->head[hash_ptr((void *) objref, CR_OBJHASH_NBITS)];
-+	hlist_for_each_entry(obj, n, h, hash)
-+		if (obj->objref == objref)
-+			return obj;
-+	return NULL;
-+}
-+
-+static struct cr_objref *cr_obj_new(struct cr_ctx *ctx, void *ptr, int objref,
-+				    unsigned short type, unsigned short flags)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = kmalloc(sizeof(*obj), GFP_KERNEL);
-+	if (obj) {
-+		int i;
-+
-+		obj->ptr = ptr;
-+		obj->type = type;
-+		obj->flags = flags;
-+
-+		if (objref) {
-+			/* use 'objref' to index (restart) */
-+			obj->objref = objref;
-+			i = hash_ptr((void *) objref, CR_OBJHASH_NBITS);
-+		} else {
-+			/* use 'ptr' to index, assign objref (checkpoint) */
-+			obj->objref = ctx->objhash->objref_index++;;
-+			i = hash_ptr(ptr, CR_OBJHASH_NBITS);
-+		}
-+
-+		hlist_add_head(&obj->hash, &ctx->objhash->head[i]);
-+		cr_obj_ref_grab(obj);
-+	}
-+	return obj;
-+}
-+
-+/**
-+ * cr_obj_add_ptr - add an object to the hash table if not already there
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @objref: unique identifier - object reference [output]
-+ * @type: object type
-+ * @flags: object flags
-+ *
-+ * Fills the unique identifier of the object into @objref
-+ *
-+ * returns 0 if found, 1 if added, < 0 on error
-+ */
-+int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
-+		   unsigned short type, unsigned short flags)
-+{
-+	struct cr_objref *obj;
-+	int ret = 0;
-+
-+	obj = cr_obj_find_by_ptr(ctx, ptr);
-+	if (!obj) {
-+		obj = cr_obj_new(ctx, ptr, 0, type, flags);
-+		if (!obj)
-+			return -ENOMEM;
-+		else
-+			ret = 1;
-+	} else if (obj->type != type)	/* sanity check */
-+		return -EINVAL;
-+	*objref = obj->objref;
-+	return ret;
-+}
-+
-+/**
-+ * cr_obj_add_ref - add an object with unique identifer to the hash table
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @objref: unique identifier - object reference
-+ * @type: object type
-+ * @flags: object flags
-+ */
-+int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
-+		   unsigned short type, unsigned short flags)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = cr_obj_new(ctx, ptr, objref, type, flags);
-+	return obj ? 0 : -ENOMEM;
-+}
-+
-+/**
-+ * cr_obj_get_by_ptr - find the unique identifier (objref) of an object
-+ * @ctx: checkpoint context
-+ * @ptr: pointer to object
-+ * @type: object type
-+ */
-+int cr_obj_get_by_ptr(struct cr_ctx *ctx, void *ptr, unsigned short type)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = cr_obj_find_by_ptr(ctx, ptr);
-+	if (obj)
-+		return obj->type == type ? obj->objref : -EINVAL;
-+	else
-+		return -ESRCH;
-+}
-+
-+/**
-+ * cr_obj_get_by_ref - find an object given its unique identifier (objref)
-+ * @ctx: checkpoint context
-+ * @objref: unique identifier - object reference
-+ * @type: object type
-+ */
-+void *cr_obj_get_by_ref(struct cr_ctx *ctx, int objref, unsigned short type)
-+{
-+	struct cr_objref *obj;
-+
-+	obj = cr_obj_find_by_objref(ctx, objref);
-+	if (obj)
-+		return obj->type == type ? obj->ptr : ERR_PTR(-EINVAL);
-+	else
-+		return NULL;
-+}
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index 8141161..4f33ac4 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -131,6 +131,7 @@ void cr_ctx_free(struct cr_ctx *ctx)
- 		path_put(ctx->vfsroot);
- 
- 	cr_pgarr_free(ctx);
-+	cr_objhash_free(ctx);
- 
- 	kfree(ctx);
- }
-@@ -154,6 +155,9 @@ struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
- 	if (!ctx->hbuf)
- 		goto nomem;
- 
-+	if (cr_objhash_alloc(ctx) < 0)
-+		goto nomem;
-+
- 	/* assume checkpointer is in container's root vfs */
- 	/* FIXME: this works for now, but will change with real containers */
- 	ctx->vfsroot = &current->fs->root;
-diff --git a/include/linux/ckpt.h b/include/linux/ckpt.h
-index 9305e7b..d73f79e 100644
---- a/include/linux/ckpt.h
-+++ b/include/linux/ckpt.h
-@@ -28,6 +28,8 @@ struct cr_ctx {
- 	void *hbuf;		/* temporary buffer for headers */
- 	int hpos;		/* position in headers buffer */
- 
-+	struct cr_objhash *objhash;	/* hash for shared objects */
-+
- 	struct list_head pgarr;	/* page array for dumping VMA contents */
- 	struct cr_pgarr *pgcur;	/* current position in page array */
- 
-@@ -50,6 +52,22 @@ int cr_kread(struct cr_ctx *ctx, void *buf, int count);
- void *cr_hbuf_get(struct cr_ctx *ctx, int n);
- void cr_hbuf_put(struct cr_ctx *ctx, int n);
- 
-+/* shared objects handling */
-+
-+enum {
-+	CR_OBJ_FILE = 1,
-+	CR_OBJ_MAX
-+};
-+
-+void cr_objhash_free(struct cr_ctx *ctx);
-+int cr_objhash_alloc(struct cr_ctx *ctx);
-+void *cr_obj_get_by_ref(struct cr_ctx *ctx, int objref, unsigned short type);
-+int cr_obj_get_by_ptr(struct cr_ctx *ctx, void *ptr, unsigned short type);
-+int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
-+		   unsigned short type, unsigned short flags);
-+int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
-+		   unsigned short type, unsigned short flags);
-+
- struct cr_hdr;
- 
- int cr_write_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf);
--- 
-1.5.4.3
+R
 
