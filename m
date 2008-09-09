@@ -1,26 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbYIIRul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbYIIRvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbYIIRul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYIIRuc
+	id S1757225AbYIIRvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYIIRu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:50:32 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:59457 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbYIIRuc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:50:32 -0400
-Subject: Re: [RFC v4][PATCH 9/9] File descriprtors (restore)
+	Tue, 9 Sep 2008 13:50:58 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43188 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755767AbYIIRu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 13:50:57 -0400
+Subject: Re: [RFC] [PATCH -mm] cgroup: limit the amount of dirty file pages
 From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-In-Reply-To: <1220946154-15174-10-git-send-email-orenl@cs.columbia.edu>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-	 <1220946154-15174-10-git-send-email-orenl@cs.columbia.edu>
+To: righi.andrea@gmail.com
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       David Radford <dradford@bluehost.com>,
+       Marco Innocenti <m.innocenti@cineca.it>,
+       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       containers@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Carl Henrik Lunde <chlunde@ping.uio.no>, linux-mm@kvack.org,
+       Divyesh Shah <dpshah@google.com>, Matt Heaton <matt@bluehost.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Naveen Gupta <ngupta@google.com>
+In-Reply-To: <48C6987D.2050905@gmail.com>
+References: <48C6987D.2050905@gmail.com>
 Content-Type: text/plain
-Date: Tue, 09 Sep 2008 09:26:20 -0700
-Message-Id: <1220977581.23386.216.camel@nimitz>
+Date: Tue, 09 Sep 2008 10:49:44 -0700
+Message-Id: <1220982584.23386.219.camel@nimitz>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -28,26 +36,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
-> 
-> +static int cr_close_all_fds(struct files_struct *files)
-> +{
-> +       int *fdtable;
-> +       int n;
-> +
-> +       do {
-> +               n = cr_scan_fds(files, &fdtable);
-> +               if (n < 0)
-> +                       return n;
-> +               while (n--)
-> +                       sys_close(fdtable[n]);
-> +               kfree(fdtable);
-> +       } while (n != -1);
-> +
-> +       return 0;
-> +}
+On Tue, 2008-09-09 at 17:38 +0200, Andrea Righi wrote:
+> It allows to control how much dirty file pages a cgroup can have at any
+> given time. This feature is supposed to be strictly connected to a
+> generic cgroup IO controller (see below).
 
-This needs to use an ERR_PTR().  It will save using the double-pointer.
+So, this functions similarly to our global dirty ratio?  Is it just
+intended to keep a cgroup from wedging itself too hard with too many
+dirty pages, just like the global ratio?
 
 -- Dave
 
