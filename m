@@ -1,84 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbYIIIoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbYIIItk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbYIIIoj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 04:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYIIIoc
+	id S1755568AbYIIItk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 04:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYIIItb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 04:44:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44917 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753068AbYIIIob (ORCPT
+	Tue, 9 Sep 2008 04:49:31 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:47532 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbYIIIt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 04:44:31 -0400
-Date: Tue, 9 Sep 2008 01:43:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, quilt-dev@nongnu.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: Re: mmotm 2008-09-08-18-32 uploaded
-Message-Id: <20080909014354.764eb9ed.akpm@linux-foundation.org>
-In-Reply-To: <20080909173753.c48a5ca7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
-	<20080909173753.c48a5ca7.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 9 Sep 2008 04:49:29 -0400
+X-AuditID: 0ac90648-ab71fba000004214-54-48c638972e84
+Message-ID: <48C6388E.4010402@hitachi.com>
+Date: Tue, 09 Sep 2008 17:49:18 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: akpm@linux-foundation.org, sct@redhat.com, adilger@sun.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, snitzer@gmail.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com
+Subject: [PATCH 1/2][RESEND] ext3: add an option to control error handling on
+    file data
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008 17:37:53 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi Andrew,
 
-> On Mon, 08 Sep 2008 18:35:16 -0700
-> akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2008-09-08-18-32 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > It contains the following patches against 2.6.27-rc5:
-> > 
-> Hmm, I'm not sure this is a trouble or not..
-> 
-> ==
-> %quilt push -a
-> <snip>
-> |commit 5ca7e4a6b0929c7a0763f9b2481e063d9f047db0
-> |Author: Hans de Goede <j.w.r.degoede@hhs.nl>
-> |Date:   Wed Sep 3 17:12:20 2008 -0300
-> |
-> |    V4L/DVB (8831): gspca: Resolve webcam conflicts between some drivers.
-> |
-> |    -remove USB-id's from zc0301 for cams for which zc0301.c does not support
-> |      the sensor
-> |    -remove USB-id's from sn9c102 for cams where sn9c102 does not support the
-> |      bridge sensor combination
-> |    -no longer make inclusion of usb id's removed from zc0301 and sn9c102
-> |      conditional in gspca
-> |    -fix conditional inclusion of USB-id's in gspca to also work when the
-> |      conflicting drivers are build as a module
-> |    -add a number of USB-id's to gspca from various windows .inf files:
-> --------------------------
-> No file to patch.  Skipping patch.
-> patch: **** /tmp/po8iQmOc : No such file or directory
-> Patch ../patches/linux-next.patch does not apply (enforce with -f)
-> 
-> This stop is caused by following line in changelog.
-> 
->     c45:608f from generic sonix sn9c103 inf file (+ ov7630 which we support)
->     041e:4022 from creative webcam nx pro, same as already supported 041e:401e
->     0ac8:0301 from generic zc0301 driver which supports many sensors
->     10fd:804d from typhoon webshot driver (also FlyCAM-USB 300 plus)
-> and this line .
->       converting those not to depend on consecutive minor numbers in commit
->   ->  5a6411b1178baf534aa9138052864dfa89d3eada and later when dev0 was added
-> 
-> When I added a charactor in front of the number, linux-next.patch is applied.
-> Start from a number is bad ? (or my environment is bad ?)
+I posted these patches previously and revised to follow comments,
+but they haven't been merged yet.  So I resend them.
 
-urgh, that's patch(1) being silly and interpreting that text as part of
-a patch.  IIRC it's interpreting it as a context diff.
+The previous post:
+http://kerneltrap.org/mailarchive/linux-kernel/2008/7/30/2742434
 
-Adding `-u' to the `patch' command will shut it up.  That change should
-be made to quilt (IMO).  
+Thanks,
+
+Subject: [PATCH 1/2] ext3: add an option to control error handling on file data
+
+If the journal doesn't abort when it gets an IO error in file data
+blocks, the file data corruption will spread silently.  Because
+most of applications and commands do buffered writes without fsync(),
+they don't notice the IO error.  It's scary for mission critical
+systems.  On the other hand, if the journal aborts whenever it gets
+an IO error in file data blocks, the system will easily become
+inoperable.  So this patch introduces a filesystem option to
+determine whether it aborts the journal or just call printk() when
+it gets an IO error in file data.
+
+If you mount a ext3 fs with data_err=abort option, it aborts on file
+data write error.  If you mount it with data_err=ignore, it doesn't
+abort, just call printk().  data_err=ignore is the default.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ Documentation/filesystems/ext3.txt |    5 +++++
+ fs/ext3/super.c                    |   16 ++++++++++++++++
+ fs/jbd/commit.c                    |    2 ++
+ include/linux/ext3_fs.h            |    2 ++
+ include/linux/jbd.h                |    3 +++
+ 5 files changed, 28 insertions(+)
+
+Index: linux-2.6.27-rc5/Documentation/filesystems/ext3.txt
+===================================================================
+--- linux-2.6.27-rc5.orig/Documentation/filesystems/ext3.txt
++++ linux-2.6.27-rc5/Documentation/filesystems/ext3.txt
+@@ -96,6 +96,11 @@ errors=remount-ro(*)	Remount the filesys
+ errors=continue		Keep going on a filesystem error.
+ errors=panic		Panic and halt the machine if an error occurs.
+ 
++data_err=ignore(*)	Just print an error message if an error occurs
++			in a file data buffer in ordered mode.
++data_err=abort		Abort the journal if an error occurs in a file
++			data buffer in ordered mode.
++
+ grpid			Give objects the same group ID as their creator.
+ bsdgroups
+ 
+Index: linux-2.6.27-rc5/fs/ext3/super.c
+===================================================================
+--- linux-2.6.27-rc5.orig/fs/ext3/super.c
++++ linux-2.6.27-rc5/fs/ext3/super.c
+@@ -625,6 +625,9 @@ static int ext3_show_options(struct seq_
+ 	else if (test_opt(sb, DATA_FLAGS) == EXT3_MOUNT_WRITEBACK_DATA)
+ 		seq_puts(seq, ",data=writeback");
+ 
++	if (test_opt(sb, DATA_ERR_ABORT))
++		seq_puts(seq, ",data_err=abort");
++
+ 	ext3_show_quota_options(seq, sb);
+ 
+ 	return 0;
+@@ -754,6 +757,7 @@ enum {
+ 	Opt_reservation, Opt_noreservation, Opt_noload, Opt_nobh, Opt_bh,
+ 	Opt_commit, Opt_journal_update, Opt_journal_inum, Opt_journal_dev,
+ 	Opt_abort, Opt_data_journal, Opt_data_ordered, Opt_data_writeback,
++	Opt_data_err_abort, Opt_data_err_ignore,
+ 	Opt_usrjquota, Opt_grpjquota, Opt_offusrjquota, Opt_offgrpjquota,
+ 	Opt_jqfmt_vfsold, Opt_jqfmt_vfsv0, Opt_quota, Opt_noquota,
+ 	Opt_ignore, Opt_barrier, Opt_err, Opt_resize, Opt_usrquota,
+@@ -796,6 +800,8 @@ static match_table_t tokens = {
+ 	{Opt_data_journal, "data=journal"},
+ 	{Opt_data_ordered, "data=ordered"},
+ 	{Opt_data_writeback, "data=writeback"},
++	{Opt_data_err_abort, "data_err=abort"},
++	{Opt_data_err_ignore, "data_err=ignore"},
+ 	{Opt_offusrjquota, "usrjquota="},
+ 	{Opt_usrjquota, "usrjquota=%s"},
+ 	{Opt_offgrpjquota, "grpjquota="},
+@@ -1011,6 +1017,12 @@ static int parse_options (char *options,
+ 				sbi->s_mount_opt |= data_opt;
+ 			}
+ 			break;
++		case Opt_data_err_abort:
++			set_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
++		case Opt_data_err_ignore:
++			clear_opt(sbi->s_mount_opt, DATA_ERR_ABORT);
++			break;
+ #ifdef CONFIG_QUOTA
+ 		case Opt_usrjquota:
+ 			qtype = USRQUOTA;
+@@ -1986,6 +1998,10 @@ static void ext3_init_journal_params(str
+ 		journal->j_flags |= JFS_BARRIER;
+ 	else
+ 		journal->j_flags &= ~JFS_BARRIER;
++	if (test_opt(sb, DATA_ERR_ABORT))
++		journal->j_flags |= JFS_ABORT_ON_SYNCDATA_ERR;
++	else
++		journal->j_flags &= ~JFS_ABORT_ON_SYNCDATA_ERR;
+ 	spin_unlock(&journal->j_state_lock);
+ }
+ 
+Index: linux-2.6.27-rc5/include/linux/ext3_fs.h
+===================================================================
+--- linux-2.6.27-rc5.orig/include/linux/ext3_fs.h
++++ linux-2.6.27-rc5/include/linux/ext3_fs.h
+@@ -380,6 +380,8 @@ struct ext3_inode {
+ #define EXT3_MOUNT_QUOTA		0x80000 /* Some quota option set */
+ #define EXT3_MOUNT_USRQUOTA		0x100000 /* "old" user quota */
+ #define EXT3_MOUNT_GRPQUOTA		0x200000 /* "old" group quota */
++#define EXT3_MOUNT_DATA_ERR_ABORT	0x400000 /* Abort on file data write
++						  * error in ordered mode */
+ 
+ /* Compatibility, for having both ext2_fs.h and ext3_fs.h included at once */
+ #ifndef _LINUX_EXT2_FS_H
+Index: linux-2.6.27-rc5/include/linux/jbd.h
+===================================================================
+--- linux-2.6.27-rc5.orig/include/linux/jbd.h
++++ linux-2.6.27-rc5/include/linux/jbd.h
+@@ -816,6 +816,9 @@ struct journal_s
+ #define JFS_FLUSHED	0x008	/* The journal superblock has been flushed */
+ #define JFS_LOADED	0x010	/* The journal superblock has been loaded */
+ #define JFS_BARRIER	0x020	/* Use IDE barriers */
++#define JFS_ABORT_ON_SYNCDATA_ERR	0x040  /* Abort the journal on file
++						* data write error in ordered
++						* mode */
+ 
+ /*
+  * Function declarations for the journaling transaction and buffer
+Index: linux-2.6.27-rc5/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.27-rc5.orig/fs/jbd/commit.c
++++ linux-2.6.27-rc5/fs/jbd/commit.c
+@@ -482,6 +482,8 @@ void journal_commit_transaction(journal_
+ 		printk(KERN_WARNING
+ 			"JBD: Detected IO errors while flushing file data "
+ 			"on %s\n", bdevname(journal->j_fs_dev, b));
++		if (journal->j_flags & JFS_ABORT_ON_SYNCDATA_ERR)
++			journal_abort(journal, err);
+ 		err = 0;
+ 	}
+ 
+
+
+
