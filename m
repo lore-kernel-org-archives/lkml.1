@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYIINOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYIINP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756456AbYIINOg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 09:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbYIINO2
+	id S1756631AbYIINP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 09:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbYIINPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 09:14:28 -0400
-Received: from mail.windriver.com ([147.11.1.11]:62598 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbYIINO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 09:14:27 -0400
-Message-ID: <48C676AB.2070101@windriver.com>
-Date: Tue, 09 Sep 2008 08:14:19 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 9 Sep 2008 09:15:15 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:46865 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753575AbYIINPO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 09:15:14 -0400
+Message-ID: <48C676E0.1080600@skyrush.com>
+Date: Tue, 09 Sep 2008 07:15:12 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080727)
 MIME-Version: 1.0
-To: Atsuo Igarashi <atsuo_igarashi@tripeaks.co.jp>
-CC: linux-kernel@vger.kernel.org, Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [PATCH] kgdb: could not write to the last of valid memory with
- kgdb.
-References: <48C5BDA0.90105@tripeaks.co.jp>
-In-Reply-To: <48C5BDA0.90105@tripeaks.co.jp>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
+ attached)
+References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>	<48AC3A16.4080209@skyrush.com>	<48B3F9F7.2050503@skyrush.com>	<48C54EC2.4060901@skyrush.com>	<20080908173250.2452c5b8.akpm@linux-foundation.org>	<48C67374.1000108@skyrush.com> <20080909141210.4fd546a1@lxorguk.ukuu.org.uk>
+In-Reply-To: <20080909141210.4fd546a1@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Sep 2008 13:14:20.0007 (UTC) FILETIME=[F823AF70:01C9127D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Atsuo Igarashi wrote:
-> Hi,
->
-> I'm using i.MX31 ARM11 board which has 104Mbyte valid memory.  When
-> I'd invoked a print command to write the last of valid memory from
-> gdb, there was no response from kgdb.
-> It seems that the following line causes this problem.
->
-> kernel/kgdb.c: write_mem_msg()
-> ...
->  491             flush_icache_range(addr, addr + length + 1);
->
-> If the last byte of valid memory is specified, the last cache line
-> and the next cache line will be flushed by the ARM11 V6's function
-> from flush_icache_range().  I'm not sure why the 2nd parameter has
-> +1, I assume this +1 is unnecessary for ARM11 V6's cache.  I send a
-> patch to remove this +1, does anyone know necessity for other
-> architectures?
+Alan Cox wrote:
+> If you have the column handling isolated and locked that is a big step
+> towards exterminating the BKL in the n_tty code. It also illustrates why
+> locking people always say "lock data not code".
 
-I had to go digging through the archives to find out where the "+1"
-came from, as it pre-dates my involvement with kgdb.  It turns out
-this actually appeared in the initial version of the 'X' 'M' gdb
-serial packet write.
+Well, it's isolated, but still locked with the BKL, which would be great
+to get rid of.  A few questions for you, since you've worked with this
+code (and kernel locking stuff) a lot longer than I:
 
-You can see historical first version if you scroll to line 973 at:
+1) Now that column state is confined to the process_out/echo funcs in
+n_tty, would using tty_write_lock() (the defined atomic write lock
+mutex) be a good replacement for lock_kernel(), even though interruptible?
 
-http://kgdb.cvs.sourceforge.net/kgdb/kgdb-2/core-lite.patch?annotate=1.40
+2) To protect echo buffer operations, I would lean toward using a
+separate echo lock mutex so it does not lock against non-echo-buffer
+output.  Would nesting this with #1 be advisable?  Should it be
+interruptable?
 
-That means we have carried this for 3 years, 10 months with no one
-noticing it. :-)
+3) tty_write() mentions refers to ldisc use of the BKL.  If we change
+this, are there any considerations for the tty_io or driver code?
 
-The flush_icache_range() is a "start" to "end" address so there should
-be no need for the +1, as it is already computed by adding the length.
-I will queue this patch for some testing and pushing into the
-mainline.
-
-Thanks,
-Jason.
-
-
+					Thanks, Joe
