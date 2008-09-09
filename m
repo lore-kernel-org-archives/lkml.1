@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbYIIIjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755786AbYIIInl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755369AbYIIIjv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 04:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYIIIjn
+	id S1755786AbYIIInl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 04:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYIIInd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 04:39:43 -0400
-Received: from scing.com ([217.160.110.58]:49881 "EHLO scing.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbYIIIjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 04:39:42 -0400
-X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Sep 2008 04:39:42 EDT
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-X-GoodMailTo: skipped
-From: Janne Grunau <j@jannau.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH 0/18] linux infrared remote control drivers
-Date: Tue, 9 Sep 2008 10:32:50 +0200
-User-Agent: KMail/1.9.9
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Jarod Wilson <jarod@redhat.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>,
-       Eric Sandeen <esandeen@redhat.com>,
-       Mario Limonciello <superm1@ubuntu.com>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <20080909070603.GA5786@x200.localdomain>
-In-Reply-To: <20080909070603.GA5786@x200.localdomain>
+	Tue, 9 Sep 2008 04:43:33 -0400
+Received: from mail7.hitachi.co.jp ([133.145.228.42]:44734 "EHLO
+	mail7.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbYIIInb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 04:43:31 -0400
+X-AuditID: 0ac90650-ab4caba000006fc9-93-48c637308242
+Message-ID: <48C63701.6090700@hitachi.com>
+Date: Tue, 09 Sep 2008 17:42:41 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: akpm@linux-foundation.org, sct@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org, jack@suse.cz,
+       jbacik@redhat.com, cmm@us.ibm.com, tytso@mit.edu, adilger@sun.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com,
+       nickpiggin@yahoo.com.au
+Subject: [PATCH -mm] jbd: test BH_Write_EIO to detect errors on metadata
+    buffers
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091032.51462.j@jannau.net>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 09:06:03 Alexey Dobriyan wrote:
->
-> All version.h and autoconf.h inclusions aren't needed.
+__try_to_free_cp_buf(), __process_buffer(), and __wait_cp_io()
+test BH_Uptodate flag to detect write I/O errors on metadata
+buffers.  But by commit 95450f5a7e53d5752ce1a0d0b8282e10fe745ae0
+"ext3: don't read inode block if the buffer has a write error"(*),
+BH_Uptodate flag can be set to inode buffers with BH_Write_EIO
+in order to avoid reading old inode data.  So now, we have to
+test BH_Write_EIO flag of checkpointing inode buffers instead
+of BH_Uptodate.  This patch does it.
 
-I'll remove them.
+(*) http://lkml.org/lkml/2008/6/23/126
 
-> #ifdef MODULE is gross and very old. Don't need that. Just use
->
-> 	static int __init x_init(void)
-> 	{
-> 		...
-> 	}
->
-> 	static void __exit x_exit(void)
-> 	{
-> 		...
-> 	}
-> 	module_init(x_init);
-> 	module_exit(x_exit);
-> 	MODULE_LICENSE
-> 		...
->
-> It will work correctly in modular and built-in case.
+This patch depends on the following patch set in -mm:
 
-Will do so.
+#1 jbd: abort when failed to log metadata buffers
+   http://lkml.org/lkml/2008/7/24/160
+#2 jbd: fix error handling for checkpoint io
+   http://lkml.org/lkml/2008/7/24/163
+#3 ext3: add checks for errors from jbd
+   http://lkml.org/lkml/2008/7/29/539
+#4 jbd: don't dirty original metadata buffer on abort
+   http://lkml.org/lkml/2008/7/24/168
 
-> Static number of devices is simple but how about adding them
-> dynamically.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ fs/jbd/checkpoint.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Will have a look
+Index: linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
+===================================================================
+--- linux-2.6.27-rc5-mm1.orig/fs/jbd/checkpoint.c
++++ linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
+@@ -94,7 +94,7 @@ static int __try_to_free_cp_buf(struct j
+ 	struct buffer_head *bh = jh2bh(jh);
+ 
+ 	if (jh->b_jlist == BJ_None && !buffer_locked(bh) &&
+-	    !buffer_dirty(bh) && buffer_uptodate(bh)) {
++	    !buffer_dirty(bh) && !buffer_write_io_error(bh)) {
+ 		JBUFFER_TRACE(jh, "remove from checkpoint list");
+ 		ret = __journal_remove_checkpoint(jh) + 1;
+ 		jbd_unlock_bh_state(bh);
+@@ -214,7 +214,7 @@ restart:
+ 			spin_lock(&journal->j_list_lock);
+ 			goto restart;
+ 		}
+-		if (unlikely(!buffer_uptodate(bh)))
++		if (unlikely(buffer_write_io_error(bh)))
+ 			ret = -EIO;
+ 
+ 		/*
+@@ -283,7 +283,7 @@ static int __process_buffer(journal_t *j
+ 		ret = 1;
+ 	} else if (!buffer_dirty(bh)) {
+ 		ret = 1;
+-		if (unlikely(!buffer_uptodate(bh)))
++		if (unlikely(buffer_write_io_error(bh)))
+ 			ret = -EIO;
+ 		J_ASSERT_JH(jh, !buffer_jbddirty(bh));
+ 		BUFFER_TRACE(bh, "remove from checkpoint");
 
-Janne
+
