@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYIISgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbYIISi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYIISgj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 14:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYIISgb
+	id S1756778AbYIISi2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 14:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYIISiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 14:36:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46720 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbYIISga (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 14:36:30 -0400
-Date: Tue, 9 Sep 2008 20:40:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080909184008.GA7714@one.firstfloor.org>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org> <48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org> <48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu> <alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org> <m3vdx6xm68.fsf@maximus.localdomain> <87d4jdty5b.fsf@basil.nowhere.org> <48C6AFA4.1050206@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 9 Sep 2008 14:38:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52063 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753617AbYIISiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 14:38:20 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Re: [PATCH 0/18] linux infrared remote control drivers
+Date: Tue, 9 Sep 2008 14:34:59 -0400
+User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
+Cc: Christoph Hellwig <hch@infradead.org>, Janne Grunau <j@jannau.net>,
+       linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>,
+       Eric Sandeen <esandeen@redhat.com>,
+       Mario Limonciello <superm1@ubuntu.com>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <200809091123.57109.jwilson@redhat.com> <20080909182710.GA31271@csclub.uwaterloo.ca>
+In-Reply-To: <20080909182710.GA31271@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C6AFA4.1050206@rtr.ca>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200809091434.59647.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Our firewall here uses a Via C3-600 CPU, and CMOV has never worked on it.
-> But based upon your posting, I have today upgraded the BIOS to the
-> latest (2004) version.
+On Tuesday 09 September 2008 14:27:10 Lennart Sorensen wrote:
+> On Tue, Sep 09, 2008 at 11:23:56AM -0400, Jarod Wilson wrote:
+> > I meant to include that the ordering of the patches was more or less from
+> > most-used/most-tested to least-used/least-tested, and a few of the
+> > patches do include Tested-by: lines in them. Basically, the first four or
+> > five drivers probably cover the majority of users, so getting them in
+> > first would provide the most bang-for-your-buck. But I can certainly
+> > re-send with only the tested drivers after we get through the first round
+> > of comments, if that's preferred over my approach of putting the
+> > higher-prio ones to the front of the ordering.
+>
+> The soundgraph imon driver is number 8, but it works great for me, and lots
+> of cases include that one (at least silverstone cases).  I think more
+> than the first 4 or 5 are in very active use.
 
-That's probably not new enough. 
-
-> 
-> Now.. how can I check whether CMOV works or not?  It's not listed in 
-> /proc/cpuinfo.
-
-If it's not in cpuinfo it won't work.
-
--Andi
+Yeah, I realized imon was much lower in the sort order after my reply there, 
+which was a bad initial move by me, since its actually one of the ones that 
+has definite positive testing feedback already. I believe quite a number of 
+vendors of HTPC cases use imon lcd (or vfd) and ir combo devices.
 
 -- 
-ak@linux.intel.com
+Jarod Wilson
+jarod@redhat.com
+
