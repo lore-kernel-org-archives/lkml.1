@@ -1,296 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYIIHpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbYIIHp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756741AbYIIHpo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756627AbYIIHoj
+	id S1756656AbYIIHp7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbYIIHol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:44:39 -0400
-Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:35577 "EHLO
-	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756551AbYIIHoi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:44:38 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: dave@linux.vnet.ibm.com
-Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v4][PATCH 9/9] File descriprtors (restore)
-Date: Tue,  9 Sep 2008 03:42:34 -0400
-Message-Id: <1220946154-15174-10-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+	Tue, 9 Sep 2008 03:44:41 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:37704 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756647AbYIIHok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:44:40 -0400
+Date: Tue, 9 Sep 2008 09:44:38 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: "Matt Fleming" <mattjfleming@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
+Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
+Message-ID: <20080909094438.6423b8ef@mjolnir.drzeus.cx>
+In-Reply-To: <5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
+References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
+	<20080907123832.5ba79c12@mjolnir.drzeus.cx>
+	<5ff4a1e50809080628i65bd7c7blfac70659a9f9229c@mail.gmail.com>
+	<20080909092216.46a6eba1@mjolnir.drzeus.cx>
+	<5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0cvs92 (GTK+ 2.14.0; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restore open file descriptors: for each FD read 'struct cr_hdr_fd_ent'
-and lookup objref in the hash table; if not found (first occurence), read
-in 'struct cr_hdr_fd_data', create a new FD and register in the hash.
-Otherwise attach the file pointer from the hash as an FD.
+On Tue, 9 Sep 2008 08:34:27 +0100
+"Matt Fleming" <mattjfleming@googlemail.com> wrote:
 
-This patch only handles basic FDs - regular files, directories and also
-symbolic links.
+> 2008/9/9 Pierre Ossman <drzeus-mmc@drzeus.cx>:
+> > On Mon, 8 Sep 2008 14:28:00 +0100
+> > "Matt Fleming" <mattjfleming@googlemail.com> wrote:
+> >
+> >> You're right, I changed the patch accordingly (I also fixed the read
+> >> timeout path).
+> >>
+> >
+> > This still doesn't use the fields from the request structure. E.g. SDIO
+> > support is probably still broken here as it mandates a timeout of 1
+> > second for data transfers.
+> >
+> 
+> What fields in the request structure? Are you talking about struct mmc_request ?
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
- checkpoint/Makefile    |    2 +-
- checkpoint/restart.c   |    4 +
- checkpoint/rstr_file.c |  205 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/ckpt.h   |    1 +
- 4 files changed, 211 insertions(+), 1 deletions(-)
- create mode 100644 checkpoint/rstr_file.c
+Yup, timeout_ns and timeout_clks.
 
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index 7496695..88bbc10 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -3,4 +3,4 @@
- #
- 
- obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
--		ckpt_mem.o rstr_mem.o ckpt_file.o
-+		ckpt_mem.o rstr_mem.o ckpt_file.o rstr_file.o
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index f8c919d..bc49523 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -212,6 +212,10 @@ static int cr_read_task(struct cr_ctx *ctx)
- 	cr_debug("memory: ret %d\n", ret);
- 	if (ret < 0)
- 		goto out;
-+	ret = cr_read_files(ctx);
-+	cr_debug("files: ret %d\n", ret);
-+	if (ret < 0)
-+		goto out;
- 	ret = cr_read_thread(ctx);
- 	cr_debug("thread: ret %d\n", ret);
- 	if (ret < 0)
-diff --git a/checkpoint/rstr_file.c b/checkpoint/rstr_file.c
-new file mode 100644
-index 0000000..28c4109
---- /dev/null
-+++ b/checkpoint/rstr_file.c
-@@ -0,0 +1,205 @@
-+/*
-+ *  Checkpoint file descriptors
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/file.h>
-+#include <linux/fdtable.h>
-+#include <linux/fsnotify.h>
-+#include <linux/syscalls.h>
-+#include <linux/ckpt.h>
-+#include <linux/ckpt_hdr.h>
-+
-+#include "ckpt_file.h"
-+
-+static int cr_close_all_fds(struct files_struct *files)
-+{
-+	int *fdtable;
-+	int n;
-+
-+	do {
-+		n = cr_scan_fds(files, &fdtable);
-+		if (n < 0)
-+			return n;
-+		while (n--)
-+			sys_close(fdtable[n]);
-+		kfree(fdtable);
-+	} while (n != -1);
-+
-+	return 0;
-+}
-+
-+/**
-+ * cr_attach_file - attach a lonely file ptr to a file descriptor
-+ * @file: lonely file pointer
-+ */
-+static int cr_attach_file(struct file *file)
-+{
-+	int fd = get_unused_fd_flags(0);
-+
-+	if (fd >= 0) {
-+		fsnotify_open(file->f_path.dentry);
-+		fd_install(fd, file);
-+	}
-+	return fd;
-+}
-+
-+#define CR_SETFL_MASK (O_APPEND|O_NONBLOCK|O_NDELAY|FASYNC|O_DIRECT|O_NOATIME)
-+
-+/* cr_read_fd_data - restore the state of a given file pointer */
-+static int
-+cr_read_fd_data(struct cr_ctx *ctx, struct files_struct *files, int parent)
-+{
-+	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int fd, rparent, ret;
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_DATA);
-+	cr_debug("rparent %d parent %d flags %#x mode %#x how %d\n",
-+		 rparent, parent, hh->f_flags, hh->f_mode, hh->fd_type);
-+	if (rparent < 0)
-+		return rparent;
-+	if (rparent != parent)
-+		return -EINVAL;
-+	/* FIX: more sanity checks on f_flags, f_mode etc */
-+
-+	switch (hh->fd_type) {
-+	case CR_FD_FILE:
-+	case CR_FD_DIR:
-+	case CR_FD_LINK:
-+		file = cr_read_open_fname(ctx, hh->f_flags, hh->f_mode);
-+		break;
-+	default:
-+		file = ERR_PTR(-EINVAL);
-+		break;
-+	}
-+
-+	if (IS_ERR(file))
-+		return PTR_ERR(file);
-+
-+	/* FIX: need to restore uid, gid, owner etc */
-+
-+	fd = cr_attach_file(file);	/* no need to cleanup 'file' below */
-+	if (fd < 0) {
-+		filp_close(file, NULL);
-+		return fd;
-+	}
-+
-+	/* register new <objref, file> tuple in hash table */
-+	ret = cr_obj_add_ref(ctx, (void *) file, parent, CR_OBJ_FILE, 0);
-+	if (ret < 0)
-+		goto out;
-+	ret = sys_fcntl(fd, F_SETFL, hh->f_flags & CR_SETFL_MASK);
-+	if (ret < 0)
-+		goto out;
-+	ret = vfs_llseek(file, hh->f_pos, SEEK_SET);
-+	if (ret == -ESPIPE)	/* ignore error on non-seekable files */
-+		ret = 0;
-+
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret < 0 ? ret : fd;
-+}
-+
-+/**
-+ * cr_read_fd_ent - restore the state of a given file descriptor
-+ * @ctx: checkpoint context
-+ * @files: files_struct pointer
-+ * @parent: parent objref
-+ *
-+ * Restore the state of a file descriptor; look up the objref (in the header)
-+ * in the hash table, and if found pick the matching file pointer and use
-+ * it; otherwise call cr_read_fd_data to restore the file pointer too.
-+ */
-+static int
-+cr_read_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int parent)
-+{
-+	struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int newfd, rparent;
-+
-+	rparent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_ENT);
-+	cr_debug("rparent %d parent %d ref %d\n", rparent, parent, hh->objref);
-+	if (rparent < 0)
-+		return rparent;
-+	if (rparent != parent)
-+		return -EINVAL;
-+	cr_debug("fd %d coe %d\n", hh->fd, hh->close_on_exec);
-+	if (hh->objref <= 0)
-+		return -EINVAL;
-+
-+	file = cr_obj_get_by_ref(ctx, hh->objref, CR_OBJ_FILE);
-+	if (IS_ERR(file))
-+		return PTR_ERR(file);
-+
-+	if (file) {
-+		newfd = cr_attach_file(file);
-+		if (newfd < 0)
-+			return newfd;
-+		get_file(file);
-+	} else {
-+		/* create new file pointer (and register in hash table) */
-+		newfd = cr_read_fd_data(ctx, files, hh->objref);
-+		if (newfd < 0)
-+			return newfd;
-+	}
-+
-+	cr_debug("newfd got %d wanted %d\n", newfd, hh->fd);
-+
-+	/* if newfd isn't desired fd, use dup2() to relocated it */
-+	if (newfd != hh->fd) {
-+		int ret = sys_dup2(newfd, hh->fd);
-+		if (ret < 0)
-+			return ret;
-+		sys_close(newfd);
-+	}
-+
-+	if (hh->close_on_exec)
-+		set_close_on_exec(hh->fd, 1);
-+
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return 0;
-+}
-+
-+int cr_read_files(struct cr_ctx *ctx)
-+{
-+	struct cr_hdr_files *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct files_struct *files = current->files;
-+	int n, parent, ret;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FILES);
-+	if (parent < 0)
-+		return parent;
-+#if 0	/* activate when containers are used */
-+	if (parent != task_pid_vnr(current))
-+		return -EINVAL;
-+#endif
-+	cr_debug("objref %d nfds %d\n", hh->objref, hh->nfds);
-+	if (hh->objref < 0 || hh->nfds < 0)
-+		return -EINVAL;
-+
-+	if (hh->nfds > sysctl_nr_open)
-+		return -EMFILE;
-+
-+	/* point of no return -- close all file descriptors */
-+	ret = cr_close_all_fds(files);
-+	if (ret < 0)
-+		return ret;
-+
-+	for (n = 0; n < hh->nfds; n++) {
-+		ret = cr_read_fd_ent(ctx, files, hh->objref);
-+		if (ret < 0)
-+			break;
-+	}
-+
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-diff --git a/include/linux/ckpt.h b/include/linux/ckpt.h
-index ad46baf..1086670 100644
---- a/include/linux/ckpt.h
-+++ b/include/linux/ckpt.h
-@@ -86,6 +86,7 @@ int cr_write_files(struct cr_ctx *ctx, struct task_struct *t);
- 
- int do_restart(struct cr_ctx *ctx);
- int cr_read_mm(struct cr_ctx *ctx);
-+int cr_read_files(struct cr_ctx *ctx);
- 
- #define cr_debug(fmt, args...)  \
- 	pr_debug("[CR:%s] " fmt, __func__, ## args)
 -- 
-1.5.4.3
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
