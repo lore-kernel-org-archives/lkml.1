@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYIIQK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757294AbYIIQKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYIIQK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 12:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756839AbYIIQI4
+	id S1757294AbYIIQKv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 12:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYIIQI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 12:08:56 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:35997 "EHLO mo10.iij4u.or.jp"
+	Tue, 9 Sep 2008 12:08:57 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:58225 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754874AbYIIQIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755406AbYIIQIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Sep 2008 12:08:53 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp
-Subject: [PATCH 2/2] x86: convert dma_alloc_coherent to use is_device_dma_capable
-Date: Wed, 10 Sep 2008 00:49:48 +0900
-Message-Id: <1220975388-8318-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       Tony Luck <tony.luck@intel.com>, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 1/4] add is_buffer_dma_capable helper function
+Date: Wed, 10 Sep 2008 01:06:46 +0900
+Message-Id: <1220976409-8417-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.4.2
-In-Reply-To: <1220975388-8318-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1220975388-8318-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1220975388-8318-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1220976409-8417-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1220976409-8417-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/asm-x86/dma-mapping.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+is_buffer_dma_capable helper function is to see if a memory region is
+DMA-capable or not. The arugments are the dma_mask (or
+coherent_dma_mask) of a device and the address and size of a memory
+region.
 
-diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
-index 9dd92b4..7b0fdd6 100644
---- a/include/asm-x86/dma-mapping.h
-+++ b/include/asm-x86/dma-mapping.h
-@@ -280,7 +280,7 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
- 		gfp |= GFP_DMA;
- 	}
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+---
+ include/linux/dma-mapping.h |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 952e0f8..6ed50c1 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -48,6 +48,11 @@ static inline int is_device_dma_capable(struct device *dev)
+ 	return dev->dma_mask != NULL && *dev->dma_mask != DMA_MASK_NONE;
+ }
  
--	if (!dev->dma_mask)
-+	if (!is_device_dma_capable(dev))
- 		return NULL;
- 
- 	if (!ops->alloc_coherent)
++static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
++{
++	return addr + size <= mask;
++}
++
+ #ifdef CONFIG_HAS_DMA
+ #include <asm/dma-mapping.h>
+ #else
 -- 
 1.5.4.2
 
