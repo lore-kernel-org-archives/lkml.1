@@ -1,88 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYIIDbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYIIDcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbYIIDbj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 23:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYIIDb3
+	id S1755361AbYIIDcS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 23:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYIIDcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 23:31:29 -0400
-Received: from hostap.isc.org ([149.20.54.63]:57638 "EHLO hostap.isc.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752665AbYIIDb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 23:31:28 -0400
-Date: Mon, 8 Sep 2008 19:55:25 -0700
-From: Jouni Malinen <j@w1.fi>
-To: David Miller <davem@davemloft.net>
-Cc: jouni.malinen@atheros.com, alex.williamson@hp.com,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, j@w1.fi
-Subject: Re: [GIT]: Networking
-Message-ID: <20080909025525.GB25148@hostap.isc.org>
-References: <20080827.164649.87042354.davem@davemloft.net> <1220627292.7260.3.camel@2710p.home> <48C5E2FC.4090304@atheros.com> <20080908.194627.169864643.davem@davemloft.net>
+	Mon, 8 Sep 2008 23:32:06 -0400
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:28767 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753300AbYIIDcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 23:32:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=0IRSgF8Edat9D/BgQcTLIB6rFzQ4pYDTfWuoXSt1BoWy6Nfn+A9L+OGkq636Dk8tiAcmx5E9mYlFgxIn3U7LmtTRNGWh8qXOJDRQpRY0ov4VPtm/cTr6goqG7S4aOg4R0f8BUjDukROUFE4tu08JG1grCZhigQJ4UWlfl7uagz8=  ;
+X-YMail-OSG: 5Z598xsVM1lE6bmVb6vdcTMXZu6nc0Ka5r2WsjkkUZdR1RV4JPEl8RrXCPlQiWiA5scY7jBxHpI_mNy261MGz0f1wTVzX6y1t5G1u20b8EsU3cG97997r1cIf93ahvK2hnU-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH 0/4] Reclaim page capture v3
+Date: Tue, 9 Sep 2008 13:31:43 +1000
+User-Agent: KMail/1.9.5
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>
+References: <1220610002-18415-1-git-send-email-apw@shadowen.org> <200809082359.55288.nickpiggin@yahoo.com.au> <20080908164153.GC9190@brain>
+In-Reply-To: <20080908164153.GC9190@brain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080908.194627.169864643.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200809091331.43671.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 07:46:27PM -0700, David Miller wrote:
-> I'm so entirely tired of reading these 300+ column emails today that
-> I'm just flat out refusing to read this one.
-> 
-> People, fix your setup please!  And if you have to get your email
-> client to auto format your outgoing email text for you, that's fine.
-> Although I can't understand why folks are too lazy to type enter every
-> 80 columns or so.
+On Tuesday 09 September 2008 02:41, Andy Whitcroft wrote:
+> On Mon, Sep 08, 2008 at 11:59:54PM +1000, Nick Piggin wrote:
 
-Hmm.. I was using my temporary thunderbird setup and it is configured to
-wordwrap at 72 character lines.. The mail server may have done something
-odd, though. The version of the message I received directly at w1.fi was
-word wrapped, so I have no idea what happened here. Anyway, since the
-message was discussing your patchset, here's another version from mutt
-(and another mail server) and which will hopefully show up in more
-reasonable format.
+> > So... what does the non-simulation version (ie. the real app) say?
+>
+> In the common use model, use of huge pages is all or nothing.  Either
+> there are sufficient pages allocatable at application start time or there
+> are not.  As huge pages are not swappable once allocated they stay there.
+> Applications either start using huge pages or they fallback to small pages
+> and continue.  This makes the real metric, how often does the customer get
+> annoyed becuase their application has fallen back to small pages and is
+> slow, or how often does their database fail to start.  It is very hard to
+> directly measure that and thus to get a comparitive figure.  Any attempt
+> to replicate that seems as necessarly artificial as the current test.
+
+But you have customers telling you they're getting annoyed because of
+this? Or you have your own "realistic" workloads that allocate hugepages
+on demand (OK, when I say realistic, something like specjbb or whatever
+is obviously a reasonable macrobenchmark even if it isn't strictly
+realistics).
 
 
-Alex Williamson wrote:
-> On Wed, 2008-08-27 at 16:46 -0700, David Miller wrote:
-> 
->> 22) Two mac80211 bug fixes from Jouni Malinen:
->>     a) Use IWEVCUSTOM so that we don't hit the 256 byte limit that
->>        IWEVASSOCREQIE has
+> > *Much* less likely, actually. Because there should be very little
+> > allocation required for reclaim (only dirty pages, and only when backed
+> > by filesystems that do silly things like not ensuring their own reserves
+> > before allowing the page to be dirtied).
+>
+> Well yes and no.  A lot of filesystems do do such stupid things.
+> Allocating things like journal pages which have relativly long lives
+> during reclaim.  We have seen these getting placed into the memory we
+> have just freed and preventing higher order coelesce.
 
-By the way, that description is incorrect; the change was in the other 
-direction (i.e., to use IWSSOCREQIE).
+They shouldn't, because that's sad and deadlocky. But yes I agree it
+happens sometimes.
 
-> This one breaks wireless with 32bit userspace/64bit kernel.  Bisected
-> back to changeset 087d833e5a9f67ba933cb32eaf5a2279c1a5b47c:
-> 
-> mac80211: Use IWEVASSOCREQIE instead of IWEVCUSTOM
 
-Great.. I was hoping that the WEXT compat ioctl fixes from Dave resolved 
-all WEXT cases. This code is (and was) using wireless_send_event() and I 
-did not find clear changes to its use in Dave's patch set. Was that 
-supposed to be fixed with the compat ioctl patches? I'm not very 
-familiar with this area and don't have an easy way to test this now (I'm 
-traveling and don't have access to a 64/32-bit setup).
+> > Also, your scheme still doesn't avoid allocation for reclaim so I don't
+> > see how you can use that as a point against queueing but not capturing!
+>
+> Obviously we cannot prevent allocations during reclaim.  But we can avoid
+> those allocations falling within the captured range.  All pages under
+> capture are marked.  Any page returning to the allocator that merges with a
+> buddy under capture, or that is a buddy under capture are kept separatly.
+> Such that any allocations from within reclaim will necessarily take
+> pages from elsewhere in the pool.  The key thing about capture is that it
+> effectivly marks ranges of pages out of use for allocations for the period
+> of the reclaim, so we have a number of small ranges blocked out, not the
+> whole pool.  This allows parallel allocations (reclaim and otherwise)
+> to succeed against the reserves (refilled by kswapd etc), whilst marking
+> the pages under capture out and preventing them from being used.
 
-As far as I can tell, the commit mentioned here is correct in itself, 
-but it looks like the WEXT code would not handle something properly for 
-wireless_send_event(). I'm not sure why IWEVCUSTOM would work any 
-better, but well, maybe it does not have some fields that get wrong in 
-64/32 case or the previous working case ended up getting the 
-too-long-buffer error which prevented the message from being processed 
-in userspace).
+Yeah, but blocking the whole pool gives a *much* bigger chance to coalesce
+freed pages. And I'm not just talking about massive order-10 allocations
+or something where you have the targetted reclaim which improves chances of
+getting a free page within that range, but also for order-1/2/3 pages
+that might be more commonly used in normal kernel workloads but can still
+have a fairly high latency to succeed if there is a lot of other parallel
+allocation happening.
 
-What exactly does "breaks wireless" mean here?
 
-As far as resolving this quickly is concerned, reverting the change is 
-fine; this is not a critical issue with most use cases. Anyway, this 
-should really be fixed eventually, but it looks like someone would need 
-to fix WEXT for wireless_send_event() first..
+> > I don't see why it should be unfair to allow a process to allocate 1024
+> > order-0 pages ahead of one order-10 page (actually, yes the order 10 page
+> > is I guess somewhat more valueable than the same number of fragmented
+> > pages, but you see where I'm coming from).
+>
+> I think we have our wires crossed here.  I was saying it would seem
+> unfair to block the allocator from giving out order-0 pages while we are
+> struggling to get an order-10 page for one process.  Having a queue
+> would seem to generate such behaviour.  What I am trying to achieve with
+> capture is to push areas likely to return us a page of the requested
+> size out of use, while we try and reclaim it without blocking the rest
+> of the allocator.
 
-- Jouni
+We don't have our wires crossed. I just don't agree that it is unfair.
+It might be unfair to allow order-10 allocations at the same *rate* at
+order-0 allocations, which is why you could allow some priority in the
+queue. But when you decide you want to satisfy an order-10 allocation,
+do you want the other guys potentially mopping up your coalescing
+candidates? (and right, for targetted reclaim, maybe this is less of a
+problem, but I'm also thinking about a general solution for all orders
+of pages not just hugepages).
 
--- 
-Jouni Malinen                                            PGP id EFC895FA
+
+> > At least with queueing you are basing the idea on *some* reasonable
+> > policy, rather than purely random "whoever happens to take this lock at
+> > the right time will win" strategy, which might I add, can even be much
+> > more unfair than you might say queueing is.
+> >
+> > However, queueing would still be able to allow some flexibility in
+> > priority. For example:
+> >
+> > if (must_queue) {
+> >   if (queue_head_prio == 0)
+> >     join_queue(1<<order);
+> >   else {
+> >     queue_head_prio -= 1<<order;
+> >     skip_queue();
+> >   }
+> > }
+>
+> Sure you would be able to make some kind of more flexible decisions, but
+> that still seems like a heavy handed approach.  You are important enough
+> to takes pages (possibly from our mostly free high order page) or not.
+
+I don't understand the thought process that leads you to these assertions. 
+Where do you get your idea of fairness or importance?
+
+I would say that allowing 2^N order-0 allocations for every order-N
+allocations if both allocators are in a tight loop (and reserves are low,
+ie. reclaim is required) is a completely reasonable starting point for
+fairness. Do you disagree with that? How is it less fair than your
+approach?
+
+
+> In a perfect world we would be able to know in advance that an order-N
+> region would definatly come free if reclaimed and allocate that preemptivly
+> to the requestor, apply reclaim to it, and then actually allocate the page.
+
+But with my queueing you get effectively the same thing without having an
+oracle. Because you will wait for *any* order-N region to become free.
+
+The "tradeoff" is blocking other allocators. But IMO that is actually a
+good thing because that equates to a general fairness model in our allocator
+for all allocation types in place of the existing, fairly random game of
+chance (especially for order-2/3+) that we have now.
+
+Even for hugepages: if, with your capture patches, if process 0 comes in
+and does all this reclaim work and has nearly freed up some linear region
+of memory; then do you think it is reasonable if process-1 happens to come
+in and get lucky and find an subsequently coalesced hugepage and allocate
+it?
