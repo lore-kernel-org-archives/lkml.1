@@ -1,116 +1,883 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbYIIHrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757047AbYIIHsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754421AbYIIHrw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYIIHrl
+	id S1757047AbYIIHsO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbYIIHrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:47:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46329 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751711AbYIIHrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:47:41 -0400
-Date: Tue, 9 Sep 2008 09:47:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v3)
-Message-ID: <20080909074727.GA13747@elte.hu>
-References: <48C13D1C.76E4.0078.0@novell.com> <20080905150030.GD10292@elte.hu> <48C51F8D.76E4.0078.0@novell.com> <20080908134019.GB11993@elte.hu> <20080908185417.GA17654@elte.hu> <48C64524.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C64524.76E4.0078.0@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 9 Sep 2008 03:47:46 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:36060 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755316AbYIIHrp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:47:45 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: dave@linux.vnet.ibm.com
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v4][PATCH 2/9] General infrastructure for checkpoint restart
+Date: Tue,  9 Sep 2008 03:42:27 -0400
+Message-Id: <1220946154-15174-3-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+In-Reply-To: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add those interfaces, as well as helpers needed to easily manage the
+file format. The code is roughly broken out as follows:
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+checkpoint/sys.c - user/kernel data transfer, as well as setup of the
+checkpoint/restart context (a per-checkpoint data structure for
+housekeeping)
 
-> Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-> former in ioremap's phys_addr_valid() check also on 32bit/PAE.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+checkpoint/checkpoint.c - output wrappers and basic checkpoint handling
 
-thanks, i've applied the delta below.
+checkpoint/restart.c - input wrappers and basic restart handling
 
-	Ingo
+Patches to add the per-architecture support as well as the actual
+work to do the memory checkpoint follow in subsequent patches.
 
----------->
->From b9397fe215791b4f83bda23b9f3c0d5200e94558 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 9 Sep 2008 09:45:32 +0200
-Subject: [PATCH] x86: x86_{phys,virt}_bits field also for i386, fix
-
-fix mismerge.
-
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/x86/kernel/cpu/common.c |   15 +++++----------
- arch/x86/mm/ioremap.c        |    2 +-
- 2 files changed, 6 insertions(+), 11 deletions(-)
+ Makefile                 |    2 +-
+ checkpoint/Makefile      |    2 +-
+ checkpoint/checkpoint.c  |  188 +++++++++++++++++++++++++++++++++++++++
+ checkpoint/restart.c     |  189 +++++++++++++++++++++++++++++++++++++++
+ checkpoint/sys.c         |  218 +++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/ckpt.h     |   60 +++++++++++++
+ include/linux/ckpt_hdr.h |   84 ++++++++++++++++++
+ include/linux/magic.h    |    3 +
+ 8 files changed, 740 insertions(+), 6 deletions(-)
+ create mode 100644 checkpoint/checkpoint.c
+ create mode 100644 checkpoint/restart.c
+ create mode 100644 include/linux/ckpt.h
+ create mode 100644 include/linux/ckpt_hdr.h
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index df6c387..b26c09e 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -439,6 +439,11 @@ void __cpuinit cpu_detect(struct cpuinfo_x86 *c)
- 			c->x86_cache_alignment = c->x86_clflush_size;
- 		}
- 	}
+diff --git a/Makefile b/Makefile
+index f448e00..a558ad2 100644
+--- a/Makefile
++++ b/Makefile
+@@ -619,7 +619,7 @@ export mod_strip_cmd
+ 
+ 
+ ifeq ($(KBUILD_EXTMOD),)
+-core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
++core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ checkpoint/
+ 
+ vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+ 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+index 07d018b..d2df68c 100644
+--- a/checkpoint/Makefile
++++ b/checkpoint/Makefile
+@@ -2,4 +2,4 @@
+ # Makefile for linux checkpoint/restart.
+ #
+ 
+-obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o
++obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o
+diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
+new file mode 100644
+index 0000000..ad1099f
+--- /dev/null
++++ b/checkpoint/checkpoint.c
+@@ -0,0 +1,188 @@
++/*
++ *  Checkpoint logic and helpers
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
 +
-+#ifdef CONFIG_X86_32
-+	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
-+		c->x86_phys_bits = 36;
-+#endif
- }
++#include <linux/version.h>
++#include <linux/sched.h>
++#include <linux/time.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++#include <linux/dcache.h>
++#include <linux/mount.h>
++#include <linux/utsname.h>
++#include <linux/magic.h>
++#include <linux/ckpt.h>
++#include <linux/ckpt_hdr.h>
++
++/**
++ * cr_write_obj - write a record described by a cr_hdr
++ * @ctx: checkpoint context
++ * @h: record descriptor
++ * @buf: record buffer
++ */
++int cr_write_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf)
++{
++	int ret;
++
++	ret = cr_kwrite(ctx, h, sizeof(*h));
++	if (ret < 0)
++		return ret;
++	return cr_kwrite(ctx, buf, h->len);
++}
++
++/**
++ * cr_write_string - write a string
++ * @ctx: checkpoint context
++ * @str: string pointer
++ * @len: string length
++ */
++int cr_write_string(struct cr_ctx *ctx, char *str, int len)
++{
++	struct cr_hdr h;
++
++	h.type = CR_HDR_STRING;
++	h.len = len;
++	h.parent = 0;
++
++	return cr_write_obj(ctx, &h, str);
++}
++
++/* write the checkpoint header */
++static int cr_write_head(struct cr_ctx *ctx)
++{
++	struct cr_hdr h;
++	struct cr_hdr_head *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	struct new_utsname *uts;
++	struct timeval ktv;
++	int ret;
++
++	h.type = CR_HDR_HEAD;
++	h.len = sizeof(*hh);
++	h.parent = 0;
++
++	do_gettimeofday(&ktv);
++
++	hh->magic = CHECKPOINT_MAGIC_HEAD;
++	hh->major = (LINUX_VERSION_CODE >> 16) & 0xff;
++	hh->minor = (LINUX_VERSION_CODE >> 8) & 0xff;
++	hh->patch = (LINUX_VERSION_CODE) & 0xff;
++
++	hh->rev = CR_VERSION;
++
++	hh->flags = ctx->flags;
++	hh->time = ktv.tv_sec;
++
++	uts = utsname();
++	memcpy(hh->release, uts->release, __NEW_UTS_LEN);
++	memcpy(hh->version, uts->version, __NEW_UTS_LEN);
++	memcpy(hh->machine, uts->machine, __NEW_UTS_LEN);
++
++	ret = cr_write_obj(ctx, &h, hh);
++	cr_hbuf_put(ctx, sizeof(*hh));
++	return ret;
++}
++
++/* write the checkpoint trailer */
++static int cr_write_tail(struct cr_ctx *ctx)
++{
++	struct cr_hdr h;
++	struct cr_hdr_tail *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	int ret;
++
++	h.type = CR_HDR_TAIL;
++	h.len = sizeof(*hh);
++	h.parent = 0;
++
++	hh->magic = CHECKPOINT_MAGIC_TAIL;
++
++	ret = cr_write_obj(ctx, &h, hh);
++	cr_hbuf_put(ctx, sizeof(*hh));
++	return ret;
++}
++
++/* dump the task_struct of a given task */
++static int cr_write_task_struct(struct cr_ctx *ctx, struct task_struct *t)
++{
++	struct cr_hdr h;
++	struct cr_hdr_task *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	int ret;
++
++	h.type = CR_HDR_TASK;
++	h.len = sizeof(*hh);
++	h.parent = 0;
++
++	hh->state = t->state;
++	hh->exit_state = t->exit_state;
++	hh->exit_code = t->exit_code;
++	hh->exit_signal = t->exit_signal;
++
++	hh->utime = t->utime;
++	hh->stime = t->stime;
++	hh->utimescaled = t->utimescaled;
++	hh->stimescaled = t->stimescaled;
++	hh->gtime = t->gtime;
++	hh->prev_utime = t->prev_utime;
++	hh->prev_stime = t->prev_stime;
++	hh->nvcsw = t->nvcsw;
++	hh->nivcsw = t->nivcsw;
++	hh->start_time_sec = t->start_time.tv_sec;
++	hh->start_time_nsec = t->start_time.tv_nsec;
++	hh->real_start_time_sec = t->real_start_time.tv_sec;
++	hh->real_start_time_nsec = t->real_start_time.tv_nsec;
++	hh->min_flt = t->min_flt;
++	hh->maj_flt = t->maj_flt;
++
++	hh->task_comm_len = TASK_COMM_LEN;
++
++	ret = cr_write_obj(ctx, &h, hh);
++	cr_hbuf_put(ctx, sizeof(*hh));
++	if (ret < 0)
++		return ret;
++
++	return cr_write_string(ctx, t->comm, TASK_COMM_LEN);
++}
++
++/* dump the entire state of a given task */
++static int cr_write_task(struct cr_ctx *ctx, struct task_struct *t)
++{
++	int ret ;
++
++	if (t->state == TASK_DEAD) {
++		pr_warning("CR: task may not be in state TASK_DEAD\n");
++		return -EAGAIN;
++	}
++
++	ret = cr_write_task_struct(ctx, t);
++	cr_debug("ret %d\n", ret);
++
++	return ret;
++}
++
++int do_checkpoint(struct cr_ctx *ctx)
++{
++	int ret;
++
++	/* FIX: need to test whether container is checkpointable */
++
++	ret = cr_write_head(ctx);
++	if (ret < 0)
++		goto out;
++	ret = cr_write_task(ctx, current);
++	if (ret < 0)
++		goto out;
++	ret = cr_write_tail(ctx);
++	if (ret < 0)
++		goto out;
++
++	/* on success, return (unique) checkpoint identifier */
++	ret = ctx->crid;
++
++ out:
++	return ret;
++}
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+new file mode 100644
+index 0000000..171cd2d
+--- /dev/null
++++ b/checkpoint/restart.c
+@@ -0,0 +1,189 @@
++/*
++ *  Restart logic and helpers
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/version.h>
++#include <linux/sched.h>
++#include <linux/file.h>
++#include <linux/magic.h>
++#include <linux/ckpt.h>
++#include <linux/ckpt_hdr.h>
++
++/**
++ * cr_read_obj - read a whole record (cr_hdr followed by payload)
++ * @ctx: checkpoint context
++ * @h: record descriptor
++ * @buf: record buffer
++ * @n: available buffer size
++ *
++ * @return: size of payload
++ */
++int cr_read_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf, int n)
++{
++	int ret;
++
++	ret = cr_kread(ctx, h, sizeof(*h));
++	if (ret < 0)
++		return ret;
++
++	cr_debug("type %d len %d parent %d\n", h->type, h->len, h->parent);
++
++	if (h->len < 0 || h->len > n)
++		return -EINVAL;
++
++	return cr_kread(ctx, buf, h->len);
++}
++
++/**
++ * cr_read_obj_type - read a whole record of expected type
++ * @ctx: checkpoint context
++ * @buf: record buffer
++ * @n: available buffer size
++ * @type: expected record type
++ *
++ * @return: object reference of the parent object
++ */
++int cr_read_obj_type(struct cr_ctx *ctx, void *buf, int n, int type)
++{
++	struct cr_hdr h;
++	int ret;
++
++	ret = cr_read_obj(ctx, &h, buf, n);
++	if (!ret) {
++		if (h.type == type)
++			ret = h.parent;
++		else
++			ret = -EINVAL;
++	}
++	return ret;
++}
++
++/**
++ * cr_read_string - read a string
++ * @ctx: checkpoint context
++ * @str: string buffer
++ * @len: buffer buffer length
++ */
++int cr_read_string(struct cr_ctx *ctx, void *str, int len)
++{
++	return cr_read_obj_type(ctx, str, len, CR_HDR_STRING);
++}
++
++/* read the checkpoint header */
++static int cr_read_head(struct cr_ctx *ctx)
++{
++	struct cr_hdr_head *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	int parent;
++
++	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_HEAD);
++	if (parent < 0)
++		return parent;
++	else if (parent != 0)
++		return -EINVAL;
++
++	if (hh->magic != CHECKPOINT_MAGIC_HEAD || hh->rev != CR_VERSION ||
++	    hh->major != ((LINUX_VERSION_CODE >> 16) & 0xff) ||
++	    hh->minor != ((LINUX_VERSION_CODE >> 8) & 0xff) ||
++	    hh->patch != ((LINUX_VERSION_CODE) & 0xff))
++		return -EINVAL;
++
++	if (hh->flags & ~CR_CTX_CKPT)
++		return -EINVAL;
++
++	ctx->oflags = hh->flags;
++
++	/* FIX: verify compatibility of release, version and machine */
++
++	cr_hbuf_put(ctx, sizeof(*hh));
++	return 0;
++}
++
++/* read the checkpoint trailer */
++static int cr_read_tail(struct cr_ctx *ctx)
++{
++	struct cr_hdr_tail *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	int parent;
++
++	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_TAIL);
++	if (parent < 0)
++		return parent;
++	else if (parent != 0)
++		return -EINVAL;
++
++	if (hh->magic != CHECKPOINT_MAGIC_TAIL)
++		return -EINVAL;
++
++	cr_hbuf_put(ctx, sizeof(*hh));
++	return 0;
++}
++
++/* read the task_struct into the current task */
++static int cr_read_task_struct(struct cr_ctx *ctx)
++{
++	struct cr_hdr_task *hh = cr_hbuf_get(ctx, sizeof(*hh));
++	struct task_struct *t = current;
++	char *buf;
++	int parent, ret;
++
++	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_TASK);
++	if (parent < 0)
++		return parent;
++	else if (parent != 0)
++		return -EINVAL;
++
++	/* FIXME: for now, only restore t->comm */
++
++	/* upper limit for task_comm_len to prevent DoS */
++	if (hh->task_comm_len < 0 || hh->task_comm_len > PAGE_SIZE)
++		return -EINVAL;
++
++	buf = kmalloc(hh->task_comm_len, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++	ret = cr_read_string(ctx, buf, hh->task_comm_len);
++	if (!ret) {
++		/* if t->comm is too long, silently truncate */
++		memset(t->comm, 0, TASK_COMM_LEN);
++		memcpy(t->comm, buf, min(hh->task_comm_len, TASK_COMM_LEN));
++	}
++	kfree(buf);
++
++	cr_hbuf_put(ctx, sizeof(*hh));
++	return ret;
++}
++
++/* read the entire state of the current task */
++static int cr_read_task(struct cr_ctx *ctx)
++{
++	int ret;
++
++	ret = cr_read_task_struct(ctx);
++	cr_debug("ret %d\n", ret);
++
++	return ret;
++}
++
++int do_restart(struct cr_ctx *ctx)
++{
++	int ret;
++
++	ret = cr_read_head(ctx);
++	if (ret < 0)
++		goto out;
++	ret = cr_read_task(ctx);
++	if (ret < 0)
++		goto out;
++	ret = cr_read_tail(ctx);
++	if (ret < 0)
++		goto out;
++
++	/* on success, adjust the return value if needed [TODO] */
++ out:
++	return ret;
++}
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+index b9018a4..113e0df 100644
+--- a/checkpoint/sys.c
++++ b/checkpoint/sys.c
+@@ -10,6 +10,189 @@
  
- static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
-@@ -520,11 +525,6 @@ static void __init early_identify_cpu(struct cpuinfo_x86 *c)
+ #include <linux/sched.h>
+ #include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++#include <linux/uaccess.h>
++#include <linux/capability.h>
++#include <linux/ckpt.h>
++
++/*
++ * helpers to write/read to/from the image file descriptor
++ *
++ *   cr_uwrite() - write a user-space buffer to the checkpoint image
++ *   cr_kwrite() - write a kernel-space buffer to the checkpoint image
++ *   cr_uread() - read from the checkpoint image to a user-space buffer
++ *   cr_kread() - read from the checkpoint image to a kernel-space buffer
++ *
++ */
++
++/* (temporarily added file_pos_read() and file_pos_write() because they
++ * are static in fs/read_write.c... should cleanup and remove later) */
++static inline loff_t file_pos_read(struct file *file)
++{
++	return file->f_pos;
++}
++
++static inline void file_pos_write(struct file *file, loff_t pos)
++{
++	file->f_pos = pos;
++}
++
++int cr_uwrite(struct cr_ctx *ctx, void *buf, int count)
++{
++	struct file *file = ctx->file;
++	ssize_t nwrite;
++	int nleft;
++
++	for (nleft = count; nleft; nleft -= nwrite) {
++		loff_t pos = file_pos_read(file);
++		nwrite = vfs_write(file, (char __user *) buf, nleft, &pos);
++		file_pos_write(file, pos);
++		if (nwrite <= 0) {
++			if (nwrite == -EAGAIN)
++				nwrite = 0;
++			else
++				return nwrite;
++		}
++		buf += nwrite;
++	}
++
++	ctx->total += count;
++	return 0;
++}
++
++int cr_kwrite(struct cr_ctx *ctx, void *buf, int count)
++{
++	mm_segment_t oldfs;
++	int ret;
++
++	oldfs = get_fs();
++	set_fs(KERNEL_DS);
++	ret = cr_uwrite(ctx, buf, count);
++	set_fs(oldfs);
++
++	return ret;
++}
++
++int cr_uread(struct cr_ctx *ctx, void *buf, int count)
++{
++	struct file *file = ctx->file;
++	ssize_t nread;
++	int nleft;
++
++	for (nleft = count; nleft; nleft -= nread) {
++		loff_t pos = file_pos_read(file);
++		nread = vfs_read(file, (char __user *) buf, nleft, &pos);
++		file_pos_write(file, pos);
++		if (nread <= 0) {
++			if (nread == -EAGAIN)
++				nread = 0;
++			else
++				return nread;
++		}
++		buf += nread;
++	}
++
++	ctx->total += count;
++	return 0;
++}
++
++int cr_kread(struct cr_ctx *ctx, void *buf, int count)
++{
++	mm_segment_t oldfs;
++	int ret;
++
++	oldfs = get_fs();
++	set_fs(KERNEL_DS);
++	ret = cr_uread(ctx, buf, count);
++	set_fs(oldfs);
++
++	return ret;
++}
++
++
++/*
++ * helpers to manage CR contexts: allocated for each checkpoint and/or
++ * restart operation, and persists until the operation is completed.
++ */
++
++/* unique checkpoint identifier (FIXME: should be per-container) */
++static atomic_t cr_ctx_count;
++
++void cr_ctx_free(struct cr_ctx *ctx)
++{
++	if (ctx->file)
++		fput(ctx->file);
++
++	free_pages((unsigned long) ctx->hbuf, CR_HBUF_ORDER);
++
++	kfree(ctx);
++}
++
++struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
++{
++	struct cr_ctx *ctx;
++
++	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
++	if (!ctx)
++		return ERR_PTR(-ENOMEM);
++
++	ctx->file = fget(fd);
++	if (!ctx->file) {
++		cr_ctx_free(ctx);
++		return ERR_PTR(-EBADF);
++	}
++	get_file(ctx->file);
++
++	ctx->hbuf = (void *) __get_free_pages(GFP_KERNEL, CR_HBUF_ORDER);
++	if (!ctx->hbuf) {
++		cr_ctx_free(ctx);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	ctx->pid = pid;
++	ctx->flags = flags;
++
++	ctx->crid = atomic_inc_return(&cr_ctx_count);
++
++	return ctx;
++}
++
++/*
++ * During checkpoint and restart the code writes outs/reads in data
++ * to/from the chekcpoint image from/to a temporary buffer (ctx->hbuf).
++ * Because operations can be nested, one should call cr_hbuf_get() to
++ * reserve space in the buffer, and then cr_hbuf_put() when no longer
++ * needs that space.
++ */
++
++/**
++ * cr_hbuf_get - reserve space on the hbuf
++ * @ctx: checkpoint context
++ * @n: number of bytes to reserve
++ *
++ * @return: pointer to reserved space
++ */
++void *cr_hbuf_get(struct cr_ctx *ctx, int n)
++{
++	void *ptr;
++
++	BUG_ON(ctx->hpos + n > CR_HBUF_TOTAL);
++	ptr = (void *) (((char *) ctx->hbuf) + ctx->hpos);
++	ctx->hpos += n;
++	return ptr;
++}
++
++/**
++ * cr_hbuf_put - unreserve space on the hbuf
++ * @ctx: checkpoint context
++ * @n: number of bytes to reserve
++ */
++void cr_hbuf_put(struct cr_ctx *ctx, int n)
++{
++	BUG_ON(ctx->hpos < n);
++	ctx->hpos -= n;
++}
  
- 	cpu_detect(c);
- 
--#ifdef CONFIG_X86_32
--	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
--		c->x86_phys_bits = 36;
--#endif
--
- 	get_cpu_vendor(c);
- 
- 	get_cpu_cap(c);
-@@ -667,11 +667,6 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- 
- 	generic_identify(c);
- 
--#ifdef CONFIG_X86_32
--	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
--		c->x86_phys_bits = 36;
--#endif
--
- 	if (this_cpu->c_identify)
- 		this_cpu->c_identify(c);
- 
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 74d16f2..ce207ba 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -25,7 +25,7 @@
- static inline int phys_addr_valid(unsigned long addr)
+ /**
+  * sys_checkpoint - checkpoint a container
+@@ -19,9 +202,23 @@
+  */
+ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
  {
- #ifdef CONFIG_RESOURCES_64BIT
--	return addr < (1UL << boot_cpu_data.x86_phys_bits);
-+	return !(addr >> boot_cpu_data.x86_phys_bits);
- #else
- 	return 1;
- #endif
+-	pr_debug("sys_checkpoint not implemented yet\n");
+-	return -ENOSYS;
++	struct cr_ctx *ctx;
++	int ret;
++
++	/* no flags for now */
++	if (flags)
++		return -EINVAL;
++
++	ctx = cr_ctx_alloc(pid, fd, flags | CR_CTX_CKPT);
++	if (IS_ERR(ctx))
++		return PTR_ERR(ctx);
++
++	ret = do_checkpoint(ctx);
++
++	cr_ctx_free(ctx);
++	return ret;
+ }
++
+ /**
+  * sys_restart - restart a container
+  * @crid: checkpoint image identifier
+@@ -30,6 +227,19 @@ asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+  */
+ asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
+ {
+-	pr_debug("sys_restart not implemented yet\n");
+-	return -ENOSYS;
++	struct cr_ctx *ctx;
++	int ret;
++
++	/* no flags for now */
++	if (flags)
++		return -EINVAL;
++
++	ctx = cr_ctx_alloc(crid, fd, flags | CR_CTX_RSTR);
++	if (IS_ERR(ctx))
++		return PTR_ERR(ctx);
++
++	ret = do_restart(ctx);
++
++	cr_ctx_free(ctx);
++	return ret;
+ }
+diff --git a/include/linux/ckpt.h b/include/linux/ckpt.h
+new file mode 100644
+index 0000000..91f4998
+--- /dev/null
++++ b/include/linux/ckpt.h
+@@ -0,0 +1,60 @@
++#ifndef _CHECKPOINT_CKPT_H_
++#define _CHECKPOINT_CKPT_H_
++/*
++ *  Generic container checkpoint-restart
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#define CR_VERSION  1
++
++struct cr_ctx {
++	pid_t pid;		/* container identifier */
++	int crid;		/* unique checkpoint id */
++
++	unsigned long flags;
++	unsigned long oflags;	/* restart: old flags */
++
++	struct file *file;
++	int total;		/* total read/written */
++
++	void *hbuf;		/* temporary buffer for headers */
++	int hpos;		/* position in headers buffer */
++};
++
++/* cr_ctx: flags */
++#define CR_CTX_CKPT	0x1
++#define CR_CTX_RSTR	0x2
++
++/* allocation defaults */
++#define CR_HBUF_ORDER  1
++#define CR_HBUF_TOTAL  (PAGE_SIZE << CR_HBUF_ORDER)
++
++int cr_uwrite(struct cr_ctx *ctx, void *buf, int count);
++int cr_kwrite(struct cr_ctx *ctx, void *buf, int count);
++int cr_uread(struct cr_ctx *ctx, void *buf, int count);
++int cr_kread(struct cr_ctx *ctx, void *buf, int count);
++
++void *cr_hbuf_get(struct cr_ctx *ctx, int n);
++void cr_hbuf_put(struct cr_ctx *ctx, int n);
++
++struct cr_hdr;
++
++int cr_write_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf);
++int cr_write_string(struct cr_ctx *ctx, char *str, int len);
++
++int cr_read_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf, int n);
++int cr_read_obj_type(struct cr_ctx *ctx, void *buf, int n, int type);
++int cr_read_string(struct cr_ctx *ctx, void *str, int len);
++
++int do_checkpoint(struct cr_ctx *ctx);
++int do_restart(struct cr_ctx *ctx);
++
++#define cr_debug(fmt, args...)  \
++	pr_debug("[CR:%s] " fmt, __func__, ## args)
++
++#endif /* _CHECKPOINT_CKPT_H_ */
+diff --git a/include/linux/ckpt_hdr.h b/include/linux/ckpt_hdr.h
+new file mode 100644
+index 0000000..dd05ecc
+--- /dev/null
++++ b/include/linux/ckpt_hdr.h
+@@ -0,0 +1,84 @@
++#ifndef _CHECKPOINT_CKPT_HDR_H_
++#define _CHECKPOINT_CKPT_HDR_H_
++/*
++ *  Generic container checkpoint-restart
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/types.h>
++#include <linux/utsname.h>
++
++/*
++ * To maintain compatibility between 32-bit and 64-bit architecture flavors,
++ * keep data 64-bit aligned: use padding for structure members, and use
++ * __attribute__ ((aligned (8))) for the entire structure.
++ */
++
++/* records: generic header */
++
++struct cr_hdr {
++	__s16 type;
++	__s16 len;
++	__u32 parent;
++};
++
++/* header types */
++enum {
++	CR_HDR_HEAD = 1,
++	CR_HDR_STRING,
++
++	CR_HDR_TASK = 101,
++	CR_HDR_THREAD,
++	CR_HDR_CPU,
++
++	CR_HDR_MM = 201,
++	CR_HDR_VMA,
++	CR_HDR_MM_CONTEXT,
++
++	CR_HDR_TAIL = 5001
++};
++
++struct cr_hdr_head {
++	__u64 magic;
++
++	__u16 major;
++	__u16 minor;
++	__u16 patch;
++	__u16 rev;
++
++	__u64 time;	/* when checkpoint taken */
++	__u64 flags;	/* checkpoint options */
++
++	char release[__NEW_UTS_LEN];
++	char version[__NEW_UTS_LEN];
++	char machine[__NEW_UTS_LEN];
++} __attribute__((aligned(8)));
++
++struct cr_hdr_tail {
++	__u64 magic;
++} __attribute__((aligned(8)));
++
++struct cr_hdr_task {
++	__u64 state;
++	__u32 exit_state;
++	__u32 exit_code;
++	__u32 exit_signal;
++	__u32 _padding0;
++
++	__u64 utime, stime, utimescaled, stimescaled;
++	__u64 gtime;
++	__u64 prev_utime, prev_stime;
++	__u64 nvcsw, nivcsw;
++	__u64 start_time_sec, start_time_nsec;
++	__u64 real_start_time_sec, real_start_time_nsec;
++	__u64 min_flt, maj_flt;
++
++	__s32 task_comm_len;
++} __attribute__((aligned(8)));
++
++#endif /* _CHECKPOINT_CKPT_HDR_H_ */
+diff --git a/include/linux/magic.h b/include/linux/magic.h
+index 1fa0c2c..c2b811c 100644
+--- a/include/linux/magic.h
++++ b/include/linux/magic.h
+@@ -42,4 +42,7 @@
+ #define FUTEXFS_SUPER_MAGIC	0xBAD1DEA
+ #define INOTIFYFS_SUPER_MAGIC	0x2BAD1DEA
+ 
++#define CHECKPOINT_MAGIC_HEAD  0x00feed0cc0a2d200LL
++#define CHECKPOINT_MAGIC_TAIL  0x002d2a0cc0deef00LL
++
+ #endif /* __LINUX_MAGIC_H__ */
+-- 
+1.5.4.3
+
