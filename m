@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYIIHf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYIIHge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbYIIHf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbYIIHfN
+	id S1756139AbYIIHge (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbYIIHg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:35:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40805 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbYIIHfL (ORCPT
+	Tue, 9 Sep 2008 03:36:26 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:16783 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753657AbYIIHgZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:35:11 -0400
-Date: Tue, 9 Sep 2008 00:33:56 -0700
-From: Greg KH <greg@kroah.com>
-To: Steve Calfee <stevecalfee@gmail.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Alan Stern <stern@rowland.harvard.edu>,
-       USB list <linux-usb@vger.kernel.org>, bgmerrell@novell.com,
-       hirofuchi@users.sourceforge.net,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       usbip-devel@lists.sourceforge.net
-Subject: Re: USBIP protocol
-Message-ID: <20080909073356.GA12284@kroah.com>
-References: <20080904214802.GO2772@parisc-linux.org> <Pine.LNX.4.44L0.0809051017280.2493-100000@iolanthe.rowland.org> <20080909005353.GR2772@parisc-linux.org> <4a5ff6bc0809090012j7121108cpc4cf108a4c323c52@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 9 Sep 2008 03:36:25 -0400
+Message-Id: <48C643B2.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Tue, 09 Sep 2008 08:36:50 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v2)
+References: <48C13D1C.76E4.0078.0@novell.com>
+ <20080905150030.GD10292@elte.hu> <48C51F8D.76E4.0078.0@novell.com>
+ <20080908134019.GB11993@elte.hu> <20080908185417.GA17654@elte.hu>
+ <48C6406E.76E4.0078.0@novell.com> <20080909073153.GA10049@elte.hu>
+In-Reply-To: <20080909073153.GA10049@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4a5ff6bc0809090012j7121108cpc4cf108a4c323c52@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 12:12:37AM -0700, Steve Calfee wrote:
-> 
-> My problem is I am using the latest Suse enterprise linux which uses
-> kernel 2.6.18
+>>> Ingo Molnar <mingo@elte.hu> 09.09.08 09:31 >>>
+>there's nothing weird about this testbox (it's a usual whitebox) - and 
+>two other testboxes failed as well after some time (no crashlog 
+>available from them). A 64-bit testbox didnt fail so it seems 32-bit 
+>only.
 
-Actually it's 2.6.16 "based" with over 2000 patches added to it :)
+I just spotted it - it's a mismerge on my part. Will send v3 in a minute.
 
-> ..... In that kernel the probes are done by the device
-> system and if a modprobe definition says the module is for this device
-> it gets loaded (by udev I think) and probed. fine. If the module is
-> already loaded the kernel probes the modules in the order they were
-> insmoded (if they say they want the particular VID/PID/CLASS/wildcard
-> etc.)
-> 
-> The problem is the probing is done by the kernel driver stuff and the
-> insmoding and user space intelligence is done by udev. Once a kernel
-> module is installed it must take all devices that match it's device ID
-> table.  Remember USBIP matches everything! That is because (at least
-> in the 2.6.18 kernel) the kernel driver stuff stops probing after a
-> probe fails.
+Jan
 
-No it doesn't, it continues on.  Or it should.  Perhaps it's been fixed
-since then, I would rely on that kernel to be looking like anything
-"real" these days, it is very old and only supported by Novell, and not
-the target audience for this patch at all.
-
-thanks,
-
-greg k-h
