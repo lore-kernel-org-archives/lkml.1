@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYIIG2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYIIGcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755765AbYIIG2X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 02:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYIIG2L
+	id S1755867AbYIIGcS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 02:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbYIIGcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 02:28:11 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40906 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753454AbYIIG2K (ORCPT
+	Tue, 9 Sep 2008 02:32:07 -0400
+Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:43135 "HELO
+	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753261AbYIIGcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 02:28:10 -0400
-Subject: Re: [PATCH -mm] Fix dev_load() compilation again
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, adobriyan@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <20080908151707.21cd1c6c.akpm@linux-foundation.org>
-References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
-	 <20080905193244.GD11569@x200.localdomain> <48C18E8B.9050201@ct.jp.nec.com>
-	 <20080908151707.21cd1c6c.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3MZwQMh/GmiqTKFD4EbJ"
-Date: Tue, 09 Sep 2008 08:27:55 +0200
-Message-Id: <1220941675.31304.93.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 9 Sep 2008 02:32:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WKbmOe1xD3vgUauOsfPuCLQeUJ9G+dlIYzW+5YX6OsyJR05OPaPrtEOhSj3cDc7VgwiYSLBm78mMJGxQUotLp9nkalI3V0qgw6imwKOP8LwRzHHWnS185uazC2+Ej7cVbTrNnQIPpj61X3rKmW2pJzNHYpm+P/eZtDw/xk4FrNs=  ;
+X-YMail-OSG: FlmiLUIVM1kIJc36qnqGg6psfZlSsW_JypkqbnBZdkxej9wrxYRvaAPczcfXpb41cXAXRAGosgrfw5_4rPNXFtgVuSutgS1axQaFKs8dULmCrnW0NRnV6gmrnkTVedk0UH8-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
+Date: Tue, 9 Sep 2008 16:31:48 +1000
+User-Agent: KMail/1.9.5
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com> <20080909012039.GO14481@linux-os.sc.intel.com> <1220941097.18239.927.camel@twins.programming.kicks-ass.net>
+In-Reply-To: <1220941097.18239.927.camel@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809091631.48820.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 09 September 2008 16:18, Peter Zijlstra wrote:
 
---=-3MZwQMh/GmiqTKFD4EbJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I've been looking at the history of that function - it started out quite
+> readable - but has, over the years, grown into a monstrosity.
 
-Hi,
+I agree it is terrible, and subsequent "features" weren't really properly
+written or integrated into the sched domains idea.
 
-On Mon, 2008-09-08 at 15:17 -0700, Andrew Morton wrote:
-> On Fri, 05 Sep 2008 12:54:51 -0700
-> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-> > in -next tree, this patch fixes the compilation error instead of
-> > my patch. So, there is a conflict.
+> Then there is this whole sched_group stuff, which I intent to have a
+> hard look at, afaict its unneeded and we can iterate over the
+> sub-domains just as well.
 
-I think I like this patch better than Stephen's, but despite causing the
-problem I'm not sure what I can do at this point.
+What sub-domains? The domains-minus-groups are just a graph (in existing
+setup code AFAIK just a line) of cpumasks. You have to group because you
+want enough control for example not to pull load from an unusually busy
+CPU from one group if it's load should actually be spread out over a
+smaller domain (ie. probably other CPUs within the group we're looking at).
 
-> Give that there's already a fix in linux-next, I can't do anything here.
->=20
-> Rusty, the regression was introduced by
->=20
-> commit 4cb9da6ecc2b0e25056b45981239475f8509d59d
-> Author:     Johannes Berg <johannes@sipsolutions.net>
-> AuthorDate: Wed Jul 9 10:28:42 2008 +0200
-> Commit:     Stephen Rothwell <sfr@canb.auug.org.au>
-> CommitDate: Tue Aug 26 10:19:47 2008 +1000
->=20
->     remove CONFIG_KMOD from net
+It would be nice if you could make it simpler of course, but I just don't
+understand you or maybe you thought of some other way to solve this or
+why it doesn't matter...
 
-Rusty, can you take
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.27-rc5/2=
-.6.27-rc5-mm1/broken-out/net-fix-compilation-ng-when-config_module.patch
 
-(although I'd rather see the blank line stay) and fold it into that
-patch or put it into the tree that Stephen pulls?
+> Finally, we should move all this stuff into sched_fair and get rid of
+> that iterator interface and fix up all nr_running etc.. usages to refer
+> to cfs.nr_running and similar.
+>
+> Then there is the idea Andi proposed, splitting up the performance and
+> power balancer into two separate functions, something that is worth
+> looking into imho.
 
-johannes
-
---=-3MZwQMh/GmiqTKFD4EbJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJIxhdnAAoJEKVg1VMiehFYYwgP/2YAUFjHttLEf/3ZgOHfeAeh
-L0xJynfz9CnIs4yC9S93PzlBudbOUt1YZdJ61wKwzaXegskd/PFsLqIoGFQWOwcE
-qb2678+zREmL8cbSukTUFZ58CIxoLVqirlHxzff1rPcr6QFwcDS2EUwGNVA4Avd/
-BU+9bNFW7OSEpoavQuREhhZ7ukeBktXk48v9JL3D2S2r7sEHlok0aC0yh/3fCTP0
-ZtfomPP2TKyYPhw6UJm6/oziz9JGYIU/bupXL5GD0exq2CJ7ATrsBgBUnHuI6GwH
-oPVnhsJvqjRDXJ5jC+Plt7BPA4OgTxq5i/k/WCc+sML88v06j99cQK1GFFrK7rT3
-fikW8m6kPICSna1xIn40zz9ao5JFgXP7MAa/583o4Qu/edkDjciDaS4ZqcE/JnAS
-Au0jBMCPhDAnaLhhHoj/GhQqVoIIekRUgLnC2q2WP3bt36q+SdAy3LPsxbcuzl7n
-SsmYBdxq+/WFW7YlVNIxJi2Nfh4kMHtN1IdRdldVvkdetzzt1E0SBlg39vYq2SmH
-tXFMo4YCtr46VmeBluUZwhRvKghQlW0CZ/iXu5nCRZToaGuL0st28Ed2gbc/Z2r4
-KGS2wvTL7ViOnuQNGOYUDLL4Qc2XU0tGKuuBMAVn2956QnTBX6QsPyNhiARuxo35
-WBsQ66w3+yTdZ5c0WJ5+
-=gffD
------END PGP SIGNATURE-----
-
---=-3MZwQMh/GmiqTKFD4EbJ--
-
+That's what *I* suggested. Before it even went in. Of course there was no
+attempt made at all and it went in despite my reservations, but what's new
+:)
