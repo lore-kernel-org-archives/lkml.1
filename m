@@ -1,140 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbYIIVD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYIIVLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757564AbYIIVD5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 17:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYIIVDt
+	id S1756645AbYIIVLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 17:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYIIVLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 17:03:49 -0400
-Received: from gv-out-0910.google.com ([216.239.58.189]:60779 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbYIIVDs (ORCPT
+	Tue, 9 Sep 2008 17:11:07 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:32751 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753457AbYIIVLE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 17:03:48 -0400
+	Tue, 9 Sep 2008 17:11:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=GCGQgYkDacbfCaqYxiXczyN9ozIcgZbhObSN7mHnmo2e4hzrvNVKLt9xGULKsHh3Rg
-         SO4C64dnOob/Yu9ZTbAwufBUMZ72L9F3WZoqNPp+je4KhOggYUP+EqbVqCCamnh28Zzz
-         QbC+lL5/6SXg9W13FgYK+INJ+HKMlup7SWY8c=
-Message-ID: <6278d2220809091403k65187128keec3b401717f1ec0@mail.gmail.com>
-Date: Tue, 9 Sep 2008 22:03:45 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: [2.6.27-rc5] inotify_read's ev_mutex vs do_page_fault's mmap_sem...
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=HDgTJijgPJRaibsdT0ElflHt9KhFj3aNTzhTiNnXcMdvhf3lxuHSHwyOoLKiOHvpOP
+         oKHlo+U0CEWb0mG8WUZUq4Zb7el35ZPWfAFZLoBJbPretOr+9WTLbHRoYLkTe85+L5Nu
+         UNrWGUDBbvjeFd+520BSCsz/DnDp1kUXJ02e8=
+Message-ID: <48C6E660.8010800@gmail.com>
+Date: Tue, 09 Sep 2008 23:10:56 +0200
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: invalid tests on unsigned
+References: <48C685F6.8020108@gmail.com>
+In-Reply-To: <48C685F6.8020108@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I observed this locking violation [1] while gnome-panel was loading;
-this was previously reported at
-http://uwsg.iu.edu/hypermail/linux/kernel/0806.3/2881.html .
-
-Let me know for more information/config/testing. Thanks!
-  Daniel
-
---- [1]
-
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.27-rc5-233c-debug #2
--------------------------------------------------------
-gnome-panel/4944 is trying to acquire lock:
- (&mm->mmap_sem){----}, at: [<ffffffff806aa40f>] do_page_fault+0x12f/0xae0
-
-but task is already holding lock:
- (&dev->ev_mutex){--..}, at: [<ffffffff80320ac3>] inotify_read+0xe3/0x200
-
-which lock already depends on the new lock.
+roel kluin wrote:
+> Using spatch I have found the following occurrences where there is
+> an invalid test on an unsigned.
+> 
+> Some may be not seriously, but just redundant, others may indicate
+> an incorrect assumption (that the variable can be negative).
+> I haven't found time to sort out these.
+> 
+> If I have time I will write patches, but feel free to write one
+> yourself if you want.
+> 
+> Roel
+> 
+> What is shown below is not meant as patch, just for reporting.
 
 
-the existing dependency chain (in reverse order) is:
+Some more (not yet reported):
 
--> #3 (&dev->ev_mutex){--..}:
-       [<ffffffff80271889>] __lock_acquire+0xd49/0x1190
-       [<ffffffff80271d61>] lock_acquire+0x91/0xc0
-       [<ffffffff806a5069>] __mutex_lock_common+0xb9/0x430
-       [<ffffffff806a54bf>] mutex_lock_nested+0x3f/0x50
-       [<ffffffff80321216>] inotify_dev_queue_event+0x46/0x1c0
-       [<ffffffff803200e6>] inotify_inode_queue_event+0xc6/0x110
-       [<ffffffff802f424c>] fsnotify_create+0x3c/0x70
-       [<ffffffff802f4c5d>] vfs_create+0xbd/0xd0
-       [<ffffffff802f7dfe>] do_filp_open+0x80e/0x910
-       [<ffffffff802e82b0>] do_sys_open+0x80/0x110
-       [<ffffffff802e8380>] sys_open+0x20/0x30
-       [<ffffffff8020c86b>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #2 (&ih->mutex){--..}:
-       [<ffffffff80271889>] __lock_acquire+0xd49/0x1190
-       [<ffffffff80271d61>] lock_acquire+0x91/0xc0
-       [<ffffffff806a5069>] __mutex_lock_common+0xb9/0x430
-       [<ffffffff806a54bf>] mutex_lock_nested+0x3f/0x50
-       [<ffffffff8031fe73>] inotify_find_update_watch+0x53/0xe0
-       [<ffffffff80320d85>] sys_inotify_add_watch+0x115/0x1d0
-       [<ffffffff8020c86b>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #1 (&inode->inotify_mutex){--..}:
-       [<ffffffff80271889>] __lock_acquire+0xd49/0x1190
-       [<ffffffff80271d61>] lock_acquire+0x91/0xc0
-       [<ffffffff806a5069>] __mutex_lock_common+0xb9/0x430
-       [<ffffffff806a54bf>] mutex_lock_nested+0x3f/0x50
-       [<ffffffff80320070>] inotify_inode_queue_event+0x50/0x110
-       [<ffffffff803206e1>] inotify_dentry_parent_queue_event+0x91/0xb0
-       [<ffffffff802ebb7f>] __fput+0x7f/0x1f0
-       [<ffffffff802ebd15>] fput+0x25/0x30
-       [<ffffffff802c84ff>] remove_vma+0x4f/0x90
-       [<ffffffff802ca359>] do_munmap+0x2e9/0x330
-       [<ffffffff802ca3f5>] sys_munmap+0x55/0x80
-       [<ffffffff8020c86b>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
--> #0 (&mm->mmap_sem){----}:
-       [<ffffffff80271950>] __lock_acquire+0xe10/0x1190
-       [<ffffffff80271d61>] lock_acquire+0x91/0xc0
-       [<ffffffff806a56eb>] down_read+0x4b/0x80
-       [<ffffffff806aa40f>] do_page_fault+0x12f/0xae0
-       [<ffffffff806a7bdd>] error_exit+0x0/0xa9
-       [<ffffffff802eac08>] vfs_read+0xc8/0x170
-       [<ffffffff802eadb5>] sys_read+0x55/0x90
-       [<ffffffff8020c86b>] system_call_fastpath+0x16/0x1b
-       [<ffffffffffffffff>] 0xffffffffffffffff
-
-other info that might help us debug this:
-
-1 lock held by gnome-panel/4944:
- #0:  (&dev->ev_mutex){--..}, at: [<ffffffff80320ac3>] inotify_read+0xe3/0x200
-
-stack backtrace:
-Pid: 4944, comm: gnome-panel Not tainted 2.6.27-rc5-233c-debug #2
-
-Call Trace:
- [<ffffffff8026f807>] print_circular_bug_tail+0xa7/0xf0
- [<ffffffff80271950>] __lock_acquire+0xe10/0x1190
- [<ffffffff80271d61>] lock_acquire+0x91/0xc0
- [<ffffffff806aa40f>] ? do_page_fault+0x12f/0xae0
- [<ffffffff806a56eb>] down_read+0x4b/0x80
- [<ffffffff806aa40f>] ? do_page_fault+0x12f/0xae0
- [<ffffffff8025c51a>] ? search_exception_tables+0x2a/0x50
- [<ffffffff806aa40f>] do_page_fault+0x12f/0xae0
- [<ffffffff8026d951>] ? trace_hardirqs_off_caller+0x21/0xc0
- [<ffffffff80213fc0>] ? native_sched_clock+0x90/0xb0
- [<ffffffff80270e39>] ? __lock_acquire+0x2f9/0x1190
- [<ffffffff80270606>] ? mark_held_locks+0x56/0xa0
- [<ffffffff802708bd>] ? trace_hardirqs_on+0xd/0x10
- [<ffffffff80270849>] ? trace_hardirqs_on_caller+0x149/0x1b0
- [<ffffffff806a7bdd>] error_exit+0x0/0xa9
- [<ffffffff80459acd>] ? copy_user_generic_string+0x2d/0x40
- [<ffffffff80320b5d>] ? inotify_read+0x17d/0x200
- [<ffffffff8025ee00>] ? autoremove_wake_function+0x0/0x40
- [<ffffffff802708bd>] ? trace_hardirqs_on+0xd/0x10
- [<ffffffff802eac08>] vfs_read+0xc8/0x170
- [<ffffffff802eadb5>] sys_read+0x55/0x90
- [<ffffffff8020c86b>] system_call_fastpath+0x16/0x1b
--- 
-Daniel J Blueman
+----[ drivers/video/atmel_lcdfb.c, unsigned long ]----
+--- drivers/video/atmel_lcdfb.c	2008-08-07 17:53:08.000000000 +0200
+@@ -843,7 +843,7 @@ static int __init atmel_lcdfb_probe(stru
+ 	}
+ 
+ 	sinfo->irq_base = platform_get_irq(pdev, 0);
+-	if (sinfo->irq_base < 0) {
+ 		dev_err(dev, "unable to get irq
+");
+ 		ret = sinfo->irq_base;
+ 		goto stop_clk;
+----[ drivers/video/aty/radeon_base.c, __u32 ]----
+--- drivers/video/aty/radeon_base.c	2008-08-07 17:53:08.000000000 +0200
+@@ -819,9 +819,9 @@ static int radeonfb_check_var (struct fb
+ 	if (v.xres_virtual < v.xres)
+ 		v.xres = v.xres_virtual;
+ 
+-	if (v.xoffset < 0)
+                 v.xoffset = 0;
+-        if (v.yoffset < 0)
+                 v.yoffset = 0;
+          
+         if (v.xoffset > v.xres_virtual - v.xres)
+----[ drivers/video/fbmem.c, __u32 ]----
+--- drivers/video/fbmem.c	2008-08-07 17:53:08.000000000 +0200
+@@ -1083,7 +1083,7 @@ fb_ioctl(struct inode *inode, struct fil
+ 			return - EFAULT;
+ 		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
+ 		    return -EINVAL;
+-		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
+ 		    return -EINVAL;
+ #ifdef CONFIG_KMOD
+ 		if (!registered_fb[con2fb.framebuffer])
+----[ drivers/video/fsl-diu-fb.c, __u32 ]----
+--- drivers/video/fsl-diu-fb.c	2008-08-07 17:53:08.000000000 +0200
+@@ -551,10 +551,10 @@ static int fsl_diu_check_var(struct fb_v
+ 	if (var->yres_virtual < var->yres)
+ 		var->yres_virtual = var->yres;
+ 
+-	if (var->xoffset < 0)
+ 		var->xoffset = 0;
+ 
+-	if (var->yoffset < 0)
+ 		var->yoffset = 0;
+ 
+ 	if (var->xoffset + info->var.xres > info->var.xres_virtual)
+@@ -908,7 +908,7 @@ static int fsl_diu_pan_display(struct fb
+ 	    (info->var.yoffset == var->yoffset))
+ 		return 0;	/* No change, do nothing */
+ 
+-	if (var->xoffset < 0 || var->yoffset < 0
+ 	    || var->xoffset + info->var.xres > info->var.xres_virtual
+ 	    || var->yoffset + info->var.yres > info->var.yres_virtual)
+ 		return -EINVAL;
+----[ drivers/video/intelfb/intelfbdrv.c, __u32 ]----
+--- drivers/video/intelfb/intelfbdrv.c	2008-07-19 23:16:53.000000000 +0200
+@@ -1324,9 +1324,9 @@ static int intelfb_check_var(struct fb_v
+ 		break;
+ 	}
+ 
+-	if (v.xoffset < 0)
+ 		v.xoffset = 0;
+-	if (v.yoffset < 0)
+ 		v.yoffset = 0;
+ 
+ 	if (v.xoffset > v.xres_virtual - v.xres)
+----[ drivers/video/omap/omapfb_main.c, u_int ]----
+--- drivers/video/omap/omapfb_main.c	2008-08-07 17:53:08.000000000 +0200
+@@ -276,7 +276,7 @@ static int _setcolreg(struct fb_info *in
+ 		if (r != 0)
+ 			break;
+ 
+-		if (regno < 0) {
+ 			r = -EINVAL;
+ 			break;
+ 		}
+----[ drivers/video/sm501fb.c, unsigned ]----
+--- drivers/video/sm501fb.c	2008-08-07 17:53:09.000000000 +0200
+@@ -172,7 +172,7 @@ static int sm501_alloc_mem(struct sm501f
+ 		if (fbi && ptr < fbi->fix.smem_len)
+ 			return -ENOMEM;
+ 
+-		if (ptr < 0)
+ 			return -ENOMEM;
+ 
+ 		break;
+----[ drivers/watchdog/wdt285.c, unsigned ]----
+--- drivers/watchdog/wdt285.c	2008-08-31 16:16:33.000000000 +0200
+@@ -161,7 +161,7 @@ static long watchdog_ioctl(struct file *
+ 			break;
+ 
+ 		/* Arbitrary, can't find the card's limits */
+-		if (new_margin < 0 || new_margin > 60) {
+ 			ret = -EINVAL;
+ 			break;
+ 		}
+----[ fs/adfs/inode.c, sector_t ]----
+--- fs/adfs/inode.c	2008-07-19 23:16:53.000000000 +0200
+@@ -28,7 +28,7 @@ static int
+ adfs_get_block(struct inode *inode, sector_t block, struct buffer_head *bh,
+ 	       int create)
+ {
+-	if (block < 0)
+ 		goto abort_negative;
+ 
+ 	if (!create) {
+----[ fs/befs/linuxvfs.c, sector_t ]----
+--- fs/befs/linuxvfs.c	2008-08-07 17:53:09.000000000 +0200
+@@ -127,7 +127,7 @@ befs_get_block(struct inode *inode, sect
+ 	befs_debug(sb, "---> befs_get_block() for inode %lu, block %ld",
+ 		   inode->i_ino, block);
+ 
+-	if (block < 0) {
+ 		befs_error(sb, "befs_get_block() was asked for a block "
+ 			   "number less than zero: block %ld in inode %lu",
+ 			   block, inode->i_ino);
+----[ fs/ext4/ialloc.c, ext4_group_t ]----
+--- fs/ext4/ialloc.c	2008-08-07 17:53:09.000000000 +0200
+@@ -351,7 +351,7 @@ find_close_to_parent:
+ 			goto found_flexbg;
+ 		}
+ 
+-		if (best_flex < 0 ||
+ 		    (flex_group[i].free_blocks >
+ 		     flex_group[best_flex].free_blocks &&
+ 		     flex_group[i].free_inodes))
+----[ fs/hugetlbfs/inode.c, unsigned long ]----
+--- fs/hugetlbfs/inode.c	2008-08-07 17:53:09.000000000 +0200
+@@ -281,7 +281,7 @@ static ssize_t hugetlbfs_read(struct fil
+ 			 */
+ 			ret = hugetlbfs_read_actor(page, offset, buf, len, nr);
+ 		}
+-		if (ret < 0) {
+ 			if (retval == 0)
+ 				retval = ret;
+ 			if (page)
+----[ fs/udf/super.c, sector_t ]----
+--- fs/udf/super.c	2008-08-07 17:53:10.000000000 +0200
+@@ -721,7 +721,7 @@ static sector_t udf_scan_anchors(struct 
+ 	 *  however, if the disc isn't closed, it could be 512 */
+ 
+ 	for (i = 0; i < ARRAY_SIZE(last); i++) {
+-		if (last[i] < 0)
+ 			continue;
+ 		if (last[i] >= sb->s_bdev->bd_inode->i_size >>
+ 				sb->s_blocksize_bits)
+----[ fs/ufs/inode.c, sector_t ]----
+--- fs/ufs/inode.c	2008-07-19 23:16:54.000000000 +0200
+@@ -56,7 +56,7 @@ static int ufs_block_to_path(struct inod
+ 
+ 
+ 	UFSD("ptrs=uspi->s_apb = %d,double_blocks=%ld 
+",ptrs,double_blocks);
+-	if (i_block < 0) {
+ 		ufs_warning(inode->i_sb, "ufs_block_to_path", "block < 0");
+ 	} else if (i_block < direct_blocks) {
+ 		offsets[n++] = i_block;
+@@ -440,7 +440,7 @@ int ufs_getfrag_block(struct inode *inod
+ 	lock_kernel();
+ 
+ 	UFSD("ENTER, ino %lu, fragment %llu
+", inode->i_ino, (unsigned long long)fragment);
+-	if (fragment < 0)
+ 		goto abort_negative;
+ 	if (fragment >
+ 	    ((UFS_NDADDR + uspi->s_apb + uspi->s_2apb + uspi->s_3apb)
