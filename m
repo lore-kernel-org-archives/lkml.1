@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYIIAPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYIIARY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbYIIAPU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 20:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYIIAPH
+	id S1755864AbYIIARY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 20:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYIIARP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 20:15:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37883 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753929AbYIIAPG (ORCPT
+	Mon, 8 Sep 2008 20:17:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46808
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753864AbYIIARP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 20:15:06 -0400
-Date: Mon, 8 Sep 2008 17:14:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Sesterhenn <snakebyte@gmx.de>
-Cc: linux-kernel@vger.kernel.org, zippel@linux-m68k.org
-Subject: Re: [Patch] hfs: fix namelength memory corruption
-Message-Id: <20080908171450.e57e6fcf.akpm@linux-foundation.org>
-In-Reply-To: <20080908133505.GA3031@alice>
-References: <20080908133505.GA3031@alice>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 8 Sep 2008 20:17:15 -0400
+Date: Mon, 08 Sep 2008 17:17:08 -0700 (PDT)
+Message-Id: <20080908.171708.43575256.davem@davemloft.net>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, wli@holomorphy.com,
+       sparclinux@vger.kernel.org, manfred@colorfullife.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] prevent sparc64 from invoking irq handlers on offline
+ CPUs
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080903154217.GA6807@linux.vnet.ibm.com>
+References: <20080903004211.GD6748@linux.vnet.ibm.com>
+	<20080903.022138.31681256.davem@davemloft.net>
+	<20080903154217.GA6807@linux.vnet.ibm.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 15:35:05 +0200
-Eric Sesterhenn <snakebyte@gmx.de> wrote:
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Date: Wed, 3 Sep 2008 08:42:17 -0700
 
-> hi,
+> Here are the situations I can think of (no doubt betraying my ignorance
+> of modern processor irq hardware in general and of sparc64 in particular):
 > 
-> this is basically the same as
-> hfsplus-fix-buffer-overflow-with-a-corrupted-image.patch.
+> o	Pending device irq.  There should be a limited number of these,
+> 	and the fixup_irqs() call prevents any more from appearing.
 
-I can't really use the above text in a changelog.  Think how it will
-look in git in two years time.
+Correct.
 
-> We use the length parameter for a memcopy without checking it and
-> thereby corruption memory. 
+> o	Pending scheduling-clock interrupts.  Does fixup_irqs() turn
+> 	these off as well?  (It does if the scheduling-clock interrupt
+> 	is one of the 0..NR_IRQS irqs.)  On the other hand, leaving
+> 	one of these pending should not be a problem (famous last
+> 	words).
 
-"corrupting".
+No, the timer interrupts are controlled differently, as the IRQ source
+lives inside of the CPU rather in some external entity.
 
-I assume that this bug was found using a deliberately corrupted
-filesystem?  If so, that sort of thing should be described in the
-changelog.
+I need to fix that by invoking tick_ops->disable_irq() here.  I'll take
+care of this.
 
-Please spend a little more time (say, 60 seconds) preparing patch
-descriptions.
+> o	Pending IPIs.  There should again be a limited number of these.
+> 	Except that an IPI handler could possibly IPI this CPU, as could
+> 	a device irq handler, I suppose.  (We cannot receive additional
+> 	IPIs from other CPUs, as they are spinning with irqs disabled.)
 
+And IPI handler runs in HW irq context, therefore such an IPI-creates-an-IPI
+should not be allowed, at least not directly.
 
-> Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-> 
-> --- linux/fs/hfs/catalog.c.orig	2008-09-08 15:20:15.000000000 +0200
-> +++ linux/fs/hfs/catalog.c	2008-09-08 15:21:02.000000000 +0200
-> @@ -190,6 +190,10 @@ int hfs_cat_find_brec(struct super_block
->  
->  	fd->search_key->cat.ParID = rec.thread.ParID;
->  	len = fd->search_key->cat.CName.len = rec.thread.CName.len;
-> +	if (len > HFS_NAMELEN) {
-> +		printk(KERN_ERR "hfs: bad catalog namelength\n");
-> +		return -EIO;
-> +	}
->  	memcpy(fd->search_key->cat.CName.name, rec.thread.CName.name, len);
->  	return hfs_brec_find(fd);
->  }
+Actually the restriction seems to be that an IPI cannot be sent when
+"irqs_disabled()", hmmm...
 
-Please send a full changelog for this patch.
+> o	Timer irqs.  Not sure what happens to add_timer() calls from
+> 	a CPU that is going offline.  The hope would be that they get
+> 	queued to some other CPU?
 
-I can (and often do) end up writing these things myself, but it's not a
-very satisfactory arrangement, particularly when I'm not provided with
-sufficient information to do so.
+This case is interesting, and I'm no sure what happens here.
 
-Thanks.
+> Now, an IPI handler cannot be allowed to send a synchronous IPI to
+> anyone, because the other CPUs are spinning with irqs disabled until
+> __cpu_disable() returns.  And in any context, a handler for a synchronous
+> IPI cannot be allowed to send a synchronous IPI to any set of CPUs that
+> might include the sender of the currently running handler, as doing so
+> would result in deadlock.
+
+Exactly.
