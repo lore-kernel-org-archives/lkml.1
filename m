@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYIIKKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYIIKU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYIIKKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 06:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYIIKKZ
+	id S1753511AbYIIKU2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 06:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbYIIKUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 06:10:25 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44613 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751493AbYIIKKY (ORCPT
+	Tue, 9 Sep 2008 06:20:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39493 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbYIIKUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 06:10:24 -0400
-X-Sasl-enc: jAiI6Whee29Pn8lrK9efuYQDTWA6xVdBAp2lbW4gK8FK 1220955022
-Message-ID: <48C64B8B.5000606@fastmail.fm>
-Date: Tue, 09 Sep 2008 12:10:19 +0200
-From: Michael J Gruber <michaeljgruber+gmane@fastmail.fm>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
-MIME-Version: 1.0
-To: Junio C Hamano <gitster@pobox.com>
-CC: Bert Wesarg <bert.wesarg@googlemail.com>,
-       "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>,
-       Git Mailing List <git@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       guilt@lists.josefsipek.net, Brandon Philips <brandon@ifup.org>
-Subject: Re: [ANNOUNCE] Guilt v0.31
-References: <20080908135244.GB27550@josefsipek.net> <36ca99e90809081133s58e3d32h8b85804f5bb76902@mail.gmail.com> <20080908184322.GE27550@josefsipek.net> <36ca99e90809081150v4ad6e7a0n72b5cca39e02b1bc@mail.gmail.com> <7vmyiifnwa.fsf@gitster.siamese.dyndns.org>
-In-Reply-To: <7vmyiifnwa.fsf@gitster.siamese.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 9 Sep 2008 06:20:17 -0400
+Date: Tue, 9 Sep 2008 19:25:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: Re: mmotm 2008-09-08-18-32 uploaded
+Message-Id: <20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
+References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Junio C Hamano venit, vidit, dixit 08.09.2008 21:17:
-> "Bert Wesarg" <bert.wesarg@googlemail.com> writes:
+On Mon, 08 Sep 2008 18:35:16 -0700
+akpm@linux-foundation.org wrote:
+
+> The mm-of-the-moment snapshot 2008-09-08-18-32 has been uploaded to
 > 
->> I must admit, that I don't like these extra tarballs with docs. I
->> always expect, that the manpages are nicely installed if I type 'make
->> install' (or at least with a install-doc target). But I need to
->> download this extra package, and extract it to the right place, there
->> is no Makefile whatsoever. In case of git its really annoying, because
->> the help mechanism is relying on the manpages (i.e. git help <cmd> or
->> git <cmd> --help, but you know this).
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> There is no need to feel "it[']s really annoying", as install-doc from the
-> tarball distribution works out of the box.
-> 
-> I used 1.6.0.1 in the demonstration below, but this is nothing new in that
-> version but has been like this for quite some time (it is how sample RPMs
-> binary packages are built, so the procedure ought to work):
-> 
->     $ ls -1 /usr/bin/git ;# to show there is no other "git" on this box
->     ls: /usr/bin/git: No such file or directory
->     $ mkdir /var/tmp/16
->     $ cd /var/tmp/16
->     $ wget http://www.kernel.org/pub/software/scm/git/git-1.6.0.1.tar.gz
->     $ tar xf git-1.6.0.1.tar.gz
->     $ cd git-1.6.0.1
->     $ make prefix=/var/tmp/16test install install-doc
->     $ PATH=/var/tmp/16test/bin:/usr/bin:/bin
->     $ export PATH
->     $ unset MANPATH
->     $ git help cat-file | cat -s | tail -n 8
->     Reformatting git-cat-file(1), please wait...
->     DOCUMENTATION
->            Documentation by David Greaves, Junio C Hamano and the git-list
->            <git@vger.kernel.org>.
-> 
->     GIT
->            Part of the git(1) suite
-> 
->     Git 1.6.0.1                       09/08/2008                   GIT-CAT-FILE(1)
+> It contains the following patches against 2.6.27-rc5:
 > 
 
-This works because you have the full toolchain, especially xmlto.
-asciidoc'ing directly to man (bypassing xmlto) may help some of us.
+I'll dig if I have time. This is just a report.
 
-> The extra tarballs for documentation are also given as courtesy because
-> they are supposed to be platform independent and some people do not want
-> to generate them themselves (even though they could).
-> 
-> Either be thankful for the availability of tarballs, or ignore them and
-> generate them yourself --- it's your choice.
+I tries UnixBench4.1 on x86_64/2cpu/1socket machine. (memory cgroup is enabled)
 
-He might want an install target which installs doc from the doc-tarball
-or from the man- and html-branches. Be it a Makefile in those
-convenience branches. I know it's just a tar or cpio away, of course. I
-might look at a Makefile for the doc branches.
+Following is comparison with a mmtom based on rc4.
+===
+[rc4mm1]
+Execl Throughput                           3004.4 lps   (29.6 secs, 3 samples)
+C Compiler Throughput                      1017.9 lpm   (60.0 secs, 3 samples)
+Shell Scripts (1 concurrent)               5726.3 lpm   (60.0 secs, 3 samples)
+Shell Scripts (8 concurrent)               1124.3 lpm   (60.0 secs, 3 samples)
+Shell Scripts (16 concurrent)               576.0 lpm   (60.0 secs, 3 samples)
+Dc: sqrt(2) to 99 decimal places         125446.5 lpm   (30.0 secs, 3 samples)
 
-Michael
+[rc5mm1]
+Execl Throughput                           3006.5 lps   (29.8 secs, 3 samples)
+C Compiler Throughput                      1006.7 lpm   (60.0 secs, 3 samples)
+Shell Scripts (1 concurrent)               4863.7 lpm   (60.0 secs, 3 samples)
+Shell Scripts (8 concurrent)                943.7 lpm   (60.0 secs, 3 samples)
+Shell Scripts (16 concurrent)               482.7 lpm   (60.0 secs, 3 samples)
+Dc: sqrt(2) to 99 decimal places         124804.9 lpm   (30.0 secs, 3 samples)
+==
+15% down in shell script test. Any idea ? (scheduler ?)
+
+Thanks,
+-Kame
+
