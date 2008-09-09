@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYIIEMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756679AbYIIEMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbYIIEMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbYIIEIr
+	id S1756679AbYIIEMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbYIIEIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42581 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42583 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbYIIEIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 00:08:01 -0400
+	id S1751442AbYIIEIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 00:08:02 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 11/18] lirc driver for the Technotrend USB IR receiver
-Date: Tue,  9 Sep 2008 00:05:56 -0400
-Message-Id: <1220933164-10160-12-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-11-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 13/18] lirc driver for ITE8709 CIR port receiver
+Date: Tue,  9 Sep 2008 00:05:58 -0400
+Message-Id: <1220933164-10160-14-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-13-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
@@ -28,6 +28,8 @@ References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-9-git-send-email-jwilson@redhat.com>
  <1220933164-10160-10-git-send-email-jwilson@redhat.com>
  <1220933164-10160-11-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-12-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-13-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,442 +38,593 @@ Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
 ---
- drivers/input/lirc/Kconfig        |    6 +
+ drivers/input/lirc/Kconfig        |    7 +
  drivers/input/lirc/Makefile       |    1 +
- drivers/input/lirc/lirc_ttusbir.c |  400 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 407 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_ttusbir.c
+ drivers/input/lirc/lirc_ite8709.c |  545 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 553 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_ite8709.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 8579f96..7e924fe 100644
+index 2731c40..9783639 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -82,4 +82,10 @@ config LIRC_STREAMZAP
+@@ -54,6 +54,13 @@ config LIRC_IMON
  	help
- 	  Driver for the Streamzap PC Receiver
+ 	  Driver for the Soundgraph IMON IR Receiver
  
-+config LIRC_TTUSBIR
-+	tristate "Technotrend USB IR Receiver"
++config LIRC_ITE8709
++	tristate "ITE8709 CIR Port Receiver"
 +	default n
-+	depends on LIRC_DEV
++	depends on LIRC_DEV && PNP
 +	help
-+	  Driver for the Technotrend USB IR Receiver
- endif
++	  Driver for the ITE8709 IR Receiver
++
+ config LIRC_MCEUSB
+ 	tristate "Microsoft Media Center Ed. Receiver, v1"
+ 	default n
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index 68f8da2..2ee00d1 100644
+index 1b2793d..1da7c5b 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -15,3 +15,4 @@ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
+@@ -11,6 +11,7 @@ obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
+ obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
+ obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
+ obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
++obj-$(CONFIG_LIRC_ITE8709)	+= lirc_ite8709.o
+ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
  obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
- obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
- obj-$(CONFIG_LIRC_STREAMZAP)	+= lirc_streamzap.o
-+obj-$(CONFIG_LIRC_TTUSBIR)	+= lirc_ttusbir.o
-diff --git a/drivers/input/lirc/lirc_ttusbir.c b/drivers/input/lirc/lirc_ttusbir.c
+ obj-$(CONFIG_LIRC_SASEM)	+= lirc_sasem.o
+diff --git a/drivers/input/lirc/lirc_ite8709.c b/drivers/input/lirc/lirc_ite8709.c
 new file mode 100644
-index 0000000..9ed9c7b
+index 0000000..d03ecf7
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_ttusbir.c
-@@ -0,0 +1,400 @@
-+/****************************************************************************
-+ ** lirc_ttusbir.c ***********************************************************
-+ ****************************************************************************
++++ b/drivers/input/lirc/lirc_ite8709.c
+@@ -0,0 +1,545 @@
++/*
++ * LIRC driver for ITE8709 CIR port
 + *
-+ * lirc_ttusbir - LIRC device driver for the TechnoTrend USB IR Receiver
++ * Copyright (C) 2008 Grégory Lardière <spmf2004-lirc@yahoo.fr>
 + *
-+ * Copyright (C) 2007 Stefan Macher <st_maker-lirc@yahoo.de>
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
 + *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
 + *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ */
-+
-+/* This LIRC driver provides access to the TechnoTrend USB IR Receiver.
-+ * The receiver delivers the IR signal as raw sampled true/false data in
-+ * isochronous USB packets each of size 128 byte.
-+ * Currently the driver reduces the sampling rate by factor of 8 as this
-+ * is still more than enough to decode RC-5 - others should be analyzed.
-+ * But the driver does not rely on RC-5 it should be able to decode every
-+ * IR signal that is not too fast.
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
++ * USA
 + */
 +
 +#include <linux/version.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/errno.h>
-+#include <linux/slab.h>
-+#include <linux/usb.h>
++
++#include <linux/autoconf.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++
++#include <linux/pnp.h>
++#include <linux/io.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+MODULE_DESCRIPTION("TechnoTrend USB IR device driver for LIRC");
-+MODULE_AUTHOR("Stefan Macher (st_maker-lirc@yahoo.de)");
-+MODULE_LICENSE("GPL");
++#define LIRC_DRIVER_NAME "lirc_ite8709"
 +
-+/* #define DEBUG */
-+#ifdef DEBUG
-+#define DPRINTK printk
++#define BUF_CHUNK_SIZE	sizeof(int)
++#define BUF_SIZE	(128*BUF_CHUNK_SIZE)
++
++/*******************************************************************************
++* The ITE8709 device seems to be the combination of IT8512 superIO chip and    *
++* a specific firmware running on the IT8512's embedded micro-controller.       *
++* In addition of the embedded micro-controller, the IT8512 chip contains a     *
++* CIR module and several other modules. A few modules are directly accessible  *
++* by the host CPU, but most of them are only accessible by the                 *
++* micro-controller. The CIR module is only accessible by the micro-controller. *
++* The battery-backed SRAM module is accessible by the host CPU and the         *
++* micro-controller. So one of the MC's firmware role is to act as a bridge     *
++* between the host CPU and the CIR module. The firmware implements a kind of   *
++* communication protocol using the SRAM module as a shared memory. The IT8512  *
++* specification is publicly available on ITE's web site, but the communication *
++* protocol is not, so it was reverse-engineered.                               *
++*******************************************************************************/
++
++/* ITE8709 Registers addresses and values (reverse-engineered) */
++#define ITE8709_MODE		0x1a
++#define ITE8709_REG_ADR		0x1b
++#define ITE8709_REG_VAL		0x1c
++#define ITE8709_IIR		0x1e  /* Interrupt identification register */
++#define ITE8709_RFSR		0x1f  /* Receiver FIFO status register */
++#define ITE8709_FIFO_START	0x20
++
++#define ITE8709_MODE_READY	0X00
++#define ITE8709_MODE_WRITE	0X01
++#define ITE8709_MODE_READ	0X02
++#define ITE8709_IIR_RDAI	0x02  /* Receiver data available interrupt */
++#define ITE8709_IIR_RFOI	0x04  /* Receiver FIFO overrun interrupt */
++#define ITE8709_RFSR_MASK	0x3f  /* FIFO byte count mask */
++
++/* IT8512 CIR-module registers addresses and values (from IT8512 E/F */
++/* specification v0.4.1)                                             */
++#define IT8512_REG_MSTCR	0x01  /* Master control register */
++#define IT8512_REG_IER		0x02  /* Interrupt enable register */
++#define IT8512_REG_CFR		0x04  /* Carrier frequency register */
++#define IT8512_REG_RCR		0x05  /* Receive control register */
++#define IT8512_REG_BDLR		0x08  /* Baud rate divisor low byte register */
++#define IT8512_REG_BDHR		0x09  /* Baud rate divisor high byte register */
++
++#define IT8512_MSTCR_RESET	0x01  /* Reset registers to default value */
++#define IT8512_MSTCR_FIFOCLR	0x02  /* Clear FIFO */
++#define IT8512_MSTCR_FIFOTL_7	0x04  /* FIFO threshold level : 7 */
++#define IT8512_MSTCR_FIFOTL_25	0x0c  /* FIFO threshold level : 25 */
++#define IT8512_IER_RDAIE	0x02  /* Enable data interrupt request */
++#define IT8512_IER_RFOIE	0x04  /* Enable FIFO overrun interrupt req */
++#define IT8512_IER_IEC		0x80  /* Enable interrupt request */
++#define IT8512_CFR_CF_36KHZ	0x09  /* Carrier freq : low speed, 36kHz */
++#define IT8512_RCR_RXDCR_1	0x01  /* Demodulation carrier range : 1 */
++#define IT8512_RCR_RXACT	0x08  /* Receiver active */
++#define IT8512_RCR_RXEN		0x80  /* Receiver enable */
++#define IT8512_BDR_6		6     /* Baud rate divisor : 6 */
++
++/* Actual values used by this driver */
++#define CFG_FIFOTL	IT8512_MSTCR_FIFOTL_25
++#define CFG_CR_FREQ	IT8512_CFR_CF_36KHZ
++#define CFG_DCR		IT8512_RCR_RXDCR_1
++#define CFG_BDR		IT8512_BDR_6
++#define CFG_TIMEOUT	100000 /* Rearm interrupt when a space is > 100 ms */
++
++static int debug;
++
++struct ite8709_device {
++	int use_count;
++	int io;
++	int irq;
++	spinlock_t hardware_lock;
++	unsigned long long acc_pulse;
++	unsigned long long acc_space;
++	char lastbit;
++	struct timeval last_tv;
++	struct lirc_plugin plugin;
++	struct lirc_buffer buffer;
++	struct tasklet_struct tasklet;
++	char force_rearm;
++	char rearmed;
++	char device_busy;
++};
++
++#define dprintk(fmt, args...)					\
++	do {							\
++		if (debug)					\
++			printk(KERN_DEBUG LIRC_DRIVER_NAME ": "	\
++				fmt, ## args);			\
++	} while (0)
++
++
++static unsigned char ite8709_read(struct ite8709_device *dev,
++					unsigned char port)
++{
++	outb(port, dev->io);
++	return inb(dev->io+1);
++}
++
++static void ite8709_write(struct ite8709_device *dev, unsigned char port,
++				unsigned char data)
++{
++	outb(port, dev->io);
++	outb(data, dev->io+1);
++}
++
++static void ite8709_wait_device(struct ite8709_device *dev)
++{
++	int i = 0;
++	/* loop until device tells it's ready to continue */
++	/* iterations count is usually ~750 but can sometimes achieve 13000 */
++	for (i = 0; i < 15000; i++) {
++		udelay(2);
++		if (ite8709_read(dev, ITE8709_MODE) == ITE8709_MODE_READY)
++			break;
++	}
++}
++
++static void ite8709_write_register(struct ite8709_device *dev,
++				unsigned char reg_adr, unsigned char reg_value)
++{
++	ite8709_wait_device(dev);
++
++	ite8709_write(dev, ITE8709_REG_VAL, reg_value);
++	ite8709_write(dev, ITE8709_REG_ADR, reg_adr);
++	ite8709_write(dev, ITE8709_MODE, ITE8709_MODE_WRITE);
++}
++
++static void ite8709_init_hardware(struct ite8709_device *dev)
++{
++	spin_lock_irq(&dev->hardware_lock);
++	dev->device_busy = 1;
++	spin_unlock_irq(&dev->hardware_lock);
++
++	ite8709_write_register(dev, IT8512_REG_BDHR, (CFG_BDR >> 8) & 0xff);
++	ite8709_write_register(dev, IT8512_REG_BDLR, CFG_BDR & 0xff);
++	ite8709_write_register(dev, IT8512_REG_CFR, CFG_CR_FREQ);
++	ite8709_write_register(dev, IT8512_REG_IER,
++			IT8512_IER_IEC | IT8512_IER_RFOIE | IT8512_IER_RDAIE);
++	ite8709_write_register(dev, IT8512_REG_RCR, CFG_DCR);
++	ite8709_write_register(dev, IT8512_REG_MSTCR,
++					CFG_FIFOTL | IT8512_MSTCR_FIFOCLR);
++	ite8709_write_register(dev, IT8512_REG_RCR,
++				IT8512_RCR_RXEN | IT8512_RCR_RXACT | CFG_DCR);
++
++	spin_lock_irq(&dev->hardware_lock);
++	dev->device_busy = 0;
++	spin_unlock_irq(&dev->hardware_lock);
++
++	tasklet_enable(&dev->tasklet);
++}
++
++static void ite8709_drop_hardware(struct ite8709_device *dev)
++{
++	tasklet_disable(&dev->tasklet);
++
++	spin_lock_irq(&dev->hardware_lock);
++	dev->device_busy = 1;
++	spin_unlock_irq(&dev->hardware_lock);
++
++	ite8709_write_register(dev, IT8512_REG_RCR, 0);
++	ite8709_write_register(dev, IT8512_REG_MSTCR,
++				IT8512_MSTCR_RESET | IT8512_MSTCR_FIFOCLR);
++
++	spin_lock_irq(&dev->hardware_lock);
++	dev->device_busy = 0;
++	spin_unlock_irq(&dev->hardware_lock);
++}
++
++static int ite8709_set_use_inc(void *data)
++{
++	struct ite8709_device *dev;
++	dev = data;
++	if (dev->use_count == 0)
++		ite8709_init_hardware(dev);
++	dev->use_count++;
++	return 0;
++}
++
++static void ite8709_set_use_dec(void *data)
++{
++	struct ite8709_device *dev;
++	dev = data;
++	dev->use_count--;
++	if (dev->use_count == 0)
++		ite8709_drop_hardware(dev);
++}
++
++static void ite8709_add_read_queue(struct ite8709_device *dev, int flag,
++					unsigned long long val)
++{
++	int value;
++
++	dprintk("add a %llu usec %s\n", val, flag ? "pulse" : "space");
++
++	value = (val > PULSE_MASK) ? PULSE_MASK : val;
++	if (flag)
++		value |= PULSE_BIT;
++
++	if (!lirc_buffer_full(&dev->buffer)) {
++		lirc_buffer_write_1(&dev->buffer, (void *) &value);
++		wake_up(&dev->buffer.wait_poll);
++	}
++}
++
++static irqreturn_t ite8709_interrupt(int irq, void *dev_id)
++{
++	unsigned char data;
++	int iir, rfsr, i;
++	int fifo = 0;
++	char bit;
++	struct timeval curr_tv;
++
++	/* Bit duration in microseconds */
++	const unsigned long bit_duration = 1000000ul / (115200 / CFG_BDR);
++
++	struct ite8709_device *dev;
++	dev = dev_id;
++
++	/* If device is busy, we simply discard data because we are in one of */
++	/* these two cases : shutting down or rearming the device, so this    */
++	/* doesn't really matter and this avoids waiting too long in IRQ ctx  */
++	spin_lock(&dev->hardware_lock);
++	if (dev->device_busy) {
++		spin_unlock(&dev->hardware_lock);
++		return IRQ_RETVAL(IRQ_HANDLED);
++	}
++
++	iir = ite8709_read(dev, ITE8709_IIR);
++
++	switch (iir) {
++	case ITE8709_IIR_RFOI:
++		dprintk("fifo overrun, scheduling forced rearm just in case\n");
++		dev->force_rearm = 1;
++		tasklet_schedule(&dev->tasklet);
++		spin_unlock(&dev->hardware_lock);
++		return IRQ_RETVAL(IRQ_HANDLED);
++
++	case ITE8709_IIR_RDAI:
++		rfsr = ite8709_read(dev, ITE8709_RFSR);
++		fifo = rfsr & ITE8709_RFSR_MASK;
++		if (fifo > 32)
++			fifo = 32;
++		dprintk("iir: 0x%x rfsr: 0x%x fifo: %d\n", iir, rfsr, fifo);
++
++		if (dev->rearmed) {
++			do_gettimeofday(&curr_tv);
++			dev->acc_space += 1000000ull
++				* (curr_tv.tv_sec - dev->last_tv.tv_sec)
++				+ (curr_tv.tv_usec - dev->last_tv.tv_usec);
++			dev->rearmed = 0;
++		}
++		for (i = 0; i < fifo; i++) {
++			data = ite8709_read(dev, i+ITE8709_FIFO_START);
++			data = ~data;
++			/* Loop through */
++			for (bit = 0; bit < 8; ++bit) {
++				if ((data >> bit) & 1) {
++					dev->acc_pulse += bit_duration;
++					if (dev->lastbit == 0) {
++						ite8709_add_read_queue(dev, 0,
++							dev->acc_space);
++						dev->acc_space = 0;
++					}
++				} else {
++					dev->acc_space += bit_duration;
++					if (dev->lastbit == 1) {
++						ite8709_add_read_queue(dev, 1,
++							dev->acc_pulse);
++						dev->acc_pulse = 0;
++					}
++				}
++				dev->lastbit = (data >> bit) & 1;
++			}
++		}
++		ite8709_write(dev, ITE8709_RFSR, 0);
++
++		if (dev->acc_space > CFG_TIMEOUT) {
++			dprintk("scheduling rearm IRQ\n");
++			do_gettimeofday(&dev->last_tv);
++			dev->force_rearm = 0;
++			tasklet_schedule(&dev->tasklet);
++		}
++
++		spin_unlock(&dev->hardware_lock);
++		return IRQ_RETVAL(IRQ_HANDLED);
++
++	default:
++		/* not our irq */
++		dprintk("unknown IRQ (shouldn't happen) !!\n");
++		spin_unlock(&dev->hardware_lock);
++		return IRQ_RETVAL(IRQ_NONE);
++	}
++}
++
++static void ite8709_rearm_irq(unsigned long data)
++{
++	struct ite8709_device *dev;
++	unsigned long flags;
++	dev = (struct ite8709_device *) data;
++
++	spin_lock_irqsave(&dev->hardware_lock, flags);
++	dev->device_busy = 1;
++	spin_unlock_irqrestore(&dev->hardware_lock, flags);
++
++	if (dev->force_rearm || dev->acc_space > CFG_TIMEOUT) {
++		dprintk("rearming IRQ\n");
++		ite8709_write_register(dev, IT8512_REG_RCR,
++						IT8512_RCR_RXACT | CFG_DCR);
++		ite8709_write_register(dev, IT8512_REG_MSTCR,
++					CFG_FIFOTL | IT8512_MSTCR_FIFOCLR);
++		ite8709_write_register(dev, IT8512_REG_RCR,
++				IT8512_RCR_RXEN | IT8512_RCR_RXACT | CFG_DCR);
++		if (!dev->force_rearm)
++			dev->rearmed = 1;
++		dev->force_rearm = 0;
++	}
++
++	spin_lock_irqsave(&dev->hardware_lock, flags);
++	dev->device_busy = 0;
++	spin_unlock_irqrestore(&dev->hardware_lock, flags);
++}
++
++static int ite8709_cleanup(struct ite8709_device *dev, int stage, int errno,
++				char *msg)
++{
++	if (msg != NULL)
++		printk(KERN_ERR LIRC_DRIVER_NAME ": %s\n", msg);
++
++	switch (stage) {
++	case 6:
++		if (dev->use_count > 0)
++			ite8709_drop_hardware(dev);
++	case 5:
++		free_irq(dev->irq, dev);
++	case 4:
++		release_region(dev->io, 2);
++	case 3:
++		lirc_unregister_plugin(dev->plugin.minor);
++	case 2:
++		lirc_buffer_free(dev->plugin.rbuf);
++	case 1:
++		kfree(dev);
++	case 0:
++		;
++	}
++
++	return errno;
++}
++
++static int __devinit ite8709_pnp_probe(struct pnp_dev *dev,
++					const struct pnp_device_id *dev_id)
++{
++	struct lirc_plugin *plugin;
++	struct ite8709_device *ite8709_dev;
++	int ret;
++
++	/* Check resources validity */
++	if (!pnp_irq_valid(dev, 0))
++		return ite8709_cleanup(NULL, 0, -ENODEV, "invalid IRQ");
++	if (!pnp_port_valid(dev, 2))
++		return ite8709_cleanup(NULL, 0, -ENODEV, "invalid IO port");
++
++	/* Allocate memory for device struct */
++	ite8709_dev = kzalloc(sizeof(struct ite8709_device), GFP_KERNEL);
++	if (ite8709_dev == NULL)
++		return ite8709_cleanup(NULL, 0, -ENOMEM, "kzalloc failed");
++	pnp_set_drvdata(dev, ite8709_dev);
++
++	/* Initialize device struct */
++	ite8709_dev->use_count = 0;
++	ite8709_dev->irq = pnp_irq(dev, 0);
++	ite8709_dev->io = pnp_port_start(dev, 2);
++	ite8709_dev->hardware_lock = __SPIN_LOCK_UNLOCKED(
++					ite8709_dev->hardware_lock);
++	ite8709_dev->acc_pulse = 0;
++	ite8709_dev->acc_space = 0;
++	ite8709_dev->lastbit = 0;
++	do_gettimeofday(&ite8709_dev->last_tv);
++	tasklet_init(&ite8709_dev->tasklet, ite8709_rearm_irq,
++							(long) ite8709_dev);
++	ite8709_dev->force_rearm = 0;
++	ite8709_dev->rearmed = 0;
++	ite8709_dev->device_busy = 0;
++
++	/* Initialize plugin struct */
++	plugin = &ite8709_dev->plugin;
++	strcpy(plugin->name, LIRC_DRIVER_NAME);
++	plugin->minor = -1;
++	plugin->code_length = sizeof(int) * 8;
++	plugin->sample_rate = 0;
++	plugin->features = LIRC_CAN_REC_MODE2;
++	plugin->data = ite8709_dev;
++	plugin->add_to_buf = NULL;
++	plugin->get_queue = NULL;
++	plugin->rbuf = &ite8709_dev->buffer;
++	plugin->set_use_inc = ite8709_set_use_inc;
++	plugin->set_use_dec = ite8709_set_use_dec;
++	plugin->ioctl = NULL;
++	plugin->fops = NULL;
++	plugin->dev = &dev->dev;
++	plugin->owner = THIS_MODULE;
++
++	/* Initialize LIRC buffer */
++	if (lirc_buffer_init(plugin->rbuf, BUF_CHUNK_SIZE, BUF_SIZE))
++		return ite8709_cleanup(ite8709_dev, 1, -ENOMEM,
++						"lirc_buffer_init() failed");
++
++	/* Register LIRC plugin */
++	ret = lirc_register_plugin(plugin);
++	if (ret < 0)
++		return ite8709_cleanup(ite8709_dev, 2, ret,
++					"lirc_register_plugin() failed");
++
++	/* Reserve I/O port access */
++	if (!request_region(ite8709_dev->io, 2, LIRC_DRIVER_NAME))
++		return ite8709_cleanup(ite8709_dev, 3, -EBUSY,
++						"i/o port already in use");
++
++	/* Reserve IRQ line */
++	ret = request_irq(ite8709_dev->irq, ite8709_interrupt, 0,
++					LIRC_DRIVER_NAME, ite8709_dev);
++	if (ret < 0)
++		return ite8709_cleanup(ite8709_dev, 4, ret,
++						"IRQ already in use");
++
++	/* Initialize hardware */
++	ite8709_drop_hardware(ite8709_dev); /* Shutdown hw until first use */
++
++	printk(KERN_INFO LIRC_DRIVER_NAME ": device found : irq=%d io=0x%x\n",
++					ite8709_dev->irq, ite8709_dev->io);
++
++	return 0;
++}
++
++static void __devexit ite8709_pnp_remove(struct pnp_dev *dev)
++{
++	struct ite8709_device *ite8709_dev;
++	ite8709_dev = pnp_get_drvdata(dev);
++
++	ite8709_cleanup(ite8709_dev, 6, 0, NULL);
++
++	printk(KERN_INFO LIRC_DRIVER_NAME ": device removed\n");
++}
++
++#ifdef CONFIG_PM
++static int ite8709_pnp_suspend(struct pnp_dev *dev, pm_message_t state)
++{
++	struct ite8709_device *ite8709_dev;
++	ite8709_dev = pnp_get_drvdata(dev);
++
++	if (ite8709_dev->use_count > 0)
++		ite8709_drop_hardware(ite8709_dev);
++
++	return 0;
++}
++
++static int ite8709_pnp_resume(struct pnp_dev *dev)
++{
++	struct ite8709_device *ite8709_dev;
++	ite8709_dev = pnp_get_drvdata(dev);
++
++	if (ite8709_dev->use_count > 0)
++		ite8709_init_hardware(ite8709_dev);
++
++	return 0;
++}
 +#else
-+#define DPRINTK(_x_, a...)
++#define ite8709_pnp_suspend NULL
++#define ite8709_pnp_resume NULL
 +#endif
 +
-+/* function declarations */
-+static int probe(struct usb_interface *intf, const struct usb_device_id *id);
-+static void disconnect(struct usb_interface *intf);
-+static void urb_complete(struct urb *urb);
-+static int set_use_inc(void *data);
-+static void set_use_dec(void *data);
-+
-+static int num_urbs = 2;
-+module_param(num_urbs, int, 0444);
-+MODULE_PARM_DESC(num_urbs,
-+		 "Number of URBs in queue. Try to increase to 4 in case "
-+		 "of problems (default: 2; minimum: 2)");
-+
-+/* table of devices that work with this driver */
-+static struct usb_device_id device_id_table[] = {
-+	/* TechnoTrend USB IR Receiver */
-+	{ USB_DEVICE(0x0B48, 0x2003) },
-+	/* Terminating entry */
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(usb, device_id_table);
-+
-+/* USB driver definition */
-+static struct usb_driver driver = {
-+	.name = "TTUSBIR",
-+	.id_table = &(device_id_table[0]),
-+	.probe = probe,
-+	.disconnect = disconnect,
++static const struct pnp_device_id pnp_dev_table[] = {
++	{"ITE8709", 0},
++	{}
 +};
 +
-+/* USB device definition */
-+struct ttusbir_device {
-+	struct usb_driver *driver;
-+	struct usb_device *udev;
-+	struct usb_interface *interf;
-+	struct usb_class_driver class_driver;
-+	unsigned int ifnum; /* Interface number to use */
-+	unsigned int alt_setting; /* alternate setting to use */
-+	unsigned int endpoint; /* Endpoint to use */
-+	struct urb **urb; /* num_urb URB pointers*/
-+	char **buffer; /* 128 byte buffer for each URB */
-+	struct lirc_buffer rbuf; /* Buffer towards LIRC */
-+	struct lirc_plugin plugin;
-+	int minor;
-+	int last_pulse; /* remembers if last received byte was pulse or space */
-+	int last_num; /* remembers how many last bytes appeared */
-+	int opened;
++MODULE_DEVICE_TABLE(pnp, pnp_dev_table);
++
++static struct pnp_driver ite8709_pnp_driver = {
++	.name           = LIRC_DRIVER_NAME,
++	.probe          = ite8709_pnp_probe,
++	.remove         = __devexit_p(ite8709_pnp_remove),
++	.suspend        = ite8709_pnp_suspend,
++	.resume         = ite8709_pnp_resume,
++	.id_table       = pnp_dev_table,
 +};
 +
-+/*************************************
-+ * LIRC specific functions
++int init_module(void)
++{
++	return pnp_register_driver(&ite8709_pnp_driver);
++}
++
++void cleanup_module(void)
++{
++	pnp_unregister_driver(&ite8709_pnp_driver);
++}
++
++MODULE_DESCRIPTION("LIRC driver for ITE8709 CIR port");
++MODULE_AUTHOR("Grégory Lardière");
++MODULE_LICENSE("GPL");
++
++module_param(debug, bool, 0644);
++MODULE_PARM_DESC(debug, "Enable debugging messages");
++
++/*
++ * Overrides for Emacs so that we follow Linus's tabbing style.
++ * ---------------------------------------------------------------------------
++ * Local variables:
++ * c-basic-offset: 8
++ * End:
 + */
-+static int set_use_inc(void *data)
-+{
-+	int i;
-+	struct ttusbir_device *ttusbir = data;
-+
-+	DPRINTK("Sending first URBs\n");
-+	/* @TODO Do I need to check if I am already opened */
-+	ttusbir->opened = 1;
-+
-+	for (i = 0; i < num_urbs; i++)
-+		usb_submit_urb(ttusbir->urb[i], GFP_KERNEL);
-+
-+	return 0;
-+}
-+
-+static void set_use_dec(void *data)
-+{
-+	struct ttusbir_device *ttusbir = data;
-+
-+	DPRINTK("Device closed\n");
-+
-+	ttusbir->opened = 0;
-+}
-+
-+/*************************************
-+ * USB specific functions
-+ */
-+
-+/* This mapping table is used to do a very simple filtering of the
-+ * input signal.
-+ * For a value with at least 4 bits set it returns 0xFF otherwise
-+ * 0x00.  For faster IR signals this can not be used. But for RC-5 we
-+ * still have about 14 samples per pulse/space, i.e. we sample with 14
-+ * times higher frequency than the signal frequency */
-+const unsigned char map_table[] =
-+{
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-+	0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0xFF, 0xFF,
-+	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-+	0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-+};
-+
-+static void urb_complete(struct urb *urb)
-+{
-+	struct ttusbir_device *ttusbir;
-+	unsigned char *buf;
-+	int i;
-+	int l;
-+
-+	ttusbir = urb->context;
-+
-+	if (!ttusbir->opened)
-+		return;
-+
-+	buf = (unsigned char *)urb->transfer_buffer;
-+
-+	for (i = 0; i < 128; i++) {
-+		/* Here we do the filtering and some kind of down sampling */
-+		buf[i] = ~map_table[buf[i]];
-+		if (ttusbir->last_pulse == buf[i]) {
-+			if (ttusbir->last_num < PULSE_MASK/63)
-+				ttusbir->last_num++;
-+		/* else we are in a idle period and do not need to
-+		 * increment any longer */
-+		} else {
-+			l = ttusbir->last_num * 62; /* about 62 = us/byte */
-+			if (ttusbir->last_pulse) /* pulse or space? */
-+				l |= PULSE_BIT;
-+			if (!lirc_buffer_full(&ttusbir->rbuf)) {
-+				lirc_buffer_write_1(&ttusbir->rbuf, (void *)&l);
-+				wake_up_interruptible(&ttusbir->rbuf.wait_poll);
-+			}
-+			ttusbir->last_num = 0;
-+			ttusbir->last_pulse = buf[i];
-+		}
-+	}
-+	usb_submit_urb(urb, GFP_ATOMIC); /* keep data rolling :-) */
-+}
-+
-+/* Called whenever the USB subsystem thinks we could be the right driver
-+   to handle this device
-+*/
-+static int probe(struct usb_interface *intf, const struct usb_device_id *id)
-+{
-+	int alt_set, endp;
-+	int found = 0;
-+	int i, j;
-+	int struct_size;
-+	struct usb_host_interface *host_interf;
-+	struct usb_interface_descriptor *interf_desc;
-+	struct usb_host_endpoint *host_endpoint;
-+	struct ttusbir_device *ttusbir;
-+
-+	DPRINTK("Module ttusbir probe\n");
-+
-+	/* To reduce memory fragmentation we use only one allocation */
-+	struct_size =  sizeof(struct ttusbir_device) +
-+		(sizeof(struct urb *) * num_urbs) +
-+		(sizeof(char *) * num_urbs) +
-+		(num_urbs * 128);
-+	ttusbir = kmalloc(struct_size, GFP_KERNEL);
-+	if (!ttusbir)
-+		return -ENOMEM;
-+	memset(ttusbir, 0, struct_size);
-+
-+	ttusbir->urb = (struct urb **)((char *)ttusbir +
-+				      sizeof(struct ttusbir_device));
-+	ttusbir->buffer = (char **)((char *)ttusbir->urb +
-+				   (sizeof(struct urb *) * num_urbs));
-+	for (i = 0; i < num_urbs; i++)
-+		ttusbir->buffer[i] = (char *)ttusbir->buffer +
-+			(sizeof(char *)*num_urbs) + (i * 128);
-+
-+	ttusbir->driver = &driver;
-+	ttusbir->alt_setting = -1;
-+	/* @TODO check if error can be returned */
-+	ttusbir->udev = usb_get_dev(interface_to_usbdev(intf));
-+	ttusbir->interf = intf;
-+	ttusbir->last_pulse = 0x00;
-+	ttusbir->last_num = 0;
-+
-+	/* Now look for interface setting we can handle
-+	   We are searching for the alt setting where end point
-+	   0x82 has max packet size 16
-+	*/
-+	for (alt_set = 0; alt_set < intf->num_altsetting && !found; alt_set++) {
-+		host_interf = &intf->altsetting[alt_set];
-+		interf_desc = &host_interf->desc;
-+		for (endp = 0; endp < interf_desc->bNumEndpoints; endp++) {
-+			host_endpoint = &host_interf->endpoint[endp];
-+			if ((host_endpoint->desc.bEndpointAddress == 0x82) &&
-+			    (host_endpoint->desc.wMaxPacketSize == 0x10)) {
-+				ttusbir->alt_setting = alt_set;
-+				ttusbir->endpoint = endp;
-+				found = 1;
-+				break;
-+			}
-+		}
-+	}
-+	if (ttusbir->alt_setting != -1)
-+		DPRINTK("alt setting: %d\n", ttusbir->alt_setting);
-+	else {
-+		err("Could not find alternate setting\n");
-+		kfree(ttusbir);
-+		return -EINVAL;
-+	}
-+
-+	/* OK lets setup this interface setting */
-+	usb_set_interface(ttusbir->udev, 0, ttusbir->alt_setting);
-+
-+	/* Store device info in interface structure */
-+	usb_set_intfdata(intf, ttusbir);
-+
-+	/* Register as a LIRC plugin */
-+	if (lirc_buffer_init(&ttusbir->rbuf, sizeof(int), 256) < 0) {
-+		err("Could not get memory for LIRC data buffer\n");
-+		usb_set_intfdata(intf, NULL);
-+		kfree(ttusbir);
-+		return -ENOMEM;
-+	}
-+	strcpy(ttusbir->plugin.name, "TTUSBIR");
-+	ttusbir->plugin.minor = -1;
-+	ttusbir->plugin.code_length = 1;
-+	ttusbir->plugin.sample_rate = 0;
-+	ttusbir->plugin.data = ttusbir;
-+	ttusbir->plugin.add_to_buf = NULL;
-+	ttusbir->plugin.get_queue = NULL;
-+	ttusbir->plugin.rbuf = &ttusbir->rbuf;
-+	ttusbir->plugin.set_use_inc = set_use_inc;
-+	ttusbir->plugin.set_use_dec = set_use_dec;
-+	ttusbir->plugin.ioctl = NULL;
-+	ttusbir->plugin.fops = NULL;
-+	ttusbir->plugin.owner = THIS_MODULE;
-+	ttusbir->plugin.features = LIRC_CAN_REC_MODE2;
-+	ttusbir->minor = lirc_register_plugin(&ttusbir->plugin);
-+	if (ttusbir->minor < 0) {
-+		err("Error registering as LIRC plugin\n");
-+		usb_set_intfdata(intf, NULL);
-+		lirc_buffer_free(&ttusbir->rbuf);
-+		kfree(ttusbir);
-+		return -EIO;
-+	}
-+
-+	/* Allocate and setup the URB that we will use to talk to the device */
-+	for (i = 0; i < num_urbs; i++) {
-+		ttusbir->urb[i] = usb_alloc_urb(8, GFP_KERNEL);
-+		if (!ttusbir->urb[i]) {
-+			err("Could not allocate memory for the URB\n");
-+			for (j = i - 1; j >= 0; j--)
-+				kfree(ttusbir->urb[j]);
-+			lirc_buffer_free(&ttusbir->rbuf);
-+			lirc_unregister_plugin(ttusbir->minor);
-+			kfree(ttusbir);
-+			usb_set_intfdata(intf, NULL);
-+			return -ENOMEM;
-+		}
-+		ttusbir->urb[i]->dev = ttusbir->udev;
-+		ttusbir->urb[i]->context = ttusbir;
-+		ttusbir->urb[i]->pipe = usb_rcvisocpipe(ttusbir->udev,
-+							ttusbir->endpoint);
-+		ttusbir->urb[i]->interval = 1;
-+		ttusbir->urb[i]->transfer_flags = URB_ISO_ASAP;
-+		ttusbir->urb[i]->transfer_buffer = &ttusbir->buffer[i][0];
-+		ttusbir->urb[i]->complete = urb_complete;
-+		ttusbir->urb[i]->number_of_packets = 8;
-+		ttusbir->urb[i]->transfer_buffer_length = 128;
-+		for (j = 0; j < 8; j++) {
-+			ttusbir->urb[i]->iso_frame_desc[j].offset = j*16;
-+			ttusbir->urb[i]->iso_frame_desc[j].length = 16;
-+		}
-+	}
-+	return 0;
-+}
-+
-+/* Called when the driver is unloaded or the device is unplugged
-+ */
-+static void disconnect(struct usb_interface *intf)
-+{
-+	int i;
-+	struct ttusbir_device *ttusbir;
-+
-+	DPRINTK("Module ttusbir disconnect\n");
-+
-+	ttusbir = (struct ttusbir_device *) usb_get_intfdata(intf);
-+	usb_set_intfdata(intf, NULL);
-+	lirc_unregister_plugin(ttusbir->minor);
-+	DPRINTK("unregistered\n");
-+
-+	for (i = 0; i < num_urbs; i++) {
-+		usb_kill_urb(ttusbir->urb[i]);
-+		usb_free_urb(ttusbir->urb[i]);
-+	}
-+	DPRINTK("URBs killed\n");
-+	lirc_buffer_free(&ttusbir->rbuf);
-+	kfree(ttusbir);
-+}
-+
-+static int ttusbir_init_module(void)
-+{
-+	int result;
-+
-+	DPRINTK(KERN_DEBUG "Module ttusbir init\n");
-+
-+	/* register this driver with the USB subsystem */
-+	result = usb_register(&driver);
-+	if (result)
-+		err("usb_register failed. Error number %d", result);
-+	return result;
-+}
-+
-+static void ttusbir_exit_module(void)
-+{
-+	printk(KERN_DEBUG "Module ttusbir exit\n");
-+	/* deregister this driver with the USB subsystem */
-+	usb_deregister(&driver);
-+}
-+
-+#ifdef MODULE
-+module_init(ttusbir_init_module);
-+module_exit(ttusbir_exit_module);
-+
-+#else
-+subsys_initcall(ttusbir_init_module);
-+
-+#endif /* MODULE */
 -- 
 1.6.0.1
 
