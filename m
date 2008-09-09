@@ -1,133 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYIIU1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYIIU2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbYIIU1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 16:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbYIIU1I
+	id S1756853AbYIIU2Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 16:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbYIIU2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 16:27:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53117 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462AbYIIU1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 16:27:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Anders Aagaard <aagaande@gmail.com>
-Subject: Re: [Suspend-devel] Resume performance
-Date: Tue, 9 Sep 2008 22:31:01 +0200
-User-Agent: KMail/1.9.9
-Cc: suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <48C10908.60101@gmail.com> <200809091613.44959.rjw@sisk.pl> <48C6D806.7020506@gmail.com>
-In-Reply-To: <48C6D806.7020506@gmail.com>
+	Tue, 9 Sep 2008 16:28:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:59308 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbYIIU2O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 16:28:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=aesQw2AGCKm2ZxACfY52OTlPxfedGQJBg4gE8r3iA+PA6KJjxWU7H5iubamxi3Np3n
+         K1tMVmgb4g4nMBlwWOtcuJ4QkSmnDcCd9/3dhg8fZKGvUZy6hEPPYEaor3XId+1hRfBn
+         Xc9Y1uU4GSHocYZYnxifAIRu7np0pKEBvesZ8=
+Message-ID: <aa79d98a0809091328q78cc7647sf99f0df415437643@mail.gmail.com>
+Date: Wed, 10 Sep 2008 00:28:01 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809092231.02510.rjw@sisk.pl>
+References: <20080909184615.GA7303@lenovo>
+	 <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 9 of September 2008, Anders Aagaard wrote:
-> Rafael J. Wysocki wrote:
-> > On Sunday, 7 of September 2008, Anders Aagaard wrote:
-> >> Rafael J. Wysocki wrote:
-> >>> On Friday, 5 of September 2008, Anders Aagaard wrote:
-> >>>> Rafael J. Wysocki wrote:
-> >>>>> On Friday, 5 of September 2008, Anders Aagaard wrote:
-> >>>>>> Hi
-> >>>>> Hi,
-> >>>>>
-> >>>>> This is a kernel problem, so let's CC the LKML.
-> >>>>>
-> >>>>>> I have a intel P35 board with a quad core cpu in it, it's currently 
-> >>>>>> running as a server for a small network, and I'd like to be able to shut 
-> >>>>>> it down when idle, and use wake on lan to wake it up when it's needed. 
-> >>>>>> Now I got that part working quite well, but for some reason I have a 
-> >>>>>> long delay in resume.
-> >>>>>>
-> >>>>>> I seem to remember being able to resume this computer in 2-3 seconds 
-> >>>>>> when I was testing it, now it needs 35 seconds to resume.  It seems 
-> >>>>>> regardless of resume options used, and it always resumes to a working 
-> >>>>>> state without problems.
-> >>>>> What kernel are you using at the moment and which one was used for the
-> >>>>> testing?
-> >>>> I'm using gentoo's 2.6.25-r7, I've also tried vanilla sources.
-> >>> Would it be possible to test 2.6.27-rc5-gi7 from kernel.org?
-> >> Tested, makes no difference.
-> >>
-> >>>>>> I've tried quite a lot of things, booting with noapic/nosmp, booting a 
-> >>>>>> kernel without usb/network drivers, disabling ahci (using ata_piix 
-> >>>>>> driver instead of ahci), and there's always that one long delay.  And 
-> >>>>>> I'm not quite sure how the kernel printk timing information works, so 
-> >>>>>> I'm not sure whats causing that delay.
-> >>>>>>
-> >>>>>> Output from dmesg when booting with nosmp (to get accurate timing data):
-> >>>>>> scripts/show_delta -b "Force enabled HPET at resume"
-> >>>>>> [349.821150 < 7.039261 >] ata3.00: configured for UDMA/133
-> >>>>>> [349.821160 < 7.039271 >] sd 2:0:0:0: [sdc] 976773168 512-byte hardware 
-> >>>>>> sectors (500108 MB)
-> >>>>>> [349.821165 < 7.039276 >] sd 2:0:0:0: [sdc] Write Protect is off
-> >>>>>> [349.821166 < 7.039277 >] sd 2:0:0:0: [sdc] Mode Sense: 00 3a 00 00
-> >>>>>> [349.821173 < 7.039284 >] sd 2:0:0:0: [sdc] Write cache: enabled, read 
-> >>>>>> cache: enabled, doesn't support DPO or FUA
-> >>>>>> [349.972801 < 7.190912 >] ata1: SATA link up 3.0 Gbps (SStatus 123 
-> >>>>>> SControl 300)
-> >>>>>> [349.979060 < 7.197171 >] ata1.00: configured for UDMA/133
-> >>>>>> [349.979070 < 7.197181 >] sd 0:0:0:0: [sda] 976771055 512-byte hardware 
-> >>>>>> sectors (500107 MB)
-> >>>>>> [349.979075 < 7.197186 >] sd 0:0:0:0: [sda] Write Protect is off
-> >>>>>> [349.979076 < 7.197187 >] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> >>>>>> [349.979083 < 7.197194 >] sd 0:0:0:0: [sda] Write cache: enabled, read 
-> >>>>>> cache: enabled, doesn't support DPO or FUA
-> >>>>> It looks like this happens here.  Can you try to unload the network driver
-> >>>>> before suspend, please?
-> >>>> I tried to build a kernel without it, and it still takes the exact same 
-> >>>> amount to boot, I've also tried unloading usb drivers and it takes the 
-> >>>> exact same amount of time.
-> >>> Can you try to boot with init=/bin/bash and suspend to RAM?  (Please have a
-> >>> look at section 2 of Documentation/power/basic-pm-debugging.txt in the newer
-> >>> kernel sources).
-> >> I checked without X before, but forgot to unload the nvidia module, that 
-> >> apparently makes a big difference, I did some numbers with 
-> >> scripts/show_delta -b "Back to C".
-> >>
-> >> Nvidia and X : 32 seconds
-> >> No X (same result as booting with init=/bin/bash) : 8.3 seconds
-> >> Git kernel : 8.2 seconds
-> >> Light kernel (no sound, network card and usb drivers) : 8.17 seconds
-> >> ATI card instead of nvidia : 8.22 seconds
-> >>
-> >> I think we found the problem, I already replaced nvidia hardware in one 
-> >> computer to resolve another issue.  Really appreciate your help on this 
-> >> issue, this resume time works pretty well for me, it was a bit 
-> >> ridiculous when I could boot faster than resume.
-> >>
-> >> Is 8 seconds fairly expected?
-> > 
-> > Well, it should be a bit less than that.  Usually, the resume shouldn't take
-> > more than 5 sec.
-> > 
-> >> My other computer (same ati card) boots  
-> >> in about 2 seconds, but there's a lot less hardware in it (6 hd's and a 
-> >> ton of usb devices in one computer, 1 hd and 1 usb device in the other).
-> > 
-> > That may matter a lot.  It would be interesting to check if detaching any of
-> > those devices from the first machine helps. ;-)
-> > 
-> >>   I checked cold booting with and without usb devices, my light kernel 
-> >> boots to /bin/bash in 2.5 seconds, normal kernel about 7-8.  But I dont 
-> >> see anything about usb on resume.
-> > 
-> > Of course the USB devices are also resumed and that takes time (comparable
-> > to the boot time).
-> 
-> Pulling out all my usb devices takes the resume time to 30.4
-
-This is with the NVidia driver I guess?  So your resume appears to be 1.6 s
-faster without the USB devices.  Perhaps the disks also add to the latency.
-
-If you have CONFIG_PCIEASPM set in the kernel config, you can try to unset it
-and see if that changes anything.
-
-Thanks,
-Rafael
+Yinghai, the base idea with mask is to apply a mask only if you need
+it. And having _and_ operation to be mandatory implemented is a
+limitation and just not enough. So that is why i do check if mask is
+defined (well it cold be not a good practice indeed). Thanks for
+notice (and about binary operator too - will fix :)
