@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbYIIGUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755765AbYIIG2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216AbYIIGUI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 02:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYIIGTd
+	id S1755765AbYIIG2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 02:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYIIG2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 02:19:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:1055 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755977AbYIIGTc (ORCPT
+	Tue, 9 Sep 2008 02:28:11 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:40906 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753454AbYIIG2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 02:19:32 -0400
-From: Steven Noonan <steven@uplinklabs.net>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elite.hu, steven@uplinklabs.net
-Subject: [PATCH] x86: unused variable in dma_alloc_coherent_gfp_flags()
-Date: Mon,  8 Sep 2008 16:19:11 -0700
-Message-Id: <1220915951-11434-3-git-send-email-steven@uplinklabs.net>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1220915951-11434-2-git-send-email-steven@uplinklabs.net>
-References: <1220915951-11434-1-git-send-email-steven@uplinklabs.net>
- <1220915951-11434-2-git-send-email-steven@uplinklabs.net>
+	Tue, 9 Sep 2008 02:28:10 -0400
+Subject: Re: [PATCH -mm] Fix dev_load() compilation again
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, adobriyan@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       sfr@canb.auug.org.au, Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <20080908151707.21cd1c6c.akpm@linux-foundation.org>
+References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
+	 <20080905193244.GD11569@x200.localdomain> <48C18E8B.9050201@ct.jp.nec.com>
+	 <20080908151707.21cd1c6c.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3MZwQMh/GmiqTKFD4EbJ"
+Date: Tue, 09 Sep 2008 08:27:55 +0200
+Message-Id: <1220941675.31304.93.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed a warning caused by a badly placed ifdef.
 
-Signed-off-by: Steven Noonan <steven@uplinklabs.net>
----
- include/asm-x86/dma-mapping.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+--=-3MZwQMh/GmiqTKFD4EbJ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
-index a072ae6..8bb3108 100644
---- a/include/asm-x86/dma-mapping.h
-+++ b/include/asm-x86/dma-mapping.h
-@@ -255,9 +255,9 @@ static inline unsigned long dma_alloc_coherent_mask(struct device *dev,
- 
- static inline gfp_t dma_alloc_coherent_gfp_flags(struct device *dev, gfp_t gfp)
- {
-+#ifdef CONFIG_X86_64
- 	unsigned long dma_mask = dma_alloc_coherent_mask(dev, gfp);
- 
--#ifdef CONFIG_X86_64
- 	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA))
- 		gfp |= GFP_DMA32;
- #endif
--- 
-1.6.0.1
+Hi,
+
+On Mon, 2008-09-08 at 15:17 -0700, Andrew Morton wrote:
+> On Fri, 05 Sep 2008 12:54:51 -0700
+> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+
+> > in -next tree, this patch fixes the compilation error instead of
+> > my patch. So, there is a conflict.
+
+I think I like this patch better than Stephen's, but despite causing the
+problem I'm not sure what I can do at this point.
+
+> Give that there's already a fix in linux-next, I can't do anything here.
+>=20
+> Rusty, the regression was introduced by
+>=20
+> commit 4cb9da6ecc2b0e25056b45981239475f8509d59d
+> Author:     Johannes Berg <johannes@sipsolutions.net>
+> AuthorDate: Wed Jul 9 10:28:42 2008 +0200
+> Commit:     Stephen Rothwell <sfr@canb.auug.org.au>
+> CommitDate: Tue Aug 26 10:19:47 2008 +1000
+>=20
+>     remove CONFIG_KMOD from net
+
+Rusty, can you take
+http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.27-rc5/2=
+.6.27-rc5-mm1/broken-out/net-fix-compilation-ng-when-config_module.patch
+
+(although I'd rather see the blank line stay) and fold it into that
+patch or put it into the tree that Stephen pulls?
+
+johannes
+
+--=-3MZwQMh/GmiqTKFD4EbJ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJIxhdnAAoJEKVg1VMiehFYYwgP/2YAUFjHttLEf/3ZgOHfeAeh
+L0xJynfz9CnIs4yC9S93PzlBudbOUt1YZdJ61wKwzaXegskd/PFsLqIoGFQWOwcE
+qb2678+zREmL8cbSukTUFZ58CIxoLVqirlHxzff1rPcr6QFwcDS2EUwGNVA4Avd/
+BU+9bNFW7OSEpoavQuREhhZ7ukeBktXk48v9JL3D2S2r7sEHlok0aC0yh/3fCTP0
+ZtfomPP2TKyYPhw6UJm6/oziz9JGYIU/bupXL5GD0exq2CJ7ATrsBgBUnHuI6GwH
+oPVnhsJvqjRDXJ5jC+Plt7BPA4OgTxq5i/k/WCc+sML88v06j99cQK1GFFrK7rT3
+fikW8m6kPICSna1xIn40zz9ao5JFgXP7MAa/583o4Qu/edkDjciDaS4ZqcE/JnAS
+Au0jBMCPhDAnaLhhHoj/GhQqVoIIekRUgLnC2q2WP3bt36q+SdAy3LPsxbcuzl7n
+SsmYBdxq+/WFW7YlVNIxJi2Nfh4kMHtN1IdRdldVvkdetzzt1E0SBlg39vYq2SmH
+tXFMo4YCtr46VmeBluUZwhRvKghQlW0CZ/iXu5nCRZToaGuL0st28Ed2gbc/Z2r4
+KGS2wvTL7ViOnuQNGOYUDLL4Qc2XU0tGKuuBMAVn2956QnTBX6QsPyNhiARuxo35
+WBsQ66w3+yTdZ5c0WJ5+
+=gffD
+-----END PGP SIGNATURE-----
+
+--=-3MZwQMh/GmiqTKFD4EbJ--
 
