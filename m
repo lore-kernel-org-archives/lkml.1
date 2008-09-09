@@ -1,121 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbYIIRGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbYIIRKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbYIIRGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYIIRGR
+	id S1756174AbYIIRKO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbYIIRKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:06:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57048 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756675AbYIIRGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:06:16 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Sebastian Siewior <lkml@ml.breakpoint.cc>, Janne Grunau <j@jannau.net>
-Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
-Date: Tue, 9 Sep 2008 13:03:27 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>,
-       Mario Limonciello <superm1@ubuntu.com>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com> <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
-In-Reply-To: <20080909074018.GA26076@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 9 Sep 2008 13:10:00 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42179 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbYIIRJ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 13:09:59 -0400
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
+Message-Id: <DE845309-1684-472A-8269-78AB3A2823A9@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+In-Reply-To: <20080909152952.GA21207@us.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809091303.27742.jwilson@redhat.com>
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace is unshared
+Date: Tue, 9 Sep 2008 13:07:40 -0400
+References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com> <m18wu1nyon.fsf@frodo.ebiederm.org> <20080909152952.GA21207@us.ibm.com>
+X-Mailer: Apple Mail (2.928.1)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 03:40:18 Sebastian Siewior wrote:
-> >diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-> >new file mode 100644
-> >index 0000000..cdb4c45
-> >--- /dev/null
-> >+++ b/drivers/input/lirc/Makefile
-> >@@ -0,0 +1,8 @@
-> >+# Makefile for the lirc drivers.
-> >+#
-> >+
-> >+# Each configuration option enables a list of files.
-> >+
-> >+EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
+On Sep 9, 2008, at Sep 9, 2008, 11:29 AM, Serge E. Hallyn wrote:
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> "Serge E. Hallyn" <serue@us.ibm.com> writes:
+>>
+>>> Thanks, Cedric.  Eric is probably right about the long-term fix, but
+>>> yeah it might take a while to properly wade through the sunrpc and  
+>>> nfs
+>>> layers to store the nodename at nfs mount time, and in the  
+>>> meantime this
+>>> fixes a real oops.
+>>
+>> A very esoteric oops that hasn't shown up for two years.
 >
-> Do you rely on this specific major? Since your daemon opens /dev/lirc0
-> you don't need a fixed major do you?
-
-Good question. Quite honestly, I'm not sure. Christoph?
-
-> LIRC_SERIAL_TRANSMITTER is used in patch 2 and just to enable a module
-> options. Since it is always the case, please remove it.
-> I haven't found the source of $src. It is probably a relic.
-
-Janne took care of these. Heck, he's already replied, I'll just leave out the 
-parts he already replied to...
-
-> >+++ b/drivers/input/lirc/lirc_dev.c
-> >@@ -0,0 +1,809 @@
-> >+/*
-> >+ * LIRC base driver
-> >+ *
-> >+ * (L) by Artur Lipowski <alipowski@interia.pl>
+> But an easily reproducible one.
 >
-> Is that L here on purpose?
-
-Historical. I think it is supposed to signify that this was originally 
-licensed and written by Artur, but simply removing "(L) " is fine (here and in 
-lirc_dev.h).
-
-> >+#include <linux/smp_lock.h>
+> It's not as though we'll stop looking for the right fix just bc we  
+> have
+> this "bad" fix in for a short while.
 >
-> if you need this than you use the BKL back. As far as I remember
-> the ioctl() handler in kernel core no longer takes the BKL and I don't
-> see any locking in irctl_ioctl().
-
-
-> >+/*  helper function
-> >+ *  initializes the irctl structure
-> >+ */
+>> Please let's look at this and see what it would take to fix this
+>> properly.
 >
-> For all comments above functions:
-> - Please use the default comment style.
+> Of course.  Cedric is looking at the best way to fix it...
 
-Apologies, I started on that, didn't finish, then forgot about it. Will do.
+If the upper layers are responsible for providing the utsname, you  
+will need to fix up lockd and the NFS server's callback client too, at  
+least.
 
-> - don't comment obvious things
-> - please use kernel doc if
-> - please comment the prototypes but the actual function.
-
-Working on this too.
-
-> >+	bytes_in_key = p->code_length/8 + (p->code_length%8 ? 1 : 0);
+>> What are we trying to achieve by reading utsname?
 >
-> did you actually pass checkpatch.pl ?
+> It looks like it gets copied into the sunrpc messages so I assume it  
+> is
+> a part of the sunrpc spec?
 
-Yeah, but now that you point that out, I'm not sure how... :)
+It appears to be used only for RPC's AUTH_SYS credentials.  The  
+nodename is used to identify the caller's host.  See RFC 1831,  
+Appendix A:
 
-Taken care of by simply using BITS_TO_LONG() instead.
+   http://rfclibrary.hosting.com/rfc/rfc1831/rfc1831-16.asp
 
-> >+EXPORT_SYMBOL(lirc_register_plugin);
->
-> Is EXPORT_SYMBOL_GPL() possible?
+I'm not terribly familiar with uts namespaces, though.  Can someone  
+explain why we need to distinguish between these for AUTH_SYS if the  
+caller is on a remote system?
 
-Should be, I'm definitely not aware of any non-GPL users.
+> I don't want to do this, but we *could* put a conditional in utsname()
+> to have it return init_utsname if current->nsproxy is null...
 
-> >+EXPORT_SYMBOL(lirc_unregister_plugin);
-
-Ditto.
-
-> >+/* ----------------------------------------------------------------------
-> > */
->
-> I hate those
-
-Me too. Gone.
+I don't like the idea of an oops in here.  Instead, (for now) it  
+should warn and fail to create the client, IMO.
 
 -- 
-Jarod Wilson
-jarod@redhat.com
-
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
