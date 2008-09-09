@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756273AbYIIHFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbYIIHK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273AbYIIHFh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 03:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYIIHF3
+	id S1754764AbYIIHK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 03:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYIIHKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 03:05:29 -0400
-Received: from sh.osrg.net ([192.16.179.4]:34055 "EHLO sh.osrg.net"
+	Tue, 9 Sep 2008 03:10:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39187 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754497AbYIIHF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 03:05:28 -0400
-Date: Tue, 9 Sep 2008 16:04:38 +0900
-To: mingo@elte.hu
-Cc: steven@uplinklabs.net, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       hpa@zytor.com
-Subject: Re: [PATCH] x86: unused variable in dma_alloc_coherent_gfp_flags()
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080909065736.GC27747@elte.hu>
-References: <1220915951-11434-2-git-send-email-steven@uplinklabs.net>
-	<1220915951-11434-3-git-send-email-steven@uplinklabs.net>
-	<20080909065736.GC27747@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080909160455J.fujita.tomonori@lab.ntt.co.jp>
+	id S1750862AbYIIHKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 03:10:18 -0400
+Date: Tue, 9 Sep 2008 09:10:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, andrea@cpushare.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] seccomp: drop now bogus dependency on PROC_FS
+Message-ID: <20080909070959.GA3412@elte.hu>
+References: <20080909070131.GB5743@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080909070131.GB5743@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0455]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008 08:57:36 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> * Steven Noonan <steven@uplinklabs.net> wrote:
-> 
-> > Fixed a warning caused by a badly placed ifdef.
-> > 
-> > Signed-off-by: Steven Noonan <steven@uplinklabs.net>
-> 
-> applied to tip/x86/iommu - thanks Steven,
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-Did you apply the same patch yesterday?
+> seccomp is prctl(2)-driven now.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-http://lkml.org/lkml/2008/9/8/274
+applied to tip/x86/cleanups, thanks Alexey!
+
+	Ingo
