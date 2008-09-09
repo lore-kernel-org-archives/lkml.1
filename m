@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYIIEKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752644AbYIIEKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYIIEKz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYIIEIf
+	id S1752644AbYIIEKj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbYIIEIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42578 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42575 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753522AbYIIEIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751226AbYIIEIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Sep 2008 00:08:00 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
        Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 07/18] lirc driver for the CommandIR USB Transceiver
-Date: Tue,  9 Sep 2008 00:05:52 -0400
-Message-Id: <1220933164-10160-8-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-7-git-send-email-jwilson@redhat.com>
+Subject: [PATCH 15/18] lirc driver for the SIR IrDA port
+Date: Tue,  9 Sep 2008 00:06:00 -0400
+Message-Id: <1220933164-10160-16-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-15-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-2-git-send-email-jwilson@redhat.com>
  <1220933164-10160-3-git-send-email-jwilson@redhat.com>
@@ -24,6 +24,14 @@ References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
  <1220933164-10160-5-git-send-email-jwilson@redhat.com>
  <1220933164-10160-6-git-send-email-jwilson@redhat.com>
  <1220933164-10160-7-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-8-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-9-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-10-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-11-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-12-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-13-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-14-git-send-email-jwilson@redhat.com>
+ <1220933164-10160-15-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,1123 +40,52 @@ Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
 ---
- drivers/input/lirc/Kconfig      |    7 +
- drivers/input/lirc/Makefile     |    1 +
- drivers/input/lirc/commandir.c  |  982 +++++++++++++++++++++++++++++++++++++++
- drivers/input/lirc/commandir.h  |   68 +++
- drivers/input/lirc/lirc_cmdir.c |  596 ++++++++++++++++++++++++
- drivers/input/lirc/lirc_cmdir.h |   25 +
- 6 files changed, 1679 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/commandir.c
- create mode 100644 drivers/input/lirc/commandir.h
- create mode 100644 drivers/input/lirc/lirc_cmdir.c
- create mode 100644 drivers/input/lirc/lirc_cmdir.h
+ drivers/input/lirc/Kconfig    |    7 +
+ drivers/input/lirc/Makefile   |    1 +
+ drivers/input/lirc/lirc_sir.c | 1302 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1310 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/lirc_sir.c
 
 diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index e17b39a..67802fe 100644
+index 42e9bc3..b2bdbfb 100644
 --- a/drivers/input/lirc/Kconfig
 +++ b/drivers/input/lirc/Kconfig
-@@ -25,6 +25,13 @@ config LIRC_ATIUSB
+@@ -96,6 +96,13 @@ config LIRC_SERIAL
  	help
- 	  Driver for the ATI USB RF remote receiver
+ 	  Driver for Homebrew Serial Port Receivers
  
-+config LIRC_CMDIR
-+	tristate "CommandIR USB Transceiver"
++config LIRC_SIR
++	tristate "Built-in SIR IrDA port"
 +	default n
 +	depends on LIRC_DEV
 +	help
-+	  Driver for the CommandIR USB Transceiver
++	  Driver for the SIR IrDA port
 +
- config LIRC_I2C
- 	tristate "I2C Based IR Receivers"
+ config LIRC_STREAMZAP
+ 	tristate "Streamzap PC Receiver"
  	default n
 diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index ba8d445..86df97d 100644
+index 4ee32f3..761cb47 100644
 --- a/drivers/input/lirc/Makefile
 +++ b/drivers/input/lirc/Makefile
-@@ -7,6 +7,7 @@ EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
- 
- obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
- obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb.o
-+obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
- obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
- obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
+@@ -17,5 +17,6 @@ obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
  obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
-diff --git a/drivers/input/lirc/commandir.c b/drivers/input/lirc/commandir.c
+ obj-$(CONFIG_LIRC_SASEM)	+= lirc_sasem.o
+ obj-$(CONFIG_LIRC_SERIAL)	+= lirc_serial.o
++obj-$(CONFIG_LIRC_SIR)		+= lirc_sir.o
+ obj-$(CONFIG_LIRC_STREAMZAP)	+= lirc_streamzap.o
+ obj-$(CONFIG_LIRC_TTUSBIR)	+= lirc_ttusbir.o
+diff --git a/drivers/input/lirc/lirc_sir.c b/drivers/input/lirc/lirc_sir.c
 new file mode 100644
-index 0000000..a05b0d6
+index 0000000..ea192b2
 --- /dev/null
-+++ b/drivers/input/lirc/commandir.c
-@@ -0,0 +1,982 @@
-+
++++ b/drivers/input/lirc/lirc_sir.c
+@@ -0,0 +1,1302 @@
 +/*
++ * LIRC SIR driver, (C) 2000 Milan Pikula <www@fornax.sk>
 + *
-+ *	Hardware Driver for COMMANDIR USB Transceiver
-+ *	2005-2007 InnovationOne - Matt Bodkin, Evelyn Yeung
-+ *
-+ *	Version 1.4.2
-+ *	For 2.4.* or 2.6.* kernel versions
-+ *	Based on the USB Skeleton driver, versions 0.7 and 2.0
-+ *
-+ */
-+
-+#include <linux/version.h>
-+#include <linux/autoconf.h>
-+
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/usb.h>
-+#include <linux/smp_lock.h>
-+#include "commandir.h"
-+
-+#include <linux/kref.h>
-+#include <linux/uaccess.h>
-+
-+#define DRIVER_VERSION "v1.1.2"
-+#define DRIVER_AUTHOR "Evelyn Yeung, InnovationOne"
-+#define DRIVER_DESC "CommandIR USB Transceiver Driver"
-+
-+#define USB_CMDIR_VENDOR_ID	0x10c4
-+#define USB_CMDIR_PRODUCT_ID	0x0003
-+#define USB_CMDIR_MINOR_BASE	192
-+
-+/* table of devices that work with this driver */
-+static struct usb_device_id cmdir_table[] =
-+{
-+	{ USB_DEVICE(USB_CMDIR_VENDOR_ID, USB_CMDIR_PRODUCT_ID) },
-+	{ }			/* Terminating entry */
-+};
-+MODULE_DEVICE_TABLE(usb, cmdir_table);
-+
-+/* circular packet queue */
-+unsigned char ourbuffers[QUEUELENGTH][64];
-+int waitusecs[QUEUELENGTH];
-+int ourbufferlengths[QUEUELENGTH];
-+int nexttosend;
-+int nexttofill;
-+int send_status = SEND_IDLE;
-+int last_tx_sec;
-+int last_tx_usec;
-+
-+static int curTXFill;
-+struct timeval tp;
-+
-+int debug_commandir;
-+
-+/* Structure to hold all of our device specific stuff */
-+struct usb_skel {
-+	struct usb_device *udev; /* the usb device for this device */
-+	struct usb_interface *interface; /* the interface for this device */
-+	unsigned char *bulk_in_buffer; /* the buffer to receive data */
-+	size_t bulk_in_size; /* the size of the receive buffer */
-+	__u8 bulk_in_endpointAddr; /* the address of the bulk in endpoint */
-+	__u8 bulk_out_endpointAddr; /* the address of the bulk out endpoint */
-+	struct kref kref;
-+};
-+#define to_skel_dev(d) container_of(d, struct usb_skel, kref)
-+
-+static struct file_operations cmdir_fops = {
-+	.read =		cmdir_file_read,
-+	.write =	cmdir_file_write,
-+	.open =		cmdir_open,
-+	.release =	cmdir_release,
-+};
-+
-+/* usb class driver info in order to get a minor number from the usb core,
-+ * and to have the device registered with devfs and the driver core */
-+static struct usb_class_driver cmdir_class = {
-+	.name =		"usb/commandir%d",
-+	.fops =		&cmdir_fops,
-+	/* .mode =	S_IFCHR | S_IRUSR | S_IWUSR |
-+	 *		S_IRGRP | S_IWGRP | S_IROTH, */
-+	.minor_base =	USB_CMDIR_MINOR_BASE,
-+};
-+
-+static struct usb_driver cmdir_driver = {
-+	.name =		"commandir",
-+	.probe =	cmdir_probe,
-+	.disconnect =	cmdir_disconnect,
-+	.id_table =	cmdir_table,
-+};
-+
-+
-+static int lcd_device;
-+static int rx_device;
-+static int def_device;
-+
-+#define DEFAULT_TRANSMITTERS 0x0F
-+static unsigned int transmitters = DEFAULT_TRANSMITTERS;
-+static unsigned int next_transmitters = DEFAULT_TRANSMITTERS;
-+
-+#define CMDIR_VAR_LEN 68
-+static char cmdir_var[] =
-+"COMMANDIRx:\n TX Enabled: 1, 2, 3, 4\n RX: commandirx\n LCD: commandirx";
-+
-+
-+static void cmdir_delete(struct kref *kref)
-+{
-+	struct usb_skel *dev = to_skel_dev(kref);
-+
-+	usb_put_dev(dev->udev);
-+	kfree(dev->bulk_in_buffer);
-+	kfree(dev);
-+}
-+
-+static int __init usb_cmdir_init(void)
-+{
-+	int result;
-+
-+	/* register this driver with the USB subsystem */
-+	result = usb_register(&cmdir_driver);
-+
-+	if (result)
-+		err("usb_register failed. Error number %d", result);
-+
-+	return result;
-+}
-+
-+static int cmdir_open(struct inode *inode, struct file *file)
-+{
-+	struct usb_skel *dev;
-+	struct usb_interface *interface;
-+	int subminor;
-+	int retval = 0;
-+
-+	subminor = iminor(inode);
-+	interface = usb_find_interface(&cmdir_driver, subminor);
-+	if (!interface) {
-+		err("%s - error, can't find device for minor %d",
-+		     __func__, subminor);
-+		retval = -ENODEV;
-+		goto exit;
-+	}
-+
-+	dev = usb_get_intfdata(interface);
-+	if (!dev) {
-+		retval = -ENODEV;
-+		goto exit;
-+	}
-+
-+	kref_get(&dev->kref);	/* increment our usage count for the device */
-+	file->private_data = dev; /* save object in file's private structure */
-+
-+exit:
-+	return retval;
-+}
-+
-+static int cmdir_probe(struct usb_interface *interface,
-+		       const struct usb_device_id *id)
-+{
-+	struct usb_skel *dev = NULL;
-+	struct usb_host_interface *iface_desc;
-+	struct usb_endpoint_descriptor *endpoint;
-+	size_t buffer_size;
-+
-+	int i;
-+	int retval = -ENOMEM;
-+	int minor;
-+
-+	/* allocate memory for our device state and initialize it */
-+	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
-+	if (dev == NULL) {
-+		err("Out of memory");
-+		goto error;
-+	}
-+	memset(dev, 0x00, sizeof(*dev));
-+	kref_init(&dev->kref);
-+	dev->udev = usb_get_dev(interface_to_usbdev(interface));
-+	dev->interface = interface;
-+
-+	/* set up the endpoint information */
-+	/* use only the first bulk-in and bulk-out endpoints */
-+	iface_desc = interface->cur_altsetting;
-+	for (i = 0; i < iface_desc->desc.bNumEndpoints; ++i) {
-+		endpoint = &iface_desc->endpoint[i].desc;
-+
-+		if (!dev->bulk_in_endpointAddr &&
-+		    (endpoint->bEndpointAddress & USB_DIR_IN) &&
-+		    ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+					== USB_ENDPOINT_XFER_BULK)) {
-+			/* we found a bulk in endpoint */
-+			buffer_size = endpoint->wMaxPacketSize;
-+			dev->bulk_in_size = buffer_size;
-+			dev->bulk_in_endpointAddr = endpoint->bEndpointAddress;
-+			dev->bulk_in_buffer = kmalloc(buffer_size, GFP_KERNEL);
-+			if (!dev->bulk_in_buffer) {
-+				err("Could not allocate bulk_in_buffer");
-+				goto error;
-+			}
-+		}
-+
-+		if (!dev->bulk_out_endpointAddr &&
-+		    !(endpoint->bEndpointAddress & USB_DIR_IN) &&
-+		    ((endpoint->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK)
-+					== USB_ENDPOINT_XFER_BULK)) {
-+			/* we found a bulk out endpoint */
-+			dev->bulk_out_endpointAddr = endpoint->bEndpointAddress;
-+		}
-+	}
-+	if (!(dev->bulk_in_endpointAddr && dev->bulk_out_endpointAddr)) {
-+		err("Could not find both bulk-in and bulk-out endpoints");
-+		goto error;
-+	}
-+
-+	/* save our data pointer in this interface device */
-+	usb_set_intfdata(interface, dev);
-+
-+	/* we can register the device now, as it is ready */
-+	retval = usb_register_dev(interface, &cmdir_class);
-+	if (retval) {
-+		/* something prevented us from registering this driver */
-+		err("Not able to get a minor for this device.");
-+		usb_set_intfdata(interface, NULL);
-+		goto error;
-+	}
-+
-+	/* check whether minor already includes base */
-+	minor = interface->minor;
-+	if (minor >= USB_CMDIR_MINOR_BASE)
-+		minor = minor-USB_CMDIR_MINOR_BASE;
-+
-+	/* let the user know what node this device is now attached to */
-+	info("CommandIR USB device now attached to commandir%d", minor);
-+
-+	reset_cmdir(minor);
-+
-+	return 0;
-+
-+error:
-+	if (dev)
-+		kref_put(&dev->kref, cmdir_delete);
-+	return retval;
-+}
-+
-+
-+static void cmdir_disconnect(struct usb_interface *interface)
-+{
-+	struct usb_skel *dev;
-+	int minor = interface->minor;
-+
-+	/* prevent cmdir_open() from racing cmdir_disconnect() */
-+	lock_kernel();
-+
-+	dev = usb_get_intfdata(interface);
-+	usb_set_intfdata(interface, NULL);
-+
-+	/* give back our minor */
-+	usb_deregister_dev(interface, &cmdir_class);
-+
-+	unlock_kernel();
-+
-+	/* decrement our usage count */
-+		kref_put(&dev->kref, cmdir_delete);
-+
-+	/* check whether minor already includes base */
-+	if (minor >= USB_CMDIR_MINOR_BASE)
-+		minor = minor-USB_CMDIR_MINOR_BASE;
-+
-+	info("CommandIR #%d now disconnected", minor);
-+
-+	/* check if default RX device still exists */
-+	if (minor == rx_device) {
-+		/* decrement until find next valid device */
-+		while (rx_device > 0) {
-+			rx_device--;
-+			if (cmdir_check(rx_device) == 0)
-+				break;
-+		}
-+		if (minor > 0)
-+			info("Active Receiver is on CommandIR #%d", rx_device);
-+	}
-+}
-+
-+static int cmdir_release(struct inode *inode, struct file *file)
-+{
-+	struct usb_skel *dev;
-+	int retval = 0;
-+
-+	dev = (struct usb_skel *)file->private_data;
-+	if (dev == NULL)
-+		/*dbg(" - object is NULL");*/
-+		return -ENODEV;
-+
-+	/* decrement the count on our device */
-+		kref_put(&dev->kref, cmdir_delete);
-+	return retval;
-+}
-+
-+static void __exit usb_cmdir_exit(void)
-+{
-+	/* deregister this driver with the USB subsystem */
-+	usb_deregister(&cmdir_driver);
-+
-+}
-+
-+static int cmdir_check(int device_num)
-+{
-+	struct usb_interface *interface;
-+
-+	interface = usb_find_interface(&cmdir_driver,
-+				       USB_CMDIR_MINOR_BASE+device_num);
-+	if (!interface) {
-+		/* also check without adding base, for devfs */
-+		interface = usb_find_interface(&cmdir_driver, rx_device);
-+		if (!interface)
-+			return -ENODEV;
-+	}
-+	return 0;
-+}
-+
-+static void init_cmdir_var(int device_num)
-+{
-+	int i;
-+	unsigned int multiplier = 1;
-+
-+	for (i = 0; i < device_num; i++)
-+		multiplier = multiplier*0x10;
-+	transmitters |= multiplier * 0x0F;
-+	next_transmitters = transmitters;
-+	info("commandir%d reset", device_num);
-+	return;
-+}
-+
-+static void reset_cmdir(int device_num)
-+{
-+	unsigned char ctrl_buffer[MCU_CTRL_SIZE];
-+	int retval;
-+	int i;
-+
-+	ctrl_buffer[0] = RESET_HEADER;
-+	for (i = 1; i < MCU_CTRL_SIZE; i++)
-+		ctrl_buffer[i] = 'j';
-+	retval = write_core(ctrl_buffer, MCU_CTRL_SIZE, NULL, device_num);
-+
-+	init_cmdir_var(device_num);
-+	print_cmdir(device_num);
-+
-+	return;
-+}
-+
-+static void update_cmdir_string(int device_num)
-+{
-+	int next_comma = 0;
-+	int next_pos = 25;
-+	unsigned int multiplier;
-+	int i;
-+
-+	/* cmdir_var[] = "COMMANDIRx:\n"
-+	 * 		 " TX Enabled: 1, 2, 3, 4\n"
-+	 * 		 " RX: commandirx\n"
-+	 * 		 " LCD: commandirx\n" */
-+
-+	cmdir_var[9] = ASCII0+device_num;
-+	cmdir_var[50] = ASCII0+rx_device;
-+	cmdir_var[67] = ASCII0+lcd_device;
-+
-+	for (i = 25; i < 35; i++)
-+		cmdir_var[i] = ' ';
-+
-+	multiplier = 1;
-+	for (i = 0; i < device_num; i++)
-+		multiplier = multiplier*0x10;
-+
-+	if (transmitters & (multiplier*0x01)) {
-+		cmdir_var[next_pos] = '1';
-+		next_pos += 3;
-+		next_comma++;
-+	}
-+	if (transmitters & (multiplier*0x02)) {
-+		cmdir_var[next_pos] = '2';
-+		if (next_comma > 0)
-+			cmdir_var[next_pos-2] = ',';
-+		next_pos += 3;
-+		next_comma++;
-+	}
-+	if (transmitters & (multiplier*0x04)) {
-+		cmdir_var[next_pos] = '3';
-+		if (next_comma > 0)
-+			cmdir_var[next_pos-2] = ',';
-+		next_pos += 3;
-+		next_comma++;
-+	}
-+	if (transmitters & (multiplier*0x08)) {
-+		cmdir_var[next_pos] = '4';
-+		if (next_comma > 0)
-+			cmdir_var[next_pos-2] = ',';
-+		next_pos += 3;
-+		next_comma++;
-+	}
-+	return;
-+}
-+
-+static void print_cmdir(int device_num)
-+{
-+	update_cmdir_string(device_num);
-+	info("%s", cmdir_var);
-+	return;
-+}
-+
-+static ssize_t cmdir_file_read(struct file *file, char *buffer,
-+			       size_t count, loff_t *ppos)
-+{
-+	int retval = 0;
-+	int minor = 0;
-+	struct usb_skel *dev;
-+
-+	dev = (struct usb_skel *)file->private_data;
-+	minor = dev->interface->minor;
-+	if (minor >= USB_CMDIR_MINOR_BASE)
-+		minor = minor - USB_CMDIR_MINOR_BASE;
-+
-+	if (((int)*ppos) == 0) {
-+		update_cmdir_string(minor);
-+		if (copy_to_user(buffer, cmdir_var, CMDIR_VAR_LEN))
-+			retval = -EFAULT;
-+		else
-+			retval = CMDIR_VAR_LEN;
-+		return retval;
-+	} else
-+		return 0;
-+}
-+
-+/*  Read data from CommandIR  */
-+ssize_t cmdir_read(unsigned char *buffer, size_t count)
-+{
-+	struct usb_skel *dev;
-+	int length, retval = 0;
-+
-+	struct usb_interface *interface;
-+	interface = usb_find_interface(&cmdir_driver,
-+			USB_CMDIR_MINOR_BASE+rx_device);
-+	if (!interface) {
-+		/* also check without adding base, for devfs */
-+		interface = usb_find_interface(&cmdir_driver, rx_device);
-+		if (!interface)
-+			return -ENODEV;
-+	}
-+	dev = usb_get_intfdata(interface);
-+	if (!dev)
-+		return -ENODEV;
-+	retval = usb_bulk_msg(dev->udev, usb_rcvbulkpipe(dev->udev,
-+						dev->bulk_in_endpointAddr),
-+		 dev->bulk_in_buffer, min(dev->bulk_in_size, count),
-+		 &length, HZ*10);
-+	if (!retval) {
-+		if (!memcpy(buffer, dev->bulk_in_buffer, length))
-+			retval = -EFAULT;
-+		else {
-+			/* current status of the TX buffer */
-+			curTXFill = buffer[2];
-+			retval = length;
-+		}
-+	}
-+	/* suppress errors */
-+	/*
-+	else {
-+		err("Read from device failed, error %d",retval);
-+	}
-+	*/
-+	/* printk(KERN_INFO "CommandIR Reporting TX buffer at %d bytes. \n",
-+	 * 	  curTXFill); */
-+	return retval;
-+}
-+EXPORT_SYMBOL(cmdir_read);
-+
-+static ssize_t cmdir_file_write(struct file *file, const char *buffer,
-+				size_t count, loff_t *ppos)
-+{
-+	int retval;
-+	int i;
-+	int equalsign = 0;
-+	int changeType = 0;
-+	unsigned char ctrl_buffer[MCU_CTRL_SIZE];
-+	char *local_buffer;
-+	int minor;
-+
-+	/* set as default - if non-specific error,
-+	 * won't keep calling this function */
-+	retval = count;
-+	local_buffer = kmalloc(count, GFP_KERNEL);
-+
-+	/* verify that we actually have some data to write */
-+	if (count == 0) {
-+		err("Write request of 0 bytes");
-+		goto exit;
-+	}
-+	if (count > 64) {
-+		err("Input too long");
-+		goto exit;
-+	}
-+
-+	/* copy the data from userspace into our local buffer */
-+	if (copy_from_user(local_buffer, buffer, count)) {
-+		retval = -EFAULT;
-+		goto exit;
-+	}
-+
-+	/* parse code */
-+	changeType = cNothing;
-+	equalsign = 0;
-+	for (i = 0; i < MCU_CTRL_SIZE; i++)
-+		ctrl_buffer[i] = 'j';
-+
-+	for (i = 0; i < count; i++) {
-+		switch (local_buffer[i]) {
-+		case 'X':
-+		case 'x':
-+			if ((i > 0) && ((local_buffer[i - 1] == 'R')
-+			    || (local_buffer[i - 1] == 'r')))
-+				changeType = cRX;
-+			break;
-+		case 'S':
-+		case 's':
-+			if ((i > 1) && ((local_buffer[i - 1] == 'E')
-+			    || (local_buffer[i - 1] == 'e'))) {
-+				if ((local_buffer[i-2] == 'R')
-+				    || (local_buffer[i-2] == 'r'))
-+					changeType = cRESET;
-+			}
-+			break;
-+		case 'L':
-+		case 'l':
-+			if ((i > 0) && ((local_buffer[i - 1] == 'F')
-+			    || (local_buffer[i - 1] == 'f')))
-+				changeType = cFLASH;
-+			break;
-+		case 'C':
-+		case 'c':
-+			if ((i > 0) && ((local_buffer[i - 1] == 'L')
-+			    || (local_buffer[i - 1] == 'l')))
-+				changeType = cLCD;
-+			break;
-+		case '=':
-+			if (changeType != cNothing)
-+				equalsign = i;
-+			break;
-+		case '0':
-+		case '1':
-+		case '2':
-+		case '3':
-+		case '4':
-+		case '5':
-+		case '6':
-+		case '7':
-+			if (equalsign > 0) {
-+				minor = local_buffer[i] - ASCII0;
-+				switch (changeType) {
-+				case cRESET:
-+					ctrl_buffer[0] = RESET_HEADER;
-+					retval = write_core(ctrl_buffer,
-+						MCU_CTRL_SIZE,
-+						cmdir_write_bulk_callback,
-+						minor);
-+					if (retval != MCU_CTRL_SIZE) {
-+						if (retval == -ENODEV)
-+							err("Device %d "
-+							    "unplugged", minor);
-+						else
-+							err("Error on write to "
-+							    "%d", minor);
-+						goto exit;
-+					} else
-+						retval = count;
-+					init_cmdir_var(minor);
-+					break;
-+				case cFLASH:
-+					ctrl_buffer[0] = FLASH_HEADER;
-+					info("Flashing indicators on device %d",
-+					     minor);
-+					retval = write_core(ctrl_buffer,
-+						MCU_CTRL_SIZE,
-+						cmdir_write_bulk_callback,
-+						minor);
-+					if (retval != MCU_CTRL_SIZE) {
-+						if (retval == -ENODEV)
-+							err("Device %d "
-+							    "unplugged", minor);
-+						else
-+							err("Error on write to "
-+							    "%d", minor);
-+						goto exit;
-+					} else
-+						retval = count;
-+					break;
-+				case cRX:
-+					rx_device = minor;
-+					info("Default receiver set to %d",
-+					     minor);
-+					break;
-+				case cLCD:
-+					lcd_device = minor;
-+					info("commandir: Default LCD set to %d",
-+					     minor);
-+					break;
-+				default:
-+					break;
-+				}
-+			}
-+			break;
-+		case ',':
-+			equalsign = 0;
-+			changeType = cNothing;
-+			break;
-+		default:
-+			if ((equalsign > 0) && (local_buffer[i] > 32)) {
-+				err("Non-numerical argument");
-+				goto exit;
-+			}
-+			break;
-+		}
-+	}
-+
-+	if ((changeType != cNothing) && (equalsign == 0))
-+		err("No device specified");
-+	if (changeType == cNothing)
-+		err("Unknown command");
-+
-+exit:
-+	kfree(local_buffer);
-+	return retval;
-+}
-+
-+int cmdir_write(unsigned char *buffer, int count,
-+		void *callback_fct, int usecdelay)
-+{
-+	/* Always add to queue, then send queue number
-+	 * no locks
-+	 * mbodkin, Sept 8, 2005 */
-+	int ret = 0;
-+	if (debug_commandir == 1) {
-+		do_gettimeofday(&tp);
-+		printk(KERN_INFO "cmdir_write at %d\n", (int)tp.tv_usec);
-+	}
-+	ret = add_cmdir_queue(buffer, count, callback_fct, usecdelay);
-+
-+	if (ret == -1)  {
-+		printk(KERN_INFO "cmdir_write returning 0\n");
-+		return 0;
-+	}
-+	return count;
-+
-+}
-+EXPORT_SYMBOL(cmdir_write);
-+
-+int add_cmdir_queue(unsigned char *buffer, int count,
-+		    void *callback_vct, int usecdelay)
-+{
-+	int ret = 0;
-+	if ((nexttofill + 1) % (QUEUELENGTH - 1) == nexttosend) {
-+
-+		/* our buffer is full */
-+		printk(KERN_INFO "Too many packets backlogged "
-+		       "in CommandIR Queue.\n");
-+		return -1;
-+	}
-+	/* go ahead and use this one: */
-+	memcpy(ourbuffers[nexttofill], buffer, count);
-+	ourbufferlengths[nexttofill] = count;
-+	waitusecs[nexttofill] = (usecdelay == 0) ? 10000 : usecdelay;
-+	/* printk(KERN_INFO "Adding %d to queue at position %d.\n",
-+	 *        count, nexttofill); */
-+	nexttofill = (nexttofill + 1) % (QUEUELENGTH - 1);
-+	ret = nexttofill;
-+	/* if (timer_running == 0) */
-+	send_queue(); /* fake it if the timer's not running */
-+	return ret;	/* we accepted the full packet */
-+
-+}
-+
-+int send_queue()
-+{
-+	int last_sent = 0;
-+	int ret = 0;
-+	if (debug_commandir == 1) {
-+		do_gettimeofday(&tp);
-+		printk(KERN_INFO "Send_queue() at %d\n", (int)tp.tv_usec);
-+	}
-+	/* initiate the send/callback routine if not already running. */
-+	if (send_status == SEND_IDLE) {
-+		if (!(nexttofill == nexttosend)) {
-+			/* start it up: */
-+
-+			last_sent = nexttosend - 1;
-+			if (last_sent < 0)
-+				last_sent = QUEUELENGTH - 1;
-+			/* Final check - is it TIME to send this packet yet? */
-+			/* if (wait_to_tx(waitusecs[last_sent]) == 0) { */
-+			/* always send if there's room,
-+			 * otherwise wait until room */
-+			if (curTXFill < 190) {
-+				if (debug_commandir == 1) {
-+					do_gettimeofday(&tp);
-+					printk(KERN_INFO "Sending packet data "
-+					       "at %d\n", (int)tp.tv_usec);
-+				}
-+				ret = cmdir_write_queue(ourbuffers[nexttosend],
-+				      ourbufferlengths[nexttosend], NULL);
-+				if (ret <= 0) {
-+					/* send failed - the device is either
-+					 * unplugged or full
-+					 * nexttosend =
-+					 * 	(nexttosend + 1)
-+					 * 	% (QUEUELENGTH - 1); */
-+					send_status = SEND_IDLE;
-+					return 0; /*send_queue(); */
-+				} else
-+					nexttosend = (nexttosend + 1)
-+						     % (QUEUELENGTH - 1);
-+				return 1;
-+			} else {
-+				if (debug_commandir == 1) {
-+					do_gettimeofday(&tp);
-+					printk(KERN_INFO "Not time to send yet "
-+					       "- starting timer at %d.\n",
-+					       (int)tp.tv_usec);
-+					printk(KERN_INFO "Enabling timer.\n");
-+				}
-+				return 0; /* doesn't matter anymore */
-+			}
-+		} else {
-+			if (debug_commandir == 1) {
-+				do_gettimeofday(&tp);
-+				printk(KERN_INFO "No more data to send %d!\n",
-+				       (int)tp.tv_usec);
-+			}
-+			last_tx_sec = 0; /* reset our TX counters */
-+			last_tx_usec = 0;
-+			return 1; /* nothing more to send! */
-+		}
-+	} else {
-+		if (debug_commandir == 1)
-+			/* will try again on the callback */
-+			printk(KERN_INFO "Already sending\n");
-+		return 1;  /* then the timer shouldn't be running... */
-+	}
-+	return 0; /* should never get here... */
-+}
-+
-+
-+int wait_to_tx(int usecs)
-+{
-+	/* don't return until last_time + usecs has been reached
-+	 * for non-zero last_tx's. */
-+	int wait_until_sec = 0, wait_until_usec = 0;
-+	int now_sec = 0, now_usec = 0;
-+	if (debug_commandir == 1)
-+		printk(KERN_INFO "waittotx(%d)\n", usecs);
-+	if (usecs == 0)
-+		return 0;
-+
-+	if (!(last_tx_sec == 0 && last_tx_usec == 0)) {
-+		/* calculate wait time: */
-+		wait_until_sec = last_tx_sec + (usecs / 1000000);
-+		wait_until_usec = last_tx_usec + usecs;
-+
-+		do_gettimeofday(&tp);
-+		now_sec = tp.tv_sec;
-+		now_usec = tp.tv_usec;
-+
-+		if (wait_until_usec > 1000000) {
-+			/* we've spilled over to the next second. */
-+			wait_until_sec++;
-+			wait_until_usec -= 1000000;
-+			/* printk(KERN_INFO "usec rollover\n"); */
-+		}
-+		if (debug_commandir == 1)
-+			printk(KERN_INFO "Testing for the right second, now = "
-+			       "%d %d, wait = %d %d\n",
-+			       now_sec, now_usec,
-+			       wait_until_sec, wait_until_usec);
-+		/* now we are always on the same second. */
-+		if (now_sec > wait_until_sec) {
-+			if (debug_commandir == 1)
-+				printk(KERN_INFO "Setting last_tx_sec to %d.\n",
-+				       wait_until_sec);
-+			last_tx_sec = wait_until_sec;
-+			last_tx_usec = wait_until_usec;
-+			return 0;
-+		}
-+
-+		if ((now_sec == wait_until_sec)
-+		    && (now_usec > wait_until_usec)) {
-+			if (debug_commandir == 1)
-+				printk(KERN_INFO "Setting last_tx_sec to %d.\n",
-+				       wait_until_sec);
-+			last_tx_sec = wait_until_sec;
-+			last_tx_usec = wait_until_usec;
-+			return 0;
-+		}
-+		return -1; /* didn't send */
-+	}
-+
-+	do_gettimeofday(&tp);
-+	last_tx_usec = tp.tv_usec;
-+	last_tx_sec = tp.tv_sec;
-+	return 0; /* if there's no last even, go ahead and send */
-+}
-+
-+
-+int cmdir_write_queue(unsigned char *buffer, int count, void *callback_fct)
-+{
-+	int retval = count;
-+	static char prev_signal_num;
-+	unsigned char next_mask;
-+	unsigned int multiplier;
-+	int i;
-+
-+	send_status = SEND_ACTIVE;
-+
-+	if (count < 2) {
-+		err("Not enough bytes (write request of %d bytes)", count);
-+		return count;
-+	}
-+
-+	/* check data; decide which device to send to */
-+	switch (buffer[0]) {
-+	case TX_HEADER:
-+	case TX_HEADER_NEW:
-+		/* this is LIRC transmit data */
-+		if (curTXFill >= 190) {
-+			printk(KERN_INFO
-+			       "TX buffer too full to send more TX data\n");
-+			return 0;
-+		}
-+		if (next_transmitters != transmitters) {
-+			if (buffer[1] != prev_signal_num)
-+				/* this is new signal; change transmitter mask*/
-+				transmitters = next_transmitters;
-+		}
-+		prev_signal_num = buffer[1];
-+
-+		multiplier = 1;
-+		for (i = 0; i < MAX_DEVICES; i++) {
-+			next_mask = 0;
-+			if (transmitters & (0x01*multiplier))
-+				next_mask |= TX1_ENABLE;
-+			if (transmitters & (0x02*multiplier))
-+				next_mask |= TX2_ENABLE;
-+			if (transmitters & (0x04*multiplier))
-+				next_mask |= TX3_ENABLE;
-+			if (transmitters & (0x08*multiplier))
-+				next_mask |= TX4_ENABLE;
-+
-+			if (next_mask > 0) {
-+				buffer[1] = next_mask;
-+				retval = write_core(buffer, count,
-+					 callback_fct, i);
-+				if (retval != count) {
-+					if (retval == -ENODEV)
-+						err("Device %d not plugged in",
-+						    i);
-+					else
-+						err("Write error to device %d",
-+						    i);
-+					return retval;
-+				}
-+			}
-+			multiplier = multiplier*0x10;
-+		}
-+		return retval;
-+		break;
-+	case LCD_HEADER:
-+		return write_core(buffer, count, callback_fct, lcd_device);
-+		break;
-+	default:
-+		return write_core(buffer, count, callback_fct, def_device);
-+		break;
-+	}
-+	/* should never get here */
-+	return retval;
-+
-+}
-+
-+int write_core(unsigned char *buffer, int count,
-+	       void *callback_fct, int device_num)
-+{
-+	struct usb_skel *dev;
-+	int retval = count;
-+
-+	struct usb_interface *interface;
-+	struct urb *urb = NULL;
-+	char *buf = NULL;
-+	interface = usb_find_interface(&cmdir_driver,
-+			USB_CMDIR_MINOR_BASE + device_num);
-+	if (!interface) {
-+		/* also check without adding base, for devfs */
-+		interface = usb_find_interface(&cmdir_driver, device_num);
-+		if (!interface)
-+			return -ENODEV;
-+	}
-+	dev = usb_get_intfdata(interface);
-+	if (!dev)
-+		return -ENODEV;
-+	/* create a urb, and a buffer for it, and copy the data to the urb */
-+	urb = usb_alloc_urb(0, GFP_ATOMIC);	/* Now -=Atomic=- */
-+	if (!urb) {
-+		retval = -ENOMEM;
-+		goto error;
-+	}
-+	buf = usb_buffer_alloc(dev->udev, count,
-+		GFP_KERNEL, &urb->transfer_dma);
-+	if (!buf) {
-+		retval = -ENOMEM;
-+		goto error;
-+	}
-+	if (!memcpy(buf, buffer, count)) {
-+		retval = -EFAULT;
-+		goto error;
-+	}
-+	/* initialize the urb properly */
-+	if (callback_fct == NULL) {
-+		usb_fill_bulk_urb(urb, dev->udev,
-+			  usb_sndbulkpipe(dev->udev,
-+				dev->bulk_out_endpointAddr),
-+			  buf, count, (void *) cmdir_write_bulk_callback, dev);
-+	} else {
-+		usb_fill_bulk_urb(urb, dev->udev,
-+			  usb_sndbulkpipe(dev->udev,
-+				dev->bulk_out_endpointAddr),
-+			  buf, count, callback_fct, dev);
-+	}
-+	urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;  /* double check this */
-+
-+	/* send the data out the bulk port */
-+	retval = usb_submit_urb(urb, GFP_KERNEL);
-+	if (retval) {
-+		err("%s - failed submitting write urb, error %d",
-+		    __func__, retval);
-+		goto error;
-+	}
-+
-+	/* release our reference to this urb, the USB
-+	 * core will eventually free it entirely */
-+	usb_free_urb(urb);
-+	return count;
-+
-+error:
-+	usb_buffer_free(dev->udev, count, buf, urb->transfer_dma);
-+	usb_free_urb(urb);
-+	return retval;
-+}
-+
-+static void cmdir_write_bulk_callback(struct urb *urb, struct pt_regs *regs)
-+{
-+	struct usb_skel *dev;
-+	dev = (struct usb_skel *)urb->context;
-+	send_status = SEND_IDLE;
-+	if (debug_commandir == 1)
-+		printk(KERN_INFO "callback()\n");
-+	/* free up our allocated buffer */
-+
-+	usb_buffer_free(urb->dev, urb->transfer_buffer_length,
-+			urb->transfer_buffer, urb->transfer_dma);
-+	send_queue(); /* send the next packet */
-+
-+}
-+
-+int set_tx_channels(unsigned int next_tx)
-+{
-+	next_transmitters = next_tx;
-+	return 0;
-+}
-+EXPORT_SYMBOL(set_tx_channels);
-+
-+module_init(usb_cmdir_init);
-+module_exit(usb_cmdir_exit);
-+
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/input/lirc/commandir.h b/drivers/input/lirc/commandir.h
-new file mode 100644
-index 0000000..bed703d
---- /dev/null
-+++ b/drivers/input/lirc/commandir.h
-@@ -0,0 +1,68 @@
-+/*
-+ *  commandir.h
-+ */
-+
-+#define ASCII0      48
-+
-+/* transmitter channel control */
-+#define MAX_DEVICES      8
-+#define MAX_CHANNELS     32
-+#define TX1_ENABLE       0x80
-+#define TX2_ENABLE       0x40
-+#define TX3_ENABLE       0x20
-+#define TX4_ENABLE       0x10
-+
-+/* command types */
-+#define cNothing	0
-+#define cRESET		1
-+#define cFLASH		2
-+#define cLCD		3
-+#define cRX		4
-+
-+/* CommandIR control codes */
-+#define MCU_CTRL_SIZE   3
-+#define FREQ_HEADER     2
-+#define RESET_HEADER    3
-+#define FLASH_HEADER    4
-+#define LCD_HEADER      5
-+#define TX_HEADER       7
-+#define TX_HEADER_NEW   8
-+
-+/* Queue buffering constants */
-+#define SEND_IDLE	0
-+#define SEND_ACTIVE	1
-+
-+#define QUEUELENGTH	256
-+
-+extern int cmdir_write(unsigned char *buffer, int count,
-+		       void *callback_fct, int u);
-+extern ssize_t cmdir_read(unsigned char *buffer, size_t count);
-+extern int set_tx_channels(unsigned int next_tx);
-+
-+
-+static int cmdir_open(struct inode *inode, struct file *file);
-+static int cmdir_probe(struct usb_interface *interface,
-+		       const struct usb_device_id *id);
-+static void cmdir_disconnect(struct usb_interface *interface);
-+static int cmdir_release(struct inode *inode, struct file *file);
-+static int cmdir_check(int device_num);
-+static void init_cmdir_var(int device_num);
-+static void reset_cmdir(int device_num);
-+static void update_cmdir_string(int device_num);
-+static void print_cmdir(int device_num);
-+static ssize_t cmdir_file_read(struct file *file, char *buffer,
-+			       size_t count, loff_t *ppos);
-+ssize_t cmdir_read(unsigned char *buffer, size_t count);
-+static ssize_t cmdir_file_write(struct file *file, const char *buffer,
-+				size_t count, loff_t *ppos);
-+int cmdir_write(unsigned char *buffer, int count, void *callback_fct, int u);
-+int write_core(unsigned char *buffer, int count,
-+	       void *callback_fct, int device_num);
-+static void cmdir_write_bulk_callback(struct urb *urb, struct pt_regs *regs);
-+int set_tx_channels(unsigned int next_tx);
-+
-+int add_cmdir_queue(unsigned char *buffer, int count,
-+		    void *callback_vct, int usecdelay);
-+int cmdir_write_queue(unsigned char *buffer, int count, void *callback_vct);
-+int send_queue(void);
-+int wait_to_tx(int usecs);
-diff --git a/drivers/input/lirc/lirc_cmdir.c b/drivers/input/lirc/lirc_cmdir.c
-new file mode 100644
-index 0000000..1faa8e3
---- /dev/null
-+++ b/drivers/input/lirc/lirc_cmdir.c
-@@ -0,0 +1,596 @@
-+/*
-+ * lirc_cmdir.c - Driver for InnovationOne's COMMANDIR USB Transceiver
-+ *
-+ *  This driver requires the COMMANDIR hardware driver, available at
-+ *  http://www.commandir.com/.
-+ *
-+ *  Copyright (C) 2005  InnovationOne - Evelyn Yeung
++ * lirc_sir - Device driver for use with SIR (serial infra red)
++ * mode of IrDA on many notebooks.
 + *
 + *  This program is free software; you can redistribute it and/or modify
 + *  it under the terms of the GNU General Public License as published by
@@ -1163,63 +100,221 @@ index 0000000..1faa8e3
 + *  You should have received a copy of the GNU General Public License
 + *  along with this program; if not, write to the Free Software
 + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ *
++ * 2000/09/16 Frank Przybylski <mail@frankprzybylski.de> :
++ *  added timeout and relaxed pulse detection, removed gap bug
++ *
++ * 2000/12/15 Christoph Bartelmus <lirc@bartelmus.de> :
++ *   added support for Tekram Irmate 210 (sending does not work yet,
++ *   kind of disappointing that nobody was able to implement that
++ *   before),
++ *   major clean-up
++ *
++ * 2001/02/27 Christoph Bartelmus <lirc@bartelmus.de> :
++ *   added support for StrongARM SA1100 embedded microprocessor
++ *   parts cut'n'pasted from sa1100_ir.c (C) 2000 Russell King
 + */
 +
 +
 +#include <linux/version.h>
++#include <linux/module.h>
 +
 +#include <linux/autoconf.h>
++
 +#include <linux/module.h>
++#include <linux/sched.h>
 +#include <linux/errno.h>
 +#include <linux/signal.h>
-+#include <linux/sched.h>
++#include <linux/fs.h>
++#include <linux/interrupt.h>
++#include <linux/ioport.h>
 +#include <linux/kernel.h>
++#include <linux/major.h>
++#include <linux/serial_reg.h>
 +#include <linux/time.h>
 +#include <linux/string.h>
++#include <linux/types.h>
++#include <linux/wait.h>
++#include <linux/mm.h>
 +#include <linux/delay.h>
 +#include <linux/poll.h>
++#include <asm/system.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include <asm/irq.h>
++#include <linux/fcntl.h>
++#ifdef LIRC_ON_SA1100
++#include <asm/hardware.h>
++#ifdef CONFIG_SA1100_COLLIE
++#include <asm/arch/tc35143.h>
++#include <asm/ucb1200.h>
++#endif
++#endif
++
++#include <linux/timer.h>
++
 +#include "lirc.h"
 +#include "lirc_dev.h"
-+#include "lirc_cmdir.h"
++
++/* SECTION: Definitions */
++
++/**************************** Tekram dongle ***************************/
++#ifdef LIRC_SIR_TEKRAM
++/* stolen from kernel source */
++/* definitions for Tekram dongle */
++#define TEKRAM_115200 0x00
++#define TEKRAM_57600  0x01
++#define TEKRAM_38400  0x02
++#define TEKRAM_19200  0x03
++#define TEKRAM_9600   0x04
++#define TEKRAM_2400   0x08
++
++#define TEKRAM_PW 0x10 /* Pulse select bit */
++
++/* 10bit * 1s/115200bit in miliseconds = 87ms*/
++#define TIME_CONST (10000000ul/115200ul)
++
++#endif
++
++#ifdef LIRC_SIR_ACTISYS_ACT200L
++static void init_act200(void);
++#elif defined(LIRC_SIR_ACTISYS_ACT220L)
++static void init_act220(void);
++#endif
++
++/******************************* SA1100 ********************************/
++#ifdef LIRC_ON_SA1100
++struct sa1100_ser2_registers {
++	/* HSSP control register */
++	unsigned char hscr0;
++	/* UART registers */
++	unsigned char utcr0;
++	unsigned char utcr1;
++	unsigned char utcr2;
++	unsigned char utcr3;
++	unsigned char utcr4;
++	unsigned char utdr;
++	unsigned char utsr0;
++	unsigned char utsr1;
++} sr;
++
++static int irq = IRQ_Ser2ICP;
++
++#define LIRC_ON_SA1100_TRANSMITTER_LATENCY 0
++
++/* pulse/space ratio of 50/50 */
++static unsigned long pulse_width = (13-LIRC_ON_SA1100_TRANSMITTER_LATENCY);
++/* 1000000/freq-pulse_width */
++static unsigned long space_width = (13-LIRC_ON_SA1100_TRANSMITTER_LATENCY);
++static unsigned int freq = 38000;      /* modulation frequency */
++static unsigned int duty_cycle = 50;   /* duty cycle of 50% */
++
++#endif
++
++#define RBUF_LEN 1024
++#define WBUF_LEN 1024
++
++#define LIRC_DRIVER_NAME "lirc_sir"
++
++#define PULSE '['
++
++#ifndef LIRC_SIR_TEKRAM
++/* 9bit * 1s/115200bit in milli seconds = 78.125ms*/
++#define TIME_CONST (9000000ul/115200ul)
++#endif
++
++
++/* timeout for sequences in jiffies (=5/100s) */
++/* must be longer than TIME_CONST */
++#define SIR_TIMEOUT	(HZ*5/100)
++
++#ifndef LIRC_ON_SA1100
++#ifndef LIRC_IRQ
++#define LIRC_IRQ 4
++#endif
++#ifndef LIRC_PORT
++#define LIRC_PORT 0x3e8
++#endif
++
++static int io = LIRC_PORT;
++static int irq = LIRC_IRQ;
++static int threshold = 3;
++#endif
++
++static DEFINE_SPINLOCK(timer_lock);
++static struct timer_list timerlist;
++/* time of last signal change detected */
++static struct timeval last_tv = {0, 0};
++/* time of last UART data ready interrupt */
++static struct timeval last_intr_tv = {0, 0};
++static int last_value;
++
++static DECLARE_WAIT_QUEUE_HEAD(lirc_read_queue);
++
++static DEFINE_SPINLOCK(hardware_lock);
++static DEFINE_SPINLOCK(dev_lock);
++
++static int rx_buf[RBUF_LEN];
++static unsigned int rx_tail, rx_head;
++static int tx_buf[WBUF_LEN];
 +
 +static int debug;
-+#define dprintk(fmt, args...)					\
-+	do {							\
-+		if (debug)					\
-+			printk(KERN_DEBUG fmt, ## args);	\
++#define dprintk(fmt, args...)						\
++	do {								\
++		if (debug)						\
++			printk(KERN_DEBUG LIRC_DRIVER_NAME ": "		\
++				fmt, ## args);				\
 +	} while (0)
 +
-+struct lirc_cmdir {
-+	int features;
-+};
++/* SECTION: Prototypes */
 +
-+struct lirc_cmdir hardware = {
-+	(
-+	/* LIRC_CAN_SET_SEND_DUTY_CYCLE|   */
-+	LIRC_CAN_SET_SEND_CARRIER|
-+	LIRC_CAN_SEND_PULSE|
-+	LIRC_CAN_SET_TRANSMITTER_MASK|
-+	LIRC_CAN_REC_MODE2)
-+	,
-+};
++/* Communication with user-space */
++static int lirc_open(struct inode *inode, struct file *file);
++static int lirc_close(struct inode *inode, struct file *file);
++static unsigned int lirc_poll(struct file *file, poll_table *wait);
++static ssize_t lirc_read(struct file *file, char *buf, size_t count,
++		loff_t *ppos);
++static ssize_t lirc_write(struct file *file, const char *buf, size_t n,
++		loff_t *pos);
++static int lirc_ioctl(struct inode *node, struct file *filep, unsigned int cmd,
++		unsigned long arg);
++static void add_read_queue(int flag, unsigned long val);
++#ifdef MODULE
++static int init_chrdev(void);
++static void drop_chrdev(void);
++#endif
++	/* Hardware */
++static irqreturn_t sir_interrupt(int irq, void *dev_id);
++static void send_space(unsigned long len);
++static void send_pulse(unsigned long len);
++static int init_hardware(void);
++static void drop_hardware(void);
++	/* Initialisation */
++static int init_port(void);
++static void drop_port(void);
 +
-+#define LIRC_DRIVER_NAME "lirc_cmdir"
-+#define RBUF_LEN   256
-+#define WBUF_LEN   256
-+#define MAX_PACKET 64
++#ifdef LIRC_ON_SA1100
++static inline void on(void)
++{
++	PPSR |= PPC_TXD2;
++}
 +
-+static struct lirc_buffer rbuf;
-+static int wbuf[WBUF_LEN];
-+static unsigned char cmdir_char[4*WBUF_LEN];
-+static unsigned char write_control[MCU_CTRL_SIZE];
-+static unsigned int last_mc_time;
-+static int usb_status = ON;
-+static unsigned char signal_num;
-+char timerval;
++static inline void off(void)
++{
++	PPSR &= ~PPC_TXD2;
++}
++#else
++static inline unsigned int sinp(int offset)
++{
++	return inb(io + offset);
++}
 +
-+unsigned int freq = 38000;
-+/* unsigned int duty_cycle = 50; */
-+
++static inline void soutp(int offset, int value)
++{
++	outb(value, io + offset);
++}
++#endif
 +
 +#ifndef MAX_UDELAY_MS
 +#define MAX_UDELAY_US 5000
@@ -1236,539 +331,1058 @@ index 0000000..1faa8e3
 +	udelay(usecs);
 +}
 +
-+static unsigned int get_time_value(unsigned int firstint,
-+			unsigned int secondint, unsigned char overflow)
-+{	/* get difference between two timestamps from MCU */
-+	unsigned int t_answer = 0;
++/* SECTION: Communication with user-space */
 +
-+	if (secondint > firstint) {
-+		t_answer = secondint - firstint + overflow*65536;
-+	} else {
-+		if (overflow > 0)
-+			t_answer = (65536 - firstint) + secondint +
-+						(overflow - 1) * 65536;
-+		else
-+			t_answer = (65536 - firstint) + secondint;
-+	}
-+
-+	/* clamp to long signal  */
-+	if (t_answer > 16000000)
-+		t_answer = PULSE_MASK;
-+
-+	return t_answer;
-+}
-+
-+
-+static int set_use_inc(void *data)
++static int lirc_open(struct inode *inode, struct file *file)
 +{
-+	/* Init read buffer. */
-+	if (lirc_buffer_init(&rbuf, sizeof(int), RBUF_LEN) < 0)
-+		return -ENOMEM;
-+
++	spin_lock(&dev_lock);
++	if (module_refcount(THIS_MODULE)) {
++		spin_unlock(&dev_lock);
++		return -EBUSY;
++	}
++	spin_unlock(&dev_lock);
 +	return 0;
 +}
 +
-+static void set_use_dec(void *data)
++static int lirc_close(struct inode *inode, struct file *file)
 +{
-+	lirc_buffer_free(&rbuf);
-+}
-+
-+
-+static void usb_error_handle(int retval)
-+{
-+	switch (retval) {
-+	case -ENODEV:
-+		/* device has been unplugged */
-+		if (usb_status == ON) {
-+			usb_status = OFF;
-+			printk(LIRC_DRIVER_NAME ": device is unplugged\n");
-+		}
-+		break;
-+	default:
-+		printk(LIRC_DRIVER_NAME ": usb error = %d\n", retval);
-+		break;
-+	}
-+}
-+
-+static int write_to_usb(unsigned char *buffer, int count, int time_elapsed)
-+{
-+	int write_return;
-+
-+	write_return = cmdir_write(buffer, count, NULL, time_elapsed);
-+	if (write_return != count) {
-+		usb_error_handle(write_return);
-+	} else {
-+		if (usb_status == OFF) {
-+			printk(LIRC_DRIVER_NAME ": device is now plugged in\n");
-+			usb_status = ON;
-+		}
-+	}
-+	return write_return;
-+}
-+
-+static void set_freq(void)
-+{
-+	/* float tempfreq = 0.0; */
-+	int write_return;
-+
-+	/*
-+	 * Can't use floating point in 2.6 kernel!
-+	 * May be some loss of precision
-+	 */
-+	timerval = (1000000 / freq) / 2;
-+	write_control[0] = FREQ_HEADER;
-+	write_control[1] = timerval;
-+	write_control[2] = 0;
-+	write_return = write_to_usb(write_control, MCU_CTRL_SIZE, 0);
-+	if (write_return == MCU_CTRL_SIZE)
-+		printk(LIRC_DRIVER_NAME ": freq set to %dHz\n", freq);
-+	else
-+		printk(LIRC_DRIVER_NAME ": freq unchanged\n");
-+
-+}
-+
-+static int cmdir_convert_RX(unsigned char *orig_rxbuffer)
-+{
-+	unsigned char tmp_char_buffer[80];
-+	unsigned int tmp_int_buffer[20];
-+	unsigned int final_data_buffer[20];
-+	unsigned int num_data_values = 0;
-+	unsigned char num_data_bytes = 0;
-+	unsigned int orig_index = 0;
-+	int i;
-+
-+	for (i = 0; i < 80; i++)
-+		tmp_char_buffer[i] = 0;
-+	for (i = 0; i < 20; i++)
-+		tmp_int_buffer[i] = 0;
-+
-+	/*
-+	 * get number of data bytes that follow the control bytes
-+	 * (NOT including them)
-+	 */
-+	num_data_bytes = orig_rxbuffer[1];
-+
-+	/* check if num_bytes is multiple of 3; if not, error */
-+	if (num_data_bytes % 3 > 0)
-+		return -1;
-+	if (num_data_bytes > 60)
-+		return -3;
-+	if (num_data_bytes < 3)
-+		return -2;
-+
-+	/*
-+	 * get number of ints to be returned; num_data_bytes does
-+	 * NOT include control bytes
-+	 */
-+	num_data_values = num_data_bytes/3;
-+
-+	for (i = 0; i < num_data_values; i++) {
-+		tmp_char_buffer[i*4] = orig_rxbuffer[(i+1)*3];
-+		tmp_char_buffer[i*4+1] = orig_rxbuffer[(i+1)*3+1];
-+		tmp_char_buffer[i*4+2] = 0;
-+		tmp_char_buffer[i*4+3] = 0;
-+	}
-+
-+	/* convert to int array */
-+	memcpy((unsigned char *)tmp_int_buffer, tmp_char_buffer,
-+						(num_data_values*4));
-+
-+	if (orig_rxbuffer[5] < 255) {
-+		/* space */
-+		final_data_buffer[0] = get_time_value(last_mc_time,
-+						tmp_int_buffer[0],
-+						orig_rxbuffer[5]);
-+	} else { /* is pulse */
-+		final_data_buffer[0] = get_time_value(last_mc_time,
-+						tmp_int_buffer[0],
-+						0);
-+		final_data_buffer[0] |= PULSE_BIT;
-+	}
-+	for (i = 1; i < num_data_values; i++) {
-+		/*
-+		 * index of orig_rxbuffer that corresponds to
-+		 * overflow/pulse/space
-+		 */
-+		orig_index = (i + 1)*3 + 2;
-+		if (orig_rxbuffer[orig_index] < 255) {
-+			final_data_buffer[i] =
-+				get_time_value(tmp_int_buffer[i - 1],
-+					       tmp_int_buffer[i],
-+					       orig_rxbuffer[orig_index]);
-+		} else {
-+			final_data_buffer[i] =
-+				get_time_value(tmp_int_buffer[i - 1],
-+					       tmp_int_buffer[i],
-+					       0);
-+			final_data_buffer[i] |= PULSE_BIT;
-+		}
-+	}
-+	last_mc_time = tmp_int_buffer[num_data_values - 1];
-+
-+	if (lirc_buffer_full(&rbuf)) {
-+		printk(KERN_ERR  LIRC_DRIVER_NAME ": lirc_buffer is full\n");
-+		return -EOVERFLOW;
-+	}
-+	lirc_buffer_write_n(&rbuf, (char *)final_data_buffer, num_data_values);
-+
 +	return 0;
 +}
 +
-+
-+static int usb_read_once(void)
++static unsigned int lirc_poll(struct file *file, poll_table *wait)
 +{
-+	int read_retval = 0;
-+	int conv_retval = 0;
-+	unsigned char read_buffer[MAX_PACKET];
-+	int i = 0;
-+	int tooFull = 5;  /* read up to 5 packets */
-+
-+	for (i = 0; i < MAX_PACKET; i++)
-+		read_buffer[i] = 0;
-+
-+	while (tooFull--) {
-+		read_retval = cmdir_read(read_buffer, MAX_PACKET);
-+		/* Loop until we unload the data build-up */
-+		if (read_buffer[1] < 60)
-+			tooFull = 0;
-+		if (!(read_retval == MAX_PACKET)) {
-+			if (read_retval == -ENODEV) {
-+				if (usb_status == ON) {
-+					printk(KERN_ALERT LIRC_DRIVER_NAME
-+						": device is unplugged\n");
-+					usb_status = OFF;
-+				}
-+			} else {
-+				/* supress errors */
-+				printk(KERN_ALERT LIRC_DRIVER_NAME
-+					": usb error on read = %d\n",
-+					read_retval);
-+				return -ENODATA;
-+			}
-+			dprintk("Error 3\n");
-+			return -ENODATA;
-+		} else {
-+			if (usb_status == OFF) {
-+				usb_status = ON;
-+				printk(LIRC_DRIVER_NAME
-+					": device is now plugged in\n");
-+			}
-+		}
-+
-+		if (read_buffer[0] & 0x08) {
-+			conv_retval = cmdir_convert_RX(read_buffer);
-+			if (conv_retval == 0) {
-+				if (!tooFull)
-+					return 0;
-+				else
-+					dprintk("Looping for more data...\n");
-+			} else {
-+				dprintk("Error 2: %d\n", (int)conv_retval);
-+				return -ENODATA;
-+			}
-+		} else {
-+			/* There really is no data in their buffer */
-+			dprintk("Empty RX Buffer!\n");
-+			return -ENODATA;
-+		}
-+	}
-+	return -1;
++	poll_wait(file, &lirc_read_queue, wait);
++	if (rx_head != rx_tail)
++		return POLLIN | POLLRDNORM;
++	return 0;
 +}
 +
-+int add_to_buf(void *data, struct lirc_buffer *buf)
++static ssize_t lirc_read(struct file *file, char *buf, size_t count,
++		loff_t *ppos)
 +{
-+	return usb_read_once();
-+}
-+
-+
-+static ssize_t lirc_write(struct file *file, const char *buf,
-+			 size_t n, loff_t *ppos)
-+{
-+	int i, count;
-+	unsigned int mod_signal_length = 0;
-+	unsigned int time_elapse = 0;
-+	unsigned int total_time_elapsed = 0;
-+	unsigned int num_bytes_already_sent = 0;
-+	unsigned int hibyte = 0;
-+	unsigned int lobyte = 0;
-+	int cmdir_cnt = 0;
-+	unsigned int wait_this = 0;
-+	struct timeval start_time;
-+	struct timeval end_time;
-+	unsigned int real_time_elapsed = 0;
-+
-+	/* save the time we started the write: */
-+	do_gettimeofday(&start_time);
++	int n = 0;
++	int retval = 0;
++	DECLARE_WAITQUEUE(wait, current);
 +
 +	if (n % sizeof(int))
 +		return -EINVAL;
 +
-+	count = n / sizeof(int);
-+	if (count > WBUF_LEN || count % 2 == 0)
-+		return -EINVAL;
-+	if (copy_from_user(wbuf, buf, n))
-+		return -EFAULT;
-+
-+	/*
-+	 * the first time we have to flag that this is the start of a new
-+	 * signal otherwise COMMANDIR may receive 2 back-to-back pulses &
-+	 * invert the signal
-+	 */
-+	cmdir_char[0] = TX_HEADER_NEW;
-+	signal_num++;
-+	cmdir_char[1] = signal_num;
-+	cmdir_cnt = 2;
-+	for (i = 0; i < count; i++) {
-+		/* conversion to number of modulation frequency pulse edges */
-+		mod_signal_length = wbuf[i] >> 3;
-+		/*
-+		 * account for minor rounding errors -
-+		 * calculate length from this:
-+		 */
-+		time_elapse += mod_signal_length * timerval;
-+
-+		hibyte = mod_signal_length / 256;
-+		lobyte = mod_signal_length % 256;
-+		cmdir_char[cmdir_cnt+1] = lobyte;
-+		cmdir_char[cmdir_cnt] = hibyte;
-+		cmdir_cnt += 2;
-+
-+		/* write data to usb if full packet is collected */
-+		if (cmdir_cnt % MAX_PACKET == 0) {
-+			write_to_usb(cmdir_char, MAX_PACKET,  time_elapse);
-+
-+			total_time_elapsed += time_elapse;
-+
-+			num_bytes_already_sent += MAX_PACKET;
-+			time_elapse = 0;
-+
-+			if ((i + 1) < count) {
-+				/* still more to send: */
-+				cmdir_char[0] =	TX_HEADER;  /* Next Packet */
-+				cmdir_char[1] = signal_num;
-+				cmdir_cnt = 2; /* reset the count */
++	add_wait_queue(&lirc_read_queue, &wait);
++	set_current_state(TASK_INTERRUPTIBLE);
++	while (n < count) {
++		if (rx_head != rx_tail) {
++			if (copy_to_user((void *) buf + n,
++					(void *) (rx_buf + rx_head),
++					sizeof(int))) {
++				retval = -EFAULT;
++				break;
 +			}
++			rx_head = (rx_head + 1) & (RBUF_LEN - 1);
++			n += sizeof(int);
++		} else {
++			if (file->f_flags & O_NONBLOCK) {
++				retval = -EAGAIN;
++				break;
++			}
++			if (signal_pending(current)) {
++				retval = -ERESTARTSYS;
++				break;
++			}
++			schedule();
++			set_current_state(TASK_INTERRUPTIBLE);
 +		}
 +	}
++	remove_wait_queue(&lirc_read_queue, &wait);
++	set_current_state(TASK_RUNNING);
++	return n ? n : retval;
++}
++static ssize_t lirc_write(struct file *file, const char *buf, size_t n,
++				loff_t *pos)
++{
++	unsigned long flags;
++	int i;
 +
-+	/* send last chunk of data */
-+	if (cmdir_cnt > 0) {
-+		total_time_elapsed += time_elapse;
-+		write_to_usb(cmdir_char, cmdir_cnt, time_elapse);
-+	}
-+	/* XXX ERS remove all this? */
-+	/*
-+	 * we need to _manually delay ourselves_ to remain backwards
-+	 * compatible with LIRC and prevent our queue buffer from overflowing.
-+	 * Queuing in this driver is about instant, and send_start for example
-+	 * will fill it up quickly and prevent send_stop from taking immediate
-+	 * effect.
-+	 */
-+	dprintk("Total elapsed time is: %d. \n", total_time_elapsed);
-+	do_gettimeofday(&end_time);
-+	/*
-+	 * udelay for the difference between endtime and
-+	 * start + total_time_elapsed
-+	 */
-+	if (start_time.tv_usec < end_time.tv_usec)
-+		real_time_elapsed = (end_time.tv_usec - start_time.tv_usec);
-+	else
-+		real_time_elapsed = ((end_time.tv_usec +  1000000) -
-+							start_time.tv_usec);
-+	dprintk("Real time elapsed was %u.\n", real_time_elapsed);
-+	if (real_time_elapsed < (total_time_elapsed - 1000))
-+		wait_this = total_time_elapsed - real_time_elapsed - 1000;
-+
-+#if 0 /* enable this for backwards compatibility */
-+	safe_udelay(wait_this);
++	if (n % sizeof(int) || (n / sizeof(int)) > WBUF_LEN)
++		return -EINVAL;
++	if (copy_from_user(tx_buf, buf, n))
++		return -EFAULT;
++	i = 0;
++	n /= sizeof(int);
++#ifdef LIRC_ON_SA1100
++	/* disable receiver */
++	Ser2UTCR3 = 0;
 +#endif
-+
++	local_irq_save(flags);
++	while (1) {
++		if (i >= n)
++			break;
++		if (tx_buf[i])
++			send_pulse(tx_buf[i]);
++		i++;
++		if (i >= n)
++			break;
++		if (tx_buf[i])
++			send_space(tx_buf[i]);
++		i++;
++	}
++	local_irq_restore(flags);
++#ifdef LIRC_ON_SA1100
++	off();
++	udelay(1000); /* wait 1ms for IR diode to recover */
++	Ser2UTCR3 = 0;
++	/* clear status register to prevent unwanted interrupts */
++	Ser2UTSR0 &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
++	/* enable receiver */
++	Ser2UTCR3 = UTCR3_RXE|UTCR3_RIE;
++#endif
 +	return n;
 +}
 +
-+
 +static int lirc_ioctl(struct inode *node, struct file *filep, unsigned int cmd,
-+		      unsigned long arg)
++		unsigned long arg)
 +{
-+	int result;
-+	unsigned long value;
++	int retval = 0;
++	unsigned long value = 0;
++#ifdef LIRC_ON_SA1100
 +	unsigned int ivalue;
-+	unsigned int multiplier = 1;
-+	unsigned int mask = 0;
-+	int i;
++
++	if (cmd == LIRC_GET_FEATURES)
++		value = LIRC_CAN_SEND_PULSE |
++			LIRC_CAN_SET_SEND_DUTY_CYCLE |
++			LIRC_CAN_SET_SEND_CARRIER |
++			LIRC_CAN_REC_MODE2;
++	else if (cmd == LIRC_GET_SEND_MODE)
++		value = LIRC_MODE_PULSE;
++	else if (cmd == LIRC_GET_REC_MODE)
++		value = LIRC_MODE_MODE2;
++#else
++	if (cmd == LIRC_GET_FEATURES)
++		value = LIRC_CAN_SEND_PULSE | LIRC_CAN_REC_MODE2;
++	else if (cmd == LIRC_GET_SEND_MODE)
++		value = LIRC_MODE_PULSE;
++	else if (cmd == LIRC_GET_REC_MODE)
++		value = LIRC_MODE_MODE2;
++#endif
 +
 +	switch (cmd) {
-+	case LIRC_SET_TRANSMITTER_MASK:
-+		if (!(hardware.features&LIRC_CAN_SET_TRANSMITTER_MASK))
-+			return -ENOIOCTLCMD;
-+		result = get_user(ivalue, (unsigned int *) arg);
-+		if (result)
-+			return result;
-+		for (i = 0; i < MAX_CHANNELS; i++) {
-+			multiplier = multiplier * 0x10;
-+			mask |= multiplier;
-+		}
-+		if (ivalue >= mask)
-+			return MAX_CHANNELS;
-+		set_tx_channels(ivalue);
-+		return 0;
-+		break;
-+
++	case LIRC_GET_FEATURES:
 +	case LIRC_GET_SEND_MODE:
-+		if (!(hardware.features & LIRC_CAN_SEND_MASK))
-+			return -ENOIOCTLCMD;
-+
-+		result = put_user(LIRC_SEND2MODE
-+				(hardware.features & LIRC_CAN_SEND_MASK),
-+				(unsigned long *) arg);
-+		if (result)
-+			return result;
++	case LIRC_GET_REC_MODE:
++		retval = put_user(value, (unsigned long *) arg);
 +		break;
 +
 +	case LIRC_SET_SEND_MODE:
-+		if (!(hardware.features&LIRC_CAN_SEND_MASK))
-+			return -ENOIOCTLCMD;
-+
-+		result = get_user(value, (unsigned long *)arg);
-+		if (result)
-+			return result;
++	case LIRC_SET_REC_MODE:
++		retval = get_user(value, (unsigned long *) arg);
 +		break;
-+
-+	case LIRC_GET_LENGTH:
-+		return -ENOSYS;
-+		break;
-+
++#ifdef LIRC_ON_SA1100
 +	case LIRC_SET_SEND_DUTY_CYCLE:
-+		dprintk(KERN_WARNING LIRC_DRIVER_NAME
-+					": SET_SEND_DUTY_CYCLE\n");
-+
-+		if (!(hardware.features&LIRC_CAN_SET_SEND_DUTY_CYCLE))
-+			return -ENOIOCTLCMD;
-+
-+		result = get_user(ivalue, (unsigned int *)arg);
-+		if (result)
-+			return result;
++		retval = get_user(ivalue, (unsigned int *) arg);
++		if (retval)
++			return reetval;
 +		if (ivalue <= 0 || ivalue > 100)
 +			return -EINVAL;
-+
-+		/* TODO: */
-+		dprintk(LIRC_DRIVER_NAME
-+			": set_send_duty_cycle not yet supported\n");
-+
-+		return 0;
++		/* (ivalue/100)*(1000000/freq) */
++		duty_cycle = ivalue;
++		pulse_width = (unsigned long) duty_cycle*10000/freq;
++		space_width = (unsigned long) 1000000L/freq-pulse_width;
++		if (pulse_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
++			pulse_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
++		if (space_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
++			space_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
 +		break;
-+
 +	case LIRC_SET_SEND_CARRIER:
-+		dprintk(KERN_WARNING LIRC_DRIVER_NAME ": SET_SEND_CARRIER\n");
-+
-+		if (!(hardware.features & LIRC_CAN_SET_SEND_CARRIER))
-+			return -ENOIOCTLCMD;
-+
-+		result = get_user(ivalue, (unsigned int *)arg);
-+		if (result)
-+			return result;
-+		if (ivalue > 500000 || ivalue < 24000)
++		retval = get_user(ivalue, (unsigned int *) arg);
++		if (retval)
++			return retval;
++		if (ivalue > 500000 || ivalue < 20000)
 +			return -EINVAL;
-+		if (ivalue != freq) {
-+			freq = ivalue;
-+			set_freq();
-+		}
-+		return 0;
++		freq = ivalue;
++		pulse_width = (unsigned long) duty_cycle*10000/freq;
++		space_width = (unsigned long) 1000000L/freq-pulse_width;
++		if (pulse_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
++			pulse_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
++		if (space_width >= LIRC_ON_SA1100_TRANSMITTER_LATENCY)
++			space_width -= LIRC_ON_SA1100_TRANSMITTER_LATENCY;
 +		break;
-+
++#endif
 +	default:
-+		return -ENOIOCTLCMD;
++		retval = -ENOIOCTLCMD;
++
++	}
++
++	if (retval)
++		return retval;
++	if (cmd == LIRC_SET_REC_MODE) {
++		if (value != LIRC_MODE_MODE2)
++			retval = -ENOSYS;
++	} else if (cmd == LIRC_SET_SEND_MODE) {
++		if (value != LIRC_MODE_PULSE)
++			retval = -ENOSYS;
++	}
++
++	return retval;
++}
++
++static void add_read_queue(int flag, unsigned long val)
++{
++	unsigned int new_rx_tail;
++	int newval;
++
++	dprintk("add flag %d with val %lu\n", flag, val);
++
++	newval = val & PULSE_MASK;
++
++	/* statistically pulses are ~TIME_CONST/2 too long: we could
++	   maybe make this more exactly but this is good enough */
++	if (flag) {
++		/* pulse */
++		if (newval > TIME_CONST/2)
++			newval -= TIME_CONST/2;
++		else /* should not ever happen */
++			newval = 1;
++		newval |= PULSE_BIT;
++	} else {
++		newval += TIME_CONST/2;
++	}
++	new_rx_tail = (rx_tail + 1) & (RBUF_LEN - 1);
++	if (new_rx_tail == rx_head) {
++		dprintk("Buffer overrun.\n");
++		return;
++	}
++	rx_buf[rx_tail] = newval;
++	rx_tail = new_rx_tail;
++	wake_up_interruptible(&lirc_read_queue);
++}
++
++static struct file_operations lirc_fops = {
++	.read		= lirc_read,
++	.write		= lirc_write,
++	.poll		= lirc_poll,
++	.ioctl		= lirc_ioctl,
++	.open		= lirc_open,
++	.release	= lirc_close,
++};
++
++static int set_use_inc(void *data)
++{
++       return 0;
++}
++
++static void set_use_dec(void *data)
++{
++}
++
++static struct lirc_plugin plugin = {
++       .name		= LIRC_DRIVER_NAME,
++       .minor		= -1,
++       .code_length	= 1,
++       .sample_rate	= 0,
++       .data		= NULL,
++       .add_to_buf	= NULL,
++       .get_queue	= NULL,
++       .set_use_inc	= set_use_inc,
++       .set_use_dec	= set_use_dec,
++       .fops		= &lirc_fops,
++       .dev		= NULL,
++       .owner		= THIS_MODULE,
++};
++
++
++#ifdef MODULE
++static int init_chrdev(void)
++{
++	plugin.minor = lirc_register_plugin(&plugin);
++	if (plugin.minor < 0) {
++		printk(KERN_ERR LIRC_DRIVER_NAME ": init_chrdev() failed.\n");
++		return -EIO;
 +	}
 +	return 0;
 +}
 +
-+static struct file_operations lirc_fops = {
-+	.write		= lirc_write,
-+};
++static void drop_chrdev(void)
++{
++	lirc_unregister_plugin(plugin.minor);
++}
++#endif
 +
-+static struct lirc_plugin plugin = {
-+	.name		= LIRC_DRIVER_NAME,
-+	.minor		= -1,
-+	.code_length	= 1,
-+	.sample_rate	= 20,
-+	.data		= NULL,
-+	.add_to_buf	= add_to_buf,
-+	.get_queue	= NULL,
-+	.rbuf		= &rbuf,
-+	.set_use_inc	= set_use_inc,
-+	.set_use_dec	= set_use_dec,
-+	.ioctl		= lirc_ioctl,
-+	.fops		= &lirc_fops,
-+	.dev		= NULL,
-+	.owner		= THIS_MODULE,
-+};
++/* SECTION: Hardware */
++static long delta(struct timeval *tv1, struct timeval *tv2)
++{
++	unsigned long deltv;
++
++	deltv = tv2->tv_sec - tv1->tv_sec;
++	if (deltv > 15)
++		deltv = 0xFFFFFF;
++	else
++		deltv = deltv*1000000 +
++			tv2->tv_usec -
++			tv1->tv_usec;
++	return deltv;
++}
++
++static void sir_timeout(unsigned long data)
++{
++	/* if last received signal was a pulse, but receiving stopped
++	   within the 9 bit frame, we need to finish this pulse and
++	   simulate a signal change to from pulse to space. Otherwise
++	   upper layers will receive two sequences next time. */
++
++	unsigned long flags;
++	unsigned long pulse_end;
++
++	/* avoid interference with interrupt */
++	spin_lock_irqsave(&timer_lock, flags);
++	if (last_value) {
++#ifndef LIRC_ON_SA1100
++		/* clear unread bits in UART and restart */
++		outb(UART_FCR_CLEAR_RCVR, io + UART_FCR);
++#endif
++		/* determine 'virtual' pulse end: */
++		pulse_end = delta(&last_tv, &last_intr_tv);
++		dprintk("timeout add %d for %lu usec\n", last_value, pulse_end);
++		add_read_queue(last_value, pulse_end);
++		last_value = 0;
++		last_tv = last_intr_tv;
++	}
++	spin_unlock_irqrestore(&timer_lock, flags);
++}
++
++static irqreturn_t sir_interrupt(int irq, void *dev_id)
++{
++	unsigned char data;
++	struct timeval curr_tv;
++	static unsigned long deltv;
++#ifdef LIRC_ON_SA1100
++	int status;
++	static int n;
++
++	status = Ser2UTSR0;
++	/*
++	 * Deal with any receive errors first.  The bytes in error may be
++	 * the only bytes in the receive FIFO, so we do this first.
++	 */
++	while (status & UTSR0_EIF) {
++		int bstat;
++
++		if (debug) {
++			dprintk("EIF\n");
++			bstat = Ser2UTSR1;
++
++			if (bstat & UTSR1_FRE)
++				dprintk("frame error\n");
++			if (bstat & UTSR1_ROR)
++				dprintk("receive fifo overrun\n");
++			if (bstat & UTSR1_PRE)
++				dprintk("parity error\n");
++		}
++
++		bstat = Ser2UTDR;
++		n++;
++		status = Ser2UTSR0;
++	}
++
++	if (status & (UTSR0_RFS | UTSR0_RID)) {
++		do_gettimeofday(&curr_tv);
++		deltv = delta(&last_tv, &curr_tv);
++		do {
++			data = Ser2UTDR;
++			dprintk("%d data: %u\n", n, (unsigned int) data);
++			n++;
++		} while (status & UTSR0_RID && /* do not empty fifo in
++						order to get UTSR0_RID in
++						any case */
++		      Ser2UTSR1 & UTSR1_RNE); /* data ready */
++
++		if (status&UTSR0_RID) {
++			add_read_queue(0 , deltv - n * TIME_CONST); /*space*/
++			add_read_queue(1, n * TIME_CONST); /*pulse*/
++			n = 0;
++			last_tv = curr_tv;
++		}
++	}
++
++	if (status & UTSR0_TFS)
++		printk(KERN_ERR "transmit fifo not full, shouldn't happen\n");
++
++	/*
++	 * We must clear certain bits.
++	 */
++	status &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
++	if (status)
++		Ser2UTSR0 = status;
++#else
++	unsigned long deltintrtv;
++	unsigned long flags;
++	int iir, lsr;
++
++	while ((iir = inb(io + UART_IIR) & UART_IIR_ID)) {
++		switch (iir&UART_IIR_ID) { /* FIXME toto treba preriedit */
++		case UART_IIR_MSI:
++			(void) inb(io + UART_MSR);
++			break;
++		case UART_IIR_RLSI:
++			(void) inb(io + UART_LSR);
++			break;
++		case UART_IIR_THRI:
++#if 0
++			if (lsr & UART_LSR_THRE) /* FIFO is empty */
++				outb(data, io + UART_TX)
++#endif
++			break;
++		case UART_IIR_RDI:
++			/* avoid interference with timer */
++			spin_lock_irqsave(&timer_lock, flags);
++			do {
++				del_timer(&timerlist);
++				data = inb(io + UART_RX);
++				do_gettimeofday(&curr_tv);
++				deltv = delta(&last_tv, &curr_tv);
++				deltintrtv = delta(&last_intr_tv, &curr_tv);
++				dprintk("t %lu, d %d\n", deltintrtv, (int)data);
++				/* if nothing came in last X cycles,
++				   it was gap */
++				if (deltintrtv > TIME_CONST * threshold) {
++					if (last_value) {
++						dprintk("GAP\n");
++						/* simulate signal change */
++						add_read_queue(last_value,
++							       deltv -
++							       deltintrtv);
++						last_value = 0;
++						last_tv.tv_sec =
++							last_intr_tv.tv_sec;
++						last_tv.tv_usec =
++							last_intr_tv.tv_usec;
++						deltv = deltintrtv;
++					}
++				}
++				data = 1;
++				if (data ^ last_value) {
++					/* deltintrtv > 2*TIME_CONST,
++						remember ? */
++					/* the other case is timeout */
++					add_read_queue(last_value,
++						       deltv-TIME_CONST);
++					last_value = data;
++					last_tv = curr_tv;
++					if (last_tv.tv_usec >= TIME_CONST) {
++						last_tv.tv_usec -= TIME_CONST;
++					} else {
++						last_tv.tv_sec--;
++						last_tv.tv_usec += 1000000 -
++							TIME_CONST;
++					}
++				}
++				last_intr_tv = curr_tv;
++				if (data) {
++					/* start timer for end of
++					 * sequence detection */
++					timerlist.expires = jiffies +
++								SIR_TIMEOUT;
++					add_timer(&timerlist);
++				}
++
++				lsr = inb(io + UART_LSR);
++			} while (lsr & UART_LSR_DR); /* data ready */
++			spin_unlock_irqrestore(&timer_lock, flags);
++			break;
++		default:
++			break;
++		}
++	}
++#endif
++	return IRQ_RETVAL(IRQ_HANDLED);
++}
++
++#ifdef LIRC_ON_SA1100
++static void send_pulse(unsigned long length)
++{
++	unsigned long k, delay;
++	int flag;
++
++	if (length == 0)
++		return;
++	/* this won't give us the carrier frequency we really want
++	   due to integer arithmetic, but we can accept this inaccuracy */
++
++	for (k = flag = 0; k < length; k += delay, flag = !flag) {
++		if (flag) {
++			off();
++			delay = space_width;
++		} else {
++			on();
++			delay = pulse_width;
++		}
++		safe_udelay(delay);
++	}
++	off();
++}
++
++static void send_space(unsigned long length)
++{
++	if (length == 0)
++		return;
++	off();
++	safe_udelay(length);
++}
++#else
++static void send_space(unsigned long len)
++{
++	safe_udelay(len);
++}
++
++static void send_pulse(unsigned long len)
++{
++	long bytes_out = len / TIME_CONST;
++	long time_left;
++
++	time_left = (long)len - (long)bytes_out * (long)TIME_CONST;
++	if (bytes_out == 0) {
++		bytes_out++;
++		time_left = 0;
++	}
++	while (bytes_out--) {
++		outb(PULSE, io + UART_TX);
++		/* FIXME treba seriozne cakanie z char/serial.c */
++		while (!(inb(io + UART_LSR) & UART_LSR_THRE))
++			;
++	}
++#if 0
++	if (time_left > 0)
++		safe_udelay(time_left);
++#endif
++}
++#endif
++
++#ifdef CONFIG_SA1100_COLLIE
++static inline int sa1100_irda_set_power_collie(int state)
++{
++	if (state) {
++		/*
++		 *  0 - off
++		 *  1 - short range, lowest power
++		 *  2 - medium range, medium power
++		 *  3 - maximum range, high power
++		 */
++		ucb1200_set_io_direction(TC35143_GPIO_IR_ON,
++					 TC35143_IODIR_OUTPUT);
++		ucb1200_set_io(TC35143_GPIO_IR_ON, TC35143_IODAT_LOW);
++		udelay(100);
++	} else {
++		/* OFF */
++		ucb1200_set_io_direction(TC35143_GPIO_IR_ON,
++					 TC35143_IODIR_OUTPUT);
++		ucb1200_set_io(TC35143_GPIO_IR_ON, TC35143_IODAT_HIGH);
++	}
++	return 0;
++}
++#endif
++
++static int init_hardware(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&hardware_lock, flags);
++	/* reset UART */
++#ifdef LIRC_ON_SA1100
++#ifdef CONFIG_SA1100_BITSY
++	if (machine_is_bitsy()) {
++		printk(KERN_INFO "Power on IR module\n");
++		set_bitsy_egpio(EGPIO_BITSY_IR_ON);
++	}
++#endif
++#ifdef CONFIG_SA1100_COLLIE
++	sa1100_irda_set_power_collie(3);	/* power on */
++#endif
++	sr.hscr0 = Ser2HSCR0;
++
++	sr.utcr0 = Ser2UTCR0;
++	sr.utcr1 = Ser2UTCR1;
++	sr.utcr2 = Ser2UTCR2;
++	sr.utcr3 = Ser2UTCR3;
++	sr.utcr4 = Ser2UTCR4;
++
++	sr.utdr = Ser2UTDR;
++	sr.utsr0 = Ser2UTSR0;
++	sr.utsr1 = Ser2UTSR1;
++
++	/* configure GPIO */
++	/* output */
++	PPDR |= PPC_TXD2;
++	PSDR |= PPC_TXD2;
++	/* set output to 0 */
++	off();
++
++	/*
++	 * Enable HP-SIR modulation, and ensure that the port is disabled.
++	 */
++	Ser2UTCR3 = 0;
++	Ser2HSCR0 = sr.hscr0 & (~HSCR0_HSSP);
++
++	/* clear status register to prevent unwanted interrupts */
++	Ser2UTSR0 &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
++
++	/* 7N1 */
++	Ser2UTCR0 = UTCR0_1StpBit|UTCR0_7BitData;
++	/* 115200 */
++	Ser2UTCR1 = 0;
++	Ser2UTCR2 = 1;
++	/* use HPSIR, 1.6 usec pulses */
++	Ser2UTCR4 = UTCR4_HPSIR|UTCR4_Z1_6us;
++
++	/* enable receiver, receive fifo interrupt */
++	Ser2UTCR3 = UTCR3_RXE|UTCR3_RIE;
++
++	/* clear status register to prevent unwanted interrupts */
++	Ser2UTSR0 &= (UTSR0_RID | UTSR0_RBB | UTSR0_REB);
++
++#elif defined(LIRC_SIR_TEKRAM)
++	/* disable FIFO */
++	soutp(UART_FCR,
++	      UART_FCR_CLEAR_RCVR|
++	      UART_FCR_CLEAR_XMIT|
++	      UART_FCR_TRIGGER_1);
++
++	/* Set DLAB 0. */
++	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
++
++	/* First of all, disable all interrupts */
++	soutp(UART_IER, sinp(UART_IER) &
++	      (~(UART_IER_MSI|UART_IER_RLSI|UART_IER_THRI|UART_IER_RDI)));
++
++	/* Set DLAB 1. */
++	soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
++
++	/* Set divisor to 12 => 9600 Baud */
++	soutp(UART_DLM, 0);
++	soutp(UART_DLL, 12);
++
++	/* Set DLAB 0. */
++	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
++
++	/* power supply */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	safe_udelay(50*1000);
++
++	/* -DTR low -> reset PIC */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
++	udelay(1*1000);
++
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	udelay(100);
++
++
++	/* -RTS low -> send control byte */
++	soutp(UART_MCR, UART_MCR_DTR|UART_MCR_OUT2);
++	udelay(7);
++	soutp(UART_TX, TEKRAM_115200|TEKRAM_PW);
++
++	/* one byte takes ~1042 usec to transmit at 9600,8N1 */
++	udelay(1500);
++
++	/* back to normal operation */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	udelay(50);
++
++	udelay(1500);
++
++	/* read previous control byte */
++	printk(KERN_INFO LIRC_DRIVER_NAME
++	       ": 0x%02x\n", sinp(UART_RX));
++
++	/* Set DLAB 1. */
++	soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
++
++	/* Set divisor to 1 => 115200 Baud */
++	soutp(UART_DLM, 0);
++	soutp(UART_DLL, 1);
++
++	/* Set DLAB 0, 8 Bit */
++	soutp(UART_LCR, UART_LCR_WLEN8);
++	/* enable interrupts */
++	soutp(UART_IER, sinp(UART_IER)|UART_IER_RDI);
++#else
++	outb(0, io + UART_MCR);
++	outb(0, io + UART_IER);
++	/* init UART */
++		/* set DLAB, speed = 115200 */
++	outb(UART_LCR_DLAB | UART_LCR_WLEN7, io + UART_LCR);
++	outb(1, io + UART_DLL); outb(0, io + UART_DLM);
++		/* 7N1+start = 9 bits at 115200 ~ 3 bits at 44000 */
++	outb(UART_LCR_WLEN7, io + UART_LCR);
++		/* FIFO operation */
++	outb(UART_FCR_ENABLE_FIFO, io + UART_FCR);
++		/* interrupts */
++	/* outb(UART_IER_RLSI|UART_IER_RDI|UART_IER_THRI, io + UART_IER); */
++	outb(UART_IER_RDI, io + UART_IER);
++	/* turn on UART */
++	outb(UART_MCR_DTR|UART_MCR_RTS|UART_MCR_OUT2, io + UART_MCR);
++#ifdef LIRC_SIR_ACTISYS_ACT200L
++	init_act200();
++#elif defined(LIRC_SIR_ACTISYS_ACT220L)
++	init_act220();
++#endif
++#endif
++	spin_unlock_irqrestore(&hardware_lock, flags);
++	return 0;
++}
++
++static void drop_hardware(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&hardware_lock, flags);
++
++#ifdef LIRC_ON_SA1100
++	Ser2UTCR3 = 0;
++
++	Ser2UTCR0 = sr.utcr0;
++	Ser2UTCR1 = sr.utcr1;
++	Ser2UTCR2 = sr.utcr2;
++	Ser2UTCR4 = sr.utcr4;
++	Ser2UTCR3 = sr.utcr3;
++
++	Ser2HSCR0 = sr.hscr0;
++#ifdef CONFIG_SA1100_BITSY
++	if (machine_is_bitsy())
++		clr_bitsy_egpio(EGPIO_BITSY_IR_ON);
++#endif
++#ifdef CONFIG_SA1100_COLLIE
++	sa1100_irda_set_power_collie(0);	/* power off */
++#endif
++#else
++	/* turn off interrupts */
++	outb(0, io + UART_IER);
++#endif
++	spin_unlock_irqrestore(&hardware_lock, flags);
++}
++
++/* SECTION: Initialisation */
++
++static int init_port(void)
++{
++	int retval;
++
++	/* get I/O port access and IRQ line */
++#ifndef LIRC_ON_SA1100
++	if (request_region(io, 8, LIRC_DRIVER_NAME) == NULL) {
++		printk(KERN_ERR LIRC_DRIVER_NAME
++		       ": i/o port 0x%.4x already in use.\n", io);
++		return -EBUSY;
++	}
++#endif
++	retval = request_irq(irq, sir_interrupt, IRQF_DISABLED,
++			     LIRC_DRIVER_NAME, NULL);
++	if (retval < 0) {
++#               ifndef LIRC_ON_SA1100
++		release_region(io, 8);
++#               endif
++		printk(KERN_ERR LIRC_DRIVER_NAME
++			": IRQ %d already in use.\n",
++			irq);
++		return retval;
++	}
++#ifndef LIRC_ON_SA1100
++	printk(KERN_INFO LIRC_DRIVER_NAME
++		": I/O port 0x%.4x, IRQ %d.\n",
++		io, irq);
++#endif
++
++	init_timer(&timerlist);
++	timerlist.function = sir_timeout;
++	timerlist.data = 0xabadcafe;
++
++	return 0;
++}
++
++static void drop_port(void)
++{
++	free_irq(irq, NULL);
++	del_timer_sync(&timerlist);
++#ifndef LIRC_ON_SA1100
++	release_region(io, 8);
++#endif
++}
++
++#ifdef LIRC_SIR_ACTISYS_ACT200L
++/******************************************************/
++/* Crystal/Cirrus CS8130 IR transceiver, used in Actisys Act200L dongle */
++/* some code borrowed from Linux IRDA driver */
++
++/* Regsiter 0: Control register #1 */
++#define ACT200L_REG0    0x00
++#define ACT200L_TXEN    0x01 /* Enable transmitter */
++#define ACT200L_RXEN    0x02 /* Enable receiver */
++#define ACT200L_ECHO    0x08 /* Echo control chars */
++
++/* Register 1: Control register #2 */
++#define ACT200L_REG1    0x10
++#define ACT200L_LODB    0x01 /* Load new baud rate count value */
++#define ACT200L_WIDE    0x04 /* Expand the maximum allowable pulse */
++
++/* Register 3: Transmit mode register #2 */
++#define ACT200L_REG3    0x30
++#define ACT200L_B0      0x01 /* DataBits, 0=6, 1=7, 2=8, 3=9(8P)  */
++#define ACT200L_B1      0x02 /* DataBits, 0=6, 1=7, 2=8, 3=9(8P)  */
++#define ACT200L_CHSY    0x04 /* StartBit Synced 0=bittime, 1=startbit */
++
++/* Register 4: Output Power register */
++#define ACT200L_REG4    0x40
++#define ACT200L_OP0     0x01 /* Enable LED1C output */
++#define ACT200L_OP1     0x02 /* Enable LED2C output */
++#define ACT200L_BLKR    0x04
++
++/* Register 5: Receive Mode register */
++#define ACT200L_REG5    0x50
++#define ACT200L_RWIDL   0x01 /* fixed 1.6us pulse mode */
++    /*.. other various IRDA bit modes, and TV remote modes..*/
++
++/* Register 6: Receive Sensitivity register #1 */
++#define ACT200L_REG6    0x60
++#define ACT200L_RS0     0x01 /* receive threshold bit 0 */
++#define ACT200L_RS1     0x02 /* receive threshold bit 1 */
++
++/* Register 7: Receive Sensitivity register #2 */
++#define ACT200L_REG7    0x70
++#define ACT200L_ENPOS   0x04 /* Ignore the falling edge */
++
++/* Register 8,9: Baud Rate Dvider register #1,#2 */
++#define ACT200L_REG8    0x80
++#define ACT200L_REG9    0x90
++
++#define ACT200L_2400    0x5f
++#define ACT200L_9600    0x17
++#define ACT200L_19200   0x0b
++#define ACT200L_38400   0x05
++#define ACT200L_57600   0x03
++#define ACT200L_115200  0x01
++
++/* Register 13: Control register #3 */
++#define ACT200L_REG13   0xd0
++#define ACT200L_SHDW    0x01 /* Enable access to shadow registers */
++
++/* Register 15: Status register */
++#define ACT200L_REG15   0xf0
++
++/* Register 21: Control register #4 */
++#define ACT200L_REG21   0x50
++#define ACT200L_EXCK    0x02 /* Disable clock output driver */
++#define ACT200L_OSCL    0x04 /* oscillator in low power, medium accuracy mode */
++
++static void init_act200(void)
++{
++	int i;
++	__u8 control[] = {
++		ACT200L_REG15,
++		ACT200L_REG13 | ACT200L_SHDW,
++		ACT200L_REG21 | ACT200L_EXCK | ACT200L_OSCL,
++		ACT200L_REG13,
++		ACT200L_REG7  | ACT200L_ENPOS,
++		ACT200L_REG6  | ACT200L_RS0  | ACT200L_RS1,
++		ACT200L_REG5  | ACT200L_RWIDL,
++		ACT200L_REG4  | ACT200L_OP0  | ACT200L_OP1 | ACT200L_BLKR,
++		ACT200L_REG3  | ACT200L_B0,
++		ACT200L_REG0  | ACT200L_TXEN | ACT200L_RXEN,
++		ACT200L_REG8 |  (ACT200L_115200       & 0x0f),
++		ACT200L_REG9 | ((ACT200L_115200 >> 4) & 0x0f),
++		ACT200L_REG1 | ACT200L_LODB | ACT200L_WIDE
++	};
++
++	/* Set DLAB 1. */
++	soutp(UART_LCR, UART_LCR_DLAB | UART_LCR_WLEN8);
++
++	/* Set divisor to 12 => 9600 Baud */
++	soutp(UART_DLM, 0);
++	soutp(UART_DLL, 12);
++
++	/* Set DLAB 0. */
++	soutp(UART_LCR, UART_LCR_WLEN8);
++	/* Set divisor to 12 => 9600 Baud */
++
++	/* power supply */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	for (i = 0; i < 50; i++)
++		safe_udelay(1000);
++
++		/* Reset the dongle : set RTS low for 25 ms */
++	soutp(UART_MCR, UART_MCR_DTR|UART_MCR_OUT2);
++	for (i = 0; i < 25; i++)
++		udelay(1000);
++
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	udelay(100);
++
++	/* Clear DTR and set RTS to enter command mode */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
++	udelay(7);
++
++/* send out the control register settings for 115K 7N1 SIR operation */
++	for (i = 0; i < sizeof(control); i++) {
++		soutp(UART_TX, control[i]);
++		/* one byte takes ~1042 usec to transmit at 9600,8N1 */
++		udelay(1500);
++	}
++
++	/* back to normal operation */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	udelay(50);
++
++	udelay(1500);
++	soutp(UART_LCR, sinp(UART_LCR) | UART_LCR_DLAB);
++
++	/* Set DLAB 1. */
++	soutp(UART_LCR, UART_LCR_DLAB | UART_LCR_WLEN7);
++
++	/* Set divisor to 1 => 115200 Baud */
++	soutp(UART_DLM, 0);
++	soutp(UART_DLL, 1);
++
++	/* Set DLAB 0. */
++	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
++
++	/* Set DLAB 0, 7 Bit */
++	soutp(UART_LCR, UART_LCR_WLEN7);
++
++	/* enable interrupts */
++	soutp(UART_IER, sinp(UART_IER)|UART_IER_RDI);
++}
++#endif
++
++#ifdef LIRC_SIR_ACTISYS_ACT220L
++/* Derived from linux IrDA driver (net/irda/actisys.c)
++ * Drop me a mail for any kind of comment: maxx@spaceboyz.net */
++
++void init_act220(void)
++{
++	int i;
++
++	/* DLAB 1 */
++	soutp(UART_LCR, UART_LCR_DLAB|UART_LCR_WLEN7);
++
++	/* 9600 baud */
++	soutp(UART_DLM, 0);
++	soutp(UART_DLL, 12);
++
++	/* DLAB 0 */
++	soutp(UART_LCR, UART_LCR_WLEN7);
++
++	/* reset the dongle, set DTR low for 10us */
++	soutp(UART_MCR, UART_MCR_RTS|UART_MCR_OUT2);
++	udelay(10);
++
++	/* back to normal (still 9600) */
++	soutp(UART_MCR, UART_MCR_DTR|UART_MCR_RTS|UART_MCR_OUT2);
++
++	/* send RTS pulses until we reach 115200
++	 * i hope this is really the same for act220l/act220l+ */
++	for (i = 0; i < 3; i++) {
++		udelay(10);
++		/* set RTS low for 10 us */
++		soutp(UART_MCR, UART_MCR_DTR|UART_MCR_OUT2);
++		udelay(10);
++		/* set RTS high for 10 us */
++		soutp(UART_MCR, UART_MCR_RTS|UART_MCR_DTR|UART_MCR_OUT2);
++	}
++
++	/* back to normal operation */
++	udelay(1500); /* better safe than sorry ;) */
++
++	/* Set DLAB 1. */
++	soutp(UART_LCR, UART_LCR_DLAB | UART_LCR_WLEN7);
++
++	/* Set divisor to 1 => 115200 Baud */
++	soutp(UART_DLM, 0);
++	soutp(UART_DLL, 1);
++
++	/* Set DLAB 0, 7 Bit */
++	/* The dongle doesn't seem to have any problems with operation
++	   at 7N1 */
++	soutp(UART_LCR, UART_LCR_WLEN7);
++
++	/* enable interrupts */
++	soutp(UART_IER, UART_IER_RDI);
++}
++#endif
++
++static int init_lirc_sir(void)
++{
++	int retval;
++
++	init_waitqueue_head(&lirc_read_queue);
++	retval = init_port();
++	if (retval < 0)
++		return retval;
++	init_hardware();
++	printk(KERN_INFO LIRC_DRIVER_NAME
++		": Installed.\n");
++	return 0;
++}
 +
 +#ifdef MODULE
 +
-+MODULE_AUTHOR("Evelyn Yeung, Matt Bodkin");
-+MODULE_DESCRIPTION("InnovationOne driver for "
-+		   "CommandIR USB infrared transceiver");
-+#ifdef MODULE_LICENSE
++static int __init lirc_sir_init(void)
++{
++	int retval;
++
++	retval = init_chrdev();
++	if (retval < 0)
++		return retval;
++	retval = init_lirc_sir();
++	if (retval) {
++		drop_chrdev();
++		return retval;
++	}
++	return 0;
++}
++
++static void __exit lirc_sir_exit(void)
++{
++	drop_hardware();
++	drop_chrdev();
++	drop_port();
++	printk(KERN_INFO LIRC_DRIVER_NAME ": Uninstalled.\n");
++}
++
++module_init(lirc_sir_init);
++module_exit(lirc_sir_exit);
++
++#ifdef LIRC_SIR_TEKRAM
++MODULE_DESCRIPTION("Infrared receiver driver for Tekram Irmate 210");
++MODULE_AUTHOR("Christoph Bartelmus");
++#elif defined(LIRC_ON_SA1100)
++MODULE_DESCRIPTION("LIRC driver for StrongARM SA1100 embedded microprocessor");
++MODULE_AUTHOR("Christoph Bartelmus");
++#elif defined(LIRC_SIR_ACTISYS_ACT200L)
++MODULE_DESCRIPTION("LIRC driver for Actisys Act200L");
++MODULE_AUTHOR("Karl Bongers");
++#elif defined(LIRC_SIR_ACTISYS_ACT220L)
++MODULE_DESCRIPTION("LIRC driver for Actisys Act220L(+)");
++MODULE_AUTHOR("Jan Roemisch");
++#else
++MODULE_DESCRIPTION("Infrared receiver driver for SIR type serial ports");
++MODULE_AUTHOR("Milan Pikula");
++#endif
 +MODULE_LICENSE("GPL");
++
++#ifdef LIRC_ON_SA1100
++module_param(irq, int, 0444);
++MODULE_PARM_DESC(irq, "Interrupt (16)");
++#else
++module_param(io, int, 0444);
++MODULE_PARM_DESC(io, "I/O address base (0x3f8 or 0x2f8)");
++
++module_param(irq, int, 0444);
++MODULE_PARM_DESC(irq, "Interrupt (4 or 3)");
++
++module_param(threshold, int, 0444);
++MODULE_PARM_DESC(threshold, "space detection threshold (3)");
 +#endif
 +
 +module_param(debug, bool, 0644);
 +MODULE_PARM_DESC(debug, "Enable debugging messages");
 +
-+
-+int init_module(void)
-+{
-+	plugin.features = hardware.features;
-+	plugin.minor = lirc_register_plugin(&plugin);
-+	if (plugin.minor < 0) {
-+		printk(KERN_ERR  LIRC_DRIVER_NAME
-+		       ": register_chrdev failed!\n");
-+		return -EIO;
-+	}
-+	set_freq();
-+	return 0;
-+}
-+
-+void cleanup_module(void)
-+{
-+	lirc_unregister_plugin(plugin.minor);
-+	printk(KERN_INFO  LIRC_DRIVER_NAME  ": module removed\n");
-+}
-+
-+#endif
-+
-+
-diff --git a/drivers/input/lirc/lirc_cmdir.h b/drivers/input/lirc/lirc_cmdir.h
-new file mode 100644
-index 0000000..f2400c3
---- /dev/null
-+++ b/drivers/input/lirc/lirc_cmdir.h
-@@ -0,0 +1,25 @@
-+/*
-+ *   lirc_cmdir.h
-+ */
-+
-+#ifndef LIRC_CMDIR_H
-+#define LIRC_CMDIR_H
-+
-+#define ON          1
-+#define OFF         0
-+
-+/* transmitter channel control */
-+#define MAX_CHANNELS     32
-+
-+/* CommandIR control codes */
-+#define MCU_CTRL_SIZE   3
-+#define FREQ_HEADER     2
-+#define TX_HEADER       7
-+#define TX_HEADER_NEW	8
-+
-+extern int cmdir_write(unsigned char *buffer, int count,
-+		       void *callback_fct, int u);
-+extern ssize_t cmdir_read(unsigned char *buffer, size_t count);
-+extern int set_tx_channels(unsigned int next_tx);
-+
-+#endif
++#endif /* MODULE */
 -- 
 1.6.0.1
 
