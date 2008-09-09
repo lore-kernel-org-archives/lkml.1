@@ -1,130 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYIIPbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYIIPdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYIIPbJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 11:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYIIPaz
+	id S1755901AbYIIPdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 11:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbYIIPdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 11:30:55 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:39597 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbYIIPay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 11:30:54 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
-Date: Tue, 9 Sep 2008 09:30:26 -0600
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Rene Herman <rene.herman@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <200809091250.08620.elendil@planet.nl>
-In-Reply-To: <200809091250.08620.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809090930.27583.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Tue, 9 Sep 2008 11:33:12 -0400
+Received: from vena.lwn.net ([206.168.112.25]:45511 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752898AbYIIPdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 11:33:11 -0400
+Date: Tue, 9 Sep 2008 09:33:08 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Jarod Wilson <jwilson@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jarod Wilson <jwilson@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>,
+       Mario Limonciello <superm1@ubuntu.com>
+Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
+Message-ID: <20080909093308.0734a6ba@bike.lwn.net>
+In-Reply-To: <1220933164-10160-2-git-send-email-jwilson@redhat.com>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
+	<1220933164-10160-2-git-send-email-jwilson@redhat.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 04:50:06 am Frans Pop wrote:
-> The only thing I used to get for pnp 00:08 on my Toshiba Satellite A40
-> up to 2.6.26 was this single line:
-> pnp 00:08: can't add resource for IO 0xa8-0xa9
+I think it's most cool that this code is finally making its way toward
+the mainline.  What I have is mostly nits...
 
-2.6.26 supported up to 40 I/O resources for PNP devices.  If a
-device had more than 40, we complained once and silently ignored
-all the rest.
+> +int lirc_unregister_plugin(int minor)
+> +{
+ ... 
+> +	/* end up polling thread */
+> +	if (ir->task) {
+> +		wake_up_process(ir->task);
+> +		kthread_stop(ir->task);
+> +	}
 
-> During bisecting I have found that fairly early in the 2.6.27 cycle this
-> was "fixed" and that message disappeared. The commit that changed this was:
-> commit aee3ad815dd291a7193ab01da0f1a30c84d00061
-> Author: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Date:   Fri Jun 27 16:56:57 2008 -0600
->     PNP: replace pnp_resource_table with dynamically allocated resources
-> 
-> Was it expected that that change could lead to a message disappearing?
-> I don't really read that from the commit description.
+kthread_stop() will wake up the process, so there is no need to do it
+separately here.  In fact, it almost looks like the separate
+wake_up_process() call could create an (unlikely) race where the thread
+would miss the fact that it's supposed to stop and sleep again.  Fixing the
+sleep_on() call there to use something like wait_event() would help in that
+regard.
 
-Yep.  This commit removed the fixed limit (40), so we shouldn't see
-messages like that any more.  The commit log mentioned these:
 
-        pnpacpi: exceeded the max number of IO resources
-        00:01: too many I/O port resources
+> +static int irctl_open(struct inode *inode, struct file *file)
+> +{
+> +	struct irctl *ir;
+> +	int retval;
+> +
+> +	if (MINOR(inode->i_rdev) >= MAX_IRCTL_DEVICES) {
 
-but I should have mentioned "can't add resource for IO ...", too.
+All of these might be better as iminor(inode)
 
-> So far for the intro, now the issue (regression?) that prompted this mail.
-> 
-> Now with 2.6.27-rc4/5 I'm suddenly getting a total of 78 (!) warnings
-> about "io resource overlaps" for pnp 00:08 in my dmesg, even though
-> AFAIK those have never caused any trouble.
+> +		dprintk("lirc_dev [%d]: open result = -ENODEV\n",
+> +			MINOR(inode->i_rdev));
+> +		return -ENODEV;
+> +	}
+> +
+> +	ir = &irctls[MINOR(inode->i_rdev)];
+> +
+> +	dprintk(LOGHEAD "open called\n", ir->p.name, ir->p.minor);
+> +
+> +	/* if the plugin has an open function use it instead */
+> +	if (ir->p.fops && ir->p.fops->open)
+> +		return ir->p.fops->open(inode, file);
+> +
+> +	if (mutex_lock_interruptible(&plugin_lock))
+> +		return -ERESTARTSYS;
 
-78 messages is certainly intolerable.  If the PNP quirk ignored
-PNP resources that had already been disabled, I think we'd generate
-"only" 27 messages.
+So the plugin open() function is called outside of any lock.  Note that
+open() no longer has BKL protection as of 2.6.27.  This might all be OK,
+but I hope you're convinced of it.
 
-> Bisection identified this commit as the cause:
-> commit 999ed65ad12e374d7445fbc13f5a1d146ae4b0da
-> Author: Rene Herman <rene.herman@gmail.com>
-> Date:   Fri Jul 25 19:44:47 2008 -0700
->     pnp: have quirk_system_pci_resources() include io resources
-> 
-> The PCI devices mentioned in the messages (1f.5 and 1f.6) are the ICH4
-> AC'97 audio controller and AC'97 (software) modem. At least sound works
-> fine _without_ this change; I don't really use the softmodem.
-> I'm not completely sure what pnp 00:08 is. Seems to have the "system"
-> driver.
+...
+> +	if (ir->p.owner != NULL && try_module_get(ir->p.owner)) {
+> +		++ir->open;
+> +		retval = ir->p.set_use_inc(ir->p.data);
 
-pnp 00:08 is a "motherboard" device the describes a lot of the
-legacy hardware (DMA controllers, timers, keyboard, etc) on the
-system board.  The "system" driver reserves those resources to
-prevent us from placing anything else on top of them.
+Why is there a set_use_inc() function separate from open()?
 
-What's curious about this to me is that those BARs just look wrong:
+> +		if (retval != SUCCESS) {
+> +			module_put(ir->p.owner);
+> +			--ir->open;
+> +		}
+> +	} else {
+> +		if (ir->p.owner == NULL)
+> +			dprintk(LOGHEAD "no module owner!!!\n",
+> +				ir->p.name, ir->p.minor);
+> +
+> +		retval = -ENODEV;
+> +	}
 
-  0000:00:1f.5 BAR 0 (0x0-0xff)
-  0000:00:1f.5 BAR 1 (0x0-0x3f)
-  0000:00:1f.6 BAR 0 (0x0-0xff)
-  0000:00:1f.6 BAR 1 (0x0-0x7f)
+If "no owner" is a fatal condition, it seems better to check it when the
+plugin is registered.  (Also, BTW, your variant of dprintk() is confusing
+to read - I was wondering where all the %'s were.  I still wonder,
+actually.  dev_printk() would be better.)
 
-Those seem like they'd be right on top of all those motherboard devices
-(and each other).
+> +static int irctl_close(struct inode *inode, struct file *file)
+> +{
+> +	struct irctl *ir = &irctls[MINOR(inode->i_rdev)];
+> +
+> +	dprintk(LOGHEAD "close called\n", ir->p.name, ir->p.minor);
+> +
+> +	/* if the plugin has a close function use it instead */
+> +	if (ir->p.fops && ir->p.fops->release)
+> +		return ir->p.fops->release(inode, file);
+> +
+> +	if (mutex_lock_interruptible(&plugin_lock))
+> +		return -ERESTARTSYS;
 
-I have some similar devices, with I/O BARs of the same sizes as
-yours, but they have reasonable values and /proc/iomem and
-/proc/ioports show sensible things:
+Should this be interruptible?  You probably want the close call to get its
+job done.  Maybe mutex_lock_killable() - and still do the cleanup on a
+signal? 
 
-  00:1e.2 Multimedia audio controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) AC'97 Audio Controller (rev 03)
-        Region 0: I/O ports at 3100 [size=256]
-        Region 1: I/O ports at 3200 [size=64]
-        Region 2: Memory at c8c01000 (32-bit, non-prefetchable) [size=512]
-        Region 3: Memory at c8c02000 (32-bit, non-prefetchable) [size=256]
+> +static int irctl_ioctl(struct inode *inode, struct file *file,
+> +		       unsigned int cmd, unsigned long arg)
+> +{
+> +	unsigned long mode;
+> +	int result;
+> +	struct irctl *ir = &irctls[MINOR(inode->i_rdev)];
+> +
+> +	dprintk(LOGHEAD "ioctl called (0x%x)\n",
+> +		ir->p.name, ir->p.minor, cmd);
+> +
+> +	/* if the plugin has a ioctl function use it instead */
+> +	if (ir->p.fops && ir->p.fops->ioctl)
+> +		return ir->p.fops->ioctl(inode, file, cmd, arg);
+> +
+> +	if (ir->p.minor == NOPLUG || !ir->attached) {
+> +		dprintk(LOGHEAD "ioctl result = -ENODEV\n",
+> +			ir->p.name, ir->p.minor);
+> +		return -ENODEV;
+> +	}
+> +
+> +	/* Give the plugin a chance to handle the ioctl */
+> +	if (ir->p.ioctl) {
+> +		result = ir->p.ioctl(inode, file, cmd, arg);
+> +		if (result != -ENOIOCTLCMD)
+> +			return result;
+> +	}
 
-  00:1e.3 Modem: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) AC'97 Modem Controller (rev 03) (prog-if 00 [Generic])
-        Region 0: I/O ports at 3400 [size=256]
-        Region 1: I/O ports at 3500 [size=128]
+Why two ioctl() handlers?  It seems better to just have one way for plugins
+to handle this call.
 
-  $ cat /proc/ioports 
-  ...
-  3100-31ff : 0000:00:1e.2
-    3100-31ff : Intel ICH6
-  3200-323f : 0000:00:1e.2
-    3200-323f : Intel ICH6
-  3400-34ff : 0000:00:1e.3
-  3500-357f : 0000:00:1e.3
+...
+> +	default:
+> +		result = -ENOIOCTLCMD;
 
-  $ cat /proc/iomem
-  ...
-  c8c01000-c8c011ff : 0000:00:1e.2
-    c8c01000-c8c011ff : Intel ICH6
-  c8c02000-c8c020ff : 0000:00:1e.2
-    c8c02000-c8c020ff : Intel ICH6
+Hmm, I note with interest that unlocked_ioctl() remaps -ENOIOCTLCMD to
+-EINVAL, while regular, locked ioctl() (which this is) does not.  Not sure
+what to make of that.
 
-What do "lspci -vv" and /proc/ioports and /proc/iomem show for you?
+> +static ssize_t irctl_read(struct file *file,
+> +			  char *buffer,
+> +			  size_t length,
+> +			  loff_t *ppos)
+> +{
+ ...
+> +			schedule();
+> +			set_current_state(TASK_INTERRUPTIBLE);
+> +			if (!ir->attached) {
+> +				ret = -ENODEV;
+> +				break;
+> +			}
 
-Bjorn
+How can ir->attached go to zero?  You checked it earlier and have been
+holding the mutex ever since.
+
+> +static ssize_t irctl_write(struct file *file, const char *buffer,
+> +			   size_t length, loff_t *ppos)
+> +{
+> +	struct irctl *ir =
+> &irctls[MINOR(file->f_dentry->d_inode->i_rdev)]; 
+> +	dprintk(LOGHEAD "write called\n", ir->p.name, ir->p.minor);
+> +
+> +	/* if the plugin has a specific read function use it instead
+> */
+> +	if (ir->p.fops && ir->p.fops->write)
+> +		return ir->p.fops->write(file, buffer, length, ppos);
+
+Looks like you're using the "specific write function" instead :)
+
+> +static struct file_operations fops = {
+> +	.read		= irctl_read,
+> +	.write		= irctl_write,
+> +	.poll		= irctl_poll,
+> +	.ioctl		= irctl_ioctl,
+> +	.open		= irctl_open,
+> +	.release	= irctl_close
+> +};
+
+You should probably set .owner too.
+
+> +static int lirc_dev_init(void)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < MAX_IRCTL_DEVICES; ++i)
+> +		init_irctl(&irctls[i]);
+> +
+> +	if (register_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME, &fops))
+> {
+> +		printk(KERN_ERR "lirc_dev: register_chrdev
+> failed\n");
+> +		goto out;
+> +	}
+> +
+> +	lirc_class = class_create(THIS_MODULE, "lirc");
+> +	if (IS_ERR(lirc_class)) {
+> +		printk(KERN_ERR "lirc_dev: class_create failed\n");
+> +		goto out_unregister;
+> +	}
+> +
+> +	printk(KERN_INFO "lirc_dev: IR Remote Control driver
+> registered, "
+> +	       "major %d \n", IRCTL_DEV_MAJOR);
+> +
+> +	return SUCCESS;
+> +
+> +out_unregister:
+> +	/* unregister_chrdev returns void now */
+> +	unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
+> +out:
+> +	return -1;
+> +}
+
+Do you want to fail completely if class_create() fails?  What if somebody
+already opened one of your devices?
+
+> +static inline int lirc_buffer_init(struct lirc_buffer *buf,
+> +				    unsigned int chunk_size,
+> +				    unsigned int size)
+> +{
+> +	/* Adjusting size to the next power of 2 would allow for
+> +	 * inconditional LIRC_BUFF_POWER_OF_2 optimization */
+> +	init_waitqueue_head(&buf->wait_poll);
+> +	spin_lock_init(&buf->lock);
+> +	_lirc_buffer_clear(buf);
+> +	buf->chunk_size = chunk_size;
+> +	buf->size = size;
+> +	buf->data = kmalloc(size*chunk_size, GFP_KERNEL);
+> +	if (buf->data == NULL)
+> +		return -1;
+> +	memset(buf->data, 0, size*chunk_size);
+> +	return 0;
+> +}
+
+All of these inlines probably shouldn't be.
+
+jon
