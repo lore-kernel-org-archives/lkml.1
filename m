@@ -1,1079 +1,1035 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbYIIEN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbYIIEOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbYIIEN2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYIIEIx
+	id S1757028AbYIIEOe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbYIIEI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42585 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42590 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753533AbYIIEIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 00:08:02 -0400
+	id S1754103AbYIIEIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 00:08:17 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 14/18] lirc driver for the ITE IT87xx CIR Port receivers
-Date: Tue,  9 Sep 2008 00:05:59 -0400
-Message-Id: <1220933164-10160-15-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-14-git-send-email-jwilson@redhat.com>
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>,
+       Mario Limonciello <superm1@ubuntu.com>
+Subject: [PATCH 01/18] lirc core device driver infrastructure
+Date: Tue,  9 Sep 2008 00:05:46 -0400
+Message-Id: <1220933164-10160-2-git-send-email-jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
 References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
- <1220933164-10160-2-git-send-email-jwilson@redhat.com>
- <1220933164-10160-3-git-send-email-jwilson@redhat.com>
- <1220933164-10160-4-git-send-email-jwilson@redhat.com>
- <1220933164-10160-5-git-send-email-jwilson@redhat.com>
- <1220933164-10160-6-git-send-email-jwilson@redhat.com>
- <1220933164-10160-7-git-send-email-jwilson@redhat.com>
- <1220933164-10160-8-git-send-email-jwilson@redhat.com>
- <1220933164-10160-9-git-send-email-jwilson@redhat.com>
- <1220933164-10160-10-git-send-email-jwilson@redhat.com>
- <1220933164-10160-11-git-send-email-jwilson@redhat.com>
- <1220933164-10160-12-git-send-email-jwilson@redhat.com>
- <1220933164-10160-13-git-send-email-jwilson@redhat.com>
- <1220933164-10160-14-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-Add Kconfig and Makefile bits
+-Add device driver interface and headers
+
+The initial Kconfig and Makefile bits were done by Mario Limonciello for
+the Ubuntu kernel, but have been tweaked a bit since then. Any errors are
+probably my doing.
+
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
+CC: Mario Limonciello <superm1@ubuntu.com>
 ---
- drivers/input/lirc/Kconfig     |    7 +
- drivers/input/lirc/Makefile    |    1 +
- drivers/input/lirc/lirc_it87.c |  999 ++++++++++++++++++++++++++++++++++++++++
- drivers/input/lirc/lirc_it87.h |  116 +++++
- 4 files changed, 1123 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/lirc/lirc_it87.c
- create mode 100644 drivers/input/lirc/lirc_it87.h
+ MAINTAINERS                   |    9 +
+ drivers/input/Kconfig         |    2 +
+ drivers/input/Makefile        |    2 +
+ drivers/input/lirc/Kconfig    |   21 +
+ drivers/input/lirc/Makefile   |    8 +
+ drivers/input/lirc/lirc.h     |  103 ++++++
+ drivers/input/lirc/lirc_dev.c |  809 +++++++++++++++++++++++++++++++++++++++++
+ drivers/input/lirc/lirc_dev.h |  262 +++++++++++++
+ 8 files changed, 1216 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/Kconfig
+ create mode 100644 drivers/input/lirc/Makefile
+ create mode 100644 drivers/input/lirc/lirc.h
+ create mode 100644 drivers/input/lirc/lirc_dev.c
+ create mode 100644 drivers/input/lirc/lirc_dev.h
 
-diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index 9783639..42e9bc3 100644
---- a/drivers/input/lirc/Kconfig
-+++ b/drivers/input/lirc/Kconfig
-@@ -54,6 +54,13 @@ config LIRC_IMON
- 	help
- 	  Driver for the Soundgraph IMON IR Receiver
+diff --git a/drivers/input/Kconfig b/drivers/input/Kconfig
+index 5f9d860..2ba0904 100644
+--- a/drivers/input/Kconfig
++++ b/drivers/input/Kconfig
+@@ -170,6 +170,8 @@ source "drivers/input/tablet/Kconfig"
  
-+config LIRC_IT87
-+	tristate "ITE IT87XX CIR Port Receiver"
-+	default n
-+	depends on LIRC_DEV
-+	help
-+	  Driver for the ITE IT87xx IR Receiver
+ source "drivers/input/touchscreen/Kconfig"
+ 
++source "drivers/input/lirc/Kconfig"
 +
- config LIRC_ITE8709
- 	tristate "ITE8709 CIR Port Receiver"
- 	default n
-diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index 1da7c5b..4ee32f3 100644
---- a/drivers/input/lirc/Makefile
-+++ b/drivers/input/lirc/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
- obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
- obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
- obj-$(CONFIG_LIRC_IMON)		+= lirc_imon.o
-+obj-$(CONFIG_LIRC_IT87)		+= lirc_it87.o
- obj-$(CONFIG_LIRC_ITE8709)	+= lirc_ite8709.o
- obj-$(CONFIG_LIRC_MCEUSB)	+= lirc_mceusb.o
- obj-$(CONFIG_LIRC_MCEUSB2)	+= lirc_mceusb2.o
-diff --git a/drivers/input/lirc/lirc_it87.c b/drivers/input/lirc/lirc_it87.c
+ source "drivers/input/misc/Kconfig"
+ 
+ endif
+diff --git a/drivers/input/Makefile b/drivers/input/Makefile
+index 98c4f9a..4dcb852 100644
+--- a/drivers/input/Makefile
++++ b/drivers/input/Makefile
+@@ -25,3 +25,5 @@ obj-$(CONFIG_INPUT_MISC)	+= misc/
+ obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
+ 
+ obj-$(CONFIG_XEN_KBDDEV_FRONTEND)	+= xen-kbdfront.o
++
++obj-$(CONFIG_INPUT_LIRC)	+= lirc/
+diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
 new file mode 100644
-index 0000000..0a64847
+index 0000000..2a04d9b
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_it87.c
-@@ -0,0 +1,999 @@
-+/*
-+ * LIRC driver for ITE IT8712/IT8705 CIR port
-+ *
-+ * Copyright (C) 2001 Hans-Gunter Lutke Uphues <hg_lu@web.de>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of the
-+ * License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
++++ b/drivers/input/lirc/Kconfig
+@@ -0,0 +1,21 @@
++#
++# LIRC driver(s) configuration
++#
++menuconfig INPUT_LIRC
++	bool "Linux Infrared Remote Control IR receiver/transmitter drivers"
++	default n
++	help
++	  Say Y here, and all supported Linux Infrared Remote Control IR and
++	  RF receiver and transmitter drivers will be displayed. When paired
++	  with a remote control and the lirc daemon, the receiver drivers
++	  allow control of your Linux system via remote control.
 +
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-+ * USA
-+ *
-+ * ITE IT8705 and IT8712(not tested) CIR-port support for lirc based
-+ * via cut and paste from lirc_sir.c (C) 2000 Milan Pikula
-+ *
-+ * Attention: Sendmode only tested with debugging logs
-+ *
-+ * 2001/02/27 Christoph Bartelmus <lirc@bartelmus.de> :
-+ *   reimplemented read function
-+ * 2005/06/05 Andrew Calkin implemented support for Asus Digimatrix,
-+ *   based on work of the following member of the Outertrack Digimatrix
-+ *   Forum: Art103 <r_tay@hotmail.com>
++if INPUT_LIRC
++
++config LIRC_DEV
++	tristate "LIRC device loadable module support"
++	default n
++	help
++	  LIRC device loadable module support, required for most LIRC drivers
++
++endif
+diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
+new file mode 100644
+index 0000000..cdb4c45
+--- /dev/null
++++ b/drivers/input/lirc/Makefile
+@@ -0,0 +1,8 @@
++# Makefile for the lirc drivers.
++#
++
++# Each configuration option enables a list of files.
++
++EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
++
++obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
+diff --git a/drivers/input/lirc/lirc.h b/drivers/input/lirc/lirc.h
+new file mode 100644
+index 0000000..dcdb6e8
+--- /dev/null
++++ b/drivers/input/lirc/lirc.h
+@@ -0,0 +1,103 @@
++/*
++ * lirc.h - linux infrared remote control header file
++ * last modified 2007/09/27
++ */
++
++#ifndef _LINUX_LIRC_H
++#define _LINUX_LIRC_H
++
++#include <linux/types.h>
++#include <linux/ioctl.h>
++
++#define PULSE_BIT  0x01000000
++#define PULSE_MASK 0x00FFFFFF
++
++/*
++ * lirc compatible hardware features
 + */
 +
 +
++#define LIRC_MODE2SEND(x) (x)
++#define LIRC_SEND2MODE(x) (x)
++#define LIRC_MODE2REC(x) ((x) << 16)
++#define LIRC_REC2MODE(x) ((x) >> 16)
++
++#define LIRC_MODE_RAW                  0x00000001
++#define LIRC_MODE_PULSE                0x00000002
++#define LIRC_MODE_MODE2                0x00000004
++#define LIRC_MODE_CODE                 0x00000008
++#define LIRC_MODE_LIRCCODE             0x00000010
++#define LIRC_MODE_STRING               0x00000020
++
++
++#define LIRC_CAN_SEND_RAW              LIRC_MODE2SEND(LIRC_MODE_RAW)
++#define LIRC_CAN_SEND_PULSE            LIRC_MODE2SEND(LIRC_MODE_PULSE)
++#define LIRC_CAN_SEND_MODE2            LIRC_MODE2SEND(LIRC_MODE_MODE2)
++#define LIRC_CAN_SEND_CODE             LIRC_MODE2SEND(LIRC_MODE_CODE)
++#define LIRC_CAN_SEND_LIRCCODE         LIRC_MODE2SEND(LIRC_MODE_LIRCCODE)
++#define LIRC_CAN_SEND_STRING           LIRC_MODE2SEND(LIRC_MODE_STRING)
++
++#define LIRC_CAN_SEND_MASK             0x0000003f
++
++#define LIRC_CAN_SET_SEND_CARRIER      0x00000100
++#define LIRC_CAN_SET_SEND_DUTY_CYCLE   0x00000200
++#define LIRC_CAN_SET_TRANSMITTER_MASK  0x00000400
++
++#define LIRC_CAN_REC_RAW               LIRC_MODE2REC(LIRC_MODE_RAW)
++#define LIRC_CAN_REC_PULSE             LIRC_MODE2REC(LIRC_MODE_PULSE)
++#define LIRC_CAN_REC_MODE2             LIRC_MODE2REC(LIRC_MODE_MODE2)
++#define LIRC_CAN_REC_CODE              LIRC_MODE2REC(LIRC_MODE_CODE)
++#define LIRC_CAN_REC_LIRCCODE          LIRC_MODE2REC(LIRC_MODE_LIRCCODE)
++#define LIRC_CAN_REC_STRING            LIRC_MODE2REC(LIRC_MODE_STRING)
++
++#define LIRC_CAN_REC_MASK              LIRC_MODE2REC(LIRC_CAN_SEND_MASK)
++
++#define LIRC_CAN_SET_REC_CARRIER       (LIRC_CAN_SET_SEND_CARRIER << 16)
++#define LIRC_CAN_SET_REC_DUTY_CYCLE    (LIRC_CAN_SET_SEND_DUTY_CYCLE << 16)
++
++#define LIRC_CAN_SET_REC_DUTY_CYCLE_RANGE 0x40000000
++#define LIRC_CAN_SET_REC_CARRIER_RANGE    0x80000000
++#define LIRC_CAN_GET_REC_RESOLUTION       0x20000000
++
++#define LIRC_CAN_SEND(x) ((x)&LIRC_CAN_SEND_MASK)
++#define LIRC_CAN_REC(x) ((x)&LIRC_CAN_REC_MASK)
++
++#define LIRC_CAN_NOTIFY_DECODE            0x01000000
++
++/*
++ * IOCTL commands for lirc driver
++ */
++
++#define LIRC_GET_FEATURES              _IOR('i', 0x00000000, __u32)
++
++#define LIRC_GET_SEND_MODE             _IOR('i', 0x00000001, __u32)
++#define LIRC_GET_REC_MODE              _IOR('i', 0x00000002, __u32)
++#define LIRC_GET_SEND_CARRIER          _IOR('i', 0x00000003, __u32)
++#define LIRC_GET_REC_CARRIER           _IOR('i', 0x00000004, __u32)
++#define LIRC_GET_SEND_DUTY_CYCLE       _IOR('i', 0x00000005, __u32)
++#define LIRC_GET_REC_DUTY_CYCLE        _IOR('i', 0x00000006, __u32)
++#define LIRC_GET_REC_RESOLUTION        _IOR('i', 0x00000007, __u32)
++
++/* code length in bits, currently only for LIRC_MODE_LIRCCODE */
++#define LIRC_GET_LENGTH                _IOR('i', 0x0000000f, __u32)
++
++#define LIRC_SET_SEND_MODE             _IOW('i', 0x00000011, __u32)
++#define LIRC_SET_REC_MODE              _IOW('i', 0x00000012, __u32)
++/* Note: these can reset the according pulse_width */
++#define LIRC_SET_SEND_CARRIER          _IOW('i', 0x00000013, __u32)
++#define LIRC_SET_REC_CARRIER           _IOW('i', 0x00000014, __u32)
++#define LIRC_SET_SEND_DUTY_CYCLE       _IOW('i', 0x00000015, __u32)
++#define LIRC_SET_REC_DUTY_CYCLE        _IOW('i', 0x00000016, __u32)
++#define LIRC_SET_TRANSMITTER_MASK      _IOW('i', 0x00000017, __u32)
++
++/* to set a range use
++   LIRC_SET_REC_DUTY_CYCLE_RANGE/LIRC_SET_REC_CARRIER_RANGE with the
++   lower bound first and later
++   LIRC_SET_REC_DUTY_CYCLE/LIRC_SET_REC_CARRIER with the upper bound */
++
++#define LIRC_SET_REC_DUTY_CYCLE_RANGE  _IOW('i', 0x0000001e, __u32)
++#define LIRC_SET_REC_CARRIER_RANGE     _IOW('i', 0x0000001f, __u32)
++
++#define LIRC_NOTIFY_DECODE             _IO('i', 0x00000020)
++
++#endif
+diff --git a/drivers/input/lirc/lirc_dev.c b/drivers/input/lirc/lirc_dev.c
+new file mode 100644
+index 0000000..c8f325c
+--- /dev/null
++++ b/drivers/input/lirc/lirc_dev.c
+@@ -0,0 +1,809 @@
++/*
++ * LIRC base driver
++ *
++ * (L) by Artur Lipowski <alipowski@interia.pl>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ *
++ */
++
 +#include <linux/version.h>
-+#include <linux/module.h>
++
 +#include <linux/autoconf.h>
-+
-+
++#include <linux/module.h>
++#include <linux/kernel.h>
 +#include <linux/sched.h>
 +#include <linux/errno.h>
-+#include <linux/signal.h>
++#include <linux/ioctl.h>
 +#include <linux/fs.h>
-+#include <linux/interrupt.h>
-+#include <linux/ioport.h>
-+#include <linux/kernel.h>
-+#include <linux/major.h>
-+#include <linux/serial_reg.h>
-+#include <linux/time.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/wait.h>
-+#include <linux/mm.h>
-+#include <linux/delay.h>
 +#include <linux/poll.h>
-+#include <asm/system.h>
++#include <linux/smp_lock.h>
++#include <linux/completion.h>
 +#include <linux/uaccess.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/fcntl.h>
++#include <linux/errno.h>
++#include <linux/semaphore.h>
++#define __KERNEL_SYSCALLS__
++#include <linux/unistd.h>
++#include <linux/kthread.h>
 +
-+#include <linux/timer.h>
++/* SysFS header */
++#include <linux/device.h>
 +
 +#include "lirc.h"
 +#include "lirc_dev.h"
 +
-+#include "lirc_it87.h"
-+
-+#ifdef LIRC_IT87_DIGIMATRIX
-+static int digimatrix = 1;
-+static int it87_freq = 36; /* kHz */
-+static int irq = 9;
-+#else
-+static int digimatrix;
-+static int it87_freq = 38; /* kHz */
-+static int irq = IT87_CIR_DEFAULT_IRQ;
-+#endif
-+
-+static unsigned long it87_bits_in_byte_out;
-+static unsigned long it87_send_counter;
-+static unsigned char it87_RXEN_mask = IT87_CIR_RCR_RXEN;
-+
-+#define RBUF_LEN 1024
-+#define WBUF_LEN 1024
-+
-+#define LIRC_DRIVER_NAME "lirc_it87"
-+
-+/* timeout for sequences in jiffies (=5/100s) */
-+/* must be longer than TIME_CONST */
-+#define IT87_TIMEOUT	(HZ*5/100)
-+
-+/* insmod parameters */
 +static int debug;
 +#define dprintk(fmt, args...)					\
 +	do {							\
 +		if (debug)					\
-+			printk(KERN_DEBUG LIRC_DRIVER_NAME ": "	\
-+			       fmt, ## args);			\
++			printk(KERN_DEBUG fmt, ## args);	\
 +	} while (0)
 +
-+static int io = IT87_CIR_DEFAULT_IOBASE;
-+/* receiver demodulator default: off */
-+static int it87_enable_demodulator;
++#define IRCTL_DEV_NAME    "BaseRemoteCtl"
++#define SUCCESS           0
++#define NOPLUG            -1
++#define LOGHEAD           "lirc_dev (%s[%d]): "
 +
-+static int timer_enabled;
-+static DEFINE_SPINLOCK(timer_lock);
-+static struct timer_list timerlist;
-+/* time of last signal change detected */
-+static struct timeval last_tv = {0, 0};
-+/* time of last UART data ready interrupt */
-+static struct timeval last_intr_tv = {0, 0};
-+static int last_value;
++struct irctl {
++	struct lirc_plugin p;
++	int attached;
++	int open;
 +
-+static DECLARE_WAIT_QUEUE_HEAD(lirc_read_queue);
++	struct mutex buffer_lock;
++	struct lirc_buffer *buf;
 +
-+static DEFINE_SPINLOCK(hardware_lock);
-+static DEFINE_SPINLOCK(dev_lock);
++	struct task_struct *task;
++	long jiffies_to_wait;
 +
-+static int rx_buf[RBUF_LEN];
-+unsigned int rx_tail, rx_head;
-+static int tx_buf[WBUF_LEN];
++};
 +
-+/* SECTION: Prototypes */
++static DEFINE_MUTEX(plugin_lock);
 +
-+/* Communication with user-space */
-+static int lirc_open(struct inode *inode, struct file *file);
-+static int lirc_close(struct inode *inode, struct file *file);
-+static unsigned int lirc_poll(struct file *file, poll_table *wait);
-+static ssize_t lirc_read(struct file *file, char *buf,
-+			 size_t count, loff_t *ppos);
-+static ssize_t lirc_write(struct file *file, const char *buf,
-+			  size_t n, loff_t *pos);
-+static int lirc_ioctl(struct inode *node, struct file *filep,
-+		      unsigned int cmd, unsigned long arg);
-+static void add_read_queue(int flag, unsigned long val);
-+#ifdef MODULE
-+static int init_chrdev(void);
-+static void drop_chrdev(void);
-+#endif
-+	/* Hardware */
-+static irqreturn_t it87_interrupt(int irq, void *dev_id);
-+static void send_space(unsigned long len);
-+static void send_pulse(unsigned long len);
-+static void init_send(void);
-+static void terminate_send(unsigned long len);
-+static int init_hardware(void);
-+static void drop_hardware(void);
-+	/* Initialisation */
-+static int init_port(void);
-+static void drop_port(void);
++static struct irctl irctls[MAX_IRCTL_DEVICES];
++static struct file_operations fops;
 +
++/* Only used for sysfs but defined to void otherwise */
++static struct class *lirc_class;
 +
-+/* SECTION: Communication with user-space */
-+
-+static int lirc_open(struct inode *inode, struct file *file)
++/*  helper function
++ *  initializes the irctl structure
++ */
++static inline void init_irctl(struct irctl *ir)
 +{
-+	spin_lock(&dev_lock);
-+	if (module_refcount(THIS_MODULE)) {
-+		spin_unlock(&dev_lock);
++	memset(&ir->p, 0, sizeof(struct lirc_plugin));
++	mutex_init(&ir->buffer_lock);
++	ir->p.minor = NOPLUG;
++
++	ir->task = NULL;
++	ir->jiffies_to_wait = 0;
++
++	ir->open = 0;
++	ir->attached = 0;
++}
++
++static void cleanup(struct irctl *ir)
++{
++	dprintk(LOGHEAD "cleaning up\n", ir->p.name, ir->p.minor);
++
++	device_destroy(lirc_class, MKDEV(IRCTL_DEV_MAJOR, ir->p.minor));
++
++	if (ir->buf != ir->p.rbuf) {
++		lirc_buffer_free(ir->buf);
++		kfree(ir->buf);
++	}
++	ir->buf = NULL;
++
++	init_irctl(ir);
++}
++
++/*  helper function
++ *  reads key codes from plugin and puts them into buffer
++ *  buffer free space is checked and locking performed
++ *  returns 0 on success
++ */
++static inline int add_to_buf(struct irctl *ir)
++{
++	if (lirc_buffer_full(ir->buf)) {
++		dprintk(LOGHEAD "buffer overflow\n",
++			ir->p.name, ir->p.minor);
++		return -EOVERFLOW;
++	}
++
++	if (ir->p.add_to_buf) {
++		int res = -ENODATA;
++		int got_data = 0;
++
++		/* service the device as long as it is returning
++		 * data and we have space
++		 */
++		while (!lirc_buffer_full(ir->buf)) {
++			res = ir->p.add_to_buf(ir->p.data, ir->buf);
++			if (res == SUCCESS)
++				got_data++;
++			else
++				break;
++		}
++
++		if (res == -ENODEV)
++			kthread_stop(ir->task);
++
++		return got_data ? SUCCESS : res;
++	}
++
++	return SUCCESS;
++}
++
++/* main function of the polling thread
++ */
++static int lirc_thread(void *irctl)
++{
++	struct irctl *ir = irctl;
++
++	/* This thread doesn't need any user-level access,
++	 * so get rid of all our resources
++	 */
++
++	dprintk(LOGHEAD "poll thread started\n", ir->p.name, ir->p.minor);
++
++	do {
++		if (ir->open) {
++			if (ir->jiffies_to_wait) {
++				set_current_state(TASK_INTERRUPTIBLE);
++				schedule_timeout(ir->jiffies_to_wait);
++			} else {
++				interruptible_sleep_on(
++					ir->p.get_queue(ir->p.data));
++			}
++			if (kthread_should_stop())
++				break;
++			if (!add_to_buf(ir))
++				wake_up_interruptible(&ir->buf->wait_poll);
++		} else {
++			/* if device not opened so we can sleep half a second */
++			set_current_state(TASK_INTERRUPTIBLE);
++			schedule_timeout(HZ/2);
++		}
++	} while (!kthread_should_stop());
++
++	dprintk(LOGHEAD "poll thread ended\n", ir->p.name, ir->p.minor);
++
++	return 0;
++}
++
++int lirc_register_plugin(struct lirc_plugin *p)
++{
++	struct irctl *ir;
++	int minor;
++	int bytes_in_key;
++	int err;
++	DECLARE_COMPLETION(tn);
++
++	if (!p) {
++		printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++		       "plugin pointer must be not NULL!\n");
++		err = -EBADRQC;
++		goto out;
++	}
++
++	if (MAX_IRCTL_DEVICES <= p->minor) {
++		printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++		       "\"minor\" must be between 0 and %d (%d)!\n",
++		       MAX_IRCTL_DEVICES-1, p->minor);
++		err = -EBADRQC;
++		goto out;
++	}
++
++	if (1 > p->code_length || (BUFLEN * 8) < p->code_length) {
++		printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++		       "code length in bits for minor (%d) "
++		       "must be less than %d!\n",
++		       p->minor, BUFLEN * 8);
++		err = -EBADRQC;
++		goto out;
++	}
++
++	printk(KERN_INFO "lirc_dev: lirc_register_plugin: sample_rate: %d\n",
++		p->sample_rate);
++	if (p->sample_rate) {
++		if (2 > p->sample_rate || HZ < p->sample_rate) {
++			printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++			       "sample_rate must be between 2 and %d!\n", HZ);
++			err = -EBADRQC;
++			goto out;
++		}
++		if (!p->add_to_buf) {
++			printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++			       "add_to_buf cannot be NULL when "
++			       "sample_rate is set\n");
++			err = -EBADRQC;
++			goto out;
++		}
++	} else if (!(p->fops && p->fops->read)
++		   && !p->get_queue && !p->rbuf) {
++		printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++		       "fops->read, get_queue and rbuf "
++		       "cannot all be NULL!\n");
++		err = -EBADRQC;
++		goto out;
++	} else if (!p->get_queue && !p->rbuf) {
++		if (!(p->fops && p->fops->read && p->fops->poll)
++		    || (!p->fops->ioctl && !p->ioctl)) {
++			printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++			       "neither read, poll nor ioctl can be NULL!\n");
++			err = -EBADRQC;
++			goto out;
++		}
++	}
++
++	if (p->owner == NULL) {
++		printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++				    "no module owner registered\n");
++		err = -EBADRQC;
++		goto out;
++	}
++
++	mutex_lock(&plugin_lock);
++
++	minor = p->minor;
++
++	if (0 > minor) {
++		/* find first free slot for plugin */
++		for (minor = 0; minor < MAX_IRCTL_DEVICES; minor++)
++			if (irctls[minor].p.minor == NOPLUG)
++				break;
++		if (MAX_IRCTL_DEVICES == minor) {
++			printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++			       "no free slots for plugins!\n");
++			err = -ENOMEM;
++			goto out_lock;
++		}
++	} else if (irctls[minor].p.minor != NOPLUG) {
++		printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++		       "minor (%d) just registered!\n", minor);
++		err = -EBUSY;
++		goto out_lock;
++	}
++
++	ir = &irctls[minor];
++
++	if (p->sample_rate) {
++		ir->jiffies_to_wait = HZ / p->sample_rate;
++	} else {
++		/* it means - wait for external event in task queue */
++		ir->jiffies_to_wait = 0;
++	}
++
++	/* some safety check 8-) */
++	p->name[sizeof(p->name)-1] = '\0';
++
++	bytes_in_key = p->code_length/8 + (p->code_length%8 ? 1 : 0);
++
++	if (p->rbuf) {
++		ir->buf = p->rbuf;
++	} else {
++		ir->buf = kmalloc(sizeof(struct lirc_buffer), GFP_KERNEL);
++		if (!ir->buf) {
++			err = -ENOMEM;
++			goto out_lock;
++		}
++		if (lirc_buffer_init(ir->buf, bytes_in_key,
++				     BUFLEN/bytes_in_key) != 0) {
++			kfree(ir->buf);
++			err = -ENOMEM;
++			goto out_lock;
++		}
++	}
++
++	if (p->features == 0)
++		p->features = (p->code_length > 8) ?
++			LIRC_CAN_REC_LIRCCODE : LIRC_CAN_REC_CODE;
++
++	ir->p = *p;
++	ir->p.minor = minor;
++
++	device_create(lirc_class, ir->p.dev,
++		      MKDEV(IRCTL_DEV_MAJOR, ir->p.minor), NULL,
++		      "lirc%u", ir->p.minor);
++
++	if (p->sample_rate || p->get_queue) {
++		/* try to fire up polling thread */
++		ir->task = kthread_run(lirc_thread, (void *)ir, "lirc_dev");
++		if (IS_ERR(ir->task)) {
++			printk(KERN_ERR "lirc_dev: lirc_register_plugin: "
++			       "cannot run poll thread for minor = %d\n",
++			       p->minor);
++			err = -ECHILD;
++			goto out_sysfs;
++		}
++	}
++	ir->attached = 1;
++	mutex_unlock(&plugin_lock);
++
++/*
++ * Recent kernels should handle this autmatically by increasing/decreasing
++ * use count when a dependant module is loaded/unloaded.
++ */
++	dprintk("lirc_dev: plugin %s registered at minor number = %d\n",
++		ir->p.name, ir->p.minor);
++	p->minor = minor;
++	return minor;
++
++out_sysfs:
++	device_destroy(lirc_class, MKDEV(IRCTL_DEV_MAJOR, ir->p.minor));
++out_lock:
++	mutex_unlock(&plugin_lock);
++out:
++	return err;
++}
++EXPORT_SYMBOL(lirc_register_plugin);
++
++int lirc_unregister_plugin(int minor)
++{
++	struct irctl *ir;
++	DECLARE_COMPLETION(tn);
++	DECLARE_COMPLETION(tn2);
++
++	if (minor < 0 || minor >= MAX_IRCTL_DEVICES) {
++		printk(KERN_ERR "lirc_dev: lirc_unregister_plugin: "
++		       "\"minor\" must be between 0 and %d!\n",
++		       MAX_IRCTL_DEVICES-1);
++		return -EBADRQC;
++	}
++
++	ir = &irctls[minor];
++
++	mutex_lock(&plugin_lock);
++
++	if (ir->p.minor != minor) {
++		printk(KERN_ERR "lirc_dev: lirc_unregister_plugin: "
++		       "minor (%d) device not registered!", minor);
++		mutex_unlock(&plugin_lock);
++		return -ENOENT;
++	}
++
++	/* end up polling thread */
++	if (ir->task) {
++		wake_up_process(ir->task);
++		kthread_stop(ir->task);
++	}
++
++	dprintk("lirc_dev: plugin %s unregistered from minor number = %d\n",
++		ir->p.name, ir->p.minor);
++
++	ir->attached = 0;
++	if (ir->open) {
++		dprintk(LOGHEAD "releasing opened plugin\n",
++			ir->p.name, ir->p.minor);
++		wake_up_interruptible(&ir->buf->wait_poll);
++		mutex_lock(&ir->buffer_lock);
++		ir->p.set_use_dec(ir->p.data);
++		module_put(ir->p.owner);
++		mutex_unlock(&ir->buffer_lock);
++	} else
++		cleanup(ir);
++	mutex_unlock(&plugin_lock);
++
++/*
++ * Recent kernels should handle this autmatically by increasing/decreasing
++ * use count when a dependant module is loaded/unloaded.
++ */
++
++	return SUCCESS;
++}
++EXPORT_SYMBOL(lirc_unregister_plugin);
++
++/*
++ *
++ */
++static int irctl_open(struct inode *inode, struct file *file)
++{
++	struct irctl *ir;
++	int retval;
++
++	if (MINOR(inode->i_rdev) >= MAX_IRCTL_DEVICES) {
++		dprintk("lirc_dev [%d]: open result = -ENODEV\n",
++			MINOR(inode->i_rdev));
++		return -ENODEV;
++	}
++
++	ir = &irctls[MINOR(inode->i_rdev)];
++
++	dprintk(LOGHEAD "open called\n", ir->p.name, ir->p.minor);
++
++	/* if the plugin has an open function use it instead */
++	if (ir->p.fops && ir->p.fops->open)
++		return ir->p.fops->open(inode, file);
++
++	if (mutex_lock_interruptible(&plugin_lock))
++		return -ERESTARTSYS;
++
++	if (ir->p.minor == NOPLUG) {
++		mutex_unlock(&plugin_lock);
++		dprintk(LOGHEAD "open result = -ENODEV\n",
++			ir->p.name, ir->p.minor);
++		return -ENODEV;
++	}
++
++	if (ir->open) {
++		mutex_unlock(&plugin_lock);
++		dprintk(LOGHEAD "open result = -EBUSY\n",
++			ir->p.name, ir->p.minor);
 +		return -EBUSY;
 +	}
-+	spin_unlock(&dev_lock);
-+	return 0;
-+}
 +
++	/* there is no need for locking here because ir->open is 0
++	 * and lirc_thread isn't using buffer
++	 * plugins which use irq's should allocate them on set_use_inc,
++	 * so there should be no problem with those either.
++	 */
++	ir->buf->head = ir->buf->tail;
++	ir->buf->fill = 0;
 +
-+static int lirc_close(struct inode *inode, struct file *file)
-+{
-+	return 0;
-+}
++	if (ir->p.owner != NULL && try_module_get(ir->p.owner)) {
++		++ir->open;
++		retval = ir->p.set_use_inc(ir->p.data);
 +
-+
-+static unsigned int lirc_poll(struct file *file, poll_table *wait)
-+{
-+	poll_wait(file, &lirc_read_queue, wait);
-+	if (rx_head != rx_tail)
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
-+
-+
-+static ssize_t lirc_read(struct file *file, char *buf,
-+			 size_t count, loff_t *ppos)
-+{
-+	int n = 0;
-+	int retval = 0;
-+
-+	while (n < count) {
-+		if (file->f_flags & O_NONBLOCK && rx_head == rx_tail) {
-+			retval = -EAGAIN;
-+			break;
++		if (retval != SUCCESS) {
++			module_put(ir->p.owner);
++			--ir->open;
 +		}
-+		retval = wait_event_interruptible(lirc_read_queue,
-+						  rx_head != rx_tail);
-+		if (retval)
-+			break;
++	} else {
++		if (ir->p.owner == NULL)
++			dprintk(LOGHEAD "no module owner!!!\n",
++				ir->p.name, ir->p.minor);
 +
-+		if (copy_to_user((void *) buf + n, (void *) (rx_buf + rx_head),
-+				 sizeof(int))) {
-+			retval = -EFAULT;
-+			break;
-+		}
-+		rx_head = (rx_head + 1) & (RBUF_LEN - 1);
-+		n += sizeof(int);
++		retval = -ENODEV;
 +	}
-+	if (n)
-+		return n;
++
++	dprintk(LOGHEAD "open result = %d\n", ir->p.name, ir->p.minor, retval);
++	mutex_unlock(&plugin_lock);
++
 +	return retval;
 +}
 +
-+
-+static ssize_t lirc_write(struct file *file, const char *buf,
-+			  size_t n, loff_t *pos)
++/*
++ *
++ */
++static int irctl_close(struct inode *inode, struct file *file)
 +{
-+	int i = 0;
++	struct irctl *ir = &irctls[MINOR(inode->i_rdev)];
 +
-+	if (n % sizeof(int) || (n / sizeof(int)) > WBUF_LEN)
-+		return -EINVAL;
-+	if (copy_from_user(tx_buf, buf, n))
-+		return -EFAULT;
-+	n /= sizeof(int);
-+	init_send();
-+	while (1) {
-+		if (i >= n)
-+			break;
-+		if (tx_buf[i])
-+			send_pulse(tx_buf[i]);
-+		i++;
-+		if (i >= n)
-+			break;
-+		if (tx_buf[i])
-+			send_space(tx_buf[i]);
-+		i++;
++	dprintk(LOGHEAD "close called\n", ir->p.name, ir->p.minor);
++
++	/* if the plugin has a close function use it instead */
++	if (ir->p.fops && ir->p.fops->release)
++		return ir->p.fops->release(inode, file);
++
++	if (mutex_lock_interruptible(&plugin_lock))
++		return -ERESTARTSYS;
++
++	--ir->open;
++	if (ir->attached) {
++		ir->p.set_use_dec(ir->p.data);
++		module_put(ir->p.owner);
++	} else {
++		cleanup(ir);
 +	}
-+	terminate_send(tx_buf[i - 1]);
-+	return n;
++
++	mutex_unlock(&plugin_lock);
++
++	return SUCCESS;
 +}
 +
-+
-+static int lirc_ioctl(struct inode *node, struct file *filep,
-+		      unsigned int cmd, unsigned long arg)
++/*
++ *
++ */
++static unsigned int irctl_poll(struct file *file, poll_table *wait)
 +{
-+	int retval = 0;
-+	unsigned long value = 0;
-+	unsigned int ivalue;
-+	unsigned long hw_flags;
++	struct irctl *ir = &irctls[MINOR(file->f_dentry->d_inode->i_rdev)];
++	unsigned int ret;
 +
-+	if (cmd == LIRC_GET_FEATURES)
-+		value = LIRC_CAN_SEND_PULSE |
-+			LIRC_CAN_SET_SEND_CARRIER |
-+			LIRC_CAN_REC_MODE2;
-+	else if (cmd == LIRC_GET_SEND_MODE)
-+		value = LIRC_MODE_PULSE;
-+	else if (cmd == LIRC_GET_REC_MODE)
-+		value = LIRC_MODE_MODE2;
++	dprintk(LOGHEAD "poll called\n", ir->p.name, ir->p.minor);
++
++	/* if the plugin has a poll function use it instead */
++	if (ir->p.fops && ir->p.fops->poll)
++		return ir->p.fops->poll(file, wait);
++
++	mutex_lock(&ir->buffer_lock);
++	if (!ir->attached) {
++		mutex_unlock(&ir->buffer_lock);
++		return POLLERR;
++	}
++
++	poll_wait(file, &ir->buf->wait_poll, wait);
++
++	dprintk(LOGHEAD "poll result = %s\n",
++		ir->p.name, ir->p.minor,
++		lirc_buffer_empty(ir->buf) ? "0" : "POLLIN|POLLRDNORM");
++
++	ret = lirc_buffer_empty(ir->buf) ? 0 : (POLLIN|POLLRDNORM);
++
++	mutex_unlock(&ir->buffer_lock);
++	return ret;
++}
++
++/*
++ *
++ */
++static int irctl_ioctl(struct inode *inode, struct file *file,
++		       unsigned int cmd, unsigned long arg)
++{
++	unsigned long mode;
++	int result;
++	struct irctl *ir = &irctls[MINOR(inode->i_rdev)];
++
++	dprintk(LOGHEAD "ioctl called (0x%x)\n",
++		ir->p.name, ir->p.minor, cmd);
++
++	/* if the plugin has a ioctl function use it instead */
++	if (ir->p.fops && ir->p.fops->ioctl)
++		return ir->p.fops->ioctl(inode, file, cmd, arg);
++
++	if (ir->p.minor == NOPLUG || !ir->attached) {
++		dprintk(LOGHEAD "ioctl result = -ENODEV\n",
++			ir->p.name, ir->p.minor);
++		return -ENODEV;
++	}
++
++	/* Give the plugin a chance to handle the ioctl */
++	if (ir->p.ioctl) {
++		result = ir->p.ioctl(inode, file, cmd, arg);
++		if (result != -ENOIOCTLCMD)
++			return result;
++	}
++	/* The plugin can't handle cmd */
++	result = SUCCESS;
 +
 +	switch (cmd) {
 +	case LIRC_GET_FEATURES:
-+	case LIRC_GET_SEND_MODE:
++		result = put_user(ir->p.features, (unsigned long *)arg);
++		break;
 +	case LIRC_GET_REC_MODE:
-+		retval = put_user(value, (unsigned long *) arg);
-+		break;
++		if (!(ir->p.features&LIRC_CAN_REC_MASK))
++			return -ENOSYS;
 +
-+	case LIRC_SET_SEND_MODE:
++		result = put_user(LIRC_REC2MODE
++				  (ir->p.features&LIRC_CAN_REC_MASK),
++				  (unsigned long *)arg);
++		break;
 +	case LIRC_SET_REC_MODE:
-+		retval = get_user(value, (unsigned long *) arg);
++		if (!(ir->p.features&LIRC_CAN_REC_MASK))
++			return -ENOSYS;
++
++		result = get_user(mode, (unsigned long *)arg);
++		if (!result && !(LIRC_MODE2REC(mode) & ir->p.features))
++			result = -EINVAL;
++		/*
++		 * FIXME: We should actually set the mode somehow but
++		 * for now, lirc_serial doesn't support mode changing either
++		 */
 +		break;
-+
-+	case LIRC_SET_SEND_CARRIER:
-+		retval = get_user(ivalue, (unsigned int *) arg);
-+		if (retval)
-+			return retval;
-+		ivalue /= 1000;
-+		if (ivalue > IT87_CIR_FREQ_MAX ||
-+		    ivalue < IT87_CIR_FREQ_MIN)
-+			return -EINVAL;
-+
-+		it87_freq = ivalue;
-+
-+		spin_lock_irqsave(&hardware_lock, hw_flags);
-+		outb(((inb(io + IT87_CIR_TCR2) & IT87_CIR_TCR2_TXMPW) |
-+		      (it87_freq - IT87_CIR_FREQ_MIN) << 3),
-+		      io + IT87_CIR_TCR2);
-+		spin_unlock_irqrestore(&hardware_lock, hw_flags);
-+		dprintk("demodulation frequency: %d kHz\n", it87_freq);
-+
++	case LIRC_GET_LENGTH:
++		result = put_user((unsigned long)ir->p.code_length,
++				  (unsigned long *)arg);
 +		break;
-+
 +	default:
-+		retval = -ENOIOCTLCMD;
++		result = -ENOIOCTLCMD;
 +	}
 +
-+	if (retval)
-+		return retval;
++	dprintk(LOGHEAD "ioctl result = %d\n",
++		ir->p.name, ir->p.minor, result);
 +
-+	if (cmd == LIRC_SET_REC_MODE) {
-+		if (value != LIRC_MODE_MODE2)
-+			retval = -ENOSYS;
-+	} else if (cmd == LIRC_SET_SEND_MODE) {
-+		if (value != LIRC_MODE_PULSE)
-+			retval = -ENOSYS;
-+	}
-+	return retval;
++	return result;
 +}
-+
-+static void add_read_queue(int flag, unsigned long val)
-+{
-+	unsigned int new_rx_tail;
-+	int newval;
-+
-+	dprintk("add flag %d with val %lu\n", flag, val);
-+
-+	newval = val & PULSE_MASK;
-+
-+	/* statistically pulses are ~TIME_CONST/2 too long: we could
-+	   maybe make this more exactly but this is good enough */
-+	if (flag) {
-+		/* pulse */
-+		if (newval > TIME_CONST / 2)
-+			newval -= TIME_CONST / 2;
-+		else /* should not ever happen */
-+			newval = 1;
-+		newval |= PULSE_BIT;
-+	} else
-+		newval += TIME_CONST / 2;
-+	new_rx_tail = (rx_tail + 1) & (RBUF_LEN - 1);
-+	if (new_rx_tail == rx_head) {
-+		dprintk("Buffer overrun.\n");
-+		return;
-+	}
-+	rx_buf[rx_tail] = newval;
-+	rx_tail = new_rx_tail;
-+	wake_up_interruptible(&lirc_read_queue);
-+}
-+
-+
-+static struct file_operations lirc_fops = {
-+	.read		= lirc_read,
-+	.write		= lirc_write,
-+	.poll		= lirc_poll,
-+	.ioctl		= lirc_ioctl,
-+	.open		= lirc_open,
-+	.release	= lirc_close,
-+};
-+
-+static int set_use_inc(void *data)
-+{
-+       return 0;
-+}
-+
-+static void set_use_dec(void *data)
-+{
-+}
-+
-+static struct lirc_plugin plugin = {
-+       .name		= LIRC_DRIVER_NAME,
-+       .minor		= -1,
-+       .code_length	= 1,
-+       .sample_rate	= 0,
-+       .data		= NULL,
-+       .add_to_buf	= NULL,
-+       .get_queue	= NULL,
-+       .set_use_inc	= set_use_inc,
-+       .set_use_dec	= set_use_dec,
-+       .fops		= &lirc_fops,
-+       .dev		= NULL,
-+       .owner		= THIS_MODULE,
-+};
-+
-+
-+#ifdef MODULE
-+static int init_chrdev(void)
-+{
-+	plugin.minor = lirc_register_plugin(&plugin);
-+
-+	if (plugin.minor < 0) {
-+		printk(KERN_ERR LIRC_DRIVER_NAME ": init_chrdev() failed.\n");
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+
-+
-+static void drop_chrdev(void)
-+{
-+	lirc_unregister_plugin(plugin.minor);
-+}
-+#endif
-+
-+
-+/* SECTION: Hardware */
-+static long delta(struct timeval *tv1, struct timeval *tv2)
-+{
-+	unsigned long deltv;
-+
-+	deltv = tv2->tv_sec - tv1->tv_sec;
-+	if (deltv > 15)
-+		deltv = 0xFFFFFF;
-+	else
-+		deltv = deltv*1000000 + tv2->tv_usec - tv1->tv_usec;
-+	return deltv;
-+}
-+
-+static void it87_timeout(unsigned long data)
-+{
-+	unsigned long flags;
-+
-+	/* avoid interference with interrupt */
-+	spin_lock_irqsave(&timer_lock, flags);
-+
-+	if (digimatrix) {
-+		/* We have timed out.
-+		   Disable the RX mechanism.
-+		*/
-+
-+		outb((inb(io + IT87_CIR_RCR) & ~IT87_CIR_RCR_RXEN) |
-+		     IT87_CIR_RCR_RXACT, io + IT87_CIR_RCR);
-+		if (it87_RXEN_mask)
-+			outb(inb(io + IT87_CIR_RCR) | IT87_CIR_RCR_RXEN,
-+			     io + IT87_CIR_RCR);
-+		dprintk(" TIMEOUT\n");
-+		timer_enabled = 0;
-+
-+		/* fifo clear */
-+		outb(inb(io + IT87_CIR_TCR1) | IT87_CIR_TCR1_FIFOCLR,
-+		     io+IT87_CIR_TCR1);
-+
-+	} else {
-+		/* if last received signal was a pulse, but receiving
-+		   stopped within the 9 bit frame, we need to finish
-+		   this pulse and simulate a signal change to from
-+		   pulse to space. Otherwise upper layers will receive
-+		   two sequences next time. */
-+
-+		if (last_value) {
-+			unsigned long pulse_end;
-+
-+			/* determine 'virtual' pulse end: */
-+			pulse_end = delta(&last_tv, &last_intr_tv);
-+			dprintk("timeout add %d for %lu usec\n",
-+				last_value, pulse_end);
-+			add_read_queue(last_value, pulse_end);
-+			last_value = 0;
-+			last_tv = last_intr_tv;
-+		}
-+	}
-+	spin_unlock_irqrestore(&timer_lock, flags);
-+}
-+
-+static irqreturn_t it87_interrupt(int irq, void *dev_id)
-+{
-+	unsigned char data;
-+	struct timeval curr_tv;
-+	static unsigned long deltv;
-+	unsigned long deltintrtv;
-+	unsigned long flags, hw_flags;
-+	int iir, lsr;
-+	int fifo = 0;
-+	static char lastbit;
-+	char bit;
-+
-+	/* Bit duration in microseconds */
-+	const unsigned long bit_duration = 1000000ul /
-+		(115200 / IT87_CIR_BAUDRATE_DIVISOR);
-+
-+
-+	iir = inb(io + IT87_CIR_IIR);
-+
-+	switch (iir & IT87_CIR_IIR_IID) {
-+	case 0x4:
-+	case 0x6:
-+		lsr = inb(io + IT87_CIR_RSR) & (IT87_CIR_RSR_RXFTO |
-+						IT87_CIR_RSR_RXFBC);
-+		fifo = lsr & IT87_CIR_RSR_RXFBC;
-+		dprintk("iir: 0x%x fifo: 0x%x\n", iir, lsr);
-+
-+		/* avoid interference with timer */
-+		spin_lock_irqsave(&timer_lock, flags);
-+		spin_lock_irqsave(&hardware_lock, hw_flags);
-+		if (digimatrix) {
-+			static unsigned long acc_pulse;
-+			static unsigned long acc_space;
-+
-+			do {
-+				data = inb(io + IT87_CIR_DR);
-+				data = ~data;
-+				fifo--;
-+				if (data != 0x00) {
-+					if (timer_enabled)
-+						del_timer(&timerlist);
-+					/* start timer for end of
-+					 * sequence detection */
-+					timerlist.expires = jiffies +
-+							    IT87_TIMEOUT;
-+					add_timer(&timerlist);
-+					timer_enabled = 1;
-+				}
-+				/* Loop through */
-+				for (bit = 0; bit < 8; ++bit) {
-+					if ((data >> bit) & 1) {
-+						++acc_pulse;
-+						if (lastbit == 0) {
-+							add_read_queue(0,
-+								acc_space *
-+								 bit_duration);
-+							acc_space = 0;
-+						}
-+					} else {
-+						++acc_space;
-+						if (lastbit == 1) {
-+							add_read_queue(1,
-+								acc_pulse *
-+								 bit_duration);
-+							acc_pulse = 0;
-+						}
-+					}
-+					lastbit = (data >> bit) & 1;
-+				}
-+
-+			} while (fifo != 0);
-+		} else { /* Normal Operation */
-+			do {
-+				del_timer(&timerlist);
-+				data = inb(io + IT87_CIR_DR);
-+
-+				dprintk("data=%.2x\n", data);
-+				do_gettimeofday(&curr_tv);
-+				deltv = delta(&last_tv, &curr_tv);
-+				deltintrtv = delta(&last_intr_tv, &curr_tv);
-+
-+				dprintk("t %lu , d %d\n",
-+					deltintrtv, (int)data);
-+
-+				/* if nothing came in last 2 cycles,
-+				   it was gap */
-+				if (deltintrtv > TIME_CONST * 2) {
-+					if (last_value) {
-+						dprintk("GAP\n");
-+
-+						/* simulate signal change */
-+						add_read_queue(last_value,
-+							       deltv -
-+							       deltintrtv);
-+						last_value = 0;
-+						last_tv.tv_sec =
-+							last_intr_tv.tv_sec;
-+						last_tv.tv_usec =
-+							last_intr_tv.tv_usec;
-+						deltv = deltintrtv;
-+					}
-+				}
-+				data = 1;
-+				if (data ^ last_value) {
-+					/* deltintrtv > 2*TIME_CONST,
-+					   remember ? */
-+					/* the other case is timeout */
-+					add_read_queue(last_value,
-+						       deltv-TIME_CONST);
-+					last_value = data;
-+					last_tv = curr_tv;
-+					if (last_tv.tv_usec >= TIME_CONST)
-+						last_tv.tv_usec -= TIME_CONST;
-+					else {
-+						last_tv.tv_sec--;
-+						last_tv.tv_usec += 1000000 -
-+							TIME_CONST;
-+					}
-+				}
-+				last_intr_tv = curr_tv;
-+				if (data) {
-+					/* start timer for end of
-+					 * sequence detection */
-+					timerlist.expires =
-+						jiffies + IT87_TIMEOUT;
-+					add_timer(&timerlist);
-+				}
-+				outb((inb(io + IT87_CIR_RCR) &
-+				     ~IT87_CIR_RCR_RXEN) |
-+				     IT87_CIR_RCR_RXACT,
-+				     io + IT87_CIR_RCR);
-+				if (it87_RXEN_mask)
-+					outb(inb(io + IT87_CIR_RCR) |
-+					     IT87_CIR_RCR_RXEN,
-+					     io + IT87_CIR_RCR);
-+				fifo--;
-+			} while (fifo != 0);
-+		}
-+		spin_unlock_irqrestore(&hardware_lock, hw_flags);
-+		spin_unlock_irqrestore(&timer_lock, flags);
-+
-+		return IRQ_RETVAL(IRQ_HANDLED);
-+
-+	default:
-+		/* not our irq */
-+		dprintk("unknown IRQ (shouldn't happen) !!\n");
-+		return IRQ_RETVAL(IRQ_NONE);
-+	}
-+}
-+
-+
-+static void send_it87(unsigned long len, unsigned long stime,
-+		      unsigned char send_byte, unsigned int count_bits)
-+{
-+	long count = len / stime;
-+	long time_left = 0;
-+	static unsigned char byte_out;
-+	unsigned long hw_flags;
-+
-+	dprintk("%s: len=%ld, sb=%d\n", __func__, len, send_byte);
-+
-+	time_left = (long)len - (long)count * (long)stime;
-+	count += ((2 * time_left) / stime);
-+	while (count) {
-+		long i = 0;
-+		for (i = 0; i < count_bits; i++) {
-+			byte_out = (byte_out << 1) | (send_byte & 1);
-+			it87_bits_in_byte_out++;
-+		}
-+		if (it87_bits_in_byte_out == 8) {
-+			dprintk("out=0x%x, tsr_txfbc: 0x%x\n",
-+				byte_out,
-+				inb(io + IT87_CIR_TSR) &
-+				IT87_CIR_TSR_TXFBC);
-+
-+			while ((inb(io + IT87_CIR_TSR) &
-+				IT87_CIR_TSR_TXFBC) >= IT87_CIR_FIFO_SIZE)
-+				;
-+
-+			spin_lock_irqsave(&hardware_lock, hw_flags);
-+			outb(byte_out, io + IT87_CIR_DR);
-+			spin_unlock_irqrestore(&hardware_lock, hw_flags);
-+
-+			it87_bits_in_byte_out = 0;
-+			it87_send_counter++;
-+			byte_out = 0;
-+		}
-+		count--;
-+	}
-+}
-+
 +
 +/*
-+maybe: exchange space and pulse because
-+it8705 only modulates 0-bits
-+*/
-+
-+
-+static void send_space(unsigned long len)
++ *
++ */
++static ssize_t irctl_read(struct file *file,
++			  char *buffer,
++			  size_t length,
++			  loff_t *ppos)
 +{
-+	send_it87(len, TIME_CONST, IT87_CIR_SPACE, IT87_CIR_BAUDRATE_DIVISOR);
-+}
++	struct irctl *ir = &irctls[MINOR(file->f_dentry->d_inode->i_rdev)];
++	unsigned char buf[ir->buf->chunk_size];
++	int ret = 0, written = 0;
++	DECLARE_WAITQUEUE(wait, current);
 +
-+static void send_pulse(unsigned long len)
-+{
-+	send_it87(len, TIME_CONST, IT87_CIR_PULSE, IT87_CIR_BAUDRATE_DIVISOR);
-+}
++	dprintk(LOGHEAD "read called\n", ir->p.name, ir->p.minor);
 +
++	/* if the plugin has a specific read function use it instead */
++	if (ir->p.fops && ir->p.fops->read)
++		return ir->p.fops->read(file, buffer, length, ppos);
 +
-+static void init_send()
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&hardware_lock, flags);
-+	/* RXEN=0: receiver disable */
-+	it87_RXEN_mask = 0;
-+	outb(inb(io + IT87_CIR_RCR) & ~IT87_CIR_RCR_RXEN,
-+	     io + IT87_CIR_RCR);
-+	spin_unlock_irqrestore(&hardware_lock, flags);
-+	it87_bits_in_byte_out = 0;
-+	it87_send_counter = 0;
-+}
-+
-+
-+static void terminate_send(unsigned long len)
-+{
-+	unsigned long flags;
-+	unsigned long last = 0;
-+
-+	last = it87_send_counter;
-+	/* make sure all necessary data has been sent */
-+	while (last == it87_send_counter)
-+		send_space(len);
-+	/* wait until all data sent */
-+	while ((inb(io + IT87_CIR_TSR) & IT87_CIR_TSR_TXFBC) != 0)
-+		;
-+	/* then reenable receiver */
-+	spin_lock_irqsave(&hardware_lock, flags);
-+	it87_RXEN_mask = IT87_CIR_RCR_RXEN;
-+	outb(inb(io + IT87_CIR_RCR) | IT87_CIR_RCR_RXEN,
-+	     io + IT87_CIR_RCR);
-+	spin_unlock_irqrestore(&hardware_lock, flags);
-+}
-+
-+
-+static int init_hardware(void)
-+{
-+	unsigned long flags;
-+	unsigned char it87_rcr = 0;
-+
-+	spin_lock_irqsave(&hardware_lock, flags);
-+	/* init cir-port */
-+	/* enable r/w-access to Baudrate-Register */
-+	outb(IT87_CIR_IER_BR, io + IT87_CIR_IER);
-+	outb(IT87_CIR_BAUDRATE_DIVISOR % 0x100, io+IT87_CIR_BDLR);
-+	outb(IT87_CIR_BAUDRATE_DIVISOR / 0x100, io+IT87_CIR_BDHR);
-+	/* Baudrate Register off, define IRQs: Input only */
-+	if (digimatrix) {
-+		outb(IT87_CIR_IER_IEC | IT87_CIR_IER_RFOIE, io + IT87_CIR_IER);
-+		/* RX: HCFS=0, RXDCR = 001b (33,75..38,25 kHz), RXEN=1 */
-+	} else {
-+		outb(IT87_CIR_IER_IEC | IT87_CIR_IER_RDAIE, io + IT87_CIR_IER);
-+		/* RX: HCFS=0, RXDCR = 001b (35,6..40,3 kHz), RXEN=1 */
-+	}
-+	it87_rcr = (IT87_CIR_RCR_RXEN & it87_RXEN_mask) | 0x1;
-+	if (it87_enable_demodulator)
-+		it87_rcr |= IT87_CIR_RCR_RXEND;
-+	outb(it87_rcr, io + IT87_CIR_RCR);
-+	if (digimatrix) {
-+		/* Set FIFO depth to 1 byte, and disable TX */
-+		outb(inb(io + IT87_CIR_TCR1) |  0x00,
-+		     io + IT87_CIR_TCR1);
-+
-+		/* TX: it87_freq (36kHz),
-+		   'reserved' sensitivity setting (0x00) */
-+		outb(((it87_freq - IT87_CIR_FREQ_MIN) << 3) | 0x00,
-+		     io + IT87_CIR_TCR2);
-+	} else {
-+		/* TX: 38kHz, 13,3us (pulse-width */
-+		outb(((it87_freq - IT87_CIR_FREQ_MIN) << 3) | 0x06,
-+		     io + IT87_CIR_TCR2);
-+	}
-+	spin_unlock_irqrestore(&hardware_lock, flags);
-+	return 0;
-+}
-+
-+
-+static void drop_hardware(void)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&hardware_lock, flags);
-+	disable_irq(irq);
-+	/* receiver disable */
-+	it87_RXEN_mask = 0;
-+	outb(0x1, io + IT87_CIR_RCR);
-+	/* turn off irqs */
-+	outb(0, io + IT87_CIR_IER);
-+	/* fifo clear */
-+	outb(IT87_CIR_TCR1_FIFOCLR, io+IT87_CIR_TCR1);
-+	/* reset */
-+	outb(IT87_CIR_IER_RESET, io+IT87_CIR_IER);
-+	enable_irq(irq);
-+	spin_unlock_irqrestore(&hardware_lock, flags);
-+}
-+
-+
-+static unsigned char it87_read(unsigned char port)
-+{
-+	outb(port, IT87_ADRPORT);
-+	return inb(IT87_DATAPORT);
-+}
-+
-+
-+static void it87_write(unsigned char port, unsigned char data)
-+{
-+	outb(port, IT87_ADRPORT);
-+	outb(data, IT87_DATAPORT);
-+}
-+
-+
-+/* SECTION: Initialisation */
-+
-+static int init_port(void)
-+{
-+	unsigned long hw_flags;
-+	int retval = 0;
-+
-+	unsigned char init_bytes[4] = IT87_INIT;
-+	unsigned char it87_chipid = 0;
-+	unsigned char ldn = 0;
-+	unsigned int  it87_io = 0;
-+	unsigned int  it87_irq = 0;
-+
-+	/* Enter MB PnP Mode */
-+	outb(init_bytes[0], IT87_ADRPORT);
-+	outb(init_bytes[1], IT87_ADRPORT);
-+	outb(init_bytes[2], IT87_ADRPORT);
-+	outb(init_bytes[3], IT87_ADRPORT);
-+
-+	/* 8712 or 8705 ? */
-+	it87_chipid = it87_read(IT87_CHIP_ID1);
-+	if (it87_chipid != 0x87) {
-+		retval = -ENXIO;
-+		return retval;
-+	}
-+	it87_chipid = it87_read(IT87_CHIP_ID2);
-+	if ((it87_chipid != 0x12) && (it87_chipid != 0x05)) {
-+		printk(KERN_INFO LIRC_DRIVER_NAME
-+		       ": no IT8705/12 found, exiting..\n");
-+		retval = -ENXIO;
-+		return retval;
-+	}
-+	printk(KERN_INFO LIRC_DRIVER_NAME
-+	       ": found IT87%.2x.\n",
-+	       it87_chipid);
-+
-+	/* get I/O-Port and IRQ */
-+	if (it87_chipid == 0x12)
-+		ldn = IT8712_CIR_LDN;
-+	else
-+		ldn = IT8705_CIR_LDN;
-+	it87_write(IT87_LDN, ldn);
-+
-+	it87_io = it87_read(IT87_CIR_BASE_MSB) * 256 +
-+		  it87_read(IT87_CIR_BASE_LSB);
-+	if (it87_io == 0) {
-+		if (io == 0)
-+			io = IT87_CIR_DEFAULT_IOBASE;
-+		printk(KERN_INFO LIRC_DRIVER_NAME
-+		       ": set default io 0x%x\n",
-+		       io);
-+		it87_write(IT87_CIR_BASE_MSB, io / 0x100);
-+		it87_write(IT87_CIR_BASE_LSB, io % 0x100);
-+	} else
-+		io = it87_io;
-+
-+	it87_irq = it87_read(IT87_CIR_IRQ);
-+	if (digimatrix || it87_irq == 0) {
-+		if (irq == 0)
-+			irq = IT87_CIR_DEFAULT_IRQ;
-+		printk(KERN_INFO LIRC_DRIVER_NAME
-+		       ": set default irq 0x%x\n",
-+		       irq);
-+		it87_write(IT87_CIR_IRQ, irq);
-+	} else
-+		irq = it87_irq;
-+
-+	spin_lock_irqsave(&hardware_lock, hw_flags);
-+	/* reset */
-+	outb(IT87_CIR_IER_RESET, io+IT87_CIR_IER);
-+	/* fifo clear */
-+	outb(IT87_CIR_TCR1_FIFOCLR |
-+	     /*	     IT87_CIR_TCR1_ILE | */
-+	     IT87_CIR_TCR1_TXRLE |
-+	     IT87_CIR_TCR1_TXENDF, io+IT87_CIR_TCR1);
-+	spin_unlock_irqrestore(&hardware_lock, hw_flags);
-+
-+	/* get I/O port access and IRQ line */
-+	if (request_region(io, 8, LIRC_DRIVER_NAME) == NULL) {
-+		printk(KERN_ERR LIRC_DRIVER_NAME
-+		       ": i/o port 0x%.4x already in use.\n", io);
-+		/* Leaving MB PnP Mode */
-+		it87_write(IT87_CFGCTRL, 0x2);
-+		return -EBUSY;
++	if (mutex_lock_interruptible(&ir->buffer_lock))
++		return -ERESTARTSYS;
++	if (!ir->attached) {
++		mutex_unlock(&ir->buffer_lock);
++		return -ENODEV;
 +	}
 +
-+	/* activate CIR-Device */
-+	it87_write(IT87_CIR_ACT, 0x1);
-+
-+	/* Leaving MB PnP Mode */
-+	it87_write(IT87_CFGCTRL, 0x2);
-+
-+	retval = request_irq(irq, it87_interrupt, 0 /*IRQF_DISABLED*/,
-+			     LIRC_DRIVER_NAME, NULL);
-+	if (retval < 0) {
-+		printk(KERN_ERR LIRC_DRIVER_NAME
-+		       ": IRQ %d already in use.\n",
-+		       irq);
-+		release_region(io, 8);
-+		return retval;
++	if (length % ir->buf->chunk_size) {
++		dprintk(LOGHEAD "read result = -EINVAL\n",
++			ir->p.name, ir->p.minor);
++		mutex_unlock(&ir->buffer_lock);
++		return -EINVAL;
 +	}
 +
-+	printk(KERN_INFO LIRC_DRIVER_NAME
-+	       ": I/O port 0x%.4x, IRQ %d.\n", io, irq);
++	/*
++	 * we add ourselves to the task queue before buffer check
++	 * to avoid losing scan code (in case when queue is awaken somewhere
++	 * beetwen while condition checking and scheduling)
++	 */
++	add_wait_queue(&ir->buf->wait_poll, &wait);
++	set_current_state(TASK_INTERRUPTIBLE);
 +
-+	init_timer(&timerlist);
-+	timerlist.function = it87_timeout;
-+	timerlist.data = 0xabadcafe;
++	/*
++	 * while we did't provide 'length' bytes, device is opened in blocking
++	 * mode and 'copy_to_user' is happy, wait for data.
++	 */
++	while (written < length && ret == 0) {
++		if (lirc_buffer_empty(ir->buf)) {
++			/* According to the read(2) man page, 'written' can be
++			 * returned as less than 'length', instead of blocking
++			 * again, returning -EWOULDBLOCK, or returning
++			 * -ERESTARTSYS */
++			if (written)
++				break;
++			if (file->f_flags & O_NONBLOCK) {
++				ret = -EWOULDBLOCK;
++				break;
++			}
++			if (signal_pending(current)) {
++				ret = -ERESTARTSYS;
++				break;
++			}
++			schedule();
++			set_current_state(TASK_INTERRUPTIBLE);
++			if (!ir->attached) {
++				ret = -ENODEV;
++				break;
++			}
++		} else {
++			lirc_buffer_read_1(ir->buf, buf);
++			ret = copy_to_user((void *)buffer+written, buf,
++					   ir->buf->chunk_size);
++			written += ir->buf->chunk_size;
++		}
++	}
 +
-+	return 0;
++	remove_wait_queue(&ir->buf->wait_poll, &wait);
++	set_current_state(TASK_RUNNING);
++	mutex_unlock(&ir->buffer_lock);
++
++	dprintk(LOGHEAD "read result = %s (%d)\n",
++		ir->p.name, ir->p.minor, ret ? "-EFAULT" : "OK", ret);
++
++	return ret ? ret : written;
 +}
 +
 +
-+static void drop_port(void)
++void *lirc_get_pdata(struct file *file)
 +{
-+/*
-+	unsigned char init_bytes[4] = IT87_INIT;
++	void *data = NULL;
 +
-+	/ * Enter MB PnP Mode * /
-+	outb(init_bytes[0], IT87_ADRPORT);
-+	outb(init_bytes[1], IT87_ADRPORT);
-+	outb(init_bytes[2], IT87_ADRPORT);
-+	outb(init_bytes[3], IT87_ADRPORT);
++	if (file && file->f_dentry && file->f_dentry->d_inode &&
++	    file->f_dentry->d_inode->i_rdev) {
++		struct irctl *ir;
++		ir = &irctls[MINOR(file->f_dentry->d_inode->i_rdev)];
++		data = ir->p.data;
++	}
 +
-+	/ * deactivate CIR-Device * /
-+	it87_write(IT87_CIR_ACT, 0x0);
-+
-+	/ * Leaving MB PnP Mode * /
-+	it87_write(IT87_CFGCTRL, 0x2);
-+*/
-+
-+	del_timer_sync(&timerlist);
-+	free_irq(irq, NULL);
-+	release_region(io, 8);
++	return data;
 +}
++EXPORT_SYMBOL(lirc_get_pdata);
 +
 +
-+static int init_lirc_it87(void)
++static ssize_t irctl_write(struct file *file, const char *buffer,
++			   size_t length, loff_t *ppos)
 +{
-+	int retval;
++	struct irctl *ir = &irctls[MINOR(file->f_dentry->d_inode->i_rdev)];
 +
-+	init_waitqueue_head(&lirc_read_queue);
-+	retval = init_port();
-+	if (retval < 0)
-+		return retval;
-+	init_hardware();
-+	printk(KERN_INFO LIRC_DRIVER_NAME ": Installed.\n");
-+	return 0;
++	dprintk(LOGHEAD "write called\n", ir->p.name, ir->p.minor);
++
++	/* if the plugin has a specific read function use it instead */
++	if (ir->p.fops && ir->p.fops->write)
++		return ir->p.fops->write(file, buffer, length, ppos);
++
++	if (!ir->attached)
++		return -ENODEV;
++
++	return -EINVAL;
 +}
 +
++
++static struct file_operations fops = {
++	.read		= irctl_read,
++	.write		= irctl_write,
++	.poll		= irctl_poll,
++	.ioctl		= irctl_ioctl,
++	.open		= irctl_open,
++	.release	= irctl_close
++};
++
++
++static int lirc_dev_init(void)
++{
++	int i;
++
++	for (i = 0; i < MAX_IRCTL_DEVICES; ++i)
++		init_irctl(&irctls[i]);
++
++	if (register_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME, &fops)) {
++		printk(KERN_ERR "lirc_dev: register_chrdev failed\n");
++		goto out;
++	}
++
++	lirc_class = class_create(THIS_MODULE, "lirc");
++	if (IS_ERR(lirc_class)) {
++		printk(KERN_ERR "lirc_dev: class_create failed\n");
++		goto out_unregister;
++	}
++
++	printk(KERN_INFO "lirc_dev: IR Remote Control driver registered, "
++	       "major %d \n", IRCTL_DEV_MAJOR);
++
++	return SUCCESS;
++
++out_unregister:
++	/* unregister_chrdev returns void now */
++	unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
++out:
++	return -1;
++}
++
++/* ---------------------------------------------------------------------- */
 +
 +#ifdef MODULE
 +
-+static int __init lirc_it87_init(void)
++/*
++ *
++ */
++int init_module(void)
 +{
-+	int retval;
-+
-+	retval = init_chrdev();
-+	if (retval < 0)
-+		return retval;
-+	retval = init_lirc_it87();
-+	if (retval) {
-+		drop_chrdev();
-+		return retval;
-+	}
-+	return 0;
++	return lirc_dev_init();
 +}
 +
-+
-+static void __exit lirc_it87_exit(void)
++/*
++ *
++ */
++void cleanup_module(void)
 +{
-+	drop_hardware();
-+	drop_chrdev();
-+	drop_port();
-+	printk(KERN_INFO LIRC_DRIVER_NAME ": Uninstalled.\n");
++	/* unregister_chrdev returns void now */
++	unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
++	class_destroy(lirc_class);
++	dprintk("lirc_dev: module unloaded\n");
 +}
 +
-+module_init(lirc_it87_init);
-+module_exit(lirc_it87_exit);
-+
-+MODULE_DESCRIPTION("LIRC driver for ITE IT8712/IT8705 CIR port");
-+MODULE_AUTHOR("Hans-Gunter Lutke Uphues");
++MODULE_DESCRIPTION("LIRC base driver module");
++MODULE_AUTHOR("Artur Lipowski");
 +MODULE_LICENSE("GPL");
-+
-+module_param(io, int, 0444);
-+MODULE_PARM_DESC(io, "I/O base address (default: 0x310)");
-+
-+module_param(irq, int, 0444);
-+#ifdef LIRC_IT87_DIGIMATRIX
-+MODULE_PARM_DESC(irq, "Interrupt (1,3-12) (default: 9)");
-+#else
-+MODULE_PARM_DESC(irq, "Interrupt (1,3-12) (default: 7)");
-+#endif
-+
-+module_param(it87_enable_demodulator, bool, 0444);
-+MODULE_PARM_DESC(it87_enable_demodulator,
-+		 "Receiver demodulator enable/disable (1/0), default: 0");
++MODULE_ALIAS_CHARDEV_MAJOR(IRCTL_DEV_MAJOR);
 +
 +module_param(debug, bool, 0644);
 +MODULE_PARM_DESC(debug, "Enable debugging messages");
 +
-+module_param(digimatrix, bool, 0644);
-+#ifdef LIRC_IT87_DIGIMATRIX
-+MODULE_PARM_DESC(digimatrix,
-+	"Asus Digimatrix it87 compat. enable/disable (1/0), default: 1");
-+#else
-+MODULE_PARM_DESC(digimatrix,
-+	"Asus Digimatrix it87 compat. enable/disable (1/0), default: 0");
-+#endif
-+
-+
-+module_param(it87_freq, int, 0444);
-+#ifdef LIRC_IT87_DIGIMATRIX
-+MODULE_PARM_DESC(it87_freq,
-+    "Carrier demodulator frequency (kHz), (default: 36)");
-+#else
-+MODULE_PARM_DESC(it87_freq,
-+    "Carrier demodulator frequency (kHz), (default: 38)");
-+#endif
++#else /* not a MODULE */
++subsys_initcall(lirc_dev_init);
 +
 +#endif /* MODULE */
-+
 +
 +/*
 + * Overrides for Emacs so that we follow Linus's tabbing style.
@@ -1082,128 +1038,294 @@ index 0000000..0a64847
 + * c-basic-offset: 8
 + * End:
 + */
-diff --git a/drivers/input/lirc/lirc_it87.h b/drivers/input/lirc/lirc_it87.h
+diff --git a/drivers/input/lirc/lirc_dev.h b/drivers/input/lirc/lirc_dev.h
 new file mode 100644
-index 0000000..a997204
+index 0000000..920dd43
 --- /dev/null
-+++ b/drivers/input/lirc/lirc_it87.h
-@@ -0,0 +1,116 @@
-+/* lirc_it87.h */
-+/* SECTION: Definitions */
-+
-+/********************************* ITE IT87xx ************************/
-+
-+/* based on the following documentation from ITE:
-+   a) IT8712F Preliminary CIR Programming Guide V0.1
-+   b) IT8705F Simple LPC I/O Preliminary Specifiction V0.3
-+   c) IT8712F EC-LPC I/O Preliminary Specification V0.5
-+*/
-+
-+/* IT8712/05 Ports: */
-+#define IT87_ADRPORT      0x2e
-+#define IT87_DATAPORT     0x2f
-+#define IT87_INIT         {0x87, 0x01, 0x55, 0x55}
-+
-+/* alternate Ports: */
++++ b/drivers/input/lirc/lirc_dev.h
+@@ -0,0 +1,262 @@
 +/*
-+#define IT87_ADRPORT      0x4e
-+#define IT87_DATAPORT     0x4f
-+#define IT87_INIT         {0x87, 0x01, 0x55, 0xaa}
++ * LIRC base driver
++ *
++ * (L) by Artur Lipowski <alipowski@interia.pl>
++ *        This code is licensed under GNU GPL
++ *
 + */
 +
-+/* IT8712/05 Registers */
-+#define IT87_CFGCTRL      0x2
-+#define IT87_LDN          0x7
-+#define IT87_CHIP_ID1     0x20
-+#define IT87_CHIP_ID2     0x21
-+#define IT87_CFG_VERSION  0x22
-+#define IT87_SWSUSPEND    0x23
++#ifndef _LINUX_LIRC_DEV_H
++#define _LINUX_LIRC_DEV_H
 +
-+#define IT8712_CIR_LDN    0xa
-+#define IT8705_CIR_LDN    0x7
++#define MAX_IRCTL_DEVICES 4
++#define BUFLEN            16
 +
-+/* CIR Configuration Registers: */
-+#define IT87_CIR_ACT      0x30
-+#define IT87_CIR_BASE_MSB 0x60
-+#define IT87_CIR_BASE_LSB 0x61
-+#define IT87_CIR_IRQ      0x70
-+#define IT87_CIR_CONFIG   0xf0
++/* #define LIRC_BUFF_POWER_OF_2 */
++#ifdef LIRC_BUFF_POWER_OF_2
++#define mod(n, div) ((n) & ((div) - 1))
++#else
++#define mod(n, div) ((n) % (div))
++#endif
++#include <linux/slab.h>
++#include <linux/fs.h>
 +
-+/* List of IT87_CIR registers: offset to BaseAddr */
-+#define IT87_CIR_DR   0
-+#define IT87_CIR_IER  1
-+#define IT87_CIR_RCR  2
-+#define IT87_CIR_TCR1 3
-+#define IT87_CIR_TCR2 4
-+#define IT87_CIR_TSR  5
-+#define IT87_CIR_RSR  6
-+#define IT87_CIR_BDLR 5
-+#define IT87_CIR_BDHR 6
-+#define IT87_CIR_IIR  7
++struct lirc_buffer {
++	wait_queue_head_t wait_poll;
++	spinlock_t lock;
 +
-+/* Bit Definitionen */
-+/* IER: */
-+#define IT87_CIR_IER_TM_EN   0x80
-+#define IT87_CIR_IER_RESEVED 0x40
-+#define IT87_CIR_IER_RESET   0x20
-+#define IT87_CIR_IER_BR      0x10
-+#define IT87_CIR_IER_IEC     0x8
-+#define IT87_CIR_IER_RFOIE   0x4
-+#define IT87_CIR_IER_RDAIE   0x2
-+#define IT87_CIR_IER_TLDLIE  0x1
++	unsigned char *data;
++	unsigned int chunk_size;
++	unsigned int size; /* in chunks */
++	unsigned int fill; /* in chunks */
++	int head, tail;    /* in chunks */
++	/* Using chunks instead of bytes pretends to simplify boundary checking
++	 * And should allow for some performance fine tunning later */
++};
++static inline void _lirc_buffer_clear(struct lirc_buffer *buf)
++{
++	buf->head = 0;
++	buf->tail = 0;
++	buf->fill = 0;
++}
++static inline int lirc_buffer_init(struct lirc_buffer *buf,
++				    unsigned int chunk_size,
++				    unsigned int size)
++{
++	/* Adjusting size to the next power of 2 would allow for
++	 * inconditional LIRC_BUFF_POWER_OF_2 optimization */
++	init_waitqueue_head(&buf->wait_poll);
++	spin_lock_init(&buf->lock);
++	_lirc_buffer_clear(buf);
++	buf->chunk_size = chunk_size;
++	buf->size = size;
++	buf->data = kmalloc(size*chunk_size, GFP_KERNEL);
++	if (buf->data == NULL)
++		return -1;
++	memset(buf->data, 0, size*chunk_size);
++	return 0;
++}
++static inline void lirc_buffer_free(struct lirc_buffer *buf)
++{
++	kfree(buf->data);
++	buf->data = NULL;
++	buf->head = 0;
++	buf->tail = 0;
++	buf->fill = 0;
++	buf->chunk_size = 0;
++	buf->size = 0;
++}
++static inline int  lirc_buffer_full(struct lirc_buffer *buf)
++{
++	return buf->fill >= buf->size;
++}
++static inline int  lirc_buffer_empty(struct lirc_buffer *buf)
++{
++	return !(buf->fill);
++}
++static inline int  lirc_buffer_available(struct lirc_buffer *buf)
++{
++    return buf->size - buf->fill;
++}
++static inline void lirc_buffer_lock(struct lirc_buffer *buf,
++				    unsigned long *flags)
++{
++	spin_lock_irqsave(&buf->lock, *flags);
++}
++static inline void lirc_buffer_unlock(struct lirc_buffer *buf,
++				      unsigned long *flags)
++{
++	spin_unlock_irqrestore(&buf->lock, *flags);
++}
++static inline void lirc_buffer_clear(struct lirc_buffer *buf)
++{
++	unsigned long flags;
++	lirc_buffer_lock(buf, &flags);
++	_lirc_buffer_clear(buf);
++	lirc_buffer_unlock(buf, &flags);
++}
++static inline void _lirc_buffer_remove_1(struct lirc_buffer *buf)
++{
++	buf->head = mod(buf->head+1, buf->size);
++	buf->fill -= 1;
++}
++static inline void lirc_buffer_remove_1(struct lirc_buffer *buf)
++{
++	unsigned long flags;
++	lirc_buffer_lock(buf, &flags);
++	_lirc_buffer_remove_1(buf);
++	lirc_buffer_unlock(buf, &flags);
++}
++static inline void _lirc_buffer_read_1(struct lirc_buffer *buf,
++				     unsigned char *dest)
++{
++	memcpy(dest, &buf->data[buf->head*buf->chunk_size], buf->chunk_size);
++	buf->head = mod(buf->head+1, buf->size);
++	buf->fill -= 1;
++}
++static inline void lirc_buffer_read_1(struct lirc_buffer *buf,
++				      unsigned char *dest)
++{
++	unsigned long flags;
++	lirc_buffer_lock(buf, &flags);
++	_lirc_buffer_read_1(buf, dest);
++	lirc_buffer_unlock(buf, &flags);
++}
++static inline void _lirc_buffer_write_1(struct lirc_buffer *buf,
++				      unsigned char *orig)
++{
++	memcpy(&buf->data[buf->tail*buf->chunk_size], orig, buf->chunk_size);
++	buf->tail = mod(buf->tail+1, buf->size);
++	buf->fill++;
++}
++static inline void lirc_buffer_write_1(struct lirc_buffer *buf,
++				       unsigned char *orig)
++{
++	unsigned long flags;
++	lirc_buffer_lock(buf, &flags);
++	_lirc_buffer_write_1(buf, orig);
++	lirc_buffer_unlock(buf, &flags);
++}
++static inline void _lirc_buffer_write_n(struct lirc_buffer *buf,
++					unsigned char *orig, int count)
++{
++	memcpy(&buf->data[buf->tail * buf->chunk_size], orig,
++	       count * buf->chunk_size);
++	buf->tail = mod(buf->tail + count, buf->size);
++	buf->fill += count;
++}
++static inline void lirc_buffer_write_n(struct lirc_buffer *buf,
++				       unsigned char *orig, int count)
++{
++	unsigned long flags;
++	int space1;
 +
-+/* RCR: */
-+#define IT87_CIR_RCR_RDWOS  0x80
-+#define IT87_CIR_RCR_HCFS   0x40
-+#define IT87_CIR_RCR_RXEN   0x20
-+#define IT87_CIR_RCR_RXEND  0x10
-+#define IT87_CIR_RCR_RXACT  0x8
-+#define IT87_CIR_RCR_RXDCR  0x7
++	lirc_buffer_lock(buf, &flags);
++	if (buf->head > buf->tail)
++		space1 = buf->head - buf->tail;
++	else
++		space1 = buf->size - buf->tail;
 +
-+/* TCR1: */
-+#define IT87_CIR_TCR1_FIFOCLR 0x80
-+#define IT87_CIR_TCR1_ILE     0x40
-+#define IT87_CIR_TCR1_FIFOTL  0x30
-+#define IT87_CIR_TCR1_TXRLE   0x8
-+#define IT87_CIR_TCR1_TXENDF  0x4
-+#define IT87_CIR_TCR1_TXMPM   0x3
++	if (count > space1) {
++		_lirc_buffer_write_n(buf, orig, space1);
++		_lirc_buffer_write_n(buf, orig+(space1*buf->chunk_size),
++				     count-space1);
++	} else {
++		_lirc_buffer_write_n(buf, orig, count);
++	}
++	lirc_buffer_unlock(buf, &flags);
++}
 +
-+/* TCR2: */
-+#define IT87_CIR_TCR2_CFQ   0xf8
-+#define IT87_CIR_TCR2_TXMPW 0x7
++struct lirc_plugin {
++	char name[40];
++	int minor;
++	int code_length;
++	int sample_rate;
++	unsigned long features;
++	void *data;
++	int (*add_to_buf) (void *data, struct lirc_buffer *buf);
++	wait_queue_head_t* (*get_queue) (void *data);
++	struct lirc_buffer *rbuf;
++	int (*set_use_inc) (void *data);
++	void (*set_use_dec) (void *data);
++	int (*ioctl) (struct inode *, struct file *, unsigned int,
++		      unsigned long);
++	struct file_operations *fops;
++	struct device *dev;
++	struct module *owner;
++};
++/* name:
++ * this string will be used for logs
++ *
++ * minor:
++ * indicates minor device (/dev/lirc) number for registered plugin
++ * if caller fills it with negative value, then the first free minor
++ * number will be used (if available)
++ *
++ * code_length:
++ * length of the remote control key code expressed in bits
++ *
++ * sample_rate:
++ * sample_rate equal to 0 means that no polling will be performed and
++ * add_to_buf will be triggered by external events (through task queue
++ * returned by get_queue)
++ *
++ * data:
++ * it may point to any plugin data and this pointer will be passed to
++ * all callback functions
++ *
++ * add_to_buf:
++ * add_to_buf will be called after specified period of the time or
++ * triggered by the external event, this behavior depends on value of
++ * the sample_rate this function will be called in user context. This
++ * routine should return 0 if data was added to the buffer and
++ * -ENODATA if none was available. This should add some number of bits
++ * evenly divisible by code_length to the buffer
++ *
++ * get_queue:
++ * this callback should return a pointer to the task queue which will
++ * be used for external event waiting
++ *
++ * rbuf:
++ * if not NULL, it will be used as a read buffer, you will have to
++ * write to the buffer by other means, like irq's (see also
++ * lirc_serial.c).
++ *
++ * set_use_inc:
++ * set_use_inc will be called after device is opened
++ *
++ * set_use_dec:
++ * set_use_dec will be called after device is closed
++ *
++ * ioctl:
++ * Some ioctl's can be directly handled by lirc_dev but will be
++ * forwared here if not NULL and only handled if it returns
++ * -ENOIOCTLCMD (see also lirc_serial.c).
++ *
++ * fops:
++ * file_operations for drivers which don't fit the current plugin model.
++ *
++ * owner:
++ * the module owning this struct
++ *
++ */
 +
-+/* TSR: */
-+#define IT87_CIR_TSR_RESERVED 0xc0
-+#define IT87_CIR_TSR_TXFBC    0x3f
 +
-+/* RSR: */
-+#define IT87_CIR_RSR_RXFTO    0x80
-+#define IT87_CIR_RSR_RESERVED 0x40
-+#define IT87_CIR_RSR_RXFBC    0x3f
++/* following functions can be called ONLY from user context
++ *
++ * returns negative value on error or minor number
++ * of the registered device if success
++ * contens of the structure pointed by p is copied
++ */
++extern int lirc_register_plugin(struct lirc_plugin *p);
 +
-+/* IIR: */
-+#define IT87_CIR_IIR_RESERVED 0xf8
-+#define IT87_CIR_IIR_IID      0x6
-+#define IT87_CIR_IIR_IIP      0x1
++/* returns negative value on error or 0 if success
++*/
++extern int lirc_unregister_plugin(int minor);
 +
-+/* TM: */
-+#define IT87_CIR_TM_IL_SEL    0x80
-+#define IT87_CIR_TM_RESERVED  0x40
-+#define IT87_CIR_TM_TM_REG    0x3f
++/* Returns the private data stored in the lirc_plugin
++ * associated with the given device file pointer.
++ */
++void *lirc_get_pdata(struct file *file);
 +
-+#define IT87_CIR_FIFO_SIZE 32
++#endif
+diff --git a/MAINTAINERS b/MAINTAINERS
+index af27945..f3f7f03 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2580,6 +2580,15 @@ W:	http://www.pasemi.com/
+ L:	linuxppc-dev@ozlabs.org
+ S:	Supported
+ 
++LINUX INFRARED REMOTE CONTROL DRIVERS (LIRC)
++P:	Jarod Wilson
++M:	jarod@redhat.com
++P:	Christoph Bartelmus
++M:	lirc@bartelmus.de
++W:	http://www.lirc.org/
++L:	lirc-list@lists.sourceforge.net
++S:	Maintained
 +
-+/* Baudratedivisor for IT87: power of 2: only 1,2,4 or 8) */
-+#define IT87_CIR_BAUDRATE_DIVISOR 0x1
-+#define IT87_CIR_DEFAULT_IOBASE 0x310
-+#define IT87_CIR_DEFAULT_IRQ    0x7
-+#define IT87_CIR_SPACE 0x00
-+#define IT87_CIR_PULSE 0xff
-+#define IT87_CIR_FREQ_MIN 27
-+#define IT87_CIR_FREQ_MAX 58
-+#define TIME_CONST (IT87_CIR_BAUDRATE_DIVISOR * 8000000ul / 115200ul)
-+
-+/********************************* ITE IT87xx ************************/
+ LLC (802.2)
+ P:	Arnaldo Carvalho de Melo
+ M:	acme@ghostprotocols.net
 -- 
 1.6.0.1
 
