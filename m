@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYIIBUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbYIIBVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbYIIBUy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 21:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbYIIBU1
+	id S1755988AbYIIBVR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 21:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbYIIBU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 21:20:27 -0400
+	Mon, 8 Sep 2008 21:20:29 -0400
 Received: from smtp.polymtl.ca ([132.207.4.11]:38310 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753733AbYIIBUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 21:20:24 -0400
-Message-Id: <20080909005116.694358963@polymtl.ca>
+	id S1754863AbYIIBU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Sep 2008 21:20:26 -0400
+Message-Id: <20080909005116.532077779@polymtl.ca>
 References: <20080909003403.836661865@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Mon, 08 Sep 2008 20:34:07 -0400
+Date: Mon, 08 Sep 2008 20:34:06 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
@@ -21,14 +21,16 @@ To: Linus Torvalds <torvalds@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>, Joe Perches <joe@perches.com>,
        Wei Weng <wweng@acedsl.com>, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC PATCH 4/5] Priority Sifting Reader-Writer Lock Sample
-Content-Disposition: inline; filename=psrwlock-sample.patch
+Subject: [RFC PATCH 3/5] Priority Sifting Reader-Writer Lock x86_64 Optimised Call
+Content-Disposition: inline; filename=psrwlock-x86_64-optimised-call.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue,  9 Sep 2008 00:55:58 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sample module to show how to use psrwlock.
+Create a specialized calling convention for x86_64 where the first argument is
+passed in rax. Use a trampoline to move it to the rdi register. Useful to re-use
+the return value of a cmpxchg without moving registers in-line.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Linus Torvalds <torvalds@linux-foundation.org>
@@ -41,223 +43,203 @@ CC: Peter Zijlstra <peterz@infradead.org>
 CC: Joe Perches <joe@perches.com>
 CC: Wei Weng <wweng@acedsl.com>
 ---
- samples/Kconfig                     |    5 +
- samples/Makefile                    |    2 
- samples/psrwlock/Makefile           |    4 
- samples/psrwlock/psrwlock_example.c |  173 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 183 insertions(+), 1 deletion(-)
+ arch/x86/Kconfig                 |    1 
+ arch/x86/kernel/Makefile         |    3 +
+ arch/x86/kernel/call_64.S        |   45 +++++++++++++++++++++++++
+ arch/x86/kernel/call_export_64.c |   36 ++++++++++++++++++++
+ include/asm-x86/call_64.h        |   68 +++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 153 insertions(+)
 
-Index: linux-2.6-lttng/samples/Makefile
+Index: linux-2.6-lttng/arch/x86/kernel/Makefile
 ===================================================================
---- linux-2.6-lttng.orig/samples/Makefile	2008-09-06 14:05:34.000000000 -0400
-+++ linux-2.6-lttng/samples/Makefile	2008-09-06 14:12:42.000000000 -0400
-@@ -1,3 +1,3 @@
- # Makefile for Linux samples code
+--- linux-2.6-lttng.orig/arch/x86/kernel/Makefile	2008-09-08 11:49:37.000000000 -0400
++++ linux-2.6-lttng/arch/x86/kernel/Makefile	2008-09-08 11:50:46.000000000 -0400
+@@ -99,6 +99,9 @@ scx200-y			+= scx200_32.o
  
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ psrwlock/
-Index: linux-2.6-lttng/samples/psrwlock/Makefile
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/samples/psrwlock/Makefile	2008-09-06 14:12:42.000000000 -0400
-@@ -0,0 +1,4 @@
-+# builds the writer-biased rwlock example kernel modules;
-+# then to use one (as root):  insmod <module_name.ko>
+ obj-$(CONFIG_OLPC)		+= olpc.o
+ 
++obj-y				+= call_64.o
++obj-y				+= call_export_64.o
 +
-+obj-$(CONFIG_SAMPLE_PSRWLOCK) += psrwlock_example.o
-Index: linux-2.6-lttng/samples/psrwlock/psrwlock_example.c
+ ###
+ # 64 bit specific files
+ ifeq ($(CONFIG_X86_64),y)
+Index: linux-2.6-lttng/arch/x86/kernel/call_64.S
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/samples/psrwlock/psrwlock_example.c	2008-09-06 14:21:22.000000000 -0400
-@@ -0,0 +1,173 @@
++++ linux-2.6-lttng/arch/x86/kernel/call_64.S	2008-09-08 11:53:47.000000000 -0400
+@@ -0,0 +1,45 @@
 +/*
-+ * Priority Sifting Reader-Writer Lock Example
++ * linux/arch/x86/kernel/call_64.S -- special 64-bits calling conventions
 + *
-+ * Copyright 2008 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ * Copyright (C) 2008 Mathieu Desnoyers
++ */
++
++#include <linux/linkage.h>
++
++/*
++ * Called by call_rax_rsi().
++ *
++ * Move rax to rdi and proceed to the standard call.
++ */
++.macro TRAMPOLINE_RAX_RSI symbol
++ENTRY(asm_\symbol)
++	movq	%rax, %rdi
++	jmp	_\symbol
++END(asm_\symbol)
++.endm
++
++/*
++ * Called by call_rbx_rsi().
++ *
++ * Move rbx to rdi and proceed to the standard call.
++ */
++.macro TRAMPOLINE_RBX_RSI symbol
++ENTRY(asm_\symbol)
++	movq	%rbx, %rdi
++	jmp	_\symbol
++END(asm_\symbol)
++.endm
++
++TRAMPOLINE_RAX_RSI psread_lock_slow_irq
++TRAMPOLINE_RAX_RSI psread_trylock_slow_irq
++TRAMPOLINE_RAX_RSI psread_lock_slow_bh
++TRAMPOLINE_RAX_RSI psread_trylock_slow_bh
++TRAMPOLINE_RAX_RSI psread_lock_slow_inatomic
++TRAMPOLINE_RAX_RSI psread_trylock_slow_inatomic
++TRAMPOLINE_RAX_RSI psread_lock_slow
++TRAMPOLINE_RAX_RSI psread_trylock_slow
++
++TRAMPOLINE_RAX_RSI pswrite_lock_slow
++TRAMPOLINE_RAX_RSI pswrite_trylock_slow
++TRAMPOLINE_RAX_RSI pswrite_unlock_slow
++TRAMPOLINE_RBX_RSI psrwlock_wakeup
+Index: linux-2.6-lttng/arch/x86/kernel/call_export_64.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/arch/x86/kernel/call_export_64.c	2008-09-08 11:50:46.000000000 -0400
+@@ -0,0 +1,36 @@
++/*
++ * linux/arch/x86/kernel/call_64.c -- special 64-bits calling conventions
++ *
++ * Export function symbols of special calling convention functions.
++ *
++ * Copyright (C) 2008 Mathieu Desnoyers
 + */
 +
 +#include <linux/module.h>
-+#include <linux/psrwlock.h>
++#include <asm/call_64.h>
 +
-+/*
-+ * Define which execution contexts can access the lock in read or write mode.
-+ * See psrwlock.h and psrwlock-types.h for details.
-+ *
-+ * In this example, the writer is in preemptable context and the readers either
-+ * in IRQ context, softirq context, non-preemptable context or preemptable
-+ * context.
-+ */
-+#define SAMPLE_ALL_WCTX		PSRW_PRIO_P
-+#define SAMPLE_ALL_RCTX		(PSR_IRQ | PSR_BH | PSR_NPTHREAD | PSR_PTHREAD)
++void asm_psread_lock_slow_irq(void);
++EXPORT_SYMBOL_GPL(asm_psread_lock_slow_irq);
++void asm_psread_trylock_slow_irq(void);
++EXPORT_SYMBOL_GPL(asm_psread_trylock_slow_irq);
++void asm_psread_lock_slow_bh(void);
++EXPORT_SYMBOL_GPL(asm_psread_lock_slow_bh);
++void asm_psread_trylock_slow_bh(void);
++EXPORT_SYMBOL_GPL(asm_psread_trylock_slow_bh);
++void asm_psread_lock_slow_inatomic(void);
++EXPORT_SYMBOL_GPL(asm_psread_lock_slow_inatomic);
++void asm_psread_trylock_slow_inatomic(void);
++EXPORT_SYMBOL_GPL(asm_psread_trylock_slow_inatomic);
++void asm_psread_lock_slow(void);
++EXPORT_SYMBOL_GPL(asm_psread_lock_slow);
++void asm_psread_trylock_slow(void);
++EXPORT_SYMBOL_GPL(asm_psread_trylock_slow);
 +
-+static DEFINE_PSRWLOCK(sample_rwlock, SAMPLE_ALL_WCTX, SAMPLE_ALL_RCTX);
-+CHECK_PSRWLOCK_MAP(sample_rwlock, SAMPLE_ALL_WCTX, SAMPLE_ALL_RCTX);
-+
-+/*
-+ * Reader in IRQ context.
-+ */
-+static void executed_in_irq(void)
-+{
-+	psread_lock_irq(&sample_rwlock);
-+	/* read structure */
-+	psread_unlock(&sample_rwlock);
-+}
-+
-+/*
-+ * Reader in Softirq context.
-+ */
-+static void executed_in_bh(void)
-+{
-+	psread_lock_bh(&sample_rwlock);
-+	/* read structure */
-+	psread_unlock(&sample_rwlock);
-+}
-+
-+/*
-+ * Reader in non-preemptable context.
-+ */
-+static void executed_inatomic(void)
-+{
-+	psread_lock_inatomic(&sample_rwlock);
-+	/* read structure */
-+	psread_unlock(&sample_rwlock);
-+}
-+
-+/*
-+ * Reader in preemptable context.
-+ */
-+static void reader_executed_preemptable(void)
-+{
-+	psread_lock(&sample_rwlock);
-+	/* read structure */
-+	psread_unlock(&sample_rwlock);
-+}
-+
-+/*
-+ * Writer in preemptable context.
-+ */
-+static void writer_executed_preemptable(void)
-+{
-+	pswrite_lock(&sample_rwlock, SAMPLE_ALL_WCTX, SAMPLE_ALL_RCTX);
-+	/* read structure */
-+	pswrite_unlock(&sample_rwlock, SAMPLE_ALL_WCTX, SAMPLE_ALL_RCTX);
-+}
-+
-+/*
-+ * Execute readers in all contexts.
-+ */
-+static void sample_all_context(void)
-+{
-+	local_irq_disable();
-+	executed_in_irq();
-+	local_irq_enable();
-+
-+	local_bh_disable();
-+	executed_in_bh();
-+	local_bh_enable();
-+
-+	preempt_disable();
-+	executed_inatomic();
-+	preempt_enable();
-+
-+	reader_executed_preemptable();
-+
-+	writer_executed_preemptable();
-+}
-+
-+
-+/*
-+ * In this second example, the writer is in non-preemptable context and the
-+ * readers either in IRQ context or softirq context only.
-+ */
-+static DEFINE_PSRWLOCK(sample_wnp_rbh_rirq_rwlock,
-+	PSRW_PRIO_P, PSR_IRQ | PSR_BH);
-+CHECK_PSRWLOCK_MAP(sample_wnp_rbh_rirq_rwlock,
-+	PSRW_PRIO_P, PSR_IRQ | PSR_BH);
-+
-+/*
-+ * Reader in IRQ context.
-+ */
-+static void wnp_rbh_rirq_executed_in_irq(void)
-+{
-+	psread_lock_irq(&sample_wnp_rbh_rirq_rwlock);
-+	/* read structure */
-+	psread_unlock(&sample_wnp_rbh_rirq_rwlock);
-+}
-+
-+/*
-+ * Reader in Softirq context.
-+ */
-+static void wnp_rbh_rirq_executed_in_bh(void)
-+{
-+	psread_lock_bh(&sample_wnp_rbh_rirq_rwlock);
-+	/* read structure */
-+	psread_unlock(&sample_wnp_rbh_rirq_rwlock);
-+}
-+
-+/*
-+ * Writer in preemptable context.
-+ */
-+static void wnp_rbh_rirq_writer_executed_non_preemptable(void)
-+{
-+	pswrite_lock(&sample_wnp_rbh_rirq_rwlock,
-+				PSRW_PRIO_P, PSR_IRQ | PSR_BH);
-+	/* read structure */
-+	pswrite_unlock(&sample_wnp_rbh_rirq_rwlock,
-+				PSRW_PRIO_P, PSR_IRQ | PSR_BH);
-+}
-+
-+/*
-+ * Execute readers in all contexts.
-+ */
-+static void sample_wnp_rbh_rirq_context(void)
-+{
-+	local_irq_disable();
-+	wnp_rbh_rirq_executed_in_irq();
-+	local_irq_enable();
-+
-+	local_bh_disable();
-+	wnp_rbh_rirq_executed_in_bh();
-+	local_bh_enable();
-+
-+	preempt_disable();
-+	wnp_rbh_rirq_writer_executed_non_preemptable();
-+	preempt_enable();
-+}
-+
-+static int __init init_example(void)
-+{
-+	sample_all_context();
-+	sample_wnp_rbh_rirq_context();
-+
-+	return 0;
-+}
-+
-+static void __exit exit_example(void)
-+{
-+}
-+
-+module_init(init_example)
-+module_exit(exit_example)
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Mathieu Desnoyers");
-+MODULE_DESCRIPTION("psrwlock example");
-Index: linux-2.6-lttng/samples/Kconfig
++void asm_pswrite_lock_slow(void);
++EXPORT_SYMBOL_GPL(asm_pswrite_lock_slow);
++void asm_pswrite_trylock_slow(void);
++EXPORT_SYMBOL_GPL(asm_pswrite_trylock_slow);
++void asm_pswrite_unlock_slow(void);
++EXPORT_SYMBOL_GPL(asm_pswrite_unlock_slow);
++void asm_psrwlock_wakeup(void);
++EXPORT_SYMBOL_GPL(asm_psrwlock_wakeup);
+Index: linux-2.6-lttng/include/asm-x86/call_64.h
 ===================================================================
---- linux-2.6-lttng.orig/samples/Kconfig	2008-09-06 14:05:34.000000000 -0400
-+++ linux-2.6-lttng/samples/Kconfig	2008-09-06 14:12:42.000000000 -0400
-@@ -33,5 +33,10 @@ config SAMPLE_KRETPROBES
- 	default m
- 	depends on SAMPLE_KPROBES && KRETPROBES
- 
-+config SAMPLE_PSRWLOCK
-+	tristate "Build psrwlock example -- loadable modules only"
-+	default m
-+	depends on m
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/asm-x86/call_64.h	2008-09-08 11:52:07.000000000 -0400
+@@ -0,0 +1,68 @@
++#ifndef __ASM_X86_CALL_64_H
++#define __ASM_X86_CALL_64_H
 +
- endif # SAMPLES
++/*
++ * asm-x86/call_64.h
++ *
++ * Use rax as first argument for the call. Useful when already returned by the
++ * previous instruction, such as cmpxchg.
++ * Leave rdi free to mov rax to rdi in the trampoline.
++ * Return value in rax.
++ *
++ * Saving the registers in the original caller because we cannot restore them in
++ * the trampoline. Save the same as "SAVE_ARGS".
++ *
++ * Copyright (C) 2008 Mathieu Desnoyers
++ */
++
++#define call_rax_rsi(symbol, rax, rsi)				\
++	({							\
++		unsigned long ret, modrsi;			\
++		asm volatile("callq asm_" #symbol "\n\t"	\
++			     : "=a" (ret), "=S" (modrsi)	\
++			     : "a" (rax), "S" (rsi)		\
++			     : "rdi", "rcx", "rdx",		\
++			       "%r8", "%r9", "%r10", "%r11",	\
++			       "cc", "memory");			\
++		ret;						\
++	})
++
++#define call_rbx_rsi(symbol, rbx, rsi)				\
++	({							\
++		unsigned long ret, modrsi;			\
++		asm volatile("callq asm_" #symbol "\n\t"	\
++			     : "=a" (ret), "=S" (modrsi)	\
++			     : "b" (rbx), "S" (rsi)		\
++			     : "rdi", "rcx", "rdx",		\
++			       "%r8", "%r9", "%r10", "%r11",	\
++			       "cc", "memory");			\
++		ret;						\
++	})
++
++#define psread_lock_slow_irq(v, rwlock)				\
++	call_rax_rsi(psread_lock_slow_irq, v, rwlock)
++#define psread_trylock_slow_irq(v, rwlock)			\
++	call_rax_rsi(psread_trylock_slow_irq, v, rwlock)
++#define psread_lock_slow_bh(v, rwlock)				\
++	call_rax_rsi(psread_lock_slow_bh, v, rwlock)
++#define psread_trylock_slow_bh(v, rwlock)			\
++	call_rax_rsi(psread_trylock_slow_bh, v, rwlock)
++#define psread_lock_slow_inatomic(v, rwlock)			\
++	call_rax_rsi(psread_lock_slow_inatomic, v, rwlock)
++#define psread_trylock_slow_inatomic(v, rwlock)			\
++	call_rax_rsi(psread_trylock_slow_inatomic, v, rwlock)
++#define psread_lock_slow(v, rwlock)				\
++	call_rax_rsi(psread_lock_slow, v, rwlock)
++#define psread_trylock_slow(v, rwlock)				\
++	call_rax_rsi(psread_trylock_slow, v, rwlock)
++
++#define pswrite_lock_slow(v, rwlock)				\
++	call_rax_rsi(pswrite_lock_slow, v, rwlock)
++#define pswrite_trylock_slow(v, rwlock)				\
++	call_rax_rsi(pswrite_trylock_slow, v, rwlock)
++#define pswrite_unlock_slow(v, rwlock)				\
++	call_rax_rsi(pswrite_unlock_slow, v, rwlock)
++#define psrwlock_wakeup(v, rwlock)				\
++	call_rbx_rsi(psrwlock_wakeup, v, rwlock)
++
++#endif
+Index: linux-2.6-lttng/arch/x86/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/arch/x86/Kconfig	2008-09-08 11:49:37.000000000 -0400
++++ linux-2.6-lttng/arch/x86/Kconfig	2008-09-08 11:50:46.000000000 -0400
+@@ -31,6 +31,7 @@ config X86
+ 	select HAVE_ARCH_KGDB if !X86_VOYAGER
+ 	select HAVE_GENERIC_DMA_COHERENT if X86_32
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
++	select HAVE_PSRWLOCK_ASM_CALL
  
+ config ARCH_DEFCONFIG
+ 	string
 
 -- 
 Mathieu Desnoyers
