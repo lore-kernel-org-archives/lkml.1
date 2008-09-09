@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbYIIOy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbYIIO4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbYIIOy6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 10:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYIIOyu
+	id S1754810AbYIIO4p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 10:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbYIIO4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 10:54:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59029 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750871AbYIIOyt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 10:54:49 -0400
-Date: Tue, 9 Sep 2008 07:54:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Krzysztof Halasa <khc@pm.waw.pl>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-In-Reply-To: <87d4jdty5b.fsf@basil.nowhere.org>
-Message-ID: <alpine.LFD.1.10.0809090753070.3117@nehalem.linux-foundation.org>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org> <alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org> <48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org> <48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu>
- <alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org> <m3vdx6xm68.fsf@maximus.localdomain> <87d4jdty5b.fsf@basil.nowhere.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 9 Sep 2008 10:56:37 -0400
+Received: from il.qumranet.com ([212.179.150.194]:58307 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbYIIO4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 10:56:37 -0400
+Message-ID: <48C68EA3.4050508@qumranet.com>
+Date: Tue, 09 Sep 2008 17:56:35 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Xen Devel <xen-devel@lists.xensource.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag for IO mappings
+References: <4d93ba619c716c45cca0.1220826073@localhost> <48C67AE0.5060503@qumranet.com> <48C68C6B.7030803@goop.org>
+In-Reply-To: <48C68C6B.7030803@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Avi Kivity wrote:
+>   
+>> Jeremy Fitzhardinge wrote:
+>>     
+>>> Use one of the software-defined PTE bits to indicate that a mapping is
+>>> intended for an IO address.  On native hardware this is irrelevent,
+>>> since a physical address is a physical address.  But in a virtual
+>>> environment, physical addresses are also virtualized, so there needs
+>>> to be some way to distinguish between pseudo-physical addresses and
+>>> actual hardware addresses; _PAGE_IOMAP indicates this intent.
+>>>
+>>> By default, __supported_pte_mask masks out _PAGE_IOMAP, so it doesn't
+>>> even appear in the final pagetable.
+>>>   
+>>>       
+>> Could PTE_SPECIAL, added for get_user_pages_really_fast(), be reused
+>> for this?
+>>
+>>     
+>
+> I'm not sure; I still don't really understand how _PAGE_SPECIAL gets
+> used, other than being user-mode mapping only.  But in principle,
+> _PAGE_IOMAP could be set on both kernel and user mappings (if you direct
+> map a device into a process address space), so I think they would
+> conflict then?
+>
+>   
 
+It's a "don't refcount me" flag, which is not sematically the same as 
+I/O, but may be close enough.
 
-On Tue, 9 Sep 2008, Andi Kleen wrote:
+> Is _PAGE_IOMAP at all useful for device passthrough in kvm?
+>   
 
-> Krzysztof Halasa <khc@pm.waw.pl> writes:
-> 
-> > Linus Torvalds <torvalds@linux-foundation.org> writes:
-> >
-> >>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
-> >>    granted.
-> >
-> > VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
-> > theatres etc) can't CMOV.
-> 
-> AFAIK they fixed that in newer BIOS with a microcode update. It's 
-> slow, but it works.
+No.  We don't care if a page is an I/O page or RAM (other than 
+refcounting correctness and page attributes, which are handled by other 
+means).
 
-Well, more practically, the C3 simply _isn't_ a "modern 32-bit" one. It 
-would fall into the other category of "pre-PPro, but at least better 
-than i386".
+-- 
+error compiling committee.c: too many arguments to function
 
-		Linus
