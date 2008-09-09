@@ -1,101 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbYIIJDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbYIIJEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbYIIJDx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 05:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbYIIJDp
+	id S1756353AbYIIJEc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 05:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbYIIJEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 05:03:45 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:44969 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754010AbYIIJDo (ORCPT
+	Tue, 9 Sep 2008 05:04:24 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:36315 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbYIIJEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 05:03:44 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=11UuCgJkcq4H+/tGtcX2vvn+FEN1Pu1YbbJC4Xi5CtJ2YXPYCb1utEUCyyKcBa9RyiFDG0YJXbi+UF2jpcyUPnUj891rjB1TzqvBrjg9HUFEw3J9H06QMpRl4DvDw1lIxadAfcjlyQGaNfvqN8ip/+PHI1iIvtYN3F/ebv0MqMg=  ;
-X-YMail-OSG: wQS3n5IVM1lW95TV_HkTT__S43bmLJog2ZJu._Zew0377u3Bsj_flnfVPomGbfsKmx9baXpB_oLaGgo0_mNuEYy_umoWIM7uKuaJXKJWqlKHx5hyqO_QQ0WowH6uYmehbig-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
-Date: Tue, 9 Sep 2008 19:03:24 +1000
-User-Agent: KMail/1.9.5
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>
-References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com> <200809091759.13327.nickpiggin@yahoo.com.au> <1220948723.18239.1091.camel@twins.programming.kicks-ass.net>
-In-Reply-To: <1220948723.18239.1091.camel@twins.programming.kicks-ass.net>
+	Tue, 9 Sep 2008 05:04:22 -0400
+Date: Tue, 9 Sep 2008 03:04:21 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com, matthew@wil.cx
+Subject: Re: [PATCH 02/13] PCI: prevent duplicate slot names
+Message-ID: <20080909090421.GA11901@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+	jbarnes@virtuousgeek.org, kristen.c.accardi@intel.com,
+	matthew@wil.cx
+References: <20080816235504.5461.20733.stgit@blender.achiang> <20080817001516.5461.59384.stgit@blender.achiang> <48AD4265.10108@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809091903.24836.nickpiggin@yahoo.com.au>
+In-Reply-To: <48AD4265.10108@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 18:25, Peter Zijlstra wrote:
-> On Tue, 2008-09-09 at 17:59 +1000, Nick Piggin wrote:
+Hi Kenji-san,
 
-> > But it's all per-cpu, so you'd have to iterate down other CPU's child
-> > domains. Which may get dirtied by that CPU. So you get cacheline
-> > bounces.
+As always, thank you very much for the excellent review.
+
+Sorry for the delay; I've been busy with travel, and trying to
+figure out how to solve the issue you pointed out below.
+
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Hi Alex-san,
 >
-> Humm, are you saying each cpu has its own domain tree? My understanding
-> was that its a global structure, eg. given:
+> Thank you for updated patches and I'm sorry for delayed comment.
+> I reviewed your patch and I found two problems. Please see below.
 >
->    domain[0-1]
+> Alex Chiang wrote:
+>> Prevent callers of pci_create_slot() from registering slots with
+>> duplicate names. This condition occurs most often when PCI hotplug
+>> drivers are loaded on platforms with broken firmware that assigns
+>> identical names to multiple slots.
+>>
+>> We now rename these duplicate slots on behalf of the user.
+>>
+>> If firmware assigns the name N to multiple slots, then:
+>>
+>> 	The first registered slot is assigned N
+>> 	The second registered slot is assigned N-1
+>> 	The third registered slot is assigned N-2
+>> 	The Mth registered slot becomes N-M
+>>
+>> A side effect of this patch is that the error condition for when
+>> multiple drivers attempt to claim the same slot becomes much more
+>> prominent.
+>>
+>> In other words, the previous error condition returned for
+>> duplicate slot names (-EEXIST) masked the case when multiple
+>> drivers attempted to claim the same slot. Now, the -EBUSY return
+>> makes the true error more obvious.
+>>
+>> Finally, since we now prevent duplicate slot names, we remove
+>> the logic introduced by the following commits:
+>>
+>>  +static char *make_slot_name(const char *name)
+>> +{
+>> +	char *new_name;
+>> +	int len, width, dup = 1;
+>> +	struct kobject *dup_slot;
+>> +
+>> +	new_name = kstrdup(name, GFP_KERNEL);
+>> +	if (!new_name)
+>> +		goto out;
+>> +
+>> +	/*
+>> +	 * Start off allocating enough room for "name-X"
+>> +	 */
+>> +	len = strlen(name) + 2;
+>> +	width = 1;
+>> +
+>> +try_again:
+>> +	dup_slot = kset_find_obj(pci_slots_kset, new_name);
+>> +	if (!dup_slot)
+>> +		goto out;
+>> +
 >
-> domain[0] domain[1]
+> The kset_find_obj() increments reference counter of specified kobject. So
+> we must call kobject_put() for 'dup_slot', otherwise it leaks reference
+> counter of 'dup_slot' kobject and the corresponding slot directory will
+> never be removed. Here is a sample to fix this problem.
 >
-> cpu0's parent domain is the same instance as cpu1's.
+> 	dup_slot = kset_find_ojb(pci_slots_kset, new_name);
+> 	if (!dup_slot)
+> 		goto out;
+> 	kobject_put(dup_slot);
+> 	^^^^^^^^^^^^^^^^^^^^^^ Added this line
 
-I haven't looked recently, but that's how I wrote it. Has that changed?
+Yes, thanks for catching that. I've fixed it.
 
-
-> > You also lose flexibility (although nobody really takes full advantage
-> > of it) of totally arbitrary topology on a per-cpu basis.
+> I found another problem in pci_hp_register() that would be more complex
+> to fix than above-mentioned problem. Here is a pci_hp_register() with
+> all of your patch applied.
 >
-> Afaict the only flexibility you loose is that you cannot make groups
-> larger/smaller than the child domain - which given that the whole
-> premesis of the groups existence is that the inner-group balancing
-> should be done by the level below - doesn't make sense anyway.
-
-But you *also* cannot have per-cpu domain trees.
-
-
-> > > So my idea was to ditch the groups and just iterate over the child
-> > > domains.
-> >
-> > I'm not saying you couldn't do it (reasonably well -- cacheline bouncing
-> > might be a problem if you propose to traverse other CPU's domains), but
-> > what exactly does that gain you?
+> int pci_hp_register(struct hotplug_slot *slot, struct pci_bus *bus, int slot_nr,
+>                        const char *name)
+> {
+> 	(snip...)
 >
-> Those cacheline bounces could be mitigated by splitting sched_domain
-> into two parts with a cacheline aligned dummy and keep the rarely
-> modified data separate from the frequently modified data.
+>        /*
+>         * No problems if we call this interface from both ACPI_PCI_SLOT
+>         * driver and call it here again. If we've already created the
+>         * pci_slot, the interface will simply bump the refcount.
+>         */
+>        pci_slot = pci_create_slot(bus, slot_nr, name);
+>        if (IS_ERR(pci_slot))
+>                return PTR_ERR(pci_slot);
+>
+>        if (pci_slot->hotplug) {
+>                dbg("%s: already claimed\n", __func__);
+>                pci_destroy_slot(pci_slot);
+>                return -EBUSY;
+>        }
+>
+>        slot->pci_slot = pci_slot;
+>        pci_slot->hotplug = slot;
+>
+>        /*
+>         * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
+>         */
+>        if (strcmp(kobject_name(&pci_slot->kobj), name)) {
+>                result = kobject_rename(&pci_slot->kobj, name);
+>                if (result) {
+>                        pci_destroy_slot(pci_slot);
+>                        return result;
+>                }
+>        }
+>
+> 	(snip...)
+> }
+>
+> If name duplication was detected in pci_create_slot(), it renames the
+> slot name like 'N-1' and return successfully. Even though slot's kobject
+> name was registered as 'N-1', 'name' array still have 'N' at this point.
+> So the following 'if' statement becomes true unexpectedly.
+>
+> 	/*
+>         * Allow pcihp drivers to override the ACPI_PCI_SLOT name.
+>         */
+>        if (strcmp(kobject_name(&pci_slot->kobj), name)) {
+>
+> Then pci_hp_register() attempt to rename the slot name with 'N' again
+> by calling kobject_rename(), but it fails because there already exists
+> kobject with name 'N'. As a result, pci_hp_register() will fail.
 
-You could.
+Yes, you are right, that is a problem.
 
+I've taken the following approach:
 
-> As to the gains - a graph walk with a single type seems more elegant to
-> me.
+	- the above code is providing a mechanism to allow a
+	  _hotplug_ driver to override a _detection_ driver slot
+	  name.
 
-It's fundamentally two different things anyway though. I don't
-see any theoretical improvement, and it definitely wouldn't
-improve the practical side much if any because the biggest problem
-I don't think is the simple walks themselves but the calculations
-and stuff.
+	- in other words, we only have to worry about the case
+	  when a _detection_ driver was loaded before a _hotplug_
+	  driver.
 
-If it can yield something clearly better that is impossible using
-domains and groups, I could change my mind.
+	- we can ignore the case where another _hotplug_ driver
+	  was loaded first, because we'll already return -EBUSY.
+
+	- so, to figure out if a _detection_ driver has already
+	  been loaded, we check to see if the pci_dev already has
+	  a valid pci_slot pointer.
+
+	- if yes, then we later check to see if the existing slot
+	  name matches the requested slot name from the hotplug
+	  driver.
+
+	- if the hotplug driver is requesting a different name,
+	  then we use a new interface, pci_rename_slot() which
+	  will safely attempt to rename the slot without name
+	  collision.
+
+I'll send out the patch set soon, it would be great if you could
+test it for me, since I don't have systems with duplicate slot
+names.
+
+Thank you very much!
+
+/ac
 
