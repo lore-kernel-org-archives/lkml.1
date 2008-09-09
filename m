@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYIIKYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYIIK30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbYIIKYo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 06:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbYIIKYe
+	id S1754649AbYIIK30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 06:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbYIIK3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 06:24:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58194 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbYIIKYd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 06:24:33 -0400
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] x86 fixes
-From: Andi Kleen <andi@firstfloor.org>
-References: <200809081752.m88Hq6tn005080@askone.hos.anvin.org>
-	<alpine.LFD.1.10.0809081056350.3117@nehalem.linux-foundation.org>
-	<48C56D60.7010405@zytor.com> <20080908114619.741b6786@infradead.org>
-	<48C57439.3040903@zytor.com> <20080908190249.GA21998@elte.hu>
-	<alpine.LFD.1.10.0809081213330.3117@nehalem.linux-foundation.org>
-	<m3vdx6xm68.fsf@maximus.localdomain>
-Date: Tue, 09 Sep 2008 12:24:32 +0200
-In-Reply-To: <m3vdx6xm68.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Tue, 09 Sep 2008 01:17:19 +0200")
-Message-ID: <87d4jdty5b.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 9 Sep 2008 06:29:18 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:39793 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbYIIK3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 06:29:18 -0400
+Date: Tue, 9 Sep 2008 12:28:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Elias Oltmanns <eo@nebensachen.de>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Block: Trouble with kobject initialisation for blk_cmd_filter
+Message-ID: <20080909102844.GD20055@kernel.dk>
+References: <87od3235fc.fsf@denkblock.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87od3235fc.fsf@denkblock.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa <khc@pm.waw.pl> writes:
+On Fri, Sep 05 2008, Elias Oltmanns wrote:
+> Hi all,
+> 
+> current usage of the kobject in struct blk_cmd_filter is flawed. Doing
+> # modprobe -r sd-mod && modprobe sd-mod
+> while, for instance, a usb-stick is plugged in currently results in
+> nasty warnings and a dump_stack(). Since blk_cmd_filter is embedded in
+> struct request_queue, I don't see the need for a kobject anyway. What
+> about the much simpler option of a struct attribute_group in this
+> particular case?
+> 
+> This would imply that the cmd_filter subdirectory would appear under
+> sda/queue/ rather than sda/ (which is probably the right place) but,
+> alas, we have to keep compatibility in mind. So I've made some changes
+> to sysfs along the way in order to provide a legacy symlink. I'd have to
+> seperate these two changes for submission but I wanted to know your
+> opinion about it all first.
+> 
+> Thinking about it now makes me wonder whether this is too much for a rc
+> patch and whether we should just allocate the struct blk_cmd_filter
+> dynamically and have done with it. Anyway, tell me what you think.
 
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
->
->>  - "modern 32-bit": PPro and better. Can take CMOV, MMX and TSC for 
->>    granted.
->
-> VIA C3 (Samuel 2/Ezra, 600 - 1000 MHz?, common on VIA EPIA-*: home
-> theatres etc) can't CMOV.
+I think this patch is a step in the right direction, lets get rid of
+that pesky kobject just for the cmdfilter. Can you resend the patch
+_without_ the sysfs changes and link support? We haven't released a
+kernel with cmd filter support yet, so we can change the location still
+and not have to worry about compatability.
 
-AFAIK they fixed that in newer BIOS with a microcode update. It's 
-slow, but it works.
+-- 
+Jens Axboe
 
--Andi
