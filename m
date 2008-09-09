@@ -1,89 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYIIDFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbYIIDGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbYIIDFW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 23:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYIIDFK
+	id S1754382AbYIIDGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 23:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYIIDGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 23:05:10 -0400
-Received: from smtp111.mail.mud.yahoo.com ([209.191.84.64]:41015 "HELO
-	smtp111.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751966AbYIIDFJ (ORCPT
+	Mon, 8 Sep 2008 23:06:30 -0400
+Received: from qb-out-0506.google.com ([72.14.204.234]:61889 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbYIIDG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 23:05:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Message-Id;
-  b=FyaV+NW+H6O8UZ5wBzZP6g9DCvzVYpuyt12bRw3qqcs/Zp1iMHtVSF1kWb98MjXQmW1Z0Pr7xwEVg7oMf9q7P4otI7EFI17JAc9RRdKLDuqMzzE7+OxLlzIIQdAIQo/E8x91Cqbvz7kMzccFKD5+F1LSmP6BIW0KbVrhvBX3gIA=  ;
-X-YMail-OSG: t_NM3JcVM1kZeaM1BXoQuVZSGUlNP5d19aP3d9GDPDjQ1tm6OJW8Jcu18r0VTF8orQkkLL1A49euxcearIIS45yh_F0QR4nadT1eI6JnLOMWfHfrzY1Nna1nDrJmMK5q8ac-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Subject: Re: 2.6.27-rc5-mm1: 3 WARN_ON dumps during boot (acpi + vmap_pte_range)
-Date: Tue, 9 Sep 2008 13:04:47 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@linux.ie>, Rusty Russell <rusty@rustcorp.com.au>
-References: <20080906084558.dff614d4.krzysztof.h1@poczta.fm> <200809081937.16427.nickpiggin@yahoo.com.au> <20080908195208.773ecadb.krzysztof.h1@poczta.fm>
-In-Reply-To: <20080908195208.773ecadb.krzysztof.h1@poczta.fm>
+	Mon, 8 Sep 2008 23:06:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:references;
+        b=HaY6DXx8JFXMnubCMf3zoQMYVFztJs62UMSYvhGoOtgY/iz4PbU866F7Kv/nGUcITk
+         16i0Jl2eU2o2iRmz4+MEt7iEuldmvDlp1D7NSnJEI6+SApiXLSbeMXAdAZxJhn8f61Fz
+         Jb3dz6r2FGeQaqh1w8joROSzk/XaeU1fGyihs=
+Message-ID: <3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
+Date: Tue, 9 Sep 2008 11:06:27 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080627204954.34F8B154231@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_PfexIaD1J9KQr+b"
-Message-Id: <200809091304.47769.nickpiggin@yahoo.com.au>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_79012_29379045.1220929587360"
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <1211869515.29836.2.camel@elijah.suse.cz>
+	 <3877989d0806022304w35764b17p9d4c3c95eceae0f5@mail.gmail.com>
+	 <48450864.6080707@suse.cz> <48455619.6040608@suse.cz>
+	 <3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
+	 <48465D5C.8000804@suse.cz>
+	 <3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
+	 <1212664605.15747.16.camel@elijah.suse.cz>
+	 <20080627204954.34F8B154231@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_PfexIaD1J9KQr+b
-Content-Type: text/plain;
-  charset="iso-8859-1"
+------=_Part_79012_29379045.1220929587360
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Tuesday 09 September 2008 03:52, Krzysztof Helt wrote:
+Just have chance to re-check the problem. I have spotted the place that strace
+misbehaves when SIGTRAP is blocked by task being straced with -f flag
+(follow trace)
+The problem is that after debugee blocking SIGTRAP the task's exec
+path would not wake up debugger (strace) with this signal. But strace
+don't know about it, and expect such a wake up. Upon receiving a
+subsequent wake up,strace still thought it was a wake up from "SIGTRAP
+in previous exec path". From now on, Debuger and Debugee misunderstand
+each other..
 
-> alloc_vmap_area within(e07f0000-fffb7000) size=801000
-> returns=(e0880000-e1081000)
-> alloc_vmap_area within(e07f0000-fffb7000) size=2000
-> returns=(e07f0000-e07f2000)
-> alloc_vmap_area within(e07f0000-fffb7000) size=2000
-> returns=(e0822000-e0824000) 
-> vunmap_page_range (e07f0000-e07f2000 size=2000)
-> free_vmap_area (e07f0000-e07f2000 size=2000)
+With the test case posted before in this thread and a customized
+kernel, I got the following debug info from kernel:
 
-> alloc_vmap_area within(e07f0000-fffb7000) size=5000
-> returns=(e07f0000-e07f5000)
-> ------------[ cut here ]------------ 
-> WARNING: at mm/vmalloc.c:40 check_pte_range+0x83/0x90()
+syscall_trace_enter exiting (4717)
+report_exec:pid= 4717 parent=4715, real_parent=4716,current->ptrace =00000001,
+report_exec:pid= 4717 parent=4715, real_parent=4716,current->ptrace =00000001,
+syscall_trace_leave entering (4717, syscall:1033)
+ ..sig_ignored=1..
+4715, PTRACE_PEEKUSR 4717 @addr 00000830 return 00000000
+4715, PTRACE_PEEKUSR 4717 @addr 000008c0 return 00000000
+4715, PTRACE_PEEKUSR 4717 @addr 000008d0 return 00000000
+4715, PTRACE_PEEKUSR 4717 @addr 000008d0 return 00000000
+4715, PTRACE_PEEKUSR 4717 @addr 000008c0 return 00000000
+syscall_trace current(4717)->exit_code(0)
+syscall_trace_leave exiting (4717)
+syscall_trace_enter beginning (4717, syscall: 1060)
+ ..sig_ignored=1..
+4715, PTRACE_PEEKUSR 4717 @addr 00000830 return 00000010
+4715, PTRACE_PEEKUSR 4717 @addr 000008b8 return 00000424
+syscall_trace current(4717)->exit_code(0)
+syscall_trace_enter exiting (4717)
 
-Thanks for that, it clearly shows the virtual address allocator
-is allowing an overlapping allocation after a vm_unmap_aliases()
-call. Unfortunately, my "random" test case happened not to
-trigger that... I should have paid more attention to edge cases
-rather than just random testing.
+Delete the line that blocks SIGTRAP in the test case, rerun it, I got:
 
-Anyway, I hope this fix should solve the problem for you? (it
-fixes it here)
+syscall_trace current(4724)->exit_code(0)
+syscall_trace_enter exiting (4724)
+report_exec:pid= 4724 parent=4722, real_parent=4723,current->ptrace =00000001,
+report_exec:pid= 4724 parent=4722, real_parent=4723,current->ptrace =00000001,
+syscall_trace_leave entering (4724, syscall:1033)
+ ..sig_ignored=1..
+4722, PTRACE_PEEKUSR 4724 @addr 00000830 return 00000000
+4722, PTRACE_PEEKUSR 4724 @addr 000008c0 return 00000000
+4722, PTRACE_PEEKUSR 4724 @addr 000008d0 return 00000000
+4722, PTRACE_PEEKUSR 4724 @addr 000008d0 return 00000000
+4722, PTRACE_PEEKUSR 4724 @addr 000008c0 return 00000000
+syscall_trace current(4724)->exit_code(0)
+syscall_trace_leave exiting (4724)
+ ..sig_ignored=1..
+4722, PTRACE_PEEKUSR 4724 @addr 00000830 return 00000000
+4722, PTRACE_PEEKUSR 4724 @addr 000008b8 return 00000409
+syscall_trace_enter beginning (4724, syscall: 1060)
+ ..sig_ignored=1..
 
---Boundary-00=_PfexIaD1J9KQr+b
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="vmap-new-infrastructure-fix2.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="vmap-new-infrastructure-fix2.patch"
 
-Index: linux-2.6/mm/vmalloc.c
-===================================================================
---- linux-2.6.orig/mm/vmalloc.c
-+++ linux-2.6/mm/vmalloc.c
-@@ -321,7 +321,7 @@ retry:
- 			struct vmap_area *tmp;
- 			tmp = rb_entry(n, struct vmap_area, rb_node);
- 			if (tmp->va_end >= addr) {
--				if (!first && tmp->va_start <= addr)
-+				if (!first && tmp->va_start < addr + size)
- 					first = tmp;
- 				n = n->rb_left;
- 			} else {
+The attahced patch is a proposal for this problem. But I still don't know
+why it is just specific to IA64.
 
---Boundary-00=_PfexIaD1J9KQr+b--
+***Note: The following patch is copy&paste, If you want apply, please
+check out the attached version
+
+
+Signed-off-by: Yu Luming <luming.yu@intel.com>
+--------------------------------------
+ include/linux/tracehook.h |    4 +++-
+ kernel/signal.c           |   11 ++++++++++-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff -Bru 0/include/linux/tracehook.h 1/include/linux/tracehook.h
+--- 0/include/linux/tracehook.h 2008-08-18 20:43:21.000000000 -0400
++++ 1/include/linux/tracehook.h 2008-09-09 09:51:14.000000000 -0400
+@@ -195,8 +195,10 @@
+                                         struct pt_regs *regs)
+ {
+        if (!ptrace_event(PT_TRACE_EXEC, PTRACE_EVENT_EXEC, 0) &&
+-           unlikely(task_ptrace(current) & PT_PTRACED))
++           unlikely(task_ptrace(current) & PT_PTRACED)){
+                send_sig(SIGTRAP, current, 0);
++               set_tsk_thread_flag(current,TIF_SIGPENDING);
++       }
+ }
+
+ /**
+diff -Bru 0/kernel/signal.c 1/kernel/signal.c
+--- 0/kernel/signal.c   2008-08-18 20:43:21.000000000 -0400
++++ 1/kernel/signal.c   2008-09-09 09:50:38.000000000 -0400
+@@ -384,8 +384,14 @@
+ static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
+                        siginfo_t *info)
+ {
+-       int sig = next_signal(pending, mask);
++       int sig = 0;
++       int allow_trap = 0;
+
++       if((current->ptrace & PT_PTRACED) && sigismember(mask,SIGTRAP)){
++               sigdelset(mask,SIGTRAP);
++               allow_trap = 1;
++       }
++       sig = next_signal(pending, mask);
+        if (sig) {
+                if (current->notifier) {
+                        if (sigismember(current->notifier_mask, sig)) {
+@@ -399,6 +405,9 @@
+                collect_signal(sig, pending, info);
+        }
+
++       if(allow_trap)
++               sigaddset(mask,SIGTRAP);
++
+        return sig;
+}
+
+On Fri, Jun 6, 2008 at 8:07 AM, Roland McGrath <roland@redhat.com> wrote:
+>> I _guess_ this is caused by the fact that test2.sh is a shell script, so
+>> the kernel executes the shell, and maybe utrace produces a second execve
+>> notifications in this case? Roland, can you shed some light?
+>
+> Not really.  The utrace kernels Luming is trying are intended to match the
+> vanilla ptrace behavior.  I don't think it's very useful to worry about the
+> difference between some utrace kernel and the current vanilla kernel.
+> Let's just look at what the current vanilla kernel is doing and compare
+> that to what an older vanilla kernel did if older versions produced
+> different results for the test case.
+>
+>
+> Thanks,
+> Roland
+>
+
+------=_Part_79012_29379045.1220929587360
+Content-Type: application/octet-stream; name=44620-upstream.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fkvxvebt0
+Content-Disposition: attachment; filename=44620-upstream.patch
+
+ZGlmZiAtQnJ1IDAvaW5jbHVkZS9saW51eC90cmFjZWhvb2suaCAxL2luY2x1ZGUvbGludXgvdHJh
+Y2Vob29rLmgKLS0tIDAvaW5jbHVkZS9saW51eC90cmFjZWhvb2suaAkyMDA4LTA4LTE4IDIwOjQz
+OjIxLjAwMDAwMDAwMCAtMDQwMAorKysgMS9pbmNsdWRlL2xpbnV4L3RyYWNlaG9vay5oCTIwMDgt
+MDktMDkgMDk6NTE6MTQuMDAwMDAwMDAwIC0wNDAwCkBAIC0xOTUsOCArMTk1LDEwIEBACiAJCQkJ
+CSBzdHJ1Y3QgcHRfcmVncyAqcmVncykKIHsKIAlpZiAoIXB0cmFjZV9ldmVudChQVF9UUkFDRV9F
+WEVDLCBQVFJBQ0VfRVZFTlRfRVhFQywgMCkgJiYKLQkgICAgdW5saWtlbHkodGFza19wdHJhY2Uo
+Y3VycmVudCkgJiBQVF9QVFJBQ0VEKSkKKwkgICAgdW5saWtlbHkodGFza19wdHJhY2UoY3VycmVu
+dCkgJiBQVF9QVFJBQ0VEKSl7CiAJCXNlbmRfc2lnKFNJR1RSQVAsIGN1cnJlbnQsIDApOworCQlz
+ZXRfdHNrX3RocmVhZF9mbGFnKGN1cnJlbnQsVElGX1NJR1BFTkRJTkcpOworCX0KIH0KIAogLyoq
+CmRpZmYgLUJydSAwL2tlcm5lbC9zaWduYWwuYyAxL2tlcm5lbC9zaWduYWwuYwotLS0gMC9rZXJu
+ZWwvc2lnbmFsLmMJMjAwOC0wOC0xOCAyMDo0MzoyMS4wMDAwMDAwMDAgLTA0MDAKKysrIDEva2Vy
+bmVsL3NpZ25hbC5jCTIwMDgtMDktMDkgMDk6NTA6MzguMDAwMDAwMDAwIC0wNDAwCkBAIC0zODQs
+OCArMzg0LDE0IEBACiBzdGF0aWMgaW50IF9fZGVxdWV1ZV9zaWduYWwoc3RydWN0IHNpZ3BlbmRp
+bmcgKnBlbmRpbmcsIHNpZ3NldF90ICptYXNrLAogCQkJc2lnaW5mb190ICppbmZvKQogewotCWlu
+dCBzaWcgPSBuZXh0X3NpZ25hbChwZW5kaW5nLCBtYXNrKTsKKwlpbnQgc2lnID0gMDsKKwlpbnQg
+YWxsb3dfdHJhcCA9IDA7CiAKKwlpZigoY3VycmVudC0+cHRyYWNlICYgUFRfUFRSQUNFRCkgJiYg
+c2lnaXNtZW1iZXIobWFzayxTSUdUUkFQKSl7CisJCXNpZ2RlbHNldChtYXNrLFNJR1RSQVApOwor
+CQlhbGxvd190cmFwID0gMTsKKwl9CisJc2lnID0gbmV4dF9zaWduYWwocGVuZGluZywgbWFzayk7
+CiAJaWYgKHNpZykgewogCQlpZiAoY3VycmVudC0+bm90aWZpZXIpIHsKIAkJCWlmIChzaWdpc21l
+bWJlcihjdXJyZW50LT5ub3RpZmllcl9tYXNrLCBzaWcpKSB7CkBAIC0zOTksNiArNDA1LDkgQEAK
+IAkJY29sbGVjdF9zaWduYWwoc2lnLCBwZW5kaW5nLCBpbmZvKTsKIAl9CiAKKwlpZihhbGxvd190
+cmFwKQorCQlzaWdhZGRzZXQobWFzayxTSUdUUkFQKTsKKwogCXJldHVybiBzaWc7CiB9CiAK
+------=_Part_79012_29379045.1220929587360--
