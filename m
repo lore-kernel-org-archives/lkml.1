@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYIIRiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYIIRlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbYIIRiZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbYIIRiQ
+	id S1756490AbYIIRlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 13:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753788AbYIIRlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:38:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33450 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753585AbYIIRiQ (ORCPT
+	Tue, 9 Sep 2008 13:41:00 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:37801 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753736AbYIIRk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:38:16 -0400
-Date: Tue, 9 Sep 2008 10:37:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2008-09-08-18-32 uploaded
-Message-Id: <20080909103741.6e10ee87.akpm@linux-foundation.org>
-In-Reply-To: <20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
-	<20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 9 Sep 2008 13:40:59 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
+Date: Tue, 9 Sep 2008 11:40:25 -0600
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Rene Herman <rene.herman@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+References: <200809091250.08620.elendil@planet.nl> <200809090930.27583.bjorn.helgaas@hp.com> <200809091826.18876.elendil@planet.nl>
+In-Reply-To: <200809091826.18876.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809091140.25597.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008 19:25:44 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Tuesday 09 September 2008 10:26:17 am Frans Pop wrote:
+> > What do "lspci -vv" and /proc/ioports and /proc/iomem show for you?
+> 
+> Thanks for the background info and data for comparison.
+> Here's what I have (full info attached). AFAICT it looks equally sane and 
+> consistent.
+> 
+> 00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM 
+> (ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller [8086:24c5] (rev 03)
+>         Region 0: I/O ports at 1000 [size=256]
+>         Region 1: I/O ports at 1880 [size=64]
+>         Region 2: Memory at 28080800 (32-bit, non-prefetchable) [size=512]
+>         Region 3: Memory at 28080a00 (32-bit, non-prefetchable) [size=256]
+> 
+> 00:1f.6 Modem: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) 
+> AC'97 Modem Controller [8086:24c6] (rev 03)
+>         Region 0: I/O ports at 1400 [size=256]
+>         Region 1: I/O ports at 1800 [size=128]
 
-> On Mon, 08 Sep 2008 18:35:16 -0700
-> akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2008-09-08-18-32 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > It contains the following patches against 2.6.27-rc5:
-> > 
-> 
-> I'll dig if I have time. This is just a report.
-> 
-> I tries UnixBench4.1 on x86_64/2cpu/1socket machine. (memory cgroup is enabled)
-> 
-> Following is comparison with a mmtom based on rc4.
-> ===
-> [rc4mm1]
-> Execl Throughput                           3004.4 lps   (29.6 secs, 3 samples)
-> C Compiler Throughput                      1017.9 lpm   (60.0 secs, 3 samples)
-> Shell Scripts (1 concurrent)               5726.3 lpm   (60.0 secs, 3 samples)
-> Shell Scripts (8 concurrent)               1124.3 lpm   (60.0 secs, 3 samples)
-> Shell Scripts (16 concurrent)               576.0 lpm   (60.0 secs, 3 samples)
-> Dc: sqrt(2) to 99 decimal places         125446.5 lpm   (30.0 secs, 3 samples)
-> 
-> [rc5mm1]
-> Execl Throughput                           3006.5 lps   (29.8 secs, 3 samples)
-> C Compiler Throughput                      1006.7 lpm   (60.0 secs, 3 samples)
-> Shell Scripts (1 concurrent)               4863.7 lpm   (60.0 secs, 3 samples)
-> Shell Scripts (8 concurrent)                943.7 lpm   (60.0 secs, 3 samples)
-> Shell Scripts (16 concurrent)               482.7 lpm   (60.0 secs, 3 samples)
-> Dc: sqrt(2) to 99 decimal places         124804.9 lpm   (30.0 secs, 3 samples)
-> ==
-> 15% down in shell script test. Any idea ? (scheduler ?)
+Yup, this all looks reasonable to me, too.  But these regions must be
+different than they were when the PNP quirk ran.  I wonder if the BIOS
+left them unprogrammed, we ran the PNP quirk and discovered all these
+"conflicts," then PCI came along and assigned resources.
 
-Dunno.  There is a largel number of debugging patches at the tail of
-the series so they should be the first thing to eliminate.
+Your dmesg shows power state changes for the PCI devices.  Maybe
+the BIOS left them in D3 and unprogrammed:
 
+  Intel ICH Modem 0000:00:1f.6: power state changed by ACPI to D0
+  Intel ICH 0000:00:1f.5: power state changed by ACPI to D0
+  Intel ICH 0000:00:1f.5: enabling device (0000 -> 0003)
+
+If the PCI device isn't fully initialized, it doesn't seem right to
+check it for resource conflicts.  But I don't know how to tell that.
+
+Can you figure out where the 1f.5 and 1f.6 resources get assigned?
+
+> /proc/ioports:
+> 1000-10ff : 0000:00:1f.5
+>   1000-10ff : Intel 82801DB-ICH4
+> 1400-14ff : 0000:00:1f.6
+>   1400-14ff : Intel 82801DB-ICH4 Modem
+> 1800-187f : 0000:00:1f.6
+>   1800-187f : Intel 82801DB-ICH4 Modem
+> 1880-18bf : 0000:00:1f.5
+>   1880-18bf : Intel 82801DB-ICH4
+> 
+> /proc/iomem:
+> 28080800-280809ff : 0000:00:1f.5
+>   28080800-280809ff : Intel 82801DB-ICH4
+> 28080a00-28080aff : 0000:00:1f.5
+>   28080a00-28080aff : Intel 82801DB-ICH4
