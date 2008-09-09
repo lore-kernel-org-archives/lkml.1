@@ -1,126 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbYIIMnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYIIMqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbYIIMnl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 08:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbYIIMnd
+	id S1755922AbYIIMqR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 08:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbYIIMqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 08:43:33 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57853 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbYIIMnb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 08:43:31 -0400
-Date: Tue, 9 Sep 2008 07:43:11 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount
-	namespace is unshared
-Message-ID: <20080909124311.GA10053@us.ibm.com>
-References: <48C52B29.4020204@fr.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C52B29.4020204@fr.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 9 Sep 2008 08:46:06 -0400
+Received: from sh.osrg.net ([192.16.179.4]:45363 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752513AbYIIMqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 08:46:04 -0400
+Date: Tue, 9 Sep 2008 21:45:39 +0900
+To: jens.axboe@oracle.com
+Cc: eo@nebensachen.de, fujita.tomonori@lab.ntt.co.jp, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Block: Trouble with kobject initialisation for blk_cmd_filter
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080909102844.GD20055@kernel.dk>
+References: <87od3235fc.fsf@denkblock.local>
+	<20080909102844.GD20055@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080909214602L.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Cedric Le Goater (clg@fr.ibm.com):
-> On a system with nfs mounts, if a task unshares its mount namespace,
-> a oops can occur when the system is rebooted if the task is the last
-> to unreference the nfs mount. It will try to create a rpc request
-> using utsname() which has been invalidated by free_nsproxy().
-> 
-> The patch fixes the issue by using the global init_utsname() but at
-> the same time, it breaks the capability of identifying rpc clients
-> per uts namespace.
-> 
-> Any better suggestions ?
-> 
-> BUG: unable to handle kernel NULL pointer dereference at 00000004
-> IP: [<c024c9ab>] rpc_create+0x332/0x42f
-> Oops: 0000 [#1] DEBUG_PAGEALLOC
-> 
-> Pid: 1857, comm: uts-oops Not tainted (2.6.27-rc5-00319-g7686ad5 #4)
-> EIP: 0060:[<c024c9ab>] EFLAGS: 00210287 CPU: 0
-> EIP is at rpc_create+0x332/0x42f
-> EAX: 00000000 EBX: df26adf0 ECX: c0251887 EDX: 00000001
-> ESI: df26ae58 EDI: c02f293c EBP: dda0fc9c ESP: dda0fc2c
->  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> Process uts-oops (pid: 1857, ti=dda0e000 task=dd9a0778 task.ti=dda0e000)
-> Stack: c0104532 dda0fffc dda0fcac dda0e000 dda0e000 dd93b7f0 00000009 c02f2880
->        df26aefc dda0fc68 c01096b7 00000000 c0266ee0 c039a070 c039a070 dda0fc74
->        c012ca67 c039a064 dda0fc8c c012cb20 c03daf74 00000011 00000000 c0275c90
-> Call Trace:
->  [<c0104532>] ? dump_trace+0xc2/0xe2
->  [<c01096b7>] ? save_stack_trace+0x1c/0x3a
->  [<c012ca67>] ? save_trace+0x37/0x8c
->  [<c012cb20>] ? add_lock_to_list+0x64/0x96
->  [<c0256fc4>] ? rpcb_register_call+0x62/0xbb
->  [<c02570c8>] ? rpcb_register+0xab/0xb3
->  [<c0252f4d>] ? svc_register+0xb4/0x128
->  [<c0253114>] ? svc_destroy+0xec/0x103
->  [<c02531b2>] ? svc_exit_thread+0x87/0x8d
->  [<c01a75cd>] ? lockd_down+0x61/0x81
->  [<c01a577b>] ? nlmclnt_done+0xd/0xf
->  [<c01941fe>] ? nfs_destroy_server+0x14/0x16
->  [<c0194328>] ? nfs_free_server+0x4c/0xaa
->  [<c019a066>] ? nfs_kill_super+0x23/0x27
->  [<c0158585>] ? deactivate_super+0x3f/0x51
->  [<c01695d1>] ? mntput_no_expire+0x95/0xb4
->  [<c016965b>] ? release_mounts+0x6b/0x7a
->  [<c01696cc>] ? __put_mnt_ns+0x62/0x70
->  [<c0127501>] ? free_nsproxy+0x25/0x80
->  [<c012759a>] ? switch_task_namespaces+0x3e/0x43
->  [<c01275a9>] ? exit_task_namespaces+0xa/0xc
->  [<c0117fed>] ? do_exit+0x4fd/0x666
->  [<c01181b3>] ? do_group_exit+0x5d/0x83
->  [<c011fa8c>] ? get_signal_to_deliver+0x2c8/0x2e0
->  [<c0102630>] ? do_notify_resume+0x69/0x700
->  [<c011d85a>] ? do_sigaction+0x134/0x145
->  [<c0127205>] ? hrtimer_nanosleep+0x8f/0xce
->  [<c0126d1a>] ? hrtimer_wakeup+0x0/0x1c
->  [<c0103488>] ? work_notifysig+0x13/0x1b
->  =======================
-> Code: 70 20 68 cb c1 2c c0 e8 75 4e 01 00 8b 83 ac 00 00 00 59 3d 00 f0 ff ff 5f 77 63 eb 57 a1 00 80 2d c0 8b 80 a8 02 00 00 8d 73 68 <8b> 40 04 83 c0 45 e8 41 46 f7 ff ba 20 00 00 00 83 f8 21 0f 4c
-> EIP: [<c024c9ab>] rpc_create+0x332/0x42f SS:ESP 0068:dda0fc2c
-> 
-> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
+On Tue, 9 Sep 2008 12:28:45 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-Thanks, Cedric.  Eric is probably right about the long-term fix, but
-yeah it might take a while to properly wade through the sunrpc and nfs
-layers to store the nodename at nfs mount time, and in the meantime this
-fixes a real oops.
+> On Fri, Sep 05 2008, Elias Oltmanns wrote:
+> > Hi all,
+> > 
+> > current usage of the kobject in struct blk_cmd_filter is flawed. Doing
+> > # modprobe -r sd-mod && modprobe sd-mod
+> > while, for instance, a usb-stick is plugged in currently results in
+> > nasty warnings and a dump_stack(). Since blk_cmd_filter is embedded in
+> > struct request_queue, I don't see the need for a kobject anyway. What
+> > about the much simpler option of a struct attribute_group in this
+> > particular case?
+> > 
+> > This would imply that the cmd_filter subdirectory would appear under
+> > sda/queue/ rather than sda/ (which is probably the right place) but,
+> > alas, we have to keep compatibility in mind. So I've made some changes
+> > to sysfs along the way in order to provide a legacy symlink. I'd have to
+> > seperate these two changes for submission but I wanted to know your
+> > opinion about it all first.
+> > 
+> > Thinking about it now makes me wonder whether this is too much for a rc
+> > patch and whether we should just allocate the struct blk_cmd_filter
+> > dynamically and have done with it. Anyway, tell me what you think.
+> 
+> I think this patch is a step in the right direction, lets get rid of
+> that pesky kobject just for the cmdfilter. Can you resend the patch
+> _without_ the sysfs changes and link support? We haven't released a
+> kernel with cmd filter support yet, so we can change the location still
+> and not have to worry about compatability.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+The sysfs changes looks too much for 2.6.27-rcX but without the sysfs
+changes, we have the cmdfilter under /sys/block/sda/queue/, right? We
+don't need to worry about compatibility, but /sys/block/sda is more
+appropriate? (though I don't think that the cmd filter is a good idea
+so I don't care much).
 
-> ---
->  net/sunrpc/clnt.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-> index 76739e9..a59cdf4 100644
-> --- a/net/sunrpc/clnt.c
-> +++ b/net/sunrpc/clnt.c
-> @@ -213,10 +213,10 @@ static struct rpc_clnt * rpc_new_client(const struct rpc_create_args *args, stru
->  	}
-> 
->  	/* save the nodename */
-> -	clnt->cl_nodelen = strlen(utsname()->nodename);
-> +	clnt->cl_nodelen = strlen(init_utsname()->nodename);
->  	if (clnt->cl_nodelen > UNX_MAXNODENAME)
->  		clnt->cl_nodelen = UNX_MAXNODENAME;
-> -	memcpy(clnt->cl_nodename, utsname()->nodename, clnt->cl_nodelen);
-> +	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
->  	rpc_register_client(clnt);
->  	return clnt;
-> 
-> -- 
-> 1.5.5.1
+Jens, would it be better to just disable the cmdfilter stuff for
+2.6.27? It's too late for another try to fix this broken stuff, I
+guess.
