@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbYIIRvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbYIISCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbYIIRvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 13:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYIIRu6
+	id S1756090AbYIISCr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 14:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYIISCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 13:50:58 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:43188 "EHLO e2.ny.us.ibm.com"
+	Tue, 9 Sep 2008 14:02:37 -0400
+Received: from verein.lst.de ([213.95.11.210]:47808 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbYIIRu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 13:50:57 -0400
-Subject: Re: [RFC] [PATCH -mm] cgroup: limit the amount of dirty file pages
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: righi.andrea@gmail.com
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       David Radford <dradford@bluehost.com>,
-       Marco Innocenti <m.innocenti@cineca.it>,
-       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       containers@lists.linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Carl Henrik Lunde <chlunde@ping.uio.no>, linux-mm@kvack.org,
-       Divyesh Shah <dpshah@google.com>, Matt Heaton <matt@bluehost.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Naveen Gupta <ngupta@google.com>
-In-Reply-To: <48C6987D.2050905@gmail.com>
-References: <48C6987D.2050905@gmail.com>
-Content-Type: text/plain
-Date: Tue, 09 Sep 2008 10:49:44 -0700
-Message-Id: <1220982584.23386.219.camel@nimitz>
+	id S1754647AbYIISCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 14:02:36 -0400
+Date: Tue, 9 Sep 2008 20:02:01 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: torvalds@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] update Documentation/filesystems/Locking for 2.6.27 changes
+Message-ID: <20080909180201.GA22200@lst.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 17:38 +0200, Andrea Righi wrote:
-> It allows to control how much dirty file pages a cgroup can have at any
-> given time. This feature is supposed to be strictly connected to a
-> generic cgroup IO controller (see below).
+In the 2.6.27 circle ->fasync lost the BKL, and the last remaining
+->open variant that takes the BKL is also gone.  ->get_sb and ->kill_sb
+didn't have BKL forever, so updated the entries while we're at that.
 
-So, this functions similarly to our global dirty ratio?  Is it just
-intended to keep a cgroup from wedging itself too hard with too many
-dirty pages, just like the global ratio?
 
--- Dave
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
+Index: linux-2.6/Documentation/filesystems/Locking
+===================================================================
+--- linux-2.6.orig/Documentation/filesystems/Locking	2008-09-09 19:57:03.000000000 +0200
++++ linux-2.6/Documentation/filesystems/Locking	2008-09-09 19:59:46.000000000 +0200
+@@ -144,8 +144,8 @@ prototypes:
+ 	void (*kill_sb) (struct super_block *);
+ locking rules:
+ 		may block	BKL
+-get_sb		yes		yes
+-kill_sb		yes		yes
++get_sb		yes		no
++kill_sb		yes		no
+ 
+ ->get_sb() returns error or 0 with locked superblock attached to the vfsmount
+ (exclusive on ->s_umount).
+@@ -409,12 +409,12 @@ ioctl:			yes	(see below)
+ unlocked_ioctl:		no	(see below)
+ compat_ioctl:		no
+ mmap:			no
+-open:			maybe	(see below)
++open:			no
+ flush:			no
+ release:		no
+ fsync:			no	(see below)
+ aio_fsync:		no
+-fasync:			yes	(see below)
++fasync:			no
+ lock:			yes
+ readv:			no
+ writev:			no
+@@ -431,13 +431,6 @@ For many filesystems, it is probably saf
+ semaphore.  Note some filesystems (i.e. remote ones) provide no
+ protection for i_size so you will need to use the BKL.
+ 
+-->open() locking is in-transit: big lock partially moved into the methods.
+-The only exception is ->open() in the instances of file_operations that never
+-end up in ->i_fop/->proc_fops, i.e. ones that belong to character devices
+-(chrdev_open() takes lock before replacing ->f_op and calling the secondary
+-method. As soon as we fix the handling of module reference counters all
+-instances of ->open() will be called without the BKL.
+-
+ Note: ext2_release() was *the* source of contention on fs-intensive
+ loads and dropping BKL on ->release() helps to get rid of that (we still
+ grab BKL for cases when we close a file that had been opened r/w, but that
