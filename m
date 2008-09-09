@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755989AbYIIAH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbYIIALQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755989AbYIIAH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Sep 2008 20:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbYIIAHs
+	id S1755598AbYIIALQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Sep 2008 20:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbYIIALD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Sep 2008 20:07:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53170 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755339AbYIIAHq (ORCPT
+	Mon, 8 Sep 2008 20:11:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60069
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753864AbYIIALC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Sep 2008 20:07:46 -0400
-Date: Mon, 8 Sep 2008 17:04:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pierre Morel <pmorel@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, oleg@tv-sign.ru, roland@redhat.com,
-       heicars2@linux.vnet.ibm.com, sameske@linux.vnet.ibm.com,
-       schwidefsky@de.ibm.com, mingo@elte.hu, gregkh@suse.de,
-       user-mode-linux-devel@lists.sourceforge.net, dave@linux.vnet.ibm.com,
-       clg@fr.ibm.com, dlezcano@fr.ibm.com,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/1] system call notification with self_ptrace
-Message-Id: <20080908170427.c8bf38f5.akpm@linux-foundation.org>
-In-Reply-To: <48C51439.7000706@linux.vnet.ibm.com>
-References: <48C51439.7000706@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 8 Sep 2008 20:11:02 -0400
+Date: Mon, 08 Sep 2008 17:10:55 -0700 (PDT)
+Message-Id: <20080908.171055.170770457.davem@davemloft.net>
+To: kaos@ocs.com.au
+Cc: kaber@trash.net, linux-kernel@vger.kernel.org
+Subject: Re: Recent copy of libpcap from CVS 
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <19419.1220918852@ocs10w>
+References: <48C51E58.7080900@trash.net>
+	<19419.1220918852@ocs10w>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Sep 2008 14:02:01 +0200
-Pierre Morel <pmorel@linux.vnet.ibm.com> wrote:
+From: Keith Owens <kaos@ocs.com.au>
+Date: Tue, 09 Sep 2008 10:07:32 +1000
 
-> Subject: [PATCH] system call notification with self_ptrace
+> Patrick McHardy (on Mon, 08 Sep 2008 14:45:12 +0200) wrote:
+> >Keith Owens wrote:
+> >> Does anybody have a recent copy of the source to libpcap from its CVS
+> >> repository?
+> >> 
+> >> The normal site for libpcap (tcpdump.org) appears to have suffered a
+> >> filesystem crash and CVS is not working.  I am looking for a version of
+> >> libpcap that supports data capture for USB interfaces, the code will
+> >> probably have references to /dev/usbmon or a pcap-usb-linux.c file for
+> >> Linux.  libpcap0.8_0.9.8-2 is not recent enough.
+> >
+> >Dave put a recent copy up at:
+> >
+> >git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
 > 
-> From: Pierre Morel <pmorel@fr.ibm.com>
-> 
-> 
-> PTRACE SELF
-> 
-> This patch adds a new functionality to ptrace: system call notification to
-> the current process.
-> When a process requests self ptrace, with the new request PTRACE_SELF_ON:
-> 
->  1.  the next system call performed by the process will not be executed
->  2.  self ptrace will be disabled for the process
->  3.  a SIGSYS signal will be sent to the process.
-> 
-> With an appropriate SIGSYS signal handler, the process can access its own
-> data structures to
-> 
->  1.  get the system call number from the siginfo structure
->  2.  get the system call arguments from the stack
->  3.  instrument the system call with other system calls
->  4.  emulate the system call with other system calls
->  5.  change the arguments of the system call
->  6.  perform the system call for good
->  7.  change the return value of the system call
->  8.  request self ptrace again before returning.
-> 
-> The new request PTRACE_SELF_OFF disables self ptrace.
-> 
+> Thanks, but that is still version 0.9.8 with no support for usb.
+> It defines DLT_USB and DLT_USB_LINUX but has no code to actually
+> read from /dev/usbmon.  I need the CVS version of libpcap.
 
-It sounds like it might be useful.
-
-Are there any userspace tools available with which people can utilise
-this new functionality?  Or plans to release them?
-
-> arch/s390/kernel/ptrace.c     |   16 ++++++++++++++++
-> arch/s390/kernel/signal.c     |    5 +++++
-> arch/x86/kernel/ptrace.c      |   29 +++++++++++++++++++++++++++++
-> arch/x86/kernel/signal_32.c   |    5 +++++
-> arch/x86/kernel/signal_64.c   |    5 +++++
-
-Maintainers of the other 30-odd architectures would appreciate a test
-application which they can use to develop and test their ports, please.
-
-Michael Kerrisk will no doubt be looking for manpage assistance. 
-Please cc him on this material.
-
-It would be good to get suitable testcases integrated into LTP (if LTP
-has ptrace tests).
-
-The patch title uses the term "self_ptrace", but the patch itself uses
-the term "ptrace_self".  Let's get it consistent everywhere.
-
-The patch adds a
-
-+	u64	instrumentation;
-
-to the task_struct but no explanation is provided as to why this was
-added, why it is a 64-bit field, what its locking rules are, etc. 
-Please fix this.
-
-
+Sorry that's the most recent CVS tree Patrick had when I built that
+GIT repo.
