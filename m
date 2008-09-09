@@ -1,476 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYIIENq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYIIEOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756446AbYIIENq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 00:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYIIEIy
+	id S1756946AbYIIEOA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 00:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbYIIEI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 00:08:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42586 "EHLO mx2.redhat.com"
+	Tue, 9 Sep 2008 00:08:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42589 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753550AbYIIEIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 00:08:04 -0400
+	id S1754046AbYIIEIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 00:08:16 -0400
 From: Jarod Wilson <jwilson@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Jarod Wilson <jwilson@redhat.com>, Jarod Wilson <jarod@redhat.com>,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: [PATCH 16/18] lirc driver for the IR interface on BT829-based hardware
-Date: Tue,  9 Sep 2008 00:06:01 -0400
-Message-Id: <1220933164-10160-17-git-send-email-jwilson@redhat.com>
-In-Reply-To: <1220933164-10160-16-git-send-email-jwilson@redhat.com>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
- <1220933164-10160-2-git-send-email-jwilson@redhat.com>
- <1220933164-10160-3-git-send-email-jwilson@redhat.com>
- <1220933164-10160-4-git-send-email-jwilson@redhat.com>
- <1220933164-10160-5-git-send-email-jwilson@redhat.com>
- <1220933164-10160-6-git-send-email-jwilson@redhat.com>
- <1220933164-10160-7-git-send-email-jwilson@redhat.com>
- <1220933164-10160-8-git-send-email-jwilson@redhat.com>
- <1220933164-10160-9-git-send-email-jwilson@redhat.com>
- <1220933164-10160-10-git-send-email-jwilson@redhat.com>
- <1220933164-10160-11-git-send-email-jwilson@redhat.com>
- <1220933164-10160-12-git-send-email-jwilson@redhat.com>
- <1220933164-10160-13-git-send-email-jwilson@redhat.com>
- <1220933164-10160-14-git-send-email-jwilson@redhat.com>
- <1220933164-10160-15-git-send-email-jwilson@redhat.com>
- <1220933164-10160-16-git-send-email-jwilson@redhat.com>
+Cc: Jarod Wilson <jarod@redhat.com>, Janne Grunau <j@jannau.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>,
+       Eric Sandeen <esandeen@redhat.com>,
+       Mario Limonciello <superm1@ubuntu.com>
+Subject: [PATCH 0/18] linux infrared remote control drivers
+Date: Tue,  9 Sep 2008 00:05:45 -0400
+Message-Id: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following patch series adds 17 new drivers for assorted infrared and/or RF
+remote control receivers and/or transmitters. These drivers have long lived
+out-of-tree at http://www.lirc.org/, packaged as 3rd-party modules by many
+distributions, and more recently, patched into the kernels of at least Fedora
+and Ubuntu. The primary maintainer of lirc, Christoph Bartelmus simply hasn't
+had the time to send these bits upstream, and a few months back, gave me the
+go-ahead to take on the task.
+
+Most drivers are fairly widely tested, certainly within the MythTV community,
+which relies upon this code quite a bit. However, note that in preparation
+for this submission, a fair number of code changes have been made only
+recently that may or may not have yet made it back into lirc cvs, and thus
+might not be as widely tested. Any bugs found were probably introduced by
+either myself or Janne Grunau, the primary folks working on the latest round
+of whacking checkpatch.pl complaints to prepare for this submission.
+
+Speaking of checkpatch... When I first added the lirc driver patch to the
+Fedora kernels (oy, way back in August of 2007), there were tens of thousands
+of lines of checkpatch warnings and errors. Through the efforts of myself,
+Janne, Eric Sandeen, and misc contributions from others, I'm now quite
+tickled to see the following:
+
+--
+$ scripts/checkpatch.pl /data/patches/lirc-for-upstream-combined.patch
+total: 0 errors, 0 warnings, 17877 lines checked
+
+/data/patches/lirc-for-upstream-combined.patch has no obvious style problems
+and is ready for submission.
+--
+
+Earlier rounds of checkpatch cleanups have already been fed back into lirc
+cvs, and Christoph has given me commit access there, so as to filter the
+latest changes back in as well. For the time being, lirc cvs will
+continue to be the canonical upstream for the lirc drivers, and all the
+earlier kernel compat bits get stripped out via an export script[1],
+though the script is still under a bit of development... I'll be taking
+point on maintaining the git tree[2] and synchronizing changes back and
+forth with cvs, at least until such time as everything is in the kernel,
+and nobody has need for out-of-tree drivers anymore, at which time the
+drivers will be dropped from the main lirc tarball.
+
+Not all drivers have been tested with this codebase and certainly not all
+devices they support, but its a solid place to start with these in-kernel.
+Patches are against 2.6.27-rc5-git9 or so, and have been tested running
+the same, at least in the cases where hardware was available. These patches
+are also in the latest nightly Fedora rawhide kernel, for those who want
+instant gratification[3]. Note that you also need the lirc userspace to
+really do any meaningful testing...
+
 Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Janne Grunau <j@jannau.net>
 CC: Christoph Bartelmus <lirc@bartelmus.de>
----
- drivers/input/lirc/Kconfig      |    7 +
- drivers/input/lirc/Makefile     |    1 +
- drivers/input/lirc/lirc_bt829.c |  388 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 396 insertions(+), 0 deletions(-)
+CC: Eric Sandeen <esandeen@redhat.com>
+CC: Mario Limonciello <superm1@ubuntu.com>
+
+[1] http://people.redhat.com/jwilson/lirc/, in a tarball atm
+[2] http://git.wilsonet.com/linux-2.6-lirc.git/ (s/http/git/ to clone)
+[3] http://kojipkgs.fedoraproject.org/packages/kernel/2.6.27/0.314.rc5.git9.fc10/
+    is the latest build, at least as of this submission
+
+Combined diffstat:
+
+ MAINTAINERS                           |    9 +
+ drivers/input/Kconfig                 |    2 +
+ drivers/input/Makefile                |    2 +
+ drivers/input/lirc/Kconfig            |  142 ++++
+ drivers/input/lirc/Makefile           |   25 +
+ drivers/input/lirc/commandir.c        |  982 +++++++++++++++++++++++
+ drivers/input/lirc/commandir.h        |   68 ++
+ drivers/input/lirc/lirc.h             |  103 +++
+ drivers/input/lirc/lirc_atiusb.c      | 1321 +++++++++++++++++++++++++++++++
+ drivers/input/lirc/lirc_bt829.c       |  388 +++++++++
+ drivers/input/lirc/lirc_cmdir.c       |  596 ++++++++++++++
+ drivers/input/lirc/lirc_cmdir.h       |   25 +
+ drivers/input/lirc/lirc_dev.c         |  809 +++++++++++++++++++
+ drivers/input/lirc/lirc_dev.h         |  262 ++++++
+ drivers/input/lirc/lirc_i2c.c         |  639 +++++++++++++++
+ drivers/input/lirc/lirc_igorplugusb.c |  619 +++++++++++++++
+ drivers/input/lirc/lirc_imon.c        | 1280 ++++++++++++++++++++++++++++++
+ drivers/input/lirc/lirc_it87.c        |  999 +++++++++++++++++++++++
+ drivers/input/lirc/lirc_it87.h        |  116 +++
+ drivers/input/lirc/lirc_ite8709.c     |  545 +++++++++++++
+ drivers/input/lirc/lirc_mceusb.c      |  890 +++++++++++++++++++++
+ drivers/input/lirc/lirc_mceusb2.c     | 1119 ++++++++++++++++++++++++++
+ drivers/input/lirc/lirc_parallel.c    |  728 +++++++++++++++++
+ drivers/input/lirc/lirc_parallel.h    |   26 +
+ drivers/input/lirc/lirc_sasem.c       |  969 +++++++++++++++++++++++
+ drivers/input/lirc/lirc_serial.c      | 1312 +++++++++++++++++++++++++++++++
+ drivers/input/lirc/lirc_sir.c         | 1302 ++++++++++++++++++++++++++++++
+ drivers/input/lirc/lirc_streamzap.c   |  795 +++++++++++++++++++
+ drivers/input/lirc/lirc_ttusbir.c     |  400 ++++++++++
+ drivers/input/lirc/lirc_zilog.c       | 1395 +++++++++++++++++++++++++++++++++
+ 30 files changed, 17868 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/input/lirc/Kconfig
+ create mode 100644 drivers/input/lirc/Makefile
+ create mode 100644 drivers/input/lirc/commandir.c
+ create mode 100644 drivers/input/lirc/commandir.h
+ create mode 100644 drivers/input/lirc/lirc.h
+ create mode 100644 drivers/input/lirc/lirc_atiusb.c
  create mode 100644 drivers/input/lirc/lirc_bt829.c
-
-diff --git a/drivers/input/lirc/Kconfig b/drivers/input/lirc/Kconfig
-index b2bdbfb..2af6278 100644
---- a/drivers/input/lirc/Kconfig
-+++ b/drivers/input/lirc/Kconfig
-@@ -25,6 +25,13 @@ config LIRC_ATIUSB
- 	help
- 	  Driver for the ATI USB RF remote receiver
- 
-+config LIRC_BT829
-+	tristate "BT829 based hardware"
-+	default n
-+	depends on LIRC_DEV
-+	help
-+	  Driver for the IR interface on BT829-based hardware
-+
- config LIRC_CMDIR
- 	tristate "CommandIR USB Transceiver"
- 	default n
-diff --git a/drivers/input/lirc/Makefile b/drivers/input/lirc/Makefile
-index 761cb47..c5f71fa 100644
---- a/drivers/input/lirc/Makefile
-+++ b/drivers/input/lirc/Makefile
-@@ -7,6 +7,7 @@ EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
- 
- obj-$(CONFIG_LIRC_DEV)		+= lirc_dev.o
- obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb.o
-+obj-$(CONFIG_LIRC_BT829)	+= lirc_bt829.o
- obj-$(CONFIG_LIRC_CMDIR)	+= lirc_cmdir.o
- obj-$(CONFIG_LIRC_I2C)		+= lirc_i2c.o
- obj-$(CONFIG_LIRC_IGORPLUGUSB)	+= lirc_igorplugusb.o
-diff --git a/drivers/input/lirc/lirc_bt829.c b/drivers/input/lirc/lirc_bt829.c
-new file mode 100644
-index 0000000..01cbdfe
---- /dev/null
-+++ b/drivers/input/lirc/lirc_bt829.c
-@@ -0,0 +1,388 @@
-+/*
-+ * Remote control driver for the TV-card based on bt829
-+ *
-+ *  by Leonid Froenchenko <lfroen@galileo.co.il>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+*/
-+
-+#include <linux/version.h>
-+
-+#include <linux/autoconf.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/threads.h>
-+#include <linux/sched.h>
-+#include <linux/ioport.h>
-+#include <linux/pci.h>
-+#include <linux/delay.h>
-+
-+#include "lirc_dev.h"
-+
-+static int poll_main(void);
-+static int atir_init_start(void);
-+
-+static void write_index(unsigned char index, unsigned int value);
-+static unsigned int read_index(unsigned char index);
-+
-+static void do_i2c_start(void);
-+static void do_i2c_stop(void);
-+
-+static void seems_wr_byte(unsigned char al);
-+static unsigned char seems_rd_byte(void);
-+
-+static unsigned int read_index(unsigned char al);
-+static void write_index(unsigned char ah, unsigned int edx);
-+
-+static void cycle_delay(int cycle);
-+
-+static void do_set_bits(unsigned char bl);
-+static unsigned char do_get_bits(void);
-+
-+#define DATA_PCI_OFF 0x7FFC00
-+#define WAIT_CYCLE   20
-+
-+static int debug;
-+#define dprintk(fmt, args...)					\
-+	do {							\
-+		if (debug)					\
-+			printk(KERN_DEBUG fmt, ## args);	\
-+	} while (0)
-+
-+static int atir_minor;
-+static unsigned long pci_addr_phys;
-+static unsigned char *pci_addr_lin;
-+
-+static struct lirc_plugin atir_plugin;
-+
-+static struct pci_dev *do_pci_probe(void)
-+{
-+	struct pci_dev *my_dev;
-+	my_dev = pci_get_device(PCI_VENDOR_ID_ATI,
-+				PCI_DEVICE_ID_ATI_264VT, NULL);
-+	if (my_dev) {
-+		printk(KERN_ERR "ATIR: Using device: %s\n",
-+		       pci_name(my_dev));
-+		pci_addr_phys = 0;
-+		if (my_dev->resource[0].flags & IORESOURCE_MEM) {
-+			pci_addr_phys = my_dev->resource[0].start;
-+			printk(KERN_INFO "ATIR memory at 0x%08X \n",
-+			       (unsigned int)pci_addr_phys);
-+		}
-+		if (pci_addr_phys == 0) {
-+			printk(KERN_ERR "ATIR no memory resource ?\n");
-+			return NULL;
-+		}
-+	} else {
-+		printk(KERN_ERR "ATIR: pci_prob failed\n");
-+		return NULL;
-+	}
-+	return my_dev;
-+}
-+
-+static int atir_add_to_buf(void *data, struct lirc_buffer *buf)
-+{
-+	unsigned char key;
-+	int status;
-+	status = poll_main();
-+	key = (status >> 8) & 0xFF;
-+	if (status & 0xFF) {
-+		dprintk("ATIR reading key %02X\n", key);
-+		lirc_buffer_write_1(buf, &key);
-+		return 0;
-+	}
-+	return -ENODATA;
-+}
-+
-+static int atir_set_use_inc(void *data)
-+{
-+	dprintk("ATIR driver is opened\n");
-+	return 0;
-+}
-+
-+static void atir_set_use_dec(void *data)
-+{
-+	dprintk("ATIR driver is closed\n");
-+}
-+
-+int init_module(void)
-+{
-+	struct pci_dev *pdev;
-+
-+	pdev = do_pci_probe();
-+	if (pdev == NULL)
-+		return 1;
-+
-+	if (!atir_init_start())
-+		return 1;
-+
-+	strcpy(atir_plugin.name, "ATIR");
-+	atir_plugin.minor       = -1;
-+	atir_plugin.code_length = 8;
-+	atir_plugin.sample_rate = 10;
-+	atir_plugin.data        = 0;
-+	atir_plugin.add_to_buf  = atir_add_to_buf;
-+	atir_plugin.set_use_inc = atir_set_use_inc;
-+	atir_plugin.set_use_dec = atir_set_use_dec;
-+	atir_plugin.dev         = &pdev->dev;
-+	atir_plugin.owner       = THIS_MODULE;
-+
-+	atir_minor = lirc_register_plugin(&atir_plugin);
-+	dprintk("ATIR driver is registered on minor %d\n", atir_minor);
-+
-+	return 0;
-+}
-+
-+
-+void cleanup_module(void)
-+{
-+	lirc_unregister_plugin(atir_minor);
-+}
-+
-+
-+static int atir_init_start(void)
-+{
-+	pci_addr_lin = ioremap(pci_addr_phys + DATA_PCI_OFF, 0x400);
-+	if (pci_addr_lin == 0) {
-+		printk(KERN_INFO "atir: pci mem must be mapped\n");
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static void cycle_delay(int cycle)
-+{
-+	udelay(WAIT_CYCLE*cycle);
-+}
-+
-+
-+static int poll_main()
-+{
-+	unsigned char status_high, status_low;
-+
-+	do_i2c_start();
-+
-+	seems_wr_byte(0xAA);
-+	seems_wr_byte(0x01);
-+
-+	do_i2c_start();
-+
-+	seems_wr_byte(0xAB);
-+
-+	status_low = seems_rd_byte();
-+	status_high = seems_rd_byte();
-+
-+	do_i2c_stop();
-+
-+	return (status_high << 8) | status_low;
-+}
-+
-+static void do_i2c_start(void)
-+{
-+	do_set_bits(3);
-+	cycle_delay(4);
-+
-+	do_set_bits(1);
-+	cycle_delay(7);
-+
-+	do_set_bits(0);
-+	cycle_delay(2);
-+}
-+
-+static void do_i2c_stop(void)
-+{
-+	unsigned char bits;
-+	bits =  do_get_bits() & 0xFD;
-+	do_set_bits(bits);
-+	cycle_delay(1);
-+
-+	bits |= 1;
-+	do_set_bits(bits);
-+	cycle_delay(2);
-+
-+	bits |= 2;
-+	do_set_bits(bits);
-+	bits = 3;
-+	do_set_bits(bits);
-+	cycle_delay(2);
-+}
-+
-+static void seems_wr_byte(unsigned char value)
-+{
-+	int i;
-+	unsigned char reg;
-+
-+	reg = do_get_bits();
-+	for (i = 0; i < 8; i++) {
-+		if (value & 0x80)
-+			reg |= 0x02;
-+		else
-+			reg &= 0xFD;
-+
-+		do_set_bits(reg);
-+		cycle_delay(1);
-+
-+		reg |= 1;
-+		do_set_bits(reg);
-+		cycle_delay(1);
-+
-+		reg &= 0xFE;
-+		do_set_bits(reg);
-+		cycle_delay(1);
-+		value <<= 1;
-+	}
-+	cycle_delay(2);
-+
-+	reg |= 2;
-+	do_set_bits(reg);
-+
-+	reg |= 1;
-+	do_set_bits(reg);
-+
-+	cycle_delay(1);
-+	do_get_bits();
-+
-+	reg &= 0xFE;
-+	do_set_bits(reg);
-+	cycle_delay(3);
-+}
-+
-+static unsigned char seems_rd_byte(void)
-+{
-+	int i;
-+	int rd_byte;
-+	unsigned char bits_2, bits_1;
-+
-+	bits_1 = do_get_bits() | 2;
-+	do_set_bits(bits_1);
-+
-+	rd_byte = 0;
-+	for (i = 0; i < 8; i++) {
-+		bits_1 &= 0xFE;
-+		do_set_bits(bits_1);
-+		cycle_delay(2);
-+
-+		bits_1 |= 1;
-+		do_set_bits(bits_1);
-+		cycle_delay(1);
-+
-+		bits_2 = do_get_bits();
-+		if (bits_2 & 2)
-+			rd_byte |= 1;
-+
-+		rd_byte <<= 1;
-+	}
-+
-+	bits_1 = 0;
-+	if (bits_2 == 0)
-+		bits_1 |= 2;
-+
-+	do_set_bits(bits_1);
-+	cycle_delay(2);
-+
-+	bits_1 |= 1;
-+	do_set_bits(bits_1);
-+	cycle_delay(3);
-+
-+	bits_1 &= 0xFE;
-+	do_set_bits(bits_1);
-+	cycle_delay(2);
-+
-+	rd_byte >>= 1;
-+	rd_byte &= 0xFF;
-+	return rd_byte;
-+}
-+
-+static void do_set_bits(unsigned char new_bits)
-+{
-+	int reg_val;
-+	reg_val = read_index(0x34);
-+	if (new_bits & 2) {
-+		reg_val &= 0xFFFFFFDF;
-+		reg_val |= 1;
-+	} else {
-+		reg_val &= 0xFFFFFFFE;
-+		reg_val |= 0x20;
-+	}
-+	reg_val |= 0x10;
-+	write_index(0x34, reg_val);
-+
-+	reg_val = read_index(0x31);
-+	if (new_bits & 1)
-+		reg_val |= 0x1000000;
-+	else
-+		reg_val &= 0xFEFFFFFF;
-+
-+	reg_val |= 0x8000000;
-+	write_index(0x31, reg_val);
-+}
-+
-+static unsigned char do_get_bits(void)
-+{
-+	unsigned char bits;
-+	int reg_val;
-+
-+	reg_val = read_index(0x34);
-+	reg_val |= 0x10;
-+	reg_val &= 0xFFFFFFDF;
-+	write_index(0x34, reg_val);
-+
-+	reg_val = read_index(0x34);
-+	bits = 0;
-+	if (reg_val & 8)
-+		bits |= 2;
-+	else
-+		bits &= 0xFD;
-+
-+	reg_val = read_index(0x31);
-+	if (reg_val & 0x1000000)
-+		bits |= 1;
-+	else
-+		bits &= 0xFE;
-+
-+	return bits;
-+}
-+
-+static unsigned int read_index(unsigned char index)
-+{
-+	unsigned char *addr;
-+	unsigned int value;
-+	/*  addr = pci_addr_lin + DATA_PCI_OFF + ((index & 0xFF) << 2); */
-+	addr = pci_addr_lin + ((index & 0xFF) << 2);
-+	value = readl(addr);
-+	return value;
-+}
-+
-+static void write_index(unsigned char index, unsigned int reg_val)
-+{
-+	unsigned char *addr;
-+	addr = pci_addr_lin + ((index & 0xFF) << 2);
-+	writel(reg_val, addr);
-+}
-+
-+MODULE_AUTHOR("Froenchenko Leonid");
-+MODULE_DESCRIPTION("IR remote driver for bt829 based TV cards");
-+MODULE_LICENSE("GPL");
-+
-+module_param(debug, bool, 0644);
-+MODULE_PARM_DESC(debug, "Debug enabled or not");
-+
-+/*
-+ * Overrides for Emacs so that we follow Linus's tabbing style.
-+ * ---------------------------------------------------------------------------
-+ * Local variables:
-+ * c-basic-offset: 8
-+ * End:
-+ */
--- 
-1.6.0.1
-
+ create mode 100644 drivers/input/lirc/lirc_cmdir.c
+ create mode 100644 drivers/input/lirc/lirc_cmdir.h
+ create mode 100644 drivers/input/lirc/lirc_dev.c
+ create mode 100644 drivers/input/lirc/lirc_dev.h
+ create mode 100644 drivers/input/lirc/lirc_i2c.c
+ create mode 100644 drivers/input/lirc/lirc_igorplugusb.c
+ create mode 100644 drivers/input/lirc/lirc_imon.c
+ create mode 100644 drivers/input/lirc/lirc_it87.c
+ create mode 100644 drivers/input/lirc/lirc_it87.h
+ create mode 100644 drivers/input/lirc/lirc_ite8709.c
+ create mode 100644 drivers/input/lirc/lirc_mceusb.c
+ create mode 100644 drivers/input/lirc/lirc_mceusb2.c
+ create mode 100644 drivers/input/lirc/lirc_parallel.c
+ create mode 100644 drivers/input/lirc/lirc_parallel.h
+ create mode 100644 drivers/input/lirc/lirc_sasem.c
+ create mode 100644 drivers/input/lirc/lirc_serial.c
+ create mode 100644 drivers/input/lirc/lirc_sir.c
+ create mode 100644 drivers/input/lirc/lirc_streamzap.c
+ create mode 100644 drivers/input/lirc/lirc_ttusbir.c
+ create mode 100644 drivers/input/lirc/lirc_zilog.c
