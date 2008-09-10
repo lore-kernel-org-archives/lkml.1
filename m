@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbYIJUhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYIJUov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbYIJUhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 16:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbYIJUhX
+	id S1753951AbYIJUov (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 16:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYIJUoj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 16:37:23 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:57889 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbYIJUhX (ORCPT
+	Wed, 10 Sep 2008 16:44:39 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:35534 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYIJUoi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 16:37:23 -0400
-Date: Wed, 10 Sep 2008 22:37:19 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Julia Lawall <julia@diku.dk>
-cc: zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/4] arch/m68k/mm/kmap.c: introduce missing kfree
-In-Reply-To: <Pine.LNX.4.64.0809101357440.15308@pc-004.diku.dk>
-Message-ID: <Pine.LNX.4.64.0809102237040.29543@anakin>
-References: <Pine.LNX.4.64.0809101357440.15308@pc-004.diku.dk>
+	Wed, 10 Sep 2008 16:44:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Rdt209rMIJaBVUVhSEAPoWjfBh5/S5MkUZYvYMziGvMzalDKc82QwouY2/OcBTtdg
+	+RgyLGghGT+/Fc9bkSUsg==
+Message-ID: <166fe7950809101344l7a5e2b7pfba8b2a7c03814a1@mail.gmail.com>
+Date: Wed, 10 Sep 2008 13:44:23 -0700
+From: "Ranjit Manomohan" <ranjitm@google.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
+Cc: kaber@trash.net, akpm@linux-foundation.org, lizf@cn.fujitsu.com,
+       menage@google.com, tgraf@suug.ch, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20080910.132251.73509521.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0809101026190.7050@ranjit.corp.google.com>
+	 <20080910.132251.73509521.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Error handling code following a kmalloc should free the allocated data.
-> 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
-> 
-> (
-> if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
-> |
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> )
-> <... when != x
->      when != if (...) { <+...x...+> }
-> x->f = E
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> |
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  arch/m68k/mm/kmap.c           |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+On Wed, Sep 10, 2008 at 1:22 PM, David Miller <davem@davemloft.net> wrote:
+>
+> I definitely prefer Thomas Graf's work, this stuff is very ugly
+> and way overengineered.
+>
 
-Thanks, queued for 2.6.28.
+Could you be more specific? Thomas' work is almost identical to this
+(except that he does not store the cgroup id into the socket which is
+a trivial change which has downsides which I have pointed out).
 
-Gr{oetje,eeting}s,
+Additionally this approach has only minor modifications to the core
+networking stack. What portions do you consider ugly and over
+engineered and what alternative implementations would you prefer?
+Please see the follow up I have sent to Thomas' proposal about why we
+need this design approach to handle the inbound case.
 
-						Geert
+I'd be ok if you accepted either change since  we just want a standard
+kernel mechanism to do this.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+-Thanks,
+Ranjit
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+> So no, I won't consider for net-next-2.6, sorry.
+>
+>
