@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYIJRkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYIJRlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbYIJRkZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYIJRkM
+	id S1754213AbYIJRlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYIJRlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:40:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41107 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751208AbYIJRkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:40:11 -0400
-Date: Wed, 10 Sep 2008 13:39:41 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Cc: hamid.jahanjou@gmail.com, "Zan Lynx" <zlynx@acm.org>,
-       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VM: Implements the swap-out page-clustering technique
-Message-ID: <20080910133941.61ceb087@bree.surriel.com>
-In-Reply-To: <2c0942db0809101008j55ea39dfx8dbf6284d4de749@mail.gmail.com>
-References: <48BFCECE.90103@gmail.com>
-	<87iqtbuez9.fsf@basil.nowhere.org>
-	<48C19648.8030002@gmail.com>
-	<20080905194501.GZ18288@one.firstfloor.org>
-	<20080906014214.22f28548@riellaptop.surriel.com>
-	<48C471AE.8060809@acm.org>
-	<20080907205536.0d1937ff@riellaptop.surriel.com>
-	<48C78246.7050507@gmail.com>
-	<2c0942db0809101008j55ea39dfx8dbf6284d4de749@mail.gmail.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Sep 2008 13:41:03 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56521 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbYIJRlB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 13:41:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type;
+	b=KL1dl6YCTDOkusQ+t5KJv1qjmatQuYptGsFlWdmJsvW0+tEibg81bFOHrlygrbWGS
+	eNoNARh3qZbdZGF4fKBKg==
+Date: Wed, 10 Sep 2008 10:40:26 -0700 (PDT)
+From: Ranjit Manomohan <ranjitm@google.com>
+To: davem@davemloft.net, kaber@trash.net, akpm@linux-foundation.org,
+       lizf@cn.fujitsu.com, menage@google.com, tgraf@suug.ch
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 0/2] Traffic control cgroups subsystem
+Message-ID: <Pine.LNX.4.64.0809101026190.7050@ranjit.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008 10:08:07 -0700
-"Ray Lee" <ray-lk@madrabbit.org> wrote:
-> On Wed, Sep 10, 2008 at 1:16 AM, Hamid R. Jahanjou
-> <hamid.jahanjou@gmail.com> wrote:
-> > I agree. As you said, we have two conflicting requirements here: on the
-> > one hand one likes to swap as many pages as to satisfy the backing
-> > storage "proper block IO size," on the other hand, one should not make a
-> > process lose too many pages.
-> 
-> I'd much rather that one process lose a lot of pages than many
-> processes lose a few. When a system is swap thrashing, each process
-> has some of its active working set tossed to swap, which means *any*
-> application you try to switch to is then sluggish. If it were only one
-> application, then only that one takes the penalty hit when the user
-> switches focus and context.
+Incorporated fixes suggested by Li Zefan.
 
-Better still, with proper IO clustering that one process can get
-its pages back into memory quite quickly.
+Please consider for net-next-2.6.
 
-Paging of anonymous pages is limited by disk seeks, so minimizing
-those is a top goal.
+This patch provides a simple resource controller (cgroup_tc) based on the
+cgroups infrastructure to manage network traffic. The cgroup_tc resource
+controller can be used to schedule and shape traffic belonging to the task(s)
+in a particular cgroup.
 
--- 
-All rights reversed.
+The implementation consists of two parts:
+
+1) A resource controller (cgroup_tc) that is used to associate packets from
+   a particular task belonging to a cgroup with a traffic control class id (
+   tc_classid). This tc_classid is propagated to all sockets created by tasks
+   in the cgroup and will be used for classifying packets at the link layer.
+
+2) A new traffic control classifier (cls_cgroup) that can classify packets
+   based on the tc_classid field in the socket to specific destination classes.
+
+An example of the use of this resource controller would be to limit
+the traffic from all tasks from a file_server cgroup to 100Mbps. We could
+achieve this by doing:
+
+# make a cgroup of file transfer processes and assign it a arbitrary unique
+# classid of 0x1234 - this will be used later to direct packets.
+mkdir -p /dev/cgroup
+mount -t cgroup tc -otc /dev/cgroup
+mkdir /dev/cgroup/file_transfer
+echo 0x1234 > /dev/cgroup/file_transfer/tc.classid
+echo $PID_OF_FILE_XFER_PROCESS > /dev/cgroup/file_transfer/tasks
+
+# Now create a HTB class that rate limits traffic to 100mbits and attach
+# a filter to direct all traffic from cgroup file_transfer to this new class.
+tc qdisc add dev eth0 root handle 1: htb
+tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 100mbit
+tc filter add dev eth0 parent 1: handle 800 protocol ip prio 1 cgroup value 0x1234 classid 1:10
+
+Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
+
+---
