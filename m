@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbYIJXxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYIJXxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221AbYIJXxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYIJXx1
+	id S1753373AbYIJXxy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYIJXxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:53:27 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9615 "EHLO
+	Wed, 10 Sep 2008 19:53:35 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9649 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbYIJXxY (ORCPT
+	with ESMTP id S1754334AbYIJXxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:53:24 -0400
+	Wed, 10 Sep 2008 19:53:34 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=message-id:date:from:to:subject:cc:in-reply-to:
 	mime-version:content-type:content-transfer-encoding:
 	content-disposition:references;
-	b=qW8vYfTpU4KPbtinJ2qradT4UBHq+fMw8I0FmIVia8JCGshXwHCptb1e/n/XtneBd
-	lcuc0meiANb1Prefs8/ng==
-Message-ID: <6599ad830809101653p5688d9b8xad0772af875a92e4@mail.gmail.com>
-Date: Wed, 10 Sep 2008 16:53:16 -0700
+	b=lRJNs4ujgyhnXOhny+pYA4cxTH7Hvdm/rKHlmrzcWaJSZGSIRgbkExkkPqJYFPrZ7
+	JAruqj/bsGOwkKkocNH8g==
+Message-ID: <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
+Date: Wed, 10 Sep 2008 16:51:55 -0700
 From: "Paul Menage" <menage@google.com>
 To: "Thomas Graf" <tgraf@suug.ch>
 Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
