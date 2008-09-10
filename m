@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbYIJQOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYIJQPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753385AbYIJQOj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYIJQOa
+	id S1753989AbYIJQPe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYIJQP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:14:30 -0400
-Received: from mga11.intel.com ([192.55.52.93]:5735 "EHLO mga11.intel.com"
+	Wed, 10 Sep 2008 12:15:26 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35340 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751901AbYIJQOa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:14:30 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,373,1217833200"; 
-   d="scan'208";a="614842409"
-From: "Ma, Chinang" <chinang.ma@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 10 Sep 2008 09:14:27 -0700
-Subject: RE: 2.6.27-rc5 OLTP performance regression
-Thread-Topic: 2.6.27-rc5 OLTP performance regression
-Thread-Index: AckTQICv/8FoqwBHRVa+t9Z+I1NLzgAHNv3g
-Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
- <1220896833.18239.141.camel@twins.programming.kicks-ass.net>
- <1220897052.18239.147.camel@twins.programming.kicks-ass.net>
- <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E71C7@azsmsx501.amr.corp.intel.com>
- <20080910122622.GG14757@elte.hu>
-In-Reply-To: <20080910122622.GG14757@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751907AbYIJQPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 12:15:25 -0400
+Date: Wed, 10 Sep 2008 20:20:08 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pierre Morel <pmorel@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>
+Subject: Re: [PATCH 1/1] system call notification with self_ptrace
+Message-ID: <20080910162008.GA401@tv-sign.ru>
+References: <48C51439.7000706@linux.vnet.ibm.com> <20080909124302.GA139@tv-sign.ru> <48C7E3A9.3060602@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C7E3A9.3060602@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I increased the /proc/sys/kernel/sched_shares_ratelimit from 1 millisecond to one second to reduce the frequency of shares update. That was okay for OLTP workload. As Peter mentioned, a larger value will reduce the accuracy of SMP fairness for group scheduler and the ratelimit and using a larger default value may not be good for general case.
+On 09/10, Pierre Morel wrote:
+>
+> Oleg Nesterov wrote:
+> >
+> >I still think this patch shouldn't change handle_signal().
+> >
+> >Once again. The signal handler for SIGSYS can first do
+> >sys_ptrace(PTRACE_SELF_OFF) (which is filtered out), and then use any
+> >other syscall, so this change is not needed, afaics.
+> >
+> Yes it can but what if the application forget to do it?
+> It is a security so that the application do not bounce for ever.
 
-Thanks,
-Chinang
------Original Message-----
-From: Ingo Molnar [mailto:mingo@elte.hu]
-Sent: Wednesday, September 10, 2008 5:26 AM
-To: Ma, Chinang
-Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5 OLTP performance regression
+The (buggy) task can be killed, this has nothing to do with security.
+
+>From the security pov, this case doesn't differ from, say,
+
+	void sigh(int sig)
+	{
+		kill(getpid(), sig);
+	}
+
+	void main(void)
+	{
+		signal(SIGSYS, sigh);
+		kill(getpid(), SIGSYS);
+	}
+
+Or I missed something?
+
+> >So, PTRACE_SELF_XXX disables the "normal" ptrace. Not sure this is good.
+> >
+> I think that having two tracing system one over the other may be
+> quite difficult to handle.
+
+Yes I see.
+
+But... well, I think we need Roland's opinion. I must admit, I am a bit
+sceptical about this patch ;) I mean, I don't really understand why it
+is useful. We can do the same with fork() + ptrace(). Yes, in that
+case we need an "extra" context switch for any traced syscall. But,
+do you have any "real life" example to demonstrate that the user-space
+solution sucks? We can even use CLONE_MM to speedup the context switch.
+
+Pierre, don't get me wrong. I never used debuggers for myself, I will
+be happy to know I am wrong. I just don't understand.
 
 
-* Ma, Chinang <chinang.ma@intel.com> wrote:
+As for ->instrumentation. If you are going to remove PTS_INSTRUMENTED,
+we need only one bit. We could use PF_PTS_SELF, but ->flags is already
+"contended". Perhaps you can do something like
 
-> Peter,
->         We increased sched_shares_ratelimit and were able to recover
-> the 2% performance regression. [...]
+	--- include/linux/sched.h
+	+++ include/linux/sched.h
+	@@ -1088,6 +1088,7 @@ struct task_struct {
+		/* ??? */
+		unsigned int personality;
+		unsigned did_exec:1;
+	+	unsigned pts_self:1;
+		pid_t pid;
+		pid_t tgid;
+	 
 
-great. Could you please post a patch for that?
+Both did_exec and pts_self can only be changed by current, so it is
+safe to share the same word. This way we don't enlarge task_struct.
 
-        Ingo
+Oleg.
+
