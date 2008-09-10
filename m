@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYIJM5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbYIJNAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYIJM5q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 08:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbYIJM5g
+	id S1753669AbYIJNAu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 09:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYIJNAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 08:57:36 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:15371 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751526AbYIJM5f (ORCPT
+	Wed, 10 Sep 2008 09:00:41 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:61135 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752135AbYIJNAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 08:57:35 -0400
-Message-ID: <48C7C428.5090209@panasas.com>
-Date: Wed, 10 Sep 2008 15:57:12 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 10 Sep 2008 09:00:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XCdiArRMUPAtugO5ahXXPlGse6bjSzdLFsfM85GF4+HoPbTX53a04Y0N/kt8i8r5lo
+         f51uoH3i8mIFnvezatrtyZHXluNq3coveRwXTfyxcJ4M2qL3bV2MQqnFmSYRYSee24kR
+         Sd/muHvsJmAlbGgPXcPPIUS+KOteBkcqhTmiI=
+Date: Wed, 10 Sep 2008 09:00:36 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] OLPC: touchpad driver (take 2)
+Message-ID: <20080910130035.GB25221@anvil.corenet.prv>
+References: <20080813152459.4d6bb0cb@ephemeral> <20080815031435.GD9438@anvil.corenet.prv> <20080829024959.68bcdc98@fred>
 MIME-Version: 1.0
-To: Chris Leech <christopher.leech@intel.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH] 24-bit types: typedef and functions for accessing 3-byte
- arrays as integers
-References: <41b516cb0809071052t1aea47b3hd7dc40d3bb1cfce3@mail.gmail.com> <20080909225930.19495.64220.stgit@localhost.localdomain>
-In-Reply-To: <20080909225930.19495.64220.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Sep 2008 12:56:20.0227 (UTC) FILETIME=[9EF41530:01C91344]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080829024959.68bcdc98@fred>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Leech wrote:
-> Both iSCSI and Fibre Channel make use of 24-bit big-endian values in
-> frame headers.  This patch defines __be24 and __le24 typedefs for a
-> structure wrapped around a 3-byte array, and functions to convert back and
-> forth to a 32-bit integer.
+On Fri, Aug 29, 2008 at 02:49:59AM -0400, Andres Salomon wrote:
+> > > +static void hgpk_spewing_hack(struct psmouse *psmouse, int l, int
+> > > r, int x,
+> > > +		int y)
+> > > +{
+> > > +	struct hgpk_data *priv = psmouse->private;
+> > > +	static int count;
+> > > +	static int x_tally;
+> > > +	static int y_tally;
+> > 
+> > Hmm, I guess we'll never see 2 such devices in one box, but still
+> > moving it to psmouse->private woudl be a good practice.
 > 
-> The undefs in iscsi_proto.h are because of the different calling
-> convention for the existing hton24 macro in the iSCSI code.  iSCSI will
-> be converted in a subsequent patch.
 > 
-> Changes from last posting:
+> Can you please clarify this comment?
 > 
-> Switched from preprocessor macros to inline functions.  The generated assembly
-> is the same with gcc 4.1.2 as long as the function is actually inlined.  I
-> applied the __always_inline attribute to all of these, after seeing that with
-> one of my test kernel configurations they were not being inlined without it
-> and the generated instructions in the iSCSI code could be considered a
-> regression from the existing macro.
-> 
-> Signed-off-by: Chris Leech <christopher.leech@intel.com>
-> ---
-> 
->  include/linux/byteorder.h         |   44 ++++++++++++++++++++++++++++++++++++
->  include/linux/byteorder/generic.h |   45 +++++++++++++++++++++++++++++++++++++
->  include/linux/types.h             |    2 ++
->  include/scsi/iscsi_proto.h        |    2 ++
->  4 files changed, 93 insertions(+), 0 deletions(-)
-> 
-<snip>
 
-Thanks! Personally I like this much better.
+If you ever have 2 such devices in the same box use of static variables
+will cause the code to not work properly because they will be shared
+between the devices. Proper way is to move them into per-device
+structure.
 
-Sorry to be nit picking but again I hate that double implementation thing.
->From what I could see, and considering a few of the ARCHs you mentioned,
-it looks to me like <linux/swab.h> is common to the two implementations,
-(old and new). Perhaps put the "__xxx" implementations in swab.h and
-only the xxx => __xxx switching in the double byteorder headers, which
-fits better with the surrounding style of these headers. 
-
-Thanks
-Boaz
+-- 
+Dmitry
