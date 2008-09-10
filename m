@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYIJSKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbYIJSLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYIJSKr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 14:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYIJSKj
+	id S1751896AbYIJSLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 14:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbYIJSLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 14:10:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47733 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750745AbYIJSKi (ORCPT
+	Wed, 10 Sep 2008 14:11:07 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:2225 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751057AbYIJSLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 14:10:38 -0400
-Date: Wed, 10 Sep 2008 11:10:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: paccept() oddity
-Message-Id: <20080910111016.b289b3eb.akpm@linux-foundation.org>
-In-Reply-To: <48AC4B6E.4040409@gmail.com>
-References: <48AC4B6E.4040409@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Sep 2008 14:11:06 -0400
+Message-ID: <48C80C11.9080103@panasas.com>
+Date: Wed, 10 Sep 2008 21:04:01 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Chris Leech <christopher.leech@intel.com>
+CC: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [Open-FCoE] [PATCH 1/3] 24-bit types: typedef and macros for
+ accessing 3-byte arrays as integers
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>		<20080910140712.GA12280@infradead.org>	<1221061241.27385.14.camel@norville.austin.ibm.com> <48C7F4EC.1080709@intel.com> <48C807A9.60509@intel.com>
+In-Reply-To: <48C807A9.60509@intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Sep 2008 18:03:08.0053 (UTC) FILETIME=[7ADF6C50:01C9136F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Aug 2008 18:50:54 +0200 Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
+Chris Leech wrote:
+> Chris Leech wrote:
+>> Dave Kleikamp wrote:
+>>> @@ -62,7 +60,7 @@ struct timestruc_t {
+>>>   */
+>>>  typedef struct {
+>>>  	unsigned len:24;
+>>> -	unsigned off1:8;
+>>> +	u8 off1;
+>>>  	u32 off2;
+>>>  } lxd_t;
+>> Shouldn't len here be changed to a __le24?  I think this just changed
+>> the size of lxd_t by a byte.
+> 
+> Never mind, I see that it's a host order field.  And presently surprised
+> to see that gcc combines the 24-bit bitfield with the following u8.
+> 
+> Chris
 
-> Ulrich,
-> 
-> [
-> 2.6.27-rc has paccept():
-> 
-> int paccept(int fd, struct sockaddr *sockaddr, socklen_t *addrlen,
->          const sigset_t *sigmask, int setsize, int flags)
-> ]
-> 
-> While considering the sigset argument for paccept() (see my previous
-> message), and testing that system call, I realized that there is a certain
-> oddness in the implementation of paccept().
-> 
-> Like accept(), paccept() automatically restarts if interrupted by a signal
-> handler that was established with the SA_RESTART flag.
-> 
-> On the other hand, pselect(), ppoll(), and epoll_pwait() are never restarted
-> if interrupted by a handler, even if the handler was established with
-> SA_RESTART.  (This is the same as with select(), poll(), and epoll_wait().)
-> 
-> It seems to me that it makes little sense to restart paccept(), especially in
-> the case where it is interrupted by a handler for one of the signals that is
-> in sigmask, since the whole point of calling paccept() is to block until a
-> connection is received, or until one of the signals in sigmask is caught().
-> 
-> How about changing paccept() so that it is never automatically restarted if
-> interrupted by a signal handler, regardless of the SA_RESTART flag.  (In
-> other words, paccept() should be consistent with pselect(), ppoll(), and
-> epoll_pwait(), rather than being consistent with accept().)  What are your
-> thoughts?
-> 
+It does because these are all bytes. on x86. But this is not guarantied
+for all ARCHs and machine-word-sizes. In any way this should be consistent
+with the rest of the file.
 
-Oleg, Roland: would you have the time to ponder the above, please?
+Please see my other reply about packing of structures. If this is
+on-the-wire then there are problems.
 
-If we can't get this nailed down very soon I'd suggest that we disable
-sys_paccept() for 2.6.27.  We don't want to be releasing a new system
-call into 2.6.27 if there are doubts surrounding its userspace-visible
-behaviour.
-
-Thanks.
+Boaz
