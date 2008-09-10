@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYIJQz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYIJQ4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbYIJQz4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYIJQzq
+	id S1754557AbYIJQ4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbYIJQ43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:55:46 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40510 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752186AbYIJQzp (ORCPT
+	Wed, 10 Sep 2008 12:56:29 -0400
+Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:28845 "EHLO
+	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752321AbYIJQ43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:55:45 -0400
-Subject: Re: [RFC v4][PATCH 4/9] Memory management (dump)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-In-Reply-To: <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-	 <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 09:55:28 -0700
-Message-Id: <1221065728.6781.19.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 10 Sep 2008 12:56:29 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Time travel experiment?
+Date: Wed, 10 Sep 2008 18:56:24 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200809101658.06935.elendil@planet.nl> <200809101755.19927.elendil@planet.nl> <200809101825.29276.elendil@planet.nl>
+In-Reply-To: <200809101825.29276.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809101856.24997.elendil@planet.nl>
+X-OriginalArrivalTime: 10 Sep 2008 16:56:25.0296 (UTC) FILETIME=[290B2D00:01C91366]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
-> +       while (addr < end) {
-> +               struct page *page;
-> +
-> +               /*
-> +                * simplified version of get_user_pages(): already have vma,
-> +                * only need FOLL_TOUCH, and (for now) ignore fault stats.
-> +                *
-> +                * FIXME: consolidate with get_user_pages()
-> +                */
-> +
-> +               cond_resched();
-> +               while (!(page = follow_page(vma, addr, FOLL_TOUCH))) {
-> +                       ret = handle_mm_fault(vma->vm_mm, vma, addr, 0);
-> +                       if (ret & VM_FAULT_ERROR) {
-> +                               if (ret & VM_FAULT_OOM)
-> +                                       ret = -ENOMEM;
-> +                               else if (ret & VM_FAULT_SIGBUS)
-> +                                       ret = -EFAULT;
-> +                               else
-> +                                       BUG();
-> +                               break;
-> +                       }
-> +                       cond_resched();
-> +                       ret = 0;
-> +               }
+On Wednesday 10 September 2008, Frans Pop wrote:
+> On Wednesday 10 September 2008, Frans Pop wrote:
+> > > > $ date
+> > > > Wed Jul  3 23:09:23 CEST 2024
 
-get_user_pages() is really the wrong thing to use here.  It makes pages
-*present* so that we can do things like hand them off to a driver.  For
-checkpointing, we really don't care about that.  It's a waste of time,
-for instance to perform faults to fill the mappings up with zero pages
-and page tables.  Just think of what will happen the first time we touch
-a very large, very sparse anonymous area.  We'll probably kill the
-system just allocating page tables.  Take a look at the comment in
-follow_page().  This is a similar operation to core dumping, and we need
-to be careful.
+Aaah, hmmm.
 
-This might be fine for a proof of concept, but it needs to be thought
-out much more thoroughly before getting merged.  I guess I'm
-volunteering to go do that.
+I'm trying to trace a problem with resume. Once in every 5-10 times resume 
+fails with dead display even though most times it resumes perfectly. So I 
+was trying the suggestion in Documentation/power/s2ram.txt and am doing
+'echo 1 > /sys/power/pm_trace' before suspending.
 
--- Dave
+Just now I find [1] which mentions that the trace info is saved in the 
+RTC, which I guess could well explain the jump. If that's what behind 
+this, wouldn't it make sense to mention that fact in s2ram.txt?
 
+But I would not expect the RTC to get changed when the resume is 
+successful. Or does it just get updated with every resume step without a 
+reset to the pre-trace value on completion?
+
+[1]https://lists.linux-foundation.org/pipermail/linux-pm/2006-June/008470.html
