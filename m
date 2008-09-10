@@ -1,65 +1,329 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbYIMI2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759120AbYIMI2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbYIMI2F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 04:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYIMI1e
+	id S1759120AbYIMI2Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 04:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758132AbYIMI1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 04:27:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:28631 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754739AbYIMI1a (ORCPT
+	Sat, 13 Sep 2008 04:27:41 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38927 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757741AbYIMI1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 04:27:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=hiUEGzfCBgoyjo5176DTf+uLctrQbR+IuRdI++04v660cEZbdmdIas0xSADYb1zejX
-         DEZZ+xl0SYKIgjjsNnthUx3CetA0r681jF+aheSBRqB4LSUQAaGMZfR+6uwG+LU2wH8G
-         VryUYJq7IMgU0NgHB+ziRCP2iFqnwO3PDGmok=
-Message-ID: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com>
-Date: Sat, 13 Sep 2008 13:57:28 +0530
-From: "karthikeyan S" <karthispeaks@gmail.com>
+	Sat, 13 Sep 2008 04:27:39 -0400
+From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
-Subject: A bug (probably) in stop_all_threads
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Wed, 10 Sep 2008 09:52:22 +0200
+Message-Id: <1221033149-15405-4-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <1221033149-15405-3-git-send-email-giometti@linux.it>
+References: <>
+ <1221033149-15405-1-git-send-email-giometti@linux.it>
+ <1221033149-15405-2-git-send-email-giometti@linux.it>
+ <1221033149-15405-3-git-send-email-giometti@linux.it>
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH 03/10] PPS: documentation programs and examples.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Here some utilities and examples about the PPS API and the LinuxPPS
+support.
 
-Apologies if I am posting this message in an incorrect mailing list
-and for bringing up an issue with older kernel version (2.4), and if
-the issue had been brought up earlier and I missed it.
+* ppsldisc.c shows how to manage PPS line discipline;
 
-There seems to be a bug with stop_all_threads function in 2.4. The
-function sends SIGSTOP to all the threads in the thread group and
-waits until all the threads get their state changed accordingly.
+* ppstest.c implements an useful testing program, while
 
-While waiting, if it finds that the event has not occurred, it tires
-to yield the processor to other processes by calling
-schedule_timeout().
+* ppsfind tries to help the user into finding a specific PPS source by
+  using its name or path.
 
-Bur before calling schedule_timeout() it does not set the task state
-to either TASK_INTERRUPTIBLE or TASK_UNINTERRUPTIBLE.
-So schedule_timeout() does not do anything effectively.
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+---
+ Documentation/pps/Makefile   |   28 ++++++++
+ Documentation/pps/ppsfind    |   17 +++++
+ Documentation/pps/ppsldisc.c |   46 +++++++++++++
+ Documentation/pps/ppstest.c  |  151 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 242 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/Makefile
+ create mode 100644 Documentation/pps/ppsfind
+ create mode 100644 Documentation/pps/ppsldisc.c
+ create mode 100644 Documentation/pps/ppstest.c
 
-This causes a problem in our device which uses kernel 2.4. When we
-have a sigsegv from the task which runs at highest priority, the
-control is stuck waiting for all the threads in the thread group to
-change their task state. But the other threads never get a chance to
-run and the SIGSTOP sent to them is of no effect.
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
+new file mode 100644
+index 0000000..9841e6b
+--- /dev/null
++++ b/Documentation/pps/Makefile
+@@ -0,0 +1,28 @@
++TARGETS = ppstest ppsldisc
++
++CFLAGS += -Wall -O2 -D_GNU_SOURCE
++CFLAGS += -I .
++CFLAGS += -ggdb
++CFLAGS += -D__N_PPS=$(shell awk '/N_PPS/ {print $$3}' ../../include/linux/tty.h)
++
++# -- Actions section --
++
++.PHONY : all depend dep
++
++all : .depend $(TARGETS)
++
++.depend depend dep :
++	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
++
++ifeq (.depend,$(wildcard .depend))
++include .depend
++endif
++
++
++# -- Clean section --
++
++.PHONY : clean
++
++clean :
++	rm -f *.o *~ core .depend
++	rm -f ${TARGETS}
+diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
+new file mode 100644
+index 0000000..93c0e17
+--- /dev/null
++++ b/Documentation/pps/ppsfind
+@@ -0,0 +1,17 @@
++#!/bin/sh
++
++SYS="/sys/class/pps/"
++
++if [ $# -lt 1 ] ; then
++	echo "usage: ppsfind <name>" >&2
++	exit 1
++fi
++
++for d in $(ls $SYS) ; do
++	if grep $1 $SYS/$d/name >& /dev/null || \
++	   grep $1 $SYS/$d/path >& /dev/null ; then
++		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
++	fi
++done
++
++exit 0
+diff --git a/Documentation/pps/ppsldisc.c b/Documentation/pps/ppsldisc.c
+new file mode 100644
+index 0000000..036e13b
+--- /dev/null
++++ b/Documentation/pps/ppsldisc.c
+@@ -0,0 +1,46 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <stdlib.h>
++#include <errno.h>
++#include <sys/ioctl.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <string.h>
++
++#ifndef N_PPS
++#define N_PPS __N_PPS
++#endif
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ttyS>\n", name);
++
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int fd;
++	int ldisc = N_PPS;
++	int ret;
++
++	if (argc < 2)
++		usage(argv[0]);
++
++	fd = open(argv[1], O_RDWR);
++	if (fd < 0) {
++		perror("open");
++		exit(EXIT_FAILURE);
++	}
++
++	ret = ioctl(fd, TIOCSETD, &ldisc);
++	if (ret < 0) {
++		perror("ioctl(TIOCSETD)");
++		exit(EXIT_FAILURE);
++	}
++
++	pause();
++
++	return 0;
++}
+diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
+new file mode 100644
+index 0000000..d125ffa
+--- /dev/null
++++ b/Documentation/pps/ppstest.c
+@@ -0,0 +1,151 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include <timepps.h>
++
++int find_source(char *path, pps_handle_t *handle, int *avail_mode)
++{
++	pps_params_t params;
++	int ret;
++
++	printf("trying PPS source \"%s\"\n", path);
++
++	/* Try to find the source by using the supplied "path" name */
++	ret = open(path, O_RDWR);
++	if (ret < 0) {
++		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
++		return ret;
++	}
++
++	/* Open the PPS source (and check the file descriptor) */
++	ret = time_pps_create(ret, handle);
++	if (ret < 0) {
++		fprintf(stderr, "cannot create a PPS source from device "
++				"\"%s\" (%m)\n", path);
++		return -1;
++	}
++	printf("found PPS source \"%s\"\n", path);
++
++	/* Find out what features are supported */
++	ret = time_pps_getcap(*handle, avail_mode);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get capabilities (%m)\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
++		fprintf(stderr, "cannot CAPTUREASSERT\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
++		fprintf(stderr, "cannot OFFSETASSERT\n");
++		return -1;
++	}
++
++	/* Capture assert timestamps, and compensate for a 675 nsec
++	 * propagation delay */
++	ret = time_pps_getparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get parameters (%m)\n");
++		return -1;
++	}
++	params.assert_offset.tv_sec = 0;
++	params.assert_offset.tv_nsec = 675;
++	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
++	ret = time_pps_setparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot set parameters (%m)\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
++{
++	struct timespec timeout;
++	pps_info_t infobuf;
++	int ret;
++
++	/* create a zero-valued timeout */
++	timeout.tv_sec = 3;
++	timeout.tv_nsec = 0;
++
++retry:
++	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	else {
++		sleep(1);
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	}
++	if (ret < 0) {
++		if (ret == -EINTR) {
++			fprintf(stderr, "time_pps_fetch() got a signal!\n");
++			goto retry;
++		}
++
++		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
++		return -1;
++	}
++
++	printf("source %d - "
++	       "assert %ld.%09ld, sequence: %ld - "
++	       "clear  %ld.%09ld, sequence: %ld\n",
++	       i,
++	       infobuf.assert_timestamp.tv_sec,
++	       infobuf.assert_timestamp.tv_nsec,
++	       infobuf.assert_sequence,
++	       infobuf.clear_timestamp.tv_sec,
++	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++
++	return 0;
++}
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int num;
++	pps_handle_t handle[4];
++	int avail_mode[4];
++	int i = 0;
++	int ret;
++
++	/* Check the command line */
++	if (argc < 2)
++		usage(argv[0]);
++
++	for (i = 1; i < argc && i <= 4; i++) {
++		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
++		if (ret < 0)
++			exit(EXIT_FAILURE);
++	}
++
++	num = i - 1;
++	printf("ok, found %d source(s), now start fetching data...\n", num);
++
++	/* loop, printing the most recent timestamp every second or so */
++	while (1) {
++		for (i = 0; i < num; i++) {
++			ret = fetch_source(i, &handle[i], &avail_mode[i]);
++			if (ret < 0 && errno != ETIMEDOUT)
++				exit(EXIT_FAILURE);
++		}
++	}
++
++	for (; i >= 0; i--)
++		time_pps_destroy(handle[i]);
++
++	return 0;
++}
+-- 
+1.5.4.3
 
-When  I changed the stop_all_threads function to set the task state to
-TASK_INTERRUPTIBLE, the problem disappears.
-
-So is this a real issue that stop_all_threads() does not set the
-current task to TASK_INTERRUPTIBLE before calling schedule_timeout()?
-
-Please provide your feedback. Thanks a lot.
-
--karthik
