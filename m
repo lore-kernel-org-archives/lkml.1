@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYIJXjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYIJXmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbYIJXjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYIJXjJ
+	id S1754662AbYIJXmf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYIJXm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:39:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52845 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752150AbYIJXjH (ORCPT
+	Wed, 10 Sep 2008 19:42:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39247
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752038AbYIJXm1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:39:07 -0400
-Date: Wed, 10 Sep 2008 16:39:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Peterson <joe@skyrush.com>
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
- attached)
-Message-Id: <20080910163902.2b7ac22b.akpm@linux-foundation.org>
-In-Reply-To: <48C6DFA4.5040406@skyrush.com>
-References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>
-	<48AC3A16.4080209@skyrush.com>
-	<48B3F9F7.2050503@skyrush.com>
-	<48C54EC2.4060901@skyrush.com>
-	<20080908173250.2452c5b8.akpm@linux-foundation.org>
-	<20080909115536.1664d57a@lxorguk.ukuu.org.uk>
-	<20080909104325.4653190b.akpm@linux-foundation.org>
-	<48C6DFA4.5040406@skyrush.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 10 Sep 2008 19:42:27 -0400
+Date: Wed, 10 Sep 2008 16:42:20 -0700 (PDT)
+Message-Id: <20080910.164220.56492718.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: jeffm@suse.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, herbert@gondor.apana.org.au
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1221089816.13621.61.camel@macbook.infradead.org>
+References: <1221088512.13621.58.camel@macbook.infradead.org>
+	<20080910.162423.40167601.davem@davemloft.net>
+	<1221089816.13621.61.camel@macbook.infradead.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Sep 2008 14:42:12 -0600
-Joe Peterson <joe@skyrush.com> wrote:
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Wed, 10 Sep 2008 16:36:56 -0700
 
-> 1) Fix tab erasure handling
-> 2) Improve locking when working with the echo buffer
-> 3) Remove the big kernel lock (BKL) from n_tty
+> On Wed, 2008-09-10 at 16:24 -0700, David Miller wrote:
+> > From: David Woodhouse <dwmw2@infradead.org>
+> > Date: Wed, 10 Sep 2008 16:15:11 -0700
+> > 
+> > > It's definitely not something we should be doing upstream though.
+> > 
+> > So you think it's ok that every Debian user has to learn this
+> > magic incantation just to use current kernels?
 > 
-> Tab erasure handling is now more robust and able to handle non-zero
-> canon column cases more correctly.  This is done by making correct use
-> of what is known in the eraser function (read buffer contents) and what
-> is known at the time of processing the tab erasure (column state).
-> 
-> Also, better locking of the echo buffer will now prevent any attempts to
-> process partial multi-byte echo operations.  And since the echo buffer
-> code now isolates the tty column state code to the process_out* and
-> process_echoes functions, we can remove the big kernel lock (BKL)
-> and replace it with more modern mutex locks.
+> They don't. Debian uses firmware from /lib/firmware if it doesn't exist
+> in /lib/firmware/$(version) -- so they can install to the normal
+> location quite happily, and it should work just fine.
 
-Boy.  Has this been carefully tested with lockdep enabled?
+That's not what I've heard from people more clueful from me.
+
+For example, Herbert Xu (CC:'d) told me that because of this directory
+usage, his wireless card couldn't find it's firmware with current
+kernels.
