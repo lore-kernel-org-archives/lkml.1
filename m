@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751939AbYIJNqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbYIJNyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751939AbYIJNqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 09:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbYIJNqb
+	id S1752623AbYIJNyQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 09:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYIJNyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 09:46:31 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:42177 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752598AbYIJNqa (ORCPT
+	Wed, 10 Sep 2008 09:54:00 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:59743 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbYIJNx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 09:46:30 -0400
-Date: Wed, 10 Sep 2008 16:47:01 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Jens Axboe <axboe@kernel.dk>
-Subject: Re: [PATCH] include <linux/fs.h> into linux/ext2_fs.h
-Message-ID: <20080910134700.GI3757@localhost.localdomain>
-References: <1221045726-5674-1-git-send-email-kirill@shutemov.name> <20080910112709.GA11742@infradead.org> <20080910114011.GB3757@localhost.localdomain> <20080910114042.GA15996@infradead.org> <20080910114923.GC3757@localhost.localdomain> <48C7CDF4.2020206@redhat.com>
+	Wed, 10 Sep 2008 09:53:59 -0400
+X-BigFish: VPS-24(zz1432R98dR1805M936fQ873fnzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K6ZFXL-04-BGY-01
+Date: Wed, 10 Sep 2008 15:53:47 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
+Message-ID: <20080910135347.GI6329@amd.com>
+References: <20080910124822.GG6329@amd.com> <20080910220323D.fujita.tomonori@lab.ntt.co.jp> <20080910131032.GH6329@amd.com> <20080910223735O.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0XMZdl/q8hSSmFeD"
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <48C7CDF4.2020206@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+In-Reply-To: <20080910223735O.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 10 Sep 2008 13:53:47.0207 (UTC) FILETIME=[A5837D70:01C9134C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 10, 2008 at 10:37:45PM +0900, FUJITA Tomonori wrote:
+> On Wed, 10 Sep 2008 15:10:32 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > Can't we simply make the gfp hacks depend on
+> > dma_ops->is_phys and avoid further gfp hacks in the hardware iommu
+> > implementations?
+> 
+> I thought about it but adding a new dma_ops->we_don't_want_gfp_flag
+> hook doesn't make the code simpler much. Currently, we have the gfp
+> setting hack in just one place. It's not bad. Adding such new hook
+> means adding more lines than we can remove.
 
---0XMZdl/q8hSSmFeD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The is_phys flas is already in place and its meaning is "the dma_ops
+return bus addresses equal to physical addresses". This is exactly the
+case when we need the gfp hacks. So I don't see a problem in just
+skipping the gfp rewrite if is_phys is zero. I don't see a point in
+adding gfp flags in dma_alloc_coherent and remove them again
+dma_ops->alloc_coherent code. Specially in this case where we already
+know in dma_alloc_coherent if we really need the flag rewrite.
 
-On Wed, Sep 10, 2008 at 08:39:00AM -0500, Eric Sandeen wrote:
-> Kirill A. Shutemov wrote:
-> > On Wed, Sep 10, 2008 at 07:40:42AM -0400, Christoph Hellwig wrote:
-> >> On Wed, Sep 10, 2008 at 02:40:12PM +0300, Kirill A. Shutemov wrote:
-> >>> On Wed, Sep 10, 2008 at 07:27:09AM -0400, Christoph Hellwig wrote:
-> >>>> On Wed, Sep 10, 2008 at 02:22:03PM +0300, Kirill A. Shutemov wrote:
-> >>>>> linux/fs.h defines FS_IOC* needed by linux/ext2_fs.h
-> >>>> And who cares? =20
-> >=20
-> > Do you think it isn't error?
-> >=20
-> >>> It breaks building pam_mktemp at least.
-> >> pam_mktemp should not use <linux/ext2_fs.h>, but rather
-> >> <ext2fs/ext2_fs.h>.
->=20
-> That's right.
->=20
-> > Why linux/ext2_fs.h does export to userspace?
-> >=20
->=20
-> it does?
->=20
-> $ grep header-y include/linux/Kbuild | wc -l
-> 163
-> $ grep header-y include/linux/Kbuild | grep ext2
-> $
->=20
-> I think it does not.
+> Yeah, I was against your patch to adding the gfp setting hack to
+> swiotlb but it's because gfp is kinda architecture specific stuff and
+> swiotlb should not. It's the bad design IMO. It's ok for me that
+> architecture specific IOMMUs can do the architecture specific stuff
+> (and it's about just clearing the gfp flag).
 
-It does:
+The generic swiotlb code already contained a gfp hack for IA64 and I
+added another one for x86 which is ok in my opinion. But the #ifdef was
+ugly, I agree with that now :-)
+Your solution of removing the flag hacks from the generic code completly
+was the other possible way.
 
-$ grep unifdef-y include/linux/Kbuild | grep ext2
-unifdef-y +=3D ext2_fs.h
+Joerg
 
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
---0XMZdl/q8hSSmFeD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjHz9QACgkQbWYnhzC5v6p/VwCePsvaciKrrHOdf5+ib74tgSKJ
-ptIAoIK7PquXkumnsh48ahHOHCSKZvpn
-=+dLe
------END PGP SIGNATURE-----
-
---0XMZdl/q8hSSmFeD--
