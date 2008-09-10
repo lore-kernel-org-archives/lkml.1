@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYIJSIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYIJSKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYIJSIs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 14:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751720AbYIJSIk
+	id S1754134AbYIJSKr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 14:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYIJSKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 14:08:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57662 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751817AbYIJSIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 14:08:39 -0400
-Date: Wed, 10 Sep 2008 20:08:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH] pci: fix merging left out for BAR print out v2
-Message-ID: <20080910180821.GA6864@elte.hu>
-References: <1220988472-24139-1-git-send-email-yhlu.kernel@gmail.com> <20080910084450.GJ15255@elte.hu> <200809101048.57119.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809101048.57119.jbarnes@virtuousgeek.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 10 Sep 2008 14:10:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47733 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750745AbYIJSKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 14:10:38 -0400
+Date: Wed, 10 Sep 2008 11:10:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: paccept() oddity
+Message-Id: <20080910111016.b289b3eb.akpm@linux-foundation.org>
+In-Reply-To: <48AC4B6E.4040409@gmail.com>
+References: <48AC4B6E.4040409@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Aug 2008 18:50:54 +0200 Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
 
-* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Wednesday, September 10, 2008 1:44 am Ingo Molnar wrote:
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > > print out for Device BAR address before kernel try to update them.
-> > >
-> > > also change it to KERN_DEBUG instead...
-> > >
-> > > v2: update to linux-pci next
-> > >    also add (unsigned long long) cast
-> > >
-> > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >
-> > Jesse, if you want to pick it up, could we please do this via git
-> > methods (git-pull and stuff)? The commit below is the one in -tip -
-> > should i separate it out?
+> Ulrich,
 > 
-> Sure, though I'm not sure why I shouldn't just be applying this stuff 
-> to my tree first... Seems weird to pull from you only to then ask 
-> Linus to pull.
+> [
+> 2.6.27-rc has paccept():
+> 
+> int paccept(int fd, struct sockaddr *sockaddr, socklen_t *addrlen,
+>          const sigset_t *sigmask, int setsize, int flags)
+> ]
+> 
+> While considering the sigset argument for paccept() (see my previous
+> message), and testing that system call, I realized that there is a certain
+> oddness in the implementation of paccept().
+> 
+> Like accept(), paccept() automatically restarts if interrupted by a signal
+> handler that was established with the SA_RESTART flag.
+> 
+> On the other hand, pselect(), ppoll(), and epoll_pwait() are never restarted
+> if interrupted by a handler, even if the handler was established with
+> SA_RESTART.  (This is the same as with select(), poll(), and epoll_wait().)
+> 
+> It seems to me that it makes little sense to restart paccept(), especially in
+> the case where it is interrupted by a handler for one of the signals that is
+> in sigmask, since the whole point of calling paccept() is to block until a
+> connection is received, or until one of the signals in sigmask is caught().
+> 
+> How about changing paccept() so that it is never automatically restarted if
+> interrupted by a signal handler, regardless of the SA_RESTART flag.  (In
+> other words, paccept() should be consistent with pselect(), ppoll(), and
+> epoll_pwait(), rather than being consistent with accept().)  What are your
+> thoughts?
+> 
 
-sure - it's just that it all happened weeks ago so it's intermixed. As 
-long as you dont mind the duplicate commit (git will sort it out fine) 
-we can apply it to both trees.
+Oleg, Roland: would you have the time to ponder the above, please?
 
-	Ingo
+If we can't get this nailed down very soon I'd suggest that we disable
+sys_paccept() for 2.6.27.  We don't want to be releasing a new system
+call into 2.6.27 if there are doubts surrounding its userspace-visible
+behaviour.
+
+Thanks.
