@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYIJPKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbYIJPMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYIJPKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 11:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYIJPJ7
+	id S1753730AbYIJPMT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 11:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYIJPMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 11:09:59 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48479 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067AbYIJPJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 11:09:58 -0400
-Date: Thu, 11 Sep 2008 00:09:43 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
- IOMMU's alloc_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080910145249.GB24392@amd.com>
-References: <20080910232446O.fujita.tomonori@lab.ntt.co.jp>
-	<20080910233819T.fujita.tomonori@lab.ntt.co.jp>
-	<20080910145249.GB24392@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 10 Sep 2008 11:12:09 -0400
+Received: from el-out-1112.google.com ([209.85.162.177]:49115 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751707AbYIJPMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 11:12:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references:x-google-sender-auth;
+        b=pTilsSeqhszsTD/9F8TymqjlyW6ZPzQ/frpPxRHFD91Q2GMNHPnK9Bu51B/5IuBFd/
+         KzbCB5upu3rmnranSkwwNTY6BDpLDlXNNQ46r2lS/Qgh+KQ0oLg83FrqrWYsB9Cs6pmV
+         pA/FeFQoc24wg++z7LOmYRagsI/PNfcClhsUQ=
+Message-ID: <76bd70e30809100812r4a7fa71crfc7196350e3ed1cf@mail.gmail.com>
+Date: Wed, 10 Sep 2008 11:12:04 -0400
+From: "Chuck Lever" <chuck.lever@oracle.com>
+Reply-To: chucklever@gmail.com
+To: "Cedric Le Goater" <clg@fr.ibm.com>
+Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace is unshared
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linux Containers" <containers@lists.osdl.org>,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <48C791F9.8090606@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080911000936R.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com>
+	 <m18wu1nyon.fsf@frodo.ebiederm.org>
+	 <20080909152952.GA21207@us.ibm.com>
+	 <DE845309-1684-472A-8269-78AB3A2823A9@oracle.com>
+	 <m1fxo9mba5.fsf@frodo.ebiederm.org> <48C791F9.8090606@fr.ibm.com>
+X-Google-Sender-Auth: 70692d84c9ab867e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008 16:52:49 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Wed, Sep 10, 2008 at 5:23 AM, Cedric Le Goater <clg@fr.ibm.com> wrote:
+> Eric W. Biederman wrote:
+>> Chuck Lever <chuck.lever@oracle.com> writes:
+>>
+>>> If the upper layers are responsible for providing the utsname, you will need to
+>>> fix up lockd and the NFS server's callback client too, at  least.
+>>
+>> Actually looking at the code.  It looks like a proper fix may be  even simpler.
+>> Why do we have both clnt->cl_server and clnt->cl_nodename?    Or is cl_server
+>> the other side of the connection?
+>>
+>>>>> What are we trying to achieve by reading utsname?
+>>>> It looks like it gets copied into the sunrpc messages so I assume it is
+>>>> a part of the sunrpc spec?
+>>> It appears to be used only for RPC's AUTH_SYS credentials.  The nodename is used
+>>> to identify the caller's host.  See RFC 1831,  Appendix A:
+>>>
+>>>   http://rfclibrary.hosting.com/rfc/rfc1831/rfc1831-16.asp
+>>
+>> Thanks that helps a lot.
+>>
+>>> I'm not terribly familiar with uts namespaces, though.  Can someone explain why
+>>> we need to distinguish between these for AUTH_SYS if the  caller is on a remote
+>>> system?
+>>
+>> Semantically processes in different uts namespaces are on different machines.
+>>
+>>> I don't like the idea of an oops in here.  Instead, (for now) it should warn and
+>>> fail to create the client, IMO.
+>>
+>> Which is interesting when the problem happens during NFS unmount.  Although
+>> frankly it could fail anyway.
+>>
+>> It seems strange that we are creating a client during unmount anyway.
+>
+> the task exiting brings down the lockd thread and unregisters the lockd service
+> with the portmapper. This is done with a rpc call which creates a client and a
+> request.
 
-> On Wed, Sep 10, 2008 at 11:39:00PM +0900, FUJITA Tomonori wrote:
->  
-> > btw, in tip/x86/iommu, GART's alloc_coherent always does virtual
-> > mappings to allocate a size-aligned memory (as DMA-mapping.txt
-> > defines).
-> > 
-> > Because someone strongly insisted, I modified GART's alloc_coherent to
-> > do so but as I said again and again, it's completely meaningless (only
-> > POWER IOMMU does it and drivers don't depend on such requirement).
-> > 
-> > I guess that it would be better to do virtual mappings only when
-> > necessary as the current mainline does since GART I/O space is
-> > precious in some systems. But I don't care much. What's your opinion
-> > (as a AMD developer)?
-> 
-> Very true. My original rewrite did the mapping only when necessary too.
-> What were the reasons to do the mapping always?
+That makes sense.
 
-As I said above, it's for allocating a size-aligned memory. Look at
-the description of pci_alloc_consistent in DMA-mapping.txt:
+This is likely coming from lockd_down(), and is almost certainly not
+coming from the same uts namespace as the lockd_up() that did the
+pmap_set, which was done by the first NFS mount done in the first uts
+namespace on the system.  It's just something that the kernel has to
+do for maintenance.
 
-The cpu return address and the DMA bus master address are both
-guaranteed to be aligned to the smallest PAGE_SIZE order which
-is greater than or equal to the requested size.  This invariant
-exists (for example) to guarantee that if you allocate a chunk
-which is smaller than or equal to 64 kilobytes, the extent of the
-buffer you receive will not cross a 64K boundary.
+There is only one lockd() instance that is shared among all the uts
+namespaces, right?  In this case, what is the correct utsname to use?
 
-You can't do this with __get_free_pages easily (you need some hacks to
-do this). You can do this via iommu_area_alloc() for free.
-
-Well, actually you agreed with adding such requirement (though I said
-again and again that it's totally meaningless...):
-
-http://lkml.org/lkml/2008/7/24/162
-
-
+-- 
+Chuck Lever
