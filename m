@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYIJWBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbYIJWGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYIJWBO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYIJWA4
+	id S1754960AbYIJWGx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYIJWGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:00:56 -0400
-Received: from postel.suug.ch ([194.88.212.233]:42994 "EHLO postel.suug.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753117AbYIJWAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:00:55 -0400
-Date: Thu, 11 Sep 2008 00:01:15 +0200
-From: Thomas Graf <tgraf@suug.ch>
-To: Ranjit Manomohan <ranjitm@google.com>
-Cc: davem@davemloft.net, akpm@linux-foundation.org, kaber@trash.net,
-       lizf@cn.fujitsu.com, menage@google.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
-Message-ID: <20080910220115.GH20815@postel.suug.ch>
-References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
+	Wed, 10 Sep 2008 18:06:43 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:43715 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYIJWGm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 18:06:42 -0400
+Subject: Re: [PATCH 1/2 v6] cfg80211: Add new wireless regulatory
+	infrastructure
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: linville@tuxdriver.com, johannes@sipsolutions.net,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <43e72e890809101318o771100f0jcac9bbea6b863ccb@mail.gmail.com>
+References: <1221027589-19203-1-git-send-email-lrodriguez@atheros.com>
+	 <1221027589-19203-2-git-send-email-lrodriguez@atheros.com>
+	 <1221070650.13336.20.camel@californication>
+	 <43e72e890809101318o771100f0jcac9bbea6b863ccb@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 11 Sep 2008 00:07:09 +0200
+Message-Id: <1221084429.13336.23.camel@californication>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ranjit Manomohan <ranjitm@google.com> 2008-09-10 10:42
-> +void cgroup_tc_set_sock_classid(struct sock *sk)
-> +{
-> +	if (sk)
-> +		sk->sk_cgroup_classid = cgroup_tc_classid(current);
-> +}
-> +
-> @@ -1170,6 +1171,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
->  	if (err < 0)
->  		goto out_module_put;
-> 
-> +	cgroup_tc_set_sock_classid(sock->sk);
-> +
->  	/*
->  	 * Now to bump the refcnt of the [loadable] module that owns this
->  	 * socket at sock_release time we decrement its refcnt.
-> @@ -1444,6 +1447,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
->  	if (err < 0)
->  		goto out_fd;
-> 
-> +	cgroup_tc_set_sock_classid(newsock->sk);
-> +
->  	if (upeer_sockaddr) {
->  		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
->  					  &len, 2) < 0) {
+Hi Luis,
 
-The big disadvantage of this method is that it does not allow to change
-the classid for sockets which already exist. It inherits the classid
-at socket creation time and then sticks to it. So if you want to follow
-this approach I'd suggest to at least store a reference to the cgroup
-state and reference count it properly.
+> > While reading through it, I came to think about regulatory_hint(). So is
+> > there a use case where would give it the alpha2 code and the domain
+> > itself at the same time? If not, then it would make more sense to split
+> > this into two functions.
+> 
+> Nope, you either pass an alpha2 or an rd domain which is built by you
+> (and in that rd structure you can set the alpha2 to your iso3166
+> alpha2 or "99" if unknown).
+> 
+> > Maybe something regulatory_alpha2_hint() and
+> > regulatory_domain_hint(). Just a thought.
+> 
+> That's how I had it originally but decided to condense it to one
+> routine since as you could see they pretty much do the same thing
+> except the case where the rd is provided it calls set_regdom().
+> Setting it back to use two routines if fine by me too. What is better?
+> Can we just get this merged and then we can flip it around if
+> necessary? :) I'm tired of carrying this around.
 
-As for the locking that you mentioned in the other thread. IMHO it is
-not possible to lookup a socket without taking at least one lock, but
-I might be wrong there. Actually I think it will take even more locks
-as different locks are used to f.e. protect listening and established
-tcp sockets.
+my take on this is that if from an API perspective you can only use one
+parameter or the other, then it should be two functions.
+
+Regards
+
+Marcel
+
+
