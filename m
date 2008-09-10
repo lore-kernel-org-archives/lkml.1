@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbYIJJGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbYIJJN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbYIJJGa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 05:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYIJJGW
+	id S1752687AbYIJJN2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 05:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYIJJNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 05:06:22 -0400
-Received: from styx.suse.cz ([82.119.242.94]:57614 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751792AbYIJJGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 05:06:21 -0400
-Date: Wed, 10 Sep 2008 11:06:20 +0200
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PATCH] UDF fix for 2.6.27-rc5
-Message-ID: <20080910090620.GB19506@duck.suse.cz>
+	Wed, 10 Sep 2008 05:13:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:52154 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751584AbYIJJNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 05:13:19 -0400
+Date: Wed, 10 Sep 2008 11:12:46 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: warn_on regression after 2.6.27-rc5
+In-Reply-To: <200809101008.40973.borntraeger@de.ibm.com>
+Message-ID: <alpine.LFD.1.10.0809101111470.13819@apollo.tec.linutronix.de>
+References: <200809101008.40973.borntraeger@de.ibm.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Linus,
+On Wed, 10 Sep 2008, Christian Borntraeger wrote:
+> 
+> While I agree with doubling the time, I am not sure if a WARN_ON is 
+> appropriate. After all the code is able to fix the timer setting.
 
-  would you please pull from
+The WARN_ON is removed already. It was there temporary to gather
+information, which worked :)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+Thanks,
 
-  to get the following fix:
-
-Christoph Hellwig (1):
-      udf: add llseek method
-
- fs/udf/file.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-  Thanks.
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	tglx
