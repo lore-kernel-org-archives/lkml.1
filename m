@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYIJNly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbYIJNoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYIJNly (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 09:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYIJNlp
+	id S1752835AbYIJNoa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 09:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbYIJNoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 09:41:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51890 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbYIJNlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 09:41:45 -0400
-Message-ID: <48C7CDF4.2020206@redhat.com>
-Date: Wed, 10 Sep 2008 08:39:00 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Wed, 10 Sep 2008 09:44:21 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:38595 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbYIJNoU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 09:44:20 -0400
+Date: Wed, 10 Sep 2008 19:15:44 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n
+Message-ID: <20080910134544.GA17984@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>
+References: <20080908131334.3221.61302.stgit@drishya.in.ibm.com> <1220880346.12278.17.camel@twins.programming.kicks-ass.net> <20080908134843.GA4053@dirshya.in.ibm.com> <20080908135834.GH26079@one.firstfloor.org>
 MIME-Version: 1.0
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-CC: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, Jens Axboe <axboe@kernel.dk>
-Subject: Re: [PATCH] include <linux/fs.h> into linux/ext2_fs.h
-References: <1221045726-5674-1-git-send-email-kirill@shutemov.name> <20080910112709.GA11742@infradead.org> <20080910114011.GB3757@localhost.localdomain> <20080910114042.GA15996@infradead.org> <20080910114923.GC3757@localhost.localdomain>
-In-Reply-To: <20080910114923.GC3757@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080908135834.GH26079@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill A. Shutemov wrote:
-> On Wed, Sep 10, 2008 at 07:40:42AM -0400, Christoph Hellwig wrote:
->> On Wed, Sep 10, 2008 at 02:40:12PM +0300, Kirill A. Shutemov wrote:
->>> On Wed, Sep 10, 2008 at 07:27:09AM -0400, Christoph Hellwig wrote:
->>>> On Wed, Sep 10, 2008 at 02:22:03PM +0300, Kirill A. Shutemov wrote:
->>>>> linux/fs.h defines FS_IOC* needed by linux/ext2_fs.h
->>>> And who cares?  
+* Andi Kleen <andi@firstfloor.org> [2008-09-08 15:58:34]:
+
+> > 1. Detailed documentation
 > 
-> Do you think it isn't error?
+> Messy code cannot be really made good with documentation. It's
+> not that your patches are that messy, it's more that it makes
+> something already overcomplicated even worse.
 > 
->>> It breaks building pam_mktemp at least.
->> pam_mktemp should not use <linux/ext2_fs.h>, but rather
->> <ext2fs/ext2_fs.h>.
-
-That's right.
-
-> Why linux/ext2_fs.h does export to userspace?
+> > 2. Cleanup the group_min and group_leader stuff in
+> >    find_busiest_group()
 > 
+> I think one issue is that there are general too many special cases
+> that completely change the algorithm especially for power saving.
+> Perhaps it would make sense to refactor the code a bit and then
+> use different high level code paths for those?  I assume that
+> would make it all simpler and easier to understand.
 
-it does?
+Hi Andi,
 
-$ grep header-y include/linux/Kbuild | wc -l
-163
-$ grep header-y include/linux/Kbuild | grep ext2
-$
+I will try to refactor the code and see if it can look cleaner.  Power
+saving balance is actually just a corner case in general load_balance.
+We will have to do default load_balance for performance each time we
+enter this section of the scheduler, except when certain complex
+conditions are met and we see an opportunity to save power. When that
+window of opportunity to save power exist, the code will take
+a different path and do things that will normally not be done by the
+default load balancer logic.
 
-I think it does not.
+I think we can split the statistics (load) computation part and the
+decision part to separate functions and call the power save balance
+conditions first and if there is no opportunity to save power, then
+recommend the default load balancing decision.
 
--Eric
+> 
+> The other alternative would be to dynamically change the domains
+> so that a generic graph walker without knowledge of power savings
+> could DTRT in all cases. But I assume that would be much harder.
+
+This option may not work because we will have to change the decision
+only when a power saving opportunity exist.  Hence more often the
+power save balance code should just fall through into the default
+balancer.  Splitting them this way may add duplicate code in both the
+paths.
+
+--Vaidy
