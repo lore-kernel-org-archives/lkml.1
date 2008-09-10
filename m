@@ -1,290 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYIJRmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbYIJRnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbYIJRmw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYIJRml
+	id S1752489AbYIJRnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYIJRm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:42:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44547 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751642AbYIJRmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:42:40 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Wed, 10 Sep 2008 13:40:18 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-3-git-send-email-jwilson@redhat.com> <20080909101422.329bd351@bike.lwn.net>
-In-Reply-To: <20080909101422.329bd351@bike.lwn.net>
+	Wed, 10 Sep 2008 13:42:57 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56986 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754387AbYIJRmz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 13:42:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type;
+	b=rpVZjKQzEabDfx35OuofGPWGaG9luxDhJ68gymgekFolitpKwSNwvqvB2jL0cPpEw
+	Je50kehhdEevvKYrTThBw==
+Date: Wed, 10 Sep 2008 10:42:16 -0700 (PDT)
+From: Ranjit Manomohan <ranjitm@google.com>
+To: davem@davemloft.net, akpm@linux-foundation.org, kaber@trash.net,
+       lizf@cn.fujitsu.com, menage@google.com, tgraf@suug.ch
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 1/2] Traffic control cgroups subsystem
+Message-ID: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809101340.19254.jwilson@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 12:14:22 Jonathan Corbet wrote:
-> > +#ifdef LIRC_SERIAL_IRDEO
-> > +static int type = LIRC_IRDEO;
-> > +#elif defined(LIRC_SERIAL_IRDEO_REMOTE)
-> > +static int type = LIRC_IRDEO_REMOTE;
-> > +#elif defined(LIRC_SERIAL_ANIMAX)
-> > +static int type = LIRC_ANIMAX;
-> > +#elif defined(LIRC_SERIAL_IGOR)
-> > +static int type = LIRC_IGOR;
-> > +#elif defined(LIRC_SERIAL_NSLU2)
-> > +static int type = LIRC_NSLU2;
-> > +#else
-> > +static int type = LIRC_HOMEBREW;
-> > +#endif
->
-> So where do all these LIRC_SERIAL_* macros come from?  I can't really tell
-> what this bunch of ifdeffery is doing or how one might influence it.
+This patch adds a traffic control cgroup subsystem that is used
+to associate all packets originating from tasks in this cgroup with a
+specific identifier (tc_classid).
 
-Bleah. I believe these get passed in when building lirc userspace and drivers 
-together, when manually selected the specific type of serial receiver you have 
-in lirc's menu-driven configuration tool thingy...
+Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
 
-In other words, they do us absolutely no good here. We just build for the 
-default type (LIRC_HOMEBREW), and users can override the type as necessary via 
-the 'type' module parameter. I'll nuke that chunk.
+---
 
-> > +
-> > +static struct lirc_serial hardware[] = {
-> > +	/* home-brew receiver/transmitter */
-> > +	{
-> > +		UART_MSR_DCD,
-> > +		UART_MSR_DDCD,
-> > +		UART_MCR_RTS|UART_MCR_OUT2|UART_MCR_DTR,
-> > +		UART_MCR_RTS|UART_MCR_OUT2,
-> > +		send_pulse_homebrew,
-> > +		send_space_homebrew,
-> > +		(
-> > +#ifdef LIRC_SERIAL_TRANSMITTER
-> > +		 LIRC_CAN_SET_SEND_DUTY_CYCLE|
-> > +		 LIRC_CAN_SET_SEND_CARRIER|
-> > +		 LIRC_CAN_SEND_PULSE|
-> > +#endif
-> > +		 LIRC_CAN_REC_MODE2)
-> > +	},
->
-> It would be really nice to use the .field=value structure initialization
-> conventions here.
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index e287745..4b12372 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -48,3 +48,9 @@ SUBSYS(devices)
+ #endif
 
-Indeed. Done.
+ /* */
++
++#ifdef CONFIG_CGROUP_TC
++SUBSYS(tc)
++#endif
++
++/* */
+diff --git a/include/linux/cgroup_tc.h b/include/linux/cgroup_tc.h
+new file mode 100644
+index 0000000..e4ba6a1
+--- /dev/null
++++ b/include/linux/cgroup_tc.h
+@@ -0,0 +1,20 @@
++#ifndef __LINUX_CGROUP_TC_H
++#define __LINUX_CGROUP_TC_H
++
++/* Interface to obtain tasks cgroup identifier. */
++
++#include <linux/cgroup.h>
++#include <linux/skbuff.h>
++#include <net/sock.h>
++
++#ifdef CONFIG_CGROUP_TC
++
++void cgroup_tc_set_sock_classid(struct sock *sk);
++
++#else
++
++#define cgroup_tc_set_sock_classid(sk)
++
++#endif /* CONFIG_CGROUP_TC */
++
++#endif /* __LINUX_CGROUP_TC_H */
+diff --git a/include/net/sock.h b/include/net/sock.h
+index dc42b44..7a4e09c 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -271,6 +271,9 @@ struct sock {
+ 	int			sk_write_pending;
+ 	void			*sk_security;
+ 	__u32			sk_mark;
++#ifdef CONFIG_CGROUP_TC
++	__u32			sk_cgroup_classid;
++#endif
+ 	/* XXX 4 bytes hole on 64 bit */
+ 	void			(*sk_state_change)(struct sock *sk);
+ 	void			(*sk_data_ready)(struct sock *sk, int bytes);
+diff --git a/init/Kconfig b/init/Kconfig
+index 6135d07..c28fde8 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -289,6 +289,17 @@ config CGROUP_DEBUG
 
-> > +#if defined(__i386__)
-> > +/*
-> > +  From:
-> > +  Linux I/O port programming mini-HOWTO
-> > +  Author: Riku Saikkonen <Riku.Saikkonen@hut.fi>
-> > +  v, 28 December 1997
-> > +
-> > +  [...]
-> > +  Actually, a port I/O instruction on most ports in the 0-0x3ff range
-> > +  takes almost exactly 1 microsecond, so if you're, for example,using
-> > +  the parallel port directly, just do additional inb()s from that port
-> > +  to delay.
-> > +  [...]
-> > +*/
-> > +/* transmitter latency 1.5625us 0x1.90 - this figure arrived at from
-> > + * comment above plus trimming to match actual measured frequency.
-> > + * This will be sensitive to cpu speed, though hopefully most of the
-> > 1.5us + * is spent in the uart access.  Still - for reference test
-> > machine was a + * 1.13GHz Athlon system - Steve
-> > + */
-> > +
-> > +/* changed from 400 to 450 as this works better on slower machines;
-> > +   faster machines will use the rdtsc code anyway */
-> > +
-> > +#define LIRC_SERIAL_TRANSMITTER_LATENCY 450
-> > +
-> > +#else
-> > +
-> > +/* does anybody have information on other platforms ? */
-> > +/* 256 = 1<<8 */
-> > +#define LIRC_SERIAL_TRANSMITTER_LATENCY 256
-> > +
-> > +#endif  /* __i386__ */
->
-> This is a little scary.  Maybe hrtimers would be a better way of handling
-> your timing issues?
+ 	  Say N if unsure
 
-Sounds plausible, will look into it. Of course, this partially hinges on the 
-USE_RDTSC bits, more comments just a little ways down...
++config CGROUP_TC
++	bool "Traffic control cgroup subsystem"
++	depends on CGROUPS
++	default n
++	help
++	  This option enables a simple cgroup subsystem that
++	  allows network traffic to be classified based on the
++	  cgroup of the task originating the traffic.
++
++	  Say N if unsure
++
+ config CGROUP_NS
+         bool "Namespace cgroup subsystem"
+         depends on CGROUPS
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 1c9938a..08b217b 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -42,6 +42,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
+ obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+ obj-$(CONFIG_CPUSETS) += cpuset.o
+ obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
++obj-$(CONFIG_CGROUP_TC) += tc_cgroup.o
+ obj-$(CONFIG_UTS_NS) += utsname.o
+ obj-$(CONFIG_USER_NS) += user_namespace.o
+ obj-$(CONFIG_PID_NS) += pid_namespace.o
+diff --git a/kernel/tc_cgroup.c b/kernel/tc_cgroup.c
+new file mode 100644
+index 0000000..9286fb2
+--- /dev/null
++++ b/kernel/tc_cgroup.c
+@@ -0,0 +1,105 @@
++/*
++ * tc_cgroup.c - traffic control cgroup subsystem
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/cgroup.h>
++#include <linux/fs.h>
++#include <linux/slab.h>
++#include <linux/cgroup_tc.h>
++
++struct tc_cgroup {
++	struct cgroup_subsys_state css;
++	unsigned int classid;
++};
++
++struct cgroup_subsys tc_subsys;
++
++static inline struct tc_cgroup *cgroup_to_tc(
++		struct cgroup *cgroup)
++{
++	return container_of(cgroup_subsys_state(cgroup, tc_subsys_id),
++			    struct tc_cgroup, css);
++}
++
++static unsigned int cgroup_tc_classid(struct task_struct *tsk)
++{
++	unsigned int tc_classid;
++
++	rcu_read_lock();
++	tc_classid = container_of(task_subsys_state(tsk, tc_subsys_id),
++					 struct tc_cgroup, css)->classid;
++	rcu_read_unlock();
++	return tc_classid;
++}
++
++void cgroup_tc_set_sock_classid(struct sock *sk)
++{
++	if (sk)
++		sk->sk_cgroup_classid = cgroup_tc_classid(current);
++}
++
++static struct cgroup_subsys_state *tc_create(struct cgroup_subsys *ss,
++						struct cgroup *cgroup)
++{
++	struct tc_cgroup *tc_cgroup;
++
++	tc_cgroup = kzalloc(sizeof(*tc_cgroup), GFP_KERNEL);
++
++	if (!tc_cgroup)
++		return ERR_PTR(-ENOMEM);
++
++	/* Copy parent's class id if present */
++	if (cgroup->parent)
++		tc_cgroup->classid = cgroup_to_tc(cgroup->parent)->classid;
++
++	return &tc_cgroup->css;
++}
++
++static void tc_destroy(struct cgroup_subsys *ss,
++			struct cgroup *cgroup)
++{
++	kfree(cgroup_to_tc(cgroup));
++}
++
++static int tc_write_u64(struct cgroup *cgroup, struct cftype *cft, u64 val)
++{
++	struct tc_cgroup *tc = cgroup_to_tc(cgroup);
++
++	if (!cgroup_lock_live_group(cgroup))
++		return -ENODEV;
++
++	tc->classid = (unsigned int) (val & 0xffffffff);
++	cgroup_unlock();
++	return 0;
++}
++
++static u64 tc_read_u64(struct cgroup *cgroup, struct cftype *cft)
++{
++	struct tc_cgroup *tc = cgroup_to_tc(cgroup);
++	return tc->classid;
++}
++
++static struct cftype tc_files[] = {
++	{
++		.name = "classid",
++		.read_u64 = tc_read_u64,
++		.write_u64 = tc_write_u64,
++	}
++};
++
++static int tc_populate(struct cgroup_subsys *ss, struct cgroup *cgroup)
++{
++	int err;
++	err = cgroup_add_files(cgroup, ss, tc_files, ARRAY_SIZE(tc_files));
++	return err;
++}
++
++struct cgroup_subsys tc_subsys = {
++	.name = "tc",
++	.create = tc_create,
++	.destroy  = tc_destroy,
++	.populate = tc_populate,
++	.subsys_id = tc_subsys_id,
++};
+diff --git a/net/socket.c b/net/socket.c
+index 66c4a8c..b7421ec 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -93,6 +93,7 @@
 
-> > +static inline unsigned int sinp(int offset)
-> > +{
-> > +#if defined(LIRC_ALLOW_MMAPPED_IO)
-> > +	if (iommap != 0) {
-> > +		/* the register is memory-mapped */
-> > +		offset <<= ioshift;
-> > +		return readb(io + offset);
-> > +	}
-> > +#endif
-> > +	return inb(io + offset);
-> > +}
->
-> This all looks like a reimplementation of ioport_map() and the associated
-> ioread*() and iowrite*() functions...?
+ #include <net/sock.h>
+ #include <linux/netfilter.h>
++#include <linux/cgroup_tc.h>
 
-Probably. Will see about using those instead.
+ static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
+ static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
+@@ -1170,6 +1171,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
+ 	if (err < 0)
+ 		goto out_module_put;
 
-> > +#ifdef USE_RDTSC
-> > +/* Version that uses Pentium rdtsc instruction to measure clocks */
-> > +
-> > +/* This version does sub-microsecond timing using rdtsc instruction,
-> > + * and does away with the fudged LIRC_SERIAL_TRANSMITTER_LATENCY
-> > + * Implicitly i586 architecture...  - Steve
-> > + */
-> > +
-> > +static inline long send_pulse_homebrew_softcarrier(unsigned long length)
-> > +{
-> > +	int flag;
-> > +	unsigned long target, start, now;
-> > +
-> > +	/* Get going quick as we can */
-> > +	rdtscl(start); on();
-> > +	/* Convert length from microseconds to clocks */
-> > +	length *= conv_us_to_clocks;
-> > +	/* And loop till time is up - flipping at right intervals */
-> > +	now = start;
-> > +	target = pulse_width;
-> > +	flag = 1;
-> > +	while ((now-start) < length) {
-> > +		/* Delay till flip time */
-> > +		do {
-> > +			rdtscl(now);
-> > +		} while ((now-start) < target);
->
-> This looks like a hard busy wait, without even an occasional, polite,
-> cpu_relax() call.  There's got to be a better way?
->
-> The i2c code has the result of a lot of bit-banging work, I wonder if
-> there's something there which could be helpful here.
++	cgroup_tc_set_sock_classid(sock->sk);
++
+ 	/*
+ 	 * Now to bump the refcnt of the [loadable] module that owns this
+ 	 * socket at sock_release time we decrement its refcnt.
+@@ -1444,6 +1447,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+ 	if (err < 0)
+ 		goto out_fd;
 
-Hrm... So at some point in the past, there was an "#if defined(rdtscl)" in the 
-lirc_serial.c code that triggered USE_RDTSC being defined. At the moment, 
-there's nothing defining it (I probably overzealously nuked it during clean-
-up), so we're not even touching the above code. However, this is supposed to 
-be the "better" code path wrt producing a reliable waveform, at least on 
-platforms with rdtscl... Will have to do some investigating... This actually 
-affects whether or not we bother with hrtimers as suggested above too, as 
-LIRC_SERIAL_TRANSMITTER_LATENCY is not used at all in the USE_RDTSC case.
-
-> > +static irqreturn_t irq_handler(int i, void *blah)
-> > +{
-> > +	struct timeval tv;
-> > +	int status, counter, dcd;
-> > +	long deltv;
-> > +	int data;
-> > +	static int last_dcd = -1;
-> > +
-> > +	if ((sinp(UART_IIR) & UART_IIR_NO_INT)) {
-> > +		/* not our interrupt */
-> > +		return IRQ_RETVAL(IRQ_NONE);
-> > +	}
->
-> That should just be IRQ_NONE, no?
-
-Yeah, looks like it. Done.
-
-> > +static void hardware_init_port(void)
-> > +{
-> > +	unsigned long flags;
-> > +	local_irq_save(flags);
->
-> That won't help you if an interrupt is handled by another processor.  This
-> needs proper locking, methinks.
-
-Yeah, working on implementing locking right now.
-
-> Nothing in this function does anything to assure itself that the port
-> actually exists and is the right kind of hardware.  Maybe that can't really
-> be done with this kind of device?
-
-We should probably try to make sure the port actually exists, but I don't 
-think there's a whole lot (if anything) we can do as far as verifying the 
-device itself.
-
-> > +static int init_port(void)
-> > +{
->
->  ...
->
-> > +	if (sense == -1) {
-> > +		/* wait 1/2 sec for the power supply */
-> > +
-> > +		set_current_state(TASK_INTERRUPTIBLE);
-> > +		schedule_timeout(HZ/2);
->
-> msleep(), maybe?
-
-Yeah, looks like it.
-
-> > +static int set_use_inc(void *data)
-> > +{
-> > +	int result;
-> > +	unsigned long flags;
-> > +
-> > +	/* Init read buffer. */
-> > +	if (lirc_buffer_init(&rbuf, sizeof(int), RBUF_LEN) < 0)
-> > +		return -ENOMEM;
-> > +
-> > +	/* initialize timestamp */
-> > +	do_gettimeofday(&lasttv);
-> > +
-> > +	result = request_irq(irq, irq_handler,
-> > +			   IRQF_DISABLED | (share_irq ? IRQF_SHARED : 0),
-> > +			   LIRC_DRIVER_NAME, (void *)&hardware);
-> > +
-> > +	switch (result) {
-> > +	case -EBUSY:
-> > +		printk(KERN_ERR LIRC_DRIVER_NAME ": IRQ %d busy\n", irq);
-> > +		lirc_buffer_free(&rbuf);
-> > +		return -EBUSY;
-> > +	case -EINVAL:
-> > +		printk(KERN_ERR LIRC_DRIVER_NAME
-> > +		       ": Bad irq number or handler\n");
-> > +		lirc_buffer_free(&rbuf);
-> > +		return -EINVAL;
-> > +	default:
-> > +		dprintk("Interrupt %d, port %04x obtained\n", irq,
-> > io);
-> > +		break;
-> > +	};
-> > +
-> > +	local_irq_save(flags);
-> > +
-> > +	/* Set DLAB 0. */
-> > +	soutp(UART_LCR, sinp(UART_LCR) & (~UART_LCR_DLAB));
-> > +
-> > +	soutp(UART_IER, sinp(UART_IER)|UART_IER_MSI);
-> > +
-> > +	local_irq_restore(flags);
-> > +
-> > +	return 0;
-> > +}
->
-> OK, so set_use_inc() really is just an open() function.  It still seems
-> like a strange duplication.
-
-Going to let the duplication be for the moment, since I don't know the history 
-behind why there's duplication, and there are enough other mountains to climb 
-first... :)
-
-> Again, local_irq_save() seems insufficient here.  You need a lock to
-> serialize access to the hardware.
-
-Will do.
-
--- 
-Jarod Wilson
-jarod@redhat.com
-
++	cgroup_tc_set_sock_classid(newsock->sk);
++
+ 	if (upeer_sockaddr) {
+ 		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
+ 					  &len, 2) < 0) {
