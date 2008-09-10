@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYIJTtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYIJTuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYIJTtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 15:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYIJTtm
+	id S1754860AbYIJTuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 15:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbYIJTuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 15:49:42 -0400
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:49697 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbYIJTtm (ORCPT
+	Wed, 10 Sep 2008 15:50:32 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:51350 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbYIJTub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 15:49:42 -0400
-Message-ID: <48C824A2.8050708@cs.columbia.edu>
-Date: Wed, 10 Sep 2008 15:48:50 -0400
-From: Oren Laadan <orenl@cs.columbia.edu>
-Organization: Columbia University
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 10 Sep 2008 15:50:31 -0400
+Message-ID: <48C8259B.7040702@keyaccess.nl>
+Date: Wed, 10 Sep 2008 21:52:59 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080707)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [RFC v4][PATCH 5/9] Memory managemnet (restore)
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>	 <1220946154-15174-6-git-send-email-orenl@cs.columbia.edu> <1221075083.6781.34.camel@nimitz>
-In-Reply-To: <1221075083.6781.34.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Airlie <airlied@gmail.com>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@codemonkey.org.uk>
+Subject: AGP PAT issue.
+References: <20080820100440.GE28492@elte.hu> <48ABF6DC.8070305@keyaccess.nl> <48AC29CA.1060203@keyaccess.nl> <20080820194127.GA10887@linux-os.sc.intel.com> <48AC8F69.4050201@keyaccess.nl> <21d7e9970808201446k3c1a6bc1naf04568a8ad06ed4@mail.gmail.com> <20080820221630.GA3598@linux-os.sc.intel.com> <20080821120626.GG5615@elte.hu> <48ADA2C2.8090905@keyaccess.nl> <48ADF3FC.7070002@keyaccess.nl> <20080822041544.GF30284@elte.hu> <48AF1B6A.80408@keyaccess.nl>
+In-Reply-To: <48AF1B6A.80408@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-No-Spam-Score: Local
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 22-08-08 22:02, Rene Herman wrote:
 
+> On 22-08-08 06:15, Ingo Molnar wrote:
 
-Dave Hansen wrote:
-> On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
->> +/**
->> + * cr_vma_read_pages_vaddrs - read addresses of pages to page-array chain
->> + * @ctx - restart context
->> + * @npages - number of pages
->> + */
->> +static int cr_vma_read_pages_vaddrs(struct cr_ctx *ctx, int npages)
->> +{
->> +	struct cr_pgarr *pgarr;
->> +	int nr, ret;
->> +
->> +	while (npages) {
->> +		pgarr = cr_pgarr_prep(ctx);
->> +		if (!pgarr)
->> +			return -ENOMEM;
->> +		nr = min(npages, (int) pgarr->nr_free);
->> +		ret = cr_kread(ctx, pgarr->vaddrs, nr * sizeof(unsigned long));
->> +		if (ret < 0)
->> +			return ret;
->> +		pgarr->nr_free -= nr;
->> +		pgarr->nr_used += nr;
->> +		npages -= nr;
->> +	}
->> +	return 0;
->> +}
+>> The frontside cache itself is in x86/urgent:
+>>
+>>  # 80c5e73: x86: fix Xorg startup/shutdown slowdown with PAT
+>>
+>> ... and should at least solve the symptom that you've hit in practice 
+>> (the slowdown), without changing the underlying PAT machinery. (which 
+>> would be way too dangerous for v2.6.27)
 > 
-> cr_pgarr_prep() can return a partially full pgarr, right?  Won't the
-> cr_kread() always start at the beginning of the pgarr->vaddrs[] array?
-> Seems to me like it will clobber things from the last call.
+> Well, please note that that specific commit only fixes X startup -- it 
+> doesn't do anything for shutdown. With only that one, I'm still at 14 
+> seconds for X shutdown (first time after boot that is, 5 seconds 
+> subsequent shutdowns) versus 1 (or sub 1, feels immediate) normally.
+> 
+> It's also a black-screen "hang", so we'll probably be getting a lot of 
+> "long hang at shutdown" reports without something additionally for .27.
+> 
+> Venki?
 
-Note that 'nr' is either equal to ->nr_free - in which case we consume
-the entire 'pgarr' vaddr array such that the next call to cr_pgarr_prep()
-will get a fresh one, or is smaller than ->nr_free - in which case that
-is the last iteration of the loop anyhow, so it won't be clobbered.
+Haven't been subcribed to any lists recently and someone was talking 
+about "the other thread" before but just noticed that an -rc6 was cut.
 
-Also, after we return - our caller, cr_vma_read_pages(), resets the state
-of the page-array chain by calling cr_pgarr_reset().
+Please note that the shutdown issue remains unfixed in it (I'm doing my 
+coalescing changes locally).
 
-Oren.
+Rene
