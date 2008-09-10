@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYIJXwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbYIJXxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbYIJXwm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYIJXwa
+	id S1756221AbYIJXxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYIJXx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:52:30 -0400
-Received: from postel.suug.ch ([194.88.212.233]:45704 "EHLO postel.suug.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752297AbYIJXwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:52:30 -0400
-Date: Thu, 11 Sep 2008 01:52:50 +0200
-From: Thomas Graf <tgraf@suug.ch>
-To: Ranjit Manomohan <ranjitm@google.com>
-Cc: David Miller <davem@davemloft.net>, kaber@trash.net,
-       akpm@linux-foundation.org, lizf@cn.fujitsu.com, menage@google.com,
+	Wed, 10 Sep 2008 19:53:27 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9615 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752340AbYIJXxY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 19:53:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=qW8vYfTpU4KPbtinJ2qradT4UBHq+fMw8I0FmIVia8JCGshXwHCptb1e/n/XtneBd
+	lcuc0meiANb1Prefs8/ng==
+Message-ID: <6599ad830809101653p5688d9b8xad0772af875a92e4@mail.gmail.com>
+Date: Wed, 10 Sep 2008 16:53:16 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Thomas Graf" <tgraf@suug.ch>
+Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
+Cc: "Ranjit Manomohan" <ranjitm@google.com>, davem@davemloft.net,
+       akpm@linux-foundation.org, kaber@trash.net, lizf@cn.fujitsu.com,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
-Message-ID: <20080910235250.GL20815@postel.suug.ch>
-References: <Pine.LNX.4.64.0809101026190.7050@ranjit.corp.google.com> <20080910.132251.73509521.davem@davemloft.net> <166fe7950809101344l7a5e2b7pfba8b2a7c03814a1@mail.gmail.com> <20080910221206.GI20815@postel.suug.ch> <166fe7950809101637o1bf22869g4939707a35a3c93b@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20080910234523.GK20815@postel.suug.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <166fe7950809101637o1bf22869g4939707a35a3c93b@mail.gmail.com>
+References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
+	 <20080910220115.GH20815@postel.suug.ch>
+	 <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com>
+	 <6599ad830809101604o71b2fb82k2aca1eb0fd8ab6d8@mail.gmail.com>
+	 <20080910232413.GJ20815@postel.suug.ch>
+	 <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com>
+	 <20080910234523.GK20815@postel.suug.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ranjit Manomohan <ranjitm@google.com> 2008-09-10 16:37
-> Could you elaborate on the failure cases? We have found this to be
-> useful in practice to prevent applications from reading large amounts
-> of data off the network so it would be nice if it were supported.
+On Wed, Sep 10, 2008 at 4:45 PM, Thomas Graf <tgraf@suug.ch> wrote:
+>
+> That's argueable I guess. Likely or not, it doesn't make sense to
+> add such restrictions if not required, especially not when it is
+> trivial to just look at the cgroup of the task directly.
 
-It works fairly well for a small number of bulk streams when no packets
-need to be dropped. The results get very inaccurate for higher number
-of smaller streams when packets start getting dropped. The problem is
-simply that currently none of the congestion notification mechanism
-work in (internet) practice.
+Isn't a very large fraction of outgoing network traffic driven from
+net_tx_action(), which doesn't execute in the context of the sending
+process? Or am I missing something?
 
-Therefore I think that it is not worth the effort. If you think
-diffrently, I will be more than glad to review code. So far I haven't
-seen anything that would work on ingress.
+You claimed "In the most common case, the packet is not queued before
+it hits the qdisc so this takes away a lot of complexity and is very
+fast but should still be sufficient.". But is that really true on a
+system where the network is busy? (Which is after all exactly the case
+where you care about accurate traffic accounting/policing)
+
+Paul
