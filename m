@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYIJWLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbYIJWMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbYIJWLy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYIJWLn
+	id S1756065AbYIJWMQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbYIJWLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:11:43 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:38827 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbYIJWLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:11:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=j7yWx/A2vDFkvhSMhUqQ/XRsY+qWlHKu2Myrl4LMXHEPmOeNOATqsDwGDIRt8qcQ3G
-         O6HVSZVe/JPB1QILJiYO+2dyyzbBvesQjPaOgoyFa7lcc7Ihk0QEeCPfFonOrJr99R//
-         X0MSNACT7CSGhlNEGNe2+L08CE0FOAwoCp4zU=
-Message-ID: <48C84619.8030303@gmail.com>
-Date: Thu, 11 Sep 2008 00:11:37 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Marcin Obara <marcin_obara@users.sourceforge.net>,
-       Marcel Selhorst <tpm@selhorst.net>, Kylene Jo Hall <kjhall@us.ibm.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       srajiv@linux.vnet.ibm.com, debora@linux.vnet.ibm.com
-Subject: tpm-correct-tpm-timeouts-to-jiffies-conversion.patch -> 2.6.27
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Sep 2008 18:11:48 -0400
+Received: from postel.suug.ch ([194.88.212.233]:43395 "EHLO postel.suug.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754068AbYIJWLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 18:11:47 -0400
+Date: Thu, 11 Sep 2008 00:12:06 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: Ranjit Manomohan <ranjitm@google.com>
+Cc: David Miller <davem@davemloft.net>, kaber@trash.net,
+       akpm@linux-foundation.org, lizf@cn.fujitsu.com, menage@google.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
+Message-ID: <20080910221206.GI20815@postel.suug.ch>
+References: <Pine.LNX.4.64.0809101026190.7050@ranjit.corp.google.com> <20080910.132251.73509521.davem@davemloft.net> <166fe7950809101344l7a5e2b7pfba8b2a7c03814a1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <166fe7950809101344l7a5e2b7pfba8b2a7c03814a1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* Ranjit Manomohan <ranjitm@google.com> 2008-09-10 13:44
+> On Wed, Sep 10, 2008 at 1:22 PM, David Miller <davem@davemloft.net> wrote:
+> >
+> > I definitely prefer Thomas Graf's work, this stuff is very ugly
+> > and way overengineered.
+> >
+> 
+> Could you be more specific? Thomas' work is almost identical to this
+> (except that he does not store the cgroup id into the socket which is
+> a trivial change which has downsides which I have pointed out).
+> 
+> Additionally this approach has only minor modifications to the core
+> networking stack. What portions do you consider ugly and over
+> engineered and what alternative implementations would you prefer?
+> Please see the follow up I have sent to Thomas' proposal about why we
+> need this design approach to handle the inbound case.
 
-is it possible to push
-tpm-correct-tpm-timeouts-to-jiffies-conversion.patch
-(the patch header follows) into 2.6.27, please?
+WRT the inbound case, after some experiments I decided to dismiss the
+ingress case at all and stick to something as simple as possible for
+egress. The reason for this is that it is a very expensive operation
+to associate a packet with a task on classifier level. Taking this
+cost, it does not add up with the very limited capabilities of ingress
+shaping. Ingress shaping is best effort at best. It works fairly well
+with a very limited number of bulk data streams but usualy fails
+miserably in common congestion situations where a cgroup classifier
+would be useful.
 
-From: Marcin Obara <marcin_obara@users.sourceforge.net>
+> I'd be ok if you accepted either change since  we just want a standard
+> kernel mechanism to do this.
 
-This patch fixes timeouts conversion to jiffies, by replacing
-msecs_to_jiffies() calls with usecs_to_jiffies().  According to TCG TPM
-Specification Version 1.2 Revision 103 (pages 166, 167) TPM timeouts and
-durations are returned in microseconds (usec) not in miliseconds (msec).
-
-Signed-off-by: Marcin Obara <marcin_obara@users.sourceforge.net>
-Cc: Marcel Selhorst <tpm@selhorst.net>
-Cc: Kylene Jo Hall <kjhall@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-
+Agreed. I think your approach is very reasonable but considering the
+reasons I've given above and in the other thread I found it could be done
+in a more simple and direct way.
