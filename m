@@ -1,190 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbYIJPlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYIJPnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751963AbYIJPlP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 11:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYIJPk5
+	id S1754220AbYIJPnH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 11:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYIJPm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 11:40:57 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:57816 "EHLO e2.ny.us.ibm.com"
+	Wed, 10 Sep 2008 11:42:56 -0400
+Received: from vena.lwn.net ([206.168.112.25]:56450 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbYIJPkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 11:40:55 -0400
-Subject: Re:[PATCH 1/3] 24-bit types: typedef and macros for
-	accessing	3-byte arrays as integers
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Chris Leech <christopher.leech@intel.com>,
-       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, devel@open-fcoe.org
-In-Reply-To: <20080910140712.GA12280@infradead.org>
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>
-	 <20080910140712.GA12280@infradead.org>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 10:40:41 -0500
-Message-Id: <1221061241.27385.14.camel@norville.austin.ibm.com>
+	id S1751654AbYIJPmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 11:42:55 -0400
+Date: Wed, 10 Sep 2008 09:42:53 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Jarod Wilson <jwilson@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Janne Grunau <j@jannua.net>,
+       Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [PATCH 05/18] lirc driver for i2c-based IR receivers
+Message-ID: <20080910094253.73a03ab3@bike.lwn.net>
+In-Reply-To: <1220933164-10160-6-git-send-email-jwilson@redhat.com>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
+	<1220933164-10160-2-git-send-email-jwilson@redhat.com>
+	<1220933164-10160-3-git-send-email-jwilson@redhat.com>
+	<1220933164-10160-4-git-send-email-jwilson@redhat.com>
+	<1220933164-10160-5-git-send-email-jwilson@redhat.com>
+	<1220933164-10160-6-git-send-email-jwilson@redhat.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 10:07 -0400, Christoph Hellwig wrote:
+> +config LIRC_I2C
+> +	tristate "I2C Based IR Receivers"
+> +	default n
+> +	depends on LIRC_DEV
+> +	help
+> +	  Driver for I2C-based IR receivers, such as those commonly
+> +	  found onboard Hauppauge PVR-150/250/350 video capture cards
 
-> JFS already defines an __le24, see fs/jfs/endian24.h.  Please try to
-> cover it, too or at least make sure you don't break it.
+This driver offers relatively few things to gripe about.  But I'm not one
+to shrink from a challenge...
 
-Chris,
-This patch takes care of jfs.  Please add it to your patchset.
+> +#include <linux/semaphore.h>
 
-Thanks,
-Shaggy
+It looks like this driver is semaphore-free?  Actually, it looks kind of
+lock-free in general.  That's probably my biggest concern; what is
+protecting against concurrent operations on the device?
 
-24-bit types: Convert jfs to use the common 24-bit types
+> +static int add_to_buf_pcf8574(void *data, struct lirc_buffer *buf)
+> +{
+> +	struct IR *ir = data;
+> +	int rc;
+> +	unsigned char all, mask;
+> +	unsigned char key;
+> +
+> +	/* compute all valid bits (key code + pressed/release flag) */
+> +	all = ir->bits | ir->flag;
+> +
+> +	/* save IR writable mask bits */
+> +	mask = i2c_smbus_read_byte(&ir->c) & ~all;
+> +
+> +	/* send bit mask */
+> +	rc = i2c_smbus_write_byte(&ir->c, (0xff & all) | mask);
+> +
+> +	/* receive scan code */
+> +	rc = i2c_smbus_read_byte(&ir->c);
+> +
+> +	if (rc == -1) {
+> +		dprintk("%s read error\n", ir->c.name);
+> +		return -EIO;
+> +	}
 
-This patch cleans up some of the ugliness in the jfs headers and
-uses the common 24-bit types instead of its private definitions.
+This ignores the return value from the first i2c_smbus_read_byte() and
+i2c_smbus_write_byte() calls.  Beyond that, i2c_smbus_read_byte() can
+return -EANYTHING, so I think the check should be "rc < 0", no?  Tests
+against -1 are common in this driver, I'll not point them all out.
 
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> +static int ir_attach(struct i2c_adapter *adap, int addr,
+> +		     unsigned short flags, int kind)
+> +{
 
-diff --git a/fs/jfs/endian24.h b/fs/jfs/endian24.h
-deleted file mode 100644
-index fa92f7f..0000000
---- a/fs/jfs/endian24.h
-+++ /dev/null
-@@ -1,49 +0,0 @@
--/*
-- *   Copyright (C) International Business Machines Corp., 2001
-- *
-- *   This program is free software;  you can redistribute it and/or modify
-- *   it under the terms of the GNU General Public License as published by
-- *   the Free Software Foundation; either version 2 of the License, or
-- *   (at your option) any later version.
-- *
-- *   This program is distributed in the hope that it will be useful,
-- *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
-- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
-- *   the GNU General Public License for more details.
-- *
-- *   You should have received a copy of the GNU General Public License
-- *   along with this program;  if not, write to the Free Software
-- *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-- */
--#ifndef _H_ENDIAN24
--#define	_H_ENDIAN24
--
--/*
-- *	endian24.h:
-- *
-- * Endian conversion for 24-byte data
-- *
-- */
--#define __swab24(x) \
--({ \
--	__u32 __x = (x); \
--	((__u32)( \
--		((__x & (__u32)0x000000ffUL) << 16) | \
--		 (__x & (__u32)0x0000ff00UL)	    | \
--		((__x & (__u32)0x00ff0000UL) >> 16) )); \
--})
--
--#if (defined(__KERNEL__) && defined(__LITTLE_ENDIAN)) || (defined(__BYTE_ORDER) && (__BYTE_ORDER == __LITTLE_ENDIAN))
--	#define __cpu_to_le24(x) ((__u32)(x))
--	#define __le24_to_cpu(x) ((__u32)(x))
--#else
--	#define __cpu_to_le24(x) __swab24(x)
--	#define __le24_to_cpu(x) __swab24(x)
--#endif
--
--#ifdef __KERNEL__
--	#define cpu_to_le24 __cpu_to_le24
--	#define le24_to_cpu __le24_to_cpu
--#endif
--
--#endif				/* !_H_ENDIAN24 */
-diff --git a/fs/jfs/jfs_types.h b/fs/jfs/jfs_types.h
-index 649f981..6c49b93 100644
---- a/fs/jfs/jfs_types.h
-+++ b/fs/jfs/jfs_types.h
-@@ -30,8 +30,6 @@
- #include <linux/types.h>
- #include <linux/nls.h>
- 
--#include "endian24.h"
--
- /*
-  * transaction and lock id's
-  *
-@@ -62,7 +60,7 @@ struct timestruc_t {
-  */
- typedef struct {
- 	unsigned len:24;
--	unsigned off1:8;
-+	u8 off1;
- 	u32 off2;
- } lxd_t;
- 
-@@ -90,8 +88,8 @@ struct lxdlist {
-  *	physical xd (pxd)
-  */
- typedef struct {
--	unsigned len:24;
--	unsigned addr1:8;
-+	__le24 len;
-+	u8 addr1;
- 	__le32 addr2;
- } pxd_t;
- 
-@@ -122,13 +120,13 @@ struct pxdlist {
-  *	data extent descriptor (dxd)
-  */
- typedef struct {
--	unsigned flag:8;	/* 1: flags */
--	unsigned rsrvd:24;
--	__le32 size;		/* 4: size in byte */
--	unsigned len:24;	/* 3: length in unit of fsblksize */
--	unsigned addr1:8;	/* 1: address in unit of fsblksize */
--	__le32 addr2;		/* 4: address in unit of fsblksize */
--} dxd_t;			/* - 16 - */
-+	u8 flag;	/* 1: flags */
-+	u8 rsrvd[3];
-+	__le32 size;	/* 4: size in byte */
-+	__le24 len;	/* 3: length in unit of fsblksize */
-+	u8 addr1;	/* 1: address in unit of fsblksize */
-+	__le32 addr2;	/* 4: address in unit of fsblksize */
-+} dxd_t;		/* - 16 - */
- 
- /* dxd_t flags */
- #define	DXD_INDEX	0x80	/* B+-tree index */
-diff --git a/fs/jfs/jfs_xtree.h b/fs/jfs/jfs_xtree.h
-index 70815c8..92beff3 100644
---- a/fs/jfs/jfs_xtree.h
-+++ b/fs/jfs/jfs_xtree.h
-@@ -29,14 +29,14 @@
-  *	extent allocation descriptor (xad)
-  */
- typedef struct xad {
--	unsigned flag:8;	/* 1: flag */
--	unsigned rsvrd:16;	/* 2: reserved */
--	unsigned off1:8;	/* 1: offset in unit of fsblksize */
--	__le32 off2;		/* 4: offset in unit of fsblksize */
--	unsigned len:24;	/* 3: length in unit of fsblksize */
--	unsigned addr1:8;	/* 1: address in unit of fsblksize */
--	__le32 addr2;		/* 4: address in unit of fsblksize */
--} xad_t;			/* (16) */
-+	u8 flag;	/* 1: flag */
-+	u8 rsvrd[2];	/* 2: reserved */
-+	u8 off1;	/* 1: offset in unit of fsblksize */
-+	__le32 off2;	/* 4: offset in unit of fsblksize */
-+	__le24 len;	/* 3: length in unit of fsblksize */
-+	u8 addr1;	/* 1: address in unit of fsblksize */
-+	__le32 addr2;	/* 4: address in unit of fsblksize */
-+} xad_t;		/* (16) */
- 
- #define MAXXLEN		((1 << 24) - 1)
- 
+...
 
--- 
-David Kleikamp
-IBM Linux Technology Center
+> +	ir->l.minor = lirc_register_plugin(&ir->l);
+> +
+> +	return 0;
+> +}
 
+The lirc_register_plugin() call can fail, the result should be checked.
+
+> +#ifdef MODULE
+> +
+> +int init_module(void)
+> +{
+> +	request_module("bttv");
+> +	request_module("rivatv");
+> +	request_module("ivtv");
+> +	request_module("cx8800");
+> +	i2c_add_driver(&driver);
+> +	return 0;
+> +}
+
+Why are all these modules being loaded here?  That would seem like a job
+for udev.
+
+jon
