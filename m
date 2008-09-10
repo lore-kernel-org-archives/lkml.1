@@ -1,104 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbYIJVFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbYIJVJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbYIJVFo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbYIJVF3
+	id S1754924AbYIJVJq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYIJVJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:05:29 -0400
-Received: from nebensachen.de ([195.34.83.29]:44866 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755444AbYIJVF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:05:28 -0400
-X-Hashcash: 1:20:080910:htejun@gmail.com::p4MOEY0Albxckjye:00e5H
-X-Hashcash: 1:20:080910:alan@lxorguk.ukuu.org.uk::zP1lygJdJ2c957FQ:00000000000000000000000000000000000005cho
-X-Hashcash: 1:20:080910:akpm@linux-foundation.org::9LqR84jQ8AXKirYa:0000000000000000000000000000000000001wdZ
-X-Hashcash: 1:20:080910:bzolnier@gmail.com::NptOshqE6rZjqZbK:0000000000000000000000000000000000000000000Vq2l
-X-Hashcash: 1:20:080910:jeff@garzik.org::IqS64OgXEp1QHnUC:0018e7
-X-Hashcash: 1:20:080910:randy.dunlap@oracle.com::AmME62SnX3y6rE6Y:000000000000000000000000000000000000003H8x
-X-Hashcash: 1:20:080910:linux-ide@vger.kernel.org::r+JCeFIzVcO/r3zv:0000000000000000000000000000000000003VaA
-X-Hashcash: 1:20:080910:linux-kernel@vger.kernel.org::FXQvrNzRiR5f8tNJ:0000000000000000000000000000000002Y32
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
-References: <87wshzplvk.fsf@denkblock.local>
-	<20080829211345.4355.89284.stgit@denkblock.local>
-	<48B913E6.1000104@gmail.com> <87k5dym5t9.fsf@denkblock.local>
-	<48BA638B.2030001@gmail.com> <87ej45mlp3.fsf@denkblock.local>
-	<48BA969C.4060207@gmail.com> <87abetmaap.fsf@denkblock.local>
-	<48BBA8D1.8020604@gmail.com> <87myirly1p.fsf@denkblock.local>
-	<48BC1BB8.2030007@gmail.com> <87fxoh0yil.fsf@denkblock.local>
-	<48BFA528.2040305@gmail.com> <87ej3zrf3o.fsf@denkblock.local>
-	<48C0F2F8.1040308@gmail.com> <87ej3snm3s.fsf@denkblock.local>
-	<48C7DC55.30002@gmail.com> <8763p3ol55.fsf@denkblock.local>
-	<48C82CB1.2070308@gmail.com>
-Date: Wed, 10 Sep 2008 23:04:23 +0200
-In-Reply-To: <48C82CB1.2070308@gmail.com> (Tejun Heo's message of "Wed, 10 Sep
-	2008 22:23:13 +0200")
-Message-ID: <871vzrogpz.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Wed, 10 Sep 2008 17:09:38 -0400
+Received: from xenotime.net ([66.160.160.81]:53233 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752720AbYIJVJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 17:09:37 -0400
+Date: Wed, 10 Sep 2008 14:09:31 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Miller <davem@davemloft.net>, david-b@pacbell.net,
+       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+       alessandro.zummo@towertech.it, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
+In-Reply-To: <20080910140417.bc35c199.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0809101407490.7159@shark.he.net>
+References: <200809081629.21125.david-b@pacbell.net>
+ <20080908.164427.216880550.davem@davemloft.net> <200809081755.26148.david-b@pacbell.net>
+ <20080908.195235.200905674.davem@davemloft.net> <20080910140417.bc35c199.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> wrote:
-> Elias Oltmanns wrote:
->>> The correct way to do this is ata_eh_about_to_do().  After that, you
->
->>> can just look at ehc->i.dev_action[].  Also, you'll need to call
->>> ata_eh_done() later.
->> 
->> We have a problem here, I'm afraid, because we may keep looping in EH
->> context and still want to pick up ATA_EH_PARK requests. Imagine that
->> ATA_EH_PARK has been scheduled for device A and the EH thread has
->> reached the call to schedule_timeout_uninterruptible(). Now, ATA_EH_PARK
->> is scheduled for device B on the same port. This will wake up the EH
->> thread, but ATA_EH_PARK is only recorded in link->eh_info, not in
->> link->eh_context.i. ata_eh_about_to_do() will unconditionally clear the
->> flag in eh_info, but checking ehc->i.dev_action afterwards will only
->> tell us whether this flag was set when we entered EH, not whether it had
->> been set since.
->> 
->> Should I change ata_eh_about_to_do() so that it will record the action
->> in link->eh_context before clearing it in link->eh_info?
->
-> That's what ata_eh_about_to_do() currently does, exactly.  Actually,
-> that's the whole reason it's there as the described problem exists for
-> all other actions too.  :-)
+On Wed, 10 Sep 2008, Andrew Morton wrote:
 
-Sounds reasonable enough. Much as I regret it, though, I really can't
-find that this is what actually happens. Where exactly is the action
-propagated from ehi to ehc->i? (Checked next-20080903, v2.6.27-rc5 and
-v2.6.26).
+> On Mon, 08 Sep 2008 19:52:35 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
+> 
+> > From: David Brownell <david-b@pacbell.net>
+> > Date: Mon, 8 Sep 2008 17:55:25 -0700
+> > 
+> > > On Monday 08 September 2008, David Miller wrote:
+> > > > From: David Brownell <david-b@pacbell.net>
+> > > > Date: Mon, 8 Sep 2008 16:29:20 -0700
+> > > > 
+> > > > > That said, there's a bit of unresolved stuff around NTP hooks
+> > > > > in the kernel.  Some patches are pending to let thtem work with
+> > > > > the RTC framework -- where writing an RTC may need to sleep,
+> > > > > for example because the RTC is on an I2C or SPI bus.  And
+> > > > > then there's the discussion of whether that shouldn't all be
+> > > > > handled by NTPD anyway, no special kernel support desired.
+> > > > > Alessandro has opinions there.  ;)
+> > > > 
+> > > > My update_persistent_clock() on sparc64 is:
+> > > > 
+> > > > int update_persistent_clock(struct timespec now)
+> > > > {
+> > > > 	struct rtc_device *rtc = rtc_class_open("rtc0");
+> > > 
+> > > I'd be tempted to cache that ... notice how you never
+> > > close it, too.  That will goof lots of refcounts...
+> > 
+> > Well if I cache it then we'll hold it forever and that's not
+> > so nice right?
+> > 
+> > I'm going to put the missing rtc_close() in there for now to
+> > fix the leak.
+> > 
+> > I'm happy to cache this if you think it's warranted, but then
+> > this is like saying that the refcount doesn't matter :-)
+> > 
+> > > =============== CUT ON THE DOTTED LINE ==================
+> > > Subject: ntp: let update_persistent_clock() sleep
+> > > From: "Maciej W. Rozycki" <macro@linux-mips.org>
+> > 
+> > I see, as Paul mentioned this is needed for stuff like RTCs
+> > behind I2C.
+> > 
+> > This change isn't in Linus's tree yet.
+> 
+> Should it be?
+> 
+> Its current status is: stuck in -mm.  I've sent it to Thomas a couple
+> of times marked "for 2.6.27?" and he might have applied it now (I'm a
+> few days behind, waiting for linux-next to start up again).
 
-On another matter: I don't particularly like the idea that there should
-appear an "EH complete" in the logs every time a head unload request has
-been processed. Is it safe to set ATA_EHI_QUIET when scheduling unload
-requests or is the risk that something important may be missed too high?
+This is something that you can attempt (again) to address next week along
+with other process issues...
 
->
->>> And it's probably better to have ehc->unloaded_mask instead of
->>> ehc->did_unload_mask and clear it here so that if unload is scheduled
->>> after this point but before EH completes, it does unloading again.
->>> ie. Something like the following.
->>>
->>> 	ata_eh_done(ATA_EH_UNLOAD);
->>> 	ehc->i.unloaded_mask &= ~(1 << dev->devno);
->> 
->> No need for that because link->eh_context is cleared in
->> ata_scsi_error().
->
-> No, for example, later steps of EH could fail in which case eh_recover
-> will be retried without going out to ata_scsi_error().
+Maybe travel time/delay is also involved (for people other than Mr. Rothwell).
 
-Alright then.
 
-Regards,
+> It was not included in Thomas's recent mainline pull request:
+> 
+> From: Thomas Gleixner <tglx@tglx.de>
+> Subject: [GIT pull] timer updates for 2.6.27
+> Date: Tue, 9 Sep 2008 22:32:39 +0200 (CEST)
 
-Elias
+-- 
+~Randy
