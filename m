@@ -1,98 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbYIJVJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYIJVPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbYIJVJq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYIJVJi
+	id S1754744AbYIJVPY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYIJVPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:09:38 -0400
-Received: from xenotime.net ([66.160.160.81]:53233 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752720AbYIJVJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:09:37 -0400
-Date: Wed, 10 Sep 2008 14:09:31 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Miller <davem@davemloft.net>, david-b@pacbell.net,
-       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
-       alessandro.zummo@towertech.it, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-In-Reply-To: <20080910140417.bc35c199.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0809101407490.7159@shark.he.net>
-References: <200809081629.21125.david-b@pacbell.net>
- <20080908.164427.216880550.davem@davemloft.net> <200809081755.26148.david-b@pacbell.net>
- <20080908.195235.200905674.davem@davemloft.net> <20080910140417.bc35c199.akpm@linux-foundation.org>
+	Wed, 10 Sep 2008 17:15:10 -0400
+Received: from styx.suse.cz ([82.119.242.94]:57901 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751232AbYIJVPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 17:15:09 -0400
+Date: Wed, 10 Sep 2008 23:15:07 +0200
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] UDF fix for 2.6.27-rc5
+Message-ID: <20080910211507.GA21384@duck.suse.cz>
+References: <20080910090620.GB19506@duck.suse.cz> <alpine.LFD.1.10.0809101105240.3384@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809101105240.3384@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008, Andrew Morton wrote:
-
-> On Mon, 08 Sep 2008 19:52:35 -0700 (PDT)
-> David Miller <davem@davemloft.net> wrote:
+On Wed 10-09-08 11:06:35, Linus Torvalds wrote:
+> On Wed, 10 Sep 2008, Jan Kara wrote:
+> > 
+> >   would you please pull from
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+> > 
+> >   to get the following fix:
+> > 
+> > Christoph Hellwig (1):
+> >       udf: add llseek method
+> > 
+> >  fs/udf/file.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> > From: David Brownell <david-b@pacbell.net>
-> > Date: Mon, 8 Sep 2008 17:55:25 -0700
-> > 
-> > > On Monday 08 September 2008, David Miller wrote:
-> > > > From: David Brownell <david-b@pacbell.net>
-> > > > Date: Mon, 8 Sep 2008 16:29:20 -0700
-> > > > 
-> > > > > That said, there's a bit of unresolved stuff around NTP hooks
-> > > > > in the kernel.  Some patches are pending to let thtem work with
-> > > > > the RTC framework -- where writing an RTC may need to sleep,
-> > > > > for example because the RTC is on an I2C or SPI bus.  And
-> > > > > then there's the discussion of whether that shouldn't all be
-> > > > > handled by NTPD anyway, no special kernel support desired.
-> > > > > Alessandro has opinions there.  ;)
-> > > > 
-> > > > My update_persistent_clock() on sparc64 is:
-> > > > 
-> > > > int update_persistent_clock(struct timespec now)
-> > > > {
-> > > > 	struct rtc_device *rtc = rtc_class_open("rtc0");
-> > > 
-> > > I'd be tempted to cache that ... notice how you never
-> > > close it, too.  That will goof lots of refcounts...
-> > 
-> > Well if I cache it then we'll hold it forever and that's not
-> > so nice right?
-> > 
-> > I'm going to put the missing rtc_close() in there for now to
-> > fix the leak.
-> > 
-> > I'm happy to cache this if you think it's warranted, but then
-> > this is like saying that the refcount doesn't matter :-)
-> > 
-> > > =============== CUT ON THE DOTTED LINE ==================
-> > > Subject: ntp: let update_persistent_clock() sleep
-> > > From: "Maciej W. Rozycki" <macro@linux-mips.org>
-> > 
-> > I see, as Paul mentioned this is needed for stuff like RTCs
-> > behind I2C.
-> > 
-> > This change isn't in Linus's tree yet.
+> This is not AT ALL what I get when I pull. I get
 > 
-> Should it be?
+>   udf: Fix error paths in udf_new_inode()
+>   udf: Fix lock inversion between iprune_mutex and alloc_mutex (v2)
 > 
-> Its current status is: stuck in -mm.  I've sent it to Thomas a couple
-> of times marked "for 2.6.27?" and he might have applied it now (I'm a
-> few days behind, waiting for linux-next to start up again).
-
-This is something that you can attempt (again) to address next week along
-with other process issues...
-
-Maybe travel time/delay is also involved (for people other than Mr. Rothwell).
-
-
-> It was not included in Thomas's recent mainline pull request:
+> which is
 > 
-> From: Thomas Gleixner <tglx@tglx.de>
-> Subject: [GIT pull] timer updates for 2.6.27
-> Date: Tue, 9 Sep 2008 22:32:39 +0200 (CEST)
+>  fs/udf/ialloc.c |   44 +++++++++++++++++++-------------------------
+>  1 files changed, 19 insertions(+), 25 deletions(-)
+> 
+> Hmm?
+  Thanks for catching this. I managed to make two mistakes - first I forgot
+to push changes to master.kernel.org and second I forgot to push older
+changes to you after sending them for review to LKML. So a second try :).
+Would you please pull
 
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-udf-2.6.git for_linus
+
+to get:
+
+Christoph Hellwig (1):
+      udf: add llseek method
+
+Jan Kara (2):
+      udf: Fix lock inversion between iprune_mutex and alloc_mutex (v2)
+      udf: Fix error paths in udf_new_inode()
+
+The diffstat is:
+  fs/udf/file.c   |    1 +
+  fs/udf/ialloc.c |   44 +++++++++++++++++++-------------------------
+  2 files changed, 20 insertions(+), 25 deletions(-)
+
+  Thanks.
+								Honza
 -- 
-~Randy
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
