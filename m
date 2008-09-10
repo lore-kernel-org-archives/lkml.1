@@ -1,63 +1,698 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYIJA4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbYIJBJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbYIJA4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 20:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYIJA4D
+	id S1752535AbYIJBJy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 21:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbYIJBJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 20:56:03 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43658 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbYIJA4B (ORCPT
+	Tue, 9 Sep 2008 21:09:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35255 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750882AbYIJBJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 20:56:01 -0400
-Date: Wed, 10 Sep 2008 10:01:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2008-09-08-18-32 uploaded
-Message-Id: <20080910100142.e74ff1e5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080909103741.6e10ee87.akpm@linux-foundation.org>
-References: <200809090135.m891ZHiW020337@imap1.linux-foundation.org>
-	<20080909192544.8c0763d2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080909103741.6e10ee87.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Sep 2008 21:09:42 -0400
+Date: Tue, 9 Sep 2008 18:09:06 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.27-rc6
+Message-ID: <alpine.LFD.1.10.0809091755200.3384@nehalem.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008 10:37:41 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > Following is comparison with a mmtom based on rc4.
-> > ===
-> > [rc4mm1]
-> > Execl Throughput                           3004.4 lps   (29.6 secs, 3 samples)
-> > C Compiler Throughput                      1017.9 lpm   (60.0 secs, 3 samples)
-> > Shell Scripts (1 concurrent)               5726.3 lpm   (60.0 secs, 3 samples)
-> > Shell Scripts (8 concurrent)               1124.3 lpm   (60.0 secs, 3 samples)
-> > Shell Scripts (16 concurrent)               576.0 lpm   (60.0 secs, 3 samples)
-> > Dc: sqrt(2) to 99 decimal places         125446.5 lpm   (30.0 secs, 3 samples)
-> > 
-> > [rc5mm1]
-> > Execl Throughput                           3006.5 lps   (29.8 secs, 3 samples)
-> > C Compiler Throughput                      1006.7 lpm   (60.0 secs, 3 samples)
-> > Shell Scripts (1 concurrent)               4863.7 lpm   (60.0 secs, 3 samples)
-> > Shell Scripts (8 concurrent)                943.7 lpm   (60.0 secs, 3 samples)
-> > Shell Scripts (16 concurrent)               482.7 lpm   (60.0 secs, 3 samples)
-> > Dc: sqrt(2) to 99 decimal places         124804.9 lpm   (30.0 secs, 3 samples)
-> > ==
-> > 15% down in shell script test. Any idea ? (scheduler ?)
-> 
-> Dunno.  There is a largel number of debugging patches at the tail of
-> the series so they should be the first thing to eliminate.
-> 
-But I compare mmtom and mmtom, both includes debug series at the tail of series.
-I'll revisit this later.
+Same old deal - except it's been almost two weeks since -rc5. That said, 
+the diff is actually about the same size, so I guess that means things are 
+calming down. Most of the diff (bulk-wise) is updates to the new gspca 
+(standard USB webcam) driver, although some of it is also removal of the 
+dead miropcm20* driver. As a result, the dirstat looks like this:
 
-Thanks,
--Kame  
+   3.7% arch/x86/
+   8.0% arch/
+   9.2% drivers/media/radio/
+  41.7% drivers/media/video/gspca/
+  49.3% drivers/media/video/
+  60.7% drivers/media/
+   3.1% drivers/net/
+  71.1% drivers/
+   3.9% fs/
+   5.5% kernel/
+   3.3% net/tipc/
+   6.3% net/
+
+but as usual, the patches most people hopefully care about tend to be 
+small details, and so more regressions should hopefully be closed now, 
+some by just reverting the commits that caused breakage.
+
+I don't think anything special merits explicit comment, but you can get a 
+flavor for things by scanning the appended shortlog.
+
+		Linus
+---
+Adam Litke (1):
+      mm: make setup_zone_migrate_reserve() aware of overlapping nodes
+
+Adrian Bunk (9):
+      sh64: re-add the __strnlen_user() prototype
+      sh: fix ptrace_64.c:user_disable_single_step()
+      dabusb_fpga_download(): fix a memory leak
+      wireless/libertas/if_cs.c: fix memory leaks
+      NTFS: update homepage
+      V4L/DVB (8678): Remove the dead CONFIG_RADIO_MIROPCM20{,_RDS} code
+      V4L/DVB (8842): vivi_release(): fix use-after-free
+      V4L/DVB (8843): tda10048_firmware_upload(): fix a memory leak
+      V4L/DVB (8844): dabusb_fpga_download(): fix a memory leak
+
+Adrian Hunter (2):
+      UBIFS: always read hashed-key nodes under TNC mutex
+      UBIFS: allow for racing between GC and TNC
+
+Al Viro (1):
+      forgotten refcount on sysctl root table
+
+Alan Cox (1):
+      ahci, pata_marvell: play nicely together
+
+Alexander Beregalov (1):
+      V4L/DVB (8681): v4l2-ioctl.c: fix warning
+
+Alexey Dobriyan (3):
+      netfilter: nf_conntrack_sip: de-static helper pointers
+      netfilter: nf_conntrack_gre: more locking around keymap list
+      netfilter: nf_conntrack_gre: nf_ct_gre_keymap_flush() fixlet
+
+Alok N Kataria (1):
+      x86: Change warning message in TSC calibration.
+
+Andi Kleen (2):
+      Don't trigger softlockup detector on network fs blocked tasks
+      ACPI: Make Len Brown the ACPI maintainer again
+
+Andre Detsch (1):
+      powerpc/spufs: Fix possible scheduling of a context to multiple SPEs
+
+Andreas Herrmann (2):
+      x86: pda_init(): fix memory leak when using CPU hotplug
+      x86: cpu_init(): fix memory leak when using CPU hotplug
+
+Andrew Morton (2):
+      drivers/char/random.c: fix a race which can lead to a bogus BUG()
+      drivers/mmc/card/block.c: fix refcount leak in mmc_block_open()
+
+Andy Adamson (1):
+      nfsd: fix compound state allocation error handling
+
+Andy Gospodarek (1):
+      ixgbe: initialize interrupt throttle rate
+
+Andy Walls (2):
+      V4L/DVB (8701): cx18: Add missing lock for when the irq handler manipulates the queues
+      V4L/DVB (8769): cx18: Simplify queue flush logic to prevent oops in cx18_flush_queues()
+
+Arjan van de Ven (1):
+      don't diff generated firmware files
+
+Artem Bityutskiy (13):
+      UBIFS: fix zero-length truncations
+      UBIFS: do not update min_idx_lebs in stafs
+      UBIFS: push empty flash hack down
+      UBIFS: remove incorrect index space check
+      UBIFS: improve statfs reporting
+      UBIFS: fix assertion
+      UBIFS: add forgotten gc_idx_lebs component
+      UBIFS: introduce LEB overhead
+      UBIFS: improve statfs reporting even more
+      UBIFS: fill f_fsid
+      UBIFS: amend f_fsid
+      UBIFS: fix division by zero
+      UBIFS: make minimum fanout 3
+
+Assaf Krauss (1):
+      iwlwifi: W/A for the TSF correction in IBSS
+
+Atsushi Nemoto (3):
+      [MIPS] TXx9: Fix txx9_pcode initialization
+      [MIPS] TX39xx: Add missing local_flush_icache_range initialization
+      [MIPS] Probe initrd header only if explicitly specified
+
+Balbir Singh (1):
+      sched: fix process time monotonicity
+
+Bartlomiej Zolnierkiewicz (3):
+      ide: fix hwif_to_node()
+      ide-disk: remove stale init_idedisk_capacity() documentation
+      ide/Kconfig: mark ide-scsi as deprecated
+
+Benjamin Herrenschmidt (1):
+      powerpc: Fix build error with 64K pages and !hugetlbfs
+
+Bjorn Helgaas (1):
+      PNPACPI: ignore the producer/consumer bit for extended IRQ descriptors
+
+Boaz Harrosh (1):
+      rt2x00: Compiler warning unmasked by fix of BUILD_BUG_ON
+
+Breno Leitao (1):
+      ipv: Re-enable IP when MTU > 68
+
+Carmelo Amoroso (1):
+      sh: resume_kernel fix for kernel oops built with CONFIG_BKL_PREEMPT=y.
+
+Chris Snook (1):
+      MAINTAINERS: add Atheros maintainer for atlx
+
+Christoph Hellwig (1):
+      update Documentation/filesystems/Locking for 2.6.27 changes
+
+Chuck Ebbert (1):
+      x86: add io delay quirk for Presario F700
+
+Chuck Lever (1):
+      NFS: Restore missing hunk in NFS mount option parser
+
+Clemens Ladisch (1):
+      ALSA: oxygen: fix distorted output on AK4396-based cards
+
+Cordelia (1):
+      audit: Moved variable declaration to beginning of function
+
+Cornelia Huck (2):
+      [S390] cio: Correct cleanup on error.
+      [S390] cio: handle ssch() return codes correctly.
+
+Cyrill Gorcunov (2):
+      acpi: add checking for NULL early param
+      sunrpc: fix possible overrun on read of /proc/sys/sunrpc/transports
+
+Daniel Lezcano (1):
+      netns : fix kernel panic in timewait socket destruction
+
+Dave Airlie (1):
+      drm/radeon: downgrade debug message from info to debug.
+
+David Brownell (3):
+      palm_bk3710: improve IDE registration
+      mmc: at91_mci: don't use coherent dma buffers
+      net/usb/pegasus: avoid hundreds of diagnostics
+
+David Kilroy (1):
+      orinoco: Multicast to the specified addresses
+
+David Milburn (1):
+      pata_sil680: remove duplicate pcim_enable_device
+
+David S. Miller (8):
+      sparc32: Implement smp_call_function_single().
+      sparc: Fix resource flags for PCI children in OF device tree.
+      net: Unbreak userspace usage of linux/mroute.h
+      sparc64: setup_valid_addr_bitmap_from_pavail() should be __init
+      ipsec: Fix deadlock in xfrm_state management.
+      tipc: Don't use structure names which easily globally conflict.
+      sparc64: Fix IPI call locking.
+      sparc64: Disable timer interrupts in fixup_irqs().
+
+David Woodhouse (3):
+      Fix modules_install on RO nfs-exported trees.
+      Remove '#include <stddef.h>' from mm/page_isolation.c
+      Revert "[ARM] use the new byteorder headers"
+
+Dennis Jansen (2):
+      ACPI: Fix typo in "Disable MWAIT via DMI on broken Compal board"
+      ACPI: Fix typo in "Disable MWAIT via DMI on broken Compal board"
+
+Dhananjay Phadke (1):
+      netxen: Remove workaround for chipset quirk
+
+Dmitry Baryshkov (2):
+      ALSA: ASoC: fix pxa2xx-i2s clk_get call
+      [MTD] [NAND] tmio_nand: fix base address programming
+
+Dominik Brodowski (2):
+      clocksource, acpi_pm.c: use proper read function also in errata mode
+      clocksource, acpi_pm.c: check for monotonicity
+
+Eduardo Habkost (1):
+      x86, xen: Use native_pte_flags instead of native_pte_val for .pte_flags
+
+Eilon Greenstein (1):
+      bnx2x: Accessing un-mapped page
+
+Eric Paris (1):
+      SELinux: memory leak in security_context_to_sid_core
+
+FUJITA Tomonori (1):
+      remove blk_register_filter and blk_unregister_filter in gendisk
+
+Florian Mickler (1):
+      net/wireless/Kconfig: clarify the description for CONFIG_WIRELESS_EXT_SYSFS
+
+Gregory Greenman (2):
+      iwlwifi: call apm stop on exit
+      iwlwifi: fix STATUS_EXIT_PENDING is not set on pci_remove
+
+H. Peter Anvin (3):
+      x86: boot: stub out unimplemented CPU feature words
+      x86: add NOPL as a synthetic CPU feature bit
+      x86: use X86_FEATURE_NOPL in alternatives
+
+Haavard Skinnemoen (1):
+      avr32: Fix lockup after Java stack underflow in user mode
+
+Hans Verkuil (7):
+      V4L/DVB (8629): v4l2-ioctl: do not try to handle private V4L1 ioctls
+      V4L/DVB (8633): ivtv: update ivtv version number
+      V4L/DVB (8648): ivtv: improve CC support
+      V4L/DVB (8757): v4l-dvb: fix a bunch of sparse warnings
+      V4L/DVB (8778): radio: fix incorrect video_register_device result check
+      V4L/DVB (8779): v4l: fix more incorrect video_register_device result checks
+      V4L/DVB (8790): saa7115: call i2c_set_clientdata only when state != NULL
+
+Hans de Goede (21):
+      V4L/DVB (8667): gspca: Bad probe of Z-Star/Vimicro webcams with pas106 sensor.
+      V4L/DVB (8720): gspca: V4L2_CAP_SENSOR_UPSIDE_DOWN added as a cap for some webcams.
+      V4L/DVB (8809): gspca: Revert commit 9a9335776548d01525141c6e8f0c12e86bbde982
+      V4L/DVB (8812): gspca: Do pac73xx webcams work.
+      V4L/DVB (8813): gspca: Adjust SOF detection for pac73xx.
+      V4L/DVB (8815): gspca: Fix problems with disabled controls.
+      V4L/DVB (8816): gspca: Set disabled ctrls and fix a register pb with ovxxxx in sonixb.
+      V4L/DVB (8817): gspca: LED and proble changes in sonixb.
+      V4L/DVB (8825): gspca: More controls for pac73xx and new webcam 093a:2624.
+      V4L/DVB (8827): gspca: Stop pac7302 autogain oscillation.
+      V4L/DVB (8830): gspca: Move some probe code to the new init function.
+      V4L/DVB (8831): gspca: Resolve webcam conflicts between some drivers.
+      V4L/DVB (8833): gspca: Cleanup the sonixb code.
+      V4L/DVB (8834): gspca: Have a bigger buffer for sn9c10x compressed images.
+      V4L/DVB (8835): gspca: Same pixfmt as the sn9c102 driver and raw Bayer added in sonixb.
+      V4L/DVB (8868): gspca: Support for vga modes with sif sensors in sonixb.
+      V4L/DVB (8869): gspca: Move the Sonix webcams with TAS5110C1B from sn9c102 to gspca.
+      V4L/DVB (8870): gspca: Fix dark room problem with sonixb.
+      V4L/DVB (8873): gspca: Bad image offset with rev012a of spca561 and adjust exposure.
+      V4L/DVB (8874): gspca: Adjust hstart for sn9c103/ov7630 and update usb-id's.
+      V4L/DVB (8880): PATCH: Fix parents on some webcam drivers
+
+Henrik Kretzschmar (2):
+      V4L/DVB (8682): V4L: fix return value of register video func
+      V4L/DVB (8750): V4L: check inval in video_register_device_index()
+
+Henrik Rydberg (5):
+      Input: bcm5974 - add maintainer entry
+      MAINTAINERS: add a maintainer for the BCM5974 multitouch driver
+      Input: bcm5974 - small formatting cleanup
+      Input: bcm5974 - improve finger tracking and counting
+      Input: bcm5974 - add BTN_TOUCH event for mousedev benefit
+
+Herbert Xu (2):
+      Revert "crypto: camellia - Use kernel-provided bitops, unaligned access helpers"
+      ipsec: Restore larval states and socket policies in dump
+
+Hisashi Hifumi (1):
+      VFS: fix dio write returning EIO when try_to_release_page fails
+
+Huang Weiyi (1):
+      [ARM] remove unused #include <version.h>
+
+Hugh Dickins (1):
+      powerpc: Fix rare boot build breakage
+
+Humphrey Bucknell (1):
+      avr32: pm_standby low-power ram bug fix
+
+J. Bruce Fields (1):
+      nfsd: fix buffer overrun decoding NFSv4 acl
+
+James Bottomley (1):
+      lib: Correct printk %pF to work on all architectures
+
+Jan Altenberg (1):
+      rtc_time_to_tm: fix signed/unsigned arithmetic
+
+Jarek Poplawski (2):
+      pkt_sched: Fix locking of qdisc_root with qdisc_root_sleeping_lock()
+      pkt_sched: Fix qdisc state in net_tx_action()
+
+Jarod Wilson (1):
+      [S390] CVE-2008-1514: prevent ptrace padding area read/write in 31-bit mode
+
+Jason Wessel (1):
+      usb: fix null deferences in low level usb serial
+
+Jean Delvare (1):
+      V4L/DVB (8837): dvb: fix I2C adapters name size
+
+Jean-Francois Moine (41):
+      V4L/DVB (8660): gspca: Simplify the scan of URB packets in pac7311.
+      V4L/DVB (8661): gspca: Bug in the previous changeset about pac7311.
+      V4L/DVB (8663): gspca: Webcam 0c45:6128 added in sonixj.
+      V4L/DVB (8664): gspca: The bridge/sensor of the webcam 093a:2621 is a PAC 7302.
+      V4L/DVB (8665): gspca: Fix the 640x480 resolution of the webcam 093a:2621.
+      V4L/DVB (8666): gspca: Bad scanning of frames in pac7311.
+      V4L/DVB (8668): gspca: Conflict GSPCA / ET61X251 for the webcam 102c:6251.
+      V4L/DVB (8669): gspca: Add white balance control for spca561 rev 012A.
+      V4L/DVB (8671): gspca: Remove the unused field 'dev_name' of the device structure.
+      V4L/DVB (8672): gspca: Big rewrite of spca561.
+      V4L/DVB (8673): gspca: Bad frame scanning again and bad init in pac7311.
+      V4L/DVB (8674): gspca: Webcam 0c45:612e added in sonixj.
+      V4L/DVB (8675): gspca: Pixmap PJPG (Pixart 73xx JPEG) added, generated by pac7311.
+      V4L/DVB (8703): gspca: Do controls work for spca561 revision 12a.
+      V4L/DVB (8705): gspca: Adjust some control limits in spca561.
+      V4L/DVB (8706): Make contrast and brightness work for pac7302.
+      V4L/DVB (8707): gspca: Colors, hflip and vflip controls added for pac7302.
+      V4L/DVB (8709): gspca: Fix initialization and controls of sn9x110 - ov7630.
+      V4L/DVB (8710): gspca: Bad color control in sonixj.
+      V4L/DVB (8711): gspca: Bad controls and quantization table of pac7311.
+      V4L/DVB (8712): gspca: Bad start of sonixj webcams since changeset a8779025e7e8.
+      V4L/DVB (8713): gspca: Bad color control again in sonixj.
+      V4L/DVB (8714): gspca: Bad start of sn9c110 and sensor om6802.
+      V4L/DVB (8715): gspca: Change the name of some webcam in the gspca doc.
+      V4L/DVB (8716): gspca: Bad start of sn9c110 and sensor ov7630.
+      V4L/DVB (8717): gspca: Frame buffer too small for small resolutions (sonixj and t613).
+      V4L/DVB (8718): gspca: suspend/resume added.
+      V4L/DVB (8719): gspca: Have VIDIOC_QUERYCTRL more compliant to the spec.
+      V4L/DVB (8810): gspca: Compile error when CONFIG_PM not defined.
+      V4L/DVB (8814): gspca: Set DISABLED the disabled controls at query control time.
+      V4L/DVB (8818): gspca: Reinitialize the device on resume.
+      V4L/DVB (8819): gspca: Initialize the ov519 at open time and source cleanup.
+      V4L/DVB (8820): gspca: Change initialization and gamma of zc3xx - pas106.
+      V4L/DVB (8822): gspca: Change some subdriver functions for suspend/resume.
+      V4L/DVB (8823): gspca: H and V flips work for ov7670 only in ov519.
+      V4L/DVB (8824): gspca: Too much code removed in the suspend/resume changeset.
+      V4L/DVB (8826): gspca: Webcam Labtec 2200 (093a:2626) added in pac7311.
+      V4L/DVB (8828): gspca: Set the clock at the end of initialization in sonixj.
+      V4L/DVB (8829): gspca: Have a clean kmalloc-ated buffer for USB exchanges.
+      V4L/DVB (8832): gspca: Bad pixelformat of vc0321 webcams.
+      V4L/DVB (8872): gspca: Bad image format and offset with rev072a of spca561.
+
+Jeff Layton (1):
+      cifs: fix O_APPEND on directio mounts
+
+Jeremy Fitzhardinge (2):
+      ACPI: thinkpad-acpi: wan radio control is not experimental
+      xen: fix 2.6.27-rc5 xen balloon driver warnings
+
+Jeremy Kerr (2):
+      powerpc/spufs: Fix multiple get_spu_context()
+      powerpc/spufs: Fix race for a free SPU
+
+Jiri Kosina (1):
+      Input: i8042 - make Lenovo 3000 N100 blacklist entry more specific
+
+John Kacur (1):
+      pm_qos_requirement might sleep
+
+John W. Linville (1):
+      iwlwifi: do not use GFP_DMA in iwl_tx_queue_init
+
+Jonathan Woithe (1):
+      fujitsu-laptop: fix regression for P8010 in 2.6.27-rc
+
+Jouni Malinen (3):
+      mac80211: Fix debugfs union misuse and pointer corruption
+      ath9k: Fix TX status reporting
+      ath9k: Fix TX control flag use for no ACK and RTS/CTS
+
+Julien Brunel (1):
+      net/xfrm: Use an IS_ERR test rather than a NULL test
+
+KOSAKI Motohiro (2):
+      mm: show quicklist usage in /proc/meminfo
+      mm: size of quicklists shouldn't be proportional to the number of CPUs
+
+Kevin Hilman (2):
+      IDE: compile fix for sff_dma_ops
+      IDE: palm_bk3710: fix compile warning for unused variable
+
+Khem Raj (1):
+      Fix conditional export of kvh.h and a.out.h to userspace.
+
+Komuro (1):
+      pcnet-cs, axnet_cs: add new IDs, remove dup ID with less info
+
+Krzysztof Helt (4):
+      cirrusfb: check_par fixes
+      tdfxfb: fix SDRAM memory size detection
+      tdfxfb: fix frame buffer name overrun
+      x86: delay early cpu initialization until cpuid is done
+
+Kumar Gala (1):
+      powerpc: Fix for getting CPU number in power_save_ppc32_restore()
+
+Lennert Buytenhek (1):
+      [ARM] 5241/1: provide ioremap_wc()
+
+Li Zefan (3):
+      devcgroup: fix race against rmdir()
+      V4L/DVB (8881): gspca: After 'while (retry--) {...}', retry will be -1 but not 0.
+      res_counter: fix off-by-one bug in setting limit
+
+Linus Torvalds (8):
+      Revert "x86: fix HPET regression in 2.6.26 versus 2.6.25, check hpet against BAR, v3"
+      Resource handling: add 'insert_resource_expand_to_fit()' function
+      Un-break printk strings in x86 PCI probing code
+      Split up PIT part of TSC calibration from native_calibrate_tsc
+      PCI: fix pbus_size_mem() resource alignment for CardBus controllers
+      Revert "mac80211: Use IWEVASSOCREQIE instead of IWEVCUSTOM"
+      x86: disable static NOPLs on 32 bits
+      Linux 2.6.27-rc6
+
+Maciej W. Rozycki (1):
+      ntp: fix calculation of the next jiffie to trigger RTC sync
+
+Magnus Damm (6):
+      sh: crash kernel resource fix
+      sh: fix kexec entry point for crash kernels
+      sh: fix platform_resource_setup_memory() section mismatch
+      sh: update Migo-R defconfig
+      sh: update AP325RXA defconfig
+      i2c: fix i2c-sh_mobile timing issues
+
+Marcel Holtmann (3):
+      [Bluetooth] Fix reference counting during ACL config stage
+      [Bluetooth] Enforce correct authentication requirements
+      [Bluetooth] Reject L2CAP connections on an insecure ACL link
+
+Marcin Slusarz (1):
+      mm/bootmem: silence section mismatch warning - contig_page_data/bootmem_node_data
+
+Mark Lord (1):
+      sata_mv: add RocketRaid 1720 PCI ID to driver
+
+Matthew Garrett (2):
+      hp-wmi: update to match current rfkill semantics
+      hp-wmi: add proper hotkey support
+
+Matthew Ranostay (1):
+      ALSA: hda: Distortion fix for dell_m6_core_init
+
+Mauro Carvalho Chehab (2):
+      V4L/DVB (8749): Fix error code, when camera is not turned on by sonypi
+      V4L/DVB (8751): vivi: Fix some issues at vivi register routine
+
+Max Krasnyansky (2):
+      sched, cpuset: rework sched domains and CPU hotplug handling (v4)
+      sched: arch_reinit_sched_domains() must destroy domains to force rebuild
+
+Michael Krufky (8):
+      V4L/DVB (8555): au8522: add mechanism to configure IF frequency for vsb and qam
+      V4L/DVB (8556): au0828: add support for Hauppauge Woodbury
+      V4L/DVB (8598): au8522: clean up function au8522_set_if
+      V4L/DVB (8599): au8522: remove if frequency settings from vsb/qam modulation tables
+      V4L/DVB (8600): au0828: explicitly set 6 MHz IF frequency in hauppauge_hvr950q_config
+      V4L/DVB (8722): sms1xxx: fix typo in license header
+      V4L/DVB (8839): dib0700: add comment to identify 35th USB id pair
+      V4L/DVB (8840): dib0700: add basic support for Hauppauge Nova-TD-500 (84xxx)
+
+Michael Neuling (1):
+      powerpc: Fix uninitialised variable in VSX alignment code
+
+Michael Schmitz (1):
+      m68k: atari_keyb_init operator precedence fix
+
+Mike Christie (1):
+      ibft: fix target info parsing in ibft module
+
+Milan Broz (2):
+      ACPI: Fix now signed module parameter.
+      ACPI: Fix now signed module parameter.
+
+Ming Ling (1):
+      ACPI: Change package length error to warning
+
+Mohamed Abbas (2):
+      iwlwifi: fix apm_stop (wrong bit polarity for FLAG_INIT_DONE)
+      iwlwifi: remove false rxon if rx chain changes
+
+Nadia Derbey (1):
+      ipc: document the new auto_msgmni proc file
+
+Neil Horman (1):
+      ipv6: Fix OOPS in ip6_dst_lookup_tail().
+
+NeilBrown (2):
+      Remove invalidate_partition call from do_md_stop.
+      Fix problem with waiting while holding rcu read lock in md/bitmap.c
+
+Oleg Nesterov (3):
+      softlockup: minor cleanup, don't check task->state twice
+      pid_ns: zap_pid_ns_processes: fix the ->child_reaper changing
+      pid_ns: (BUG 11391) change ->child_reaper when init->group_leader exits
+
+Patrick McHardy (1):
+      netfilter: nf_conntrack_irc: make sure string is terminated before calling simple_strtoul
+
+Paul E. McKenney (1):
+      sparc64: Prevent sparc64 from invoking irq handlers on offline CPUs
+
+Paul Mackerras (1):
+      powerpc: Only make kernel text pages of linear mapping executable
+
+Paul Mundt (1):
+      sh64: resume_kernel fix for kernel oops built with CONFIG_BKL_PREEMPT=y.
+
+Peter Oberparleiter (1):
+      [S390] cio: allow offline processing for disconnected devices
+
+Peter Zijlstra (1):
+      sched_clock: fix NOHZ interaction
+
+Prarit Bhargava (1):
+      x86: fix memmap=exactmap boot argument
+
+Rafael J. Wysocki (2):
+      rtc-cmos: wake again from S5
+      forcedeth: fix kexec regression
+
+Randy Dunlap (1):
+      kernel/resource.c: fix new kernel-doc warning
+
+Rene Herman (2):
+      V4L/DVB (8727): V4L1: make PMS not autoprobe when builtin.
+      V4L/DVB (8728): 1-make-pms-not-autoprobe-when-builtin update
+
+Roland McGrath (1):
+      tracehook: comment pasto fixes
+
+Ron Rindjunsky (2):
+      iwlwifi: fix hidden ssid discovery in passive channels
+      iwlwifi: fix station mimo power save values
+
+Russ Anderson (1):
+      sysfs: document files in /sys/firmware/sgi_uv/
+
+Russ Dill (2):
+      acer-wmi: remove debugfs entries upon unloading
+      acer-wmi: remove debugfs entries upon unloading
+
+Russell King (3):
+      [ARM] omap: fix gpio.c build error
+      [ARM] omap: fix build error in ohci-omap.c
+      [ARM] omap: fix virtual vs physical address space confusions
+
+Senthil Balasubramanian (2):
+      ath9k: Incorrect key used when group and pairwise ciphers are different.
+      ath9: Fix ath_rx_flush_tid() for IRQs disabled kernel warning message.
+
+Seth Heasley (1):
+      ahci: RAID mode SATA patch for Intel Ibex Peak DeviceIDs
+
+Simon Arlott (1):
+      V4L/DVB (8726): link tuner before saa7134
+
+Stanislaw Gruszka (1):
+      atmel_lcdfb: fix oops in rmmod when framebuffer fails to register
+
+Stephen Hemminger (1):
+      bridge: don't allow setting hello time to zero
+
+Stephen Rothwell (2):
+      fix typo in arch/parisc/hpux/fs.c
+      powerpc: Make sure _etext is after all kernel text
+
+Steve French (3):
+      [CIFS] Fix plaintext authentication
+      [CIFS] update cifs change log
+      [CIFS] Turn off Unicode during session establishment for plaintext authentication
+
+Steven Toth (3):
+      V4L/DVB (8803): s5h1409: Enable QAM_AUTO mode
+      V4L/DVB (8804): s5h1411: Enable QAM_AUTO mode
+      V4L/DVB (8805): Steven Toth email address change
+
+Takashi Iwai (4):
+      Revert "ALSA: hda - Added model selection for iMac 24""
+      ALSA: hda - Fix ALC663 auto-probe
+      ALSA: hda - Add mic-boost controls to ALC662/663 auto configuration
+      Fix CONFIG_AC97_BUS dependency
+
+Tejun Heo (5):
+      block: restore original behavior of /proc/partition when there's no partition
+      mmap: fix petty bug in anonymous shared mmap offset handling
+      ahci: disable PMP for marvell ahcis
+      sata_nv: disable hardreset for generic
+      libata-sff: kill spurious WARN_ON() in ata_hsm_move()
+
+Thierry MERLE (2):
+      V4L/DVB (8876): budget: udelay changed to mdelay
+      V4L/DVB (8877): b2c2 and bt8xx: udelay to mdelay
+
+Thomas Bogendoerfer (3):
+      [MIPS] Fix data bus error recovery
+      [MIPS] Fix WARNING: at kernel/smp.c:290
+      [MIPS] IP22: Fix detection of second HPC3 on Challenge S
+
+Thomas Gleixner (10):
+      [x86] Fix TSC calibration issues
+      clockevents: prevent endless loop in periodic broadcast handler
+      clockevents: enforce reprogram in oneshot setup
+      clockevents: prevent multiple init/shutdown
+      clockevents: prevent endless loop lockup
+      HPET: make minimum reprogramming delta useful
+      clockevents: broadcast fixup possible waiters
+      x86: HPET fix moronic 32/64bit thinko
+      x86: HPET: read back compare register before reading counter
+      clockevents: remove WARN_ON which was used to gather information
+
+Tom Tucker (1):
+      svcrdma: Fix race between svc_rdma_recvfrom thread and the dto_tasklet
+
+Tomas Winkler (4):
+      iwlwifi: workaround interrupt handling no some platforms
+      iwlwifi: fix 64bit platform firmware loading
+      iwlwifi: fix rx_chain computation
+      iwlwifi: fix Tx cmd memory allocation failure handling
+
+Tony Breeds (1):
+      powerpc: Work around gcc's -fno-omit-frame-pointer bug
+
+Uwe Kleine-König (1):
+      Fix format of MAINTAINERS
+
+Vegard Nossum (1):
+      debugobjects: fix lockdep warning
+
+Venkatesh Pallipadi (1):
+      clockevents: prevent clockevent event_handler ending up handler_noop
+
+Will Newton (1):
+      8250: improve workaround for UARTs that don't re-assert THRE correctly
+
+Yang Hongyang (1):
+      ipv6: When we droped a packet, we should return NET_RX_DROP instead of 0
+
+Yinghai Lu (1):
+      x86: move mtrr cpu cap setting early in early_init_xxxx
+
+Yoshihiro Shimoda (1):
+      sh: fix semtimedop syscall
+
+Yuri Tikhonov (1):
+      async_tx: fix the bug in async_tx_run_dependencies
+
+Zev Weiss (1):
+      [MTD] mtdchar.c: Fix regression in MEMGETREGIONINFO ioctl()
+
+Zhao Yakui (1):
+      ACPI: Avoid bogus timeout about SMbus check
 
