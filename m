@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYIJV3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYIJVbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYIJV3P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYIJV27
+	id S1755503AbYIJVbw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYIJVbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:28:59 -0400
-Received: from 1wt.eu ([62.212.114.60]:3777 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbYIJV26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:28:58 -0400
-Date: Wed, 10 Sep 2008 23:28:40 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Frans Pop <elendil@planet.nl>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Time travel experiment?
-Message-ID: <20080910212840.GA24654@1wt.eu>
-References: <200809101658.06935.elendil@planet.nl> <20080910152917.634a03fc@the-village.bc.nu> <200809101755.19927.elendil@planet.nl> <200809101825.29276.elendil@planet.nl>
+	Wed, 10 Sep 2008 17:31:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57479 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751232AbYIJVbo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 17:31:44 -0400
+Date: Wed, 10 Sep 2008 14:31:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adam Tkac <vonsch@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.27-rc5] Allow set RLIMIT_NOFILE to RLIM_INFINITY
+Message-Id: <20080910143141.a3bc8258.akpm@linux-foundation.org>
+In-Reply-To: <20080909071406.GA3814@traged.atkac.englab.brq.redhat.com>
+References: <20080909071406.GA3814@traged.atkac.englab.brq.redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809101825.29276.elendil@planet.nl>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 06:25:28PM +0200, Frans Pop wrote:
-> On Wednesday 10 September 2008, Frans Pop wrote:
-> > > > $ date
-> > > > Wed Jul  3 23:09:23 CEST 2024
-> > >
-> > > Is this repeatable ?
-> >
-> > This wasn't the first suspend I've done today and I'd not seen it
-> > before. I'll follow up if it does repeat, but I thought it was strange
-> > and potentially important enough to at least report this occurrence. It
-> > might ring a bell with someone.
-> 
-> Oops. Yes, it is repeatable. Just had the same occur again.
-> Not sure if I can trigger it reliably though or if it will still happen
-> after a reboot.
-> 
-> The jump occurs at the same point and to almost the same time/date:
-> Sep 10 18:15:30 aragorn kernel: PM: Adding info for No Bus:vcs63
-> Sep 10 18:15:30 aragorn kernel: PM: Adding info for No Bus:vcsa63
-> Sep 10 18:15:30 aragorn kernel: wlan0: authenticate with AP 00:14:c1:38:e5:15
-> Sep 10 18:15:30 aragorn kernel: wlan0: authenticated
-> Sep 10 18:15:30 aragorn kernel: wlan0: associate with AP 00:14:c1:38:e5:15
-> Sep 10 18:15:30 aragorn kernel: wlan0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-> Sep 10 18:15:30 aragorn kernel: wlan0: associated
-> Sep 10 18:15:30 aragorn kernel: PM: Removing info for No Bus:vcs63
-> Sep 10 18:15:30 aragorn kernel: PM: Removing info for No Bus:vcsa63
-> Jul  3 23:09:01 aragorn kernel: wlan0: disassociating by local choice (reason=3)
-> Jul  3 23:09:03 aragorn kernel: wlan0: associate with AP 00:14:c1:38:e5:15
-> Jul  3 23:09:03 aragorn kernel: wlan0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-> 
-> One other thing with this last one. I had the system on AC this time,
-> which means the screensaver was active. It was running at a crazy speed
-> (much too fast). If I start the screensaver again now it runs at normal
-> speed.
+On Tue, 9 Sep 2008 09:14:07 +0200
+Adam Tkac <vonsch@gmail.com> wrote:
 
-Note that the time jump is 500 million seconds in the future (498977611
-to be precise). I don't know if it is possible that some value running
-one unit has mistakenly been used in place of another one (eg: internal
-clock ticks instead of jiffies, etc...).
+> when process wants set limit of open files to RLIM_INFINITY it gets
+> EPERM even if it has CAP_SYS_RESOURCE capability. Attached patch
+> should fix the problem. Please add me to CC of your responses because
+> I'm not member of list.
+> 
+> Regards, Adam
+> 
+> -- 
+> Adam Tkac
+> 
+> 
+> [linux26-openfiles.patch  text/plain (634B)]
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -1458,8 +1458,14 @@ asmlinkage long sys_setrlimit(unsigned i
+>  	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
+>  	    !capable(CAP_SYS_RESOURCE))
+>  		return -EPERM;
+> -	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
+> -		return -EPERM;
+> +	if (resource == RLIMIT_NOFILE) {
+> +		if (new_rlim.rlim_max == RLIM_INFINITY)
+> +			new_rlim.rlim_max = sysctl_nr_open;
+> +		if (new_rlim.rlim_cur == RLIM_INFINITY)
+> +			new_rlim.rlim_cur = sysctl_nr_open;
+> +		if (new_rlim.rlim_max > sysctl_nr_open)
+> +			return -EPERM;
+> +	}
 
-Willy
+The kernel has had this behaviour for a long time.  2.6.13 had:
 
+	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
+	    !capable(CAP_SYS_RESOURCE))
+		return -EPERM;
+	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > NR_OPEN)
+			return -EPERM;
+
+I don't immediately see a problem with your change, but what makes you
+believe that it is needed?  Is there some standard which we're
+violating?  Is there some operational situation in which the current
+behaviour is causing a problem?
+
+Thanks.
