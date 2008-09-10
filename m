@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbYIJIEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563AbYIJIKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbYIJIEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 04:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYIJIEj
+	id S1752563AbYIJIKj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 04:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYIJIKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 04:04:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53320 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbYIJIEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 04:04:38 -0400
-Date: Wed, 10 Sep 2008 10:04:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Yang, Sheng" <sheng.yang@intel.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/2] x86: Extended cpuinfo to show virtualization HW
-	features
-Message-ID: <20080910080421.GC15255@elte.hu>
-References: <12209432941440-git-send-email-sheng.yang@intel.com> <1220943294312-git-send-email-sheng.yang@intel.com> <86802c440809090052t2e626ce8h4fda865b8cbce00b@mail.gmail.com> <200809091605.42121.sheng.yang@intel.com> <86802c440809091045h2d4f1776g94355e1b1dd1b29e@mail.gmail.com>
+	Wed, 10 Sep 2008 04:10:25 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:47361 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbYIJIKX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 04:10:23 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: warn_on regression after 2.6.27-rc5
+Date: Wed, 10 Sep 2008 10:08:40 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440809091045h2d4f1776g94355e1b1dd1b29e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200809101008.40973.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Thomas,
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+this commit 
 
-> On Tue, Sep 9, 2008 at 1:05 AM, Yang, Sheng <sheng.yang@intel.com> wrote:
-> >
-> > Yeah, I've considered that, but seems duplicate for both files? The feature
-> > detection code is the same. Any way to merge them?
-> 
-> just merged intel_64.c into intel.c...
+commit 1fb9b7d29d8e85ba3196eaa7ab871bf76fc98d36
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Wed Sep 3 21:37:14 2008 +0000
 
-it's all in tip/master:
+    clockevents: prevent endless loop lockup
 
-  http://people.redhat.com/mingo/tip.git/README
 
-would it be possible to get a patchset ontop of that?
+causes the following warning on my Thinkpad T61p:
 
-	Ingo
+CE: __tick_program_event of hpet is stuck 7416220944 7416221ccc
+CE: increasing min_delta_ns 5000 to 10000 nsec
+------------[ cut here ]------------
+WARNING: at kernel/time/tick-oneshot.c:52 tick_dev_program_event+0xd6/0x120()
+Modules linked in: kvm_intel kvm fan iptable_nat nf_nat iptable_mangle 
+ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables 
+x_tables ctr blowfish rmd160 sha256_generic crypto_null nls_utf8 ntfs fuse 
+acpi_cpufreq usbhid pcmcia snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm 
+snd_timer snd_page_alloc snd_hwdep snd yenta_socket iwlagn rsrc_nonstatic 
+pcmcia_core soundcore ehci_hcd uhci_hcd e1000e thermal evdev video battery 
+usbcore ac bay processor button
+Pid: 0, comm: swapper Not tainted 2.6.27-rc5-00319-g7686ad5 #15
+ [<c012e32f>] warn_on_slowpath+0x5f/0xa0
+ [<c026f950>] vt_console_print+0x0/0x330
+ [<c03f0554>] _spin_lock_irqsave+0x34/0x50
+ [<c012eb71>] release_console_sem+0x191/0x1c0
+ [<c012f0ce>] vprintk+0x32e/0x3a0
+ [<c01487d1>] getnstimeofday+0x41/0xf0
+ [<c0114d88>] lapic_next_event+0x18/0x30
+ [<c01487d1>] getnstimeofday+0x41/0xf0
+ [<c014bd73>] clockevents_program_event+0xa3/0x160
+ [<c014cfe6>] tick_dev_program_event+0xd6/0x120
+ [<c014c81d>] tick_broadcast_oneshot_control+0x10d/0x120
+ [<c014c3a5>] tick_notify+0x295/0x3c0
+ [<c0146df6>] notifier_call_chain+0x36/0x70
+ [<c0146ee7>] raw_notifier_call_chain+0x17/0x20
+ [<c014bbbe>] clockevents_notify+0x1e/0x70
+ [<f884f087>] acpi_idle_enter_bm+0x15e/0x2c2 [processor]
+ [<c031fed3>] cpuidle_idle_call+0x73/0xd0
+ [<c010249d>] cpu_idle+0x6d/0x140
+ =======================
+---[ end trace c7d6f2472868c172 ]---
+
+While I agree with doubling the time, I am not sure if a WARN_ON is 
+appropriate. After all the code is able to fix the timer setting.
+
+Christian
