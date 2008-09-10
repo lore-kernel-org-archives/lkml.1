@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbYIJGxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752248AbYIJGzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752898AbYIJGxy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 02:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYIJGxq
+	id S1752248AbYIJGzM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 02:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYIJGy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 02:53:46 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:7779 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbYIJGxp (ORCPT
+	Wed, 10 Sep 2008 02:54:59 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:45378 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbYIJGy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 02:53:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=BB1JrVN8fmWv70xm0jstz6uixdCNZchs+Cw9lCHELr8X3HTUpeU1hWoaIYg4wQtE79
-         WqCORTU3fBElcOJPO8GcfOPQCudS70zVDidUqTu2hxSiuSks6bpYgr1jj3rrNotoxwHk
-         UNlZJYwqQSgPMcdkpgiB5VKUIX4uGDDH7u5O8=
-Message-ID: <2f11576a0809092353y1e25efeatebf1287d1b818560@mail.gmail.com>
-Date: Wed, 10 Sep 2008 15:53:44 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
-Cc: "Hidehiro Kawai" <hidehiro.kawai.ez@hitachi.com>,
-       "Mel Gorman" <mel@csn.ul.ie>, "Hugh Dickins" <hugh@veritas.com>,
-       "William Irwin" <wli@holomorphy.com>, "Adam Litke" <agl@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       sugita <yumiko.sugita.yf@hitachi.com>,
-       "Satoshi OSHIMA" <satoshi.oshima.fk@hitachi.com>
-In-Reply-To: <20080910060431.188081541FE@magilla.localdomain>
+	Wed, 10 Sep 2008 02:54:58 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <48C6F913.1010509@goop.org>
+	<86802c440809091554y349366fdu8e4ca59797ab4205@mail.gmail.com>
+	<48C70ADC.8060004@goop.org>
+	<86802c440809091726y4db8f85eg2d478b482862c5f9@mail.gmail.com>
+	<48C719C0.6060201@goop.org>
+Date: Tue, 09 Sep 2008 23:45:23 -0700
+In-Reply-To: <48C719C0.6060201@goop.org> (Jeremy Fitzhardinge's message of
+	"Tue, 09 Sep 2008 17:50:08 -0700")
+Message-ID: <m1zlmglcsc.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20080902134850.GA26372@csn.ul.ie> <48C48520.9070206@hitachi.com>
-	 <20080910060431.188081541FE@magilla.localdomain>
-X-Google-Sender-Auth: 51ae5dbbe35d3463
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: jeremy@goop.org, linux-kernel@vger.kernel.org, mingo@elte.hu, yhlu.kernel@gmail.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Jeremy Fitzhardinge <jeremy@goop.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0358]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: TARGET_CPUS in assign_irq_vector
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It was certainly not meant to be excluded from any documentation.
->
-> To make the description clear, MMF_DUMP_ELF_HEADERS applies when a
-> file-backed private mapping would otherwise be elided (based on the other
-> bits and whether it's been modified).  If the vma maps offset 0 of the
-> file, and that page is readable and starts with ELFMAG, then just that
-> first page will be dumped.  (So p_filesz will be PAGE_SIZE rather than 0
-> for an elided mapping, or p_memsz for a mapping dumped whole.)
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Could you please make the patch.
-Then, I'll ack it with presure.
+> 3) give up because the idea is fundamentally ill-conceived, or 4)
+> something else?
 
-Thanks.
+Yes.
+
+When working with event channels you should not have any
+truck with vectors and you should not call the architecture
+specific do_IRQ().
+
+Eric
+
