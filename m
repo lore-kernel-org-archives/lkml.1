@@ -1,86 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbYIJNhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbYIJNiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752446AbYIJNhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 09:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYIJNhW
+	id S1752832AbYIJNiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 09:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbYIJNiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 09:37:22 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:43892 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbYIJNhU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 09:37:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=EegT4vfkDvv588bnd3jx2/foMT1nAwifb98xFhPm9lmBJDXD2Q7g+qI+DvV8DLJt2/
-         +YuFXq5JaSQ4u5ItDby0lBfPcjYIa2lCLSrk3QU8NQ/Ag8x6L20ICSkGylbztyiOKFSs
-         DZE12D40k2d+VfHzF+9Argf/42vG9ble1Rl/A=
-Message-ID: <9e4733910809100637t55cdf1c0r19372bb74d3be57d@mail.gmail.com>
-Date: Wed, 10 Sep 2008 09:37:19 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: [PATCH 06/18] lirc driver for the ATI USB RF remote receiver
-Cc: "Jarod Wilson" <jwilson@redhat.com>, "Ville Syrj?l?" <syrjala@sci.fi>,
-       "Janne Grunau" <j@jannau.net>, linux-kernel@vger.kernel.org,
-       "Christoph Bartelmus" <lirc@bartelmus.de>,
-       lirc-list@lists.sourceforge.net
-In-Reply-To: <20080910131432.GA2161@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 09:38:07 -0400
+Received: from sh.osrg.net ([192.16.179.4]:37884 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751102AbYIJNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 09:38:05 -0400
+Date: Wed, 10 Sep 2008 22:37:45 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
+ IOMMU's alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080910131032.GH6329@amd.com>
+References: <20080910124822.GG6329@amd.com>
+	<20080910220323D.fujita.tomonori@lab.ntt.co.jp>
+	<20080910131032.GH6329@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com>
-	 <1220933164-10160-7-git-send-email-jwilson@redhat.com>
-	 <20080910095832.GA22422@sci.fi>
-	 <200809100905.58304.jwilson@redhat.com>
-	 <20080910131432.GA2161@infradead.org>
+Message-Id: <20080910223735O.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/10/08, Christoph Hellwig <hch@infradead.org> wrote:
-> On Wed, Sep 10, 2008 at 09:05:58AM -0400, Jarod Wilson wrote:
->  > True, though I think some users still prefer using them with the lirc drivers
->  > for assorted reasons. Configuring something like mythtv to work with the
->  > ati_remote{,2} driver appears to be a bit more complex (or at least non-
->  > standard vs. several other popular remotes) and not as functional vs.
->  > configuring mythtv w/lirc_atiusb.
->
->
-> Bad idea to have two drivers for the same piece of hardware.  And this
->  gets straight back into the why should lirc be different from the input
->  layer point raised earlies.  I think we really shouldn't keep lirc as
->  a separate subsystem, but make sure all the drivers are written to the
->  input layer.  To make the migration easier for exiting users we could
->  add a /dev/lirc driver ontop of the input layer, similar to how the ps2
->  mouse and joystick drivers sit ontop of the input core.
+On Wed, 10 Sep 2008 15:10:32 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-There have been concerns on the lirc list that integrating with the
-input core would mean that the kernel has to translate from the lirc
-timing data to key strokes. Keyboards do their translation in user
-space, lirc can do the same, right? User space app receives lirc event
-and then calls a translation library function.
+> On Wed, Sep 10, 2008 at 10:03:32PM +0900, FUJITA Tomonori wrote:
+> 
+> Ok, I see.
+> 
+> > Hmm, I'm not sure what code you look at. Here's dma_alloc_coherent()
+> > in tip/x86/iommu:
+> > 
+> > dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
+> > 		gfp_t gfp)
+> > {
+> > 	struct dma_mapping_ops *ops = get_dma_ops(dev);
+> > 	void *memory;
+> > 
+> > 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
+> > 
+> > Surely we here clear the flag but...
+> > 
+> > 	if (dma_alloc_from_coherent(dev, size, dma_handle, &memory))
+> > 		return memory;
+> > 
+> > 	if (!dev) {
+> > 		dev = &x86_dma_fallback_dev;
+> > 		gfp |= GFP_DMA;
+> > 	}
+> > 
+> > we play with it here though (not happens with pci devices),
+> > 
+> > 	if (!dev->dma_mask)
+> > 		return NULL;
+> > 
+> > 	if (!ops->alloc_coherent)
+> > 		return NULL;
+> > 
+> > Then dma_alloc_coherent_gfp_flags() sets it again according to
+> > device->coherent_dma_mask and gfp before ops->alloc_coherent hook:
+> > 
+> > 	return ops->alloc_coherent(dev, size, dma_handle,
+> > 				   dma_alloc_coherent_gfp_flags(dev, gfp));
+> > 
+> > 
+> > This code can set up the exact same gfp flag for swiotbl and nommu as
+> > before.
+> 
+> So its possible that alloc_coherent is called with region specifiers in
+> the gfp flags.
 
-A second issue is that some IR drivers are completely in user space.
-Is there a mechanism for these user space drivers to send events down
-into the input layer? These events would then get queued with the
-other kernel generated events and be delivered to consuming apps in
-order.
+Yes, that's how we solved the ZONE_DMA exhaustion problem in
+swiotlb. And we don't duplicate the gfp hack in both swiotlb and
+pci-nommu.
 
 
->
->
->  --
->  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->  Please read the FAQ at  http://www.tux.org/lkml/
->
+> Can't we simply make the gfp hacks depend on
+> dma_ops->is_phys and avoid further gfp hacks in the hardware iommu
+> implementations?
 
+I thought about it but adding a new dma_ops->we_don't_want_gfp_flag
+hook doesn't make the code simpler much. Currently, we have the gfp
+setting hack in just one place. It's not bad. Adding such new hook
+means adding more lines than we can remove.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Yeah, I was against your patch to adding the gfp setting hack to
+swiotlb but it's because gfp is kinda architecture specific stuff and
+swiotlb should not. It's the bad design IMO. It's ok for me that
+architecture specific IOMMUs can do the architecture specific stuff
+(and it's about just clearing the gfp flag).
+
+Intel IOMMU already clears up the flag so I'll send a patch to do that
+for Calgary shortly then I think that we can finish x86 alloc_coherent
+rewrite.
