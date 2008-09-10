@@ -1,68 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbYIJSRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbYIJSUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbYIJSRT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 14:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYIJSRG
+	id S1751258AbYIJSUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 14:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYIJSTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 14:17:06 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:39338 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbYIJSRF (ORCPT
+	Wed, 10 Sep 2008 14:19:53 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:59635 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbYIJSTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 14:17:05 -0400
-Subject: Re: [PATCH 1/2 v6] cfg80211: Add new wireless regulatory
-	infrastructure
-From: Marcel Holtmann <holtmann@linux.intel.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: linville@tuxdriver.com, johannes@sipsolutions.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1221027589-19203-2-git-send-email-lrodriguez@atheros.com>
-References: <1221027589-19203-1-git-send-email-lrodriguez@atheros.com>
-	 <1221027589-19203-2-git-send-email-lrodriguez@atheros.com>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 20:17:30 +0200
-Message-Id: <1221070650.13336.20.camel@californication>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Sep 2008 14:19:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HPo8O/MztwLOSN3ylj/o2nG07Pu7EAv6zKBhuDwK3VGN6SMRVLurQKh6nqbrWKzCHB
+         AG6sd4ZHyHjcD52+IT6IsZsGKMZsD+Stds/MIufBYm8dQaN3yyq9QBAdauWRj68Dif15
+         XDZKCl69yZpYD05R7WYAPBGQZG4W6CNutG+/E=
+Date: Wed, 10 Sep 2008 22:19:50 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
+Message-ID: <20080910181950.GC8067@lenovo>
+References: <20080909184615.GA7303@lenovo> <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com> <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com> <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com> <20080910093105.GA5259@elte.hu> <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luis,
+[Yinghai Lu - Wed, Sep 10, 2008 at 10:30:39AM -0700]
+| On Wed, Sep 10, 2008 at 2:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
+| >
+| > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+| >
+| >> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| >> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+| >> > ...
+| >> >>
+| >> >> hope we can keep using MACRO..
+| >> >>
+| >> >> YH
+| >> >>
+| >> >
+| >> > Btw, Yinghai, what does it mean? To not touch this macro at all?
+| >> > Or you mean about implementation issue (ie the design itself)?
+| >>
+| >> do not touch this macro... and may revisit after 2.6.28
+| >
+| > anything you are particularly worried about? Regressions we should be
+| > able to find pretty quickly, in a central macro like that - and the
+| > macro is quite ugly.
+| >
+| 
+| ok, let remove unneeded "if", and use function pointer...
+| 
+| void (*extra_action_t)(struct irq_pin_list *entry);
+| 
+| +static inline void io_apic_modify_irq(unsigned int irq,
+| +                               int mask_and, int mask_or,
+| +                               int mask_and_not, extra_action_t action)
+| +{
+| +       int pin;
+| +       struct irq_cfg *cfg;
+| +       struct irq_pin_list *entry;
+| +       cfg = irq_cfg(irq);
+| +       for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
+| +               unsigned int reg;
+| +               pin = entry->pin;
+| +               reg = io_apic_read(entry->apic, 0x10 + pin * 2);
+| +               reg &= mask_and;
+| +               reg |= mask_or;
+| +               reg &= ~mask_and_not;
+| +               io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
+| +               if (action)
+| +                       action(entry);
+| +       }
+| +}
+| 
+| +void extra_read(struct irq_pin_list *entry)
+| +             {
+| +                       /*
+| +                        * Synchronize the IO-APIC and the CPU by doing
+| +                        * a dummy read from the IO-APIC
+| +                        */
+| +                       struct io_apic __iomem *io_apic;
+| +                       io_apic = io_apic_base(entry->apic);
+| +                       readl(&io_apic->data);
+| +               }
+| 
+| 
+| YH
+| 
 
-> This adds the new wireless regulatory infrastructure. The
-> main motiviation behind this was to centralize regulatory
-> code as each driver was implementing their own regulatory solution,
-> and to replace the initial centralized code we have where:
-> 
-> * only 3 regulatory domains are supported: US, JP and EU
-> * regulatory domains can only be changed through module parameter
-> * all rules were built statically in the kernel
-> 
-> We now have support for regulatory domains for many countries
-> and regulatory domains are now queried through a userspace agent
-> through udev allowing distributions to update regulatory rules
-> without updating the kernel.
-> 
-> Each driver can regulatory_hint() a regulatory domain
-> based on either their EEPROM mapped regulatory domain value to a
-> respective ISO/IEC 3166-1 country code or pass an internally built
-> regulatory domain. We also add support to let the user set the
-> regulatory domain through userspace in case of faulty EEPROMs to
-> further help compliance.
+Yinghai, Ingo, what about this one?
 
-thanks for the write-up and examples. I like it a lot and gives driver
-maintainers a nice understanding what to do.
+		- Cyrill -
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: x86: io-apic - get rid of __DO_ACTION macro v3
 
-While reading through it, I came to think about regulatory_hint(). So is
-there a use case where would give it the alpha2 code and the domain
-itself at the same time? If not, then it would make more sense to split
-this into two functions. Maybe something regulatory_alpha2_hint() and
-regulatory_domain_hint(). Just a thought.
+Replace __DO_ACTION macro with io_apic_modify_irq function.
+This allow us to 'grep' definitions being hided by
+__DO_ACTION macro:
 
-Regards
+	__unmask_IO_APIC_irq
+	__mask_IO_APIC_irq
+	__mask_and_edge_IO_APIC_irq
+	__unmask_and_level_IO_APIC_irq
 
-Marcel
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+---
 
-
+Index: linux-2.6.git/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-09 22:27:57.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-10 22:17:25.000000000 +0400
+@@ -643,65 +643,66 @@ static void __init replace_pin_at_irq(un
+ 		add_pin_to_irq(irq, newapic, newpin);
+ }
+ 
+-#define __DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)		\
+-									\
+-{									\
+-	int pin;							\
+-	struct irq_cfg *cfg;						\
+-	struct irq_pin_list *entry;					\
+-									\
+-	cfg = irq_cfg(irq);						\
+-	entry = cfg->irq_2_pin;						\
+-	for (;;) {							\
+-		unsigned int reg;					\
+-		if (!entry)						\
+-			break;						\
+-		pin = entry->pin;					\
+-		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
+-		reg ACTION_DISABLE;					\
+-		reg ACTION_ENABLE;					\
+-		io_apic_modify(entry->apic, 0x10 + R + pin*2, reg);	\
+-		FINAL;							\
+-		if (!entry->next)					\
+-			break;						\
+-		entry = entry->next;					\
+-	}								\
+-}
+-
+-#define DO_ACTION(name,R, ACTION_ENABLE, ACTION_DISABLE, FINAL)		\
+-									\
+-	static void name##_IO_APIC_irq (unsigned int irq)		\
+-	__DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)
++static inline void io_apic_modify_irq(unsigned int irq,
++				int mask_and, int mask_or,
++				void (*final)(struct irq_pin_list *entry))
++{
++	int pin;
++	struct irq_cfg *cfg;
++	struct irq_pin_list *entry;
+ 
+-/* mask = 0 */
+-DO_ACTION(__unmask,	0, |= 0, &= ~IO_APIC_REDIR_MASKED, )
++	cfg = irq_cfg(irq);
++	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
++		unsigned int reg;
++		pin = entry->pin;
++		reg = io_apic_read(entry->apic, 0x10 + pin * 2);
++		reg &= mask_and;
++		reg |= mask_or;
++		io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
++		if (final)
++			final(entry);
++	}
++}
++
++static void __unmask_IO_APIC_irq(unsigned int irq)
++{
++	io_apic_modify_irq(irq, ~IO_APIC_REDIR_MASKED, 0, NULL);
++}
+ 
+ #ifdef CONFIG_X86_64
+-/*
+- * Synchronize the IO-APIC and the CPU by doing
+- * a dummy read from the IO-APIC
+- */
+-static inline void io_apic_sync(unsigned int apic)
++void io_apic_sync(struct irq_pin_list *entry)
+ {
+-	struct io_apic __iomem *io_apic = io_apic_base(apic);
++	/*
++	 * Synchronize the IO-APIC and the CPU by doing
++	 * a dummy read from the IO-APIC
++	 */
++	struct io_apic __iomem *io_apic;
++	io_apic = io_apic_base(entry->apic);
+ 	readl(&io_apic->data);
+ }
+ 
+-/* mask = 1 */
+-DO_ACTION(__mask,	0, |= IO_APIC_REDIR_MASKED, &= ~0, io_apic_sync(entry->apic))
+-
+-#else
+-
+-/* mask = 1 */
+-DO_ACTION(__mask,	0, |= IO_APIC_REDIR_MASKED, &= ~0, )
+-
+-/* mask = 1, trigger = 0 */
+-DO_ACTION(__mask_and_edge, 0, |= IO_APIC_REDIR_MASKED, &= ~IO_APIC_REDIR_LEVEL_TRIGGER, )
++static void __mask_IO_APIC_irq(unsigned int irq)
++{
++	io_apic_modify_irq(irq, ~0, IO_APIC_REDIR_MASKED, &io_apic_sync);
++}
++#else /* CONFIG_X86_32 */
++static void __mask_IO_APIC_irq(unsigned int irq)
++{
++	io_apic_modify_irq(irq, ~0, IO_APIC_REDIR_MASKED, NULL);
++}
+ 
+-/* mask = 0, trigger = 1 */
+-DO_ACTION(__unmask_and_level, 0, |= IO_APIC_REDIR_LEVEL_TRIGGER, &= ~IO_APIC_REDIR_MASKED, )
++static void __mask_and_edge_IO_APIC_irq(unsigned int irq)
++{
++	io_apic_modify_irq(irq, ~IO_APIC_REDIR_LEVEL_TRIGGER,
++			IO_APIC_REDIR_MASKED, NULL);
++}
+ 
+-#endif
++static void __unmask_and_level_IO_APIC_irq(unsigned int irq)
++{
++	io_apic_modify_irq(irq, ~IO_APIC_REDIR_MASKED,
++			IO_APIC_REDIR_LEVEL_TRIGGER, NULL);
++}
++#endif /* CONFIG_X86_32 */
+ 
+ static void mask_IO_APIC_irq (unsigned int irq)
+ {
