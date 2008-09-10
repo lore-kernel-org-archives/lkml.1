@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYIJVgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYIJVjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755885AbYIJVgi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYIJVg3
+	id S1755573AbYIJVjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYIJVjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:36:29 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:33394 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752787AbYIJVg2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:36:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qgvbciIy4rntWkxBdF84X8f025liTzcPxiVpjPWQiN/U8nSZKJ/BUoWUGSIIqMaQr+3LdieN3UwjT2XrWBLjn4L235eVW71k9tIwSoGC8SJsY0c+EVUIDboSWocaK7lQd8w+QtAYKhZJrB+5T8ripv+d+7N2599SjxLwcmZpFfk=  ;
-X-YMail-OSG: 1c4YzfcVM1kwnRJqwKl13q0C.HXi3PwbReocY.92r8uTnK2jg5Yw2GTcDwh6fkBMeBNgezUYT.PJQyzSy.iB0Vb5Y8UJqkoRW_lr0rUYUQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-Date: Wed, 10 Sep 2008 14:36:25 -0700
-User-Agent: KMail/1.9.9
-Cc: rdunlap@xenotime.net, akpm@linux-foundation.org,
-       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
-       alessandro.zummo@towertech.it, tglx@linutronix.de
-References: <20080910140417.bc35c199.akpm@linux-foundation.org> <200809101419.05499.david-b@pacbell.net> <20080910.142047.265458325.davem@davemloft.net>
-In-Reply-To: <20080910.142047.265458325.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200809101436.26162.david-b@pacbell.net>
+	Wed, 10 Sep 2008 17:39:03 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:58993 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752406AbYIJVjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 17:39:01 -0400
+Subject: Re: [RFC v4][PATCH 4/9] Memory management (dump)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+In-Reply-To: <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+	 <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 14:38:58 -0700
+Message-Id: <1221082738.6781.59.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 September 2008, David Miller wrote:
-> > 
-> > I don't think anyone in particular has been _pushing_ to resolve these
-> > NTP related issues ... lack of urgency.  Maybe it's fair to think of
-> > that as a process issue.  If DaveM wants SPARC64 to completely remove
-> > its legacy RTC support for some release (which?) then:  (a) great! and
-> > (b) that should be sufficient urgency.
-> 
-> Well, firstly my RTC sparc work is 2.6.28 targetted.
+On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
+> array chain
+> + */
+> +static int cr_vma_scan_pages(struct cr_ctx *ctx, struct vm_area_struct *vma)
+> +{
+> +       unsigned long addr = vma->vm_start;
+> +       unsigned long end = vma->vm_end;
+> +       struct cr_pgarr *pgarr;
+> +       int nr, total = 0;
+> +
+> +       while (addr < end) {
+> +               pgarr = cr_pgarr_prep(ctx);
+> +               if (!pgarr)
+> +                       return -ENOMEM;
+> +               nr = cr_vma_fill_pgarr(ctx, pgarr, vma, &addr);
+> +               if (nr < 0)
+> +                       return nr;
+> +               pgarr->nr_free -= nr;
+> +               pgarr->nr_used += nr;
+> +               total += nr;
+> +       }
+> +
+> +       cr_debug("total %d\n", total);
+> +       return total;
+> +}
 
-Fine; Andrew and Thomas won't need to worry about this patch
-for now, then.
+This confuses me.  cr_vma_fill_pgarr() if it runs into an error attempts
+to free up the pgarr references from the current pgarr that was just
+filled.  But, that could only be a portion of a large VMA.  If it can't
+free up the entire VMA worth of references (at least), why does it even
+try to free a portion?  Why not just return since the upper levels need
+to clean up the other portions anyway?
 
+Also, is it really necessary to track the total amount filled in here?
+I kinda gums up the code.
 
-> Secondly, that sleeping capability is only really needed for I2C based
-> RTC chips, of which sparc isn't currently making any use of.
+-- Dave
 
-Not quite right.  The RTC calls you make grabs a mutex; *ALL* calls
-into the framework are made in task context.  Even if the underlying
-RTC happens to be the type with registers on the CPU bus, where
-there's no need to sleep when reading values.
-
-Of course, you're very unlikely to sleep while waiting for that
-mutex; or even while holding it, if you stick to Sun hardware.
-Someone running Linux on one of the FPGA-based SPARCs might well
-use an I2C based RTC though.
-
-- Dave
