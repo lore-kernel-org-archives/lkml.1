@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752624AbYIJKx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYIJK7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752624AbYIJKx4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 06:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYIJKxt
+	id S1753176AbYIJK7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 06:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbYIJK65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 06:53:49 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:26420 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYIJKxs (ORCPT
+	Wed, 10 Sep 2008 06:58:57 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34364 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbYIJK64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 06:53:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=uSyaQvX1JxsL8Q7h3E2JRcUjOH16FPSMTd8U6zuAVRXXkv3wFQkX9Jq3f9V9vKP6ul
-         PbX3Pp5ZOzfqMG6rPqZanpl1eIJAW2wOis53Ncpd2gMyAEHtOJWrWRWe0Y3Vm5iDRhQj
-         JgSg61GP0jN/DjMmRy1xu26rNRoNO/S8OKw1E=
-Message-ID: <aa79d98a0809100353t3f995bb3hf658e1bc66eaac7a@mail.gmail.com>
-Date: Wed, 10 Sep 2008 14:53:47 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
-Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080910093105.GA5259@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 06:58:56 -0400
+Date: Wed, 10 Sep 2008 20:03:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       hugh@veritas.com, menage@google.com, xemul@openvz.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct
+ page
+Message-Id: <20080910200304.fd078007.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200809110644.39334.nickpiggin@yahoo.com.au>
+References: <48C66AF8.5070505@linux.vnet.ibm.com>
+	<20080910012048.GA32752@balbir.in.ibm.com>
+	<20080910104940.a7ec9b5a.kamezawa.hiroyu@jp.fujitsu.com>
+	<200809110644.39334.nickpiggin@yahoo.com.au>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080909184615.GA7303@lenovo>
-	 <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
-	 <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com>
-	 <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com>
-	 <20080910093105.GA5259@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 1:31 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
->> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->> > ...
->> >>
->> >> hope we can keep using MACRO..
->> >>
->> >> YH
->> >>
->> >
->> > Btw, Yinghai, what does it mean? To not touch this macro at all?
->> > Or you mean about implementation issue (ie the design itself)?
->>
->> do not touch this macro... and may revisit after 2.6.28
->
-> anything you are particularly worried about? Regressions we should be
-> able to find pretty quickly, in a central macro like that - and the
-> macro is quite ugly.
->
->        Ingo
->
+On Thu, 11 Sep 2008 06:44:37 +1000
+Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-Btw Ingo, don't apply this patch for now - I'll simplify it a bit.
-I just overzealous with masks operation - 'and' and 'or' will
-be more then enough without checking. I think I will do it today evening
-so Yinghai could review it and say if he like it. Anyway the
-patch could be just queued to satisfy any concerns :)
+> On Wednesday 10 September 2008 11:49, KAMEZAWA Hiroyuki wrote:
+> > On Tue, 9 Sep 2008 18:20:48 -0700
+> >
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-09-09
+> > > 21:30:12]: OK, here is approach #2, it works for me and gives me really
+> > > good performance (surpassing even the current memory controller). I am
+> > > seeing almost a 7% increase
+> >
+> > This number is from pre-allcation, maybe.
+> > We really do alloc-at-boot all page_cgroup ? This seems a big change.
+> 
+> It seems really nice to me -- we get the best of both worlds, less overhead
+> for those who don't enable the memory controller, and even better
+> performance for those who do.
+
+No trobles for me for allocating-all-at-boot policy.
+My small concern is
+  - wasting page_cgroup for hugepage area.
+  - memory hotplug
+
+> 
+> Are you expecting many users to want to turn this on and off at runtime?
+> I wouldn't expect so, but I don't know enough about them.
+> 
+There is no runtime switch. only at boot.
+
+Thanks,
+-Kame
+
