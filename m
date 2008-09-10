@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYIJJbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbYIJJfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbYIJJbj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 05:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYIJJbb
+	id S1753634AbYIJJfB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 05:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYIJJex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 05:31:31 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50444 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Sep 2008 05:34:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47397 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbYIJJba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 05:31:30 -0400
-Date: Wed, 10 Sep 2008 11:31:05 +0200
+	id S1751654AbYIJJew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 05:34:52 -0400
+Date: Wed, 10 Sep 2008 11:34:30 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
-Message-ID: <20080910093105.GA5259@elte.hu>
-References: <20080909184615.GA7303@lenovo> <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com> <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com> <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tony.luck@intel.com
+Subject: Re: [PATCH 0/4] add a helper function, is_buffer_dma_capable()
+Message-ID: <20080910093430.GB5259@elte.hu>
+References: <1220976409-8417-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <20080909162705.GC13536@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com>
+In-Reply-To: <20080909162705.GC13536@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,24 +35,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > ...
-> >>
-> >> hope we can keep using MACRO..
-> >>
-> >> YH
-> >>
-> >
-> > Btw, Yinghai, what does it mean? To not touch this macro at all?
-> > Or you mean about implementation issue (ie the design itself)?
+> On Wed, Sep 10, 2008 at 01:06:45AM +0900, FUJITA Tomonori wrote:
+> > This patchset adds a trivial helper function, is_buffer_dma_capable()
+> > and cleans up some IOMMU implementations. This function is to to see
+> > if a memory region is DMA-capable or not with the arguments, the
+> > dma_mask (or coherent_dma_mask) of a device and the address and size
+> > of a memory region. It's useful for IOMMUs that don't do virtual
+> > mappings at all times.
+> > 
+> > The patch for swiotlb is a bug fix (the rest are just
+> > cleanups). Currently, swiotlb doesn't take account of the size of a
+> > memory region to see if if the memory region is DMA-capable.
 > 
-> do not touch this macro... and may revisit after 2.6.28
+> Good idea. This patchset increases the readability of the software
+> dma-api implementations.
+> 
+> Acked-by: Joerg Roedel <joerg.roedel@amd.com>
 
-anything you are particularly worried about? Regressions we should be 
-able to find pretty quickly, in a central macro like that - and the 
-macro is quite ugly.
+applied to tip/x86/iommu:
+
+ 2797982: swiotlb: convert swiotlb to use is_buffer_dma_capable helper function
+ 49fbf4e: x86: convert pci-nommu to use is_buffer_dma_capable helper function
+ ac4ff65: x86: convert gart to use is_buffer_dma_capable helper function
+ 636dc67: add is_buffer_dma_capable helper function
+
+thanks!
 
 	Ingo
