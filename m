@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbYIJP34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYIJPcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753341AbYIJP34 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 11:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYIJP3s
+	id S1754016AbYIJPcb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 11:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbYIJPcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 11:29:48 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:31014 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752019AbYIJP3s (ORCPT
+	Wed, 10 Sep 2008 11:32:22 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:35996 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752305AbYIJPcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 11:29:48 -0400
-X-BigFish: VPS-23(zz1432R98dR1805M936fQ873fnzz10d3izz2f39iz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K6ZKCT-04-HM4-01
-Date: Wed, 10 Sep 2008 17:29:18 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
-Message-ID: <20080910152918.GD24392@amd.com>
-References: <20080910232446O.fujita.tomonori@lab.ntt.co.jp> <20080910233819T.fujita.tomonori@lab.ntt.co.jp> <20080910145249.GB24392@amd.com> <20080911000936R.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 10 Sep 2008 11:32:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lJ/AKNgZLT3Rkkfd0I7DDGdwFRXYEnSe6AAc0tkhr8h8Iav6xJwp33crXMYGP9K4TS
+         XndJaF5seww7oOrSnQzfiX51rXQZxn1xRZ5o9L3v6+0+BZ4fuG7iAa1syp5Zc4kaGWls
+         TsdGJpgclQfBO5MVBMsfkHibqToyrcADV84+8=
+Date: Wed, 10 Sep 2008 11:32:14 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: akpm@osdl.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] input: mousedev: Emulate right and middle buttons
+	for single-button touchpads
+Message-ID: <20080910153213.GA6940@USFSHXP-002051>
+References: <48C0893C.6060901@euromail.se> <20080910125228.GA25221@anvil.corenet.prv> <48C7DF08.4060208@euromail.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080911000936R.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 10 Sep 2008 15:29:18.0315 (UTC) FILETIME=[FD852BB0:01C91359]
+In-Reply-To: <48C7DF08.4060208@euromail.se>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 12:09:43AM +0900, FUJITA Tomonori wrote:
-> On Wed, 10 Sep 2008 16:52:49 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Wed, Sep 10, 2008 at 04:51:52PM +0200, Henrik Rydberg wrote:
+> Greetings Dmitry,
 > 
-> > On Wed, Sep 10, 2008 at 11:39:00PM +0900, FUJITA Tomonori wrote:
-> >  
-> > > btw, in tip/x86/iommu, GART's alloc_coherent always does virtual
-> > > mappings to allocate a size-aligned memory (as DMA-mapping.txt
-> > > defines).
-> > > 
-> > > Because someone strongly insisted, I modified GART's alloc_coherent to
-> > > do so but as I said again and again, it's completely meaningless (only
-> > > POWER IOMMU does it and drivers don't depend on such requirement).
-> > > 
-> > > I guess that it would be better to do virtual mappings only when
-> > > necessary as the current mainline does since GART I/O space is
-> > > precious in some systems. But I don't care much. What's your opinion
-> > > (as a AMD developer)?
+> > On Fri, Sep 05, 2008 at 03:19:56AM +0200, Henrik Rydberg wrote:
+> >> On most linux-based systems, the right and middle buttons are used
+> >> extensively. On computers lacking either of those buttons, such as
+> >> the Apple Macbooks, emulation is needed. This patch adds emulation
+> >> of the missing buttons via two-fingers-and-click and three-fingers-
+> >> and-click operations, which has recently become standard, both in
+> >> MacOS and in the Xorg synaptics driver.
+> >>
 > > 
-> > Very true. My original rewrite did the mapping only when necessary too.
-> > What were the reasons to do the mapping always?
+> > The standard way of emulating right and middle button presses for
+> > "button-deficient" devices is to use Macintosh emulation
+> > (MAC_EMUMOUSEBTN) that works not only for touchpads but for regular mice
+> > as well.
 > 
-> As I said above, it's for allocating a size-aligned memory. Look at
-> the description of pci_alloc_consistent in DMA-mapping.txt:
+> I have a hard time believing that in five years from now, people will
+> still consider pressing a key on the keyboard the standard way to
+> emulate a right click.
+
+Well, what other options do you have if your device has only one
+button and nothing else (i.e. it's a mouse, not a touchpad)? Anyway, I
+hope in 5 years distros will switch to pure evdev-based interfaces and
+won't use mousedev at all.
+
+> Nevertheless, I can see the point in moving
+> away from user-land decisions in the kernel. I will not pursue this one
+> further, although it is a rather neat piece of functionality.
 > 
-> The cpu return address and the DMA bus master address are both
-> guaranteed to be aligned to the smallest PAGE_SIZE order which
-> is greater than or equal to the requested size.  This invariant
-> exists (for example) to guarantee that if you allocate a chunk
-> which is smaller than or equal to 64 kilobytes, the extent of the
-> buffer you receive will not cross a 64K boundary.
+> > Overall I don't think we should enhance mousedev for scenarios where
+> > proper solution is to install Synaptics X driver. This also goes for
+> > your other patch improving tapping in mousedev.
 > 
-> You can't do this with __get_free_pages easily (you need some hacks to
-> do this). You can do this via iommu_area_alloc() for free.
+> Regarding the tapping patch; it is addressing the correctness of
+> already implemented functionality. I can see nothing wrong with that.
+>
 
-What hacks do you need with __get_free_pages? The memory it returns is
-_always_ aligned at its size.
-
-> 
-> Well, actually you agreed with adding such requirement (though I said
-> again and again that it's totally meaningless...):
-
-The other possible way is removing this requirement from the
-documentation. But if the spec has this requirement the code _has_ to
-fullfill it, even if its meaningless for most drivers.
-
-> http://lkml.org/lkml/2008/7/24/162
-
-This message stated nothing about _always_ map GART alloc_coherent
-allocations using the aperture.
-
-Joerg
+My position that since the isssue can be "fixed" by simply installing
+the proper X driver I'd rather not include it. Mousedev purpose is to
+provide good enough emulation in absence of a native driver and that's
+it. Also, the default value would not work well on high-resiolution
+devices (like Synaptics) and would require user fiddling with kernel
+parameters - not worth it in my opinion.
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+Dmitry
