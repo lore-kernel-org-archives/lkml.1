@@ -1,43 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbYIJVkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYIJVmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbYIJVkU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYIJVkH
+	id S1755319AbYIJVmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYIJVmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:40:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39276
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752957AbYIJVkG (ORCPT
+	Wed, 10 Sep 2008 17:42:10 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:53494 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbYIJVmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:40:06 -0400
-Date: Wed, 10 Sep 2008 14:40:00 -0700 (PDT)
-Message-Id: <20080910.144000.111159506.davem@davemloft.net>
-To: david-b@pacbell.net
-Cc: rdunlap@xenotime.net, akpm@linux-foundation.org,
-       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
-       alessandro.zummo@towertech.it, tglx@linutronix.de
-Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200809101436.26162.david-b@pacbell.net>
-References: <200809101419.05499.david-b@pacbell.net>
-	<20080910.142047.265458325.davem@davemloft.net>
-	<200809101436.26162.david-b@pacbell.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 10 Sep 2008 17:42:09 -0400
+Subject: Re: [RFC v3][PATCH 5/9] Memory managemnet (restore)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+In-Reply-To: <48C6113A.3080804@cs.columbia.edu>
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
+	 <Pine.LNX.4.64.0809040404060.5982@takamine.ncl.cs.columbia.edu>
+	 <1220551683.23386.32.camel@nimitz>  <48C345D2.1020603@cs.columbia.edu>
+	 <1220892596.23386.166.camel@nimitz>  <48C6113A.3080804@cs.columbia.edu>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 14:42:02 -0700
+Message-Id: <1221082922.6781.62.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <david-b@pacbell.net>
-Date: Wed, 10 Sep 2008 14:36:25 -0700
+On Tue, 2008-09-09 at 02:01 -0400, Oren Laadan wrote: 
+> > Have you looked at mprotect_fixup()?  It deals with two things:
+> > 1. altering the commit charge against RSS if the mapping is actually
+> >    writable.
+> > 2. Merging the VMA with an adjacent one if possible
+> > 
+> > We don't want to do either of these two things.  Even if we do merge the
+> > VMA, it will be a waste of time and energy since we'll just re-split it
+> > when we mprotect() again.
+> 
+> Your observation is correct; I chose this interface because it's really
+> simple and handy. I'm not worried about the performance because such VMAs
+> (read only but modified) are really rare, and the code can be optimized
+> later on.
 
-> Of course, you're very unlikely to sleep while waiting for that
-> mutex; or even while holding it, if you stick to Sun hardware.
-> Someone running Linux on one of the FPGA-based SPARCs might well
-> use an I2C based RTC though.
+The worry is that it will never get cleaned up, and it is basically
+cruft as it stands.  People may think that it is here protecting or
+fixing something that it is not.
 
-There are at least one or two sparc workstations and/or servers that
-use an I2C based RTC, I just haven't written the driver yet :)
+> >>>> +	/* restore original protection for this vma */
+> >>>> +	if (!(cr_vma->vm_flags & VM_WRITE))
+> >>>> +		ret = cr_vma_writable(mm, cr_vma->vm_start, cr_vma->vm_end, 0);
+> >>>> +
+> >>>> + out:
+> >>>> +	return ret;
+> >>>> +}
+> >>> Ugh.  Is this a security hole?  What if the user was not allowed to
+> >>> write to the file being mmap()'d by this VMA?  Is this a window where
+> >>> someone could come in and (using ptrace or something similar) write to
+> >>> the file?
+> >> Not a security hole: this is only for private memory, so it never
+> >> modifies the underlying file. This is related to what I explained before
+> >> about read-only VMAs that have modified pages.
+> > 
+> > OK, so a shared, read-only mmap() should never get into this code path.
+> > What if an attacker modified the checkpoint file to pretend to have
+> > pages for a read-only, but shared mmap().  Would this code be tricked?
+> 
+> VMAs of shared maps (IPC, anonymous shared) will be treated differently.
+> 
+> VMAs of shared files (mapped shared) are saved without their contents,
+> as the contents remains available on the file system !  (yes, for that
+> we will eventually need file system snapshots).
+> 
+> As for an attack that provides an altered checkpoint image: since we
+> (currently) don't escalate privileges, the attacker will not be able
+> to modify something that it doesn't have access to in the first place.
+
+I bugged Serge about this.  He said that this, at least, bypasses the SE
+Linux checks that are normally done with an mprotect() system call.
+That's a larger design problem that we need to keep in mind: we need to
+be careful to keep existing checks in place.
+
+> >> The process is restarting, inside a container that is restarting. All
+> >> tasks inside should be calling sys_restart() (by design) and no other
+> >> process from outside should be allowed to ptrace them at this point.
+> > 
+> > Are there plans to implement this, or is it already in here somehow?
+> 
+> Once we get positive responses about the current patchset, the next
+> step is to handle multiple processes: I plan to extend the freezer
+> with two more state for this purpose (dumping, restarting).
+
+OK, but I just asked you why a ptrace() of a process during this
+elevated privilege operation couldn't potentially do something bad.  You
+responded that, by design, we can't ptrace things.  The design is all
+well and good, but the patch isn't, because it doesn't implement that
+design. :(  Before we get these merged, that needs to get resolved.
+
+> >> (In any case, if some other tasks ptraces this task, it can make it do
+> >> anything anyhow).
+> > 
+> > No.  I'm suggesting that since this lets you effectively write to
+> > something that is not writable, it may be a hole with which to bypass
+> > permissions which were set up at an earlier time.
+> 
+> That's a good comment, but here all we are doing here is to modify a
+> privately mapped/anonymous memory.
+> 
+> > 
+> >>> We copy into the process address space all the time when not in its
+> >>> context explicitly.  
+> >> Huh ?
+> > 
+> > I'm just saying that you don't need to be in a process's context in
+> > order to copy contents into its virtual address space.  Check out
+> > access_process_vm().
+> > 
+> 
+> That would be the other way to implement the restart. But, since restart
+> executes in task's context, it's simpler and more efficient to leverage
+> copy-to-user().
+> In terms of security, both methods brings about the same end results: the
+> memory is modified (perhaps bypassing the read-only property of the VMA)
+
+But copy_to_user() is fundamentally different.  It writes *over*
+contents and in to files.  Simulating a fault fills in those pages, but
+it never writes over things or in to files.   Faulting is fundamentally
+safer.
+
+Faulting today can also handle populating a memory area with pages that
+appear read-only via userspace.  That's exactly what we're doing here as
+well.
+
+Anyway, I don't expect that you'll agree with this.  I'll prototype
+doing it the other way at some point and we can compare how both look.
+
+-- Dave
+
