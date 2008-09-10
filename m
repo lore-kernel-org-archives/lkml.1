@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYIMI3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYIMI37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbYIMI3l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 04:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758701AbYIMI1v
+	id S1759564AbYIMI37 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 04:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758799AbYIMI1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 04:27:51 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38959 "EHLO
+	Sat, 13 Sep 2008 04:27:54 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38977 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758590AbYIMI1s (ORCPT
+	with ESMTP id S1758745AbYIMI1w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 04:27:48 -0400
+	Sat, 13 Sep 2008 04:27:52 -0400
 From: Rodolfo Giometti <giometti@linux.it>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -19,80 +19,45 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Wed, 10 Sep 2008 09:52:27 +0200
-Message-Id: <1221033149-15405-9-git-send-email-giometti@linux.it>
+Date: Wed, 10 Sep 2008 09:52:21 +0200
+Message-Id: <1221033149-15405-3-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1221033149-15405-8-git-send-email-giometti@linux.it>
+In-Reply-To: <1221033149-15405-2-git-send-email-giometti@linux.it>
 References: <>
  <1221033149-15405-1-git-send-email-giometti@linux.it>
  <1221033149-15405-2-git-send-email-giometti@linux.it>
- <1221033149-15405-3-git-send-email-giometti@linux.it>
- <1221033149-15405-4-git-send-email-giometti@linux.it>
- <1221033149-15405-5-git-send-email-giometti@linux.it>
- <1221033149-15405-6-git-send-email-giometti@linux.it>
- <1221033149-15405-7-git-send-email-giometti@linux.it>
- <1221033149-15405-8-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.254
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 08/10] PPS: serial clients support.
+Subject: [PATCH 02/10] PPS: userland header file for PPS API.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds support, by using the PPS line discipline, for the PPS sources
-connected with the CD (Carrier Detect) pin of a serial port.
+This patch adds into the PPS's documentation directory a possible
+implementation of the PPS API (RFC 2783) by using the LinuxPPS's char
+devices.
+
+This file is not just an example but it can be used into real
+systems. :)
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- drivers/pps/clients/Kconfig     |    7 ++
- drivers/pps/clients/Makefile    |    1 +
- drivers/pps/clients/pps-ldisc.c |  154 +++++++++++++++++++++++++++++++++++++++
- drivers/serial/8250.c           |   13 +++
- include/linux/serial_core.h     |   10 ++-
- 5 files changed, 184 insertions(+), 1 deletions(-)
- create mode 100644 drivers/pps/clients/pps-ldisc.c
+ Documentation/pps/timepps.h |  195 +++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 195 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/timepps.h
 
-diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
-index 60b83be..487c1c8 100644
---- a/drivers/pps/clients/Kconfig
-+++ b/drivers/pps/clients/Kconfig
-@@ -15,4 +15,11 @@ config PPS_CLIENT_KTIMER
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called ktimer.ko.
- 
-+config PPS_CLIENT_LDISC
-+	tristate "PPS line discipline"
-+	depends on PPS
-+	help
-+	  If you say yes here you get support for a PPS source connected
-+	  with the CD (Carrier Detect) pin of your serial port.
-+
- endif
-diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
-index f3c1e39..9f5b988 100644
---- a/drivers/pps/clients/Makefile
-+++ b/drivers/pps/clients/Makefile
-@@ -3,6 +3,7 @@
- #
- 
- obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= ktimer.o
-+obj-$(CONFIG_PPS_CLIENT_LDISC)	+= pps-ldisc.o
- 
- ifeq ($(CONFIG_PPS_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/drivers/pps/clients/pps-ldisc.c b/drivers/pps/clients/pps-ldisc.c
+diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
 new file mode 100644
-index 0000000..6484f17
+index 0000000..2372949
 --- /dev/null
-+++ b/drivers/pps/clients/pps-ldisc.c
-@@ -0,0 +1,154 @@
++++ b/Documentation/pps/timepps.h
+@@ -0,0 +1,195 @@
 +/*
-+ * pps-ldisc.c -- PPS line discipline
++ * timepps.h -- PPS API main header
 + *
-+ *
-+ * Copyright (C) 2008	Rodolfo Giometti <giometti@linux.it>
++ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
 + *
 + *   This program is free software; you can redistribute it and/or modify
 + *   it under the terms of the GNU General Public License as published by
@@ -109,200 +74,181 @@ index 0000000..6484f17
 + *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/serial_core.h>
-+#include <linux/tty.h>
++#ifndef _SYS_TIMEPPS_H_
++#define _SYS_TIMEPPS_H_
++
++#include <sys/syscall.h>
++#include <unistd.h>
++#include <errno.h>
 +#include <linux/pps.h>
 +
-+#define PPS_TTY_MAGIC		0x0001
++#define LINUXPPS	1		/* signal we are using LinuxPPS */
 +
-+static void pps_tty_dcd_change(struct tty_struct *tty, unsigned int status,
-+				struct timespec *ts)
++/*
++ * New data structures
++ */
++
++struct ntp_fp {
++	unsigned int integral;
++	unsigned int fractional;
++};
++
++union pps_timeu {
++	struct timespec tspec;
++	struct ntp_fp ntpfp;
++	unsigned long longpad[3];
++};
++
++struct pps_info {
++	unsigned long assert_sequence;	/* seq. num. of assert event */
++	unsigned long clear_sequence;	/* seq. num. of clear event */
++	union pps_timeu assert_tu;	/* time of assert event */
++	union pps_timeu clear_tu;	/* time of clear event */
++	int current_mode;		/* current mode bits */
++};
++
++struct pps_params {
++	int api_version;		/* API version # */
++	int mode;			/* mode bits */
++	union pps_timeu assert_off_tu;	/* offset compensation for assert */
++	union pps_timeu clear_off_tu;	/* offset compensation for clear */
++};
++
++typedef int pps_handle_t;		/* represents a PPS source */
++typedef unsigned long pps_seq_t;	/* sequence number */
++typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
++typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
++typedef struct pps_info pps_info_t;
++typedef struct pps_params pps_params_t;
++
++#define assert_timestamp        assert_tu.tspec
++#define clear_timestamp         clear_tu.tspec
++
++#define assert_timestamp_ntpfp  assert_tu.ntpfp
++#define clear_timestamp_ntpfp   clear_tu.ntpfp
++
++#define assert_offset		assert_off_tu.tspec
++#define clear_offset		clear_off_tu.tspec
++
++#define assert_offset_ntpfp     assert_off_tu.ntpfp
++#define clear_offset_ntpfp      clear_off_tu.ntpfp
++
++/*
++ * The PPS API
++ */
++
++static __inline int time_pps_create(int source, pps_handle_t *handle)
 +{
-+	int id = (int) tty->disc_data;
-+	struct timespec __ts;
-+	struct pps_ktime pps_ts;
-+
-+	/* First of all we get the time stamp... */
-+	getnstimeofday(&__ts);
-+
-+	/* Does caller give us a timestamp? */
-+	if (ts) {	/* Yes. Let's use it! */
-+		pps_ts.sec = ts->tv_sec;
-+		pps_ts.nsec = ts->tv_nsec;
-+	} else {	/* No. Do it ourself! */
-+		pps_ts.sec = __ts.tv_sec;
-+		pps_ts.nsec = __ts.tv_nsec;
-+	}
-+
-+	/* Now do the PPS event report */
-+	pps_event(id, &pps_ts, status ? PPS_CAPTUREASSERT : PPS_CAPTURECLEAR,
-+			NULL);
-+
-+	pr_debug("PPS %s at %lu on source #%d\n",
-+			status ? "assert" : "clear", jiffies, id);
-+}
-+
-+static int pps_tty_open(struct tty_struct *tty)
-+{
-+	struct pps_source_info info;
-+	struct tty_driver *drv = tty->driver;
-+	int index = tty->index + drv->name_base;
 +	int ret;
 +
-+	info.owner = THIS_MODULE;
-+	info.dev = NULL;
-+	snprintf(info.name, PPS_MAX_NAME_LEN, "%s%d", drv->driver_name, index);
-+	snprintf(info.path, PPS_MAX_NAME_LEN, "/dev/%s%d", drv->name, index);
-+	info.mode = PPS_CAPTUREBOTH | \
-+			PPS_OFFSETASSERT | PPS_OFFSETCLEAR | \
-+			PPS_CANWAIT | PPS_TSFMT_TSPEC;
-+
-+	ret = pps_register_source(&info, PPS_CAPTUREBOTH | \
-+				PPS_OFFSETASSERT | PPS_OFFSETCLEAR);
-+	if (ret < 0) {
-+		pr_err("cannot register PPS source \"%s\"\n", info.path);
-+		return ret;
++	if (!handle) {
++		errno = EINVAL;
++		return -1;
 +	}
-+	tty->disc_data = (void *) ret;
 +
-+	/* Should open N_TTY ldisc too */
-+	ret = n_tty_open(tty);
-+	if (ret < 0)
-+		pps_unregister_source((int) tty->disc_data);
++	/* First we check if current device is a PPS valid PPS one...
++	 */
++	ret = ioctl(source, PPS_CHECK);
++	if (ret) {
++		errno = EOPNOTSUPP;
++		return -1;
++	}
 +
-+	pr_info("PPS source #%d \"%s\" added\n", ret, info.path);
++	/* ... then since in LinuxPPS there are no differences between a
++	 * "PPS source" and a "PPS handle", we simply return the same value.
++	 */
++	*handle = source;
 +
 +	return 0;
 +}
 +
-+static void pps_tty_close(struct tty_struct *tty)
++static __inline int time_pps_destroy(pps_handle_t handle)
 +{
-+	int id = (int) tty->disc_data;
-+
-+	pps_unregister_source(id);
-+	n_tty_close(tty);
-+
-+	pr_info("PPS source #%d removed\n", id);
++	return close(handle);
 +}
 +
-+struct tty_ldisc_ops pps_ldisc_ops = {
-+	.magic		= PPS_TTY_MAGIC,
-+	.name		= "pps_tty",
-+	.dcd_change	= pps_tty_dcd_change,
-+	.open		= pps_tty_open,
-+	.close		= pps_tty_close,
-+
-+	/* Now we should use N_TTY ldisc methods in order to have
-+	 * normal tty behaviour
-+	 */
-+	.flush_buffer	= n_tty_flush_buffer,
-+	.chars_in_buffer = n_tty_chars_in_buffer,
-+	.read		= n_tty_read,
-+	.write		= n_tty_write,
-+	.ioctl		= n_tty_ioctl,
-+	.set_termios	= n_tty_set_termios,
-+	.poll		= n_tty_poll,
-+	.receive_buf	= n_tty_receive_buf,
-+	.write_wakeup	= n_tty_write_wakeup
-+};
-+
-+/*
-+ * Module stuff
-+ */
-+
-+static int __init pps_tty_init(void)
++static __inline int time_pps_getparams(pps_handle_t handle,
++					pps_params_t *ppsparams)
 +{
-+	int err;
++	int ret;
++	struct pps_kparams __ppsparams;
 +
-+	err = tty_register_ldisc(N_PPS, &pps_ldisc_ops);
-+	if (err)
-+		pr_err("can't register PPS line discipline\n");
-+	else
-+		pr_info("PPS line discipline registered\n");
++	ret = ioctl(handle, PPS_GETPARAMS, &__ppsparams);
 +
-+	return err;
++	ppsparams->api_version = __ppsparams.api_version;
++	ppsparams->mode = __ppsparams.mode;
++	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
++	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
++	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
++	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
++
++	return ret;
 +}
 +
-+static void __exit pps_tty_cleanup(void)
++static __inline int time_pps_setparams(pps_handle_t handle,
++					const pps_params_t *ppsparams)
 +{
-+	int err;
++	struct pps_kparams __ppsparams;
 +
-+	err = tty_unregister_ldisc(N_PPS);
-+	if (err)
-+		pr_err("can't unregister PPS line discipline\n");
-+	else
-+		pr_info("PPS line discipline removed\n");
++	__ppsparams.api_version = ppsparams->api_version;
++	__ppsparams.mode = ppsparams->mode;
++	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
++	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
++	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
++	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
++
++	return ioctl(handle, PPS_SETPARAMS, &__ppsparams);
 +}
 +
-+module_init(pps_tty_init);
-+module_exit(pps_tty_cleanup);
-+
-+MODULE_ALIAS_LDISC(N_PPS);
-+MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
-+MODULE_DESCRIPTION("PPS TTY device driver");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 342e12f..1759d87 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2247,6 +2247,18 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
- }
- 
- static void
-+serial8250_set_ldisc(struct uart_port *port)
++/* Get capabilities for handle */
++static __inline int time_pps_getcap(pps_handle_t handle, int *mode)
 +{
-+	int line = port->line;
-+
-+	if (line >= port->info->port.tty->driver->num)
-+		return;
-+
-+	if (port->info->port.tty->ldisc.ops->num == N_PPS)
-+		serial8250_enable_ms(port);
++	return ioctl(handle, PPS_GETCAP, mode);
 +}
 +
-+static void
- serial8250_pm(struct uart_port *port, unsigned int state,
- 	      unsigned int oldstate)
- {
-@@ -2450,6 +2462,7 @@ static struct uart_ops serial8250_pops = {
- 	.startup	= serial8250_startup,
- 	.shutdown	= serial8250_shutdown,
- 	.set_termios	= serial8250_set_termios,
-+	.set_ldisc	= serial8250_set_ldisc,
- 	.pm		= serial8250_pm,
- 	.type		= serial8250_type,
- 	.release_port	= serial8250_release_port,
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 3b2f6c0..1aa894c 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -488,9 +488,13 @@ static inline void
- uart_handle_dcd_change(struct uart_port *port, unsigned int status)
- {
- 	struct uart_info *info = port->info;
-+	struct tty_ldisc *ld = tty_ldisc_ref(info->port.tty);
-+	struct timespec ts;
- 
--	port->icount.dcd++;
-+	if (ld->ops->dcd_change)
-+		getnstimeofday(&ts);
- 
-+	port->icount.dcd++;
- #ifdef CONFIG_HARD_PPS
- 	if ((port->flags & UPF_HARDPPS_CD) && status)
- 		hardpps();
-@@ -502,6 +506,10 @@ uart_handle_dcd_change(struct uart_port *port, unsigned int status)
- 		else if (info->port.tty)
- 			tty_hangup(info->port.tty);
- 	}
++static __inline int time_pps_fetch(pps_handle_t handle, const int tsformat,
++					pps_info_t *ppsinfobuf,
++					const struct timespec *timeout)
++{
++	struct pps_fdata __fdata;
++	int ret;
 +
-+	if (ld->ops->dcd_change)
-+		ld->ops->dcd_change(port, status, &ts);
-+	tty_ldisc_deref(ld);
- }
- 
- /**
++	/* Sanity checks */
++	if (tsformat != PPS_TSFMT_TSPEC) {
++		errno = EINVAL;
++		return -1;
++	}
++
++	if (timeout) {
++		__fdata.timeout.sec = timeout->tv_sec;
++		__fdata.timeout.nsec = timeout->tv_nsec;
++		__fdata.timeout.flags = ~PPS_TIME_INVALID;
++	} else
++		__fdata.timeout.flags = PPS_TIME_INVALID;
++
++	ret = ioctl(handle, PPS_FETCH, &__fdata);
++
++	ppsinfobuf->assert_sequence = __fdata.info.assert_sequence;
++	ppsinfobuf->clear_sequence = __fdata.info.clear_sequence;
++	ppsinfobuf->assert_tu.tspec.tv_sec = __fdata.info.assert_tu.sec;
++	ppsinfobuf->assert_tu.tspec.tv_nsec = __fdata.info.assert_tu.nsec;
++	ppsinfobuf->clear_tu.tspec.tv_sec = __fdata.info.clear_tu.sec;
++	ppsinfobuf->clear_tu.tspec.tv_nsec = __fdata.info.clear_tu.nsec;
++	ppsinfobuf->current_mode = __fdata.info.current_mode;
++
++	return ret;
++}
++
++static __inline int time_pps_kcbind(pps_handle_t handle,
++					const int kernel_consumer,
++					const int edge, const int tsformat)
++{
++	/* LinuxPPS doesn't implement kernel consumer feature */
++	errno = EOPNOTSUPP;
++	return -1;
++}
++
++#endif				/* _SYS_TIMEPPS_H_ */
 -- 
 1.5.4.3
 
