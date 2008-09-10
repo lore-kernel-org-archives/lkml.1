@@ -1,107 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbYIJLYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbYIJL1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbYIJLYs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 07:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYIJLYj
+	id S1754046AbYIJL1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 07:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbYIJL1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 07:24:39 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41996 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbYIJLYi (ORCPT
+	Wed, 10 Sep 2008 07:27:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42883 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbYIJL1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 07:24:38 -0400
-Date: Wed, 10 Sep 2008 20:27:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       hugh@veritas.com, menage@google.com, xemul@openvz.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct
- page
-Message-Id: <20080910202744.0cc27be5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200809110702.45003.nickpiggin@yahoo.com.au>
-References: <48C66AF8.5070505@linux.vnet.ibm.com>
-	<200809110644.39334.nickpiggin@yahoo.com.au>
-	<20080910200304.fd078007.kamezawa.hiroyu@jp.fujitsu.com>
-	<200809110702.45003.nickpiggin@yahoo.com.au>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Sep 2008 07:27:12 -0400
+Date: Wed, 10 Sep 2008 07:27:09 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] include <linux/fs.h> into linux/ext2_fs.h
+Message-ID: <20080910112709.GA11742@infradead.org>
+References: <1221045726-5674-1-git-send-email-kirill@shutemov.name>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221045726-5674-1-git-send-email-kirill@shutemov.name>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Sep 2008 07:02:44 +1000
-Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Wed, Sep 10, 2008 at 02:22:03PM +0300, Kirill A. Shutemov wrote:
+> linux/fs.h defines FS_IOC* needed by linux/ext2_fs.h
 
-> On Wednesday 10 September 2008 21:03, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 11 Sep 2008 06:44:37 +1000
-> >
-> > Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> > > On Wednesday 10 September 2008 11:49, KAMEZAWA Hiroyuki wrote:
-> > > > On Tue, 9 Sep 2008 18:20:48 -0700
-> > > >
-> > > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-09-09
-> > > > > 21:30:12]: OK, here is approach #2, it works for me and gives me
-> > > > > really good performance (surpassing even the current memory
-> > > > > controller). I am seeing almost a 7% increase
-> > > >
-> > > > This number is from pre-allcation, maybe.
-> > > > We really do alloc-at-boot all page_cgroup ? This seems a big change.
-> > >
-> > > It seems really nice to me -- we get the best of both worlds, less
-> > > overhead for those who don't enable the memory controller, and even
-> > > better performance for those who do.
-> >
-> > No trobles for me for allocating-all-at-boot policy.
-> > My small concern is
-> >   - wasting page_cgroup for hugepage area.
-> >   - memory hotplug
-> 
-> In those cases you still waste the struct page area too. I realise that
-> isn't a good way to justify even more wastage. But I guess it is
-> relatively low. At least, I would think the users would be more happy to
-> get a 7% performance increase for small pages! :)
-> 
-I guess the increase mostly because we can completely avoid kmalloc/kfree slow path.
-
-Balbir, how about fix our way to allocate-all-at-boot-policy ?
-If you say yes, I think I can help you and I'll find usable part from my garbage.
-
-Following is lockless+remove-page-cgroup-pointer-from-page-struct patch's result.
-
-rc5-mm1
-==
-Execl Throughput                           3006.5 lps   (29.8 secs, 3 samples)
-C Compiler Throughput                      1006.7 lpm   (60.0 secs, 3 samples)
-Shell Scripts (1 concurrent)               4863.7 lpm   (60.0 secs, 3 samples)
-Shell Scripts (8 concurrent)                943.7 lpm   (60.0 secs, 3 samples)
-Shell Scripts (16 concurrent)               482.7 lpm   (60.0 secs, 3 samples)
-Dc: sqrt(2) to 99 decimal places         124804.9 lpm   (30.0 secs, 3 samples)
-
-lockless
-==
-Execl Throughput                           3035.5 lps   (29.6 secs, 3 samples)
-C Compiler Throughput                      1010.3 lpm   (60.0 secs, 3 samples)
-Shell Scripts (1 concurrent)               4881.0 lpm   (60.0 secs, 3 samples)
-Shell Scripts (8 concurrent)                947.7 lpm   (60.0 secs, 3 samples)
-Shell Scripts (16 concurrent)               485.0 lpm   (60.0 secs, 3 samples)
-Dc: sqrt(2) to 99 decimal places         125437.9 lpm   (30.0 secs, 3 samples)
-
-lockless + remove page cgroup pointer (my version).
-==
-Execl Throughput                           3021.1 lps   (29.5 secs, 3 samples)
-C Compiler Throughput                       980.3 lpm   (60.0 secs, 3 samples)
-Shell Scripts (1 concurrent)               4600.0 lpm   (60.0 secs, 3 samples)
-Shell Scripts (8 concurrent)                915.7 lpm   (60.0 secs, 3 samples)
-Shell Scripts (16 concurrent)               468.3 lpm   (60.0 secs, 3 samples)
-Dc: sqrt(2) to 99 decimal places         124909.1 lpm   (30.0 secs, 3 samples)
-
-Oh,yes. siginificant slow down. I'm glad to kick this patch out to trash box.
-
-Thanks,
--Kame
+And who cares?  
 
