@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYIJLi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYIJLju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbYIJLi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 07:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYIJLiv
+	id S1754219AbYIJLju (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 07:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYIJLjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 07:38:51 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:48715 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751453AbYIJLiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 07:38:51 -0400
-Date: Wed, 10 Sep 2008 15:44:01 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frank Mayhar <fmayhar@google.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2.6.27-rc5] Fix itimer/many thread hang.
-Message-ID: <20080910114401.GA220@tv-sign.ru>
-References: <1220906643.31846.21.camel@bobble.smo.corp.google.com> <20080909070329.GD2086@elte.hu> <20080909160152.GA714@tv-sign.ru> <20080910040404.245301541FE@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 10 Sep 2008 07:39:42 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:36631 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbYIJLjl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 07:39:41 -0400
+Date: Wed, 10 Sep 2008 14:40:12 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ext4@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH] include <linux/fs.h> into linux/ext2_fs.h
+Message-ID: <20080910114011.GB3757@localhost.localdomain>
+References: <1221045726-5674-1-git-send-email-kirill@shutemov.name> <20080910112709.GA11742@infradead.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9zSXsLTf0vkW971A"
 Content-Disposition: inline
-In-Reply-To: <20080910040404.245301541FE@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080910112709.GA11742@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09, Roland McGrath wrote:
->
-> > As for this particular function, it seems to me that ->signal == NULL
-> > is not possible, no?
-> 
-> The concern is to make sure that the timer tick path is always safe for a
-> tick that hits during release_task(current) in exit_notify().  A timer tick
-> there can come with current->signal == NULL.  We just need to make sure one
-> way or another that this is safe.
 
-run_posix_cpu_timers() must check ->signal != NULL anyway. (The same for
-other functions like account_group_user_time() which are called by the
-timer tick).
+--9zSXsLTf0vkW971A
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Apart from the timer tick, "current" should not use this function after
-exit_notify().
+On Wed, Sep 10, 2008 at 07:27:09AM -0400, Christoph Hellwig wrote:
+> On Wed, Sep 10, 2008 at 02:22:03PM +0300, Kirill A. Shutemov wrote:
+> > linux/fs.h defines FS_IOC* needed by linux/ext2_fs.h
+>=20
+> And who cares? =20
 
-And, if tsk != current, ->signal must be pinned, this means it can't be NULL.
+It breaks building pam_mktemp at least.
 
+It's regression introduced by commit 36695673b.
 
-Perhaps I missed something, but imho this check is confusing and misleading.
-However, this is just a minor detail even if I am right.
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
 
-Oleg.
+--9zSXsLTf0vkW971A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjHshsACgkQbWYnhzC5v6rAZACeOu6dJN2J4FAU791UYghiVJMq
+IYkAnAos59VGUJK+XW28DlY4lUF92c6h
+=/YlD
+-----END PGP SIGNATURE-----
+
+--9zSXsLTf0vkW971A--
