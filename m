@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYIJOje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbYIJOmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYIJOje (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 10:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYIJOjQ
+	id S1753547AbYIJOmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 10:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYIJOl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 10:39:16 -0400
-Received: from sh.osrg.net ([192.16.179.4]:48636 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753220AbYIJOjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 10:39:15 -0400
-Date: Wed, 10 Sep 2008 23:39:00 +0900
-To: joerg.roedel@amd.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
- IOMMU's alloc_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080910232446O.fujita.tomonori@lab.ntt.co.jp>
-References: <20080910223735O.fujita.tomonori@lab.ntt.co.jp>
-	<20080910135347.GI6329@amd.com>
-	<20080910232446O.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 10 Sep 2008 10:41:58 -0400
+Received: from po-out-1718.google.com ([72.14.252.155]:52196 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750889AbYIJOl5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 10:41:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=HHvq6twwAxfk0I4O1k0+DU7F7abHeE3PkrLgCe50SWBTN1AGuro0CsJAifS5/kFf2O
+         c1ixNvwyrtPLzD69zJ4bZ6Cm4M5G4qMbkbeCHUHHtMi/R6K3/oDG99gVOPv1Ry3CH5BW
+         DxRoT7kYn1r/db4RoFFWsU6GFSpO7zeCzW19I=
+Message-ID: <cfd18e0f0809100741k7cd38f1se625dd8d35d5d100@mail.gmail.com>
+Date: Wed, 10 Sep 2008 16:41:55 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-3.09 is released
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080910233819T.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008 23:24:57 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+Gidday
 
-> On Wed, 10 Sep 2008 15:53:47 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > On Wed, Sep 10, 2008 at 10:37:45PM +0900, FUJITA Tomonori wrote:
-> > > On Wed, 10 Sep 2008 15:10:32 +0200
-> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > Can't we simply make the gfp hacks depend on
-> > > > dma_ops->is_phys and avoid further gfp hacks in the hardware iommu
-> > > > implementations?
-> > > 
-> > > I thought about it but adding a new dma_ops->we_don't_want_gfp_flag
-> > > hook doesn't make the code simpler much. Currently, we have the gfp
-> > > setting hack in just one place. It's not bad. Adding such new hook
-> > > means adding more lines than we can remove.
-> > 
-> > The is_phys flas is already in place and its meaning is "the dma_ops
-> > return bus addresses equal to physical addresses". This is exactly the
-> > case when we need the gfp hacks. So I don't see a problem in just
-> > skipping the gfp rewrite if is_phys is zero. I don't see a point in
-> > adding gfp flags in dma_alloc_coherent and remove them again
-> > dma_ops->alloc_coherent code. Specially in this case where we already
-> > know in dma_alloc_coherent if we really need the flag rewrite.
-> 
-> dma_ops->is_phys doesn't work well for GART and Intel IOMMU, that do
-> virtual mappings for some devices and doesn't for some.
-> 
-> We need to a hook that can pass a point to a device to IOMMUs like:
-> 
-> dma_ops->is_phys(struct device *dev)
-> 
-> 
-> Because they need to look at a device to know if they will do virtual
-> mappings or not for it.
+I've released man-pages-3.09.
 
-btw, in tip/x86/iommu, GART's alloc_coherent always does virtual
-mappings to allocate a size-aligned memory (as DMA-mapping.txt
-defines).
+This release is now available for download at:
 
-Because someone strongly insisted, I modified GART's alloc_coherent to
-do so but as I said again and again, it's completely meaningless (only
-POWER IOMMU does it and drivers don't depend on such requirement).
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-I guess that it would be better to do virtual mappings only when
-necessary as the current mainline does since GART I/O space is
-precious in some systems. But I don't care much. What's your opinion
-(as a AMD developer)?
+This release is now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+
+The online changelog is available at
+http://www.kernel.org/doc/man-pages/changelog.html
+(blogged at
+http://linux-man-pages.blogspot.com/2008/09/man-pages-309-is-released.html)
+and the current version of the pages is browsable at
+http://www.kernel.org/doc/man-pages/
+
+An abridged version of the changes in this release that may be of
+interest to readers of this list is provided below.
+
+Cheers,
+
+Michael
+
+
+==================== Changes in man-pages-3.09 ====================
+
+
+New and rewritten pages
+-----------------------
+
+fopencookie.3
+    mtk
+        Document fopencookie(3), a library function that allows
+        custom implementation of a stdio stream.
+
+networks.5
+    Martin (Joey) Schulze, with a few light edits by mtk
+        Documents the /etc/networks file.
+
+
+Changes to individual pages
+---------------------------
+
+fcntl.2
+    mtk, after a note by Mike Bianchi
+        More clearly and consistently describe whether
+        or not the third argument to fcntl() is required,
+        and what its type should be.
+
+sched_setscheduler.2
+    Carsten Emde
+        Update kernel version numbers relating to real-time support.
+
+proc.5
+    Mats Wichmann / mtk
+        s/\[number]/[pid]/ in file names for /proc/PID files.
+        And similar changes for task/[tid] sub-directories.
+    Joe Korty
+        Document new fields in /proc/interrupts that were added in
+        Linux 2.6.24.
