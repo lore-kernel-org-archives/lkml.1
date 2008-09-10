@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbYIJOhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYIJOia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbYIJOhY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 10:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYIJOhM
+	id S1754188AbYIJOia (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 10:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYIJOiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 10:37:12 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:6002 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbYIJOhK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 10:37:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=H5BWy/k8JiUpOLg2giH/V9bA/1e2lvlruhBUCNlHKbp8vvUyd2YSH1eDcVsP5NNsgN
-         9BO/a9lDUwuRZQuTvFySHDKVaPnKIbS1GA/+q4CxCO7H2+97cFSXDb6wU+/021zt2dBs
-         EByBvXaOUbb03/5ULPetmkB1Ed6m25+9Gm5mE=
-Date: Wed, 10 Sep 2008 10:37:05 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Jarod Wilson <jwilson@redhat.com>, Janne Grunau <j@jannau.net>,
-       linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [PATCH 06/18] lirc driver for the ATI USB RF remote receiver
-Message-ID: <20080910143705.GB32156@anvil.corenet.prv>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-7-git-send-email-jwilson@redhat.com> <20080910095832.GA22422@sci.fi> <200809100905.58304.jwilson@redhat.com> <20080910140831.GB22422@sci.fi>
+	Wed, 10 Sep 2008 10:38:22 -0400
+Received: from 8bytes.org ([88.198.83.132]:56106 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751847AbYIJOiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 10:38:21 -0400
+Date: Wed, 10 Sep 2008 16:38:18 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
+Message-ID: <20080910143818.GA31506@8bytes.org>
+References: <20080910131032.GH6329@amd.com> <20080910223735O.fujita.tomonori@lab.ntt.co.jp> <20080910135347.GI6329@amd.com> <20080910232446O.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080910140831.GB22422@sci.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080910232446O.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 05:08:31PM +0300, Ville Syrjälä wrote:
-> On Wed, Sep 10, 2008 at 09:05:58AM -0400, Jarod Wilson wrote:
-> > On Wednesday 10 September 2008 05:58:32 Ville Syrjälä wrote:
-> > > On Tue, Sep 09, 2008 at 12:05:51AM -0400, Jarod Wilson wrote:
-> > > > +config LIRC_ATIUSB
-> > > > +	tristate "ATI RF USB Receiver support"
-> > > > +	default n
-> > > > +	depends on LIRC_DEV
-> > > > +	help
-> > > > +	  Driver for the ATI USB RF remote receiver
-> > > > +
-> > >
-> > > We already have proper input drivers for these devices (ati_remote and
-> > > ati_remote2).
+On Wed, Sep 10, 2008 at 11:24:57PM +0900, FUJITA Tomonori wrote:
+> On Wed, 10 Sep 2008 15:53:47 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > On Wed, Sep 10, 2008 at 10:37:45PM +0900, FUJITA Tomonori wrote:
+> > > On Wed, 10 Sep 2008 15:10:32 +0200
+> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > > > Can't we simply make the gfp hacks depend on
+> > > > dma_ops->is_phys and avoid further gfp hacks in the hardware iommu
+> > > > implementations?
+> > > 
+> > > I thought about it but adding a new dma_ops->we_don't_want_gfp_flag
+> > > hook doesn't make the code simpler much. Currently, we have the gfp
+> > > setting hack in just one place. It's not bad. Adding such new hook
+> > > means adding more lines than we can remove.
 > > 
-> > True, though I think some users still prefer using them with the lirc drivers 
-> > for assorted reasons. Configuring something like mythtv to work with the 
-> > ati_remote{,2} driver appears to be a bit more complex (or at least non-
-> > standard vs. several other popular remotes) and not as functional vs. 
-> > configuring mythtv w/lirc_atiusb.
-> > 
-> > http://evuraan.blogspot.com/2008/01/how-to-use-ati-remote-wonder-ii-
-> > remote.html
+> > The is_phys flas is already in place and its meaning is "the dma_ops
+> > return bus addresses equal to physical addresses". This is exactly the
+> > case when we need the gfp hacks. So I don't see a problem in just
+> > skipping the gfp rewrite if is_phys is zero. I don't see a point in
+> > adding gfp flags in dma_alloc_coherent and remove them again
+> > dma_ops->alloc_coherent code. Specially in this case where we already
+> > know in dma_alloc_coherent if we really need the flag rewrite.
 > 
-> The X11 limitations are unfortunate but they can be worked around with
-> keymap support in the kernel driver.
-
-X's evdev support is also maturing and hopefully hotplug support will be
-implemented soon.
-
-> ati_remote2 keymap patch is somewhere
-> on it's way upstream as we speak. Not sure about ati_remote though.
+> dma_ops->is_phys doesn't work well for GART and Intel IOMMU, that do
+> virtual mappings for some devices and doesn't for some.
 > 
-
-Yeah, its in my "next" branch, waiting for .28 to open.
-
-> Furthermore if lirc can already handle input from event devices then the
-> lirc_atiusb drivers are simply not needed.
+> We need to a hook that can pass a point to a device to IOMMUs like:
 > 
-> -- 
-> Ville Syrjälä
-> syrjala@sci.fi
-> http://www.sci.fi/~syrjala/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> dma_ops->is_phys(struct device *dev)
+> 
+> 
+> Because they need to look at a device to know if they will do virtual
+> mappings or not for it.
 
--- 
-Dmitry
+Ok, thats a valid point. I queue your patch with the AMD IOMMU updates
+for 2.6.28. Thanks.
+
+Joerg
+
