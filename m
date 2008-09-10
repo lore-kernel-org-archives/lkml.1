@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbYIJTUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYIJTZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753401AbYIJTUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 15:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYIJTUZ
+	id S1753371AbYIJTZW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 15:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYIJTZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 15:20:25 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:54421 "EHLO e5.ny.us.ibm.com"
+	Wed, 10 Sep 2008 15:25:10 -0400
+Received: from gw.goop.org ([64.81.55.164]:54448 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbYIJTUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 15:20:24 -0400
-Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros
-	for	accessing	3-byte arrays as integers
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Chris Leech <christopher.leech@intel.com>,
-       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, devel@open-fcoe.org
-In-Reply-To: <48C7F19D.3080507@panasas.com>
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>
-	 <20080910140712.GA12280@infradead.org>
-	 <1221061241.27385.14.camel@norville.austin.ibm.com>
-	 <48C7F19D.3080507@panasas.com>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 14:20:09 -0500
-Message-Id: <1221074409.27385.39.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751258AbYIJTZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 15:25:09 -0400
+Message-ID: <48C81F12.9040208@goop.org>
+Date: Wed, 10 Sep 2008 12:25:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Rambaldi <rambaldi@xs4all.nl>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.27-rc6 xen soft lockup
+References: <48C7BB39.6090700@xs4all.nl> <48C7FB83.8080904@goop.org> <48C81537.8080409@xs4all.nl>
+In-Reply-To: <48C81537.8080409@xs4all.nl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 19:11 +0300, Boaz Harrosh wrote:
-> Dave Kleikamp wrote:
+Rambaldi wrote:
+> The machine has two Intel(R) Xeon(R) E5420's so that gives a total of
+> 8 cpu's
+> During the time of the lockup the cpu load, as measured with cacti,
+> was about 4%
+> with a increase to 15% at the time the BUG was triggered. So I would
+> say mostly idle
+> but not very idle.
 
-> > @@ -62,7 +60,7 @@ struct timestruc_t {
-> >   */
-> >  typedef struct {
-> >  	unsigned len:24;
-> > -	unsigned off1:8;
-> > +	u8 off1;
-> >  	u32 off2;
-> >  } lxd_t;
-> >  
-> 
-> Why is the difference from below definition. That is the
-> use/not of __le24? 
+So that's the cpu load within the domain?  How about the overall system
+load?  What other domains are running?
 
-Answered elsewhere, but this is host-endian.  I plan to kill this
-structure soon.
-
-> > @@ -90,8 +88,8 @@ struct lxdlist {
-> >   *	physical xd (pxd)
-> >   */
-> >  typedef struct {
-> > -	unsigned len:24;
-> > -	unsigned addr1:8;
-> > +	__le24 len;
-> 
-> Is this stuff on-the-wire?
-
-Written to disk, so basically, yeah.
-
-> Do you need a:
-> +	__le24 len __packed;
-> 
-> > +	u8 addr1;
-> >  	__le32 addr2;
-> >  } pxd_t;
-> and:
->   } pxd_t __packed ;
-
-I'm not convinced that this is needed.  Does the compiler do any padding
-for alignment when it only contains char types (or structs of chars)?
-
-> 
-> Note that before the :24 bit-field was kept packed but now
-> with the use of struct at the __le24 definition it might
-> choose to pad them.
-
-Maybe, but I can't get the compiler to add any padding playing around
-with variants of these structures.  I've tested a simple program on both
-x86 and ppc64, but I'm not sure what would happen on, say, arm.
-
-> Chris you might want to change the definitions at linux/types.h
-> to:
-> 
-> typedef struct { __u8 b[3]; } __be24, __le24 __packed;
-> 
-> With gcc it will not help with the proceeding fields, and the
-> containing struct will need it's own "__packed" declaration
-> but it will keep it packed with previous fields.
 >
-> Just my $0.017
-> Boaz
+> > Did anything fail or misbehave?
+> No nothing failed or misbehaved (as far as I could tell)
+>
+> With dynticks I guess you mean: CONFIG_NO_HZ ; this option is not set.
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+(In general its a good idea to set it for virtual machines, to avoid
+spuriously scheduling vcpus.)
 
+> I have attached my .config. I have also attached the output of
+> (date ; cat /proc/interrupts ; sleep 10 ; date ;  cat /proc/interrupts
+> )> /tmp/interrupts
+> to give an impression about the number of interrupts after 11:30 hours
+> of uptime.
+
+Well, there were 1001 interrupts on cpu 1 in that interval, which shows
+that the timer interrupts are going at full rate on the idle cpu.
+
+I'm a bit confused.  I'm not sure what would trigger a lockup at that
+point, unless it really stopped taking interrupts for a while. 
+Unfortunately the RIP and backtrace are not particularly helpful.  I'm
+assuming the message is spurious, and indicates some other kind of
+timekeeping bug.
+
+> Any other info that you need?
+
+Full dmesg output, for completeness.
+
+    J
