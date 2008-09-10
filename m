@@ -1,57 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbYIJJ2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYIJJbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbYIJJ2H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 05:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYIJJ1y
+	id S1753446AbYIJJbF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 05:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYIJJay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 05:27:54 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:32950 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751586AbYIJJ1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 05:27:53 -0400
-Subject: [BUG?] sendfile / distcc
-From: Peter Zijlstra <peterz@infradead.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
+	Wed, 10 Sep 2008 05:30:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34325 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751650AbYIJJay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 05:30:54 -0400
+Subject: Re: [PATCH] make setpriority POSIX compliant; introduce
+	PRIO_THREAD extension
+From: Denys Vlasenko <dvlasenk@redhat.com>
+To: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <517f3f820809090845o5dc772f8r2308a6c010f69561@mail.gmail.com>
+References: <1220278355.3866.21.camel@localhost.localdomain>
+	 <517f3f820809090845o5dc772f8r2308a6c010f69561@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 10 Sep 2008 11:27:51 +0200
-Message-Id: <1221038871.2442.86.camel@twins.programming.kicks-ass.net>
+Date: Wed, 10 Sep 2008 11:28:14 +0200
+Message-Id: <1221038894.8848.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 2008-09-09 at 17:45 +0200, Michael Kerrisk wrote:
+> > Patch is run tested. I will post test program etc as a reply.
+> 
+> Tested-by: Michael Kerrisk <mtk.manpages@gmail.com>
+> 
+> Please do CC me on API changes, so that they might get documented in
+> the man pages.
+> 
+> Thanks for this work.  (I'm not sure whether or not it's a response to
+> my bug report, http://bugzilla.kernel.org/show_bug.cgi?id=6258 )
 
-I've been seeing this for a while now, but its still present with -rc5+
-kernels. Its always the local machine failing, never the remotes.
+I worked on it because of this bug report:
 
-[root@twins linux-2.6-rt]# nice ./k opteron build
-time distmake x86_64 O=opteron-build ARCH=x86_64
-testing twins:    distccd running
-testing opteron:  DOWN
-testing taijtu:   distccd running
-testing dyad:     distccd running
-testing lappy:    host running
-testing ubuntu:   host running
-DISTCC_HOSTS= twins/8 taijtu/32 dyad/32
-DISTCC_DIR=/dev/shm/distcc
-DISTCC_SLOTS=72
+https://bugzilla.redhat.com/show_bug.cgi?id=455251
 
-...
+> I tested your patch.  Most things seem to work as I would expect, but
+> there is one strangeness.
+> 
+> I would expect
+> setpriority(PRIO_PROCESS, getpid())
+> and
+> setpriority(PRIO_PROCESS, 0)
+> to have the same affect (because: which == PRIO_PRCESS, who == 0
+> conventionally means "the calling process").
+> 
+> But they do not: the latter call only changes the priority of the
+> calling thread.  Is this intended?
 
-distcc[9931] (dcc_writex) ERROR: failed to write: Connection reset by peer
-distcc[9931] Warning: failed to distribute /mnt/build/linux-2.6-rt/kernel/fork.c to twins/8, running locally instead
+No, it was not intended. I think this error is here:
 
-...
++               case PRIO_PROCESS:
++                       if (who)
++                               pid = find_vpid(who);
++                       else {
++                               pid = task_pid(current);
++                               who = current->pid;
++                       }
 
-distcc[12078] (dcc_pump_sendfile) ERROR: sendfile failed: Connection reset by peer
-distcc[12078] (dcc_readx) ERROR: unexpected eof on fd4
-distcc[12078] (dcc_r_token_int) ERROR: read failed while waiting for token "DONE"
-distcc[12078] Warning: failed to distribute /mnt/build/linux-2.6-rt/init/version.c to twins/8, running locally instead
+I was confused. ->pid is TID, had to use ->tgid to get PID.
+The fix: replace
+who = current->pid;
+with
+who = current->tgid;
+There are two places where you need to do it.
+
+Updated patch is below.
+
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+--
+vda
+
+
+
+diff --git a/include/linux/resource.h b/include/linux/resource.h
+index aaa423a..f292690 100644
+--- a/include/linux/resource.h
++++ b/include/linux/resource.h
+@@ -51,6 +51,7 @@ struct rlimit {
+ #define	PRIO_PROCESS	0
+ #define	PRIO_PGRP	1
+ #define	PRIO_USER	2
++#define	PRIO_THREAD	3
+ 
+ /*
+  * Limit the stack by to some sane default: root can always
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 038a7bc..d339c1a 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -142,9 +142,9 @@ asmlinkage long sys_setpriority(int which, int who,
+int niceval)
+ 	struct task_struct *g, *p;
+ 	struct user_struct *user;
+ 	int error = -EINVAL;
+-	struct pid *pgrp;
++	struct pid *pgrp, *pid;
+ 
+-	if (which > PRIO_USER || which < PRIO_PROCESS)
++	if (which > PRIO_THREAD || which < PRIO_PROCESS)
+ 		goto out;
+ 
+ 	/* normalize: avoid signed division (rounding problems) */
+@@ -156,7 +156,7 @@ asmlinkage long sys_setpriority(int which, int who,
+int niceval)
+ 
+ 	read_lock(&tasklist_lock);
+ 	switch (which) {
+-		case PRIO_PROCESS:
++		case PRIO_THREAD:
+ 			if (who)
+ 				p = find_task_by_vpid(who);
+ 			else
+@@ -164,6 +164,19 @@ asmlinkage long sys_setpriority(int which, int who,
+int niceval)
+ 			if (p)
+ 				error = set_one_prio(p, niceval, error);
+ 			break;
++		case PRIO_PROCESS:
++			if (who)
++				pid = find_vpid(who);
++			else {
++				pid = task_pid(current);
++				who = current->tgid;
++			}
++			do_each_pid_thread(pid, PIDTYPE_PID, p) {
++				if (who == p->pid || who == p->tgid) {
++					error = set_one_prio(p, niceval, error);
++				}
++			} while_each_pid_thread(pid, PIDTYPE_PID, p);
++			break;
+ 		case PRIO_PGRP:
+ 			if (who)
+ 				pgrp = find_vpid(who);
+@@ -206,14 +219,14 @@ asmlinkage long sys_getpriority(int which, int
+who)
+ 	struct task_struct *g, *p;
+ 	struct user_struct *user;
+ 	long niceval, retval = -ESRCH;
+-	struct pid *pgrp;
++	struct pid *pgrp, *pid;
+ 
+-	if (which > PRIO_USER || which < PRIO_PROCESS)
++	if (which > PRIO_THREAD || which < PRIO_PROCESS)
+ 		return -EINVAL;
+ 
+ 	read_lock(&tasklist_lock);
+ 	switch (which) {
+-		case PRIO_PROCESS:
++		case PRIO_THREAD:
+ 			if (who)
+ 				p = find_task_by_vpid(who);
+ 			else
+@@ -224,6 +237,21 @@ asmlinkage long sys_getpriority(int which, int who)
+ 					retval = niceval;
+ 			}
+ 			break;
++		case PRIO_PROCESS:
++			if (who)
++				pid = find_vpid(who);
++			else {
++				pid = task_pid(current);
++				who = current->tgid;
++			}
++			do_each_pid_thread(pid, PIDTYPE_PID, p) {
++				if (who == p->pid || who == p->tgid) {
++					niceval = 20 - task_nice(p);
++					if (niceval > retval)
++						retval = niceval;
++				}
++			} while_each_pid_thread(pid, PIDTYPE_PID, p);
++			break;
+ 		case PRIO_PGRP:
+ 			if (who)
+ 				pgrp = find_vpid(who);
 
 
 
