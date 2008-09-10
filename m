@@ -1,62 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753660AbYIJOZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbYIJO0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753660AbYIJOZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 10:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYIJOZT
+	id S1754042AbYIJO0V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 10:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYIJO0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 10:25:19 -0400
-Received: from sh.osrg.net ([192.16.179.4]:43348 "EHLO sh.osrg.net"
+	Wed, 10 Sep 2008 10:26:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47389 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077AbYIJOZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 10:25:18 -0400
-Date: Wed, 10 Sep 2008 23:24:57 +0900
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
- IOMMU's alloc_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080910135347.GI6329@amd.com>
-References: <20080910131032.GH6329@amd.com>
-	<20080910223735O.fujita.tomonori@lab.ntt.co.jp>
-	<20080910135347.GI6329@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080910232446O.fujita.tomonori@lab.ntt.co.jp>
+	id S1751179AbYIJO0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 10:26:09 -0400
+Date: Wed, 10 Sep 2008 16:26:05 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Thierry Vignaud <tvignaud@mandriva.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng v2.14.1 (stable)
+Message-ID: <20080910142605.GA6092@nb.net.home>
+References: <20080910124008.GF2943@nb.net.home> <m24p4op2gm.fsf@vador.mandriva.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m24p4op2gm.fsf@vador.mandriva.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008 15:53:47 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
-
-> On Wed, Sep 10, 2008 at 10:37:45PM +0900, FUJITA Tomonori wrote:
-> > On Wed, 10 Sep 2008 15:10:32 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > Can't we simply make the gfp hacks depend on
-> > > dma_ops->is_phys and avoid further gfp hacks in the hardware iommu
-> > > implementations?
-> > 
-> > I thought about it but adding a new dma_ops->we_don't_want_gfp_flag
-> > hook doesn't make the code simpler much. Currently, we have the gfp
-> > setting hack in just one place. It's not bad. Adding such new hook
-> > means adding more lines than we can remove.
+On Wed, Sep 10, 2008 at 03:14:49PM +0200, Thierry Vignaud wrote:
+> Err, since you're both:
+> - the official upstream author,
+> - the official packager in fedora,
 > 
-> The is_phys flas is already in place and its meaning is "the dma_ops
-> return bus addresses equal to physical addresses". This is exactly the
-> case when we need the gfp hacks. So I don't see a problem in just
-> skipping the gfp rewrite if is_phys is zero. I don't see a point in
-> adding gfp flags in dma_alloc_coherent and remove them again
-> dma_ops->alloc_coherent code. Specially in this case where we already
-> know in dma_alloc_coherent if we really need the flag rewrite.
+> why do you package so many uncommited patches in your fedora package?
 
-dma_ops->is_phys doesn't work well for GART and Intel IOMMU, that do
-virtual mappings for some devices and doesn't for some.
+> util-linux-ng-2.13-ctrlaltdel-man.patch
 
-We need to a hook that can pass a point to a device to IOMMUs like:
+ distribution specific patch
 
-dma_ops->is_phys(struct device *dev)
+> util-linux-ng-2.13-fdformat-man-ide.patch
+> util-linux-ng-2.13-floppy-generic.patch
+> util-linux-ng-2.13-floppy-locale.patch
+
+ distribution specific patches -- upstream does not include
+ the"floppy" util
+
+> util-linux-ng-2.13-fdisk-b-4096.patch
+> util-linux-ng-2.13-ipcs-32bit.patch
+> util-linux-ng-2.13-login-lastlog.patch
+> util-linux-ng-2.13-login-pamstart.patch
+
+ not sure, maybe good enough for upstream (we will see in 2.15..)
+
+> util-linux-ng-2.13-mount-pamconsole.patch
+
+ old distribution specific patch (not planned for F10)
+
+> util-linux-ng-2.14-blockdev-rmpart.patch
+
+ (stupid) distribution specific patch (duplicate delpart(1)
+ functionality.
+
+> util-linux-ng-2.14-mount-file_t.patch
+
+ already in upstream devel repository
+
+> util-linux-ng-2.14-mount-managed.patch
+
+ distribution specific patch
 
 
-Because they need to look at a device to know if they will do virtual
-mappings or not for it.
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
