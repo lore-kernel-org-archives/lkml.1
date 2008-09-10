@@ -1,77 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYIJDDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIJDEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbYIJDDs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 23:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbYIJDDj
+	id S1753828AbYIJDEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 23:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYIJDEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 23:03:39 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56318 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751963AbYIJDDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 23:03:38 -0400
-Message-ID: <48C73873.1010708@cn.fujitsu.com>
-Date: Wed, 10 Sep 2008 11:01:07 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 9 Sep 2008 23:04:23 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:32201 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752017AbYIJDEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 23:04:23 -0400
+Date: Wed, 10 Sep 2008 12:03:45 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sh: intc_prio_data() test before subtraction on unsigned
+Message-ID: <20080910030345.GA25508@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	roel kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org
+References: <48C6E473.9070408@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Doc/RCU: fix pseudocode in rcuref.txt
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C6E473.9070408@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 09, 2008 at 11:02:43PM +0200, roel kluin wrote:
+> bit is unsigned, so test before subtraction
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-atomic_inc_not_zero(v) return 0 if *v = 0.
-use spin_lock instead of write_lock for update lock.
+Applied, thanks.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/Documentation/RCU/rcuref.txt b/Documentation/RCU/rcuref.txt
-index 451de2a..4202ad0 100644
---- a/Documentation/RCU/rcuref.txt
-+++ b/Documentation/RCU/rcuref.txt
-@@ -29,9 +29,9 @@ release_referenced()			delete()
- 					}
- 
- If this list/array is made lock free using RCU as in changing the
--write_lock() in add() and delete() to spin_lock and changing read_lock
--in search_and_reference to rcu_read_lock(), the atomic_get in
--search_and_reference could potentially hold reference to an element which
-+write_lock() in add() and delete() to spin_lock() and changing read_lock()
-+in search_and_reference() to rcu_read_lock(), the atomic_inc() in
-+search_and_reference() could potentially hold reference to an element which
- has already been deleted from the list/array.  Use atomic_inc_not_zero()
- in this scenario as follows:
- 
-@@ -40,20 +40,20 @@ add()					search_and_reference()
- {					{
-     alloc_object			    rcu_read_lock();
-     ...					    search_for_element
--    atomic_set(&el->rc, 1);		    if (atomic_inc_not_zero(&el->rc)) {
--    write_lock(&list_lock);		        rcu_read_unlock();
-+    atomic_set(&el->rc, 1);		    if (!atomic_inc_not_zero(&el->rc)) {
-+    spin_lock(&list_lock);		        rcu_read_unlock();
- 					        return FAIL;
-     add_element				    }
-     ...					    ...
--    write_unlock(&list_lock);		    rcu_read_unlock();
-+    spin_unlock(&list_lock);		    rcu_read_unlock();
- }					}
- 3.					4.
- release_referenced()			delete()
- {					{
--    ...					    write_lock(&list_lock);
-+    ...					    spin_lock(&list_lock);
-     if (atomic_dec_and_test(&el->rc))       ...
-         call_rcu(&el->head, el_free);       delete_element
--    ...                                     write_unlock(&list_lock);
-+    ...                                     spin_unlock(&list_lock);
- } 					    ...
- 					    if (atomic_dec_and_test(&el->rc))
- 					        call_rcu(&el->head, el_free);
-
-
+In the future, please make sure to CC linux-sh@vger.kernel.org on any SH
+related patches.
