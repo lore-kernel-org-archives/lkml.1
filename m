@@ -1,187 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYIJJbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYIJJbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYIJJbF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 05:31:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbYIJJay
+	id S1753989AbYIJJbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 05:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYIJJbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 05:30:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34325 "EHLO mx2.redhat.com"
+	Wed, 10 Sep 2008 05:31:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50444 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650AbYIJJay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 05:30:54 -0400
-Subject: Re: [PATCH] make setpriority POSIX compliant; introduce
-	PRIO_THREAD extension
-From: Denys Vlasenko <dvlasenk@redhat.com>
-To: Michael Kerrisk <mtk.manpages@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <517f3f820809090845o5dc772f8r2308a6c010f69561@mail.gmail.com>
-References: <1220278355.3866.21.camel@localhost.localdomain>
-	 <517f3f820809090845o5dc772f8r2308a6c010f69561@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 11:28:14 +0200
-Message-Id: <1221038894.8848.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751501AbYIJJba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 05:31:30 -0400
+Date: Wed, 10 Sep 2008 11:31:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
+Message-ID: <20080910093105.GA5259@elte.hu>
+References: <20080909184615.GA7303@lenovo> <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com> <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com> <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 17:45 +0200, Michael Kerrisk wrote:
-> > Patch is run tested. I will post test program etc as a reply.
+
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+
+> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > ...
+> >>
+> >> hope we can keep using MACRO..
+> >>
+> >> YH
+> >>
+> >
+> > Btw, Yinghai, what does it mean? To not touch this macro at all?
+> > Or you mean about implementation issue (ie the design itself)?
 > 
-> Tested-by: Michael Kerrisk <mtk.manpages@gmail.com>
-> 
-> Please do CC me on API changes, so that they might get documented in
-> the man pages.
-> 
-> Thanks for this work.  (I'm not sure whether or not it's a response to
-> my bug report, http://bugzilla.kernel.org/show_bug.cgi?id=6258 )
+> do not touch this macro... and may revisit after 2.6.28
 
-I worked on it because of this bug report:
+anything you are particularly worried about? Regressions we should be 
+able to find pretty quickly, in a central macro like that - and the 
+macro is quite ugly.
 
-https://bugzilla.redhat.com/show_bug.cgi?id=455251
-
-> I tested your patch.  Most things seem to work as I would expect, but
-> there is one strangeness.
-> 
-> I would expect
-> setpriority(PRIO_PROCESS, getpid())
-> and
-> setpriority(PRIO_PROCESS, 0)
-> to have the same affect (because: which == PRIO_PRCESS, who == 0
-> conventionally means "the calling process").
-> 
-> But they do not: the latter call only changes the priority of the
-> calling thread.  Is this intended?
-
-No, it was not intended. I think this error is here:
-
-+               case PRIO_PROCESS:
-+                       if (who)
-+                               pid = find_vpid(who);
-+                       else {
-+                               pid = task_pid(current);
-+                               who = current->pid;
-+                       }
-
-I was confused. ->pid is TID, had to use ->tgid to get PID.
-The fix: replace
-who = current->pid;
-with
-who = current->tgid;
-There are two places where you need to do it.
-
-Updated patch is below.
-
-Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
---
-vda
-
-
-
-diff --git a/include/linux/resource.h b/include/linux/resource.h
-index aaa423a..f292690 100644
---- a/include/linux/resource.h
-+++ b/include/linux/resource.h
-@@ -51,6 +51,7 @@ struct rlimit {
- #define	PRIO_PROCESS	0
- #define	PRIO_PGRP	1
- #define	PRIO_USER	2
-+#define	PRIO_THREAD	3
- 
- /*
-  * Limit the stack by to some sane default: root can always
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 038a7bc..d339c1a 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -142,9 +142,9 @@ asmlinkage long sys_setpriority(int which, int who,
-int niceval)
- 	struct task_struct *g, *p;
- 	struct user_struct *user;
- 	int error = -EINVAL;
--	struct pid *pgrp;
-+	struct pid *pgrp, *pid;
- 
--	if (which > PRIO_USER || which < PRIO_PROCESS)
-+	if (which > PRIO_THREAD || which < PRIO_PROCESS)
- 		goto out;
- 
- 	/* normalize: avoid signed division (rounding problems) */
-@@ -156,7 +156,7 @@ asmlinkage long sys_setpriority(int which, int who,
-int niceval)
- 
- 	read_lock(&tasklist_lock);
- 	switch (which) {
--		case PRIO_PROCESS:
-+		case PRIO_THREAD:
- 			if (who)
- 				p = find_task_by_vpid(who);
- 			else
-@@ -164,6 +164,19 @@ asmlinkage long sys_setpriority(int which, int who,
-int niceval)
- 			if (p)
- 				error = set_one_prio(p, niceval, error);
- 			break;
-+		case PRIO_PROCESS:
-+			if (who)
-+				pid = find_vpid(who);
-+			else {
-+				pid = task_pid(current);
-+				who = current->tgid;
-+			}
-+			do_each_pid_thread(pid, PIDTYPE_PID, p) {
-+				if (who == p->pid || who == p->tgid) {
-+					error = set_one_prio(p, niceval, error);
-+				}
-+			} while_each_pid_thread(pid, PIDTYPE_PID, p);
-+			break;
- 		case PRIO_PGRP:
- 			if (who)
- 				pgrp = find_vpid(who);
-@@ -206,14 +219,14 @@ asmlinkage long sys_getpriority(int which, int
-who)
- 	struct task_struct *g, *p;
- 	struct user_struct *user;
- 	long niceval, retval = -ESRCH;
--	struct pid *pgrp;
-+	struct pid *pgrp, *pid;
- 
--	if (which > PRIO_USER || which < PRIO_PROCESS)
-+	if (which > PRIO_THREAD || which < PRIO_PROCESS)
- 		return -EINVAL;
- 
- 	read_lock(&tasklist_lock);
- 	switch (which) {
--		case PRIO_PROCESS:
-+		case PRIO_THREAD:
- 			if (who)
- 				p = find_task_by_vpid(who);
- 			else
-@@ -224,6 +237,21 @@ asmlinkage long sys_getpriority(int which, int who)
- 					retval = niceval;
- 			}
- 			break;
-+		case PRIO_PROCESS:
-+			if (who)
-+				pid = find_vpid(who);
-+			else {
-+				pid = task_pid(current);
-+				who = current->tgid;
-+			}
-+			do_each_pid_thread(pid, PIDTYPE_PID, p) {
-+				if (who == p->pid || who == p->tgid) {
-+					niceval = 20 - task_nice(p);
-+					if (niceval > retval)
-+						retval = niceval;
-+				}
-+			} while_each_pid_thread(pid, PIDTYPE_PID, p);
-+			break;
- 		case PRIO_PGRP:
- 			if (who)
- 				pgrp = find_vpid(who);
-
-
-
+	Ingo
