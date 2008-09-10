@@ -1,42 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbYIJWcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbYIJWch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbYIJWcG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYIJWbx
+	id S1756505AbYIJWch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYIJWcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:31:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42720
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751956AbYIJWbw (ORCPT
+	Wed, 10 Sep 2008 18:32:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37527 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753990AbYIJWcW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:31:52 -0400
-Date: Wed, 10 Sep 2008 15:31:46 -0700 (PDT)
-Message-Id: <20080910.153146.143573430.davem@davemloft.net>
-To: dave@linux.vnet.ibm.com
-Cc: balbir@linux.vnet.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       nickpiggin@yahoo.com.au, akpm@linux-foundation.org, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct
- page
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1221085260.6781.69.camel@nimitz>
-References: <30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080910012048.GA32752@balbir.in.ibm.com>
-	<1221085260.6781.69.camel@nimitz>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 10 Sep 2008 18:32:22 -0400
+Date: Wed, 10 Sep 2008 15:31:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: elendil@planet.nl, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       kernel-testers@vger.kernel.org, jesse.brandeburg@intel.com
+Subject: Re: [PATCH] e100: Use pci_pme_active for clearing wake-up events
+ and disabling PME# (was: Re: [regression] e100: PCI wake-up handling rework
+ causes "Error clearing wake event")
+Message-Id: <20080910153124.8536a7db.akpm@linux-foundation.org>
+In-Reply-To: <200809091514.23817.rjw@sisk.pl>
+References: <200809090812.37649.elendil@planet.nl>
+	<200809091514.23817.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-Date: Wed, 10 Sep 2008 15:21:00 -0700
+On Tue, 9 Sep 2008 15:14:22 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> This will really suck for sparse memory machines.  Imagine a machine
-> with 1GB of memory at 0x0 and another 1GB of memory at 1TB up in the
-> address space.
+> On Tuesday, 9 of September 2008, Frans Pop wrote:
+> > (Resending because of error in mail headers in previous attempt; sorry)
+> > 
+> > On my Toshiba Satellite A40 with 2.6.27-rc4/5 I noticed the following 
+> > error in the boot log (not there with 2.6.26):
+> > e100: 0000:01:08.0: e100_probe: Error clearing wake event
+> > 
+> > Bisection has fingered the following patch as the cause of the message.
+> > 
+> > commit eb9d0fe40e313c0a74115ef456a2e43a6c8da72f
+> > Author: Rafael J. Wysocki <rjw@sisk.pl>
+> > Date:   Mon Jul 7 03:34:48 2008 +0200
+> >     PCI ACPI: Rework PCI handling of wake-up
+> > 
+> > The test this error originates from in drivers/net/e100.c is old and has 
+> > not changed recently.
+> > 
+> > Surrounding messages (full dmesg attached):
+> > e100: Intel(R) PRO/100 Network Driver, 3.5.23-k4-NAPI
+> > e100: Copyright(c) 1999-2006 Intel Corporation
+> > e100 0000:01:08.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+> > e100: 0000:01:08.0: e100_probe: Error clearing wake event
+> > e100: eth0: e100_probe: addr 0xcffff000, irq 20, MAC addr 
+> > 00:08:0d:17:bf:f5
+> > 
+> > The NIC is:
+> > 01:08.0 Ethernet controller [0200]: Intel Corporation 82801DB PRO/100 VE 
+> > (MOB) Ethernet Controller [8086:103d] (rev 83)
+> >         Kernel driver in use: e100
+> 
+> The message is actually harmless, but I agree that it's confusing.
+> 
+> The appended patch should fix the problem (ISTR sending it some time ago
+> already).
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> e100: Use pci_pme_active for clearing wake-up events and disabling PME#
+> 
+> Currently e100 uses pci_enable_wake() to clear pending wake-up events
+> and disable PME# during intitialization, but that function is not
+> suitable for this purpose, because it immediately returns error code
+> if device_may_wakeup() returns false for given device.
+> 
+> Make e100 use pci_pme_active(), which carries out exactly the
+> required operations, instead.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/net/e100.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> Index: linux-2.6/drivers/net/e100.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/e100.c
+> +++ linux-2.6/drivers/net/e100.c
+> @@ -2738,9 +2738,7 @@ static int __devinit e100_probe(struct p
+>  		nic->flags |= wol_magic;
+>  
+>  	/* ack any pending wake events, disable PME */
+> -	err = pci_enable_wake(pdev, 0, 0);
+> -	if (err)
+> -		DPRINTK(PROBE, ERR, "Error clearing wake event\n");
+> +	pci_pme_active(pdev, false);
+>  
+>  	strcpy(netdev->name, "eth%d");
+>  	if((err = register_netdev(netdev))) {
 
-You just described the workstation I am typing this from :-)
+This change is already included in
+
+e100-adapt-to-the-reworked-pci-pm.patch:
+
+  From: "Rafael J. Wysocki" <rjw@sisk.pl>
+  
+  Adapt the e100 driver to the reworked PCI PM
+  
+  * Use device_set_wakeup_enable() and friends as needed
+  * Use pci_pme_active() to clear PME_Status and disable PME#
+  * Use the observation that it is sufficient to call pci_enable_wake()
+    once, unless it fails
+  
+  Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+  Tested-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+  Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+  Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+  Cc: Jeff Garzik <jeff@garzik.org>
+  Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+  
+
+which I sent to Jeff on Aug 20 as a for-2.6.28 thing.
+
+Maybe I should just mark e100-adapt-to-the-reworked-pci-pm.patch as a
+for-2.6.27 thing next time I send that (large) pile of maybe-for-2.6.27
+netdev patches.
+
+e100-adapt-to-the-reworked-pci-pm.patch
+drivers-net-skfp-pmfc-use-offsetof-macro.patch
+drivers-net-atl1e-dont-take-the-mdio_lock-in-atl1e_probe.patch
+e1000e-prevent-corruption-of-eeprom-nvm.patch
+drivers-net-mlx4-allocc-needs-mmh.patch
+net-forcedeth-call-restore-mac-addr-in-nv_shutdown-path-v2.patch
+ehea-fix-dlpar-memory-handling.patch
+nec-fix-rmmod-platform-driver-improvements.patch
+nec-fix-suspend-and-resume-for-isa-pnp-cards.patch
+
