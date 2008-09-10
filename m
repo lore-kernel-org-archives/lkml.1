@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbYIJKjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbYIJKlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbYIJKjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 06:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYIJKjL
+	id S1753093AbYIJKlF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 06:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYIJKkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 06:39:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:48128 "EHLO mga02.intel.com"
+	Wed, 10 Sep 2008 06:40:55 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31977 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751586AbYIJKjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 06:39:10 -0400
+	id S1751814AbYIJKky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 06:40:54 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.32,371,1217833200"; 
-   d="scan'208";a="334807418"
+   d="scan'208";a="44366947"
 From: "Yang, Sheng" <sheng.yang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] x86: Extended cpuinfo to show virtualization HW features
-Date: Wed, 10 Sep 2008 18:42:30 +0800
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH 1/2] x86: Move VMX MSRs to msr-index.h
+Date: Wed, 10 Sep 2008 18:44:15 +0800
 User-Agent: KMail/1.9.10
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-References: <12209432941440-git-send-email-sheng.yang@intel.com> <86802c440809091045h2d4f1776g94355e1b1dd1b29e@mail.gmail.com> <20080910080421.GC15255@elte.hu>
-In-Reply-To: <20080910080421.GC15255@elte.hu>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <12208705553277-git-send-email-sheng.yang@intel.com> <1220870555659-git-send-email-sheng.yang@intel.com> <48C67E57.1050309@qumranet.com>
+In-Reply-To: <48C67E57.1050309@qumranet.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809101842.31355.sheng.yang@intel.com>
+Message-Id: <200809101844.16091.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 September 2008 16:04:21 Ingo Molnar wrote:
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> > On Tue, Sep 9, 2008 at 1:05 AM, Yang, Sheng <sheng.yang@intel.com> wrote:
-> > > Yeah, I've considered that, but seems duplicate for both files? The
-> > > feature detection code is the same. Any way to merge them?
+On Tuesday 09 September 2008 21:47:03 Avi Kivity wrote:
+> Sheng Yang wrote:
+> > They are hardware specific MSRs, and we would use them in virtualization
+> > feature detection later.
 > >
-> > just merged intel_64.c into intel.c...
+> >
+> >
+> >
+> > -
+> > -#define MSR_IA32_FEATURE_CONTROL                0x3a
+> >  #define MSR_IA32_FEATURE_CONTROL_LOCKED         0x1
+> >  #define MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED  0x
 >
-> it's all in tip/master:
->
->   http://people.redhat.com/mingo/tip.git/README
->
-> would it be possible to get a patchset ontop of that?
->
-> 	Ingo
+> Might as well move these two bitmask definitions.
 
-So quick.... 
-Thanks Yinghai!
+Um... I think it's better to leave them here, for the MSR_IA32_FEATURE_CONTROL 
+is a MSR which can be put into msr-index.h, but the others are only bits of 
+MSR...
 
-Would send the updated patch soon.
 -- 
 regards
 Yang, Sheng
