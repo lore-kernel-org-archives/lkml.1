@@ -1,97 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYIJRwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbYIJSBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYIJRwk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYIJRwc
+	id S1753462AbYIJSBi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 14:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbYIJSB2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:52:32 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:59232 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbYIJRwb (ORCPT
+	Wed, 10 Sep 2008 14:01:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:47341 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbYIJSB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:52:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=QJeV6fSD0vsgrovI5LkZ3y5CUEy1izHH5WtTN+Ax4uJx9PVizXPz20A5NXXKpPzF4
-	4zO20UWSEvZ9t9o/FujQQ==
-Subject: Re: [PATCH 2.6.27-rc5] Fix itimer/many thread hang.
-From: Frank Mayhar <fmayhar@google.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080910121251.GB220@tv-sign.ru>
-References: <1220906643.31846.21.camel@bobble.smo.corp.google.com>
-	 <20080909070329.GD2086@elte.hu> <20080909160152.GA714@tv-sign.ru>
-	 <1220992172.23059.20.camel@bobble.smo.corp.google.com>
-	 <20080910121251.GB220@tv-sign.ru>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Wed, 10 Sep 2008 10:50:58 -0700
-Message-Id: <1221069058.25218.10.camel@bobble.smo.corp.google.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 10 Sep 2008 14:01:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XDGCf7GTXOvErevSeslHYPo7hwnnwTnHzHWEqV3gBDlq1nd6tnVFs4sh+jG0Xu/wDV
+         mSZWMWsUCVcsnLT6TP8cEn7hf8xjm11vbq9yq4uyVqBpfQlZHLREl2lGb1AFlOnalYuL
+         hM5lsmdadhlVuo5/OooGxLgc5J1kzsZ+yQU3Y=
+Message-ID: <86802c440809101101ld5a98d0yfd9089b6ab8eac1c@mail.gmail.com>
+Date: Wed, 10 Sep 2008 11:01:26 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] pci: fix merging left out for BAR print out v2
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <200809101048.57119.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1220988472-24139-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080910084450.GJ15255@elte.hu>
+	 <200809101048.57119.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 16:12 +0400, Oleg Nesterov wrote:
-> On 09/09, Frank Mayhar wrote:
-> >
-> > On Tue, 2008-09-09 at 20:01 +0400, Oleg Nesterov wrote:
-> >
-> > > As for this particular function, it seems to me that ->signal == NULL
-> > > is not possible, no?
-> >
-> > That's not completely clear to me.  I'm allowing for the possibility
-> > that it might be called during, say, process teardown.  It's used in so
-> > many places that I'm uncomfortable leaving the == NULL check out.
-> 
-> Please see my reply to Roland.
+On Wed, Sep 10, 2008 at 10:48 AM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Wednesday, September 10, 2008 1:44 am Ingo Molnar wrote:
+>> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> > print out for Device BAR address before kernel try to update them.
+>> >
+>> > also change it to KERN_DEBUG instead...
+>> >
+>> > v2: update to linux-pci next
+>> >    also add (unsigned long long) cast
+>> >
+>> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>
+>> Jesse, if you want to pick it up, could we please do this via git
+>> methods (git-pull and stuff)? The commit below is the one in -tip -
+>> should i separate it out?
+>
+> Sure, though I'm not sure why I shouldn't just be applying this stuff to my
+> tree first... Seems weird to pull from you only to then ask Linus to pull.
 
-I saw it.  I dunno, I'm more of the "belt-and-suspenders" mindset.  I'll
-add a comment, thought, that this is probably a "can't happen" but we
-check it anyway.
+there is another patch applied to linux-pci next for cast some
+resource_t to unsigned-long-long...
 
-> > > Btw, this function has a lot of callers, perhaps it is better to
-> > > uninline it.
-> >
-> > If that's the consensus I'll do so.  I assumed that speed was more
-> > important than space in this case.  Am I mistaken?
-> 
-> Are you sure inline will be faster? It has a lot of calllers, think
-> about i-cache. And the function call is not that expensive.
+anyway, v2 could be applied to linux-pci cleanly.
 
-Hmm.  It just seems to me that making it inline enables the optimizer to
-do smarter things with the flow of control.  The routine isn't all that
-long, disassembling the posix_cpu_timers_exit_group() routine gives a
-good view of it and it appears to be around 120 bytes.  Certainly less
-than 200 bytes (all of posix_cpu_timers_exit_group() is only 201 bytes).
-That doesn't seem like a cache buster but I defer to those who are more
-familiar with this stuff.
-
-> > > So, the first CLONE_THREAD creates ->cputime.totals. After that
-> > > thread_group_cputime_account_xxx() start to use it even if the task
-> > > doesn't have the attached cpu timers.
-> > >
-> > > Stupid question: can't we allocate .totals in posix_cpu_timer_create() /
-> > > set_process_cpu_timer() ?
-> >
-> > That was the original plan but we (that is, Roland and I) decided to
-> > eliminate the separate storage for the dead-threads totals.  It's now
-> > all kept in the totals field, for the whole thread group.
-> 
-> I see, thanks.
-
-You're welcome.  I actually like the new method of keeping track of this
-stuff; it seems cleaner and certainly removes the requirement of walking
-the thread group to add it up.  Should help some microbenchmarks, at
-least. :-)
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
-
+YH
