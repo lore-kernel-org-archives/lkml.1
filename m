@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755103AbYIJRp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754528AbYIJRtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755103AbYIJRp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbYIJRpe
+	id S1754528AbYIJRtU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbYIJRtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:45:34 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:54301 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754718AbYIJRpb (ORCPT
+	Wed, 10 Sep 2008 13:49:12 -0400
+Received: from outbound-mail-24.bluehost.com ([69.89.21.19]:58324 "HELO
+	outbound-mail-24.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751377AbYIJRtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:45:31 -0400
-Subject: Re: [RFC v4][PATCH 4/9] Memory management (dump)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1221065728.6781.19.camel@nimitz>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-	 <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
-	 <1221065728.6781.19.camel@nimitz>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 10:45:23 -0700
-Message-Id: <1221068723.6781.21.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 10 Sep 2008 13:49:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=gS/eyarC1Yv6DFkMC+dXdalR+3AygSc11L2g/u9pkwkTKUt95+RWDwMR8giJg2kZjH3zZjkf3d9h3HTkOUdYl8ZfjKTdMpI1UoXRc688juAkDlNKja3nWT8VBu8Mwgxx;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] pci: fix merging left out for BAR print out v2
+Date: Wed, 10 Sep 2008 10:48:56 -0700
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+References: <1220988472-24139-1-git-send-email-yhlu.kernel@gmail.com> <20080910084450.GJ15255@elte.hu>
+In-Reply-To: <20080910084450.GJ15255@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809101048.57119.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 09:55 -0700, Dave Hansen wrote:
-> 
-> > +               cond_resched();
-> > +               while (!(page = follow_page(vma, addr, FOLL_TOUCH))) 
+On Wednesday, September 10, 2008 1:44 am Ingo Molnar wrote:
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > print out for Device BAR address before kernel try to update them.
+> >
+> > also change it to KERN_DEBUG instead...
+> >
+> > v2: update to linux-pci next
+> >    also add (unsigned long long) cast
+> >
+> > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>
+> Jesse, if you want to pick it up, could we please do this via git
+> methods (git-pull and stuff)? The commit below is the one in -tip -
+> should i separate it out?
 
-Why is the FOLL_TOUCH required here?
+Sure, though I'm not sure why I shouldn't just be applying this stuff to my 
+tree first... Seems weird to pull from you only to then ask Linus to pull.
 
--- Dave
 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
