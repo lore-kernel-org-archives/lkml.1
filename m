@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbYIJGHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbYIJGHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbYIJGHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 02:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYIJGHJ
+	id S1752014AbYIJGHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 02:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYIJGHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 02:07:09 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:54881 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750859AbYIJGHH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 02:07:07 -0400
-Date: Wed, 10 Sep 2008 11:36:24 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24.7-rt18
-Message-ID: <20080910060624.GA7484@in.ibm.com>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
-Mail-Followup-To: Ankita Garg <ankita@in.ibm.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <1221018283.22713.20.camel@localhost.localdomain>
+	Wed, 10 Sep 2008 02:07:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59873 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751145AbYIJGHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 02:07:18 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1221018283.22713.20.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+X-Fcc: ~/Mail/linus
+Cc: Mel Gorman <mel@csn.ul.ie>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>, William Irwin <wli@holomorphy.com>,
+       Adam Litke <agl@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       sugita <yumiko.sugita.yf@hitachi.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH] coredump_filter: add hugepage core dumping
+In-Reply-To: Hidehiro Kawai's message of  Monday, 8 September 2008 10:51:28 +0900 <48C48520.9070206@hitachi.com>
+References: <20080828142352.6ABC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080902134850.GA26372@csn.ul.ie>
+	<48C48520.9070206@hitachi.com>
+X-Windows: you'd better sit down.
+Message-Id: <20080910060431.188081541FE@magilla.localdomain>
+Date: Tue,  9 Sep 2008 23:04:31 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+It was certainly not meant to be excluded from any documentation.  
 
-On Tue, Sep 09, 2008 at 11:44:42PM -0400, Steven Rostedt wrote:
-> We are pleased to announce the 2.6.24.7-rt18 tree, which can be
-> downloaded from the location:
-> 
->   http://rt.et.redhat.com/download/
-> 
-> Information on the RT patch can be found at:
-> 
->   http://rt.wiki.kernel.org/index.php/Main_Page
-> 
-> Changes since 2.6.24.7-rt17
-> 
->   - seqlock serialize writes (Gregory Haskins)
-> 
->   - Fix above patch that broke non PREEMPT_RT (Steven Rostedt)
-> 
->   - Add sysctl to warn on RT task using non PI futex (Steven Rostedt)
->
+To make the description clear, MMF_DUMP_ELF_HEADERS applies when a
+file-backed private mapping would otherwise be elided (based on the other
+bits and whether it's been modified).  If the vma maps offset 0 of the
+file, and that page is readable and starts with ELFMAG, then just that
+first page will be dumped.  (So p_filesz will be PAGE_SIZE rather than 0
+for an elided mapping, or p_memsz for a mapping dumped whole.)
 
-A trivial patch to remove the hard coded value of MAX_RT_PRIO in the
-above patch.
- 
-Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
 
-Index: linux-2.6.26.5/kernel/futex.c
-===================================================================
---- linux-2.6.26.5.orig/kernel/futex.c	2008-09-09 22:58:19.000000000 -0700
-+++ linux-2.6.26.5/kernel/futex.c	2008-09-09 22:58:38.000000000 -0700
-@@ -1241,7 +1241,7 @@
- 			       "RT task %s:%d with priority %d"
- 			       " using non PI futex\n",
- 			       current->comm, current->pid,
--			       100 - current->prio);
-+			       MAX_RT_PRIO - current->prio);
- 		}
- 	}
- 
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+Thanks,
+Roland
