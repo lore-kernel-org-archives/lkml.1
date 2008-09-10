@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbYIJLIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbYIJLUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752014AbYIJLIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 07:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYIJLIF
+	id S1752832AbYIJLUT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 07:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYIJLUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 07:08:05 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:42848 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751131AbYIJLIE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 07:08:04 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: forcedeth: option to disable 100Hz timer (try 2)
-To: Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jgarzik@pobox.com>
-Reply-To: 7eggert@gmx.de
-Date: Wed, 10 Sep 2008 13:16:02 +0200
-References: <baho5-34g-25@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KdNg3-0001N5-Al@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+	Wed, 10 Sep 2008 07:20:05 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:56455 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752014AbYIJLUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 07:20:04 -0400
+Date: Wed, 10 Sep 2008 20:19:40 +0900
+To: joerg.roedel@amd.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's
+ alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080910201851R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikhail Kshevetskiy <mikhail.kshevetskiy@gmail.com> wrote:
+This is for tip/iommu.
 
-> On some hardware no TX done interrupts are generated, thus special
-> 100Hz timer interrupt is required to handle this situation properly.
-> Other device do not require that timer interrupt feature.
-> 
-> Forcedeth has a DEV_NEED_TIMERIRQ flag to mark the broken devices.
-> Unfortunately, nobody know the actual list of broken devices, so all
-> device has this flag on. Other problem, this flag is not user visible,
-> so the kernel recompilation is required to disable timer interrupts and
-> test a device.
+btw, Joery, what happens if map_sg (or map_single) gets
+not-DMA-capable buffer in the case of !iommu || !domain?
 
-Why don't you disable the interrupt after the first TX_done interrupt
-(no RX pending, no RX done)? Maybe you can printk "forcedeth device [x,y] does
-not need timer interrupts, please send this line to you@example.org", too.
-Maybe you can even disable it if no TX is to be done.
 
-OTOH, this fix is available, it's possibly the best to use it for now.
+==
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
+
+x86's common alloc_coherent (dma_alloc_coherent in dma-mapping.h) sets
+up the gfp flag according to the device dma_mask but AMD IOMMU doesn't
+need it for devices that the IOMMU can do virtual mappings for. This
+patch avoids unnecessary low zone allocation.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/amd_iommu.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 01c68c3..8efd249 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -999,6 +999,11 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	u16 devid;
+ 	phys_addr_t paddr;
+ 
++	get_device_resources(dev, &iommu, &domain, &devid);
++
++	if (iommu && domain)
++		flag &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
++
+ 	virt_addr = (void *)__get_free_pages(flag, get_order(size));
+ 	if (!virt_addr)
+ 		return 0;
+@@ -1006,8 +1011,6 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	memset(virt_addr, 0, size);
+ 	paddr = virt_to_phys(virt_addr);
+ 
+-	get_device_resources(dev, &iommu, &domain, &devid);
+-
+ 	if (!iommu || !domain) {
+ 		*dma_addr = (dma_addr_t)paddr;
+ 		return virt_addr;
+-- 
+1.5.4.2
 
