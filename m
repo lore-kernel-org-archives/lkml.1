@@ -1,75 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbYIJHAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752321AbYIJHOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbYIJHAh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 03:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYIJHA3
+	id S1752321AbYIJHOG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 03:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYIJHNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 03:00:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35521 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179AbYIJHA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 03:00:29 -0400
-Date: Wed, 10 Sep 2008 09:00:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: heukelum@fastmail.fm, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH] i386: handle all exceptions with interrupts off
-	initially
-Message-ID: <20080910070014.GB31059@elte.hu>
-References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm> <48C73EB8.8020405@zytor.com> <20080910055337.GA9765@elte.hu> <48C76243.5010206@zytor.com>
+	Wed, 10 Sep 2008 03:13:54 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:43593 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYIJHNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 03:13:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wWWuikipGdk54wYcPTsD0eyfTCYzp6ewq9rdrj2PnXtsSu20ZytmfnDhs8zqGGawEb
+         XGdADSx3IvTul3NkXL6CHp7NfXxhxEpxuc8Gju5xKLU/HLxdJ+789ZJCg6Z9J/sHgv7k
+         UnRj1xi46HZnUJogl94WaRjY3Bf2iNSPwlUNI=
+Message-ID: <28c262360809100013x7a5271fcm78a67ee930526a63@mail.gmail.com>
+Date: Wed, 10 Sep 2008 16:13:52 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Oren Laadan" <orenl@cs.columbia.edu>
+Subject: Re: [RFC v4][PATCH 6/9] Checkpoint/restart: initial documentation
+Cc: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+In-Reply-To: <1220946154-15174-7-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C76243.5010206@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+	 <1220946154-15174-7-git-send-email-orenl@cs.columbia.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@zytor.com> wrote:
-
-> Ingo Molnar wrote:
->>
->> the entry paths here are really short (we enable irqs almost 
->> immediately) so it's a non-issue in terms of worst-case latencies.
->>
->>> In other words, it's not something we want to do "just because", but 
->>> to the extent that it provides real benefit, it makes sense.
->>
->> this is historically pretty fragile code so bringing the 32-bit and 
->> 64-bit variants more in line sounds like a good reason to me. For 
->> example we had various long-living irq state annotation bugs (the 
->> combination of kprobes and lockdep, etc.) that remained unfixed 
->> partly due to this assymetry.
+On Tue, Sep 9, 2008 at 4:42 PM, Oren Laadan <orenl@cs.columbia.edu> wrote:
+> Covers application checkpoint/restart, overall design, interfaces
+> and checkpoint image format.
 >
-> Agreed completely.  I certainly didn't mean to come across sounding 
-> negative.
+> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+> ---
+>  Documentation/checkpoint.txt |  187 ++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 187 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/checkpoint.txt
+>
+> diff --git a/Documentation/checkpoint.txt b/Documentation/checkpoint.txt
+> new file mode 100644
+> index 0000000..f67aef1
+> --- /dev/null
+> +++ b/Documentation/checkpoint.txt
+> @@ -0,0 +1,187 @@
+> +
+> +       === Checkpoint-Restart support in the Linux kernel ===
+> +
+> +Copyright (C) 2008 Oren Laadan
+> +
+> +Author:                Oren Laadan <orenl@cs.columbia.edu>
+> +
+> +License:       The GNU Free Documentation License, Version 1.2
+> +               (dual licensed under the GPL v2)
+> +Reviewers:
+> +
+> +Application checkpoint/restart [CR] is the ability to save the state
+> +of a running application so that it can later resume its execution
+> +from the time at which it was checkpointed. An application can be
+> +migrated by checkpointing it on one machine and restarting it on
+> +another. CR can provide many potential benefits:
+> +
+> +* Failure recovery: by rolling back an to a previous checkpoint
+> +
+> +* Improved response time: by restarting applications from checkpoints
+> +  instead of from scratch.
+> +
+> +* Improved system utilization: by suspending long running CPU
+> +  intensive jobs and resuming them when load decreases.
+> +
+> +* Fault resilience: by migrating applications off of faulty hosts.
+> +
+> +* Dynamic load balancing: by migrating applications to less loaded
+> +  hosts.
+> +
+> +* Improved service availability and administration: by migrating
+> +  applications before host maintenance so that they continue to run
+> +  with minimal downtime
+> +
+> +* Time-travel: by taking periodic checkpoints and restarting from
+> +  any previous checkpoint.
+> +
+> +
+> +=== Overall design
+> +
+> +Checkpoint and restart is done in the kernel as much as possible. The
+> +kernel exports a relative opaque 'blob' of data to userspace which can
+> +then be handed to the new kernel at restore time.  The 'blob' contains
+> +data and state of select portions of kernel structures such as VMAs
+> +and mm_structs, as well as copies of the actual memory that the tasks
+> +use. Any changes in this blob's format between kernel revisions can be
+> +handled by an in-userspace conversion program. The approach is similar
+> +to virtually all of the commercial CR products out there, as well as
+> +the research project Zap.
+> +
+> +Two new system calls are introduced to provide CR: sys_checkpoint and
+> +sys_restart.  The checkpoint code basically serializes internel kernel
+> +state and writes it out to a file descriptor, and the resulting image
+> +is stream-able. More specifically, it consists of 5 steps:
+> +  1. Pre-dump
+> +  2. Freeze the container
+> +  3. Dump
+> +  4. Thaw (or kill) the container
+> +  5. Post-dump
+> +Steps 1 and 5 are an optimization to reduce application downtime:
+> +"pre-dump" works before freezing the container, e.g. the pre-copy for
+> +live migration, and "post-dump" works after the container resumes
+> +execution, e.g. write-back the data to secondary storage.
+> +
+> +The restart code basically reads the saved kernel state and from a
+> +file descriptor, and re-creates the tasks and the resources they need
+> +to resume execution. The restart code is executed by each task that
+> +is restored in a new container to reconstruct its own state.
+> +
+> +
+> +=== Interfaces
+> +
+> +int sys_checkpoint(pid_t pid, int fd, unsigned long flag);
+> +  Checkpoint a container whose init task is identified by pid, to the
+> +  file designated by fd. Flags will have future meaning (should be 0
+> +  for now).
+> +  Returns: a positive integer that identifies the checkpoint image
+> +  (for future reference in case it is kept in memory) upon success,
+> +  0 if it returns from a restart, and -1 if an error occurs.
+> +
+> +int sys_restart(int crid, int fd, unsigned long flags);
+> +  Restart a container from a checkpoint image identified by crid, or
+> +  from the blob stored in the file designated by fd. Flags will have
+> +  future meaning (should be 0 for now).
+> +  Returns: 0 on success and -1 if an error occurs.
+> +
+> +Thus, if checkpoint is initiated by a process in the container, one
+> +can use logic similar to fork():
+> +       ...
+> +       crid = checkpoint(...);
+> +       switch (crid) {
+> +       case -1:
+> +               perror("checkpoint failed");
+> +               break;
+> +       default:
+> +               fprintf(stderr, "checkpoint succeeded, CRID=%d\n", ret);
+> +               /* proceed with execution after checkpoint */
+> +               ...
+> +               break;
+> +       case 0:
+> +               fprintf(stderr, "returned after restart\n");
+> +               /* proceed with action required following a restart */
+> +               ...
+> +               break;
+> +       }
+> +       ...
+> +And to initiate a restart, the process in an empty container can use
+> +logic similar to execve():
+> +       ...
+> +       if (restart(crid, ...) < 0)
+> +               perror("restart failed");
+> +       /* only get here if restart failed */
+> +       ...
+> +
+> +
+> +=== Checkpoint image format
+> +
+> +The checkpoint image format is composed of records consistings of a
+> +pre-header that identifies its contents, followed by a payload. (The
+> +idea here is to enable parallel checkpointing in the future in which
+> +multiple threads interleave data from multiple processes into a single
+> +stream).
+> +
+> +The pre-header is defined by "struct cr_hdr" as follows:
+> +
+> +struct cr_hdr {
+> +       __s16 type;
+> +       __s16 len;
+> +       __u32 id;
+> +};
+> +
+> +Here, 'type' field identifies the type of the payload, 'len' tells its
+> +length in byes. The 'id' identifies the owner object instance. The
 
-great - i'll check which topic this fits in best. I suspect it will get 
-its own topic - but there could be interactions as traps*.c is a central 
-(and hence popular) file - here are the currently pending changes in 
--tip:
+byes => bytes ?? :)
 
-db4b0f1: kmemcheck: implement REP MOVS/STOS emulation
-48e2bd5: x86: coding style fixes to arch/x86/kernel/traps_64.c
-c9c3ddd: x86_64: remove empty lines from stack traces/oopses
-4df9e51: x86: coding style fixes to arch/x86/kernel/traps_64.c
-b359e8a: x86, xsave: context switch support using xsave/xrstor
-dc1e35c: x86, xsave: enable xsave/xrstor on cpus with xsave support
-862849a: x86: add hooks for kmemcheck on x86_64
-787ecfa: x86: add hooks for kmemcheck
-afdb702: x86: __show_registers() and __show_regs() API unification
-0d84b78: x86 NMI-safe INT3 and Page Fault
+> +meaning of the 'id' field varies depending on the type. For example,
+> +for type CR_HDR_MM, the 'id' identifies the task to which this MM
+> +belongs. The payload also varies depending on the type, for instance,
+> +the data describing a task_struct is given by a 'struct cr_hdr_task'
+> +(type CR_HDR_TASK) and so on.
+> +
+> +The format of the memory dump is as follows: for each VMA, there is a
+> +'struct cr_vma'; if the VMA is file-mapped, it is followed by the file
+> +name. The cr_vma->npages indicated how many pages were dumped for this
+> +VMA. Following comes the actual data: first the addresses of all the
+> +dumped pages, followed by the contents of all the dumped pages (npages
+> +entries each). Then comes the next VMA and so on.
+> +
+> +To illustrate this, consider a single simple task with two VMAs: one
+> +is file mapped with two dumped pages, and the other is anonymous with
+> +three dumped pages. The checkpoint image will look like this:
+> +
+> +cr_hdr + cr_hdr_head
+> +cr_hdr + cr_hdr_task
+> +       cr_hdr + cr_hdr_mm
+> +               cr_hdr + cr_hdr_vma + cr_hdr + string
+> +                       addr1, addr2
+> +                       page1, page2
+> +               cr_hdr + cr_hdr_vma
+> +                       addr3, addr4, addr5
+> +                       page3, page4, page5
+> +               cr_hdr + cr_mm_context
+> +       cr_hdr + cr_hdr_thread
+> +       cr_hdr + cr_hdr_cpu
+> +cr_hdr + cr_hdr_tail
+> +
+> +
+> +=== Changelog
+> +
+> +[2008-Sep-04] v4:
+> +* Fix calculation of hash table size
+> +* Fix header structure alignment
+> +* Use stand list_... for cr_pgarr
+> +
+> +[2008-Aug-20] v3:
+> +* Various fixes and clean-ups
+> +* Use standard hlist_... for hash table
+> +* Better use of standard kmalloc/kfree
+> +
+> +[2008-Aug-09] v2:
+> +* Added utsname->{release,version,machine} to checkpoint header
+> +* Pad header structures to 64 bits to ensure compatibility
+> +* Address comments from LKML and linux-containers mailing list
+> +
+> +[2008-Jul-29] v1:
+> +In this incarnation, CR only works on single task. The address space
+> +may consist of only private, simple VMAs - anonymous or file-mapped.
+> +Both checkpoint and restart will ignore the first argument (pid/crid)
+> +and instead act on themselves.
+> --
+> 1.5.4.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-we'll see.
 
-	Ingo
+
+-- 
+Kinds regards,
+MinChan Kim
