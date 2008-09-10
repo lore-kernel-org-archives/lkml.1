@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYIJQzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYIJQz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbYIJQzd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYIJQzZ
+	id S1754453AbYIJQz4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYIJQzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:55:25 -0400
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:36932 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752009AbYIJQzY (ORCPT
+	Wed, 10 Sep 2008 12:55:46 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:40510 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752186AbYIJQzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:55:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6uxxVdzwAQkeKs/KK4DN4cZlZkok9fenVpBNa5rEChM/ZJnDMJkbSsjqs1sB2ICyW2u1cUX2S+LWEyLqfIt3yn8EdVozc0LMG+KQwesjrvdqsHnSwe9hlmm4lBVLf2R/MCB/Pmc+H2IuEvyQpUCftUW0r0nTOK66FdkTWbJQSyw=  ;
-X-YMail-OSG: JxiT4IwVM1mdE.SJNPqbyOMiUV859kXmn6V6CV0HY0hT96fqlO_ZFh_6BOD8O1A6ZVeIqteYnuVdRpO5sOAeOSJ3.p06JIxrPLt4rdo7Lpw0m2_WUsbpXPHyCi4UdsfgczY-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [Xen-devel] Re: [PATCH 1 of 7] x86: add _PAGE_IOMAP pte flag for =?iso-8859-1?q?IO=09mappings?=
-Date: Thu, 11 Sep 2008 02:55:03 +1000
-User-Agent: KMail/1.9.5
-Cc: Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>,
-       Xen Devel <xen-devel@lists.xensource.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <4d93ba619c716c45cca0.1220826073@localhost> <48C7998D.1030408@qumranet.com> <48C7F80C.6000807@goop.org>
-In-Reply-To: <48C7F80C.6000807@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 10 Sep 2008 12:55:45 -0400
+Subject: Re: [RFC v4][PATCH 4/9] Memory management (dump)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+In-Reply-To: <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+	 <1220946154-15174-5-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 09:55:28 -0700
+Message-Id: <1221065728.6781.19.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809110255.03580.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 September 2008 02:38, Jeremy Fitzhardinge wrote:
-> Avi Kivity wrote:
-> > Actually it's more of a "no struct page" flag, which implies no
-> > refcounting.
->
-> Hm, is that actually true enough to define it?  Could we rename it
-> something like _PAGE_NOSTRUCTPAGE or something a bit more specific than
-> "special"?
+On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
+> +       while (addr < end) {
+> +               struct page *page;
+> +
+> +               /*
+> +                * simplified version of get_user_pages(): already have vma,
+> +                * only need FOLL_TOUCH, and (for now) ignore fault stats.
+> +                *
+> +                * FIXME: consolidate with get_user_pages()
+> +                */
+> +
+> +               cond_resched();
+> +               while (!(page = follow_page(vma, addr, FOLL_TOUCH))) {
+> +                       ret = handle_mm_fault(vma->vm_mm, vma, addr, 0);
+> +                       if (ret & VM_FAULT_ERROR) {
+> +                               if (ret & VM_FAULT_OOM)
+> +                                       ret = -ENOMEM;
+> +                               else if (ret & VM_FAULT_SIGBUS)
+> +                                       ret = -EFAULT;
+> +                               else
+> +                                       BUG();
+> +                               break;
+> +                       }
+> +                       cond_resched();
+> +                       ret = 0;
+> +               }
 
-It complements vm_normal_page, which was there first (and coined by
-Linus). It is the opposite of normal. This question always comes up
-and my answer is always yes, if you can convince Linus to rename
-vm_normal_page to the corresponding term :)
+get_user_pages() is really the wrong thing to use here.  It makes pages
+*present* so that we can do things like hand them off to a driver.  For
+checkpointing, we really don't care about that.  It's a waste of time,
+for instance to perform faults to fill the mappings up with zero pages
+and page tables.  Just think of what will happen the first time we touch
+a very large, very sparse anonymous area.  We'll probably kill the
+system just allocating page tables.  Take a look at the comment in
+follow_page().  This is a similar operation to core dumping, and we need
+to be careful.
 
-It's not exactly _PAGE_NOSTRUCTPAGE. There can be struct pages under
-there, but you're not to touch them.
+This might be fine for a proof of concept, but it needs to be thought
+out much more thoroughly before getting merged.  I guess I'm
+volunteering to go do that.
 
+-- Dave
 
-> >   And not having a struct page should correspond well to a pte not
-> > requiring pfn->mfn conversion and being an I/O page.
->
-> But _PAGE_SPECIAL is only set in a few places.  It's not set in ioremap
-> mappings and so on.  Should it be?
-
-Kernel address space, you mean? No, it is only ever used on user
-addresses.
-
-
-> There's also the hiccup that it gets set in a pte with pte_mkspecial() -
-> but at that point its too late because you've already constructed the
-> pte and done the pfn->mfn conversion.  _PAGE_IOMAP can only be set when
-> you initially construct the pte out of a frame number and a pgprot.
-
-I don't see this would be any problem because the pte is always constructed
-in a single line in both places where it is used.
