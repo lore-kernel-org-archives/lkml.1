@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYIJQZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYIJQ0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbYIJQZo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbYIJQZd
+	id S1754813AbYIJQ0E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYIJQZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:25:33 -0400
-Received: from cpsmtpo-eml06.kpnxchange.com ([213.75.38.155]:39495 "EHLO
-	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752305AbYIJQZc (ORCPT
+	Wed, 10 Sep 2008 12:25:48 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:14281 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754711AbYIJQZr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:25:32 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Time travel experiment?
-Date: Wed, 10 Sep 2008 18:25:28 +0200
-User-Agent: KMail/1.9.9
-References: <200809101658.06935.elendil@planet.nl> <20080910152917.634a03fc@the-village.bc.nu> <200809101755.19927.elendil@planet.nl>
-In-Reply-To: <200809101755.19927.elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+	Wed, 10 Sep 2008 12:25:47 -0400
+Message-ID: <48C7F4EA.8080107@panasas.com>
+Date: Wed, 10 Sep 2008 19:25:14 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Chris Leech <christopher.leech@intel.com>,
+       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, devel@open-fcoe.org
+Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for	accessing	3-byte
+ arrays as integers
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>	 <20080910140712.GA12280@infradead.org> <1221061241.27385.14.camel@norville.austin.ibm.com> <48C7F19D.3080507@panasas.com>
+In-Reply-To: <48C7F19D.3080507@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809101825.29276.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Sep 2008 16:25:30.0343 (UTC) FILETIME=[D767CF70:01C91361]
+X-OriginalArrivalTime: 10 Sep 2008 16:24:21.0978 (UTC) FILETIME=[AEA823A0:01C91361]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 September 2008, Frans Pop wrote:
-> > > $ date
-> > > Wed Jul  3 23:09:23 CEST 2024
-> >
-> > Is this repeatable ?
->
-> This wasn't the first suspend I've done today and I'd not seen it
-> before. I'll follow up if it does repeat, but I thought it was strange
-> and potentially important enough to at least report this occurrence. It
-> might ring a bell with someone.
+devel-bounces@open-fcoe.org wrote:
+> Your mail to 'devel' with the subject
+> 
+>     Re: [PATCH 1/3] 24-bit types: typedef and macros for	accessing
+> 3-byte arrays as integers
+> 
+> Is being held until the list moderator can review it for approval.
+> 
+> The reason it is being held:
+> 
+>     Post by non-member to a members-only list
+> 
+> Either the message will get posted to the list, or you will receive
+> notification of the moderator's decision.  If you would like to cancel
+> this posting, please visit the following URL:
+> 
+>     http://www.open-fcoe.org/mailman/confirm/devel/2402f0a8c12e310105827ba074ab7376a0dee4a0
+> 
 
-Oops. Yes, it is repeatable. Just had the same occur again.
-Not sure if I can trigger it reliably though or if it will still happen
-after a reboot.
 
-The jump occurs at the same point and to almost the same time/date:
-Sep 10 18:15:30 aragorn kernel: PM: Adding info for No Bus:vcs63
-Sep 10 18:15:30 aragorn kernel: PM: Adding info for No Bus:vcsa63
-Sep 10 18:15:30 aragorn kernel: wlan0: authenticate with AP 00:14:c1:38:e5:15
-Sep 10 18:15:30 aragorn kernel: wlan0: authenticated
-Sep 10 18:15:30 aragorn kernel: wlan0: associate with AP 00:14:c1:38:e5:15
-Sep 10 18:15:30 aragorn kernel: wlan0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-Sep 10 18:15:30 aragorn kernel: wlan0: associated
-Sep 10 18:15:30 aragorn kernel: PM: Removing info for No Bus:vcs63
-Sep 10 18:15:30 aragorn kernel: PM: Removing info for No Bus:vcsa63
-Jul  3 23:09:01 aragorn kernel: wlan0: disassociating by local choice (reason=3)
-Jul  3 23:09:03 aragorn kernel: wlan0: associate with AP 00:14:c1:38:e5:15
-Jul  3 23:09:03 aragorn kernel: wlan0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-
-One other thing with this last one. I had the system on AC this time,
-which means the screensaver was active. It was running at a crazy speed
-(much too fast). If I start the screensaver again now it runs at normal
-speed.
+Can this be fixed please ?
