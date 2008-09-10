@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYIJVbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbYIJVen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503AbYIJVbw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbYIJVbo
+	id S1755503AbYIJVen (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYIJVee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:31:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57479 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751232AbYIJVbo (ORCPT
+	Wed, 10 Sep 2008 17:34:34 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30839 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752390AbYIJVed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:31:44 -0400
-Date: Wed, 10 Sep 2008 14:31:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adam Tkac <vonsch@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27-rc5] Allow set RLIMIT_NOFILE to RLIM_INFINITY
-Message-Id: <20080910143141.a3bc8258.akpm@linux-foundation.org>
-In-Reply-To: <20080909071406.GA3814@traged.atkac.englab.brq.redhat.com>
-References: <20080909071406.GA3814@traged.atkac.englab.brq.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Sep 2008 17:34:33 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
+Date: Wed, 10 Sep 2008 15:34:27 -0600
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Rene Herman <rene.herman@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Matthew Wilcox <matthew@wil.cx>
+References: <200809091250.08620.elendil@planet.nl> <200809091140.25597.bjorn.helgaas@hp.com> <200809100939.17045.elendil@planet.nl>
+In-Reply-To: <200809100939.17045.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809101534.27688.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Sep 2008 09:14:07 +0200
-Adam Tkac <vonsch@gmail.com> wrote:
-
-> when process wants set limit of open files to RLIM_INFINITY it gets
-> EPERM even if it has CAP_SYS_RESOURCE capability. Attached patch
-> should fix the problem. Please add me to CC of your responses because
-> I'm not member of list.
+On Wednesday 10 September 2008 01:39:15 am Frans Pop wrote:
+> On Tuesday 09 September 2008, Bjorn Helgaas wrote:
+> > If the PCI device isn't fully initialized, it doesn't seem right to
+> > check it for resource conflicts.  But I don't know how to tell that.
+> >
+> > Can you figure out where the 1f.5 and 1f.6 resources get assigned?
 > 
-> Regards, Adam
-> 
-> -- 
-> Adam Tkac
-> 
-> 
-> [linux26-openfiles.patch  text/plain (634B)]
-> --- a/kernel/sys.c
-> +++ b/kernel/sys.c
-> @@ -1458,8 +1458,14 @@ asmlinkage long sys_setrlimit(unsigned i
->  	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
->  	    !capable(CAP_SYS_RESOURCE))
->  		return -EPERM;
-> -	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
-> -		return -EPERM;
-> +	if (resource == RLIMIT_NOFILE) {
-> +		if (new_rlim.rlim_max == RLIM_INFINITY)
-> +			new_rlim.rlim_max = sysctl_nr_open;
-> +		if (new_rlim.rlim_cur == RLIM_INFINITY)
-> +			new_rlim.rlim_cur = sysctl_nr_open;
-> +		if (new_rlim.rlim_max > sysctl_nr_open)
-> +			return -EPERM;
-> +	}
+> If the approach suggested by Rene feasible or would you still like me to 
+> get this info? In the last case I'll need some pointers where exactly to 
+> look.
 
-The kernel has had this behaviour for a long time.  2.6.13 had:
+Checking pci_resource_start() for zero would certainly work
+in your particular case.  But I don't know enough about PCI to
+know whether that's always safe.
 
-	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
-	    !capable(CAP_SYS_RESOURCE))
-		return -EPERM;
-	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > NR_OPEN)
-			return -EPERM;
+Matthew Wilcox suggested that the BARs may be zero because the BIOS
+has "disabled" those two devices.  Are there any BIOS setup options
+related to them?  I know you need to use at least the sound device,
+so I'm not suggesting that Linux should leave it disabled;  I'm just
+trying to learn more about the situation.
 
-I don't immediately see a problem with your change, but what makes you
-believe that it is needed?  Is there some standard which we're
-violating?  Is there some operational situation in which the current
-behaviour is causing a problem?
+If I were trying to figure out where we assign resources, I'd probably
+boot with "pci=earlydump" and sprinkle calls to early_dump_pci_device()
+in pcibios_resource_survey(), and drill down from there.
 
-Thanks.
+Bjorn
