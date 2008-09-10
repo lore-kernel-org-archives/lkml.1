@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbYIJLUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbYIJLVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbYIJLUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 07:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbYIJLUF
+	id S1753805AbYIJLVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 07:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYIJLVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 07:20:05 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:56455 "EHLO mo10.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752014AbYIJLUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 07:20:04 -0400
-Date: Wed, 10 Sep 2008 20:19:40 +0900
-To: joerg.roedel@amd.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's
- alloc_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080910201851R.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 10 Sep 2008 07:21:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:27847 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbYIJLVM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 07:21:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent:from;
+        b=qxLolRUsVXK/PD5H1BvxbKo38o0w2dGj4mUsd+DrI8EnsUbcdId/GZ6zxzHiw4Bmxt
+         xEmRcmn1ATl+SWAAZxwqgdBZeDFBPJzFchiGKU9W52BvO2GRZwCWptlVFIzOgnCNZy4Q
+         T87uuaOjg5Y+RgleljC2t0YrcZUzPlMASV5w0=
+Date: Wed, 10 Sep 2008 13:20:44 +0200
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/18] ide: add generic ATA/ATAPI disk driver
+Message-ID: <20080910112044.GB10263@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080907221424.24285.81137.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080907221424.24285.81137.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is for tip/iommu.
+On Mon, Sep 08, 2008 at 12:14:24AM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> [ Borislav, this is the 'futuristic' stuff that we were talking about. :) ]
+> 
+> Hi,
+> 
+> This patch series adds a generic ATA/ATAPI disk driver (ide-gd) replacing
+> ide-disk and ide-floppy drivers.  It is achieved by moving the common code
+> to ide-gd.c, adding struct ide_disk_ops (which is used to abstract protocol
+> specific details) and updating ide-{disk,floppy}.c accordingly.
+> 
+> The main goal is to make the code more maintainable / easier to extend later.
+> As an immediate result we get driver specific debugging support for ATA disks
+> and ability for driver specific Power Management for ATAPI devices.  Otherwise
+> it is really an initial merge (which means that in the future the code can be
+> further unified, struct ide_disk_ops can be made more fine-grained etc.).
 
-btw, Joery, what happens if map_sg (or map_single) gets
-not-DMA-capable buffer in the case of !iommu || !domain?
+Looks cool, ACK with some comments/questions in separate mail. Will test on my
+Iomega ZIP drive when I get back.
 
-
-==
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
-
-x86's common alloc_coherent (dma_alloc_coherent in dma-mapping.h) sets
-up the gfp flag according to the device dma_mask but AMD IOMMU doesn't
-need it for devices that the IOMMU can do virtual mappings for. This
-patch avoids unnecessary low zone allocation.
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/x86/kernel/amd_iommu.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 01c68c3..8efd249 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -999,6 +999,11 @@ static void *alloc_coherent(struct device *dev, size_t size,
- 	u16 devid;
- 	phys_addr_t paddr;
- 
-+	get_device_resources(dev, &iommu, &domain, &devid);
-+
-+	if (iommu && domain)
-+		flag &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
-+
- 	virt_addr = (void *)__get_free_pages(flag, get_order(size));
- 	if (!virt_addr)
- 		return 0;
-@@ -1006,8 +1011,6 @@ static void *alloc_coherent(struct device *dev, size_t size,
- 	memset(virt_addr, 0, size);
- 	paddr = virt_to_phys(virt_addr);
- 
--	get_device_resources(dev, &iommu, &domain, &devid);
--
- 	if (!iommu || !domain) {
- 		*dma_addr = (dma_addr_t)paddr;
- 		return virt_addr;
 -- 
-1.5.4.2
-
+Regards/Gruss,
+    Boris.
