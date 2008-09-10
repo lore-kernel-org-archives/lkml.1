@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbYIJJ6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbYIJJ76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752690AbYIJJ6n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 05:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbYIJJ6g
+	id S1753304AbYIJJ76 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 05:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYIJJ7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 05:58:36 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51821 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751489AbYIJJ6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 05:58:35 -0400
-Date: Wed, 10 Sep 2008 12:58:32 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Jarod Wilson <jwilson@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
-       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
-Subject: Re: [PATCH 06/18] lirc driver for the ATI USB RF remote receiver
-Message-ID: <20080910095832.GA22422@sci.fi>
-Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-	Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-	Jarod Wilson <jarod@redhat.com>, Janne Grunau <j@jannau.net>,
-	Christoph Bartelmus <lirc@bartelmus.de>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com> <1220933164-10160-3-git-send-email-jwilson@redhat.com> <1220933164-10160-4-git-send-email-jwilson@redhat.com> <1220933164-10160-5-git-send-email-jwilson@redhat.com> <1220933164-10160-6-git-send-email-jwilson@redhat.com> <1220933164-10160-7-git-send-email-jwilson@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1220933164-10160-7-git-send-email-jwilson@redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 10 Sep 2008 05:59:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57770 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbYIJJ7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 05:59:50 -0400
+Subject: Re: [2.6.27-rc5] inotify_read's ev_mutex vs do_page_fault's
+ mmap_sem...
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Daniel J Blueman <daniel.blueman@gmail.com>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200809101950.27669.nickpiggin@yahoo.com.au>
+References: <6278d2220809091403k65187128keec3b401717f1ec0@mail.gmail.com>
+	 <200809101803.20758.nickpiggin@yahoo.com.au>
+	 <20080910083749.GH15255@elte.hu>
+	 <200809101950.27669.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 11:59:31 +0200
+Message-Id: <1221040771.2442.120.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 12:05:51AM -0400, Jarod Wilson wrote:
-> +config LIRC_ATIUSB
-> +	tristate "ATI RF USB Receiver support"
-> +	default n
-> +	depends on LIRC_DEV
-> +	help
-> +	  Driver for the ATI USB RF remote receiver
-> +
+On Wed, 2008-09-10 at 19:50 +1000, Nick Piggin wrote:
+> On Wednesday 10 September 2008 18:37, Ingo Molnar wrote:
+> > * Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > > On Wednesday 10 September 2008 17:57, Peter Zijlstra wrote:
+> 
+> > > > Sure, how about the below - untested - uncompiled, might eat kittens,
+> > > > etc..
+> > > >
+> > > > Just sprinkle something like:
+> > > >
+> > > >   might_lock_read(&mm->mmap_sem);
+> > > >
+> > > > in the right places.
+> > >
+> > > Ahh, very nice, thanks! I'll give that a try...
+> >
+> > cool! Please send in an RFC patch once you have something that boots -
+> > we can stick it into tip/core/locking and see whether there's any new
+> > messages on a wide range of systems and workloads. (and we'd also check
+> > whether the number of kittens is an invariant.)
+> 
+> Well I have verified it boots, and have used the annotation in some of
+> x86-64's user copy routines (luckily no flood of bugs I was scared of,
+> phew!)
+> 
+> So I would like to request you merge Peter's patch, and we'll hopefully
+> start seeing the annotations being used. 
 
-We already have proper input drivers for these devices (ati_remote and
-ati_remote2).
+Will you send your x86_64 patch to be the first?
 
--- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+> FWIW, I don't suppose lockdep
+> can determine that it is a sleeping lock, and do the appropriate
+> might_sleep checks at this point as well?
+
+Humm, no - we don't actually have that information there - I guess one
+could add it to lockdep_map and set it from the various init routines,
+but I'm not sure its worth it - just add might_sleep() along with
+might_lock() :-)
+
