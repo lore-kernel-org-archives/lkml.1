@@ -1,73 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635AbYIJA2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbYIJAgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752635AbYIJA2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 20:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYIJA2O
+	id S1752068AbYIJAgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 20:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYIJAgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 20:28:14 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5787 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbYIJA2N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 20:28:13 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=YARr0N8Y2r3klNjp/8KrlE5QiyEvOQ8OYTJpps5iYgJErzq8v5GN0LXOz9uJEfl14
-	vqeqjmMH4GpdYfK57jIpQ==
-Message-ID: <6599ad830809091728m426a7219h1977001f86cb5f31@mail.gmail.com>
-Date: Tue, 9 Sep 2008 17:28:03 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH] cgroups: fix probable race with put_css_set[_taskexit] and find_css_set
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48AA684B.7000704@cn.fujitsu.com>
+	Tue, 9 Sep 2008 20:36:09 -0400
+Received: from scing.com ([217.160.110.58]:60237 "EHLO scing.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750882AbYIJAgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 20:36:08 -0400
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+From: Janne Grunau <j@jannau.net>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 04/18] lirc driver for 2nd-gen and later Media Center Ed. USB IR transceivers
+Date: Wed, 10 Sep 2008 02:36:03 +0200
+User-Agent: KMail/1.9.9
+Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
+       Christoph Bartelmus <lirc@bartelmus.de>, Janne Grunau <j@jannau.net>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-5-git-send-email-jwilson@redhat.com> <20080909173057.6d93a7ef@bike.lwn.net>
+In-Reply-To: <20080909173057.6d93a7ef@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <48AA684B.7000704@cn.fujitsu.com>
+Message-Id: <200809100236.04016.j@jannau.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 18, 2008 at 11:29 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> put_css_set_taskexit may be called when find_css_set is called on
-> other cpu. And the race will occur:
+On Wednesday 10 September 2008 01:30:57 Jonathan Corbet wrote:
+> On Tue,  9 Sep 2008 00:05:49 -0400
 >
+> Jarod Wilson <jwilson@redhat.com> wrote:
+> > +/*
+> > + * LIRC driver for Philips eHome USB Infrared Transceiver
+> > + * and the Microsoft MCE 2005 Remote Control
+> > + *
+> > + * (C) by Martin A. Blatter <martin_a_blatter@yahoo.com>
+> > + *
+> > + * Transmitter support and reception code cleanup.
+> > + * (C) by Daniel Melander <lirc@rajidae.se>
+>
+> As I understand it, proper assertions of copyright need the word
+> "copyright" and a year; the "(C)" trigraph doesn't have any legal
+> meaning.
 
+Depends on the country. I won't touch copyright notices or attributions.
 
-Sorry I didn't respond to this when it originally came out - I was on vacation.
+> > + * This driver will only work reliably with kernel version 2.6.10
+> > + * or higher, probably because of differences in USB device
+> > enumeration + * in the kernel code. Device initialization fails
+> > most of the time + * with earlier kernel versions.
+>
+> My guess is that this will not be a major impediment to mainline
+> inclusion; this comment can probably go.
 
-I agree that it's a race that needs to be fixed, but I'm not sure that
-I like the fix that can generate kref warnings.
+Already removed.
 
-I can see two possible fixes:
+> > +/* lock irctl structure */
+> > +#define IRLOCK		mutex_lock(&ir->lock)
+> > +#define IRUNLOCK	mutex_unlock(&ir->lock)
+>
+> Might I request that these go away?  They can only obfuscate the
+> code.
 
-1) avoid the race entirely by introducing some new primitives:
+yes, I will manually expand similar macros in the other drivers too.
 
-atomic_dec_and_write_lock() (like atomic_dec_and_lock(), but for an rwlock)
+> Also, set_use_inc() is returning a normal zero-or-negative-error
+> status to an outside caller.  It shouldn't return a locally-defined
+> symbol like SUCCESS.  I'd just use "return 0;".
 
-and kref_put_and_write_lock() which would be something like:
+fixed
 
-int kref_put_and_write_lock(struct kref *kref, void (*release)(struct
-kref *kref), rwlock*lock)
-{
-  if(atomic_dec_and_write_lock(&kref->refcount, lock)) {
-    release(kref);
-    return 1;
-  }
-  return 0;
-}
+> > +#ifdef MODULE
+> > +static int __init usb_remote_init(void)
+> > +{
+>
+> I'm curious: you don't need to initialize if not compiled as a
+> module?
 
-We'd then use kref_put_and_write_lock(), and enter __release_css_set()
-with the lock already held
+Already fixed in all drivers, relict from out of tree lirc.
 
-2) Use atomic_inc_not_zero() in find_existing_css_set(), to ensure
-that we only return a referenced css, and remove the get_css_set()
-call from find_css_set(). (Possibly wrapping this in a new
-kref_get_not_zero() function)
+> > +	int i;
+> > +
+> > +	printk(KERN_INFO "\n");
+> > +	printk(KERN_INFO DRIVER_NAME ": " DRIVER_DESC " " DRIVER_VERSION
+> > "\n"); +	printk(KERN_INFO DRIVER_NAME ": " DRIVER_AUTHOR "\n");
+> > +	dprintk(DRIVER_NAME ": debug mode enabled\n");
+> > +
+> > +	request_module("lirc_dev");
+>
+> You're calling functions from lirc_dev.c, so modprobe will not load
+> this module until lirc_dev is already there.  There's no point in
+> trying to load it explicitly with request_module().
 
-Paul
+True, request_module("lirc_dev"); removed from all drivers.
+
+> > +	i = usb_register(&usb_remote_driver);
+> > +	if (i < 0) {
+> > +		printk(DRIVER_NAME ": usb register failed, result = %d\n", i);
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	return SUCCESS;
+> > +}
+>
+> "return 0;" please.
+
+fixed for all drivers
+
+Janne
