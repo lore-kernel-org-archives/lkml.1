@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbYIJXhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYIJXiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbYIJXhP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbYIJXhD
+	id S1754900AbYIJXiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYIJXiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:37:03 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35733 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751946AbYIJXhB (ORCPT
+	Wed, 10 Sep 2008 19:38:08 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:7420 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751986AbYIJXiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:37:01 -0400
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: David Woodhouse <dwmw2@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: jeffm@suse.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20080910.162423.40167601.davem@davemloft.net>
-References: <1221087719.13621.50.camel@macbook.infradead.org>
-	 <20080910.160505.14060698.davem@davemloft.net>
-	 <1221088512.13621.58.camel@macbook.infradead.org>
-	 <20080910.162423.40167601.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 16:36:56 -0700
-Message-Id: <1221089816.13621.61.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 10 Sep 2008 19:38:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=vZCn84bJzo2vu9X9Y6HSbc84kHU16FKVdC/5FLMeB+pQ0UkogYz5tCOGo4tpnmPOz
+	Zf0RX2DbsmjoDagoEsQAg==
+Message-ID: <166fe7950809101637o1bf22869g4939707a35a3c93b@mail.gmail.com>
+Date: Wed, 10 Sep 2008 16:37:57 -0700
+From: "Ranjit Manomohan" <ranjitm@google.com>
+To: "Thomas Graf" <tgraf@suug.ch>
+Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
+Cc: "David Miller" <davem@davemloft.net>, kaber@trash.net,
+       akpm@linux-foundation.org, lizf@cn.fujitsu.com, menage@google.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20080910221206.GI20815@postel.suug.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0809101026190.7050@ranjit.corp.google.com>
+	 <20080910.132251.73509521.davem@davemloft.net>
+	 <166fe7950809101344l7a5e2b7pfba8b2a7c03814a1@mail.gmail.com>
+	 <20080910221206.GI20815@postel.suug.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 16:24 -0700, David Miller wrote:
-> From: David Woodhouse <dwmw2@infradead.org>
-> Date: Wed, 10 Sep 2008 16:15:11 -0700
-> 
-> > It's definitely not something we should be doing upstream though.
-> 
-> So you think it's ok that every Debian user has to learn this
-> magic incantation just to use current kernels?
+On Wed, Sep 10, 2008 at 3:12 PM, Thomas Graf <tgraf@suug.ch> wrote:
+> * Ranjit Manomohan <ranjitm@google.com> 2008-09-10 13:44
+>> On Wed, Sep 10, 2008 at 1:22 PM, David Miller <davem@davemloft.net> wrote:
+>> >
+>> > I definitely prefer Thomas Graf's work, this stuff is very ugly
+>> > and way overengineered.
+>> >
+>>
+>> Could you be more specific? Thomas' work is almost identical to this
+>> (except that he does not store the cgroup id into the socket which is
+>> a trivial change which has downsides which I have pointed out).
+>>
+>> Additionally this approach has only minor modifications to the core
+>> networking stack. What portions do you consider ugly and over
+>> engineered and what alternative implementations would you prefer?
+>> Please see the follow up I have sent to Thomas' proposal about why we
+>> need this design approach to handle the inbound case.
+>
+> WRT the inbound case, after some experiments I decided to dismiss the
+> ingress case at all and stick to something as simple as possible for
+> egress. The reason for this is that it is a very expensive operation
+> to associate a packet with a task on classifier level. Taking this
+> cost, it does not add up with the very limited capabilities of ingress
+> shaping. Ingress shaping is best effort at best. It works fairly well
+> with a very limited number of bulk data streams but usualy fails
+> miserably in common congestion situations where a cgroup classifier
+> would be useful.
 
-They don't. Debian uses firmware from /lib/firmware if it doesn't exist
-in /lib/firmware/$(version) -- so they can install to the normal
-location quite happily, and it should work just fine.
+Could you elaborate on the failure cases? We have found this to be
+useful in practice to prevent applications from reading large amounts
+of data off the network so it would be nice if it were supported.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+-Thanks,
+Ranjit
+>
+>> I'd be ok if you accepted either change since  we just want a standard
+>> kernel mechanism to do this.
+>
+> Agreed. I think your approach is very reasonable but considering the
+> reasons I've given above and in the other thread I found it could be done
+> in a more simple and direct way.
+>
