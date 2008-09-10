@@ -1,109 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbYIJPAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbYIJPBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbYIJPAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 11:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYIJPAd
+	id S1754550AbYIJPBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 11:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYIJPBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 11:00:33 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:36442 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753727AbYIJPAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 11:00:30 -0400
-Date: Wed, 10 Sep 2008 10:00:19 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [RFC v4][PATCH 5/9] Memory managemnet (restore)
-Message-ID: <20080910150019.GA17478@us.ibm.com>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu> <1220946154-15174-6-git-send-email-orenl@cs.columbia.edu> <20080909160724.GA23397@us.ibm.com> <48C7082A.1050608@cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C7082A.1050608@cs.columbia.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 10 Sep 2008 11:01:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54188 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYIJPBJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 11:01:09 -0400
+Subject: Re: [patch] x86: some lock annotations for user copy paths
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080910144812.GB18644@wotan.suse.de>
+References: <20080910113717.GB16811@wotan.suse.de>
+	 <1221046892.30429.85.camel@twins.programming.kicks-ass.net>
+	 <20080910114755.GA9696@elte.hu> <20080910121217.GA16013@elte.hu>
+	 <20080910144812.GB18644@wotan.suse.de>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 17:01:04 +0200
+Message-Id: <1221058864.30429.291.camel@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.23.91 (2.23.91-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> 
-> 
-> Serge E. Hallyn wrote:
-> > Quoting Oren Laadan (orenl@cs.columbia.edu):
-> 
-> [...]
-> 
-> >> +/* change the protection of an address range to be writable/non-writable.
-> >> + * this is useful when restoring the memory of a read-only vma */
-> >> +static int cr_vma_set_writable(struct mm_struct *mm, unsigned long start,
-> >> +			       unsigned long end, int writable)
-> >> +{
-> >> +	struct vm_area_struct *vma, *prev;
-> >> +	unsigned long flags = 0;
-> >> +	int ret = -EINVAL;
-> >> +
-> >> +	cr_debug("vma %#lx-%#lx writable %d\n", start, end, writable);
-> >> +
-> >> +	down_write(&mm->mmap_sem);
-> >> +	vma = find_vma_prev(mm, start, &prev);
-> >> +	if (!vma || vma->vm_start > end || vma->vm_end < start)
-> >> +		goto out;
-> >> +	if (writable && !(vma->vm_flags & VM_WRITE))
-> >> +		flags = vma->vm_flags | VM_WRITE;
-> >> +	else if (!writable && (vma->vm_flags & VM_WRITE))
-> >> +		flags = vma->vm_flags & ~VM_WRITE;
-> >> +	cr_debug("flags %#lx\n", flags);
-> >> +	if (flags)
-> >> +		ret = mprotect_fixup(vma, &prev, vma->vm_start,
-> >> +				     vma->vm_end, flags);
-> > 
-> > As Dave has pointed out, this appears to be a security problem.  I think
-> 
-> As I replied to Dave, I don't see why this would be a security problem.
-> 
-> This handles private memory only. In particular, the uncommon case of a
-> read-only VMA tha has modified contents. This _cannot_ affect the file
-> from which this VMA may have been mapped.
-> 
-> Shared memory (not file-mapped) will be handled differently: since it is
-> always backed up by an inode in shmfs, the restart will populate the
-> relevant pages directly. Besides, non-file-mapped shared memory is again
-> not a security concern.
-> 
-> Finally, shared memory that maps to a file is simply _not saved_ at all;
-> it is part of the file system, and belongs to the (future) file system
-> snapshot capability. Since the contents are always available in the file
-> system, we don't need to save it (like we don't save shared libraries).
-> 
-> That said, it is necessary that the code ensures that the vm_flags that
-> belong to a VMA of a private type, e.g. CR_VMA_ANON/CR_VMA_FILE, indeed
-> match it (ie, don't have VM_MAY_SHARE/VM_SHARED). I'll add that.
+On Wed, 2008-09-10 at 16:48 +0200, Nick Piggin wrote:
 
-Cool.  That sounds good and I'll look for that in the next version.
+> @@ -3016,3 +3016,18 @@ void print_vma_addr(char *prefix, unsign
+>  	}
+>  	up_read(&current->mm->mmap_sem);
+>  }
+> +
+> +void might_fault(void)
+> +{
+> +	/*
+> +	 * it would be nicer only to annotatea paths which are not under
+> +	 * pagefault_disable, however that requires a larger audit and
+> +	 * providing helpers like get_user_atomic.
+> +	 */
+> +	if (!in_atomic()) {
+> +		might_sleep();
+> +		if (current->mm)
+> +			might_lock_read(&current->mm->mmap_sem);
+> +	}
+> +}
+> +EXPORT_SYMBOL(might_fault);
 
-There still may be objections about bypassing selinux execmem/execheap
-permission checks, but I think that's ok for now.  Long-term I expect
-we'll want the security_file_mprotect checks there, and selinux users
-will have to use a policy where restart is started in a privileged
-restart_t domain or somesuch (and eventually transitions back to the
-checkpointed selinux type if possible).
+>From the nitpick squad :-), I prefer the form:
 
-thanks,
--serge
+void might_fault(void)
+{
+	if (in_atomic())
+		return;
 
-> > what you need to do is create a new helper mprotect_fixup_withchecks(),
-> > which does all the DAC+MAC checks which are done in the sys_mprotect()
-> > loop starting with "for (nstart = start ; ; ) {...  Otherwise an
-> > unprivileged user can create a checkpoint image of a program which has
-> > done a ro shared file mmap, edit the checkpoint, then restart it and (i
-> > assume) cause the modified contents to be written to the file.  This
-> > could violate both DAC checks and selinux checks.
-> > 
-> > So create that helper which does the security checks, and use it
-> > both here and in the sys_mprotect() loop, please.
-> > 
-> 
-> [...]
-> 
-> Oren.
+	might_sleep();
+
+	if (!current->mm)
+		might_lock_read(&current->mm->mmap_sem);
+}
+
+
+Due to it being one nesting level less.
+
+> Index: linux-2.6/include/linux/kernel.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kernel.h
+> +++ linux-2.6/include/linux/kernel.h
+> @@ -140,6 +140,15 @@ extern int _cond_resched(void);
+>  		(__x < 0) ? -__x : __x;		\
+>  	})
+>  
+> +#ifdef CONFIG_LOCKDEP
+> +void might_fault(void);
+> +#else
+> +static inline void might_fault(void)
+> +{
+> +	might_sleep();
+> +}
+> +#endif
+> +
+>  extern struct atomic_notifier_head panic_notifier_list;
+>  extern long (*panic_blink)(long time);
+>  NORET_TYPE void panic(const char * fmt, ...)
+
+This forgets that in_atomic() again - possibly triggering might_sleep()
+where not appropriate.
+
+I'm not sure its worth it to out-of-line the thing though (its only big
+on debug builds), and CONFIG_LOCKDEP is the wrong CONFIG_* variable, I
+think CONFIG_PROVE_LOCKING would be the appropriate one.
+
