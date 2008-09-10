@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbYIJTxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYIJTxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbYIJTxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 15:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYIJTvw
+	id S1755009AbYIJTxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 15:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYIJTvy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 15:51:52 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:40389 "EHLO
+	Wed, 10 Sep 2008 15:51:54 -0400
+Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:40390 "EHLO
 	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752560AbYIJTvv (ORCPT
+	by vger.kernel.org with ESMTP id S1753299AbYIJTvx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 15:51:51 -0400
+	Wed, 10 Sep 2008 15:51:53 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<ukleinek@informatik.uni-freiburg.de>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] MAINTAINERS: fix alphabetic ordering
-Date: Wed, 10 Sep 2008 21:51:39 +0200
-Message-Id: <1221076300-7018-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH] MAINTAINERS: merge P and M fields to ease copy'n'paste
+Date: Wed, 10 Sep 2008 21:51:40 +0200
+Message-Id: <1221076300-7018-6-git-send-email-ukleinek@informatik.uni-freiburg.de>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1221076300-7018-4-git-send-email-ukleinek@informatik.uni-freiburg.de>
+In-Reply-To: <1221076300-7018-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
 References: <20080910193210.GA26173@informatik.uni-freiburg.de>
  <1221076300-7018-1-git-send-email-ukleinek@informatik.uni-freiburg.de>
  <1221076300-7018-2-git-send-email-ukleinek@informatik.uni-freiburg.de>
  <1221076300-7018-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
  <1221076300-7018-4-git-send-email-ukleinek@informatik.uni-freiburg.de>
+ <1221076300-7018-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -31,7 +33,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change was done using the following Python script:
+This was suggested by Sam Ravnborg and done using the following
+Python script:
 
 	#! /usr/bin/env python
 
@@ -42,77 +45,54 @@ This change was done using the following Python script:
 
 	locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
-	re_start = re.compile('P:')
-	re_topic = re.compile('[0-9a-zA-Z][^:]')
-	# F is undefined but used
-	re_field = re.compile('[PMLWTSF]:')
-	re_empty = re.compile('\s*$')
+	re_person = re.compile(r'P:(\s*)(.*)')
+	re_mail = re.compile(r'M:\s*(.*)')
 
-	prologue = True
-	current_topic = None
-	topic = dict()
 	fixed_maintainers = tempfile.TemporaryFile()
 
-	for line in open('MAINTAINERS'):
-	    if prologue:
-	        print >> fixed_maintainers, line,
-	        mo = re_start.match(line)
-	        if mo:
-	            prologue = False
+	current_persons = None
+	current_persons_used = False
 
-	        continue
-
-	    mo = re_topic.match(line)
+	for lineno, line in enumerate(open('MAINTAINERS')):
+	    mo = re_person.match(line)
 	    if mo:
-	        current_topic = line
-	        if topic.has_key(current_topic):
-	            sys.exit(1)
-	        topic[current_topic] = list()
+	        if current_persons and not current_persons_used:
+	            print >> fixed_maintainers, 'P:%s%s' % (current_persons_intend, ', '.join(current_persons))
+
+	        current_persons = re.split(r',\s*', mo.group(2))
+	        current_persons_intend = mo.group(1)
+	        current_persons_used = False
 	        continue
 
-	    elif current_topic is None:
-	        # rest of prologue
-	        print >> fixed_maintainers, line,
-
-	        continue
-
-	    assert not current_topic is None
-
-	    mo = re_field.match(line)
+	    mo = re_mail.match(line)
 	    if mo:
-	        topic[current_topic].append(line)
-
-	    else:
-	        mo = re_empty.match(line)
-	        if not mo:
-	            print >> sys.stderr, 'tralala', current_topic, repr(line)
+	        if current_persons is None:
+	            print 'mail without person at line %d' % (lineno + 1)
 	            sys.exit(1)
 
-	first = True
+	        mail = re.split(r',\s*', mo.group(1))
 
-	the_rest = 'THE REST\n'
-	have_the_rest = False
+	        if mail == ['Mail patches to']:
+	            mail = ['p.e@rs.on']
 
-	# sort case insensitive
-	for t, body in sorted(topic.iteritems(), key=lambda i: i[0].upper()):
-	    if t == the_rest:
-	        have_the_rest = True
-	        continue
+	        if len(mail) != len(current_persons):
+	            if len(mail) == 1:
+	                current_persons = ['%s' % ', '.join(current_persons)]
+	            elif len(current_persons) == 1:
+	                current_persons = len(mail) * current_persons
+	            else:
+	                print 'number of persons doesn\'t match number of mail addresses at line %d' % (lineno + 1)
+	                sys.exit(1)
 
-	    if first:
-	        first = False
+	        print >> fixed_maintainers, 'P:%s' % current_persons_intend + ', '.join('%s <%s>' % pm for pm in zip(current_persons, mail))
+	        current_persons_used = True
+
 	    else:
-	        print >> fixed_maintainers
+	        if current_persons and not current_persons_used:
+	            # either there is no mail address or the entry is already correct
+	            print >> fixed_maintainers, 'P:%s%s' % (current_persons_intend, ', '.join(current_persons))
 
-	    print >> fixed_maintainers, t,
-	    for line in body:
-	        print >> fixed_maintainers, line,
-
-	if have_the_rest:
-	    print >> fixed_maintainers
-
-	    print >> fixed_maintainers, the_rest,
-	    for line in topic[the_rest]:
+	        current_persons = None
 	        print >> fixed_maintainers, line,
 
 	fixed_maintainers.seek(0)
@@ -122,14 +102,15 @@ This change was done using the following Python script:
 	    print >> maintainers, line,
 
 Signed-off-by: Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- MAINTAINERS | 1250 +++++++++++++++++++++++++++++-----------------------------
- 1 files changed, 625 insertions(+), 625 deletions(-)
+ MAINTAINERS | 2363 ++++++++++++++++++++---------------------------------------
+ 1 files changed, 793 insertions(+), 1570 deletions(-)
 
 I deleted the actual patch to save some bytes.  To get the real patch
 you have several possibilities:
 
- a) look at http://modarm9.com/git/people/ukleinek/linux-2.6.git?a=commit;h=7f347bb1e138857fabc059b791cf50240fedd61f;
+ a) look at http://modarm9.com/git/people/ukleinek/linux-2.6.git?a=commit;h=33c64dab660857949c9a78f2a8edca14d30455c5;
  b) fetch/pull from the maintainers branch at
 
  	 git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git maintainers
