@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbYIJQ0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIJQ0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbYIJQ0E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYIJQZs
+	id S1754648AbYIJQ0z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbYIJQ0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:25:48 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:14281 "EHLO
-	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754711AbYIJQZr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:25:47 -0400
-Message-ID: <48C7F4EA.8080107@panasas.com>
-Date: Wed, 10 Sep 2008 19:25:14 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-CC: Christoph Hellwig <hch@infradead.org>,
-       Chris Leech <christopher.leech@intel.com>,
-       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, devel@open-fcoe.org
-Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for	accessing	3-byte
- arrays as integers
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>	 <20080910140712.GA12280@infradead.org> <1221061241.27385.14.camel@norville.austin.ibm.com> <48C7F19D.3080507@panasas.com>
-In-Reply-To: <48C7F19D.3080507@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Sep 2008 16:24:21.0978 (UTC) FILETIME=[AEA823A0:01C91361]
+	Wed, 10 Sep 2008 12:26:46 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48269 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbYIJQ0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 12:26:46 -0400
+Date: Wed, 10 Sep 2008 20:32:05 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Frank Mayhar <fmayhar@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.27-rc5] Fix itimer/many thread hang.
+Message-ID: <20080910163205.GA478@tv-sign.ru>
+References: <1220906643.31846.21.camel@bobble.smo.corp.google.com> <20080909070329.GD2086@elte.hu> <20080909160152.GA714@tv-sign.ru> <1220992172.23059.20.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1220992172.23059.20.camel@bobble.smo.corp.google.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devel-bounces@open-fcoe.org wrote:
-> Your mail to 'devel' with the subject
-> 
->     Re: [PATCH 1/3] 24-bit types: typedef and macros for	accessing
-> 3-byte arrays as integers
-> 
-> Is being held until the list moderator can review it for approval.
-> 
-> The reason it is being held:
-> 
->     Post by non-member to a members-only list
-> 
-> Either the message will get posted to the list, or you will receive
-> notification of the moderator's decision.  If you would like to cancel
-> this posting, please visit the following URL:
-> 
->     http://www.open-fcoe.org/mailman/confirm/devel/2402f0a8c12e310105827ba074ab7376a0dee4a0
-> 
+On 09/09, Frank Mayhar wrote:
+>
+> On Tue, 2008-09-09 at 20:01 +0400, Oleg Nesterov wrote:
+> > The patch has a lot of
+> >
+> > 	rcu_read_lock();
+> > 	sig = rcu_dereference(tsk->signal);
+> >
+> > This is bogus, task_struct->signal is not protected by RCU.
+>
+> I just want to snapshot the field
+> atomically.  I guess I can just do an atomic read...
+
+Missed this part...
+
+No, no, you don't need an atomic read. Just do
+
+	sig = tsk->signal;
+	if (sig)
+		use(sig);
+
+->signal must be stable, or the code is buggy anyway. (and the task
+never changes its ->signal, it becomes NULL when the task dies).
 
 
-Can this be fixed please ?
+BTW, thanks for doing this!
+
+Oleg.
+
