@@ -1,108 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbYIJUtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755039AbYIJUuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbYIJUtf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 16:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbYIJUt1
+	id S1755039AbYIJUuo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 16:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbYIJUue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 16:49:27 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:60263 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377AbYIJUt0 (ORCPT
+	Wed, 10 Sep 2008 16:50:34 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:53543 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752126AbYIJUud (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 16:49:26 -0400
-Subject: Re: [RFC v4][PATCH 5/9] Memory managemnet (restore)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-In-Reply-To: <48C824A2.8050708@cs.columbia.edu>
-References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
-	 <1220946154-15174-6-git-send-email-orenl@cs.columbia.edu>
-	 <1221075083.6781.34.camel@nimitz>  <48C824A2.8050708@cs.columbia.edu>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 13:49:17 -0700
-Message-Id: <1221079757.6781.54.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 10 Sep 2008 16:50:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:user-agent:cc:mime-version:content-disposition:date
+         :message-id:content-type:content-transfer-encoding;
+        b=vmh3XgQtnleq8Z4XaT91pCmSxJuf8QXY8Kkwvz47XqUccrAuITapsLm4i8+sjeqvFc
+         67Fd1R2v7FPk+MM/dlPI01KGs2TjSLDl1PemgB9dTNKcj9L/T/Fl0jQJ8esjQO8MJosu
+         0HONsqRpx1J4LcZT0VYpnoQy85cq+01GKR38k=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] IDE fixes
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Wed, 10 Sep 2008 22:47:20 +0200
+Message-Id: <200809102247.21172.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 15:48 -0400, Oren Laadan wrote:
-> Dave Hansen wrote:
-> > On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
-> >> +/**
-> >> + * cr_vma_read_pages_vaddrs - read addresses of pages to page-array chain
-> >> + * @ctx - restart context
-> >> + * @npages - number of pages
-> >> + */
-> >> +static int cr_vma_read_pages_vaddrs(struct cr_ctx *ctx, int npages)
-> >> +{
-> >> +	struct cr_pgarr *pgarr;
-> >> +	int nr, ret;
-> >> +
-> >> +	while (npages) {
-> >> +		pgarr = cr_pgarr_prep(ctx);
-> >> +		if (!pgarr)
-> >> +			return -ENOMEM;
-> >> +		nr = min(npages, (int) pgarr->nr_free);
-> >> +		ret = cr_kread(ctx, pgarr->vaddrs, nr * sizeof(unsigned long));
-> >> +		if (ret < 0)
-> >> +			return ret;
-> >> +		pgarr->nr_free -= nr;
-> >> +		pgarr->nr_used += nr;
-> >> +		npages -= nr;
-> >> +	}
-> >> +	return 0;
-> >> +}
-> > 
-> > cr_pgarr_prep() can return a partially full pgarr, right?  Won't the
-> > cr_kread() always start at the beginning of the pgarr->vaddrs[] array?
-> > Seems to me like it will clobber things from the last call.
-> 
-> Note that 'nr' is either equal to ->nr_free - in which case we consume
-> the entire 'pgarr' vaddr array such that the next call to cr_pgarr_prep()
-> will get a fresh one, or is smaller than ->nr_free - in which case that
-> is the last iteration of the loop anyhow, so it won't be clobbered.
-> 
-> Also, after we return - our caller, cr_vma_read_pages(), resets the state
-> of the page-array chain by calling cr_pgarr_reset().
 
-Man, that's awfully subtle for something which is so simple.
+Hi,
 
-I think it is a waste of memory to have to hold *all* of the vaddrs in
-memory at once.  Is there a real requirement for that somehow?  The code
-would look a lot simpler use less memory if it was done (for instance)
-using a single 'struct pgaddr' at a time.  There are an awful lot of HPC
-apps that have nearly all physical memory in the machine allocated and
-mapped into a single VMA.  This approach could be quite painful there.
+Hopefully the last pull request before 2.6.27-final:
 
-I know it's being done this way because that's what the dump format
-looks like.  Would you consider changing the dump format to have blocks
-of pages and vaddrs together?  That should also parallelize a bit more
-naturally.
+* Fixes hpt366 crash with HPT374 controllers
+  (Masoud Sharbiani and Sergei Shtylyov).
 
-Anyway, this either needs a big fat comment or something that is
-self-describing like this:
+* Adds ide-scsi to feature-removal-schedule.txt,
+  which I forgot to do while deprecating the driver
+  (FUJITA Tomonori).
 
-+       while (npages) {
-+               pgarr = alloc_fresh_pgarr(...)
-+               if (!pgarr)
-+                       return -ENOMEM;
-+               nr = min(npages, (int) pgarr->nr_free);
-+               ret = cr_kread(ctx, pgarr->vaddrs, nr * sizeof(unsigned long));
-+               if (ret < 0)
-+                       return ret;
-+               pgarr->nr_free -= nr;
-+               pgarr->nr_used += nr;
-+               npages -= nr;
-		add_pgarr_to_ctx(ctx, pgarr);
-+       }
-+       return 0;
+BTW I'll be leaving for KS+LPC on Saturday's morning
+so I may be a bit unresponsive for a while (preparations,
+travelling and a "time zone change syndrome").
 
-When someone is looking at that, it is painfully obvious that they're
-not writing over anyone else's vaddrs since the pgarr is fresh.  
 
--- Dave
+Linus, please pull from:
 
+master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+
+to receive the following updates:
+
+ Documentation/feature-removal-schedule.txt |    8 +++++++
+ drivers/ide/pci/hpt366.c                   |   31 +++++++++++++--------------
+ 2 files changed, 23 insertions(+), 16 deletions(-)
+
+
+FUJITA Tomonori (1):
+      add deprecated ide-scsi to feature-removal-schedule.txt
+
+Masoud Sharbiani (1):
+      ide: Fix pointer arithmetic in hpt3xx driver code (3rd try)
+
+
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index eb1a47b..83c88ca 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -322,3 +322,11 @@ Why:  Accounting can now be enabled/disabled without kernel recompilation.
+       controlled by a kernel/module/sysfs/sysctl parameter.
+ Who:  Krzysztof Piotr Oledzki <ole@ans.pl>
+ 
++---------------------------
++
++What: ide-scsi (BLK_DEV_IDESCSI)
++When: 2.6.29
++Why:  The 2.6 kernel supports direct writing to ide CD drives, which
++      eliminates the need for ide-scsi. The new method is more
++      efficient in every way.
++Who:  FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
+index eb107ee..c37ab17 100644
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -613,6 +613,14 @@ static int check_in_drive_list(ide_drive_t *drive, const char **list)
+ 	return 0;
+ }
+ 
++static struct hpt_info *hpt3xx_get_info(struct device *dev)
++{
++	struct ide_host *host	= dev_get_drvdata(dev);
++	struct hpt_info *info	= (struct hpt_info *)host->host_priv;
++
++	return dev == host->dev[1] ? info + 1 : info;
++}
++
+ /*
+  * The Marvell bridge chips used on the HighPoint SATA cards do not seem
+  * to support the UltraDMA modes 1, 2, and 3 as well as any MWDMA modes...
+@@ -621,9 +629,7 @@ static int check_in_drive_list(ide_drive_t *drive, const char **list)
+ static u8 hpt3xx_udma_filter(ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+-	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 	u8 mask 		= hwif->ultra_mask;
+ 
+ 	switch (info->chip_type) {
+@@ -662,9 +668,7 @@ static u8 hpt3xx_udma_filter(ide_drive_t *drive)
+ static u8 hpt3xx_mdma_filter(ide_drive_t *drive)
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+-	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 
+ 	switch (info->chip_type) {
+ 	case HPT372 :
+@@ -700,8 +704,7 @@ static void hpt3xx_set_mode(ide_drive_t *drive, const u8 speed)
+ {
+ 	ide_hwif_t *hwif	= drive->hwif;
+ 	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 	struct hpt_timings *t	= info->timings;
+ 	u8  itr_addr		= 0x40 + (drive->dn * 4);
+ 	u32 old_itr		= 0;
+@@ -744,8 +747,7 @@ static void hpt3xx_maskproc(ide_drive_t *drive, int mask)
+ {
+ 	ide_hwif_t *hwif	= HWIF(drive);
+ 	struct pci_dev	*dev	= to_pci_dev(hwif->dev);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 
+ 	if (drive->quirk_list) {
+ 		if (info->chip_type >= HPT370) {
+@@ -973,8 +975,7 @@ static int __devinit hpt37x_calibrate_dpll(struct pci_dev *dev, u16 f_low, u16 f
+ static unsigned int __devinit init_chipset_hpt366(struct pci_dev *dev)
+ {
+ 	unsigned long io_base	= pci_resource_start(dev, 4);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (&dev->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(&dev->dev);
+ 	const char *name	= DRV_NAME;
+ 	u8 pci_clk,  dpll_clk	= 0;	/* PCI and DPLL clock in MHz */
+ 	u8 chip_type;
+@@ -1217,8 +1218,7 @@ static unsigned int __devinit init_chipset_hpt366(struct pci_dev *dev)
+ static u8 hpt3xx_cable_detect(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev	*dev	= to_pci_dev(hwif->dev);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 	u8 chip_type		= info->chip_type;
+ 	u8 scr1 = 0, ata66	= hwif->channel ? 0x01 : 0x02;
+ 
+@@ -1262,8 +1262,7 @@ static u8 hpt3xx_cable_detect(ide_hwif_t *hwif)
+ static void __devinit init_hwif_hpt366(ide_hwif_t *hwif)
+ {
+ 	struct pci_dev *dev	= to_pci_dev(hwif->dev);
+-	struct ide_host *host	= pci_get_drvdata(dev);
+-	struct hpt_info *info	= host->host_priv + (hwif->dev == host->dev[1]);
++	struct hpt_info *info	= hpt3xx_get_info(hwif->dev);
+ 	int serialize		= HPT_SERIALIZE_IO;
+ 	u8  chip_type		= info->chip_type;
+ 	u8  new_mcr, old_mcr	= 0;
