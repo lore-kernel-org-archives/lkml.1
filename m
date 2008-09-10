@@ -1,141 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbYIJVmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYIJV4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbYIJVmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbYIJVmK
+	id S1754679AbYIJV4A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYIJVzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:42:10 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:53494 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbYIJVmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:42:09 -0400
-Subject: Re: [RFC v3][PATCH 5/9] Memory managemnet (restore)
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
-       linux-kernel@vger.kernel.org, arnd@arndb.de
-In-Reply-To: <48C6113A.3080804@cs.columbia.edu>
-References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
-	 <Pine.LNX.4.64.0809040404060.5982@takamine.ncl.cs.columbia.edu>
-	 <1220551683.23386.32.camel@nimitz>  <48C345D2.1020603@cs.columbia.edu>
-	 <1220892596.23386.166.camel@nimitz>  <48C6113A.3080804@cs.columbia.edu>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 14:42:02 -0700
-Message-Id: <1221082922.6781.62.camel@nimitz>
+	Wed, 10 Sep 2008 17:55:51 -0400
+Received: from mail.queued.net ([207.210.101.209]:4202 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752512AbYIJVzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 17:55:50 -0400
+Date: Wed, 10 Sep 2008 17:55:13 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] OLPC: touchpad driver (take 2)
+Message-ID: <20080910175513.17d900bc@dev.queued.net>
+In-Reply-To: <20080815031435.GD9438@anvil.corenet.prv>
+References: <20080813152459.4d6bb0cb@ephemeral>
+	<20080815031435.GD9438@anvil.corenet.prv>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-09 at 02:01 -0400, Oren Laadan wrote: 
-> > Have you looked at mprotect_fixup()?  It deals with two things:
-> > 1. altering the commit charge against RSS if the mapping is actually
-> >    writable.
-> > 2. Merging the VMA with an adjacent one if possible
-> > 
-> > We don't want to do either of these two things.  Even if we do merge the
-> > VMA, it will be a waste of time and energy since we'll just re-split it
-> > when we mprotect() again.
-> 
-> Your observation is correct; I chose this interface because it's really
-> simple and handy. I'm not worried about the performance because such VMAs
-> (read only but modified) are really rare, and the code can be optimized
-> later on.
+On Thu, 14 Aug 2008 23:14:35 -0400
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-The worry is that it will never get cleaned up, and it is basically
-cruft as it stands.  People may think that it is here protecting or
-fixing something that it is not.
-
-> >>>> +	/* restore original protection for this vma */
-> >>>> +	if (!(cr_vma->vm_flags & VM_WRITE))
-> >>>> +		ret = cr_vma_writable(mm, cr_vma->vm_start, cr_vma->vm_end, 0);
-> >>>> +
-> >>>> + out:
-> >>>> +	return ret;
-> >>>> +}
-> >>> Ugh.  Is this a security hole?  What if the user was not allowed to
-> >>> write to the file being mmap()'d by this VMA?  Is this a window where
-> >>> someone could come in and (using ptrace or something similar) write to
-> >>> the file?
-> >> Not a security hole: this is only for private memory, so it never
-> >> modifies the underlying file. This is related to what I explained before
-> >> about read-only VMAs that have modified pages.
-> > 
-> > OK, so a shared, read-only mmap() should never get into this code path.
-> > What if an attacker modified the checkpoint file to pretend to have
-> > pages for a read-only, but shared mmap().  Would this code be tricked?
+> Hi Andres,
 > 
-> VMAs of shared maps (IPC, anonymous shared) will be treated differently.
+> On Wed, Aug 13, 2008 at 03:24:59PM -0400, Andres Salomon wrote:
+[...]
 > 
-> VMAs of shared files (mapped shared) are saved without their contents,
-> as the contents remains available on the file system !  (yes, for that
-> we will eventually need file system snapshots).
-> 
-> As for an attack that provides an altered checkpoint image: since we
-> (currently) don't escalate privileges, the attacker will not be able
-> to modify something that it doesn't have access to in the first place.
-
-I bugged Serge about this.  He said that this, at least, bypasses the SE
-Linux checks that are normally done with an mprotect() system call.
-That's a larger design problem that we need to keep in mind: we need to
-be careful to keep existing checks in place.
-
-> >> The process is restarting, inside a container that is restarting. All
-> >> tasks inside should be calling sys_restart() (by design) and no other
-> >> process from outside should be allowed to ptrace them at this point.
-> > 
-> > Are there plans to implement this, or is it already in here somehow?
-> 
-> Once we get positive responses about the current patchset, the next
-> step is to handle multiple processes: I plan to extend the freezer
-> with two more state for this purpose (dumping, restarting).
-
-OK, but I just asked you why a ptrace() of a process during this
-elevated privilege operation couldn't potentially do something bad.  You
-responded that, by design, we can't ptrace things.  The design is all
-well and good, but the patch isn't, because it doesn't implement that
-design. :(  Before we get these merged, that needs to get resolved.
-
-> >> (In any case, if some other tasks ptraces this task, it can make it do
-> >> anything anyhow).
-> > 
-> > No.  I'm suggesting that since this lets you effectively write to
-> > something that is not writable, it may be a hole with which to bypass
-> > permissions which were set up at an earlier time.
-> 
-> That's a good comment, but here all we are doing here is to modify a
-> privately mapped/anonymous memory.
-> 
-> > 
-> >>> We copy into the process address space all the time when not in its
-> >>> context explicitly.  
-> >> Huh ?
-> > 
-> > I'm just saying that you don't need to be in a process's context in
-> > order to copy contents into its virtual address space.  Check out
-> > access_process_vm().
+> > +
+> > +	retval = serio_pin_driver(serio);
+> > +	if (retval)
+> > +		return retval;
+> > +
+> > +	psmouse = serio_get_drvdata(serio);
+> > +	priv = psmouse->private;
+> > +
+> > +	if (val == priv->powered)
+> > +		goto done;
+> > +
+> > +	/* hgpk_toggle_power will deal w/ state so we're not
+> > racing w/ irq */
+> > +	retval = hgpk_toggle_power(psmouse, val);
+> > +	if (!retval)
+> > +		priv->powered = val;
+> > +
+> > +done:
+> > +	serio_unpin_driver(serio);
+> > +	return retval ? retval : count;
+> > +}
+> > +
+> > +static DEVICE_ATTR(powered, S_IWUSR | S_IRUGO, hgpk_show_powered,
+> > +		hgpk_set_powered);
 > > 
 > 
-> That would be the other way to implement the restart. But, since restart
-> executes in task's context, it's simpler and more efficient to leverage
-> copy-to-user().
-> In terms of security, both methods brings about the same end results: the
-> memory is modified (perhaps bypassing the read-only property of the VMA)
+> Any particular reason you didn't use PSMOUSE_DEFINE_ATTR? Then you
+> would not need to bother with pinning the driver and provode mutual
+> exclusion with other things. Btw, what do we do if device is powered
+> down an user tries to change some settings via generic attributes
+> defined in psmouse-base?
+> 
 
-But copy_to_user() is fundamentally different.  It writes *over*
-contents and in to files.  Simulating a fault fills in those pages, but
-it never writes over things or in to files.   Faulting is fundamentally
-safer.
+Ok, the problem is this - hgpk_set_powered disables power by sending a
+special command, and power is re-enabled with the following code:
 
-Faulting today can also handle populating a memory area with pages that
-appear read-only via userspace.  That's exactly what we're doing here as
-well.
+                /*
+                 * Sending a byte will drive MS-DAT low; this will wake
+up
+                 * the controller.  Once we get an ACK back from it, it
+                 * means we can continue with the touchpad re-init. ALPS
+                 * tells us that 1s should be long enough, so set that
+as
+                 * the upper bound.
+                 */
+                for (timeo = 20; timeo > 0; timeo--) {
+                        if (!ps2_sendbyte(&psmouse->ps2dev,
+                                        PSMOUSE_CMD_DISABLE, 20))
+                                break;
+                        msleep(50);
+                }
 
-Anyway, I don't expect that you'll agree with this.  I'll prototype
-doing it the other way at some point and we can compare how both look.
+This means that after telling the ALPS device to turn off power, we
+shouldn't be sending any ps2 commands until we want to turn power
+back on.  However, psmouse_attr_set_helper code has the following:
 
--- Dave
+        psmouse_deactivate(psmouse);
+        retval = attr->set(psmouse, attr->data, buf, count);
+        if (retval != -ENODEV)
+                psmouse_activate(psmouse);
 
+If we're disabling power, psmouse_activate will proceed to turn
+power back on.
+
+There's also the following check in psmouse_attr_set_helper:
+
+        if (psmouse->state == PSMOUSE_IGNORE) {
+                retval = -ENODEV;
+                goto out_unlock;
+        }
+
+That's not at all what we want; when we disable power, we also
+do a psmouse_set_state(psmouse, PSMOUSE_IGNORE).  That check
+means we'd never be able to turn power back on.
+
+
+What do you think about either changing PSMOUSE_DEFINE_ATTR
+to take an additional 'raw' argument (meaning psmouse->state is
+not checked, and psmouse_deactivate/psmouse_activate are not
+called), or alternatively adding new helper functions that just
+handle the locking (__PSMOUSE_DEFINE_ATTR() and
+__psmouse_attr_{set,show}_helper())?  I'd prefer the raw
+argument.
