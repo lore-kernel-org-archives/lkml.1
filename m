@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbYIJW5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbYIJW5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbYIJW5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYIJW5D
+	id S1756169AbYIJW5f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYIJW5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:57:03 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:53996 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752186AbYIJW5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:57:01 -0400
-Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct
-	page
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: balbir@linux.vnet.ibm.com
-Cc: kamezawa.hiroyu@jp.fujitsu.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <48C84C0A.30902@linux.vnet.ibm.com>
-References: <48C66AF8.5070505@linux.vnet.ibm.com>
-	 <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com>
-	 <200809091358.28350.nickpiggin@yahoo.com.au>
-	 <20080909135317.cbff4871.kamezawa.hiroyu@jp.fujitsu.com>
-	 <200809091500.10619.nickpiggin@yahoo.com.au>
-	 <20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com>
-	 <30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20080910012048.GA32752@balbir.in.ibm.com>
-	 <1221085260.6781.69.camel@nimitz>  <48C84C0A.30902@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 10 Sep 2008 15:56:48 -0700
-Message-Id: <1221087408.6781.73.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 10 Sep 2008 18:57:07 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:1986 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYIJW5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 18:57:05 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=jX7SEMYVtNxG1b6cbmC5a0fQUF+l4eQahfZoGxiDO15caxlgVP5pzDWh5q1q6l7Nc
+	uyP0XZfyw8TMHyM4CUO3Q==
+Message-ID: <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com>
+Date: Wed, 10 Sep 2008 15:56:55 -0700
+From: "Ranjit Manomohan" <ranjitm@google.com>
+To: "Thomas Graf" <tgraf@suug.ch>
+Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
+Cc: davem@davemloft.net, akpm@linux-foundation.org, kaber@trash.net,
+       lizf@cn.fujitsu.com, menage@google.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20080910220115.GH20815@postel.suug.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
+	 <20080910220115.GH20815@postel.suug.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-10 at 15:36 -0700, Balbir Singh wrote:
-> Dave Hansen wrote:
-> > On Tue, 2008-09-09 at 18:20 -0700, Balbir Singh wrote:
-> >> +       start = pgdat->node_start_pfn;
-> >> +       end = pgdat->node_start_pfn + pgdat->node_spanned_pages;
-> >> +       size = (end - start) * sizeof(struct page_cgroup);
-> >> +       printk("Allocating %lu bytes for node %d\n", size, n);
-> >> +       pcg_map[n] = alloc_bootmem_node(pgdat, size);
-> >> +       /*
-> >> +        * We can do smoother recovery
-> >> +        */
-> >> +       BUG_ON(!pcg_map[n]);
-> >> +       return 0;
-> >>  }
-> > 
-> > This will really suck for sparse memory machines.  Imagine a machine
-> > with 1GB of memory at 0x0 and another 1GB of memory at 1TB up in the
-> > address space.
-> > 
-> 
-> I would hate to re-implement the entire sparsemem code :(
-> Kame did suggest making the memory controller depend on sparsemem (to hook in
-> from there for allocations)
+On Wed, Sep 10, 2008 at 3:01 PM, Thomas Graf <tgraf@suug.ch> wrote:
+> * Ranjit Manomohan <ranjitm@google.com> 2008-09-10 10:42
+>> +void cgroup_tc_set_sock_classid(struct sock *sk)
+>> +{
+>> +     if (sk)
+>> +             sk->sk_cgroup_classid = cgroup_tc_classid(current);
+>> +}
+>> +
+>> @@ -1170,6 +1171,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
+>>       if (err < 0)
+>>               goto out_module_put;
+>>
+>> +     cgroup_tc_set_sock_classid(sock->sk);
+>> +
+>>       /*
+>>        * Now to bump the refcnt of the [loadable] module that owns this
+>>        * socket at sock_release time we decrement its refcnt.
+>> @@ -1444,6 +1447,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+>>       if (err < 0)
+>>               goto out_fd;
+>>
+>> +     cgroup_tc_set_sock_classid(newsock->sk);
+>> +
+>>       if (upeer_sockaddr) {
+>>               if (newsock->ops->getname(newsock, (struct sockaddr *)address,
+>>                                         &len, 2) < 0) {
+>
+> The big disadvantage of this method is that it does not allow to change
+> the classid for sockets which already exist. It inherits the classid
+> at socket creation time and then sticks to it. So if you want to follow
+> this approach I'd suggest to at least store a reference to the cgroup
+> state and reference count it properly.
+>
 
-Yeah, you could just make another mem_section member.  Or, you could
-work to abstract the sparsemem code so that other people can use it, or
-maybe make it more dynamic so we can have multiple pfn->object lookups
-in parallel.  Adding the struct member is obviously easier.
+I had considered adding support for moving tasks between cgroups by
+going through all the open fds of the task and updating the sockets
+(in the cgroup attach method). It is a very heavy weight operation and
+not considered a common use case (and even undesirable at times) so I
+dropped the idea. I can add it back in if it is considered essential.
 
--- Dave
 
+> As for the locking that you mentioned in the other thread. IMHO it is
+> not possible to lookup a socket without taking at least one lock, but
+> I might be wrong there. Actually I think it will take even more locks
+> as different locks are used to f.e. protect listening and established
+> tcp sockets.
+
+That is correct for ingress, for egress the sk is already available in
+the skb so should be fine.
+
+-Thanks,
+Ranjit
+
+>
