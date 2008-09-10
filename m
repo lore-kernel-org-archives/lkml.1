@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbYIJWi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYIJWk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbYIJWi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbYIJWin
+	id S1756127AbYIJWk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYIJWkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:38:43 -0400
-Received: from smtp120.mail.mud.yahoo.com ([209.191.84.77]:35259 "HELO
-	smtp120.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755763AbYIJWin (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:38:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CjkDNQpIrD2NZ2XEGu0d7NJ5lo74HQ105JXhSUURr1gYrHy7K+ciTvd86Je8asxkoFpAqXfbzWP6Z0BIOF1xZ9uYFWOMAliv3pty8OsugXr17g70+0jTiOVCIlROppm6upf9ebbGx8Uw5K6SwzwIcyNBkUZjZeZR+XmrGba+IDE=  ;
-X-YMail-OSG: oDgmGacVM1lwWjrIJfSMj9QW8ErJcPWZIjFWtVT_f8_gNnEuwaod3HDKqi482tkSvwcS3auztqBirw6NoVgpvOXQSzYgA62ZbSVY3aD8cBRPhhBJE6mWfQ5pcEmAhKmB5xJeFWxjdwOLijRvtqJiZA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct page
-Date: Thu, 11 Sep 2008 08:38:20 +1000
-User-Agent: KMail/1.9.5
-Cc: balbir@linux.vnet.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <48C66AF8.5070505@linux.vnet.ibm.com> <20080910012048.GA32752@balbir.in.ibm.com> <1221085260.6781.69.camel@nimitz>
-In-Reply-To: <1221085260.6781.69.camel@nimitz>
+	Wed, 10 Sep 2008 18:40:49 -0400
+Received: from nebensachen.de ([195.34.83.29]:38914 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753026AbYIJWks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 18:40:48 -0400
+X-Hashcash: 1:20:080910:steven@uplinklabs.net::VqlNt2AdhTXLXaPg:00000000000000000000000000000000000000004rdm
+X-Hashcash: 1:20:080910:bzolnier@gmail.com::gid7i5E66/+jw1o/:00000000000000000000000000000000000000000000trC
+X-Hashcash: 1:20:080910:linux-kernel@vger.kernel.org::SpxhlM2qbnAR7lV+:0000000000000000000000000000000001Bxe
+X-Hashcash: 1:20:080910:mingo@elte.hu::+NtKmzsldEw3Ssmz:00001D+9
+From: Elias Oltmanns <eo@nebensachen.de>
+To: "Steven Noonan" <steven@uplinklabs.net>
+Cc: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] drivers/ide/ide-probe.c: uninitialized variable 'rc'
+References: <1220994461-15962-1-git-send-email-steven@uplinklabs.net>
+	<200809102309.34159.bzolnier@gmail.com>
+	<f488382f0809101419y65b35547t572a0f7bb5316952@mail.gmail.com>
+Date: Thu, 11 Sep 2008 00:40:23 +0200
+In-Reply-To: <f488382f0809101419y65b35547t572a0f7bb5316952@mail.gmail.com>
+	(Steven Noonan's message of "Wed, 10 Sep 2008 14:19:56 -0700")
+Message-ID: <87myifmxpk.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809110838.20770.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 September 2008 08:21, Dave Hansen wrote:
-> On Tue, 2008-09-09 at 18:20 -0700, Balbir Singh wrote:
-> > +       start = pgdat->node_start_pfn;
-> > +       end = pgdat->node_start_pfn + pgdat->node_spanned_pages;
-> > +       size = (end - start) * sizeof(struct page_cgroup);
-> > +       printk("Allocating %lu bytes for node %d\n", size, n);
-> > +       pcg_map[n] = alloc_bootmem_node(pgdat, size);
-> > +       /*
-> > +        * We can do smoother recovery
-> > +        */
-> > +       BUG_ON(!pcg_map[n]);
-> > +       return 0;
-> >  }
+"Steven Noonan" <steven@uplinklabs.net> wrote:
+> On Wed, Sep 10, 2008 at 2:09 PM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+>>
 >
-> This will really suck for sparse memory machines.  Imagine a machine
-> with 1GB of memory at 0x0 and another 1GB of memory at 1TB up in the
-> address space.
+>> I recall seeing identical patch before:
+>>
+>>        http://article.gmane.org/gmane.linux.ide/33107
+>>
+>> Does the existing code really results in gcc warning?
+>>
+>>
 >
-> You also need to consider how it works with memory hotplug and how
-> you're going to grow it at runtime.
+> Yes, because GCC thinks it's possible that the for loop has zero
+> iterations (and hence, 'rc' is never touched).
 
-I think it should try to hook into the physical memory model
-code. I thought it was going to do that but didn't look at the
-details...
+What about changing the declaration to
+
+	int i, uninitialized_var(rc);
+
+then?
+
+Regards,
+
+Elias
