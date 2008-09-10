@@ -1,44 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbYIJPkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751963AbYIJPlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754473AbYIJPkt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 11:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYIJPkk
+	id S1751963AbYIJPlP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 11:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYIJPk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 11:40:40 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:35749 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752128AbYIJPki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 11:40:38 -0400
-Date: Wed, 10 Sep 2008 08:40:34 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Doc/RCU: fix pseudocode in rcuref.txt
-Message-ID: <20080910154034.GF6742@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <48C73873.1010708@cn.fujitsu.com> <20080910063745.GC14700@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080910063745.GC14700@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 10 Sep 2008 11:40:57 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:57816 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752394AbYIJPkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 11:40:55 -0400
+Subject: Re:[PATCH 1/3] 24-bit types: typedef and macros for
+	accessing	3-byte arrays as integers
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Chris Leech <christopher.leech@intel.com>,
+       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, devel@open-fcoe.org
+In-Reply-To: <20080910140712.GA12280@infradead.org>
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>
+	 <20080910140712.GA12280@infradead.org>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 10:40:41 -0500
+Message-Id: <1221061241.27385.14.camel@norville.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 08:37:45AM +0200, Ingo Molnar wrote:
-> 
-> * Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> 
-> > atomic_inc_not_zero(v) return 0 if *v = 0.
-> > use spin_lock instead of write_lock for update lock.
-> > 
-> > Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> 
-> i've applied it to tip/core/rcu (unless Paul has objections) - thanks!
+On Wed, 2008-09-10 at 10:07 -0400, Christoph Hellwig wrote:
 
-No objections here!!!
+> JFS already defines an __le24, see fs/jfs/endian24.h.  Please try to
+> cover it, too or at least make sure you don't break it.
 
-							Thanx, Paul
+Chris,
+This patch takes care of jfs.  Please add it to your patchset.
+
+Thanks,
+Shaggy
+
+24-bit types: Convert jfs to use the common 24-bit types
+
+This patch cleans up some of the ugliness in the jfs headers and
+uses the common 24-bit types instead of its private definitions.
+
+Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+diff --git a/fs/jfs/endian24.h b/fs/jfs/endian24.h
+deleted file mode 100644
+index fa92f7f..0000000
+--- a/fs/jfs/endian24.h
++++ /dev/null
+@@ -1,49 +0,0 @@
+-/*
+- *   Copyright (C) International Business Machines Corp., 2001
+- *
+- *   This program is free software;  you can redistribute it and/or modify
+- *   it under the terms of the GNU General Public License as published by
+- *   the Free Software Foundation; either version 2 of the License, or
+- *   (at your option) any later version.
+- *
+- *   This program is distributed in the hope that it will be useful,
+- *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+- *   the GNU General Public License for more details.
+- *
+- *   You should have received a copy of the GNU General Public License
+- *   along with this program;  if not, write to the Free Software
+- *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+- */
+-#ifndef _H_ENDIAN24
+-#define	_H_ENDIAN24
+-
+-/*
+- *	endian24.h:
+- *
+- * Endian conversion for 24-byte data
+- *
+- */
+-#define __swab24(x) \
+-({ \
+-	__u32 __x = (x); \
+-	((__u32)( \
+-		((__x & (__u32)0x000000ffUL) << 16) | \
+-		 (__x & (__u32)0x0000ff00UL)	    | \
+-		((__x & (__u32)0x00ff0000UL) >> 16) )); \
+-})
+-
+-#if (defined(__KERNEL__) && defined(__LITTLE_ENDIAN)) || (defined(__BYTE_ORDER) && (__BYTE_ORDER == __LITTLE_ENDIAN))
+-	#define __cpu_to_le24(x) ((__u32)(x))
+-	#define __le24_to_cpu(x) ((__u32)(x))
+-#else
+-	#define __cpu_to_le24(x) __swab24(x)
+-	#define __le24_to_cpu(x) __swab24(x)
+-#endif
+-
+-#ifdef __KERNEL__
+-	#define cpu_to_le24 __cpu_to_le24
+-	#define le24_to_cpu __le24_to_cpu
+-#endif
+-
+-#endif				/* !_H_ENDIAN24 */
+diff --git a/fs/jfs/jfs_types.h b/fs/jfs/jfs_types.h
+index 649f981..6c49b93 100644
+--- a/fs/jfs/jfs_types.h
++++ b/fs/jfs/jfs_types.h
+@@ -30,8 +30,6 @@
+ #include <linux/types.h>
+ #include <linux/nls.h>
+ 
+-#include "endian24.h"
+-
+ /*
+  * transaction and lock id's
+  *
+@@ -62,7 +60,7 @@ struct timestruc_t {
+  */
+ typedef struct {
+ 	unsigned len:24;
+-	unsigned off1:8;
++	u8 off1;
+ 	u32 off2;
+ } lxd_t;
+ 
+@@ -90,8 +88,8 @@ struct lxdlist {
+  *	physical xd (pxd)
+  */
+ typedef struct {
+-	unsigned len:24;
+-	unsigned addr1:8;
++	__le24 len;
++	u8 addr1;
+ 	__le32 addr2;
+ } pxd_t;
+ 
+@@ -122,13 +120,13 @@ struct pxdlist {
+  *	data extent descriptor (dxd)
+  */
+ typedef struct {
+-	unsigned flag:8;	/* 1: flags */
+-	unsigned rsrvd:24;
+-	__le32 size;		/* 4: size in byte */
+-	unsigned len:24;	/* 3: length in unit of fsblksize */
+-	unsigned addr1:8;	/* 1: address in unit of fsblksize */
+-	__le32 addr2;		/* 4: address in unit of fsblksize */
+-} dxd_t;			/* - 16 - */
++	u8 flag;	/* 1: flags */
++	u8 rsrvd[3];
++	__le32 size;	/* 4: size in byte */
++	__le24 len;	/* 3: length in unit of fsblksize */
++	u8 addr1;	/* 1: address in unit of fsblksize */
++	__le32 addr2;	/* 4: address in unit of fsblksize */
++} dxd_t;		/* - 16 - */
+ 
+ /* dxd_t flags */
+ #define	DXD_INDEX	0x80	/* B+-tree index */
+diff --git a/fs/jfs/jfs_xtree.h b/fs/jfs/jfs_xtree.h
+index 70815c8..92beff3 100644
+--- a/fs/jfs/jfs_xtree.h
++++ b/fs/jfs/jfs_xtree.h
+@@ -29,14 +29,14 @@
+  *	extent allocation descriptor (xad)
+  */
+ typedef struct xad {
+-	unsigned flag:8;	/* 1: flag */
+-	unsigned rsvrd:16;	/* 2: reserved */
+-	unsigned off1:8;	/* 1: offset in unit of fsblksize */
+-	__le32 off2;		/* 4: offset in unit of fsblksize */
+-	unsigned len:24;	/* 3: length in unit of fsblksize */
+-	unsigned addr1:8;	/* 1: address in unit of fsblksize */
+-	__le32 addr2;		/* 4: address in unit of fsblksize */
+-} xad_t;			/* (16) */
++	u8 flag;	/* 1: flag */
++	u8 rsvrd[2];	/* 2: reserved */
++	u8 off1;	/* 1: offset in unit of fsblksize */
++	__le32 off2;	/* 4: offset in unit of fsblksize */
++	__le24 len;	/* 3: length in unit of fsblksize */
++	u8 addr1;	/* 1: address in unit of fsblksize */
++	__le32 addr2;	/* 4: address in unit of fsblksize */
++} xad_t;		/* (16) */
+ 
+ #define MAXXLEN		((1 << 24) - 1)
+ 
+
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
