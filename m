@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbYIJGCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbYIJGHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbYIJGCu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 02:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYIJGCl
+	id S1752901AbYIJGHX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 02:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYIJGHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 02:02:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:64496 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbYIJGCl (ORCPT
+	Wed, 10 Sep 2008 02:07:09 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:54881 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750859AbYIJGHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 02:02:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=GGySSOarEEl6nviugD0szdgNl7opU3BE9gHgRjP89ormVoikm50KYnwjyDePEiY1iy
-         9dlfCa9/ROa5e60ZnuFBvoDMn3AyZqaxLKB1pN7pZ+c45nqNXV3j8QyvC8zfv3XhPt3j
-         ajvvmah/LnHiVmEjYAzrJSjGh/S8rMgulzYg0=
-Message-ID: <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com>
-Date: Wed, 10 Sep 2008 10:02:40 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
-Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
+	Wed, 10 Sep 2008 02:07:07 -0400
+Date: Wed, 10 Sep 2008 11:36:24 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.24.7-rt18
+Message-ID: <20080910060624.GA7484@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+Mail-Followup-To: Ankita Garg <ankita@in.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <1221018283.22713.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080909184615.GA7303@lenovo>
-	 <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
+In-Reply-To: <1221018283.22713.20.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-...
->
-> hope we can keep using MACRO..
->
-> YH
+Hi Steven,
+
+On Tue, Sep 09, 2008 at 11:44:42PM -0400, Steven Rostedt wrote:
+> We are pleased to announce the 2.6.24.7-rt18 tree, which can be
+> downloaded from the location:
+> 
+>   http://rt.et.redhat.com/download/
+> 
+> Information on the RT patch can be found at:
+> 
+>   http://rt.wiki.kernel.org/index.php/Main_Page
+> 
+> Changes since 2.6.24.7-rt17
+> 
+>   - seqlock serialize writes (Gregory Haskins)
+> 
+>   - Fix above patch that broke non PREEMPT_RT (Steven Rostedt)
+> 
+>   - Add sysctl to warn on RT task using non PI futex (Steven Rostedt)
 >
 
-Btw, Yinghai, what does it mean? To not touch this macro at all?
-Or you mean about implementation issue (ie the design itself)?
+A trivial patch to remove the hard coded value of MAX_RT_PRIO in the
+above patch.
+ 
+Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
+
+Index: linux-2.6.26.5/kernel/futex.c
+===================================================================
+--- linux-2.6.26.5.orig/kernel/futex.c	2008-09-09 22:58:19.000000000 -0700
++++ linux-2.6.26.5/kernel/futex.c	2008-09-09 22:58:38.000000000 -0700
+@@ -1241,7 +1241,7 @@
+ 			       "RT task %s:%d with priority %d"
+ 			       " using non PI futex\n",
+ 			       current->comm, current->pid,
+-			       100 - current->prio);
++			       MAX_RT_PRIO - current->prio);
+ 		}
+ 	}
+ 
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
