@@ -1,102 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYIJQPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbYIJQRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbYIJQPe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYIJQP0
+	id S1753872AbYIJQRL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYIJQQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:15:26 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:35340 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751907AbYIJQPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:15:25 -0400
-Date: Wed, 10 Sep 2008 20:20:08 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pierre Morel <pmorel@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>
-Subject: Re: [PATCH 1/1] system call notification with self_ptrace
-Message-ID: <20080910162008.GA401@tv-sign.ru>
-References: <48C51439.7000706@linux.vnet.ibm.com> <20080909124302.GA139@tv-sign.ru> <48C7E3A9.3060602@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C7E3A9.3060602@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+	Wed, 10 Sep 2008 12:16:56 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:18424 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752149AbYIJQQz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 12:16:55 -0400
+Message-ID: <48C7F19D.3080507@panasas.com>
+Date: Wed, 10 Sep 2008 19:11:09 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Chris Leech <christopher.leech@intel.com>,
+       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, devel@open-fcoe.org
+Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for	accessing	3-byte
+ arrays as integers
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>	 <20080910140712.GA12280@infradead.org> <1221061241.27385.14.camel@norville.austin.ibm.com>
+In-Reply-To: <1221061241.27385.14.camel@norville.austin.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Sep 2008 16:10:16.0982 (UTC) FILETIME=[B6FFFB60:01C9135F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/10, Pierre Morel wrote:
->
-> Oleg Nesterov wrote:
-> >
-> >I still think this patch shouldn't change handle_signal().
-> >
-> >Once again. The signal handler for SIGSYS can first do
-> >sys_ptrace(PTRACE_SELF_OFF) (which is filtered out), and then use any
-> >other syscall, so this change is not needed, afaics.
-> >
-> Yes it can but what if the application forget to do it?
-> It is a security so that the application do not bounce for ever.
+Dave Kleikamp wrote:
+> On Wed, 2008-09-10 at 10:07 -0400, Christoph Hellwig wrote:
+> 
+>> JFS already defines an __le24, see fs/jfs/endian24.h.  Please try to
+>> cover it, too or at least make sure you don't break it.
+> 
+> Chris,
+> This patch takes care of jfs.  Please add it to your patchset.
+> 
+> Thanks,
+> Shaggy
+> 
+> 24-bit types: Convert jfs to use the common 24-bit types
+> 
+> This patch cleans up some of the ugliness in the jfs headers and
+> uses the common 24-bit types instead of its private definitions.
+> 
+> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> 
+> diff --git a/fs/jfs/endian24.h b/fs/jfs/endian24.h
+> deleted file mode 100644
+> index fa92f7f..0000000
+> --- a/fs/jfs/endian24.h
+> +++ /dev/null
+> @@ -1,49 +0,0 @@
+> -/*
+> - *   Copyright (C) International Business Machines Corp., 2001
+> - *
+> - *   This program is free software;  you can redistribute it and/or modify
+> - *   it under the terms of the GNU General Public License as published by
+> - *   the Free Software Foundation; either version 2 of the License, or
+> - *   (at your option) any later version.
+> - *
+> - *   This program is distributed in the hope that it will be useful,
+> - *   but WITHOUT ANY WARRANTY;  without even the implied warranty of
+> - *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+> - *   the GNU General Public License for more details.
+> - *
+> - *   You should have received a copy of the GNU General Public License
+> - *   along with this program;  if not, write to the Free Software
+> - *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+> - */
+> -#ifndef _H_ENDIAN24
+> -#define	_H_ENDIAN24
+> -
+> -/*
+> - *	endian24.h:
+> - *
+> - * Endian conversion for 24-byte data
+> - *
+> - */
+> -#define __swab24(x) \
+> -({ \
+> -	__u32 __x = (x); \
+> -	((__u32)( \
+> -		((__x & (__u32)0x000000ffUL) << 16) | \
+> -		 (__x & (__u32)0x0000ff00UL)	    | \
+> -		((__x & (__u32)0x00ff0000UL) >> 16) )); \
+> -})
+> -
+> -#if (defined(__KERNEL__) && defined(__LITTLE_ENDIAN)) || (defined(__BYTE_ORDER) && (__BYTE_ORDER == __LITTLE_ENDIAN))
+> -	#define __cpu_to_le24(x) ((__u32)(x))
+> -	#define __le24_to_cpu(x) ((__u32)(x))
+> -#else
+> -	#define __cpu_to_le24(x) __swab24(x)
+> -	#define __le24_to_cpu(x) __swab24(x)
+> -#endif
+> -
+> -#ifdef __KERNEL__
+> -	#define cpu_to_le24 __cpu_to_le24
+> -	#define le24_to_cpu __le24_to_cpu
+> -#endif
+> -
+> -#endif				/* !_H_ENDIAN24 */
+> diff --git a/fs/jfs/jfs_types.h b/fs/jfs/jfs_types.h
+> index 649f981..6c49b93 100644
+> --- a/fs/jfs/jfs_types.h
+> +++ b/fs/jfs/jfs_types.h
+> @@ -30,8 +30,6 @@
+>  #include <linux/types.h>
+>  #include <linux/nls.h>
+>  
+> -#include "endian24.h"
+> -
+>  /*
+>   * transaction and lock id's
+>   *
+> @@ -62,7 +60,7 @@ struct timestruc_t {
+>   */
+>  typedef struct {
+>  	unsigned len:24;
+> -	unsigned off1:8;
+> +	u8 off1;
+>  	u32 off2;
+>  } lxd_t;
+>  
 
-The (buggy) task can be killed, this has nothing to do with security.
+Why is the difference from below definition. That is the
+use/not of __le24? 
 
->From the security pov, this case doesn't differ from, say,
+> @@ -90,8 +88,8 @@ struct lxdlist {
+>   *	physical xd (pxd)
+>   */
+>  typedef struct {
+> -	unsigned len:24;
+> -	unsigned addr1:8;
+> +	__le24 len;
 
-	void sigh(int sig)
-	{
-		kill(getpid(), sig);
-	}
+Is this stuff on-the-wire?
+Do you need a:
++	__le24 len __packed;
 
-	void main(void)
-	{
-		signal(SIGSYS, sigh);
-		kill(getpid(), SIGSYS);
-	}
+> +	u8 addr1;
+>  	__le32 addr2;
+>  } pxd_t;
+and:
+  } pxd_t __packed ;
 
-Or I missed something?
+>  
+> @@ -122,13 +120,13 @@ struct pxdlist {
+>   *	data extent descriptor (dxd)
+>   */
+>  typedef struct {
+> -	unsigned flag:8;	/* 1: flags */
+> -	unsigned rsrvd:24;
+> -	__le32 size;		/* 4: size in byte */
+> -	unsigned len:24;	/* 3: length in unit of fsblksize */
+> -	unsigned addr1:8;	/* 1: address in unit of fsblksize */
+> -	__le32 addr2;		/* 4: address in unit of fsblksize */
+> -} dxd_t;			/* - 16 - */
+> +	u8 flag;	/* 1: flags */
+> +	u8 rsrvd[3];
+> +	__le32 size;	/* 4: size in byte */
+> +	__le24 len;	/* 3: length in unit of fsblksize */
+> +	u8 addr1;	/* 1: address in unit of fsblksize */
+> +	__le32 addr2;	/* 4: address in unit of fsblksize */
+> +} dxd_t;		/* - 16 - */
+>  
+>  /* dxd_t flags */
+>  #define	DXD_INDEX	0x80	/* B+-tree index */
+> diff --git a/fs/jfs/jfs_xtree.h b/fs/jfs/jfs_xtree.h
+> index 70815c8..92beff3 100644
+> --- a/fs/jfs/jfs_xtree.h
+> +++ b/fs/jfs/jfs_xtree.h
+> @@ -29,14 +29,14 @@
+>   *	extent allocation descriptor (xad)
+>   */
+>  typedef struct xad {
+> -	unsigned flag:8;	/* 1: flag */
+> -	unsigned rsvrd:16;	/* 2: reserved */
+> -	unsigned off1:8;	/* 1: offset in unit of fsblksize */
+> -	__le32 off2;		/* 4: offset in unit of fsblksize */
+> -	unsigned len:24;	/* 3: length in unit of fsblksize */
+> -	unsigned addr1:8;	/* 1: address in unit of fsblksize */
+> -	__le32 addr2;		/* 4: address in unit of fsblksize */
+> -} xad_t;			/* (16) */
+> +	u8 flag;	/* 1: flag */
+> +	u8 rsvrd[2];	/* 2: reserved */
+> +	u8 off1;	/* 1: offset in unit of fsblksize */
+> +	__le32 off2;	/* 4: offset in unit of fsblksize */
+> +	__le24 len;	/* 3: length in unit of fsblksize */
+> +	u8 addr1;	/* 1: address in unit of fsblksize */
+> +	__le32 addr2;	/* 4: address in unit of fsblksize */
+> +} xad_t;		/* (16) */
+>  
+>  #define MAXXLEN		((1 << 24) - 1)
+>  
+> 
 
-> >So, PTRACE_SELF_XXX disables the "normal" ptrace. Not sure this is good.
-> >
-> I think that having two tracing system one over the other may be
-> quite difficult to handle.
+Note that before the :24 bit-field was kept packed but now
+with the use of struct at the __le24 definition it might
+choose to pad them.
 
-Yes I see.
+Chris you might want to change the definitions at linux/types.h
+to:
 
-But... well, I think we need Roland's opinion. I must admit, I am a bit
-sceptical about this patch ;) I mean, I don't really understand why it
-is useful. We can do the same with fork() + ptrace(). Yes, in that
-case we need an "extra" context switch for any traced syscall. But,
-do you have any "real life" example to demonstrate that the user-space
-solution sucks? We can even use CLONE_MM to speedup the context switch.
+typedef struct { __u8 b[3]; } __be24, __le24 __packed;
 
-Pierre, don't get me wrong. I never used debuggers for myself, I will
-be happy to know I am wrong. I just don't understand.
+With gcc it will not help with the proceeding fields, and the
+containing struct will need it's own "__packed" declaration
+but it will keep it packed with previous fields.
 
-
-As for ->instrumentation. If you are going to remove PTS_INSTRUMENTED,
-we need only one bit. We could use PF_PTS_SELF, but ->flags is already
-"contended". Perhaps you can do something like
-
-	--- include/linux/sched.h
-	+++ include/linux/sched.h
-	@@ -1088,6 +1088,7 @@ struct task_struct {
-		/* ??? */
-		unsigned int personality;
-		unsigned did_exec:1;
-	+	unsigned pts_self:1;
-		pid_t pid;
-		pid_t tgid;
-	 
-
-Both did_exec and pts_self can only be changed by current, so it is
-safe to share the same word. This way we don't enlarge task_struct.
-
-Oleg.
-
+Just my $0.017
+Boaz
