@@ -1,167 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbYIJIRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbYIJITO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbYIJIRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 04:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYIJIRY
+	id S1753301AbYIJITO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 04:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYIJITB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 04:17:24 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11561 "EHLO mga09.intel.com"
+	Wed, 10 Sep 2008 04:19:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38477 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbYIJIRW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 04:17:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,371,1217833200"; 
-   d="scan'208";a="334780522"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751402AbYIJITA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 04:19:00 -0400
+Date: Wed, 10 Sep 2008 10:18:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: alex.nixon@citrix.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] xen: fix pinning when not using split pte locks
+Message-ID: <20080910081843.GE15255@elte.hu>
+References: <1220959508-13806-1-git-send-email-alex.nixon@citrix.com> <48C6BB00.9040607@goop.org> <48C6CCD7.8030800@citrix.com> <48C6DE6E.1070804@goop.org> <48C6F80E.8010509@citrix.com> <48C6FC0D.9040009@goop.org> <20080909155306.921d453b.akpm@linux-foundation.org> <48C706E8.4020200@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 1/4 v2] PCI: introduce new base functions
-Date: Wed, 10 Sep 2008 16:17:18 +0800
-Message-ID: <7A25B56E4BE99C4283EB931CD1A40E110181CB4E@pdsmsx414.ccr.corp.intel.com>
-In-Reply-To: <20080901161534.GF16796@ldl.fc.hp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/4 v2] PCI: introduce new base functions
-Thread-Index: AckMTgFBuWQMWOYaS5id0r8ourkbQQGzYaHQ
-References: <7A25B56E4BE99C4283EB931CD1A40E110177EB6D@pdsmsx414.ccr.corp.intel.com> <20080901161534.GF16796@ldl.fc.hp.com>
-From: "Zhao, Yu" <yu.zhao@intel.com>
-To: "Alex Chiang" <achiang@hp.com>
-Cc: "Jesse Barnes" <jbarnes@virtuousgeek.org>, <linux-pci@vger.kernel.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, "Greg KH" <greg@kroah.com>,
-       "Grant Grundler" <grundler@parisc-linux.org>,
-       "Matthew Wilcox" <matthew@wil.cx>, <linux-kernel@vger.kernel.org>,
-       <kvm@vger.kernel.org>, <virtualization@lists.linux-foundation.org>,
-       <xen-devel@lists.xensource.com>
-X-OriginalArrivalTime: 10 Sep 2008 08:17:21.0191 (UTC) FILETIME=[A5B5E370:01C9131D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C706E8.4020200@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, September 02, 2008 12:16 AM, Alex Chiang wrote:
->* Zhao, Yu <yu.zhao@intel.com>:
->> Some basic changes to allocation bus range, MMIO resource for SR-IOV device.
->
->This following comment is a bit confusing:
->> And add new sysfs entry to hotplug core to pass parameter to a
->> slot, which will be used by SR-IOV code.
->
->I was reading this patch, expecting to see a change to the
->hotplug core _API_ taking a param, not just a new sysfs entry.
->
->I would suggest rewording this part of the changelog as:
->
->	Add new sysfs file 'param' to /sys/bus/pci/slots/.../
->	which allows the user to pass a parameter to a slot. This
->	parameter will be used by the SR-IOV code.
->
->More about this new 'param' file below.
->
->>
->
->Please break the 80-column "rule" and make this all one line, to
->help with greppability.
->
->I know the prior version had it broken across two lines too, but
->we can improve it now. :)
 
-Sure, will do this in next version :-)
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
->
->> +			continue;
->> +		}
->> +		child->is_added = 1;
->> +		retval = device_create_file(&child->dev,
->> +					    &dev_attr_cpuaffinity);
->> +		if (retval)
->> +			dev_err(&dev->dev, "Error creating cpuaffinity"
->> +					   " file, continuing...\n");
->
->This one too, please.
->
->> diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
->> index e1098c3..f6f2a59 100644
->> --- a/drivers/pci/proc.c
->> +++ b/drivers/pci/proc.c
->> @@ -352,15 +352,16 @@ static int show_device(struct seq_file *m, void *v)
->>  			dev->vendor,
->>  			dev->device,
->>  			dev->irq);
->> -	/* Here should be 7 and not PCI_NUM_RESOURCES as we need to preserve
->compatibility */
->> -	for (i=0; i<7; i++) {
->> +
->> +	/* only print standard and ROM resources to preserve compatibility */
->> +	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
->
->Why not:
->
->	for (i = 0; i < PCI_BRIDGE_RESOURCES; i++) {
->
->Looks like the tradeoff is explicit mention of PCI_ROM_RESOURCE
->vs using a non-standard C idiom (personally, I'm not a huge fan
->of <= in a for loop, but ymmv).
->
->Again, this is a minor nit, feel free to ignore.
+> Andrew Morton wrote:
+> > What are the effects of the bug which you fixed?
+> >
+> > Do you consider this to be 2.6.27 material?  2.6.26.x?  2.6.25.x?
+> >   
+> 
+> This is a fix for a bug which only exists in tip.git.
 
-It can be PCI_BRIDGE_RESOURCES, because there may be some non-standard resources following PCI_ROM_RESOURCE and before PCI_BRIDGE_RESOURCES.
+instead of putting it into the x86 tree i've split out the mm patch into 
+a separate, -git based isolated topic branch (tip/core/xen) - the 
+coordinates for it are below. The commit ID is:
 
-For example, a standard PCI device has following resources:
-	0 - 5   BARs
-	6       ROM
-	7 - 10  Bridge
+  4ef2d41: mm: define USE_SPLIT_PTLOCKS rather than repeating expression
 
-After SR-IOV is enabled, it becomes
-	0 - 5   standard BARs
-	6       Rom
-     7 - 12  SR-IOV BARs
-	13 - 16 Bridge
+Andrew, any objection to this approach? If it's fine to you then after 
+testing this commit will eventually go to linux-next via 
+tip/auto-core-next. (the x86 tree merges this tree and i've applied the 
+Xen fix after that merge.)
 
->
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index c0e1400..687be00 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -76,7 +76,29 @@ enum pci_mmap_state {
->>  #define PCI_DMA_FROMDEVICE	2
->>  #define PCI_DMA_NONE		3
->>
->> -#define DEVICE_COUNT_RESOURCE	12
->> +/*
->> + *  For PCI devices, the region numbers are assigned this way:
->> + */
->> +enum {
->> +	/* 0-5	standard PCI regions */
->> +	PCI_STD_RESOURCE,
->> +
->> +	/* expansion ROM */
->> +	PCI_ROM_RESOURCE = 6,
->> +
->> +	/* address space assigned to buses behind the bridge */
->> +#ifndef PCI_BRIDGE_NUM_RES
->> +#define PCI_BRIDGE_NUM_RES 4
->> +#endif
->> +	PCI_BRIDGE_RESOURCES,
->> +	PCI_BRIDGE_RES_END = PCI_BRIDGE_RESOURCES + PCI_BRIDGE_NUM_RES - 1,
->> +
->> +	/* total resources associated with a PCI device */
->> +	PCI_NUM_RESOURCES,
->> +
->> +	/* preserve this for compatibility */
->> +	DEVICE_COUNT_RESOURCE
->> +};
->
->Ouch, this enum makes my head hurt a little. Care to put in a
->comment for PCI_BRIDGE_RES_END, saying that it has a value of 10?
+	Ingo
 
-Same as above, the PCI_BRIDGE_RES_END varies when some features is enabled or disabled.
+----------------------------------------------->
+the latest tip/core/xen topic tree is at:
 
-Thank you very much for carefully reviewing these patches. I'd like to invite you to review next version again if it's convenient for you.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core/xen
 
->
->Thanks,
->
->/ac
+------------------>
+Jeremy Fitzhardinge (1):
+      mm: define USE_SPLIT_PTLOCKS rather than repeating expression
 
+
+ arch/x86/xen/mmu.c       |    2 +-
+ include/linux/mm.h       |    6 +++---
+ include/linux/mm_types.h |   10 ++++++----
+ include/linux/sched.h    |    6 +++---
+ 4 files changed, 13 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index aa37469..2e1b640 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -646,7 +646,7 @@ static spinlock_t *lock_pte(struct page *page)
+ {
+ 	spinlock_t *ptl = NULL;
+ 
+-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++#if USE_SPLIT_PTLOCKS
+ 	ptl = __pte_lockptr(page);
+ 	spin_lock(ptl);
+ #endif
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 72a15dc..4194bf8 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -919,7 +919,7 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
+ }
+ #endif /* CONFIG_MMU && !__ARCH_HAS_4LEVEL_HACK */
+ 
+-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++#if USE_SPLIT_PTLOCKS
+ /*
+  * We tuck a spinlock to guard each pagetable page into its struct page,
+  * at page->private, with BUILD_BUG_ON to make sure that this will not
+@@ -932,14 +932,14 @@ static inline pmd_t *pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long a
+ } while (0)
+ #define pte_lock_deinit(page)	((page)->mapping = NULL)
+ #define pte_lockptr(mm, pmd)	({(void)(mm); __pte_lockptr(pmd_page(*(pmd)));})
+-#else
++#else	/* !USE_SPLIT_PTLOCKS */
+ /*
+  * We use mm->page_table_lock to guard all pagetable pages of the mm.
+  */
+ #define pte_lock_init(page)	do {} while (0)
+ #define pte_lock_deinit(page)	do {} while (0)
+ #define pte_lockptr(mm, pmd)	({(void)(pmd); &(mm)->page_table_lock;})
+-#endif /* NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS */
++#endif /* USE_SPLIT_PTLOCKS */
+ 
+ static inline void pgtable_page_ctor(struct page *page)
+ {
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index bf33413..9d49fa3 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -21,11 +21,13 @@
+ 
+ struct address_space;
+ 
+-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++#define USE_SPLIT_PTLOCKS	(NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS)
++
++#if USE_SPLIT_PTLOCKS
+ typedef atomic_long_t mm_counter_t;
+-#else  /* NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS */
++#else  /* !USE_SPLIT_PTLOCKS */
+ typedef unsigned long mm_counter_t;
+-#endif /* NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS */
++#endif /* !USE_SPLIT_PTLOCKS */
+ 
+ /*
+  * Each physical page in the system has a struct page associated with
+@@ -65,7 +67,7 @@ struct page {
+ 						 * see PAGE_MAPPING_ANON below.
+ 						 */
+ 	    };
+-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++#if USE_SPLIT_PTLOCKS
+ 	    spinlock_t ptl;
+ #endif
+ 	    struct kmem_cache *slab;	/* SLUB: Pointer to slab */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 3d9120c..272c353 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -352,7 +352,7 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
+ extern void arch_unmap_area(struct mm_struct *, unsigned long);
+ extern void arch_unmap_area_topdown(struct mm_struct *, unsigned long);
+ 
+-#if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
++#if USE_SPLIT_PTLOCKS
+ /*
+  * The mm counters are not protected by its page_table_lock,
+  * so must be incremented atomically.
+@@ -363,7 +363,7 @@ extern void arch_unmap_area_topdown(struct mm_struct *, unsigned long);
+ #define inc_mm_counter(mm, member) atomic_long_inc(&(mm)->_##member)
+ #define dec_mm_counter(mm, member) atomic_long_dec(&(mm)->_##member)
+ 
+-#else  /* NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS */
++#else  /* !USE_SPLIT_PTLOCKS */
+ /*
+  * The mm counters are protected by its page_table_lock,
+  * so can be incremented directly.
+@@ -374,7 +374,7 @@ extern void arch_unmap_area_topdown(struct mm_struct *, unsigned long);
+ #define inc_mm_counter(mm, member) (mm)->_##member++
+ #define dec_mm_counter(mm, member) (mm)->_##member--
+ 
+-#endif /* NR_CPUS < CONFIG_SPLIT_PTLOCK_CPUS */
++#endif /* !USE_SPLIT_PTLOCKS */
+ 
+ #define get_mm_rss(mm)					\
+ 	(get_mm_counter(mm, file_rss) + get_mm_counter(mm, anon_rss))
