@@ -1,137 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbYIJXFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbYIJXPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756495AbYIJXFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbYIJXFm
+	id S1754220AbYIJXPR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYIJXO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:05:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56976 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756681AbYIJXFl (ORCPT
+	Wed, 10 Sep 2008 19:14:59 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:4966 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYIJXO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:05:41 -0400
-Date: Wed, 10 Sep 2008 15:59:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com,
-       dave@linux.vnet.ibm.com
-Subject: Re: [RFC v2][PATCH] dynamically enable readprofile at runtime
-Message-Id: <20080910155956.dce60eb4.akpm@linux-foundation.org>
-In-Reply-To: <20080909180536.9F0C7BAB@kernel>
-References: <20080909180536.9F0C7BAB@kernel>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Sep 2008 19:14:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=AL+lOWf3kSDymMATdQN8nC/TPwv5DT3JooE4s26JP3aor3zPHxl9YYvXytWcBCImg
+	XYw71IDml54FD59b4dU5Q==
+Message-ID: <166fe7950809101614y20b60745t652183e32703ccc9@mail.gmail.com>
+Date: Wed, 10 Sep 2008 16:14:42 -0700
+From: "Ranjit Manomohan" <ranjitm@google.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
+Cc: tgraf@suug.ch, akpm@linux-foundation.org, kaber@trash.net,
+       lizf@cn.fujitsu.com, menage@google.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20080910.160026.31554352.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
+	 <20080910220115.GH20815@postel.suug.ch>
+	 <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com>
+	 <20080910.160026.31554352.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Sep 2008 11:05:36 -0700
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+On Wed, Sep 10, 2008 at 4:00 PM, David Miller <davem@davemloft.net> wrote:
+> From: "Ranjit Manomohan" <ranjitm@google.com>
+> Date: Wed, 10 Sep 2008 15:56:55 -0700
+>
+>> That is correct for ingress, for egress the sk is already available in
+>> the skb so should be fine.
+>
+> That is not something you can rely upon, even for egress, %100 of the time.
+>
+> Some forms of reallocation and mangling might decide to orphan the SKB
+> and thus drop the skb->sk reference before you see the packet.  And they
+> are absolutely free to do this.
+>
+> Just grep for skb_orphan().
+>
+> Therefore, it is absolutely something you should not rely upon for
+> correct operation.
 
-> 
-> Way too often, I have a machine that exhibits some kind of crappy
-> behavior.  The CPU looks wedged in the kernel or it is spending
-> way too much system time and I wonder what is responsible.
-> 
-> I try to run readprofile.  But, of course, Ubuntu doesn't enable
-> it by default.  Dang!
-> 
-> The reason we boot-time enable it is that it takes a big bufffer
-> that we generally can only bootmem alloc.  But, does it hurt to
-> at least try and runtime-alloc it?
-> 
-> To use:
-> echo 2 > /sys/kernel/profile
-> 
-> Then run readprofile like normal.
-> 
-> This should fix the compile issue with allmodconfig.  I've
-> compile-tested on a bunch more configs now including a few
-> more architectures.
-> 
+Thats fine and we do not rely on this. Those packets would just not be
+classified, the cgroup classid is only a hint and used when available
+(which is most of the time).
 
-Can it be turned off again?  afaict: no?
+>
+> Like I said from the beginning, Thomas's approach is the superior one.
 
-> +#ifdef CONFIG_PROFILING
-> +static ssize_t profiling_show(struct kobject *kobj,
-> +				  struct kobj_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", prof_on);
-> +}
-> +static ssize_t profiling_store(struct kobject *kobj,
-> +				   struct kobj_attribute *attr,
-> +				   const char *buf, size_t count)
-> +{
-> +	int ret;
-> +
-> +	if (prof_on)
-> +		return -EEXIST;
-> +	/*
-> +	 * This eventually calls into get_option() which
-> +	 * has a ton of callers and is not const.  It is
-> +	 * easiest to cast it away here.
-> +	 */
-> +	profile_setup((char *)buf);
-> +	ret = profile_init();
-> +	if (ret)
-> +		return ret;
-> +	ret = create_proc_profile();
-> +	if (ret)
-> +		return ret;
-> +	return count;
-> +}
-> +KERNEL_ATTR_RW(profiling);
-> +#endif
+It would leave a lot of packets (like acks) unaccounted for and these
+do take up a significant portion of network packets transmitted on a
+high speed link). I am ok with Thomas' simpler approach too, just
+pointing out that it is not as accurate as the proposed alternative.
 
-Tested with CONFIG_SYSFS=n?
+-Thanks,
+Ranjit
 
-> -void __init profile_init(void)
-> +int profile_init(void)
->  {
-> +	int buffer_bytes;
->  	if (!prof_on)
-> -		return;
-> +		return 0;
->  
->  	/* only text is profiled */
->  	prof_len = (_etext - _stext) >> prof_shift;
-> -	prof_buffer = alloc_bootmem(prof_len*sizeof(atomic_t));
-> +	buffer_bytes = prof_len*sizeof(atomic_t);
-> +	if (!slab_is_available()) {
-> +		prof_buffer = alloc_bootmem(buffer_bytes);
-> +		return 0;
-> +	}
-> +
-> +	prof_buffer = kzalloc(buffer_bytes, GFP_KERNEL);
-> +	if (prof_buffer)
-> +		return 0;
-> +
-> +	prof_buffer = alloc_pages_exact(buffer_bytes, GFP_KERNEL|__GFP_ZERO);
-> +	if (prof_buffer)
-> +		return 0;
-> +
-> +	prof_buffer = vmalloc(buffer_bytes);
-> +	if (prof_buffer)
-> +		return 0;
-> +
-> +	return -ENOMEM;
->  }
-
-Well that should cover it.
-
-Did you check to see if any __GFP_NOWARNs are needed there?
-
-
-alloc_bootmem() will (apparently undocumentedly and secretly) zero the
-memory.
-
-kzalloc() will zero the memory.
-
-alloc_pages_exact(__GFP_ZERO) will zero the memory.
-
-But what about vmalloc?  I see no documentation which says that it
-zeroes the memory, although it seems that some flavours of it will do
-this, but the nommu version does not.  Seems all messed up.
-
+>
