@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752343AbYIJGST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609AbYIJGWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752343AbYIJGST (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 02:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYIJGSH
+	id S1752609AbYIJGWs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 02:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbYIJGWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 02:18:07 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60162 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbYIJGSG (ORCPT
+	Wed, 10 Sep 2008 02:22:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:47137 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbYIJGWi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 02:18:06 -0400
-Date: Tue, 9 Sep 2008 23:17:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Paul Menage <menage@google.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cgroups: fix probable race with put_css_set[_taskexit]
-	and find_css_set
-Message-ID: <20080910061717.GA6301@kroah.com>
-References: <48AA684B.7000704@cn.fujitsu.com> <6599ad830809091728m426a7219h1977001f86cb5f31@mail.gmail.com> <48C72E7C.8080302@cn.fujitsu.com> <20080910050112.GA2897@kroah.com> <6599ad830809092231h90712a6mc95b81229d64d6bc@mail.gmail.com>
+	Wed, 10 Sep 2008 02:22:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ND/uwsdjPyE+6T/wTNHCnFxqEoSoL8swpzBZmsVQRMBZWNtYQH1r/xYe5LU0uIUvAT
+         4aNNmPSlfWbO2OSArA7I/LXU+jq00WyTYrR5sojSPim86ycz1ENKZhopTYroY8l5B+1K
+         MflOBCp/BIs8fvYOxPrusWd53Fv+gxbHl8Y/E=
+Message-ID: <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com>
+Date: Tue, 9 Sep 2008 23:22:37 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <6599ad830809092231h90712a6mc95b81229d64d6bc@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080909184615.GA7303@lenovo>
+	 <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com>
+	 <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 10:31:24PM -0700, Paul Menage wrote:
-> On Tue, Sep 9, 2008 at 10:01 PM, Greg KH <greg@kroah.com> wrote:
-> >
-> > What are you trying to solve here with this change?  I agree, it does
-> > seem a bit "chaotic" :)
-> 
-> There's a place in cgroups that uses kref_put() to release an object;
-> the release function *then* takes a write-lock and removes the object
-> from a lookup table; it could race with another thread that searches
-> the lookup table (while holding a read-lock) and does kref_get() on
-> the same object.
+On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> ...
+>>
+>> hope we can keep using MACRO..
+>>
+>> YH
+>>
+>
+> Btw, Yinghai, what does it mean? To not touch this macro at all?
+> Or you mean about implementation issue (ie the design itself)?
 
-Ick, yeah that's not good.
+do not touch this macro... and may revisit after 2.6.28
 
-What about the way everyone else solves this, grab the lock before you
-call kref_put()?
-
-> The current fix is for the release function to recheck inside the lock
-> that the object's refcount is still zero, and only actually
-> unlink/free it if so. And actually I've just realised that this isn't
-> actually even safe, since the thread that just acquired the object
-> could kref_put() it almost immediately, which would leave two threads
-> both trying to unlink/free the object.
-
-Yeah, don't do that :)
-
-thanks,
-
-greg k-h
+YH
