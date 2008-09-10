@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbYIJNIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbYIJNJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbYIJNIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 09:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYIJNIR
+	id S1753131AbYIJNJL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 09:09:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYIJNI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 09:08:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53009 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYIJNIQ convert rfc822-to-8bit (ORCPT
+	Wed, 10 Sep 2008 09:08:57 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:62937 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbYIJNI5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 09:08:16 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Ville =?iso-8859-1?q?Syrj=E4l=E4?= <syrjala@sci.fi>,
-       Janne Grunau <j@jannau.net>
-Subject: Re: [PATCH 06/18] lirc driver for the ATI USB RF remote receiver
-Date: Wed, 10 Sep 2008 09:05:58 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Christoph Bartelmus <lirc@bartelmus.de>
-References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-7-git-send-email-jwilson@redhat.com> <20080910095832.GA22422@sci.fi>
-In-Reply-To: <20080910095832.GA22422@sci.fi>
+	Wed, 10 Sep 2008 09:08:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rTjlUoWpz7pZ0rFGZUQC1AhsU7rcD8DRgsxHswwUvtFGGs7y4jPvzIPOnVupOZi1hD
+         jhyIHCxZeEwCjuf8c5q61Y+vDzrvexJiPAtZJYmgbuRLjA9kh25cJ1/LmKUV55L+OsNk
+         pya1K+NRIzA2Tiochd30klJe8K8c5CSS8l5/Q=
+Date: Wed, 10 Sep 2008 09:08:51 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jarod Wilson <jwilson@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Jarod Wilson <jarod@redhat.com>,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>,
+       Mario Limonciello <superm1@ubuntu.com>
+Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
+Message-ID: <20080910130851.GC25221@anvil.corenet.prv>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809100905.58304.jwilson@redhat.com>
+In-Reply-To: <1220933164-10160-2-git-send-email-jwilson@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 September 2008 05:58:32 Ville Syrjälä wrote:
-> On Tue, Sep 09, 2008 at 12:05:51AM -0400, Jarod Wilson wrote:
-> > +config LIRC_ATIUSB
-> > +	tristate "ATI RF USB Receiver support"
-> > +	default n
-> > +	depends on LIRC_DEV
-> > +	help
-> > +	  Driver for the ATI USB RF remote receiver
-> > +
->
-> We already have proper input drivers for these devices (ati_remote and
-> ati_remote2).
+Hi Jarod,
 
-True, though I think some users still prefer using them with the lirc drivers 
-for assorted reasons. Configuring something like mythtv to work with the 
-ati_remote{,2} driver appears to be a bit more complex (or at least non-
-standard vs. several other popular remotes) and not as functional vs. 
-configuring mythtv w/lirc_atiusb.
+On Tue, Sep 09, 2008 at 12:05:46AM -0400, Jarod Wilson wrote:
+> -Add Kconfig and Makefile bits
+> -Add device driver interface and headers
+> 
+> The initial Kconfig and Makefile bits were done by Mario Limonciello for
+> the Ubuntu kernel, but have been tweaked a bit since then. Any errors are
+> probably my doing.
+> 
 
-http://evuraan.blogspot.com/2008/01/how-to-use-ati-remote-wonder-ii-
-remote.html
+Couple of questions - what is missing in the current input core to
+properly support IR devices? How can we enhance it to not need new
+subsystem to handle such devices? We already have in-kernel support for
+some of the devices you are adding (ATI remotes, xbox, etc) so the
+situation is not ideal. Could we try to work it in ininput core and
+maybe provide LIRC device access through an input handler
+implementation so that applications do not have to implement 2 types of
+interfaces?
 
 -- 
-Jarod Wilson
-jarod@redhat.com
-
+Dmitry
