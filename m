@@ -1,72 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYIJOqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYIJOsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbYIJOqS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 10:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbYIJOqJ
+	id S1753792AbYIJOsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 10:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYIJOsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 10:46:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:35644 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521AbYIJOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 10:46:08 -0400
-Date: Wed, 10 Sep 2008 23:45:34 +0900
-To: joro@8bytes.org
-Cc: fujita.tomonori@lab.ntt.co.jp, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
- IOMMU's alloc_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080910143818.GA31506@8bytes.org>
-References: <20080910135347.GI6329@amd.com>
-	<20080910232446O.fujita.tomonori@lab.ntt.co.jp>
-	<20080910143818.GA31506@8bytes.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 10 Sep 2008 10:48:10 -0400
+Received: from mx51.mymxserver.com ([85.199.173.110]:10213 "EHLO
+	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbYIJOsJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 10:48:09 -0400
+X-Greylist: delayed 88962 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Sep 2008 10:48:09 EDT
+From: Holger Schurig <hs4233@mail.mn-solutions.de>
+To: Zhao Yakui <yakui.zhao@intel.com>
+Subject: Re: OOPS: getting an ACPI interrupt while in an ACPI interrupt hangs my box
+Date: Wed, 10 Sep 2008 16:47:58 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200809091605.07734.hs4233@mail.mn-solutions.de> <1221008490.3989.102.camel@yakui_zhao.sh.intel.com>
+In-Reply-To: <1221008490.3989.102.camel@yakui_zhao.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080910234510S.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+Message-Id: <200809101647.58567.hs4233@mail.mn-solutions.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008 16:38:18 +0200
-Joerg Roedel <joro@8bytes.org> wrote:
+> If the system is booted with the boot option of
+> "processor.max_cstate=1", does the following warning message
+> still exist?
 
-> On Wed, Sep 10, 2008 at 11:24:57PM +0900, FUJITA Tomonori wrote:
-> > On Wed, 10 Sep 2008 15:53:47 +0200
-> > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > 
-> > > On Wed, Sep 10, 2008 at 10:37:45PM +0900, FUJITA Tomonori wrote:
-> > > > On Wed, 10 Sep 2008 15:10:32 +0200
-> > > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > > > Can't we simply make the gfp hacks depend on
-> > > > > dma_ops->is_phys and avoid further gfp hacks in the hardware iommu
-> > > > > implementations?
-> > > > 
-> > > > I thought about it but adding a new dma_ops->we_don't_want_gfp_flag
-> > > > hook doesn't make the code simpler much. Currently, we have the gfp
-> > > > setting hack in just one place. It's not bad. Adding such new hook
-> > > > means adding more lines than we can remove.
-> > > 
-> > > The is_phys flas is already in place and its meaning is "the dma_ops
-> > > return bus addresses equal to physical addresses". This is exactly the
-> > > case when we need the gfp hacks. So I don't see a problem in just
-> > > skipping the gfp rewrite if is_phys is zero. I don't see a point in
-> > > adding gfp flags in dma_alloc_coherent and remove them again
-> > > dma_ops->alloc_coherent code. Specially in this case where we already
-> > > know in dma_alloc_coherent if we really need the flag rewrite.
-> > 
-> > dma_ops->is_phys doesn't work well for GART and Intel IOMMU, that do
-> > virtual mappings for some devices and doesn't for some.
-> > 
-> > We need to a hook that can pass a point to a device to IOMMUs like:
-> > 
-> > dma_ops->is_phys(struct device *dev)
-> > 
-> > 
-> > Because they need to look at a device to know if they will do virtual
-> > mappings or not for it.
-> 
-> Ok, thats a valid point. I queue your patch with the AMD IOMMU updates
-> for 2.6.28. Thanks.
-
-Ingo already has queued it his tree, I think.
+Yes, if this did help, then only marginally.
