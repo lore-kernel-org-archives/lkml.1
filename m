@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbYIJNPJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYIJNTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbYIJNPJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 09:15:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYIJNOo
+	id S1754119AbYIJNTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 09:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYIJNTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 09:14:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:32174 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbYIJNOm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 09:14:42 -0400
-Date: Wed, 10 Sep 2008 16:15:13 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Christine Caulfield <caulfie@redhat.com>,
-       David Teigland <teigland@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] include <linux/types.h> into linux/dlm_plock.h for
-	__u* typedef
-Message-ID: <20080910131512.GH3757@localhost.localdomain>
-References: <1221045726-5674-1-git-send-email-kirill@shutemov.name> <1221045726-5674-2-git-send-email-kirill@shutemov.name> <20080910121450.GA3468@x200.localdomain> <20080910125503.GG3757@localhost.localdomain> <20080910131158.GB3468@x200.localdomain>
+	Wed, 10 Sep 2008 09:19:41 -0400
+Received: from mx1.suse.de ([195.135.220.2]:35069 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751707AbYIJNTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 09:19:41 -0400
+Date: Wed, 10 Sep 2008 06:18:55 -0700
+From: Greg KH <gregkh@suse.de>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       htejun@gmail.com
+Subject: Re: [PATCH] x86: sysfs - kill owner field from attribute
+Message-ID: <20080910131855.GA15808@suse.de>
+References: <f7848160809091611w50270265hc149baeaf267775e@mail.gmail.com> <20080910053724.GA3632@suse.de> <f7848160809100601o56340cf2re9f43cf0c3969d19@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J/zg8ciPNcraoWb6"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080910131158.GB3468@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+In-Reply-To: <f7848160809100601o56340cf2re9f43cf0c3969d19@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 10, 2008 at 09:01:48AM -0400, Parag Warudkar wrote:
+> On Wed, Sep 10, 2008 at 1:37 AM, Greg KH <gregkh@suse.de> wrote:
+> 
+> > Why one arch, normally we do it one subsystem at a time :)
+> 
+> Mostly because I at least want to compile test and preferably boot
+> with the changes - which I can on x86/64.
+> And somewhat in the hope that some one else will help with changes on
+> the arches he/she is able to test!
+> 
+> >
+> > Either way, thanks for doing this, I'll gladly take your fixed up
+> > version and work to clean up the rest if you don't want to do it.
+> >
+> 
+> Not that I don't want to do it - just that I can't test it on the
+> other arches - so please feel free.
+> The sooner it goes away the better.
 
---J/zg8ciPNcraoWb6
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cross-compilers are your friend, Andrew beat that into me finally after
+years of telling me this :)
 
-On Wed, Sep 10, 2008 at 05:11:58PM +0400, Alexey Dobriyan wrote:
-> On Wed, Sep 10, 2008 at 03:55:04PM +0300, Kirill A. Shutemov wrote:
-> > On Wed, Sep 10, 2008 at 04:14:50PM +0400, Alexey Dobriyan wrote:
-> > > On Wed, Sep 10, 2008 at 02:22:04PM +0300, Kirill A. Shutemov wrote:
-> > > > --- a/include/linux/dlm_plock.h
-> > > > +++ b/include/linux/dlm_plock.h
-> > >=20
-> > > > +#include <linux/types.h>
-> > >=20
-> > > I'd say that unless you can demonstrate compilation breakage, these w=
-ill
-> > > only slow down compilation.
-> >=20
-> > Do you think that minor slow down is worse than dependence on the order=
- of
-> > inclusion?
->=20
-> Since it compiles fine there is no such dependency.
+resend your patch and I'll run with it.
 
-It doesn't compiles:
+thanks,
 
-$ make headers_install
-=2E..
-$ gcc usr/include/linux/dlm_plock.h
-usr/include/linux/dlm_plock.h:25: error: expected specifier-qualifier-list
-before =E2=80=98__u32=E2=80=99
-
-> Just removing externs from function prototypes makes compiles go faster f=
-or
-> _seconds_.
-
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---J/zg8ciPNcraoWb6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjHyGAACgkQbWYnhzC5v6o+wQCdF422uv0k4cHyhURzYOFDMf1j
-kDsAn0l9nYGgRcX79beleb6gSHfH4xJ4
-=Io2I
------END PGP SIGNATURE-----
-
---J/zg8ciPNcraoWb6--
+greg k-h
