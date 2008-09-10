@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYIJBwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbYIJByl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbYIJBwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 21:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbYIJBwO
+	id S1753191AbYIJByl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 21:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYIJByd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 21:52:14 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:23454 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbYIJBwN (ORCPT
+	Tue, 9 Sep 2008 21:54:33 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:36747 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbYIJByd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 21:52:13 -0400
-From: heukelum@fastmail.fm
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 7/24] i386: convert hardware exception 6 to an interrupt gate
-Date: Tue,  9 Sep 2008 21:56:01 +0200
-Message-Id: <1220990178-29773-8-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
-References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 10 Sep 2008 03:51:58 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
+	Tue, 9 Sep 2008 21:54:33 -0400
+Message-ID: <48C727B6.9000700@cs.columbia.edu>
+Date: Tue, 09 Sep 2008 21:49:42 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: [RFC v4][PATCH 9/9] File descriprtors (restore)
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>	 <1220946154-15174-10-git-send-email-orenl@cs.columbia.edu> <1220977581.23386.216.camel@nimitz>
+In-Reply-To: <1220977581.23386.216.camel@nimitz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander van Heukelum <heukelum@fastmail.fm>
 
-Handle invalid opcode exception with interrupt initially off.
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/traps_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Dave Hansen wrote:
+> On Tue, 2008-09-09 at 03:42 -0400, Oren Laadan wrote:
+>> +static int cr_close_all_fds(struct files_struct *files)
+>> +{
+>> +       int *fdtable;
+>> +       int n;
+>> +
+>> +       do {
+>> +               n = cr_scan_fds(files, &fdtable);
+>> +               if (n < 0)
+>> +                       return n;
+>> +               while (n--)
+>> +                       sys_close(fdtable[n]);
+>> +               kfree(fdtable);
+>> +       } while (n != -1);
+>> +
+>> +       return 0;
+>> +}
+> 
+> This needs to use an ERR_PTR().  It will save using the double-pointer.
 
-diff --git a/arch/x86/kernel/traps_32.c b/arch/x86/kernel/traps_32.c
-index becfc84..5d8d057 100644
---- a/arch/x86/kernel/traps_32.c
-+++ b/arch/x86/kernel/traps_32.c
-@@ -635,7 +635,7 @@ void do_##name(struct pt_regs *regs, long error_code)			\
- DO_VM86_ERROR_INFO(0, SIGFPE, "divide error", divide_error, FPE_INTDIV, regs->ip)
- DO_VM86_ERROR(4, SIGSEGV, "overflow", overflow)
- DO_VM86_ERROR(5, SIGSEGV, "bounds", bounds)
--DO_TRAP_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
-+DO_ERROR_INFO(6, SIGILL, "invalid opcode", invalid_op, ILL_ILLOPN, regs->ip, 0)
- DO_TRAP(9, SIGFPE, "coprocessor segment overrun", coprocessor_segment_overrun)
- DO_TRAP(10, SIGSEGV, "invalid TSS", invalid_TSS)
- DO_TRAP(11, SIGBUS, "segment not present", segment_not_present)
-@@ -1252,7 +1252,7 @@ void __init trap_init(void)
- 	set_system_intr_gate(3, &int3); /* int3 can be called from all */
- 	set_system_intr_gate(4, &overflow); /* int4 can be called from all */
- 	set_intr_gate(5, &bounds);
--	set_trap_gate(6, &invalid_op);
-+	set_intr_gate(6, &invalid_op);
- 	set_trap_gate(7, &device_not_available);
- 	set_task_gate(8, GDT_ENTRY_DOUBLEFAULT_TSS);
- 	set_trap_gate(9, &coprocessor_segment_overrun);
--- 
-1.5.4.3
+I suppose you refer to the call to cr_scan_fds(): either 'fdtable'
+or 'n' will have to pass-by-reference. Is it that you prefer it to be
+	fdtable = cr_scan_fds(files, &n);
+?
+
+Oren.
 
