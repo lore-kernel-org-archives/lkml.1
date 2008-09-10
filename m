@@ -1,71 +1,3376 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbYIJWTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbYIJWTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbYIJWTR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYIJWTB
+	id S1754291AbYIJWTg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbYIJWTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:19:01 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:41502 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbYIJWTA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:19:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=W6JKh7pb1DOrkfKogb1x7tNWdQpqiGJzewjPlmjmEZo9YswRm4NLpYqd+1Y3wFO4wG
-         hYF61IspjN1zSCM8r11KQhELNShYTlDJ8B/FJJ4aBVS9DgMCkMPmjW6Kp2E0V2kXOXoJ
-         BkGaxgIhFmX2c8f+yxrjvXgibKsfVcTOlSlNM=
-Message-ID: <43e72e890809101518k35047191hac8b796383a5638@mail.gmail.com>
-Date: Wed, 10 Sep 2008 15:18:59 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: "Marcel Holtmann" <holtmann@linux.intel.com>
-Subject: Re: [PATCH 1/2 v6] cfg80211: Add new wireless regulatory infrastructure
-Cc: linville@tuxdriver.com, johannes@sipsolutions.net,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1221084429.13336.23.camel@californication>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221027589-19203-1-git-send-email-lrodriguez@atheros.com>
-	 <1221027589-19203-2-git-send-email-lrodriguez@atheros.com>
-	 <1221070650.13336.20.camel@californication>
-	 <43e72e890809101318o771100f0jcac9bbea6b863ccb@mail.gmail.com>
-	 <1221084429.13336.23.camel@californication>
-X-Google-Sender-Auth: 782eaf096b849e39
+	Wed, 10 Sep 2008 18:19:15 -0400
+Received: from crmm.lgl.lu ([158.64.72.228]:46613 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753738AbYIJWTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 18:19:06 -0400
+Date: Thu, 11 Sep 2008 00:18:54 +0200
+From: Alain Knaff <alain@knaff.lu>
+Message-Id: <200809102218.m8AMIscm023350@hitchhiker.org.lu>
+Subject: [update4] [PATCH] init: bzip2 or lzma -compressed kernels and initrds
+To: <rob@landley.net>, <linux-kernel@vger.kernel.org>, <alain@knaff.lu>
+X-Mailer: mail (GNU Mailutils 1.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 3:07 PM, Marcel Holtmann
-<holtmann@linux.intel.com> wrote:
-> Hi Luis,
->
->> > While reading through it, I came to think about regulatory_hint(). So is
->> > there a use case where would give it the alpha2 code and the domain
->> > itself at the same time? If not, then it would make more sense to split
->> > this into two functions.
->>
->> Nope, you either pass an alpha2 or an rd domain which is built by you
->> (and in that rd structure you can set the alpha2 to your iso3166
->> alpha2 or "99" if unknown).
->>
->> > Maybe something regulatory_alpha2_hint() and
->> > regulatory_domain_hint(). Just a thought.
->>
->> That's how I had it originally but decided to condense it to one
->> routine since as you could see they pretty much do the same thing
->> except the case where the rd is provided it calls set_regdom().
->> Setting it back to use two routines if fine by me too. What is better?
->> Can we just get this merged and then we can flip it around if
->> necessary? :) I'm tired of carrying this around.
->
-> my take on this is that if from an API perspective you can only use one
-> parameter or the other, then it should be two functions.
+From: Alain Knaff <alain@knaff.lu>
 
-This is reasonable, I'll respin, yet once again...
+This is an updated version of my bzip2/lzma patch
 
-  Luis
+It is based on an idea by Christian Ludwig, includes support for
+compressing the kernel with bzip2 or lzma rather than gzip. Both
+compressors give smaller sizes than gzip.  Lzma's decompresses faster
+than bzip2.
+
+It also supports ramdisks and initramfs' compressed using these two
+compressors.
+
+The functionality has been successfully used for a couple of years by
+the udpcast project
+
+This version applies to "tip" kernel 2.6.27-rc5
+
+Changes since last version (update3):
+
+- Support for ARM architecture
+- Minor cleanup
+
+Signed-off-by: Alain Knaff <alain@knaff.lu>
+
+---
+
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/arm/boot/compressed/Makefile linux.trees.git.udpcast/arch/arm/boot/compressed/Makefile
+--- linux.trees.git.0/arch/arm/boot/compressed/Makefile	2008-09-07 11:29:10.000000000 +0200
++++ linux.trees.git.udpcast/arch/arm/boot/compressed/Makefile	2008-09-10 23:58:06.000000000 +0200
+@@ -67,8 +67,15 @@ endif
+ 
+ SEDFLAGS	= s/TEXT_START/$(ZTEXTADDR)/;s/BSS_START/$(ZBSSADDR)/
+ 
+-targets       := vmlinux vmlinux.lds piggy.gz piggy.o font.o font.c \
+-		 head.o misc.o $(OBJS)
++suffix_$(CONFIG_KERNEL_GZIP)  = gz
++suffix_$(CONFIG_KERNEL_BZIP2) = bz2
++suffix_$(CONFIG_KERNEL_LZMA)  = lzma
++
++targets       := vmlinux vmlinux.lds \
++		 piggy.gz piggy.gz.o \
++		 piggy.bz2 piggy.bz2.o \
++		 piggy.lzma piggy.lzma.o \
++		 font.o font.c head.o misc.o $(OBJS)
+ 
+ ifeq ($(CONFIG_FTRACE),y)
+ ORIG_CFLAGS := $(KBUILD_CFLAGS)
+@@ -95,7 +102,7 @@ LDFLAGS_vmlinux += -p --no-undefined -X 
+ # would otherwise mess up our GOT table
+ CFLAGS_misc.o := -Dstatic=
+ 
+-$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.o \
++$(obj)/vmlinux: $(obj)/vmlinux.lds $(obj)/$(HEAD) $(obj)/piggy.$(suffix_y).o \
+ 	 	$(addprefix $(obj)/, $(OBJS)) FORCE
+ 	$(call if_changed,ld)
+ 	@:
+@@ -103,7 +110,17 @@ $(obj)/vmlinux: $(obj)/vmlinux.lds $(obj
+ $(obj)/piggy.gz: $(obj)/../Image FORCE
+ 	$(call if_changed,gzip)
+ 
+-$(obj)/piggy.o:  $(obj)/piggy.gz FORCE
++$(obj)/piggy.bz2: $(obj)/../Image FORCE
++	$(call if_changed,bzip2)
++
++$(obj)/piggy.lzma: $(obj)/../Image FORCE
++	$(call if_changed,lzma)
++
++$(obj)/piggy.gz.o:  $(obj)/piggy.gz FORCE
++
++$(obj)/piggy.bz2.o:  $(obj)/piggy.bz2 FORCE
++
++$(obj)/piggy.lzma.o:  $(obj)/piggy.lzma FORCE
+ 
+ CFLAGS_font.o := -Dstatic=
+ 
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/arm/boot/compressed/misc.c linux.trees.git.udpcast/arch/arm/boot/compressed/misc.c
+--- linux.trees.git.0/arch/arm/boot/compressed/misc.c	2008-09-07 11:29:10.000000000 +0200
++++ linux.trees.git.udpcast/arch/arm/boot/compressed/misc.c	2008-09-10 23:38:49.000000000 +0200
+@@ -169,116 +169,31 @@ static inline __ptr_t memcpy(__ptr_t __d
+ /*
+  * gzip delarations
+  */
+-#define OF(args)  args
+ #define STATIC static
+ 
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+ typedef unsigned long  ulg;
+-
+-#define WSIZE 0x8000		/* Window size must be at least 32k, */
+-				/* and a power of two */
+-
+-static uch *inbuf;		/* input buffer */
+-static uch window[WSIZE];	/* Sliding window buffer */
+-
+-static unsigned insize;		/* valid bytes in inbuf */
+-static unsigned inptr;		/* index of next byte to be processed in inbuf */
+-static unsigned outcnt;		/* bytes in output buffer */
+-
+-/* gzip flag byte */
+-#define ASCII_FLAG   0x01 /* bit 0 set: file probably ascii text */
+-#define CONTINUATION 0x02 /* bit 1 set: continuation of multi-part gzip file */
+-#define EXTRA_FIELD  0x04 /* bit 2 set: extra field present */
+-#define ORIG_NAME    0x08 /* bit 3 set: original file name present */
+-#define COMMENT      0x10 /* bit 4 set: file comment present */
+-#define ENCRYPTED    0x20 /* bit 5 set: file is encrypted */
+-#define RESERVED     0xC0 /* bit 6,7:   reserved */
+-
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
+-
+-/* Diagnostic functions */
+-#ifdef DEBUG
+-#  define Assert(cond,msg) {if(!(cond)) error(msg);}
+-#  define Trace(x) fprintf x
+-#  define Tracev(x) {if (verbose) fprintf x ;}
+-#  define Tracevv(x) {if (verbose>1) fprintf x ;}
+-#  define Tracec(c,x) {if (verbose && (c)) fprintf x ;}
+-#  define Tracecv(c,x) {if (verbose>1 && (c)) fprintf x ;}
+-#else
+-#  define Assert(cond,msg)
+-#  define Trace(x)
+-#  define Tracev(x)
+-#  define Tracevv(x)
+-#  define Tracec(c,x)
+-#  define Tracecv(c,x)
+-#endif
+-
+-static int  fill_inbuf(void);
+-static void flush_window(void);
+-static void error(char *m);
++typedef ulg memptr ;
+ 
+ extern char input_data[];
+ extern char input_data_end[];
+ 
+-static uch *output_data;
+-static ulg output_ptr;
+-static ulg bytes_out;
+-
+-static void error(char *m);
+-
+-static void putstr(const char *);
+-
+-extern int end;
+-static ulg free_mem_ptr;
+-static ulg free_mem_end_ptr;
+-
+-#ifdef STANDALONE_DEBUG
+-#define NO_INFLATE_MALLOC
+-#endif
+-
+ #define ARCH_HAS_DECOMP_WDOG
+ 
++static void error(char *x);
++
++#ifdef CONFIG_KERNEL_GZIP
+ #include "../../../../lib/inflate.c"
++#endif
+ 
+-/* ===========================================================================
+- * Fill the input buffer. This is called only when the buffer is empty
+- * and at least one byte is really needed.
+- */
+-int fill_inbuf(void)
+-{
+-	if (insize != 0)
+-		error("ran out of input data");
++#ifdef CONFIG_KERNEL_BZIP2
++#include "../../../../lib/decompress_bunzip2.c"
++#endif
+ 
+-	inbuf = input_data;
+-	insize = &input_data_end[0] - &input_data[0];
++#ifdef CONFIG_KERNEL_LZMA
++#include "../../../../lib/decompress_unlzma.c"
++#endif
+ 
+-	inptr = 1;
+-	return inbuf[0];
+-}
+ 
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-void flush_window(void)
+-{
+-	ulg c = crc;
+-	unsigned n;
+-	uch *in, *out, ch;
+-
+-	in = window;
+-	out = &output_data[output_ptr];
+-	for (n = 0; n < outcnt; n++) {
+-		ch = *out++ = *in++;
+-		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-	}
+-	crc = c;
+-	bytes_out += (ulg)outcnt;
+-	output_ptr += (ulg)outcnt;
+-	outcnt = 0;
+-	putstr(".");
+-}
+ 
+ #ifndef arch_error
+ #define arch_error(x)
+@@ -301,17 +216,26 @@ ulg
+ decompress_kernel(ulg output_start, ulg free_mem_ptr_p, ulg free_mem_ptr_end_p,
+ 		  int arch_id)
+ {
+-	output_data		= (uch *)output_start;	/* Points to kernel start */
+-	free_mem_ptr		= free_mem_ptr_p;
+-	free_mem_end_ptr	= free_mem_ptr_end_p;
++	ulg output_ptr;
++	ulg *ptr;
++	size_t input_len	= input_data_end - input_data;
++	size_t pos		= 0;
++
+ 	__machine_arch_type	= arch_id;
+ 
+ 	arch_decomp_setup();
+ 
+-	makecrc();
+-	putstr("Uncompressing Linux...");
+-	gunzip();
++	ptr = (ulg *) (((long)input_data_end) - 4);
++	output_ptr = output_start +  *ptr;
++
++	free_mem_ptr		= output_ptr;
++	free_mem_end_ptr	= output_ptr + 0x4000000;
++
++	putstr("Decompressing Linux...");
++	decompress(input_data, input_len,
++		   NULL, NULL, (unsigned char *) output_start, &pos, error);
+ 	putstr(" done, booting the kernel.\n");
++
+ 	return output_ptr;
+ }
+ #else
+@@ -320,11 +244,12 @@ char output_buffer[1500*1024];
+ 
+ int main()
+ {
+-	output_data = output_buffer;
+-
+-	makecrc();
+ 	putstr("Uncompressing Linux...");
+-	gunzip();
++#ifdef CONFIG_KERNEL_BZIP2
++	/* Fake decompressed length for bzip2 */
++	input_len -= 4;
++#endif
++	decompress(input_data, input_len, NULL, output_buffer, NULL);
+ 	putstr("done.\n");
+ 	return 0;
+ }
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/arm/boot/compressed/piggy.bz2.S linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.bz2.S
+--- linux.trees.git.0/arch/arm/boot/compressed/piggy.bz2.S	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.bz2.S	2008-09-10 23:31:36.000000000 +0200
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.bz2"
++	.globl	input_data_end
++input_data_end:
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/arm/boot/compressed/piggy.gz.S linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.gz.S
+--- linux.trees.git.0/arch/arm/boot/compressed/piggy.gz.S	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.gz.S	2008-09-10 23:25:48.000000000 +0200
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.gz"
++	.globl	input_data_end
++input_data_end:
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/arm/boot/compressed/piggy.lzma.S linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.lzma.S
+--- linux.trees.git.0/arch/arm/boot/compressed/piggy.lzma.S	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.lzma.S	2008-09-10 23:25:49.000000000 +0200
+@@ -0,0 +1,6 @@
++	.section .piggydata,#alloc
++	.globl	input_data
++input_data:
++	.incbin	"arch/arm/boot/compressed/piggy.lzma"
++	.globl	input_data_end
++input_data_end:
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/arm/boot/compressed/piggy.S linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.S
+--- linux.trees.git.0/arch/arm/boot/compressed/piggy.S	2008-09-07 11:29:10.000000000 +0200
++++ linux.trees.git.udpcast/arch/arm/boot/compressed/piggy.S	1970-01-01 01:00:00.000000000 +0100
+@@ -1,6 +0,0 @@
+-	.section .piggydata,#alloc
+-	.globl	input_data
+-input_data:
+-	.incbin	"arch/arm/boot/compressed/piggy.gz"
+-	.globl	input_data_end
+-input_data_end:
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/x86/boot/compressed/head_32.S linux.trees.git.udpcast/arch/x86/boot/compressed/head_32.S
+--- linux.trees.git.0/arch/x86/boot/compressed/head_32.S	2008-09-07 11:29:12.000000000 +0200
++++ linux.trees.git.udpcast/arch/x86/boot/compressed/head_32.S	2008-09-09 00:41:04.000000000 +0200
+@@ -143,7 +143,7 @@ relocated:
+ 	pushl %eax	# input_len
+ 	leal input_data(%ebx), %eax
+ 	pushl %eax	# input_data
+-	leal boot_heap(%ebx), %eax
++	leal _end(%ebx), %eax
+ 	pushl %eax	# heap area
+ 	pushl %esi	# real mode pointer
+ 	call decompress_kernel
+@@ -184,8 +184,6 @@ relocated:
+ .bss
+ /* Stack and heap for uncompression */
+ .balign 4
+-boot_heap:
+-	.fill BOOT_HEAP_SIZE, 1, 0
+ boot_stack:
+ 	.fill BOOT_STACK_SIZE, 1, 0
+ boot_stack_end:
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/x86/boot/compressed/head_64.S linux.trees.git.udpcast/arch/x86/boot/compressed/head_64.S
+--- linux.trees.git.0/arch/x86/boot/compressed/head_64.S	2008-09-07 11:29:12.000000000 +0200
++++ linux.trees.git.udpcast/arch/x86/boot/compressed/head_64.S	2008-09-09 00:41:09.000000000 +0200
+@@ -287,7 +287,7 @@ relocated:
+  */
+ 	pushq	%rsi			# Save the real mode argument
+ 	movq	%rsi, %rdi		# real mode address
+-	leaq	boot_heap(%rip), %rsi	# malloc area for uncompression
++	leaq	_end(%rip), %rsi	# malloc area for uncompression
+ 	leaq	input_data(%rip), %rdx  # input_data
+ 	movl	input_len(%rip), %eax
+ 	movq	%rax, %rcx		# input_len
+@@ -316,8 +316,6 @@ gdt_end:
+ .bss
+ /* Stack and heap for uncompression */
+ .balign 4
+-boot_heap:
+-	.fill BOOT_HEAP_SIZE, 1, 0
+ boot_stack:
+ 	.fill BOOT_STACK_SIZE, 1, 0
+ boot_stack_end:
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/x86/boot/compressed/Makefile linux.trees.git.udpcast/arch/x86/boot/compressed/Makefile
+--- linux.trees.git.0/arch/x86/boot/compressed/Makefile	2008-09-07 11:29:12.000000000 +0200
++++ linux.trees.git.udpcast/arch/x86/boot/compressed/Makefile	2008-09-07 11:41:54.000000000 +0200
+@@ -4,7 +4,7 @@
+ # create a compressed vmlinux image from the original vmlinux
+ #
+ 
+-targets := vmlinux vmlinux.bin vmlinux.bin.gz head_$(BITS).o misc.o piggy.o
++targets := vmlinux vmlinux.bin vmlinux.bin.gz vmlinux.bin.bz2 vmlinux.bin.lzma head_$(BITS).o misc.o piggy.o
+ 
+ KBUILD_CFLAGS := -m$(BITS) -D__KERNEL__ $(LINUX_INCLUDE) -O2
+ KBUILD_CFLAGS += -fno-strict-aliasing -fPIC
+@@ -47,18 +47,34 @@ ifeq ($(CONFIG_X86_32),y)
+ ifdef CONFIG_RELOCATABLE
+ $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin.all FORCE
+ 	$(call if_changed,gzip)
++$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin.all FORCE
++	$(call if_changed,bzip2)
++$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin.all FORCE
++	$(call if_changed,lzma)
+ else
+ $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
+ 	$(call if_changed,gzip)
++$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,bzip2)
++$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,lzma)
+ endif
+ LDFLAGS_piggy.o := -r --format binary --oformat elf32-i386 -T
+ 
+ else
+ $(obj)/vmlinux.bin.gz: $(obj)/vmlinux.bin FORCE
+ 	$(call if_changed,gzip)
++$(obj)/vmlinux.bin.bz2: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,bzip2)
++$(obj)/vmlinux.bin.lzma: $(obj)/vmlinux.bin FORCE
++	$(call if_changed,lzma)
+ 
+ LDFLAGS_piggy.o := -r --format binary --oformat elf64-x86-64 -T
+ endif
+ 
+-$(obj)/piggy.o: $(obj)/vmlinux.scr $(obj)/vmlinux.bin.gz FORCE
++suffix_$(CONFIG_KERNEL_GZIP)  = gz
++suffix_$(CONFIG_KERNEL_BZIP2) = bz2
++suffix_$(CONFIG_KERNEL_LZMA)  = lzma
++
++$(obj)/piggy.o: $(obj)/vmlinux.scr $(obj)/vmlinux.bin.$(suffix_y) FORCE
+ 	$(call if_changed,ld)
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/arch/x86/boot/compressed/misc.c linux.trees.git.udpcast/arch/x86/boot/compressed/misc.c
+--- linux.trees.git.0/arch/x86/boot/compressed/misc.c	2008-09-07 11:29:12.000000000 +0200
++++ linux.trees.git.udpcast/arch/x86/boot/compressed/misc.c	2008-09-10 22:49:28.000000000 +0200
+@@ -116,71 +116,13 @@
+ /*
+  * gzip declarations
+  */
+-
+-#define OF(args)	args
+ #define STATIC		static
+ 
+ #undef memset
+ #undef memcpy
+ #define memzero(s, n)	memset((s), 0, (n))
+ 
+-typedef unsigned char	uch;
+-typedef unsigned short	ush;
+-typedef unsigned long	ulg;
+-
+-/*
+- * Window size must be at least 32k, and a power of two.
+- * We don't actually have a window just a huge output buffer,
+- * so we report a 2G window size, as that should always be
+- * larger than our output buffer:
+- */
+-#define WSIZE		0x80000000
+ 
+-/* Input buffer: */
+-static unsigned char	*inbuf;
+-
+-/* Sliding window buffer (and final output buffer): */
+-static unsigned char	*window;
+-
+-/* Valid bytes in inbuf: */
+-static unsigned		insize;
+-
+-/* Index of next byte to be processed in inbuf: */
+-static unsigned		inptr;
+-
+-/* Bytes in output buffer: */
+-static unsigned		outcnt;
+-
+-/* gzip flag byte */
+-#define ASCII_FLAG	0x01 /* bit 0 set: file probably ASCII text */
+-#define CONTINUATION	0x02 /* bit 1 set: continuation of multi-part gz file */
+-#define EXTRA_FIELD	0x04 /* bit 2 set: extra field present */
+-#define ORIG_NAM	0x08 /* bit 3 set: original file name present */
+-#define COMMENT		0x10 /* bit 4 set: file comment present */
+-#define ENCRYPTED	0x20 /* bit 5 set: file is encrypted */
+-#define RESERVED	0xC0 /* bit 6, 7:  reserved */
+-
+-#define get_byte()	(inptr < insize ? inbuf[inptr++] : fill_inbuf())
+-
+-/* Diagnostic functions */
+-#ifdef DEBUG
+-#  define Assert(cond, msg) do { if (!(cond)) error(msg); } while (0)
+-#  define Trace(x)	do { fprintf x; } while (0)
+-#  define Tracev(x)	do { if (verbose) fprintf x ; } while (0)
+-#  define Tracevv(x)	do { if (verbose > 1) fprintf x ; } while (0)
+-#  define Tracec(c, x)	do { if (verbose && (c)) fprintf x ; } while (0)
+-#  define Tracecv(c, x)	do { if (verbose > 1 && (c)) fprintf x ; } while (0)
+-#else
+-#  define Assert(cond, msg)
+-#  define Trace(x)
+-#  define Tracev(x)
+-#  define Tracevv(x)
+-#  define Tracec(c, x)
+-#  define Tracecv(c, x)
+-#endif
+-
+-static int  fill_inbuf(void);
+-static void flush_window(void);
+ static void error(char *m);
+ 
+ /*
+@@ -189,11 +131,6 @@ static void error(char *m);
+ static struct boot_params *real_mode;		/* Pointer to real-mode data */
+ static int quiet;
+ 
+-extern unsigned char input_data[];
+-extern int input_len;
+-
+-static long bytes_out;
+-
+ static void *memset(void *s, int c, unsigned n);
+ static void *memcpy(void *dest, const void *src, unsigned n);
+ 
+@@ -206,14 +143,21 @@ static void __putstr(int, const char *);
+ #define memptr unsigned
+ #endif
+ 
+-static memptr free_mem_ptr;
+-static memptr free_mem_end_ptr;
+-
+ static char *vidmem;
+ static int vidport;
+ static int lines, cols;
+ 
++#ifdef CONFIG_KERNEL_GZIP
+ #include "../../../../lib/inflate.c"
++#endif
++
++#ifdef CONFIG_KERNEL_BZIP2
++#include "../../../../lib/decompress_bunzip2.c"
++#endif
++
++#ifdef CONFIG_KERNEL_LZMA
++#include "../../../../lib/decompress_unlzma.c"
++#endif
+ 
+ static void scroll(void)
+ {
+@@ -293,38 +237,6 @@ static void *memcpy(void *dest, const vo
+ 	return dest;
+ }
+ 
+-/* ===========================================================================
+- * Fill the input buffer. This is called only when the buffer is empty
+- * and at least one byte is really needed.
+- */
+-static int fill_inbuf(void)
+-{
+-	error("ran out of input data");
+-	return 0;
+-}
+-
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-static void flush_window(void)
+-{
+-	/* With my window equal to my output buffer
+-	 * I only need to compute the crc here.
+-	 */
+-	unsigned long c = crc;         /* temporary variable */
+-	unsigned n;
+-	unsigned char *in, ch;
+-
+-	in = window;
+-	for (n = 0; n < outcnt; n++) {
+-		ch = *in++;
+-		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-	}
+-	crc = c;
+-	bytes_out += (unsigned long)outcnt;
+-	outcnt = 0;
+-}
+ 
+ static void error(char *x)
+ {
+@@ -360,7 +272,7 @@ static void parse_elf(void *output)
+ 	if (!quiet)
+ 		putstr("Parsing ELF... ");
+ 
+-	phdrs = malloc(sizeof(*phdrs) * ehdr.e_phnum);
++	phdrs = (void *) malloc(sizeof(*phdrs) * ehdr.e_phnum);
+ 	if (!phdrs)
+ 		error("Failed to allocate space for phdrs");
+ 
+@@ -407,12 +319,8 @@ asmlinkage void decompress_kernel(void *
+ 	lines = real_mode->screen_info.orig_video_lines;
+ 	cols = real_mode->screen_info.orig_video_cols;
+ 
+-	window = output;		/* Output buffer (Normally at 1M) */
+ 	free_mem_ptr     = heap;	/* Heap */
+ 	free_mem_end_ptr = heap + BOOT_HEAP_SIZE;
+-	inbuf  = input_data;		/* Input buffer */
+-	insize = input_len;
+-	inptr  = 0;
+ 
+ #ifdef CONFIG_X86_64
+ 	if ((unsigned long)output & (__KERNEL_ALIGN - 1))
+@@ -430,10 +338,9 @@ asmlinkage void decompress_kernel(void *
+ #endif
+ #endif
+ 
+-	makecrc();
+ 	if (!quiet)
+ 		putstr("\nDecompressing Linux... ");
+-	gunzip();
++	decompress(input_data, input_len, NULL, NULL, output, NULL, error);
+ 	parse_elf(output);
+ 	if (!quiet)
+ 		putstr("done.\nBooting the kernel.\n");
+Les fichiers binaires linux.trees.git.0/arch/x86/vdso/vdso32-int80.so.dbg et linux.trees.git.udpcast/arch/x86/vdso/vdso32-int80.so.dbg sont différents.
+Les fichiers binaires linux.trees.git.0/arch/x86/vdso/vdso32-sysenter.so.dbg et linux.trees.git.udpcast/arch/x86/vdso/vdso32-sysenter.so.dbg sont différents.
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/drivers/block/Kconfig linux.trees.git.udpcast/drivers/block/Kconfig
+--- linux.trees.git.0/drivers/block/Kconfig	2008-09-07 11:29:12.000000000 +0200
++++ linux.trees.git.udpcast/drivers/block/Kconfig	2008-09-07 11:36:40.000000000 +0200
+@@ -357,6 +357,30 @@ config BLK_DEV_XIP
+ 	  will prevent RAM block device backing store memory from being
+ 	  allocated from highmem (only a problem for highmem systems).
+ 
++config RD_BZIP2
++	bool "Initial ramdisk compressed using bzip2"
++	default n
++	depends on BLK_DEV_INITRD=y
++	help
++	  Support loading of a bzip2 encoded initial ramdisk or cpio buffer
++	  If unsure, say N.
++
++config RD_LZMA
++	bool "Initial ramdisk compressed using lzma"
++	default n
++	depends on BLK_DEV_INITRD=y
++	help
++	  Support loading of a lzma encoded initial ramdisk or cpio buffer
++	  If unsure, say N.
++
++config RD_GZIP
++	bool "Initial ramdisk compressed using gzip"
++	default y
++	depends on BLK_DEV_INITRD=y
++	help
++	  Support loading of a gzip encoded initial ramdisk or cpio buffer.
++	  If unsure, say Y.
++
+ config CDROM_PKTCDVD
+ 	tristate "Packet writing on CD/DVD media"
+ 	depends on !UML
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/include/asm-x86/boot.h linux.trees.git.udpcast/include/asm-x86/boot.h
+--- linux.trees.git.0/include/asm-x86/boot.h	2008-09-07 11:29:18.000000000 +0200
++++ linux.trees.git.udpcast/include/asm-x86/boot.h	2008-09-07 17:01:31.000000000 +0200
+@@ -17,11 +17,21 @@
+ 				+ (CONFIG_PHYSICAL_ALIGN - 1)) \
+ 				& ~(CONFIG_PHYSICAL_ALIGN - 1))
+ 
++#if (defined CONFIG_KERNEL_BZIP2)
++#define BOOT_HEAP_SIZE             0x400000
++#else
++
+ #ifdef CONFIG_X86_64
+ #define BOOT_HEAP_SIZE	0x7000
+-#define BOOT_STACK_SIZE	0x4000
+ #else
+ #define BOOT_HEAP_SIZE	0x4000
++#endif
++
++#endif
++
++#ifdef CONFIG_X86_64
++#define BOOT_STACK_SIZE	0x4000
++#else
+ #define BOOT_STACK_SIZE	0x1000
+ #endif
+ 
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/include/linux/decompress_bunzip2.h linux.trees.git.udpcast/include/linux/decompress_bunzip2.h
+--- linux.trees.git.0/include/linux/decompress_bunzip2.h	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/include/linux/decompress_bunzip2.h	2008-09-10 22:04:49.000000000 +0200
+@@ -0,0 +1,10 @@
++#ifndef DECOMPRESS_BUNZIP2_H
++#define DECOMPRESS_BUNZIP2_H
++
++int bunzip2(unsigned char *inbuf, int len,
++	    int(*fill)(void*, unsigned int),
++	    int(*flush)(void*, unsigned int),
++	    unsigned char *output,
++	    int *pos,
++	    void(*error)(char *x));
++#endif
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/include/linux/decompress_generic.h linux.trees.git.udpcast/include/linux/decompress_generic.h
+--- linux.trees.git.0/include/linux/decompress_generic.h	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/include/linux/decompress_generic.h	2008-09-10 22:08:52.000000000 +0200
+@@ -0,0 +1,30 @@
++#ifndef DECOMPRESS_GENERIC_H
++#define DECOMPRESS_GENERIC_H
++
++/* Minimal chunksize to be read.
++ *Bzip2 prefers at least 4096
++ *Lzma prefers 0x10000 */
++#define COMPR_IOBUF_SIZE	4096
++
++typedef int (*decompress_fn) (unsigned char *inbuf, int len,
++			      int(*fill)(void*, unsigned int),
++			      int(*writebb)(void*, unsigned int),
++			      unsigned char *output,
++			      int *posp,
++			      void(*error)(char *x));
++
++/* inbuf   - input buffer
++ *len     - len of pre-read data in inbuf
++ *fill    - function to fill inbuf if empty
++ *writebb - function to write out outbug
++ *posp    - if non-null, input position (number of bytes read) will be
++ *	  returned here
++ *
++ *If len != 0, the inbuf is initialized (with as much data), and fill
++ *should not be called
++ *If len = 0, the inbuf is allocated, but empty. Its size is IOBUF_SIZE
++ *fill should be called (repeatedly...) to read data, at most IOBUF_SIZE
++ */
++
++
++#endif
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/include/linux/decompress_unlzma.h linux.trees.git.udpcast/include/linux/decompress_unlzma.h
+--- linux.trees.git.0/include/linux/decompress_unlzma.h	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/include/linux/decompress_unlzma.h	2008-09-10 22:05:02.000000000 +0200
+@@ -0,0 +1,12 @@
++#ifndef DECOMPRESS_UNLZMA_H
++#define DECOMPRESS_UNLZMA_H
++
++int unlzma(unsigned char *, int,
++	   int(*fill)(void*, unsigned int),
++	   int(*flush)(void*, unsigned int),
++	   unsigned char *output,
++	   int *posp,
++	   void(*error)(char *x)
++	);
++
++#endif
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/include/linux/decompr_mm.h linux.trees.git.udpcast/include/linux/decompr_mm.h
+--- linux.trees.git.0/include/linux/decompr_mm.h	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/include/linux/decompr_mm.h	2008-09-10 22:22:49.000000000 +0200
+@@ -0,0 +1,90 @@
++/*
++ * linux/compr_mm.h
++ *
++ * Memory management for pre-boot and ramdisk uncompressors
++ *
++ * Authors: Alain Knaff <alain@knaff.lu>
++ *
++ */
++
++#ifndef DECOMPR_MM_H
++#define DECOMPR_MM_H
++
++#ifdef STATIC
++
++/* Code active when included from pre-boot environment: */
++
++static memptr free_mem_ptr;
++static memptr free_mem_end_ptr;
++
++/* A trivial malloc implementation, adapted from
++ *  malloc by Hannu Savolainen 1993 and Matthias Urlichs 1994
++ */
++static unsigned long malloc_ptr;
++static int malloc_count;
++
++static void *malloc(int size)
++{
++	void *p;
++
++	if (size < 0)
++		error("Malloc error");
++	if (!malloc_ptr)
++		malloc_ptr = free_mem_ptr;
++
++	malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
++
++	p = (void *)malloc_ptr;
++	malloc_ptr += size;
++
++	if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
++		error("Out of memory");
++
++	malloc_count++;
++	return p;
++}
++
++static void free(void *where)
++{
++	malloc_count--;
++	if (!malloc_count)
++		malloc_ptr = free_mem_ptr;
++}
++
++#define large_malloc(a) malloc(a)
++#define large_free(a) free(a)
++
++#define set_error_fn(x)
++#define panic error
++
++#define INIT
++
++#else /* STATIC */
++
++/* Code active when compiled standalone for use when loading ramdisk: */
++
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/string.h>
++#include <linux/vmalloc.h>
++
++/* Use defines rather than static inline in order to avoid spurious
++ * warnings when not needed (indeed large_malloc / large_free are not
++ * needed by inflate */
++
++#define malloc(a) kmalloc(a, GFP_KERNEL)
++#define free(a) kfree(a)
++
++#define large_malloc(a) vmalloc(a)
++#define large_free(a) vfree(a)
++
++static void(*error)(char *m);
++#define set_error_fn(x) error = x;
++
++#define INIT __init
++#define STATIC
++#include <linux/init.h>
++
++#endif /* STATIC */
++
++#endif /* DECOMPR_MM_H */
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/include/linux/inflate.h linux.trees.git.udpcast/include/linux/inflate.h
+--- linux.trees.git.0/include/linux/inflate.h	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/include/linux/inflate.h	2008-09-10 22:12:55.000000000 +0200
+@@ -0,0 +1,13 @@
++#ifndef INFLATE_H
++#define INFLATE_H
++
++/* Other housekeeping constants */
++#define INBUFSIZ 4096
++
++int gunzip(unsigned char *inbuf, int len,
++	   int(*fill)(void*, unsigned int),
++	   int(*flush)(void*, unsigned int),
++	   unsigned char *output,
++	   int *pos,
++	   void(*error_fn)(char *x));
++#endif
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/init/do_mounts_rd.c linux.trees.git.udpcast/init/do_mounts_rd.c
+--- linux.trees.git.0/init/do_mounts_rd.c	2008-09-07 11:29:23.000000000 +0200
++++ linux.trees.git.udpcast/init/do_mounts_rd.c	2008-09-10 22:52:03.000000000 +0200
+@@ -10,6 +10,20 @@
+ 
+ #include "do_mounts.h"
+ 
++#include <linux/decompress_generic.h>
++
++#ifdef CONFIG_RD_BZIP2
++#include <linux/decompress_bunzip2.h>
++#endif
++
++#ifdef CONFIG_RD_LZMA
++#include <linux/decompress_unlzma.h>
++#endif
++
++#ifdef CONFIG_RD_GZIP
++#include <linux/inflate.h>
++#endif
++
+ int __initdata rd_prompt = 1;/* 1 = prompt for RAM disk, 0 = don't prompt */
+ 
+ static int __init prompt_ramdisk(char *str)
+@@ -28,7 +42,9 @@ static int __init ramdisk_start_setup(ch
+ }
+ __setup("ramdisk_start=", ramdisk_start_setup);
+ 
+-static int __init crd_load(int in_fd, int out_fd);
++
++
++static int __init crd_load(int in_fd, int out_fd, decompress_fn deco);
+ 
+ /*
+  * This routine tries to find a RAM disk image to load, and returns the
+@@ -44,7 +60,7 @@ static int __init crd_load(int in_fd, in
+  * 	gzip
+  */
+ static int __init 
+-identify_ramdisk_image(int fd, int start_block)
++identify_ramdisk_image(int fd, int start_block, decompress_fn *decompressor)
+ {
+ 	const int size = 512;
+ 	struct minix_super_block *minixsb;
+@@ -70,6 +86,7 @@ identify_ramdisk_image(int fd, int start
+ 	sys_lseek(fd, start_block * BLOCK_SIZE, 0);
+ 	sys_read(fd, buf, size);
+ 
++#ifdef CONFIG_RD_GZIP
+ 	/*
+ 	 * If it matches the gzip magic numbers, return -1
+ 	 */
+@@ -77,9 +94,39 @@ identify_ramdisk_image(int fd, int start
+ 		printk(KERN_NOTICE
+ 		       "RAMDISK: Compressed image found at block %d\n",
+ 		       start_block);
++		*decompressor = gunzip;
++		nblocks = 0;
++		goto done;
++	}
++#endif
++
++#ifdef CONFIG_RD_BZIP2
++	/*
++	 * If it matches the bzip magic numbers, return -1
++	 */
++	if (buf[0] == 0x42 && (buf[1] == 0x5a)) {
++		printk(KERN_NOTICE
++		       "RAMDISK: Bzipped image found at block %d\n",
++		       start_block);
++		*decompressor = bunzip2;
++		nblocks = 0;
++		goto done;
++	}
++#endif
++
++#ifdef CONFIG_RD_LZMA
++	/*
++	 * If it matches the bzip magic numbers, return -1
++	 */
++	if (buf[0] == 0x5d && (buf[1] == 0x00)) {
++		printk(KERN_NOTICE
++		       "RAMDISK: Lzma image found at block %d\n",
++		       start_block);
++		*decompressor = unlzma;
+ 		nblocks = 0;
+ 		goto done;
+ 	}
++#endif
+ 
+ 	/* romfs is at block zero too */
+ 	if (romfsb->word0 == ROMSB_WORD0 &&
+@@ -143,6 +190,7 @@ int __init rd_load_image(char *from)
+ 	int nblocks, i, disk;
+ 	char *buf = NULL;
+ 	unsigned short rotate = 0;
++	decompress_fn decompressor = NULL;
+ #if !defined(CONFIG_S390) && !defined(CONFIG_PPC_ISERIES)
+ 	char rotator[4] = { '|' , '/' , '-' , '\\' };
+ #endif
+@@ -155,12 +203,12 @@ int __init rd_load_image(char *from)
+ 	if (in_fd < 0)
+ 		goto noclose_input;
+ 
+-	nblocks = identify_ramdisk_image(in_fd, rd_image_start);
++	nblocks = identify_ramdisk_image(in_fd, rd_image_start, &decompressor);
+ 	if (nblocks < 0)
+ 		goto done;
+ 
+ 	if (nblocks == 0) {
+-		if (crd_load(in_fd, out_fd) == 0)
++		if (crd_load(in_fd, out_fd, decompressor) == 0)
+ 			goto successful_load;
+ 		goto done;
+ 	}
+@@ -259,138 +307,48 @@ int __init rd_load_disk(int n)
+ 	return rd_load_image("/dev/root");
+ }
+ 
+-/*
+- * gzip declarations
+- */
+-
+-#define OF(args)  args
+-
+-#ifndef memzero
+-#define memzero(s, n)     memset ((s), 0, (n))
+-#endif
+-
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+-typedef unsigned long  ulg;
+-
+-#define INBUFSIZ 4096
+-#define WSIZE 0x8000    /* window size--must be a power of two, and */
+-			/*  at least 32K for zip's deflate method */
+-
+-static uch *inbuf;
+-static uch *window;
+-
+-static unsigned insize;  /* valid bytes in inbuf */
+-static unsigned inptr;   /* index of next byte to be processed in inbuf */
+-static unsigned outcnt;  /* bytes in output buffer */
+ static int exit_code;
+-static int unzip_error;
+-static long bytes_out;
++static int decompress_error;
+ static int crd_infd, crd_outfd;
+ 
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
+-		
+-/* Diagnostic functions (stubbed out) */
+-#define Assert(cond,msg)
+-#define Trace(x)
+-#define Tracev(x)
+-#define Tracevv(x)
+-#define Tracec(c,x)
+-#define Tracecv(c,x)
+-
+-#define STATIC static
+-#define INIT __init
+-
+-static int  __init fill_inbuf(void);
+-static void __init flush_window(void);
+-static void __init error(char *m);
+-
+-#define NO_INFLATE_MALLOC
+-
+-#include "../lib/inflate.c"
+-
+-/* ===========================================================================
+- * Fill the input buffer. This is called only when the buffer is empty
+- * and at least one byte is really needed.
+- * Returning -1 does not guarantee that gunzip() will ever return.
+- */
+-static int __init fill_inbuf(void)
++static int __init compr_fill(void *buf, unsigned int len)
+ {
+-	if (exit_code) return -1;
+-	
+-	insize = sys_read(crd_infd, inbuf, INBUFSIZ);
+-	if (insize == 0) {
+-		error("RAMDISK: ran out of compressed data");
+-		return -1;
+-	}
+-
+-	inptr = 1;
+-
+-	return inbuf[0];
++	int r = sys_read(crd_infd, buf, len);
++	if (r < 0)
++		printk(KERN_ERR "RAMDISK: error while reading compressed data");
++	else if (r == 0)
++		printk(KERN_ERR "RAMDISK: EOF while reading compressed data");
++	return r;
+ }
+ 
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-static void __init flush_window(void)
++static int __init compr_flush(void *window, unsigned int outcnt)
+ {
+-    ulg c = crc;         /* temporary variable */
+-    unsigned n, written;
+-    uch *in, ch;
+-    
+-    written = sys_write(crd_outfd, window, outcnt);
+-    if (written != outcnt && unzip_error == 0) {
+-	printk(KERN_ERR "RAMDISK: incomplete write (%d != %d) %ld\n",
+-	       written, outcnt, bytes_out);
+-	unzip_error = 1;
+-    }
+-    in = window;
+-    for (n = 0; n < outcnt; n++) {
+-	    ch = *in++;
+-	    c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-    }
+-    crc = c;
+-    bytes_out += (ulg)outcnt;
+-    outcnt = 0;
++	int written = sys_write(crd_outfd, window, outcnt);
++	if (written != outcnt) {
++		if (decompress_error == 0)
++			printk(KERN_ERR
++			       "RAMDISK: incomplete write (%d != %d)\n",
++			       written, outcnt);
++		decompress_error = 1;
++		return -1;
++	}
++	return outcnt;
+ }
+ 
+ static void __init error(char *x)
+ {
+ 	printk(KERN_ERR "%s\n", x);
+ 	exit_code = 1;
+-	unzip_error = 1;
++	decompress_error = 1;
+ }
+ 
+-static int __init crd_load(int in_fd, int out_fd)
++static int __init crd_load(int in_fd, int out_fd, decompress_fn deco)
+ {
+ 	int result;
+-
+-	insize = 0;		/* valid bytes in inbuf */
+-	inptr = 0;		/* index of next byte to be processed in inbuf */
+-	outcnt = 0;		/* bytes in output buffer */
+-	exit_code = 0;
+-	bytes_out = 0;
+-	crc = (ulg)0xffffffffL; /* shift register contents */
+-
+ 	crd_infd = in_fd;
+ 	crd_outfd = out_fd;
+-	inbuf = kmalloc(INBUFSIZ, GFP_KERNEL);
+-	if (!inbuf) {
+-		printk(KERN_ERR "RAMDISK: Couldn't allocate gzip buffer\n");
+-		return -1;
+-	}
+-	window = kmalloc(WSIZE, GFP_KERNEL);
+-	if (!window) {
+-		printk(KERN_ERR "RAMDISK: Couldn't allocate gzip window\n");
+-		kfree(inbuf);
+-		return -1;
+-	}
+-	makecrc();
+-	result = gunzip();
+-	if (unzip_error)
++	result = deco(NULL, 0, compr_fill, compr_flush, NULL, NULL, error);
++	if (decompress_error)
+ 		result = 1;
+-	kfree(inbuf);
+-	kfree(window);
+ 	return result;
+ }
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/init/initramfs.c linux.trees.git.udpcast/init/initramfs.c
+--- linux.trees.git.0/init/initramfs.c	2008-09-07 11:29:23.000000000 +0200
++++ linux.trees.git.udpcast/init/initramfs.c	2008-09-10 22:10:27.000000000 +0200
+@@ -330,11 +330,14 @@ static int __init write_buffer(char *buf
+ 	return len - count;
+ }
+ 
+-static void __init flush_buffer(char *buf, unsigned len)
++
++static int __init flush_buffer(void *bufv, unsigned len)
+ {
++	char *buf = (char *) bufv;
+ 	int written;
++	int origLen = len;
+ 	if (message)
+-		return;
++		return -1;
+ 	while ((written = write_buffer(buf, len)) < len && !message) {
+ 		char c = buf[written];
+ 		if (c == '0') {
+@@ -348,73 +351,22 @@ static void __init flush_buffer(char *bu
+ 		} else
+ 			error("junk in compressed archive");
+ 	}
++	return origLen;
+ }
+ 
+-/*
+- * gzip declarations
+- */
++static unsigned my_inptr;   /* index of next byte to be processed in inbuf */
+ 
+-#define OF(args)  args
++#ifdef CONFIG_RD_BZIP2
++#include <linux/decompress_bunzip2.h>
++#endif
+ 
+-#ifndef memzero
+-#define memzero(s, n)     memset ((s), 0, (n))
++#ifdef CONFIG_RD_LZMA
++#include <linux/decompress_unlzma.h>
+ #endif
+ 
+-typedef unsigned char  uch;
+-typedef unsigned short ush;
+-typedef unsigned long  ulg;
+-
+-#define WSIZE 0x8000    /* window size--must be a power of two, and */
+-			/*  at least 32K for zip's deflate method */
+-
+-static uch *inbuf;
+-static uch *window;
+-
+-static unsigned insize;  /* valid bytes in inbuf */
+-static unsigned inptr;   /* index of next byte to be processed in inbuf */
+-static unsigned outcnt;  /* bytes in output buffer */
+-static long bytes_out;
+-
+-#define get_byte()  (inptr < insize ? inbuf[inptr++] : -1)
+-		
+-/* Diagnostic functions (stubbed out) */
+-#define Assert(cond,msg)
+-#define Trace(x)
+-#define Tracev(x)
+-#define Tracevv(x)
+-#define Tracec(c,x)
+-#define Tracecv(c,x)
+-
+-#define STATIC static
+-#define INIT __init
+-
+-static void __init flush_window(void);
+-static void __init error(char *m);
+-
+-#define NO_INFLATE_MALLOC
+-
+-#include "../lib/inflate.c"
+-
+-/* ===========================================================================
+- * Write the output window window[0..outcnt-1] and update crc and bytes_out.
+- * (Used for the decompressed data only.)
+- */
+-static void __init flush_window(void)
+-{
+-	ulg c = crc;         /* temporary variable */
+-	unsigned n;
+-	uch *in, ch;
+-
+-	flush_buffer(window, outcnt);
+-	in = window;
+-	for (n = 0; n < outcnt; n++) {
+-		ch = *in++;
+-		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
+-	}
+-	crc = c;
+-	bytes_out += (ulg)outcnt;
+-	outcnt = 0;
+-}
++#ifdef CONFIG_RD_GZIP
++#include <linux/inflate.h>
++#endif
+ 
+ static char * __init unpack_to_rootfs(char *buf, unsigned len)
+ {
+@@ -422,9 +374,10 @@ static char * __init unpack_to_rootfs(ch
+ 	header_buf = kmalloc(110, GFP_KERNEL);
+ 	symlink_buf = kmalloc(PATH_MAX + N_ALIGN(PATH_MAX) + 1, GFP_KERNEL);
+ 	name_buf = kmalloc(N_ALIGN(PATH_MAX), GFP_KERNEL);
+-	window = kmalloc(WSIZE, GFP_KERNEL);
+-	if (!window || !header_buf || !symlink_buf || !name_buf)
++
++	if (!header_buf || !symlink_buf || !name_buf)
+ 		panic("can't allocate buffers");
++
+ 	state = Start;
+ 	this_header = 0;
+ 	message = NULL;
+@@ -444,21 +397,41 @@ static char * __init unpack_to_rootfs(ch
+ 			continue;
+ 		}
+ 		this_header = 0;
+-		insize = len;
+-		inbuf = buf;
+-		inptr = 0;
+-		outcnt = 0;		/* bytes in output buffer */
+-		bytes_out = 0;
+-		crc = (ulg)0xffffffffL; /* shift register contents */
+-		makecrc();
+-		gunzip();
++#ifdef CONFIG_RD_GZIP
++		if (!gunzip(buf, len, NULL, flush_buffer, NULL,
++			    &my_inptr, error) &&
++		    message == NULL)
++			goto ok;
++#endif
++
++#ifdef CONFIG_RD_BZIP2
++		message = NULL; /* Zero out message, or else cpio will
++				   think an error has already occured */
++		if (!bunzip2(buf, len, NULL, flush_buffer, NULL,
++			     &my_inptr, error) < 0
++		    &&
++		    message == NULL) {
++			goto ok;
++		}
++#endif
++
++#ifdef CONFIG_RD_LZMA
++		message = NULL; /* Zero out message, or else cpio will
++				   think an error has already occured */
++		if (!unlzma(buf, len, NULL, flush_buffer, NULL,
++			    &my_inptr, error) < 0
++		    &&
++		    message == NULL) {
++			goto ok;
++		}
++#endif
++ok:
+ 		if (state != Reset)
+-			error("junk in gzipped archive");
+-		this_header = saved_offset + inptr;
+-		buf += inptr;
+-		len -= inptr;
++			error("junk in compressed archive");
++		this_header = saved_offset + my_inptr;
++		buf += my_inptr;
++		len -= my_inptr;
+ 	}
+-	kfree(window);
+ 	kfree(name_buf);
+ 	kfree(symlink_buf);
+ 	kfree(header_buf);
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/init/Kconfig linux.trees.git.udpcast/init/Kconfig
+--- linux.trees.git.0/init/Kconfig	2008-09-07 11:29:23.000000000 +0200
++++ linux.trees.git.udpcast/init/Kconfig	2008-09-07 17:09:14.000000000 +0200
+@@ -101,6 +101,56 @@ config LOCALVERSION_AUTO
+ 
+ 	  which is done within the script "scripts/setlocalversion".)
+ 
++choice
++        prompt "Kernel compression mode"
++        default KERNEL_GZIP
++        help
++	  The linux kernel is a kind of self-extracting executable.
++	  Several compression algorithms are available, which differ
++	  in efficiency, compression and decompression speed.
++	  Compression speed is only relevant when building a kernel.
++	  Decompression speed is relevant at each boot.
++
++	  If you have any problems with bzip2 or lzma compressed
++	  kernels, mail me (Alain Knaff) <alain@knaff.lu>. (An older
++	  version of this functionality (bzip2 only), for 2.4, was
++	  supplied by Christian Ludwig)
++
++	  High compression options are mostly useful for users, who
++	  are low on disk space (embedded systems), but for whom ram
++	  size matters less.
++
++	  If in doubt, select 'gzip'
++
++config KERNEL_GZIP
++       bool "Gzip"
++       help
++         The old and tried gzip compression. Its compression ratio is
++	 the poorest among the 3 choices; however its speed (both
++	 compression and decompression) is the fastest.
++
++config KERNEL_BZIP2
++	bool "Bzip2"
++	help
++	  Its compression ratio and speed is intermediate.
++	  Decompression speed is slowest among the 3.
++	  The kernel size is about 10 per cent smaller with bzip2,
++	  in comparison to gzip.
++	  Bzip2 uses a large amount of memory. For modern kernels
++	  you will need at least 8MB RAM or more for booting.
++
++config KERNEL_LZMA
++       bool "LZMA"
++       help
++         The most recent compression algorithm.
++	 Its ratio is best, decompression speed is between the other
++	 2. Compression is slowest.
++	 The kernel size is about 33 per cent smaller with lzma,
++	 in comparison to gzip.
++
++endchoice
++
++
+ config SWAP
+ 	bool "Support for paging of anonymous memory (swap)"
+ 	depends on MMU && BLOCK
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/lib/decompress_bunzip2.c linux.trees.git.udpcast/lib/decompress_bunzip2.c
+--- linux.trees.git.0/lib/decompress_bunzip2.c	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/lib/decompress_bunzip2.c	2008-09-10 22:18:34.000000000 +0200
+@@ -0,0 +1,735 @@
++/* vi: set sw = 4 ts = 4: */
++/*	Small bzip2 deflate implementation, by Rob Landley (rob@landley.net).
++
++	Based on bzip2 decompression code by Julian R Seward (jseward@acm.org),
++	which also acknowledges contributions by Mike Burrows, David Wheeler,
++	Peter Fenwick, Alistair Moffat, Radford Neal, Ian H. Witten,
++	Robert Sedgewick, and Jon L. Bentley.
++
++	This code is licensed under the LGPLv2:
++		LGPL (http://www.gnu.org/copyleft/lgpl.html
++*/
++
++/*
++	Size and speed optimizations by Manuel Novoa III  (mjn3@codepoet.org).
++
++	More efficient reading of Huffman codes, a streamlined read_bunzip()
++	function, and various other tweaks.  In (limited) tests, approximately
++	20% faster than bzcat on x86 and about 10% faster on arm.
++
++	Note that about 2/3 of the time is spent in read_unzip() reversing
++	the Burrows-Wheeler transformation.  Much of that time is delay
++	resulting from cache misses.
++
++	I would ask that anyone benefiting from this work, especially those
++	using it in commercial products, consider making a donation to my local
++	non-profit hospice organization in the name of the woman I loved, who
++	passed away Feb. 12, 2003.
++
++		In memory of Toni W. Hagan
++
++		Hospice of Acadiana, Inc.
++		2600 Johnston St., Suite 200
++		Lafayette, LA 70503-3240
++
++		Phone (337) 232-1234 or 1-800-738-2226
++		Fax   (337) 232-1297
++
++		http://www.hospiceacadiana.com/
++
++	Manuel
++ */
++
++/*
++	Made it fit for running in Linux Kernel by Alain Knaff (alain@knaff.lu)
++*/
++
++
++#ifndef STATIC
++#include <linux/decompress_bunzip2.h>
++#endif /* STATIC */
++
++#include <linux/decompr_mm.h>
++
++#ifndef INT_MAX
++#define INT_MAX 0x7fffffff
++#endif
++
++/* Constants for Huffman coding */
++#define MAX_GROUPS		6
++#define GROUP_SIZE   		50	/* 64 would have been more efficient */
++#define MAX_HUFCODE_BITS 	20	/* Longest Huffman code allowed */
++#define MAX_SYMBOLS 		258	/* 256 literals + RUNA + RUNB */
++#define SYMBOL_RUNA		0
++#define SYMBOL_RUNB		1
++
++/* Status return values */
++#define RETVAL_OK			0
++#define RETVAL_LAST_BLOCK		(-1)
++#define RETVAL_NOT_BZIP_DATA		(-2)
++#define RETVAL_UNEXPECTED_INPUT_EOF	(-3)
++#define RETVAL_UNEXPECTED_OUTPUT_EOF	(-4)
++#define RETVAL_DATA_ERROR		(-5)
++#define RETVAL_OUT_OF_MEMORY		(-6)
++#define RETVAL_OBSOLETE_INPUT		(-7)
++
++/* Other housekeeping constants */
++#define BZIP2_IOBUF_SIZE		4096
++
++/* This is what we know about each Huffman coding group */
++struct group_data {
++	/* We have an extra slot at the end of limit[] for a sentinal value. */
++	int limit[MAX_HUFCODE_BITS+1];
++	int base[MAX_HUFCODE_BITS];
++	int permute[MAX_SYMBOLS];
++	int minLen, maxLen;
++};
++
++/* Structure holding all the housekeeping data, including IO buffers and
++   memory that persists between calls to bunzip */
++struct bunzip_data {
++	/* State for interrupting output loop */
++	int writeCopies, writePos, writeRunCountdown, writeCount, writeCurrent;
++	/* I/O tracking data (file handles, buffers, positions, etc.) */
++	int (*fill)(void*, unsigned int);
++	int inbufCount, inbufPos /*, outbufPos*/;
++	unsigned char *inbuf /*,*outbuf*/;
++	unsigned int inbufBitCount, inbufBits;
++	/* The CRC values stored in the block header and calculated from the
++	data */
++	unsigned int crc32Table[256], headerCRC, totalCRC, writeCRC;
++	/* Intermediate buffer and its size (in bytes) */
++	unsigned int *dbuf, dbufSize;
++	/* These things are a bit too big to go on the stack */
++	unsigned char selectors[32768];		/* nSelectors = 15 bits */
++	struct group_data groups[MAX_GROUPS];	/* Huffman coding tables */
++	int io_error;			/* non-zero if we have IO error */
++};
++
++
++/* Return the next nnn bits of input.  All reads from the compressed input
++   are done through this function.  All reads are big endian */
++static unsigned int INIT get_bits(struct bunzip_data *bd, char bits_wanted)
++{
++	unsigned int bits = 0;
++
++	/* If we need to get more data from the byte buffer, do so.
++	   (Loop getting one byte at a time to enforce endianness and avoid
++	   unaligned access.) */
++	while (bd->inbufBitCount < bits_wanted) {
++		/* If we need to read more data from file into byte buffer, do
++		   so */
++		if (bd->inbufPos == bd->inbufCount) {
++			if (bd->io_error)
++				return 0;
++			bd->inbufCount = bd->fill(bd->inbuf, BZIP2_IOBUF_SIZE);
++			if (bd->inbufCount <= 0) {
++				bd->io_error = RETVAL_UNEXPECTED_INPUT_EOF;
++				return 0;
++			}
++			bd->inbufPos = 0;
++		}
++		/* Avoid 32-bit overflow (dump bit buffer to top of output) */
++		if (bd->inbufBitCount >= 24) {
++			bits = bd->inbufBits&((1 << bd->inbufBitCount)-1);
++			bits_wanted -= bd->inbufBitCount;
++			bits <<= bits_wanted;
++			bd->inbufBitCount = 0;
++		}
++		/* Grab next 8 bits of input from buffer. */
++		bd->inbufBits = (bd->inbufBits << 8)|bd->inbuf[bd->inbufPos++];
++		bd->inbufBitCount += 8;
++	}
++	/* Calculate result */
++	bd->inbufBitCount -= bits_wanted;
++	bits |= (bd->inbufBits >> bd->inbufBitCount)&((1 << bits_wanted)-1);
++
++	return bits;
++}
++
++/* Unpacks the next block and sets up for the inverse burrows-wheeler step. */
++
++static int INIT get_next_block(struct bunzip_data *bd)
++{
++	struct group_data *hufGroup = NULL;
++	int *base = NULL;
++	int *limit = NULL;
++	int dbufCount, nextSym, dbufSize, groupCount, selector,
++		i, j, k, t, runPos, symCount, symTotal, nSelectors,
++		byteCount[256];
++	unsigned char uc, symToByte[256], mtfSymbol[256], *selectors;
++	unsigned int *dbuf, origPtr;
++
++	dbuf = bd->dbuf;
++	dbufSize = bd->dbufSize;
++	selectors = bd->selectors;
++
++	/* Read in header signature and CRC, then validate signature.
++	   (last block signature means CRC is for whole file, return now) */
++	i = get_bits(bd, 24);
++	j = get_bits(bd, 24);
++	bd->headerCRC = get_bits(bd, 32);
++	if ((i == 0x177245) && (j == 0x385090))
++		return RETVAL_LAST_BLOCK;
++	if ((i != 0x314159) || (j != 0x265359))
++		return RETVAL_NOT_BZIP_DATA;
++	/* We can add support for blockRandomised if anybody complains.
++	   There was some code for this in busybox 1.0.0-pre3, but nobody ever
++	   noticed that it didn't actually work. */
++	if (get_bits(bd, 1))
++		return RETVAL_OBSOLETE_INPUT;
++	origPtr = get_bits(bd, 24);
++	if (origPtr > dbufSize)
++		return RETVAL_DATA_ERROR;
++	/* mapping table: if some byte values are never used (encoding things
++	   like ascii text), the compression code removes the gaps to have fewer
++	   symbols to deal with, and writes a sparse bitfield indicating which
++	   values were present.  We make a translation table to convert the
++	   symbols back to the corresponding bytes. */
++	t = get_bits(bd, 16);
++	symTotal = 0;
++	for (i = 0; i < 16; i++) {
++		if (t&(1 << (15-i))) {
++			k = get_bits(bd, 16);
++			for (j = 0; j < 16; j++)
++				if (k&(1 << (15-j)))
++					symToByte[symTotal++] = (16*i)+j;
++		}
++	}
++	/* How many different Huffman coding groups does this block use? */
++	groupCount = get_bits(bd, 3);
++	if (groupCount < 2 || groupCount > MAX_GROUPS)
++		return RETVAL_DATA_ERROR;
++	/* nSelectors: Every GROUP_SIZE many symbols we select a new
++	   Huffman coding group.  Read in the group selector list,
++	   which is stored as MTF encoded bit runs.  (MTF = Move To
++	   Front, as each value is used it's moved to the start of the
++	   list.) */
++	nSelectors = get_bits(bd, 15);
++	if (!nSelectors)
++		return RETVAL_DATA_ERROR;
++	for (i = 0; i < groupCount; i++)
++		mtfSymbol[i] = i;
++	for (i = 0; i < nSelectors; i++) {
++		/* Get next value */
++		for (j = 0; get_bits(bd, 1); j++)
++			if (j >= groupCount)
++				return RETVAL_DATA_ERROR;
++		/* Decode MTF to get the next selector */
++		uc = mtfSymbol[j];
++		for (; j; j--)
++			mtfSymbol[j] = mtfSymbol[j-1];
++		mtfSymbol[0] = selectors[i] = uc;
++	}
++	/* Read the Huffman coding tables for each group, which code
++	   for symTotal literal symbols, plus two run symbols (RUNA,
++	   RUNB) */
++	symCount = symTotal+2;
++	for (j = 0; j < groupCount; j++) {
++		unsigned char length[MAX_SYMBOLS], temp[MAX_HUFCODE_BITS+1];
++		int	minLen,	maxLen, pp;
++		/* Read Huffman code lengths for each symbol.  They're
++		   stored in a way similar to mtf; record a starting
++		   value for the first symbol, and an offset from the
++		   previous value for everys symbol after that.
++		   (Subtracting 1 before the loop and then adding it
++		   back at the end is an optimization that makes the
++		   test inside the loop simpler: symbol length 0
++		   becomes negative, so an unsigned inequality catches
++		   it.) */
++		t = get_bits(bd, 5)-1;
++		for (i = 0; i < symCount; i++) {
++			for (;;) {
++				if (((unsigned)t) > (MAX_HUFCODE_BITS-1))
++					return RETVAL_DATA_ERROR;
++
++				/* If first bit is 0, stop.  Else
++				   second bit indicates whether to
++				   increment or decrement the value.
++				   Optimization: grab 2 bits and unget
++				   the second if the first was 0. */
++
++				k = get_bits(bd, 2);
++				if (k < 2) {
++					bd->inbufBitCount++;
++					break;
++				}
++				/* Add one if second bit 1, else
++				 * subtract 1.  Avoids if/else */
++				t += (((k+1)&2)-1);
++			}
++			/* Correct for the initial -1, to get the
++			 * final symbol length */
++			length[i] = t+1;
++		}
++		/* Find largest and smallest lengths in this group */
++		minLen = maxLen = length[0];
++
++		for (i = 1; i < symCount; i++) {
++			if (length[i] > maxLen)
++				maxLen = length[i];
++			else if (length[i] < minLen)
++				minLen = length[i];
++		}
++
++		/* Calculate permute[], base[], and limit[] tables from
++		 * length[].
++		 *
++		 * permute[] is the lookup table for converting
++		 * Huffman coded symbols into decoded symbols.  base[]
++		 * is the amount to subtract from the value of a
++		 * Huffman symbol of a given length when using
++		 * permute[].
++		 *
++		 * limit[] indicates the largest numerical value a
++		 * symbol with a given number of bits can have.  This
++		 * is how the Huffman codes can vary in length: each
++		 * code with a value > limit[length] needs another
++		 * bit.
++		 */
++		hufGroup = bd->groups+j;
++		hufGroup->minLen = minLen;
++		hufGroup->maxLen = maxLen;
++		/* Note that minLen can't be smaller than 1, so we
++		   adjust the base and limit array pointers so we're
++		   not always wasting the first entry.  We do this
++		   again when using them (during symbol decoding).*/
++		base = hufGroup->base-1;
++		limit = hufGroup->limit-1;
++		/* Calculate permute[].  Concurently, initialize
++		 * temp[] and limit[]. */
++		pp = 0;
++		for (i = minLen; i <= maxLen; i++) {
++			temp[i] = limit[i] = 0;
++			for (t = 0; t < symCount; t++)
++				if (length[t] == i)
++					hufGroup->permute[pp++] = t;
++		}
++		/* Count symbols coded for at each bit length */
++		for (i = 0; i < symCount; i++)
++			temp[length[i]]++;
++		/* Calculate limit[] (the largest symbol-coding value
++		 *at each bit length, which is (previous limit <<
++		 *1)+symbols at this level), and base[] (number of
++		 *symbols to ignore at each bit length, which is limit
++		 *minus the cumulative count of symbols coded for
++		 *already). */
++		pp = t = 0;
++		for (i = minLen; i < maxLen; i++) {
++			pp += temp[i];
++			/* We read the largest possible symbol size
++			   and then unget bits after determining how
++			   many we need, and those extra bits could be
++			   set to anything.  (They're noise from
++			   future symbols.)  At each level we're
++			   really only interested in the first few
++			   bits, so here we set all the trailing
++			   to-be-ignored bits to 1 so they don't
++			   affect the value > limit[length]
++			   comparison. */
++			limit[i] = (pp << (maxLen - i)) - 1;
++			pp <<= 1;
++			base[i+1] = pp-(t += temp[i]);
++		}
++		limit[maxLen+1] = INT_MAX; /* Sentinal value for
++					    * reading next sym. */
++		limit[maxLen] = pp+temp[maxLen]-1;
++		base[minLen] = 0;
++	}
++	/* We've finished reading and digesting the block header.  Now
++	   read this block's Huffman coded symbols from the file and
++	   undo the Huffman coding and run length encoding, saving the
++	   result into dbuf[dbufCount++] = uc */
++
++	/* Initialize symbol occurrence counters and symbol Move To
++	 * Front table */
++	for (i = 0; i < 256; i++) {
++		byteCount[i] = 0;
++		mtfSymbol[i] = (unsigned char)i;
++	}
++	/* Loop through compressed symbols. */
++	runPos = dbufCount = symCount = selector = 0;
++	for (;;) {
++		/* Determine which Huffman coding group to use. */
++		if (!(symCount--)) {
++			symCount = GROUP_SIZE-1;
++			if (selector >= nSelectors)
++				return RETVAL_DATA_ERROR;
++			hufGroup = bd->groups+selectors[selector++];
++			base = hufGroup->base-1;
++			limit = hufGroup->limit-1;
++		}
++		/* Read next Huffman-coded symbol. */
++		/* Note: It is far cheaper to read maxLen bits and
++		   back up than it is to read minLen bits and then an
++		   additional bit at a time, testing as we go.
++		   Because there is a trailing last block (with file
++		   CRC), there is no danger of the overread causing an
++		   unexpected EOF for a valid compressed file.  As a
++		   further optimization, we do the read inline
++		   (falling back to a call to get_bits if the buffer
++		   runs dry).  The following (up to got_huff_bits:) is
++		   equivalent to j = get_bits(bd, hufGroup->maxLen);
++		 */
++		while (bd->inbufBitCount < hufGroup->maxLen) {
++			if (bd->inbufPos == bd->inbufCount) {
++				j = get_bits(bd, hufGroup->maxLen);
++				goto got_huff_bits;
++			}
++			bd->inbufBits =
++				(bd->inbufBits << 8)|bd->inbuf[bd->inbufPos++];
++			bd->inbufBitCount += 8;
++		};
++		bd->inbufBitCount -= hufGroup->maxLen;
++		j = (bd->inbufBits >> bd->inbufBitCount)&
++			((1 << hufGroup->maxLen)-1);
++got_huff_bits:
++		/* Figure how how many bits are in next symbol and
++		 * unget extras */
++		i = hufGroup->minLen;
++		while (j > limit[i])
++			++i;
++		bd->inbufBitCount += (hufGroup->maxLen - i);
++		/* Huffman decode value to get nextSym (with bounds checking) */
++		if ((i > hufGroup->maxLen)
++			|| (((unsigned)(j = (j>>(hufGroup->maxLen-i))-base[i]))
++				>= MAX_SYMBOLS))
++			return RETVAL_DATA_ERROR;
++		nextSym = hufGroup->permute[j];
++		/* We have now decoded the symbol, which indicates
++		   either a new literal byte, or a repeated run of the
++		   most recent literal byte.  First, check if nextSym
++		   indicates a repeated run, and if so loop collecting
++		   how many times to repeat the last literal. */
++		if (((unsigned)nextSym) <= SYMBOL_RUNB) { /* RUNA or RUNB */
++			/* If this is the start of a new run, zero out
++			 * counter */
++			if (!runPos) {
++				runPos = 1;
++				t = 0;
++			}
++			/* Neat trick that saves 1 symbol: instead of
++			   or-ing 0 or 1 at each bit position, add 1
++			   or 2 instead.  For example, 1011 is 1 << 0
++			   + 1 << 1 + 2 << 2.  1010 is 2 << 0 + 2 << 1
++			   + 1 << 2.  You can make any bit pattern
++			   that way using 1 less symbol than the basic
++			   or 0/1 method (except all bits 0, which
++			   would use no symbols, but a run of length 0
++			   doesn't mean anything in this context).
++			   Thus space is saved. */
++			t += (runPos << nextSym);
++			/* +runPos if RUNA; +2*runPos if RUNB */
++
++			runPos <<= 1;
++			continue;
++		}
++		/* When we hit the first non-run symbol after a run,
++		   we now know how many times to repeat the last
++		   literal, so append that many copies to our buffer
++		   of decoded symbols (dbuf) now.  (The last literal
++		   used is the one at the head of the mtfSymbol
++		   array.) */
++		if (runPos) {
++			runPos = 0;
++			if (dbufCount+t >= dbufSize)
++				return RETVAL_DATA_ERROR;
++
++			uc = symToByte[mtfSymbol[0]];
++			byteCount[uc] += t;
++			while (t--)
++				dbuf[dbufCount++] = uc;
++		}
++		/* Is this the terminating symbol? */
++		if (nextSym > symTotal)
++			break;
++		/* At this point, nextSym indicates a new literal
++		   character.  Subtract one to get the position in the
++		   MTF array at which this literal is currently to be
++		   found.  (Note that the result can't be -1 or 0,
++		   because 0 and 1 are RUNA and RUNB.  But another
++		   instance of the first symbol in the mtf array,
++		   position 0, would have been handled as part of a
++		   run above.  Therefore 1 unused mtf position minus 2
++		   non-literal nextSym values equals -1.) */
++		if (dbufCount >= dbufSize)
++			return RETVAL_DATA_ERROR;
++		i = nextSym - 1;
++		uc = mtfSymbol[i];
++		/* Adjust the MTF array.  Since we typically expect to
++		 *move only a small number of symbols, and are bound
++		 *by 256 in any case, using memmove here would
++		 *typically be bigger and slower due to function call
++		 *overhead and other assorted setup costs. */
++		do {
++			mtfSymbol[i] = mtfSymbol[i-1];
++		} while (--i);
++		mtfSymbol[0] = uc;
++		uc = symToByte[uc];
++		/* We have our literal byte.  Save it into dbuf. */
++		byteCount[uc]++;
++		dbuf[dbufCount++] = (unsigned int)uc;
++	}
++	/* At this point, we've read all the Huffman-coded symbols
++	   (and repeated runs) for this block from the input stream,
++	   and decoded them into the intermediate buffer.  There are
++	   dbufCount many decoded bytes in dbuf[].  Now undo the
++	   Burrows-Wheeler transform on dbuf.  See
++	   http://dogma.net/markn/articles/bwt/bwt.htm
++	 */
++	/* Turn byteCount into cumulative occurrence counts of 0 to n-1. */
++	j = 0;
++	for (i = 0; i < 256; i++) {
++		k = j+byteCount[i];
++		byteCount[i] = j;
++		j = k;
++	}
++	/* Figure out what order dbuf would be in if we sorted it. */
++	for (i = 0; i < dbufCount; i++) {
++		uc = (unsigned char)(dbuf[i] & 0xff);
++		dbuf[byteCount[uc]] |= (i << 8);
++		byteCount[uc]++;
++	}
++	/* Decode first byte by hand to initialize "previous" byte.
++	   Note that it doesn't get output, and if the first three
++	   characters are identical it doesn't qualify as a run (hence
++	   writeRunCountdown = 5). */
++	if (dbufCount) {
++		if (origPtr >= dbufCount)
++			return RETVAL_DATA_ERROR;
++		bd->writePos = dbuf[origPtr];
++		bd->writeCurrent = (unsigned char)(bd->writePos&0xff);
++		bd->writePos >>= 8;
++		bd->writeRunCountdown = 5;
++	}
++	bd->writeCount = dbufCount;
++
++	return RETVAL_OK;
++}
++
++/* Undo burrows-wheeler transform on intermediate buffer to produce output.
++   If start_bunzip was initialized with out_fd =-1, then up to len bytes of
++   data are written to outbuf.  Return value is number of bytes written or
++   error (all errors are negative numbers).  If out_fd!=-1, outbuf and len
++   are ignored, data is written to out_fd and return is RETVAL_OK or error.
++*/
++
++static int INIT read_bunzip(struct bunzip_data *bd, char *outbuf, int len)
++{
++	const unsigned int *dbuf;
++	int pos, xcurrent, previous, gotcount;
++
++	/* If last read was short due to end of file, return last block now */
++	if (bd->writeCount < 0)
++		return bd->writeCount;
++
++	gotcount = 0;
++	dbuf = bd->dbuf;
++	pos = bd->writePos;
++	xcurrent = bd->writeCurrent;
++
++	/* We will always have pending decoded data to write into the output
++	   buffer unless this is the very first call (in which case we haven't
++	   Huffman-decoded a block into the intermediate buffer yet). */
++
++	if (bd->writeCopies) {
++		/* Inside the loop, writeCopies means extra copies (beyond 1) */
++		--bd->writeCopies;
++		/* Loop outputting bytes */
++		for (;;) {
++			/* If the output buffer is full, snapshot
++			 * state and return */
++			if (gotcount >= len) {
++				bd->writePos = pos;
++				bd->writeCurrent = xcurrent;
++				bd->writeCopies++;
++				return len;
++			}
++			/* Write next byte into output buffer, updating CRC */
++			outbuf[gotcount++] = xcurrent;
++			bd->writeCRC = (((bd->writeCRC) << 8)
++				^bd->crc32Table[((bd->writeCRC) >> 24)
++				^xcurrent]);
++			/* Loop now if we're outputting multiple
++			 * copies of this byte */
++			if (bd->writeCopies) {
++				--bd->writeCopies;
++				continue;
++			}
++decode_next_byte:
++			if (!bd->writeCount--)
++				break;
++			/* Follow sequence vector to undo
++			 * Burrows-Wheeler transform */
++			previous = xcurrent;
++			pos = dbuf[pos];
++			xcurrent = pos&0xff;
++			pos >>= 8;
++			/* After 3 consecutive copies of the same
++			   byte, the 4th is a repeat count.  We count
++			   down from 4 instead *of counting up because
++			   testing for non-zero is faster */
++			if (--bd->writeRunCountdown) {
++				if (xcurrent != previous)
++					bd->writeRunCountdown = 4;
++			} else {
++				/* We have a repeated run, this byte
++				 * indicates the count */
++				bd->writeCopies = xcurrent;
++				xcurrent = previous;
++				bd->writeRunCountdown = 5;
++				/* Sometimes there are just 3 bytes
++				 * (run length 0) */
++				if (!bd->writeCopies)
++					goto decode_next_byte;
++				/* Subtract the 1 copy we'd output
++				 * anyway to get extras */
++				--bd->writeCopies;
++			}
++		}
++		/* Decompression of this block completed successfully */
++		bd->writeCRC = ~bd->writeCRC;
++		bd->totalCRC = ((bd->totalCRC << 1) |
++				(bd->totalCRC >> 31)) ^ bd->writeCRC;
++		/* If this block had a CRC error, force file level CRC error. */
++		if (bd->writeCRC != bd->headerCRC) {
++			bd->totalCRC = bd->headerCRC+1;
++			return RETVAL_LAST_BLOCK;
++		}
++	}
++
++	/* Refill the intermediate buffer by Huffman-decoding next
++	 * block of input */
++	/* (previous is just a convenient unused temp variable here) */
++	previous = get_next_block(bd);
++	if (previous) {
++		bd->writeCount = previous;
++		return (previous != RETVAL_LAST_BLOCK) ? previous : gotcount;
++	}
++	bd->writeCRC = 0xffffffffUL;
++	pos = bd->writePos;
++	xcurrent = bd->writeCurrent;
++	goto decode_next_byte;
++}
++
++static int INIT nofill(void *buf, unsigned int len)
++{
++	return -1;
++}
++
++/* Allocate the structure, read file header.  If in_fd ==-1, inbuf must contain
++   a complete bunzip file (len bytes long).  If in_fd!=-1, inbuf and len are
++   ignored, and data is read from file handle into temporary buffer. */
++static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, int len,
++			     int (*fill)(void*, unsigned int))
++{
++	struct bunzip_data *bd;
++	unsigned int i, j, c;
++	const unsigned int BZh0 =
++		(((unsigned int)'B') << 24)+(((unsigned int)'Z') << 16)
++		+(((unsigned int)'h') << 8)+(unsigned int)'0';
++
++	/* Figure out how much data to allocate */
++	i = sizeof(struct bunzip_data);
++
++	/* Allocate bunzip_data.  Most fields initialize to zero. */
++	bd = *bdp = malloc(i);
++	memset(bd, 0, sizeof(struct bunzip_data));
++	/* Setup input buffer */
++	bd->inbuf = inbuf;
++	bd->inbufCount = len;
++	if (fill != NULL)
++		bd->fill = fill;
++	else
++		bd->fill = nofill;
++
++	/* Init the CRC32 table (big endian) */
++	for (i = 0; i < 256; i++) {
++		c = i << 24;
++		for (j = 8; j; j--)
++			c = c&0x80000000 ? (c << 1)^0x04c11db7 : (c << 1);
++		bd->crc32Table[i] = c;
++	}
++
++	/* Ensure that file starts with "BZh['1'-'9']." */
++	i = get_bits(bd, 32);
++	if (((unsigned int)(i-BZh0-1)) >= 9)
++		return RETVAL_NOT_BZIP_DATA;
++
++	/* Fourth byte (ascii '1'-'9'), indicates block size in units of 100k of
++	   uncompressed data.  Allocate intermediate buffer for block. */
++	bd->dbufSize = 100000*(i-BZh0);
++
++	bd->dbuf = large_malloc(bd->dbufSize * sizeof(int));
++	return RETVAL_OK;
++}
++
++/* Example usage: decompress src_fd to dst_fd.  (Stops at end of bzip data,
++   not end of file.) */
++STATIC int INIT bunzip2(unsigned char *buf, int len,
++			int(*fill)(void*, unsigned int),
++			int(*flush)(void*, unsigned int),
++			unsigned char *outbuf,
++			int *pos,
++			void(*error_fn)(char *x))
++{
++	struct bunzip_data *bd;
++	int i = -1;
++	unsigned char *inbuf;
++
++	set_error_fn(error_fn);
++	if (flush)
++		outbuf = malloc(BZIP2_IOBUF_SIZE);
++	else
++		len -= 4; /* Uncompressed size hack active in pre-boot
++			     environment */
++	if (!outbuf) {
++		error("Could not allocate output bufer");
++		return -1;
++	}
++	if (buf)
++		inbuf = buf;
++	else
++		inbuf = malloc(BZIP2_IOBUF_SIZE);
++	if (!inbuf) {
++		error("Could not allocate input bufer");
++		goto exit_0;
++	}
++	i = start_bunzip(&bd, inbuf, len, fill);
++	if (!i) {
++		for (;;) {
++			i = read_bunzip(bd, outbuf, BZIP2_IOBUF_SIZE);
++			if (i <= 0)
++				break;
++			if (!flush)
++				outbuf += i;
++			else
++				if (i != flush(outbuf, i)) {
++					i = RETVAL_UNEXPECTED_OUTPUT_EOF;
++					break;
++				}
++		}
++	}
++	/* Check CRC and release memory */
++	if (i == RETVAL_LAST_BLOCK) {
++		if (bd->headerCRC != bd->totalCRC)
++			error("Data integrity error when decompressing.");
++		else
++			i = RETVAL_OK;
++	} else if (i == RETVAL_UNEXPECTED_OUTPUT_EOF) {
++		error("Compressed file ends unexpectedly");
++	}
++	if (bd->dbuf)
++		large_free(bd->dbuf);
++	if (pos)
++		*pos = bd->inbufPos;
++	free(bd);
++	if (!buf)
++		free(inbuf);
++exit_0:
++	if (flush)
++		free(outbuf);
++	return i;
++}
++
++#define decompress bunzip2
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/lib/decompress_unlzma.c linux.trees.git.udpcast/lib/decompress_unlzma.c
+--- linux.trees.git.0/lib/decompress_unlzma.c	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/lib/decompress_unlzma.c	2008-09-10 22:37:44.000000000 +0200
+@@ -0,0 +1,659 @@
++/* Lzma decompressor for Linux kernel. Shamelessly snarfed
++ *from busybox 1.1.1
++ *
++ *Linux kernel adaptation
++ *Copyright (C) 2006  Alain < alain@knaff.lu >
++ *
++ *Based on small lzma deflate implementation/Small range coder
++ *implementation for lzma.
++ *Copyright (C) 2006  Aurelien Jacobs < aurel@gnuage.org >
++ *
++ *Based on LzmaDecode.c from the LZMA SDK 4.22 (http://www.7-zip.org/)
++ *Copyright (C) 1999-2005  Igor Pavlov
++ *
++ *Copyrights of the parts, see headers below.
++ *
++ *
++ *This program is free software; you can redistribute it and/or
++ *modify it under the terms of the GNU Lesser General Public
++ *License as published by the Free Software Foundation; either
++ *version 2.1 of the License, or (at your option) any later version.
++ *
++ *This program is distributed in the hope that it will be useful,
++ *but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *Lesser General Public License for more details.
++ *
++ *You should have received a copy of the GNU Lesser General Public
++ *License along with this library; if not, write to the Free Software
++ *Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#ifndef STATIC
++#include <linux/decompress_unlzma.h>
++#endif /* STATIC */
++
++#include <linux/decompr_mm.h>
++
++#define	MIN(a, b) (((a) < (b)) ? (a) : (b))
++
++static long long INIT read_int(unsigned char *ptr, int size)
++{
++	int i;
++	long long ret = 0;
++
++	for (i = 0; i < size; i++)
++		ret = (ret << 8) | ptr[size-i-1];
++	return ret;
++}
++
++#define ENDIAN_CONVERT(x) \
++  x = (typeof(x))read_int((unsigned char *)&x, sizeof(x))
++
++
++/* Small range coder implementation for lzma.
++ *Copyright (C) 2006  Aurelien Jacobs < aurel@gnuage.org >
++ *
++ *Based on LzmaDecode.c from the LZMA SDK 4.22 (http://www.7-zip.org/)
++ *Copyright (c) 1999-2005  Igor Pavlov
++ */
++
++#ifndef always_inline
++#  if defined(__GNUC__) && (__GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ > 0)
++#    define always_inline __attribute__((always_inline)) inline
++#  else
++#    define always_inline inline
++#  endif
++#endif
++
++#ifdef CONFIG_FEATURE_LZMA_FAST
++#  define speed_inline always_inline
++#else
++#  define speed_inline
++#endif
++
++#define LZMA_IOBUF_SIZE	0x10000
++
++struct rc {
++	int (*fill)(void*, unsigned int);
++	uint8_t *ptr;
++	uint8_t *buffer;
++	uint8_t *buffer_end;
++	int buffer_size;
++	uint32_t code;
++	uint32_t range;
++	uint32_t bound;
++};
++
++
++#define RC_TOP_BITS 24
++#define RC_MOVE_BITS 5
++#define RC_MODEL_TOTAL_BITS 11
++
++
++/* Called twice: once at startup and once in rc_normalize() */
++static void INIT rc_read(struct rc *rc)
++{
++	rc->buffer_size = rc->fill((char *)rc->buffer, LZMA_IOBUF_SIZE);
++	if (rc->buffer_size <= 0)
++		error("unexpected EOF");
++	rc->ptr = rc->buffer;
++	rc->buffer_end = rc->buffer + rc->buffer_size;
++}
++
++/* Called once */
++static always_inline void INIT rc_init(struct rc *rc,
++				       int (*fill)(void*, unsigned int),
++				       char *buffer, int buffer_size)
++{
++	rc->fill = fill;
++	rc->buffer = (uint8_t *)buffer;
++	rc->buffer_size = buffer_size;
++	rc->buffer_end = rc->buffer + rc->buffer_size;
++	rc->ptr = rc->buffer;
++
++	rc->code = 0;
++	rc->range = 0xFFFFFFFF;
++}
++
++static always_inline void INIT rc_init_code(struct rc *rc)
++{
++	int i;
++
++	for (i = 0; i < 5; i++) {
++		if (rc->ptr >= rc->buffer_end)
++			rc_read(rc);
++		rc->code = (rc->code << 8) | *rc->ptr++;
++	}
++}
++
++
++/* Called once. TODO: bb_maybe_free() */
++static always_inline void INIT rc_free(struct rc *rc)
++{
++	free(rc->buffer);
++}
++
++/* Called twice, but one callsite is in speed_inline'd rc_is_bit_0_helper() */
++static void INIT rc_do_normalize(struct rc *rc)
++{
++	if (rc->ptr >= rc->buffer_end)
++		rc_read(rc);
++	rc->range <<= 8;
++	rc->code = (rc->code << 8) | *rc->ptr++;
++}
++static always_inline void INIT rc_normalize(struct rc *rc)
++{
++	if (rc->range < (1 << RC_TOP_BITS))
++		rc_do_normalize(rc);
++}
++
++/* Called 9 times */
++/* Why rc_is_bit_0_helper exists?
++ *Because we want to always expose (rc->code < rc->bound) to optimizer
++ */
++static speed_inline uint32_t INIT rc_is_bit_0_helper(struct rc *rc, uint16_t *p)
++{
++	rc_normalize(rc);
++	rc->bound = *p * (rc->range >> RC_MODEL_TOTAL_BITS);
++	return rc->bound;
++}
++static always_inline int INIT rc_is_bit_0(struct rc *rc, uint16_t *p)
++{
++	uint32_t t = rc_is_bit_0_helper(rc, p);
++	return rc->code < t;
++}
++
++/* Called ~10 times, but very small, thus inlined */
++static speed_inline void INIT rc_update_bit_0(struct rc *rc, uint16_t *p)
++{
++	rc->range = rc->bound;
++	*p += ((1 << RC_MODEL_TOTAL_BITS) - *p) >> RC_MOVE_BITS;
++}
++static speed_inline void rc_update_bit_1(struct rc *rc, uint16_t *p)
++{
++	rc->range -= rc->bound;
++	rc->code -= rc->bound;
++	*p -= *p >> RC_MOVE_BITS;
++}
++
++/* Called 4 times in unlzma loop */
++static int INIT rc_get_bit(struct rc *rc, uint16_t *p, int *symbol)
++{
++	if (rc_is_bit_0(rc, p)) {
++		rc_update_bit_0(rc, p);
++		*symbol *= 2;
++		return 0;
++	} else {
++		rc_update_bit_1(rc, p);
++		*symbol = *symbol * 2 + 1;
++		return 1;
++	}
++}
++
++/* Called once */
++static always_inline int INIT rc_direct_bit(struct rc *rc)
++{
++	rc_normalize(rc);
++	rc->range >>= 1;
++	if (rc->code >= rc->range) {
++		rc->code -= rc->range;
++		return 1;
++	}
++	return 0;
++}
++
++/* Called twice */
++static speed_inline void INIT
++rc_bit_tree_decode(struct rc *rc, uint16_t *p, int num_levels, int *symbol)
++{
++	int i = num_levels;
++
++	*symbol = 1;
++	while (i--)
++		rc_get_bit(rc, p + *symbol, symbol);
++	*symbol -= 1 << num_levels;
++}
++
++
++/*
++ * Small lzma deflate implementation.
++ * Copyright (C) 2006  Aurelien Jacobs < aurel@gnuage.org >
++ *
++ * Based on LzmaDecode.c from the LZMA SDK 4.22 (http://www.7-zip.org/)
++ * Copyright (C) 1999-2005  Igor Pavlov
++ */
++
++
++struct lzma_header {
++	uint8_t pos;
++	uint32_t dict_size;
++	uint64_t dst_size;
++} __attribute__ ((packed)) ;
++
++
++#define LZMA_BASE_SIZE 1846
++#define LZMA_LIT_SIZE 768
++
++#define LZMA_NUM_POS_BITS_MAX 4
++
++#define LZMA_LEN_NUM_LOW_BITS 3
++#define LZMA_LEN_NUM_MID_BITS 3
++#define LZMA_LEN_NUM_HIGH_BITS 8
++
++#define LZMA_LEN_CHOICE 0
++#define LZMA_LEN_CHOICE_2 (LZMA_LEN_CHOICE + 1)
++#define LZMA_LEN_LOW (LZMA_LEN_CHOICE_2 + 1)
++#define LZMA_LEN_MID (LZMA_LEN_LOW \
++		      + (1 << (LZMA_NUM_POS_BITS_MAX + LZMA_LEN_NUM_LOW_BITS)))
++#define LZMA_LEN_HIGH (LZMA_LEN_MID \
++		       +(1 << (LZMA_NUM_POS_BITS_MAX + LZMA_LEN_NUM_MID_BITS)))
++#define LZMA_NUM_LEN_PROBS (LZMA_LEN_HIGH + (1 << LZMA_LEN_NUM_HIGH_BITS))
++
++#define LZMA_NUM_STATES 12
++#define LZMA_NUM_LIT_STATES 7
++
++#define LZMA_START_POS_MODEL_INDEX 4
++#define LZMA_END_POS_MODEL_INDEX 14
++#define LZMA_NUM_FULL_DISTANCES (1 << (LZMA_END_POS_MODEL_INDEX >> 1))
++
++#define LZMA_NUM_POS_SLOT_BITS 6
++#define LZMA_NUM_LEN_TO_POS_STATES 4
++
++#define LZMA_NUM_ALIGN_BITS 4
++
++#define LZMA_MATCH_MIN_LEN 2
++
++#define LZMA_IS_MATCH 0
++#define LZMA_IS_REP (LZMA_IS_MATCH + (LZMA_NUM_STATES << LZMA_NUM_POS_BITS_MAX))
++#define LZMA_IS_REP_G0 (LZMA_IS_REP + LZMA_NUM_STATES)
++#define LZMA_IS_REP_G1 (LZMA_IS_REP_G0 + LZMA_NUM_STATES)
++#define LZMA_IS_REP_G2 (LZMA_IS_REP_G1 + LZMA_NUM_STATES)
++#define LZMA_IS_REP_0_LONG (LZMA_IS_REP_G2 + LZMA_NUM_STATES)
++#define LZMA_POS_SLOT (LZMA_IS_REP_0_LONG \
++		       + (LZMA_NUM_STATES << LZMA_NUM_POS_BITS_MAX))
++#define LZMA_SPEC_POS (LZMA_POS_SLOT \
++		       +(LZMA_NUM_LEN_TO_POS_STATES << LZMA_NUM_POS_SLOT_BITS))
++#define LZMA_ALIGN (LZMA_SPEC_POS \
++		    + LZMA_NUM_FULL_DISTANCES - LZMA_END_POS_MODEL_INDEX)
++#define LZMA_LEN_CODER (LZMA_ALIGN + (1 << LZMA_NUM_ALIGN_BITS))
++#define LZMA_REP_LEN_CODER (LZMA_LEN_CODER + LZMA_NUM_LEN_PROBS)
++#define LZMA_LITERAL (LZMA_REP_LEN_CODER + LZMA_NUM_LEN_PROBS)
++
++
++struct writer {
++	uint8_t *buffer;
++	uint8_t previous_byte;
++	size_t buffer_pos;
++	int bufsize;
++	size_t global_pos;
++	int(*flush)(void*, unsigned int);
++	struct lzma_header *header;
++};
++
++struct cstate {
++	int state;
++	uint32_t rep0, rep1, rep2, rep3;
++};
++
++static always_inline size_t INIT get_pos(struct writer *wr)
++{
++	return
++		wr->global_pos + wr->buffer_pos;
++}
++
++static always_inline uint8_t INIT peek_old_byte(struct writer *wr,
++						uint32_t offs)
++{
++	if (!wr->flush) {
++		int32_t pos;
++		while (offs > wr->header->dict_size)
++			offs -= wr->header->dict_size;
++		pos = wr->buffer_pos - offs;
++		return wr->buffer[pos];
++	} else {
++		uint32_t pos = wr->buffer_pos - offs;
++		while (pos >= wr->header->dict_size)
++			pos += wr->header->dict_size;
++		return wr->buffer[pos];
++	}
++
++}
++
++static always_inline void INIT write_byte(struct writer *wr, uint8_t byte)
++{
++	wr->buffer[wr->buffer_pos++] = wr->previous_byte = byte;
++	if (wr->flush && wr->buffer_pos == wr->header->dict_size) {
++		wr->buffer_pos = 0;
++		wr->global_pos += wr->header->dict_size;
++		wr->flush((char *)wr->buffer, wr->header->dict_size);
++	}
++}
++
++
++static always_inline void INIT copy_byte(struct writer *wr, uint32_t offs)
++{
++	write_byte(wr, peek_old_byte(wr, offs));
++}
++
++static always_inline void INIT copy_bytes(struct writer *wr,
++					 uint32_t rep0, int len)
++{
++	do {
++		copy_byte(wr, rep0);
++		len--;
++	} while (len != 0 && wr->buffer_pos < wr->header->dst_size);
++}
++
++static always_inline void INIT process_bit0(struct writer *wr, struct rc *rc,
++				     struct cstate *cst, uint16_t *p,
++				     int pos_state, uint16_t *prob,
++				     int lc, uint32_t literal_pos_mask) {
++	int mi = 1;
++	rc_update_bit_0(rc, prob);
++	prob = (p + LZMA_LITERAL +
++		(LZMA_LIT_SIZE
++		 * (((get_pos(wr) & literal_pos_mask) << lc)
++		    + (wr->previous_byte >> (8 - lc))))
++		);
++
++	if (cst->state >= LZMA_NUM_LIT_STATES) {
++		int match_byte = peek_old_byte(wr, cst->rep0);
++		do {
++			int bit;
++			uint16_t *prob_lit;
++
++			match_byte <<= 1;
++			bit = match_byte & 0x100;
++			prob_lit = prob + 0x100 + bit + mi;
++			if (rc_get_bit(rc, prob_lit, &mi)) {
++				if (!bit)
++					break;
++			} else {
++				if (bit)
++					break;
++			}
++		} while (mi < 0x100);
++	}
++	while (mi < 0x100) {
++		uint16_t *prob_lit = prob + mi;
++		rc_get_bit(rc, prob_lit, &mi);
++	}
++	write_byte(wr, mi);
++	if (cst->state < 4)
++		cst->state = 0;
++	else if (cst->state < 10)
++		cst->state -= 3;
++	else
++		cst->state -= 6;
++}
++
++static always_inline void INIT process_bit1(struct writer *wr, struct rc *rc,
++					    struct cstate *cst, uint16_t *p,
++					    int pos_state, uint16_t *prob) {
++  int offset;
++	uint16_t *prob_len;
++	int num_bits;
++	int len;
++
++	rc_update_bit_1(rc, prob);
++	prob = p + LZMA_IS_REP + cst->state;
++	if (rc_is_bit_0(rc, prob)) {
++		rc_update_bit_0(rc, prob);
++		cst->rep3 = cst->rep2;
++		cst->rep2 = cst->rep1;
++		cst->rep1 = cst->rep0;
++		cst->state = cst->state < LZMA_NUM_LIT_STATES ? 0 : 3;
++		prob = p + LZMA_LEN_CODER;
++	} else {
++		rc_update_bit_1(rc, prob);
++		prob = p + LZMA_IS_REP_G0 + cst->state;
++		if (rc_is_bit_0(rc, prob)) {
++			rc_update_bit_0(rc, prob);
++			prob = (p + LZMA_IS_REP_0_LONG
++				+ (cst->state <<
++				   LZMA_NUM_POS_BITS_MAX) +
++				pos_state);
++			if (rc_is_bit_0(rc, prob)) {
++				rc_update_bit_0(rc, prob);
++
++				cst->state = cst->state < LZMA_NUM_LIT_STATES ?
++					9 : 11;
++				copy_byte(wr, cst->rep0);
++				return;
++			} else {
++				rc_update_bit_1(rc, prob);
++			}
++		} else {
++			uint32_t distance;
++
++			rc_update_bit_1(rc, prob);
++			prob = p + LZMA_IS_REP_G1 + cst->state;
++			if (rc_is_bit_0(rc, prob)) {
++				rc_update_bit_0(rc, prob);
++				distance = cst->rep1;
++			} else {
++				rc_update_bit_1(rc, prob);
++				prob = p + LZMA_IS_REP_G2 + cst->state;
++				if (rc_is_bit_0(rc, prob)) {
++					rc_update_bit_0(rc, prob);
++					distance = cst->rep2;
++				} else {
++					rc_update_bit_1(rc, prob);
++					distance = cst->rep3;
++					cst->rep3 = cst->rep2;
++				}
++				cst->rep2 = cst->rep1;
++			}
++			cst->rep1 = cst->rep0;
++			cst->rep0 = distance;
++		}
++		cst->state = cst->state < LZMA_NUM_LIT_STATES ? 8 : 11;
++		prob = p + LZMA_REP_LEN_CODER;
++	}
++
++	prob_len = prob + LZMA_LEN_CHOICE;
++	if (rc_is_bit_0(rc, prob_len)) {
++		rc_update_bit_0(rc, prob_len);
++		prob_len = (prob + LZMA_LEN_LOW
++			    + (pos_state <<
++			       LZMA_LEN_NUM_LOW_BITS));
++		offset = 0;
++		num_bits = LZMA_LEN_NUM_LOW_BITS;
++	} else {
++		rc_update_bit_1(rc, prob_len);
++		prob_len = prob + LZMA_LEN_CHOICE_2;
++		if (rc_is_bit_0(rc, prob_len)) {
++			rc_update_bit_0(rc, prob_len);
++			prob_len = (prob + LZMA_LEN_MID
++				    + (pos_state <<
++				       LZMA_LEN_NUM_MID_BITS));
++			offset = 1 << LZMA_LEN_NUM_LOW_BITS;
++			num_bits = LZMA_LEN_NUM_MID_BITS;
++		} else {
++			rc_update_bit_1(rc, prob_len);
++			prob_len = prob + LZMA_LEN_HIGH;
++			offset = ((1 << LZMA_LEN_NUM_LOW_BITS)
++				  + (1 << LZMA_LEN_NUM_MID_BITS));
++			num_bits = LZMA_LEN_NUM_HIGH_BITS;
++		}
++	}
++
++	rc_bit_tree_decode(rc, prob_len, num_bits, &len);
++	len += offset;
++
++	if (cst->state < 4) {
++		int pos_slot;
++
++		cst->state += LZMA_NUM_LIT_STATES;
++		prob =
++			p + LZMA_POS_SLOT +
++			((len <
++			  LZMA_NUM_LEN_TO_POS_STATES ? len :
++			  LZMA_NUM_LEN_TO_POS_STATES - 1)
++			 << LZMA_NUM_POS_SLOT_BITS);
++		rc_bit_tree_decode(rc, prob,
++				   LZMA_NUM_POS_SLOT_BITS,
++				   &pos_slot);
++		if (pos_slot >= LZMA_START_POS_MODEL_INDEX) {
++			int i, mi;
++			num_bits = (pos_slot >> 1) - 1;
++			cst->rep0 = 2 | (pos_slot & 1);
++			if (pos_slot < LZMA_END_POS_MODEL_INDEX) {
++				cst->rep0 <<= num_bits;
++				prob = p + LZMA_SPEC_POS +
++					cst->rep0 - pos_slot - 1;
++			} else {
++				num_bits -= LZMA_NUM_ALIGN_BITS;
++				while (num_bits--)
++					cst->rep0 = (cst->rep0 << 1) |
++						rc_direct_bit(rc);
++				prob = p + LZMA_ALIGN;
++				cst->rep0 <<= LZMA_NUM_ALIGN_BITS;
++				num_bits = LZMA_NUM_ALIGN_BITS;
++			}
++			i = 1;
++			mi = 1;
++			while (num_bits--) {
++				if (rc_get_bit(rc, prob + mi, &mi))
++					cst->rep0 |= i;
++				i <<= 1;
++			}
++		} else
++			cst->rep0 = pos_slot;
++		if (++(cst->rep0) == 0)
++			return;
++	}
++
++	len += LZMA_MATCH_MIN_LEN;
++
++	copy_bytes(wr, cst->rep0, len);
++}
++
++
++
++STATIC always_inline int INIT unlzma(unsigned char *buf, int in_len,
++				     int(*fill)(void*, unsigned int),
++				     int(*flush)(void*, unsigned int),
++				     unsigned char *output,
++				     int *posp,
++				     void(*error_fn)(char *x)
++	)
++{
++	struct lzma_header header;
++	int lc, pb, lp;
++	uint32_t pos_state_mask;
++	uint32_t literal_pos_mask;
++	uint16_t *p;
++	int num_probs;
++	struct rc rc;
++	int i, mi;
++	struct writer wr;
++	struct cstate cst;
++	unsigned char *inbuf;
++	int ret = -1;
++
++	set_error_fn(error_fn);
++	if (!flush)
++		in_len -= 4; /* Uncompressed size hack active in pre-boot
++				environment */
++	if (buf)
++		inbuf = buf;
++	else
++		inbuf = malloc(LZMA_IOBUF_SIZE);
++	if (!inbuf) {
++		error("Could not allocate input bufer");
++		goto exit_0;
++	}
++
++	cst.state = 0;
++	cst.rep0 = cst.rep1 = cst.rep2 = cst.rep3 = 1;
++
++	wr.header = &header;
++	wr.flush = flush;
++	wr.global_pos = 0;
++	wr.previous_byte = 0;
++	wr.buffer_pos = 0;
++
++	rc_init(&rc, fill, inbuf, in_len);
++
++	for (i = 0; i < sizeof(header); i++) {
++		if (rc.ptr >= rc.buffer_end)
++			rc_read(&rc);
++		((unsigned char *)&header)[i] = *rc.ptr++;
++	}
++
++	if (header.pos >= (9 * 5 * 5))
++		error("bad header");
++
++	mi = 0;
++	lc = header.pos;
++	while (lc >= 9) {
++		mi++;
++		lc -= 9;
++	}
++	pb = 0;
++	lp = mi;
++	while (lp >= 5) {
++		pb++;
++		lp -= 5;
++	}
++	pos_state_mask = (1 << pb) - 1;
++	literal_pos_mask = (1 << lp) - 1;
++
++	ENDIAN_CONVERT(header.dict_size);
++	ENDIAN_CONVERT(header.dst_size);
++
++	if (header.dict_size == 0)
++		header.dict_size = 1;
++
++	if (output)
++		wr.buffer = output;
++	else {
++		wr.bufsize = MIN(header.dst_size, header.dict_size);
++		wr.buffer = large_malloc(wr.bufsize);
++	}
++	if (wr.buffer == NULL)
++		goto exit_1;
++
++	num_probs = LZMA_BASE_SIZE + (LZMA_LIT_SIZE << (lc + lp));
++	p = (uint16_t *) large_malloc(num_probs * sizeof(*p));
++	if (p == 0)
++		goto exit_2;
++	num_probs = LZMA_LITERAL + (LZMA_LIT_SIZE << (lc + lp));
++	for (i = 0; i < num_probs; i++)
++		p[i] = (1 << RC_MODEL_TOTAL_BITS) >> 1;
++
++	rc_init_code(&rc);
++
++	while (get_pos(&wr) < header.dst_size) {
++		int pos_state =	get_pos(&wr) & pos_state_mask;
++		uint16_t *prob = p + LZMA_IS_MATCH +
++			(cst.state << LZMA_NUM_POS_BITS_MAX) + pos_state;
++		if (rc_is_bit_0(&rc, prob))
++			process_bit0(&wr, &rc, &cst, p, pos_state, prob,
++				     lc, literal_pos_mask);
++		else {
++			process_bit1(&wr, &rc, &cst, p, pos_state, prob);
++			if (cst.rep0 == 0)
++				break;
++		}
++	}
++
++	if (posp)
++		*posp = rc.ptr-rc.buffer;
++	if (wr.flush)
++		wr.flush(wr.buffer, wr.buffer_pos);
++	ret = 0;
++	large_free(p);
++exit_2:
++	if (!output)
++		large_free(wr.buffer);
++exit_1:
++	if (!buf)
++		free(inbuf);
++exit_0:
++	return ret;
++}
++
++#define decompress unlzma
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/lib/inflate.c linux.trees.git.udpcast/lib/inflate.c
+--- linux.trees.git.0/lib/inflate.c	2008-09-07 11:29:23.000000000 +0200
++++ linux.trees.git.udpcast/lib/inflate.c	2008-09-10 22:45:27.000000000 +0200
+@@ -109,20 +109,77 @@ static char rcsid[] = "#Id: inflate.c,v 
+ #endif
+ 
+ #ifndef STATIC
++#include <linux/inflate.h>
++#endif /* ! STATIC */
+ 
+-#if defined(STDC_HEADERS) || defined(HAVE_STDLIB_H)
+-#  include <sys/types.h>
+-#  include <stdlib.h>
+-#endif
++#include <linux/decompr_mm.h>
++
++#include <linux/string.h>
++
++static int(*flush_cb)(void*, unsigned int);
++static int(*fill_cb)(void*, unsigned int);
++
++
++/* Begin stuff copied from initramfs */
++/*
++ * gzip declarations
++ */
+ 
+-#include "gzip.h"
+-#define STATIC
+-#endif /* !STATIC */
++#define OF(args)  args
+ 
+-#ifndef INIT
+-#define INIT
++#ifndef memzero
++#define memzero(s, n)     memset((s), 0, (n))
+ #endif
+-	
++
++#define INBUFSIZ 4096
++
++#define WSIZE 0x8000    /* window size--must be a power of two, and */
++			/*  at least 32K for zip's deflate method */
++
++static uint8_t *inbuf;
++static uint8_t *window;
++
++static unsigned insize;  /* valid bytes in inbuf */
++static unsigned outcnt;  /* bytes in output buffer */
++static long bytes_out;
++
++/* --- */
++
++static unsigned inptr;   /* index of next byte to be processed in inbuf */
++
++/* --- */
++
++/* ===========================================================================
++ * Fill the input buffer. This is called only when the buffer is empty
++ * and at least one byte is really needed.
++ * Returning -1 does not guarantee that gunzip() will ever return.
++ */
++static int INIT fill_inbuf(void)
++{
++	insize = fill_cb(inbuf, INBUFSIZ);
++	if (insize <= 0) {
++		error("RAMDISK: ran out of compressed data");
++		return -1;
++	}
++
++	inptr = 1;
++
++	return inbuf[0];
++}
++
++#define get_byte()  (inptr < insize ? inbuf[inptr++] : fill_inbuf())
++
++/* Diagnostic functions (stubbed out) */
++#define Assert(cond, msg)
++#define Trace(x)
++#define Tracev(x)
++#define Tracevv(x)
++#define Tracec(c, x)
++#define Tracecv(c, x)
++
++static void flush_window(void);
++/* End stuff copied from initramfs */
++
+ #define slide window
+ 
+ /* Huffman code lookup table entry--this entry is four bytes for machines
+@@ -133,10 +190,10 @@ static char rcsid[] = "#Id: inflate.c,v 
+    an unused code.  If a code with e == 99 is looked up, this implies an
+    error in the data. */
+ struct huft {
+-  uch e;                /* number of extra bits or operation */
+-  uch b;                /* number of bits in this code or subcode */
++  uint8_t e;                /* number of extra bits or operation */
++  uint8_t b;                /* number of bits in this code or subcode */
+   union {
+-    ush n;              /* literal, length base, or distance base */
++    uint16_t n;              /* literal, length base, or distance base */
+     struct huft *t;     /* pointer to next level of table */
+   } v;
+ };
+@@ -144,7 +201,7 @@ struct huft {
+ 
+ /* Function prototypes */
+ STATIC int INIT huft_build OF((unsigned *, unsigned, unsigned, 
+-		const ush *, const ush *, struct huft **, int *));
++		const uint16_t *, const uint16_t *, struct huft **, int *));
+ STATIC int INIT huft_free OF((struct huft *));
+ STATIC int INIT inflate_codes OF((struct huft *, struct huft *, int, int));
+ STATIC int INIT inflate_stored OF((void));
+@@ -159,28 +216,28 @@ STATIC int INIT inflate OF((void));
+    circular buffer.  The index is updated simply by incrementing and then
+    ANDing with 0x7fff (32K-1). */
+ /* It is left to other modules to supply the 32 K area.  It is assumed
+-   to be usable as if it were declared "uch slide[32768];" or as just
+-   "uch *slide;" and then malloc'ed in the latter case.  The definition
++   to be usable as if it were declared "uint8_t slide[32768];" or as just
++   "uint8_t *slide;" and then malloc'ed in the latter case.  The definition
+    must be in unzip.h, included above. */
+ /* unsigned wp;             current position in slide */
+ #define wp outcnt
+ #define flush_output(w) (wp=(w),flush_window())
+ 
+ /* Tables for deflate from PKZIP's appnote.txt. */
+-static const unsigned border[] = {    /* Order of the bit length code lengths */
++static const unsigned border[] = {   /* Order of the bit length code lengths */
+         16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
+-static const ush cplens[] = {         /* Copy lengths for literal codes 257..285 */
++static const uint16_t cplens[] = { /* Copy lengths for literal codes 257..285 */
+         3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
+         /* note: see note #13 above about the 258 in this list. */
+-static const ush cplext[] = {         /* Extra bits for literal codes 257..285 */
++static const uint16_t cplext[] = {   /* Extra bits for literal codes 257..285 */
+         0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+         3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99}; /* 99==invalid */
+-static const ush cpdist[] = {         /* Copy offsets for distance codes 0..29 */
++static const uint16_t cpdist[] = {   /* Copy offsets for distance codes 0..29 */
+         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+         257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+         8193, 12289, 16385, 24577};
+-static const ush cpdext[] = {         /* Extra bits for distance codes */
++static const uint16_t cpdext[] = {   /* Extra bits for distance codes */
+         0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+         7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
+         12, 12, 13, 13};
+@@ -217,59 +274,21 @@ static const ush cpdext[] = {         /*
+    the stream.
+  */
+ 
+-STATIC ulg bb;                         /* bit buffer */
++STATIC uint32_t bb;                         /* bit buffer */
+ STATIC unsigned bk;                    /* bits in bit buffer */
+ 
+-STATIC const ush mask_bits[] = {
++STATIC const uint16_t mask_bits[] = {
+     0x0000,
+     0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
+     0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff
+ };
+ 
+-#define NEXTBYTE()  ({ int v = get_byte(); if (v < 0) goto underrun; (uch)v; })
+-#define NEEDBITS(n) {while(k<(n)){b|=((ulg)NEXTBYTE())<<k;k+=8;}}
++#define NEXTBYTE()  ({ int v = get_byte(); if (v < 0) goto underrun; \
++			(uint8_t)v; })
++#define NEEDBITS(n) {while (k < (n)) \
++			{b |= ((uint32_t)NEXTBYTE())<<k; k += 8; } }
+ #define DUMPBITS(n) {b>>=(n);k-=(n);}
+ 
+-#ifndef NO_INFLATE_MALLOC
+-/* A trivial malloc implementation, adapted from
+- *  malloc by Hannu Savolainen 1993 and Matthias Urlichs 1994
+- */
+-
+-static unsigned long malloc_ptr;
+-static int malloc_count;
+-
+-static void *malloc(int size)
+-{
+-       void *p;
+-
+-       if (size < 0)
+-		error("Malloc error");
+-       if (!malloc_ptr)
+-		malloc_ptr = free_mem_ptr;
+-
+-       malloc_ptr = (malloc_ptr + 3) & ~3;     /* Align */
+-
+-       p = (void *)malloc_ptr;
+-       malloc_ptr += size;
+-
+-       if (free_mem_end_ptr && malloc_ptr >= free_mem_end_ptr)
+-		error("Out of memory");
+-
+-       malloc_count++;
+-       return p;
+-}
+-
+-static void free(void *where)
+-{
+-       malloc_count--;
+-       if (!malloc_count)
+-		malloc_ptr = free_mem_ptr;
+-}
+-#else
+-#define malloc(a) kmalloc(a, GFP_KERNEL)
+-#define free(a) kfree(a)
+-#endif
+-
+ /*
+    Huffman code decoding is performed using a multi-level table lookup.
+    The fastest way to decode is to simply build a lookup table whose
+@@ -307,7 +326,7 @@ STATIC const int lbits = 9;          /* 
+ STATIC const int dbits = 6;          /* bits in base distance lookup table */
+ 
+ 
+-/* If BMAX needs to be larger than 16, then h and x[] should be ulg. */
++/* If BMAX needs to be larger than 16, then h and x[] should be uint32_t. */
+ #define BMAX 16         /* maximum bit length of any code (16 for explode) */
+ #define N_MAX 288       /* maximum number of codes in any set */
+ 
+@@ -319,8 +338,8 @@ STATIC int INIT huft_build(
+ 	unsigned *b,            /* code lengths in bits (all assumed <= BMAX) */
+ 	unsigned n,             /* number of codes (assumed <= N_MAX) */
+ 	unsigned s,             /* number of simple-valued codes (0..s-1) */
+-	const ush *d,           /* list of base values for non-simple codes */
+-	const ush *e,           /* list of extra bits for non-simple codes */
++	const uint16_t *d,      /* list of base values for non-simple codes */
++	const uint16_t *e,      /* list of extra bits for non-simple codes */
+ 	struct huft **t,        /* result: starting table */
+ 	int *m                  /* maximum lookup bits, returns actual */
+ 	)
+@@ -500,8 +519,8 @@ DEBG1("5 ");
+         if (h)
+         {
+           x[h] = i;             /* save pattern for backing up */
+-          r.b = (uch)l;         /* bits to dump before this table */
+-          r.e = (uch)(16 + j);  /* bits in this table */
++	  r.b = (uint8_t)l;         /* bits to dump before this table */
++	  r.e = (uint8_t)(16 + j);  /* bits in this table */
+           r.v.t = q;            /* pointer to this table */
+           j = i >> (w - l);     /* (get around Turbo C bug) */
+           u[h-1][j] = r;        /* connect to last table */
+@@ -511,18 +530,18 @@ DEBG1("6 ");
+ DEBG("h6c ");
+ 
+       /* set up table entry in r */
+-      r.b = (uch)(k - w);
++      r.b = (uint8_t)(k - w);
+       if (p >= v + n)
+         r.e = 99;               /* out of values--invalid code */
+       else if (*p < s)
+       {
+-        r.e = (uch)(*p < 256 ? 16 : 15);    /* 256 is end-of-block code */
+-        r.v.n = (ush)(*p);             /* simple code is just the value */
++	r.e = (uint8_t)(*p < 256 ? 16 : 15);    /* 256 is end-of-block code */
++	r.v.n = (uint16_t)(*p);             /* simple code is just the value */
+ 	p++;                           /* one compiler does not like *p++ */
+       }
+       else
+       {
+-        r.e = (uch)e[*p - s];   /* non-simple--look up in lists */
++	r.e = (uint8_t)e[*p - s];   /* non-simple--look up in lists */
+         r.v.n = d[*p++ - s];
+       }
+ DEBG("h6d ");
+@@ -592,11 +611,12 @@ STATIC int INIT inflate_codes(
+    Return an error code or zero if it all goes ok. */
+ {
+   register unsigned e;  /* table entry flag/number of extra bits */
+-  unsigned n, d;        /* length and index for copy */
++  unsigned n;
++  int d;              /* source index for copy */
+   unsigned w;           /* current window position */
+   struct huft *t;       /* pointer to table entry */
+   unsigned ml, md;      /* masks for bl and bd bits */
+-  register ulg b;       /* bit buffer */
++  register uint32_t b;       /* bit buffer */
+   register unsigned k;  /* number of bits in bit buffer */
+ 
+ 
+@@ -622,7 +642,7 @@ STATIC int INIT inflate_codes(
+     DUMPBITS(t->b)
+     if (e == 16)                /* then it's a literal */
+     {
+-      slide[w++] = (uch)t->v.n;
++      slide[w++] = (uint8_t)t->v.n;
+       Tracevv((stderr, "%c", slide[w-1]));
+       if (w == WSIZE)
+       {
+@@ -659,11 +679,22 @@ STATIC int INIT inflate_codes(
+ 
+       /* do the copy */
+       do {
+-        n -= (e = (e = WSIZE - ((d &= WSIZE-1) > w ? d : w)) > n ? n : e);
++	if (flush_cb) {
++		/* Sliding window emulated using circular buffer:
++		 * manage wrap-around */
++		e = WSIZE - ((d &= WSIZE-1) > w ? d : w);
++		if (e > n)
++			e = n;
++	} else {
++		e = n;
++	}
++
++	n -= e;
++
+ #if !defined(NOMEMCPY) && !defined(DEBUG)
+         if (w - d >= e)         /* (this test assumes unsigned comparison) */
+         {
+-          memcpy(slide + w, slide + d, e);
++		memcpy(slide + w, slide + d, e);
+           w += e;
+           d += e;
+         }
+@@ -673,9 +704,8 @@ STATIC int INIT inflate_codes(
+             slide[w++] = slide[d++];
+ 	    Tracevv((stderr, "%c", slide[w-1]));
+           } while (--e);
+-        if (w == WSIZE)
+-        {
+-          flush_output(w);
++	if (w == WSIZE) {
++	  flush_output(w);
+           w = 0;
+         }
+       } while (n);
+@@ -702,7 +732,7 @@ STATIC int INIT inflate_stored(void)
+ {
+   unsigned n;           /* number of bytes in block */
+   unsigned w;           /* current window position */
+-  register ulg b;       /* bit buffer */
++  register uint32_t b;       /* bit buffer */
+   register unsigned k;  /* number of bits in bit buffer */
+ 
+ DEBG("<stor");
+@@ -732,7 +762,7 @@ DEBG("<stor");
+   while (n--)
+   {
+     NEEDBITS(8)
+-    slide[w++] = (uch)b;
++    slide[w++] = (uint8_t)b;
+     if (w == WSIZE)
+     {
+       flush_output(w);
+@@ -838,7 +868,7 @@ STATIC int noinline INIT inflate_dynamic
+   unsigned nl;          /* number of literal/length codes */
+   unsigned nd;          /* number of distance codes */
+   unsigned *ll;         /* literal/length and distance code lengths */
+-  register ulg b;       /* bit buffer */
++  register uint32_t b;       /* bit buffer */
+   register unsigned k;  /* number of bits in bit buffer */
+   int ret;
+ 
+@@ -1033,7 +1063,7 @@ STATIC int INIT inflate_block(
+ /* decompress an inflated block */
+ {
+   unsigned t;           /* block type */
+-  register ulg b;       /* bit buffer */
++  register uint32_t b;       /* bit buffer */
+   register unsigned k;  /* number of bits in bit buffer */
+ 
+   DEBG("<blk");
+@@ -1130,8 +1160,8 @@ STATIC int INIT inflate(void)
+  *
+  **********************************************************************/
+ 
+-static ulg crc_32_tab[256];
+-static ulg crc;		/* initialized in makecrc() so it'll reside in bss */
++static uint32_t crc_32_tab[256];
++static uint32_t crc;	/* initialized in makecrc() so it'll reside in bss */
+ #define CRC_VALUE (crc ^ 0xffffffffUL)
+ 
+ /*
+@@ -1172,7 +1202,7 @@ makecrc(void)
+   }
+ 
+   /* this is initialized here so this code could reside in ROM */
+-  crc = (ulg)0xffffffffUL; /* shift register contents */
++  crc = (uint32_t)0xffffffffUL; /* shift register contents */
+ }
+ 
+ /* gzip flag byte */
+@@ -1184,18 +1214,80 @@ makecrc(void)
+ #define ENCRYPTED    0x20 /* bit 5 set: file is encrypted */
+ #define RESERVED     0xC0 /* bit 6,7:   reserved */
+ 
++/* ===========================================================================
++ * Write the output window window[0..outcnt-1] and update crc and bytes_out.
++ * (Used for the decompressed data only.)
++ */
++static void INIT flush_window(void)
++{
++	uint32_t c = crc;         /* temporary variable */
++	unsigned n;
++	uint8_t *in, ch;
++
++	in = window;
++	for (n = 0; n < outcnt; n++) {
++		ch = *in++;
++		c = crc_32_tab[((int)c ^ ch) & 0xff] ^ (c >> 8);
++	}
++	crc = c;
++	bytes_out += (uint32_t)outcnt;
++	if (flush_cb != NULL)
++		flush_cb(window, outcnt); /* TODO: handle unzip_error */
++	else
++		window += outcnt;
++	outcnt = 0;
++}
++
++static int empty_fill(void *buf, unsigned int len)
++{
++	return 0;
++}
++
++
++
+ /*
+  * Do the uncompression!
+  */
+-static int INIT gunzip(void)
++STATIC int INIT gunzip(unsigned char *buf, int len,
++		       int(*fill)(void*, unsigned int),
++		       int(*flush)(void*, unsigned int),
++		       unsigned char *output,
++		       int *posp,
++		       void(*error_fn)(char *x)
++  )
+ {
+-    uch flags;
++    uint8_t flags;
+     unsigned char magic[2]; /* magic header */
+     char method;
+-    ulg orig_crc = 0;       /* original crc */
+-    ulg orig_len = 0;       /* original uncompressed length */
++    uint32_t orig_crc = 0;       /* original crc */
++    uint32_t orig_len = 0;       /* original uncompressed length */
+     int res;
+ 
++    set_error_fn(error_fn);
++    if (fill == NULL)
++	    fill_cb = empty_fill;
++    else
++	    fill_cb = fill;
++    if (output)
++	    window = output;
++    else {
++	    window = malloc(0x8000);
++	    if (!window)
++		    panic("can't allocate buffers");
++	    flush_cb = flush;
++    }
++
++    insize = len;
++    if (buf)
++	    inbuf = buf;
++    else
++	    inbuf = malloc(INBUFSIZ);
++    inptr = 0;
++    outcnt = 0;		/* bytes in output buffer */
++    bytes_out = 0;
++    crc = (uint32_t)0xffffffffL; /* shift register contents */
++    makecrc();
++
+     magic[0] = NEXTBYTE();
+     magic[1] = NEXTBYTE();
+     method   = NEXTBYTE();
+@@ -1212,7 +1304,7 @@ static int INIT gunzip(void)
+ 	    return -1;
+     }
+ 
+-    flags  = (uch)get_byte();
++    flags  = (uint8_t)get_byte();
+     if ((flags & ENCRYPTED) != 0) {
+ 	    error("Input is encrypted");
+ 	    return -1;
+@@ -1277,15 +1369,15 @@ static int INIT gunzip(void)
+     /* crc32  (see algorithm.doc)
+      * uncompressed input size modulo 2^32
+      */
+-    orig_crc = (ulg) NEXTBYTE();
+-    orig_crc |= (ulg) NEXTBYTE() << 8;
+-    orig_crc |= (ulg) NEXTBYTE() << 16;
+-    orig_crc |= (ulg) NEXTBYTE() << 24;
++    orig_crc = (uint32_t) NEXTBYTE();
++    orig_crc |= (uint32_t) NEXTBYTE() << 8;
++    orig_crc |= (uint32_t) NEXTBYTE() << 16;
++    orig_crc |= (uint32_t) NEXTBYTE() << 24;
+     
+-    orig_len = (ulg) NEXTBYTE();
+-    orig_len |= (ulg) NEXTBYTE() << 8;
+-    orig_len |= (ulg) NEXTBYTE() << 16;
+-    orig_len |= (ulg) NEXTBYTE() << 24;
++    orig_len = (uint32_t) NEXTBYTE();
++    orig_len |= (uint32_t) NEXTBYTE() << 8;
++    orig_len |= (uint32_t) NEXTBYTE() << 16;
++    orig_len |= (uint32_t) NEXTBYTE() << 24;
+     
+     /* Validate decompression */
+     if (orig_crc != CRC_VALUE) {
+@@ -1296,11 +1388,18 @@ static int INIT gunzip(void)
+ 	    error("length error");
+ 	    return -1;
+     }
++    if (!output)
++	    free(window);
++    if (posp)
++	    *posp = inptr;
+     return 0;
+ 
+  underrun:			/* NEXTBYTE() goto's here if needed */
++    free(window);
++    if (!buf)
++	    free(inbuf);
+     error("out of input data");
+     return -1;
+ }
+ 
+-
++#define decompress gunzip
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/lib/Makefile linux.trees.git.udpcast/lib/Makefile
+--- linux.trees.git.0/lib/Makefile	2008-09-07 11:29:23.000000000 +0200
++++ linux.trees.git.udpcast/lib/Makefile	2008-09-09 00:45:10.000000000 +0200
+@@ -57,6 +57,10 @@ obj-$(CONFIG_CRC7)	+= crc7.o
+ obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
+ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
+ 
++obj-$(CONFIG_RD_GZIP)	+= inflate.o
++obj-$(CONFIG_RD_BZIP2)	+= decompress_bunzip2.o
++obj-$(CONFIG_RD_LZMA)	+= decompress_unlzma.o
++
+ obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
+ obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
+ obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/scripts/bin_size linux.trees.git.udpcast/scripts/bin_size
+--- linux.trees.git.0/scripts/bin_size	1970-01-01 01:00:00.000000000 +0100
++++ linux.trees.git.udpcast/scripts/bin_size	2008-09-08 21:11:34.000000000 +0200
+@@ -0,0 +1,10 @@
++#!/bin/sh
++
++if [ $# = 0 ] ; then
++   echo Usage: $0 file
++fi
++
++size_dec=`stat -c "%s" $1`
++size_hex_echo_string=`printf "%08x" $size_dec |
++     sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'`
++/bin/echo -ne $size_hex_echo_string
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/scripts/Makefile.lib linux.trees.git.udpcast/scripts/Makefile.lib
+--- linux.trees.git.0/scripts/Makefile.lib	2008-09-07 11:29:28.000000000 +0200
++++ linux.trees.git.udpcast/scripts/Makefile.lib	2008-09-10 23:04:34.000000000 +0200
+@@ -174,3 +174,17 @@ quiet_cmd_gzip = GZIP    $@
+ cmd_gzip = gzip -f -9 < $< > $@
+ 
+ 
++# Bzip2
++# ---------------------------------------------------------------------------
++
++# Bzip2 does not include size in file... so we have to fake that
++size_append=scripts/bin_size
++
++quiet_cmd_bzip2 = BZIP2    $@
++cmd_bzip2 = (bzip2 -9 < $< ; $(size_append) $<) > $@
++
++# Lzma
++# ---------------------------------------------------------------------------
++
++quiet_cmd_lzma = LZMA    $@
++cmd_lzma = (lzma -9 -c $< ; $(size_append) $<) >$@
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/usr/initramfs_data.S linux.trees.git.udpcast/usr/initramfs_data.S
+--- linux.trees.git.0/usr/initramfs_data.S	2008-09-07 11:29:35.000000000 +0200
++++ linux.trees.git.udpcast/usr/initramfs_data.S	2008-09-08 20:51:13.000000000 +0200
+@@ -8,7 +8,7 @@
+ 
+ 
+   ld -m elf_i386  --format binary --oformat elf32-i386 -r \
+-  -T initramfs_data.scr initramfs_data.cpio.gz -o initramfs_data.o
++  -T initramfs_data.scr initramfs_data.cpio -o initramfs_data.o
+    ld -m elf_i386  -r -o built-in.o initramfs_data.o
+ 
+   initramfs_data.scr looks like this:
+@@ -26,5 +26,5 @@ SECTIONS
+ */
+ 
+ .section .init.ramfs,"a"
+-.incbin "usr/initramfs_data.cpio.gz"
++.incbin "usr/initramfs_data.cpio"
+ 
+diff -urNp -X linux.trees.git.udpcast/Documentation/dontdiff linux.trees.git.0/usr/Makefile linux.trees.git.udpcast/usr/Makefile
+--- linux.trees.git.0/usr/Makefile	2008-09-07 11:29:35.000000000 +0200
++++ linux.trees.git.udpcast/usr/Makefile	2008-09-08 20:43:16.000000000 +0200
+@@ -12,7 +12,7 @@ obj-$(CONFIG_BLK_DEV_INITRD) := initramf
+ # initramfs_data.o contains the initramfs_data.cpio.gz image.
+ # The image is included using .incbin, a dependency which is not
+ # tracked automatically.
+-$(obj)/initramfs_data.o: $(obj)/initramfs_data.cpio.gz FORCE
++$(obj)/initramfs_data.o: $(obj)/initramfs_data.cpio FORCE
+ 
+ #####
+ # Generate the initramfs cpio archive
+@@ -29,24 +29,24 @@ ramfs-args  := \
+ # in initramfs and to detect if any files are added/removed.
+ # Removed files are identified by directory timestamp being updated
+ # The dependency list is generated by gen_initramfs.sh -l
+-ifneq ($(wildcard $(obj)/.initramfs_data.cpio.gz.d),)
+-	include $(obj)/.initramfs_data.cpio.gz.d
++ifneq ($(wildcard $(obj)/.initramfs_data.cpio.d),)
++	include $(obj)/.initramfs_data.cpio.d
+ endif
+ 
+ quiet_cmd_initfs = GEN     $@
+       cmd_initfs = $(initramfs) -o $@ $(ramfs-args) $(ramfs-input)
+ 
+-targets := initramfs_data.cpio.gz
++targets := initramfs_data.cpio
+ # do not try to update files included in initramfs
+ $(deps_initramfs): ;
+ 
+ $(deps_initramfs): klibcdirs
+-# We rebuild initramfs_data.cpio.gz if:
++# We rebuild initramfs_data.cpio if:
+ # 1) Any included file is newer then initramfs_data.cpio.gz
+ # 2) There are changes in which files are included (added or deleted)
+ # 3) If gen_init_cpio are newer than initramfs_data.cpio.gz
+ # 4) arguments to gen_initramfs.sh changes
+-$(obj)/initramfs_data.cpio.gz: $(obj)/gen_init_cpio $(deps_initramfs) klibcdirs
+-	$(Q)$(initramfs) -l $(ramfs-input) > $(obj)/.initramfs_data.cpio.gz.d
++$(obj)/initramfs_data.cpio: $(obj)/gen_init_cpio $(deps_initramfs) klibcdirs
++	$(Q)$(initramfs) -l $(ramfs-input) > $(obj)/.initramfs_data.cpio.d
+ 	$(call if_changed,initfs)
+ 
