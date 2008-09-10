@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYIJXxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbYIJX5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753373AbYIJXxy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYIJXxf
+	id S1754868AbYIJX5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYIJX5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:53:35 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9649 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754334AbYIJXxe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:53:34 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=lRJNs4ujgyhnXOhny+pYA4cxTH7Hvdm/rKHlmrzcWaJSZGSIRgbkExkkPqJYFPrZ7
-	JAruqj/bsGOwkKkocNH8g==
-Message-ID: <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
-Date: Wed, 10 Sep 2008 16:51:55 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Thomas Graf" <tgraf@suug.ch>
-Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
-Cc: "Ranjit Manomohan" <ranjitm@google.com>, davem@davemloft.net,
-       akpm@linux-foundation.org, kaber@trash.net, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20080910234523.GK20815@postel.suug.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
-	 <20080910220115.GH20815@postel.suug.ch>
-	 <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com>
-	 <6599ad830809101604o71b2fb82k2aca1eb0fd8ab6d8@mail.gmail.com>
-	 <20080910232413.GJ20815@postel.suug.ch>
-	 <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com>
-	 <20080910234523.GK20815@postel.suug.ch>
+	Wed, 10 Sep 2008 19:57:12 -0400
+Received: from mail.ocs.com.au ([202.134.241.204]:14361 "EHLO mail.ocs.com.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752219AbYIJX5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 19:57:12 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 (debian 1:2.7.2-12) with nmh-1.2
+From: Keith Owens <kaos@ocs.com.au>
+To: David Miller <davem@davemloft.net>
+cc: kaber@trash.net, linux-kernel@vger.kernel.org
+Subject: Re: Recent copy of libpcap from CVS 
+In-reply-to: Your message of "Wed, 10 Sep 2008 15:57:06 MST."
+             <20080910.155706.100960963.davem@davemloft.net> 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Thu, 11 Sep 2008 09:57:08 +1000
+Message-ID: <7381.1221091028@ocs10w>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 4:45 PM, Thomas Graf <tgraf@suug.ch> wrote:
+David Miller (on Wed, 10 Sep 2008 15:57:06 -0700 (PDT)) wrote:
+>From: Patrick McHardy <kaber@trash.net>
+>Date: Tue, 09 Sep 2008 05:11:59 +0200
 >
-> That's argueable I guess. Likely or not, it doesn't make sense to
-> add such restrictions if not required, especially not when it is
-> trivial to just look at the cgroup of the task directly.
+>> Thats odd, the version I had has USB support and that one also appears
+>> to be missing my VLAN patches that are in current CVS.
+>> 
+>> I'll try to figure out what went wrong and send you both a new tarball.
+>
+>I just rebuilt the libpcap repo from an updated tarball Patrick sent me.
+>Let me know if it's still screwed up :)
 
-Isn't a very large fraction of outgoing network traffic driven from
-net_tx_action(), which doesn't execute in the context of the sending
-process? Or am I missing something?
+Comparing git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
+against Patrick's tarball.  git is missing some mode and some rcsid
+lines like this example below, I assume that the removal of these lines
+in git was deliberate.
 
-You claimed "In the most common case, the packet is not queued before
-it hits the qdisc so this takes away a lot of complexity and is very
-fast but should still be sufficient.". But is that really true on a
-system where the network is busy? (Which is after all exactly the case
-where you care about accurate traffic accounting/policing)
+diff -urp libpcap-0.9-PRE-CVS/fad-getad.c libpcap/fad-getad.c
+--- libpcap-0.9-PRE-CVS/fad-getad.c	2007-10-18 04:11:49.000000000 +1000
++++ libpcap/fad-getad.c	2008-09-11 09:45:20.144341324 +1000
+@@ -1,4 +1,3 @@
+-/* -*- Mode: c; tab-width: 8; indent-tabs-mode: 1; c-basic-offset: 8; -*- */
+ /*
+  * Copyright (c) 1994, 1995, 1996, 1997, 1998
+  *	The Regents of the University of California.  All rights reserved.
+@@ -32,11 +31,6 @@
+  * SUCH DAMAGE.
+  */
+ 
+-#ifndef lint
+-static const char rcsid[] _U_ =
+-    "@(#) $Header: /tcpdump/master/libpcap/fad-getad.c,v 1.12 2007/09/14 00:44:55 guy Exp $ (LBL)";
+-#endif
+-
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #endif
 
-Paul
+However the removal of the #ifndef lint lines also removed a copyright
+notice from the object.  The copyright line should be reinstated.
+
+diff -urp libpcap-0.9-PRE-CVS/filtertest.c libpcap/filtertest.c
+--- libpcap-0.9-PRE-CVS/filtertest.c	2007-10-11 16:56:22.000000000 +1000
++++ libpcap/filtertest.c	2008-09-11 09:45:20.148341971 +1000
+@@ -19,14 +19,6 @@
+  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  */
+ 
+-#ifndef lint
+-static const char copyright[] _U_ =
+-    "@(#) Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 2000\n\
+-The Regents of the University of California.  All rights reserved.\n";
+-static const char rcsid[] _U_ =
+-    "@(#) $Header: /tcpdump/master/libpcap/filtertest.c,v 1.2 2005/08/08 17:50:13 guy Exp $ (LBL)";
+-#endif
+-
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #endif
+
