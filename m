@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbYIJRFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753568AbYIJRIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbYIJRFi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYIJRFa
+	id S1753568AbYIJRIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYIJRIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:05:30 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:24580 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbYIJRF3 (ORCPT
+	Wed, 10 Sep 2008 13:08:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:33990 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbYIJRII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:05:29 -0400
-X-BigFish: VPS-24(zz1432R98dR1805M936fQ873fnzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K6ZOSC-04-MLX-01
-Date: Wed, 10 Sep 2008 19:05:04 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
-Message-ID: <20080910170504.GA32286@amd.com>
-References: <20080910145249.GB24392@amd.com> <20080911000936R.fujita.tomonori@lab.ntt.co.jp> <20080910152918.GD24392@amd.com> <20080911012932D.fujita.tomonori@lab.ntt.co.jp>
+	Wed, 10 Sep 2008 13:08:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=gL48LRAqW/5mZGtEOTqPWCeY94w47xQF5QV+UJidm9DZIfJIoUmD4WPC6m5Msnr23n
+         qtzlZH5ZeZ6nByUMtnd7RaRpykTPHBZts91DsceMeTNDNVbRIQWxT0L0sPbQYrYbfkOP
+         DeY1AZmQ+XJv8U++GVcC/oriYOFl9G6TOJYhY=
+Message-ID: <2c0942db0809101008j55ea39dfx8dbf6284d4de749@mail.gmail.com>
+Date: Wed, 10 Sep 2008 10:08:07 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: hamid.jahanjou@gmail.com
+Subject: Re: [PATCH] VM: Implements the swap-out page-clustering technique
+Cc: "Rik van Riel" <riel@redhat.com>, "Zan Lynx" <zlynx@acm.org>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <48C78246.7050507@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080911012932D.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 10 Sep 2008 17:05:04.0511 (UTC) FILETIME=[5E8518F0:01C91367]
+References: <48BFCECE.90103@gmail.com> <87iqtbuez9.fsf@basil.nowhere.org>
+	 <48C19648.8030002@gmail.com>
+	 <20080905194501.GZ18288@one.firstfloor.org>
+	 <20080906014214.22f28548@riellaptop.surriel.com>
+	 <48C471AE.8060809@acm.org>
+	 <20080907205536.0d1937ff@riellaptop.surriel.com>
+	 <48C78246.7050507@gmail.com>
+X-Google-Sender-Auth: 272ea9160ea37888
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 01:29:54AM +0900, FUJITA Tomonori wrote:
-> On Wed, 10 Sep 2008 17:29:18 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > On Thu, Sep 11, 2008 at 12:09:43AM +0900, FUJITA Tomonori wrote:
-> > > On Wed, 10 Sep 2008 16:52:49 +0200
-> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > 
-> > > > On Wed, Sep 10, 2008 at 11:39:00PM +0900, FUJITA Tomonori wrote:
-> > > >  
-> > > > > btw, in tip/x86/iommu, GART's alloc_coherent always does virtual
-> > > > > mappings to allocate a size-aligned memory (as DMA-mapping.txt
-> > > > > defines).
-> > > > > 
-> > > > > Because someone strongly insisted, I modified GART's alloc_coherent to
-> > > > > do so but as I said again and again, it's completely meaningless (only
-> > > > > POWER IOMMU does it and drivers don't depend on such requirement).
-> > > > > 
-> > > > > I guess that it would be better to do virtual mappings only when
-> > > > > necessary as the current mainline does since GART I/O space is
-> > > > > precious in some systems. But I don't care much. What's your opinion
-> > > > > (as a AMD developer)?
-> > > > 
-> > > > Very true. My original rewrite did the mapping only when necessary too.
-> > > > What were the reasons to do the mapping always?
-> > > 
-> > > As I said above, it's for allocating a size-aligned memory. Look at
-> > > the description of pci_alloc_consistent in DMA-mapping.txt:
-> > > 
-> > > The cpu return address and the DMA bus master address are both
-> > > guaranteed to be aligned to the smallest PAGE_SIZE order which
-> > > is greater than or equal to the requested size.  This invariant
-> > > exists (for example) to guarantee that if you allocate a chunk
-> > > which is smaller than or equal to 64 kilobytes, the extent of the
-> > > buffer you receive will not cross a 64K boundary.
-> > > 
-> > > You can't do this with __get_free_pages easily (you need some hacks to
-> > > do this). You can do this via iommu_area_alloc() for free.
-> > 
-> > What hacks do you need with __get_free_pages? The memory it returns is
-> > _always_ aligned at its size.
-> 
-> Is it guaranteed (documented somewhere) ?
+On Wed, Sep 10, 2008 at 1:16 AM, Hamid R. Jahanjou
+<hamid.jahanjou@gmail.com> wrote:
+> I agree. As you said, we have two conflicting requirements here: on the
+> one hand one likes to swap as many pages as to satisfy the backing
+> storage "proper block IO size," on the other hand, one should not make a
+> process lose too many pages.
 
-I don't know if there is a formal definition for it. It is documented in
-some books about the Linux kernel (I read this in some book the first
-time). This alignment results from the buddy algorithm the page alloctor
-uses. You can definitly rely on that.
-
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+I'd much rather that one process lose a lot of pages than many
+processes lose a few. When a system is swap thrashing, each process
+has some of its active working set tossed to swap, which means *any*
+application you try to switch to is then sluggish. If it were only one
+application, then only that one takes the penalty hit when the user
+switches focus and context.
