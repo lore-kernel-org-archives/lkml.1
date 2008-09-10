@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYIJFWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYIJFbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbYIJFWe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 01:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYIJFWM
+	id S1753369AbYIJFbo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 01:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYIJFbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 01:22:12 -0400
-Received: from m-relay2.rz.uni-saarland.de ([134.96.7.8]:11687 "EHLO
-	eris.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751464AbYIJFWL (ORCPT
+	Wed, 10 Sep 2008 01:31:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:46377 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbYIJFbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 01:22:11 -0400
-From: heukelum@fastmail.fm
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: [PATCH 20/24] i386: add TRACE_IRQS_OFF to entry_32.S in 'error_code'
-Date: Tue,  9 Sep 2008 21:56:14 +0200
-Message-Id: <1220990178-29773-21-git-send-email-heukelum@fastmail.fm>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1220990178-29773-20-git-send-email-heukelum@fastmail.fm>
-References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-2-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-3-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-4-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-5-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-6-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-7-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-8-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-9-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-10-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-11-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-12-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-13-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-14-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-15-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-16-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-17-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-18-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-19-git-send-email-heukelum@fastmail.fm>
- <1220990178-29773-20-git-send-email-heukelum@fastmail.fm>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (eris.rz.uni-saarland.de [134.96.7.8]); Wed, 10 Sep 2008 07:21:58 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.1.28; VDF: 7.0.6.136; host: AntiVir2)
+	Wed, 10 Sep 2008 01:31:36 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Lf/hUU2kIc1F9ZVcNQ2kwatI8V76tzksucqYTZJ51jrmG2N1q6JbfhtQBxqw4Yx7w
+	QJ/yFp0k1ygIy//cFSb7g==
+Message-ID: <6599ad830809092231h90712a6mc95b81229d64d6bc@mail.gmail.com>
+Date: Tue, 9 Sep 2008 22:31:24 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] cgroups: fix probable race with put_css_set[_taskexit] and find_css_set
+Cc: "Lai Jiangshan" <laijs@cn.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080910050112.GA2897@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AA684B.7000704@cn.fujitsu.com>
+	 <6599ad830809091728m426a7219h1977001f86cb5f31@mail.gmail.com>
+	 <48C72E7C.8080302@cn.fujitsu.com> <20080910050112.GA2897@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander van Heukelum <heukelum@fastmail.fm>
+On Tue, Sep 9, 2008 at 10:01 PM, Greg KH <greg@kroah.com> wrote:
+>
+> What are you trying to solve here with this change?  I agree, it does
+> seem a bit "chaotic" :)
 
-Many exceptions use the same code path via the label 'error_code'
-in entry_32.S. At this point interrupts are off, so let's inform
-the tracing code of that fact before calling into C.
+There's a place in cgroups that uses kref_put() to release an object;
+the release function *then* takes a write-lock and removes the object
+from a lookup table; it could race with another thread that searches
+the lookup table (while holding a read-lock) and does kref_get() on
+the same object.
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
----
- arch/x86/kernel/entry_32.S |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+The current fix is for the release function to recheck inside the lock
+that the object's refcount is still zero, and only actually
+unlink/free it if so. And actually I've just realised that this isn't
+actually even safe, since the thread that just acquired the object
+could kref_put() it almost immediately, which would leave two threads
+both trying to unlink/free the object.
 
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index c5fe01b..49438e5 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -730,6 +730,7 @@ error_code:
- 	movl $(__USER_DS), %ecx
- 	movl %ecx, %ds
- 	movl %ecx, %es
-+	TRACE_IRQS_OFF
- 	movl %esp,%eax			# pt_regs pointer
- 	call *%edi
- 	jmp ret_from_exception
--- 
-1.5.4.3
+The two solutions being considered are:
 
+- add a kref_put_and_write_lock(), similar to atomic_dec_and_lock(),
+which would ensure that the final refcount on the object was only
+released inside the lock
+
+- add a kref_get_if_not_zero(), which would prevent a lookup from
+succeeding if another thread had just dropped the last reference on
+the object.
+
+Paul
