@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYIJJYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907AbYIJJYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059AbYIJJYY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 05:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYIJJYP
+	id S1751907AbYIJJYj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 05:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYIJJYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 05:24:15 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:60525 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbYIJJYN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 05:24:13 -0400
-Message-ID: <48C791F9.8090606@fr.ibm.com>
-Date: Wed, 10 Sep 2008 11:23:05 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 10 Sep 2008 05:24:18 -0400
+Received: from ns.suse.de ([195.135.220.2]:43767 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751956AbYIJJYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 05:24:16 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: John Wenker <jjw@pt.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: fstat(2) returns st_size==0 for non-empty FIFO.
+References: <OFA045C5CB.E26ECC40-ON882574BF.007A7015-882574BF.007ED085@pt.com>
+X-Yow: Darling, my ELBOW is FLYING over FRANKFURT, Germany..
+Date: Wed, 10 Sep 2008 11:24:15 +0200
+In-Reply-To: <OFA045C5CB.E26ECC40-ON882574BF.007A7015-882574BF.007ED085@pt.com>
+	(John Wenker's message of "Tue, 9 Sep 2008 16:05:06 -0700")
+Message-ID: <jehc8o9ww0.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Chuck Lever <chuck.lever@oracle.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount
- namespace is unshared
-References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com> <m18wu1nyon.fsf@frodo.ebiederm.org> <20080909152952.GA21207@us.ibm.com> <DE845309-1684-472A-8269-78AB3A2823A9@oracle.com> <m1fxo9mba5.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1fxo9mba5.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Chuck Lever <chuck.lever@oracle.com> writes:
-> 
->> If the upper layers are responsible for providing the utsname, you will need to
->> fix up lockd and the NFS server's callback client too, at  least.
-> 
-> Actually looking at the code.  It looks like a proper fix may be  even simpler.
-> Why do we have both clnt->cl_server and clnt->cl_nodename?    Or is cl_server
-> the other side of the connection?
-> 
->>>> What are we trying to achieve by reading utsname?
->>> It looks like it gets copied into the sunrpc messages so I assume it is
->>> a part of the sunrpc spec?
->> It appears to be used only for RPC's AUTH_SYS credentials.  The nodename is used
->> to identify the caller's host.  See RFC 1831,  Appendix A:
->>
->>   http://rfclibrary.hosting.com/rfc/rfc1831/rfc1831-16.asp
-> 
-> Thanks that helps a lot.
-> 
->> I'm not terribly familiar with uts namespaces, though.  Can someone explain why
->> we need to distinguish between these for AUTH_SYS if the  caller is on a remote
->> system?
-> 
-> Semantically processes in different uts namespaces are on different machines.
-> 
->> I don't like the idea of an oops in here.  Instead, (for now) it should warn and
->> fail to create the client, IMO.
-> 
-> Which is interesting when the problem happens during NFS unmount.  Although
-> frankly it could fail anyway.
-> 
-> It seems strange that we are creating a client during unmount anyway.
+John Wenker <jjw@pt.com> writes:
 
-the task exiting brings down the lockd thread and unregisters the lockd service 
-with the portmapper. This is done with a rpc call which creates a client and a
-request.
+> [1.] One line summary of the problem:
+> fstat(2) returns st_size == 0 for a FIFO that is known to have data in it.
 
-that's how I understand the code and the oops.
+st_size has no meaning except for regular files and symlinks.
 
+Andreas.
 
-C.
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
