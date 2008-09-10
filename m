@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYIJRfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYIJRkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYIJRfQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:35:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbYIJRfE
+	id S1753438AbYIJRkZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYIJRkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:35:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43249 "EHLO mx3.mail.elte.hu"
+	Wed, 10 Sep 2008 13:40:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41107 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbYIJRfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:35:03 -0400
-Date: Wed, 10 Sep 2008 19:34:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Ma, Chinang" <chinang.ma@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27-rc5 OLTP performance regression
-Message-ID: <20080910173442.GB31942@elte.hu>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com> <1220896833.18239.141.camel@twins.programming.kicks-ass.net> <1220897052.18239.147.camel@twins.programming.kicks-ass.net> <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E71C7@azsmsx501.amr.corp.intel.com> <20080910122622.GG14757@elte.hu> <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751208AbYIJRkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 13:40:11 -0400
+Date: Wed, 10 Sep 2008 13:39:41 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Cc: hamid.jahanjou@gmail.com, "Zan Lynx" <zlynx@acm.org>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VM: Implements the swap-out page-clustering technique
+Message-ID: <20080910133941.61ceb087@bree.surriel.com>
+In-Reply-To: <2c0942db0809101008j55ea39dfx8dbf6284d4de749@mail.gmail.com>
+References: <48BFCECE.90103@gmail.com>
+	<87iqtbuez9.fsf@basil.nowhere.org>
+	<48C19648.8030002@gmail.com>
+	<20080905194501.GZ18288@one.firstfloor.org>
+	<20080906014214.22f28548@riellaptop.surriel.com>
+	<48C471AE.8060809@acm.org>
+	<20080907205536.0d1937ff@riellaptop.surriel.com>
+	<48C78246.7050507@gmail.com>
+	<2c0942db0809101008j55ea39dfx8dbf6284d4de749@mail.gmail.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Sep 2008 10:08:07 -0700
+"Ray Lee" <ray-lk@madrabbit.org> wrote:
+> On Wed, Sep 10, 2008 at 1:16 AM, Hamid R. Jahanjou
+> <hamid.jahanjou@gmail.com> wrote:
+> > I agree. As you said, we have two conflicting requirements here: on the
+> > one hand one likes to swap as many pages as to satisfy the backing
+> > storage "proper block IO size," on the other hand, one should not make a
+> > process lose too many pages.
+> 
+> I'd much rather that one process lose a lot of pages than many
+> processes lose a few. When a system is swap thrashing, each process
+> has some of its active working set tossed to swap, which means *any*
+> application you try to switch to is then sluggish. If it were only one
+> application, then only that one takes the penalty hit when the user
+> switches focus and context.
 
-* Ma, Chinang <chinang.ma@intel.com> wrote:
+Better still, with proper IO clustering that one process can get
+its pages back into memory quite quickly.
 
-> I increased the /proc/sys/kernel/sched_shares_ratelimit from 1 
-> millisecond to one second to reduce the frequency of shares update. 
-> That was okay for OLTP workload. As Peter mentioned, a larger value 
-> will reduce the accuracy of SMP fairness for group scheduler and the 
-> ratelimit and using a larger default value may not be good for general 
-> case.
+Paging of anonymous pages is limited by disk seeks, so minimizing
+those is a top goal.
 
-does 10 msecs already get you most of the 2%? 1000 millisecond sounds 
-very (and probably unacceptable) coarse.
-
-	Ingo
+-- 
+All rights reversed.
