@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYIJXmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYIJXpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbYIJXmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYIJXm1
+	id S1755236AbYIJXpT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYIJXpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:42:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39247
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752038AbYIJXm1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:42:27 -0400
-Date: Wed, 10 Sep 2008 16:42:20 -0700 (PDT)
-Message-Id: <20080910.164220.56492718.davem@davemloft.net>
-To: dwmw2@infradead.org
-Cc: jeffm@suse.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, herbert@gondor.apana.org.au
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1221089816.13621.61.camel@macbook.infradead.org>
-References: <1221088512.13621.58.camel@macbook.infradead.org>
-	<20080910.162423.40167601.davem@davemloft.net>
-	<1221089816.13621.61.camel@macbook.infradead.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 10 Sep 2008 19:45:04 -0400
+Received: from postel.suug.ch ([194.88.212.233]:45399 "EHLO postel.suug.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752150AbYIJXpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 19:45:03 -0400
+Date: Thu, 11 Sep 2008 01:45:23 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: Paul Menage <menage@google.com>
+Cc: Ranjit Manomohan <ranjitm@google.com>, davem@davemloft.net,
+       akpm@linux-foundation.org, kaber@trash.net, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
+Message-ID: <20080910234523.GK20815@postel.suug.ch>
+References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com> <20080910220115.GH20815@postel.suug.ch> <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com> <6599ad830809101604o71b2fb82k2aca1eb0fd8ab6d8@mail.gmail.com> <20080910232413.GJ20815@postel.suug.ch> <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 10 Sep 2008 16:36:56 -0700
+* Paul Menage <menage@google.com> 2008-09-10 16:31
+> Yes, for this particular case it doesn't work. But isn't it much more
+> likely that the admin/user will know that web-browsers tend to trigger
+> bulk data transfers and configure the system so that the web browser
+> always starts in its own cgroup, rather than trying to jump on it
+> after the fact?
 
-> On Wed, 2008-09-10 at 16:24 -0700, David Miller wrote:
-> > From: David Woodhouse <dwmw2@infradead.org>
-> > Date: Wed, 10 Sep 2008 16:15:11 -0700
-> > 
-> > > It's definitely not something we should be doing upstream though.
-> > 
-> > So you think it's ok that every Debian user has to learn this
-> > magic incantation just to use current kernels?
-> 
-> They don't. Debian uses firmware from /lib/firmware if it doesn't exist
-> in /lib/firmware/$(version) -- so they can install to the normal
-> location quite happily, and it should work just fine.
+That's argueable I guess. Likely or not, it doesn't make sense to
+add such restrictions if not required, especially not when it is
+trivial to just look at the cgroup of the task directly.
 
-That's not what I've heard from people more clueful from me.
+If the ingress case is of such importance, I'd propose to lookup
+the classid via skb -> socket -> task -> classid.
 
-For example, Herbert Xu (CC:'d) told me that because of this directory
-usage, his wireless card couldn't find it's firmware with current
-kernels.
+Anyways, I think we've listed all the pros and cons of either approach.
