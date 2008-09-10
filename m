@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbYIJXiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYIJXjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbYIJXiV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 19:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYIJXiI
+	id S1755386AbYIJXjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 19:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbYIJXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 19:38:08 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:7420 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbYIJXiH (ORCPT
+	Wed, 10 Sep 2008 19:39:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52845 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752150AbYIJXjH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 19:38:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=vZCn84bJzo2vu9X9Y6HSbc84kHU16FKVdC/5FLMeB+pQ0UkogYz5tCOGo4tpnmPOz
-	Zf0RX2DbsmjoDagoEsQAg==
-Message-ID: <166fe7950809101637o1bf22869g4939707a35a3c93b@mail.gmail.com>
-Date: Wed, 10 Sep 2008 16:37:57 -0700
-From: "Ranjit Manomohan" <ranjitm@google.com>
-To: "Thomas Graf" <tgraf@suug.ch>
-Subject: Re: [PATCH 0/2] Traffic control cgroups subsystem
-Cc: "David Miller" <davem@davemloft.net>, kaber@trash.net,
-       akpm@linux-foundation.org, lizf@cn.fujitsu.com, menage@google.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20080910221206.GI20815@postel.suug.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 19:39:07 -0400
+Date: Wed, 10 Sep 2008 16:39:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Peterson <joe@skyrush.com>
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TTY: Fix loss of echoed characters (2nd follow-on PATCH
+ attached)
+Message-Id: <20080910163902.2b7ac22b.akpm@linux-foundation.org>
+In-Reply-To: <48C6DFA4.5040406@skyrush.com>
+References: <200807252257.m6PMvieO003213@imap1.linux-foundation.org>
+	<48AC3A16.4080209@skyrush.com>
+	<48B3F9F7.2050503@skyrush.com>
+	<48C54EC2.4060901@skyrush.com>
+	<20080908173250.2452c5b8.akpm@linux-foundation.org>
+	<20080909115536.1664d57a@lxorguk.ukuu.org.uk>
+	<20080909104325.4653190b.akpm@linux-foundation.org>
+	<48C6DFA4.5040406@skyrush.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0809101026190.7050@ranjit.corp.google.com>
-	 <20080910.132251.73509521.davem@davemloft.net>
-	 <166fe7950809101344l7a5e2b7pfba8b2a7c03814a1@mail.gmail.com>
-	 <20080910221206.GI20815@postel.suug.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 3:12 PM, Thomas Graf <tgraf@suug.ch> wrote:
-> * Ranjit Manomohan <ranjitm@google.com> 2008-09-10 13:44
->> On Wed, Sep 10, 2008 at 1:22 PM, David Miller <davem@davemloft.net> wrote:
->> >
->> > I definitely prefer Thomas Graf's work, this stuff is very ugly
->> > and way overengineered.
->> >
->>
->> Could you be more specific? Thomas' work is almost identical to this
->> (except that he does not store the cgroup id into the socket which is
->> a trivial change which has downsides which I have pointed out).
->>
->> Additionally this approach has only minor modifications to the core
->> networking stack. What portions do you consider ugly and over
->> engineered and what alternative implementations would you prefer?
->> Please see the follow up I have sent to Thomas' proposal about why we
->> need this design approach to handle the inbound case.
->
-> WRT the inbound case, after some experiments I decided to dismiss the
-> ingress case at all and stick to something as simple as possible for
-> egress. The reason for this is that it is a very expensive operation
-> to associate a packet with a task on classifier level. Taking this
-> cost, it does not add up with the very limited capabilities of ingress
-> shaping. Ingress shaping is best effort at best. It works fairly well
-> with a very limited number of bulk data streams but usualy fails
-> miserably in common congestion situations where a cgroup classifier
-> would be useful.
+On Tue, 09 Sep 2008 14:42:12 -0600
+Joe Peterson <joe@skyrush.com> wrote:
 
-Could you elaborate on the failure cases? We have found this to be
-useful in practice to prevent applications from reading large amounts
-of data off the network so it would be nice if it were supported.
+> 1) Fix tab erasure handling
+> 2) Improve locking when working with the echo buffer
+> 3) Remove the big kernel lock (BKL) from n_tty
+> 
+> Tab erasure handling is now more robust and able to handle non-zero
+> canon column cases more correctly.  This is done by making correct use
+> of what is known in the eraser function (read buffer contents) and what
+> is known at the time of processing the tab erasure (column state).
+> 
+> Also, better locking of the echo buffer will now prevent any attempts to
+> process partial multi-byte echo operations.  And since the echo buffer
+> code now isolates the tty column state code to the process_out* and
+> process_echoes functions, we can remove the big kernel lock (BKL)
+> and replace it with more modern mutex locks.
 
--Thanks,
-Ranjit
->
->> I'd be ok if you accepted either change since  we just want a standard
->> kernel mechanism to do this.
->
-> Agreed. I think your approach is very reasonable but considering the
-> reasons I've given above and in the other thread I found it could be done
-> in a more simple and direct way.
->
+Boy.  Has this been carefully tested with lockdep enabled?
