@@ -1,92 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbYIJQWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYIJQXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbYIJQWq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYIJQWh
+	id S1753511AbYIJQXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 12:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbYIJQXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:22:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:49254 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752416AbYIJQWg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:22:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=KhoMnkh13a36x4GJbhJVbMZOaHoByG5R9e4H0QVjMeUxbj9PxUsEBEYtFnwch63Mlq
-         1NNcbkwCZTx79lcyd82tLkuKjSEiDVKAGAM3ReYKgADDQGzg23P+xoGB256kNxn+jHx6
-         cUXCU09vSZcgY8tGcVKt6v/dwmvlrGQrkxTow=
-Message-ID: <48C7F1EA.6070008@gmail.com>
-Date: Wed, 10 Sep 2008 18:12:26 +0200
-From: roel kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: mchehab@infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] V4L/DVB: pxa-camera: Unsigned dma_chans[] cannot be negative
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 12:23:31 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33379 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752173AbYIJQXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 12:23:30 -0400
+Subject: Re: [PATCH 1/1] system call notification with self_ptrace
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Pierre Morel <pmorel@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Cedric Le Goater <clg@fr.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>
+In-Reply-To: <20080910162008.GA401@tv-sign.ru>
+References: <48C51439.7000706@linux.vnet.ibm.com>
+	 <20080909124302.GA139@tv-sign.ru> <48C7E3A9.3060602@linux.vnet.ibm.com>
+	 <20080910162008.GA401@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 10 Sep 2008 09:23:25 -0700
+Message-Id: <1221063805.6781.11.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unsigned dma_chans[] cannot be negative
+On Wed, 2008-09-10 at 20:20 +0400, Oleg Nesterov wrote:
+> But... well, I think we need Roland's opinion. I must admit, I am a bit
+> sceptical about this patch ;) I mean, I don't really understand why it
+> is useful
 
-Note that also the third time dma_chans[0] < 0 was tested instead of dma_chans[2]
+Yeah, I don't think they're completely coming clean on it, yet.  
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/media/video/pxa_camera.c b/drivers/media/video/pxa_camera.c
-index ead87dd..950a2d4 100644
---- a/drivers/media/video/pxa_camera.c
-+++ b/drivers/media/video/pxa_camera.c
-@@ -1078,7 +1078,7 @@ static int pxa_camera_probe(struct platform_device *pdev)
- 	struct pxa_camera_dev *pcdev;
- 	struct resource *res;
- 	void __iomem *base;
--	int irq;
-+	int irq, retval;
- 	int err = 0;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-@@ -1144,31 +1144,34 @@ static int pxa_camera_probe(struct platform_device *pdev)
- 	pcdev->dev = &pdev->dev;
- 
- 	/* request dma */
--	pcdev->dma_chans[0] = pxa_request_dma("CI_Y", DMA_PRIO_HIGH,
-+	retval = pxa_request_dma("CI_Y", DMA_PRIO_HIGH,
- 					      pxa_camera_dma_irq_y, pcdev);
--	if (pcdev->dma_chans[0] < 0) {
-+	if (retval < 0) {
- 		dev_err(pcdev->dev, "Can't request DMA for Y\n");
- 		err = -ENOMEM;
- 		goto exit_iounmap;
- 	}
-+	pcdev->dma_chans[0] = retval;
- 	dev_dbg(pcdev->dev, "got DMA channel %d\n", pcdev->dma_chans[0]);
- 
--	pcdev->dma_chans[1] = pxa_request_dma("CI_U", DMA_PRIO_HIGH,
-+	retval = pxa_request_dma("CI_U", DMA_PRIO_HIGH,
- 					      pxa_camera_dma_irq_u, pcdev);
--	if (pcdev->dma_chans[1] < 0) {
-+	if (retval < 0) {
- 		dev_err(pcdev->dev, "Can't request DMA for U\n");
- 		err = -ENOMEM;
- 		goto exit_free_dma_y;
- 	}
-+	pcdev->dma_chans[1] = retval;
- 	dev_dbg(pcdev->dev, "got DMA channel (U) %d\n", pcdev->dma_chans[1]);
- 
--	pcdev->dma_chans[2] = pxa_request_dma("CI_V", DMA_PRIO_HIGH,
-+	retval = pxa_request_dma("CI_V", DMA_PRIO_HIGH,
- 					      pxa_camera_dma_irq_v, pcdev);
--	if (pcdev->dma_chans[0] < 0) {
-+	if (retval < 0) {
- 		dev_err(pcdev->dev, "Can't request DMA for V\n");
- 		err = -ENOMEM;
- 		goto exit_free_dma_u;
- 	}
-+	pcdev->dma_chans[2] = retval;
- 	dev_dbg(pcdev->dev, "got DMA channel (V) %d\n", pcdev->dma_chans[2]);
- 
- 	DRCMR68 = pcdev->dma_chans[0] | DRCMR_MAPVLD;
+-- Dave
+
