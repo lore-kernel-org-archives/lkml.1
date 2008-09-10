@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbYIJHj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbYIJHpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbYIJHj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 03:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYIJHjW
+	id S1752651AbYIJHpf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 03:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbYIJHpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 03:39:22 -0400
-Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:56058 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751179AbYIJHjV (ORCPT
+	Wed, 10 Sep 2008 03:45:25 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:48217 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbYIJHpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 03:39:21 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
-Date: Wed, 10 Sep 2008 09:39:15 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Rene Herman <rene.herman@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <200809091250.08620.elendil@planet.nl> <200809091826.18876.elendil@planet.nl> <200809091140.25597.bjorn.helgaas@hp.com>
-In-Reply-To: <200809091140.25597.bjorn.helgaas@hp.com>
+	Wed, 10 Sep 2008 03:45:24 -0400
+X-RZG-CLASS-ID: mo00
+X-RZG-AUTH: :KUEFfEyIfvurJj9T/C45bJjugCcRcpKspBzHGHUPkpqEWZN2yWOZpp3GaYwY8+WWOHoNjD4=
+Message-ID: <48C77AA6.7050702@edgar-kalkowski.de>
+Date: Wed, 10 Sep 2008 09:43:34 +0200
+From: Edgar Kalkowski <eMail@edgar-kalkowski.de>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080726)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Takashi Iwai <tiwai@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: PROBLEM: Kernel 2.6.26 oops if I unplug my Logitech USB 1.1 headset
+References: <48C069B1.3000201@edgar-kalkowski.de>	<20080904172822.e5390a59.akpm@linux-foundation.org> <s5hod33t6f9.wl%tiwai@suse.de>
+In-Reply-To: <s5hod33t6f9.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.7
+OpenPGP: url=http://www.edgar-kalkowski.de/gpg.asc
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809100939.17045.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Sep 2008 07:39:19.0529 (UTC) FILETIME=[55BBE590:01C91318]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008, Bjorn Helgaas wrote:
-> If the PCI device isn't fully initialized, it doesn't seem right to
-> check it for resource conflicts.  But I don't know how to tell that.
->
-> Can you figure out where the 1f.5 and 1f.6 resources get assigned?
+Sorry that it lasted a while, I had to compile a 2.6.25 kernel. But the error is
+just the same with it. The funny thing is that it does not happen always but
+only sometimes (I have to unplug and replug about 5 times until the error
+occurrs). Looks to me like a threading issue if I may dare to guess. ;)
 
-If the approach suggested by Rene feasible or would you still like me to 
-get this info? In the last case I'll need some pointers where exactly to 
-look.
+Regards!
 
-Cheers,
-FJP
+Edgar
+
+
+Takashi Iwai wrote:
+> At Thu, 4 Sep 2008 17:28:22 -0700,
+> Andrew Morton wrote:
+>> On Fri, 05 Sep 2008 01:05:21 +0200
+>> Edgar Kalkowski <eMail@edgar-kalkowski.de> wrote:
+>>
+>>> Dear kernel hackers. ;)
+>>>
+>>> [1.] One line summary of the problem: If I unplug my USB-Headset the kernel oopses.
+>> cc's added.
+>>
+>> Might be USB, might be ALSA.
+> 
+> Hm, it's hard to guess...
+> Edgar, could you check whether it happens with 2.6.25?
+> 
+> 
+> thanks,
+> 
+> Takashi
+> 
