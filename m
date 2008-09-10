@@ -1,230 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbYIJLh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYIJLi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbYIJLh2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 07:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYIJLhU
+	id S1754098AbYIJLi7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 07:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYIJLiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 07:37:20 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46980 "EHLO mx2.suse.de"
+	Wed, 10 Sep 2008 07:38:51 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:48715 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752128AbYIJLhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 07:37:20 -0400
-Date: Wed, 10 Sep 2008 13:37:17 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] x86: some lock annotations for user copy paths
-Message-ID: <20080910113717.GB16811@wotan.suse.de>
+	id S1751453AbYIJLiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 07:38:51 -0400
+Date: Wed, 10 Sep 2008 15:44:01 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frank Mayhar <fmayhar@google.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.27-rc5] Fix itimer/many thread hang.
+Message-ID: <20080910114401.GA220@tv-sign.ru>
+References: <1220906643.31846.21.camel@bobble.smo.corp.google.com> <20080909070329.GD2086@elte.hu> <20080909160152.GA714@tv-sign.ru> <20080910040404.245301541FE@magilla.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080910040404.245301541FE@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/09, Roland McGrath wrote:
+>
+> > As for this particular function, it seems to me that ->signal == NULL
+> > is not possible, no?
+> 
+> The concern is to make sure that the timer tick path is always safe for a
+> tick that hits during release_task(current) in exit_notify().  A timer tick
+> there can come with current->signal == NULL.  We just need to make sure one
+> way or another that this is safe.
 
-copy_to/from_user and all its variants (except the atomic ones) can take a
-page fault and perform non-trivial work like taking mmap_sem and entering
-the filesyste/pagecache.
+run_posix_cpu_timers() must check ->signal != NULL anyway. (The same for
+other functions like account_group_user_time() which are called by the
+timer tick).
 
-Unfortunately, this often escapes lockdep because a common pattern is to
-use it to read in some arguments just set up from userspace, or write data
-back to a hot buffer. In those cases, it will be unlikely for page reclaim
-to get a window in to cause copy_*_user to fault.
+Apart from the timer tick, "current" should not use this function after
+exit_notify().
 
-With the new might_lock primitives, add some annotations to x86. I don't
-know if I caught all possible faulting points (it's a bit of a maze, and I
-didn't really look at 32-bit). But this is a starting point.
+And, if tsk != current, ->signal must be pinned, this means it can't be NULL.
 
-Boots and runs OK so far.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
+Perhaps I missed something, but imho this check is confusing and misleading.
+However, this is just a minor detail even if I am right.
 
-Index: linux-2.6/include/asm-x86/uaccess_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/uaccess_64.h
-+++ linux-2.6/include/asm-x86/uaccess_64.h
-@@ -28,6 +28,10 @@ static __always_inline __must_check
- int __copy_from_user(void *dst, const void __user *src, unsigned size)
- {
- 	int ret = 0;
-+
-+	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 	if (!__builtin_constant_p(size))
- 		return copy_user_generic(dst, (__force void *)src, size);
- 	switch (size) {
-@@ -70,6 +74,10 @@ static __always_inline __must_check
- int __copy_to_user(void __user *dst, const void *src, unsigned size)
- {
- 	int ret = 0;
-+
-+	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 	if (!__builtin_constant_p(size))
- 		return copy_user_generic((__force void *)dst, src, size);
- 	switch (size) {
-@@ -112,6 +120,10 @@ static __always_inline __must_check
- int __copy_in_user(void __user *dst, const void __user *src, unsigned size)
- {
- 	int ret = 0;
-+
-+	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 	if (!__builtin_constant_p(size))
- 		return copy_user_generic((__force void *)dst,
- 					 (__force void *)src, size);
-Index: linux-2.6/include/asm-x86/uaccess.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/uaccess.h
-+++ linux-2.6/include/asm-x86/uaccess.h
-@@ -8,6 +8,8 @@
- #include <linux/thread_info.h>
- #include <linux/prefetch.h>
- #include <linux/string.h>
-+#include <linux/lockdep.h>
-+#include <linux/sched.h>
- #include <asm/asm.h>
- #include <asm/page.h>
- 
-@@ -157,6 +159,9 @@ extern int __get_user_bad(void);
- 	int __ret_gu;							\
- 	unsigned long __val_gu;						\
- 	__chk_user_ptr(ptr);						\
-+	might_sleep();							\
-+	if (current->mm)						\
-+		might_lock_read(&current->mm->mmap_sem);		\
- 	switch (sizeof(*(ptr))) {					\
- 	case 1:								\
- 		__get_user_x(1, __ret_gu, __val_gu, ptr);		\
-@@ -241,6 +246,9 @@ extern void __put_user_8(void);
- 	int __ret_pu;						\
- 	__typeof__(*(ptr)) __pu_val;				\
- 	__chk_user_ptr(ptr);					\
-+	might_sleep();						\
-+	if (current->mm)					\
-+		might_lock_read(&current->mm->mmap_sem);	\
- 	__pu_val = x;						\
- 	switch (sizeof(*(ptr))) {				\
- 	case 1:							\
-@@ -265,6 +273,9 @@ extern void __put_user_8(void);
- #define __put_user_size(x, ptr, size, retval, errret)			\
- do {									\
- 	retval = 0;							\
-+	might_sleep();							\
-+	if (current->mm)						\
-+		might_lock_read(&current->mm->mmap_sem);		\
- 	__chk_user_ptr(ptr);						\
- 	switch (size) {							\
- 	case 1:								\
-@@ -317,6 +328,9 @@ do {									\
- #define __get_user_size(x, ptr, size, retval, errret)			\
- do {									\
- 	retval = 0;							\
-+	might_sleep();							\
-+	if (current->mm)						\
-+		might_lock_read(&current->mm->mmap_sem);		\
- 	__chk_user_ptr(ptr);						\
- 	switch (size) {							\
- 	case 1:								\
-Index: linux-2.6/arch/x86/lib/usercopy_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/lib/usercopy_32.c
-+++ linux-2.6/arch/x86/lib/usercopy_32.c
-@@ -33,6 +33,8 @@ static inline int __movsl_is_ok(unsigned
- do {									   \
- 	int __d0, __d1, __d2;						   \
- 	might_sleep();							   \
-+	if (current->mm)						   \
-+		might_lock_read(&current->mm->mmap_sem);		   \
- 	__asm__ __volatile__(						   \
- 		"	testl %1,%1\n"					   \
- 		"	jz 2f\n"					   \
-@@ -120,6 +122,8 @@ EXPORT_SYMBOL(strncpy_from_user);
- do {									\
- 	int __d0;							\
- 	might_sleep();							\
-+	if (current->mm)						\
-+		might_lock_read(&current->mm->mmap_sem);		\
- 	__asm__ __volatile__(						\
- 		"0:	rep; stosl\n"					\
- 		"	movl %2,%0\n"					\
-@@ -148,7 +152,6 @@ do {									\
- unsigned long
- clear_user(void __user *to, unsigned long n)
- {
--	might_sleep();
- 	if (access_ok(VERIFY_WRITE, to, n))
- 		__do_clear_user(to, n);
- 	return n;
-@@ -191,6 +194,8 @@ long strnlen_user(const char __user *s, 
- 	unsigned long res, tmp;
- 
- 	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 
- 	__asm__ __volatile__(
- 		"	testl %0, %0\n"
-Index: linux-2.6/arch/x86/lib/usercopy_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/lib/usercopy_64.c
-+++ linux-2.6/arch/x86/lib/usercopy_64.c
-@@ -16,6 +16,8 @@
- do {									   \
- 	long __d0, __d1, __d2;						   \
- 	might_sleep();							   \
-+	if (current->mm)						   \
-+		might_lock_read(&current->mm->mmap_sem);		   \
- 	__asm__ __volatile__(						   \
- 		"	testq %1,%1\n"					   \
- 		"	jz 2f\n"					   \
-@@ -65,6 +67,8 @@ unsigned long __clear_user(void __user *
- {
- 	long __d0;
- 	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 	/* no memory constraint because it doesn't change any memory gcc knows
- 	   about */
- 	asm volatile(
-Index: linux-2.6/include/asm-x86/uaccess_32.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/uaccess_32.h
-+++ linux-2.6/include/asm-x86/uaccess_32.h
-@@ -82,8 +82,10 @@ __copy_to_user_inatomic(void __user *to,
- static __always_inline unsigned long __must_check
- __copy_to_user(void __user *to, const void *from, unsigned long n)
- {
--       might_sleep();
--       return __copy_to_user_inatomic(to, from, n);
-+	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
-+	return __copy_to_user_inatomic(to, from, n);
- }
- 
- static __always_inline unsigned long
-@@ -138,6 +140,8 @@ static __always_inline unsigned long
- __copy_from_user(void *to, const void __user *from, unsigned long n)
- {
- 	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 	if (__builtin_constant_p(n)) {
- 		unsigned long ret;
- 
-@@ -160,6 +164,8 @@ static __always_inline unsigned long __c
- 				const void __user *from, unsigned long n)
- {
- 	might_sleep();
-+	if (current->mm)
-+		might_lock_read(&current->mm->mmap_sem);
- 	if (__builtin_constant_p(n)) {
- 		unsigned long ret;
- 
+Oleg.
+
