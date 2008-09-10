@@ -1,266 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbYIJRnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbYIJRoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752489AbYIJRnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbYIJRm5
+	id S1754533AbYIJRoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYIJRoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:42:57 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:56986 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754387AbYIJRmz (ORCPT
+	Wed, 10 Sep 2008 13:44:13 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:11129 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbYIJRoL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:42:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type;
-	b=rpVZjKQzEabDfx35OuofGPWGaG9luxDhJ68gymgekFolitpKwSNwvqvB2jL0cPpEw
-	Je50kehhdEevvKYrTThBw==
-Date: Wed, 10 Sep 2008 10:42:16 -0700 (PDT)
-From: Ranjit Manomohan <ranjitm@google.com>
-To: davem@davemloft.net, akpm@linux-foundation.org, kaber@trash.net,
-       lizf@cn.fujitsu.com, menage@google.com, tgraf@suug.ch
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 1/2] Traffic control cgroups subsystem
-Message-ID: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
+	Wed, 10 Sep 2008 13:44:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=p2hYaKUxnYFLH6RPE1QORvZ8YUqgNLLFDqfwzGsDkcKKHx+hqfSORrBKxHgnUAGJAl
+         jJcR7DLSSBKBA7HCAzLxsNZxfZLYADlyNyBYp0E7os63/E7vQ6GxD1k6o1gaPiLkD/tW
+         3gRh2U65PhwVPE0BMyR0OAd0uw3OenwYqpqas=
+Date: Wed, 10 Sep 2008 21:44:09 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
+Message-ID: <20080910174409.GB8067@lenovo>
+References: <20080909184615.GA7303@lenovo> <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com> <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com> <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com> <20080910093105.GA5259@elte.hu> <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a traffic control cgroup subsystem that is used
-to associate all packets originating from tasks in this cgroup with a
-specific identifier (tc_classid).
+[Yinghai Lu - Wed, Sep 10, 2008 at 10:30:39AM -0700]
+| On Wed, Sep 10, 2008 at 2:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
+| >
+| > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+| >
+| >> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| >> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+| >> > ...
+| >> >>
+| >> >> hope we can keep using MACRO..
+| >> >>
+| >> >> YH
+| >> >>
+| >> >
+| >> > Btw, Yinghai, what does it mean? To not touch this macro at all?
+| >> > Or you mean about implementation issue (ie the design itself)?
+| >>
+| >> do not touch this macro... and may revisit after 2.6.28
+| >
+| > anything you are particularly worried about? Regressions we should be
+| > able to find pretty quickly, in a central macro like that - and the
+| > macro is quite ugly.
+| >
+| 
+| ok, let remove unneeded "if", and use function pointer...
+| 
+| void (*extra_action_t)(struct irq_pin_list *entry);
+| 
+| +static inline void io_apic_modify_irq(unsigned int irq,
+| +                               int mask_and, int mask_or,
+| +                               int mask_and_not, extra_action_t action)
+| +{
+| +       int pin;
+| +       struct irq_cfg *cfg;
+| +       struct irq_pin_list *entry;
+| +       cfg = irq_cfg(irq);
+| +       for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
+| +               unsigned int reg;
+| +               pin = entry->pin;
+| +               reg = io_apic_read(entry->apic, 0x10 + pin * 2);
+| +               reg &= mask_and;
+| +               reg |= mask_or;
+| +               reg &= ~mask_and_not;
+| +               io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
+| +               if (action)
+| +                       action(entry);
+| +       }
+| +}
+| 
+| +void extra_read(struct irq_pin_list *entry)
+| +             {
+| +                       /*
+| +                        * Synchronize the IO-APIC and the CPU by doing
+| +                        * a dummy read from the IO-APIC
+| +                        */
+| +                       struct io_apic __iomem *io_apic;
+| +                       io_apic = io_apic_base(entry->apic);
+| +                       readl(&io_apic->data);
+| +               }
+| 
+| 
+| YH
+| 
 
-Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
+Yinghai, I've posted second version before you
+proposed this. Let me update it then. (though
+I don't think if we would need some extra actions
+instead of syncs by additional read except for possible
+erranious chips). Anyway - will repost updated version.
+Thanks.
 
----
-
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index e287745..4b12372 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -48,3 +48,9 @@ SUBSYS(devices)
- #endif
-
- /* */
-+
-+#ifdef CONFIG_CGROUP_TC
-+SUBSYS(tc)
-+#endif
-+
-+/* */
-diff --git a/include/linux/cgroup_tc.h b/include/linux/cgroup_tc.h
-new file mode 100644
-index 0000000..e4ba6a1
---- /dev/null
-+++ b/include/linux/cgroup_tc.h
-@@ -0,0 +1,20 @@
-+#ifndef __LINUX_CGROUP_TC_H
-+#define __LINUX_CGROUP_TC_H
-+
-+/* Interface to obtain tasks cgroup identifier. */
-+
-+#include <linux/cgroup.h>
-+#include <linux/skbuff.h>
-+#include <net/sock.h>
-+
-+#ifdef CONFIG_CGROUP_TC
-+
-+void cgroup_tc_set_sock_classid(struct sock *sk);
-+
-+#else
-+
-+#define cgroup_tc_set_sock_classid(sk)
-+
-+#endif /* CONFIG_CGROUP_TC */
-+
-+#endif /* __LINUX_CGROUP_TC_H */
-diff --git a/include/net/sock.h b/include/net/sock.h
-index dc42b44..7a4e09c 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -271,6 +271,9 @@ struct sock {
- 	int			sk_write_pending;
- 	void			*sk_security;
- 	__u32			sk_mark;
-+#ifdef CONFIG_CGROUP_TC
-+	__u32			sk_cgroup_classid;
-+#endif
- 	/* XXX 4 bytes hole on 64 bit */
- 	void			(*sk_state_change)(struct sock *sk);
- 	void			(*sk_data_ready)(struct sock *sk, int bytes);
-diff --git a/init/Kconfig b/init/Kconfig
-index 6135d07..c28fde8 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -289,6 +289,17 @@ config CGROUP_DEBUG
-
- 	  Say N if unsure
-
-+config CGROUP_TC
-+	bool "Traffic control cgroup subsystem"
-+	depends on CGROUPS
-+	default n
-+	help
-+	  This option enables a simple cgroup subsystem that
-+	  allows network traffic to be classified based on the
-+	  cgroup of the task originating the traffic.
-+
-+	  Say N if unsure
-+
- config CGROUP_NS
-         bool "Namespace cgroup subsystem"
-         depends on CGROUPS
-diff --git a/kernel/Makefile b/kernel/Makefile
-index 1c9938a..08b217b 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -42,6 +42,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
- obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
- obj-$(CONFIG_CPUSETS) += cpuset.o
- obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
-+obj-$(CONFIG_CGROUP_TC) += tc_cgroup.o
- obj-$(CONFIG_UTS_NS) += utsname.o
- obj-$(CONFIG_USER_NS) += user_namespace.o
- obj-$(CONFIG_PID_NS) += pid_namespace.o
-diff --git a/kernel/tc_cgroup.c b/kernel/tc_cgroup.c
-new file mode 100644
-index 0000000..9286fb2
---- /dev/null
-+++ b/kernel/tc_cgroup.c
-@@ -0,0 +1,105 @@
-+/*
-+ * tc_cgroup.c - traffic control cgroup subsystem
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/cgroup.h>
-+#include <linux/fs.h>
-+#include <linux/slab.h>
-+#include <linux/cgroup_tc.h>
-+
-+struct tc_cgroup {
-+	struct cgroup_subsys_state css;
-+	unsigned int classid;
-+};
-+
-+struct cgroup_subsys tc_subsys;
-+
-+static inline struct tc_cgroup *cgroup_to_tc(
-+		struct cgroup *cgroup)
-+{
-+	return container_of(cgroup_subsys_state(cgroup, tc_subsys_id),
-+			    struct tc_cgroup, css);
-+}
-+
-+static unsigned int cgroup_tc_classid(struct task_struct *tsk)
-+{
-+	unsigned int tc_classid;
-+
-+	rcu_read_lock();
-+	tc_classid = container_of(task_subsys_state(tsk, tc_subsys_id),
-+					 struct tc_cgroup, css)->classid;
-+	rcu_read_unlock();
-+	return tc_classid;
-+}
-+
-+void cgroup_tc_set_sock_classid(struct sock *sk)
-+{
-+	if (sk)
-+		sk->sk_cgroup_classid = cgroup_tc_classid(current);
-+}
-+
-+static struct cgroup_subsys_state *tc_create(struct cgroup_subsys *ss,
-+						struct cgroup *cgroup)
-+{
-+	struct tc_cgroup *tc_cgroup;
-+
-+	tc_cgroup = kzalloc(sizeof(*tc_cgroup), GFP_KERNEL);
-+
-+	if (!tc_cgroup)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/* Copy parent's class id if present */
-+	if (cgroup->parent)
-+		tc_cgroup->classid = cgroup_to_tc(cgroup->parent)->classid;
-+
-+	return &tc_cgroup->css;
-+}
-+
-+static void tc_destroy(struct cgroup_subsys *ss,
-+			struct cgroup *cgroup)
-+{
-+	kfree(cgroup_to_tc(cgroup));
-+}
-+
-+static int tc_write_u64(struct cgroup *cgroup, struct cftype *cft, u64 val)
-+{
-+	struct tc_cgroup *tc = cgroup_to_tc(cgroup);
-+
-+	if (!cgroup_lock_live_group(cgroup))
-+		return -ENODEV;
-+
-+	tc->classid = (unsigned int) (val & 0xffffffff);
-+	cgroup_unlock();
-+	return 0;
-+}
-+
-+static u64 tc_read_u64(struct cgroup *cgroup, struct cftype *cft)
-+{
-+	struct tc_cgroup *tc = cgroup_to_tc(cgroup);
-+	return tc->classid;
-+}
-+
-+static struct cftype tc_files[] = {
-+	{
-+		.name = "classid",
-+		.read_u64 = tc_read_u64,
-+		.write_u64 = tc_write_u64,
-+	}
-+};
-+
-+static int tc_populate(struct cgroup_subsys *ss, struct cgroup *cgroup)
-+{
-+	int err;
-+	err = cgroup_add_files(cgroup, ss, tc_files, ARRAY_SIZE(tc_files));
-+	return err;
-+}
-+
-+struct cgroup_subsys tc_subsys = {
-+	.name = "tc",
-+	.create = tc_create,
-+	.destroy  = tc_destroy,
-+	.populate = tc_populate,
-+	.subsys_id = tc_subsys_id,
-+};
-diff --git a/net/socket.c b/net/socket.c
-index 66c4a8c..b7421ec 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -93,6 +93,7 @@
-
- #include <net/sock.h>
- #include <linux/netfilter.h>
-+#include <linux/cgroup_tc.h>
-
- static int sock_no_open(struct inode *irrelevant, struct file *dontcare);
- static ssize_t sock_aio_read(struct kiocb *iocb, const struct iovec *iov,
-@@ -1170,6 +1171,8 @@ static int __sock_create(struct net *net, int family, int type, int protocol,
- 	if (err < 0)
- 		goto out_module_put;
-
-+	cgroup_tc_set_sock_classid(sock->sk);
-+
- 	/*
- 	 * Now to bump the refcnt of the [loadable] module that owns this
- 	 * socket at sock_release time we decrement its refcnt.
-@@ -1444,6 +1447,8 @@ asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
- 	if (err < 0)
- 		goto out_fd;
-
-+	cgroup_tc_set_sock_classid(newsock->sk);
-+
- 	if (upeer_sockaddr) {
- 		if (newsock->ops->getname(newsock, (struct sockaddr *)address,
- 					  &len, 2) < 0) {
+		- Cyrill -
