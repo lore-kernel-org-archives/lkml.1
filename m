@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYIJPDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYIJPKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbYIJPDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 11:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYIJPD2
+	id S1753389AbYIJPKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 11:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYIJPJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 11:03:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:16524 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbYIJPD1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 11:03:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=NqYF5PJpNmH1d/ugLfz7yjGCsmAhP6fOuKPaMipuhsMdUZxCrHIEn20L2T37tdx8D
-	srZog3LP15LWw7OX8dtkQ==
-Message-ID: <6599ad830809100803w1bbbb331qa6741b9f42204dcf@mail.gmail.com>
-Date: Wed, 10 Sep 2008 08:03:18 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] cgroups: fix probable race with put_css_set[_taskexit] and find_css_set
-Cc: "Li Zefan" <lizf@cn.fujitsu.com>, "Lai Jiangshan" <laijs@cn.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080910062951.GA6779@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 11:09:59 -0400
+Received: from sh.osrg.net ([192.16.179.4]:48479 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752067AbYIJPJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 11:09:58 -0400
+Date: Thu, 11 Sep 2008 00:09:43 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
+ IOMMU's alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080910145249.GB24392@amd.com>
+References: <20080910232446O.fujita.tomonori@lab.ntt.co.jp>
+	<20080910233819T.fujita.tomonori@lab.ntt.co.jp>
+	<20080910145249.GB24392@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48AA684B.7000704@cn.fujitsu.com>
-	 <6599ad830809091728m426a7219h1977001f86cb5f31@mail.gmail.com>
-	 <48C72E7C.8080302@cn.fujitsu.com> <20080910050112.GA2897@kroah.com>
-	 <6599ad830809092231h90712a6mc95b81229d64d6bc@mail.gmail.com>
-	 <20080910061717.GA6301@kroah.com> <48C76875.50007@cn.fujitsu.com>
-	 <20080910062951.GA6779@kroah.com>
+Message-Id: <20080911000936R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 9, 2008 at 11:29 PM, Greg KH <greg@kroah.com> wrote:
->
-> But you can't put such logic in the release() function as you are
-> finding out, that's not going to work either.
+On Wed, 10 Sep 2008 16:52:49 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Right - that's why a kref_put_and_write_lock() function would be handy
-- it would take the lock only when necessary. It would delegate most
-of its work to the (as-yet nonexistant) atomic_dec_and_write_lock()
-function, which would be an rwlock equivalent of atomic_dec_and_lock()
+> On Wed, Sep 10, 2008 at 11:39:00PM +0900, FUJITA Tomonori wrote:
+>  
+> > btw, in tip/x86/iommu, GART's alloc_coherent always does virtual
+> > mappings to allocate a size-aligned memory (as DMA-mapping.txt
+> > defines).
+> > 
+> > Because someone strongly insisted, I modified GART's alloc_coherent to
+> > do so but as I said again and again, it's completely meaningless (only
+> > POWER IOMMU does it and drivers don't depend on such requirement).
+> > 
+> > I guess that it would be better to do virtual mappings only when
+> > necessary as the current mainline does since GART I/O space is
+> > precious in some systems. But I don't care much. What's your opinion
+> > (as a AMD developer)?
+> 
+> Very true. My original rewrite did the mapping only when necessary too.
+> What were the reasons to do the mapping always?
 
->
-> Maybe you need to just "open-code" an atomic counter here and not use
-> kref as it sounds like you are needing to do something very "special"
-> here.
->
+As I said above, it's for allocating a size-aligned memory. Look at
+the description of pci_alloc_consistent in DMA-mapping.txt:
 
-It's basically the same situation as the dentry cache - ref-counted
-objects that are also referenced from a hash table protected by a
-global lock.
+The cpu return address and the DMA bus master address are both
+guaranteed to be aligned to the smallest PAGE_SIZE order which
+is greater than or equal to the requested size.  This invariant
+exists (for example) to guarantee that if you allocate a chunk
+which is smaller than or equal to 64 kilobytes, the extent of the
+buffer you receive will not cross a 64K boundary.
 
-If you're opposed to the addition of kref_put_and_write_lock() then
-yes, I'll replace kref with a custom refcount.
+You can't do this with __get_free_pages easily (you need some hacks to
+do this). You can do this via iommu_area_alloc() for free.
 
-Paul
+Well, actually you agreed with adding such requirement (though I said
+again and again that it's totally meaningless...):
+
+http://lkml.org/lkml/2008/7/24/162
+
+
