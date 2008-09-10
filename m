@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbYIJUPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYIJUQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbYIJUPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 16:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbYIJUP2
+	id S1755466AbYIJUQU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 16:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYIJUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 16:15:28 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33306 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbYIJUPT (ORCPT
+	Wed, 10 Sep 2008 16:16:01 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:39445 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752235AbYIJUQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 16:15:19 -0400
-Date: Wed, 10 Sep 2008 16:15:17 -0400 (EDT)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: sam@ravnborg.org
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: kbuild: Unnecessary recompiles on path change
-Message-ID: <alpine.LNX.1.10.0809101610210.11310@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Sep 2008 16:16:00 -0400
+Message-Id: <20080910201517.233690597@mail.of.borg>
+User-Agent: quilt/0.46-1
+Date: Wed, 10 Sep 2008 22:15:17 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 0/2] m68k patches for 2.6.27
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+	Hi Linus,
 
+Here are two more patches for m68k for 2.6.27:
+  [1] [PATCH] VIDEO_SH_MOBILE_CEU should depend on HAS_DMA
+  [2] [PATCH] m68k: Update defconfigs for 2.6.27-rc6
 
-I notice that my kernels get needlessy recompiled if I access the source 
-tree through a different directory. In other words, /lo/linux is the 
-kernel tree, and `mount --bind /lo /home/jengelh/lo` is in effect.
+The first one fixes a regression in m68k allmodconfig.
+The second one is the classical defconfig update after all Kconfig changes have
+settled.
 
-I see the absolute path being stored in .*.o.cmd files, which seems like 
-all the explanation I need. I do remember that I left a comment 
-when something like that was afloating:
-http://www.nabble.com/-RFC-PATCH-3-6--kbuild:-convert-include-and-source-paths-td17064364.html
+Please apply. Also please note that Andrew no longer tracks m68k patches,
+as the m68k tree is in linux-next.
 
-As of v2.6.27-rc4-263-g5697a99, there's no gcov in (at least there is no 
-such thing in my .config when bulit with ARCH=um), but the issue with 
-absolute paths exists.
+Thanks!
 
+Gr{oetje,eeting}s,
 
-Jan
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
