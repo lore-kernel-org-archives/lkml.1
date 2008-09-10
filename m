@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYIJFzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbYIJF7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752818AbYIJFzZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 01:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYIJFzL
+	id S1752761AbYIJF7u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 01:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYIJF7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 01:55:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59927 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbYIJFzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 01:55:10 -0400
+	Wed, 10 Sep 2008 01:59:43 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54568 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbYIJF7m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 01:59:42 -0400
+Message-ID: <48C76243.5010206@zytor.com>
+Date: Tue, 09 Sep 2008 22:59:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: heukelum@fastmail.fm, linux-kernel@vger.kernel.org, ak@suse.de
+Subject: Re: [RFC/PATCH] i386: handle all exceptions with interrupts off	initially
+References: <1220990178-29773-1-git-send-email-heukelum@fastmail.fm> <48C73EB8.8020405@zytor.com> <20080910055337.GA9765@elte.hu>
+In-Reply-To: <20080910055337.GA9765@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Luming Yu" <luming.yu@gmail.com>
-X-Fcc: ~/Mail/linus
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-In-Reply-To: Luming Yu's message of  Tuesday, 9 September 2008 11:06:27 +0800 <3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	<1211869515.29836.2.camel@elijah.suse.cz>
-	<3877989d0806022304w35764b17p9d4c3c95eceae0f5@mail.gmail.com>
-	<48450864.6080707@suse.cz>
-	<48455619.6040608@suse.cz>
-	<3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
-	<48465D5C.8000804@suse.cz>
-	<3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
-	<1212664605.15747.16.camel@elijah.suse.cz>
-	<20080627204954.34F8B154231@magilla.localdomain>
-	<3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
-X-Shopping-List: (1) Gaelic Expectant putty impositions
-   (2) River-toweling Ritz Cracker Crumbs
-   (3) Inefficient sleeves
-Message-Id: <20080910055504.9A2A41541FE@magilla.localdomain>
-Date: Tue,  9 Sep 2008 22:55:04 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This subject line is quite far from what you're now addressing, btw.
+Ingo Molnar wrote:
+> 
+> the entry paths here are really short (we enable irqs almost 
+> immediately) so it's a non-issue in terms of worst-case latencies.
+> 
+>> In other words, it's not something we want to do "just because", but 
+>> to the extent that it provides real benefit, it makes sense.
+> 
+> this is historically pretty fragile code so bringing the 32-bit and 
+> 64-bit variants more in line sounds like a good reason to me. For 
+> example we had various long-living irq state annotation bugs (the 
+> combination of kprobes and lockdep, etc.) that remained unfixed partly 
+> due to this assymetry.
+> 
 
-I certainly wouldn't recommend that patch.  The interference between ptrace
-uses of SIGTRAP and a program that blocks SIGTRAP is just a fact of life
-with ptrace.  If you wanted to change the exec SIGTRAP to be more
-consistent with other signals induced by debuggers (such as breakpoints and
-single-step), you could just change send_sig to force_sig.  That unblocks
-SIGTRAP and resets its handler when it's blocked.  Conversely, a tracer
-program could use PTRACE_O_TRACEEXEC if it cared to deal with tracing a
-process that blocks SIGTRAP.  (That uses ptrace_notify rather than any
-actual signal that can be blocked.)
+Agreed completely.  I certainly didn't mean to come across sounding 
+negative.
 
-But, none of this goes to your actual problem at all AFAICT.  You've said
-your actual problem with strace only arises on ia64.  The behavior of
-ptrace'd exec, and the effect of a program blocking SIGTRAP, is exactly the
-same across all machines.  Changing it does not explain your situation.
-I'm in favor of understanding what is actually going on before changing
-things.
+	-hpa
 
-If the SIGTRAP from exec is actually seen by strace on a different machine
-like it's not on ia64, that suggests that something different happened
-between the two.  In the case that doesn't exhibit the problem, either
-SIGTRAP got unblocked by something before the exec, or userland (strace)
-behaves differently so that it doesn't care about not seeing that SIGTRAP.
-
-
-Thanks,
-Roland
