@@ -1,38 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYIJDEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYIJDMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYIJDEb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Sep 2008 23:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYIJDEX
+	id S1753400AbYIJDMA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Sep 2008 23:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYIJDLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 23:04:23 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:32201 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752017AbYIJDEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 23:04:23 -0400
-Date: Wed, 10 Sep 2008 12:03:45 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: roel kluin <roel.kluin@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sh: intc_prio_data() test before subtraction on unsigned
-Message-ID: <20080910030345.GA25508@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	roel kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org
-References: <48C6E473.9070408@gmail.com>
+	Tue, 9 Sep 2008 23:11:51 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:28393 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751779AbYIJDLu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Sep 2008 23:11:50 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references:x-scanned-by;
+	b=hplKrAPa64+0vDMN9okOdxuea5nutGqMPF99KhydIZQnd8DwzDw2aApa9FLU5pemN
+	7NrNQhA09ioBAOCRlMcPw==
+Message-ID: <6599ad830809092011x6fce5a70kcd4fb77bf37c46a2@mail.gmail.com>
+Date: Tue, 9 Sep 2008 20:11:39 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH] cgroups: fix probable race with put_css_set[_taskexit] and find_css_set
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <greg@kroah.com>
+In-Reply-To: <48C72E7C.8080302@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C6E473.9070408@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <48AA684B.7000704@cn.fujitsu.com>
+	 <6599ad830809091728m426a7219h1977001f86cb5f31@mail.gmail.com>
+	 <48C72E7C.8080302@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 09, 2008 at 11:02:43PM +0200, roel kluin wrote:
-> bit is unsigned, so test before subtraction
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+On Tue, Sep 9, 2008 at 7:18 PM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>        hlist_for_each_entry(cg, node, hhead, hlist) {
+>                if (!memcmp(template, cg->subsys, sizeof(cg->subsys))) {
+>                        /* All subsystems matched */
+> +                       if (!kref_get_not_zero(&cg->ref))
+> +                               return NULL;
 
-Applied, thanks.
+Maybe it would be better to do:
 
-In the future, please make sure to CC linux-sh@vger.kernel.org on any SH
-related patches.
+if (!memcmp(...) && kref_get_not_zero(&cg->ref))
+  return cg;
+
+so that in the event of a race, we carry on looking in the array.
+> + * Return 0 if this refcount is 0, otherwise return 1.
+> + */
+> +int kref_get_not_zero(struct kref *kref)
+
+Probably clearer to have a bool return type.
+
+Paul
