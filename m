@@ -1,87 +1,42 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755966AbYIIGp0 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 9 Sep 2008 02:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbYIIGpN
+	id S1752977AbYIJHad (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 10 Sep 2008 03:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbYIJHaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Sep 2008 02:45:13 -0400
-Received: from vz310.securenet-server.net ([207.45.191.25]:53674 "EHLO
-	vz310.securenet-server.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753581AbYIIGpM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Sep 2008 02:45:12 -0400
-X-Greylist: delayed 4249 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Sep 2008 02:45:12 EDT
+	Wed, 10 Sep 2008 03:30:24 -0400
+Received: from web73414.mail.tp2.yahoo.com ([203.188.201.74]:29684 "HELO
+	web73414.mail.tp2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751145AbYIJHaX convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 03:30:23 -0400
+X-YMail-OSG: vsekDIIVM1kLcOILuTmtx_qsI8FxPGbobgMaD_H0dHzNvMFCB1NAj_rq4hREoiPikQ6fGBQkGYKf_veuWHrWxi__ahalHb8p8FrMB305M7SdLhbtqO8VQJtmmM4jh0M-
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Wed, 10 Sep 2008 15:30:21 +0800 (CST)
+From: =?big5?B?u6+n9SCwqA==?= <ygvr4f73836@yahoo.com.tw>
+Reply-To: ygvr4f73836@yahoo.com.tw
+Subject: =?big5?B?MTU6MzA6MTktLT61TKZXrNulVS2wqqSkvsepZi27crfTrHmlWDU5?=
 To: linux-kernel@vger.kernel.org
-Subject: Launching MyEverydayPage.com (Ver 2.0)
-Date: Tue, 9 Sep 2008 11:01:46 +0580
-From: My Everyday Page <contactus@rapidmile.com>
-Message-ID: <14812e5551315d095bddf88385a63e9b@207.45.191.27>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-X-Mailer: phplist v2.10.5
-X-MessageID: 3
-X-ListMember: linux-kernel@vger.kernel.org
+Cc: linya@ms1.kcg.gov.tw
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - vz310.securenet-server.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [99 99] / [47 12]
-X-AntiAbuse: Sender Address Domain - vz310.securenet-server.net
+Content-Type: text/plain; charset=big5
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Message-ID: <907057.63342.qm@web73414.mail.tp2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755966AbYIIGp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752977AbYIJHad@vger.kernel.org>
+
+=B5L=A6W=AC=DB=A5U-=B0=AA=A4=A4=BE=C7=A9f-=BBr=B7=D3=ACy=A5X http://ub0=
+.cc/8Q/g
 
 
-
-Dear Members,
-
- Its our great pleasure to launch a new version of your favorite
-everyday website with Great New Looks, New Logo & More Features. One
-stop homepage for you, with one click links to all the important daily
-visit websites.
-
- <http://www.myeverydaypage.com/>
-
-Changes/Additions:
-
-1: Brand new Platform to provide you with better looks and
-performance.
-
-2: More new websites added, as per your recommendations/feed backs.
-
-3: Easy Access to Google Search.
-
-4: New MEP TV.
-
-5: Applications like Clock/Calculator/Poll/Daily Quotes on easy
-access.
-
-So go ahead and try our great launch. Click the link below.
-
-Make it your HOME PAGE TODAY!
-
-MyEverydayPage.com <http://myeverydaypage.com/>
-
-Best things in life are Free, so are We!
-
-You can help! us by forwarding this mail to all your friends.
-
-Thanks & Regards,
-
-Team MyEverydayPage.com <http://myeverydaypage.com/>
-
-
-
+      _________________________________________________________________=
+________________________________________
+=B7Q=AA=BE=B9D=B5L=B2=E1=A5=CD=AC=A1=A6p=A6=F3=A4j=C5=DC=A8=AD=B9=C0=A1=
+H http://tw.promote.mail.yahoo.com/dc/change.html
 --
-If you do not want to receive any more emails Click:
-http://207.45.191.27/phplist/?p=unsubscribe&uid=be7d6a312e45b21e5766c4e159994bf4
-Forward a Message to Someone, Click:
-http://207.45.191.27/phplist/?p=forward&uid=be7d6a312e45b21e5766c4e159994bf4&mid=3
-
-
---
-Powered by PHPlist, www.phplist.com --
-
-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
