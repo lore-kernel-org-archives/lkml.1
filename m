@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYIJQ4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYIJRBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbYIJQ4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 12:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbYIJQ43
+	id S1753494AbYIJRBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbYIJRBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 12:56:29 -0400
-Received: from hpsmtp-eml13.kpnxchange.com ([213.75.38.113]:28845 "EHLO
-	hpsmtp-eml13.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752321AbYIJQ43 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 12:56:29 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Time travel experiment?
-Date: Wed, 10 Sep 2008 18:56:24 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <200809101658.06935.elendil@planet.nl> <200809101755.19927.elendil@planet.nl> <200809101825.29276.elendil@planet.nl>
-In-Reply-To: <200809101825.29276.elendil@planet.nl>
+	Wed, 10 Sep 2008 13:01:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46887 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbYIJRBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 13:01:01 -0400
+Message-ID: <48C7FCEE.8060404@kernel.org>
+Date: Wed, 10 Sep 2008 18:59:26 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: multinymous@gmail.com, Elias Oltmanns <eo@nebensachen.de>,
+       Thomas Renninger <trenn@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Laptop shock detection and harddisk protection
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809101856.24997.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Sep 2008 16:56:25.0296 (UTC) FILETIME=[290B2D00:01C91366]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Sep 2008 17:00:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 September 2008, Frans Pop wrote:
-> On Wednesday 10 September 2008, Frans Pop wrote:
-> > > > $ date
-> > > > Wed Jul  3 23:09:23 CEST 2024
+Hello, all.
 
-Aaah, hmmm.
+Elias has been sending libata/ide shock protection patches[1] and for
+libata I think it's only one or two iterations from being included.
+The interface is pretty simple, it only has to write timeout values to
+sysfs nodes for all disks.
 
-I'm trying to trace a problem with resume. Once in every 5-10 times resume 
-fails with dead display even though most times it resumes perfectly. So I 
-was trying the suggestion in Documentation/power/s2ram.txt and am doing
-'echo 1 > /sys/power/pm_trace' before suspending.
+Thomas is now working on implementing shock detection for HP laptops
+where the interface is much simpler than the HDAPS one.  Interrupts
+for danger imminent and danger over plus control for warning LED.
 
-Just now I find [1] which mentions that the trace info is saved in the 
-RTC, which I guess could well explain the jump. If that's what behind 
-this, wouldn't it make sense to mention that fact in s2ram.txt?
+I browsed a little bit for HDAPS one and it seems all the pieces are
+there but scattered.  The latest effort seems tp_smapi which Shem
+Multinymous is working on.
 
-But I would not expect the RTC to get changed when the resume is 
-successful. Or does it just get updated with every resume step without a 
-reset to the pre-trace value on completion?
+So, overall, all the pieces are falling into places but many pieces
+are not upstream yet and there also are interface differences for
+different detection drivers.  The original hdaps uses polling on sysfs
+nodes, the HP thing Thomas is working on is likely to use sysfs +
+sysfs_notify_event() and probably another node to control LED.  The
+tp_smapi seems to use joystick input device to transfer the data along
+all the axises.
 
-[1]https://lists.linux-foundation.org/pipermail/linux-pm/2006-June/008470.html
+So, I think it's about time to decide how to proceed on this
+acceleration detection and shock protection thing.
+
+1. How should the shock interface look like?  As we're gonna need
+   userland daemon one way or the other, we can use the userland
+   daemon to glue all the interfaces but it would be much better to
+   have a unified interface.  Although there seem to be several
+   different variants, they don't differ all that much and creating a
+   new interface every time is painful.  I think we can get by with a
+   sysfs interface with notification.
+
+2. If we're gonna unify interface, how much can we unify the backend?
+   Some devices are based on polling, others interrupt.  For polling,
+   is it better to delegate the whole polling to userland or is it
+   better to do some of it in kernel (tp_smapi seems to be doing
+   this)?
+
+3. What about the userland daemon?  It would be best to have a unified
+   daemon which can handle all instead of one for hdaps and another
+   for hp (and so on).  If we can unify the interface, this will be
+   much easier.
+
+Thanks.
+
+-- 
+tejun
+
+[1] http://thread.gmane.org/gmane.linux.ide/34103
