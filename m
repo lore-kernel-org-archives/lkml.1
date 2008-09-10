@@ -1,243 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbYIJSUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbYIJSYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751258AbYIJSUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 14:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYIJSTx
+	id S1753525AbYIJSYQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 14:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYIJSYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 14:19:53 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:59635 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbYIJSTx (ORCPT
+	Wed, 10 Sep 2008 14:24:00 -0400
+Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:56269 "HELO
+	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751763AbYIJSYA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 14:19:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HPo8O/MztwLOSN3ylj/o2nG07Pu7EAv6zKBhuDwK3VGN6SMRVLurQKh6nqbrWKzCHB
-         AG6sd4ZHyHjcD52+IT6IsZsGKMZsD+Stds/MIufBYm8dQaN3yyq9QBAdauWRj68Dif15
-         XDZKCl69yZpYD05R7WYAPBGQZG4W6CNutG+/E=
-Date: Wed, 10 Sep 2008 22:19:50 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
-Message-ID: <20080910181950.GC8067@lenovo>
-References: <20080909184615.GA7303@lenovo> <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com> <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com> <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com> <20080910093105.GA5259@elte.hu> <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
+	Wed, 10 Sep 2008 14:24:00 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=GcmtdPp6NMUSsVVg5i57e9rsommfo+kbCq/m3xeOcFP9Xf/a7SWQE2lTReW+XnY2yhkDXu0xYM6qKjH+ZUiiNR++RulML8lMKv6avq7UPz7G/mzmQpBki0ZywEJUeBuB;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] pci: fix merging left out for BAR print out v2
+Date: Wed, 10 Sep 2008 11:23:46 -0700
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+References: <1220988472-24139-1-git-send-email-yhlu.kernel@gmail.com> <200809101048.57119.jbarnes@virtuousgeek.org> <20080910180821.GA6864@elte.hu>
+In-Reply-To: <20080910180821.GA6864@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200809101123.46618.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Wed, Sep 10, 2008 at 10:30:39AM -0700]
-| On Wed, Sep 10, 2008 at 2:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
-| >
-| > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-| >
-| >> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| >> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-| >> > ...
-| >> >>
-| >> >> hope we can keep using MACRO..
-| >> >>
-| >> >> YH
-| >> >>
-| >> >
-| >> > Btw, Yinghai, what does it mean? To not touch this macro at all?
-| >> > Or you mean about implementation issue (ie the design itself)?
-| >>
-| >> do not touch this macro... and may revisit after 2.6.28
-| >
-| > anything you are particularly worried about? Regressions we should be
-| > able to find pretty quickly, in a central macro like that - and the
-| > macro is quite ugly.
-| >
-| 
-| ok, let remove unneeded "if", and use function pointer...
-| 
-| void (*extra_action_t)(struct irq_pin_list *entry);
-| 
-| +static inline void io_apic_modify_irq(unsigned int irq,
-| +                               int mask_and, int mask_or,
-| +                               int mask_and_not, extra_action_t action)
-| +{
-| +       int pin;
-| +       struct irq_cfg *cfg;
-| +       struct irq_pin_list *entry;
-| +       cfg = irq_cfg(irq);
-| +       for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
-| +               unsigned int reg;
-| +               pin = entry->pin;
-| +               reg = io_apic_read(entry->apic, 0x10 + pin * 2);
-| +               reg &= mask_and;
-| +               reg |= mask_or;
-| +               reg &= ~mask_and_not;
-| +               io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
-| +               if (action)
-| +                       action(entry);
-| +       }
-| +}
-| 
-| +void extra_read(struct irq_pin_list *entry)
-| +             {
-| +                       /*
-| +                        * Synchronize the IO-APIC and the CPU by doing
-| +                        * a dummy read from the IO-APIC
-| +                        */
-| +                       struct io_apic __iomem *io_apic;
-| +                       io_apic = io_apic_base(entry->apic);
-| +                       readl(&io_apic->data);
-| +               }
-| 
-| 
-| YH
-| 
+On Wednesday, September 10, 2008 11:08 am Ingo Molnar wrote:
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > On Wednesday, September 10, 2008 1:44 am Ingo Molnar wrote:
+> > > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> > > > print out for Device BAR address before kernel try to update them.
+> > > >
+> > > > also change it to KERN_DEBUG instead...
+> > > >
+> > > > v2: update to linux-pci next
+> > > >    also add (unsigned long long) cast
+> > > >
+> > > > Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> > >
+> > > Jesse, if you want to pick it up, could we please do this via git
+> > > methods (git-pull and stuff)? The commit below is the one in -tip -
+> > > should i separate it out?
+> >
+> > Sure, though I'm not sure why I shouldn't just be applying this stuff
+> > to my tree first... Seems weird to pull from you only to then ask
+> > Linus to pull.
+>
+> sure - it's just that it all happened weeks ago so it's intermixed. As
+> long as you dont mind the duplicate commit (git will sort it out fine)
+> we can apply it to both trees.
 
-Yinghai, Ingo, what about this one?
+Ah I see, sure I can pull your bits.  /me gets out his breadcrumbs in 
+preparation for entering the x86 forest.  Does your -tip just contain stuff 
+you're sending to Linus for 2.6.27?
 
-		- Cyrill -
----
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: x86: io-apic - get rid of __DO_ACTION macro v3
-
-Replace __DO_ACTION macro with io_apic_modify_irq function.
-This allow us to 'grep' definitions being hided by
-__DO_ACTION macro:
-
-	__unmask_IO_APIC_irq
-	__mask_IO_APIC_irq
-	__mask_and_edge_IO_APIC_irq
-	__unmask_and_level_IO_APIC_irq
-
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>
----
-
-Index: linux-2.6.git/arch/x86/kernel/io_apic.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-09 22:27:57.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-10 22:17:25.000000000 +0400
-@@ -643,65 +643,66 @@ static void __init replace_pin_at_irq(un
- 		add_pin_to_irq(irq, newapic, newpin);
- }
- 
--#define __DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)		\
--									\
--{									\
--	int pin;							\
--	struct irq_cfg *cfg;						\
--	struct irq_pin_list *entry;					\
--									\
--	cfg = irq_cfg(irq);						\
--	entry = cfg->irq_2_pin;						\
--	for (;;) {							\
--		unsigned int reg;					\
--		if (!entry)						\
--			break;						\
--		pin = entry->pin;					\
--		reg = io_apic_read(entry->apic, 0x10 + R + pin*2);	\
--		reg ACTION_DISABLE;					\
--		reg ACTION_ENABLE;					\
--		io_apic_modify(entry->apic, 0x10 + R + pin*2, reg);	\
--		FINAL;							\
--		if (!entry->next)					\
--			break;						\
--		entry = entry->next;					\
--	}								\
--}
--
--#define DO_ACTION(name,R, ACTION_ENABLE, ACTION_DISABLE, FINAL)		\
--									\
--	static void name##_IO_APIC_irq (unsigned int irq)		\
--	__DO_ACTION(R, ACTION_ENABLE, ACTION_DISABLE, FINAL)
-+static inline void io_apic_modify_irq(unsigned int irq,
-+				int mask_and, int mask_or,
-+				void (*final)(struct irq_pin_list *entry))
-+{
-+	int pin;
-+	struct irq_cfg *cfg;
-+	struct irq_pin_list *entry;
- 
--/* mask = 0 */
--DO_ACTION(__unmask,	0, |= 0, &= ~IO_APIC_REDIR_MASKED, )
-+	cfg = irq_cfg(irq);
-+	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
-+		unsigned int reg;
-+		pin = entry->pin;
-+		reg = io_apic_read(entry->apic, 0x10 + pin * 2);
-+		reg &= mask_and;
-+		reg |= mask_or;
-+		io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
-+		if (final)
-+			final(entry);
-+	}
-+}
-+
-+static void __unmask_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, ~IO_APIC_REDIR_MASKED, 0, NULL);
-+}
- 
- #ifdef CONFIG_X86_64
--/*
-- * Synchronize the IO-APIC and the CPU by doing
-- * a dummy read from the IO-APIC
-- */
--static inline void io_apic_sync(unsigned int apic)
-+void io_apic_sync(struct irq_pin_list *entry)
- {
--	struct io_apic __iomem *io_apic = io_apic_base(apic);
-+	/*
-+	 * Synchronize the IO-APIC and the CPU by doing
-+	 * a dummy read from the IO-APIC
-+	 */
-+	struct io_apic __iomem *io_apic;
-+	io_apic = io_apic_base(entry->apic);
- 	readl(&io_apic->data);
- }
- 
--/* mask = 1 */
--DO_ACTION(__mask,	0, |= IO_APIC_REDIR_MASKED, &= ~0, io_apic_sync(entry->apic))
--
--#else
--
--/* mask = 1 */
--DO_ACTION(__mask,	0, |= IO_APIC_REDIR_MASKED, &= ~0, )
--
--/* mask = 1, trigger = 0 */
--DO_ACTION(__mask_and_edge, 0, |= IO_APIC_REDIR_MASKED, &= ~IO_APIC_REDIR_LEVEL_TRIGGER, )
-+static void __mask_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, ~0, IO_APIC_REDIR_MASKED, &io_apic_sync);
-+}
-+#else /* CONFIG_X86_32 */
-+static void __mask_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, ~0, IO_APIC_REDIR_MASKED, NULL);
-+}
- 
--/* mask = 0, trigger = 1 */
--DO_ACTION(__unmask_and_level, 0, |= IO_APIC_REDIR_LEVEL_TRIGGER, &= ~IO_APIC_REDIR_MASKED, )
-+static void __mask_and_edge_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, ~IO_APIC_REDIR_LEVEL_TRIGGER,
-+			IO_APIC_REDIR_MASKED, NULL);
-+}
- 
--#endif
-+static void __unmask_and_level_IO_APIC_irq(unsigned int irq)
-+{
-+	io_apic_modify_irq(irq, ~IO_APIC_REDIR_MASKED,
-+			IO_APIC_REDIR_LEVEL_TRIGGER, NULL);
-+}
-+#endif /* CONFIG_X86_32 */
- 
- static void mask_IO_APIC_irq (unsigned int irq)
- {
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
