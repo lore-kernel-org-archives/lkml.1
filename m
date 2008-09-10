@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbYIJVQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYIJVTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbYIJVQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 17:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYIJVQJ
+	id S1754860AbYIJVTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 17:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYIJVTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 17:16:09 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:61813 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbYIJVQI (ORCPT
+	Wed, 10 Sep 2008 17:19:10 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:28736 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752765AbYIJVTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 17:16:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=h0N0W4i7jCGXNSoJuNEz88X6FvF1BucL3Ti6pXpoeSQBEtfmclcguXFJt7h2J/Mi0c
-         yANTwaJjFBDvXCSQgtaeTcbV99y6ers+KdNpoYDeWQnzORz1KgixCoKxa65/8phHOnsW
-         MoecsewG5zwcJ9FohKjqKC8VvseR8Xan0ehs4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Steven Noonan <steven@uplinklabs.net>
-Subject: Re: [PATCH] drivers/ide/ide-probe.c: uninitialized variable 'rc'
-Date: Wed, 10 Sep 2008 23:09:33 +0200
+	Wed, 10 Sep 2008 17:19:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=RkfZ5GYbHWkWpJWdWPaNy4yMicxAGlzB/Mjht+kqX56tplwkhzyn7xlTqXIsxdCXsfBMIjkF+YaRS1rohWUEYObqzQZWc73Ss1HEIU3cQ6gZ/DWRz/An2wEw0SN2VbByIf3kucQ9M3tbzWpCWVtaBhUzJpRsfKeVdNb3UlO+fjU=  ;
+X-YMail-OSG: uaBijWYVM1lqMgO_o56zE0kyKvgUJ.Nstcw9JqxWqMZzcsAfovGZlXmRhiBuz0gm3FyxWjy.uBsUz0QlC9e13qh8TlQm_vi9U7VQydemuqkzZQLD14OEBbyGrY5dpQU-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH] fix RTC_CLASS regression with PARISC
+Date: Wed, 10 Sep 2008 14:19:04 -0700
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-References: <1220994461-15962-1-git-send-email-steven@uplinklabs.net>
-In-Reply-To: <1220994461-15962-1-git-send-email-steven@uplinklabs.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org,
+       alessandro.zummo@towertech.it, Thomas Gleixner <tglx@linutronix.de>
+References: <200809081629.21125.david-b@pacbell.net> <20080910140417.bc35c199.akpm@linux-foundation.org> <Pine.LNX.4.64.0809101407490.7159@shark.he.net>
+In-Reply-To: <Pine.LNX.4.64.0809101407490.7159@shark.he.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200809102309.34159.bzolnier@gmail.com>
+Message-Id: <200809101419.05499.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Tuesday 09 September 2008, Steven Noonan wrote:
-> Fixed the warning by initializing 'rc' to zero.
+On Wednesday 10 September 2008, Randy.Dunlap wrote:
 > 
-> Signed-off-by: Steven Noonan <steven@uplinklabs.net>
-> ---
->  drivers/ide/ide-probe.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > > =============== CUT ON THE DOTTED LINE ==================
+> > > > Subject: ntp: let update_persistent_clock() sleep
+> > > > From: "Maciej W. Rozycki" <macro@linux-mips.org>
+> > > 
+> > > I see, as Paul mentioned this is needed for stuff like RTCs
+> > > behind I2C.
+> > > 
+> > > This change isn't in Linus's tree yet.
+> > 
+> > Should it be?
+
+IMO if it doesn't make 2.6.27, it should merge for 2.6.28 early-ish.
+
+ 
+> > Its current status is: stuck in -mm.  I've sent it to Thomas a couple
+> > of times marked "for 2.6.27?" and he might have applied it now (I'm a
+> > few days behind, waiting for linux-next to start up again).
 > 
-> diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-> index 994e410..e53c645 100644
-> --- a/drivers/ide/ide-probe.c
-> +++ b/drivers/ide/ide-probe.c
-> @@ -1492,7 +1492,7 @@ static struct device_attribute *ide_port_attrs[] = {
->  
->  static int ide_sysfs_register_port(ide_hwif_t *hwif)
->  {
-> -	int i, rc;
-> +	int i, rc = 0;
->  
->  	for (i = 0; ide_port_attrs[i]; i++) {
->  		rc = device_create_file(hwif->portdev, ide_port_attrs[i]);
+> This is something that you can attempt (again) to address next week along
+> with other process issues...
 
-I recall seeing identical patch before:
+I don't think anyone in particular has been _pushing_ to resolve these
+NTP related issues ... lack of urgency.  Maybe it's fair to think of
+that as a process issue.  If DaveM wants SPARC64 to completely remove
+its legacy RTC support for some release (which?) then:  (a) great! and
+(b) that should be sufficient urgency.
 
-	http://article.gmane.org/gmane.linux.ide/33107
+There was, I think, another patch related to this one.  Then there may
+be a few other loose ends to tie up also.
 
-Does the existing code really results in gcc warning?
-
-If so we may apply it just to shut-up the broken gcc version...
-
-Thanks,
-Bart
+- Dave
