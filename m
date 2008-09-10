@@ -1,43 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIJWuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbYIJWy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYIJWuQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 18:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYIJWuD
+	id S1754435AbYIJWy1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 18:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYIJWyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 18:50:03 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44958 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821AbYIJWuD (ORCPT
+	Wed, 10 Sep 2008 18:54:18 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:35135 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbYIJWyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 18:50:03 -0400
-Date: Thu, 11 Sep 2008 00:53:45 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, davej@codemonkey.org.uk,
-       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] CPUMASK: proposal for replacing cpumask_t
-Message-ID: <20080910225345.GL7714@one.firstfloor.org>
-References: <20080906235036.891970000@polaris-admin.engr.sgi.com> <20080906235037.880702000@polaris-admin.engr.sgi.com> <1220783087.8687.73.camel@twins.programming.kicks-ass.net> <48C53C91.70604@sgi.com> <1220886335.12278.31.camel@twins.programming.kicks-ass.net> <20080908183852.GA3713@elte.hu> <48C84E9E.7080507@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 10 Sep 2008 18:54:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=R+TLCHVdQeBs6h2/se7T3HpEExPucSe2/zwRY3FCHGXjrTTmo266Dy/MqMI+vXQerZ
+         zTJniGnRNTpK3aUqJf4hFjVccpfQdEGr+0o4A4FtK/g6DT2CAKp6+aSIX3ozropEre4U
+         /ZGjIZOsF9C+FsA5jUhhyn/FYmRp7TdX1V4LQ=
+Message-ID: <28c262360809101554l1faab2a9na6b9066a07747554@mail.gmail.com>
+Date: Thu, 11 Sep 2008 07:54:16 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Oren Laadan" <orenl@cs.columbia.edu>
+Subject: Re: [RFC v4][PATCH 2/9] General infrastructure for checkpoint restart
+Cc: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+In-Reply-To: <48C813A0.2020404@cs.columbia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48C84E9E.7080507@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+References: <1220946154-15174-1-git-send-email-orenl@cs.columbia.edu>
+	 <1220946154-15174-3-git-send-email-orenl@cs.columbia.edu>
+	 <28c262360809092310x244c0c8dvca8a6022c7d0d225@mail.gmail.com>
+	 <48C813A0.2020404@cs.columbia.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here's an initial proposal for abstracting cpumask_t to be either
+Hi, Oren.
 
-At least for some cases I don't think you'll get around defining
-a "nearby subset of CPUs that can be handled together" type. Handling 1K 
-objects all the time in one piece is simply not a good idea.
+On Thu, Sep 11, 2008 at 3:36 AM, Oren Laadan <orenl@cs.columbia.edu> wrote:
+>
+>
+> MinChan Kim wrote:
+>> On Tue, Sep 9, 2008 at 4:42 PM, Oren Laadan <orenl@cs.columbia.edu> wrote:
+>
+> [...]
+>
+>>> +struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
+>>> +{
+>>> +       struct cr_ctx *ctx;
+>>> +
+>>> +       ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+>>> +       if (!ctx)
+>>> +               return ERR_PTR(-ENOMEM);
+>>> +
+>>> +       ctx->file = fget(fd);
+>>> +       if (!ctx->file) {
+>>> +               cr_ctx_free(ctx);
+>>> +               return ERR_PTR(-EBADF);
+>>> +       }
+>>> +       get_file(ctx->file);
+>>
+>> Why do you need get_file?
+>> You already called fget.
+>> Am I missing something ?
+>
+> This was meant for when we will restart multiple processes, each would
+> have access to the checkpoint-context, such that the checkpoint-context
+> may outlives the task that created it and initiated the restart. Thus
+> the file-pointer will need to stay around longer than that task.
 
--Andi
+OK. Thanks for your explanation.
+You should have inserted above annotation.
+
+> Of course, restart of multiple processes _can_ be coded such that this
+> first task will always terminate last - either after restart completes
+> successfully, or after all the other tasks aborted and won't use the
+> checkpoint-context anymore.
+>
+> Because that code is not part of the this patch-set, I considered it
+> safer to grab a reference of the file pointer, making it less likely
+> that we forget about it later.
+
+What do you mean by that ? Isn't it a your part of your code?
+When the last checkpoint-context is ended, who free file ?
+I mean how it match pair(fget/fput and get_file) ?
+
+>>
+>>> +       ctx->hbuf = (void *) __get_free_pages(GFP_KERNEL, CR_HBUF_ORDER);
+>>> +       if (!ctx->hbuf) {
+>>> +               cr_ctx_free(ctx);
+>>> +               return ERR_PTR(-ENOMEM);
+>>> +       }
+>>> +
+>>> +       ctx->pid = pid;
+>>> +       ctx->flags = flags;
+>>> +
+>>> +       ctx->crid = atomic_inc_return(&cr_ctx_count);
+>>> +
+>>> +       return ctx;
+>>> +}
+>
+> Oren.
+>
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
