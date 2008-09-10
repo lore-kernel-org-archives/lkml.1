@@ -1,110 +1,431 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbYIJRoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYIJRp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbYIJRoV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 13:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYIJRoN
+	id S1754689AbYIJRp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 13:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYIJRpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 13:44:13 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:11129 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751208AbYIJRoL (ORCPT
+	Wed, 10 Sep 2008 13:45:10 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:57525 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751584AbYIJRpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 13:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p2hYaKUxnYFLH6RPE1QORvZ8YUqgNLLFDqfwzGsDkcKKHx+hqfSORrBKxHgnUAGJAl
-         jJcR7DLSSBKBA7HCAzLxsNZxfZLYADlyNyBYp0E7os63/E7vQ6GxD1k6o1gaPiLkD/tW
-         3gRh2U65PhwVPE0BMyR0OAd0uw3OenwYqpqas=
-Date: Wed, 10 Sep 2008 21:44:09 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: io-apic - get rid of __DO_ACTION macro
-Message-ID: <20080910174409.GB8067@lenovo>
-References: <20080909184615.GA7303@lenovo> <86802c440809091313l6b3e1f48x6e3b5cd0b948ccf9@mail.gmail.com> <aa79d98a0809092302g60967a60sd0609044a6d6a137@mail.gmail.com> <86802c440809092322w363cc9dbt5eb172d5c80a6adc@mail.gmail.com> <20080910093105.GA5259@elte.hu> <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
+	Wed, 10 Sep 2008 13:45:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type;
+	b=DoYaZrGoaO/4wOVxojKAlpktjJtXMJpfw3mt7XzJ7eM6oxnu7SZoitrbysxh3gHuF
+	8e7XnrKeekWB39DWBzhyg==
+Date: Wed, 10 Sep 2008 10:43:53 -0700 (PDT)
+From: Ranjit Manomohan <ranjitm@google.com>
+To: davem@davemloft.net, akpm@linux-foundation.org, tgraf@suug.ch,
+       kaber@trash.net, menage@google.com, lizf@cn.fujitsu.com
+cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] Traffic control cgroups subsystem
+Message-ID: <Pine.LNX.4.64.0809101042180.7050@ranjit.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809101030q758d2f92v470727c88654d91d@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Wed, Sep 10, 2008 at 10:30:39AM -0700]
-| On Wed, Sep 10, 2008 at 2:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
-| >
-| > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-| >
-| >> On Tue, Sep 9, 2008 at 11:02 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| >> > On Wed, Sep 10, 2008 at 12:13 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-| >> > ...
-| >> >>
-| >> >> hope we can keep using MACRO..
-| >> >>
-| >> >> YH
-| >> >>
-| >> >
-| >> > Btw, Yinghai, what does it mean? To not touch this macro at all?
-| >> > Or you mean about implementation issue (ie the design itself)?
-| >>
-| >> do not touch this macro... and may revisit after 2.6.28
-| >
-| > anything you are particularly worried about? Regressions we should be
-| > able to find pretty quickly, in a central macro like that - and the
-| > macro is quite ugly.
-| >
-| 
-| ok, let remove unneeded "if", and use function pointer...
-| 
-| void (*extra_action_t)(struct irq_pin_list *entry);
-| 
-| +static inline void io_apic_modify_irq(unsigned int irq,
-| +                               int mask_and, int mask_or,
-| +                               int mask_and_not, extra_action_t action)
-| +{
-| +       int pin;
-| +       struct irq_cfg *cfg;
-| +       struct irq_pin_list *entry;
-| +       cfg = irq_cfg(irq);
-| +       for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
-| +               unsigned int reg;
-| +               pin = entry->pin;
-| +               reg = io_apic_read(entry->apic, 0x10 + pin * 2);
-| +               reg &= mask_and;
-| +               reg |= mask_or;
-| +               reg &= ~mask_and_not;
-| +               io_apic_modify(entry->apic, 0x10 + pin * 2, reg);
-| +               if (action)
-| +                       action(entry);
-| +       }
-| +}
-| 
-| +void extra_read(struct irq_pin_list *entry)
-| +             {
-| +                       /*
-| +                        * Synchronize the IO-APIC and the CPU by doing
-| +                        * a dummy read from the IO-APIC
-| +                        */
-| +                       struct io_apic __iomem *io_apic;
-| +                       io_apic = io_apic_base(entry->apic);
-| +                       readl(&io_apic->data);
-| +               }
-| 
-| 
-| YH
-| 
+This patch implements a filter that classifies packets based upon
+the cgroup_classid of the packet.
 
-Yinghai, I've posted second version before you
-proposed this. Let me update it then. (though
-I don't think if we would need some extra actions
-instead of syncs by additional read except for possible
-erranious chips). Anyway - will repost updated version.
-Thanks.
+Signed-off-by: Ranjit Manomohan <ranjitm@google.com>
 
-		- Cyrill -
+---
+
+diff --git a/include/linux/pkt_cls.h b/include/linux/pkt_cls.h
+index 99efbed..53348a3 100644
+--- a/include/linux/pkt_cls.h
++++ b/include/linux/pkt_cls.h
+@@ -379,6 +379,21 @@ enum
+
+ #define TCA_FLOW_MAX	(__TCA_FLOW_MAX - 1)
+
++/* Cgroups filter */
++
++enum {
++	TCA_CGROUP_UNSPEC,
++	TCA_CGROUP_CLASSID,
++	TCA_CGROUP_MASK,
++	TCA_CGROUP_VALUE,
++	TCA_CGROUP_ACT,
++	TCA_CGROUP_POLICE,
++	TCA_CGROUP_EMATCHES,
++	__TCA_CGROUP_MAX
++};
++
++#define TCA_CGROUP_MAX	(__TCA_CGROUP_MAX - 1)
++
+ /* Basic filter */
+
+ enum
+diff --git a/net/sched/Kconfig b/net/sched/Kconfig
+index 82adfe6..844837f 100644
+--- a/net/sched/Kconfig
++++ b/net/sched/Kconfig
+@@ -318,6 +318,16 @@ config NET_CLS_FLOW
+ 	  To compile this code as a module, choose M here: the
+ 	  module will be called cls_flow.
+
++config NET_CLS_CGROUP
++	tristate "Cgroups tc classifier"
++	select NET_CLS
++	---help---
++	  If you say Y here, you will be able to classify packets based on
++	  cgroup membership of the task originating the packet.
++
++	  To compile this code as a module, choose M here: the
++	  module will be called cls_cgroup.
++
+ config NET_EMATCH
+ 	bool "Extended Matches"
+ 	select NET_CLS
+diff --git a/net/sched/Makefile b/net/sched/Makefile
+index 1d2b0f7..91e9ee0 100644
+--- a/net/sched/Makefile
++++ b/net/sched/Makefile
+@@ -36,6 +36,7 @@ obj-$(CONFIG_NET_CLS_TCINDEX)	+= cls_tcindex.o
+ obj-$(CONFIG_NET_CLS_RSVP6)	+= cls_rsvp6.o
+ obj-$(CONFIG_NET_CLS_BASIC)	+= cls_basic.o
+ obj-$(CONFIG_NET_CLS_FLOW)	+= cls_flow.o
++obj-$(CONFIG_NET_CLS_CGROUP)	+= cls_cgroup.o
+ obj-$(CONFIG_NET_EMATCH)	+= ematch.o
+ obj-$(CONFIG_NET_EMATCH_CMP)	+= em_cmp.o
+ obj-$(CONFIG_NET_EMATCH_NBYTE)	+= em_nbyte.o
+diff --git a/net/sched/cls_cgroup.c b/net/sched/cls_cgroup.c
+new file mode 100644
+index 0000000..70a363f
+--- /dev/null
++++ b/net/sched/cls_cgroup.c
+@@ -0,0 +1,330 @@
++/*
++ * net/sched/cls_cgroup.c	Simple packet classifier which can filter
++ * 				packets based on the cgroups they belong to.
++ *
++ *		This program is free software; you can redistribute it and/or
++ *		modify it under the terms of the GNU General Public License
++ *		as published by the Free Software Foundation; either version
++ *		2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/skbuff.h>
++#include <net/pkt_cls.h>
++#include <net/netlink.h>
++#include <net/sock.h>
++
++struct cgroup_head {
++	struct list_head	flist;		/* Head of filter list */
++};
++
++struct cgroup_filter {
++	u32			handle;		/* Unique filter handle */
++	struct tcf_exts		exts;
++	struct tcf_ematch_tree	ematches;
++	struct tcf_result	res;
++	struct list_head	link;
++	u32			mask;
++	u32			value;
++};
++
++static const struct tcf_ext_map cgroup_ext_map = {
++	.action	= TCA_CGROUP_ACT,
++	.police	= TCA_CGROUP_POLICE,
++};
++
++/* This function is called from the qdisc to classify a particular packet
++ * contained in the skb to the appropriate sub-classes. It returns the
++ * classid of the target class. This filter will match if the cgroup_classid
++ * in the skb matches the value in the filter.
++ */
++static int cgroup_classify(struct sk_buff *skb, struct tcf_proto *tp,
++			  struct tcf_result *res)
++{
++	struct cgroup_head *head = (struct cgroup_head *)tp->root;
++	struct cgroup_filter *f;
++	uint32_t cgroup_classid = 0;
++	int r;
++
++#ifdef CONFIG_CGROUP_TC
++	if (skb->sk)
++		cgroup_classid =  skb->sk->sk_cgroup_classid;
++#endif
++
++	list_for_each_entry(f, &head->flist, link) {
++
++		if (!tcf_em_tree_match(skb, &f->ematches, NULL))
++			continue;
++
++		if ((cgroup_classid & f->mask) == f->value) {
++			*res = f->res;
++			r = tcf_exts_exec(skb, &f->exts, res);
++			if (r < 0)
++				continue;
++			return r;
++		}
++	}
++	return -1;
++}
++
++/* Returns pointer to filter matching the handle passed into the function.*/
++static unsigned long cgroup_get(struct tcf_proto *tp, u32 handle)
++{
++	unsigned long l = 0UL;
++	struct cgroup_head *head = (struct cgroup_head *) tp->root;
++	struct cgroup_filter *f;
++
++	if (head == NULL)
++		return 0UL;
++
++	list_for_each_entry(f, &head->flist, link)
++		if (f->handle == handle)
++			l = (unsigned long) f;
++
++	return l;
++}
++
++/* Does not seem to be used for classifiers. */
++static void cgroup_put(struct tcf_proto *tp, unsigned long f)
++{
++}
++
++/* Initializer function called when tp is created. */
++static int cgroup_init(struct tcf_proto *tp)
++{
++	struct cgroup_head *head = kzalloc(sizeof(*head), GFP_KERNEL);
++	if (head == NULL)
++		return -ENOBUFS;
++
++	INIT_LIST_HEAD(&head->flist);
++	tp->root = head;
++	return 0;
++}
++
++/* Simple delete function called when filter is deleted */
++static inline void cgroup_delete_filter(struct tcf_proto *tp,
++				       struct cgroup_filter *f)
++{
++	tcf_unbind_filter(tp, &f->res);
++	tcf_exts_destroy(tp, &f->exts);
++	tcf_em_tree_destroy(tp, &f->ematches);
++	kfree(f);
++}
++
++/* Destroy the entire tp structure.*/
++static void cgroup_destroy(struct tcf_proto *tp)
++{
++	struct cgroup_head *head = (struct cgroup_head *) xchg(&tp->root, NULL);
++	struct cgroup_filter *f, *n;
++
++	list_for_each_entry_safe(f, n, &head->flist, link) {
++		list_del(&f->link);
++		cgroup_delete_filter(tp, f);
++	}
++	kfree(head);
++}
++
++/* Delete one filter entry */
++static int cgroup_delete(struct tcf_proto *tp, unsigned long arg)
++{
++	struct cgroup_head *head = (struct cgroup_head *) tp->root;
++	struct cgroup_filter *t, *f = (struct cgroup_filter *) arg;
++
++	list_for_each_entry(t, &head->flist, link)
++		if (t == f) {
++			tcf_tree_lock(tp);
++			list_del(&t->link);
++			tcf_tree_unlock(tp);
++			cgroup_delete_filter(tp, t);
++			return 0;
++		}
++
++	return -ENOENT;
++}
++
++/* Set the mask and value parameters in the tp structure. */
++static inline int cgroup_set_parms(struct tcf_proto *tp,
++			unsigned long base,
++			struct cgroup_filter *f, struct nlattr **tb)
++{
++	int err = -EINVAL;
++
++	if (tb[TCA_CGROUP_MASK]) {
++		if (nla_len(tb[TCA_CGROUP_MASK]) < sizeof(u32))
++			return err;
++		f->mask =  nla_get_u32(tb[TCA_CGROUP_MASK]);
++	} else
++		f->mask = UINT_MAX;
++
++	if (tb[TCA_CGROUP_VALUE]) {
++		if (nla_len(tb[TCA_CGROUP_VALUE]) < sizeof(u32))
++			return err;
++		f->value = nla_get_u32(tb[TCA_CGROUP_VALUE]);
++	} else
++		return err;
++
++	if (tb[TCA_CGROUP_CLASSID]) {
++		if (nla_len(tb[TCA_CGROUP_CLASSID]) < sizeof(u32))
++			return err;
++		f->res.classid = nla_get_u32(tb[TCA_CGROUP_CLASSID]);
++		tcf_bind_filter(tp, &f->res, base);
++	} else
++		return err;
++
++	return 0;
++}
++
++/* Change the mask and value parameters in the current settings. */
++static int cgroup_change(struct tcf_proto *tp, unsigned long base, u32 handle,
++				struct nlattr **tca, unsigned long *arg)
++{
++	int err = -EINVAL;
++	struct cgroup_head *head = (struct cgroup_head *) tp->root;
++	struct nlattr *tb[TCA_CGROUP_MAX];
++	struct cgroup_filter *f = (struct cgroup_filter *) *arg;
++	struct tcf_exts e;
++	struct tcf_ematch_tree t;
++
++	if (tca[TCA_OPTIONS] == NULL)
++		return -EINVAL;
++
++	if (nla_parse_nested(tb, TCA_CGROUP_MAX, tca[TCA_OPTIONS], NULL) < 0)
++		return -EINVAL;
++
++	err = tcf_exts_validate(tp, tb, tca[TCA_RATE], &e, &cgroup_ext_map);
++	if (err < 0)
++		return err;
++
++	err = tcf_em_tree_validate(tp, tb[TCA_CGROUP_EMATCHES], &t);
++	if (err < 0)
++		goto error1;
++
++	if (f != NULL) {
++		if (handle && f->handle != handle)
++			goto error2;
++	} else {
++		if (!handle)
++			goto error2;
++		f = kzalloc(sizeof(*f), GFP_KERNEL);
++		if (f == NULL)
++			goto error2;
++		f->handle = handle;
++	}
++
++	err = cgroup_set_parms(tp, base, f, tb);
++	if (err < 0)
++		goto error3;
++
++	tcf_exts_change(tp, &f->exts, &e);
++	tcf_em_tree_change(tp, &f->ematches, &t);
++
++	if (*arg == 0) {
++		tcf_tree_lock(tp);
++		list_add(&f->link, &head->flist);
++		tcf_tree_unlock(tp);
++	}
++
++	*arg = (unsigned long)f;
++	return 0;
++
++error3:
++	if (*arg == 0)
++		kfree(f);
++error2:
++	tcf_em_tree_destroy(tp, &t);
++error1:
++	tcf_exts_destroy(tp, &e);
++
++	return err;
++}
++
++/* Walk the filter list for things like displaying contents.*/
++static void cgroup_walk(struct tcf_proto *tp, struct tcf_walker *arg)
++{
++	struct cgroup_head *head = (struct cgroup_head *) tp->root;
++	struct cgroup_filter *f;
++
++	list_for_each_entry(f, &head->flist, link) {
++		if (arg->count < arg->skip)
++			goto skip;
++
++		if (arg->fn(tp, (unsigned long) f, arg) < 0) {
++			arg->stop = 1;
++			break;
++		}
++skip:
++		arg->count++;
++	}
++}
++
++/* Retreive current settings in the filter */
++static int cgroup_dump(struct tcf_proto *tp, unsigned long fh,
++		      struct sk_buff *skb, struct tcmsg *t)
++{
++	struct cgroup_filter *f = (struct cgroup_filter *) fh;
++	struct nlattr *nest;
++
++	if (f == NULL)
++		return skb->len;
++
++	t->tcm_handle = f->handle;
++
++	nest = nla_nest_start(skb, TCA_OPTIONS);
++	if (nest == NULL)
++		goto nla_put_failure;
++
++	NLA_PUT_U32(skb, TCA_CGROUP_CLASSID, f->res.classid);
++	NLA_PUT_U32(skb, TCA_CGROUP_MASK, f->mask);
++	NLA_PUT_U32(skb, TCA_CGROUP_VALUE, f->value);
++
++	if (tcf_exts_dump(skb, &f->exts, &cgroup_ext_map) < 0)
++		goto nla_put_failure;
++
++#ifdef CONFIG_NET_EMATCH
++	if (f->ematches.hdr.nmatches &&
++	  tcf_em_tree_dump(skb, &f->ematches, TCA_CGROUP_EMATCHES) < 0)
++		goto nla_put_failure;
++#endif
++
++	if (tcf_exts_dump_stats(skb, &f->exts, &cgroup_ext_map) < 0)
++		goto nla_put_failure;
++
++	nla_nest_end(skb, nest);
++	return skb->len;
++
++nla_put_failure:
++	nla_nest_cancel(skb, nest);
++	return -1;
++}
++
++static struct tcf_proto_ops cls_cgroup_ops = {
++	.kind		=	"cgroup",
++	.classify	=	cgroup_classify,
++	.init		=	cgroup_init,
++	.destroy	=	cgroup_destroy,
++	.get		=	cgroup_get,
++	.put		=	cgroup_put,
++	.change		=	cgroup_change,
++	.delete		=	cgroup_delete,
++	.walk		=	cgroup_walk,
++	.dump		=	cgroup_dump,
++	.owner		=	THIS_MODULE,
++};
++
++static int __init init_cgroup(void)
++{
++	return register_tcf_proto_ops(&cls_cgroup_ops);
++}
++
++static void __exit exit_cgroup(void)
++{
++	unregister_tcf_proto_ops(&cls_cgroup_ops);
++}
++
++module_init(init_cgroup)
++module_exit(exit_cgroup)
++MODULE_LICENSE("GPL");
++
