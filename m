@@ -1,78 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYIKFk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYIKFrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbYIKFk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 01:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYIKFkS
+	id S1753196AbYIKFrR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 01:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbYIKFrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 01:40:18 -0400
-Received: from mga11.intel.com ([192.55.52.93]:45580 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751491AbYIKFkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 01:40:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,377,1217833200"; 
-   d="scan'208";a="615092432"
-Subject: Re: [PATCH 1/2] fix acpi ec read write bug
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Kevin Hao <kexin.hao@windriver.com>
-Cc: ak@linux.intel.com, astarikovskiy@suse.de, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <1221108565.11106.12.camel@kevin>
-References: <1221103065-9123-1-git-send-email-kexin.hao@windriver.com>
-	 <d41e1c0a5be061176c65db7ef42263f75ae84dcb.1221102420.git.kexin.hao@windriver.com>
-	 <1221106057.3989.228.camel@yakui_zhao.sh.intel.com>
-	 <1221108565.11106.12.camel@kevin>
-Content-Type: text/plain
-Date: Thu, 11 Sep 2008 13:54:56 +0800
-Message-Id: <1221112496.3989.233.camel@yakui_zhao.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Thu, 11 Sep 2008 01:47:04 -0400
+Received: from po-out-1718.google.com ([72.14.252.152]:59276 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751701AbYIKFrB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 01:47:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=inOeixqRIJjXeWX/KXrEEgpGYAfoEmnBbecjwdIo+5rm2KFirWM+Oa4oLtFNzLwOiN
+         9CN52mVMV9A1IZ+zARCFFJK0uJu5/o9SK8SYo9Grq+B/Ajog+J+bENQPSWjeYOREIPdk
+         MeQ/Bjm58qPtiVPd5G03hqkf75Wh8ohhLsxVo=
+Message-ID: <cfd18e0f0809102247h677acc76r9c76994cdf036443@mail.gmail.com>
+Date: Thu, 11 Sep 2008 07:47:00 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: paccept() oddity
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20080911003833.265E7154210@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48AC4B6E.4040409@gmail.com>
+	 <20080910111016.b289b3eb.akpm@linux-foundation.org>
+	 <20080911003833.265E7154210@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-11 at 12:49 +0800, Kevin Hao wrote:
-> On Thu, 2008-09-11 at 12:07 +0800, Zhao Yakui wrote:
-> > On Thu, 2008-09-11 at 11:17 +0800, Kevin Hao wrote:
-> > > Fill in command unit of transaction_data structure, otherwise
-> > > gpe_transaction will skip read or write instruction.
-> > > 
-> > > Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
-> > > ---
-> > >  drivers/acpi/ec.c |    1 +
-> > >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-> > > index bd3555c..0c65e82 100644
-> > > --- a/drivers/acpi/ec.c
-> > > +++ b/drivers/acpi/ec.c
-> > > @@ -240,6 +240,7 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
-> > >  	}
-> > >  	atomic_set(&ec->irq_count, 0);
-> > >  	/* fill in transaction structure */
-> > > +	ec->t.command = command;
-> > It is also OK to add this explicitly. In fact the ec->t.command will be
-> > assigned in the function of acpi_ec_write_cmd.
-> 
-> NO, I am using the latest linux-next kernel and I don't found
-> ec->t.command is assigned in acpi_ec_write_cmd function.
+Roland,
 
-static inline void acpi_ec_write_cmd(struct acpi_ec *ec, u8 command)
- {
- 	pr_debug(PREFIX "<--- command = 0x%2.2x\n", command);
--	outb(command, ec->command_addr);
-+	outb((ec->t.command = command), ec->command_addr);
- }
+Thanks for having a look at this.
 
-It is very obscure so that it is not easy to understand.
-> Thanks,
-> Kevin
-> 
-> > 
-> > Thanks.
-> > >  	ec->t.wdata = wdata;
-> > >  	ec->t.wlen = wdata_len;
-> > >  	ec->t.rdata = rdata;
-> > 
+On 9/11/08, Roland McGrath <roland@redhat.com> wrote:
+> I don't see any rationale for changing paccept to be an oddball special
+> case in its EINTR behavior.
+>
+> select/poll are special cases historically, and that's why the principle of
+> least astonishment makes it best for pselect/ppoll to match their behavior.
 
+I agree on the idea of least astonishment.  I just differ on where
+greater astonishment is considered to lie.  If I'm making a system
+call one of whose arguments is a mask of signals that the system call
+should wait for, then I expect the system call to return, rather than
+restart, if that signal is delivered, regardless of SA_RESTART.  This
+is the behaviour of pselect(), which seems perfectly reasonable, and
+happens to coincide with historical select() EINTR behavior.
+
+But, perhaps all of this is moot, given the point you raise below (and
+which I already raised with Ulrich)...
+
+> The same principle makes it highly dubious to have paccept differ from
+> accept in such a subtlety.  I don't see any reason to want it, anyway.
+> An application that wants to see EINTR can just use sigaction to clear
+> SA_RESTART.
+>
+> Frankly, I don't see the rationale for rolling the implicit sigprocmask
+> into paccept at all.  accept is analogous to read or other i/o calls,
+> not to select/poll.
+
+That is precisely the other point about paccept() that I've already
+raised, which drew no response from Ulrich:
+
+http://thread.gmane.org/gmane.linux.kernel/723952/focus=728786
+(I'll add you to the CC on that thread.)
+
+> It's not any normal plan to fiddle blocked signals
+> around a blocking i/o call.  Instead, programs use (p)select/poll (and
+> sometimes also O_NONBLOCK) to manage the blocking and waking up.  Then
+> when the program finally calls accept, it knows it won't block.  The
+> atomic signal machinery makes sense for pselect/ppoll to help manage the
+> corner cases of blocking/wakeup in event loops.  It makes no more sense
+> to roll blocked signal set changes into accept than it would to have
+> read, write, etc. all take a sigset_t and do that.
+
+Agreed.
+
+Given that adding a sigset to accept():
+
+* seems unnecessary (i.e., it provides no functionality that we can't
+get otherwise), * is inconsistent with other I/O APIs that don't have
+a sigset argument (e.g., read(), write(), redvfrom(), open(), etc.)
+* currently (IMO) provides questionable semantics around EINTR
+
+I'd argue in favour of eliminating this syscall in favour of a simpler:
+
+accept4(int fd, struct sockaddr *sa, socklen_t *salen, ind flags);
+
+and in the meantime disabling sys_paccept() in -rc.
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
