@@ -1,36 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYIKNs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbYIKNsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYIKNs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbYIKNre
+	id S1755136AbYIKNsM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbYIKNrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:47:34 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:58186 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756512AbYIKNrc (ORCPT
+	Thu, 11 Sep 2008 09:47:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:21560 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756374AbYIKNrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:47:32 -0400
+	Thu, 11 Sep 2008 09:47:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=Ukom0nQu00UvUxCJXMD6TJfRrk8PhcvaYH1cM/SO3amnXEEm034Rd6QJmwQ7Xvv5TB
-         AumZRjc/+dPL24Z7/6zfMfPz1rIYq9qSkn1VvbfMhz1hKlgfALkEg8F88VgSElSbMSl6
-         cbCwOcq/feIh2xqPyNAGjNoMoIDPtLVd6Qb4Q=
-Message-ID: <80b317760809110647wf1b81e3u799c63e0aa83a04@mail.gmail.com>
-Date: Thu, 11 Sep 2008 15:47:31 +0200
+        b=A1iIJ39SiQaiKXpn3TInfWpQ64HttehVmzumTXOu3mmmWY1MRS6RqSKGKJaXmqoE4g
+         aQpY4vePjS7MorCpBdf5+Xdk00kCgRYFRP5H20QLwndc6V0e/HEf7ve2WC7eiNPntyZb
+         LVci7sZDX0CxIosdpPOsXeloIvy1Dcp+Q4B3g=
+Message-ID: <80b317760809110647w1659ceffia363cc55c295b631@mail.gmail.com>
+Date: Thu, 11 Sep 2008 15:47:14 +0200
 From: "Richard Genoud" <richard.genoud@gmail.com>
 To: "Julia Lawall" <julia@diku.dk>
-Subject: Re: [PATCH 5/5] drivers/dma/ioat_dma.c: Drop code after return
-Cc: maciej.sosnowski@intel.com, linux-kernel@vger.kernel.org,
-       vigneshbabu@gmail.com, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0809111434100.9593@pc-004.diku.dk>
+Subject: Re: [PATCH 4/5] net/atm/lec.c: Drop code after return
+Cc: chas@cmf.nrl.navy.mil, vigneshbabu@gmail.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0809111433510.9593@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0809111434100.9593@pc-004.diku.dk>
+References: <Pine.LNX.4.64.0809111433510.9593@pc-004.diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -44,23 +44,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Reviewed-by: Richard Genoud <richard.genoud@gmail.com>
 > ---
 >
->  drivers/dma/ioat_dma.c        |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
+>  net/atm/lec.c                 |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 >
-> diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
-> index bc8c6e3..1ef68b3 100644
-> --- a/drivers/dma/ioat_dma.c
-> +++ b/drivers/dma/ioat_dma.c
-> @@ -971,11 +971,9 @@ static struct ioat_desc_sw *ioat_dma_get_next_descriptor(
->        switch (ioat_chan->device->version) {
->        case IOAT_VER_1_2:
->                return ioat1_dma_get_next_descriptor(ioat_chan);
-> -               break;
->        case IOAT_VER_2_0:
->        case IOAT_VER_3_0:
->                return ioat2_dma_get_next_descriptor(ioat_chan);
-> -               break;
->        }
->        return NULL;
->  }
+> diff --git a/net/atm/lec.c b/net/atm/lec.c
+> index 5799fb5..8f701cd 100644
+> --- a/net/atm/lec.c
+> +++ b/net/atm/lec.c
+> @@ -1931,7 +1931,6 @@ static struct atm_vcc *lec_arp_resolve(struct lec_priv *priv,
+>                switch (priv->lane_version) {
+>                case 1:
+>                        return priv->mcast_vcc;
+> -                       break;
+>                case 2: /* LANE2 wants arp for multicast addresses */
+>                        if (!compare_ether_addr(mac_to_find, bus_mac))
+>                                return priv->mcast_vcc;
 >
