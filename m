@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbYIKP0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYIKP1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756020AbYIKP0W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 11:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYIKP0B
+	id S1755835AbYIKP1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 11:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYIKP1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 11:26:01 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:35951 "EHLO relay.sgi.com"
+	Thu, 11 Sep 2008 11:27:35 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49718 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755535AbYIKP0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 11:26:00 -0400
-Date: Thu, 11 Sep 2008 10:25:58 -0500
+	id S1751848AbYIKP1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 11:27:33 -0400
+Date: Thu, 11 Sep 2008 10:27:32 -0500
 From: Dean Nelson <dcn@sgi.com>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Alan Mayer <ajm@sgi.com>, Ingo Molnar <mingo@elte.hu>, jeremy@goop.org,
@@ -17,8 +17,8 @@ Cc: Alan Mayer <ajm@sgi.com>, Ingo Molnar <mingo@elte.hu>, jeremy@goop.org,
        torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
        "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Yinghai Lu <Yinghai.lu@amd.com>
-Subject: [RFC 1/4] switch vector_irq[] from irq number to irq_desc pointer
-Message-ID: <20080911152558.GB13655@sgi.com>
+Subject: [RFC 2/4] introduce dynamically allocated system vectors
+Message-ID: <20080911152732.GC13655@sgi.com>
 References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -29,350 +29,503 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change per_cpu variable vector_irq[] from holding an 'int' irq number to
-holding a 'struct irq_desc' pointer.
+Introduce the dynamic allocation and deallocation of system vectors which
+are mapped to irq numbers allowing the use of request_irq()/free_irq().
 
 Signed-off-by: Dean Nelson <dcn@sgi.com>
 
 ---
 
-Note that this pre-allocates the irq_desc structure before we know whether
-a vector will be successfully found. And should it not, the irq_desc structure
-is left created with the irq still unallocated. Should someone in the future
-attempt to allocate a vector with that same irq and succeed, they will get
-the previously allocated irq_desc structure.
-
-Also, I won't claim the changes to arch/x86/xen/irq.c were correctly done, and
-I know they weren't tested.
-
- arch/x86/kernel/io_apic.c     |   32 ++++++++++++++++++--------------
- arch/x86/kernel/irq_32.c      |   14 ++++++--------
- arch/x86/kernel/irq_64.c      |   10 ++++------
- arch/x86/kernel/irqinit_32.c  |   29 +++++++++--------------------
- arch/x86/kernel/irqinit_64.c  |   29 +++++++++--------------------
- arch/x86/kernel/vmiclock_32.c |    2 +-
- arch/x86/xen/irq.c            |    3 ++-
- include/asm-x86/hw_irq.h      |    2 +-
- 8 files changed, 50 insertions(+), 71 deletions(-)
+ arch/x86/kernel/apic.c        |    3 
+ arch/x86/kernel/io_apic.c     |  264 +++++++++++++++++++++++++++++++++-----
+ arch/x86/kernel/irqinit_64.c  |    4 
+ include/asm-x86/desc.h        |   13 +
+ include/asm-x86/irq_vectors.h |    1 
+ include/linux/irq.h           |   13 +
+ 6 files changed, 258 insertions(+), 40 deletions(-)
 
 Index: linux/arch/x86/kernel/io_apic.c
 ===================================================================
---- linux.orig/arch/x86/kernel/io_apic.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/kernel/io_apic.c	2008-09-10 09:21:29.000000000 -0500
-@@ -1222,6 +1222,7 @@ static int __assign_irq_vector(int irq, 
- 	unsigned int old_vector;
+--- linux.orig/arch/x86/kernel/io_apic.c	2008-09-10 12:08:46.000000000 -0500
++++ linux/arch/x86/kernel/io_apic.c	2008-09-11 07:17:33.000000000 -0500
+@@ -1205,7 +1205,34 @@ void unlock_vector_lock(void)
+ 	spin_unlock(&vector_lock);
+ }
+ 
+-static int __assign_irq_vector(int irq, cpumask_t mask)
++bool __grab_irq_vector(struct irq_desc *desc, unsigned int vector,
++		       cpumask_t *new_domain_mask)
++{
++	/* Must be called with vector lock */
++	struct irq_cfg *cfg;
++	int cpu;
++
++	for_each_cpu_mask_nr(cpu, *new_domain_mask) {
++		if (per_cpu(vector_irq, cpu)[vector] != NULL)
++			return false;
++	}
++
++	/* Available reserve it */
++	for_each_cpu_mask_nr(cpu, *new_domain_mask)
++		per_cpu(vector_irq, cpu)[vector] = desc;
++
++	cfg = irq_cfg(desc->irq);
++	if (cfg->vector) {
++		cfg->move_in_progress = 1;
++		cfg->old_domain = cfg->domain;
++	}
++	cfg->vector = vector;
++	cfg->domain = *new_domain_mask;
++
++	return true;
++}
++
++static int __assign_irq_vector(int irq, cpumask_t *mask)
+ {
+ 	/*
+ 	 * NOTE! The local APIC isn't very good at handling
+@@ -1219,42 +1246,40 @@ static int __assign_irq_vector(int irq, 
+ 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
+ 	 */
+ 	static int current_vector = FIRST_DEVICE_VECTOR, current_offset = 0;
+-	unsigned int old_vector;
++	cpumask_t target_cpus_mask;
  	int cpu;
  	struct irq_cfg *cfg;
-+	struct irq_desc *desc;
+ 	struct irq_desc *desc;
  
  	cfg = irq_cfg(irq);
  
-@@ -1239,6 +1240,8 @@ static int __assign_irq_vector(int irq, 
+-	/* Only try and allocate irqs on cpus that are present */
+-	cpus_and(mask, mask, cpu_online_map);
+-
+ 	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
+ 		return -EBUSY;
+ 
+-	old_vector = cfg->vector;
+-	if (old_vector) {
++	/* Only try and allocate irqs on cpus that are present */
++	cpus_and(target_cpus_mask, *mask, cpu_online_map);
++
++	if (cfg->vector) {
+ 		cpumask_t tmp;
+-		cpus_and(tmp, cfg->domain, mask);
++		cpus_and(tmp, cfg->domain, target_cpus_mask);
+ 		if (!cpus_empty(tmp))
  			return 0;
  	}
  
-+	desc = irq_to_desc_alloc(irq);
-+
- 	for_each_cpu_mask_nr(cpu, mask) {
- 		cpumask_t domain, new_mask;
- 		int new_cpu;
-@@ -1266,7 +1269,7 @@ next:
+ 	desc = irq_to_desc_alloc(irq);
+ 
+-	for_each_cpu_mask_nr(cpu, mask) {
+-		cpumask_t domain, new_mask;
+-		int new_cpu;
++	for_each_cpu_mask_nr(cpu, target_cpus_mask) {
++		cpumask_t domain, new_domain_mask;
+ 		int vector, offset;
+ 
+ 		domain = vector_allocation_domain(cpu);
+-		cpus_and(new_mask, domain, cpu_online_map);
++		cpus_and(new_domain_mask, domain, cpu_online_map);
+ 
+ 		vector = current_vector;
+ 		offset = current_offset;
+ next:
+ 		vector += 8;
+-		if (vector >= first_system_vector) {
++		if (vector > last_device_vector) {
+ 			/* If we run out of vectors on large boxen, must share them. */
+ 			offset = (offset + 1) % 8;
+ 			vector = FIRST_DEVICE_VECTOR + offset;
+@@ -1268,20 +1293,12 @@ next:
+ 		if (vector == SYSCALL_VECTOR)
  			goto next;
  #endif
- 		for_each_cpu_mask_nr(new_cpu, new_mask)
--			if (per_cpu(vector_irq, new_cpu)[vector] != -1)
-+			if (per_cpu(vector_irq, new_cpu)[vector] != NULL)
- 				goto next;
+-		for_each_cpu_mask_nr(new_cpu, new_mask)
+-			if (per_cpu(vector_irq, new_cpu)[vector] != NULL)
+-				goto next;
++		if (!__grab_irq_vector(desc, vector, &new_domain_mask))
++			goto next;
++
  		/* Found one! */
  		current_vector = vector;
-@@ -1276,7 +1279,7 @@ next:
- 			cfg->old_domain = cfg->domain;
- 		}
- 		for_each_cpu_mask_nr(new_cpu, new_mask)
--			per_cpu(vector_irq, new_cpu)[vector] = irq;
-+			per_cpu(vector_irq, new_cpu)[vector] = desc;
- 		cfg->vector = vector;
- 		cfg->domain = domain;
+ 		current_offset = offset;
+-		if (old_vector) {
+-			cfg->move_in_progress = 1;
+-			cfg->old_domain = cfg->domain;
+-		}
+-		for_each_cpu_mask_nr(new_cpu, new_mask)
+-			per_cpu(vector_irq, new_cpu)[vector] = desc;
+-		cfg->vector = vector;
+-		cfg->domain = domain;
  		return 0;
-@@ -1307,7 +1310,7 @@ static void __clear_irq_vector(int irq)
- 	vector = cfg->vector;
- 	cpus_and(mask, cfg->domain, cpu_online_map);
- 	for_each_cpu_mask_nr(cpu, mask)
--		per_cpu(vector_irq, cpu)[vector] = -1;
-+		per_cpu(vector_irq, cpu)[vector] = NULL;
- 
- 	cfg->vector = 0;
- 	cpus_clear(cfg->domain);
-@@ -1319,23 +1322,26 @@ void __setup_vector_irq(int cpu)
- 	/* This function must be called with vector_lock held */
- 	int irq, vector;
- 	struct irq_cfg *cfg;
-+	struct irq_desc *desc;
- 
- 	/* Mark the inuse vectors */
- 	for_each_irq_cfg(irq, cfg) {
- 		if (!cpu_isset(cpu, cfg->domain))
- 			continue;
- 		vector = cfg->vector;
--		per_cpu(vector_irq, cpu)[vector] = irq;
-+		desc = irq_to_desc(irq);
-+		BUG_ON(desc == NULL);
-+		per_cpu(vector_irq, cpu)[vector] = desc;
  	}
- 	/* Mark the free vectors */
- 	for (vector = 0; vector < NR_VECTORS; ++vector) {
--		irq = per_cpu(vector_irq, cpu)[vector];
--		if (irq < 0)
-+		desc = per_cpu(vector_irq, cpu)[vector];
-+		if (desc == NULL)
- 			continue;
+ 	return -ENOSPC;
+@@ -1293,11 +1310,51 @@ static int assign_irq_vector(int irq, cp
+ 	unsigned long flags;
  
--		cfg = irq_cfg(irq);
-+		cfg = irq_cfg(desc->irq);
- 		if (!cpu_isset(cpu, cfg->domain))
--			per_cpu(vector_irq, cpu)[vector] = -1;
-+			per_cpu(vector_irq, cpu)[vector] = NULL;
- 	}
+ 	spin_lock_irqsave(&vector_lock, flags);
+-	err = __assign_irq_vector(irq, mask);
++	err = __assign_irq_vector(irq, &mask);
+ 	spin_unlock_irqrestore(&vector_lock, flags);
+ 	return err;
  }
  
-@@ -2370,16 +2376,14 @@ asmlinkage void smp_irq_move_cleanup_int
- 
- 	me = smp_processor_id();
- 	for (vector = FIRST_EXTERNAL_VECTOR; vector < NR_VECTORS; vector++) {
--		unsigned int irq;
- 		struct irq_desc *desc;
- 		struct irq_cfg *cfg;
--		irq = __get_cpu_var(vector_irq)[vector];
- 
--		desc = irq_to_desc(irq);
--		if (!desc)
-+		desc = __get_cpu_var(vector_irq)[vector];
-+		if (desc == NULL)
- 			continue;
- 
--		cfg = irq_cfg(irq);
-+		cfg = irq_cfg(desc->irq);
- 		spin_lock(&desc->lock);
- 		if (!cfg->move_cleanup_count)
- 			goto unlock;
-@@ -2387,7 +2391,7 @@ asmlinkage void smp_irq_move_cleanup_int
- 		if ((vector == cfg->vector) && cpu_isset(me, cfg->domain))
- 			goto unlock;
- 
--		__get_cpu_var(vector_irq)[vector] = -1;
-+		__get_cpu_var(vector_irq)[vector] = NULL;
- 		cfg->move_cleanup_count--;
- unlock:
- 		spin_unlock(&desc->lock);
-Index: linux/include/asm-x86/hw_irq.h
-===================================================================
---- linux.orig/include/asm-x86/hw_irq.h	2008-09-09 12:57:08.000000000 -0500
-+++ linux/include/asm-x86/hw_irq.h	2008-09-09 12:57:13.000000000 -0500
-@@ -113,7 +113,7 @@ extern asmlinkage void smp_invalidate_in
- extern void (*const interrupt[NR_VECTORS])(void);
- #endif
- 
--typedef int vector_irq_t[NR_VECTORS];
-+typedef struct irq_desc *vector_irq_t[NR_VECTORS];
- DECLARE_PER_CPU(vector_irq_t, vector_irq);
- 
- #ifdef CONFIG_X86_IO_APIC
-Index: linux/arch/x86/kernel/irq_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/irq_32.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/kernel/irq_32.c	2008-09-10 09:20:10.000000000 -0500
-@@ -226,26 +226,24 @@ unsigned int do_IRQ(struct pt_regs *regs
- 	int overflow;
- 	unsigned vector = ~regs->orig_ax;
- 	struct irq_desc *desc;
--	unsigned irq;
- 
- 
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
--	irq = __get_cpu_var(vector_irq)[vector];
- 
- 	overflow = check_stack_overflow();
- 
--	desc = irq_to_desc(irq);
--	if (unlikely(!desc)) {
--		printk(KERN_EMERG "%s: cannot handle IRQ %d vector %#x cpu %d\n",
--					__func__, irq, vector, smp_processor_id());
-+	desc = __get_cpu_var(vector_irq)[vector];
-+	if (unlikely(desc == NULL)) {
-+		printk(KERN_EMERG "%s: cannot handle IRQ vector %#x cpu %d\n",
-+					__func__, vector, smp_processor_id());
- 		BUG();
- 	}
- 
--	if (!execute_on_irq_stack(overflow, desc, irq)) {
-+	if (!execute_on_irq_stack(overflow, desc, desc->irq)) {
- 		if (unlikely(overflow))
- 			print_stack_overflow();
--		desc->handle_irq(irq, desc);
-+		desc->handle_irq(desc->irq, desc);
- 	}
- 
- 	irq_exit();
-Index: linux/arch/x86/kernel/irq_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/irq_64.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/kernel/irq_64.c	2008-09-10 09:20:10.000000000 -0500
-@@ -213,20 +213,18 @@ asmlinkage unsigned int do_IRQ(struct pt
- 
- 	/* high bit used in ret_from_ code  */
- 	unsigned vector = ~regs->orig_ax;
--	unsigned irq;
- 
- 	exit_idle();
- 	irq_enter();
--	irq = __get_cpu_var(vector_irq)[vector];
- 
- #ifdef CONFIG_DEBUG_STACKOVERFLOW
- 	stack_overflow_check(regs);
- #endif
- 
--	desc = irq_to_desc(irq);
--	if (likely(desc))
--		generic_handle_irq_desc(irq, desc);
--	else {
-+	desc = __get_cpu_var(vector_irq)[vector];
-+	if (likely(desc != NULL)) {
-+		generic_handle_irq_desc(desc->irq, desc);
-+	} else {
- 		if (!disable_apic)
- 			ack_APIC_irq();
- 
-Index: linux/arch/x86/kernel/vmiclock_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/vmiclock_32.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/kernel/vmiclock_32.c	2008-09-09 12:57:13.000000000 -0500
-@@ -242,7 +242,7 @@ void __init vmi_time_init(void)
- 	vmi_time_init_clockevent();
- 	setup_irq(0, &vmi_clock_action);
- 	for_each_possible_cpu(cpu)
--		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = 0;
-+		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = NULL;
- }
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-Index: linux/arch/x86/xen/irq.c
-===================================================================
---- linux.orig/arch/x86/xen/irq.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/xen/irq.c	2008-09-09 12:57:13.000000000 -0500
-@@ -27,8 +27,9 @@ static void __init __xen_init_IRQ(void)
- 	for(i = 0; i < NR_VECTORS; i++) {
- 		int cpu;
- 
-+		desc = irq_to_desc_alloc(i);
- 		for_each_possible_cpu(cpu)
--			per_cpu(vector_irq, cpu)[i] = i;
-+			per_cpu(vector_irq, cpu)[i] = desc;
- 	}
- 
- 	xen_init_IRQ();
-Index: linux/arch/x86/kernel/irqinit_32.c
-===================================================================
---- linux.orig/arch/x86/kernel/irqinit_32.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/kernel/irqinit_32.c	2008-09-09 12:57:13.000000000 -0500
-@@ -59,6 +59,8 @@ static struct irqaction fpu_irq = {
- void __init init_ISA_irqs (void)
- {
- 	int i;
++static int __assign_irq_system_vector(int irq, cpumask_t *mask, int priority)
++{
++	int vector;
++	cpumask_t target_cpus_mask;
 +	int cpu;
-+	unsigned int vector;
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- 	init_bsp_APIC();
-@@ -76,6 +78,12 @@ void __init init_ISA_irqs (void)
- 		desc->action = NULL;
- 		desc->depth = 1;
- 
-+		vector = IRQ0_VECTOR + i;
-+		for_each_cpu_mask_nr(cpu, cpu_possible_map) {
-+			BUG_ON(per_cpu(vector_irq, cpu)[vector] != NULL);
-+			per_cpu(vector_irq, cpu)[vector] = desc;
++	cpumask_t domain;
++	cpumask_t new_domain_mask = CPU_MASK_NONE;
++	struct irq_desc *desc;
++
++	if (priority == IRQ_PRIORITY_HIGH)
++		vector = first_static_system_vector;
++	else if (priority == IRQ_PRIORITY_LOW)
++		vector = FIRST_DEVICE_VECTOR - 1;
++	else
++		BUG();
++
++	cpus_and(target_cpus_mask, *mask, cpu_possible_map);
++	for_each_cpu_mask_nr(cpu, target_cpus_mask) {
++		domain = vector_allocation_domain(cpu);
++		cpus_and(domain, domain, cpu_possible_map);
++		cpus_or(new_domain_mask, new_domain_mask, domain);
++	}
++
++	desc = irq_to_desc_alloc(irq);
++
++	do {
++		if (priority == IRQ_PRIORITY_HIGH) {
++			if (--vector < FIRST_DEVICE_VECTOR)
++				return -ENOSPC;
++		} else {	/* IRQ_PRIORITY_LOW */
++			if (++vector == first_static_system_vector)
++				return -ENOSPC;
 +		}
 +
- 		set_irq_chip_and_handler_name(i, &i8259A_chip,
- 					      handle_level_irq, "XT");
++	} while (!__grab_irq_vector(desc, vector, &new_domain_mask));
++
++	/* found one */
++	return 0;
++}
++
+ static void __clear_irq_vector(int irq)
+ {
+ 	struct irq_cfg *cfg;
+@@ -3045,21 +3102,22 @@ static int __init ioapic_init_sysfs(void
+ 
+ device_initcall(ioapic_init_sysfs);
+ 
+-/*
+- * Dynamic irq allocate and deallocation
+- */
+-unsigned int create_irq_nr(unsigned int irq_want)
++#define DEVICE_VECTOR	1
++#define SYSTEM_VECTOR	2
++
++static unsigned int __create_irq_nr(int vector_type, unsigned int irq_want,
++				    cpumask_t *mask, int priority)
+ {
+ 	/* Allocate an unused irq */
+ 	unsigned int irq;
+ 	unsigned int new;
+ 	unsigned long flags;
+ 	struct irq_cfg *cfg_new;
++	int ret;
+ 
+ #ifndef CONFIG_HAVE_SPARSE_IRQ
+ 	irq_want = nr_irqs - 1;
+ #endif
+-
+ 	irq = 0;
+ 	spin_lock_irqsave(&vector_lock, flags);
+ 	for (new = irq_want; new > 0; new--) {
+@@ -3071,18 +3129,34 @@ unsigned int create_irq_nr(unsigned int 
+ 		/* check if need to create one */
+ 		if (!cfg_new)
+ 			cfg_new = irq_cfg_alloc(new);
+-		if (__assign_irq_vector(new, TARGET_CPUS) == 0)
++		if (vector_type == DEVICE_VECTOR)
++			ret = __assign_irq_vector(new, mask);
++		else
++			ret = __assign_irq_system_vector(new, mask, priority);
++
++		if (ret == 0)
+ 			irq = new;
+ 		break;
  	}
-@@ -90,26 +98,7 @@ static struct irqaction irq2 = {
- 	.name = "cascade",
- };
+ 	spin_unlock_irqrestore(&vector_lock, flags);
  
--DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
--	[0 ... IRQ0_VECTOR - 1] = -1,
--	[IRQ0_VECTOR] = 0,
--	[IRQ1_VECTOR] = 1,
--	[IRQ2_VECTOR] = 2,
--	[IRQ3_VECTOR] = 3,
--	[IRQ4_VECTOR] = 4,
--	[IRQ5_VECTOR] = 5,
--	[IRQ6_VECTOR] = 6,
--	[IRQ7_VECTOR] = 7,
--	[IRQ8_VECTOR] = 8,
--	[IRQ9_VECTOR] = 9,
--	[IRQ10_VECTOR] = 10,
--	[IRQ11_VECTOR] = 11,
--	[IRQ12_VECTOR] = 12,
--	[IRQ13_VECTOR] = 13,
--	[IRQ14_VECTOR] = 14,
--	[IRQ15_VECTOR] = 15,
--	[IRQ15_VECTOR + 1 ... NR_VECTORS - 1] = -1
--};
-+DEFINE_PER_CPU(vector_irq_t, vector_irq);
+-	if (irq > 0) {
++	if (irq > 0)
+ 		dynamic_irq_init(irq);
+-	}
++
+ 	return irq;
+ }
  
- /* Overridden in paravirt.c */
- void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
++unsigned int create_irq_nr(unsigned int irq_want)
++{
++	cpumask_t mask = TARGET_CPUS;
++
++	return __create_irq_nr(DEVICE_VECTOR, irq_want, &mask,
++			       IRQ_PRIORITY_LOW);
++}
++
++/*
++ * Dynamic irq device vector allocation.
++ */
+ int create_irq(void)
+ {
+ 	int irq;
+@@ -3095,6 +3169,9 @@ int create_irq(void)
+ 	return irq;
+ }
+ 
++/*
++ * Dynamic irq device vector deallocation.
++ */
+ void destroy_irq(unsigned int irq)
+ {
+ 	unsigned long flags;
+@@ -3109,6 +3186,127 @@ void destroy_irq(unsigned int irq)
+ 	spin_unlock_irqrestore(&vector_lock, flags);
+ }
+ 
++static void noop(unsigned int irq)
++{
++}
++
++static unsigned int noop_ret(unsigned int irq)
++{
++	return 0;
++}
++
++static void ack_apic(unsigned int irq)
++{
++	ack_APIC_irq();
++}
++
++static struct irq_chip ack_apic_chip = {
++	.name		= "ack_apic",
++	.startup	= noop_ret,
++	.shutdown	= noop,
++	.enable		= noop,
++	.disable	= noop,
++	.ack		= noop,
++	.mask		= noop,
++	.unmask		= noop,
++	.eoi		= ack_apic,
++	.end		= noop,
++};
++
++unsigned int create_irq_system_vector_nr(unsigned int irq_want, cpumask_t *mask,
++					 int priority)
++{
++	return __create_irq_nr(SYSTEM_VECTOR, irq_want, mask, priority);
++}
++
++/*
++ * Dynamic irq system vector allocation.
++ */
++unsigned int create_irq_system_vector(cpumask_t *mask, int priority,
++				      char *irq_name, int *assigned_vector)
++{
++	unsigned long flags;
++	struct irq_cfg *cfg;
++	int irq;
++
++	/* allocate an available irq and vector mapping */
++	irq = create_irq_system_vector_nr(nr_irqs - 1, mask, priority);
++	if (irq == 0)
++		return -1;
++
++	spin_lock_irqsave(&vector_lock, flags);
++	set_irq_chip_and_handler_name(irq, &ack_apic_chip, handle_percpu_irq,
++				      irq_name);
++	spin_unlock_irqrestore(&vector_lock, flags);
++
++	cfg = irq_cfg(irq);
++	*assigned_vector = cfg->vector;
++	return irq;
++}
++EXPORT_SYMBOL(create_irq_system_vector);
++
++/*
++ * Dynamic irq system vector deallocation.
++ */
++void destroy_irq_system_vector(unsigned int irq)
++{
++	unsigned long flags;
++	struct irq_cfg *cfg;
++	int cpu;
++
++	if (irq >= nr_irqs)
++		return;
++	cfg = irq_cfg(irq);
++	if (cfg->vector == 0)
++		return;
++
++#ifdef CONFIG_SMP
++	synchronize_irq(irq);
++#endif
++	dynamic_irq_cleanup(irq);
++	disable_irq(irq);
++
++	spin_lock_irqsave(&vector_lock, flags);
++
++	for_each_cpu_mask_nr(cpu, cfg->domain)
++		per_cpu(vector_irq, cpu)[cfg->vector] = NULL;
++
++	cfg->vector = 0;
++	cpus_clear(cfg->domain);
++
++	spin_unlock_irqrestore(&vector_lock, flags);
++}
++EXPORT_SYMBOL(destroy_irq_system_vector);
++
++int reserve_system_vectors(int number)
++{
++	unsigned long flags;
++	int new_last_device_vector;
++	int vector;
++	int cpu;
++	int ret = -EBUSY;
++
++	spin_lock_irqsave(&vector_lock, flags);
++
++	new_last_device_vector = last_device_vector - number;
++	if (new_last_device_vector < MIN_LAST_DEVICE_VECTOR)
++		goto out;
++
++	for (vector = last_device_vector; vector > new_last_device_vector;
++	     vector--) {
++		for_each_cpu_mask_nr(cpu, cpu_possible_map) {
++			if (per_cpu(vector_irq, cpu)[vector] != NULL)
++				goto out;
++		}
++	}
++
++	last_device_vector = new_last_device_vector;
++	ret = 0;
++out:
++	spin_unlock_irqrestore(&vector_lock, flags);
++	return ret;
++}
++
+ /*
+  * MSI message composition
+  */
+Index: linux/include/linux/irq.h
+===================================================================
+--- linux.orig/include/linux/irq.h	2008-09-10 12:08:46.000000000 -0500
++++ linux/include/linux/irq.h	2008-09-11 06:53:16.000000000 -0500
+@@ -390,11 +390,22 @@ set_irq_chained_handler(unsigned int irq
+ extern void set_irq_noprobe(unsigned int irq);
+ extern void set_irq_probe(unsigned int irq);
+ 
+-/* Handle dynamic irq creation and destruction */
++/* Handle dynamic irq device vector allocation and deallocation */
+ extern unsigned int create_irq_nr(unsigned int irq_want);
+ extern int create_irq(void);
+ extern void destroy_irq(unsigned int irq);
+ 
++/* Handle dynamic irq system vector allocation and deallocation */
++extern unsigned int create_irq_system_vector(cpumask_t *mask, int priority,
++					     char *irq_name,
++					     int *assigned_vector);
++#define IRQ_PRIORITY_LOW	1
++#define IRQ_PRIORITY_HIGH	2
++
++extern void destroy_irq_system_vector(unsigned int irq);
++
++extern int reserve_system_vectors(int number);
++
+ /* Test to see if a driver has successfully requested an irq */
+ static inline int irq_has_action(unsigned int irq)
+ {
+Index: linux/arch/x86/kernel/apic.c
+===================================================================
+--- linux.orig/arch/x86/kernel/apic.c	2008-09-10 12:08:46.000000000 -0500
++++ linux/arch/x86/kernel/apic.c	2008-09-11 06:42:34.000000000 -0500
+@@ -116,7 +116,8 @@ static int disable_apic_timer __cpuinitd
+ int local_apic_timer_c2_ok;
+ EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
+ 
+-int first_system_vector = 0xfe;
++int first_static_system_vector = 0xfe;
++int last_device_vector = 0xfd;
+ 
+ char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
+ 
+Index: linux/include/asm-x86/desc.h
+===================================================================
+--- linux.orig/include/asm-x86/desc.h	2008-09-10 12:08:46.000000000 -0500
++++ linux/include/asm-x86/desc.h	2008-09-11 06:42:34.000000000 -0500
+@@ -323,22 +323,25 @@ static inline void set_intr_gate(unsigne
+ #define SYS_VECTOR_FREE		0
+ #define SYS_VECTOR_ALLOCED	1
+ 
+-extern int first_system_vector;
++extern int first_static_system_vector;
++extern int last_device_vector;
+ extern char system_vectors[];
+ 
+-static inline void alloc_system_vector(int vector)
++static inline void alloc_static_system_vector(int vector)
+ {
+ 	if (system_vectors[vector] == SYS_VECTOR_FREE) {
+ 		system_vectors[vector] = SYS_VECTOR_ALLOCED;
+-		if (first_system_vector > vector)
+-			first_system_vector = vector;
++		if (first_static_system_vector > vector)
++			first_static_system_vector = vector;
++		if (last_device_vector > vector - 1)
++			last_device_vector = vector - 1;
+ 	} else
+ 		BUG();
+ }
+ 
+ static inline void alloc_intr_gate(unsigned int n, void *addr)
+ {
+-	alloc_system_vector(n);
++	alloc_static_system_vector(n);
+ 	set_intr_gate(n, addr);
+ }
+ 
+Index: linux/include/asm-x86/irq_vectors.h
+===================================================================
+--- linux.orig/include/asm-x86/irq_vectors.h	2008-09-05 08:38:48.000000000 -0500
++++ linux/include/asm-x86/irq_vectors.h	2008-09-11 07:14:54.000000000 -0500
+@@ -92,6 +92,7 @@
+  * levels. (0x80 is the syscall vector)
+  */
+ #define FIRST_DEVICE_VECTOR	(IRQ15_VECTOR + 2)
++#define MIN_LAST_DEVICE_VECTOR	(LOCAL_TIMER_VECTOR - 16)
+ 
+ #define NR_VECTORS		256
+ 
 Index: linux/arch/x86/kernel/irqinit_64.c
 ===================================================================
---- linux.orig/arch/x86/kernel/irqinit_64.c	2008-09-09 12:57:08.000000000 -0500
-+++ linux/arch/x86/kernel/irqinit_64.c	2008-09-09 12:57:13.000000000 -0500
-@@ -114,30 +114,13 @@ static struct irqaction irq2 = {
- 	.mask = CPU_MASK_NONE,
- 	.name = "cascade",
- };
--DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
--	[0 ... IRQ0_VECTOR - 1] = -1,
--	[IRQ0_VECTOR] = 0,
--	[IRQ1_VECTOR] = 1,
--	[IRQ2_VECTOR] = 2,
--	[IRQ3_VECTOR] = 3,
--	[IRQ4_VECTOR] = 4,
--	[IRQ5_VECTOR] = 5,
--	[IRQ6_VECTOR] = 6,
--	[IRQ7_VECTOR] = 7,
--	[IRQ8_VECTOR] = 8,
--	[IRQ9_VECTOR] = 9,
--	[IRQ10_VECTOR] = 10,
--	[IRQ11_VECTOR] = 11,
--	[IRQ12_VECTOR] = 12,
--	[IRQ13_VECTOR] = 13,
--	[IRQ14_VECTOR] = 14,
--	[IRQ15_VECTOR] = 15,
--	[IRQ15_VECTOR + 1 ... NR_VECTORS - 1] = -1
--};
-+DEFINE_PER_CPU(vector_irq_t, vector_irq);
+--- linux.orig/arch/x86/kernel/irqinit_64.c	2008-09-09 12:57:13.000000000 -0500
++++ linux/arch/x86/kernel/irqinit_64.c	2008-09-11 07:21:41.000000000 -0500
+@@ -22,6 +22,7 @@
+ #include <asm/desc.h>
+ #include <asm/apic.h>
+ #include <asm/i8259.h>
++#include <asm/genapic.h>
  
- static void __init init_ISA_irqs (void)
- {
- 	int i;
-+	int cpu;
-+	unsigned int vector;
+ /*
+  * Common place to define all x86 IRQ vectors
+@@ -202,6 +203,9 @@ void __init native_init_IRQ(void)
+ 	alloc_intr_gate(SPURIOUS_APIC_VECTOR, spurious_interrupt);
+ 	alloc_intr_gate(ERROR_APIC_VECTOR, error_interrupt);
  
- 	init_bsp_APIC();
- 	init_8259A(0);
-@@ -150,6 +133,12 @@ static void __init init_ISA_irqs (void)
- 		desc->action = NULL;
- 		desc->depth = 1;
- 
-+		vector = IRQ0_VECTOR + i;
-+		for_each_cpu_mask_nr(cpu, cpu_possible_map) {
-+			BUG_ON(per_cpu(vector_irq, cpu)[vector] != NULL);
-+			per_cpu(vector_irq, cpu)[vector] = desc;
-+		}
++	if (is_uv_system())
++		reserve_system_vectors(8);
 +
- 		/*
- 		 * 16 old-style INTA-cycle interrupts:
- 		 */
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
+ }
