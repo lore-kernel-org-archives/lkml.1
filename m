@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYIKUjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYIKUlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYIKUjB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYIKUix
+	id S1756541AbYIKUlA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYIKUkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:38:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60510 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893AbYIKUiw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:38:52 -0400
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: David Woodhouse <dwmw2@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>,
-       Thierry Vignaud <tvignaud@mandriva.com>,
-       David Miller <davem@davemloft.net>, jeffm@suse.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20080911201541.GA18518@kroah.com>
-References: <48C68507.6000609@suse.com>
-	 <1221087719.13621.50.camel@macbook.infradead.org>
-	 <20080910.160505.14060698.davem@davemloft.net>
-	 <m27i9i9az9.fsf@vador.mandriva.com> <20080911134042.GB3293@kroah.com>
-	 <1221151165.6309.55.camel@californication>
-	 <20080911201541.GA18518@kroah.com>
-Content-Type: text/plain
-Date: Thu, 11 Sep 2008 13:38:38 -0700
-Message-Id: <1221165518.4077.17.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 11 Sep 2008 16:40:52 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35422 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752015AbYIKUkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 16:40:51 -0400
+Date: Thu, 11 Sep 2008 15:40:50 -0500
+From: Robin Holt <holt@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
+       Dean Nelson <dcn@sgi.com>
+Subject: [Patch] Panic on ia64 when you modprobe -r xpc.
+Message-ID: <20080911204050.GE8520@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-11 at 13:15 -0700, Greg KH wrote:
-> This is the firmware that is in the kernel source tree, that has been
-> moved to use request_firmware, and was originally tied tightly to the
-> kernel drivers themselves.
+If you are on ia64 and you modprobe xpc then modprobe -r xpc, you
+immediately get a panic.  xpc depends on xp which depends on gru for
+a symbol.  That symbol is only used when we are running on UV hardware.
 
-Not really. Most of it hasn't changed for years; it isn't _really_ tied
-that closely to the kernel. 
+Currently, the GRU driver detects we are not on UV hardware and does
+no initializing.  It does not do the same check when unloading.  As a
+result, the gru driver attempts to tear down stuff that was not setup.
 
-You can just ignore what the kernel ships with, and install the firmware
-from the linux-firmware.git repository instead.
+This is a simple two-line workaround to get us through this release.
+Once 2.6.28 is opened, we need to rework the symbols that xp is depending
+on from gru so the gru driver can properly fail to load when hardware
+is not available.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Signed-off-by: Robin Holt <holt@sgi.com>
 
+
+Index: xpmem_v006_20080911/drivers/misc/sgi-gru/grufile.c
+===================================================================
+--- xpmem_v006_20080911.orig/drivers/misc/sgi-gru/grufile.c	2008-09-11 15:23:40.000000000 -0500
++++ xpmem_v006_20080911/drivers/misc/sgi-gru/grufile.c	2008-09-11 15:33:21.009814869 -0500
+@@ -445,6 +445,9 @@ static void __exit gru_exit(void)
+ 	int order = get_order(sizeof(struct gru_state) *
+ 			      GRU_CHIPLETS_PER_BLADE);
+ 
++	if (!IS_UV())
++		return;
++
+ 	for (i = 0; i < GRU_CHIPLETS_PER_BLADE; i++)
+ 		free_irq(IRQ_GRU + i, NULL);
+ 
