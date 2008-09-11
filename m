@@ -1,68 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbYIKLTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYIKLUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755489AbYIKLTy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 07:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYIKLTp
+	id S1755430AbYIKLUx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 07:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYIKLUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 07:19:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34551 "EHLO hera.kernel.org"
+	Thu, 11 Sep 2008 07:20:43 -0400
+Received: from il.qumranet.com ([212.179.150.194]:20233 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752217AbYIKLTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 07:19:44 -0400
-Message-ID: <48C8FE6F.2070003@kernel.org>
-Date: Thu, 11 Sep 2008 13:18:07 +0200
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Austin Zhang <austin_zhang@linux.intel.com>
-CC: multinymous@gmail.com, Elias Oltmanns <eo@nebensachen.de>,
-       Thomas Renninger <trenn@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-References: <48C7FCEE.8060404@kernel.org> <1221128797.30437.4.camel@azhang.bj.intel.com>
-In-Reply-To: <1221128797.30437.4.camel@azhang.bj.intel.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 11 Sep 2008 11:19:31 +0000 (UTC)
+	id S1752235AbYIKLUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 07:20:42 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] KVM fixes for 2.6.27-rc6
+Date: Thu, 11 Sep 2008 14:20:40 +0300
+Message-Id: <1221132040-22598-1-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.6.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Austin Zhang wrote:
->> 2. If we're gonna unify interface, how much can we unify the backend?
->>    Some devices are based on polling, others interrupt.  For polling,
->>    is it better to delegate the whole polling to userland or is it
->>    better to do some of it in kernel (tp_smapi seems to be doing
->>    this)?
-> Shock protection should be time-sensitive, if we put the whole polling 
-> into userland, will it be possible that the damage had happened before 
-> userland app can signal ATA idle command timely?
+Linus, the trio of patches in
 
-Yeah, it's time sensitive but it seems latency of tens of millisecs is
-good enough and with mlocked user process, it's really not a problem.
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates/2.6.27
 
->> 3. What about the userland daemon?  It would be best to have a unified
->>    daemon which can handle all instead of one for hdaps and another
->>    for hp (and so on).  If we can unify the interface, this will be
->>    much easier.
->>
->> Thanks.
-> 
-> Can this process "acceleration-detect --> inform ATA shock protect --> 
-> issue idle command" be done totally in kernel, avoiding to consume too 
-> many time for "acceleration-detect --> sysfs --> userland app --> sysfs 
-> --> inform ATA shock protect --> issue idle command" before HD was damaged? 
-> The userland daemon should be just a indicator (but of course it can pass 
-> params to driver) for the protection status rather than a judge.
+fix regressions in the kvm npt and ept support code.  Please pull.
 
-Again, it doesn't have to be that fast and the judgement part involves
-complex floating arithmetics + user usage patterns (has the user typed
-something recently, is lid closed kind of stuff).  I don't think it
-fits in kernel.
+Shortlog, diffstat, and diff below.
 
-Thanks.
+Joerg Roedel (2):
+      KVM: SVM: fix random segfaults with NPT enabled
+      KVM: SVM: fix guest global tlb flushes with NPT
 
--- 
-tejun
+Sheng Yang (1):
+      KVM: VMX: Always return old for clear_flush_young() when using EPT
+
+ arch/x86/kvm/mmu.c |    4 ++++
+ arch/x86/kvm/svm.c |   12 ++++++++++++
+ arch/x86/kvm/vmx.c |    3 +--
+ arch/x86/kvm/vmx.h |    2 --
+ 4 files changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 0bfe2bd..3da2508 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -711,6 +711,10 @@ static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp)
+ 	u64 *spte;
+ 	int young = 0;
+ 
++	/* always return old for EPT */
++	if (!shadow_accessed_mask)
++		return 0;
++
+ 	spte = rmap_next(kvm, rmapp, NULL);
+ 	while (spte) {
+ 		int _young;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index e2ee264..8233b86 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -62,6 +62,7 @@ static int npt = 1;
+ module_param(npt, int, S_IRUGO);
+ 
+ static void kvm_reput_irq(struct vcpu_svm *svm);
++static void svm_flush_tlb(struct kvm_vcpu *vcpu);
+ 
+ static inline struct vcpu_svm *to_svm(struct kvm_vcpu *vcpu)
+ {
+@@ -878,6 +879,10 @@ set:
+ static void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
+ {
+ 	unsigned long host_cr4_mce = read_cr4() & X86_CR4_MCE;
++	unsigned long old_cr4 = to_svm(vcpu)->vmcb->save.cr4;
++
++	if (npt_enabled && ((old_cr4 ^ cr4) & X86_CR4_PGE))
++		force_new_asid(vcpu);
+ 
+ 	vcpu->arch.cr4 = cr4;
+ 	if (!npt_enabled)
+@@ -1027,6 +1032,13 @@ static int pf_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+ 		KVMTRACE_3D(TDP_FAULT, &svm->vcpu, error_code,
+ 			    (u32)fault_address, (u32)(fault_address >> 32),
+ 			    handler);
++	/*
++	 * FIXME: Tis shouldn't be necessary here, but there is a flush
++	 * missing in the MMU code. Until we find this bug, flush the
++	 * complete TLB here on an NPF
++	 */
++	if (npt_enabled)
++		svm_flush_tlb(&svm->vcpu);
+ 
+ 	if (event_injection)
+ 		kvm_mmu_unprotect_page_virt(&svm->vcpu, fault_address);
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 2a69773..7041cc5 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -3301,8 +3301,7 @@ static int __init vmx_init(void)
+ 		kvm_mmu_set_base_ptes(VMX_EPT_READABLE_MASK |
+ 			VMX_EPT_WRITABLE_MASK |
+ 			VMX_EPT_DEFAULT_MT << VMX_EPT_MT_EPTE_SHIFT);
+-		kvm_mmu_set_mask_ptes(0ull, VMX_EPT_FAKE_ACCESSED_MASK,
+-				VMX_EPT_FAKE_DIRTY_MASK, 0ull,
++		kvm_mmu_set_mask_ptes(0ull, 0ull, 0ull, 0ull,
+ 				VMX_EPT_EXECUTABLE_MASK);
+ 		kvm_enable_tdp();
+ 	} else
+diff --git a/arch/x86/kvm/vmx.h b/arch/x86/kvm/vmx.h
+index 425a134..23e8373 100644
+--- a/arch/x86/kvm/vmx.h
++++ b/arch/x86/kvm/vmx.h
+@@ -370,8 +370,6 @@ enum vmcs_field {
+ #define VMX_EPT_READABLE_MASK			0x1ull
+ #define VMX_EPT_WRITABLE_MASK			0x2ull
+ #define VMX_EPT_EXECUTABLE_MASK			0x4ull
+-#define VMX_EPT_FAKE_ACCESSED_MASK		(1ull << 62)
+-#define VMX_EPT_FAKE_DIRTY_MASK			(1ull << 63)
+ 
+ #define VMX_EPT_IDENTITY_PAGETABLE_ADDR		0xfffbc000ul
+ 
