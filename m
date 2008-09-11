@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYIKTz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYIKUA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYIKTz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 15:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYIKTzL
+	id S1755512AbYIKUA5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYIKUAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 15:55:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:24183 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbYIKTzK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 15:55:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Bir/onpQjUx5lGLGCV6r0XLVUq2eZa5P1d6HoJHD5fwYFWLya/CBEFgTw7a+TTuW9
-	SCGyjpT7vPLzwDkkvr91A==
-Message-ID: <6599ad830809111254h62e1945egd72b30f2c8585104@mail.gmail.com>
-Date: Thu, 11 Sep 2008 12:54:53 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
-Subject: Re: [PATCH -mm] cgroup,cpuset: use alternative malloc to allocate large memory buf for tasks
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Paul Jackson" <pj@sgi.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <6599ad830809110945pb85ec68o16328b31cbb0dc52@mail.gmail.com>
+	Thu, 11 Sep 2008 16:00:48 -0400
+Received: from nebensachen.de ([195.34.83.29]:37523 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751380AbYIKUAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 16:00:47 -0400
+X-Hashcash: 1:20:080911:tj@kernel.org::WPcFEfSSNJidNm25:00000RgM
+X-Hashcash: 1:20:080911:multinymous@gmail.com::9rMUb50RlMJRhmfb:00000000000000000000000000000000000000005bFS
+X-Hashcash: 1:20:080911:trenn@suse.de::w6BjxT7oOoOiY9og:000019qT
+X-Hashcash: 1:20:080911:linux-kernel@vger.kernel.org::p+iY+CgVgBLnrmsq:0000000000000000000000000000000000Euf
+X-Hashcash: 1:20:080911:linux-ide@vger.kernel.org::VPN16mTTaGoh5U9O:0000000000000000000000000000000000001nM4
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: Shem Multinymous <multinymous@gmail.com>, Thomas Renninger <trenn@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Laptop shock detection and harddisk protection
+References: <48C7FCEE.8060404@kernel.org>
+	<41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
+	<48C948A6.3080404@kernel.org>
+Date: Thu, 11 Sep 2008 22:00:37 +0200
+Message-ID: <877i9ipi56.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48C8F32E.2020004@cn.fujitsu.com>
-	 <6599ad830809110945pb85ec68o16328b31cbb0dc52@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 9:45 AM, Paul Menage <menage@google.com> wrote:
-> On Thu, Sep 11, 2008 at 3:30 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->> This new alternative allocation implementation can allocate memory
->> up to 64M in 32bits system or 512M in 64bits system.
+Tejun Heo <tj@kernel.org> wrote:
+> Hello, Shem Multinymous.
 >
-> Isn't a lot of this patch just reimplementing vmalloc()?
+> Shem Multinymous wrote:
+[...]
+>>> 2. If we're gonna unify interface, how much can we unify the backend?
+>>>   Some devices are based on polling, others interrupt.  For polling,
+>>>   is it better to delegate the whole polling to userland or is it
+>>>   better to do some of it in kernel (tp_smapi seems to be doing
+>>>   this)?
+>> 
+>> The ThinkPad accelerometer needs to be polled at very regular
+>> intervals (max jitter on the order of 10ms), which sounds like a job
+>> for the kernel.
+>
+> Yes, I agree.
+>
+>> This is because in ThinkPads we actually have a 4-level pile:
+>> [hdapsd userspace] -> [hdaps kernel] -> [embedded controller] ->
+>> [accelerometer A2D]
+>> What the kernel polls is actually is the H8S embedded controller (EC)
+>> chip, which in turn does its own polling of the accelerometer A2D.
+>> Now, the EC has a tiny buffer and strange buffering semantics, and it
+>> has its own internal clock, so the software->EC polling should be very
+>> regular to minmize EC buffer overflows/underruns.
+>
+> So, I think the whole polling should be implemented inside the kernel
+> and the kernel should notify userland when new data is available,
+> which is about what the current joystick implementation does and can
+> be achieved using sysfs_notify_event().
 
-To extend on this, I think there are two ways of fixing the large
-allocation problem:
+Short of a satisfying proposition regarding the questions raised, I just
+want to add two things that would be nice to solve in the future one way
+or another and should perhaps be taken into consideration from the
+beginning:
 
-1) just use vmalloc() rather than kmalloc() when the pid array is over
-a certain threshold (probably 1 page?)
+1. Disable polling completely when it isn't required: once the hd has
+   spun down, there is no need to keep polling the sensors at all. Only
+   when the first request requiring the hd to spin up arrives, the
+   kernel needs to hold back for a short while to gather enough data
+   from the sensors, so shock protection is up and running again.
+2. Make shock protection interact nicely with suspend operations:
+   currently, we are out of luck if anything should happen after
+   processes have been frozen. This is particularly unfortunatel in the
+   case of s2disk.
 
-2) allocate pages/chunks in a similar way to your CL, but don't bother
-mapping them. Instead we'd use the fact that each record (pid) is the
-same size, and hence we can very easily use the high bits of an index
-to select the chunk and the low bits to select the pid within the
-chunk - no need to suffer the overhead of setting up and tearing down
-ptes in order for the MMU do the same operation for us in hardware.
+As far as 1. is concerned, I'm not quite sure yet how to determine when
+the disk has spun down since this may have happened according to vendor
+specific timing rules. Once we have established that the disk is
+sleeping safe and sound, sensor drivers can be notified to stop polling
+the hardware and possibly notify clients (like hdapsd) about that fact.
 
-Obviously option 1 is a lot simpler, but option 2 avoids a
-vmap()/vunmap() on every open/close of a tasks file. I'm not familiar
-enough with the performance of vmap/vunmap on typical
-hardware/workloads to know how high this overhead is  - maybe a VM
-guru can comment?
+Something along the lines of the disk_shock module approach suggested by
+Bart in [1] sounds promising, but it still needs some careful thinking
+when designing the interfaces to all components involved. As for the
+suspend problem, we could either put some simplified logic into
+disk_shock so it can take over once hdapsd has been frozen, or we can
+find a way to keep hdapsd unfrozen until the hd has been put to sleep.
+Of course, we'd have to think about resume as well, although it'll be
+impossible to protect right from the start in the s2disk case.
 
-Paul
+Regards,
+
+Elias
+
+[1] http://marc.info/?l=linux-kernel&m=122021163324843&w=2
