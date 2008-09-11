@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYIKObP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbYIKOc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbYIKObP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 10:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYIKOa7
+	id S1755597AbYIKOc6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 10:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYIKOcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 10:30:59 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:45063 "EHLO mo11.iij4u.or.jp"
+	Thu, 11 Sep 2008 10:32:50 -0400
+Received: from mail.queued.net ([207.210.101.209]:3481 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbYIKOa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 10:30:58 -0400
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
-       Alexis Bruemmer <alexisb@us.ibm.com>, Muli Ben-Yehuda <muli@il.ibm.com>
-Subject: [PATCH 1/2] x86: avoid unnecessary low zone allocation in Calgary's alloc_coherent
-Date: Thu, 11 Sep 2008 23:08:47 +0900
-Message-Id: <1221142128-28350-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.4.2
-In-Reply-To: <1221142128-28350-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1221142128-28350-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	id S1752384AbYIKOct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 10:32:49 -0400
+Date: Thu, 11 Sep 2008 10:32:28 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] OLPC: touchpad driver (take 2)
+Message-ID: <20080911103228.3a55d1b3@dev.queued.net>
+In-Reply-To: <20080911090103.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080813152459.4d6bb0cb@ephemeral>
+	<20080815031435.GD9438@anvil.corenet.prv>
+	<20080910175513.17d900bc@dev.queued.net>
+	<20080911010124.79166d64@dev.queued.net>
+	<20080911013209.3d7c70da@dev.queued.net>
+	<20080911090103.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86's common alloc_coherent (dma_alloc_coherent in dma-mapping.h) sets
-up the gfp flag according to the device dma_mask but Calgary doesn't
-need it because of virtual mappings. This patch avoids unnecessary low
-zone allocation.
+On Thu, 11 Sep 2008 09:05:22 -0400
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Alexis Bruemmer <alexisb@us.ibm.com>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>
----
- arch/x86/kernel/pci-calgary_64.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> On Thu, Sep 11, 2008 at 01:32:09AM -0400, Andres Salomon wrote:
+> > 
+> > And here's the current touchpad driver after updating based upon
+> > your comments.
+> > 
+> 
+> Looks good. Care to respin it all thogether based on the attribute
+> change I requested so I can be sure I'm applying the latest version of
+> everything? Ummm....
+> 
 
-diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
-index 8415d92..fe7695e 100644
---- a/arch/x86/kernel/pci-calgary_64.c
-+++ b/arch/x86/kernel/pci-calgary_64.c
-@@ -491,6 +491,8 @@ static void* calgary_alloc_coherent(struct device *dev, size_t size,
- 	npages = size >> PAGE_SHIFT;
- 	order = get_order(size);
- 
-+	flag &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
-+
- 	/* alloc enough pages (and possibly more) */
- 	ret = (void *)__get_free_pages(flag, order);
- 	if (!ret)
--- 
-1.5.4.2
+Thanks, will do.
 
+
+> > diff --git a/drivers/input/mouse/Kconfig
+> > b/drivers/input/mouse/Kconfig index 7bbea09..fff0253 100644
+> > --- a/drivers/input/mouse/Kconfig
+> > +++ b/drivers/input/mouse/Kconfig
+> > @@ -96,6 +96,16 @@ config MOUSE_PS2_TOUCHKIT
+> >  
+> >  	  If unsure, say N.
+> >  
+> > +config MOUSE_PS2_OLPC
+> > +	bool "OLPC PS/2 mouse protocol extension"
+> > +	depends on MOUSE_PS2 && OLPC
+> 
+> Are you sure it shoudl depend on OLPC? It looks like driver should
+> work on any box with PS/2 port. I understand that only OLPC has the
+> hardware installed but can this change?
+> 
+> Thanks!
+> 
+
+Positive; the majority of this driver is just workarounds for bugs in
+the hardware that are specific to OLPC.  If we didn't have to
+deal with flaky hardware and recalibrations, we could just
+use standard psmouse without extensions.  :/
