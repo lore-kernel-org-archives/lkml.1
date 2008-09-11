@@ -1,46 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbYIKNjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYIKNpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbYIKNjr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYIKNjj
+	id S1754066AbYIKNpc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYIKNpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:39:39 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50370 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751167AbYIKNji (ORCPT
+	Thu, 11 Sep 2008 09:45:17 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:65358 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbYIKNpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:39:38 -0400
-Date: Thu, 11 Sep 2008 09:38:47 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Faidon Liambotis <paravoid@debian.org>, David Miller <davem@davemloft.net>,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-Message-ID: <20080911133847.GD5082@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jeff Mahoney <jeffm@suse.com>,
-	Faidon Liambotis <paravoid@debian.org>,
-	David Miller <davem@davemloft.net>, dwmw2@infradead.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org
-References: <48C68507.6000609@suse.com> <1221087719.13621.50.camel@macbook.infradead.org> <20080910.160505.14060698.davem@davemloft.net> <48C8BC17.5050508@debian.org> <48C8C580.5020803@suse.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48C8C580.5020803@suse.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Thu, 11 Sep 2008 09:45:15 -0400
+Message-Id: <20080911133813.858636188@de.ibm.com>
+References: <20080911133538.026764388@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 11 Sep 2008 15:35:39 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
+       Tim Hockin <thockin@hockin.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       =?ISO-8859-15?q?Jochen=20Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
+       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/4] kmsg: Kernel message catalog macros.
+Content-Disposition: inline; filename=800-kmsg-macros.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 03:15:12AM -0400, Jeff Mahoney wrote:
-> 
-> In the end, though, Andrew's right. We can't go breaking udev prior to
-> 127 with this.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Michael Holzheu <holzheu@de.ibm.com>
 
-But it's OK to break various distribution's kernel packaging tools?
+Introduce a new family of printk macros which prefixes each kmsg message
+with a component name and allows to tag the message with a 24 bit hash of
+the message text. The kmsg component name is defined per source file with
+the KMSG_COMPONENT macro.
 
-    	       	     	     		    	   	     - Ted
+If the message hash will be printed to the console / syslog at all depends
+on CONFIG_MSG_IDS. If it is "n" then a kmsg_xxx call is just another
+printk wrapper. These macros are intended to be used uniformly in the
+s390 architecture and the s390 device drivers.
+
+Signed-off-by: Michael Holzheu <holzheu@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ arch/s390/Kconfig    |    9 ++++++++
+ include/linux/kmsg.h |   54 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/printk.c      |   24 ++++++++++++++++++++++
+ 3 files changed, 87 insertions(+)
+
+Index: quilt-2.6/arch/s390/Kconfig
+===================================================================
+--- quilt-2.6.orig/arch/s390/Kconfig
++++ quilt-2.6/arch/s390/Kconfig
+@@ -571,6 +571,15 @@ bool "s390 guest support (EXPERIMENTAL)"
+ 	select VIRTIO_CONSOLE
+ 	help
+ 	  Select this option if you want to run the kernel under s390 linux
++
++config KMSG_IDS
++	bool "Kernel message numbers"
++	default y
++	help
++	  Select this option if you want to include a message number to the
++	  prefix for kernel messages issued by the s390 architecture and
++	  driver code. See "Documentation/s390/kmsg.txt" for more details.
++
+ endmenu
+ 
+ source "net/Kconfig"
+Index: quilt-2.6/include/linux/kmsg.h
+===================================================================
+--- /dev/null
++++ quilt-2.6/include/linux/kmsg.h
+@@ -0,0 +1,54 @@
++#ifndef _LINUX_KMSG_H
++#define _LINUX_KMSG_H
++
++int kmsg_printk(char *prefix, char *fmt, ...);
++
++#if defined(__KMSG_CHECKER)
++#define KMSG_ID KMSG_COMPONENT ".%06x"
++#define KMSG_FMT(fmt) _$_(fmt)_$_
++#define kmsg_printk __KMSG_CHECK
++#elif defined(CONFIG_KMSG_IDS)
++#define KMSG_ID KMSG_COMPONENT ".%06x"
++#define KMSG_FMT(fmt) fmt
++#else /* !defined(CONFIG_KMSG_IDS) */
++#define KMSG_ID KMSG_COMPONENT
++#define KMSG_FMT(fmt) fmt
++#define kmsg_printk(prefix, fmt, ...) printk(prefix # fmt, ##__VA_ARGS__)
++#endif
++
++#define kmsg_alert(fmt, ...) \
++	kmsg_printk(KERN_ALERT KMSG_ID ": ", KMSG_FMT(fmt), ##__VA_ARGS__)
++
++#define kmsg_err(fmt, ...) \
++	kmsg_printk(KERN_ERR KMSG_ID ": ", KMSG_FMT(fmt), ##__VA_ARGS__)
++
++#define kmsg_warn(fmt, ...) \
++	kmsg_printk(KERN_WARNING KMSG_ID ": ", KMSG_FMT(fmt), ##__VA_ARGS__)
++
++#define kmsg_info(fmt, ...) \
++	kmsg_printk(KERN_INFO KMSG_ID ": ", KMSG_FMT(fmt), ##__VA_ARGS__)
++
++#define kmsg_notice(fmt, ...) \
++	kmsg_printk(KERN_NOTICE KMSG_ID ": ", KMSG_FMT(fmt), ##__VA_ARGS__)
++
++#define kmsg_dev_alert(dev, fmt, ...) \
++	kmsg_printk(KERN_ALERT KMSG_ID ":%s: ", KMSG_FMT(fmt), \
++		    dev_name(dev), ##__VA_ARGS__)
++
++#define kmsg_dev_err(dev, fmt, ...) \
++	kmsg_printk(KERN_ERR KMSG_ID ":%s: ", KMSG_FMT(fmt), \
++		    dev_name(dev), ##__VA_ARGS__)
++
++#define kmsg_dev_warn(dev, fmt, ...) \
++	kmsg_printk(KERN_WARNING KMSG_ID ":%s: ", KMSG_FMT(fmt), \
++		    dev_name(dev), ##__VA_ARGS__)
++
++#define kmsg_dev_info(dev, fmt, ...) \
++	kmsg_printk(KERN_INFO KMSG_ID ":%s: ", KMSG_FMT(fmt), \
++		    dev_name(dev), ##__VA_ARGS__)
++
++#define kmsg_dev_notice(dev, fmt, ...) \
++	kmsg_printk(KERN_NOTICE KMSG_ID ":%s: ", KMSG_FMT(fmt), \
++		    dev_name(dev), ##__VA_ARGS__)
++
++#endif /* _LINUX_KMSG_H */
+Index: quilt-2.6/kernel/printk.c
+===================================================================
+--- quilt-2.6.orig/kernel/printk.c
++++ quilt-2.6/kernel/printk.c
+@@ -32,6 +32,7 @@
+ #include <linux/security.h>
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
++#include <linux/jhash.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -1343,3 +1344,26 @@ bool printk_timed_ratelimit(unsigned lon
+ }
+ EXPORT_SYMBOL(printk_timed_ratelimit);
+ #endif
++
++#if defined CONFIG_PRINTK && defined CONFIG_KMSG_IDS
++
++/**
++ * kmsg_printk - print a kernel message with a message id
++ * @fmt: format string
++ * @hfmt: revelant part of the format string included in the hash
++ */
++asmlinkage int kmsg_printk(const char *prefix, const char *fmt, ...)
++{
++	va_list args;
++	int r;
++
++	r = printk(prefix, jhash(fmt, strlen(fmt), 0) & 0xffffff);
++	va_start(args, fmt);
++	r += vprintk(fmt, args);
++	va_end(args);
++
++	return r;
++}
++EXPORT_SYMBOL(kmsg_printk);
++
++#endif
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
