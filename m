@@ -1,97 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbYIKNrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYIKNqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbYIKNrH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbYIKNqi
+	id S1755189AbYIKNqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbYIKNqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:46:38 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:46295 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756088AbYIKNqh (ORCPT
+	Thu, 11 Sep 2008 09:46:17 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:38060 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbYIKNqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:46:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D8MyUteeT3mU6WbizLeie4MOC2YWLUBi3Rl8zFbeCY229RQP8Hjk2/Jh2hT0NoceYT
-         LL6HcT2XVXvNMa83V71ozunuqJUmXgaN5+KCQ4+SdH1IszUdHKaNgylW/a/VF3skJ+bo
-         n/+B3pON2cUfRp8T29uCvM841j0WhlCANrnEE=
-Message-ID: <80b317760809110646l6e0f678v2d17d9823653d642@mail.gmail.com>
-Date: Thu, 11 Sep 2008 15:46:35 +0200
-From: "Richard Genoud" <richard.genoud@gmail.com>
-To: "Julia Lawall" <julia@diku.dk>
-Subject: Re: [PATCH 2/5] drivers/media/common/tuners: Drop code after return or goto
-Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, vigneshbabu@gmail.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0809111433020.9593@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0809111433020.9593@pc-004.diku.dk>
+	Thu, 11 Sep 2008 09:46:15 -0400
+Message-Id: <20080911133815.176612777@de.ibm.com>
+References: <20080911133538.026764388@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 11 Sep 2008 15:35:42 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       lf_kernel_messages@lists.linux-foundation.org,
+       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Joe Perches <joe@perches.com>,
+       Tim Hockin <thockin@hockin.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michael Holzheu <holzheu@de.ibm.com>, Gerrit Huizenga <gh@us.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Pavel Machek <pavel@ucw.cz>, Sam Ravnborg <sam@ravnborg.org>,
+       =?ISO-8859-15?q?Jochen=20Vo=DF?= <jochen.voss@googlemail.com>,
+       Kunai Takashi <kunai@linux-foundation.jp>,
+       Tim Bird <tim.bird@am.sony.com>, Jan Blunck <jblunck@suse.de>,
+       Rick Troth <rmt@casita.net>, Utz Bacher <utz.bacher@de.ibm.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 4/4] kmsg: convert vmcp to kmsg api.
+Content-Disposition: inline; filename=803-kmsg-vmcp.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/11 Julia Lawall <julia@diku.dk>:
-> From: Julia Lawall <julia@diku.dk>
->
-> The break after the return or goto serves no purpose.
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-Reviewed-by: Richard Genoud <richard.genoud@gmail.com>
-> ---
->  drivers/media/common/tuners/mxl5007t.c     |    1 -
->  drivers/media/common/tuners/tda18271-fe.c  |    1 -
->  drivers/media/common/tuners/tda9887.c      |    1 -
->  drivers/media/common/tuners/tuner-simple.c |    1 -
->  4 files changed, 4 deletions(-)
->
-> diff -u -p a/drivers/media/common/tuners/tuner-simple.c b/drivers/media/common/tuners/tuner-simple.c
-> --- a/drivers/media/common/tuners/tuner-simple.c
-> +++ b/drivers/media/common/tuners/tuner-simple.c
-> @@ -1038,7 +1038,6 @@ struct dvb_frontend *simple_tuner_attach
->        case 0:
->                mutex_unlock(&tuner_simple_list_mutex);
->                return NULL;
-> -               break;
->        case 1:
->                fe->tuner_priv = priv;
->
-> diff -u -p a/drivers/media/common/tuners/tda18271-fe.c b/drivers/media/common/tuners/tda18271-fe.c
-> --- a/drivers/media/common/tuners/tda18271-fe.c
-> +++ b/drivers/media/common/tuners/tda18271-fe.c
-> @@ -1155,7 +1155,6 @@ struct dvb_frontend *tda18271_attach(str
->        switch (instance) {
->        case 0:
->                goto fail;
-> -               break;
->        case 1:
->                /* new tuner instance */
->                priv->gate = (cfg) ? cfg->gate : TDA18271_GATE_AUTO;
-> diff -u -p a/drivers/media/common/tuners/mxl5007t.c b/drivers/media/common/tuners/mxl5007t.c
-> --- a/drivers/media/common/tuners/mxl5007t.c
-> +++ b/drivers/media/common/tuners/mxl5007t.c
-> @@ -979,7 +979,6 @@ struct dvb_frontend *mxl5007t_attach(str
->        switch (instance) {
->        case 0:
->                goto fail;
-> -               break;
->        case 1:
->                /* new tuner instance */
->                state->config = cfg;
-> diff -u -p a/drivers/media/common/tuners/tda9887.c b/drivers/media/common/tuners/tda9887.c
-> --- a/drivers/media/common/tuners/tda9887.c
-> +++ b/drivers/media/common/tuners/tda9887.c
-> @@ -686,7 +686,6 @@ struct dvb_frontend *tda9887_attach(stru
->        case 0:
->                mutex_unlock(&tda9887_list_mutex);
->                return NULL;
-> -               break;
->        case 1:
->                fe->analog_demod_priv = priv;
->                priv->mode = T_STANDBY;
->
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ drivers/s390/char/vmcp.c |   21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+Index: quilt-2.6/drivers/s390/char/vmcp.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/vmcp.c
++++ quilt-2.6/drivers/s390/char/vmcp.c
+@@ -17,6 +17,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/smp_lock.h>
++#include <linux/kmsg.h>
+ #include <asm/cpcmd.h>
+ #include <asm/debug.h>
+ #include <asm/uaccess.h>
+@@ -26,7 +27,7 @@ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Christian Borntraeger <borntraeger@de.ibm.com>");
+ MODULE_DESCRIPTION("z/VM CP interface");
+ 
+-#define PRINTK_HEADER "vmcp: "
++#define KMSG_COMPONENT "vmcp"
+ 
+ static debug_info_t *vmcp_debug;
+ 
+@@ -193,7 +194,8 @@ static int __init vmcp_init(void)
+ 	int ret;
+ 
+ 	if (!MACHINE_IS_VM) {
+-		PRINT_WARN("z/VM CP interface is only available under z/VM\n");
++		kmsg_warn("The z/VM CP interface device driver cannot be "
++			     "loaded without z/VM\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -216,6 +218,21 @@ static int __init vmcp_init(void)
+ 	return 0;
+ }
+ 
++/*?
++ * Tag: vmcp.42661a
++ * Text: "The z/VM CP interface device driver cannot be loaded without z/VM\n"
++ * Severity: Warning
++ * Description:
++ * With the z/VM CP interface you can issue z/VM CP commands from a Linux
++ * terminal session. On Linux instances that run in environments other than
++ * the z/VM hypervisor, the z/VM CP interface does not provide any useful
++ * function and the corresponding vmcp device driver cannot be loaded.
++ * User action:
++ * Load the vmcp device driver only on Linux instances that run as guest
++ * operating systems of the z/VM hypervisor. If the device driver has been
++ * compiled into the kernel, ignore this message.
++ */
++
+ static void __exit vmcp_exit(void)
+ {
+ 	misc_deregister(&vmcp_dev);
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
