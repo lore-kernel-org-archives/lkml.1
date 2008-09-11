@@ -1,80 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYIKVec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757550AbYIKVfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbYIKVec (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 17:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbYIKVdS
+	id S1757550AbYIKVfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 17:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbYIKVde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 17:33:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:44691 "EHLO mail.goop.org"
+	Thu, 11 Sep 2008 17:33:34 -0400
+Received: from mga11.intel.com ([192.55.52.93]:31403 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755235AbYIKVdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 17:33:17 -0400
-Message-ID: <48C98E9C.9090709@goop.org>
-Date: Thu, 11 Sep 2008 14:33:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] acpi: remove final __acpi_map_table mapping before setting
- acpi_gbl_permanent_mmap
-References: <patchbomb.1220826072@localhost> <944fe7ea3da7707eb90f.1220826078@localhost> <20080907234418.GB26079@one.firstfloor.org> <48C46BCB.2060209@goop.org> <20080908142619.GA10580@elte.hu> <20080910115525.GA31692@elte.hu> <48C7FA91.9050302@goop.org> <20080911125748.GA14698@elte.hu>
-In-Reply-To: <20080911125748.GA14698@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1756917AbYIKVdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 17:33:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,383,1217833200"; 
+   d="scan'208";a="615332298"
+Message-Id: <20080911204150.872070000@linux-os.sc.intel.com>
+References: <20080911203048.929515000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 11 Sep 2008 13:30:52 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de, arjan@linux.intel.com
+Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 4/7] x86, cpa: dont use large pages for kernel identity mapping with DEBUG_PAGEALLOC
+Content-Disposition: inline; filename=no_lp_identity_mapping_debug_pgalloc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On x86, __acpi_map_table uses early_ioremap() to create the mapping,
-replacing the previous mapping with a new one.  Once enough of the
-kernel is up an running it switches to using normal ioremap().  At
-that point, we need to clean up the final mapping to avoid a warning
-from the early_ioremap subsystem.
+Don't use large pages for kernel identity mapping with DEBUG_PAGEALLOC.
+This will remove the need to split the large page for the
+allocated kernel page in the interrupt context.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+This will simplify cpa code(as we don't do the split any more from the
+interrupt context). cpa code simplication in the subsequent patches.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
- arch/x86/kernel/acpi/boot.c |    8 +++++---
- drivers/acpi/bus.c          |    6 ++++++
- 2 files changed, 11 insertions(+), 3 deletions(-)
 
+Index: tip/arch/x86/mm/init_32.c
 ===================================================================
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -124,11 +124,13 @@
- 	static char *prev_map;
- 	static unsigned long prev_size;
+--- tip.orig/arch/x86/mm/init_32.c	2008-09-11 13:07:32.000000000 -0700
++++ tip/arch/x86/mm/init_32.c	2008-09-11 13:25:36.000000000 -0700
+@@ -775,7 +775,7 @@
+ 	after_init_bootmem = 1;
+ }
  
-+	if (prev_map) {
-+		early_iounmap(prev_map, prev_size);
-+		prev_map = NULL;
-+	}
-+
- 	if (!phys || !size)
- 		return NULL;
--
--	if (prev_map)
--		early_iounmap(prev_map, prev_size);
+-static void __init find_early_table_space(unsigned long end)
++static void __init find_early_table_space(unsigned long end, int use_pse)
+ {
+ 	unsigned long puds, pmds, ptes, tables, start;
  
- 	prev_size = size;
- 	prev_map = early_ioremap(phys, size);
-===================================================================
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -650,6 +650,12 @@
- 	if (!acpi_strict)
- 		acpi_gbl_enable_interpreter_slack = TRUE;
+@@ -785,7 +785,7 @@
+ 	pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
+ 	tables += PAGE_ALIGN(pmds * sizeof(pmd_t));
  
+-	if (cpu_has_pse) {
++	if (use_pse) {
+ 		unsigned long extra;
+ 
+ 		extra = end - ((end>>PMD_SHIFT) << PMD_SHIFT);
+@@ -825,12 +825,22 @@
+ 	pgd_t *pgd_base = swapper_pg_dir;
+ 	unsigned long start_pfn, end_pfn;
+ 	unsigned long big_page_start;
++#ifdef CONFIG_DEBUG_PAGEALLOC
 +	/*
-+	 * Doing a zero-sized mapping will clear out the previous
-+	 * __acpi_map_table() mapping, if any.
++	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
++	 * This will simplify cpa(), which otherwise needs to support splitting
++	 * large pages into small in interrupt context, etc.
 +	 */
-+	__acpi_map_table(0, 0);
-+
- 	acpi_gbl_permanent_mmap = 1;
++	int use_pse = 0;
++#else
++	int use_pse = cpu_has_pse;
++#endif
  
- 	status = acpi_reallocate_root_table();
+ 	/*
+ 	 * Find space for the kernel direct mapping tables.
+ 	 */
+ 	if (!after_init_bootmem)
+-		find_early_table_space(end);
++		find_early_table_space(end, use_pse);
+ 
+ #ifdef CONFIG_X86_PAE
+ 	set_nx();
+@@ -876,7 +886,7 @@
+ 	end_pfn = (end>>PMD_SHIFT) << (PMD_SHIFT - PAGE_SHIFT);
+ 	if (start_pfn < end_pfn)
+ 		kernel_physical_mapping_init(pgd_base, start_pfn, end_pfn,
+-						cpu_has_pse);
++					     use_pse);
+ 
+ 	/* tail is not big page alignment ? */
+ 	start_pfn = end_pfn;
+Index: tip/arch/x86/mm/init_64.c
+===================================================================
+--- tip.orig/arch/x86/mm/init_64.c	2008-09-11 13:07:32.000000000 -0700
++++ tip/arch/x86/mm/init_64.c	2008-09-11 13:25:47.000000000 -0700
+@@ -512,13 +512,14 @@
+ 	return phys_pud_init(pud, addr, end, page_size_mask);
+ }
+ 
+-static void __init find_early_table_space(unsigned long end)
++static void __init find_early_table_space(unsigned long end, int use_pse,
++					  int use_gbpages)
+ {
+ 	unsigned long puds, pmds, ptes, tables, start;
+ 
+ 	puds = (end + PUD_SIZE - 1) >> PUD_SHIFT;
+ 	tables = roundup(puds * sizeof(pud_t), PAGE_SIZE);
+-	if (direct_gbpages) {
++	if (use_gbpages) {
+ 		unsigned long extra;
+ 		extra = end - ((end>>PUD_SHIFT) << PUD_SHIFT);
+ 		pmds = (extra + PMD_SIZE - 1) >> PMD_SHIFT;
+@@ -526,7 +527,7 @@
+ 		pmds = (end + PMD_SIZE - 1) >> PMD_SHIFT;
+ 	tables += roundup(pmds * sizeof(pmd_t), PAGE_SIZE);
+ 
+-	if (cpu_has_pse) {
++	if (use_pse) {
+ 		unsigned long extra;
+ 		extra = end - ((end>>PMD_SHIFT) << PMD_SHIFT);
+ 		ptes = (extra + PAGE_SIZE - 1) >> PAGE_SHIFT;
+@@ -696,6 +697,7 @@
+ 
+ 	struct map_range mr[NR_RANGE_MR];
+ 	int nr_range, i;
++	int use_pse, use_gbpages;
+ 
+ 	printk(KERN_INFO "init_memory_mapping\n");
+ 
+@@ -709,9 +711,21 @@
+ 	if (!after_bootmem)
+ 		init_gbpages();
+ 
+-	if (direct_gbpages)
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	/*
++	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
++	 * This will simplify cpa(), which otherwise needs to support splitting
++	 * large pages into small in interrupt context, etc.
++	 */
++	use_pse = use_gbpages = 0;
++#else
++	use_pse = cpu_has_pse;
++	use_gbpages = direct_gbpages;
++#endif
++
++	if (use_gbpages)
+ 		page_size_mask |= 1 << PG_LEVEL_1G;
+-	if (cpu_has_pse)
++	if (use_pse)
+ 		page_size_mask |= 1 << PG_LEVEL_2M;
+ 
+ 	memset(mr, 0, sizeof(mr));
+@@ -772,7 +786,7 @@
+ 			 (mr[i].page_size_mask & (1<<PG_LEVEL_2M))?"2M":"4k"));
+ 
+ 	if (!after_bootmem)
+-		find_early_table_space(end);
++		find_early_table_space(end, use_pse, use_gbpages);
+ 
+ 	for (i = 0; i < nr_range; i++)
+ 		last_map_addr = kernel_physical_mapping_init(
 
+-- 
 
