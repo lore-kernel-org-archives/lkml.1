@@ -1,102 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYIKLMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYIKLMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYIKLMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 07:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYIKLMZ
+	id S1755495AbYIKLMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 07:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYIKLM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 07:12:25 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37332 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbYIKLMY (ORCPT
+	Thu, 11 Sep 2008 07:12:28 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56113 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbYIKLMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 07:12:24 -0400
-Message-ID: <059C75EDB49641A49EF986D81EED4200@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, <linux-fsdevel@vger.kernel.org>,
-       <dm-devel@redhat.com>, <viro@ZenIV.linux.org.uk>,
-       <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>, <axboe@kernel.dk>,
-       <mtk.manpages@googlemail.com>, <linux-kernel@vger.kernel.org>
-References: <20080908205245t-sato@mail.jp.nec.com> <20080908171020.GA22521@infradead.org>
-In-Reply-To: <20080908171020.GA22521@infradead.org>
-Subject: Re: [PATCH 1/3] Implement generic freeze feature
-Date: Thu, 11 Sep 2008 20:11:06 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Thu, 11 Sep 2008 07:12:25 -0400
+Date: Thu, 11 Sep 2008 20:14:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, "xemul@openvz.org" <xemul@openvz.org>,
+       "hugh@veritas.com" <hugh@veritas.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, menage@google.com
+Subject: [RFC] [PATCH 3/9]  memcg: move_account between groups
+Message-Id: <20080911201451.6aecd29a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch provides a function to move account information of a page between
+mem_cgroups.
 
-Christoph Hellwig wrote:
->> --- linux-2.6.27-rc5.org/fs/block_dev.c 2008-08-29 07:52:02.000000000 +0900
->> +++ linux-2.6.27-rc5-freeze/fs/block_dev.c 2008-09-05 20:00:29.000000000 +0900
->> @@ -285,6 +285,8 @@ static void init_once(void *foo)
->>      INIT_LIST_HEAD(&bdev->bd_holder_list);
->>  #endif
->>      inode_init_once(&ei->vfs_inode);
->> +     /* Initialize mutex for freeze. */
->> +     mutex_init(&bdev->bd_fsfreeze_mutex);
->
-> Why not just freeze_mutex?
+This moving of page_cgroup is done under
+ - the page is locked.
+ - lru_lock of source/destination mem_cgroup is held.
 
-The Linux kernel has already had the name of "freezer" in the part of
-power-management.  So I named the above mutex "fsfreeze"
-(filesystem freeze) to distinguish it from the existent "freezer".
-Andrew pointed it out.
+Then, a routine which touches pc->mem_cgroup without page_lock() should
+confirm pc->mem_cgroup is still valid or not. Typlical code can be following.
 
->>  struct super_block *freeze_bdev(struct block_device *bdev)
->>  {
->>       struct super_block *sb;
->>
->> +    mutex_lock(&bdev->bd_fsfreeze_mutex);
->> +    if (bdev->bd_fsfreeze_count > 0) {
->> +        bdev->bd_fsfreeze_count++;
->> +        sb = get_super(bdev);
->> +        mutex_unlock(&bdev->bd_fsfreeze_mutex);
->> +        return sb;
->> +    }
->> +    bdev->bd_fsfreeze_count++;
->> +
->>      down(&bdev->bd_mount_sem);
->
-> Note that we still have duplication with the bd_mount_sem.  I think
-> you should look into getting rid of it and instead do a check of
-> the freeze_count under proper freeze_mutex protection.
+(while page is not under lock_page())
+	mem = pc->mem_cgroup;
+	mz = page_cgroup_zoneinfo(pc)
+	spin_lock_irqsave(&mz->lru_lock);
+	if (pc->mem_cgroup == mem)
+		...../* some list handling */
+	spin_unlock_irq(&mz->lru_lock);
 
-In the original implementation,
-while the filesystem is frozen, subsequent mounts wait for unfreeze
-with the semaphore (bd_mount_sem).
-But if we replace the semphore with the check of the freeze_count,
-subsequent mounts will abort.
-I think the original behavior shouldn't be changed, so the existing bd_mount_sem
-is better.
+If you find page_cgroup from mem_cgroup's LRU under mz->lru_lock, you don't
+have to worry about anything.
 
->> @@ -244,6 +274,8 @@ void thaw_bdev(struct block_device *bdev
->>  }
->>
->>        up(&bdev->bd_mount_sem);
->> +     mutex_unlock(&bdev->bd_fsfreeze_mutex);
->> +     return 0;
->
-> Why do you add a return value here if we always return 0 anyway?
+Changelong: (v2) -> (v3)
+  - added lock_page_cgroup().
+  - splitted out from new-force-empty patch.
+  - added how-to-use text.
+  - fixed race in __mem_cgroup_uncharge_common().
 
-I forgot to remove the unneeded return value in above old patch.
-But I need to implement a return value in the new patch
-because thaw_bdev() needs to return an IO error which occurs
-in unlockfs().
-Eric pointed it out.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Cheers, Takashi
+---
+ mm/memcontrol.c |   74 +++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 71 insertions(+), 3 deletions(-)
+
+Index: mmtom-2.6.27-rc5+/mm/memcontrol.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/mm/memcontrol.c
++++ mmtom-2.6.27-rc5+/mm/memcontrol.c
+@@ -428,6 +428,7 @@ int task_in_mem_cgroup(struct task_struc
+ void mem_cgroup_move_lists(struct page *page, enum lru_list lru)
+ {
+ 	struct page_cgroup *pc;
++	struct mem_cgroup *mem;
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
+ 
+@@ -446,9 +447,14 @@ void mem_cgroup_move_lists(struct page *
+ 
+ 	pc = page_get_page_cgroup(page);
+ 	if (pc) {
++		mem = pc->mem_cgroup;
+ 		mz = page_cgroup_zoneinfo(pc);
+ 		spin_lock_irqsave(&mz->lru_lock, flags);
+-		__mem_cgroup_move_lists(pc, lru);
++		/*
++		 * check against the race with move_account.
++		 */
++		if (likely(mem == pc->mem_cgroup))
++			__mem_cgroup_move_lists(pc, lru);
+ 		spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 	}
+ 	unlock_page_cgroup(page);
+@@ -569,6 +575,67 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	return nr_taken;
+ }
+ 
++/**
++ * mem_cgroup_move_account - move account of the page
++ * @page ... the target page of being moved.
++ * @pc   ... page_cgroup of the page.
++ * @from ... mem_cgroup which the page is moved from.
++ * @to   ... mem_cgroup which the page is moved to.
++ *
++ * The caller must confirm following.
++ * 1. lock the page by lock_page().
++ * 2. disable irq.
++ * 3. lru_lock of old mem_cgroup should be held.
++ * 4. pc is guaranteed to be valid and on mem_cgroup's LRU.
++ *
++ * Because we cannot call try_to_free_page() here, the caller must guarantee
++ * this moving of change never fails. Currently this is called only against
++ * root cgroup, which has no limitation of resource.
++ * Returns 0 at success, returns 1 at failure.
++ */
++int mem_cgroup_move_account(struct page *page, struct page_cgroup *pc,
++	struct mem_cgroup *from, struct mem_cgroup *to)
++{
++	struct mem_cgroup_per_zone *from_mz, *to_mz;
++	int nid, zid;
++	int ret = 1;
++
++	VM_BUG_ON(!irqs_disabled());
++	VM_BUG_ON(!PageLocked(page));
++
++	nid = page_to_nid(page);
++	zid = page_zonenum(page);
++	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
++	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
++
++	if (res_counter_charge(&to->res, PAGE_SIZE)) {
++		/* Now, we assume no_limit...no failure here. */
++		return ret;
++	}
++	if (try_lock_page_cgroup(page))
++		return ret;
++
++	if (page_get_page_cgroup(page) != pc)
++		goto out;
++
++	if (spin_trylock(&to_mz->lru_lock)) {
++		__mem_cgroup_remove_list(from_mz, pc);
++		css_put(&from->css);
++		res_counter_uncharge(&from->res, PAGE_SIZE);
++		pc->mem_cgroup = to;
++		css_get(&to->css);
++		__mem_cgroup_add_list(to_mz, pc);
++		ret = 0;
++		spin_unlock(&to_mz->lru_lock);
++	} else {
++		res_counter_uncharge(&to->res, PAGE_SIZE);
++	}
++out:
++	unlock_page_cgroup(page);
++
++	return ret;
++}
++
+ /*
+  * Charge the memory controller for page usage.
+  * Return
+@@ -761,16 +828,24 @@ __mem_cgroup_uncharge_common(struct page
+ 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+ 	    && ((PageCgroupCache(pc) || page_mapped(page))))
+ 		goto unlock;
+-
++retry:
++	mem = pc->mem_cgroup;
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
++	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED &&
++	    unlikely(mem != pc->mem_cgroup)) {
++		/* MAPPED account can be done without lock_page().
++		   Check race with mem_cgroup_move_account() */
++		spin_unlock_irqrestore(&mz->lru_lock, flags);
++		goto retry;
++	}
+ 	__mem_cgroup_remove_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 
+ 	page_assign_page_cgroup(page, NULL);
+ 	unlock_page_cgroup(page);
+ 
+-	mem = pc->mem_cgroup;
++
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 	css_put(&mem->css);
+ 
 
