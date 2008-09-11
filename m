@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbYIKEub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbYIKE5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbYIKEub (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 00:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYIKEuS
+	id S1752807AbYIKE5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 00:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYIKE5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 00:50:18 -0400
-Received: from mail.windriver.com ([147.11.1.11]:37486 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751157AbYIKEuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 00:50:17 -0400
-Subject: Re: [PATCH 1/2] fix acpi ec read write bug
-From: Kevin Hao <kexin.hao@windriver.com>
-To: Zhao Yakui <yakui.zhao@intel.com>
-Cc: ak@linux.intel.com, astarikovskiy@suse.de, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <1221106057.3989.228.camel@yakui_zhao.sh.intel.com>
-References: <1221103065-9123-1-git-send-email-kexin.hao@windriver.com>
-	 <d41e1c0a5be061176c65db7ef42263f75ae84dcb.1221102420.git.kexin.hao@windriver.com>
-	 <1221106057.3989.228.camel@yakui_zhao.sh.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 11 Sep 2008 12:49:25 +0800
-Message-Id: <1221108565.11106.12.camel@kevin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-X-OriginalArrivalTime: 11 Sep 2008 04:50:05.0473 (UTC) FILETIME=[DBDBA910:01C913C9]
+	Thu, 11 Sep 2008 00:57:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:32784 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbYIKE5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 00:57:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ewpK7Ondw3EFqlsFwsUfpu0sK3thwxi7r4ArqMjWZ09d/lGzYaOfm8nprJc3EwaVhY
+         3BbZXXNI7Mdnb0tYVQj0ZNj2Xuci4ISvw4OvVxMgpFeugQoSu7zt0psr/7GOfdAm6tKL
+         xVLic90ayNYqSik3wSNO/Za0FktweiHk+9rgg=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: print out apic id with hex format
+Date: Wed, 10 Sep 2008 21:56:46 -0700
+Message-Id: <1221109006-4315-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-11 at 12:07 +0800, Zhao Yakui wrote:
-> On Thu, 2008-09-11 at 11:17 +0800, Kevin Hao wrote:
-> > Fill in command unit of transaction_data structure, otherwise
-> > gpe_transaction will skip read or write instruction.
-> > 
-> > Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
-> > ---
-> >  drivers/acpi/ec.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-> > index bd3555c..0c65e82 100644
-> > --- a/drivers/acpi/ec.c
-> > +++ b/drivers/acpi/ec.c
-> > @@ -240,6 +240,7 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
-> >  	}
-> >  	atomic_set(&ec->irq_count, 0);
-> >  	/* fill in transaction structure */
-> > +	ec->t.command = command;
-> It is also OK to add this explicitly. In fact the ec->t.command will be
-> assigned in the function of acpi_ec_write_cmd.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-NO, I am using the latest linux-next kernel and I don't found
-ec->t.command is assigned in acpi_ec_write_cmd function.
+---
+ arch/x86/kernel/apic.c      |    2 +-
+ arch/x86/kernel/cpu/amd.c   |    2 +-
+ arch/x86/kernel/cpu/intel.c |    2 +-
+ arch/x86/kernel/smpboot.c   |    6 +++---
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
-Thanks,
-Kevin
-
-> 
-> Thanks.
-> >  	ec->t.wdata = wdata;
-> >  	ec->t.wlen = wdata_len;
-> >  	ec->t.rdata = rdata;
-> 
+Index: linux-2.6/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic.c
++++ linux-2.6/arch/x86/kernel/apic.c
+@@ -1586,7 +1586,7 @@ int __init APIC_init_uniprocessor(void)
+ 	 */
+ 	if (!cpu_has_apic &&
+ 	    APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid])) {
+-		printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
++		printk(KERN_ERR "BIOS bug, local APIC 0x%x not detected!...\n",
+ 		       boot_cpu_physical_apicid);
+ 		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
+ 		return -1;
+Index: linux-2.6/arch/x86/kernel/cpu/amd.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
++++ linux-2.6/arch/x86/kernel/cpu/amd.c
+@@ -249,7 +249,7 @@ static void __cpuinit srat_detect_node(s
+ 	}
+ 	numa_set_node(cpu, node);
+ 
+-	printk(KERN_INFO "CPU %d/%x -> Node %d\n", cpu, apicid, node);
++	printk(KERN_INFO "CPU %d/0x%x -> Node %d\n", cpu, apicid, node);
+ #endif
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/intel.c
++++ linux-2.6/arch/x86/kernel/cpu/intel.c
+@@ -174,7 +174,7 @@ static void __cpuinit srat_detect_node(v
+ 		node = first_node(node_online_map);
+ 	numa_set_node(cpu, node);
+ 
+-	printk(KERN_INFO "CPU %d/%x -> Node %d\n", cpu, apicid, node);
++	printk(KERN_INFO "CPU %d/0x%x -> Node %d\n", cpu, apicid, node);
+ #endif
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -542,10 +542,10 @@ static inline void __inquire_remote_apic
+ 	int timeout;
+ 	u32 status;
+ 
+-	printk(KERN_INFO "Inquiring remote APIC #%d...\n", apicid);
++	printk(KERN_INFO "Inquiring remote APIC 0x%x...\n", apicid);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(regs); i++) {
+-		printk(KERN_INFO "... APIC #%d %s: ", apicid, names[i]);
++		printk(KERN_INFO "... APIC 0x%x %s: ", apicid, names[i]);
+ 
+ 		/*
+ 		 * Wait for idle.
+@@ -871,7 +871,7 @@ do_rest:
+ 	start_ip = setup_trampoline();
+ 
+ 	/* So we see what's up   */
+-	printk(KERN_INFO "Booting processor %d/%d ip %lx\n",
++	printk(KERN_INFO "Booting processor %d APIC 0x%x ip 0x%lx\n",
+ 			  cpu, apicid, start_ip);
+ 
+ 	/*
