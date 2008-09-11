@@ -1,167 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYIKLTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbYIKLTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755049AbYIKLTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 07:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYIKLTP
+	id S1755489AbYIKLTy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 07:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYIKLTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 07:19:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56340 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbYIKLTO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 07:19:14 -0400
-Date: Thu, 11 Sep 2008 20:16:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, "xemul@openvz.org" <xemul@openvz.org>,
-       "hugh@veritas.com" <hugh@veritas.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: [RFC] [PATCH 4/9] memcg: new force empty
-Message-Id: <20080911201657.8705b120.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Sep 2008 07:19:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34551 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752217AbYIKLTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 07:19:44 -0400
+Message-ID: <48C8FE6F.2070003@kernel.org>
+Date: Thu, 11 Sep 2008 13:18:07 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Austin Zhang <austin_zhang@linux.intel.com>
+CC: multinymous@gmail.com, Elias Oltmanns <eo@nebensachen.de>,
+       Thomas Renninger <trenn@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Laptop shock detection and harddisk protection
+References: <48C7FCEE.8060404@kernel.org> <1221128797.30437.4.camel@azhang.bj.intel.com>
+In-Reply-To: <1221128797.30437.4.camel@azhang.bj.intel.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 11 Sep 2008 11:19:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current force_empty of memory resource controller just removes page_cgroup.
-This maans the page is never accounted at all and create an in-use page which
-has no page_cgroup. (And we have to feat terrible race condition....)
+Austin Zhang wrote:
+>> 2. If we're gonna unify interface, how much can we unify the backend?
+>>    Some devices are based on polling, others interrupt.  For polling,
+>>    is it better to delegate the whole polling to userland or is it
+>>    better to do some of it in kernel (tp_smapi seems to be doing
+>>    this)?
+> Shock protection should be time-sensitive, if we put the whole polling 
+> into userland, will it be possible that the damage had happened before 
+> userland app can signal ATA idle command timely?
 
-This patch tries to move account to "root" cgroup at force_empty.
-By this patch, force_empty doesn't leak an account but move account
-to "root" cgroup. Maybe someone can think of other enhancements as moving
-account to its parent. Someone will revisit this behavior later.
+Yeah, it's time sensitive but it seems latency of tens of millisecs is
+good enough and with mlocked user process, it's really not a problem.
 
-For now, just moves account to root cgroup.
+>> 3. What about the userland daemon?  It would be best to have a unified
+>>    daemon which can handle all instead of one for hdaps and another
+>>    for hp (and so on).  If we can unify the interface, this will be
+>>    much easier.
+>>
+>> Thanks.
+> 
+> Can this process "acceleration-detect --> inform ATA shock protect --> 
+> issue idle command" be done totally in kernel, avoiding to consume too 
+> many time for "acceleration-detect --> sysfs --> userland app --> sysfs 
+> --> inform ATA shock protect --> issue idle command" before HD was damaged? 
+> The userland daemon should be just a indicator (but of course it can pass 
+> params to driver) for the protection status rather than a judge.
 
-Note: all lock other than old mem_cgroup's lru_lock
-      in this path is try_lock().
+Again, it doesn't have to be that fast and the judgement part involves
+complex floating arithmetics + user usage patterns (has the user typed
+something recently, is lid closed kind of stuff).  I don't think it
+fits in kernel.
 
-Changelog (v2) -> (v3)
- - splitted out mem_cgroup_move_account().
- - replaced get_page() with get_page_unless_zero().
-   (This is necessary for avoiding confliction with migration)
+Thanks.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- Documentation/controllers/memory.txt |    7 ++--
- mm/memcontrol.c                      |   51 +++++++++++++++++++++--------------
- 2 files changed, 35 insertions(+), 23 deletions(-)
-
-Index: mmtom-2.6.27-rc5+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc5+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc5+/mm/memcontrol.c
-@@ -29,6 +29,7 @@
- #include <linux/slab.h>
- #include <linux/swap.h>
- #include <linux/spinlock.h>
-+#include <linux/pagemap.h>
- #include <linux/fs.h>
- #include <linux/seq_file.h>
- #include <linux/vmalloc.h>
-@@ -977,17 +978,14 @@ int mem_cgroup_resize_limit(struct mem_c
- 
- 
- /*
-- * This routine traverse page_cgroup in given list and drop them all.
-- * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
-+ * This routine traverse page_cgroup in given list and move them all.
-  */
--#define FORCE_UNCHARGE_BATCH	(128)
- static void mem_cgroup_force_empty_list(struct mem_cgroup *mem,
- 			    struct mem_cgroup_per_zone *mz,
- 			    enum lru_list lru)
- {
- 	struct page_cgroup *pc;
- 	struct page *page;
--	int count = FORCE_UNCHARGE_BATCH;
- 	unsigned long flags;
- 	struct list_head *list;
- 
-@@ -997,23 +995,36 @@ static void mem_cgroup_force_empty_list(
- 	while (!list_empty(list)) {
- 		pc = list_entry(list->prev, struct page_cgroup, lru);
- 		page = pc->page;
--		get_page(page);
--		spin_unlock_irqrestore(&mz->lru_lock, flags);
--		/*
--		 * Check if this page is on LRU. !LRU page can be found
--		 * if it's under page migration.
--		 */
--		if (PageLRU(page)) {
--			__mem_cgroup_uncharge_common(page,
--					MEM_CGROUP_CHARGE_TYPE_FORCE);
-+		/* For avoiding race with speculative page cache handling. */
-+		if (!PageLRU(page) || !get_page_unless_zero(page)) {
-+			list_move(&pc->lru, list);
-+			spin_unlock_irqrestore(&mz->lru_lock, flags);
-+			yield();
-+			spin_lock_irqsave(&mz->lru_lock, flags);
-+			continue;
-+		}
-+		if (!trylock_page(page)) {
-+			list_move(&pc->lru, list);
- 			put_page(page);
--			if (--count <= 0) {
--				count = FORCE_UNCHARGE_BATCH;
--				cond_resched();
--			}
--		} else
--			cond_resched();
--		spin_lock_irqsave(&mz->lru_lock, flags);
-+			spin_unlock_irqrestore(&mz->lru_lock, flags);
-+			yield();
-+			spin_lock_irqsave(&mz->lru_lock, flags);
-+			continue;
-+		}
-+		if (mem_cgroup_move_account(page, pc, mem, &init_mem_cgroup)) {
-+			/* some confliction */
-+			list_move(&pc->lru, list);
-+			unlock_page(page);
-+			put_page(page);
-+			spin_unlock_irqrestore(&mz->lru_lock, flags);
-+			yield();
-+			spin_lock_irqsave(&mz->lru_lock, flags);
-+		} else {
-+			unlock_page(page);
-+			put_page(page);
-+		}
-+		if (atomic_read(&mem->css.cgroup->count) > 0)
-+			break;
- 	}
- 	spin_unlock_irqrestore(&mz->lru_lock, flags);
- }
-Index: mmtom-2.6.27-rc5+/Documentation/controllers/memory.txt
-===================================================================
---- mmtom-2.6.27-rc5+.orig/Documentation/controllers/memory.txt
-+++ mmtom-2.6.27-rc5+/Documentation/controllers/memory.txt
-@@ -207,7 +207,8 @@ The memory.force_empty gives an interfac
- 
- # echo 1 > memory.force_empty
- 
--will drop all charges in cgroup. Currently, this is maintained for test.
-+will move all charges to root cgroup.
-+(This policy may be modified in future.)
- 
- 4. Testing
- 
-@@ -238,8 +239,8 @@ reclaimed.
- 
- A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
- cgroup might have some charge associated with it, even though all
--tasks have migrated away from it. Such charges are automatically dropped at
--rmdir() if there are no tasks.
-+tasks have migrated away from it. Such charges are automatically moved to
-+root cgroup at rmidr() if there are no tasks. (This policy may be changed.)
- 
- 5. TODO
- 
-
+-- 
+tejun
