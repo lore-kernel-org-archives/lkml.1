@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbYIKNCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbYIKNFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070AbYIKNCi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYIKNC3
+	id S1754912AbYIKNFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYIKNF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:02:29 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:25891 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbYIKNC2 (ORCPT
+	Thu, 11 Sep 2008 09:05:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:34125 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbYIKNF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:02:28 -0400
+	Thu, 11 Sep 2008 09:05:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=GZz8UuzjAYOzGg01XA9wsmMpBee8mYBaxc6GchkxiWCNywV/sMSmaigPIEYv+xKGBl
-         0s+DtIKd0xHIZCVVlw53KncufG5l/Ipjv9sgnB0QEZ9btV8g8BCzR8q16Yog1OxE8v5I
-         1lJAhzCSEul5F/VmyBzk5pxSnLuPfjUIDs0nE=
-Message-ID: <48C9168C.4090101@gmail.com>
-Date: Thu, 11 Sep 2008 15:01:00 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=cxkLmSYMUG8sPWSZW6Bpd1QfDccLhI6ULKOtaTY2Ce3IXJQV5vWqwvZtUhjTWcQOp6
+         2/YM6EZ5svqqJoa12wYXA/ntMcyGRGDgdgnRv2WP+3txQFoTmYGyRaKgJoDWQyotbGVo
+         KMhZHGZO7rU0uB5t19j191iEiNa3EfmDwduGg=
+Date: Thu, 11 Sep 2008 09:05:22 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] OLPC: touchpad driver (take 2)
+Message-ID: <20080911090103.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080813152459.4d6bb0cb@ephemeral> <20080815031435.GD9438@anvil.corenet.prv> <20080910175513.17d900bc@dev.queued.net> <20080911010124.79166d64@dev.queued.net> <20080911013209.3d7c70da@dev.queued.net>
 MIME-Version: 1.0
-To: Elias Oltmanns <eo@nebensachen.de>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
-References: <87wshzplvk.fsf@denkblock.local>	<20080829211345.4355.89284.stgit@denkblock.local>	<48B913E6.1000104@gmail.com> <87k5dym5t9.fsf@denkblock.local>	<48BA638B.2030001@gmail.com> <87ej45mlp3.fsf@denkblock.local>	<48BA969C.4060207@gmail.com> <87abetmaap.fsf@denkblock.local>	<48BBA8D1.8020604@gmail.com> <87myirly1p.fsf@denkblock.local>	<48BC1BB8.2030007@gmail.com> <87fxoh0yil.fsf@denkblock.local>	<48BFA528.2040305@gmail.com> <87ej3zrf3o.fsf@denkblock.local>	<48C0F2F8.1040308@gmail.com> <87ej3snm3s.fsf@denkblock.local>	<48C7DC55.30002@gmail.com> <8763p3ol55.fsf@denkblock.local>	<48C82CB1.2070308@gmail.com> <871vzrogpz.fsf@denkblock.local>	<48C850AA.2030409@gmail.com> <87k5diq35g.fsf@denkblock.local> <48C91458.7090503@gmail.com>
-In-Reply-To: <48C91458.7090503@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080911013209.3d7c70da@dev.queued.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ah.. just one more thing.
+On Thu, Sep 11, 2008 at 01:32:09AM -0400, Andres Salomon wrote:
+> 
+> And here's the current touchpad driver after updating based upon your
+> comments.
+> 
 
-I think it would be easier on the application if the written timeout
-value is cropped if it's over the maximum instead of failing the
-write.
+Looks good. Care to respin it all thogether based on the attribute
+change I requested so I can be sure I'm applying the latest version of
+everything? Ummm....
 
-Thanks.
+> diff --git a/drivers/input/mouse/Kconfig b/drivers/input/mouse/Kconfig
+> index 7bbea09..fff0253 100644
+> --- a/drivers/input/mouse/Kconfig
+> +++ b/drivers/input/mouse/Kconfig
+> @@ -96,6 +96,16 @@ config MOUSE_PS2_TOUCHKIT
+>  
+>  	  If unsure, say N.
+>  
+> +config MOUSE_PS2_OLPC
+> +	bool "OLPC PS/2 mouse protocol extension"
+> +	depends on MOUSE_PS2 && OLPC
+
+Are you sure it shoudl depend on OLPC? It looks like driver should
+work on any box with PS/2 port. I understand that only OLPC has the
+hardware installed but can this change?
+
+Thanks!
 
 -- 
-tejun
+Dmitry
