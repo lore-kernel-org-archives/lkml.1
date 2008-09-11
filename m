@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYIKNdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbYIKNfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbYIKNdH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235AbYIKNc4
+	id S1755125AbYIKNfK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbYIKNew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:32:56 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:36139 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbYIKNcz (ORCPT
+	Thu, 11 Sep 2008 09:34:52 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37142 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910AbYIKNev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:32:55 -0400
-Date: Thu, 11 Sep 2008 10:33:32 -0300
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: "Steven Noonan" <steven@uplinklabs.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Semi-repeatable hard lockup on 2.6.27-rc6
-Message-ID: <20080911103332.56160ce0@doriath.conectiva>
-In-Reply-To: <f488382f0809101426g158a6043l1db8f4e26fdc9c06@mail.gmail.com>
-References: <f488382f0809101107h4ce8b912o1093adb44c157005@mail.gmail.com>
-	<f488382f0809101426g158a6043l1db8f4e26fdc9c06@mail.gmail.com>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.13.7; i586-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Sep 2008 09:34:51 -0400
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, themann@de.ibm.com,
+       tklein@de.ibm.com, raisch@de.ibm.com, jeff@garzik.org,
+       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com, sebastien.dugue@bull.net
+Subject: [PATCH 1/2] ehea: fix phyp debugging typo
+Date: Thu, 11 Sep 2008 15:34:39 +0200
+Message-Id: <1221140080-9853-2-git-send-email-sebastien.dugue@bull.net>
+X-Mailer: git-send-email 1.5.5.rc2.1.gc953.dirty
+In-Reply-To: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>
+References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, 10 Sep 2008 14:26:12 -0700
-"Steven Noonan" <steven@uplinklabs.net> escreveu:
+  Fix typo in ehea_h_query_ehea() which prevents building when DEBUG is on.
 
-| On Wed, Sep 10, 2008 at 11:07 AM, Steven Noonan <steven@uplinklabs.net> wrote:
-| > I've got a hard lockup problem on boot of 2.6.27-rc6. It's sporadic
-| > though. Sometimes it locks, sometimes not. Each time it -does- lock
-| > up, it gets to 'Waiting for uevents to be processed' and then
-| > immediately locks up.
-| >
-| 
-| This problem does -not- occur on 2.6.27-rc6-tip, though. Something's
-| screwy in the pristine 2.6.27-rc6 branch.
+Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+---
+ drivers/net/ehea/ehea_phyp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- Can you describe the machine? Is it SMP?
-
- The best way would be to run git bisect, but you can also try to
-enable all the locking debug features under the Kernel hacking menu.
-
+diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
+index 156eb63..2a33a61 100644
+--- a/drivers/net/ehea/ehea_phyp.c
++++ b/drivers/net/ehea/ehea_phyp.c
+@@ -535,7 +535,7 @@ u64 ehea_h_query_ehea(const u64 adapter_handle, void *cb_addr)
+ 				       cb_logaddr,		/* R5 */
+ 				       0, 0, 0, 0, 0);		/* R6-R10 */
+ #ifdef DEBUG
+-	ehea_dmp(cb_addr, sizeof(struct hcp_query_ehea), "hcp_query_ehea");
++	ehea_dump(cb_addr, sizeof(struct hcp_query_ehea), "hcp_query_ehea");
+ #endif
+ 	return hret;
+ }
 -- 
-Luiz Fernando N. Capitulino
+1.6.0.1.308.gede4c
+
