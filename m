@@ -1,69 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIKS37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbYIKSct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYIKS37 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 14:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYIKS3u
+	id S1755629AbYIKSct (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 14:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbYIKSck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 14:29:50 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:38985 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbYIKS3t (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 14:29:49 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Tejun Heo <htejun@gmail.com>
-Cc: Elias Oltmanns <eo@nebensachen.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
-In-Reply-To: Your message of "Thu, 11 Sep 2008 15:01:00 +0200."
-             <48C9168C.4090101@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <87wshzplvk.fsf@denkblock.local> <20080829211345.4355.89284.stgit@denkblock.local> <48B913E6.1000104@gmail.com> <87k5dym5t9.fsf@denkblock.local> <48BA638B.2030001@gmail.com> <87ej45mlp3.fsf@denkblock.local> <48BA969C.4060207@gmail.com> <87abetmaap.fsf@denkblock.local> <48BBA8D1.8020604@gmail.com> <87myirly1p.fsf@denkblock.local> <48BC1BB8.2030007@gmail.com> <87fxoh0yil.fsf@denkblock.local> <48BFA528.2040305@gmail.com> <87ej3zrf3o.fsf@denkblock.local> <48C0F2F8.1040308@gmail.com> <87ej3snm3s.fsf@denkblock.local> <48C7DC55.30002@gmail.com> <8763p3ol55.fsf@denkblock.local> <48C82CB1.2070308@gmail.com> <871vzrogpz.fsf@denkblock.local> <48C850AA.2030409@gmail.com> <87k5diq35g.fsf@denkblock.local> <48C91458.7090503@gmail.com>
-            <48C9168C.4090101@gmail.com>
+	Thu, 11 Sep 2008 14:32:40 -0400
+Received: from mail.queued.net ([207.210.101.209]:2383 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752608AbYIKScj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 14:32:39 -0400
+Date: Thu, 11 Sep 2008 14:32:16 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] OLPC: touchpad driver (take 2)
+Message-ID: <20080911143216.3d618691@dev.queued.net>
+In-Reply-To: <20080911090103.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080813152459.4d6bb0cb@ephemeral>
+	<20080815031435.GD9438@anvil.corenet.prv>
+	<20080910175513.17d900bc@dev.queued.net>
+	<20080911010124.79166d64@dev.queued.net>
+	<20080911013209.3d7c70da@dev.queued.net>
+	<20080911090103.ZZRA012@mailhub.coreip.homeip.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1221157727_3036P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Thu, 11 Sep 2008 14:28:47 -0400
-Message-ID: <25227.1221157727@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1221157727_3036P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 11 Sep 2008 09:05:22 -0400
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-On Thu, 11 Sep 2008 15:01:00 +0200, Tejun Heo said:
-> Ah.. just one more thing.
+> On Thu, Sep 11, 2008 at 01:32:09AM -0400, Andres Salomon wrote:
+> > 
+> > And here's the current touchpad driver after updating based upon
+> > your comments.
+> > 
 > 
-> I think it would be easier on the application if the written timeout
-> value is cropped if it's over the maximum instead of failing the
-> write.
+> Looks good. Care to respin it all thogether based on the attribute
+> change I requested so I can be sure I'm applying the latest version of
+> everything? Ummm....
+> 
 
-Which is better, failing the write so the application *knows* there is a
-problem, or letting the application proceed with a totally incorrect idea of
-what the value is set to?
-
-For instance, what happens if the program tries to set 100, it's silently
-clamped to 10, and it then tries to set a timer for itself to '90% of the
-value'?  It might be in for an unpleasant surprise when it finds out that
-it's overshot by 81....
+Here's the patch.  This is on top of the other 2 psmouse patches that
+were previously sent.
 
 
 
---==_Exmh_1221157727_3036P
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+From: Andres Salomon <dilinger@debian.org>
+Subject: [PATCH] psmouse: tweak PSMOUSE_DEFINE_ATTR to support raw set callbacks
 
-iD8DBQFIyWNfcC3lWbTT17ARAqTZAKCdEfSXq66RnOT1tp9K+i/t3W0zAwCfbPLd
-OobtSFbKqKU1U9DBKFYRQbc=
-=NPqv
------END PGP SIGNATURE-----
+We want to support attr->set callbacks that may need psmouse->state to
+not be updated, or may want to manually deal w/ enabling and disabling
+the device.  To do that, we create __PSMOUSE_DEFINE_ATTR which enables
+us to set a 'protect' argument specifying whether or not the set
+callback should be protected with psmouse_disable and state setting.
 
---==_Exmh_1221157727_3036P--
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/input/mouse/psmouse-base.c |   30 +++++++++++++++++-------------
+ drivers/input/mouse/psmouse.h      |    7 ++++++-
+ 2 files changed, 23 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
+index 488ba95..f7278e6 100644
+--- a/drivers/input/mouse/psmouse-base.c
++++ b/drivers/input/mouse/psmouse-base.c
+@@ -1401,25 +1401,29 @@ ssize_t psmouse_attr_set_helper(struct device *dev, struct device_attribute *dev
+ 
+ 	psmouse = serio_get_drvdata(serio);
+ 
+-	if (psmouse->state == PSMOUSE_IGNORE) {
+-		retval = -ENODEV;
+-		goto out_unlock;
+-	}
++	if (attr->protect) {
++		if (psmouse->state == PSMOUSE_IGNORE) {
++			retval = -ENODEV;
++			goto out_unlock;
++		}
+ 
+-	if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
+-		parent = serio_get_drvdata(serio->parent);
+-		psmouse_deactivate(parent);
+-	}
++		if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
++			parent = serio_get_drvdata(serio->parent);
++			psmouse_deactivate(parent);
++		}
+ 
+-	psmouse_deactivate(psmouse);
++		psmouse_deactivate(psmouse);
++	}
+ 
+ 	retval = attr->set(psmouse, attr->data, buf, count);
+ 
+-	if (retval != -ENODEV)
+-		psmouse_activate(psmouse);
++	if (attr->protect) {
++		if (retval != -ENODEV)
++			psmouse_activate(psmouse);
+ 
+-	if (parent)
+-		psmouse_activate(parent);
++		if (parent)
++			psmouse_activate(parent);
++	}
+ 
+  out_unlock:
+ 	mutex_unlock(&psmouse_mutex);
+diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
+index 48e0112..0f13c1b 100644
+--- a/drivers/input/mouse/psmouse.h
++++ b/drivers/input/mouse/psmouse.h
+@@ -106,6 +106,7 @@ struct psmouse_attribute {
+ 	ssize_t (*show)(struct psmouse *psmouse, void *data, char *buf);
+ 	ssize_t (*set)(struct psmouse *psmouse, void *data,
+ 			const char *buf, size_t count);
++	int protect;
+ };
+ #define to_psmouse_attr(a)	container_of((a), struct psmouse_attribute, dattr)
+ 
+@@ -114,7 +115,7 @@ ssize_t psmouse_attr_show_helper(struct device *dev, struct device_attribute *at
+ ssize_t psmouse_attr_set_helper(struct device *dev, struct device_attribute *attr,
+ 				const char *buf, size_t count);
+ 
+-#define PSMOUSE_DEFINE_ATTR(_name, _mode, _data, _show, _set)			\
++#define __PSMOUSE_DEFINE_ATTR(_name, _mode, _data, _show, _set, _protect)	\
+ static ssize_t _show(struct psmouse *, void *data, char *);			\
+ static ssize_t _set(struct psmouse *, void *data, const char *, size_t);	\
+ static struct psmouse_attribute psmouse_attr_##_name = {			\
+@@ -129,6 +130,10 @@ static struct psmouse_attribute psmouse_attr_##_name = {			\
+ 	.data	= _data,							\
+ 	.show	= _show,							\
+ 	.set	= _set,								\
++	.protect = _protect,							\
+ }
+ 
++#define PSMOUSE_DEFINE_ATTR(_name, _mode, _data, _show, _set)	\
++		__PSMOUSE_DEFINE_ATTR(_name, _mode, _data, _show, _set, 1)
++
+ #endif /* _PSMOUSE_H */
+-- 
+1.5.6.5
+
