@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbYIKXsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYIKXux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbYIKXsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 19:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYIKXsB
+	id S1756597AbYIKXux (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 19:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990AbYIKXup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 19:48:01 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60887
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751810AbYIKXsA (ORCPT
+	Thu, 11 Sep 2008 19:50:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49535 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754334AbYIKXuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 19:48:00 -0400
-Date: Thu, 11 Sep 2008 16:47:54 -0700 (PDT)
-Message-Id: <20080911.164754.205344391.davem@davemloft.net>
-To: elad_lahav@users.sourceforge.net
+	Thu, 11 Sep 2008 19:50:44 -0400
+Date: Thu, 11 Sep 2008 16:50:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harun Scheutzow <harun04@scheutzow.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Initial support for Niagara T1 performance counters
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <48C9AB16.3060706@users.sourceforge.net>
-References: <48C98820.3080009@users.sourceforge.net>
-	<20080911.145937.178601244.davem@davemloft.net>
-	<48C9AB16.3060706@users.sourceforge.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: vfat file system extreme fragmentation on multiprocessor
+Message-Id: <20080911165039.d129a559.akpm@linux-foundation.org>
+In-Reply-To: <0ML29c-1KdqyO1YV1-0001g5@mrelayeu.kundenserver.de>
+References: <0ML29c-1KdqyO1YV1-0001g5@mrelayeu.kundenserver.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Elad Lahav <elad_lahav@users.sourceforge.net>
-Date: Thu, 11 Sep 2008 19:34:46 -0400
+On Thu, 11 Sep 2008 20:01:16 +0200
+Harun Scheutzow <harun04@scheutzow.de> wrote:
 
-> Just for the record, is the implementation correct? Specifically, is
-> this the right way to extract the PIL at the time of the trap?
+> I like to share the following observation made with different kernels of 2.6.x series
 
-Yep it looks right.
+Yeah.  ext2 and ext3 also showed major, major, major differences in
+layout quality (and hence performance) when switching between
+uniprocessor and multiprocessor environments, for the same reason. (UP was
+far better).
 
-Also, for the record, you should post sparc patches at least
-CC:'d to sparclinux@vger.kernel.org in the future.
+It was fixed in ext3/4 by the in-core reservations code (recently
+ported into ext2 as well).
+
+This is why filesystem performance testing is far from complete if it
+is performed only on SMP (or UP) machines.
 
