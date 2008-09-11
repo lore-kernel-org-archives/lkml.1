@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbYIKVHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbYIKVJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbYIKVHz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 17:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYIKVHq
+	id S1756251AbYIKVJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 17:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYIKVJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 17:07:46 -0400
-Received: from gw.goop.org ([64.81.55.164]:51616 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbYIKVHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 17:07:45 -0400
-Message-ID: <48C9889B.7090901@goop.org>
-Date: Thu, 11 Sep 2008 14:07:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 11 Sep 2008 17:09:10 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:54313 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753020AbYIKVJJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 17:09:09 -0400
+Date: Thu, 11 Sep 2008 17:09:08 -0400
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Harun Scheutzow <harun04@scheutzow.de>, linux-kernel@vger.kernel.org
+Subject: Re: vfat file system extreme fragmentation on multiprocessor
+Message-ID: <20080911210908.GC31271@csclub.uwaterloo.ca>
+References: <0ML29c-1KdqyO1YV1-0001g5@mrelayeu.kundenserver.de> <20080911191049.GB31271@csclub.uwaterloo.ca> <48C97338.5080502@zytor.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 6 of 7] x86: use early_ioremap in __acpi_map_table
-References: <patchbomb.1220826072@localhost>	 <944fe7ea3da7707eb90f.1220826078@localhost>	 <20080907234418.GB26079@one.firstfloor.org>	 <48C46BCB.2060209@goop.org> <20080908142619.GA10580@elte.hu>	 <20080910115525.GA31692@elte.hu> <48C7FA91.9050302@goop.org> <86802c440809111334u6d6691c3sd83bcfddc83b1bbd@mail.gmail.com>
-In-Reply-To: <86802c440809111334u6d6691c3sd83bcfddc83b1bbd@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C97338.5080502@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> void __iomem *__init_refok
-> acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
-> {
->         if (phys > ULONG_MAX) {
->                 printk(KERN_ERR PREFIX "Cannot map memory that high\n");
->                 return NULL;
->         }
->         if (acpi_gbl_permanent_mmap)
->                 /*
->                 * ioremap checks to ensure this is in reserved space
->                 */
->                 return ioremap((unsigned long)phys, size);
->         else
->                 return __acpi_map_table((unsigned long)phys, size);
-> }
-> EXPORT_SYMBOL_GPL(acpi_os_map_memory);
->
-> void acpi_os_unmap_memory(void __iomem * virt, acpi_size size)
-> {
->         if (acpi_gbl_permanent_mmap) {
->                 iounmap(virt);
->         }
-> }
-> EXPORT_SYMBOL_GPL(acpi_os_unmap_memory);
->
-> just let acpi_os_unmap_memory to call __acpi_unmap_table...
->   
+On Thu, Sep 11, 2008 at 12:36:24PM -0700, H. Peter Anvin wrote:
+> Lennart Sorensen wrote:
+> >
+> >I don't think fat filesystems have any concept of reserving space for
+> >expanding files.  It's a pretty simple filesystem after all designed for
+> >a single cpu machine with a non-multitasking OS (if you can call DOS an
+> >OS).  Space tends to be allocated from the start of the disk wherever
+> >free space is found since otherwise you would have to go searching for
+> >the free space, which isn't that efficient.
+> >
+> 
+> Well, you can always do that in-memory.
 
-That was my first attempt.  Unfortunately a lot of the acpi code seems
-pretty sloppy about unmapping its tables, and basically relies on
-__acpi_map_table's current behaviour of removing the previous mapping
-when creating the new mapping.
+It still involves searching no matter where you do it.  With FAT-16 that
+means up to 2^16 clusters to search through.  With FAT-32 even more.  It
+doesn't have a cluster bitmap to speed things up.
 
-    J
+-- 
+Len Sorensen
