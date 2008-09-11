@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbYIKUe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYIKUjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbYIKUe5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYIKUer
+	id S1756111AbYIKUjB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYIKUix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:34:47 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:41047 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbYIKUeq (ORCPT
+	Thu, 11 Sep 2008 16:38:53 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60510 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751893AbYIKUiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:34:46 -0400
-X-Greylist: delayed 2900 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Sep 2008 16:34:45 EDT
-Date: Thu, 11 Sep 2008 20:14:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, mikhail.kshevetskiy@gmail.com,
-       linux-kernel@vger.kernel.org, aabdulla@nvidia.com, jgarzik@pobox.com
-Subject: Re: forcedeth: option to disable 100Hz timer (try 2)
-Message-ID: <20080911201420.2757a723@the-village.bc.nu>
-In-Reply-To: <20080910221947.94409642.akpm@linux-foundation.org>
-References: <fa.iCGOiwuSYhYKpu85Kihny1t9YbA@ifi.uio.no>
-	<fa.4uZtuq0waBlpfBb/4OLq4bM5Pj8@ifi.uio.no>
-	<48C863CC.3010902@shaw.ca>
-	<20080910173630.d0d38697.akpm@linux-foundation.org>
-	<48C89D9F.5080404@shaw.ca>
-	<20080910221947.94409642.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 11 Sep 2008 16:38:52 -0400
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+From: David Woodhouse <dwmw2@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       Thierry Vignaud <tvignaud@mandriva.com>,
+       David Miller <davem@davemloft.net>, jeffm@suse.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20080911201541.GA18518@kroah.com>
+References: <48C68507.6000609@suse.com>
+	 <1221087719.13621.50.camel@macbook.infradead.org>
+	 <20080910.160505.14060698.davem@davemloft.net>
+	 <m27i9i9az9.fsf@vador.mandriva.com> <20080911134042.GB3293@kroah.com>
+	 <1221151165.6309.55.camel@californication>
+	 <20080911201541.GA18518@kroah.com>
+Content-Type: text/plain
+Date: Thu, 11 Sep 2008 13:38:38 -0700
+Message-Id: <1221165518.4077.17.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > But it's quite likely that at least some of the 
-> > chipsets that this driver supports don't need this timer nonsense at all
-> 
-> Well yes.  If all the chipsets need the timer then there's nothing we
-> can do to improve it.
+On Thu, 2008-09-11 at 13:15 -0700, Greg KH wrote:
+> This is the firmware that is in the kernel source tree, that has been
+> moved to use request_firmware, and was originally tied tightly to the
+> kernel drivers themselves.
 
-Surely you only need the timer running when transmits are active and
-sufficient transmits to make it worth recovering the queued memory ?
+Not really. Most of it hasn't changed for years; it isn't _really_ tied
+that closely to the kernel. 
+
+You can just ignore what the kernel ships with, and install the firmware
+from the linux-firmware.git repository instead.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
