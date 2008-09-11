@@ -1,78 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbYIKHoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbYIKHrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753176AbYIKHoR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 03:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYIKHoD
+	id S1752720AbYIKHrs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 03:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYIKHrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 03:44:03 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:56965 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751682AbYIKHoB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 03:44:01 -0400
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: Marcel Holtmann <holtmann@linux.intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: dwmw2@infradead.org, jeffm@suse.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-Reply-To: <20080910.162423.40167601.davem@davemloft.net>
-References: <1221087719.13621.50.camel@macbook.infradead.org>
-	 <20080910.160505.14060698.davem@davemloft.net>
-	 <1221088512.13621.58.camel@macbook.infradead.org>
-	 <20080910.162423.40167601.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 11 Sep 2008 09:44:28 +0200
-Message-Id: <1221119068.6309.8.camel@californication>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Sep 2008 03:47:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55137 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbYIKHrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 03:47:39 -0400
+Date: Thu, 11 Sep 2008 09:47:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       vapier.adi@gmail.com
+Subject: Re: [PATCH] fastboot: fix blackfin breakage due to vmlinux.lds
+	change
+Message-ID: <20080911074724.GG12087@elte.hu>
+References: <20080910082534.12344a1c@infradead.org> <386072610809102043ie1107dp45e46889483048e7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <386072610809102043ie1107dp45e46889483048e7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
 
-> > It's definitely not something we should be doing upstream though.
+* Bryan Wu <cooloney@kernel.org> wrote:
+
+> On Wed, Sep 10, 2008 at 11:25 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> > Hi,
+> >
+> > the patch below fixes the fastboot bug as reported by Mike Frysinger;
+> > I've commited this to
+> > git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-fastboot.git
+> >
+> > Ingo, please also add to -tip
+> >
+> >
+> > From 16aeda33acbb711863d8fff78c15b32ad0d4aa89 Mon Sep 17 00:00:00 2001
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Date: Wed, 10 Sep 2008 08:22:26 -0700
+> > Subject: [PATCH] fastboot: fix blackfin breakage due to vmlinux.lds change
+> >
+> > As reported by Mike Frysinger, the vmlinux.lds changes should
+> > have used VMLINUX_SYMBOL()...
+> >
 > 
-> So you think it's ok that every Debian user has to learn this
-> magic incantation just to use current kernels?
+> Thanks a lot, Mike and Arjan. This issue was found by Mike's auto
+> nightly building machine.
 > 
-> I don't think it's nice to break things like this on people,
-> especially such a large group.  Getting this stuff to work is hard
-> enough, and we're just putting yet another barrier into the situation
-> and that can only mean less testers and contributors.
-> 
-> I do know several people who aren't testing and contributing because
-> the whole firmware shakeup is so bolixed and they really are exasperated
-> after spending hours trying to get it to work.
+> Acked-by: Bryan Wu <cooloney@kernel.org>
 
-it is that the Debian maintainer screwed this up. Upstream never
-promoted kernel versioned directories for the firmware. I had a long
-discussion with Dave about it at OLS and using the kernel version is
-just plain wrong. The driver maintainers should version the firmware if
-they break it in an API incompatible way.
+applied to tip/fastboot, thanks!
 
-To shed some light into the problem with Debian/Ubuntu. They install the
-firmware in /lib/firmware/`uname -r`/ and everytime they bump their ABI
-number, they have to install all the firmware again. This is just
-braindead. Their udev script actually checks /lib/firmware first and
-then the kernel versioned directory. So that is just fine.
-
-Problem comes when installing let say 2.6.27 since then the firmware
-will be looked up in /lib/firmware/ and /lib/firmware/2.6.27/ and
-actually it will not be found. Since it is in /lib/firmware/2.6.26-xx/
-or something similar.
-
-So having the kernel install everything in /lib/firmware works just fine
-with every distro. However looking for firmware that is not shipped with
-the kernel, we have a problem since Debian/Ubuntu just not installs it
-in the right directory. And there is nothing the kernel can do about it
-since it will not touch firmware it doesn't ship. The distro has to fix
-their firmware or the users have to place a copy in /lib/firmware/ where
-it actually should have been in the first place.
-
-Regards
-
-Marcel
-
-
+	Ingo
