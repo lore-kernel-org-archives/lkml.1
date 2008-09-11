@@ -1,99 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbYIKUeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbYIKUeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447AbYIKUeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbYIKUeK
+	id S1756779AbYIKUeg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbYIKUeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:34:10 -0400
-Received: from hs-out-0708.google.com ([64.233.178.245]:38530 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751902AbYIKUeJ (ORCPT
+	Thu, 11 Sep 2008 16:34:14 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:53767 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbYIKUeN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:34:09 -0400
+	Thu, 11 Sep 2008 16:34:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=S00TbdY93pjGYgJCWSmWkMo7iWHlBOitmr8voyUo6zdksKaz94gpTo156XKDtR6lUD
-         bUdcksmUXSRTkqDAYCCnUYoIMPYTNbp0lxmx9wx9NLDI/mcD87CBaS05B/+i56XT2vGh
-         /sKlfEyQuax3C4TFxO925K/VOma5PfqbkWqVg=
-Message-ID: <a44ae5cd0809111334n5dbe074eqaea80324f7ff9ae@mail.gmail.com>
-Date: Thu, 11 Sep 2008 16:34:06 -0400
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Hard drive not seen by mount when booting using busybox/initrd under 2.6.27-2-generic (Ubuntu)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RRdgYQs23l1bNOuonbVE0evVd5bWaXUxPRp/Xb8riNx3+dkRGiMRgzm9ChEGY3ayvB
+         HBM60Ay8yIgRTvBFrHKm7iSq82vIlJbDqvRC7Jk0ykZ4aJ2YBoiMn26xVWASXkFBH4ZE
+         aJm1CT/N2tzA9w8RKrifExHRDD/Bnbf0qhnp8=
+Message-ID: <86802c440809111334u6d6691c3sd83bcfddc83b1bbd@mail.gmail.com>
+Date: Thu, 11 Sep 2008 13:34:12 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Subject: Re: [PATCH 6 of 7] x86: use early_ioremap in __acpi_map_table
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <48C7FA91.9050302@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <patchbomb.1220826072@localhost>
+	 <944fe7ea3da7707eb90f.1220826078@localhost>
+	 <20080907234418.GB26079@one.firstfloor.org>
+	 <48C46BCB.2060209@goop.org> <20080908142619.GA10580@elte.hu>
+	 <20080910115525.GA31692@elte.hu> <48C7FA91.9050302@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I get the messages below during the setup of the drives on my machine.
- Is the kernel failing to set up my drives correctly?  One clue is
-that it looks as though perhaps BOTH pata_acpi and ata_piix are trying
-to handle the hard drives interface???  I am also puzzled by the line
-"sda:<6>ata5.00: ATAPI: Optiarc DVD RW AD-7530A", which seems to
-indicate that sda is somehow getting confused with my DVD-RW drive.
+On Wed, Sep 10, 2008 at 9:49 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Ingo Molnar wrote:
+>>> So i'd suggest a different, more carful approach: keep the new code
+>>> you wrote, but print a WARN()ing if prev_map is not unmapped yet when
+>>> the next mapping is acquired. That way the ACPI code can be fixed
+>>> gradually and without breaking existing functionality.
+>>>
+>>
+>> ok, i stuck in your patches into tip/master today and -tip testing
+>> quickly found an early-ioremap leak:
+>>
+>> [   36.625100] calling  check_early_ioremap_leak+0x0/0x3d
+>> [   36.630253] ------------[ cut here ]------------
+>> [   36.634884] WARNING: at arch/x86/mm/ioremap.c:577 check_early_ioremap_leak+0x28/0x3d()
+>> [   36.642811] Debug warning: early ioremap leak of 1 areas detected.
+>>
+>> find the full log below with ioremap-leak-tracing turned on. I've
+>> excluded these commits for now from tip/master.
+>>
+>
+> Yes, that leak is expected, unfortunately.  __acpi_map_table() has no
+> corresponding unmap, and only maintains one mapping.  So it will leak
+> its last mapping when it switches over from using __acpi_map_table() to
+> ioremap().
+>
+> So, yes, its ugly, but its guaranteed to be a single leaked mapping.
+> But I'm not sure what the best approach to deal with it is.
+>
+> (All those other backtraces are just informational, right?)
+>
 
-I get a similar problem when I compile and test a 2.6.27-rc6 kernel.
-The only difference is that I also see a message saying that my
-modules cannot be found before the mount error occurs.
+acpi_os_map_memory is the only user for __acpi_map_table (except es7000_32.c)
 
-I tried mounting partitions from my drive from the command line and
-all attempts gave the same error:  "device not found".
+void __iomem *__init_refok
+acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
+{
+        if (phys > ULONG_MAX) {
+                printk(KERN_ERR PREFIX "Cannot map memory that high\n");
+                return NULL;
+        }
+        if (acpi_gbl_permanent_mmap)
+                /*
+                * ioremap checks to ensure this is in reserved space
+                */
+                return ioremap((unsigned long)phys, size);
+        else
+                return __acpi_map_table((unsigned long)phys, size);
+}
+EXPORT_SYMBOL_GPL(acpi_os_map_memory);
 
-[    4.459717] ata1: SATA max UDMA/133 abar m1024@0xd8444400 port
-0xd8444500 irq 2301
-[    4.459720] ata2: DUMMY
-[    4.459723] ata3: SATA max UDMA/133 abar m1024@0xd8444400 port
-0xd8444600 irq 2301
-[    4.459726] ata4: DUMMY
-[    5.056152] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-[    5.057177] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
-[    5.057342] ata1.00: ATA-7: Hitachi HTS541616J9SA00, SB4OC70P, max UDMA/100
-[    5.057345] ata1.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 31/32)
-[    5.058519] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
-[    5.058686] ata1.00: configured for UDMA/100
-[    5.392129] ata3: SATA link down (SStatus 0 SControl 300)
-[    5.408396] scsi 0:0:0:0: Direct-Access     ATA      Hitachi
-HTS54161 SB4O PQ: 0 ANSI: 5
-[    5.464760] pata_acpi 0000:00:1f.1: PCI INT B -> GSI 19 (level,
-low) -> IRQ 19
-[    5.464798] pata_acpi 0000:00:1f.1: setting latency timer to 64
-[    5.464821] pata_acpi 0000:00:1f.1: PCI INT B disabled
-[    5.468055] ata_piix 0000:00:1f.1: version 2.12
-[    5.468065] ata_piix 0000:00:1f.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
-[    5.468109] ata_piix 0000:00:1f.1: setting latency timer to 64
-[    5.468195] scsi4 : ata_piix
-[    5.468273] scsi5 : ata_piix
-[    5.469015] ata5: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x1810 irq 14
-[    5.469019] ata6: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x1818 irq 15
-[    5.478018] Driver 'sd' needs updating - please use bus_type methods
-[    5.478163] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-[    5.478192] sd 0:0:0:0: [sda] Write Protect is off
-[    5.478195] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[    5.478240] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[    5.478344] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-[    5.478369] sd 0:0:0:0: [sda] Write Protect is off
-[    5.478372] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[    5.478418] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
-enabled, doesn't support DPO or FUA
-[    5.478423]  sda:<6>ata5.00: ATAPI: Optiarc DVD RW AD-7530A, EX32,
-max UDMA/33
-[    5.648451] ata5.00: configured for UDMA/33
-[    5.648503] ata6: port disabled. ignoring.
-[    5.648548] isa bounce pool size: 16 pages
-[    5.649976] scsi 4:0:0:0: CD-ROM            Optiarc  DVD RW
-AD-7530A  EX32 PQ: 0 ANSI: 5
-[    5.661100] Driver 'sr' needs updating - please use bus_type methods
-[    5.879315]  sda1 sda2
-[    5.879493] sd 0:0:0:0: [sda] Attached SCSI disk
-[    5.886208] sd 0:0:0:0: Attached scsi generic sg0 type 0
-[    5.886253] sr 4:0:0:0: Attached scsi generic sg1 type 5
-[    5.894719] sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw
-xa/form2 cdda tray
-[    5.894725] Uniform CD-ROM driver Revision: 3.20
-[    5.894830] sr 4:0:0:0: Attached scsi CD-ROM sr0
+void acpi_os_unmap_memory(void __iomem * virt, acpi_size size)
+{
+        if (acpi_gbl_permanent_mmap) {
+                iounmap(virt);
+        }
+}
+EXPORT_SYMBOL_GPL(acpi_os_unmap_memory);
+
+just let acpi_os_unmap_memory to call __acpi_unmap_table...
+
+YH
