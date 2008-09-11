@@ -1,143 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYIKDbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYIKDnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbYIKDbg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 23:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbYIKDal
+	id S1754678AbYIKDnm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 23:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYIKDnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 23:30:41 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33114 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598AbYIKDak (ORCPT
+	Wed, 10 Sep 2008 23:43:33 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:3340 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478AbYIKDnc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 23:30:40 -0400
-Date: Wed, 10 Sep 2008 20:30:25 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
-       peterz@infradead.org, tglx@tglx.de
-Subject: [PATCH 3/3] hrtimer: peek at the timer queue just before going idle
-Message-ID: <20080910203025.0b88cc7e@infradead.org>
-In-Reply-To: <20080910202803.42b5f251@infradead.org>
-References: <20080910202803.42b5f251@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Sep 2008 23:43:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=DE3v2M3kbhKGg98HPMr7nlp/UqucrkHPP9GnWnaPqTiS8L9gocTYAt8sXvDEGsg75R
+         fRoK8iaAF5j7r0R3Z5i1BuOxM2WO+PyRhPLXNbiNkrvVKh3aFwQNEaKCfzd54VI/u8ut
+         GOxiaLqdtDF2Y+GUqJsNGUieatfOAdzao1M2Y=
+Message-ID: <386072610809102043ie1107dp45e46889483048e7@mail.gmail.com>
+Date: Thu, 11 Sep 2008 11:43:31 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH] fastboot: fix blackfin breakage due to vmlinux.lds change
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, vapier.adi@gmail.com
+In-Reply-To: <20080910082534.12344a1c@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20080910082534.12344a1c@infradead.org>
+X-Google-Sender-Auth: 32731c16165af042
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 10, 2008 at 11:25 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> Hi,
+>
+> the patch below fixes the fastboot bug as reported by Mike Frysinger;
+> I've commited this to
+> git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-fastboot.git
+>
+> Ingo, please also add to -tip
+>
+>
+> From 16aeda33acbb711863d8fff78c15b32ad0d4aa89 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Wed, 10 Sep 2008 08:22:26 -0700
+> Subject: [PATCH] fastboot: fix blackfin breakage due to vmlinux.lds change
+>
+> As reported by Mike Frysinger, the vmlinux.lds changes should
+> have used VMLINUX_SYMBOL()...
+>
 
+Thanks a lot, Mike and Arjan. This issue was found by Mike's auto
+nightly building machine.
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] hrtimer: peek at the timer queue just before going idle
+Acked-by: Bryan Wu <cooloney@kernel.org>
 
-As part of going idle, we already look at the time of the next timer event to determine
-which C-state to select etc.
-
-This patch adds functionality that causes the timers that are past their
-soft expire time, to fire at this time, before we calculate the next wakeup
-time. This functionality will thus avoid wakeups by running timers before
-going idle rather than specially waking up for it.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/cpuidle/cpuidle.c |    7 +++++++
- include/linux/hrtimer.h   |    5 +++++
- kernel/hrtimer.c          |   30 ++++++++++++++++++++++++++++++
- 3 files changed, 42 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 5ce07b5..2e31484 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -16,6 +16,7 @@
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/ktime.h>
-+#include <linux/hrtimer.h>
- 
- #include "cpuidle.h"
- 
-@@ -60,6 +61,12 @@ static void cpuidle_idle_call(void)
- 		return;
- 	}
- 
-+	/*
-+	 * run any timers that can be run now, at this point
-+	 * before calculating the idle duration etc.
-+	 */
-+	hrtimer_peek_ahead_timers();
-+
- 	/* ask the governor for the next state */
- 	next_state = cpuidle_curr_governor->select(dev);
- 	if (need_resched())
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 301c2c8..1ca3978 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -326,6 +326,11 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
- extern ktime_t ktime_get(void);
- extern ktime_t ktime_get_real(void);
- 
-+
-+DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
-+extern void hrtimer_peek_ahead_timers(void);
-+
-+
- /* Exported timer functions: */
- 
- /* Initialize timers: */
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index b1dacd3..d152c46 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -1381,6 +1381,36 @@ void hrtimer_interrupt(struct clock_event_device *dev)
- 		raise_softirq(HRTIMER_SOFTIRQ);
- }
- 
-+/**
-+ * hrtimer_peek_ahead_timers -- run soft-expired timers now
-+ *
-+ * hrtimer_peek_ahead_timers will peek at the timer queue of
-+ * the current cpu and check if there are any timers for which
-+ * the soft expires time has passed. If any such timers exist,
-+ * they are run immediately and then removed from the timer queue.
-+ *
-+ */
-+void hrtimer_peek_ahead_timers(void)
-+{
-+	unsigned long flags;
-+	struct tick_device *td;
-+	struct clock_event_device *dev;
-+
-+	if (hrtimer_hres_active())
-+		return;
-+
-+	local_irq_save(flags);
-+	td = &__get_cpu_var(tick_cpu_device);
-+	if (!td)
-+		goto out;
-+	dev = td->evtdev;
-+	if (!dev)
-+		goto out;
-+	hrtimer_interrupt(dev);
-+out:
-+	local_irq_restore(flags);	
-+}
-+
- static void run_hrtimer_softirq(struct softirq_action *h)
- {
- 	run_hrtimer_pending(&__get_cpu_var(hrtimer_bases));
--- 
-1.5.5.1
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> Reported-by: Mike Frysinger <vapier.adi@gmail.com>
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  include/asm-generic/vmlinux.lds.h |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+> index 020c641..f32418f 100644
+> --- a/include/asm-generic/vmlinux.lds.h
+> +++ b/include/asm-generic/vmlinux.lds.h
+> @@ -373,11 +373,11 @@
+>        *(.initcall5s.init)                                             \
+>        *(.initcallrootfs.init)                                         \
+>        *(.initcall6s.init)                                             \
+> -       __async_initcall_start = .;                                     \
+> +       VMLINUX_SYMBOL(__async_initcall_start) = .;                     \
+>        *(.initcall6a.init)                                             \
+> -       __async_initcall_end = .;                                       \
+> +       VMLINUX_SYMBOL(__async_initcall_end) = .;                       \
+>        *(.initcall6.init)                                              \
+> -       __device_initcall_end = .;                                      \
+> +       VMLINUX_SYMBOL(__device_initcall_end) = .;                      \
+>        *(.initcall7.init)                                              \
+>        *(.initcall7s.init)
+>
+> --
+> 1.5.5.1
+>
+>
+>
+>
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
