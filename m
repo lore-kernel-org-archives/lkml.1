@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbYIKBsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYIKBvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbYIKBsQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 21:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYIKBsA
+	id S1754434AbYIKBvv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 21:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYIKBvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 21:48:00 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:37446 "EHLO
-	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751848AbYIKBsA (ORCPT
+	Wed, 10 Sep 2008 21:51:40 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:56276 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751963AbYIKBvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 21:48:00 -0400
-Message-ID: <48C878AD.4040404@linux.vnet.ibm.com>
-Date: Wed, 10 Sep 2008 18:47:25 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+	Wed, 10 Sep 2008 21:51:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references:x-google-sender-auth;
+        b=ptvxztO/z770o3tns/cI6TcZ35z6Voe1lMbL1ilbdRptKw4hn1W/SF3QUqovCt1T15
+         pvkS8VsSeiAsg9b31TRKVeLh42c1oWZbGWuRX1xSux4gMPhe6swFjAanwrv87ShoS0jn
+         KKajWPWo9SHhdMUO5QVOblvmdmQO4/qyAsIrg=
+Message-ID: <41b516cb0809101851p79f73499vbd10dec4f6bdeccb@mail.gmail.com>
+Date: Wed, 10 Sep 2008 18:51:37 -0700
+From: "Chris Leech" <christopher.leech@intel.com>
+Reply-To: chris.leech@gmail.com
+To: "Boaz Harrosh" <bharrosh@panasas.com>
+Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte arrays as integers
+Cc: "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, devel@open-fcoe.org
+In-Reply-To: <48C7F19D.3080507@panasas.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct page
-References: <48C66AF8.5070505@linux.vnet.ibm.com> <20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com> <200809091358.28350.nickpiggin@yahoo.com.au> <20080909135317.cbff4871.kamezawa.hiroyu@jp.fujitsu.com> <200809091500.10619.nickpiggin@yahoo.com.au> <20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com> <30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com> <20080910012048.GA32752@balbir.in.ibm.com> <1221085260.6781.69.camel@nimitz> <48C84C0A.30902@linux.vnet.ibm.com> <1221087408.6781.73.camel@nimitz> <20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>
+	 <20080910140712.GA12280@infradead.org>
+	 <1221061241.27385.14.camel@norville.austin.ibm.com>
+	 <48C7F19D.3080507@panasas.com>
+X-Google-Sender-Auth: 20cb85bf9dfc9467
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 10 Sep 2008 15:56:48 -0700
-> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> 
->> On Wed, 2008-09-10 at 15:36 -0700, Balbir Singh wrote:
->>> Dave Hansen wrote:
->>>> On Tue, 2008-09-09 at 18:20 -0700, Balbir Singh wrote:
->>>>> +       start = pgdat->node_start_pfn;
->>>>> +       end = pgdat->node_start_pfn + pgdat->node_spanned_pages;
->>>>> +       size = (end - start) * sizeof(struct page_cgroup);
->>>>> +       printk("Allocating %lu bytes for node %d\n", size, n);
->>>>> +       pcg_map[n] = alloc_bootmem_node(pgdat, size);
->>>>> +       /*
->>>>> +        * We can do smoother recovery
->>>>> +        */
->>>>> +       BUG_ON(!pcg_map[n]);
->>>>> +       return 0;
->>>>>  }
->>>> This will really suck for sparse memory machines.  Imagine a machine
->>>> with 1GB of memory at 0x0 and another 1GB of memory at 1TB up in the
->>>> address space.
->>>>
->>> I would hate to re-implement the entire sparsemem code :(
->>> Kame did suggest making the memory controller depend on sparsemem (to hook in
->>> from there for allocations)
->> Yeah, you could just make another mem_section member.  Or, you could
->> work to abstract the sparsemem code so that other people can use it, or
->> maybe make it more dynamic so we can have multiple pfn->object lookups
->> in parallel.  Adding the struct member is obviously easier.
->>
-> Don't worry. I'll care sparse memory map and hotplug.
-> But whether making this depends on SPARSEMEM or not is not fixed yet.
-> I'll try generic one, at first. If it's dirty, start discussion about SPARSEMEM.
-> 
-> (Honestly, I love sparsemem than others ;)
+On Wed, Sep 10, 2008 at 9:11 AM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> Chris you might want to change the definitions at linux/types.h
+> to:
+>
+> typedef struct { __u8 b[3]; } __be24, __le24 __packed;
+>
+> With gcc it will not help with the proceeding fields, and the
+> containing struct will need it's own "__packed" declaration
+> but it will keep it packed with previous fields.
 
-My concern is that if we depend on sparsemem, then we force distros to turn on
-sparsemem (which might be the default, but not on all architectures), we might
-end up losing those architectures (w.r.t. turning on the memory controller)
-where sparsemem is not the default on the distro.
+I haven't seen padding added simply because of a nested structure
+boundary, but I'm not up on all the ABIs for the different
+architectures.  Obviously a containing structure would want to have
+the 24-bit type adjacent to an 8-bit type, or have it's own packed
+attribute if needed.
 
+It shouldn't hurt, in this case the members shouldn't be expected to
+have more than byte alignment anyway, but I can't see how it would
+help.
 
--- 
-	Balbir
+If there's a particular arch that might be a problem I'm happy to look
+into it, but I don't want to start throwing packed attributes around
+just in case.
+
+Chris
