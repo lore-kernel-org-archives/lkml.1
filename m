@@ -1,173 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYIKH1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbYIKHeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbYIKH1a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 03:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYIKH1W
+	id S1753091AbYIKHeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 03:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYIKHeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 03:27:22 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:45241 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751650AbYIKH1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 03:27:21 -0400
-Date: Thu, 11 Sep 2008 09:27:18 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Daney <ddaney@avtrex.com>
-cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [Patch 2/6] MIPS: Add HARDWARE_WATCHPOINTS definitions and
- support code.
-In-Reply-To: <48C8B2C3.4050002@avtrex.com>
-Message-ID: <Pine.LNX.4.64.0809110922090.29543@anakin>
-References: <48C8ADEF.9020305@avtrex.com> <48C8B2C3.4050002@avtrex.com>
+	Thu, 11 Sep 2008 03:34:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40554 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbYIKHd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 03:33:59 -0400
+Date: Thu, 11 Sep 2008 09:33:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 6 of 7] x86: use early_ioremap in __acpi_map_table
+Message-ID: <20080911073337.GF27877@elte.hu>
+References: <patchbomb.1220826072@localhost> <944fe7ea3da7707eb90f.1220826078@localhost> <20080907234418.GB26079@one.firstfloor.org> <48C46BCB.2060209@goop.org> <20080908142619.GA10580@elte.hu> <20080910115525.GA31692@elte.hu> <48C7FA91.9050302@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C7FA91.9050302@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Sep 2008, David Daney wrote:
 
-Given
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> +	case 4:
-> +		write_c0_watchlo3(watches->watchlo[3]);
-> +		/* Write 1 to the I, R, and W bits to clear them, and
-> +		   1 to G so all ASIDs are trapped. */
-> +		write_c0_watchhi3(0x40000007 | watches->watchhi[3]);
-> +	case 3:
-> +		write_c0_watchlo2(watches->watchlo[2]);
-> +		write_c0_watchhi2(0x40000007 | watches->watchhi[2]);
-> +	case 2:
-> +		write_c0_watchlo1(watches->watchlo[1]);
-> +		write_c0_watchhi1(0x40000007 | watches->watchhi[1]);
-> +	case 1:
-> +		write_c0_watchlo0(watches->watchlo[0]);
-> +		write_c0_watchhi0(0x40000007 | watches->watchhi[0]);
+> Ingo Molnar wrote:
+> >> So i'd suggest a different, more carful approach: keep the new code 
+> >> you wrote, but print a WARN()ing if prev_map is not unmapped yet when 
+> >> the next mapping is acquired. That way the ACPI code can be fixed 
+> >> gradually and without breaking existing functionality.
+> >>     
+> >
+> > ok, i stuck in your patches into tip/master today and -tip testing 
+> > quickly found an early-ioremap leak:
+> >
+> > [   36.625100] calling  check_early_ioremap_leak+0x0/0x3d
+> > [   36.630253] ------------[ cut here ]------------
+> > [   36.634884] WARNING: at arch/x86/mm/ioremap.c:577 check_early_ioremap_leak+0x28/0x3d()
+> > [   36.642811] Debug warning: early ioremap leak of 1 areas detected.
+> >
+> > find the full log below with ioremap-leak-tracing turned on. I've 
+> > excluded these commits for now from tip/master.
+> >   
+> 
+> Yes, that leak is expected, unfortunately.  __acpi_map_table() has no 
+> corresponding unmap, and only maintains one mapping.  So it will leak 
+> its last mapping when it switches over from using __acpi_map_table() 
+> to ioremap().
+> 
+> So, yes, its ugly, but its guaranteed to be a single leaked mapping. 
+> But I'm not sure what the best approach to deal with it is.
 
-and
+the false positive should be avoided, for example by unmapping the 
+'prev' mapping shortly before the leak check.
 
-> +	case 4:
-> +		watches->watchhi[3] = (read_c0_watchhi3() & 0x0fff);
-> +	case 3:
-> +		watches->watchhi[2] = (read_c0_watchhi2() & 0x0fff);
-> +	case 2:
-> +		watches->watchhi[1] = (read_c0_watchhi1() & 0x0fff);
-> +	case 1:
-> +		watches->watchhi[0] = (read_c0_watchhi0() & 0x0fff);
+> (All those other backtraces are just informational, right?)
 
-and
+no, they cause hard failures in my test setup. Nor do we want to litter 
+the bootup log with messages that are not correct.
 
-> +	case 8:
-> +		write_c0_watchlo7(0);
-> +	case 7:
-> +		write_c0_watchlo6(0);
-> +	case 6:
-> +		write_c0_watchlo5(0);
-> +	case 5:
-> +		write_c0_watchlo4(0);
-> +	case 4:
-> +		write_c0_watchlo3(0);
-> +	case 3:
-> +		write_c0_watchlo2(0);
-> +	case 2:
-> +		write_c0_watchlo1(0);
-> +	case 1:
-> +		write_c0_watchlo0(0);
-
-do the same for each registers, perhaps it makes sense to create
-read_c0_watchhi(), write_c0_watchlo(), and write_c0_watchhi() macros
-that take the watchdog register index as a parameter? Then the above can
-be turned in simple loops.
-
-> +	write_c0_watchlo0(7);
-> +	t = read_c0_watchlo0();
-> +	write_c0_watchlo0(0);
-> +	c->watch_reg_masks[0] = t & 7;
-> +
-> +	/* Write the mask bits and read them back to determine which
-> +	 * can be used. */
-> +	c->watch_reg_count = 1;
-> +	c->watch_reg_use_cnt = 1;
-> +	t = read_c0_watchhi0();
-> +	write_c0_watchhi0(t | 0xff8);
-> +	t = read_c0_watchhi0();
-> +	c->watch_reg_masks[0] |= (t & 0xff8);
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-> +
-> +	write_c0_watchlo1(7);
-> +	t = read_c0_watchlo1();
-> +	write_c0_watchlo1(0);
-> +	c->watch_reg_masks[1] = t & 7;
-> +
-> +	c->watch_reg_count = 2;
-> +	c->watch_reg_use_cnt = 2;
-> +	t = read_c0_watchhi1();
-> +	write_c0_watchhi1(t | 0xff8);
-> +	t = read_c0_watchhi1();
-> +	c->watch_reg_masks[1] |= (t & 0xff8);
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-> +
-> +	write_c0_watchlo2(7);
-> +	t = read_c0_watchlo2();
-> +	write_c0_watchlo2(0);
-> +	c->watch_reg_masks[2] = t & 7;
-> +
-> +	c->watch_reg_count = 3;
-> +	c->watch_reg_use_cnt = 3;
-> +	t = read_c0_watchhi2();
-> +	write_c0_watchhi2(t | 0xff8);
-> +	t = read_c0_watchhi2();
-> +	c->watch_reg_masks[2] |= (t & 0xff8);
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-> +
-> +	write_c0_watchlo3(7);
-> +	t = read_c0_watchlo3();
-> +	write_c0_watchlo3(0);
-> +	c->watch_reg_masks[3] = t & 7;
-> +
-> +	c->watch_reg_count = 4;
-> +	c->watch_reg_use_cnt = 4;
-> +	t = read_c0_watchhi3();
-> +	write_c0_watchhi3(t | 0xff8);
-> +	t = read_c0_watchhi3();
-> +	c->watch_reg_masks[3] |= (t & 0xff8);
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-
-Same here
-
-> +	/* We use at most 4, but probe and report up to 8. */
-> +	c->watch_reg_count = 5;
-> +	t = read_c0_watchhi4();
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-> +
-> +	c->watch_reg_count = 6;
-> +	t = read_c0_watchhi5();
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-> +
-> +	c->watch_reg_count = 7;
-> +	t = read_c0_watchhi6();
-> +	if ((t & 0x80000000) == 0)
-> +		return;
-> +
-> +	c->watch_reg_count = 8;
-
-and here
-
-BTW, no check for read_c0_watchhi7()?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
