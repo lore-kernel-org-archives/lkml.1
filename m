@@ -1,108 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755440AbYIKL1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYIKL36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440AbYIKL1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 07:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYIKL1l
+	id S1755238AbYIKL36 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 07:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIKL3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 07:27:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49126 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbYIKL1k (ORCPT
+	Thu, 11 Sep 2008 07:29:50 -0400
+Received: from mx1.moondrake.net ([212.85.150.166]:57584 "EHLO
+	mx1.mandriva.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752563AbYIKL3t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 07:27:40 -0400
-Date: Thu, 11 Sep 2008 20:17:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: balbir@linux.vnet.ibm.com, "xemul@openvz.org" <xemul@openvz.org>,
-       "hugh@veritas.com" <hugh@veritas.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, menage@google.com
-Subject: [RFC] [PATCH 5/9] memcg: set mapping null before uncharge
-Message-Id: <20080911201751.4b81bbb8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Sep 2008 07:29:49 -0400
+X-Spam-Virus: No
+To: David Miller <davem@davemloft.net>
+Cc: dwmw2@infradead.org, jeffm@suse.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+X-URL: <http://www.mandrivalinux.com/
+References: <48C68507.6000609@suse.com>
+	<1221087719.13621.50.camel@macbook.infradead.org>
+	<20080910.160505.14060698.davem@davemloft.net>
+From: Thierry Vignaud <tvignaud@mandriva.com>
+Organization: Mandriva
+Date: Thu, 11 Sep 2008 13:29:46 +0200
+In-Reply-To: <20080910.160505.14060698.davem@davemloft.net> (David Miller's message of "Wed\, 10 Sep 2008 16\:05\:05 -0700 \(PDT\)")
+Message-ID: <m27i9i9az9.fsf@vador.mandriva.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch tries to make page->mapping to be NULL before
-mem_cgroup_uncharge_cache_page() is called.
+David Miller <davem@davemloft.net> writes:
 
-"page->mapping == NULL" is a good check for "whether the page is still
-radix-tree or not".
-This patch also adds BUG_ON() to mem_cgroup_uncharge_cache_page();
+> > This isn't compatible with the version of udev that people actually have
+> > installed, today. And it's also the _wrong_ thing to do.
+> > 
+> > Firmware really _isn't_ version-specific.
+> 
+> Tell that to every Debian and Debian derived system on the planet.
+> 
+> To my knowledge, it is only fedora and possibly one or two other dists
+> that put the firmware files in a unary /lib/firmware location, rather
+> than a versioned /lib/firmware/$KERNELRELASE one.
 
+We (Mandriva Linux) do too.
+Why other distro cannot package firmware separatly for all their kernel
+flavors?
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- mm/filemap.c    |    2 +-
- mm/memcontrol.c |    1 +
- mm/migrate.c    |   12 +++++++++---
- 3 files changed, 11 insertions(+), 4 deletions(-)
-
-Index: mmtom-2.6.27-rc5+/mm/filemap.c
-===================================================================
---- mmtom-2.6.27-rc5+.orig/mm/filemap.c
-+++ mmtom-2.6.27-rc5+/mm/filemap.c
-@@ -116,12 +116,12 @@ void __remove_from_page_cache(struct pag
- {
- 	struct address_space *mapping = page->mapping;
- 
--	mem_cgroup_uncharge_cache_page(page);
- 	radix_tree_delete(&mapping->page_tree, page->index);
- 	page->mapping = NULL;
- 	mapping->nrpages--;
- 	__dec_zone_page_state(page, NR_FILE_PAGES);
- 	BUG_ON(page_mapped(page));
-+	mem_cgroup_uncharge_cache_page(page);
- 
- 	/*
- 	 * Some filesystems seem to re-dirty the page even after
-Index: mmtom-2.6.27-rc5+/mm/memcontrol.c
-===================================================================
---- mmtom-2.6.27-rc5+.orig/mm/memcontrol.c
-+++ mmtom-2.6.27-rc5+/mm/memcontrol.c
-@@ -864,6 +864,7 @@ void mem_cgroup_uncharge_page(struct pag
- void mem_cgroup_uncharge_cache_page(struct page *page)
- {
- 	VM_BUG_ON(page_mapped(page));
-+	VM_BUG_ON(page->mapping);
- 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
- }
- 
-Index: mmtom-2.6.27-rc5+/mm/migrate.c
-===================================================================
---- mmtom-2.6.27-rc5+.orig/mm/migrate.c
-+++ mmtom-2.6.27-rc5+/mm/migrate.c
-@@ -330,8 +330,6 @@ static int migrate_page_move_mapping(str
- 	__inc_zone_page_state(newpage, NR_FILE_PAGES);
- 
- 	spin_unlock_irq(&mapping->tree_lock);
--	if (!PageSwapCache(newpage))
--		mem_cgroup_uncharge_cache_page(page);
- 
- 	return 0;
- }
-@@ -378,7 +376,15 @@ static void migrate_page_copy(struct pag
- #endif
- 	ClearPagePrivate(page);
- 	set_page_private(page, 0);
--	page->mapping = NULL;
-+	/* page->mapping contains a flag for PageAnon() */
-+	if (PageAnon(page)) {
-+		/* This page is uncharged at try_to_unmap(). */
-+		page->mapping = NULL;
-+	} else {
-+		/* Obsolete file cache should be uncharged */
-+		page->mapping = NULL;
-+		mem_cgroup_uncharge_cache_page(page);
-+	}
- 
- 	/*
- 	 * If any waiters have accumulated on the new page then
-
+Firmware are not version-specific.
