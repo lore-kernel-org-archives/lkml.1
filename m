@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYIKJDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYIKJLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbYIKJDB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 05:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYIKJCu
+	id S1753912AbYIKJLN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 05:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYIKJK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 05:02:50 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:60215 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbYIKJCt (ORCPT
+	Thu, 11 Sep 2008 05:10:58 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:17332 "EHLO
+	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751876AbYIKJK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 05:02:49 -0400
-Message-ID: <48C8DEA0.9080905@fr.ibm.com>
-Date: Thu, 11 Sep 2008 11:02:24 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 11 Sep 2008 05:10:57 -0400
+X-BigFish: VPS-33(zz1432R98dR936eQ1805M936fQ873fnzz10d3izzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K70XHU-04-HS2-01
+Date: Thu, 11 Sep 2008 11:10:00 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: joro@8bytes.org, linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
+Message-ID: <20080911091000.GI24392@amd.com>
+References: <20080910135347.GI6329@amd.com> <20080910232446O.fujita.tomonori@lab.ntt.co.jp> <20080910143818.GA31506@8bytes.org> <20080910234510S.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: chucklever@gmail.com, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>, linux-nfs@vger.kernel.org
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount
- namespace is unshared
-References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com> <m18wu1nyon.fsf@frodo.ebiederm.org> <20080909152952.GA21207@us.ibm.com> <DE845309-1684-472A-8269-78AB3A2823A9@oracle.com> <m1fxo9mba5.fsf@frodo.ebiederm.org> <48C791F9.8090606@fr.ibm.com> <76bd70e30809100812r4a7fa71crfc7196350e3ed1cf@mail.gmail.com> <m1ej3rixbx.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1ej3rixbx.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20080910234510S.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 11 Sep 2008 09:10:01.0007 (UTC) FILETIME=[2B854BF0:01C913EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Sep 10, 2008 at 11:45:34PM +0900, FUJITA Tomonori wrote:
+> On Wed, 10 Sep 2008 16:38:18 +0200
+> Joerg Roedel <joro@8bytes.org> wrote:
+> > Ok, thats a valid point. I queue your patch with the AMD IOMMU updates
+> > for 2.6.28. Thanks.
+> 
+> Ingo already has queued it his tree, I think.
 
-> The conservative play is to always force use of the initial namespace
-> and to deny creation of mounts that would use different namespaces.  In part
-> because the initial version of the namespace always exists.  Which means
-> as relates to Cedrics initial patch we would still need to know which
-> mounts should cause us to use a different uts namespace so we can deny
-> them.
+I asked Ingo to remove it from his tree to avoid merge conflicts with
+updates I am currently preparing. Here is the patch I queued into my
+2.6.28 update chain.
 
-I will send the initial patch which forces use of the initial namespace because
-it does fix a real oops. 
+Joerg
 
-Then, I should be able to find some time to work on improving the uts namespace
-checks when NFS mounts are done.
+===
+commit 42a7fa8d8a7f1680cba76e4824dba30bfd1c9d70
+Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date:   Wed Sep 10 20:19:40 2008 +0900
 
-Thanks !
+    x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
+    
+    x86's common alloc_coherent (dma_alloc_coherent in dma-mapping.h) sets
+    up the gfp flag according to the device dma_mask but AMD IOMMU doesn't
+    need it for devices that the IOMMU can do virtual mappings for. This
+    patch avoids unnecessary low zone allocation.
+    
+    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-C.
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index ae38b24..09261dc 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -1360,6 +1360,9 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	if (!check_device(dev))
+ 		return NULL;
+ 
++	if (!get_device_resources(dev, &iommu, &domain, &devid))
++		flag &= ~(__GFP_DMA | __GFP_HIGHMEM | __GFP_DMA32);
++
+ 	virt_addr = (void *)__get_free_pages(flag, get_order(size));
+ 	if (!virt_addr)
+ 		return 0;
+@@ -1367,8 +1370,6 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	memset(virt_addr, 0, size);
+ 	paddr = virt_to_phys(virt_addr);
+ 
+-	get_device_resources(dev, &iommu, &domain, &devid);
+-
+ 	if (!iommu || !domain) {
+ 		*dma_addr = (dma_addr_t)paddr;
+ 		return virt_addr;
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
