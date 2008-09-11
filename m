@@ -1,63 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbYIKRTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbYIKRXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbYIKRTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYIKRTK
+	id S1755098AbYIKRXP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 13:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYIKRXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 13:19:10 -0400
-Received: from quackingmoose.com ([63.73.180.143]:36396 "EHLO
-	penguin.merfinllc.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752230AbYIKRTJ (ORCPT
+	Thu, 11 Sep 2008 13:23:00 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58701 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752290AbYIKRXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 13:19:09 -0400
-Date: Thu, 11 Sep 2008 10:19:08 -0700
-From: Aaron Straus <aaron@merfinllc.com>
-To: Chuck Lever <chuck.lever@oracle.com>
-Cc: Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Message-ID: <20080911171908.GE12037@merfinllc.com>
-References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080908190212.GF28123@merfinllc.com> <76bd70e30809081415h6b55a8dfl8171634c576ac946@mail.gmail.com> <20080909194644.GI5290@merfinllc.com> <8BFB4AE0-3EF1-41FA-A13B-27E380A79950@oracle.com>
+	Thu, 11 Sep 2008 13:23:00 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 11 Sep 2008 19:22:53 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: invalid tests on unsigned
+To: roel kluin <roel.kluin@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+In-Reply-To: <48C685F6.8020108@gmail.com>
+Message-ID: <tkrat.bcb8c2523d8a9de4@s5r6.in-berlin.de>
+References: <48C685F6.8020108@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8BFB4AE0-3EF1-41FA-A13B-27E380A79950@oracle.com>
-User-Agent: Mutt/1.5.11
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On  9 Sep, roel kluin wrote on LKML:
+> Using spatch I have found the following occurrences where there is
+> an invalid test on an unsigned.
+> 
+> Some may be not seriously, but just redundant, others may indicate
+> an incorrect assumption (that the variable can be negative).
+...
 
-On Sep 11 12:55 PM, Chuck Lever wrote:
-> A more thorough review of the NFS write and flush logic that exists in
-> 2.6.27 is needed if we choose to recognize this issue as a real
-> problem.
+ 
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: dv1394, video1394: remove unnecessary expressions
 
-Yep.  
+init->channel and v.buffer are unsigned and tests for < 0 therefore
+always false.  gcc knows this and eliminates the code, but anyway...
+Reported by Roel Kluin.
 
-Sorry.  I didn't mean we should revert the hunk.  I was just trying to
-help identify the cause of the new behavior.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/dv1394.c    |    2 +-
+ drivers/ieee1394/video1394.c |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-I think this is a real problem albeit not a "serious" one.  Network
-file-systems usually try to avoid readers seeing blocks of zeros in
-files, especially in this simple writer/reader case.
-
-It wouldn't be bad if the file is written out of order occasionally, but
-we see this constantly now.
-
-We cannot write/read log files to NFS mounts reliably any more.  That
-seems like a valid use case which no longer works?
-
-Anyway, thanks for your time!
-
-				=a=
-
+Index: linux/drivers/ieee1394/dv1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/dv1394.c
++++ linux/drivers/ieee1394/dv1394.c
+@@ -918,7 +918,7 @@ static int do_dv1394_init(struct video_c
+ 		/* default SYT offset is 3 cycles */
+ 		init->syt_offset = 3;
+ 
+-	if ( (init->channel > 63) || (init->channel < 0) )
++	if (init->channel > 63)
+ 		init->channel = 63;
+ 
+ 	chan_mask = (u64)1 << init->channel;
+Index: linux/drivers/ieee1394/video1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/video1394.c
++++ linux/drivers/ieee1394/video1394.c
+@@ -893,7 +893,7 @@ static long video1394_ioctl(struct file 
+ 		if (unlikely(d == NULL))
+ 			return -EFAULT;
+ 
+-		if (unlikely((v.buffer<0) || (v.buffer>=d->num_desc - 1))) {
++		if (unlikely(v.buffer >= d->num_desc - 1)) {
+ 			PRINT(KERN_ERR, ohci->host->id,
+ 			      "Buffer %d out of range",v.buffer);
+ 			return -EINVAL;
+@@ -959,7 +959,7 @@ static long video1394_ioctl(struct file 
+ 		if (unlikely(d == NULL))
+ 			return -EFAULT;
+ 
+-		if (unlikely((v.buffer<0) || (v.buffer>d->num_desc - 1))) {
++		if (unlikely(v.buffer > d->num_desc - 1)) {
+ 			PRINT(KERN_ERR, ohci->host->id,
+ 			      "Buffer %d out of range",v.buffer);
+ 			return -EINVAL;
+@@ -1030,7 +1030,7 @@ static long video1394_ioctl(struct file 
+ 		d = find_ctx(&ctx->context_list, OHCI_ISO_TRANSMIT, v.channel);
+ 		if (d == NULL) return -EFAULT;
+ 
+-		if ((v.buffer<0) || (v.buffer>=d->num_desc - 1)) {
++		if (v.buffer >= d->num_desc - 1) {
+ 			PRINT(KERN_ERR, ohci->host->id,
+ 			      "Buffer %d out of range",v.buffer);
+ 			return -EINVAL;
+@@ -1137,7 +1137,7 @@ static long video1394_ioctl(struct file 
+ 		d = find_ctx(&ctx->context_list, OHCI_ISO_TRANSMIT, v.channel);
+ 		if (d == NULL) return -EFAULT;
+ 
+-		if ((v.buffer<0) || (v.buffer>=d->num_desc-1)) {
++		if (v.buffer >= d->num_desc - 1) {
+ 			PRINT(KERN_ERR, ohci->host->id,
+ 			      "Buffer %d out of range",v.buffer);
+ 			return -EINVAL;
 
 
 -- 
-===================
-Aaron Straus
-aaron@merfinllc.com
+Stefan Richter
+-=====-==--- =--= -=-==
+http://arcgraph.de/sr/
+
