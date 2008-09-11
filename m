@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYIKLRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049AbYIKLTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbYIKLRf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 07:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYIKLR1
+	id S1755049AbYIKLTY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 07:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYIKLTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 07:17:27 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56280 "EHLO
+	Thu, 11 Sep 2008 07:19:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56340 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbYIKLR1 (ORCPT
+	with ESMTP id S1752230AbYIKLTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 07:17:27 -0400
-Date: Thu, 11 Sep 2008 20:18:46 +0900
+	Thu, 11 Sep 2008 07:19:14 -0400
+Date: Thu, 11 Sep 2008 20:16:57 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: balbir@linux.vnet.ibm.com, "xemul@openvz.org" <xemul@openvz.org>,
        "hugh@veritas.com" <hugh@veritas.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org, menage@google.com
-Subject: [RFC] [PATCH 6/9] memcg: optimize stat
-Message-Id: <20080911201846.5786c41c.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [RFC] [PATCH 4/9] memcg: new force empty
+Message-Id: <20080911201657.8705b120.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: Fujitsu
@@ -29,58 +29,139 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found mem_cgroup_charge_statistics() is a little big (in object) and
-does unnecessary address calclation.
-This patch is for optimization to reduce the size of this function.
+Current force_empty of memory resource controller just removes page_cgroup.
+This maans the page is never accounted at all and create an in-use page which
+has no page_cgroup. (And we have to feat terrible race condition....)
+
+This patch tries to move account to "root" cgroup at force_empty.
+By this patch, force_empty doesn't leak an account but move account
+to "root" cgroup. Maybe someone can think of other enhancements as moving
+account to its parent. Someone will revisit this behavior later.
+
+For now, just moves account to root cgroup.
+
+Note: all lock other than old mem_cgroup's lru_lock
+      in this path is try_lock().
+
+Changelog (v2) -> (v3)
+ - splitted out mem_cgroup_move_account().
+ - replaced get_page() with get_page_unless_zero().
+   (This is necessary for avoiding confliction with migration)
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
 ---
- mm/memcontrol.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ Documentation/controllers/memory.txt |    7 ++--
+ mm/memcontrol.c                      |   51 +++++++++++++++++++++--------------
+ 2 files changed, 35 insertions(+), 23 deletions(-)
 
 Index: mmtom-2.6.27-rc5+/mm/memcontrol.c
 ===================================================================
 --- mmtom-2.6.27-rc5+.orig/mm/memcontrol.c
 +++ mmtom-2.6.27-rc5+/mm/memcontrol.c
-@@ -67,11 +67,10 @@ struct mem_cgroup_stat {
+@@ -29,6 +29,7 @@
+ #include <linux/slab.h>
+ #include <linux/swap.h>
+ #include <linux/spinlock.h>
++#include <linux/pagemap.h>
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/vmalloc.h>
+@@ -977,17 +978,14 @@ int mem_cgroup_resize_limit(struct mem_c
+ 
+ 
  /*
-  * For accounting under irq disable, no need for increment preempt count.
+- * This routine traverse page_cgroup in given list and drop them all.
+- * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
++ * This routine traverse page_cgroup in given list and move them all.
   */
--static void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat *stat,
-+static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
- 		enum mem_cgroup_stat_index idx, int val)
+-#define FORCE_UNCHARGE_BATCH	(128)
+ static void mem_cgroup_force_empty_list(struct mem_cgroup *mem,
+ 			    struct mem_cgroup_per_zone *mz,
+ 			    enum lru_list lru)
  {
--	int cpu = smp_processor_id();
--	stat->cpustat[cpu].count[idx] += val;
-+	stat->count[idx] += val;
+ 	struct page_cgroup *pc;
+ 	struct page *page;
+-	int count = FORCE_UNCHARGE_BATCH;
+ 	unsigned long flags;
+ 	struct list_head *list;
+ 
+@@ -997,23 +995,36 @@ static void mem_cgroup_force_empty_list(
+ 	while (!list_empty(list)) {
+ 		pc = list_entry(list->prev, struct page_cgroup, lru);
+ 		page = pc->page;
+-		get_page(page);
+-		spin_unlock_irqrestore(&mz->lru_lock, flags);
+-		/*
+-		 * Check if this page is on LRU. !LRU page can be found
+-		 * if it's under page migration.
+-		 */
+-		if (PageLRU(page)) {
+-			__mem_cgroup_uncharge_common(page,
+-					MEM_CGROUP_CHARGE_TYPE_FORCE);
++		/* For avoiding race with speculative page cache handling. */
++		if (!PageLRU(page) || !get_page_unless_zero(page)) {
++			list_move(&pc->lru, list);
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			yield();
++			spin_lock_irqsave(&mz->lru_lock, flags);
++			continue;
++		}
++		if (!trylock_page(page)) {
++			list_move(&pc->lru, list);
+ 			put_page(page);
+-			if (--count <= 0) {
+-				count = FORCE_UNCHARGE_BATCH;
+-				cond_resched();
+-			}
+-		} else
+-			cond_resched();
+-		spin_lock_irqsave(&mz->lru_lock, flags);
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			yield();
++			spin_lock_irqsave(&mz->lru_lock, flags);
++			continue;
++		}
++		if (mem_cgroup_move_account(page, pc, mem, &init_mem_cgroup)) {
++			/* some confliction */
++			list_move(&pc->lru, list);
++			unlock_page(page);
++			put_page(page);
++			spin_unlock_irqrestore(&mz->lru_lock, flags);
++			yield();
++			spin_lock_irqsave(&mz->lru_lock, flags);
++		} else {
++			unlock_page(page);
++			put_page(page);
++		}
++		if (atomic_read(&mem->css.cgroup->count) > 0)
++			break;
+ 	}
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
  }
+Index: mmtom-2.6.27-rc5+/Documentation/controllers/memory.txt
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/Documentation/controllers/memory.txt
++++ mmtom-2.6.27-rc5+/Documentation/controllers/memory.txt
+@@ -207,7 +207,8 @@ The memory.force_empty gives an interfac
  
- static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
-@@ -242,18 +241,21 @@ static void mem_cgroup_charge_statistics
- {
- 	int val = (charge)? 1 : -1;
- 	struct mem_cgroup_stat *stat = &mem->stat;
-+	struct mem_cgroup_stat_cpu *cpustat;
+ # echo 1 > memory.force_empty
  
- 	VM_BUG_ON(!irqs_disabled());
-+
-+	cpustat = &stat->cpustat[smp_processor_id()];
- 	if (PageCgroupCache(pc))
--		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_CACHE, val);
-+		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_CACHE, val);
- 	else
--		__mem_cgroup_stat_add_safe(stat, MEM_CGROUP_STAT_RSS, val);
-+		__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_RSS, val);
+-will drop all charges in cgroup. Currently, this is maintained for test.
++will move all charges to root cgroup.
++(This policy may be modified in future.)
  
- 	if (charge)
--		__mem_cgroup_stat_add_safe(stat,
-+		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGIN_COUNT, 1);
- 	else
--		__mem_cgroup_stat_add_safe(stat,
-+		__mem_cgroup_stat_add_safe(cpustat,
- 				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
- }
+ 4. Testing
+ 
+@@ -238,8 +239,8 @@ reclaimed.
+ 
+ A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
+ cgroup might have some charge associated with it, even though all
+-tasks have migrated away from it. Such charges are automatically dropped at
+-rmdir() if there are no tasks.
++tasks have migrated away from it. Such charges are automatically moved to
++root cgroup at rmidr() if there are no tasks. (This policy may be changed.)
+ 
+ 5. TODO
  
 
