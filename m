@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYIKAH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbYIKAKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419AbYIKAH6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 20:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYIKAHt
+	id S1754743AbYIKAKM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 20:10:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbYIKAJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 20:07:49 -0400
-Received: from mga02.intel.com ([134.134.136.20]:49082 "EHLO mga02.intel.com"
+	Wed, 10 Sep 2008 20:09:57 -0400
+Received: from mail.ocs.com.au ([202.134.241.204]:14631 "EHLO mail.ocs.com.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752313AbYIKAHs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 20:07:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,375,1217833200"; 
-   d="scan'208";a="438062927"
-From: "Ma, Chinang" <chinang.ma@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 10 Sep 2008 17:07:32 -0700
-Subject: RE: 2.6.27-rc5 OLTP performance regression
-Thread-Topic: 2.6.27-rc5 OLTP performance regression
-Thread-Index: AckTbJNRtFcyH+QFRlCY2aaqKI5uqAANOdUg
-Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE7540F9@azsmsx501.amr.corp.intel.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
- <1220896833.18239.141.camel@twins.programming.kicks-ass.net>
- <1220897052.18239.147.camel@twins.programming.kicks-ass.net>
- <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E71C7@azsmsx501.amr.corp.intel.com>
- <20080910122622.GG14757@elte.hu>
- <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
- <20080910173442.GB31942@elte.hu>
-In-Reply-To: <20080910173442.GB31942@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1752235AbYIKAJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 20:09:56 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 (debian 1:2.7.2-12) with nmh-1.2
+From: Keith Owens <kaos@ocs.com.au>
+To: David Miller <davem@davemloft.net>
+cc: kaber@trash.net, linux-kernel@vger.kernel.org
+Subject: Re: Recent copy of libpcap from CVS 
+In-reply-to: Your message of "Wed, 10 Sep 2008 16:59:31 MST."
+             <20080910.165931.187028031.davem@davemloft.net> 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Thu, 11 Sep 2008 10:09:55 +1000
+Message-ID: <8686.1221091795@ocs10w>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When set to 10 ms the regression is about 0.4%. We get most of the 2%.
+David Miller (on Wed, 10 Sep 2008 16:59:31 -0700 (PDT)) wrote:
+>From: Keith Owens <kaos@ocs.com.au>
+>Date: Thu, 11 Sep 2008 09:57:08 +1000
+>
+>> Comparing git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
+>> against Patrick's tarball.  git is missing some mode and some rcsid
+>> lines like this example below, I assume that the removal of these lines
+>> in git was deliberate.
+>
+>Yes, look at the changesets in the tree, I did it.
 
-Chinang
------Original Message-----
-From: Ingo Molnar [mailto:mingo@elte.hu]
-Sent: Wednesday, September 10, 2008 10:35 AM
-To: Ma, Chinang
-Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27-rc5 OLTP performance regression
+Removing the #ifndef lines also accidentally removed a copyright notice.
+
+diff -urp libpcap-0.9-PRE-CVS/filtertest.c libpcap/filtertest.c
+--- libpcap-0.9-PRE-CVS/filtertest.c	2007-10-11 16:56:22.000000000 +1000
++++ libpcap/filtertest.c	2008-09-11 09:45:20.148341971 +1000
+@@ -19,14 +19,6 @@
+  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+  */
+ 
+-#ifndef lint
+-static const char copyright[] _U_ =
+-    "@(#) Copyright (c) 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 2000\n\
+-The Regents of the University of California.  All rights reserved.\n";
+-static const char rcsid[] _U_ =
+-    "@(#) $Header: /tcpdump/master/libpcap/filtertest.c,v 1.2 2005/08/08 17:50:13 guy Exp $ (LBL)";
+-#endif
+-
+ #ifdef HAVE_CONFIG_H
+ #include "config.h"
+ #endif
 
 
-* Ma, Chinang <chinang.ma@intel.com> wrote:
-
-> I increased the /proc/sys/kernel/sched_shares_ratelimit from 1
-> millisecond to one second to reduce the frequency of shares update.
-> That was okay for OLTP workload. As Peter mentioned, a larger value
-> will reduce the accuracy of SMP fairness for group scheduler and the
-> ratelimit and using a larger default value may not be good for general
-> case.
-
-does 10 msecs already get you most of the 2%? 1000 millisecond sounds
-very (and probably unacceptable) coarse.
-
-        Ingo
