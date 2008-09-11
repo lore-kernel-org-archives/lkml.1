@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbYIKSYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYIKS37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755444AbYIKSYo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 14:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYIKSYg
+	id S1754856AbYIKS37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 14:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYIKS3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 14:24:36 -0400
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:45836 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751848AbYIKSYf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 14:24:35 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-Date: Thu, 11 Sep 2008 20:24:29 +0200
-User-Agent: KMail/1.9.9
-References: <48C68507.6000609@suse.com> <200809111832.38051.elendil@planet.nl> <alpine.LFD.1.10.0809111048340.3384@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0809111048340.3384@nehalem.linux-foundation.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, davem@davemloft.net, jeffm@suse.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 11 Sep 2008 14:29:50 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:38985 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbYIKS3t (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 14:29:49 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tejun Heo <htejun@gmail.com>
+Cc: Elias Oltmanns <eo@nebensachen.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
+In-Reply-To: Your message of "Thu, 11 Sep 2008 15:01:00 +0200."
+             <48C9168C.4090101@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <87wshzplvk.fsf@denkblock.local> <20080829211345.4355.89284.stgit@denkblock.local> <48B913E6.1000104@gmail.com> <87k5dym5t9.fsf@denkblock.local> <48BA638B.2030001@gmail.com> <87ej45mlp3.fsf@denkblock.local> <48BA969C.4060207@gmail.com> <87abetmaap.fsf@denkblock.local> <48BBA8D1.8020604@gmail.com> <87myirly1p.fsf@denkblock.local> <48BC1BB8.2030007@gmail.com> <87fxoh0yil.fsf@denkblock.local> <48BFA528.2040305@gmail.com> <87ej3zrf3o.fsf@denkblock.local> <48C0F2F8.1040308@gmail.com> <87ej3snm3s.fsf@denkblock.local> <48C7DC55.30002@gmail.com> <8763p3ol55.fsf@denkblock.local> <48C82CB1.2070308@gmail.com> <871vzrogpz.fsf@denkblock.local> <48C850AA.2030409@gmail.com> <87k5diq35g.fsf@denkblock.local> <48C91458.7090503@gmail.com>
+            <48C9168C.4090101@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221157727_3036P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809112024.30747.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Sep 2008 18:24:33.0247 (UTC) FILETIME=[A35236F0:01C9143B]
+Date: Thu, 11 Sep 2008 14:28:47 -0400
+Message-ID: <25227.1221157727@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 September 2008, Linus Torvalds wrote:
-> On Thu, 11 Sep 2008, Frans Pop wrote:
-> > > Aren't _you_ the one who are ignoring current issues?
-> >
-> > I don't think so.
-> > _The_ current issue for me is that I can no longer build Debian
-> > kernel packages using 'make deb-pkg', which is part of _your_ tree,
-> > and install the resulting package *NOW*.
->
-> Well, complain to the right people then. The patch that started this
-> all is wrong.
+--==_Exmh_1221157727_3036P
+Content-Type: text/plain; charset=us-ascii
 
-I totally agree with that.
+On Thu, 11 Sep 2008 15:01:00 +0200, Tejun Heo said:
+> Ah.. just one more thing.
+> 
+> I think it would be easier on the application if the written timeout
+> value is cropped if it's over the maximum instead of failing the
+> write.
 
-What I would still like to see instead is the *option* to just include 
-firmware inside modules, where it's always been.
+Which is better, failing the write so the application *knows* there is a
+problem, or letting the application proceed with a totally incorrect idea of
+what the value is set to?
 
-Either that, or stop building firmware as part of the kernel build process 
-altogether (which seems to be David's vision of the future).
-
-> The people you are complaining to are not the rigth people. We can't do
-> anything about debian packaging. 
-
-This isn't about Debian packaging or Debian tools. I'm not using a Debian 
-tool [1]! Why is that so hard to understand?
-
-I'm using an option in *your* kernel tree that produces a broken Debian 
-package. Please have a look in scripts/package/builddeb.
-That offers the option to just do 'make deb-pkg' to build a kernel package 
-in Debian package format.
-
-The other part of my complaint is that this simple example proves that the 
-firmware split *has* broken existing tools while you and others have been 
-maintaining that everything would continue to work fine "because everyone 
-has been using /lib/firmware for ages". The reason things have broken 
-because we never used to generate files as a basically inseparable part 
-of a kernel build before.
+For instance, what happens if the program tries to set 100, it's silently
+clamped to 10, and it then tries to set a timer for itself to '90% of the
+value'?  It might be in for an unpleasant surprise when it finds out that
+it's overshot by 81....
 
 
-[1] I abandoned make-kpkg about a year ago because it was terminally 
-insane and broken. AFAIK it still does not support the unified x86 dir...
+
+--==_Exmh_1221157727_3036P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIyWNfcC3lWbTT17ARAqTZAKCdEfSXq66RnOT1tp9K+i/t3W0zAwCfbPLd
+OobtSFbKqKU1U9DBKFYRQbc=
+=NPqv
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221157727_3036P--
