@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbYIKUEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYIKUFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbYIKUEV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbYIKUEN
+	id S1756545AbYIKUFO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYIKUE7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:04:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47495 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752962AbYIKUEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:04:12 -0400
-Subject: Re: [PATCH 1/2] audit: fix NUL handling in untrusted strings
-From: Miloslav =?UTF-8?Q?Trma=C4=8D?= <mitr@redhat.com>
-To: John Dennis <jdennis@redhat.com>
-Cc: Eric Paris <eparis@redhat.com>, linux-audit <linux-audit@redhat.com>,
-       viro@zeniv.linux.org.uk, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <48C975D5.3020603@redhat.com>
-References: <1221085418.2705.19.camel@amilo>
-	 <1221143113.2992.9.camel@localhost.localdomain>
-	 <48C955C8.2000602@redhat.com> <1221156612.17533.14.camel@amilo>
-	 <48C96D90.70608@redhat.com> <1221161260.17533.30.camel@amilo>
-	 <48C975D5.3020603@redhat.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 11 Sep 2008 22:03:06 +0200
-Message-Id: <1221163386.17533.52.camel@amilo>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	Thu, 11 Sep 2008 16:04:59 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:51154 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752960AbYIKUE6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 16:04:58 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: serue@us.ibm.com, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <E1KYNMl-0000TG-Qs@pomaz-ex.szeredi.hu>
+	<20080827184600.GA8069@us.ibm.com>
+	<E1KaxLm-0006OD-K8@pomaz-ex.szeredi.hu>
+	<20080903220215.GA27705@us.ibm.com>
+	<E1Kb0ml-0006qL-5M@pomaz-ex.szeredi.hu>
+	<20080903224334.GA726@us.ibm.com>
+	<E1Kb8Y0-0008Gh-FP@pomaz-ex.szeredi.hu>
+	<20080904132804.GA14709@us.ibm.com>
+	<E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu>
+	<E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu>
+	<20080905153134.GA18367@us.ibm.com>
+	<E1Kd3Mh-0001vk-F5@pomaz-ex.szeredi.hu>
+	<m11vzrge86.fsf@frodo.ebiederm.org>
+	<E1KdnOb-00068L-Eq@pomaz-ex.szeredi.hu>
+	<m17i9icxme.fsf@frodo.ebiederm.org>
+Date: Thu, 11 Sep 2008 12:58:22 -0700
+In-Reply-To: <m17i9icxme.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
+	of "Thu, 11 Sep 2008 12:04:41 -0700")
+Message-ID: <m1sks6bgkh.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Miklos Szeredi <miklos@szeredi.hu>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0005]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
+	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: unprivileged mounts git tree
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Dennis píše v Čt 11. 09. 2008 v 15:47 -0400:
-> Miloslav Trmač wrote: 
-> > If the interface says "NUL-terminated string", any bytes after that are
-> > not "actual data".
-> Yes, that's correct. However, the function in question,
-> audit_log_n_untrustedstring() is not an interface accepting a null
-> terminated string, it accepts a count.
-These options are not exclusive - see strnlen().
-audit_log_n_untrustedstring(), as patched, follows that model exactly.
+ebiederm@xmission.com (Eric W. Biederman) writes:
 
-> > Yes, that's why it was wrong to use audit_*string() for TTY input data.
-> > And the 2/2 patch fixes it - at the source of the problem, not in an
-> > unrelated function that was incorrectly used.
-> >   
-> This is true, but it's only part of the problem, the string functions
-> still need to be robust, even used inappropriately.
-They need to do what they promise in the first place, only then can they
-possibly do something useful with invalid input.  AUDIT_USER_TTY
-messages, like all messages sent from user-space, are sent with a
-trailing NUL.  The contents of the message are (more or less) trusted,
-it is perfectly reasonable to stop at first NUL.
-audit_log_n_untrustedstring(), as patched, does exactly what is needed -
-the length parameter is used only to make unrelated kernel data does not
-appear in the audit record. 
+> This also intersects in interesting ways with dcache pruning, and
+> automounting.
 
-Now, given a function called fn(), either behavior (terminating at NUL,
-or treating NUL as a control character) is valid, and AUDIT_USER_TTY
-handling can be written for both behaviors of fn().  But given the
-function is called ...untrustedstring, and "string" in C implies
-NUL-terminated, I think it is more consistent to stop on NUL.
-	Mirek
+In particular we already have mounts that expire.  So deleting the
+files or directories of mount points (when allowed) should just be 
+a case of expiring the mount point.
 
+When it is ok to do that is a separate question.
+
+Eric
