@@ -1,101 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbYIKQI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbYIKQJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbYIKQI6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 12:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbYIKQIo
+	id S1756593AbYIKQJV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 12:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbYIKQIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 12:08:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:32208 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755778AbYIKQIm (ORCPT
+	Thu, 11 Sep 2008 12:08:46 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:53087 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756087AbYIKQIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 12:08:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SCDaJgo0CneyHk76lpdpZRwLTxYsVSDa8S4D6eBqc7QgAgNFbKdqUIxHe4u1RJw2AV
-         +WwYQWhabNDzHlR4WHksTStjLvls+8UXSJF3iLpT6HaLYt92r77SABZgXe1ZG4wyH6QV
-         2aA0Y7unvEGJmiUosbozygbfB7xXIiEUhaF4A=
-Message-ID: <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
-Date: Thu, 11 Sep 2008 12:08:41 -0400
-From: "Shem Multinymous" <multinymous@gmail.com>
-To: "Tejun Heo" <tj@kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-Cc: "Elias Oltmanns" <eo@nebensachen.de>, "Thomas Renninger" <trenn@suse.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "IDE/ATA development list" <linux-ide@vger.kernel.org>
-In-Reply-To: <48C7FCEE.8060404@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 11 Sep 2008 12:08:43 -0400
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+From: Marcel Holtmann <holtmann@linux.intel.com>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: David Miller <davem@davemloft.net>, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <48C8D33F.2050804@suse.com>
+References: <1221087719.13621.50.camel@macbook.infradead.org>
+	 <20080910.160505.14060698.davem@davemloft.net>
+	 <1221088512.13621.58.camel@macbook.infradead.org>
+	 <20080910.162423.40167601.davem@davemloft.net>
+	 <1221119068.6309.8.camel@californication>  <48C8D33F.2050804@suse.com>
+Content-Type: text/plain
+Date: Thu, 11 Sep 2008 18:09:10 +0200
+Message-Id: <1221149350.6309.29.camel@californication>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48C7FCEE.8060404@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
+Hi Jeff,
 
-On Wed, Sep 10, 2008 at 12:59 PM, Tejun Heo <tj@kernel.org> wrote:
+> >>> It's definitely not something we should be doing upstream though.
+> >> So you think it's ok that every Debian user has to learn this
+> >> magic incantation just to use current kernels?
+> >>
+> >> I don't think it's nice to break things like this on people,
+> >> especially such a large group.  Getting this stuff to work is hard
+> >> enough, and we're just putting yet another barrier into the situation
+> >> and that can only mean less testers and contributors.
+> >>
+> >> I do know several people who aren't testing and contributing because
+> >> the whole firmware shakeup is so bolixed and they really are exasperated
+> >> after spending hours trying to get it to work.
+> > 
+> > it is that the Debian maintainer screwed this up. Upstream never
+> > promoted kernel versioned directories for the firmware. I had a long
+> > discussion with Dave about it at OLS and using the kernel version is
+> > just plain wrong. The driver maintainers should version the firmware if
+> > they break it in an API incompatible way.
+> 
+> They "should," but is that happening now? Out of all the firmware blobs
+> installed with 2.6.27-rcX, only the edgeport drier actually versions
+> them - and they're versioned because the driver requires different
+> versions for different hardware.
 
->The original hdaps uses polling on sysfs
-> nodes, the HP thing Thomas is working on is likely to use sysfs +
-> sysfs_notify_event() and probably another node to control LED.  The
-> tp_smapi seems to use joystick input device to transfer the data along
-> all the axises.
+let me repeat this, if a driver depends on newer firmware version, then
+it should make sure that the firmware itself is versioned. Everything
+else will break eventually.
 
-> 1. How should the shock interface look like?  As we're gonna need
->   userland daemon one way or the other, we can use the userland
->   daemon to glue all the interfaces but it would be much better to
->   have a unified interface.  Although there seem to be several
->   different variants, they don't differ all that much and creating a
->   new interface every time is painful.  I think we can get by with a
->   sysfs interface with notification.
+The Intel wireless drivers started to version their firmware a long time
+ago. That is the way to go. How will a user tell different firmwares
+apart otherwise.
 
-Using the input device interface for the accelerometer (as done by
-tp_smapi's hdaps + latest hdapsd) greatly reduces the number of
-accelerometer-related timer interrupts on tickless kernels, as
-measured by powertop. With syscall polling you have the kernal polling
-the hardware at ~50Hz and then the userspace hdapsd polling the kernel
-at ~50Hz. When they're out of phase so you can get up to 100
-interrupts/sec. With an input device you're always at 50Hz. The phase
-difference also induces a small extra delay in the shock handling
-response.
+> > To shed some light into the problem with Debian/Ubuntu. They install the
+> > firmware in /lib/firmware/`uname -r`/ and everytime they bump their ABI
+> > number, they have to install all the firmware again. This is just
+> > braindead. Their udev script actually checks /lib/firmware first and
+> > then the kernel versioned directory. So that is just fine.
+> 
+> Well, what we're doing is including the firmware blobs inside the kernel
+> packages. So, yeah, we install all the firmware blobs again, but they're
+> installed with the modules that we're installing all over again anyway.
+> All the firmware blobs currently included in 2.6.27-rcs total about
+> 540k, so the wasted disk space is largely negligible when compared to
+> the size of installing an additional kernel and module set.
+> 
+> We check /lib/firmware/$(uname -r) /lib/firmware
+> /usr/local/lib/firmware, in that order.
+
+Checking /lib/firmware/$(uname -r) is not the issue. The issue is that
+when installing a self-compiled kernel, the firmware is not present
+in /lib/firmware.
+
+> > Problem comes when installing let say 2.6.27 since then the firmware
+> > will be looked up in /lib/firmware/ and /lib/firmware/2.6.27/ and
+> > actually it will not be found. Since it is in /lib/firmware/2.6.26-xx/
+> > or something similar.
+> 
+> In what case? After you install a new kernel and then reboot? You have
+> the same problem with the modules that need the firmware blobs.
+
+If the firmware is not in /lib/firmware (especially external firmware)
+it will not be found and the module will be useless if it depends on
+that firmware. And the biggest part of the firmware is not distributed
+with the kernel because of GPL restrictions. So whatever we decide for
+the kernel right now helps nothing if the user needs external firmware
+for their devices.
+
+Just take the Intel wireless drivers as an example. If I boot my own
+kernel, I have to make sure I either copied or linked them from the
+distro directory to /lib/firmware or downloaded them. Whatever the
+kernel firmware prefix is makes no difference here.
+
+> > So having the kernel install everything in /lib/firmware works just fine
+> > with every distro. However looking for firmware that is not shipped with
+> > the kernel, we have a problem since Debian/Ubuntu just not installs it
+> > in the right directory. And there is nothing the kernel can do about it
+> > since it will not touch firmware it doesn't ship. The distro has to fix
+> > their firmware or the users have to place a copy in /lib/firmware/ where
+> > it actually should have been in the first place.
+> 
+> It works just fine until the user wants to install an additional, newer,
+> kernel and the blob has changed but the filename hasn't.
+
+That is the whole point and Dave and I discussed this deeply. If the
+blob changes in an incompatible way or if a driver needs a newer
+firmware, the firmware filename should change.
+
+Regards
+
+Marcel
 
 
-> 2. If we're gonna unify interface, how much can we unify the backend?
->   Some devices are based on polling, others interrupt.  For polling,
->   is it better to delegate the whole polling to userland or is it
->   better to do some of it in kernel (tp_smapi seems to be doing
->   this)?
-
-The ThinkPad accelerometer needs to be polled at very regular
-intervals (max jitter on the order of 10ms), which sounds like a job
-for the kernel.
-This is because in ThinkPads we actually have a 4-level pile:
-[hdapsd userspace] -> [hdaps kernel] -> [embedded controller] ->
-[accelerometer A2D]
-What the kernel polls is actually is the H8S embedded controller (EC)
-chip, which in turn does its own polling of the accelerometer A2D.
-Now, the EC has a tiny buffer and strange buffering semantics, and it
-has its own internal clock, so the software->EC polling should be very
-regular to minmize EC buffer overflows/underruns.
-
-
-> 3. What about the userland daemon?  It would be best to have a unified
->   daemon which can handle all instead of one for hdaps and another
->   for hp (and so on).  If we can unify the interface, this will be
->   much easier.
-
-Assuming the funky shock detection algorithms are done in userspace,
-we need two interfaces: one for the acceleration data (an input device
-works nicely) and one for "unload now" events.
-On HP, the kernel can trigger the "unload now" event directly. On
-ThinkPads, there's still the question of what the userspace shock
-detection daemon should do when it detects a shock: should it unloads
-the heads by itself, or trigger the generic "unload now" event and let
-someone else do the actual unloading.
-
-  Shem
