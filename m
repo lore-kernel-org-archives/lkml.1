@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYIKAH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYIKAH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYIKAH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 20:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYIKAHJ
+	id S1753419AbYIKAH6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 20:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYIKAHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 20:07:09 -0400
-Received: from postel.suug.ch ([194.88.212.233]:46083 "EHLO postel.suug.ch"
+	Wed, 10 Sep 2008 20:07:49 -0400
+Received: from mga02.intel.com ([134.134.136.20]:49082 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239AbYIKAHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 20:07:08 -0400
-Date: Thu, 11 Sep 2008 02:07:26 +0200
-From: Thomas Graf <tgraf@suug.ch>
-To: Paul Menage <menage@google.com>
-Cc: Ranjit Manomohan <ranjitm@google.com>, davem@davemloft.net,
-       akpm@linux-foundation.org, kaber@trash.net, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
-Message-ID: <20080911000726.GM20815@postel.suug.ch>
-References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com> <20080910220115.GH20815@postel.suug.ch> <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com> <6599ad830809101604o71b2fb82k2aca1eb0fd8ab6d8@mail.gmail.com> <20080910232413.GJ20815@postel.suug.ch> <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com> <20080910234523.GK20815@postel.suug.ch> <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
+	id S1752313AbYIKAHs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 20:07:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,375,1217833200"; 
+   d="scan'208";a="438062927"
+From: "Ma, Chinang" <chinang.ma@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Mike Galbraith <efault@gmx.de>, Gregory Haskins <ghaskins@novell.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
+       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
+       "Chilukuri, Harita" <harita.chilukuri@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 10 Sep 2008 17:07:32 -0700
+Subject: RE: 2.6.27-rc5 OLTP performance regression
+Thread-Topic: 2.6.27-rc5 OLTP performance regression
+Thread-Index: AckTbJNRtFcyH+QFRlCY2aaqKI5uqAANOdUg
+Message-ID: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE7540F9@azsmsx501.amr.corp.intel.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E8002FE60F751@azsmsx501.amr.corp.intel.com>
+ <1220896833.18239.141.camel@twins.programming.kicks-ass.net>
+ <1220897052.18239.147.camel@twins.programming.kicks-ass.net>
+ <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E71C7@azsmsx501.amr.corp.intel.com>
+ <20080910122622.GG14757@elte.hu>
+ <BC02C49EEB98354DBA7F5DD76F2A9E8002FE6E7B62@azsmsx501.amr.corp.intel.com>
+ <20080910173442.GB31942@elte.hu>
+In-Reply-To: <20080910173442.GB31942@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Menage <menage@google.com> 2008-09-10 16:51
-> On Wed, Sep 10, 2008 at 4:45 PM, Thomas Graf <tgraf@suug.ch> wrote:
-> >
-> > That's argueable I guess. Likely or not, it doesn't make sense to
-> > add such restrictions if not required, especially not when it is
-> > trivial to just look at the cgroup of the task directly.
-> 
-> Isn't a very large fraction of outgoing network traffic driven from
-> net_tx_action(), which doesn't execute in the context of the sending
-> process? Or am I missing something?
+When set to 10 ms the regression is about 0.4%. We get most of the 2%.
 
-net_tx_action() dequeues from the qdisc. The classification is done
-before the packets is enqueued onto the qdisc.
+Chinang
+-----Original Message-----
+From: Ingo Molnar [mailto:mingo@elte.hu]
+Sent: Wednesday, September 10, 2008 10:35 AM
+To: Ma, Chinang
+Cc: Peter Zijlstra; Srivatsa Vaddagiri; Mike Galbraith; Gregory Haskins; Steven Rostedt; Nick Piggin; Siddha, Suresh B; Wilcox, Matthew R; Tripathi, Sharad C; Chilukuri, Harita; linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc5 OLTP performance regression
 
-A special case exists when the packets needs to be requeued, in this
-case the enqueue() is done in softirq context but it should not invoke
-the classifier again if I remember correctly.
 
-> You claimed "In the most common case, the packet is not queued before
-> it hits the qdisc so this takes away a lot of complexity and is very
-> fast but should still be sufficient.". But is that really true on a
-> system where the network is busy? (Which is after all exactly the case
-> where you care about accurate traffic accounting/policing)
+* Ma, Chinang <chinang.ma@intel.com> wrote:
 
-To my best knowledge it is, otherwise I wouldn't say it. Feel free to
-prove me wrong.
+> I increased the /proc/sys/kernel/sched_shares_ratelimit from 1
+> millisecond to one second to reduce the frequency of shares update.
+> That was okay for OLTP workload. As Peter mentioned, a larger value
+> will reduce the accuracy of SMP fairness for group scheduler and the
+> ratelimit and using a larger default value may not be good for general
+> case.
 
-F.e. it doesn't work if an ifb device is added to egress between
-the user and the cgroup classifier. That's what I mean with common
-cases.
+does 10 msecs already get you most of the 2%? 1000 millisecond sounds
+very (and probably unacceptable) coarse.
+
+        Ingo
