@@ -1,114 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464AbYIKJQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYIKJX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464AbYIKJQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 05:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYIKJQD
+	id S1753439AbYIKJX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 05:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751806AbYIKJXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 05:16:03 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:40831 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbYIKJQA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 05:16:00 -0400
-Message-ID: <48C8E162.7050800@fr.ibm.com>
-Date: Thu, 11 Sep 2008 11:14:10 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 11 Sep 2008 05:23:50 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40739 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797AbYIKJXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 05:23:50 -0400
+Date: Thu, 11 Sep 2008 12:21:56 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
+       Janne Grunau <j@jannau.net>, Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [PATCH 04/18] lirc driver for 2nd-gen and later Media Center
+	Ed. USB IR transceivers
+Message-ID: <20080911092156.GA26887@cs181140183.pp.htv.fi>
+References: <1220933164-10160-1-git-send-email-jwilson@redhat.com> <1220933164-10160-2-git-send-email-jwilson@redhat.com> <1220933164-10160-3-git-send-email-jwilson@redhat.com> <1220933164-10160-4-git-send-email-jwilson@redhat.com> <1220933164-10160-5-git-send-email-jwilson@redhat.com> <20080909173057.6d93a7ef@bike.lwn.net>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: linux-nfs@vger.kernel.org, Chuck Lever <chuck.lever@oracle.com>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: [PATCH] sunrpc: fix oops in rpc_create() when the mount namespace
- is unshared
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080909173057.6d93a7ef@bike.lwn.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cedric Le Goater <clg@fr.ibm.com>
+On Tue, Sep 09, 2008 at 05:30:57PM -0600, Jonathan Corbet wrote:
+> On Tue,  9 Sep 2008 00:05:49 -0400
+> Jarod Wilson <jwilson@redhat.com> wrote:
+> 
+> > +/*
+> > + * LIRC driver for Philips eHome USB Infrared Transceiver
+> > + * and the Microsoft MCE 2005 Remote Control
+> > + *
+> > + * (C) by Martin A. Blatter <martin_a_blatter@yahoo.com>
+> > + *
+> > + * Transmitter support and reception code cleanup.
+> > + * (C) by Daniel Melander <lirc@rajidae.se>
+> 
+> As I understand it, proper assertions of copyright need the word
+> "copyright" and a year; the "(C)" trigraph doesn't have any legal meaning.
+>...
 
-On a system with nfs mounts, if a task unshares its mount namespace,
-a oops can occur when the system is rebooted if the task is the last
-to unreference the nfs mount. It will try to create a rpc request
-using utsname() which has been invalidated by free_nsproxy().
+As far as I understand it your statement is only true if you are in
+the USA and travel back in time by at least 20 years, and otherwise
+no proper assertion is required at all.
 
-The patch fixes the issue by using the global init_utsname() which is
-always valid. the capability of identifying rpc clients per uts namespace
-stills needs some extra work so this should not be a problem.
+Anything I miss?
 
-BUG: unable to handle kernel NULL pointer dereference at 00000004
-IP: [<c024c9ab>] rpc_create+0x332/0x42f
-Oops: 0000 [#1] DEBUG_PAGEALLOC
+> jon
 
-Pid: 1857, comm: uts-oops Not tainted (2.6.27-rc5-00319-g7686ad5 #4)
-EIP: 0060:[<c024c9ab>] EFLAGS: 00210287 CPU: 0
-EIP is at rpc_create+0x332/0x42f
-EAX: 00000000 EBX: df26adf0 ECX: c0251887 EDX: 00000001
-ESI: df26ae58 EDI: c02f293c EBP: dda0fc9c ESP: dda0fc2c
- DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Process uts-oops (pid: 1857, ti=dda0e000 task=dd9a0778 task.ti=dda0e000)
-Stack: c0104532 dda0fffc dda0fcac dda0e000 dda0e000 dd93b7f0 00000009 c02f2880
-       df26aefc dda0fc68 c01096b7 00000000 c0266ee0 c039a070 c039a070 dda0fc74
-       c012ca67 c039a064 dda0fc8c c012cb20 c03daf74 00000011 00000000 c0275c90
-Call Trace:
- [<c0104532>] ? dump_trace+0xc2/0xe2
- [<c01096b7>] ? save_stack_trace+0x1c/0x3a
- [<c012ca67>] ? save_trace+0x37/0x8c
- [<c012cb20>] ? add_lock_to_list+0x64/0x96
- [<c0256fc4>] ? rpcb_register_call+0x62/0xbb
- [<c02570c8>] ? rpcb_register+0xab/0xb3
- [<c0252f4d>] ? svc_register+0xb4/0x128
- [<c0253114>] ? svc_destroy+0xec/0x103
- [<c02531b2>] ? svc_exit_thread+0x87/0x8d
- [<c01a75cd>] ? lockd_down+0x61/0x81
- [<c01a577b>] ? nlmclnt_done+0xd/0xf
- [<c01941fe>] ? nfs_destroy_server+0x14/0x16
- [<c0194328>] ? nfs_free_server+0x4c/0xaa
- [<c019a066>] ? nfs_kill_super+0x23/0x27
- [<c0158585>] ? deactivate_super+0x3f/0x51
- [<c01695d1>] ? mntput_no_expire+0x95/0xb4
- [<c016965b>] ? release_mounts+0x6b/0x7a
- [<c01696cc>] ? __put_mnt_ns+0x62/0x70
- [<c0127501>] ? free_nsproxy+0x25/0x80
- [<c012759a>] ? switch_task_namespaces+0x3e/0x43
- [<c01275a9>] ? exit_task_namespaces+0xa/0xc
- [<c0117fed>] ? do_exit+0x4fd/0x666
- [<c01181b3>] ? do_group_exit+0x5d/0x83
- [<c011fa8c>] ? get_signal_to_deliver+0x2c8/0x2e0
- [<c0102630>] ? do_notify_resume+0x69/0x700
- [<c011d85a>] ? do_sigaction+0x134/0x145
- [<c0127205>] ? hrtimer_nanosleep+0x8f/0xce
- [<c0126d1a>] ? hrtimer_wakeup+0x0/0x1c
- [<c0103488>] ? work_notifysig+0x13/0x1b
- =======================
-Code: 70 20 68 cb c1 2c c0 e8 75 4e 01 00 8b 83 ac 00 00 00 59 3d 00 f0 ff ff 5f 77 63 eb 57 a1 00 80 2d c0 8b 80 a8 02 00 00 8d 73 68 <8b> 40 04 83 c0 45 e8 41 46 f7 ff ba 20 00 00 00 83 f8 21 0f 4c
-EIP: [<c024c9ab>] rpc_create+0x332/0x42f SS:ESP 0068:dda0fc2c
+cu
+Adrian
 
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- net/sunrpc/clnt.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-index 76739e9..a59cdf4 100644
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -213,10 +213,10 @@ static struct rpc_clnt * rpc_new_client(const struct rpc_create_args *args, stru
- 	}
- 
- 	/* save the nodename */
--	clnt->cl_nodelen = strlen(utsname()->nodename);
-+	clnt->cl_nodelen = strlen(init_utsname()->nodename);
- 	if (clnt->cl_nodelen > UNX_MAXNODENAME)
- 		clnt->cl_nodelen = UNX_MAXNODENAME;
--	memcpy(clnt->cl_nodename, utsname()->nodename, clnt->cl_nodelen);
-+	memcpy(clnt->cl_nodename, init_utsname()->nodename, clnt->cl_nodelen);
- 	rpc_register_client(clnt);
- 	return clnt;
- 
 -- 
-1.5.5.1
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
