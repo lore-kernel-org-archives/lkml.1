@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYIKUy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYIKU6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbYIKUy4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYIKUyq
+	id S1756585AbYIKU6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYIKU6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:54:46 -0400
-Received: from mga05.intel.com ([192.55.52.89]:36530 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751893AbYIKUyq (ORCPT
+	Thu, 11 Sep 2008 16:58:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50646 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbYIKU6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:54:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,382,1217833200"; 
-   d="scan'208";a="379286030"
-Message-ID: <48C9858C.6040403@linux.intel.com>
-Date: Thu, 11 Sep 2008 13:54:36 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Thu, 11 Sep 2008 16:58:36 -0400
+Date: Thu, 11 Sep 2008 13:57:38 -0700
+From: Greg KH <greg@kroah.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+       Thierry Vignaud <tvignaud@mandriva.com>,
+       David Miller <davem@davemloft.net>, jeffm@suse.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+Message-ID: <20080911205738.GB11708@kroah.com>
+References: <48C68507.6000609@suse.com> <1221087719.13621.50.camel@macbook.infradead.org> <20080910.160505.14060698.davem@davemloft.net> <m27i9i9az9.fsf@vador.mandriva.com> <20080911134042.GB3293@kroah.com> <1221151165.6309.55.camel@californication> <20080911201541.GA18518@kroah.com> <1221165518.4077.17.camel@macbook.infradead.org>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops/Warning report for the week of September 10th, 2008
-References: <48C81D20.9040302@linux.intel.com> <20080911045255.GD6863@suse.de> <48C92389.7070209@linux.intel.com> <20080911205249.GB21263@suse.de>
-In-Reply-To: <20080911205249.GB21263@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221165518.4077.17.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Sep 11, 2008 at 06:56:25AM -0700, Arjan van de Ven wrote:
->> Greg KH wrote:
->>> On Wed, Sep 10, 2008 at 12:16:48PM -0700, Arjan van de Ven wrote:
->>>> Rank 2: sysfs_add_one (warning)
->>>> 	Reported 215 times (3751 total reports)
->>>> 	Duplicate sysfs registration; mostly in USB audio
->>>> 	This warning was last seen in version 2.6.27-rc5, and first seen in 
->>>> 2.6.24-rc6.
->>>> 	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
->>> Is there any way to break this one down further by caller so we can try
->>> to narrow it down?  I thought you did that for other types of warnings
->>> in the past (may_sleep(), etc.)
->> ok I think I got this one sorted;
->> your entry is now replaced by
->>
->> Rank 4: snd_card_register (warning)
->> 	Reported 146 times (2594 total reports)
->> 	This warning was last seen in version 2.6.25.14, and first seen in 2.6.24.
->> 	More info: 
->> http://www.kerneloops.org/searchweek.php?search=snd_card_register
->>
->> which is ALL usb audio... (so I might have to also skip snd_card_register 
->> in the backtrace, but I'll leave that between you and the alsa guys)
+On Thu, Sep 11, 2008 at 01:38:38PM -0700, David Woodhouse wrote:
+> On Thu, 2008-09-11 at 13:15 -0700, Greg KH wrote:
+> > This is the firmware that is in the kernel source tree, that has been
+> > moved to use request_firmware, and was originally tied tightly to the
+> > kernel drivers themselves.
 > 
-> Yes, that's much better thanks.  I think that has now been fixed by
-> the ALSA people, as seen by no reports 2.6.26 and onward.
+> Not really. Most of it hasn't changed for years; it isn't _really_ tied
+> that closely to the kernel. 
 
-sounds like a -stable candidate to me
+Some are and some aren't (I have two in my -staging tree that are
+changing as the driver changes, so it does happen.)
 
-(also be careful with the "2.6.26+" comment; most test data is from 2.6.25 still
-until Fedora pushes their 2.6.26 kernel)
+> You can just ignore what the kernel ships with, and install the firmware
+> from the linux-firmware.git repository instead.
+
+So you are now forcing distros to ship the linux-firmware.git repo
+instead?  That's not nice and is a totally new dependancy for them to
+handle.
+
+What about the very basic fact that kernel versions will stomp on files
+from other kernel versions if you install multiple kernels on the same
+machine?  That's just bad and ripe for problems in any package
+management system.
+
+thanks,
+
+greg k-h
