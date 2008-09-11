@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbYIKVuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbYIKVza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbYIKVuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 17:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbYIKVuN
+	id S1756275AbYIKVza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 17:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYIKVzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 17:50:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59068 "EHLO mx2.redhat.com"
+	Thu, 11 Sep 2008 17:55:21 -0400
+Received: from mx1.suse.de ([195.135.220.2]:46567 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753830AbYIKVuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 17:50:12 -0400
-Subject: [PATCH] Audit: fix handling of 'strings' with NULL characters
-From: Eric Paris <eparis@redhat.com>
-To: linux-audit@redhat.com, linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, jdennis@redhat.com, mitr@redhat.com,
-       akpm@linux-foundation.org, sgrubb@redhat.com
-Content-Type: text/plain
-Date: Thu, 11 Sep 2008 17:48:39 -0400
-Message-Id: <1221169719.2952.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1753830AbYIKVzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 17:55:21 -0400
+Date: Thu, 11 Sep 2008 14:53:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Oops/Warning report for the week of September 10th, 2008
+Message-ID: <20080911215345.GB5761@suse.de>
+References: <48C81D20.9040302@linux.intel.com> <20080911045255.GD6863@suse.de> <48C92389.7070209@linux.intel.com> <20080911205249.GB21263@suse.de> <48C9858C.6040403@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C9858C.6040403@linux.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-currently audit_log_n_untrustedstring() uses
-audit_string_contains_control() to check if the 'string' has any control
-characters.  If the 'string' has an embedded NULL
-audit_string_contains_control() will return that the data has no control
-characters and will then pass the string to audit_log_n_string with the
-total length, not the length up to the first NULL.  audit_log_n_string
-does a memcpy of the entire length and so the actual audit record
-emitted may then contain a NULL and then whatever random memory is after
-the NULL.
+On Thu, Sep 11, 2008 at 01:54:36PM -0700, Arjan van de Ven wrote:
+> Greg KH wrote:
+>> On Thu, Sep 11, 2008 at 06:56:25AM -0700, Arjan van de Ven wrote:
+>>> Greg KH wrote:
+>>>> On Wed, Sep 10, 2008 at 12:16:48PM -0700, Arjan van de Ven wrote:
+>>>>> Rank 2: sysfs_add_one (warning)
+>>>>> 	Reported 215 times (3751 total reports)
+>>>>> 	Duplicate sysfs registration; mostly in USB audio
+>>>>> 	This warning was last seen in version 2.6.27-rc5, and first seen in 
+>>>>> 2.6.24-rc6.
+>>>>> 	More info: 
+>>>>> http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
+>>>> Is there any way to break this one down further by caller so we can try
+>>>> to narrow it down?  I thought you did that for other types of warnings
+>>>> in the past (may_sleep(), etc.)
+>>> ok I think I got this one sorted;
+>>> your entry is now replaced by
+>>>
+>>> Rank 4: snd_card_register (warning)
+>>> 	Reported 146 times (2594 total reports)
+>>> 	This warning was last seen in version 2.6.25.14, and first seen in 
+>>> 2.6.24.
+>>> 	More info: 
+>>> http://www.kerneloops.org/searchweek.php?search=snd_card_register
+>>>
+>>> which is ALL usb audio... (so I might have to also skip snd_card_register 
+>>> in the backtrace, but I'll leave that between you and the alsa guys)
+>> Yes, that's much better thanks.  I think that has now been fixed by
+>> the ALSA people, as seen by no reports 2.6.26 and onward.
+>
+> sounds like a -stable candidate to me
 
-Since we want to log the entire octet stream (if we can't trust the data
-to be a string we can't trust that a NULL isn't actually a part of it)
-we should just consider NULL as a control character.  If the caller is
-certain they want to stop at the first NULL they should be using
-audit_log_untrustedstring.
+Probably is, I'll dig into it after next week...
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
+thanks,
 
----
-
-Miloslav, this is also going to take care of nulls in the TTY_AUDIT_USER
-message from userspace.  Is it going to be common to have control
-characters on that code path as well?  Do you want to change
-audit_receive_msg() to also use the hex encoding directly instead of the
-_n_untrustedstring interface?
-
- kernel/audit.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/audit.c b/kernel/audit.c
-index 4414e93..ccb8d68 100644
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1370,7 +1370,7 @@ void audit_log_n_string(struct audit_buffer *ab, const char *string,
- int audit_string_contains_control(const char *string, size_t len)
- {
- 	const unsigned char *p;
--	for (p = string; p < (const unsigned char *)string + len && *p; p++) {
-+	for (p = string; p < (const unsigned char *)string + len; p++) {
- 		if (*p == '"' || *p < 0x21 || *p > 0x7e)
- 			return 1;
- 	}
-
-
+greg k-h
