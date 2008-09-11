@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756172AbYIKNu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbYIKNvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756172AbYIKNu4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbYIKNub
+	id S1756451AbYIKNvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYIKNuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:50:31 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58128 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbYIKNub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:50:31 -0400
-Date: Thu, 11 Sep 2008 06:40:42 -0700
-From: Greg KH <greg@kroah.com>
-To: Thierry Vignaud <tvignaud@mandriva.com>
-Cc: David Miller <davem@davemloft.net>, dwmw2@infradead.org, jeffm@suse.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-Message-ID: <20080911134042.GB3293@kroah.com>
-References: <48C68507.6000609@suse.com> <1221087719.13621.50.camel@macbook.infradead.org> <20080910.160505.14060698.davem@davemloft.net> <m27i9i9az9.fsf@vador.mandriva.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m27i9i9az9.fsf@vador.mandriva.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 11 Sep 2008 09:50:46 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:53052 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755706AbYIKNup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 09:50:45 -0400
+Date: Thu, 11 Sep 2008 22:50:48 +0900 (JST)
+Message-Id: <20080911.225048.25909971.anemo@mba.ocn.ne.jp>
+To: david@fries.net
+Cc: paul.gortmaker@gmail.com, akpm@linux-foundation.org, p_gortmaker@yahoo.com,
+       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] ne.c fix for hibernate and rmmod oops fix
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080909025434.GB28469@spacedout.fries.net>
+References: <20080904030212.GA23493@spacedout.fries.net>
+	<7d1d9c250809050101v9ab3907l649781ee38a5a243@mail.gmail.com>
+	<20080909025434.GB28469@spacedout.fries.net>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 01:29:46PM +0200, Thierry Vignaud wrote:
-> David Miller <davem@davemloft.net> writes:
-> 
-> > > This isn't compatible with the version of udev that people actually have
-> > > installed, today. And it's also the _wrong_ thing to do.
-> > > 
-> > > Firmware really _isn't_ version-specific.
-> > 
-> > Tell that to every Debian and Debian derived system on the planet.
-> > 
-> > To my knowledge, it is only fedora and possibly one or two other dists
-> > that put the firmware files in a unary /lib/firmware location, rather
-> > than a versioned /lib/firmware/$KERNELRELASE one.
-> 
-> We (Mandriva Linux) do too.
-> Why other distro cannot package firmware separatly for all their kernel
-> flavors?
-> 
-> Firmware are not version-specific.
+On Mon, 8 Sep 2008 21:54:34 -0500, David Fries <david@fries.net> wrote:
+> Now that the io port and irq can be looked up in the arrays the probe
+> code doesn't even need the resources passed by the platform device.
+> The ne.c driver already registers the resources it needs and there
+> isn't any good way to update the resources when the io port or irq are
+> zero and probed at runtime.
 
-Yes it is, when it is bundled with the kernel source tree itself.
+No, please don't.  This breaks current users of ne platform driver.
+For example, please look at rbtx4927_ne_init() in
+arch/mips/txx9/rbtx4927/setup.c file.
 
-Why do people not realize this?
-
-This is a real problem for distros, and for anyone who wants to have
-multiple kernel versions on a single machine.  Jeff's patch fixes this.
-
-thanks,
-
-greg k-h
+---
+Atsushi Nemoto
