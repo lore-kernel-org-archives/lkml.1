@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbYIKQp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbYIKQ4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbYIKQp4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 12:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754791AbYIKQpq
+	id S1754799AbYIKQ4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 12:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYIKQ4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 12:45:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41058 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbYIKQpp (ORCPT
+	Thu, 11 Sep 2008 12:56:08 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:12316 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752591AbYIKQ4H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 12:45:45 -0400
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: David Woodhouse <dwmw2@infradead.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Greg KH <greg@kroah.com>, Thierry Vignaud <tvignaud@mandriva.com>,
-       David Miller <davem@davemloft.net>, jeffm@suse.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <1221151165.6309.55.camel@californication>
-References: <48C68507.6000609@suse.com>
-	 <1221087719.13621.50.camel@macbook.infradead.org>
-	 <20080910.160505.14060698.davem@davemloft.net>
-	 <m27i9i9az9.fsf@vador.mandriva.com>  <20080911134042.GB3293@kroah.com>
-	 <1221151165.6309.55.camel@californication>
-Content-Type: text/plain
-Date: Thu, 11 Sep 2008 09:45:38 -0700
-Message-Id: <1221151538.8593.36.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 11 Sep 2008 12:56:07 -0400
+Cc: Neil Brown <neilb@suse.de>,
+       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       LKML Kernel <linux-kernel@vger.kernel.org>
+Message-Id: <8BFB4AE0-3EF1-41FA-A13B-27E380A79950@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Aaron Straus <aaron@merfinllc.com>
+In-Reply-To: <20080909194644.GI5290@merfinllc.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Mime-Version: 1.0 (Apple Message framework v928.1)
+Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
+Date: Thu, 11 Sep 2008 12:55:47 -0400
+References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080908190212.GF28123@merfinllc.com> <76bd70e30809081415h6b55a8dfl8171634c576ac946@mail.gmail.com> <20080909194644.GI5290@merfinllc.com>
+X-Mailer: Apple Mail (2.928.1)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-11 at 18:39 +0200, Marcel Holtmann wrote:
-> What is wrong with moving the firmware into its own package with its
-> own version number?
+On Sep 9, 2008, at Sep 9, 2008, 3:46 PM, Aaron Straus wrote:
+> Hi,
+>
+> On Sep 08 05:15 PM, Chuck Lever wrote:
+>> I think I saw some recent work in Trond's development branch that
+>> makes some changes in this area.  I will wait for him to respond to
+>> this thread.
+>
+> One other piece of information.
+>
+> Of the bisected offending commit:
+>
+> commit e261f51f25b98c213e0b3d7f2109b117d714f69d
+> Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Date:   Tue Dec 5 00:35:41 2006 -0500
+>
+>    NFS: Make nfs_updatepage() mark the page as dirty.
+>
+>    This will ensure that we can call set_page_writeback() from within
+>    nfs_writepage(), which is always called with the page lock set.
+>
+>    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+>
+>
+> It seems to be this hunk which introduces the problem:
+>
+>
+> @@ -628,7 +667,6 @@ static struct nfs_page *  
+> nfs_update_request(struct nfs_open_context* ctx,
+> 				return ERR_PTR(error);
+> 			}
+> 			spin_unlock(&nfsi->req_lock);
+> -			nfs_mark_request_dirty(new);
+> 			return new;
+> 		}
+> 		spin_unlock(&nfsi->req_lock);
+>
+>
+>
+> If I add that function call back in... the problem disappears.  I  
+> don't
+> know if this just papers over the real problem though?
 
-Nothing. You can do this today, building from the linux-firmware
-repository. That repository is starting to contain extra firmware that
-vendors are now willing to let us distribute -- where they _weren't_
-willing to let us distribute it as part of the kernel.
+It's possible that the NFS write path as it exists after this commit  
+is not marking certain pages dirty at the same time as others.  An  
+asynchronous flush call from the VM would catch some of the dirty  
+pages, then later, others, resulting in the pages flushing to the  
+server out of order.
+
+However, I poked around a little bit in late model kernels yesterday  
+and found that the changes from Trond I referred to earlier are  
+already in 2.6.27.  These rework this area significantly, so reverting  
+this hunk alone will be more difficult in recent kernels.
+
+In addition I notice that one purpose of this commit is to change the  
+page locking scheme in the NFS client's write path.  I wouldn't advise  
+simply adding this nfs_mark_request_dirty() call back in.  It could  
+result in deadlocks for certain workloads (perhaps not your specific  
+workload, though).
+
+A more thorough review of the NFS write and flush logic that exists in  
+2.6.27 is needed if we choose to recognize this issue as a real problem.
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
