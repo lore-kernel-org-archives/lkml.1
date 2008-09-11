@@ -1,116 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYIKAAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYIKAH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbYIKAAc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 20:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYIKAAV
+	id S1754573AbYIKAH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 20:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYIKAHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 20:00:21 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:17544 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752582AbYIKAAU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 20:00:20 -0400
-Message-ID: <48C85F93.9020602@ct.jp.nec.com>
-Date: Wed, 10 Sep 2008 17:00:19 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: ronne@list.ru, mingo@elte.hu
-Cc: rml@tech9.net, linux-kernel@vger.kernel.org
-Subject: Re: deadlock in setting schedule parameters
-References: <48C838F9.1050607@list.ru>
-In-Reply-To: <48C838F9.1050607@list.ru>
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Sep 2008 20:07:09 -0400
+Received: from postel.suug.ch ([194.88.212.233]:46083 "EHLO postel.suug.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752239AbYIKAHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 20:07:08 -0400
+Date: Thu, 11 Sep 2008 02:07:26 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: Paul Menage <menage@google.com>
+Cc: Ranjit Manomohan <ranjitm@google.com>, davem@davemloft.net,
+       akpm@linux-foundation.org, kaber@trash.net, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
+Message-ID: <20080911000726.GM20815@postel.suug.ch>
+References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com> <20080910220115.GH20815@postel.suug.ch> <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com> <6599ad830809101604o71b2fb82k2aca1eb0fd8ab6d8@mail.gmail.com> <20080910232413.GJ20815@postel.suug.ch> <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com> <20080910234523.GK20815@postel.suug.ch> <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrei Gusev wrote:
-> Hello!
+* Paul Menage <menage@google.com> 2008-09-10 16:51
+> On Wed, Sep 10, 2008 at 4:45 PM, Thomas Graf <tgraf@suug.ch> wrote:
+> >
+> > That's argueable I guess. Likely or not, it doesn't make sense to
+> > add such restrictions if not required, especially not when it is
+> > trivial to just look at the cgroup of the task directly.
 > 
-> I played witch scheduler settings. After doing something like:
-> echo -n 1000000 >sched_rt_period_us
-> 
-> command is looked. I found in kernel.log
-> Sep 11 00:39:34 zaratustra
-> Sep 11 00:39:34 zaratustra Pid: 4495, comm: bash Tainted: G        W 
-> (2.6.26.3 #12)
-> Sep 11 00:39:34 zaratustra EIP: 0060:[<c0213fc7>] EFLAGS: 00210246 CPU: 0
-> Sep 11 00:39:34 zaratustra EIP is at div64_u64+0x57/0x80
-> Sep 11 00:39:34 zaratustra EAX: 0000389f EBX: 00000000 ECX: 00000000 
-> EDX: 00000000
-> Sep 11 00:39:34 zaratustra ESI: d9800000 EDI: d9800000 EBP: 0000389f 
-> ESP: ea7a6edc
-> Sep 11 00:39:34 zaratustra DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> Sep 11 00:39:34 zaratustra Process bash (pid: 4495, ti=ea7a6000 
-> task=ea744000 task.ti=ea7a6000)
-> Sep 11 00:39:34 zaratustra Stack: 00000000 000003e8 d9800000 0000389f 
-> c0119042 00000000 00000000 00000001
-> Sep 11 00:39:34 zaratustra 00000000 00000000 ea7a6f54 00010000 00000000 
-> c04d2e80 00000001 000e7ef0
-> Sep 11 00:39:34 zaratustra c01191a3 00000000 00000000 ea7a6fa0 00000001 
-> ffffffff c04d2e80 ea5b2480
-> Sep 11 00:39:34 zaratustra Call Trace:
-> Sep 11 00:39:34 zaratustra [<c0119042>] __rt_schedulable+0x52/0x130
-> Sep 11 00:39:34 zaratustra [<c01191a3>] sched_rt_handler+0x83/0x120
-> Sep 11 00:39:34 zaratustra [<c01a76a6>] proc_sys_call_handler+0xb6/0xd0
-> Sep 11 00:39:34 zaratustra [<c01a76c0>] proc_sys_write+0x0/0x20
-> Sep 11 00:39:34 zaratustra [<c01a76d9>] proc_sys_write+0x19/0x20
-> Sep 11 00:39:34 zaratustra [<c016cc68>] vfs_write+0xa8/0x140
-> Sep 11 00:39:34 zaratustra [<c016cdd1>] sys_write+0x41/0x80
-> Sep 11 00:39:34 zaratustra [<c0103051>] sysenter_past_esp+0x6a/0x91
-> Sep 11 00:39:34 zaratustra =======================
-> Sep 11 00:39:34 zaratustra Code: c8 41 0f ad f3 d3 ee f6 c1 20 0f 45 de 
-> 31 f6 0f ad ef d3 ed f6 c1 20 0f 45 fd 0f 45 ee 31 c9 39 eb 89 fe 89 ea 
-> 77 08 89 e8 31 d2 <f7> f3 89 c1 89 f0 8b 7c 24 08 f7 f3 8b 74 24 04 89 
-> ca 8b 1c 24
-> Sep 11 00:39:34 zaratustra EIP: [<c0213fc7>] div64_u64+0x57/0x80 SS:ESP 
-> 0068:ea7a6edc
-> Sep 11 00:39:34 zaratustra ---[ end trace 4eaa2a86a8e2da22 ]---
+> Isn't a very large fraction of outgoing network traffic driven from
+> net_tx_action(), which doesn't execute in the context of the sending
+> process? Or am I missing something?
 
-Hi,
+net_tx_action() dequeues from the qdisc. The classification is done
+before the packets is enqueued onto the qdisc.
 
-I'm not sure this patch really addresses the issue.
-But the kernel locks after changing sysctl_sched_rt_period=0.
+A special case exists when the packets needs to be requeued, in this
+case the enqueue() is done in softirq context but it should not invoke
+the classifier again if I remember correctly.
 
-This patch is against -tip.
-I think it's needed to -stable too.
--------->
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Subject: [PATCH] sched: do not allow sysctl_sched_rt_period=0
+> You claimed "In the most common case, the packet is not queued before
+> it hits the qdisc so this takes away a lot of complexity and is very
+> fast but should still be sufficient.". But is that really true on a
+> system where the network is busy? (Which is after all exactly the case
+> where you care about accurate traffic accounting/policing)
 
-sysctl_sched_rt_period=0 makes exception at to_ratio().
+To my best knowledge it is, otherwise I wouldn't say it. Feel free to
+prove me wrong.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/sched.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8f4af55..32d56d6 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -8971,6 +8971,9 @@ static int sched_rt_global_constraints(void)
- 	u64 rt_runtime, rt_period;
- 	int ret = 0;
- 
-+	if (sysctl_sched_rt_period <= 0)
-+		return -EINVAL;
-+
- 	rt_period = ktime_to_ns(tg->rt_bandwidth.rt_period);
- 	rt_runtime = tg->rt_bandwidth.rt_runtime;
- 
-@@ -8988,6 +8991,9 @@ static int sched_rt_global_constraints(void)
- 	unsigned long flags;
- 	int i;
- 
-+	if (sysctl_sched_rt_period <= 0)
-+		return -EINVAL;
-+
- 	spin_lock_irqsave(&def_rt_bandwidth.rt_runtime_lock, flags);
- 	for_each_possible_cpu(i) {
- 		struct rt_rq *rt_rq = &cpu_rq(i)->rt;
--- 
-1.5.6
-
+F.e. it doesn't work if an ifb device is added to egress between
+the user and the cgroup classifier. That's what I mean with common
+cases.
