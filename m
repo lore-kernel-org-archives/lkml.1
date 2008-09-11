@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbYIKAKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbYIKAPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbYIKAKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 20:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYIKAKJ
+	id S1754123AbYIKAPx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 20:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYIKAPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 20:10:09 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:12475 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754049AbYIKAKI (ORCPT
+	Wed, 10 Sep 2008 20:15:45 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43089
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751636AbYIKAPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 20:10:08 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=OQ0IK3fXkbKgYQ8HQ1Xxsoro3JSjsSnhepiBE4ZpiDPYij1icZBS0U6hagr171STt
-	ON2zViOSlrS2V/uTOP3/g==
-Message-ID: <6599ad830809101709k5bf10e6y2399235c68e59548@mail.gmail.com>
-Date: Wed, 10 Sep 2008 17:09:49 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Thomas Graf" <tgraf@suug.ch>
-Subject: Re: [PATCH 1/2] Traffic control cgroups subsystem
-Cc: "Ranjit Manomohan" <ranjitm@google.com>, davem@davemloft.net,
-       akpm@linux-foundation.org, kaber@trash.net, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <20080911000726.GM20815@postel.suug.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Sep 2008 20:15:44 -0400
+Date: Wed, 10 Sep 2008 17:15:38 -0700 (PDT)
+Message-Id: <20080910.171538.129595030.davem@davemloft.net>
+To: kaos@ocs.com.au
+Cc: kaber@trash.net, linux-kernel@vger.kernel.org
+Subject: Re: Recent copy of libpcap from CVS 
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <8686.1221091795@ocs10w>
+References: <20080910.165931.187028031.davem@davemloft.net>
+	<8686.1221091795@ocs10w>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0809101040280.7050@ranjit.corp.google.com>
-	 <20080910220115.GH20815@postel.suug.ch>
-	 <166fe7950809101556q61cb7e30m2d5e758304618f61@mail.gmail.com>
-	 <6599ad830809101604o71b2fb82k2aca1eb0fd8ab6d8@mail.gmail.com>
-	 <20080910232413.GJ20815@postel.suug.ch>
-	 <6599ad830809101631q51371f75w2ab9f73ef2414f90@mail.gmail.com>
-	 <20080910234523.GK20815@postel.suug.ch>
-	 <6599ad830809101651u79a0efb7y8fa7288de6e48c8a@mail.gmail.com>
-	 <20080911000726.GM20815@postel.suug.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 5:07 PM, Thomas Graf <tgraf@suug.ch> wrote:
->> Isn't a very large fraction of outgoing network traffic driven from
->> net_tx_action(), which doesn't execute in the context of the sending
->> process? Or am I missing something?
->
-> net_tx_action() dequeues from the qdisc. The classification is done
-> before the packets is enqueued onto the qdisc.
+From: Keith Owens <kaos@ocs.com.au>
+Date: Thu, 11 Sep 2008 10:09:55 +1000
 
-Ah, good point.
+> David Miller (on Wed, 10 Sep 2008 16:59:31 -0700 (PDT)) wrote:
+> >From: Keith Owens <kaos@ocs.com.au>
+> >Date: Thu, 11 Sep 2008 09:57:08 +1000
+> >
+> >> Comparing git://git.kernel.org/pub/scm/linux/kernel/git/davem/libpcap.git
+> >> against Patrick's tarball.  git is missing some mode and some rcsid
+> >> lines like this example below, I assume that the removal of these lines
+> >> in git was deliberate.
+> >
+> >Yes, look at the changesets in the tree, I did it.
+> 
+> Removing the #ifndef lines also accidentally removed a copyright notice.
 
-Thanks,
-
-Paul
+No, the copyright is also in the comment right above it.
