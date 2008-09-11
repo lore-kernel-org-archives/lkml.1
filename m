@@ -1,387 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbYIKUWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbYIKUZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbYIKUWw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYIKUWk
+	id S1756601AbYIKUZd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYIKUZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:22:40 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50025 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbYIKUWj (ORCPT
+	Thu, 11 Sep 2008 16:25:24 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:50906 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752013AbYIKUZX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:22:39 -0400
-Date: Thu, 11 Sep 2008 14:51:04 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>, Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       ak@linux.intel.com, hare@suse.de
-Subject: Re: catch calls of acpi_driver_data on pointer of wrong type
-Message-ID: <20080911125104.GA1764@elf.ucw.cz>
-References: <20080910141151.GA13669@elf.ucw.cz> <20080910173102.53e19f92.akpm@linux-foundation.org>
+	Thu, 11 Sep 2008 16:25:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XR+Y8/ktYEpo/tsDncS3wi11YXjXCtmQ/t6kQcjx0oVf1lQNrU2LaeL2+sXLr/kBfO
+         egQShsMENMZ41u56wkDBszPEkyPKrF95LWf0Qz1f6kwDR69fnoKjwLCnFQNwJbNC19YR
+         jspsCXNEnqwVY+boWp3xVn7D0NsqUyjVwwjOw=
+Message-ID: <41840b750809111325t30f8ffe2sa4572d401d43dc5a@mail.gmail.com>
+Date: Thu, 11 Sep 2008 16:25:22 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Tejun Heo" <tj@kernel.org>
+Subject: Re: Laptop shock detection and harddisk protection
+Cc: "Elias Oltmanns" <eo@nebensachen.de>, "Thomas Renninger" <trenn@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <48C948A6.3080404@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080910173102.53e19f92.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <48C7FCEE.8060404@kernel.org>
+	 <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
+	 <48C948A6.3080404@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len?
+Hi Tejun,
 
-I must admit I do not like the lvalue abuse. Is Andrew's patch
-aceptable to you?
+On Thu, Sep 11, 2008 at 12:34 PM, Tejun Heo <tj@kernel.org> wrote:
+> Hello, Shem Multinymous.
+>> Using the input device interface for the accelerometer (as done by
+>> tp_smapi's hdaps + latest hdapsd) greatly reduces the number of
+>> accelerometer-related timer interrupts on tickless kernels, as
+>> measured by powertop. With syscall polling you have the kernal polling
+>> the hardware at ~50Hz and then the userspace hdapsd polling the kernel
+>> at ~50Hz. When they're out of phase so you can get up to 100
+>> interrupts/sec. With an input device you're always at 50Hz. The phase
+>> difference also induces a small extra delay in the shock handling
+>> response.
+>
+> That reduction comes because input device supports poll and
+> sysfs_notify_event() does about the same thing.  The uesrland daemon
+> can just poll on a node and read data nodes when poll event on the
+> node triggeres.
 
-								Pavel
+Agreed.
+There's another issue with the current sysfs interface, though: hdapsd
+needs to read (x,y,timestamp) tuples, whereas sysfs provides just x
+and y in separate attributes which cannot be read atomically together.
+We can add a sysfs file with "x y timestamp" readouts, though this is
+unusual for sysfs (and certainly incompatible with hwmon).
 
-On Wed 2008-09-10 17:31:02, Andrew Morton wrote:
-> On Wed, 10 Sep 2008 16:11:51 +0200
-> Pavel Machek <pavel@suse.cz> wrote:
-> 
-> > 
-> > Catch attempts to use of acpi_driver_data on pointers of wrong type.
-> > 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > Cc: Hannes Reinecke <hare@suse.de>
-> > 
-> > ---
-> > commit 76c9074075cd9208cf386f37ebd932a00557643a
-> > tree 02589a15c23f430c7728560e4ba51077d41a6eff
-> > parent d4a51ebfa2ffc3320d7eab269dc1ca84e86719f5
-> > author Pavel <pavel@amd.ucw.cz> Wed, 10 Sep 2008 16:10:28 +0200
-> > committer Pavel <pavel@amd.ucw.cz> Wed, 10 Sep 2008 16:10:28 +0200
-> > 
-> >  include/acpi/acpi_bus.h |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-> > index a5ac0bc..641656e 100644
-> > --- a/include/acpi/acpi_bus.h
-> > +++ b/include/acpi/acpi_bus.h
-> > @@ -300,7 +300,7 @@ struct acpi_device {
-> >  	enum acpi_bus_removal_type removal_type;	/* indicate for different removal type */
-> >  };
-> >  
-> > -#define acpi_driver_data(d)	((d)->driver_data)
-> > +#define acpi_driver_data(d)	((void) (d == (struct acpi_device *) 0), d)->driver_data
-> >  #define to_acpi_device(d)	container_of(d, struct acpi_device, dev)
-> >  #define to_acpi_driver(d)	container_of(d, struct acpi_driver, drv)
-> >  
-> 
-> Let us not try to implement a C compiler in cpp, for that is perverse.
-> 
-> Behold my amazingness:
-> 
-> static inline void *acpi_driver_data(struct acpi_device *d)
-> {
-> 	return d->driver_data;
-> }
-> 
-> 
-> Implementing this requires that we fix all the idiotic crap which uses
-> acpi_driver_data() as an lvalue, but fixing idiotic crap is rarely a
-> bad thing, no?
-> 
-> Something like this...
-> 
->  drivers/acpi/ac.c             |    2 +-
->  drivers/acpi/asus_acpi.c      |    2 +-
->  drivers/acpi/battery.c        |    2 +-
->  drivers/acpi/button.c         |    2 +-
->  drivers/acpi/container.c      |    2 +-
->  drivers/acpi/ec.c             |    4 ++--
->  drivers/acpi/fan.c            |    2 +-
->  drivers/acpi/pcc_acpi.c       |    2 +-
->  drivers/acpi/pci_link.c       |    2 +-
->  drivers/acpi/pci_root.c       |    2 +-
->  drivers/acpi/power.c          |    4 ++--
->  drivers/acpi/processor_core.c |    2 +-
->  drivers/acpi/sbs.c            |    2 +-
->  drivers/acpi/sbshc.c          |    4 ++--
->  drivers/acpi/scan.c           |    4 ++--
->  drivers/acpi/thermal.c        |    2 +-
->  drivers/acpi/video.c          |    6 +++---
->  include/acpi/acpi_bus.h       |    6 +++++-
->  18 files changed, 28 insertions(+), 24 deletions(-)
-> 
-> diff -puN include/acpi/acpi_bus.h~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix include/acpi/acpi_bus.h
-> --- a/include/acpi/acpi_bus.h~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/include/acpi/acpi_bus.h
-> @@ -300,7 +300,11 @@ struct acpi_device {
->  	enum acpi_bus_removal_type removal_type;	/* indicate for different removal type */
->  };
->  
-> -#define acpi_driver_data(d)	((void) (d == (struct acpi_device *) 0), d)->driver_data
-> +static inline void *acpi_driver_data(struct acpi_device *d)
-> +{
-> +	return d->driver_data;
-> +}
-> +
->  #define to_acpi_device(d)	container_of(d, struct acpi_device, dev)
->  #define to_acpi_driver(d)	container_of(d, struct acpi_driver, drv)
->  
-> diff -puN drivers/acpi/scan.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/scan.c
-> --- a/drivers/acpi/scan.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/scan.c
-> @@ -391,7 +391,7 @@ static int acpi_device_remove(struct dev
->  			acpi_drv->ops.remove(acpi_dev, acpi_dev->removal_type);
->  	}
->  	acpi_dev->driver = NULL;
-> -	acpi_driver_data(dev) = NULL;
-> +	dev->driver_data = NULL;
->  
->  	put_device(dev);
->  	return 0;
-> @@ -545,7 +545,7 @@ acpi_bus_driver_init(struct acpi_device 
->  	result = driver->ops.add(device);
->  	if (result) {
->  		device->driver = NULL;
-> -		acpi_driver_data(device) = NULL;
-> +		device->driver_data = NULL;
->  		return result;
->  	}
->  
-> diff -puN drivers/acpi/ec.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/ec.c
-> --- a/drivers/acpi/ec.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/ec.c
-> @@ -792,7 +792,7 @@ static int acpi_ec_add(struct acpi_devic
->  
->  	if (!first_ec)
->  		first_ec = ec;
-> -	acpi_driver_data(device) = ec;
-> +	device->driver_data = ec;
->  	acpi_ec_add_fs(device);
->  	pr_info(PREFIX "GPE = 0x%lx, I/O: command/status = 0x%lx, data = 0x%lx\n",
->  			  ec->gpe, ec->command_addr, ec->data_addr);
-> @@ -817,7 +817,7 @@ static int acpi_ec_remove(struct acpi_de
->  	}
->  	mutex_unlock(&ec->lock);
->  	acpi_ec_remove_fs(device);
-> -	acpi_driver_data(device) = NULL;
-> +	device->driver_data = NULL;
->  	if (ec == first_ec)
->  		first_ec = NULL;
->  	kfree(ec);
-> diff -puN drivers/acpi/pci_root.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/pci_root.c
-> --- a/drivers/acpi/pci_root.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/pci_root.c
-> @@ -206,7 +206,7 @@ static int __devinit acpi_pci_root_add(s
->  	root->device = device;
->  	strcpy(acpi_device_name(device), ACPI_PCI_ROOT_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_PCI_ROOT_CLASS);
-> -	acpi_driver_data(device) = root;
-> +	device->driver_data = root;
->  
->  	device->ops.bind = acpi_pci_bind;
->  
-> diff -puN drivers/acpi/pci_link.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/pci_link.c
-> --- a/drivers/acpi/pci_link.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/pci_link.c
-> @@ -737,7 +737,7 @@ static int acpi_pci_link_add(struct acpi
->  	link->device = device;
->  	strcpy(acpi_device_name(device), ACPI_PCI_LINK_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_PCI_LINK_CLASS);
-> -	acpi_driver_data(device) = link;
-> +	device->driver_data = link;
->  
->  	mutex_lock(&acpi_link_lock);
->  	result = acpi_pci_link_get_possible(link);
-> diff -puN drivers/acpi/power.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/power.c
-> --- a/drivers/acpi/power.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/power.c
-> @@ -679,7 +679,7 @@ static int acpi_power_add(struct acpi_de
->  	strcpy(resource->name, device->pnp.bus_id);
->  	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
-> -	acpi_driver_data(device) = resource;
-> +	device->driver_data = resource;
->  
->  	/* Evalute the object to get the system level and resource order. */
->  	status = acpi_evaluate_object(device->handle, NULL, NULL, &buffer);
-> @@ -755,7 +755,7 @@ static int acpi_power_resume(struct acpi
->  	if (!device || !acpi_driver_data(device))
->  		return -EINVAL;
->  
-> -	resource = (struct acpi_power_resource *)acpi_driver_data(device);
-> +	resource = acpi_driver_data(device);
->  
->  	result = acpi_power_get_state(device->handle, &state);
->  	if (result)
-> diff -puN drivers/acpi/ac.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/ac.c
-> --- a/drivers/acpi/ac.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/ac.c
-> @@ -269,7 +269,7 @@ static int acpi_ac_add(struct acpi_devic
->  	ac->device = device;
->  	strcpy(acpi_device_name(device), ACPI_AC_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_AC_CLASS);
-> -	acpi_driver_data(device) = ac;
-> +	device->driver_data = ac;
->  
->  	result = acpi_ac_get_state(ac);
->  	if (result)
-> diff -puN drivers/acpi/button.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/button.c
-> --- a/drivers/acpi/button.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/button.c
-> @@ -384,7 +384,7 @@ static int acpi_button_add(struct acpi_d
->  		return -ENOMEM;
->  
->  	button->device = device;
-> -	acpi_driver_data(device) = button;
-> +	device->driver_data = button;
->  
->  	button->input = input = input_allocate_device();
->  	if (!input) {
-> diff -puN drivers/acpi/battery.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/battery.c
-> --- a/drivers/acpi/battery.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/battery.c
-> @@ -804,7 +804,7 @@ static int acpi_battery_add(struct acpi_
->  	battery->device = device;
->  	strcpy(acpi_device_name(device), ACPI_BATTERY_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_BATTERY_CLASS);
-> -	acpi_driver_data(device) = battery;
-> +	device->driver_data = battery;
->  	mutex_init(&battery->lock);
->  	acpi_battery_update(battery);
->  #ifdef CONFIG_ACPI_PROCFS_POWER
-> diff -puN drivers/acpi/fan.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/fan.c
-> --- a/drivers/acpi/fan.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/fan.c
-> @@ -265,7 +265,7 @@ static int acpi_fan_add(struct acpi_devi
->  
->  	dev_info(&device->dev, "registered as cooling_device%d\n", cdev->id);
->  
-> -	acpi_driver_data(device) = cdev;
-> +	device->driver_data = cdev;
->  	result = sysfs_create_link(&device->dev.kobj,
->  				   &cdev->device.kobj,
->  				   "thermal_cooling");
-> diff -puN drivers/acpi/video.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/video.c
-> --- a/drivers/acpi/video.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/video.c
-> @@ -1500,7 +1500,7 @@ acpi_video_bus_get_one_device(struct acp
->  
->  		strcpy(acpi_device_name(device), ACPI_VIDEO_DEVICE_NAME);
->  		strcpy(acpi_device_class(device), ACPI_VIDEO_CLASS);
-> -		acpi_driver_data(device) = data;
-> +		device->driver_data = data;
->  
->  		data->device_id = device_id;
->  		data->video = video;
-> @@ -1990,7 +1990,7 @@ static int acpi_video_bus_add(struct acp
->  	video->device = device;
->  	strcpy(acpi_device_name(device), ACPI_VIDEO_BUS_NAME);
->  	strcpy(acpi_device_class(device), ACPI_VIDEO_CLASS);
-> -	acpi_driver_data(device) = video;
-> +	device->driver_data = video;
->  
->  	acpi_video_bus_find_cap(video);
->  	error = acpi_video_bus_check(video);
-> @@ -2066,7 +2066,7 @@ static int acpi_video_bus_add(struct acp
->  	acpi_video_bus_remove_fs(device);
->   err_free_video:
->  	kfree(video);
-> -	acpi_driver_data(device) = NULL;
-> +	device->driver_data = NULL;
->  
->  	return error;
->  }
-> diff -puN drivers/acpi/processor_core.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/processor_core.c
-> --- a/drivers/acpi/processor_core.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/processor_core.c
-> @@ -818,7 +818,7 @@ static int acpi_processor_add(struct acp
->  	pr->handle = device->handle;
->  	strcpy(acpi_device_name(device), ACPI_PROCESSOR_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_PROCESSOR_CLASS);
-> -	acpi_driver_data(device) = pr;
-> +	device->driver_data = pr;
->  
->  	return 0;
->  }
-> diff -puN drivers/acpi/container.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/container.c
-> --- a/drivers/acpi/container.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/container.c
-> @@ -108,7 +108,7 @@ static int acpi_container_add(struct acp
->  	container->handle = device->handle;
->  	strcpy(acpi_device_name(device), ACPI_CONTAINER_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_CONTAINER_CLASS);
-> -	acpi_driver_data(device) = container;
-> +	device->driver_data = container;
->  
->  	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device <%s> bid <%s>\n",
->  			  acpi_device_name(device), acpi_device_bid(device)));
-> diff -puN drivers/acpi/thermal.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/thermal.c
-> --- a/drivers/acpi/thermal.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/thermal.c
-> @@ -1647,7 +1647,7 @@ static int acpi_thermal_add(struct acpi_
->  	strcpy(tz->name, device->pnp.bus_id);
->  	strcpy(acpi_device_name(device), ACPI_THERMAL_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_THERMAL_CLASS);
-> -	acpi_driver_data(device) = tz;
-> +	device->driver_data = tz;
->  	mutex_init(&tz->lock);
->  
->  
-> diff -puN drivers/acpi/asus_acpi.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/asus_acpi.c
-> --- a/drivers/acpi/asus_acpi.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/asus_acpi.c
-> @@ -1321,7 +1321,7 @@ static int asus_hotk_add(struct acpi_dev
->  	hotk->handle = device->handle;
->  	strcpy(acpi_device_name(device), ACPI_HOTK_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_HOTK_CLASS);
-> -	acpi_driver_data(device) = hotk;
-> +	device->driver_data = hotk;
->  	hotk->device = device;
->  
->  	result = asus_hotk_check();
-> diff -puN drivers/acpi/pcc_acpi.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/pcc_acpi.c
-> --- a/drivers/acpi/pcc_acpi.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/pcc_acpi.c
-> @@ -657,7 +657,7 @@ static int acpi_pcc_hotkey_add(struct ac
->  	pcc->device = device;
->  	pcc->handle = device->handle;
->  	pcc->num_sifr = num_sifr;
-> -	acpi_driver_data(device) = pcc;
-> +	device->driver_data = pcc;
->  	strcpy(acpi_device_name(device), ACPI_PCC_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_PCC_CLASS);
->  
-> diff -puN drivers/acpi/sbshc.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/sbshc.c
-> --- a/drivers/acpi/sbshc.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/sbshc.c
-> @@ -282,7 +282,7 @@ static int acpi_smbus_hc_add(struct acpi
->  	hc->ec = acpi_driver_data(device->parent);
->  	hc->offset = (val >> 8) & 0xff;
->  	hc->query_bit = val & 0xff;
-> -	acpi_driver_data(device) = hc;
-> +	device->driver_data = hc;
->  
->  	acpi_ec_add_query_handler(hc->ec, hc->query_bit, NULL, smbus_alarm, hc);
->  	printk(KERN_INFO PREFIX "SBS HC: EC = 0x%p, offset = 0x%0x, query_bit = 0x%0x\n",
-> @@ -303,7 +303,7 @@ static int acpi_smbus_hc_remove(struct a
->  	hc = acpi_driver_data(device);
->  	acpi_ec_remove_query_handler(hc->ec, hc->query_bit);
->  	kfree(hc);
-> -	acpi_driver_data(device) = NULL;
-> +	device->driver_data = NULL;
->  	return 0;
->  }
->  
-> diff -puN drivers/acpi/sbs.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix drivers/acpi/sbs.c
-> --- a/drivers/acpi/sbs.c~acpi-catch-calls-of-acpi_driver_data-on-pointer-of-wrong-type-fix
-> +++ a/drivers/acpi/sbs.c
-> @@ -931,7 +931,7 @@ static int acpi_sbs_add(struct acpi_devi
->  	sbs->device = device;
->  	strcpy(acpi_device_name(device), ACPI_SBS_DEVICE_NAME);
->  	strcpy(acpi_device_class(device), ACPI_SBS_CLASS);
-> -	acpi_driver_data(device) = sbs;
-> +	device->driver_data = sbs;
->  
->  	result = acpi_charger_add(sbs);
->  	if (result)
-> _
-> 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Unloading heads will be simple.  Just echoing timeout in ms to sysfs
+> nodes, so I don't think it's a good idea to push out actual unloading
+> to another process especially as fork doesn't inherit mlockall.
+
+I had in mind another daemon listening for "unload now" events, so no
+forking needed.
+This second daemon might make sense if we push the logic of deciding
+*which* disks to unload into userspace, since this logic is the same
+for the ThinkPad style and the HP style.
+
+
+> On a related note, is there any plan to merge tp_smapi to mainline?
+> It seems you put a lot of work into it and I don't really see why it
+> should stay out of tree.
+
+The only issue I'm aware of is finding a reasonably-named maintainer.
+On the technical side, the reviews on my lkml submission of
+thinkpad_ec+hdaps seemed good and all technical comments are since
+addressed. The code has been stable, well-tested and packaged by major
+distros for years.
+
+  Shem
