@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYIKRuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYIKRuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYIKRuV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 13:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYIKRuI
+	id S1755945AbYIKRuj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 13:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYIKRuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 13:50:08 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:42115 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbYIKRuH (ORCPT
+	Thu, 11 Sep 2008 13:50:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58258 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753020AbYIKRuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 13:50:07 -0400
-Cc: Neil Brown <neilb@suse.de>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       LKML Kernel <linux-kernel@vger.kernel.org>
-Message-Id: <56258A29-95D5-4A8C-A097-014B8FEDFB8F@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Aaron Straus <aaron@merfinllc.com>
-In-Reply-To: <20080911171908.GE12037@merfinllc.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: [NFS] blocks of zeros (NULLs) in NFS files in kernels >= 2.6.20
-Date: Thu, 11 Sep 2008 13:48:49 -0400
-References: <20080905191939.GG22796@merfinllc.com> <0A24B45A-9761-4310-B1DB-B4738964E862@oracle.com> <20080908190212.GF28123@merfinllc.com> <76bd70e30809081415h6b55a8dfl8171634c576ac946@mail.gmail.com> <20080909194644.GI5290@merfinllc.com> <8BFB4AE0-3EF1-41FA-A13B-27E380A79950@oracle.com> <20080911171908.GE12037@merfinllc.com>
-X-Mailer: Apple Mail (2.928.1)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 11 Sep 2008 13:50:12 -0400
+Date: Thu, 11 Sep 2008 10:49:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+cc: David Woodhouse <dwmw2@infradead.org>, davem@davemloft.net, jeffm@suse.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+In-Reply-To: <200809111832.38051.elendil@planet.nl>
+Message-ID: <alpine.LFD.1.10.0809111048340.3384@nehalem.linux-foundation.org>
+References: <48C68507.6000609@suse.com> <200809111749.40204.elendil@planet.nl> <alpine.LFD.1.10.0809110852460.3384@nehalem.linux-foundation.org> <200809111832.38051.elendil@planet.nl>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sep 11, 2008, at Sep 11, 2008, 1:19 PM, Aaron Straus wrote:
-> Hi,
->
-> On Sep 11 12:55 PM, Chuck Lever wrote:
->> A more thorough review of the NFS write and flush logic that exists  
->> in
->> 2.6.27 is needed if we choose to recognize this issue as a real
->> problem.
->
-> Yep.
->
-> Sorry.  I didn't mean we should revert the hunk.  I was just trying to
-> help identify the cause of the new behavior.
->
-> I think this is a real problem albeit not a "serious" one.  Network
-> file-systems usually try to avoid readers seeing blocks of zeros in
-> files, especially in this simple writer/reader case.
->
-> It wouldn't be bad if the file is written out of order occasionally,  
-> but
-> we see this constantly now.
->
-> We cannot write/read log files to NFS mounts reliably any more.  That
-> seems like a valid use case which no longer works?
 
-Were you able to modify your writer to do real fsync system calls?  If  
-so, did it help?  That would be a useful data point.
 
-NFS uses close-to-open cache coherency.  Thus we expect the file to be  
-consistent and up to date after it is opened by a client, but not  
-necessarily if some other client writes to it after it was opened.  We  
-usually recommend file locking and direct I/O to minimize these  
-problems.
+On Thu, 11 Sep 2008, Frans Pop wrote:
+> >
+> > Aren't _you_ the one who are ignoring current issues?
+> 
+> I don't think so.
+> _The_ current issue for me is that I can no longer build Debian kernel 
+> packages using 'make deb-pkg', which is part of _your_ tree, and install 
+> the resulting package *NOW*.
 
-Practically speaking this is often not enough for typical  
-applications, so NFS client implementations go to further (non- 
-standard) efforts to behave like a local file system.  This is simply  
-a question of whether we can address this while not creating  
-performance or correctness issues for other common use cases.
+Well, complain to the right people then. The patch that started this all 
+is wrong. The people you are complaining to are not the rigth people. We 
+can't do anything about debian packaging.
 
-Anyway, I'm not the NFS client maintainer, so this decision is not up  
-to me.
-
--- 
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+		Linus
