@@ -1,56 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYIKUlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbYIKUlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYIKUlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbYIKUkw
+	id S1756794AbYIKUlw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYIKUlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:40:52 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:35422 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752015AbYIKUkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:40:51 -0400
-Date: Thu, 11 Sep 2008 15:40:50 -0500
-From: Robin Holt <holt@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jack Steiner <steiner@sgi.com>,
-       Dean Nelson <dcn@sgi.com>
-Subject: [Patch] Panic on ia64 when you modprobe -r xpc.
-Message-ID: <20080911204050.GE8520@sgi.com>
+	Thu, 11 Sep 2008 16:41:36 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:43783 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753122AbYIKUlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 16:41:35 -0400
+Date: Thu, 11 Sep 2008 16:13:09 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2008-09-11
+Message-ID: <20080911201308.GJ3423@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you are on ia64 and you modprobe xpc then modprobe -r xpc, you
-immediately get a panic.  xpc depends on xp which depends on gru for
-a symbol.  That symbol is only used when we are running on UV hardware.
+Dave,
 
-Currently, the GRU driver detects we are not on UV hardware and does
-no initializing.  It does not do the same check when unloading.  As a
-result, the gru driver attempts to tear down stuff that was not setup.
+Here is one fix for 2.6.27.  It is a backport of a patch that is already
+in net-next-2.6.  Since it is for a new driver (ath9k) and since it
+fixes a reported bug (http://bugzilla.kernel.org/show_bug.cgi?id=11394)
+I think it should be OK to pass it to Linus for the current cycle.
 
-This is a simple two-line workaround to get us through this release.
-Once 2.6.28 is opened, we need to rework the symbols that xp is depending
-on from gru so the gru driver can properly fail to load when hardware
-is not available.
+John
 
-Signed-off-by: Robin Holt <holt@sgi.com>
+---
 
+Individual patch is available here:
 
-Index: xpmem_v006_20080911/drivers/misc/sgi-gru/grufile.c
-===================================================================
---- xpmem_v006_20080911.orig/drivers/misc/sgi-gru/grufile.c	2008-09-11 15:23:40.000000000 -0500
-+++ xpmem_v006_20080911/drivers/misc/sgi-gru/grufile.c	2008-09-11 15:33:21.009814869 -0500
-@@ -445,6 +445,9 @@ static void __exit gru_exit(void)
- 	int order = get_order(sizeof(struct gru_state) *
- 			      GRU_CHIPLETS_PER_BLADE);
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit e550dfb0c2c31b6363aa463a035fc9f8dcaa3c9b:
+  Neil Horman (1):
+        ipv6: Fix OOPS in ip6_dst_lookup_tail().
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Jouni Malinen (1):
+      ath9k: Assign seq# when mac80211 requests this
+
+ drivers/net/wireless/ath9k/beacon.c |   13 +++++++++++++
+ drivers/net/wireless/ath9k/core.h   |    1 +
+ drivers/net/wireless/ath9k/main.c   |   14 ++++++++++++++
+ 3 files changed, 28 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/wireless/ath9k/beacon.c b/drivers/net/wireless/ath9k/beacon.c
+index caf5694..00a0eaa 100644
+--- a/drivers/net/wireless/ath9k/beacon.c
++++ b/drivers/net/wireless/ath9k/beacon.c
+@@ -209,6 +209,7 @@ static struct ath_buf *ath_beacon_generate(struct ath_softc *sc, int if_id)
+ 	unsigned int curlen;
+ 	struct ath_txq *cabq;
+ 	struct ath_txq *mcastq;
++	struct ieee80211_tx_info *info;
+ 	avp = sc->sc_vaps[if_id];
  
-+	if (!IS_UV())
-+		return;
+ 	mcastq = &avp->av_mcastq;
+@@ -232,6 +233,18 @@ static struct ath_buf *ath_beacon_generate(struct ath_softc *sc, int if_id)
+ 	 */
+ 	curlen = skb->len;
+ 
++	info = IEEE80211_SKB_CB(skb);
++	if (info->flags & IEEE80211_TX_CTL_ASSIGN_SEQ) {
++		/*
++		 * TODO: make sure the seq# gets assigned properly (vs. other
++		 * TX frames)
++		 */
++		struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
++		sc->seq_no += 0x10;
++		hdr->seq_ctrl &= cpu_to_le16(IEEE80211_SCTL_FRAG);
++		hdr->seq_ctrl |= cpu_to_le16(sc->seq_no);
++	}
 +
- 	for (i = 0; i < GRU_CHIPLETS_PER_BLADE; i++)
- 		free_irq(IRQ_GRU + i, NULL);
+ 	/* XXX: spin_lock_bh should not be used here, but sparse bitches
+ 	 * otherwise. We should fix sparse :) */
+ 	spin_lock_bh(&mcastq->axq_lock);
+diff --git a/drivers/net/wireless/ath9k/core.h b/drivers/net/wireless/ath9k/core.h
+index 673b3d8..4ee695b 100644
+--- a/drivers/net/wireless/ath9k/core.h
++++ b/drivers/net/wireless/ath9k/core.h
+@@ -992,6 +992,7 @@ struct ath_softc {
+ 	u32 sc_txintrperiod;	/* tx interrupt batching */
+ 	int sc_haltype2q[ATH9K_WME_AC_VO+1]; /* HAL WME	AC -> h/w qnum */
+ 	u32 sc_ant_tx[8];	/* recent tx frames/antenna */
++	u16 seq_no; /* TX sequence number */
  
+ 	/* Beacon */
+ 	struct ath9k_tx_queue_info sc_beacon_qi;
+diff --git a/drivers/net/wireless/ath9k/main.c b/drivers/net/wireless/ath9k/main.c
+index c5107f2..99badf1 100644
+--- a/drivers/net/wireless/ath9k/main.c
++++ b/drivers/net/wireless/ath9k/main.c
+@@ -369,6 +369,20 @@ static int ath9k_tx(struct ieee80211_hw *hw,
+ {
+ 	struct ath_softc *sc = hw->priv;
+ 	int hdrlen, padsize;
++	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
++
++	/*
++	 * As a temporary workaround, assign seq# here; this will likely need
++	 * to be cleaned up to work better with Beacon transmission and virtual
++	 * BSSes.
++	 */
++	if (info->flags & IEEE80211_TX_CTL_ASSIGN_SEQ) {
++		struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
++		if (info->flags & IEEE80211_TX_CTL_FIRST_FRAGMENT)
++			sc->seq_no += 0x10;
++		hdr->seq_ctrl &= cpu_to_le16(IEEE80211_SCTL_FRAG);
++		hdr->seq_ctrl |= cpu_to_le16(sc->seq_no);
++	}
+ 
+ 	/* Add the padding after the header if this is not already done */
+ 	hdrlen = ieee80211_get_hdrlen_from_skb(skb);
+-- 
+John W. Linville
+linville@tuxdriver.com
