@@ -1,98 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYIKIc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYIKIiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbYIKIc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 04:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbYIKIbv
+	id S1754374AbYIKIiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 04:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbYIKIht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 04:31:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:33264 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754788AbYIKIbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 04:31:50 -0400
-Message-ID: <48C8D774.9010705@goop.org>
-Date: Thu, 11 Sep 2008 01:31:48 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 11 Sep 2008 04:37:49 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:5444 "EHLO
+	natasha.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751806AbYIKIhs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 04:37:48 -0400
+Message-ID: <48C8D70C.7090908@panasas.com>
+Date: Thu, 11 Sep 2008 11:30:04 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alex Nixon <alex.nixon@citrix.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] make PFN_PHYS explicitly return phys_addr_t
-X-Enigmail-Version: 0.95.7
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Chris Leech <christopher.leech@intel.com>,
+       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, devel@open-fcoe.org
+Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros	for	accessing	3-byte
+ arrays as integers
+References: <20080905165732.16689.50256.stgit@localhost.localdomain>	 <20080910140712.GA12280@infradead.org>	 <1221061241.27385.14.camel@norville.austin.ibm.com>	 <48C7F19D.3080507@panasas.com> <1221074409.27385.39.camel@norville.austin.ibm.com>
+In-Reply-To: <1221074409.27385.39.camel@norville.austin.ibm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Sep 2008 08:29:10.0705 (UTC) FILETIME=[7706E210:01C913E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PFN_PHYS, as its name suggests, turns a pfn into a physical address.
-However, it is a macro which just operates on its argument without
-modifying its type.  pfns are typed unsigned long, but an unsigned
-long may not be long enough to hold a physical address (32-bit systems
-with more than 32 bits of physcial address).
+Dave Kleikamp wrote:
+> On Wed, 2008-09-10 at 19:11 +0300, Boaz Harrosh wrote:
+>> Dave Kleikamp wrote:
+> 
+>>> @@ -62,7 +60,7 @@ struct timestruc_t {
+>>>   */
+>>>  typedef struct {
+>>>  	unsigned len:24;
+>>> -	unsigned off1:8;
+>>> +	u8 off1;
+>>>  	u32 off2;
+>>>  } lxd_t;
+>>>  
+>> Why is the difference from below definition. That is the
+>> use/not of __le24? 
+> 
+> Answered elsewhere, but this is host-endian.  I plan to kill this
+> structure soon.
+> 
+>>> @@ -90,8 +88,8 @@ struct lxdlist {
+>>>   *	physical xd (pxd)
+>>>   */
+>>>  typedef struct {
+>>> -	unsigned len:24;
+>>> -	unsigned addr1:8;
+>>> +	__le24 len;
+>> Is this stuff on-the-wire?
+> 
+> Written to disk, so basically, yeah.
+> 
+>> Do you need a:
+>> +	__le24 len __packed;
+>>
+>>> +	u8 addr1;
+>>>  	__le32 addr2;
+>>>  } pxd_t;
+>> and:
+>>   } pxd_t __packed ;
+> 
+> I'm not convinced that this is needed.  Does the compiler do any padding
+> for alignment when it only contains char types (or structs of chars)?
+> 
+>> Note that before the :24 bit-field was kept packed but now
+>> with the use of struct at the __le24 definition it might
+>> choose to pad them.
+> 
+> Maybe, but I can't get the compiler to add any padding playing around
+> with variants of these structures.  I've tested a simple program on both
+> x86 and ppc64, but I'm not sure what would happen on, say, arm.
+> 
 
-Make sure we cast to phys_addr_t to return a complete result.
+You have an "__le32 addr2" followed, it might want too in rare cases.
+But for me this is also a a declaration issue and a readability issue.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Eduardo Habkost <ehabkost@redhat.com>
----
- arch/m32r/mm/discontig.c   |    4 ++--
- include/asm-x86/xen/page.h |    4 ++--
- include/linux/pfn.h        |    6 +++++-
- 3 files changed, 9 insertions(+), 5 deletions(-)
+I'm telling the compiler, don't mess with my structure, this needs
+to be constant whatever the compiler is. In C the compiler is even
+allowed to change fields order if it wants to. Why the guess work,
+__packed and be done with it.
 
-===================================================================
---- a/arch/m32r/mm/discontig.c
-+++ b/arch/m32r/mm/discontig.c
-@@ -112,9 +112,9 @@
- 				initrd_start, INITRD_SIZE);
- 		} else {
- 			printk("initrd extends beyond end of memory "
--				"(0x%08lx > 0x%08lx)\ndisabling initrd\n",
-+				"(0x%08lx > 0x%08llx)\ndisabling initrd\n",
- 				INITRD_START + INITRD_SIZE,
--				PFN_PHYS(max_low_pfn));
-+			        (unsigned long long)PFN_PHYS(max_low_pfn));
- 
- 			initrd_start = 0;
- 		}
-===================================================================
---- a/include/asm-x86/xen/page.h
-+++ b/include/asm-x86/xen/page.h
-@@ -76,13 +76,13 @@
- static inline xmaddr_t phys_to_machine(xpaddr_t phys)
- {
- 	unsigned offset = phys.paddr & ~PAGE_MASK;
--	return XMADDR(PFN_PHYS((u64)pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
-+	return XMADDR(PFN_PHYS(pfn_to_mfn(PFN_DOWN(phys.paddr))) | offset);
- }
- 
- static inline xpaddr_t machine_to_phys(xmaddr_t machine)
- {
- 	unsigned offset = machine.maddr & ~PAGE_MASK;
--	return XPADDR(PFN_PHYS((u64)mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
-+	return XPADDR(PFN_PHYS(mfn_to_pfn(PFN_DOWN(machine.maddr))) | offset);
- }
- 
- /*
-===================================================================
---- a/include/linux/pfn.h
-+++ b/include/linux/pfn.h
-@@ -1,9 +1,13 @@
- #ifndef _LINUX_PFN_H_
- #define _LINUX_PFN_H_
-+
-+#ifndef __ASSEMBLY__
-+#include <linux/types.h>
-+#endif
- 
- #define PFN_ALIGN(x)	(((unsigned long)(x) + (PAGE_SIZE - 1)) & PAGE_MASK)
- #define PFN_UP(x)	(((x) + PAGE_SIZE-1) >> PAGE_SHIFT)
- #define PFN_DOWN(x)	((x) >> PAGE_SHIFT)
--#define PFN_PHYS(x)	((x) << PAGE_SHIFT)
-+#define PFN_PHYS(x)	((phys_addr_t)(x) << PAGE_SHIFT)
- 
- #endif
+And it's also a readability issue. Look above lxd_t vs pxd_t. I can't
+know that one is in memory and one is on disk. I have to ask questions
+and make wrong remarks. But if the later had a __packed on it, then
+there are no more questions.
 
+__packed for me is a statement for both the programmer and compiler
+that says: "This stuff will be seen externally of the machine. It must
+be universally constant"
 
+>> Chris you might want to change the definitions at linux/types.h
+>> to:
+>>
+>> typedef struct { __u8 b[3]; } __be24, __le24 __packed;
+>>
+>> With gcc it will not help with the proceeding fields, and the
+>> containing struct will need it's own "__packed" declaration
+>> but it will keep it packed with previous fields.
+>>
+>> Just my $0.017
+>> Boaz
+> 
+> Shaggy
+
+Boaz
