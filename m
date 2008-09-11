@@ -1,54 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755048AbYIKPBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYIKPFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755048AbYIKPBD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 11:01:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYIKPAx
+	id S1755019AbYIKPFQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 11:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIKPFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 11:00:53 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:40617 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbYIKPAw (ORCPT
+	Thu, 11 Sep 2008 11:05:05 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52593 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752298AbYIKPFE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 11:00:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=O1gIw/Kpw+0TOP921xWSM0R9CCU5HcRUPmIJSHRaMJrJMnrx577XKO/OmrvJlwN5Qu
-         1Yin/TroNT3hX01bKzag44ah3J42ssj/ykm6j+X1FLLhKH8x8gmns9Tl3VBDWN3zCgvn
-         EozyuGkhlIWT0lKSbJ9oI2iZ4cjvacS5TEtKY=
-From: tom.leiming@gmail.com
-To: laurent.pinchart@skynet.be, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH] MAINTAINERS:fix USB VIDEO CLASS mail list address
-Date: Thu, 11 Sep 2008 23:01:35 +0800
-Message-Id: <1221145295-8936-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.5.6.rc2.45.gdc92c
+	Thu, 11 Sep 2008 11:05:04 -0400
+Message-ID: <48C9339A.4030309@sgi.com>
+Date: Thu, 11 Sep 2008 08:04:58 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] CPUMASK: proposal for replacing cpumask_t
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com>	 <20080906235037.880702000@polaris-admin.engr.sgi.com>	 <1220783087.8687.73.camel@twins.programming.kicks-ass.net>	 <48C53C91.70604@sgi.com>	 <1220886335.12278.31.camel@twins.programming.kicks-ass.net>	 <20080908183852.GA3713@elte.hu>  <48C84E9E.7080507@sgi.com> <1221123630.4415.1136.camel@twins.programming.kicks-ass.net>
+In-Reply-To: <1221123630.4415.1136.camel@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+Peter Zijlstra wrote:
+...
+>> So in function prototypes:
+>>
+>> 	cpumask_t function(const cpumask_t *A,
+>> 			   cpumask_t *B,
+>> 			   cpumask_t cpumask_C)
+>>
+>> becomes:
+>>
+>> 	cpumask_val function(cpumask_t A,
+>> 			     cpumask_var B,
+>> 			     cpumask_t cpumask_C)
+> 
+> I guess we have to stick the const into the typedef otherwise we get a
+> const pointer instead of a const array member, right?
+> 
+> In which case I much prefer the following names:
+> 
+>  cpumask_data_t  - value
+> 
+>  const_cpumask_t - pointer to constant value
+>  cpumask_t       - pointer to value
 
-It should be linux-uvc-devel@lists.berlios.de.
+There were some comments previously such that we should "imply" that the
+incoming cpumask_t args are const, so the compiler would flag those
+who arbitrarily modify it.
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- MAINTAINERS |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+...
+>> 	alloc_cpumask(&mask);
+> 
+> Don't you have to deal with allocation errors?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index af27945..7e0b0be 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4363,7 +4363,7 @@ S:	Maintained
- USB VIDEO CLASS
- P:	Laurent Pinchart
- M:	laurent.pinchart@skynet.be
--L:	linx-uvc-devel@berlios.de
-+L:	linux-uvc-devel@lists.berlios.de
- L:	video4linux-list@redhat.com
- W:	http://linux-uvc.berlios.de
- S:	Maintained
--- 
-1.5.6.rc2.45.gdc92c
+In a perfect world, no... ;-)
+...
+>> 	static inline void alloc_cpumask(cpumask_t *m)
+>> 	{
+>> 		cpumask_t d = kmalloc(BYTES_PER_CPUMASK, GFP_KERNEL);
+>> 		if (no_cpumask(&d))
+>> 			BUG();
+> 
+> yuckery yuck yuck!
+> 
+>> 		*m = d;
+>> 	}
+>>
+>> 	static inline void alloc_cpumask_nopanic(cpumask_t *m)
+>> 	{
+>> 		cpumask_t d = kmalloc(BYTES_PER_CPUMASK, GFP_KERNEL);
+>>
+>> 		*m = d;
+>> 	}
+> 
+> gah - at the very least you got the naming wrong, methinks the one
+> panic-ing should have panic in its name - if you really want to persist
+> with that variant.
 
+Yeah, I rather rushed through the allocation part (yuck indeed ;-).
+
+There are some other alternatives:
+
+	- reserve one or more of these in the task struct
+	- reserve one or more in a per-cpu area
+	- setup some kind of allocation pool similar to alloc_bootmem
+	- ???
+
+Thanks,
+Mike
