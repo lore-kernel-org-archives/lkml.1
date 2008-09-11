@@ -1,94 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbYIKQ27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYIKQgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbYIKQ27 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 12:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYIKQ2u
+	id S1755647AbYIKQgc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 12:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYIKQgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 12:28:50 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:49514 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751986AbYIKQ2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 12:28:49 -0400
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: Marcel Holtmann <holtmann@linux.intel.com>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Theodore Tso <tytso@mit.edu>, Faidon Liambotis <paravoid@debian.org>,
-       David Miller <davem@davemloft.net>, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <48C92CFE.2030803@suse.com>
-References: <48C68507.6000609@suse.com>
-	 <1221087719.13621.50.camel@macbook.infradead.org>
-	 <20080910.160505.14060698.davem@davemloft.net>
-	 <48C8BC17.5050508@debian.org> <48C8C580.5020803@suse.com>
-	 <20080911133847.GD5082@mit.edu>  <48C92CFE.2030803@suse.com>
-Content-Type: text/plain
-Date: Thu, 11 Sep 2008 18:29:18 +0200
-Message-Id: <1221150558.6309.50.camel@californication>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 11 Sep 2008 12:36:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50102 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752340AbYIKQgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 12:36:21 -0400
+Message-ID: <48C948A6.3080404@kernel.org>
+Date: Thu, 11 Sep 2008 18:34:46 +0200
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Shem Multinymous <multinymous@gmail.com>
+CC: Elias Oltmanns <eo@nebensachen.de>, Thomas Renninger <trenn@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: Laptop shock detection and harddisk protection
+References: <48C7FCEE.8060404@kernel.org> <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
+In-Reply-To: <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 11 Sep 2008 16:36:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+Hello, Shem Multinymous.
 
-> >> In the end, though, Andrew's right. We can't go breaking udev prior to
-> >> 127 with this.
-> > 
-> > But it's OK to break various distribution's kernel packaging tools?
+Shem Multinymous wrote:
+> Hi Tejun,
+>> 1. How should the shock interface look like?  As we're gonna need
+>>   userland daemon one way or the other, we can use the userland
+>>   daemon to glue all the interfaces but it would be much better to
+>>   have a unified interface.  Although there seem to be several
+>>   different variants, they don't differ all that much and creating a
+>>   new interface every time is painful.  I think we can get by with a
+>>   sysfs interface with notification.
 > 
-> No. I still think the right answer is to keep them in a versioned
-> directory and I'm keeping this patch applied to the SUSE kernel trees.
-> Udev in the next release understands where to look. It's just clear that
-> there's some disagreement if that's the right answer for everyone. My
-> opinion is that if the firmware blobs are built with and shipped with
-> the kernel, then they're already associated with a particular kernel
-> version as a dependency the same way we'd treat module dependencies.
+> Using the input device interface for the accelerometer (as done by
+> tp_smapi's hdaps + latest hdapsd) greatly reduces the number of
+> accelerometer-related timer interrupts on tickless kernels, as
+> measured by powertop. With syscall polling you have the kernal polling
+> the hardware at ~50Hz and then the userspace hdapsd polling the kernel
+> at ~50Hz. When they're out of phase so you can get up to 100
+> interrupts/sec. With an input device you're always at 50Hz. The phase
+> difference also induces a small extra delay in the shock handling
+> response.
 
-no they don't depend on a kernel version. The firmware depends on a
-specific driver version (and hardware in some cases). The kernel version
-is totally irrelevant in this case.
+That reduction comes because input device supports poll and
+sysfs_notify_event() does about the same thing.  The uesrland daemon
+can just poll on a node and read data nodes when poll event on the
+node triggeres.
 
-> It's silly to willfully complicate the situation beyond just including
-> the firmware blobs with the kernel. Even though it sounds a lot simpler
-> to just say, "keep a separate firmware package," the reality is that it
-> creates more work for everyone, developers, users, and packagers alike.
-> I recently updated the kernel on my notebook to a 2.6.27-rc, only to
-> find out that the firmware blob that I already had installed was out of
-> date and the driver was useless without it. This is an example of an
-> externally-maintained firmware blob, but creating a separate package out
-> of firmware blobs essentially makes all of them externally maintained
-> and forces in-kernel developers to jump through the same hoops that
-> third-party driver maintainers must.
+>> 2. If we're gonna unify interface, how much can we unify the backend?
+>>   Some devices are based on polling, others interrupt.  For polling,
+>>   is it better to delegate the whole polling to userland or is it
+>>   better to do some of it in kernel (tp_smapi seems to be doing
+>>   this)?
 > 
-> Packagers will need to keep track of every firmware version associated
-> with every kernel, since users may want to install multiple kernel
-> versions. This is the entire point of the thread, and it assumes that
-> the user installing the kernel is even using a packaged kernel. If
-> they've just built their own and have done a make modules_install ; make
-> install, then they're out of luck.
+> The ThinkPad accelerometer needs to be polled at very regular
+> intervals (max jitter on the order of 10ms), which sounds like a job
+> for the kernel.
 
-We do have MODULE_FIRMWARE for that.
+Yes, I agree.
 
-> Putting them in their own directory just makes it obvious and easy for
-> everyone. The issue is that firmware.sh isn't looking there right now.
-> Perhaps making optional symlinks is the answer.
+> This is because in ThinkPads we actually have a 4-level pile:
+> [hdapsd userspace] -> [hdaps kernel] -> [embedded controller] ->
+> [accelerometer A2D]
+> What the kernel polls is actually is the H8S embedded controller (EC)
+> chip, which in turn does its own polling of the accelerometer A2D.
+> Now, the EC has a tiny buffer and strange buffering semantics, and it
+> has its own internal clock, so the software->EC polling should be very
+> regular to minmize EC buffer overflows/underruns.
 
-Making symlinks is just a workaround. It will not solve anything in the
-long term.
+So, I think the whole polling should be implemented inside the kernel
+and the kernel should notify userland when new data is available,
+which is about what the current joystick implementation does and can
+be achieved using sysfs_notify_event().
 
-Getting all the firmware out of the kernel and getting it into a
-separate package is the solution. And to avoid any breakage or problems
-the firmware files itself have to be versioned. Firmware like every
-other software has its version numbers already. It is like any other API
-and once you break it in an incompatible why, you should increase the
-major version number. The kernel version has nothing to do with it.
+>> 3. What about the userland daemon?  It would be best to have a unified
+>>   daemon which can handle all instead of one for hdaps and another
+>>   for hp (and so on).  If we can unify the interface, this will be
+>>   much easier.
+> 
+> Assuming the funky shock detection algorithms are done in userspace,
+> we need two interfaces: one for the acceleration data (an input device
+> works nicely) and one for "unload now" events.
+> On HP, the kernel can trigger the "unload now" event directly. On
+> ThinkPads, there's still the question of what the userspace shock
+> detection daemon should do when it detects a shock: should it unloads
+> the heads by itself, or trigger the generic "unload now" event and let
+> someone else do the actual unloading.
 
-Regards
+Unloading heads will be simple.  Just echoing timeout in ms to sysfs
+nodes, so I don't think it's a good idea to push out actual unloading
+to another process especially as fork doesn't inherit mlockall.
 
-Marcel
+On a related note, is there any plan to merge tp_smapi to mainline?
+It seems you put a lot of work into it and I don't really see why it
+should stay out of tree.
 
+Thanks.
 
+-- 
+tejun
