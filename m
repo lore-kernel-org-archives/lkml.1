@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYIKNzM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbYIKN4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYIKNzM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:55:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYIKNy5
+	id S1755741AbYIKN4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbYIKN4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:54:57 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57581 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752521AbYIKNy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:54:56 -0400
-Date: Thu, 11 Sep 2008 22:55:03 +0900 (JST)
-Message-Id: <20080911.225503.59032738.anemo@mba.ocn.ne.jp>
-To: david@fries.net
-Cc: paul.gortmaker@gmail.com, akpm@linux-foundation.org, p_gortmaker@yahoo.com,
-       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] [PATCH] ne.c fix rmmod, platform driver
- improvements
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080909025821.GA25019@spacedout.fries.net>
-References: <20080909025434.GB28469@spacedout.fries.net>
-	<20080909025821.GA25019@spacedout.fries.net>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 11 Sep 2008 09:56:36 -0400
+Received: from mga10.intel.com ([192.55.52.92]:32441 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752801AbYIKN4g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 09:56:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,379,1217833200"; 
+   d="scan'208";a="379167835"
+Message-ID: <48C92389.7070209@linux.intel.com>
+Date: Thu, 11 Sep 2008 06:56:25 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Oops/Warning report for the week of September 10th, 2008
+References: <48C81D20.9040302@linux.intel.com> <20080911045255.GD6863@suse.de>
+In-Reply-To: <20080911045255.GD6863@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Sep 2008 21:58:21 -0500, David Fries <david@fries.net> wrote:
->  static int __init ne_drv_probe(struct platform_device *pdev)
->  {
->  	struct net_device *dev;
-> -	struct resource *res;
-> -	int err, irq;
-> -
-> -	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-> -	irq = platform_get_irq(pdev, 0);
-> -	if (!res || irq < 0)
-> -		return -ENODEV;
-> +	int err, this_dev = pdev->id;
->  
->  	dev = alloc_eip_netdev();
->  	if (!dev)
->  		return -ENOMEM;
-> -	dev->irq = irq;
-> -	dev->base_addr = res->start;
-> +	dev->base_addr = io[this_dev];
-> +	dev->irq = irq[this_dev];
-> +	dev->mem_end = bad[this_dev];
->  	err = do_ne_probe(dev);
+Greg KH wrote:
+> On Wed, Sep 10, 2008 at 12:16:48PM -0700, Arjan van de Ven wrote:
+>> Rank 2: sysfs_add_one (warning)
+>> 	Reported 215 times (3751 total reports)
+>> 	Duplicate sysfs registration; mostly in USB audio
+>> 	This warning was last seen in version 2.6.27-rc5, and first seen in 
+>> 2.6.24-rc6.
+>> 	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
+> 
+> 
+> Is there any way to break this one down further by caller so we can try
+> to narrow it down?  I thought you did that for other types of warnings
+> in the past (may_sleep(), etc.)
 
-This breaks current users of ne platform driver.  Here is a quick fix
-upon your patch.
+ok I think I got this one sorted;
+your entry is now replaced by
 
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index 221e188..8b08433 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -813,10 +813,26 @@ static int __init ne_drv_probe(struct platform_device *pdev)
- {
- 	struct net_device *dev;
- 	int err, this_dev = pdev->id;
-+	struct resource *res;
- 
- 	dev = alloc_eip_netdev();
- 	if (!dev)
- 		return -ENOMEM;
-+	
-+	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+	if (res) {
-+		dev->base_addr = res->start;
-+		dev->irq = platform_get_irq(pdev, 0);
-+		err = do_ne_probe(dev);
-+		if (err) {
-+			free_netdev(dev);
-+			return err;
-+		}
-+		platform_set_drvdata(pdev, dev);
-+		return 0;
-+	}
-+	if (this_dev < 0 || this_dev >= MAX_NE_CARDS)
-+		return -EINVAL;
- 	dev->base_addr = io[this_dev];
- 	dev->irq = irq[this_dev];
- 	dev->mem_end = bad[this_dev];
+Rank 4: snd_card_register (warning)
+	Reported 146 times (2594 total reports)
+	This warning was last seen in version 2.6.25.14, and first seen in 2.6.24.
+	More info: http://www.kerneloops.org/searchweek.php?search=snd_card_register
+
+which is ALL usb audio... (so I might have to also skip snd_card_register in the backtrace, but I'll leave that between you and the alsa guys)
+
