@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYIKBvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbYIKBxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbYIKBvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 21:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbYIKBvk
+	id S1754642AbYIKBxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 21:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYIKBxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 21:51:40 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:56276 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbYIKBvj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 21:51:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references:x-google-sender-auth;
-        b=ptvxztO/z770o3tns/cI6TcZ35z6Voe1lMbL1ilbdRptKw4hn1W/SF3QUqovCt1T15
-         pvkS8VsSeiAsg9b31TRKVeLh42c1oWZbGWuRX1xSux4gMPhe6swFjAanwrv87ShoS0jn
-         KKajWPWo9SHhdMUO5QVOblvmdmQO4/qyAsIrg=
-Message-ID: <41b516cb0809101851p79f73499vbd10dec4f6bdeccb@mail.gmail.com>
-Date: Wed, 10 Sep 2008 18:51:37 -0700
-From: "Chris Leech" <christopher.leech@intel.com>
-Reply-To: chris.leech@gmail.com
-To: "Boaz Harrosh" <bharrosh@panasas.com>
-Subject: Re: [PATCH 1/3] 24-bit types: typedef and macros for accessing 3-byte arrays as integers
-Cc: "Dave Kleikamp" <shaggy@linux.vnet.ibm.com>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, devel@open-fcoe.org
-In-Reply-To: <48C7F19D.3080507@panasas.com>
+	Wed, 10 Sep 2008 21:53:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:62530 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751848AbYIKBxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Sep 2008 21:53:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,375,1217833200"; 
+   d="scan'208";a="615005563"
+From: "Yang, Sheng" <sheng.yang@intel.com>
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH 1/2] x86: Move VMX MSRs to msr-index.h
+Date: Thu, 11 Sep 2008 09:56:32 +0800
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <12208705553277-git-send-email-sheng.yang@intel.com> <200809101844.16091.sheng.yang@intel.com> <48C7D9F7.4020506@qumranet.com>
+In-Reply-To: <48C7D9F7.4020506@qumranet.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080905165732.16689.50256.stgit@localhost.localdomain>
-	 <20080910140712.GA12280@infradead.org>
-	 <1221061241.27385.14.camel@norville.austin.ibm.com>
-	 <48C7F19D.3080507@panasas.com>
-X-Google-Sender-Auth: 20cb85bf9dfc9467
+Message-Id: <200809110956.32777.sheng.yang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 9:11 AM, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> Chris you might want to change the definitions at linux/types.h
-> to:
+On Wednesday 10 September 2008 22:30:15 Avi Kivity wrote:
+> Yang, Sheng wrote:
+> > On Tuesday 09 September 2008 21:47:03 Avi Kivity wrote:
+> >> Sheng Yang wrote:
+> >>> They are hardware specific MSRs, and we would use them in
+> >>> virtualization feature detection later.
+> >>>
+> >>>
+> >>>
+> >>>
+> >>> -
+> >>> -#define MSR_IA32_FEATURE_CONTROL                0x3a
+> >>>  #define MSR_IA32_FEATURE_CONTROL_LOCKED         0x1
+> >>>  #define MSR_IA32_FEATURE_CONTROL_VMXON_ENABLED  0x
+> >>
+> >> Might as well move these two bitmask definitions.
+> >
+> > Um... I think it's better to leave them here, for the
+> > MSR_IA32_FEATURE_CONTROL is a MSR which can be put into msr-index.h, but
+> > the others are only bits of MSR...
 >
-> typedef struct { __u8 b[3]; } __be24, __le24 __packed;
->
-> With gcc it will not help with the proceeding fields, and the
-> containing struct will need it's own "__packed" declaration
-> but it will keep it packed with previous fields.
+> The EFER bits are in msr-index.h, and I think the msr index in one file
+> and the bits in another detract from clarity.
 
-I haven't seen padding added simply because of a nested structure
-boundary, but I'm not up on all the ABIs for the different
-architectures.  Obviously a containing structure would want to have
-the 24-bit type adjacent to an 8-bit type, or have it's own packed
-attribute if needed.
+I agree now, sorry for miss that... 
 
-It shouldn't hurt, in this case the members shouldn't be expected to
-have more than byte alignment anyway, but I can't see how it would
-help.
+Would post another patch(es) to do this clean up...
 
-If there's a particular arch that might be a problem I'm happy to look
-into it, but I don't want to start throwing packed attributes around
-just in case.
-
-Chris
+-- 
+regards
+Yang, Sheng
