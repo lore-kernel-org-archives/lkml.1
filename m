@@ -1,24 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755010AbYIKAlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYIKBdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755010AbYIKAlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 20:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbYIKAlg
+	id S1753990AbYIKBdW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 21:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYIKBdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 20:41:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40214 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752248AbYIKAlf (ORCPT
+	Wed, 10 Sep 2008 21:33:11 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42150 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbYIKBdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 20:41:35 -0400
-Date: Wed, 10 Sep 2008 17:41:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: oakad@exemail.com.au
-Cc: linux-kernel@vger.kernel.org, oakad@yahoo.com
-Subject: Re: [PATCH] memstick: fix MSProHG 8-bit interface mode support
-Message-Id: <20080910174127.faf60c73.akpm@linux-foundation.org>
-In-Reply-To: <1221059395-25724-1-git-send-email-oakad@exemail.com.au>
-References: <1221059395-25724-1-git-send-email-oakad@exemail.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 10 Sep 2008 21:33:10 -0400
+Date: Thu, 11 Sep 2008 10:35:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: balbir@linux.vnet.ibm.com, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [Approach #2] [RFC][PATCH] Remove cgroup member from struct
+ page
+Message-Id: <20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1221087408.6781.73.camel@nimitz>
+References: <48C66AF8.5070505@linux.vnet.ibm.com>
+	<20080901161927.a1fe5afc.kamezawa.hiroyu@jp.fujitsu.com>
+	<200809091358.28350.nickpiggin@yahoo.com.au>
+	<20080909135317.cbff4871.kamezawa.hiroyu@jp.fujitsu.com>
+	<200809091500.10619.nickpiggin@yahoo.com.au>
+	<20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com>
+	<30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080910012048.GA32752@balbir.in.ibm.com>
+	<1221085260.6781.69.camel@nimitz>
+	<48C84C0A.30902@linux.vnet.ibm.com>
+	<1221087408.6781.73.camel@nimitz>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,25 +41,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Sep 2008 01:09:55 +1000
-oakad@exemail.com.au wrote:
+On Wed, 10 Sep 2008 15:56:48 -0700
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-> * Fix support of 8-bit interface mode
+> On Wed, 2008-09-10 at 15:36 -0700, Balbir Singh wrote:
+> > Dave Hansen wrote:
+> > > On Tue, 2008-09-09 at 18:20 -0700, Balbir Singh wrote:
+> > >> +       start = pgdat->node_start_pfn;
+> > >> +       end = pgdat->node_start_pfn + pgdat->node_spanned_pages;
+> > >> +       size = (end - start) * sizeof(struct page_cgroup);
+> > >> +       printk("Allocating %lu bytes for node %d\n", size, n);
+> > >> +       pcg_map[n] = alloc_bootmem_node(pgdat, size);
+> > >> +       /*
+> > >> +        * We can do smoother recovery
+> > >> +        */
+> > >> +       BUG_ON(!pcg_map[n]);
+> > >> +       return 0;
+> > >>  }
+> > > 
+> > > This will really suck for sparse memory machines.  Imagine a machine
+> > > with 1GB of memory at 0x0 and another 1GB of memory at 1TB up in the
+> > > address space.
+> > > 
+> > 
+> > I would hate to re-implement the entire sparsemem code :(
+> > Kame did suggest making the memory controller depend on sparsemem (to hook in
+> > from there for allocations)
+> 
+> Yeah, you could just make another mem_section member.  Or, you could
+> work to abstract the sparsemem code so that other people can use it, or
+> maybe make it more dynamic so we can have multiple pfn->object lookups
+> in parallel.  Adding the struct member is obviously easier.
+> 
+Don't worry. I'll care sparse memory map and hotplug.
+But whether making this depends on SPARSEMEM or not is not fixed yet.
+I'll try generic one, at first. If it's dirty, start discussion about SPARSEMEM.
 
-what was wrong with it?
+(Honestly, I love sparsemem than others ;)
 
-> * Make driver to fallback to highest supported mode instead of always
->   falling back to serial
-
-why?
-
-> * Edit some macros for better conformance to Sony documentation
-
-um, OK.
-
-This is not pointless bookkeeping.  Someone (ie: me) needs to decide
-whether this patch should be merged into 2.6.27.  You did not provide
-sufficient information for the making of that decision.  Please always
-do so.
-
+Thanks,
+-Kame
 
