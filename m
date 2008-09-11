@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYIKTPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbYIKTSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbYIKTPh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 15:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756584AbYIKTPW
+	id S1756223AbYIKTSS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 15:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYIKTSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 15:15:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39736 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756568AbYIKTPU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 15:15:20 -0400
-Date: Thu, 11 Sep 2008 12:14:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miloslav =?ISO-8859-1?Q?Trma=5F=5F?= <mitr@redhat.com>
-Cc: viro@zeniv.linux.org.uk, eparis@redhat.com, linux-audit@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] audit: fix NUL handling in untrusted strings
-Message-Id: <20080911121443.c3153842.akpm@linux-foundation.org>
-In-Reply-To: <1221085418.2705.19.camel@amilo>
-References: <1221085418.2705.19.camel@amilo>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Sep 2008 15:18:07 -0400
+Received: from scing.com ([217.160.110.58]:47848 "EHLO scing.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbYIKTSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 15:18:06 -0400
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+X-GoodMailTo: skipped
+From: Janne Grunau <j@jannau.net>
+To: Christoph Bartelmus <lirc@bartelmus.de>
+Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
+Date: Thu, 11 Sep 2008 21:18:00 +0200
+User-Agent: KMail/1.9.9
+Cc: hch@infradead.org, jarod@redhat.com, jwilson@redhat.com,
+       linux-kernel@vger.kernel.org, superm1@ubuntu.com
+References: <AlfDbh7ojFB@christoph>
+In-Reply-To: <AlfDbh7ojFB@christoph>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809112118.00556.j@jannau.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Sep 2008 00:23:38 +0200
-Miloslav Trma__ <mitr@redhat.com> wrote:
+On Thursday 11 September 2008 20:03:00 Christoph Bartelmus wrote:
+> Hi Janne,
+>
+> on 10 Sep 08 at 14:24, Janne Grunau wrote:
+> > On Tuesday 09 September 2008 15:01:02 Christoph Hellwig wrote:
+> >>> +	do {
+> >>> +		if (ir->open) {
+> >>> +			if (ir->jiffies_to_wait) {
+> >>> +				set_current_state(TASK_INTERRUPTIBLE);
+> >>> +				schedule_timeout(ir->jiffies_to_wait);
+> >>> +			} else {
+> >>> +				interruptible_sleep_on(
+> >>> +					ir->p.get_queue(ir->p.data));
+> >>> +			}
+> >>
+> >> No sleep on, please.  But this one should be trivial to fix
+> >> anyway, by just changing this to a
+> >>
+> >> 	set_current_state(TASK_INTERRUPTIBLE);
+> >> 	schedule();
+> >>
+> >> and using wake_up_process in the wakeup path.
+> >
+> > No driver uses the get_queue callback. So I'm inclined to just
+> > remove it. Christoph, any objections?
+>
+> lirc_gpio is using it.
+> I guess there will be no need to use lirc_gpio in future, but I'd
+> like to keep this in CVS for people who still use it.
 
-> audit_string_contains_control() stops checking at the first NUL byte.
-> If audit_string_contains_control() returns FALSE,
-> audit_log_n_untrustedstring() submits the complete string - including
-> the NUL byte and all following bytes, up to the specified maximum length
-> - to audit_log_n_string(), which copies the data unchanged into the
-> audit record.
-> 
-> The audit record can thus contain a NUL byte (and some unchecked data
-> after that).  Because the user-space audit daemon treats audit records
-> as NUL-terminated strings, an untrusted string that is shorter than the
-> specified maximum length effectively terminates the audit record.
-> 
-> This patch modifies audit_log_n_untrustedstring() to only log the data
-> before the first NUL byte, if any.
+We don't have lirc_gpio in the kernel tree? And I guess there is no need 
+to integrate into the kernel. I've removed it already.
 
-It's unclear how serious this problem is.  Do you believe that it is
-sufficiently serious to warrant merging these fixes into 2.6.27? 
-2.6.26.x?  2.6.25.x?
+Janne
 
-Thanks.
+> Christoph
+
+
