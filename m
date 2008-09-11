@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYIKOhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbYIKOoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbYIKOhH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 10:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYIKOg5
+	id S1754403AbYIKOoh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 10:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbYIKOo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 10:36:57 -0400
-Received: from mail.suse.de ([195.135.220.2]:37602 "EHLO mx1.suse.de"
+	Thu, 11 Sep 2008 10:44:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35841 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbYIKOg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 10:36:56 -0400
-Message-ID: <48C92CFE.2030803@suse.com>
-Date: Thu, 11 Sep 2008 10:36:46 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Jeff Mahoney <jeffm@suse.com>,
-       Faidon Liambotis <paravoid@debian.org>,
-       David Miller <davem@davemloft.net>, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-References: <48C68507.6000609@suse.com> <1221087719.13621.50.camel@macbook.infradead.org> <20080910.160505.14060698.davem@davemloft.net> <48C8BC17.5050508@debian.org> <48C8C580.5020803@suse.com> <20080911133847.GD5082@mit.edu>
-In-Reply-To: <20080911133847.GD5082@mit.edu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1751355AbYIKOo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 10:44:28 -0400
+Subject: Re: [PATCH 1/2] audit: fix NUL handling in untrusted strings
+From: Miloslav =?UTF-8?Q?Trma=C4=8D?= <mitr@redhat.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: viro@zeniv.linux.org.uk, linux-audit <linux-audit@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1221143113.2992.9.camel@localhost.localdomain>
+References: <1221085418.2705.19.camel@amilo>
+	 <1221143113.2992.9.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 11 Sep 2008 16:43:19 +0200
+Message-Id: <1221144199.3033.47.camel@amilo>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Theodore Tso wrote:
-> On Thu, Sep 11, 2008 at 03:15:12AM -0400, Jeff Mahoney wrote:
->> In the end, though, Andrew's right. We can't go breaking udev prior to
->> 127 with this.
+Thanks for the review.
+Eric Paris píše v Čt 11. 09. 2008 v 10:25 -0400:
+> On Thu, 2008-09-11 at 00:23 +0200, Miloslav Trmač wrote:
+> > This patch modifies audit_log_n_untrustedstring() to only log the data
+> > before the first NUL byte, if any.
 > 
-> But it's OK to break various distribution's kernel packaging tools?
+> I'm going to have to say NAK on this patch.
+> 
+> It's still not right looking at the other user,
+> audit_log_single_execve_arg().  An execve arg with a NULL could loose
+> the stuff after the NULL (not break the record like audit_tty) since the
+> execve uses %s rather than calling trusted string.
+execve() arguments are NUL-terminated strings:
+audit_log_single_execve_arg() starts with
+	len_left = len = strnlen_user(p, MAX_ARG_STRLEN) - 1;
+and the two cycles handle chunks in the first "len" bytes of "p".
+audit_log_single_execve_arg() never touches any bytes after the first
+NUL.
 
-No. I still think the right answer is to keep them in a versioned
-directory and I'm keeping this patch applied to the SUSE kernel trees.
-Udev in the next release understands where to look. It's just clear that
-there's some disagreement if that's the right answer for everyone. My
-opinion is that if the firmware blobs are built with and shipped with
-the kernel, then they're already associated with a particular kernel
-version as a dependency the same way we'd treat module dependencies.
+So, when audit_log_single_execve_arg() calls
+audit_string_contains_control(buf, to_send), strlen(buf) == to_send and
+the patch does not change anything.
 
-It's silly to willfully complicate the situation beyond just including
-the firmware blobs with the kernel. Even though it sounds a lot simpler
-to just say, "keep a separate firmware package," the reality is that it
-creates more work for everyone, developers, users, and packagers alike.
-I recently updated the kernel on my notebook to a 2.6.27-rc, only to
-find out that the firmware blob that I already had installed was out of
-date and the driver was useless without it. This is an example of an
-externally-maintained firmware blob, but creating a separate package out
-of firmware blobs essentially makes all of them externally maintained
-and forces in-kernel developers to jump through the same hoops that
-third-party driver maintainers must.
+> How about we change the meaning of audit_string_contains_control()
+> return values?  If it returns positive that is the number of bytes in a
+> legitimate string up to the first null.  -1 means it is hex.
+That is possible, although the return value convention is somewhat
+complex.  Anyway, no change to the semantics of
+audit_string_contains_control() is necessary for execve() argument
+logging.
+	Mirek
 
-Packagers will need to keep track of every firmware version associated
-with every kernel, since users may want to install multiple kernel
-versions. This is the entire point of the thread, and it assumes that
-the user installing the kernel is even using a packaged kernel. If
-they've just built their own and have done a make modules_install ; make
-install, then they're out of luck.
-
-Driver maintainers need to worry about remembering to up the version
-every time the firmware blob changes. If the blobs are always kept with
-the associated kernel version, then it's fire and forget, the same way
-internal API changes are.
-
-Putting them in their own directory just makes it obvious and easy for
-everyone. The issue is that firmware.sh isn't looking there right now.
-Perhaps making optional symlinks is the answer.
-
-- -Jeff
-
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkjJLP4ACgkQLPWxlyuTD7I5aQCbBRYn5wv3GbLw1cxUsDr/PxuC
-ml0An2WjJwkYEz4hQadUi0PosZe6n6ng
-=rY53
------END PGP SIGNATURE-----
