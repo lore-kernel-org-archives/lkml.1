@@ -1,60 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYIKPXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYIKPZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbYIKPXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 11:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbYIKPXJ
+	id S1755306AbYIKPZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 11:25:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbYIKPZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 11:23:09 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43063 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752761AbYIKPXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 11:23:08 -0400
-Date: Thu, 11 Sep 2008 10:23:04 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alan Mayer <ajm@sgi.com>, Ingo Molnar <mingo@elte.hu>, jeremy@goop.org,
-       rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <Yinghai.lu@amd.com>
-Subject: [RFC 0/4] dynamically allocate arch specific system vectors
-Message-ID: <20080911152304.GA13655@sgi.com>
-References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org>
+	Thu, 11 Sep 2008 11:25:48 -0400
+Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:4313 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751780AbYIKPZs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 11:25:48 -0400
+From: Frans Pop <elendil@planet.nl>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
+Date: Thu, 11 Sep 2008 17:24:59 +0200
+User-Agent: KMail/1.9.9
+References: <48C68507.6000609@suse.com> <200809111152.58187.elendil@planet.nl> <1221144627.8593.9.camel@macbook.infradead.org>
+In-Reply-To: <1221144627.8593.9.camel@macbook.infradead.org>
+Cc: davem@davemloft.net, jeffm@suse.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1y733mjdh.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200809111725.01511.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Sep 2008 15:25:04.0005 (UTC) FILETIME=[905A4B50:01C91422]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 11, 2008 at 12:39:22PM -0700, Eric W. Biederman wrote:
+On Thursday 11 September 2008, David Woodhouse wrote:
+> > b) places a burden on the end-user to install/upgrade the firmware he
+> >    needs separately from the kernel
 >
-> Although I am not at all convinced that dynamic allocation of
-> the vector number (instead of statically reserving it makes sense).
+> Not really. The new kernel package can just require the firmware
+> package. There's not really much of a burden on the end-user, is there?
 
-We (SGI) need somewhere around eight vectors.
+Did you read the second part of the mail explaining why having a 
+single "firmware" package is not a good idea?
+Also, if some firmware is assigned to non-free in Debian the kernel 
+package CANNOT depend on it.
 
-There are two kernel modules, sgi-gru and sgi-xp (in drivers/misc), that
-each need two vectors. And there's the broadcast assist unit (BAU) that is
-involved in tlb shootdown on uv, which currently uses statically reserved
-vector 0xf8 (UV_BAU_MESSAGE -- see uv_bau_init()). I know of a debugger that
-also uses 0xf8 because it was previously available until UV_BAU_MESSAGE came
-along. The BAU would be happy with a dynamically allocated system vector.
-We have a couple of other things in the works that also need vectors.
+> > c) makes system installation more complex as the right additional
+> > firmware package(s) need to be retrieved and installed
+>
+> It's a simple dependency, handled just like dependencies normally are
+> -- it's not exactly a giant leap in complexity.
 
-All of these eight or so vectors are only meaningful on SGI uv systems.
+Nope, see above.
 
-We'll go with which ever way you decide on this (dynamically allocated or
-statically reserved).
+> > d) will break installed systems on upgrades (unless special measures
+> > are taken): users may need to install additional firmware packages on
+> > a kernel upgrade to keep a driver working
+>
+> I have yet to see reports of it breaking Fedora. You upgrade the
+> kernel, the firmware package is automatically installed to satisfy the
+> dependency. And it just works.
 
-But we really need to get something into 2.6.28. So in order to move forward
-I'm submitting the following patchset for comment. This set of four patches
-represents my take on Eric's suggested approach to supporting dynamically
-allocated system vectors (i.e., __grab_irq_vector()).
+Nope, see above.
 
-Eric, is this what you were thinking of? Or did I miss the mark?
+> Really, people seem to be imagining problems where they don't exist.
 
-Thanks,
-Dean
+You have completely ignored my point in my other mail about 'make deb-pkg' 
+being demonstrably broken as it results in packages that are guaranteed 
+to produce file conflicts.
+You have completely ignored my point about other existing packaging 
+utilities being similarly broken.
+
+Let me repeat again:
+            THIS IS NOT ABOUT THE OFFICIAL DEBIAN PACKAGES
+
+The Debian kernel team _will_ find a way to make this work properly. As 
+far as separate firmware packages and upgrading is an issue the Debian 
+project will deal with it, maybe using a userland "firmware-installer" 
+tool or even if it is just by documenting the need to install firmware 
+packages in the Release Notes.
+
+This is about users, LIKE ME, being unable *NOW* to build correct custom 
+kernel packages from upstream source *using existing tools*.
+I am confronted with the broken packages as a result of your changes 
+*every time I build/install a kernel* currently.
+
+As you can see in other mail I'm currently working around it by using an 
+extra option when installing the packages, but it's an option I should 
+not have to use! And I'll probably change to just not building any 
+drivers that need firmware at all as luckily none of my hardware needs 
+in-tree firmware.
+
+Sorry for all the emphasis, but it looks like you need it.
+Your comments about how everything works for official Fedora package are 
+completely irrelevant. Please try to look a bit further than your own 
+narrow use-case.
+
+I'm seriously disappointed with your reply.
+
+Cheers,
+FJP
