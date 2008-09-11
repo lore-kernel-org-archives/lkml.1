@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbYIKDan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbYIKDa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbYIKDan (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Sep 2008 23:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbYIKDad
+	id S1755566AbYIKDa6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Sep 2008 23:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYIKDaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Sep 2008 23:30:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33103 "EHLO
+	Wed, 10 Sep 2008 23:30:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33106 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752412AbYIKDad (ORCPT
+	with ESMTP id S1752691AbYIKDae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Sep 2008 23:30:33 -0400
-Date: Wed, 10 Sep 2008 20:28:03 -0700
+	Wed, 10 Sep 2008 23:30:34 -0400
+Date: Wed, 10 Sep 2008 20:28:50 -0700
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, peterz@infradead.org
-Subject: 3 further range-hrtimer patches
-Message-ID: <20080910202803.42b5f251@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu,
+       peterz@infradead.org
+Subject: [PATCH 1/3] hrtimer: make the futex() system call use the per
+ process slack value
+Message-ID: <20080910202850.07b2ff45@infradead.org>
+In-Reply-To: <20080910202803.42b5f251@infradead.org>
+References: <20080910202803.42b5f251@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-as reply to this email I have 3 further patches for the range-hrtimer
-patchkit:
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] hrtimer: make the futex() system call use the per process slack value
 
-Patch 1 and 2 change the futex and nanosleep code to also use
-range-hrtimers with the per process slack
+This patch makes the futex() system call use the per process
+slack value; with this users are able to externally control existing
+applications to reduce the wakeup rate.
 
-Patch 3 adds a "peek-a-timer" capability; this is used from the cpuidle
-loop to run any soft-expired timers just before looking at how long
-we'll be idle (for determining the C-state etc); that way we'll have a
-longer idle period.
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ kernel/futex.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-I'll add these patches to the git tree in a day or two, adjusted for
-comments based on this posting
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 4cd5b43..8af1002 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -1296,10 +1296,14 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
+ 		if (!abs_time)
+ 			schedule();
+ 		else {
++			unsigned long slack;
++			slack = current->timer_slack_ns;
++			if (rt_task(current))
++				slack = 0;
+ 			hrtimer_init_on_stack(&t.timer, CLOCK_MONOTONIC,
+ 						HRTIMER_MODE_ABS);
+ 			hrtimer_init_sleeper(&t, current);
+-			hrtimer_set_expires(&t.timer, *abs_time);
++			hrtimer_set_expires_range_ns(&t.timer, *abs_time, slack);
+ 
+ 			hrtimer_start_expires(&t.timer, HRTIMER_MODE_ABS);
+ 			if (!hrtimer_active(&t.timer))
+-- 
+1.5.5.1
+
 
 
 -- 
