@@ -1,105 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbYIKPFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYIKPFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755019AbYIKPFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 11:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIKPFF
+	id S1755860AbYIKPFh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 11:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbYIKPFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 11:05:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52593 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752298AbYIKPFE (ORCPT
+	Thu, 11 Sep 2008 11:05:08 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33278 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbYIKPFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 11:05:04 -0400
-Message-ID: <48C9339A.4030309@sgi.com>
-Date: Thu, 11 Sep 2008 08:04:58 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       davej@codemonkey.org.uk, David Miller <davem@davemloft.net>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] CPUMASK: proposal for replacing cpumask_t
-References: <20080906235036.891970000@polaris-admin.engr.sgi.com>	 <20080906235037.880702000@polaris-admin.engr.sgi.com>	 <1220783087.8687.73.camel@twins.programming.kicks-ass.net>	 <48C53C91.70604@sgi.com>	 <1220886335.12278.31.camel@twins.programming.kicks-ass.net>	 <20080908183852.GA3713@elte.hu>  <48C84E9E.7080507@sgi.com> <1221123630.4415.1136.camel@twins.programming.kicks-ass.net>
-In-Reply-To: <1221123630.4415.1136.camel@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 11 Sep 2008 11:05:07 -0400
+From: kamezawa.hiroyu@jp.fujitsu.com
+Message-ID: <14174529.1221145313517.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 12 Sep 2008 00:01:53 +0900 (JST)
+To: kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: Re: Re: [RFC] [PATCH 8/9] memcg: remove page_cgroup pointer from memmap
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, hugh@veritas.com,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, menage@google.com
+In-Reply-To: <33551037.1221143889677.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: @nifty Webmail 2.0
+References: <33551037.1221143889677.kamezawa.hiroyu@jp.fujitsu.com>
+ <200809120000.37901.nickpiggin@yahoo.com.au>
+ <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com> <20080911202249.df6026ae.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-...
->> So in function prototypes:
+>>On Thursday 11 September 2008 21:22, KAMEZAWA Hiroyuki wrote:
+>>> Remove page_cgroup pointer from struct page.
+>>>
+>>> This patch removes page_cgroup pointer from struct page and make it be abl
+e
+>>> to get from pfn. Then, relationship of them is
+>>>
+>>> Before this:
+>>>   pfn <-> struct page <-> struct page_cgroup.
+>>> After this:
+>>>   struct page <-> pfn -> struct page_cgroup -> struct page.
 >>
->> 	cpumask_t function(const cpumask_t *A,
->> 			   cpumask_t *B,
->> 			   cpumask_t cpumask_C)
+>>So...
 >>
->> becomes:
+>>pfn -> *hash* -> struct page_cgroup, right?
 >>
->> 	cpumask_val function(cpumask_t A,
->> 			     cpumask_var B,
->> 			     cpumask_t cpumask_C)
-> 
-> I guess we have to stick the const into the typedef otherwise we get a
-> const pointer instead of a const array member, right?
-> 
-> In which case I much prefer the following names:
-> 
->  cpumask_data_t  - value
-> 
->  const_cpumask_t - pointer to constant value
->  cpumask_t       - pointer to value
-
-There were some comments previously such that we should "imply" that the
-incoming cpumask_t args are const, so the compiler would flag those
-who arbitrarily modify it.
-
-> 
-...
->> 	alloc_cpumask(&mask);
-> 
-> Don't you have to deal with allocation errors?
-
-In a perfect world, no... ;-)
-...
->> 	static inline void alloc_cpumask(cpumask_t *m)
->> 	{
->> 		cpumask_t d = kmalloc(BYTES_PER_CPUMASK, GFP_KERNEL);
->> 		if (no_cpumask(&d))
->> 			BUG();
-> 
-> yuckery yuck yuck!
-> 
->> 		*m = d;
->> 	}
+>right.
+>
+>>While I don't think there is anything wrong with the approach, I
+>>don't understand exactly where you guys are hoping to end up with
+>>this?
 >>
->> 	static inline void alloc_cpumask_nopanic(cpumask_t *m)
->> 	{
->> 		cpumask_t d = kmalloc(BYTES_PER_CPUMASK, GFP_KERNEL);
->>
->> 		*m = d;
->> 	}
-> 
-> gah - at the very least you got the naming wrong, methinks the one
-> panic-ing should have panic in its name - if you really want to persist
-> with that variant.
+>No. but this is simple. I'd like to use linear mapping like
+>sparsemem-vmemmap and HUGTLB kernel pages at the end.
+>But it needs much more work and should be done in the future.
+>(And it seems to have to depend on SPARSEMEM.)
+>This is just a generic one.
+>
+This is my thinking, now.
 
-Yeah, I rather rushed through the allocation part (yuck indeed ;-).
+Adding a patch for FLATMEM is very easy, maybe. (Just Do as Balbir's one.)
 
-There are some other alternatives:
+Adding a patch for DISCONTIGMEM is doubtful. I'm not sure how it's widely
+used now.
 
-	- reserve one or more of these in the task struct
-	- reserve one or more in a per-cpu area
-	- setup some kind of allocation pool similar to alloc_bootmem
-	- ???
+When it comes to SPARSEMEM, our target is 64bit arch and we need 
+SPARSEMEM_EXTREME...2 level table. Maybe not far different from current hash.
+
+Our way should be linear mapping like SPARSEMEM_VMEMMAP. But it needs
+arch dependent code and some difficulty to allocate virtual space,
+which can be very Huge.
+This should be updated one by one (for each arch.).
 
 Thanks,
-Mike
+-Kame
+
+
+
+
