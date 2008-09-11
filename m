@@ -1,118 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYIKJxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbYIKJxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYIKJxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 05:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbYIKJxF
+	id S1754557AbYIKJxl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 05:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYIKJxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 05:53:05 -0400
-Received: from cpsmtpo-eml01.kpnxchange.com ([213.75.38.150]:53503 "EHLO
-	cpsmtpo-eml01.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751946AbYIKJxE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 05:53:04 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-Date: Thu, 11 Sep 2008 11:52:56 +0200
-User-Agent: KMail/1.9.9
-Cc: davem@davemloft.net, jeffm@suse.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       Jeff Garzik <jeff@garzik.org>
-References: <48C68507.6000609@suse.com> <1221088512.13621.58.camel@macbook.infradead.org> <200809111043.34847.elendil@planet.nl>
-In-Reply-To: <200809111043.34847.elendil@planet.nl>
+	Thu, 11 Sep 2008 05:53:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43422 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751787AbYIKJx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 05:53:29 -0400
+Date: Thu, 11 Sep 2008 11:53:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Alex Nixon <alex.nixon@citrix.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Globally defining phys_addr_t
+Message-ID: <20080911095311.GB7795@elte.hu>
+References: <48C8D76B.10901@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809111152.58187.elendil@planet.nl>
-X-OriginalArrivalTime: 11 Sep 2008 09:53:00.0723 (UTC) FILETIME=[2D26B830:01C913F4]
+In-Reply-To: <48C8D76B.10901@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 September 2008, Frans Pop wrote:
-> Possible solutions
-> ==================
-> There are two possible solutions to this.
->
-> 1) Move the firmware files to a versioned directory
-[...]
-> 2) Move the firmware files into a separate package
 
-As mentioned in my previous mail Debian currently uses 2) for its kernel 
-packages up to and including 2.6.26. I expect the Debian kernel team to 
-also use 2) for 2.6.27, but that's in the future. Debian is currently 
-concentrating on 2.6.26 as that's the kernel targeted for the soon-to-be- 
-released Lenny release.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
->From what I understand from this list (I'm a Debian person and don't 
-really follow Ubuntu), Ubuntu seems to have chosen 1).
+> Hi Ingo,
+> 
+> This is a repost of a little 3-patch series which Andrew has been 
+> carrying in -mm.  It cleans up the definition of phys_addr_t to make 
+> it kernel-wide rather than x86-specific, and fixes up PFN_PHYS() to 
+> use it to avoid address truncation.
+> 
+> We currently have a few workarounds for this problem in the tree, but 
+> Alex found another bug caused by PFN_PHYS(), so it's probably better 
+> if you bring these patches into tip.git for now.
+> 
+> PowerPC also defines a phys_addr_t with the same meaning as x86; the 
+> powerpc arch maintainers are happy with these patches.
 
-There are pros and cons to both these solutions and given the different 
-philosophies of Debian and Ubuntu those do help explain the different 
-choices.
+Andrew, are you fine with that approach too?
 
-Solution 1:
-a) keeps kernel, modules and firmware firmly together
-b) ensures there will never be mismatches, even if a firmware file "ABI"
-   changes without being properly versioned
-c) makes system installation simple: firmware is always just "there"
+Also, i dont see Andrew's signoffs in the patches, and that's the true 
+path of these patches which should be preserved: you => -mm => -tip.
 
-Solution 2:
-a) naturally allows firmware to be split between "free" and "non-free"
-b) places a burden on the end-user to install/upgrade the firmware he
-   needs separately from the kernel
-c) makes system installation more complex as the right additional firmware
-   package(s) need to be retrieved and installed
-d) will break installed systems on upgrades (unless special measures are
-   taken): users may need to install additional firmware packages on a
-   kernel upgrade to keep a driver working
-
-Ubuntu has a "things should just work" philosophy. Choosing 1) keeps 
-things simple from a user PoV and is a logical choice from that 
-perspective.
-
-Debian has strict licencing rules and has never shirked from placing some 
-responsibility in the hands of users. Especially 2a) makes 2) the more 
-natural choice for Debian.
-
-
-Note that with 2) you cannot just create one big "linux-firmware" package. 
-You will need to package all firmware separately which means that users 
-will need to somehow select the specific firmware packages they need for 
-their hardware.
-The reason for this is the possibility that a driver and its firmware may 
-be dropped from the upstream kernel source.
-
-Example
--------
-linux-image-2.6.27_1_i386.deb contains:
-/boot/vmlinuz-2.6.27
-/lib/modules/2.6.27/kernel/net/a.ko
-/lib/modules/2.6.27/kernel/net/b.ko
-
-linux-firmware_2.6.27.1_i386.deb contains:
-/lib/firmware/a.dat
-/lib/firmware/b.dat
-
-For 2.6.28 driver "a" is dropped, which would result in:
-linux-image-2.6.28_1_i386.deb contains:
-/boot/vmlinuz-2.6.28
-/lib/modules/2.6.28/kernel/net/b.ko
-
-linux-firmware_2.6.28.1_i386.deb contains:
-/lib/firmware/b.dat
-
-The user installs linux-image-2.6.28 alongside linux-image-2.6.27 and 
-upgrades linux-firmware from version 2.6.27.1 to 2.6.28.1.
-Oops! The upgrade of the linux-firmware package removed b.dat, which 
-effectively means the still installed 2.6.27 kernel is now broken.
-
-To avoid this you need separate packages which can be installed/removed 
-independently:
-a-firmware_<a-firmware-version>_i386.deb contains:
-/lib/firmware/a.dat
-
-b-firmware_<b-firmware-version>_i386.deb contains:
-/lib/firmware/b.dat
+	Ingo
