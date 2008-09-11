@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYIKTGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYIKTIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbYIKTGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 15:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYIKTGi
+	id S1756061AbYIKTIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 15:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYIKTI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 15:06:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39106 "EHLO mx2.redhat.com"
+	Thu, 11 Sep 2008 15:08:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51898 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752298AbYIKTGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 15:06:37 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Matthew Bodkin <matthew.bodkin@innovationone.ca>
-Subject: Re: [PATCH 07/18] lirc driver for the CommandIR USB Transceiver
-Date: Thu, 11 Sep 2008 15:03:44 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: Christoph Bartelmus <lirc@bartelmus.de>, corbet@lwn.net, j@jannau.net,
-       linux-kernel@vger.kernel.org
-References: <AlfDeGfojFB@christoph> <1221159005.13683.34.camel@minimatt>
-In-Reply-To: <1221159005.13683.34.camel@minimatt>
+	id S1751586AbYIKTI0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 15:08:26 -0400
+From: Steve Grubb <sgrubb@redhat.com>
+To: linux-audit@redhat.com
+Subject: Re: [PATCH 1/2] audit: fix NUL handling in untrusted strings
+Date: Thu, 11 Sep 2008 15:08:13 -0400
+User-Agent: KMail/1.9.9
+Cc: Miloslav =?utf-8?q?Trma=C4=8D?= <mitr@redhat.com>,
+       John Dennis <jdennis@redhat.com>, viro@zeniv.linux.org.uk,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <1221085418.2705.19.camel@amilo> <48C955C8.2000602@redhat.com> <1221156612.17533.14.camel@amilo>
+In-Reply-To: <1221156612.17533.14.camel@amilo>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200809111503.44334.jwilson@redhat.com>
+Message-Id: <200809111508.13658.sgrubb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 September 2008 14:50:05 Matthew Bodkin wrote:
-> Hi Christoph, All -
+On Thursday 11 September 2008 14:10:12 Miloslav Trmač wrote:
+> > As a side note I'm concerned there may be places in the user audit
+> > code which treat string data as null terminated (at least that is my
+> > recollection).
 >
-> True, I added a 'commandir' userspace driver a couple months ago that
-> replaces the kernel 'lirc_cmdir' driver.
->
-> However the userspace driver remains unreleased in CVS so until there is
-> a new LIRC release, I think the include the old kernel driver will have
-> to be included.
+> Yes, auditd adds a NUL terminator to the audit record, and then treats
+> it as a regular NUL-terminated string; if the audit record contains an
+> embedded NUL byte, the rest of the record is discarded by auditd.
 
-I thought I remembered something about a userspace driver... Don't worry about 
-whether or not its released in an lirc tarball though. The code headed to the 
-kernel is cvs head based already.
+In every case where this occurs (kernel or user space), the field values are 
+expected to be encoded to prevent it from being discarded.
 
-I take it the userspace driver is the commandir.{c,h} bits vs. the old 
-lirc_cmdir.{c,h} bits being the old driver. D'oh. Its been sitting right under 
-my nose... So yeah, we'll drop the lirc_cmdir bits, and roll with just the 
-commandir bits.
-
-Side bar: wish I'd had more time to read over *all* the code, rather than 
-focusing so much on just the checkpatch cleanups, but I think it was better to 
-get this out here and get some momentum built up anyhow...
-
-> Demo hardware is available for testing if anyone wants.
-
-That would be most excellent. I'd definitely love to get some, will drop you a 
-line off-list.
-
-
-> On Thu, 2008-09-11 at 20:24 +0200, Christoph Bartelmus wrote:
-> > Hi,
-> >
-> > there is a user-space driver that is going to replace the kernel driver
-> > for the CommandIR driver. I don't think there is a reason anymore to get
-> > this driver into the kernel.
-> > Added, Matthew.
-> >
-> > Christoph
-
--- 
-Jarod Wilson
-jarod@redhat.com
-
+-Steve
