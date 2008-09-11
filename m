@@ -1,76 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYIKHYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbYIKH1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbYIKHYm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 03:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbYIKHYd
+	id S1753365AbYIKH1a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 03:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYIKH1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 03:24:33 -0400
-Received: from divinity.tty.gr ([212.89.179.170]:38371 "EHLO mail.tty.gr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751609AbYIKHYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 03:24:32 -0400
-X-Greylist: delayed 2986 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Sep 2008 03:24:32 EDT
-Message-ID: <48C8BC17.5050508@debian.org>
-Date: Thu, 11 Sep 2008 09:35:03 +0300
-From: Faidon Liambotis <paravoid@debian.org>
-Organization: Debian
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Thu, 11 Sep 2008 03:27:22 -0400
+Received: from monty.telenet-ops.be ([195.130.132.56]:45241 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751650AbYIKH1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 03:27:21 -0400
+Date: Thu, 11 Sep 2008 09:27:18 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Daney <ddaney@avtrex.com>
+cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [Patch 2/6] MIPS: Add HARDWARE_WATCHPOINTS definitions and
+ support code.
+In-Reply-To: <48C8B2C3.4050002@avtrex.com>
+Message-ID: <Pine.LNX.4.64.0809110922090.29543@anakin>
+References: <48C8ADEF.9020305@avtrex.com> <48C8B2C3.4050002@avtrex.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: dwmw2@infradead.org, jeffm@suse.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-References: <48C68507.6000609@suse.com>	<1221087719.13621.50.camel@macbook.infradead.org> <20080910.160505.14060698.davem@davemloft.net>
-In-Reply-To: <20080910.160505.14060698.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
->> Firmware really _isn't_ version-specific.
-> 
-> Tell that to every Debian and Debian derived system on the planet.
-> 
-> To my knowledge, it is only fedora and possibly one or two other dists
-> that put the firmware files in a unary /lib/firmware location, rather
-> than a versioned /lib/firmware/$KERNELRELASE one.
-[not speaking on behalf of the project, the kernel team or the
-respective maintainers]
+On Wed, 10 Sep 2008, David Daney wrote:
 
-Apparently and afaik you are misinformed:
+Given
 
-$ dpkg -L firmware-bnx2 (or [1])
-...
-/lib/firmware/bnx2-06-4.0.5.fw
-/lib/firmware/bnx2-09-4.0.5.fw
-...
+> +	case 4:
+> +		write_c0_watchlo3(watches->watchlo[3]);
+> +		/* Write 1 to the I, R, and W bits to clear them, and
+> +		   1 to G so all ASIDs are trapped. */
+> +		write_c0_watchhi3(0x40000007 | watches->watchhi[3]);
+> +	case 3:
+> +		write_c0_watchlo2(watches->watchlo[2]);
+> +		write_c0_watchhi2(0x40000007 | watches->watchhi[2]);
+> +	case 2:
+> +		write_c0_watchlo1(watches->watchlo[1]);
+> +		write_c0_watchhi1(0x40000007 | watches->watchhi[1]);
+> +	case 1:
+> +		write_c0_watchlo0(watches->watchlo[0]);
+> +		write_c0_watchhi0(0x40000007 | watches->watchhi[0]);
 
-$ dpkg -L firmware-iwlwifi (or [2])
-...
-/lib/firmware/iwlwifi-3945-1.ucode
-/lib/firmware/iwlwifi-4965-1.ucode
-/lib/firmware/iwlwifi-4965-2.ucode
-...
+and
 
-$ dpkg -L firmware-qlogic (or [3])
-...
-/lib/firmware/ql2100_fw.bin
-/lib/firmware/ql2200_fw.bin
-/lib/firmware/ql2300_fw.bin
-/lib/firmware/ql2322_fw.bin
-/lib/firmware/ql2400_fw.bin
-/lib/firmware/ql2500_fw.bin
-...
+> +	case 4:
+> +		watches->watchhi[3] = (read_c0_watchhi3() & 0x0fff);
+> +	case 3:
+> +		watches->watchhi[2] = (read_c0_watchhi2() & 0x0fff);
+> +	case 2:
+> +		watches->watchhi[1] = (read_c0_watchhi1() & 0x0fff);
+> +	case 1:
+> +		watches->watchhi[0] = (read_c0_watchhi0() & 0x0fff);
 
-etc. for the other firmware packages[4].
+and
 
-Regards,
-Faidon
+> +	case 8:
+> +		write_c0_watchlo7(0);
+> +	case 7:
+> +		write_c0_watchlo6(0);
+> +	case 6:
+> +		write_c0_watchlo5(0);
+> +	case 5:
+> +		write_c0_watchlo4(0);
+> +	case 4:
+> +		write_c0_watchlo3(0);
+> +	case 3:
+> +		write_c0_watchlo2(0);
+> +	case 2:
+> +		write_c0_watchlo1(0);
+> +	case 1:
+> +		write_c0_watchlo0(0);
 
-1: http://packages.debian.org/sid/all/firmware-bnx2/filelist
-2: http://packages.debian.org/sid/all/firmware-iwlwifi/filelist
-3: http://packages.debian.org/sid/all/firmware-qlogic/filelist
-4: http://packages.debian.org/firmware
+do the same for each registers, perhaps it makes sense to create
+read_c0_watchhi(), write_c0_watchlo(), and write_c0_watchhi() macros
+that take the watchdog register index as a parameter? Then the above can
+be turned in simple loops.
+
+> +	write_c0_watchlo0(7);
+> +	t = read_c0_watchlo0();
+> +	write_c0_watchlo0(0);
+> +	c->watch_reg_masks[0] = t & 7;
+> +
+> +	/* Write the mask bits and read them back to determine which
+> +	 * can be used. */
+> +	c->watch_reg_count = 1;
+> +	c->watch_reg_use_cnt = 1;
+> +	t = read_c0_watchhi0();
+> +	write_c0_watchhi0(t | 0xff8);
+> +	t = read_c0_watchhi0();
+> +	c->watch_reg_masks[0] |= (t & 0xff8);
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+> +
+> +	write_c0_watchlo1(7);
+> +	t = read_c0_watchlo1();
+> +	write_c0_watchlo1(0);
+> +	c->watch_reg_masks[1] = t & 7;
+> +
+> +	c->watch_reg_count = 2;
+> +	c->watch_reg_use_cnt = 2;
+> +	t = read_c0_watchhi1();
+> +	write_c0_watchhi1(t | 0xff8);
+> +	t = read_c0_watchhi1();
+> +	c->watch_reg_masks[1] |= (t & 0xff8);
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+> +
+> +	write_c0_watchlo2(7);
+> +	t = read_c0_watchlo2();
+> +	write_c0_watchlo2(0);
+> +	c->watch_reg_masks[2] = t & 7;
+> +
+> +	c->watch_reg_count = 3;
+> +	c->watch_reg_use_cnt = 3;
+> +	t = read_c0_watchhi2();
+> +	write_c0_watchhi2(t | 0xff8);
+> +	t = read_c0_watchhi2();
+> +	c->watch_reg_masks[2] |= (t & 0xff8);
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+> +
+> +	write_c0_watchlo3(7);
+> +	t = read_c0_watchlo3();
+> +	write_c0_watchlo3(0);
+> +	c->watch_reg_masks[3] = t & 7;
+> +
+> +	c->watch_reg_count = 4;
+> +	c->watch_reg_use_cnt = 4;
+> +	t = read_c0_watchhi3();
+> +	write_c0_watchhi3(t | 0xff8);
+> +	t = read_c0_watchhi3();
+> +	c->watch_reg_masks[3] |= (t & 0xff8);
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+
+Same here
+
+> +	/* We use at most 4, but probe and report up to 8. */
+> +	c->watch_reg_count = 5;
+> +	t = read_c0_watchhi4();
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+> +
+> +	c->watch_reg_count = 6;
+> +	t = read_c0_watchhi5();
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+> +
+> +	c->watch_reg_count = 7;
+> +	t = read_c0_watchhi6();
+> +	if ((t & 0x80000000) == 0)
+> +		return;
+> +
+> +	c->watch_reg_count = 8;
+
+and here
+
+BTW, no check for read_c0_watchhi7()?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
