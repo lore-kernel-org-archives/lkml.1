@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754287AbYIKF5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYIKF7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754287AbYIKF5T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 01:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYIKF5L
+	id S1754016AbYIKF7y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 01:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYIKF7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 01:57:11 -0400
-Received: from smtp1.dnsmadeeasy.com ([205.234.170.134]:54389 "EHLO
+	Thu, 11 Sep 2008 01:59:46 -0400
+Received: from smtp1.dnsmadeeasy.com ([205.234.170.134]:54827 "EHLO
 	smtp1.dnsmadeeasy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbYIKF5K (ORCPT
+	with ESMTP id S1751609AbYIKF7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 01:57:10 -0400
+	Thu, 11 Sep 2008 01:59:45 -0400
 X-Authenticated-Name: js.dnsmadeeasy
 X-Transit-System: In case of SPAM please contact abuse@dnsmadeeasy.com
-Message-ID: <48C8B333.4000003@avtrex.com>
-Date: Wed, 10 Sep 2008 22:57:07 -0700
+Message-ID: <48C8B3CF.4000303@avtrex.com>
+Date: Wed, 10 Sep 2008 22:59:43 -0700
 From: David Daney <ddaney@avtrex.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
 To: linux-mips@linux-mips.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [Patch 3/6] MIPS: Probe watch registers and report configuration.
+Subject: [Patch 4/6] MIPS: Watch exception handling for HARDWARE_WATCHPOINTS.
 References: <48C8ADEF.9020305@avtrex.com>
 In-Reply-To: <48C8ADEF.9020305@avtrex.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Sep 2008 05:57:08.0313 (UTC) FILETIME=[39A85490:01C913D3]
+X-OriginalArrivalTime: 11 Sep 2008 05:59:44.0108 (UTC) FILETIME=[9684C2C0:01C913D3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Probe watch registers and report configuration.
+Watch exception handling for HARDWARE_WATCHPOINTS.
 
-Probe for watch register characteristics, and report them in /proc/cpuinfo.
+Here we hook up the watch exception handler so that it sends SIGTRAP when
+the hardware watch registers are triggered.
 
 Signed-off-by: David Daney <ddaney@avtrex.com>
 ---
- arch/mips/kernel/cpu-probe.c |    2 ++
- arch/mips/kernel/proc.c      |    9 +++++++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ arch/mips/kernel/genex.S |    4 ++++
+ arch/mips/kernel/traps.c |   14 +++++++++-----
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/arch/mips/kernel/cpu-probe.c b/arch/mips/kernel/cpu-probe.c
-index 335a6ae..d0d07b8 100644
---- a/arch/mips/kernel/cpu-probe.c
-+++ b/arch/mips/kernel/cpu-probe.c
-@@ -21,6 +21,7 @@
- #include <asm/fpu.h>
- #include <asm/mipsregs.h>
- #include <asm/system.h>
+diff --git a/arch/mips/kernel/genex.S b/arch/mips/kernel/genex.S
+index c6ada98..15a9bde 100644
+--- a/arch/mips/kernel/genex.S
++++ b/arch/mips/kernel/genex.S
+@@ -416,7 +416,11 @@ NESTED(nmi_handler, PT_SIZE, sp)
+ 	BUILD_HANDLER tr tr sti silent			/* #13 */
+ 	BUILD_HANDLER fpe fpe fpe silent		/* #15 */
+ 	BUILD_HANDLER mdmx mdmx sti silent		/* #22 */
++#ifdef 	CONFIG_HARDWARE_WATCHPOINTS
++	BUILD_HANDLER watch watch sti silent		/* #23 */
++#else
+ 	BUILD_HANDLER watch watch sti verbose		/* #23 */
++#endif
+ 	BUILD_HANDLER mcheck mcheck cli verbose		/* #24 */
+ 	BUILD_HANDLER mt mt sti silent			/* #25 */
+ 	BUILD_HANDLER dsp dsp sti silent		/* #26 */
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index 6bee290..5fbf591 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -42,6 +42,7 @@
+ #include <asm/tlbdebug.h>
+ #include <asm/traps.h>
+ #include <asm/uaccess.h>
 +#include <asm/watch.h>
- 
- /*
-  * Not all of the MIPS CPUs have the "wait" instruction available. Moreover,
-@@ -685,6 +686,7 @@ static inline void spram_config(void) {}
- static inline void cpu_probe_mips(struct cpuinfo_mips *c)
+ #include <asm/mmu_context.h>
+ #include <asm/types.h>
+ #include <asm/stacktrace.h>
+@@ -908,12 +909,15 @@ asmlinkage void do_mdmx(struct pt_regs *regs)
+ asmlinkage void do_watch(struct pt_regs *regs)
  {
- 	decode_configs(c);
-+	mips_probe_watch_registers(c);
- 	switch (c->processor_id & 0xff00) {
- 	case PRID_IMP_4KC:
- 		c->cputype = CPU_4KC;
-diff --git a/arch/mips/kernel/proc.c b/arch/mips/kernel/proc.c
-index 36f0653..9d60679 100644
---- a/arch/mips/kernel/proc.c
-+++ b/arch/mips/kernel/proc.c
-@@ -50,8 +50,13 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	seq_printf(m, "tlb_entries\t\t: %d\n", cpu_data[n].tlbsize);
- 	seq_printf(m, "extra interrupt vector\t: %s\n",
- 	              cpu_has_divec ? "yes" : "no");
--	seq_printf(m, "hardware watchpoint\t: %s\n",
--	              cpu_has_watch ? "yes" : "no");
-+	seq_printf(m, "hardware watchpoint\t: %s",
-+		   cpu_has_watch ? "yes, " : "no\n");
-+	if (cpu_has_watch)
-+		seq_printf(m,
-+			   "count: %d, address/irw mask: 0x%04x\n",
-+			   cpu_data[n].watch_reg_count,
-+			   cpu_data[n].watch_reg_masks[0]);
- 	seq_printf(m, "ASEs implemented\t:%s%s%s%s%s%s\n",
- 		      cpu_has_mips16 ? " mips16" : "",
- 		      cpu_has_mdmx ? " mdmx" : "",
+ 	/*
+-	 * We use the watch exception where available to detect stack
+-	 * overflows.
++	 * If the current thread has the watch registers loaded, save
++	 * their values and send SIGTRAP.  Otherwise another thread
++	 * left the registers set, clear them and continue.
+ 	 */
+-	dump_tlb_all();
+-	show_regs(regs);
+-	panic("Caught WATCH exception - probably caused by stack overflow.");
++	if (test_tsk_thread_flag(current, TIF_LOAD_WATCH)) {
++		mips_read_watch_registers();
++		force_sig(SIGTRAP, current);
++	} else
++		mips_clear_watch_registers();
+ }
+ 
+ asmlinkage void do_mcheck(struct pt_regs *regs)
 -- 
 1.5.5.1
 
