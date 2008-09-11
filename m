@@ -1,75 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbYIKQpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbYIKQpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbYIKQpQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 12:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbYIKQpD
+	id S1753020AbYIKQpl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 12:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756004AbYIKQpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 12:45:03 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:62057 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbYIKQpA (ORCPT
+	Thu, 11 Sep 2008 12:45:20 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:41602 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756176AbYIKQpS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 12:45:00 -0400
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Linux NFS Mailing List <linux-nfs@vger.kernel.org>
-Message-Id: <02721E5E-6962-4699-86A5-EF5CFC787284@oracle.com>
-From: Chuck Lever <chuck.lever@oracle.com>
-To: Cedric Le Goater <clg@fr.ibm.com>
-In-Reply-To: <48C8DEA0.9080905@fr.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 11 Sep 2008 12:45:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=dbZ2Wl5X7RpTLOajP238UG/e93Y7IKEF2Ph7PP0j6FXTgtbkySLwnowOOKcUhD/RU
+	tZetVqGwPsrSCtkIlFJng==
+Message-ID: <6599ad830809110945pb85ec68o16328b31cbb0dc52@mail.gmail.com>
+Date: Thu, 11 Sep 2008 09:45:08 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Lai Jiangshan" <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH -mm] cgroup,cpuset: use alternative malloc to allocate large memory buf for tasks
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Paul Jackson" <pj@sgi.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48C8F32E.2020004@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v928.1)
-Subject: Re: [RFC][PATCH] sunrpc: fix oops in rpc_create() when the mount namespace is unshared
-Date: Thu, 11 Sep 2008 12:39:39 -0400
-References: <48C52B29.4020204@fr.ibm.com> <20080909124311.GA10053@us.ibm.com> <m18wu1nyon.fsf@frodo.ebiederm.org> <20080909152952.GA21207@us.ibm.com> <DE845309-1684-472A-8269-78AB3A2823A9@oracle.com> <m1fxo9mba5.fsf@frodo.ebiederm.org> <48C791F9.8090606@fr.ibm.com> <76bd70e30809100812r4a7fa71crfc7196350e3ed1cf@mail.gmail.com> <m1ej3rixbx.fsf@frodo.ebiederm.org> <48C8DEA0.9080905@fr.ibm.com>
-X-Mailer: Apple Mail (2.928.1)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <48C8F32E.2020004@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cedric-
+On Thu, Sep 11, 2008 at 3:30 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> This new alternative allocation implementation can allocate memory
+> up to 64M in 32bits system or 512M in 64bits system.
 
-On Sep 11, 2008, at Sep 11, 2008, 5:02 AM, Cedric Le Goater wrote:
->> The conservative play is to always force use of the initial namespace
->> and to deny creation of mounts that would use different  
->> namespaces.  In part
->> because the initial version of the namespace always exists.  Which  
->> means
->> as relates to Cedrics initial patch we would still need to know which
->> mounts should cause us to use a different uts namespace so we can  
->> deny
->> them.
+Isn't a lot of this patch just reimplementing vmalloc()?
+
+Paul
+
 >
-> I will send the initial patch which forces use of the initial  
-> namespace because
-> it does fix a real oops.
-
-Today's patch looks reasonable to me.  I would add a FIXME comment in  
-net/sunrpc/clnt.c near the site of the fix.
-
-> Then, I should be able to find some time to work on improving the  
-> uts namespace
-> checks when NFS mounts are done.
-
-As a final note, I don't think this is an issue only for NFS mounts.   
-The problem is with how AUTH_SYS RPC credentials are formed.
-
-cl_nodename is a copy of utsname kept in the rpc_clnt structure for  
-efficiency.  I think the auth_unix code has to be more sensitive to  
-which utsname is "in effect" for each RPC request.  We probably can't  
-use the same utsname for all RPC requests for the life of an RPC  
-client.  And since RPC credentials are cached, we should be more  
-careful about which cached credential is selected.
-
--- 
-Chuck Lever
-chuck[dot]lever[at]oracle[dot]com
+> This patch fix the problem for a really large cgroup.
+>
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index bb298de..974e898 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -403,6 +403,18 @@ void cgroup_iter_end(struct cgroup *cgrp, struct cgroup_iter *it);
+>  int cgroup_scan_tasks(struct cgroup_scanner *scan);
+>  int cgroup_attach_task(struct cgroup *, struct task_struct *);
+>
+> +/*
+> + * Basic struct of cgroup huge memory allocation,
+> + * use typedef to hide its implementation.
+> + */
+> +typedef struct {
+> +       struct page **page_array;
+> +       size_t page_count;
+> +} cgroup_huge_mem_t;
+> +
+> +void *cgroup_huge_mem_alloc(size_t size, cgroup_huge_mem_t *huge);
+> +void cgroup_huge_mem_free(void *ptr, cgroup_huge_mem_t *huge);
+> +
+>  #else /* !CONFIG_CGROUPS */
+>
+>  static inline int cgroup_init_early(void) { return 0; }
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 996865a..3ad4ff0 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -142,6 +142,55 @@ static int notify_on_release(const struct cgroup *cgrp)
+>        return test_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
+>  }
+>
+> +#define CGROUP_HUGE_PAGES_THRESHOLD 4
+> +
+> +void *cgroup_huge_mem_alloc(size_t size, cgroup_huge_mem_t *huge)
+> +{
+> +       unsigned int i, j, n_pages;
+> +       struct page **pages;
+> +       void *mem;
+> +
+> +       huge->page_array = NULL;
+> +       huge->page_count = 0;
+> +       if (size < PAGE_SIZE * CGROUP_HUGE_PAGES_THRESHOLD)
+> +               return kmalloc(size, GFP_KERNEL);
+> +
+> +       n_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+> +       pages = kmalloc(sizeof(*pages) * n_pages, GFP_KERNEL);
+> +       if (!pages)
+> +               return NULL;
+> +
+> +       for (i = 0; i < n_pages; i++) {
+> +               pages[i] = alloc_page(GFP_KERNEL);
+> +               if (unlikely(!pages[i]))
+> +                       goto depopulate;
+> +       }
+> +       mem = vmap(pages, n_pages, VM_MAP, PAGE_KERNEL);
+> +       if (mem) {
+> +               huge->page_array = pages;
+> +               huge->page_count = n_pages;
+> +               return mem;
+> +       }
+> +
+> +depopulate:
+> +       for (j = 0; j < i; j++)
+> +               __free_page(pages[j]);
+> +       kfree(pages);
+> +       return NULL;
+> +}
+> +
+> +void cgroup_huge_mem_free(void *ptr, cgroup_huge_mem_t *huge)
+> +{
+> +       if (huge->page_count) {
+> +               unsigned int i;
+> +               vunmap(ptr);
+> +               for (i = 0; i < huge->page_count; i++)
+> +                       __free_page(huge->page_array[i]);
+> +               kfree(huge->page_array);
+> +       } else
+> +               kfree(ptr);
+> +}
+> +
+>  /*
+>  * for_each_subsys() allows you to iterate on each subsystem attached to
+>  * an active hierarchy
+> @@ -2106,7 +2155,6 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
+>        down_read(&cgrp->pids_mutex);
+>        if (pid) {
+>                int end = cgrp->pids_length;
+> -               int i;
+>                while (index < end) {
+>                        int mid = (index + end) / 2;
+>                        if (cgrp->tasks_pids[mid] == pid) {
+> @@ -2164,12 +2212,35 @@ static struct seq_operations cgroup_tasks_seq_operations = {
+>        .show = cgroup_tasks_show,
+>  };
+>
+> +
+> +static void *cgroup_pid_array_alloc(size_t size)
+> +{
+> +       cgroup_huge_mem_t huge;
+> +       void *mem = cgroup_huge_mem_alloc(size + sizeof(huge), &huge);
+> +       if (mem) {
+> +               *(cgroup_huge_mem_t *)mem = huge;
+> +               return mem + sizeof(huge);
+> +       }
+> +       return NULL;
+> +}
+> +
+> +static void cgroup_pid_array_free(void *ptr)
+> +{
+> +       if (ptr) {
+> +               cgroup_huge_mem_t huge;
+> +               void *mem = ptr - sizeof(huge);
+> +
+> +               huge = *(cgroup_huge_mem_t *)mem;
+> +               cgroup_huge_mem_free(mem, &huge);
+> +       }
+> +}
+> +
+>  static void release_cgroup_pid_array(struct cgroup *cgrp)
+>  {
+>        down_write(&cgrp->pids_mutex);
+>        BUG_ON(!cgrp->pids_use_count);
+>        if (!--cgrp->pids_use_count) {
+> -               kfree(cgrp->tasks_pids);
+> +               cgroup_pid_array_free(cgrp->tasks_pids);
+>                cgrp->tasks_pids = NULL;
+>                cgrp->pids_length = 0;
+>        }
+> @@ -2217,7 +2288,7 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+>         * show up until sometime later on.
+>         */
+>        npids = cgroup_task_count(cgrp);
+> -       pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
+> +       pidarray = cgroup_pid_array_alloc(npids * sizeof(pid_t));
+>        if (!pidarray)
+>                return -ENOMEM;
+>        npids = pid_array_load(pidarray, npids, cgrp);
+> @@ -2228,7 +2299,7 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+>         * array if necessary
+>         */
+>        down_write(&cgrp->pids_mutex);
+> -       kfree(cgrp->tasks_pids);
+> +       cgroup_pid_array_free(cgrp->tasks_pids);
+>        cgrp->tasks_pids = pidarray;
+>        cgrp->pids_length = npids;
+>        cgrp->pids_use_count++;
+> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+> index f227bc1..38fde1e 100644
+> --- a/kernel/cpuset.c
+> +++ b/kernel/cpuset.c
+> @@ -999,6 +999,7 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
+>  {
+>        struct task_struct *p;
+>        struct mm_struct **mmarray;
+> +       cgroup_huge_mem_t huge;
+>        int i, n, ntasks;
+>        int migrate;
+>        int fudge;
+> @@ -1021,14 +1022,15 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
+>        while (1) {
+>                ntasks = cgroup_task_count(cs->css.cgroup);  /* guess */
+>                ntasks += fudge;
+> -               mmarray = kmalloc(ntasks * sizeof(*mmarray), GFP_KERNEL);
+> +               mmarray = cgroup_huge_mem_alloc(ntasks * sizeof(*mmarray),
+> +                               &huge);
+>                if (!mmarray)
+>                        goto done;
+>                read_lock(&tasklist_lock);              /* block fork */
+>                if (cgroup_task_count(cs->css.cgroup) <= ntasks)
+>                        break;                          /* got enough */
+>                read_unlock(&tasklist_lock);            /* try again */
+> -               kfree(mmarray);
+> +               cgroup_huge_mem_free(mmarray, &huge);
+>        }
+>
+>        n = 0;
+> @@ -1075,7 +1077,7 @@ static int update_tasks_nodemask(struct cpuset *cs, const nodemask_t *oldmem)
+>        }
+>
+>        /* We're done rebinding vmas to this cpuset's new mems_allowed. */
+> -       kfree(mmarray);
+> +       cgroup_huge_mem_free(mmarray, &huge);
+>        cpuset_being_rebound = NULL;
+>        retval = 0;
+>  done:
+>
+>
