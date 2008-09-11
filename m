@@ -1,192 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYIKNfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbYIKNhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbYIKNfz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 09:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYIKNfD
+	id S1754893AbYIKNhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 09:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYIKNh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 09:35:03 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:37221 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753135AbYIKNfA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 09:35:00 -0400
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, themann@de.ibm.com,
-       tklein@de.ibm.com, raisch@de.ibm.com, jeff@garzik.org,
-       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
-       tinytim@us.ibm.com, sebastien.dugue@bull.net
-Subject: [PATCH 2/2] ehea: fix mutex and spinlock use
-Date: Thu, 11 Sep 2008 15:34:40 +0200
-Message-Id: <1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>
-X-Mailer: git-send-email 1.5.5.rc2.1.gc953.dirty
-In-Reply-To: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>
-References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>
+	Thu, 11 Sep 2008 09:37:28 -0400
+Received: from sh.osrg.net ([192.16.179.4]:35208 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751041AbYIKNh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 09:37:27 -0400
+Date: Thu, 11 Sep 2008 22:36:59 +0900
+To: joerg.roedel@amd.com
+Cc: fujita.tomonori@lab.ntt.co.jp, joro@8bytes.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] x86: avoid unnecessary low zone allocation in AMD
+ IOMMU's alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080911091000.GI24392@amd.com>
+References: <20080910143818.GA31506@8bytes.org>
+	<20080910234510S.fujita.tomonori@lab.ntt.co.jp>
+	<20080911091000.GI24392@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080911223647D.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Looks like to me that the ehea_fw_handles.lock mutex and the
-ehea_bcmc_regs.lock spinlock are taken much longer than necessary and could
-as well be pushed inside the functions that need them
-(ehea_update_firmware_handles() and ehea_update_bcmc_registrations())
-rather than at each callsite.
+On Thu, 11 Sep 2008 11:10:00 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
----
- drivers/net/ehea/ehea_main.c |   26 ++++----------------------
- 1 files changed, 4 insertions(+), 22 deletions(-)
+> On Wed, Sep 10, 2008 at 11:45:34PM +0900, FUJITA Tomonori wrote:
+> > On Wed, 10 Sep 2008 16:38:18 +0200
+> > Joerg Roedel <joro@8bytes.org> wrote:
+> > > Ok, thats a valid point. I queue your patch with the AMD IOMMU updates
+> > > for 2.6.28. Thanks.
+> > 
+> > Ingo already has queued it his tree, I think.
+> 
+> I asked Ingo to remove it from his tree to avoid merge conflicts with
+> updates I am currently preparing. Here is the patch I queued into my
+> 2.6.28 update chain.
+> 
+> Joerg
+> 
+> ===
+> commit 42a7fa8d8a7f1680cba76e4824dba30bfd1c9d70
+> Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date:   Wed Sep 10 20:19:40 2008 +0900
+> 
+>     x86: avoid unnecessary low zone allocation in AMD IOMMU's alloc_coherent
+>     
+>     x86's common alloc_coherent (dma_alloc_coherent in dma-mapping.h) sets
+>     up the gfp flag according to the device dma_mask but AMD IOMMU doesn't
+>     need it for devices that the IOMMU can do virtual mappings for. This
+>     patch avoids unnecessary low zone allocation.
+>     
+>     Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+>     Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> 
+> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> index ae38b24..09261dc 100644
+> --- a/arch/x86/kernel/amd_iommu.c
+> +++ b/arch/x86/kernel/amd_iommu.c
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index b70c531..c765ec6 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -219,9 +219,11 @@ static void ehea_update_firmware_handles(void)
- 	}
- 
- out_update:
-+	mutex_lock(&ehea_fw_handles.lock);
- 	kfree(ehea_fw_handles.arr);
- 	ehea_fw_handles.arr = arr;
- 	ehea_fw_handles.num_entries = i;
-+	mutex_unlock(&ehea_fw_handles.lock);
- }
- 
- static void ehea_update_bcmc_registrations(void)
-@@ -293,9 +295,11 @@ static void ehea_update_bcmc_registrations(void)
- 	}
- 
- out_update:
-+	spin_lock(&ehea_bcmc_regs.lock);
- 	kfree(ehea_bcmc_regs.arr);
- 	ehea_bcmc_regs.arr = arr;
- 	ehea_bcmc_regs.num_entries = i;
-+	spin_unlock(&ehea_bcmc_regs.lock);
- }
- 
- static struct net_device_stats *ehea_get_stats(struct net_device *dev)
-@@ -1770,8 +1774,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
- 
- 	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
- 
--	spin_lock(&ehea_bcmc_regs.lock);
--
- 	/* Deregister old MAC in pHYP */
- 	if (port->state == EHEA_PORT_UP) {
- 		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
-@@ -1792,7 +1794,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
- 
- out_upregs:
- 	ehea_update_bcmc_registrations();
--	spin_unlock(&ehea_bcmc_regs.lock);
- out_free:
- 	kfree(cb0);
- out:
-@@ -1954,8 +1955,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
- 	}
- 	ehea_promiscuous(dev, 0);
- 
--	spin_lock(&ehea_bcmc_regs.lock);
--
- 	if (dev->flags & IFF_ALLMULTI) {
- 		ehea_allmulti(dev, 1);
- 		goto out;
-@@ -1985,7 +1984,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
- 	}
- out:
- 	ehea_update_bcmc_registrations();
--	spin_unlock(&ehea_bcmc_regs.lock);
- 	return;
- }
- 
-@@ -2466,8 +2464,6 @@ static int ehea_up(struct net_device *dev)
- 	if (port->state == EHEA_PORT_UP)
- 		return 0;
- 
--	mutex_lock(&ehea_fw_handles.lock);
--
- 	ret = ehea_port_res_setup(port, port->num_def_qps,
- 				  port->num_add_tx_qps);
- 	if (ret) {
-@@ -2504,8 +2500,6 @@ static int ehea_up(struct net_device *dev)
- 		}
- 	}
- 
--	spin_lock(&ehea_bcmc_regs.lock);
--
- 	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
- 	if (ret) {
- 		ret = -EIO;
-@@ -2527,10 +2521,8 @@ out:
- 		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
- 
- 	ehea_update_bcmc_registrations();
--	spin_unlock(&ehea_bcmc_regs.lock);
- 
- 	ehea_update_firmware_handles();
--	mutex_unlock(&ehea_fw_handles.lock);
- 
- 	return ret;
- }
-@@ -2580,9 +2572,6 @@ static int ehea_down(struct net_device *dev)
- 	if (port->state == EHEA_PORT_DOWN)
- 		return 0;
- 
--	mutex_lock(&ehea_fw_handles.lock);
--
--	spin_lock(&ehea_bcmc_regs.lock);
- 	ehea_drop_multicast_list(dev);
- 	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
- 
-@@ -2591,7 +2580,6 @@ static int ehea_down(struct net_device *dev)
- 	port->state = EHEA_PORT_DOWN;
- 
- 	ehea_update_bcmc_registrations();
--	spin_unlock(&ehea_bcmc_regs.lock);
- 
- 	ret = ehea_clean_all_portres(port);
- 	if (ret)
-@@ -2599,7 +2587,6 @@ static int ehea_down(struct net_device *dev)
- 			  dev->name, ret);
- 
- 	ehea_update_firmware_handles();
--	mutex_unlock(&ehea_fw_handles.lock);
- 
- 	return ret;
- }
-@@ -3378,7 +3365,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
- 		ehea_error("Invalid ibmebus device probed");
- 		return -EINVAL;
- 	}
--	mutex_lock(&ehea_fw_handles.lock);
- 
- 	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
- 	if (!adapter) {
-@@ -3462,7 +3448,6 @@ out_free_ad:
- 
- out:
- 	ehea_update_firmware_handles();
--	mutex_unlock(&ehea_fw_handles.lock);
- 	return ret;
- }
- 
-@@ -3481,8 +3466,6 @@ static int __devexit ehea_remove(struct of_device *dev)
- 
- 	flush_scheduled_work();
- 
--	mutex_lock(&ehea_fw_handles.lock);
--
- 	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
- 	tasklet_kill(&adapter->neq_tasklet);
- 
-@@ -3492,7 +3475,6 @@ static int __devexit ehea_remove(struct of_device *dev)
- 	kfree(adapter);
- 
- 	ehea_update_firmware_handles();
--	mutex_unlock(&ehea_fw_handles.lock);
- 
- 	return 0;
- }
--- 
-1.6.0.1.308.gede4c
-
+I see, thanks.
