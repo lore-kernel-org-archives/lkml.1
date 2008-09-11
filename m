@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbYIKUvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYIKUxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064AbYIKUvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 16:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYIKUu7
+	id S1756769AbYIKUxp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 16:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYIKUxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 16:50:59 -0400
-Received: from mail.netone.net.tr ([193.192.98.182]:1570 "EHLO
-	mail.netone.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754634AbYIKUu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 16:50:58 -0400
-Message-ID: <489ABE12.3050409@netone.net.tr>
-Date: Thu, 07 Aug 2008 12:19:14 +0300
-From: Tarkan Erimer <tarkan@netone.net.tr>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Thu, 11 Sep 2008 16:53:37 -0400
+Received: from ns.suse.de ([195.135.220.2]:41712 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752058AbYIKUxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 16:53:37 -0400
+Date: Thu, 11 Sep 2008 13:52:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Oops/Warning report for the week of September 10th, 2008
+Message-ID: <20080911205249.GB21263@suse.de>
+References: <48C81D20.9040302@linux.intel.com> <20080911045255.GD6863@suse.de> <48C92389.7070209@linux.intel.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] USB Mass Storage Problem via Linux-2.6.27-rc1/2
-Content-Type: text/plain; charset=ISO-8859-9; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Aug 2008 09:16:09.0969 (UTC) FILETIME=[3AFB2E10:01C8F86E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C92389.7070209@linux.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Sep 11, 2008 at 06:56:25AM -0700, Arjan van de Ven wrote:
+> Greg KH wrote:
+>> On Wed, Sep 10, 2008 at 12:16:48PM -0700, Arjan van de Ven wrote:
+>>> Rank 2: sysfs_add_one (warning)
+>>> 	Reported 215 times (3751 total reports)
+>>> 	Duplicate sysfs registration; mostly in USB audio
+>>> 	This warning was last seen in version 2.6.27-rc5, and first seen in 
+>>> 2.6.24-rc6.
+>>> 	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
+>> Is there any way to break this one down further by caller so we can try
+>> to narrow it down?  I thought you did that for other types of warnings
+>> in the past (may_sleep(), etc.)
+>
+> ok I think I got this one sorted;
+> your entry is now replaced by
+>
+> Rank 4: snd_card_register (warning)
+> 	Reported 146 times (2594 total reports)
+> 	This warning was last seen in version 2.6.25.14, and first seen in 2.6.24.
+> 	More info: 
+> http://www.kerneloops.org/searchweek.php?search=snd_card_register
+>
+> which is ALL usb audio... (so I might have to also skip snd_card_register 
+> in the backtrace, but I'll leave that between you and the alsa guys)
 
-When I tried to connect my Sonyericsson K800i in "USB Mass Storage" 
-mode, it didn't recognize it as a USB Mass Storage and also freezes the 
-"lsusb". These strange behavior exist on both Linux-2.6.27-rc1 and rc2. 
-At the logs:
+Yes, that's much better thanks.  I think that has now been fixed by
+the ALSA people, as seen by no reports 2.6.26 and onward.
 
-Aug  7 12:05:17 tarkane kernel: usb 5-2: Product: Sony Ericsson K800
-Aug  7 12:05:17 tarkane kernel: usb 5-2: Manufacturer: Sony Ericsson
-Aug  7 12:05:17 tarkane kernel: usb 5-2: SerialNumber: 3534270171822450
-Aug  7 12:05:20 tarkane kernel: cdc_acm 5-2:3.1: ttyACM0: USB ACM device
-Aug  7 12:05:20 tarkane kernel: cdc_acm 5-2:3.3: ttyACM1: USB ACM device
-Aug  7 12:05:20 tarkane kernel: usbcore: registered new interface driver 
-cdc_acm
-Aug  7 12:05:20 tarkane kernel: cdc_acm: v0.26:USB Abstract Control 
-Model driver for USB modemsand ISDN adapters
-Aug  7 12:05:20 tarkane kernel: usb0: register 'cdc_ether' at 
-usb-0000:00:1d.3-2, CDC Ethernet Device, 02:80:37:06:03:00
-Aug  7 12:05:20 tarkane kernel: usbcore: registered new interface driver 
-cdc_ether
-Aug  7 12:05:25 tarkane kernel: usb 5-2: USB disconnect, address 2
+thanks,
 
-
-It seems; at least, it detects my K800i as a phone/modem device; but not 
-as a USB Mass Storage. It's perfectly fine under  <=Linux-2.6.26.x 
-kernels. Any help I can do to debug it more ?
-
-
-Tarkan
-
- 
+greg k-h
