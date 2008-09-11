@@ -1,34 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbYIKTjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYIKTkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbYIKTjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 15:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYIKTjQ
+	id S1756395AbYIKTkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 15:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYIKTkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 15:39:16 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55772 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbYIKTjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 15:39:15 -0400
-Message-ID: <48C97310.9060507@cs.helsinki.fi>
-Date: Thu, 11 Sep 2008 22:35:44 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Salman Qazi <sqazi@google.com>
-CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org
-Subject: Re: slub: fixed uninitialized counter in struct kmem_cache_node
-References: <20080911192541.GA23822@google.com>
-In-Reply-To: <20080911192541.GA23822@google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Sep 2008 15:40:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45550 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752487AbYIKTkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 15:40:11 -0400
+Subject: Re: [PATCH 1/2] audit: fix NUL handling in untrusted strings
+From: Miloslav =?UTF-8?Q?Trma=C4=8D?= <mitr@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: viro@zeniv.linux.org.uk, eparis@redhat.com, linux-audit@redhat.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080911121443.c3153842.akpm@linux-foundation.org>
+References: <1221085418.2705.19.camel@amilo>
+	 <20080911121443.c3153842.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 11 Sep 2008 21:37:47 +0200
+Message-Id: <1221161868.17533.37.camel@amilo>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Salman Qazi wrote:
-> Initialized total objects atomic for the node in init_kmem_cache_node.  The uninitialized value was ruining the stats in /proc/slabinfo.
+Andrew Morton píše v Čt 11. 09. 2008 v 12:14 -0700:
+> On Thu, 11 Sep 2008 00:23:38 +0200
+> Miloslav Trma__ <mitr@redhat.com> wrote:
 > 
-> Signed-off-by: Salman Qazi <sqazi@google.com>
+> > The audit record can thus contain a NUL byte (and some unchecked data
+> > after that).  Because the user-space audit daemon treats audit records
+> > as NUL-terminated strings, an untrusted string that is shorter than the
+> > specified maximum length effectively terminates the audit record.
+> > 
 
-Applied, thanks!
+> It's unclear how serious this problem is.
+* AUDIT_USER_TTY records (which are sent from user-space with a trailing
+NUL byte) are missing a terminating '"' character.
+* Some data is not recorded in AUDIT_TTY records, and the terminating
+'"' character is missing in that case as well.
+
+>   Do you believe that it is
+> sufficiently serious to warrant merging these fixes into 2.6.27? 
+> 2.6.26.x?  2.6.25.x?
+This patch (1/2) only fixes creation of incorrectly formatted, but
+easy-to-understand audit records; it would be nice to have it in 2.6.27
+(assuming the audit maintainer acks it - or a variant of it).  The other
+one (2/2), which makes sure all TTY audit data is recorded, should
+probably be merged in the stable releases as well.
+	Mirek
+
