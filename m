@@ -1,69 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbYIKTK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbYIKTLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087AbYIKTK7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 15:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYIKTKv
+	id S1756323AbYIKTLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 15:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYIKTLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 15:10:51 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:34097 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753365AbYIKTKu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 15:10:50 -0400
-Date: Thu, 11 Sep 2008 15:10:49 -0400
-To: Harun Scheutzow <harun04@scheutzow.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: vfat file system extreme fragmentation on multiprocessor
-Message-ID: <20080911191049.GB31271@csclub.uwaterloo.ca>
-References: <0ML29c-1KdqyO1YV1-0001g5@mrelayeu.kundenserver.de>
+	Thu, 11 Sep 2008 15:11:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59899 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753399AbYIKTLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 15:11:37 -0400
+Message-ID: <48C969CF.2030208@redhat.com>
+Date: Thu, 11 Sep 2008 13:56:15 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+CC: akpm@linux-foundation.org, sct@redhat.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, jack@suse.cz, jbacik@redhat.com,
+       cmm@us.ibm.com, tytso@mit.edu, adilger@sun.com,
+       yumiko.sugita.yf@hitachi.com, satoshi.oshima.fk@hitachi.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH -mm] jbd: test BH_Write_EIO to detect errors on metadata
+    buffers
+References: <48C63701.6090700@hitachi.com>
+In-Reply-To: <48C63701.6090700@hitachi.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0ML29c-1KdqyO1YV1-0001g5@mrelayeu.kundenserver.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 08:01:16PM +0200, Harun Scheutzow wrote:
-> I like to share the following observation made with different kernels of 2.6.x series, a T7100 Core2Duo CPU (effectively 2 processors). I have not seen such a post while searching.
+Hidehiro Kawai wrote:
+> __try_to_free_cp_buf(), __process_buffer(), and __wait_cp_io()
+> test BH_Uptodate flag to detect write I/O errors on metadata
+> buffers.  But by commit 95450f5a7e53d5752ce1a0d0b8282e10fe745ae0
+> "ext3: don't read inode block if the buffer has a write error"(*),
+> BH_Uptodate flag can be set to inode buffers with BH_Write_EIO
+> in order to avoid reading old inode data.  So now, we have to
+> test BH_Write_EIO flag of checkpointing inode buffers instead
+> of BH_Uptodate.  This patch does it.
 > 
-> Two applications compress data at the same time and try to do their best to avoid fragmenting the file system by writing blocks of 50 MByte to a VFAT (FAT32) partition on SATA harddisk, cluster size 8 KByte. Resulting file size is 200 to 250 MByte. It is ok to get 4 to 5 fragments per file. But at random, approximately at every 4th file, there are a few 100 up to more than 4500 (most likely case approx 1500) fragments for each of the two files written in parallel.
+> (*) http://lkml.org/lkml/2008/6/23/126
 > 
-> My best guess: In this case both CPU cores were in the cluster allocation function of the fat file system at (nearly) the same time, allocating only a few clusters (guess 8) for their file before the other core got the next. The compression task is CPU bound. The harddisk could probably cater 4 cores. This reverses for decompression.
+> This patch depends on the following patch set in -mm:
 > 
-> The files are ok, no corruption, just heavy fragmentation. I know vfat is not liked very much. Nevertheless I like to hope someone with more Linux kernel coding experience than me fixes this in the future.
+> #1 jbd: abort when failed to log metadata buffers
+>    http://lkml.org/lkml/2008/7/24/160
+> #2 jbd: fix error handling for checkpoint io
+>    http://lkml.org/lkml/2008/7/24/163
+> #3 ext3: add checks for errors from jbd
+>    http://lkml.org/lkml/2008/7/29/539
+> #4 jbd: don't dirty original metadata buffer on abort
+>    http://lkml.org/lkml/2008/7/24/168
 > 
-> vfat still seems to be the reliable way for data exchange accross platforms (anyone an ext2 driver for Win up to Vista which does not trash the f.s. every few days, or a reliable NTFS for Linux?). Anyway, it is a general design issue on SMP systems one should not forget.
-> 
-> I tried the same to an ext2 f.s.. It showed only very little fragmentation, most files were 1 piece, well done!
-> 
-> Best Regards, Harun Scheutzow
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> ---
+Thanks, you can add
 
-I don't think fat filesystems have any concept of reserving space for
-expanding files.  It's a pretty simple filesystem after all designed for
-a single cpu machine with a non-multitasking OS (if you can call DOS an
-OS).  Space tends to be allocated from the start of the disk wherever
-free space is found since otherwise you would have to go searching for
-the free space, which isn't that efficient.
+Acked-by: Eric Sandeen <sandeen@redhat.com>
 
-ext2 of course was designed to avoid fragmentation and has lots of fancy
-things like cylinder groups, and reserving space and such as far as I
-understand it.
+too.
 
-Now what would happen if you used ftruncate to extend the file you open
-to a large size, and then started writing it, and then set the size
-correctly at the end?  Or if you simply used ftruncate to make the file
-50MB initially, then wrote data until you hit 50MB, then extended it to
-100MB, wrote more data, and so on, and at the end truncate to the
-correct length?  My guess would be that the ftruncate call would go
-allocate all the clusters for you right away and reserve the space,
-after which you can go fill in those clusters with real date.  That if
-it works ought to reduce the number of fragments you get.
+>  fs/jbd/checkpoint.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
+> ===================================================================
+> --- linux-2.6.27-rc5-mm1.orig/fs/jbd/checkpoint.c
+> +++ linux-2.6.27-rc5-mm1/fs/jbd/checkpoint.c
+> @@ -94,7 +94,7 @@ static int __try_to_free_cp_buf(struct j
+>  	struct buffer_head *bh = jh2bh(jh);
+>  
+>  	if (jh->b_jlist == BJ_None && !buffer_locked(bh) &&
+> -	    !buffer_dirty(bh) && buffer_uptodate(bh)) {
+> +	    !buffer_dirty(bh) && !buffer_write_io_error(bh)) {
+>  		JBUFFER_TRACE(jh, "remove from checkpoint list");
+>  		ret = __journal_remove_checkpoint(jh) + 1;
+>  		jbd_unlock_bh_state(bh);
+> @@ -214,7 +214,7 @@ restart:
+>  			spin_lock(&journal->j_list_lock);
+>  			goto restart;
+>  		}
+> -		if (unlikely(!buffer_uptodate(bh)))
+> +		if (unlikely(buffer_write_io_error(bh)))
+>  			ret = -EIO;
+>  
+>  		/*
+> @@ -283,7 +283,7 @@ static int __process_buffer(journal_t *j
+>  		ret = 1;
+>  	} else if (!buffer_dirty(bh)) {
+>  		ret = 1;
+> -		if (unlikely(!buffer_uptodate(bh)))
+> +		if (unlikely(buffer_write_io_error(bh)))
+>  			ret = -EIO;
+>  		J_ASSERT_JH(jh, !buffer_jbddirty(bh));
+>  		BUFFER_TRACE(bh, "remove from checkpoint");
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Of course avoiding fragments on a filesystem that is practically
-designed to fragment isn't going to be easy.
-
--- 
-Len Sorensen
