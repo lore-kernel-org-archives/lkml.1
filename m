@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYILNvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYILNxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYILNvP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 09:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYILNu7
+	id S1756630AbYILNxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 09:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYILNxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 09:50:59 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:51724 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751577AbYILNu7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 09:50:59 -0400
-Date: Fri, 12 Sep 2008 09:50:30 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-In-reply-to: <20080912083927.GA13849@nineveh.local>
-To: David Woodhouse <dwmw2@infradead.org>, Greg KH <greg@kroah.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Thierry Vignaud <tvignaud@mandriva.com>,
-       David Miller <davem@davemloft.net>, jeffm@suse.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Message-id: <200809120950.30866.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20080910.160505.14060698.davem@davemloft.net>
- <1221171943.4077.59.camel@macbook.infradead.org>
- <20080912083927.GA13849@nineveh.local>
-User-Agent: KMail/1.9.9
+	Fri, 12 Sep 2008 09:53:30 -0400
+Received: from iona.labri.fr ([147.210.8.143]:47214 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752013AbYILNx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 09:53:29 -0400
+Message-ID: <48CA748F.8020701@inria.fr>
+Date: Fri, 12 Sep 2008 15:54:23 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nathalie Furmento <nathalie.furmento@labri.fr>
+Subject: Re: [PATCH] mm: make do_move_pages() complexity linear
+References: <48CA611A.8060706@inria.fr> <48CA727F.1050405@linux-foundation.org>
+In-Reply-To: <48CA727F.1050405@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 September 2008, Joseph Fannin wrote:
->On Thu, Sep 11, 2008 at 03:25:43PM -0700, David Woodhouse wrote:
->> On Thu, 2008-09-11 at 15:07 -0700, Greg KH wrote:
->
-><snip>
->
->> Now, can we _please_ stop being bloody stupid? If there are _real_
->> problems, like the one I fixed with commit 1cede1af last week, then I'm
->> perfectly happy to deal with them. But stop making crap up.
->
->I CAN'T INSTALL MORE THAN ONE KERNEL PACKAGE > v2.6.26.
->
->IT'S NOT IMAGINARY.
->
->IT USED TO WORK AND YOU BROKE IT.
->
-I've been building my own, and currently have about 10 kernels newer than 
-2.6.26 sitting in my /boot partition, and they all work.  I'd suggest you 
-investigate how you are maintaining your .config(uration)
+Christoph Lameter wrote:
+> Brice Goglin wrote:
+>> Page migration is currently very slow because its overhead is quadratic
+>> with the number of pages. This is caused by each single page migration
+>> doing a linear lookup in the page array in new_page_node().
+> 
+> Page migration in general is not affected by this issue. This is specific to
+> the sys_move_pages() system call. The API was so far only used to migrate a
+> limited number of pages. For more one would use either the cpuset or the
+> sys_migrate_pages() APIs since these do not require an array that describes
+> how every single page needs to be moved.
+> 
+>> Since pages are stored in the array order in the pagelist and do_move_pages
+>> process this list in order, new_page_node() can increase the "pm" pointer
+>> to the page array so that the next iteration will find the next page in
+>> 0 or few lookup steps.
+> 
+> I agree. It would be good increase the speed of sys_move_pages().
+> 
+> However, note that your patch assumes that new_page_node() is called in
+> sequence for each of the pages in the page descriptor array.
 
->--
->Joseph Fannin
->jfannin@gmail.com
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+No, it assumes that pages are stored in pagelist in order. But some of
+them can be missing compared to the page array.
 
+> new_page_node() is skipped in the loop if
+> 
+> 1. The page is not present
+> 2. The page is reserved
+> 3. The page is already on the intended node
+> 4. The page is shared between processes.
+> 
+> If any of those cases happen then your patch will result in the association of
+> page descriptors with the wrong pages for the remaining pages in the array.
 
+I don't think so. If this happens, the while loop will skip those pages.
+(while in the regular case, the while loop does 0 iterations).
+The while loop is still here to make sure we are processing the right pm
+entry. What the patch changes is only that we don't uselessly look at
+the already-processed beginning of pm.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-You would if you could but you can't so you won't.
+thanks,
+Brice
