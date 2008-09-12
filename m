@@ -1,71 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbYILFnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbYILFo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752840AbYILFnM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 01:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYILFmz
+	id S1754892AbYILFo3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 01:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYILFoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 01:42:55 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60266 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754357AbYILFmy (ORCPT
+	Fri, 12 Sep 2008 01:44:21 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:46906 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750901AbYILFoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 01:42:54 -0400
-Date: Thu, 11 Sep 2008 22:42:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
-Subject: Re: [PATCH 0/13] Turn hrtimers into a range capable timer
-Message-ID: <20080911224241.13855b23@infradead.org>
-In-Reply-To: <200809121339.49902.rusty@rustcorp.com.au>
-References: <20080901160343.75a89ec9@infradead.org>
-	<200809121339.49902.rusty@rustcorp.com.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Fri, 12 Sep 2008 01:44:20 -0400
+X-IronPort-AV: E=Sophos;i="4.32,386,1217822400"; 
+   d="scan'208";a="74991931"
+Subject: [PATCH][kgdb][v2] Make mem access function weak in kgdb.c and
+	kgdb.h
+From: sonic zhang <sonic.adi@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       kgdb mailing list <kgdb-bugreport@lists.sourceforge.net>
+Content-Type: text/plain
+Date: Fri, 12 Sep 2008 13:39:16 +0800
+Message-Id: <1221197956.15380.6.camel@eight.analog.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008 13:39:49 +1000
-Rusty Russell <rusty@rustcorp.com.au> wrote:
+L1 instruction memory and MMR memory on blackfin can not be accessed by
+common functions probe_kernel_read() and probe_kernel_write().
+Blackfin asks for 2/4 byte align access to MMR memory and DMA access to L1
+instruction memory. These functions need to be reimplemented in
+architecture specific kgdb.c. Update documentation and prototypes as well.
 
-> On Tuesday 02 September 2008 09:03:43 Arjan van de Ven wrote:
-> > This series is a follow-on the the nanosecond select/poll series.
-> >
-> > The goal of this series is to introduce the capability into
-> > hrtimers to deal with a "range" rather than a specific point in
-> > time. (Several people discussed this recently, but we've been
-> > toying with the concept for a while)
-> 
-> Hi Arjen, sorry for not replying sooner.
-> 
-> I had half a patch to create a new "timer layer to rule them all"
-> called ktimers, which took an explicit "slop" value.  Slop is the
-> "how long before its worth waking the machine for this?" value, with
-> friendly SLOP_USECS, SLOP_SECONDS, SLOP_DAYS etc defines.
-> Implemented in terms of normal and hr timers, which get deprecated
-> over time.
-> 
-> Heuristics work for a while, but IMHO eventually this is going to
-> have to be plumbed through to userspace.
+Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
+---
+ include/linux/kgdb.h |   42 ++++++++++++++++++++++++++++++++++++++++--
+ kernel/kgdb.c        |    6 +++---
+ 2 files changed, 43 insertions(+), 5 deletions(-)
 
-yes we need to add the system calls at some point (beyond the prctl);
-however both Ulrich and Linus indicated that this will be one of those
-"handful of users" kind of things. IMO it needs to work well enough
-without having to change the whole application stack (and with my
-patches that can be done; it works well in practice)
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 8fdd3cb..cb8a3d6 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -267,8 +267,46 @@ extern int kgdb_register_io_module(struct kgdb_io *local_kgdb_io_ops);
+ extern void kgdb_unregister_io_module(struct kgdb_io *local_kgdb_io_ops);
  
-> 
-> Cheers,
-> Rusty.
-
-
+ extern int kgdb_hex2long(char **ptr, unsigned long *long_val);
+-extern int kgdb_mem2hex(char *mem, char *buf, int count);
+-extern int kgdb_hex2mem(char *buf, char *mem, int count);
++
++/**
++ *      kgdb_mem2hex - (optional arch overide) traslate bin to hex chars
++ *      @mem: source buffer
++ *      @buf: target buffer
++ *      @count: number of bytes in mem
++ *
++ *      Archictures which do not support probe_kernel_(read|write),
++ *      can make an alternate implmentation of this function.
++ *      This function safely reads memory into hex
++ *      characters for use with the kgdb protocol.
++ */
++extern int __weak kgdb_mem2hex(char *mem, char *buf, int count);
++
++/**
++ *      kgdb_hex2mem - (optional arch overide) traslate hex chars to bin
++ *      @buf: source buffer
++ *      @mem: target buffer
++ *      @count: number of bytes in mem
++ *
++ *      Archictures which do not support probe_kernel_(read|write),
++ *      can make an alternate implmentation of this function.
++ *      This function safely writes hex characters into memory
++ *      for use with the kgdb protocol.
++ */
++extern int __weak kgdb_hex2mem(char *buf, char *mem, int count);
++
++/**
++ *      kgdb_ebin2mem - (optional arch overide) Copy the binary array
++ *	pointed to by buf into mem.
++ *      @buf: source buffer
++ *      @mem: target buffer
++ *      @count: number of bytes in mem
++ *
++ *      Archictures which do not support probe_kernel_(read|write),
++ *      can make an alternate implmentation of this function.
++ *      This function safely copys binary array into memory
++ *      for use with the kgdb protocol.
++ */
++extern int __weak kgdb_ebin2mem(char *buf, char *mem, int count);
+ 
+ extern int kgdb_isremovedbreak(unsigned long addr);
+ 
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index c803730..aae578e 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -364,7 +364,7 @@ static void put_packet(char *buffer)
+  * Convert the memory pointed to by mem into hex, placing result in buf.
+  * Return a pointer to the last char put in buf (null). May return an error.
+  */
+-int kgdb_mem2hex(char *mem, char *buf, int count)
++int __weak kgdb_mem2hex(char *mem, char *buf, int count)
+ {
+ 	char *tmp;
+ 	int err;
+@@ -394,7 +394,7 @@ int kgdb_mem2hex(char *mem, char *buf, int count)
+  * 0x7d escaped with 0x7d.  Return a pointer to the character after
+  * the last byte written.
+  */
+-static int kgdb_ebin2mem(char *buf, char *mem, int count)
++int __weak kgdb_ebin2mem(char *buf, char *mem, int count)
+ {
+ 	int err = 0;
+ 	char c;
+@@ -419,7 +419,7 @@ static int kgdb_ebin2mem(char *buf, char *mem, int count)
+  * Return a pointer to the character AFTER the last byte written.
+  * May return an error.
+  */
+-int kgdb_hex2mem(char *buf, char *mem, int count)
++int __weak kgdb_hex2mem(char *buf, char *mem, int count)
+ {
+ 	char *tmp_raw;
+ 	char *tmp_hex;
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.6.0
+
+
