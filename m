@@ -1,35 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbYILQbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYILQfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbYILQbt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 12:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbYILQbi
+	id S1756893AbYILQfN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 12:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYILQfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 12:31:38 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:30551 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752724AbYILQbh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 12:31:37 -0400
-X-YMail-OSG: 3XSAGpsVM1mm7hl1CPhvgNPd9yOORu9nN3sqXgHIcqauDCqbFHxC9Ipeyima5GlXSMYYs8Tj1LYcdcS0JCtJbytH0UvoW9cvS.NQHhDi5XHTPJTzXPCH74Uw1FgdztzPOifnXGYIRqQwwCpuqp38fM1P
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: ConfigFS + Target Mode Engine API discussion
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: linux-iscsi-target-dev@googlegroups.com
-Cc: Joel Becker <Joel.Becker@oracle.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       SCST-Devel <scst-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1221123529.27831.343.camel@haakon2.linux-iscsi.org>
-References: <1221087547.27831.165.camel@haakon2.linux-iscsi.org>
-	 <20080910233107.GC23864@mail.oracle.com>
-	 <1221097366.27831.216.camel@haakon2.linux-iscsi.org>
-	 <20080911021331.GA12902@mail.oracle.com>
-	 <1221107358.27831.289.camel@haakon2.linux-iscsi.org>
-	 <20080911063846.GB16583@mail.oracle.com>
-	 <1221123529.27831.343.camel@haakon2.linux-iscsi.org>
+	Fri, 12 Sep 2008 12:35:00 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36250 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbYILQe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 12:34:59 -0400
+Subject: Re: [RFC v3][PATCH 5/9] Memory managemnet (restore)
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, jeremy@goop.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48C8CAC6.3090209@cs.columbia.edu>
+References: <Pine.LNX.4.64.0809040354440.460@takamine.ncl.cs.columbia.edu>
+	 <Pine.LNX.4.64.0809040404060.5982@takamine.ncl.cs.columbia.edu>
+	 <1220551683.23386.32.camel@nimitz> <48C345D2.1020603@cs.columbia.edu>
+	 <1220892596.23386.166.camel@nimitz> <48C6113A.3080804@cs.columbia.edu>
+	 <1221082922.6781.62.camel@nimitz>  <48C8CAC6.3090209@cs.columbia.edu>
 Content-Type: text/plain
-Date: Fri, 12 Sep 2008 09:24:52 -0700
-Message-Id: <1221236692.3401.28.camel@haakon2.linux-iscsi.org>
+Date: Fri, 12 Sep 2008 09:34:48 -0700
+Message-Id: <1221237288.17910.26.camel@nimitz>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -37,99 +30,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-11 at 01:58 -0700, Nicholas A. Bellinger wrote:
-> On Wed, 2008-09-10 at 23:38 -0700, Joel Becker wrote:
-> > On Wed, Sep 10, 2008 at 09:29:18PM -0700, Nicholas A. Bellinger wrote:
-> > > On Wed, 2008-09-10 at 19:13 -0700, Joel Becker wrote:
-> > > > On Wed, Sep 10, 2008 at 06:42:46PM -0700, Nicholas A. Bellinger wrote:
-> > > > > So I am thinking about the following question:  What would be the
-> > > > > preferred method for calling ct_group_ops->make_group() in order to
-> > > > > create the $CONFIGFS/target/$FABRIC struct config_item directly from
-> > > > > target_fabric_configfs_register() call?  From there, the config group
-> > > > > hanging off $CONFIGFS/target/$FABRIC will be fabric dependent and
-> > > > > providing their own groups, items, depends, from the passed *fabric_cit.
-> > > > > How do I "simulate" a mkdir(2) configfs -> make_group() call coming from
-> > > > > the fabric module itself..?   This would be assuming that both mkdir(2)
-> > > > 
-> > > > 	That's precisely what you don't do with configfs.  It's a
-> > > > defined "not to be done" thing.  So there's no preferred way, there's no
-> > > > way at all.
-> > > > 	What you want do to is drive this from mkdir().  The
-> > > > make_group() will look up the sub-module it needs and return the
-> > > > appropriate item.
-> > > > 
-> > > 
-> > > Whew, good thing I asked about this case first..  :-)
-> > 
-> > 	Can you give me a more complete description of what you're
-> > trying to do?  that way I can maybe help with some suggestions.
-> > 
+On Thu, 2008-09-11 at 03:37 -0400, Oren Laadan wrote:
+> Let me start with the bottom line - since this creates too much confusion,
+> I'll just switch to the alternative: will use get_user_pages() to bring
+> pages in and copy the data directly. Hopefully this will end the discussion.
 > 
-> Sure, the process to get the things up and running would look like:
-> 
-> # Load in the generic target's configfs infrastructure
-> modprobe target_core_configfs
-> 
-> *) $CONFIGFS/target is created with configfs_register_subsystem()
-> 
-> *) $CONFIGFS/target/core is created as a default group under struct
-> configfs_subsystem->su_group to interact with generic target mode
-> engine's storage objects (eg: SCSI HCTL referenced devices, LVM UUID, MD
-> UUID). 
-> 
-> ...........
-> 
->  # Load LIO-Target using function symbols from target_core_configfs
-> modprobe iscsi_target_mod
-> 
-> module_init() from iscsi_target_mod (eg: the fabric module) calls
-> target_fabric_configfs_register() in target_core_configfs.ko, which is a
-> small wrapper for calling sys_mkdir($CONFIGFS/target/$FABRIC) to kick
-> off the struct config_group_operations->make_group() to create a struct
-> config_item for /sys/kernel/config/target/iscsi (or whatever the fabric
-> is called).
-> 
-> config_item_get() is also called in target_fabric_configfs_register()
-> and returns the newly allocated struct config_item to
-> iscsi_target_mod.ko code to then create new struct config_groups for
-> iSCSI target fabric specific abstractions and LUN mappings between
-> $CONFIGFS/target/core/$STORAGE_OBJECT and Fabric dependent code. I think
-> the latter would be done with symlinks between $FABRIC <-> Generic
-> Target Core Storage Object.
-> 
-> Anyways, knowing that make_group() and drop_item() will *NEVER* be
-> called internally clears up alot for me.  I will keep working on this
-> setup and let you know if I run into any more head scratchers.
-> 
-> Thanks again Joel!
-> 
+> (Note, there there is a performance penalty in the form of extra data copy:
+> instead of reading data directly to the page, we instead read into a buffer,
+> kmap_atomic the page and copy into the page).
 
-Hi Joel,
+Yep but, as we discussed on IRC, this code needs some optimization for
+pages in swap, anyway.  It isn't optimal for those, either.  So, for
+this we'll leave it at a minimal amount of code rather than maximal
+functionality. :)
 
-After some more thought and a few hours of effort, I was able to get
-some code up using the model above between a new target_core_configfs.ko
-and iscsi_target_mod.ko (LIO-Target):
+> > I bugged Serge about this.  He said that this, at least, bypasses the SE
+> > Linux checks that are normally done with an mprotect() system call.
+> > That's a larger design problem that we need to keep in mind: we need to
+> > be careful to keep existing checks in place.
+> 
+> I also discussed this with Serge, and I got the impression that he
+> agreed that there was no security issue because it was all and only
+> about private memory.
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commit;h=1a48fb089e1ee1cff5ef02b401d365fdf206cf69
+Yep, as long as there are some sanity checks to make sure that we're not
+overriding permissions, I'm happy with this.
 
-The one symbol that I required out of fs/namei.c for vfs_mkdir() that
-was not available was lookup_hash(), and the symbol is exported in the
-commit so that
-drivers/lio-core/transport_core_configfs.c:do_configfs_rmdir() works as
-expected.  There is another version of do_configfs_rmdir() that uses the
-exported lookup_one_len(), but that one is not working just quite yet.
-Perhaps there is value in lookup_hash() being defined as
-EXPORT_SYMBOL_GPL().
+> If a task is ptraced, then the tracer can easily arrange for the tracee
+> to call mprotect(), or to call sys_restart() with a tampered checkpoint
+> file, or do other tricks. The call to mprotect_fix(), on a private vma,
+> does not make this any worse. That is why I didn't bother implementing
+> that bit.
 
-Now that the basic configfs structure between a generic engine <->
-fabric is in place, the next steps will be to enable the LIO-Target  and
-LIO-Core IOCTLs into make_group() and drop_item() calls.
+I completely agree that it isn't an issue on a private VMA.  My only
+concern is if this is done to any shared memory or could potentially be
+abused in such a way that it gets applied to shared memory.
 
-Have a look and let me know what you think..  I will ping you when the
-first pieces of LIO-Target functionality are up and running..
-
-:-)
-
---nab
-
+-- Dave
 
