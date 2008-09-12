@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYILRl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbYILRmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757846AbYILRl3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 13:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYILRkM
+	id S1757540AbYILRmq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 13:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbYILRmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 13:40:12 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:14343 "EHLO
-	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757362AbYILRkK (ORCPT
+	Fri, 12 Sep 2008 13:42:39 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:35866 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753839AbYILRmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 13:40:10 -0400
-X-BigFish: VPS-31(z21eW34a4lz98dR936fQ3117Kzz10d3izzz32i6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0K73FQF-01-09E-01
-Date: Fri, 12 Sep 2008 19:39:33 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Rufus & Azrael <rufus-azrael@numericable.fr>,
-       Jordan Crouse <jordan.crouse@amd.com>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
-	with the same regression
-Message-ID: <20080912173933.GF6743@alberich.amd.com>
-References: <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com> <48B067B3.6020008@numericable.fr> <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com> <48B06FF9.1030404@numericable.fr> <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com> <48B07409.60905@numericable.fr> <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com> <48B074E1.9020106@numericable.fr> <86802c440808231345u7c4f7710k5878928239507b10@mail.gmail.com> <86802c440808231405u42fa8024r89eccc907f36d99e@mail.gmail
+	Fri, 12 Sep 2008 13:42:38 -0400
+Message-ID: <48CAA9D4.4090000@oracle.com>
+Date: Fri, 12 Sep 2008 10:41:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <86802c440808231405u42fa8024r89eccc907f36d99e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 12 Sep 2008 17:39:56.0730 (UTC) FILETIME=[9267E1A0:01C914FE]
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
+Subject: Re: [RFC/PATCH] dontdiff: generate from gitignore
+References: <20080901150951.5cba4dc7@infradead.org> <20080901231419.GA5602@x200.localdomain> <20080912101840.e0b6dd8c.randy.dunlap@oracle.com> <alpine.LFD.1.10.0809121025460.3300@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809121025460.3300@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 23, 2008 at 02:05:19PM -0700, Yinghai Lu wrote:
-> Jordan, or others for AMD could access SB600
-> can you check ATI SB600 doc to produce one quirks patch to set the
-> magic bit to hide 00:14.0 BAR1 to OS ?
+Linus Torvalds wrote:
+> 
+> On Fri, 12 Sep 2008, Randy Dunlap wrote:
+>> Generate the "dontdiff" file from the .gitignore files.
+> 
+> t's not quite as simple as that, though.
+> 
+> The .gitignore files are fundamentally location hierarchy-aware, so a 
+> ignore entry in one subdirectory only affects that subdirectory 
+> (recursively), so if you flatten then, you should take that into account.
+> 
+> As far as I can tell, your script will generate lots of incorrect entries 
+> due to this. Eg, it will generate
+> 
+> 	parse.[ch]
+> 
+> as a dontdiff pattern, because scripts/genksyms/.gitignore has that, but 
+> that means that now it will ignore parse.c in all the _other_ places, 
+> where it *isn't* a generated file (ie mm/parse.c).
 
-I know this is a very late reply, but
-is there still a quirk desired to hide BAR1 of SB600 SMBus device?
+Yes, that's one of the reasons that it contains "RFC" in $subject.
+There's also no handling of !pattern .gitignore lines....
 
-If yes, I'll provide a patch asap.
+AFAIK, diff with a dontdiff file does not allow/support full pathname
+hierarchies like .gitignore does, so this is probably a futile exercise.  ??
 
-
-Regards,
-
-Andreas
-
-
-
-
+-- 
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
