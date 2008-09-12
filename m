@@ -1,151 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYILHF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbYILHFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbYILHF3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 03:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbYILHFV
+	id S1752305AbYILHFs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 03:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYILHFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 03:05:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39169 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750704AbYILHFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 03:05:20 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18PGfAVexUPndg2bl7MfdBPqPcET0yLDnwlM5q3ZE
-	7aiMAvRJyGuMGO
-Subject: Re: [PATCH] sched: Fix __load_balance_iterator() for cfq with only
-	one task
-From: Mike Galbraith <efault@gmx.de>
-To: ego@in.ibm.com
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-In-Reply-To: <20080912063539.GB4872@in.ibm.com>
-References: <20080905123004.GD6238@in.ibm.com>
-	 <1220627628.11202.16.camel@twins.programming.kicks-ass.net>
-	 <1220635424.11202.20.camel@twins.programming.kicks-ass.net>
-	 <20080912063539.GB4872@in.ibm.com>
-Content-Type: multipart/mixed; boundary="=-5W1xWAkVyhD4q48V6XJH"
-Date: Fri, 12 Sep 2008 09:05:12 +0200
-Message-Id: <1221203112.28541.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.75
+	Fri, 12 Sep 2008 03:05:35 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:32463 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750901AbYILHFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 03:05:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=YcxUDLcxfU7MXxXZXvtLpKP1UlwjXkV0rgIoooPHoiNZhoxeB+iwICx6adkHKu0e4/
+         ICxF1vPw/AwheZr7b9rGB2JY0peduJLh0VVExEoQ2NfsFIAiCIFvZdS4bNePnQV8SA9n
+         usBKheRC2ba4jOXtfSvYLfOtRaVJn8OfM5X4c=
+Date: Fri, 12 Sep 2008 09:05:25 +0200
+To: David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.28] tcp_ipv6: fix use of uninitialized memory
+Message-ID: <20080912070525.GA22276@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From 6544c4074aa5dde2e3f4d3e02f5601c1c33b770e Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Tue, 9 Sep 2008 07:17:32 +0200
+Subject: [PATCH] tcp_ipv6: fix use of uninitialized memory
 
---=-5W1xWAkVyhD4q48V6XJH
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+inet6_rsk() is called on a struct request_sock * before we
+have checked whether the socket is an ipv6 socket or a ipv6-
+mapped ipv4 socket. The access that triggers this is the
+inet_rsk(rsk)->inet6_rsk_offset dereference in inet6_rsk().
 
-On Fri, 2008-09-12 at 12:05 +0530, Gautham R Shenoy wrote:
+This is arguably not a critical error as the inet6_rsk_offset
+is only used to compute a pointer which is never really used
+(in the code path in question) anyway. But it might be a
+latent error, so let's fix it.
 
-> Mike, with what --oltp-* mode did you run the sysbench test?
+Spotted by kmemcheck.
 
-My cobbled together via google test script is attached.
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ net/ipv6/tcp_ipv6.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-	-Mike
-
---=-5W1xWAkVyhD4q48V6XJH
-Content-Disposition: attachment; filename=sysbench.test
-Content-Type: application/x-shellscript; name=sysbench.test
-Content-Transfer-Encoding: 7bit
-
-#!/bin/sh
-
-dbtype=mysql
-#dbtype=pgsql
-
-tablesize="100000"
-
-case $dbtype in
-    mysql)
-        connect="--mysql-host=127.0.0.1 --mysql-port=3306 --mysql-db=sbtest --mysql-user=mikeg"
-        common="--test=oltp --db-driver=mysql --oltp-table-size=${tablesize}"
-        ;;
-    pgsql)
-	sudo sh -c 'echo 134217728 > /proc/sys/kernel/shmmax'
-	pg_ctl -D /home/mikeg/postgres -l logfile start
-	sleep 5
-#	dropdb sbtest
-#	createdb sbtest
-#	sysbench --test=oltp --pgsql-user=mikeg --db-driver=pgsql --oltp-table-size=100000 prepare
-
-#        connect="--pgsql-host=127.0.0.1 --pgsql-port=5432 --pgsql-db=sbtest --pgsql-user=mikeg"
-        connect="--pgsql-host="" --pgsql-port=5432 --pgsql-db=sbtest --pgsql-user=mikeg"
-        common="--test=oltp --db-driver=pgsql --oltp-table-size=${tablesize}"
-        ;;
-    *)
-        echo "Unknown dbtype";
-        exit 1;
-        ;;
-esac
-
-# system setup
-steps="8 1 2 4 8 16 32 64 128 256"
-# steps="256"
-requests="10000"
-flavor=`uname -r`
-
-# test type, ro/rw
-testtype="ro"
-resultdir="sysbench_results/${RUNID}"
-mkdir -p ${resultdir}
-args="${common} ${connect} --max-time=60 --max-requests=0 --oltp-test-mode=complex --oltp-dist-iter=16"
-
-case ${testtype} in
-    ro)
-        args="${args} --oltp-read-only=on --oltp-skip-trx=off"
-        ;;
-    rw)
-        args="${args} --oltp-read-only=off"
-        test ${dbtype} = "mysql" && args="${args} --oltp-skip-trx=on"
-        test ${dbtype} = "mysql" || args="${args} --oltp-skip-trx=off"
-        ;;
-esac
-
-resultfile() {
-    local threads=$1
-    echo ${resultdir}/${flavor}.${dbtype}.${testtype}.${threads}
-}
-plotdata=`echo ${resultdir}/${flavor}.${dbtype}.${testtype}.plot | tr '.-' _`
-
-rm -f ${plotdata}
-rm -f ${resultdir}/${flavor}.${testtype}.*
-
-echo -n > ${plotdata}
-
-for threads in ${steps}
-do
-    cmd="sysbench --num-threads=${threads} ${args} run"
-    out=`resultfile ${threads}`
-    echo ${cmd} > ${out}
-    echo "Testing with ${threads}"
-    success=0
-    while test ${success} -eq 0;
-    do
-        date
-        date >> ${out}
-        $cmd >> ${out} && success=1
-        test ${success} -eq 0 && (echo "Test failed, restarting")
-    done
-    cat ${out}
-    awk '/read.write requests/ {sub("^.", "", $4); print $4}' ${out} >> ${plotdata}
-done
-
-# Shutdown
-case $dbtype in
-    mysql)
-        ;;
-    pgsql)
-	pg_ctl -D /home/mikeg/postgres -l logfile stop
-        ;;
-esac
-
---=-5W1xWAkVyhD4q48V6XJH--
+diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
+index 5b90b36..c9b6c13 100644
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -1286,7 +1286,7 @@ static struct sock * tcp_v6_syn_recv_sock(struct sock *sk, struct sk_buff *skb,
+ 					  struct request_sock *req,
+ 					  struct dst_entry *dst)
+ {
+-	struct inet6_request_sock *treq = inet6_rsk(req);
++	struct inet6_request_sock *treq;
+ 	struct ipv6_pinfo *newnp, *np = inet6_sk(sk);
+ 	struct tcp6_sock *newtcp6sk;
+ 	struct inet_sock *newinet;
+@@ -1350,6 +1350,7 @@ static struct sock * tcp_v6_syn_recv_sock(struct sock *sk, struct sk_buff *skb,
+ 		return newsk;
+ 	}
+ 
++	treq = inet6_rsk(req);
+ 	opt = np->opt;
+ 
+ 	if (sk_acceptq_is_full(sk))
+-- 
+1.5.5.1
 
