@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbYILVMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbYILVOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758305AbYILVMN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 17:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757959AbYILVL5
+	id S1758096AbYILVOx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 17:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYILVOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 17:11:57 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:53031 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757610AbYILVL4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 17:11:56 -0400
-From: David Sanders <linux@sandersweb.net>
-Reply-To: linux@sandersweb.net
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: nops in virtual pc x86
-Date: Fri, 12 Sep 2008 17:11:47 -0400
-User-Agent: KMail/1.9.5
-Cc: "the arch/x86 maintainers" <x86@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Fri, 12 Sep 2008 17:14:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43184 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752508AbYILVOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 17:14:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [Bug #11276] build error: CONFIG_OPTIMIZE_INLINING=y causes gcc 4.2 to do stupid things
+Date: Fri, 12 Sep 2008 23:19:17 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <SpS7rta8n4.A.W3.8esyIB@albercik> <48CAD51D.4060908@oracle.com>
+In-Reply-To: <48CAD51D.4060908@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809121711.48558.linux@sandersweb.net>
+Message-Id: <200809122319.18633.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, I thought we determined that multibyte nops were causing virtual pc to 
-die and removing them made it work fine.  Then why do I see this
-$ cat /proc/cpuinfo | grep nopl
+On Friday, 12 of September 2008, Randy Dunlap wrote:
+> Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11276
+> > Subject		: build error: CONFIG_OPTIMIZE_INLINING=y causes gcc 4.2 to do stupid things
+> > Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+> > Date		: 2008-08-06 17:18 (38 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121804329014332&w=4
+> > 		  http://lkml.org/lkml/2008/7/22/353
+> > Handled-By	: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> > Patch		: http://lkml.org/lkml/2008/7/22/364
+> 
+> Yes, I still see this build error.
+> What would it take to have Bjorn's patch merged into mainline?
 
-flags           : fpu vme pse tsc msr pae cx8 sep pge cmov acpi mmx fxsr sse 
-sse2 constant_tsc up nopl lahf_lm
-             
-It seems the detection code in common.c is saying nops are supported.  Huh?
+Well, send a request to Andrew I think (with the patch appended).
 
-SO I ran this code:
-#include <stdio.h>
-#include <time.h>
-
-int main()
-{
-	unsigned char nopl1[2] = { 0x90, 0xc3 };
-	unsigned char nopl2[3] = { 0x66, 0x90, 0xc3 };
-	unsigned char nopl3[4] = { 0x0f, 0x1f, 0x00, 0xc3 };
-	unsigned char nopl4[5] = { 0x0f, 0x1f, 0x40, 0x00, 0xc3 };
-	unsigned char nopl5[6] = { 0x0f, 0x1f, 0x44, 0x00, 0x00, 0xc3 };
-	unsigned char nopl6[7] = { 0x66, 0x0f, 0x1f, 0x44, 0x00, 0x00, 0xc3 };
-	unsigned char nopl7[8] = { 0x0f, 0x1f, 0x80, 0x00, 0x00, 0x00, 0x00, 0xc3 };
-	unsigned char nopl8[9] = { 0x0f, 0x1f, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00, 
-0xc3 };
-	
-	int i;
-	for (i=0;i<100000;i++) {
-		((void (*)()) nopl1)();
-		((void (*)()) nopl2)();
-		((void (*)()) nopl3)();
-		((void (*)()) nopl4)();
-		((void (*)()) nopl5)();
-		((void (*)()) nopl6)();
-		((void (*)()) nopl7)();
-		((void (*)()) nopl8)();
-	}
-	
-	printf("Executed 800,000 NOPLs in %d ticks with no errors.\n", clock());
-	return 0;
-}
-
-It seems I can run 800000 nopl's without anyone complaining in user space.
-
-Could it perhaps depend on the context the nops appear in?
-
+Thanks,
+Rafael
