@@ -1,100 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYILHAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbYILHF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbYILHAW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 03:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbYILHAI
+	id S1753309AbYILHF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 03:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbYILHFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 03:00:08 -0400
-Received: from arirang.snu.ac.kr ([147.46.240.156]:1552 "EHLO
-	arirang.snu.ac.kr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbYILHAH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 03:00:07 -0400
-X-Greylist: delayed 1244 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Sep 2008 03:00:07 EDT
-From: "Eunsung Kim" <eskim@arirang.snu.ac.kr>
-To: <linux-kernel@vger.kernel.org>
-Subject: Performance of "kirqd" in SMP Internet Server 
-Date: Fri, 12 Sep 2008 15:39:20 +0900
-Message-ID: <001f01c914a2$4c856d80$e5904880$@snu.ac.kr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AckUokkjLsXWEtJNQ72yesduklz2Hw==
-Content-Language: ko
+	Fri, 12 Sep 2008 03:05:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39169 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750704AbYILHFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 03:05:20 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18PGfAVexUPndg2bl7MfdBPqPcET0yLDnwlM5q3ZE
+	7aiMAvRJyGuMGO
+Subject: Re: [PATCH] sched: Fix __load_balance_iterator() for cfq with only
+	one task
+From: Mike Galbraith <efault@gmx.de>
+To: ego@in.ibm.com
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+In-Reply-To: <20080912063539.GB4872@in.ibm.com>
+References: <20080905123004.GD6238@in.ibm.com>
+	 <1220627628.11202.16.camel@twins.programming.kicks-ass.net>
+	 <1220635424.11202.20.camel@twins.programming.kicks-ass.net>
+	 <20080912063539.GB4872@in.ibm.com>
+Content-Type: multipart/mixed; boundary="=-5W1xWAkVyhD4q48V6XJH"
+Date: Fri, 12 Sep 2008 09:05:12 +0200
+Message-Id: <1221203112.28541.6.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.75
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there.
 
-I am looking for improving network interrupt balancing mechanism in SMP
-internet server.
-So I have analyzed kirqd in Linux kernel and I have done the following
-experiment to realize impact of kirqd.
+--=-5W1xWAkVyhD4q48V6XJH
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
--------------------------------------------------------------
+On Fri, 2008-09-12 at 12:05 +0530, Gautham R Shenoy wrote:
 
-- Server spec.
-CPU: AMD Phenom 9550 Quad-Core (each core 2.2 GHz)
-Network card: RealTek Gigabit Ethernet
-Network driver: R8169 disabled NAPI
+> Mike, with what --oltp-* mode did you run the sysbench test?
 
-- Client spec.
-CPU: Intel Pentium 4 CPU 3.20GHz
-Network card: Marvell Gigabit Ethernet
+My cobbled together via google test script is attached.
 
-- Network
-Connected with gigabit switch
+	-Mike
 
-- Benchmark tool
-Netperf (throughput for TCP_STREAM in 10 mins)
+--=-5W1xWAkVyhD4q48V6XJH
+Content-Disposition: attachment; filename=sysbench.test
+Content-Type: application/x-shellscript; name=sysbench.test
+Content-Transfer-Encoding: 7bit
 
-- Comparison (throughput)
-1. kernel 2.6.19.2 (smp_affinity of network irq is CPU 0.)
-2. kernel 2.6.19.2 enabled kirqd
+#!/bin/sh
 
--------------------------------------------------------------
+dbtype=mysql
+#dbtype=pgsql
 
-Experimental result present that there is no difference between 1 and 2.
-Both have achieved throughput of about 940 Mbps via the experiment.
-Throughput of 1 describes that netperf traffic can't saturate the server
-system and then it is normal traffic.
+tablesize="100000"
 
-I have thought that kirqd will 
-- get "good" performance due to removing "receive livelock" of a CPU under
-high traffic.
-- get "poor" performance due to cache miss under low or normal traffic.
+case $dbtype in
+    mysql)
+        connect="--mysql-host=127.0.0.1 --mysql-port=3306 --mysql-db=sbtest --mysql-user=mikeg"
+        common="--test=oltp --db-driver=mysql --oltp-table-size=${tablesize}"
+        ;;
+    pgsql)
+	sudo sh -c 'echo 134217728 > /proc/sys/kernel/shmmax'
+	pg_ctl -D /home/mikeg/postgres -l logfile start
+	sleep 5
+#	dropdb sbtest
+#	createdb sbtest
+#	sysbench --test=oltp --pgsql-user=mikeg --db-driver=pgsql --oltp-table-size=100000 prepare
 
-But the result for normal traffic doesn't so.
-Is it correct?
+#        connect="--pgsql-host=127.0.0.1 --pgsql-port=5432 --pgsql-db=sbtest --pgsql-user=mikeg"
+        connect="--pgsql-host="" --pgsql-port=5432 --pgsql-db=sbtest --pgsql-user=mikeg"
+        common="--test=oltp --db-driver=pgsql --oltp-table-size=${tablesize}"
+        ;;
+    *)
+        echo "Unknown dbtype";
+        exit 1;
+        ;;
+esac
 
-I had no idea of how to generate high traffic and couldn't perform it.
-How can I generate high traffic to saturate the server system?
+# system setup
+steps="8 1 2 4 8 16 32 64 128 256"
+# steps="256"
+requests="10000"
+flavor=`uname -r`
 
-I wonder whether my experimental setup is correct or not.
-How do I have to configure experiment to discover a strong or weak point of
-kirqd?
+# test type, ro/rw
+testtype="ro"
+resultdir="sysbench_results/${RUNID}"
+mkdir -p ${resultdir}
+args="${common} ${connect} --max-time=60 --max-requests=0 --oltp-test-mode=complex --oltp-dist-iter=16"
 
-Please comment on my experiment result and setup, and
-tell me the web link if there are experiment materials for the system
-performance of kirqd
+case ${testtype} in
+    ro)
+        args="${args} --oltp-read-only=on --oltp-skip-trx=off"
+        ;;
+    rw)
+        args="${args} --oltp-read-only=off"
+        test ${dbtype} = "mysql" && args="${args} --oltp-skip-trx=on"
+        test ${dbtype} = "mysql" || args="${args} --oltp-skip-trx=off"
+        ;;
+esac
 
+resultfile() {
+    local threads=$1
+    echo ${resultdir}/${flavor}.${dbtype}.${testtype}.${threads}
+}
+plotdata=`echo ${resultdir}/${flavor}.${dbtype}.${testtype}.plot | tr '.-' _`
 
-regards.
+rm -f ${plotdata}
+rm -f ${resultdir}/${flavor}.${testtype}.*
 
--- Eunsung
+echo -n > ${plotdata}
 
-+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
- Eunsung Kim
- PhD candidate
- Distibuted Computing System Laboratory
- School of Computer Science and Engineering
- Seoul National University
- Tel: +82-2-876-2159
- Email: eskim@dcslab.snu.ac.kr
-+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+= 
+for threads in ${steps}
+do
+    cmd="sysbench --num-threads=${threads} ${args} run"
+    out=`resultfile ${threads}`
+    echo ${cmd} > ${out}
+    echo "Testing with ${threads}"
+    success=0
+    while test ${success} -eq 0;
+    do
+        date
+        date >> ${out}
+        $cmd >> ${out} && success=1
+        test ${success} -eq 0 && (echo "Test failed, restarting")
+    done
+    cat ${out}
+    awk '/read.write requests/ {sub("^.", "", $4); print $4}' ${out} >> ${plotdata}
+done
 
+# Shutdown
+case $dbtype in
+    mysql)
+        ;;
+    pgsql)
+	pg_ctl -D /home/mikeg/postgres -l logfile stop
+        ;;
+esac
 
+--=-5W1xWAkVyhD4q48V6XJH--
 
