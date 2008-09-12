@@ -1,134 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbYILT5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYILT62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbYILT5b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 15:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbYILT5X
+	id S1757566AbYILT62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 15:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYILT6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 15:57:23 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:34032 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754622AbYILT5W (ORCPT
+	Fri, 12 Sep 2008 15:58:20 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:64723 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754764AbYILT6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 15:57:22 -0400
+	Fri, 12 Sep 2008 15:58:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PR3VaDPShKxQGwwexHGLtyFUQN23M7vl+zoPcLWLlcVCdamsn9J21yj15wNzwZ0Ad5
-         981ecij8Yw4aidue1weki12oX2czoCygkk4COGN+vOi3mN5cy18qDFhqJR0VM3mhQazF
-         IL9CgzAQytzCM7h21gK4v3sqLGZitinwU6PFM=
-Message-ID: <86802c440809121257s23e5193aqb7939fdc94473c9d@mail.gmail.com>
-Date: Fri, 12 Sep 2008 12:57:21 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] x86: io-apic - do not use KERN_DEBUG marker too much
-Cc: "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-In-Reply-To: <86802c440809121255k1af2881dwb00ebb6f4a58057b@mail.gmail.com>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=XzJQJZPilqdsfTKSX06ztdAtIUyhATiCqNbOrNezSu3G5zYAa0zCE8afr/uBYbuk5v
+         hg5V+dTPU5fvdVcpjVWtbDV257vEA05WsrH/QiyqO+BHIzUOeXonVKse3dHUiFMU2s0U
+         rVVPP/P4OdAvNxK95o3OB84RxIRSEHBxVaFQ8=
+Date: Fri, 12 Sep 2008 23:58:24 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: apic - fix unused vars warning in calibrate_APIC_clock
+Message-ID: <20080912195824.GA8410@lenovo>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080908153806.GB7278@lenovo>
-	 <86802c440809121255k1af2881dwb00ebb6f4a58057b@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 12:55 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Mon, Sep 8, 2008 at 8:38 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
->> Do not use KERN_DEBUG several times on the same line being printed.
->> Introduced by mine previous patch, sorry.
->>
->> Reported-by: Yinghai Lu <yhlu.kernel@gmail.com>
->> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->> ---
->>
->> Index: linux-2.6.git/arch/x86/kernel/io_apic.c
->> ===================================================================
->> --- linux-2.6.git.orig/arch/x86/kernel/io_apic.c        2008-09-08 19:32:34.000000000 +0400
->> +++ linux-2.6.git/arch/x86/kernel/io_apic.c     2008-09-08 19:34:10.000000000 +0400
->> @@ -1526,11 +1526,16 @@ static void __init setup_IO_APIC_irqs(vo
->>
->>                        idx = find_irq_entry(apic, pin, mp_INT);
->>                        if (idx == -1) {
->> -                               apic_printk(APIC_VERBOSE,
->> -                                       KERN_DEBUG " %d-%d",
->> -                                       mp_ioapics[apic].mp_apicid, pin);
->> -                               if (!notcon)
->> +                               if (!notcon) {
->>                                        notcon = 1;
->> +                                       apic_printk(APIC_VERBOSE,
->> +                                               KERN_DEBUG " %d-%d",
->> +                                               mp_ioapics[apic].mp_apicid,
->> +                                               pin);
->> +                               } else
->> +                                       apic_printk(APIC_VERBOSE, " %d-%d",
->> +                                               mp_ioapics[apic].mp_apicid,
->> +                                               pin);
->>                                continue;
->>                        }
->>
->> @@ -1546,14 +1551,14 @@ static void __init setup_IO_APIC_irqs(vo
->>                }
->>                if (notcon) {
->>                        apic_printk(APIC_VERBOSE,
->> -                               KERN_DEBUG " (apicid-pin) not connected\n");
->> +                               " (apicid-pin) not connected\n");
->>                        notcon = 0;
->>                }
->>        }
->>
->>        if (notcon)
->>                apic_printk(APIC_VERBOSE,
->> -                       KERN_DEBUG " (apicid-pin) not connected\n");
->> +                       " (apicid-pin) not connected\n");
->>  }
->>
->>  /*
->>
->
-> still some wrong
->
-> init IO_APIC IRQs
->  8-0<7> 0 add_pin_to_irq: irq 1 --> apic 0 pin 1
-> IOAPIC[0]: Set routing entry (8-1 -> 0x31 -> IRQ 1 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 0 --> apic 0 pin 2
-> IOAPIC[0]: Set routing entry (8-2 -> 0x30 -> IRQ 0 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 3 --> apic 0 pin 3
-> IOAPIC[0]: Set routing entry (8-3 -> 0x33 -> IRQ 3 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 4 --> apic 0 pin 4
-> IOAPIC[0]: Set routing entry (8-4 -> 0x34 -> IRQ 4 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 5 --> apic 0 pin 5
-> IOAPIC[0]: Set routing entry (8-5 -> 0x35 -> IRQ 5 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 6 --> apic 0 pin 6
-> IOAPIC[0]: Set routing entry (8-6 -> 0x36 -> IRQ 6 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 7 --> apic 0 pin 7
-> IOAPIC[0]: Set routing entry (8-7 -> 0x37 -> IRQ 7 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 8 --> apic 0 pin 8
-> IOAPIC[0]: Set routing entry (8-8 -> 0x38 -> IRQ 8 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 9 --> apic 0 pin 9
-> IOAPIC[0]: Set routing entry (8-9 -> 0x39 -> IRQ 9 Mode:1 Active:0)
->  0 add_pin_to_irq: irq 10 --> apic 0 pin 10
-> IOAPIC[0]: Set routing entry (8-10 -> 0x3a -> IRQ 10 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 11 --> apic 0 pin 11
-> IOAPIC[0]: Set routing entry (8-11 -> 0x3b -> IRQ 11 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 12 --> apic 0 pin 12
-> IOAPIC[0]: Set routing entry (8-12 -> 0x3c -> IRQ 12 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 13 --> apic 0 pin 13
-> IOAPIC[0]: Set routing entry (8-13 -> 0x3d -> IRQ 13 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 14 --> apic 0 pin 14
-> IOAPIC[0]: Set routing entry (8-14 -> 0x3e -> IRQ 14 Mode:0 Active:0)
->  0 add_pin_to_irq: irq 15 --> apic 0 pin 15
-> IOAPIC[0]: Set routing entry (8-15 -> 0x3f -> IRQ 15 Mode:0 Active:0)
->  8-16 8-17 8-18 8-19 8-20 8-21 8-22 8-23 (apicid-pin) not connected
->  9-0 9-1 9-2 9-3 9-4 9-5 9-6 9-7 9-8 9-9 9-10 9-11 9-12 9-13 9-14 9-15
-> 9-16 9-17 9-18 9-19 9-20 9-21 9-22 9-23 (apicid-pin) not connected
->
+If we don't have CONFIG_X86_PM_TIMER=y compiler warns about
+unused variables. Move PM timer based calibration into a
+separate procedure and make the compiler happy.
 
-only first one not connected at first, and ...
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-why not just revert those two patches?
+Please review.
 
-YH
+Index: linux-2.6.git/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/apic.c	2008-09-12 22:46:40.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/apic.c	2008-09-12 23:55:49.000000000 +0400
+@@ -538,14 +538,51 @@ static void __init lapic_cal_handler(str
+ 	}
+ }
+ 
++static int __init calibrate_by_pmtimer(long deltapm, long *delta)
++{
++	const long pm_100ms = PMTMR_TICKS_PER_SEC / 10;
++	const long pm_thresh = pm_100ms / 100;
++	unsigned long mult;
++	u64 res;
++
++#ifndef CONFIG_X86_PM_TIMER
++	return -1;
++#endif
++
++	apic_printk(APIC_VERBOSE, "... PM timer delta = %ld\n", deltapm);
++
++	/* Check, if the PM timer is available */
++	if (!deltapm)
++		return -1;
++
++	mult = clocksource_hz2mult(PMTMR_TICKS_PER_SEC, 22);
++
++	if (deltapm > (pm_100ms - pm_thresh) &&
++	    deltapm < (pm_100ms + pm_thresh)) {
++		apic_printk(APIC_VERBOSE, "... PM timer result ok\n");
++	} else {
++		res = (((u64)deltapm) *  mult) >> 22;
++		do_div(res, 1000000);
++		printk(KERN_WARNING "APIC calibration not consistent "
++			"with PM Timer: %ldms instead of 100ms\n",
++			(long)res);
++		/* Correct the lapic counter value */
++		res = (((u64)(*delta)) * pm_100ms);
++		do_div(res, deltapm);
++		printk(KERN_INFO "APIC delta adjusted to PM-Timer: "
++			"%lu (%ld)\n", (unsigned long)res, *delta);
++		*delta = (long)res;
++	}
++
++	return 0;
++}
++
+ static int __init calibrate_APIC_clock(void)
+ {
+ 	struct clock_event_device *levt = &__get_cpu_var(lapic_events);
+-	const long pm_100ms = PMTMR_TICKS_PER_SEC/10;
+-	const long pm_thresh = pm_100ms/100;
+ 	void (*real_handler)(struct clock_event_device *dev);
+ 	unsigned long deltaj;
+-	long delta, deltapm;
++	long delta;
+ 	int pm_referenced = 0;
+ 
+ 	local_irq_disable();
+@@ -575,36 +612,9 @@ static int __init calibrate_APIC_clock(v
+ 	delta = lapic_cal_t1 - lapic_cal_t2;
+ 	apic_printk(APIC_VERBOSE, "... lapic delta = %ld\n", delta);
+ 
+-#ifdef CONFIG_X86_PM_TIMER
+-	/* Check, if the PM timer is available */
+-	deltapm = lapic_cal_pm2 - lapic_cal_pm1;
+-	apic_printk(APIC_VERBOSE, "... PM timer delta = %ld\n", deltapm);
+-
+-	if (deltapm) {
+-		unsigned long mult;
+-		u64 res;
+-
+-		mult = clocksource_hz2mult(PMTMR_TICKS_PER_SEC, 22);
+-
+-		if (deltapm > (pm_100ms - pm_thresh) &&
+-		    deltapm < (pm_100ms + pm_thresh)) {
+-			apic_printk(APIC_VERBOSE, "... PM timer result ok\n");
+-		} else {
+-			res = (((u64) deltapm) *  mult) >> 22;
+-			do_div(res, 1000000);
+-			printk(KERN_WARNING "APIC calibration not consistent "
+-			       "with PM Timer: %ldms instead of 100ms\n",
+-			       (long)res);
+-			/* Correct the lapic counter value */
+-			res = (((u64) delta) * pm_100ms);
+-			do_div(res, deltapm);
+-			printk(KERN_INFO "APIC delta adjusted to PM-Timer: "
+-			       "%lu (%ld)\n", (unsigned long) res, delta);
+-			delta = (long) res;
+-		}
+-		pm_referenced = 1;
+-	}
+-#endif
++	/* we trust the PM based calibration if possible */
++	pm_referenced = !calibrate_by_pmtimer(lapic_cal_pm2 - lapic_cal_pm1,
++					&delta);
+ 
+ 	/* Calculate the scaled math multiplication factor */
+ 	lapic_clockevent.mult = div_sc(delta, TICK_NSEC * LAPIC_CAL_LOOPS,
+@@ -646,7 +656,10 @@ static int __init calibrate_APIC_clock(v
+ 
+ 	levt->features &= ~CLOCK_EVT_FEAT_DUMMY;
+ 
+-	/* We trust the pm timer based calibration */
++	/*
++	 * PM timer calibration failed or not turned on
++	 * so lets try APIC timer based calibration
++	 */
+ 	if (!pm_referenced) {
+ 		apic_printk(APIC_VERBOSE, "... verify APIC timer\n");
+ 
