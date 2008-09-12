@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYILRM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbYILRTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbYILRM1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 13:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYILRMR
+	id S1756513AbYILRTQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 13:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYILRS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 13:12:17 -0400
-Received: from c60.cesmail.net ([216.154.195.49]:34923 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752714AbYILRMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 13:12:16 -0400
-Subject: Re: I need help with a sparse warning
-From: Pavel Roskin <proski@gnu.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>
-In-Reply-To: <48C9DC5C.3040109@lwfinger.net>
-References: <48C9D040.8010107@lwfinger.net> <ada4p4mm6iy.fsf@cisco.com>
-	 <48C9DC5C.3040109@lwfinger.net>
-Content-Type: text/plain
-Date: Fri, 12 Sep 2008 13:12:12 -0400
-Message-Id: <1221239532.13346.5.camel@dv>
+	Fri, 12 Sep 2008 13:18:59 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:28086 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780AbYILRS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 13:18:58 -0400
+Date: Fri, 12 Sep 2008 10:17:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       dwmw2@infradead.org, torvalds@linux-foundation.org
+Subject: Re: [path] don't diff generated firmware files
+Message-Id: <20080912101742.b3e2ea33.randy.dunlap@oracle.com>
+In-Reply-To: <20080901231419.GA5602@x200.localdomain>
+References: <20080901150951.5cba4dc7@infradead.org>
+	<20080901231419.GA5602@x200.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-11 at 22:05 -0500, Larry Finger wrote:
-> > I would guess you want something like:
-> > 
-> > 	priv->rx_mtu = le16_to_cpu(((__force __le16 *) bootrec->data)[20]);
-> > 
-> > (__force is what shuts up sparse, and as far as I can see, the size_t
-> > cast is useless, since the result will be promoted anyway)
+On Tue, 2 Sep 2008 03:14:19 +0400 Alexey Dobriyan wrote:
+
+> On Mon, Sep 01, 2008 at 03:09:51PM -0700, Arjan van de Ven wrote:
+> > With the new firmware infrastructure in 2.6.27, some files are generated and shouldn't be
+> > diffed; add these 2 to the "dontdiff" file
 > 
-> Yes, that one works. As you suspected, this section is parsing data 
-> from the firmware.
+> > --- linux.trees.git/Documentation/dontdiff
+> > +++ linux.trees.git/Documentation/dontdiff
+> > @@ -5,6 +5,8 @@
+> >  *.css
+> >  *.dvi
+> >  *.eps
+> > +*.fw.gen.S
+> > +*.fw
+> 
+> Dontdiff is obsoleted because of .gitignore and should probably be auto-generated
+> from them.
 
-I believe __force should be the last resort.  If you want to read a
-16-bit little endian value at the given offset, I suggest that you use
-le16_to_cpup(), which operates on pointers and does the cast for you.
+Let's please not assume that everyone uses git nor force that.
 
-A better but more elaborate solution would be to define a structure that
-would have __le16 rx_mtu at the offset 40.  Then you can cast bootrec to
-that structure and apply le16_to_cpu() to that field.
-
--- 
-Regards,
-Pavel Roskin
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
