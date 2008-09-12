@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbYILAYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYILAfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbYILAYp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 20:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYILAYg
+	id S1755555AbYILAfT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 20:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYILAfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 20:24:36 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:50761 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbYILAYf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 20:24:35 -0400
-X-Mailer: QUALCOMM Windows Eudora Version 7.1.0.9
-Date: Fri, 12 Sep 2008 01:03:03 +0200
-To: linux-kernel@vger.kernel.org
-From: Harun Scheutzow <harun04@scheutzow.de>
-Subject: Re: vfat file system extreme fragmentation on multiprocessor
-Cc: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-In-Reply-To: <20080911212001.GD31271@csclub.uwaterloo.ca>
-References: <0ML29c-1KdqyO1YV1-0001g5@mrelayeu.kundenserver.de>
- <20080911191049.GB31271@csclub.uwaterloo.ca>
- <0ML31I-1KdsXT0vcs-0006v2@mrelayeu.kundenserver.de>
- <20080911212001.GD31271@csclub.uwaterloo.ca>
+	Thu, 11 Sep 2008 20:35:05 -0400
+Received: from postel.suug.ch ([194.88.212.233]:54341 "EHLO postel.suug.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753135AbYILAfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 20:35:04 -0400
+Date: Fri, 12 Sep 2008 02:35:23 +0200
+From: Thomas Graf <tgraf@suug.ch>
+To: David Miller <davem@davemloft.net>
+Cc: vegard.nossum@gmail.com, netdev@vger.kernel.org, penberg@cs.helsinki.fi,
+       mingo@elte.hu, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netlink: fix overrun in attribute iteration
+Message-ID: <20080912003522.GN20815@postel.suug.ch>
+References: <20080911205933.GA20032@localhost.localdomain> <20080911.150434.99620481.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Message-Id: <0ML25U-1KdwSf0P4s-0006TS@mrelayeu.kundenserver.de>
-X-Provags-ID: V01U2FsdGVkX19pdQG3ZZytkvZAdXJIq5y3NMSI71F1gTZaUr0
- 0s5KvAq77aQmtjW6a6oJyln2pPOlcsLHlCs7DPL5e5OV+RPQny
- O37oXOAi5Q02tt7XcP+Yw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080911.150434.99620481.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Why should C library fwrite() split anything? There is no good reason (unless in x86 64 KByte segmented model trying to emulate a flat model - old DOS). The 50 MByte go to write() in a single piece here.
+* David Miller <davem@davemloft.net> 2008-09-11 15:04
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Thomas, please review.
+> 
+> > diff --git a/include/net/netlink.h b/include/net/netlink.h
+> > index 18024b8..208fe5a 100644
+> > --- a/include/net/netlink.h
+> > +++ b/include/net/netlink.h
+> > @@ -702,7 +702,7 @@ static inline int nla_len(const struct nlattr *nla)
+> >   */
+> >  static inline int nla_ok(const struct nlattr *nla, int remaining)
+> >  {
+> > -	return remaining >= sizeof(*nla) &&
+> > +	return remaining >= (int) sizeof(*nla) &&
+> >  	       nla->nla_len >= sizeof(*nla) &&
+> >  	       nla->nla_len <= remaining;
+> >  }
 
-There are only very little "single operation"s in kernel nowadays. In most cases this is a good thing.
-
-Looks like fat/fatent.c fat_alloc_clusters() is limited to allocate only 4 clusters under a single lock.
-
-Found another assumption I do not like: cluster size >= 512. There are old FAT systems on SRAM cards having 128 byte/sector and cluster. But I don't want to have long filenames on them. Hope the 512 does not sit elsewhere, too.
-
-fat/inode.c __fat_get_block() /* TODO: multiple cluster allocation would be desirable */
-YES, OF COURSE. Only a single cluster is allocated at a time, no lock here, I can be happy I got still 8 clusters per fragment, might have been only 1.
-
-Harun
-
+Very nice catch, would never have thought of that.
