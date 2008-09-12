@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbYILWPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbYILWVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbYILWPh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 18:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756247AbYILWP0
+	id S1758057AbYILWVM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 18:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYILWU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 18:15:26 -0400
-Received: from tundra.namei.org ([65.99.196.166]:54427 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755495AbYILWPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 18:15:25 -0400
-Date: Sat, 13 Sep 2008 08:14:10 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-In-Reply-To: <SpS7rta8n4.A.i9G.ZcsyIB@albercik>
-Message-ID: <alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <SpS7rta8n4.A.i9G.ZcsyIB@albercik>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Fri, 12 Sep 2008 18:20:57 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33335 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755567AbYILWU5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 18:20:57 -0400
+Message-ID: <48CAEB40.9090303@zytor.com>
+Date: Fri, 12 Sep 2008 15:20:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Sanders <linux@sandersweb.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: nops in virtual pc x86
+References: <200809121711.48558.linux@sandersweb.net> <alpine.LFD.1.10.0809121501390.3337@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0809121501390.3337@nehalem.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008, Rafael J. Wysocki wrote:
-
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Linus Torvalds wrote:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
+> The thing is, afaik, Virtual PC will happily let the CPU execute all the 
+> user-space instructions, and thus they all work as well as if they were 
+> running on real hardware - since they _do_ run on real hardware.
 > 
+> But it is probably the case that Virtual PC will then do some "security 
+> checking" of any system code, possibly by JIT'ing it or just interpreting 
+> it, since it can't let the kernel run natively with privileges. That's 
+> what VMware does too, since older CPU's don't have virtualization support 
+> for ring0 programs.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
-> Subject		: /proc/net bug related to selinux
-> Submitter	: Andrew Morton <akpm@linux-foundation.org>
-> Date		: 2008-09-04 17:45 (9 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
+> And _that_ is presumably buggy, and never learnt about the "new" 
+> instructions in the PPro.
+> 
 
-I think this might be a regression caused by namespace changes which we 
-addressed in SELinux policy.  Which distro version & policy version is 
-this seen with?
+Actually, it's apparently worse than that.  The NOPL probe instruction 
+for dynamic testing gets executed in kernel space, and passes! 
+Apparently at that point (and beyond) it is okay, though.
 
+Microsoft quality stuff.
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+	-hpa
