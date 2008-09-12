@@ -1,72 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYILOdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbYILOjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYILOdA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYILOcw
+	id S1755553AbYILOjS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYILOi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:32:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57466 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbYILOcv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:32:51 -0400
-Subject: Re: [PATCH] firmware: Allow release-specific firmware dir
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joseph Fannin <jfannin@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Marcel Holtmann <marcel@holtmann.org>,
-       Thierry Vignaud <tvignaud@mandriva.com>,
-       David Miller <davem@davemloft.net>, jeffm@suse.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <20080912083927.GA13849@nineveh.local>
-References: <20080910.160505.14060698.davem@davemloft.net>
-	 <m27i9i9az9.fsf@vador.mandriva.com> <20080911134042.GB3293@kroah.com>
-	 <1221151165.6309.55.camel@californication>
-	 <20080911201541.GA18518@kroah.com>
-	 <1221165518.4077.17.camel@macbook.infradead.org>
-	 <20080911205738.GB11708@kroah.com>
-	 <1221167725.4077.34.camel@macbook.infradead.org>
-	 <20080911220700.GD5823@kroah.com>
-	 <1221171943.4077.59.camel@macbook.infradead.org>
-	 <20080912083927.GA13849@nineveh.local>
-Content-Type: text/plain
-Date: Fri, 12 Sep 2008 07:32:44 -0700
-Message-Id: <1221229964.3919.38.camel@macbook.infradead.org>
+	Fri, 12 Sep 2008 10:38:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58874 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752852AbYILOi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:38:58 -0400
+Date: Fri, 12 Sep 2008 10:38:14 -0400 (EDT)
+Message-Id: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, agk@redhat.com,
+       James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com,
+       stefan.bader@canonical.com, akpm@linux-foundation.org
+Subject: [PATCH 00/13] request-based dm-multipath
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-12 at 04:39 -0400, Joseph Fannin wrote:
-> On Thu, Sep 11, 2008 at 03:25:43PM -0700, David Woodhouse wrote:
-> > On Thu, 2008-09-11 at 15:07 -0700, Greg KH wrote:
-> <snip>
-> 
-> > Now, can we _please_ stop being bloody stupid? If there are _real_
-> > problems, like the one I fixed with commit 1cede1af last week, then I'm
-> > perfectly happy to deal with them. But stop making crap up.
-> 
-> I CAN'T INSTALL MORE THAN ONE KERNEL PACKAGE > v2.6.26.
-> 
-> IT'S NOT IMAGINARY.
-> 
-> IT USED TO WORK AND YOU BROKE IT.
+Hi Jens, James and Alasdair,
 
-Then your kernel packaging is broken. Fix it.
+This is a new version of request-based dm-multipath patches.
+The patches are created on top of 2.6.27-rc6 + Alasdair's dm patches
+for linux-next below:
+    dm-mpath-use-more-error-codes.patch
+    dm-mpath-remove-is_active-from-struct-dm_path.patch
 
-Or go an stand in the corner with the muppets who are whining that the
-move from arch/i386 to arch/x86 also broke their kernel packaging....
-and who refuse to fix that too.
+Major changes from the previous version (*) are:
+    - Moved busy state information for device/host to
+      q->backing_dev_info from q->queue_flags, since backing_dev_info
+      seems to be more appropriate location. (PATCH 03)
+      And corresponding changes to the scsi driver. (PATCH 04)
 
-Oh, wait...there weren't any of those; it wasn't even a _consideration_.
+    - Added a queue flag to indicate whether the block device is
+      request stackable or not, so that request stacking drivers
+      can avoid to stack request-based device on bio-based device.
+      (PATCH 05)
 
-You're just being an idiot, because people like to whine about firmware.
+    - Fixed the problem that requests are not flushed on flush suspend.
+      (PATCH 10)
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+    - Changed queue initialization method for bio-based dm devices
+      from blk_alloc_queue() to blk_init_queue(). (PATCH 11)
 
+    - Changed congestion check method in dm-multipath not to invoke
+      __choose_pgpath(). (PATCH 13)
+
+    (*) http://lkml.org/lkml/2008/3/19/478
+
+Some basic function/performance testings are done with NEC iStorage
+(active-active multipath), and no problem was found.
+Please review and apply if no problem.
+
+
+Summary of the patch-set:
+  01/13: block: add request data completion interface
+  02/13: block: add request submission interface
+  03/13: mm: export driver's busy state via backing_dev_info
+  04/13: scsi: export busy status
+  05/13: block: add a queue flag for request stacking support
+  06/13: dm: remove unused code (preparation for request-based dm)
+  07/13: dm: tidy local_init (preparation for request-based dm)
+  08/13: dm: prepare mempools on module init for request-based dm
+  09/13: dm: add target interface for request-based dm
+  10/13: dm: add core functions for request-based dm
+  11/13: dm: add a switch to enable request-based dm if target is ready
+  12/13: dm: reject requests violating limits for request-based dm
+  13/13: dm-mpath: convert to request-based from bio-based
+
+
+Summary of the design and request-based dm-multipath are below.
+
+BACKGROUND
+==========
+Currently, device-mapper (dm) is implemented as a stacking block device
+at bio level.  This bio-based implementation has an issue below
+on dm-multipath.
+
+    Because hook for I/O mapping is above block layer __make_request(),
+    contiguous bios can be mapped to different underlying devices
+    and these bios aren't merged into a request.
+    Dynamic load balancing could happen this situation, though
+    it has not been implemented yet.
+    Therefore, I/O mapping after bio merging is needed for better
+    dynamic load balancing.
+
+The basic idea to resolve the issue is to move multipathing layer
+down below the I/O scheduler, and it was proposed from Mike Christie
+as the block layer (request-based) multipath:
+    http://marc.info/?l=linux-scsi&m=115520444515914&w=2
+
+Mike's patch added new block layer device for multipath and didn't
+have dm interface.  So I modified his patch to be used from dm.
+It is request-based dm-multipath.
+
+
+DESIGN OVERVIEW
+===============
+While currently dm and md stacks block devices at bio level,
+request-based dm stacks at request level and submits/completes
+struct request instead of struct bio.
+
+
+Overview of the request-based dm patch:
+  - Mapping is done in a unit of struct request, instead of struct bio
+  - Hook for I/O mapping is at q->request_fn() after merging and
+    sorting by I/O scheduler, instead of q->make_request_fn().
+  - Hook for I/O completion is at bio->bi_end_io() and rq->end_io(),
+    instead of only bio->bi_end_io()
+                  bio-based (current)     request-based (this patch)
+      ------------------------------------------------------------------
+      submission  q->make_request_fn()    q->request_fn()
+      completion  bio->bi_end_io()        bio->bi_end_io(), rq->end_io()
+  - Whether the dm device is bio-based or request-based is determined
+    at table loading time
+  - Keep user interface same (table/message/status/ioctl)
+  - Any bio-based devices (like dm/md) can be stacked on request-based
+    dm device.
+    Request-based dm device *cannot* be stacked on any bio-based device.
+
+
+Expected benefit:
+  - better load balancing
+
+
+Additional explanations:
+
+Why does request-based dm use bio->bi_end_io(), too?
+Because:
+  - dm needs to keep not only the request but also bios of the request,
+    if dm target drivers want to retry or do something on the request.
+    For example, dm-multipath has to check errors and retry with other
+    paths if necessary before returning the I/O result to the upper layer.
+
+  - But rq->end_io() is called at the very late stage of completion
+    handling where all bios in the request have been completed and
+    the I/O results are already visible to the upper layer.
+So request-based dm hooks bio->bi_end_io() and doesn't complete the bio
+in error cases, and gives over the error handling to rq->end_io() hook.
+
+
+Thanks,
+Kiyoshi Ueda
