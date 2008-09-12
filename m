@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbYILVyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbYILV55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758070AbYILVyW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 17:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYILVyO
+	id S1758004AbYILV55 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 17:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbYILV5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 17:54:14 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:51193 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756757AbYILVyN (ORCPT
+	Fri, 12 Sep 2008 17:57:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53873
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755626AbYILV5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 17:54:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=P26i1/YH3c5KTnVseDsDCrkGcIpekbWPvFHoxBRnubRxp566j/jcyfQj/nIteWyknJ
-         fBz2OsNYK9jS00kR7O3L9Nmpri+tJnMXaGQTjR7eg/zjucW4KBpEIdDw+zc93Z5nE+F8
-         +g9VYm/d4GVifVcab0/eWNckKSsAMECdLg888=
-Message-ID: <86802c440809121454v5302d79ds8c6e1e6ca948059a@mail.gmail.com>
-Date: Fri, 12 Sep 2008 14:54:12 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] apci: dump slit
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, mingo@elte.hu,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080912213053.GR7714@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 12 Sep 2008 17:57:48 -0400
+Date: Fri, 12 Sep 2008 14:57:41 -0700 (PDT)
+Message-Id: <20080912.145741.59974282.davem@davemloft.net>
+To: rmk+lkml@arm.linux.org.uk
+Cc: roland@redhat.com, linux-arch@vger.kernel.org, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_HAVE_ARCH_TRACEHOOK and you
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080912131351.GA31545@flint.arm.linux.org.uk>
+References: <20080912025733.E55F415420D@magilla.localdomain>
+	<20080912131351.GA31545@flint.arm.linux.org.uk>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080912122031.eca8723e.akpm@linux-foundation.org>
-	 <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com>
-	 <878wtxrrwh.fsf@basil.nowhere.org>
-	 <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de>
-	 <20080912213053.GR7714@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 2:30 PM, Andi Kleen <andi@firstfloor.org> wrote:
->
-> Yes excellent point.  Should we dump the complete ACPI tables?
-> Do you prefer hexdump
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Date: Fri, 12 Sep 2008 14:13:51 +0100
 
-good point. there is one time BIOS put blank slit there. (only have
-acpi table header)
-only after dump that earlier in kernel boot log, they shut up and go
-back to fix their problem.
+> However, in looking at other architectures, I notice that sparc does this
+> when initializing its regsets:
+> 
+>                 .n = 38 * sizeof(u32),
+>                 .size = sizeof(u32), .align = sizeof(u32),
+> 
+> and sparc64:
+> 
+>                 .n = 36 * sizeof(u64),
+>                 .size = sizeof(u64), .align = sizeof(u64),
+> 
+> which, given that fs/binfmt_elf.c does this:
+> 
+>                         size_t size = regset->n * regset->size;
+>                         void *data = kmalloc(size, GFP_KERNEL);
+>                         if (unlikely(!data))
+>                                 return 0;
+> 
+> means sparc ends up allocating 38 * sizeof(u32) * sizeof(u32), and
+> sparc64 ends up with 36 * sizeof(u64) * sizeof(u64), which must surely
+> be wrong?
 
-YH
+Yep, definitely a bug, good catch.  I guess, better to allocate
+too much by accident rather than too little in this case :-)
+
+I'll fix this up, thanks!
+
