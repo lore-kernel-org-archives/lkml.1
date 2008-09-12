@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYILCF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbYILCNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbYILCF5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 22:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbYILCFq
+	id S1755833AbYILCNc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 22:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbYILCNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 22:05:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58984
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754213AbYILCFp (ORCPT
+	Thu, 11 Sep 2008 22:13:22 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:57831 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754436AbYILCNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 22:05:45 -0400
-Date: Thu, 11 Sep 2008 19:05:39 -0700 (PDT)
-Message-Id: <20080911.190539.47210177.davem@davemloft.net>
-To: tgraf@suug.ch
-Cc: vegard.nossum@gmail.com, netdev@vger.kernel.org, penberg@cs.helsinki.fi,
-       mingo@elte.hu, viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netlink: fix overrun in attribute iteration
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080912003522.GN20815@postel.suug.ch>
-References: <20080911205933.GA20032@localhost.localdomain>
-	<20080911.150434.99620481.davem@davemloft.net>
-	<20080912003522.GN20815@postel.suug.ch>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 11 Sep 2008 22:13:21 -0400
+Message-ID: <48C9D040.8010107@lwfinger.net>
+Date: Thu, 11 Sep 2008 21:13:20 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: wireless <linux-wireless@vger.kernel.org>
+Subject: I need help with a sparse warning
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Thomas Graf <tgraf@suug.ch>
-Date: Fri, 12 Sep 2008 02:35:23 +0200
+In file drivers/net/wireless/p54/p54common.c, the statement
 
-> * David Miller <davem@davemloft.net> 2008-09-11 15:04
-> > From: Vegard Nossum <vegard.nossum@gmail.com>
-> > Thomas, please review.
-> > 
-> > > diff --git a/include/net/netlink.h b/include/net/netlink.h
-> > > index 18024b8..208fe5a 100644
-> > > --- a/include/net/netlink.h
-> > > +++ b/include/net/netlink.h
-> > > @@ -702,7 +702,7 @@ static inline int nla_len(const struct nlattr *nla)
-> > >   */
-> > >  static inline int nla_ok(const struct nlattr *nla, int remaining)
-> > >  {
-> > > -	return remaining >= sizeof(*nla) &&
-> > > +	return remaining >= (int) sizeof(*nla) &&
-> > >  	       nla->nla_len >= sizeof(*nla) &&
-> > >  	       nla->nla_len <= remaining;
-> > >  }
-> 
-> Very nice catch, would never have thought of that.
+        priv->rx_mtu = (size_t) le16_to_cpu((__le16)bootrec->data[10]);
 
-Applied, thanks everyone.
+generates the sparse warning
+
+.../p54common.c:185:29: warning: cast to restricted __le16
+
+where bootrec->data is u32, and priv->rx_mtu is u16.
+
+What should be done to eliminate this warning?
+
+Thanks,
+
+Larry
+
