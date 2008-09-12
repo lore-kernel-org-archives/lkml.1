@@ -1,118 +1,3366 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbYILRoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYILR7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbYILRoV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 13:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbYILRoL
+	id S1756872AbYILR7P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 13:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYILR67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 13:44:11 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:8928 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbYILRoJ (ORCPT
+	Fri, 12 Sep 2008 13:58:59 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42515 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780AbYILR6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 13:44:09 -0400
-X-BigFish: VPS-35(z21eW34a4lz1432R98dR936eQ4015M1805M936fQzz10d3izzz32i6bh87il43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0K73FX3-02-831-01
-Date: Fri, 12 Sep 2008 11:45:22 -0600
-From: Jordan Crouse <jordan.crouse@amd.com>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Rufus & Azrael <rufus-azrael@numericable.fr>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>
-Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
-	with the same regression
-Message-ID: <20080912174522.GB8042@cosmic.amd.com>
-References: <48B067B3.6020008@numericable.fr> <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com> <48B06FF9.1030404@numericable.fr> <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com> <48B07409.60905@numericable.fr> <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com> <48B074E1.9020106@numericable.fr> <86802c440808231345u7c4f7710k5878928239507b10@mail.gmail.com> <86802c440808231405u42fa8024r89eccc907f36d99e@mail.gmail.com> <20080912173933.GF6743@alberich.amd.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="W/nzBZO5zC0uMSeA"
-Content-Disposition: inline
-In-Reply-To: <20080912173933.GF6743@alberich.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 12 Sep 2008 17:44:01.0172 (UTC) FILETIME=[241AC540:01C914FF]
+	Fri, 12 Sep 2008 13:58:55 -0400
+Date: Fri, 12 Sep 2008 10:58:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Tej <bewith.tej@gmail.com>, jason.wessel@windriver.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel PANIC with 2.6.27-rc6 (kgdb)
+Message-Id: <20080912105835.f51f31f0.randy.dunlap@oracle.com>
+In-Reply-To: <f1c9d250809110841s5c3d08b9ha93f0ef1da58642a@mail.gmail.com>
+References: <f1c9d250809110841s5c3d08b9ha93f0ef1da58642a@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---W/nzBZO5zC0uMSeA
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
+[adding cc: Jason Wessel]
 
-On 12/09/08 19:39 +0200, Andreas Herrmann wrote:
-> On Sat, Aug 23, 2008 at 02:05:19PM -0700, Yinghai Lu wrote:
-> > Jordan, or others for AMD could access SB600
-> > can you check ATI SB600 doc to produce one quirks patch to set the
-> > magic bit to hide 00:14.0 BAR1 to OS ?
+
+On Thu, 11 Sep 2008 21:11:09 +0530 Tej wrote:
+
+> observed a panic on 2.6.27-rc6 caused by  enabling
+> "CONFIG_KGDB_TESTS_ON_BOOT" option
 > 
-> I know this is a very late reply, but
-> is there still a quirk desired to hide BAR1 of SB600 SMBus device?
+> panic logged using serial console and .config are attached.
 > 
-> If yes, I'll provide a patch asap.
+> Linux version 2.6.27-rc6 (root@luser-desktop) (gcc version 4.2.3 (Ubuntu 4.2.3-8
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000008f000 (usable)
+>  BIOS-e820: 000000000008f000 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000003e56f000 (usable)
+>  BIOS-e820: 000000003e56f000 - 000000003e57c000 (reserved)
+>  BIOS-e820: 000000003e57c000 - 000000003e624000 (usable)
+>  BIOS-e820: 000000003e624000 - 000000003e681000 (ACPI NVS)
+>  BIOS-e820: 000000003e681000 - 000000003e685000 (ACPI data)
+>  BIOS-e820: 000000003e685000 - 000000003e6dc000 (ACPI NVS)
+>  BIOS-e820: 000000003e6dc000 - 000000003e6ed000 (usable)
+>  BIOS-e820: 000000003e6ed000 - 000000003e6ef000 (ACPI NVS)
+>  BIOS-e820: 000000003e6ef000 - 000000003e6f0000 (ACPI data)
+>  BIOS-e820: 000000003e6f0000 - 000000003e6f1000 (usable)
+>  BIOS-e820: 000000003e6f1000 - 000000003e6ff000 (ACPI data)
+>  BIOS-e820: 000000003e6ff000 - 000000003e700000 (usable)
+>  BIOS-e820: 000000003e700000 - 000000003f000000 (reserved)
+>  BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
+> last_pfn = 0x3e700 max_arch_pfn = 0x1000000
+> NX (Execute Disable) protection: active
+> RAMDISK: 37cfd000 - 37fef2f8
+> DMI 2.4 present.
+> ACPI: RSDP 000FE020, 0014 (r0 HCLINF)
+> ACPI: RSDT 3E6FD038, 0058 (r1 HCLINF DESKTOPS     1748       1000013)
+> ACPI: FACP 3E6FC000, 0074 (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: DSDT 3E6F7000, 42C8 (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: FACS 3E685000, 0040
+> ACPI: APIC 3E6F6000, 0078 (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: WDDT 3E6F5000, 0040 (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: MCFG 3E6F4000, 003C (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: ASF! 3E6F3000, 00A6 (r32 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: HPET 3E6F2000, 0038 (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: SLIC 3E6F1000, 0176 (r1 HCLINF DESKTOPS     1748 MSFT  1000013)
+> ACPI: SSDT 3E6EF000, 020C (r1 HCLINF    CpuPm     1748 MSFT  1000013)
+> ACPI: SSDT 3E684000, 0175 (r1 HCLINF  Cpu0Ist     1748 MSFT  1000013)
+> ACPI: SSDT 3E683000, 0175 (r1 HCLINF  Cpu1Ist     1748 MSFT  1000013)
+> ACPI: SSDT 3E682000, 0175 (r1 HCLINF  Cpu2Ist     1748 MSFT  1000013)
+> ACPI: SSDT 3E681000, 0175 (r1 HCLINF  Cpu3Ist     1748 MSFT  1000013)
+> ACPI: TCPA 3E624000, 0946 (r1 INTEL  TIANO           2 MSFT  1000013)
+> 103MB HIGHMEM available.
+> 896MB LOWMEM available.
+>   mapped low ram: 0 - 38000000
+>   low ram: 00000000 - 38000000
+>   bootmap 00009000 - 00010000
+> (9 early reservations) ==> bootmem [0000000000 - 0038000000]
+>   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+>   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+>   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+>   #3 [0000100000 - 0000736140]    TEXT DATA BSS ==> [0000100000 - 0000736140]
+>   #4 [0037cfd000 - 0037fef2f8]          RAMDISK ==> [0037cfd000 - 0037fef2f8]
+>   #5 [0000737000 - 000073f000]    INIT_PG_TABLE ==> [0000737000 - 000073f000]
+>   #6 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
+>   #7 [0000007000 - 0000009000]          PGTABLE ==> [0000007000 - 0000009000]
+>   #8 [0000009000 - 0000010000]          BOOTMAP ==> [0000009000 - 0000010000]
+> found SMP MP-table at [c00fe200] 000fe200
+> Zone PFN ranges:
+>   DMA      0x00000000 -> 0x00001000
+>   Normal   0x00001000 -> 0x00038000
+>   HighMem  0x00038000 -> 0x0003e700
+> Movable zone start PFN for each node
+> early_node_map[6] active PFN ranges
+>     0: 0x00000000 -> 0x0000008f
+>     0: 0x00000100 -> 0x0003e56f
+>     0: 0x0003e57c -> 0x0003e624
+>     0: 0x0003e6dc -> 0x0003e6ed
+>     0: 0x0003e6f0 -> 0x0003e6f1
+>     0: 0x0003e6ff -> 0x0003e700
+> ACPI: PM-Timer IO Port: 0x408
+> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
+> ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
+> ACPI: LAPIC_NMI (acpi_id[0x01] dfl dfl lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x02] dfl dfl lint[0x1])
+> ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+> IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+> Enabling APIC mode:  Flat.  Using 1 I/O APICs
+> Using ACPI (MADT) for SMP configuration information
+> SMP: Allowing 4 CPUs, 2 hotplug CPUs
+> Allocating PCI resources starting at 40000000 (gap: 3f000000:c0e00000)
+> PERCPU: Allocating 36380 bytes of per cpu data
+> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 253419
+> Kernel command line: root=/dev/sda1 ro quite splash console=tty0 console=ttyS0,
+> Enabling fast FPU save and restore... done.
+> Enabling unmasked SIMD FPU exception support... done.
+> Initializing CPU#0
+> PID hash table entries: 4096 (order: 12, 16384 bytes)
+> TSC: PIT calibration confirmed by PMTIMER.
+> TSC: using PIT calibration value
+> Detected 2397.578 MHz processor.
+> Console: colour VGA+ 80x25
+> console [tty0] enabled
+> console [ttyS0] enabled
+> Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+> Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+> Memory: 1002924k/1022976k available (3929k kernel code, 18404k reserved, 1757k )
+> virtual kernel memory layout:
+>     fixmap  : 0xfff51000 - 0xfffff000   ( 696 kB)
+>     pkmap   : 0xffa00000 - 0xffc00000   (2048 kB)
+>     vmalloc : 0xf8800000 - 0xff9fe000   ( 113 MB)
+>     lowmem  : 0xc0000000 - 0xf8000000   ( 896 MB)
+>       .init : 0xc0697000 - 0xc06e5000   ( 312 kB)
+>       .data : 0xc04d67a2 - 0xc068de0c   (1757 kB)
+>       .text : 0xc0100000 - 0xc04d67a2   (3929 kB)
+> Checking if this processor honours the WP bit even in supervisor mode...Ok.
+> Calibrating delay loop (skipped), value calculated using timer frequency.. 4795)
+> Mount-cache hash table entries: 512
+> CPU: L1 I cache: 32K, L1 D cache: 32K
+> CPU: L2 cache: 4096K
+> CPU: Physical Processor ID: 0
+> CPU: Processor Core ID: 0
+> using mwait in idle threads.
+> Checking 'hlt' instruction... OK.
+> ACPI: Core revision 20080609
+> ENABLING IO-APIC IRQs
+> ..TIMER: vector=0x31 apic1=0 pin1=2 apic2=-1 pin2=-1
+> CPU0: Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
+> Booting processor 1/1 ip 6000
+> Initializing CPU#1
+> Calibrating delay using timer specific routine.. 4795.35 BogoMIPS (lpj=23976790)
+> CPU: L1 I cache: 32K, L1 D cache: 32K
+> CPU: L2 cache: 4096K
+> CPU: Physical Processor ID: 0
+> CPU: Processor Core ID: 1
+> CPU1: Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz stepping 06
+> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+> Brought up 2 CPUs
+> Total of 2 processors activated (9590.51 BogoMIPS).
+> net_namespace: 596 bytes
+> NET: Registered protocol family 16
+> No dock devices found.
+> ACPI: bus type pci registered
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 127
+> PCI: Not using MMCONFIG.
+> PCI: Using configuration type 1 for base access
+> ACPI: Interpreter enabled
+> ACPI: (supports S0 S3 S5)
+> ACPI: Using IOAPIC for interrupt routing
+> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 127
+> PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
+> PCI: Using MMCONFIG for extended config space
+> ACPI: PCI Root Bridge [PCI0] (0000:00)
+> pci 0000:00:03.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:03.0: PME# disabled
+> pci 0000:00:19.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:19.0: PME# disabled
+> pci 0000:00:1a.7: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1a.7: PME# disabled
+> pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1b.0: PME# disabled
+> pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.0: PME# disabled
+> pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.1: PME# disabled
+> pci 0000:00:1c.2: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.2: PME# disabled
+> pci 0000:00:1c.3: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.3: PME# disabled
+> pci 0000:00:1c.4: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1c.4: PME# disabled
+> pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
+> pci 0000:00:1d.7: PME# disabled
+> pci 0000:00:1f.0: quirk: region 0400-047f claimed by ICH6 ACPI/GPIO/TCO
+> pci 0000:00:1f.0: quirk: region 0500-053f claimed by ICH6 GPIO
+> pci 0000:00:1f.2: PME# supported from D3hot
+> pci 0000:00:1f.2: PME# disabled
+> pci 0000:00:1f.5: PME# supported from D3hot
+> pci 0000:00:1f.5: PME# disabled
+> pci 0000:02:00.0: PME# supported from D0 D1 D3hot
+> pci 0000:02:00.0: PME# disabled
+> PCI: bridge 0000:00:1c.1 io port: [1000, 1fff]
+> PCI: bridge 0000:00:1c.1 32bit mmio: [50000000, 500fffff]
+> pci 0000:00:1e.0: transparent bridge
+> ACPI: PCI Interrupt Link [LNKA] (IRQs 3 4 5 7 9 10 *11 12)
+> ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 5 7 9 *10 11 12)
+> ACPI: PCI Interrupt Link [LNKC] (IRQs 3 4 5 7 9 10 *11 12)
+> ACPI: PCI Interrupt Link [LNKD] (IRQs 3 4 5 7 9 10 *11 12)
+> ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 7 *9 10 11 12)
+> ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 7 9 *10 11 12)
+> ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 5 7 *9 10 11 12)
+> ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 7 9 10 *11 12)
+> Linux Plug and Play Support v0.97 (c) Adam Belay
+> pnp: PnP ACPI init
+> ACPI: bus type pnp registered
+> pnp: PnP ACPI: found 14 devices
+> ACPI: ACPI bus type pnp unregistered
+> SCSI subsystem initialized
+> usbcore: registered new interface driver usbfs
+> usbcore: registered new interface driver hub
+> usbcore: registered new device driver usb
+> PCI: Using ACPI for IRQ routing
+> ACPI: RTC can wake from S4
+> system 00:01: iomem range 0xf0000000-0xf7ffffff has been reserved
+> system 00:01: iomem range 0xfed13000-0xfed13fff has been reserved
+> system 00:01: iomem range 0xfed14000-0xfed17fff has been reserved
+> system 00:01: iomem range 0xfed18000-0xfed18fff has been reserved
+> system 00:01: iomem range 0xfed19000-0xfed19fff has been reserved
+> system 00:01: iomem range 0xfed1c000-0xfed1ffff has been reserved
+> system 00:01: iomem range 0xfed20000-0xfed3ffff has been reserved
+> system 00:01: iomem range 0xfed45000-0xfed99fff has been reserved
+> system 00:01: iomem range 0xc0000-0xdffff could not be reserved
+> system 00:01: iomem range 0xe0000-0xfffff could not be reserved
+> system 00:06: ioport range 0x500-0x53f has been reserved
+> system 00:06: ioport range 0x400-0x47f has been reserved
+> system 00:06: ioport range 0x680-0x6ff has been reserved
+> system 00:07: iomem range 0xfed40000-0xfed44fff has been reserved
+> pci 0000:00:1c.0: PCI bridge, secondary bus 0000:01
+> pci 0000:00:1c.0:   IO window: disabled
+> pci 0000:00:1c.0:   MEM window: disabled
+> pci 0000:00:1c.0:   PREFETCH window: disabled
+> pci 0000:00:1c.1: PCI bridge, secondary bus 0000:02
+> pci 0000:00:1c.1:   IO window: 0x1000-0x1fff
+> pci 0000:00:1c.1:   MEM window: 0x50000000-0x500fffff
+> pci 0000:00:1c.1:   PREFETCH window: disabled
+> pci 0000:00:1c.2: PCI bridge, secondary bus 0000:03
+> pci 0000:00:1c.2:   IO window: disabled
+> pci 0000:00:1c.2:   MEM window: disabled
+> pci 0000:00:1c.2:   PREFETCH window: disabled
+> pci 0000:00:1c.3: PCI bridge, secondary bus 0000:04
+> pci 0000:00:1c.3:   IO window: disabled
+> pci 0000:00:1c.3:   MEM window: disabled
+> pci 0000:00:1c.3:   PREFETCH window: disabled
+> pci 0000:00:1c.4: PCI bridge, secondary bus 0000:05
+> pci 0000:00:1c.4:   IO window: disabled
+> pci 0000:00:1c.4:   MEM window: disabled
+> pci 0000:00:1c.4:   PREFETCH window: disabled
+> pci 0000:00:1e.0: PCI bridge, secondary bus 0000:06
+> pci 0000:00:1e.0:   IO window: disabled
+> pci 0000:00:1e.0:   MEM window: disabled
+> pci 0000:00:1e.0:   PREFETCH window: disabled
+> pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
+> pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+> pci 0000:00:1c.3: PCI INT D -> GSI 19 (level, low) -> IRQ 19
+> pci 0000:00:1c.4: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> bus: 00 index 0 io port: [0, ffff]
+> bus: 00 index 1 mmio: [0, ffffffffffffffff]
+> bus: 01 index 0 mmio: [0, 0]
+> bus: 01 index 1 mmio: [0, 0]
+> bus: 01 index 2 mmio: [0, 0]
+> bus: 01 index 3 mmio: [0, 0]
+> bus: 02 index 0 io port: [1000, 1fff]
+> bus: 02 index 1 mmio: [50000000, 500fffff]
+> bus: 02 index 2 mmio: [0, 0]
+> bus: 02 index 3 mmio: [0, 0]
+> bus: 03 index 0 mmio: [0, 0]
+> bus: 03 index 1 mmio: [0, 0]
+> bus: 03 index 2 mmio: [0, 0]
+> bus: 03 index 3 mmio: [0, 0]
+> bus: 04 index 0 mmio: [0, 0]
+> bus: 04 index 1 mmio: [0, 0]
+> bus: 04 index 2 mmio: [0, 0]
+> bus: 04 index 3 mmio: [0, 0]
+> bus: 05 index 0 mmio: [0, 0]
+> bus: 05 index 1 mmio: [0, 0]
+> bus: 05 index 2 mmio: [0, 0]
+> bus: 05 index 3 mmio: [0, 0]
+> bus: 06 index 0 mmio: [0, 0]
+> bus: 06 index 1 mmio: [0, 0]
+> bus: 06 index 2 mmio: [0, 0]
+> bus: 06 index 3 io port: [0, ffff]
+> bus: 06 index 4 mmio: [0, ffffffffffffffff]
+> NET: Registered protocol family 2
+> IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
+> TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+> TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
+> TCP: Hash tables configured (established 131072 bind 65536)
+> TCP reno registered
+> NET: Registered protocol family 1
+> checking if image is initramfs... it is
+> Freeing initrd memory: 3016k freed
+> IA-32 Microcode Update Driver: v1.14a <tigran@aivazian.fsnet.co.uk>
+> highmem bounce pool size: 64 pages
+> fuse init (API version 7.9)
+> msgmni has been set to 1761
+> io scheduler noop registered
+> io scheduler anticipatory registered (default)
+> io scheduler deadline registered
+> io scheduler cfq registered
+> pcieport-driver 0000:00:1c.0: found MSI capability
+> pcieport-driver 0000:00:1c.1: found MSI capability
+> pcieport-driver 0000:00:1c.2: found MSI capability
+> pcieport-driver 0000:00:1c.3: found MSI capability
+> pcieport-driver 0000:00:1c.4: found MSI capability
+> Serial: 8250/16550 driver4 ports, IRQ sharing disabled
+> serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> 00:0b: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+> floppy0: no floppy controllers found
+> brd: module loaded
+> loop: module loaded
+> HP CISS Driver (v 3.6.20)
+> kgdb: Registered I/O driver kgdbts.
+> kgdbts:RUN plant and detach test
+> kgdbts:RUN sw breakpoint test
+> kgdbts:RUN bad memory access test
+> kgdbts:RUN singlestep test 1000 iterations
+> kgdbts:RUN singlestep [0/1000]
+> kgdbts:RUN singlestep [100/1000]
+> kgdbts: BP mismatch c0109c02 expected c02ad250
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:302 check_and_rewind_pc+0xb2/0xe0()
+> Modules linked in:
+> Pid: 0, comm: swapper Not tainted 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c01548f7>] ? __rmqueue_smallest+0xb7/0x130
+>  [<c02445e7>] ? __copy_to_user_ll+0x57/0x60
+>  [<c0153dc0>] ? probe_kernel_write+0x20/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] check_and_rewind_pc+0xb2/0xe0
+>  [<c0109c02>] ? mwait_idle+0x32/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02acdd1>] validate_simple_test+0x21/0xb0
+>  [<c02ad5a7>] run_simple_test+0x107/0x260
+>  [<c0153e00>] ? probe_kernel_read+0x20/0x40
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c01056ca>] die_nmi+0x3a/0x100
+>  [<c0112697>] nmi_watchdog_tick+0x187/0x190
+>  [<c0106067>] do_nmi+0x87/0x2a0
+>  [<c04d5a73>] nmi_stack_correct+0x26/0x2b
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c0109c02>] ? mwait_idle+0x32/0x40
+>  [<c01026c5>] cpu_idle+0x55/0xf0
+>  [<c04ae02e>] rest_init+0x4e/0x60
+>  [<c069794f>] start_kernel+0x23f/0x2c0
+>  [<c0697270>] ? unknown_bootoption+0x0/0x210
+>  [<c0697077>] __init_begin+0x77/0xb0
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR PUT: end of test buffer on 'singlestep_breakpoint_test' line 3 ex0
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x153/0x260()
+> Modules linked in:
+> Pid: 0, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] ? check_and_rewind_pc+0xb2/0xe0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad5f3>] run_simple_test+0x153/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c01056ca>] die_nmi+0x3a/0x100
+>  [<c0112697>] nmi_watchdog_tick+0x187/0x190
+>  [<c0106067>] do_nmi+0x87/0x2a0
+>  [<c04d5a73>] nmi_stack_correct+0x26/0x2b
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c0109c02>] ? mwait_idle+0x32/0x40
+>  [<c01026c5>] cpu_idle+0x55/0xf0
+>  [<c04ae02e>] rest_init+0x4e/0x60
+>  [<c069794f>] start_kernel+0x23f/0x2c0
+>  [<c0697270>] ? unknown_bootoption+0x0/0x210
+>  [<c0697077>] __init_begin+0x77/0xb0
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR PUT: end of test buffer on 'singlestep_breakpoint_test' line 0 ex7
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x153/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c013c3ba>] ? atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] ? notify_die+0x2d/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad5f3>] run_simple_test+0x153/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014c089>] kgdb_handle_exception+0xd29/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c01100d8>] ? msr_seek+0x68/0x80
+>  [<c014ac53>] ? kgdb_breakpoint+0x13/0x30
+>  [<c02adb1e>] configure_kgdbts+0x1fe/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: BP mismatch c0109c03 expected c02ad250
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:302 check_and_rewind_pc+0xb2/0xe0()
+> Modules linked in:
+> Pid: 0, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c02445e7>] ? __copy_to_user_ll+0x57/0x60
+>  [<c0153dc0>] ? probe_kernel_write+0x20/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] check_and_rewind_pc+0xb2/0xe0
+>  [<c0109c03>] ? mwait_idle+0x33/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02acdd1>] validate_simple_test+0x21/0xb0
+>  [<c02ad5a7>] run_simple_test+0x107/0x260
+>  [<c0153e00>] ? probe_kernel_read+0x20/0x40
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c011fd25>] ? run_rebalance_domains+0x125/0x3f0
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105c65>] do_debug+0x55/0xe0
+>  [<c04d5a17>] debug_stack_correct+0x27/0x2c
+>  [<c0109c03>] ? mwait_idle+0x33/0x40
+>  [<c01026c5>] ? cpu_idle+0x55/0xf0
+>  [<c04ae02e>] rest_init+0x4e/0x60
+>  [<c069794f>] start_kernel+0x23f/0x2c0
+>  [<c0697270>] ? unknown_bootoption+0x0/0x210
+>  [<c0697077>] __init_begin+0x77/0xb0
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR PUT: end of test buffer on 'singlestep_breakpoint_test' line 3 ex0
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x153/0x260()
+> Modules linked in:
+> Pid: 0, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] ? check_and_rewind_pc+0xb2/0xe0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad5f3>] run_simple_test+0x153/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c011fd25>] ? run_rebalance_domains+0x125/0x3f0
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105c65>] do_debug+0x55/0xe0
+>  [<c04d5a17>] debug_stack_correct+0x27/0x2c
+>  [<c0109c03>] ? mwait_idle+0x33/0x40
+>  [<c01026c5>] ? cpu_idle+0x55/0xf0
+>  [<c04ae02e>] rest_init+0x4e/0x60
+>  [<c069794f>] start_kernel+0x23f/0x2c0
+>  [<c0697270>] ? unknown_bootoption+0x0/0x210
+>  [<c0697077>] __init_begin+0x77/0xb0
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts:RUN singlestep [200/1000]
+> KGDB: Waiting for remote debugger
+> kgdbts: BP mismatch c014ac53 expected c02ad250
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:302 check_and_rewind_pc+0xb2/0xe0()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c02445e7>] ? __copy_to_user_ll+0x57/0x60
+>  [<c0153dc0>] ? probe_kernel_write+0x20/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] check_and_rewind_pc+0xb2/0xe0
+>  [<c014ac53>] ? kgdb_breakpoint+0x13/0x30
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02acdd1>] validate_simple_test+0x21/0xb0
+>  [<c02ad5a7>] run_simple_test+0x107/0x260
+>  [<c0153e00>] ? probe_kernel_read+0x20/0x40
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c01100d8>] ? msr_seek+0x68/0x80
+>  [<c014ac53>] ? kgdb_breakpoint+0x13/0x30
+>  [<c02adb1e>] configure_kgdbts+0x1fe/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR PUT: end of test buffer on 'singlestep_breakpoint_test' line 3 ex0
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x153/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c013c33d>] ? notifier_call_chain+0x2d/0x60
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] ? check_and_rewind_pc+0xb2/0xe0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad5f3>] run_simple_test+0x153/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c01100d8>] ? msr_seek+0x68/0x80
+>  [<c014ac53>] ? kgdb_breakpoint+0x13/0x30
+>  [<c02adb1e>] configure_kgdbts+0x1fe/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts:RUN singlestep [300/1000]
+> kgdbts: BP mismatch c0109c02 expected c02ad250
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:302 check_and_rewind_pc+0xb2/0xe0()
+> Modules linked in:
+> Pid: 0, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02445e7>] ? __copy_to_user_ll+0x57/0x60
+>  [<c0153dc0>] ? probe_kernel_write+0x20/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] check_and_rewind_pc+0xb2/0xe0
+>  [<c0109c02>] ? mwait_idle+0x32/0x40
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02acdd1>] validate_simple_test+0x21/0xb0
+>  [<c02ad5a7>] run_simple_test+0x107/0x260
+>  [<c0153e00>] ? probe_kernel_read+0x20/0x40
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c01056ca>] die_nmi+0x3a/0x100
+>  [<c0112697>] nmi_watchdog_tick+0x187/0x190
+>  [<c0106067>] do_nmi+0x87/0x2a0
+>  [<c04d5a73>] nmi_stack_correct+0x26/0x2b
+>  [<c0109c02>] ? mwait_idle+0x32/0x40
+>  [<c01026c5>] cpu_idle+0x55/0xf0
+>  [<c04ae02e>] rest_init+0x4e/0x60
+>  [<c069794f>] start_kernel+0x23f/0x2c0
+>  [<c0697270>] ? unknown_bootoption+0x0/0x210
+>  [<c0697077>] __init_begin+0x77/0xb0
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR PUT: end of test buffer on 'singlestep_breakpoint_test' line 10 e0
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x153/0x260()
+> Modules linked in:
+> Pid: 0, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad250>] ? kgdbts_break_test+0x0/0x30
+>  [<c02adfb2>] ? check_and_rewind_pc+0xb2/0xe0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad5f3>] run_simple_test+0x153/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c01056ca>] die_nmi+0x3a/0x100
+>  [<c0112697>] nmi_watchdog_tick+0x187/0x190
+>  [<c0106067>] do_nmi+0x87/0x2a0
+>  [<c04d5a73>] nmi_stack_correct+0x26/0x2b
+>  [<c0109c02>] ? mwait_idle+0x32/0x40
+>  [<c01026c5>] cpu_idle+0x55/0xf0
+>  [<c04ae02e>] rest_init+0x4e/0x60
+>  [<c069794f>] start_kernel+0x23f/0x2c0
+>  [<c0697270>] ? unknown_bootoption+0x0/0x210
+>  [<c0697077>] __init_begin+0x77/0xb0
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> KGDB: Waiting for remote debugger
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014b663>] kgdb_handle_exception+0x303/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9d2>] put_packet+0x22/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa16>] put_packet+0x66/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa26>] put_packet+0x76/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR GET: EOB on 'singlestep_breakpoint_test' at 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:681 run_simple_test+0x22d/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad6cd>] run_simple_test+0x22d/0x260
+>  [<c02acea5>] kgdbts_get_char+0x15/0x20
+>  [<c014aa4c>] put_packet+0x9c/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa6c>] put_packet+0xbc/0xe0
+>  [<c014b650>] kgdb_handle_exception+0x2f0/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR GET: EOB on 'singlestep_breakpoint_test' at 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:681 run_simple_test+0x22d/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad6cd>] run_simple_test+0x22d/0x260
+>  [<c014aa6c>] ? put_packet+0xbc/0xe0
+>  [<c02acea5>] kgdbts_get_char+0x15/0x20
+>  [<c014b560>] kgdb_handle_exception+0x200/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c014aa6c>] ? put_packet+0xbc/0xe0
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014b663>] kgdb_handle_exception+0x303/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9d2>] put_packet+0x22/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9ee>] put_packet+0x3e/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9ee>] put_packet+0x3e/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa16>] put_packet+0x66/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa26>] put_packet+0x76/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR GET: EOB on 'singlestep_breakpoint_test' at 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:681 run_simple_test+0x22d/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad6cd>] run_simple_test+0x22d/0x260
+>  [<c02acea5>] kgdbts_get_char+0x15/0x20
+>  [<c014aa4c>] put_packet+0x9c/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa6c>] put_packet+0xbc/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c38c>] ? __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105514>] do_int3+0x34/0x70
+>  [<c04d5b63>] int3+0x27/0x2c
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c02ad251>] ? kgdbts_break_test+0x1/0x30
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c06b8313>] init_kgdbts+0x13/0x20
+>  [<c0101120>] do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> BUG: unable to handle kernel NULL pointer dereference at 0000044c
+> IP: [<c059875e>]
+> *pdpt = 00000000006e7001 *pde = 0000000000000000
+> Oops: 0000 [#1] SMP
+> KGDB: Waiting for remote debugger
+> kgdbts: ERROR GET: EOB on 'singlestep_breakpoint_test' at 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:681 run_simple_test+0x22d/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c013c3ba>] ? atomic_notifier_call_chain+0x1a/0x20
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad6cd>] run_simple_test+0x22d/0x260
+>  [<c02acea5>] kgdbts_get_char+0x15/0x20
+>  [<c014b560>] kgdb_handle_exception+0x200/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014b663>] kgdb_handle_exception+0x303/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9d2>] put_packet+0x22/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9ee>] put_packet+0x3e/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014a9ee>] put_packet+0x3e/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa16>] put_packet+0x66/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa26>] put_packet+0x76/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa36>] put_packet+0x86/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR GET: EOB on 'singlestep_breakpoint_test' at 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:681 run_simple_test+0x22d/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad6cd>] run_simple_test+0x22d/0x260
+>  [<c02acea5>] kgdbts_get_char+0x15/0x20
+>  [<c014aa4c>] put_packet+0x9c/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> kgdbts: ERROR: beyond end of test on 'singlestep_breakpoint_test' line 13
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:696 run_simple_test+0xb3/0x260()
+> Modules linked in:
+> Pid: 1, comm: swapper Tainted: G        W 2.6.27-rc6 #16
+>  [<c0125d04>] warn_on_slowpath+0x54/0x70
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c013c15b>] ? up+0x2b/0x40
+>  [<c0126634>] ? release_console_sem+0x1a4/0x1c0
+>  [<c01126b2>] ? touch_nmi_watchdog+0x12/0x60
+>  [<c02ad0af>] ? fill_get_buf+0xbf/0xf0
+>  [<c0126bab>] ? printk+0x1b/0x20
+>  [<c02ad553>] run_simple_test+0xb3/0x260
+>  [<c02acec4>] kgdbts_put_char+0x14/0x20
+>  [<c014aa6c>] put_packet+0xbc/0xe0
+>  [<c014bd60>] kgdb_handle_exception+0xa00/0xd90
+>  [<c01260f0>] ? __call_console_drivers+0x60/0x70
+>  [<c0114cc8>] kgdb_notify+0x58/0x180
+>  [<c013c33d>] notifier_call_chain+0x2d/0x60
+>  [<c013c38c>] __atomic_notifier_call_chain+0x1c/0x30
+>  [<c013c3ba>] atomic_notifier_call_chain+0x1a/0x20
+>  [<c013c44d>] notify_die+0x2d/0x30
+>  [<c0105118>] __die+0x78/0xf0
+>  [<c01051cb>] die+0x3b/0x70
+>  [<c0116aa4>] do_page_fault+0x264/0x7f0
+>  [<c012a6ec>] ? __do_softirq+0xcc/0xf0
+>  [<c012aabb>] ? irq_exit+0x3b/0x50
+>  [<c0116840>] ? do_page_fault+0x0/0x7f0
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c04d59ca>] error_code+0x72/0x78
+>  [<c02adb28>] ? configure_kgdbts+0x208/0x4d0
+>  [<c011007b>] ? msr_seek+0xb/0x80
+>  [<c06b8313>] ? init_kgdbts+0x13/0x20
+>  [<c0101120>] ? do_one_initcall+0x30/0x160
+>  [<c06b8300>] ? init_kgdbts+0x0/0x20
+>  [<c014e793>] ? register_irq_proc+0xb3/0xd0
+>  [<c069768d>] ? kernel_init+0x10d/0x170
+>  [<c0697580>] ? kernel_init+0x0/0x170
+>  [<c01047cf>] ? kernel_thread_helper+0x7/0x18
+>  =======================
+> ---[ end trace 7151dc3b5234c3c1 ]---
+> Kernel panic - not syncing: Attempted to kill init!
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> config:
+> -----------------------------
+> 
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.27-rc6
+> # Thu Sep 11 18:24:02 2008
+> #
+> # CONFIG_64BIT is not set
+> CONFIG_X86_32=y
+> # CONFIG_X86_64 is not set
+> CONFIG_X86=y
+> CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
+> # CONFIG_GENERIC_LOCKBREAK is not set
+> CONFIG_GENERIC_TIME=y
+> CONFIG_GENERIC_CMOS_UPDATE=y
+> CONFIG_CLOCKSOURCE_WATCHDOG=y
+> CONFIG_GENERIC_CLOCKEVENTS=y
+> CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+> CONFIG_LOCKDEP_SUPPORT=y
+> CONFIG_STACKTRACE_SUPPORT=y
+> CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+> CONFIG_FAST_CMPXCHG_LOCAL=y
+> CONFIG_MMU=y
+> CONFIG_ZONE_DMA=y
+> CONFIG_GENERIC_ISA_DMA=y
+> CONFIG_GENERIC_IOMAP=y
+> CONFIG_GENERIC_BUG=y
+> CONFIG_GENERIC_HWEIGHT=y
+> # CONFIG_GENERIC_GPIO is not set
+> CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+> # CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+> CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+> # CONFIG_ARCH_HAS_ILOG2_U32 is not set
+> # CONFIG_ARCH_HAS_ILOG2_U64 is not set
+> CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+> CONFIG_GENERIC_CALIBRATE_DELAY=y
+> # CONFIG_GENERIC_TIME_VSYSCALL is not set
+> CONFIG_ARCH_HAS_CPU_RELAX=y
+> CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+> CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+> # CONFIG_HAVE_CPUMASK_OF_CPU_MAP is not set
+> CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+> CONFIG_ARCH_SUSPEND_POSSIBLE=y
+> # CONFIG_ZONE_DMA32 is not set
+> CONFIG_ARCH_POPULATES_NODE_MAP=y
+> # CONFIG_AUDIT_ARCH is not set
+> CONFIG_ARCH_SUPPORTS_AOUT=y
+> CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+> CONFIG_GENERIC_HARDIRQS=y
+> CONFIG_GENERIC_IRQ_PROBE=y
+> CONFIG_GENERIC_PENDING_IRQ=y
+> CONFIG_X86_SMP=y
+> CONFIG_X86_32_SMP=y
+> CONFIG_X86_HT=y
+> CONFIG_X86_BIOS_REBOOT=y
+> CONFIG_X86_TRAMPOLINE=y
+> CONFIG_KTIME_SCALAR=y
+> CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+> 
+> #
+> # General setup
+> #
+> CONFIG_EXPERIMENTAL=y
+> CONFIG_LOCK_KERNEL=y
+> CONFIG_INIT_ENV_ARG_LIMIT=32
+> CONFIG_LOCALVERSION=""
+> # CONFIG_LOCALVERSION_AUTO is not set
+> CONFIG_SWAP=y
+> CONFIG_SYSVIPC=y
+> CONFIG_SYSVIPC_SYSCTL=y
+> # CONFIG_POSIX_MQUEUE is not set
+> # CONFIG_BSD_PROCESS_ACCT is not set
+> # CONFIG_TASKSTATS is not set
+> # CONFIG_AUDIT is not set
+> CONFIG_IKCONFIG=y
+> # CONFIG_IKCONFIG_PROC is not set
+> CONFIG_LOG_BUF_SHIFT=14
+> # CONFIG_CGROUPS is not set
+> CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+> # CONFIG_GROUP_SCHED is not set
+> CONFIG_SYSFS_DEPRECATED=y
+> CONFIG_SYSFS_DEPRECATED_V2=y
+> # CONFIG_RELAY is not set
+> CONFIG_NAMESPACES=y
+> # CONFIG_UTS_NS is not set
+> # CONFIG_IPC_NS is not set
+> # CONFIG_USER_NS is not set
+> # CONFIG_PID_NS is not set
+> CONFIG_BLK_DEV_INITRD=y
+> CONFIG_INITRAMFS_SOURCE=""
+> # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+> CONFIG_SYSCTL=y
+> # CONFIG_EMBEDDED is not set
+> CONFIG_UID16=y
+> CONFIG_SYSCTL_SYSCALL=y
+> CONFIG_KALLSYMS=y
+> # CONFIG_KALLSYMS_ALL is not set
+> # CONFIG_KALLSYMS_EXTRA_PASS is not set
+> CONFIG_HOTPLUG=y
+> CONFIG_PRINTK=y
+> CONFIG_BUG=y
+> CONFIG_ELF_CORE=y
+> CONFIG_PCSPKR_PLATFORM=y
+> CONFIG_COMPAT_BRK=y
+> CONFIG_BASE_FULL=y
+> CONFIG_FUTEX=y
+> CONFIG_ANON_INODES=y
+> CONFIG_EPOLL=y
+> CONFIG_SIGNALFD=y
+> CONFIG_TIMERFD=y
+> CONFIG_EVENTFD=y
+> CONFIG_SHMEM=y
+> CONFIG_VM_EVENT_COUNTERS=y
+> CONFIG_SLAB=y
+> # CONFIG_SLUB is not set
+> # CONFIG_SLOB is not set
+> # CONFIG_PROFILING is not set
+> # CONFIG_MARKERS is not set
+> CONFIG_HAVE_OPROFILE=y
+> # CONFIG_KPROBES is not set
+> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+> CONFIG_HAVE_IOREMAP_PROT=y
+> CONFIG_HAVE_KPROBES=y
+> CONFIG_HAVE_KRETPROBES=y
+> # CONFIG_HAVE_ARCH_TRACEHOOK is not set
+> # CONFIG_HAVE_DMA_ATTRS is not set
+> CONFIG_USE_GENERIC_SMP_HELPERS=y
+> # CONFIG_HAVE_CLK is not set
+> CONFIG_PROC_PAGE_MONITOR=y
+> CONFIG_HAVE_GENERIC_DMA_COHERENT=y
+> CONFIG_SLABINFO=y
+> CONFIG_RT_MUTEXES=y
+> # CONFIG_TINY_SHMEM is not set
+> CONFIG_BASE_SMALL=0
+> CONFIG_MODULES=y
+> # CONFIG_MODULE_FORCE_LOAD is not set
+> CONFIG_MODULE_UNLOAD=y
+> # CONFIG_MODULE_FORCE_UNLOAD is not set
+> # CONFIG_MODVERSIONS is not set
+> # CONFIG_MODULE_SRCVERSION_ALL is not set
+> CONFIG_KMOD=y
+> CONFIG_STOP_MACHINE=y
+> CONFIG_BLOCK=y
+> # CONFIG_LBD is not set
+> # CONFIG_BLK_DEV_IO_TRACE is not set
+> CONFIG_LSF=y
+> # CONFIG_BLK_DEV_BSG is not set
+> # CONFIG_BLK_DEV_INTEGRITY is not set
+> 
+> #
+> # IO Schedulers
+> #
+> CONFIG_IOSCHED_NOOP=y
+> CONFIG_IOSCHED_AS=y
+> CONFIG_IOSCHED_DEADLINE=y
+> CONFIG_IOSCHED_CFQ=y
+> CONFIG_DEFAULT_AS=y
+> # CONFIG_DEFAULT_DEADLINE is not set
+> # CONFIG_DEFAULT_CFQ is not set
+> # CONFIG_DEFAULT_NOOP is not set
+> CONFIG_DEFAULT_IOSCHED="anticipatory"
+> CONFIG_CLASSIC_RCU=y
+> 
+> #
+> # Processor type and features
+> #
+> # CONFIG_TICK_ONESHOT is not set
+> # CONFIG_NO_HZ is not set
+> # CONFIG_HIGH_RES_TIMERS is not set
+> CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+> CONFIG_SMP=y
+> CONFIG_X86_FIND_SMP_CONFIG=y
+> CONFIG_X86_MPPARSE=y
+> CONFIG_X86_PC=y
+> # CONFIG_X86_ELAN is not set
+> # CONFIG_X86_VOYAGER is not set
+> # CONFIG_X86_GENERICARCH is not set
+> # CONFIG_X86_VSMP is not set
+> # CONFIG_X86_RDC321X is not set
+> CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+> # CONFIG_PARAVIRT_GUEST is not set
+> # CONFIG_MEMTEST is not set
+> # CONFIG_M386 is not set
+> # CONFIG_M486 is not set
+> # CONFIG_M586 is not set
+> # CONFIG_M586TSC is not set
+> # CONFIG_M586MMX is not set
+> CONFIG_M686=y
+> # CONFIG_MPENTIUMII is not set
+> # CONFIG_MPENTIUMIII is not set
+> # CONFIG_MPENTIUMM is not set
+> # CONFIG_MPENTIUM4 is not set
+> # CONFIG_MK6 is not set
+> # CONFIG_MK7 is not set
+> # CONFIG_MK8 is not set
+> # CONFIG_MCRUSOE is not set
+> # CONFIG_MEFFICEON is not set
+> # CONFIG_MWINCHIPC6 is not set
+> # CONFIG_MWINCHIP2 is not set
+> # CONFIG_MWINCHIP3D is not set
+> # CONFIG_MGEODEGX1 is not set
+> # CONFIG_MGEODE_LX is not set
+> # CONFIG_MCYRIXIII is not set
+> # CONFIG_MVIAC3_2 is not set
+> # CONFIG_MVIAC7 is not set
+> # CONFIG_MPSC is not set
+> # CONFIG_MCORE2 is not set
+> # CONFIG_GENERIC_CPU is not set
+> CONFIG_X86_GENERIC=y
+> CONFIG_X86_CPU=y
+> CONFIG_X86_CMPXCHG=y
+> CONFIG_X86_L1_CACHE_SHIFT=7
+> CONFIG_X86_XADD=y
+> CONFIG_X86_PPRO_FENCE=y
+> CONFIG_X86_WP_WORKS_OK=y
+> CONFIG_X86_INVLPG=y
+> CONFIG_X86_BSWAP=y
+> CONFIG_X86_POPAD_OK=y
+> CONFIG_X86_INTEL_USERCOPY=y
+> CONFIG_X86_USE_PPRO_CHECKSUM=y
+> CONFIG_X86_TSC=y
+> CONFIG_X86_CMPXCHG64=y
+> CONFIG_X86_CMOV=y
+> CONFIG_X86_MINIMUM_CPU_FAMILY=4
+> CONFIG_X86_DEBUGCTLMSR=y
+> # CONFIG_HPET_TIMER is not set
+> CONFIG_DMI=y
+> # CONFIG_IOMMU_HELPER is not set
+> CONFIG_NR_CPUS=8
+> # CONFIG_SCHED_SMT is not set
+> CONFIG_SCHED_MC=y
+> CONFIG_PREEMPT_NONE=y
+> # CONFIG_PREEMPT_VOLUNTARY is not set
+> # CONFIG_PREEMPT is not set
+> CONFIG_X86_LOCAL_APIC=y
+> CONFIG_X86_IO_APIC=y
+> # CONFIG_X86_MCE is not set
+> CONFIG_VM86=y
+> # CONFIG_TOSHIBA is not set
+> # CONFIG_I8K is not set
+> # CONFIG_X86_REBOOTFIXUPS is not set
+> CONFIG_MICROCODE=y
+> CONFIG_MICROCODE_OLD_INTERFACE=y
+> CONFIG_X86_MSR=y
+> CONFIG_X86_CPUID=y
+> # CONFIG_NOHIGHMEM is not set
+> # CONFIG_HIGHMEM4G is not set
+> CONFIG_HIGHMEM64G=y
+> CONFIG_PAGE_OFFSET=0xC0000000
+> CONFIG_HIGHMEM=y
+> CONFIG_X86_PAE=y
+> CONFIG_ARCH_FLATMEM_ENABLE=y
+> CONFIG_ARCH_SPARSEMEM_ENABLE=y
+> CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+> CONFIG_SELECT_MEMORY_MODEL=y
+> CONFIG_FLATMEM_MANUAL=y
+> # CONFIG_DISCONTIGMEM_MANUAL is not set
+> # CONFIG_SPARSEMEM_MANUAL is not set
+> CONFIG_FLATMEM=y
+> CONFIG_FLAT_NODE_MEM_MAP=y
+> CONFIG_SPARSEMEM_STATIC=y
+> # CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
+> CONFIG_PAGEFLAGS_EXTENDED=y
+> CONFIG_SPLIT_PTLOCK_CPUS=4
+> CONFIG_RESOURCES_64BIT=y
+> CONFIG_ZONE_DMA_FLAG=1
+> CONFIG_BOUNCE=y
+> CONFIG_VIRT_TO_BUS=y
+> # CONFIG_HIGHPTE is not set
+> # CONFIG_MATH_EMULATION is not set
+> CONFIG_MTRR=y
+> # CONFIG_MTRR_SANITIZER is not set
+> # CONFIG_X86_PAT is not set
+> # CONFIG_EFI is not set
+> CONFIG_IRQBALANCE=y
+> CONFIG_SECCOMP=y
+> CONFIG_HZ_100=y
+> # CONFIG_HZ_250 is not set
+> # CONFIG_HZ_300 is not set
+> # CONFIG_HZ_1000 is not set
+> CONFIG_HZ=100
+> # CONFIG_SCHED_HRTICK is not set
+> CONFIG_KEXEC=y
+> # CONFIG_CRASH_DUMP is not set
+> CONFIG_PHYSICAL_START=0x100000
+> # CONFIG_RELOCATABLE is not set
+> CONFIG_PHYSICAL_ALIGN=0x100000
+> CONFIG_HOTPLUG_CPU=y
+> CONFIG_COMPAT_VDSO=y
+> CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+> 
+> #
+> # Power management options
+> #
+> CONFIG_PM=y
+> # CONFIG_PM_DEBUG is not set
+> CONFIG_PM_SLEEP_SMP=y
+> CONFIG_PM_SLEEP=y
+> CONFIG_SUSPEND=y
+> CONFIG_SUSPEND_FREEZER=y
+> # CONFIG_HIBERNATION is not set
+> CONFIG_ACPI=y
+> CONFIG_ACPI_SLEEP=y
+> # CONFIG_ACPI_PROCFS is not set
+> CONFIG_ACPI_PROCFS_POWER=y
+> CONFIG_ACPI_SYSFS_POWER=y
+> CONFIG_ACPI_PROC_EVENT=y
+> CONFIG_ACPI_AC=m
+> CONFIG_ACPI_BATTERY=m
+> CONFIG_ACPI_BUTTON=m
+> CONFIG_ACPI_FAN=m
+> CONFIG_ACPI_DOCK=y
+> # CONFIG_ACPI_BAY is not set
+> CONFIG_ACPI_PROCESSOR=m
+> CONFIG_ACPI_HOTPLUG_CPU=y
+> CONFIG_ACPI_THERMAL=m
+> # CONFIG_ACPI_WMI is not set
+> CONFIG_ACPI_ASUS=m
+> CONFIG_ACPI_TOSHIBA=m
+> CONFIG_ACPI_CUSTOM_DSDT_FILE=""
+> # CONFIG_ACPI_CUSTOM_DSDT is not set
+> CONFIG_ACPI_BLACKLIST_YEAR=0
+> # CONFIG_ACPI_DEBUG is not set
+> CONFIG_ACPI_EC=y
+> # CONFIG_ACPI_PCI_SLOT is not set
+> CONFIG_ACPI_POWER=y
+> CONFIG_ACPI_SYSTEM=y
+> CONFIG_X86_PM_TIMER=y
+> CONFIG_ACPI_CONTAINER=m
+> # CONFIG_ACPI_SBS is not set
+> # CONFIG_APM is not set
+> 
+> #
+> # CPU Frequency scaling
+> #
+> # CONFIG_CPU_FREQ is not set
+> CONFIG_CPU_IDLE=y
+> CONFIG_CPU_IDLE_GOV_LADDER=y
+> 
+> #
+> # Bus options (PCI etc.)
+> #
+> CONFIG_PCI=y
+> # CONFIG_PCI_GOBIOS is not set
+> # CONFIG_PCI_GOMMCONFIG is not set
+> # CONFIG_PCI_GODIRECT is not set
+> # CONFIG_PCI_GOOLPC is not set
+> CONFIG_PCI_GOANY=y
+> CONFIG_PCI_BIOS=y
+> CONFIG_PCI_DIRECT=y
+> CONFIG_PCI_MMCONFIG=y
+> CONFIG_PCI_DOMAINS=y
+> CONFIG_PCIEPORTBUS=y
+> CONFIG_PCIEAER=y
+> # CONFIG_PCIEASPM is not set
+> CONFIG_ARCH_SUPPORTS_MSI=y
+> # CONFIG_PCI_MSI is not set
+> CONFIG_PCI_LEGACY=y
+> # CONFIG_PCI_DEBUG is not set
+> CONFIG_HT_IRQ=y
+> CONFIG_ISA_DMA_API=y
+> # CONFIG_ISA is not set
+> # CONFIG_MCA is not set
+> # CONFIG_SCx200 is not set
+> # CONFIG_OLPC is not set
+> CONFIG_K8_NB=y
+> # CONFIG_PCCARD is not set
+> # CONFIG_HOTPLUG_PCI is not set
+> 
+> #
+> # Executable file formats / Emulations
+> #
+> CONFIG_BINFMT_ELF=y
+> # CONFIG_BINFMT_AOUT is not set
+> # CONFIG_BINFMT_MISC is not set
+> CONFIG_NET=y
+> 
+> #
+> # Networking options
+> #
+> CONFIG_PACKET=y
+> # CONFIG_PACKET_MMAP is not set
+> CONFIG_UNIX=y
+> CONFIG_XFRM=y
+> # CONFIG_XFRM_USER is not set
+> # CONFIG_XFRM_SUB_POLICY is not set
+> # CONFIG_XFRM_MIGRATE is not set
+> # CONFIG_XFRM_STATISTICS is not set
+> # CONFIG_NET_KEY is not set
+> CONFIG_INET=y
+> # CONFIG_IP_MULTICAST is not set
+> # CONFIG_IP_ADVANCED_ROUTER is not set
+> CONFIG_IP_FIB_HASH=y
+> CONFIG_IP_PNP=y
+> CONFIG_IP_PNP_DHCP=y
+> # CONFIG_IP_PNP_BOOTP is not set
+> # CONFIG_IP_PNP_RARP is not set
+> # CONFIG_NET_IPIP is not set
+> # CONFIG_NET_IPGRE is not set
+> # CONFIG_ARPD is not set
+> # CONFIG_SYN_COOKIES is not set
+> # CONFIG_INET_AH is not set
+> # CONFIG_INET_ESP is not set
+> # CONFIG_INET_IPCOMP is not set
+> # CONFIG_INET_XFRM_TUNNEL is not set
+> # CONFIG_INET_TUNNEL is not set
+> CONFIG_INET_XFRM_MODE_TRANSPORT=y
+> CONFIG_INET_XFRM_MODE_TUNNEL=y
+> CONFIG_INET_XFRM_MODE_BEET=y
+> # CONFIG_INET_LRO is not set
+> # CONFIG_INET_DIAG is not set
+> # CONFIG_TCP_CONG_ADVANCED is not set
+> CONFIG_TCP_CONG_CUBIC=y
+> CONFIG_DEFAULT_TCP_CONG="cubic"
+> # CONFIG_TCP_MD5SIG is not set
+> # CONFIG_IP_VS is not set
+> # CONFIG_IPV6 is not set
+> # CONFIG_NETWORK_SECMARK is not set
+> CONFIG_NETFILTER=y
+> # CONFIG_NETFILTER_DEBUG is not set
+> CONFIG_NETFILTER_ADVANCED=y
+> CONFIG_BRIDGE_NETFILTER=y
+> 
+> #
+> # Core Netfilter Configuration
+> #
+> # CONFIG_NETFILTER_NETLINK_QUEUE is not set
+> # CONFIG_NETFILTER_NETLINK_LOG is not set
+> # CONFIG_NF_CONNTRACK is not set
+> # CONFIG_NETFILTER_XTABLES is not set
+> 
+> #
+> # IP: Netfilter Configuration
+> #
+> # CONFIG_IP_NF_QUEUE is not set
+> # CONFIG_IP_NF_IPTABLES is not set
+> # CONFIG_IP_NF_ARPTABLES is not set
+> 
+> #
+> # Bridge: Netfilter Configuration
+> #
+> # CONFIG_BRIDGE_NF_EBTABLES is not set
+> # CONFIG_IP_DCCP is not set
+> # CONFIG_IP_SCTP is not set
+> # CONFIG_TIPC is not set
+> # CONFIG_ATM is not set
+> CONFIG_STP=y
+> CONFIG_BRIDGE=y
+> # CONFIG_VLAN_8021Q is not set
+> # CONFIG_DECNET is not set
+> CONFIG_LLC=y
+> # CONFIG_LLC2 is not set
+> # CONFIG_IPX is not set
+> # CONFIG_ATALK is not set
+> # CONFIG_X25 is not set
+> # CONFIG_LAPB is not set
+> # CONFIG_ECONET is not set
+> # CONFIG_WAN_ROUTER is not set
+> # CONFIG_NET_SCHED is not set
+> 
+> #
+> # Network testing
+> #
+> # CONFIG_NET_PKTGEN is not set
+> # CONFIG_HAMRADIO is not set
+> # CONFIG_CAN is not set
+> # CONFIG_IRDA is not set
+> # CONFIG_BT is not set
+> # CONFIG_AF_RXRPC is not set
+> 
+> #
+> # Wireless
+> #
+> # CONFIG_CFG80211 is not set
+> # CONFIG_WIRELESS_EXT is not set
+> # CONFIG_MAC80211 is not set
+> # CONFIG_IEEE80211 is not set
+> # CONFIG_RFKILL is not set
+> # CONFIG_NET_9P is not set
+> 
+> #
+> # Device Drivers
+> #
+> 
+> #
+> # Generic Driver Options
+> #
+> CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+> # CONFIG_STANDALONE is not set
+> CONFIG_PREVENT_FIRMWARE_BUILD=y
+> CONFIG_FW_LOADER=y
+> CONFIG_FIRMWARE_IN_KERNEL=y
+> CONFIG_EXTRA_FIRMWARE=""
+> # CONFIG_DEBUG_DRIVER is not set
+> # CONFIG_DEBUG_DEVRES is not set
+> # CONFIG_SYS_HYPERVISOR is not set
+> # CONFIG_CONNECTOR is not set
+> # CONFIG_MTD is not set
+> # CONFIG_PARPORT is not set
+> CONFIG_PNP=y
+> CONFIG_PNP_DEBUG=y
+> 
+> #
+> # Protocols
+> #
+> CONFIG_PNPACPI=y
+> CONFIG_BLK_DEV=y
+> CONFIG_BLK_DEV_FD=y
+> # CONFIG_BLK_CPQ_DA is not set
+> CONFIG_BLK_CPQ_CISS_DA=y
+> # CONFIG_CISS_SCSI_TAPE is not set
+> # CONFIG_BLK_DEV_DAC960 is not set
+> # CONFIG_BLK_DEV_UMEM is not set
+> # CONFIG_BLK_DEV_COW_COMMON is not set
+> CONFIG_BLK_DEV_LOOP=y
+> # CONFIG_BLK_DEV_CRYPTOLOOP is not set
+> # CONFIG_BLK_DEV_NBD is not set
+> # CONFIG_BLK_DEV_SX8 is not set
+> # CONFIG_BLK_DEV_UB is not set
+> CONFIG_BLK_DEV_RAM=y
+> CONFIG_BLK_DEV_RAM_COUNT=16
+> CONFIG_BLK_DEV_RAM_SIZE=4096
+> # CONFIG_BLK_DEV_XIP is not set
+> # CONFIG_CDROM_PKTCDVD is not set
+> # CONFIG_ATA_OVER_ETH is not set
+> # CONFIG_BLK_DEV_HD is not set
+> CONFIG_MISC_DEVICES=y
+> # CONFIG_IBM_ASM is not set
+> # CONFIG_PHANTOM is not set
+> # CONFIG_EEPROM_93CX6 is not set
+> # CONFIG_SGI_IOC4 is not set
+> # CONFIG_TIFM_CORE is not set
+> # CONFIG_FUJITSU_LAPTOP is not set
+> # CONFIG_TC1100_WMI is not set
+> # CONFIG_MSI_LAPTOP is not set
+> # CONFIG_COMPAL_LAPTOP is not set
+> # CONFIG_SONY_LAPTOP is not set
+> # CONFIG_THINKPAD_ACPI is not set
+> # CONFIG_INTEL_MENLOW is not set
+> # CONFIG_ENCLOSURE_SERVICES is not set
+> # CONFIG_HP_ILO is not set
+> CONFIG_HAVE_IDE=y
+> CONFIG_IDE=y
+> CONFIG_BLK_DEV_IDE=y
+> 
+> #
+> # Please see Documentation/ide/ide.txt for help/info on IDE drives
+> #
+> CONFIG_BLK_DEV_IDE_SATA=y
+> CONFIG_BLK_DEV_IDEDISK=y
+> # CONFIG_IDEDISK_MULTI_MODE is not set
+> # CONFIG_BLK_DEV_IDECD is not set
+> # CONFIG_BLK_DEV_IDETAPE is not set
+> # CONFIG_BLK_DEV_IDEFLOPPY is not set
+> # CONFIG_BLK_DEV_IDESCSI is not set
+> CONFIG_BLK_DEV_IDEACPI=y
+> # CONFIG_IDE_TASK_IOCTL is not set
+> CONFIG_IDE_PROC_FS=y
+> 
+> #
+> # IDE chipset support/bugfixes
+> #
+> CONFIG_IDE_GENERIC=y
+> # CONFIG_BLK_DEV_PLATFORM is not set
+> # CONFIG_BLK_DEV_CMD640 is not set
+> # CONFIG_BLK_DEV_IDEPNP is not set
+> CONFIG_BLK_DEV_IDEDMA_SFF=y
+> 
+> #
+> # PCI IDE chipsets support
+> #
+> CONFIG_BLK_DEV_IDEPCI=y
+> CONFIG_IDEPCI_PCIBUS_ORDER=y
+> # CONFIG_BLK_DEV_OFFBOARD is not set
+> CONFIG_BLK_DEV_GENERIC=y
+> # CONFIG_BLK_DEV_OPTI621 is not set
+> # CONFIG_BLK_DEV_RZ1000 is not set
+> CONFIG_BLK_DEV_IDEDMA_PCI=y
+> # CONFIG_BLK_DEV_AEC62XX is not set
+> # CONFIG_BLK_DEV_ALI15X3 is not set
+> # CONFIG_BLK_DEV_AMD74XX is not set
+> # CONFIG_BLK_DEV_ATIIXP is not set
+> # CONFIG_BLK_DEV_CMD64X is not set
+> # CONFIG_BLK_DEV_TRIFLEX is not set
+> # CONFIG_BLK_DEV_CS5520 is not set
+> # CONFIG_BLK_DEV_CS5530 is not set
+> # CONFIG_BLK_DEV_CS5535 is not set
+> # CONFIG_BLK_DEV_HPT366 is not set
+> # CONFIG_BLK_DEV_JMICRON is not set
+> # CONFIG_BLK_DEV_SC1200 is not set
+> CONFIG_BLK_DEV_PIIX=y
+> # CONFIG_BLK_DEV_IT8213 is not set
+> # CONFIG_BLK_DEV_IT821X is not set
+> # CONFIG_BLK_DEV_NS87415 is not set
+> # CONFIG_BLK_DEV_PDC202XX_OLD is not set
+> # CONFIG_BLK_DEV_PDC202XX_NEW is not set
+> CONFIG_BLK_DEV_SVWKS=y
+> # CONFIG_BLK_DEV_SIIMAGE is not set
+> # CONFIG_BLK_DEV_SIS5513 is not set
+> # CONFIG_BLK_DEV_SLC90E66 is not set
+> # CONFIG_BLK_DEV_TRM290 is not set
+> # CONFIG_BLK_DEV_VIA82CXXX is not set
+> # CONFIG_BLK_DEV_TC86C001 is not set
+> CONFIG_BLK_DEV_IDEDMA=y
+> 
+> #
+> # SCSI device support
+> #
+> # CONFIG_RAID_ATTRS is not set
+> CONFIG_SCSI=y
+> CONFIG_SCSI_DMA=y
+> CONFIG_SCSI_TGT=y
+> CONFIG_SCSI_NETLINK=y
+> CONFIG_SCSI_PROC_FS=y
+> 
+> #
+> # SCSI support type (disk, tape, CD-ROM)
+> #
+> CONFIG_BLK_DEV_SD=y
+> # CONFIG_CHR_DEV_ST is not set
+> # CONFIG_CHR_DEV_OSST is not set
+> # CONFIG_BLK_DEV_SR is not set
+> CONFIG_CHR_DEV_SG=y
+> # CONFIG_CHR_DEV_SCH is not set
+> 
+> #
+> # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+> #
+> # CONFIG_SCSI_MULTI_LUN is not set
+> # CONFIG_SCSI_CONSTANTS is not set
+> # CONFIG_SCSI_LOGGING is not set
+> # CONFIG_SCSI_SCAN_ASYNC is not set
+> CONFIG_SCSI_WAIT_SCAN=m
+> 
+> #
+> # SCSI Transports
+> #
+> CONFIG_SCSI_SPI_ATTRS=y
+> CONFIG_SCSI_FC_ATTRS=y
+> # CONFIG_SCSI_FC_TGT_ATTRS is not set
+> CONFIG_SCSI_ISCSI_ATTRS=y
+> CONFIG_SCSI_SAS_ATTRS=y
+> CONFIG_SCSI_SAS_LIBSAS=y
+> # CONFIG_SCSI_SAS_ATA is not set
+> CONFIG_SCSI_SAS_HOST_SMP=y
+> CONFIG_SCSI_SAS_LIBSAS_DEBUG=y
+> # CONFIG_SCSI_SRP_ATTRS is not set
+> CONFIG_SCSI_LOWLEVEL=y
+> CONFIG_ISCSI_TCP=y
+> CONFIG_BLK_DEV_3W_XXXX_RAID=y
+> # CONFIG_SCSI_3W_9XXX is not set
+> # CONFIG_SCSI_ACARD is not set
+> CONFIG_SCSI_AACRAID=y
+> CONFIG_SCSI_AIC7XXX=y
+> CONFIG_AIC7XXX_CMDS_PER_DEVICE=32
+> CONFIG_AIC7XXX_RESET_DELAY_MS=15000
+> CONFIG_AIC7XXX_DEBUG_ENABLE=y
+> CONFIG_AIC7XXX_DEBUG_MASK=0
+> CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+> # CONFIG_SCSI_AIC7XXX_OLD is not set
+> CONFIG_SCSI_AIC79XX=y
+> CONFIG_AIC79XX_CMDS_PER_DEVICE=32
+> CONFIG_AIC79XX_RESET_DELAY_MS=15000
+> CONFIG_AIC79XX_DEBUG_ENABLE=y
+> CONFIG_AIC79XX_DEBUG_MASK=0
+> CONFIG_AIC79XX_REG_PRETTY_PRINT=y
+> # CONFIG_SCSI_AIC94XX is not set
+> # CONFIG_SCSI_DPT_I2O is not set
+> CONFIG_SCSI_ADVANSYS=y
+> # CONFIG_SCSI_ARCMSR is not set
+> CONFIG_MEGARAID_NEWGEN=y
+> # CONFIG_MEGARAID_MM is not set
+> # CONFIG_MEGARAID_LEGACY is not set
+> # CONFIG_MEGARAID_SAS is not set
+> # CONFIG_SCSI_HPTIOP is not set
+> # CONFIG_SCSI_BUSLOGIC is not set
+> # CONFIG_SCSI_DMX3191D is not set
+> # CONFIG_SCSI_EATA is not set
+> # CONFIG_SCSI_FUTURE_DOMAIN is not set
+> CONFIG_SCSI_GDTH=y
+> # CONFIG_SCSI_IPS is not set
+> # CONFIG_SCSI_INITIO is not set
+> # CONFIG_SCSI_INIA100 is not set
+> CONFIG_SCSI_MVSAS=y
+> # CONFIG_SCSI_STEX is not set
+> # CONFIG_SCSI_SYM53C8XX_2 is not set
+> # CONFIG_SCSI_IPR is not set
+> CONFIG_SCSI_QLOGIC_1280=y
+> CONFIG_SCSI_QLA_FC=y
+> # CONFIG_SCSI_QLA_ISCSI is not set
+> # CONFIG_SCSI_LPFC is not set
+> # CONFIG_SCSI_DC395x is not set
+> # CONFIG_SCSI_DC390T is not set
+> # CONFIG_SCSI_NSP32 is not set
+> # CONFIG_SCSI_DEBUG is not set
+> # CONFIG_SCSI_SRP is not set
+> # CONFIG_SCSI_DH is not set
+> CONFIG_ATA=y
+> # CONFIG_ATA_NONSTANDARD is not set
+> CONFIG_ATA_ACPI=y
+> CONFIG_SATA_PMP=y
+> CONFIG_SATA_AHCI=y
+> # CONFIG_SATA_SIL24 is not set
+> CONFIG_ATA_SFF=y
+> # CONFIG_SATA_SVW is not set
+> CONFIG_ATA_PIIX=y
+> CONFIG_SATA_MV=y
+> CONFIG_SATA_NV=y
+> # CONFIG_PDC_ADMA is not set
+> # CONFIG_SATA_QSTOR is not set
+> # CONFIG_SATA_PROMISE is not set
+> # CONFIG_SATA_SX4 is not set
+> # CONFIG_SATA_SIL is not set
+> # CONFIG_SATA_SIS is not set
+> # CONFIG_SATA_ULI is not set
+> # CONFIG_SATA_VIA is not set
+> # CONFIG_SATA_VITESSE is not set
+> # CONFIG_SATA_INIC162X is not set
+> # CONFIG_PATA_ACPI is not set
+> # CONFIG_PATA_ALI is not set
+> # CONFIG_PATA_AMD is not set
+> # CONFIG_PATA_ARTOP is not set
+> # CONFIG_PATA_ATIIXP is not set
+> # CONFIG_PATA_CMD640_PCI is not set
+> # CONFIG_PATA_CMD64X is not set
+> # CONFIG_PATA_CS5520 is not set
+> # CONFIG_PATA_CS5530 is not set
+> # CONFIG_PATA_CS5535 is not set
+> # CONFIG_PATA_CS5536 is not set
+> # CONFIG_PATA_CYPRESS is not set
+> # CONFIG_PATA_EFAR is not set
+> # CONFIG_ATA_GENERIC is not set
+> # CONFIG_PATA_HPT366 is not set
+> # CONFIG_PATA_HPT37X is not set
+> # CONFIG_PATA_HPT3X2N is not set
+> # CONFIG_PATA_HPT3X3 is not set
+> # CONFIG_PATA_IT821X is not set
+> # CONFIG_PATA_IT8213 is not set
+> # CONFIG_PATA_JMICRON is not set
+> # CONFIG_PATA_TRIFLEX is not set
+> CONFIG_PATA_MARVELL=y
+> CONFIG_PATA_MPIIX=y
+> CONFIG_PATA_OLDPIIX=y
+> # CONFIG_PATA_NETCELL is not set
+> # CONFIG_PATA_NINJA32 is not set
+> # CONFIG_PATA_NS87410 is not set
+> # CONFIG_PATA_NS87415 is not set
+> # CONFIG_PATA_OPTI is not set
+> # CONFIG_PATA_OPTIDMA is not set
+> # CONFIG_PATA_PDC_OLD is not set
+> # CONFIG_PATA_RADISYS is not set
+> # CONFIG_PATA_RZ1000 is not set
+> # CONFIG_PATA_SC1200 is not set
+> # CONFIG_PATA_SERVERWORKS is not set
+> # CONFIG_PATA_PDC2027X is not set
+> # CONFIG_PATA_SIL680 is not set
+> # CONFIG_PATA_SIS is not set
+> # CONFIG_PATA_VIA is not set
+> # CONFIG_PATA_WINBOND is not set
+> CONFIG_PATA_SCH=y
+> CONFIG_MD=y
+> CONFIG_BLK_DEV_MD=y
+> # CONFIG_MD_LINEAR is not set
+> CONFIG_MD_RAID0=y
+> CONFIG_MD_RAID1=y
+> # CONFIG_MD_RAID10 is not set
+> # CONFIG_MD_RAID456 is not set
+> # CONFIG_MD_MULTIPATH is not set
+> # CONFIG_MD_FAULTY is not set
+> CONFIG_BLK_DEV_DM=y
+> # CONFIG_DM_DEBUG is not set
+> # CONFIG_DM_CRYPT is not set
+> CONFIG_DM_SNAPSHOT=y
+> CONFIG_DM_MIRROR=y
+> # CONFIG_DM_ZERO is not set
+> # CONFIG_DM_MULTIPATH is not set
+> # CONFIG_DM_DELAY is not set
+> # CONFIG_DM_UEVENT is not set
+> CONFIG_FUSION=y
+> CONFIG_FUSION_SPI=y
+> # CONFIG_FUSION_FC is not set
+> # CONFIG_FUSION_SAS is not set
+> CONFIG_FUSION_MAX_SGE=128
+> # CONFIG_FUSION_CTL is not set
+> # CONFIG_FUSION_LOGGING is not set
+> 
+> #
+> # IEEE 1394 (FireWire) support
+> #
+> 
+> #
+> # Enable only one of the two stacks, unless you know what you are doing
+> #
+> # CONFIG_FIREWIRE is not set
+> # CONFIG_IEEE1394 is not set
+> # CONFIG_I2O is not set
+> # CONFIG_MACINTOSH_DRIVERS is not set
+> CONFIG_NETDEVICES=y
+> # CONFIG_DUMMY is not set
+> # CONFIG_BONDING is not set
+> # CONFIG_MACVLAN is not set
+> # CONFIG_EQUALIZER is not set
+> CONFIG_TUN=y
+> # CONFIG_VETH is not set
+> # CONFIG_NET_SB1000 is not set
+> # CONFIG_ARCNET is not set
+> CONFIG_PHYLIB=y
+> 
+> #
+> # MII PHY device drivers
+> #
+> # CONFIG_MARVELL_PHY is not set
+> # CONFIG_DAVICOM_PHY is not set
+> # CONFIG_QSEMI_PHY is not set
+> # CONFIG_LXT_PHY is not set
+> # CONFIG_CICADA_PHY is not set
+> # CONFIG_VITESSE_PHY is not set
+> # CONFIG_SMSC_PHY is not set
+> # CONFIG_BROADCOM_PHY is not set
+> # CONFIG_ICPLUS_PHY is not set
+> # CONFIG_REALTEK_PHY is not set
+> # CONFIG_FIXED_PHY is not set
+> # CONFIG_MDIO_BITBANG is not set
+> CONFIG_NET_ETHERNET=y
+> CONFIG_MII=y
+> # CONFIG_HAPPYMEAL is not set
+> # CONFIG_SUNGEM is not set
+> # CONFIG_CASSINI is not set
+> CONFIG_NET_VENDOR_3COM=y
+> CONFIG_VORTEX=y
+> # CONFIG_TYPHOON is not set
+> CONFIG_NET_TULIP=y
+> # CONFIG_DE2104X is not set
+> CONFIG_TULIP=y
+> # CONFIG_TULIP_MWI is not set
+> # CONFIG_TULIP_MMIO is not set
+> # CONFIG_TULIP_NAPI is not set
+> # CONFIG_DE4X5 is not set
+> # CONFIG_WINBOND_840 is not set
+> # CONFIG_DM9102 is not set
+> # CONFIG_ULI526X is not set
+> # CONFIG_HP100 is not set
+> # CONFIG_IBM_NEW_EMAC_ZMII is not set
+> # CONFIG_IBM_NEW_EMAC_RGMII is not set
+> # CONFIG_IBM_NEW_EMAC_TAH is not set
+> # CONFIG_IBM_NEW_EMAC_EMAC4 is not set
+> CONFIG_NET_PCI=y
+> CONFIG_PCNET32=y
+> # CONFIG_AMD8111_ETH is not set
+> # CONFIG_ADAPTEC_STARFIRE is not set
+> # CONFIG_B44 is not set
+> # CONFIG_FORCEDETH is not set
+> # CONFIG_EEPRO100 is not set
+> CONFIG_E100=y
+> # CONFIG_FEALNX is not set
+> # CONFIG_NATSEMI is not set
+> CONFIG_NE2K_PCI=y
+> # CONFIG_8139CP is not set
+> CONFIG_8139TOO=y
+> CONFIG_8139TOO_PIO=y
+> # CONFIG_8139TOO_TUNE_TWISTER is not set
+> # CONFIG_8139TOO_8129 is not set
+> # CONFIG_8139_OLD_RX_RESET is not set
+> # CONFIG_R6040 is not set
+> # CONFIG_SIS900 is not set
+> # CONFIG_EPIC100 is not set
+> # CONFIG_SUNDANCE is not set
+> # CONFIG_TLAN is not set
+> CONFIG_VIA_RHINE=y
+> # CONFIG_VIA_RHINE_MMIO is not set
+> # CONFIG_SC92031 is not set
+> CONFIG_NETDEV_1000=y
+> CONFIG_ACENIC=y
+> # CONFIG_ACENIC_OMIT_TIGON_I is not set
+> # CONFIG_DL2K is not set
+> CONFIG_E1000=y
+> # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
+> CONFIG_E1000E=y
+> # CONFIG_IP1000 is not set
+> CONFIG_IGB=y
+> # CONFIG_IGB_LRO is not set
+> # CONFIG_NS83820 is not set
+> # CONFIG_HAMACHI is not set
+> # CONFIG_YELLOWFIN is not set
+> # CONFIG_R8169 is not set
+> # CONFIG_SIS190 is not set
+> # CONFIG_SKGE is not set
+> # CONFIG_SKY2 is not set
+> # CONFIG_VIA_VELOCITY is not set
+> CONFIG_TIGON3=y
+> CONFIG_BNX2=y
+> # CONFIG_QLA3XXX is not set
+> # CONFIG_ATL1 is not set
+> # CONFIG_ATL1E is not set
+> CONFIG_NETDEV_10000=y
+> # CONFIG_CHELSIO_T1 is not set
+> # CONFIG_CHELSIO_T3 is not set
+> # CONFIG_IXGBE is not set
+> # CONFIG_IXGB is not set
+> # CONFIG_S2IO is not set
+> # CONFIG_MYRI10GE is not set
+> # CONFIG_NETXEN_NIC is not set
+> # CONFIG_NIU is not set
+> # CONFIG_MLX4_CORE is not set
+> # CONFIG_TEHUTI is not set
+> # CONFIG_BNX2X is not set
+> # CONFIG_SFC is not set
+> # CONFIG_TR is not set
+> 
+> #
+> # Wireless LAN
+> #
+> # CONFIG_WLAN_PRE80211 is not set
+> # CONFIG_WLAN_80211 is not set
+> # CONFIG_IWLWIFI_LEDS is not set
+> 
+> #
+> # USB Network Adapters
+> #
+> # CONFIG_USB_CATC is not set
+> # CONFIG_USB_KAWETH is not set
+> # CONFIG_USB_PEGASUS is not set
+> # CONFIG_USB_RTL8150 is not set
+> # CONFIG_USB_USBNET is not set
+> # CONFIG_WAN is not set
+> # CONFIG_FDDI is not set
+> # CONFIG_HIPPI is not set
+> # CONFIG_PPP is not set
+> # CONFIG_SLIP is not set
+> # CONFIG_NET_FC is not set
+> CONFIG_NETCONSOLE=y
+> CONFIG_NETCONSOLE_DYNAMIC=y
+> CONFIG_NETPOLL=y
+> CONFIG_NETPOLL_TRAP=y
+> CONFIG_NET_POLL_CONTROLLER=y
+> # CONFIG_ISDN is not set
+> # CONFIG_PHONE is not set
+> 
+> #
+> # Input device support
+> #
+> CONFIG_INPUT=y
+> # CONFIG_INPUT_FF_MEMLESS is not set
+> # CONFIG_INPUT_POLLDEV is not set
+> 
+> #
+> # Userland interfaces
+> #
+> CONFIG_INPUT_MOUSEDEV=y
+> CONFIG_INPUT_MOUSEDEV_PSAUX=y
+> CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+> CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+> # CONFIG_INPUT_JOYDEV is not set
+> # CONFIG_INPUT_EVDEV is not set
+> # CONFIG_INPUT_EVBUG is not set
+> 
+> #
+> # Input Device Drivers
+> #
+> CONFIG_INPUT_KEYBOARD=y
+> CONFIG_KEYBOARD_ATKBD=y
+> # CONFIG_KEYBOARD_SUNKBD is not set
+> # CONFIG_KEYBOARD_LKKBD is not set
+> # CONFIG_KEYBOARD_XTKBD is not set
+> # CONFIG_KEYBOARD_NEWTON is not set
+> # CONFIG_KEYBOARD_STOWAWAY is not set
+> CONFIG_INPUT_MOUSE=y
+> CONFIG_MOUSE_PS2=y
+> CONFIG_MOUSE_PS2_ALPS=y
+> CONFIG_MOUSE_PS2_LOGIPS2PP=y
+> CONFIG_MOUSE_PS2_SYNAPTICS=y
+> CONFIG_MOUSE_PS2_LIFEBOOK=y
+> CONFIG_MOUSE_PS2_TRACKPOINT=y
+> # CONFIG_MOUSE_PS2_TOUCHKIT is not set
+> # CONFIG_MOUSE_SERIAL is not set
+> # CONFIG_MOUSE_APPLETOUCH is not set
+> # CONFIG_MOUSE_BCM5974 is not set
+> # CONFIG_MOUSE_VSXXXAA is not set
+> # CONFIG_INPUT_JOYSTICK is not set
+> # CONFIG_INPUT_TABLET is not set
+> # CONFIG_INPUT_TOUCHSCREEN is not set
+> # CONFIG_INPUT_MISC is not set
+> 
+> #
+> # Hardware I/O ports
+> #
+> CONFIG_SERIO=y
+> CONFIG_SERIO_I8042=y
+> CONFIG_SERIO_SERPORT=y
+> # CONFIG_SERIO_CT82C710 is not set
+> # CONFIG_SERIO_PCIPS2 is not set
+> CONFIG_SERIO_LIBPS2=y
+> # CONFIG_SERIO_RAW is not set
+> # CONFIG_GAMEPORT is not set
+> 
+> #
+> # Character devices
+> #
+> CONFIG_VT=y
+> CONFIG_CONSOLE_TRANSLATIONS=y
+> CONFIG_VT_CONSOLE=y
+> CONFIG_HW_CONSOLE=y
+> CONFIG_VT_HW_CONSOLE_BINDING=y
+> CONFIG_DEVKMEM=y
+> # CONFIG_SERIAL_NONSTANDARD is not set
+> # CONFIG_NOZOMI is not set
+> 
+> #
+> # Serial drivers
+> #
+> CONFIG_SERIAL_8250=y
+> CONFIG_SERIAL_8250_CONSOLE=y
+> CONFIG_FIX_EARLYCON_MEM=y
+> CONFIG_SERIAL_8250_PCI=y
+> CONFIG_SERIAL_8250_PNP=y
+> CONFIG_SERIAL_8250_NR_UARTS=4
+> CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+> # CONFIG_SERIAL_8250_EXTENDED is not set
+> 
+> #
+> # Non-8250 serial port support
+> #
+> CONFIG_SERIAL_CORE=y
+> CONFIG_SERIAL_CORE_CONSOLE=y
+> CONFIG_CONSOLE_POLL=y
+> # CONFIG_SERIAL_JSM is not set
+> CONFIG_UNIX98_PTYS=y
+> CONFIG_LEGACY_PTYS=y
+> CONFIG_LEGACY_PTY_COUNT=256
+> # CONFIG_IPMI_HANDLER is not set
+> # CONFIG_HW_RANDOM is not set
+> # CONFIG_NVRAM is not set
+> # CONFIG_R3964 is not set
+> # CONFIG_APPLICOM is not set
+> # CONFIG_SONYPI is not set
+> # CONFIG_MWAVE is not set
+> # CONFIG_PC8736x_GPIO is not set
+> # CONFIG_NSC_GPIO is not set
+> # CONFIG_CS5535_GPIO is not set
+> # CONFIG_RAW_DRIVER is not set
+> # CONFIG_HPET is not set
+> # CONFIG_HANGCHECK_TIMER is not set
+> # CONFIG_TCG_TPM is not set
+> # CONFIG_TELCLOCK is not set
+> CONFIG_DEVPORT=y
+> # CONFIG_I2C is not set
+> # CONFIG_SPI is not set
+> CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+> # CONFIG_GPIOLIB is not set
+> # CONFIG_W1 is not set
+> CONFIG_POWER_SUPPLY=y
+> # CONFIG_POWER_SUPPLY_DEBUG is not set
+> # CONFIG_PDA_POWER is not set
+> # CONFIG_BATTERY_DS2760 is not set
+> # CONFIG_HWMON is not set
+> CONFIG_THERMAL=m
+> # CONFIG_WATCHDOG is not set
+> 
+> #
+> # Sonics Silicon Backplane
+> #
+> CONFIG_SSB_POSSIBLE=y
+> # CONFIG_SSB is not set
+> 
+> #
+> # Multifunction device drivers
+> #
+> # CONFIG_MFD_CORE is not set
+> # CONFIG_MFD_SM501 is not set
+> # CONFIG_HTC_PASIC3 is not set
+> # CONFIG_MFD_TMIO is not set
+> 
+> #
+> # Multimedia devices
+> #
+> 
+> #
+> # Multimedia core support
+> #
+> # CONFIG_VIDEO_DEV is not set
+> # CONFIG_DVB_CORE is not set
+> # CONFIG_VIDEO_MEDIA is not set
+> 
+> #
+> # Multimedia drivers
+> #
+> # CONFIG_DAB is not set
+> 
+> #
+> # Graphics support
+> #
+> CONFIG_AGP=m
+> CONFIG_AGP_ALI=m
+> CONFIG_AGP_ATI=m
+> CONFIG_AGP_AMD=m
+> CONFIG_AGP_AMD64=m
+> CONFIG_AGP_INTEL=m
+> CONFIG_AGP_NVIDIA=m
+> CONFIG_AGP_SIS=m
+> CONFIG_AGP_SWORKS=m
+> CONFIG_AGP_VIA=m
+> # CONFIG_AGP_EFFICEON is not set
+> CONFIG_DRM=m
+> CONFIG_DRM_TDFX=m
+> CONFIG_DRM_R128=m
+> CONFIG_DRM_RADEON=m
+> CONFIG_DRM_I810=m
+> CONFIG_DRM_I830=m
+> CONFIG_DRM_I915=m
+> CONFIG_DRM_MGA=m
+> CONFIG_DRM_SIS=m
+> # CONFIG_DRM_VIA is not set
+> # CONFIG_DRM_SAVAGE is not set
+> # CONFIG_VGASTATE is not set
+> # CONFIG_VIDEO_OUTPUT_CONTROL is not set
+> # CONFIG_FB is not set
+> # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+> CONFIG_BACKLIGHT_CLASS_DEVICE=m
+> # CONFIG_BACKLIGHT_CORGI is not set
+> # CONFIG_BACKLIGHT_PROGEAR is not set
+> # CONFIG_BACKLIGHT_MBP_NVIDIA is not set
+> 
+> #
+> # Display device support
+> #
+> # CONFIG_DISPLAY_SUPPORT is not set
+> 
+> #
+> # Console display driver support
+> #
+> CONFIG_VGA_CONSOLE=y
+> # CONFIG_VGACON_SOFT_SCROLLBACK is not set
+> # CONFIG_VIDEO_SELECT is not set
+> CONFIG_DUMMY_CONSOLE=y
+> # CONFIG_SOUND is not set
+> CONFIG_HID_SUPPORT=y
+> CONFIG_HID=y
+> CONFIG_HID_DEBUG=y
+> # CONFIG_HIDRAW is not set
+> 
+> #
+> # USB Input Devices
+> #
+> CONFIG_USB_HID=y
+> # CONFIG_USB_HIDINPUT_POWERBOOK is not set
+> # CONFIG_HID_FF is not set
+> # CONFIG_USB_HIDDEV is not set
+> CONFIG_USB_SUPPORT=y
+> CONFIG_USB_ARCH_HAS_HCD=y
+> CONFIG_USB_ARCH_HAS_OHCI=y
+> CONFIG_USB_ARCH_HAS_EHCI=y
+> CONFIG_USB=y
+> # CONFIG_USB_DEBUG is not set
+> # CONFIG_USB_ANNOUNCE_NEW_DEVICES is not set
+> 
+> #
+> # Miscellaneous USB options
+> #
+> # CONFIG_USB_DEVICEFS is not set
+> CONFIG_USB_DEVICE_CLASS=y
+> # CONFIG_USB_DYNAMIC_MINORS is not set
+> # CONFIG_USB_SUSPEND is not set
+> # CONFIG_USB_OTG is not set
+> CONFIG_USB_MON=y
+> 
+> #
+> # USB Host Controller Drivers
+> #
+> # CONFIG_USB_C67X00_HCD is not set
+> # CONFIG_USB_EHCI_HCD is not set
+> # CONFIG_USB_ISP116X_HCD is not set
+> # CONFIG_USB_ISP1760_HCD is not set
+> CONFIG_USB_OHCI_HCD=y
+> # CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+> # CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+> CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+> CONFIG_USB_UHCI_HCD=y
+> # CONFIG_USB_SL811_HCD is not set
+> # CONFIG_USB_R8A66597_HCD is not set
+> 
+> #
+> # USB Device Class drivers
+> #
+> # CONFIG_USB_ACM is not set
+> # CONFIG_USB_PRINTER is not set
+> # CONFIG_USB_WDM is not set
+> 
+> #
+> # NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+> #
+> 
+> #
+> # may also be needed; see USB_STORAGE Help for more information
+> #
+> # CONFIG_USB_STORAGE is not set
+> # CONFIG_USB_LIBUSUAL is not set
+> 
+> #
+> # USB Imaging devices
+> #
+> # CONFIG_USB_MDC800 is not set
+> # CONFIG_USB_MICROTEK is not set
+> 
+> #
+> # USB port drivers
+> #
+> # CONFIG_USB_SERIAL is not set
+> 
+> #
+> # USB Miscellaneous drivers
+> #
+> # CONFIG_USB_EMI62 is not set
+> # CONFIG_USB_EMI26 is not set
+> # CONFIG_USB_ADUTUX is not set
+> # CONFIG_USB_RIO500 is not set
+> # CONFIG_USB_LEGOTOWER is not set
+> # CONFIG_USB_LCD is not set
+> # CONFIG_USB_BERRY_CHARGE is not set
+> # CONFIG_USB_LED is not set
+> # CONFIG_USB_CYPRESS_CY7C63 is not set
+> # CONFIG_USB_CYTHERM is not set
+> # CONFIG_USB_PHIDGET is not set
+> # CONFIG_USB_IDMOUSE is not set
+> # CONFIG_USB_FTDI_ELAN is not set
+> # CONFIG_USB_APPLEDISPLAY is not set
+> # CONFIG_USB_LD is not set
+> # CONFIG_USB_TRANCEVIBRATOR is not set
+> # CONFIG_USB_IOWARRIOR is not set
+> # CONFIG_USB_ISIGHTFW is not set
+> # CONFIG_USB_GADGET is not set
+> # CONFIG_MMC is not set
+> # CONFIG_MEMSTICK is not set
+> # CONFIG_NEW_LEDS is not set
+> # CONFIG_ACCESSIBILITY is not set
+> # CONFIG_INFINIBAND is not set
+> # CONFIG_EDAC is not set
+> CONFIG_RTC_LIB=m
+> CONFIG_RTC_CLASS=m
+> 
+> #
+> # RTC interfaces
+> #
+> CONFIG_RTC_INTF_SYSFS=y
+> CONFIG_RTC_INTF_PROC=y
+> CONFIG_RTC_INTF_DEV=y
+> # CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+> CONFIG_RTC_DRV_TEST=m
+> 
+> #
+> # SPI RTC drivers
+> #
+> 
+> #
+> # Platform RTC drivers
+> #
+> CONFIG_RTC_DRV_CMOS=m
+> # CONFIG_RTC_DRV_DS1511 is not set
+> # CONFIG_RTC_DRV_DS1553 is not set
+> # CONFIG_RTC_DRV_DS1742 is not set
+> # CONFIG_RTC_DRV_STK17TA8 is not set
+> CONFIG_RTC_DRV_M48T86=m
+> # CONFIG_RTC_DRV_M48T59 is not set
+> # CONFIG_RTC_DRV_V3020 is not set
+> 
+> #
+> # on-CPU RTC drivers
+> #
+> # CONFIG_UIO is not set
+> 
+> #
+> # Firmware Drivers
+> #
+> # CONFIG_EDD is not set
+> CONFIG_FIRMWARE_MEMMAP=y
+> # CONFIG_DELL_RBU is not set
+> # CONFIG_DCDBAS is not set
+> CONFIG_DMIID=y
+> # CONFIG_ISCSI_IBFT_FIND is not set
+> 
+> #
+> # File systems
+> #
+> CONFIG_EXT2_FS=y
+> # CONFIG_EXT2_FS_XATTR is not set
+> # CONFIG_EXT2_FS_XIP is not set
+> CONFIG_EXT3_FS=y
+> CONFIG_EXT3_FS_XATTR=y
+> # CONFIG_EXT3_FS_POSIX_ACL is not set
+> # CONFIG_EXT3_FS_SECURITY is not set
+> # CONFIG_EXT4DEV_FS is not set
+> CONFIG_JBD=y
+> CONFIG_FS_MBCACHE=y
+> CONFIG_REISERFS_FS=y
+> # CONFIG_REISERFS_CHECK is not set
+> # CONFIG_REISERFS_PROC_INFO is not set
+> # CONFIG_REISERFS_FS_XATTR is not set
+> # CONFIG_JFS_FS is not set
+> # CONFIG_FS_POSIX_ACL is not set
+> # CONFIG_XFS_FS is not set
+> # CONFIG_OCFS2_FS is not set
+> CONFIG_DNOTIFY=y
+> CONFIG_INOTIFY=y
+> CONFIG_INOTIFY_USER=y
+> # CONFIG_QUOTA is not set
+> CONFIG_AUTOFS_FS=y
+> CONFIG_AUTOFS4_FS=y
+> CONFIG_FUSE_FS=y
+> 
+> #
+> # CD-ROM/DVD Filesystems
+> #
+> CONFIG_ISO9660_FS=y
+> CONFIG_JOLIET=y
+> CONFIG_ZISOFS=y
+> # CONFIG_UDF_FS is not set
+> 
+> #
+> # DOS/FAT/NT Filesystems
+> #
+> CONFIG_FAT_FS=m
+> CONFIG_MSDOS_FS=m
+> CONFIG_VFAT_FS=m
+> CONFIG_FAT_DEFAULT_CODEPAGE=437
+> CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+> # CONFIG_NTFS_FS is not set
+> 
+> #
+> # Pseudo filesystems
+> #
+> CONFIG_PROC_FS=y
+> CONFIG_PROC_KCORE=y
+> CONFIG_PROC_SYSCTL=y
+> CONFIG_SYSFS=y
+> CONFIG_TMPFS=y
+> # CONFIG_TMPFS_POSIX_ACL is not set
+> # CONFIG_HUGETLBFS is not set
+> # CONFIG_HUGETLB_PAGE is not set
+> CONFIG_CONFIGFS_FS=y
+> 
+> #
+> # Miscellaneous filesystems
+> #
+> # CONFIG_ADFS_FS is not set
+> # CONFIG_AFFS_FS is not set
+> # CONFIG_HFS_FS is not set
+> # CONFIG_HFSPLUS_FS is not set
+> # CONFIG_BEFS_FS is not set
+> # CONFIG_BFS_FS is not set
+> # CONFIG_EFS_FS is not set
+> CONFIG_CRAMFS=y
+> # CONFIG_VXFS_FS is not set
+> # CONFIG_MINIX_FS is not set
+> # CONFIG_OMFS_FS is not set
+> # CONFIG_HPFS_FS is not set
+> # CONFIG_QNX4FS_FS is not set
+> # CONFIG_ROMFS_FS is not set
+> # CONFIG_SYSV_FS is not set
+> # CONFIG_UFS_FS is not set
+> CONFIG_NETWORK_FILESYSTEMS=y
+> CONFIG_NFS_FS=y
+> CONFIG_NFS_V3=y
+> # CONFIG_NFS_V3_ACL is not set
+> # CONFIG_NFS_V4 is not set
+> CONFIG_ROOT_NFS=y
+> CONFIG_NFSD=m
+> CONFIG_NFSD_V3=y
+> # CONFIG_NFSD_V3_ACL is not set
+> # CONFIG_NFSD_V4 is not set
+> CONFIG_LOCKD=y
+> CONFIG_LOCKD_V4=y
+> CONFIG_EXPORTFS=m
+> CONFIG_NFS_COMMON=y
+> CONFIG_SUNRPC=y
+> # CONFIG_RPCSEC_GSS_KRB5 is not set
+> # CONFIG_RPCSEC_GSS_SPKM3 is not set
+> # CONFIG_SMB_FS is not set
+> # CONFIG_CIFS is not set
+> # CONFIG_NCP_FS is not set
+> # CONFIG_CODA_FS is not set
+> # CONFIG_AFS_FS is not set
+> 
+> #
+> # Partition Types
+> #
+> # CONFIG_PARTITION_ADVANCED is not set
+> CONFIG_MSDOS_PARTITION=y
+> CONFIG_NLS=y
+> CONFIG_NLS_DEFAULT="iso8859-1"
+> CONFIG_NLS_CODEPAGE_437=y
+> # CONFIG_NLS_CODEPAGE_737 is not set
+> # CONFIG_NLS_CODEPAGE_775 is not set
+> # CONFIG_NLS_CODEPAGE_850 is not set
+> # CONFIG_NLS_CODEPAGE_852 is not set
+> # CONFIG_NLS_CODEPAGE_855 is not set
+> # CONFIG_NLS_CODEPAGE_857 is not set
+> # CONFIG_NLS_CODEPAGE_860 is not set
+> # CONFIG_NLS_CODEPAGE_861 is not set
+> # CONFIG_NLS_CODEPAGE_862 is not set
+> # CONFIG_NLS_CODEPAGE_863 is not set
+> # CONFIG_NLS_CODEPAGE_864 is not set
+> # CONFIG_NLS_CODEPAGE_865 is not set
+> # CONFIG_NLS_CODEPAGE_866 is not set
+> # CONFIG_NLS_CODEPAGE_869 is not set
+> # CONFIG_NLS_CODEPAGE_936 is not set
+> # CONFIG_NLS_CODEPAGE_950 is not set
+> # CONFIG_NLS_CODEPAGE_932 is not set
+> # CONFIG_NLS_CODEPAGE_949 is not set
+> # CONFIG_NLS_CODEPAGE_874 is not set
+> # CONFIG_NLS_ISO8859_8 is not set
+> # CONFIG_NLS_CODEPAGE_1250 is not set
+> # CONFIG_NLS_CODEPAGE_1251 is not set
+> # CONFIG_NLS_ASCII is not set
+> CONFIG_NLS_ISO8859_1=y
+> # CONFIG_NLS_ISO8859_2 is not set
+> # CONFIG_NLS_ISO8859_3 is not set
+> # CONFIG_NLS_ISO8859_4 is not set
+> # CONFIG_NLS_ISO8859_5 is not set
+> # CONFIG_NLS_ISO8859_6 is not set
+> # CONFIG_NLS_ISO8859_7 is not set
+> # CONFIG_NLS_ISO8859_9 is not set
+> # CONFIG_NLS_ISO8859_13 is not set
+> # CONFIG_NLS_ISO8859_14 is not set
+> # CONFIG_NLS_ISO8859_15 is not set
+> # CONFIG_NLS_KOI8_R is not set
+> # CONFIG_NLS_KOI8_U is not set
+> # CONFIG_NLS_UTF8 is not set
+> # CONFIG_DLM is not set
+> 
+> #
+> # Kernel hacking
+> #
+> CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+> # CONFIG_PRINTK_TIME is not set
+> CONFIG_ENABLE_WARN_DEPRECATED=y
+> CONFIG_ENABLE_MUST_CHECK=y
+> CONFIG_FRAME_WARN=1024
+> CONFIG_MAGIC_SYSRQ=y
+> CONFIG_UNUSED_SYMBOLS=y
+> # CONFIG_DEBUG_FS is not set
+> # CONFIG_HEADERS_CHECK is not set
+> CONFIG_DEBUG_KERNEL=y
+> # CONFIG_DEBUG_SHIRQ is not set
+> CONFIG_DETECT_SOFTLOCKUP=y
+> # CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
+> CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC_VALUE=0
+> CONFIG_SCHED_DEBUG=y
+> # CONFIG_SCHEDSTATS is not set
+> # CONFIG_TIMER_STATS is not set
+> # CONFIG_DEBUG_OBJECTS is not set
+> # CONFIG_DEBUG_SLAB is not set
+> # CONFIG_DEBUG_RT_MUTEXES is not set
+> # CONFIG_RT_MUTEX_TESTER is not set
+> # CONFIG_DEBUG_SPINLOCK is not set
+> # CONFIG_DEBUG_MUTEXES is not set
+> # CONFIG_DEBUG_LOCK_ALLOC is not set
+> # CONFIG_PROVE_LOCKING is not set
+> # CONFIG_LOCK_STAT is not set
+> # CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+> # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+> # CONFIG_DEBUG_KOBJECT is not set
+> # CONFIG_DEBUG_HIGHMEM is not set
+> CONFIG_DEBUG_BUGVERBOSE=y
+> CONFIG_DEBUG_INFO=y
+> # CONFIG_DEBUG_VM is not set
+> # CONFIG_DEBUG_WRITECOUNT is not set
+> CONFIG_DEBUG_MEMORY_INIT=y
+> # CONFIG_DEBUG_LIST is not set
+> # CONFIG_DEBUG_SG is not set
+> CONFIG_FRAME_POINTER=y
+> # CONFIG_BOOT_PRINTK_DELAY is not set
+> # CONFIG_RCU_TORTURE_TEST is not set
+> # CONFIG_BACKTRACE_SELF_TEST is not set
+> # CONFIG_FAULT_INJECTION is not set
+> # CONFIG_LATENCYTOP is not set
+> CONFIG_SYSCTL_SYSCALL_CHECK=y
+> CONFIG_HAVE_FTRACE=y
+> CONFIG_HAVE_DYNAMIC_FTRACE=y
+> # CONFIG_FTRACE is not set
+> # CONFIG_IRQSOFF_TRACER is not set
+> # CONFIG_SYSPROF_TRACER is not set
+> # CONFIG_SCHED_TRACER is not set
+> # CONFIG_CONTEXT_SWITCH_TRACER is not set
+> CONFIG_PROVIDE_OHCI1394_DMA_INIT=y
+> # CONFIG_SAMPLES is not set
+> CONFIG_HAVE_ARCH_KGDB=y
+> CONFIG_KGDB=y
+> CONFIG_KGDB_SERIAL_CONSOLE=y
+> CONFIG_KGDB_TESTS=y
+> CONFIG_KGDB_TESTS_ON_BOOT=y
+> CONFIG_KGDB_TESTS_BOOT_STRING="V1F100"
+> # CONFIG_STRICT_DEVMEM is not set
+> CONFIG_X86_VERBOSE_BOOTUP=y
+> CONFIG_EARLY_PRINTK=y
+> # CONFIG_DEBUG_STACKOVERFLOW is not set
+> # CONFIG_DEBUG_STACK_USAGE is not set
+> # CONFIG_DEBUG_PAGEALLOC is not set
+> # CONFIG_DEBUG_PER_CPU_MAPS is not set
+> # CONFIG_X86_PTDUMP is not set
+> # CONFIG_DEBUG_RODATA is not set
+> # CONFIG_DEBUG_NX_TEST is not set
+> # CONFIG_4KSTACKS is not set
+> CONFIG_DOUBLEFAULT=y
+> # CONFIG_MMIOTRACE is not set
+> CONFIG_IO_DELAY_TYPE_0X80=0
+> CONFIG_IO_DELAY_TYPE_0XED=1
+> CONFIG_IO_DELAY_TYPE_UDELAY=2
+> CONFIG_IO_DELAY_TYPE_NONE=3
+> CONFIG_IO_DELAY_0X80=y
+> # CONFIG_IO_DELAY_0XED is not set
+> # CONFIG_IO_DELAY_UDELAY is not set
+> # CONFIG_IO_DELAY_NONE is not set
+> CONFIG_DEFAULT_IO_DELAY_TYPE=0
+> # CONFIG_CPA_DEBUG is not set
+> # CONFIG_OPTIMIZE_INLINING is not set
+> 
+> #
+> # Security options
+> #
+> # CONFIG_KEYS is not set
+> # CONFIG_SECURITY is not set
+> # CONFIG_SECURITY_FILE_CAPABILITIES is not set
+> CONFIG_CRYPTO=y
+> 
+> #
+> # Crypto core or helper
+> #
+> CONFIG_CRYPTO_ALGAPI=y
+> CONFIG_CRYPTO_HASH=y
+> CONFIG_CRYPTO_MANAGER=y
+> # CONFIG_CRYPTO_GF128MUL is not set
+> # CONFIG_CRYPTO_NULL is not set
+> # CONFIG_CRYPTO_CRYPTD is not set
+> # CONFIG_CRYPTO_AUTHENC is not set
+> # CONFIG_CRYPTO_TEST is not set
+> 
+> #
+> # Authenticated Encryption with Associated Data
+> #
+> # CONFIG_CRYPTO_CCM is not set
+> # CONFIG_CRYPTO_GCM is not set
+> # CONFIG_CRYPTO_SEQIV is not set
+> 
+> #
+> # Block modes
+> #
+> # CONFIG_CRYPTO_CBC is not set
+> # CONFIG_CRYPTO_CTR is not set
+> # CONFIG_CRYPTO_CTS is not set
+> # CONFIG_CRYPTO_ECB is not set
+> # CONFIG_CRYPTO_LRW is not set
+> # CONFIG_CRYPTO_PCBC is not set
+> # CONFIG_CRYPTO_XTS is not set
+> 
+> #
+> # Hash modes
+> #
+> CONFIG_CRYPTO_HMAC=y
+> # CONFIG_CRYPTO_XCBC is not set
+> 
+> #
+> # Digest
+> #
+> CONFIG_CRYPTO_CRC32C=y
+> # CONFIG_CRYPTO_MD4 is not set
+> CONFIG_CRYPTO_MD5=y
+> # CONFIG_CRYPTO_MICHAEL_MIC is not set
+> # CONFIG_CRYPTO_RMD128 is not set
+> # CONFIG_CRYPTO_RMD160 is not set
+> # CONFIG_CRYPTO_RMD256 is not set
+> # CONFIG_CRYPTO_RMD320 is not set
+> CONFIG_CRYPTO_SHA1=m
+> # CONFIG_CRYPTO_SHA256 is not set
+> # CONFIG_CRYPTO_SHA512 is not set
+> # CONFIG_CRYPTO_TGR192 is not set
+> # CONFIG_CRYPTO_WP512 is not set
+> 
+> #
+> # Ciphers
+> #
+> # CONFIG_CRYPTO_AES is not set
+> # CONFIG_CRYPTO_AES_586 is not set
+> # CONFIG_CRYPTO_ANUBIS is not set
+> # CONFIG_CRYPTO_ARC4 is not set
+> # CONFIG_CRYPTO_BLOWFISH is not set
+> # CONFIG_CRYPTO_CAMELLIA is not set
+> # CONFIG_CRYPTO_CAST5 is not set
+> # CONFIG_CRYPTO_CAST6 is not set
+> CONFIG_CRYPTO_DES=m
+> # CONFIG_CRYPTO_FCRYPT is not set
+> # CONFIG_CRYPTO_KHAZAD is not set
+> # CONFIG_CRYPTO_SALSA20 is not set
+> # CONFIG_CRYPTO_SALSA20_586 is not set
+> # CONFIG_CRYPTO_SEED is not set
+> # CONFIG_CRYPTO_SERPENT is not set
+> # CONFIG_CRYPTO_TEA is not set
+> # CONFIG_CRYPTO_TWOFISH is not set
+> # CONFIG_CRYPTO_TWOFISH_586 is not set
+> 
+> #
+> # Compression
+> #
+> # CONFIG_CRYPTO_DEFLATE is not set
+> # CONFIG_CRYPTO_LZO is not set
+> CONFIG_CRYPTO_HW=y
+> # CONFIG_CRYPTO_DEV_PADLOCK is not set
+> # CONFIG_CRYPTO_DEV_GEODE is not set
+> # CONFIG_CRYPTO_DEV_HIFN_795X is not set
+> CONFIG_HAVE_KVM=y
+> CONFIG_VIRTUALIZATION=y
+> # CONFIG_KVM is not set
+> # CONFIG_VIRTIO_PCI is not set
+> # CONFIG_VIRTIO_BALLOON is not set
+> 
+> #
+> # Library routines
+> #
+> CONFIG_BITREVERSE=y
+> CONFIG_GENERIC_FIND_FIRST_BIT=y
+> CONFIG_GENERIC_FIND_NEXT_BIT=y
+> # CONFIG_CRC_CCITT is not set
+> # CONFIG_CRC16 is not set
+> CONFIG_CRC_T10DIF=y
+> # CONFIG_CRC_ITU_T is not set
+> CONFIG_CRC32=y
+> # CONFIG_CRC7 is not set
+> CONFIG_LIBCRC32C=y
+> CONFIG_ZLIB_INFLATE=y
+> CONFIG_PLIST=y
+> CONFIG_HAS_IOMEM=y
+> CONFIG_HAS_IOPORT=y
+> CONFIG_HAS_DMA=y
+> --
 
-I sent one up last week, but it was overshadowed by the much
-more serious R790 problem that Linus and Rafael was looking
-at.  I have re-attached the patch for posterity.
-
-Thanks,
-Jordan
-
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
---W/nzBZO5zC0uMSeA
-Content-Type: text/x-diff; charset="us-ascii"
-Content-Disposition: inline; filename="remove-hpet-bar.patch"
-
-[PATCH]: SB600 - remove HPET resources from PCI device
-
-From: Jordan Crouse <jordan.crouse@amd.com>
-
-Prevent the HPET resources from appearing in PCI device 14.0 which
-confuses the PCI resource engine.
-
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
 ---
-
- arch/x86/pci/fixup.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/pci/fixup.c b/arch/x86/pci/fixup.c
-index 4bdaa59..d313ba8 100644
---- a/arch/x86/pci/fixup.c
-+++ b/arch/x86/pci/fixup.c
-@@ -511,3 +511,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, fam10h_pci_cfg_space_size);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, fam10h_pci_cfg_space_size);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, fam10h_pci_cfg_space_size);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, fam10h_pci_cfg_space_size);
-+
-+/* SB600: Disable BAR1 on device 14.0 to avoid HPET resources from
-+ * confusing the PCI engine */
-+
-+static void sb600_disable_hpet_bar(struct pci_dev *dev)
-+{
-+	u8 val;
-+
-+	/* The SB600 and SB700 both share the same device
-+	 * ID, but the PM register 0x55 does something different
-+	 * for the SB700, so make sure we are dealing with the
-+	 * SB600 before touching the bit.
-+	 */
-+
-+	pci_read_config_byte(dev, 0x08, &val);
-+
-+	if (val < 0x2F) {
-+		outb(0x55, 0xCD6);
-+		val = inb(0xCD7);
-+
-+		/* Set bit 7 in PM register 0x55 */
-+		outb(0x55, 0xCD6);
-+		outb(val | 0x80, 0xCD7);
-+	}
-+}
-+
-+DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_ATI, 0x4385, sb600_disable_hpet_bar);
-
---W/nzBZO5zC0uMSeA--
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
