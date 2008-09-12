@@ -1,32 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757368AbYILTAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYILTI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757368AbYILTAs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 15:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbYILTAk
+	id S1757338AbYILTI2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 15:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbYILTIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 15:00:40 -0400
-Received: from simmts7.bellnexxia.net ([206.47.199.165]:49249 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754981AbYILTAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 15:00:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AopPAHtWykjOL8cR/2dsb2JhbACBY4lZiCeBVZxNCAOGTAMIBHaBPA
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [196.220.5.179]
-From: UPGRADING SERVICE <k.macdonald@pei.sympatico.ca>
-Reply-To: upgrading_service@live.com
-Organization: UPGRADING SERVICE
-To: <info@webmaster2.com>
-Subject: Upgrading Service
-Date: Fri, 12 Sep 2008 15:00:35 -0400
+	Fri, 12 Sep 2008 15:08:19 -0400
+Received: from ns.suse.de ([195.135.220.2]:54841 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755217AbYILTIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 15:08:18 -0400
+Date: Fri, 12 Sep 2008 08:51:05 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: kobject leak in next-20080829 (and mainline)
+Message-ID: <20080912155105.GA3526@suse.de>
+References: <20080830044246.GA26435@x200.localdomain> <20080830054343.GA16899@suse.de> <20080906054522.GA3191@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080912190036.NRGC1779.simmts7-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080906054522.GA3191@x200.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is to notify you that we are presently working on our STANFORD.EDU email service provider,this maintenance can close your Planet email account completely due to unsolicited mails along with virus attack that is currently going on. Do not say you were not informed on the ongoing upgrading service. Your urgent response is highly needed, to protect your STANFORD.EDU.net email account from being closed, please forward your SURNAME and PASSWORD to the Upgrading Service Office via email address: upgrading_service@live.com
+On Sat, Sep 06, 2008 at 09:45:22AM +0400, Alexey Dobriyan wrote:
+> On Fri, Aug 29, 2008 at 10:43:43PM -0700, Greg KH wrote:
+> > On Sat, Aug 30, 2008 at 08:42:46AM +0400, Alexey Dobriyan wrote:
+> > > 	size-32: 3511 kvasprintf+0x57/0x90
+> > > 	size-64: 3059 kobject_create+0x1c/0x40
+> > > 
+> > > These two buddies increase after every "modprobe; rmmod" sequence.
+> > 
+> > Do they also do so in mainline?
+> 
+> Yep, same bug in mainline.
 
+Not good.  Does 2.6.26 show this as well?
+
+thanks,
+
+greg k-h
