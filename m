@@ -1,68 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYILPey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYILPgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbYILPey (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 11:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbYILPep
+	id S1756883AbYILPgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 11:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYILPgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 11:34:45 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41546 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753408AbYILPeo (ORCPT
+	Fri, 12 Sep 2008 11:36:36 -0400
+Received: from web50606.mail.re2.yahoo.com ([206.190.38.93]:45416 "HELO
+	web50606.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752150AbYILPgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 11:34:44 -0400
-Subject: Updated: Linux Foundation Technical Advisory Board Election
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: ksummit-2008-discuss@lists.linux-foundation.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>
-In-Reply-To: <1219264622.3258.73.camel@localhost.localdomain>
-References: <1219264622.3258.73.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 12 Sep 2008 10:34:41 -0500
-Message-Id: <1221233681.3319.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Sep 2008 11:36:36 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Sep 2008 11:36:35 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=5nK5dwL/9Q0lPf94xEoD/ZnYSkKRmdCO2LkAPJqAmkvVFk1fZWagJL8OOcYFeCxzWOwDAZQwnp6N0a4USeH0MD1PvowOzDggy1OEjIX7zviI6Hwb+npbHWcVc6X3ogHBgJXJTgymBjEsZeYr/v8h5vLwAo98icJyZrbgHZHe4a8=;
+X-YMail-OSG: E74Dg3IVM1lccvvHf_Lv4m0_Lx5M_rYrQh4BHor56UNoX7sphzjBgj_j2HOy_NL2BVQnQOQ.BAA83zkzPFZfAHep38jhDG0cLMVYOb_Y4.ekk2Ic0uzgbRBwD1XV62rH.rfYv_Po2OQWZng5gliW4JU-
+X-Mailer: YahooMailWebService/0.7.218.2
+Date: Fri, 12 Sep 2008 08:29:51 -0700 (PDT)
+From: marty <martyleisner@yahoo.com>
+Subject: Re: FW: [linux-pm] select with timeout across S3
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>, Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+In-Reply-To: <20080911092408.GA14503@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <739522.18279.qm@web50606.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The elections for five of the ten members of the Linux Foundation
-Technical Advisory Board[TAB] are held every year, currently the
-election will be at the 2008 Kernel Summit in a BOF session.  This year,
-in order to allow for wider participation, we thought we'd try holding
-the BFF last thing before the Plumbers Conf Aura Lounge event (say
-around 6:30pm---i.e. after dinner but before the Aura event) and allow
-not only KS attendees but also Plumbers Conf attendees to vote.
+I don't see a behavior change in the current kernels.
 
-Update: The TAB has had one recent resignation, so the person coming
-sixth in the vote will be appointed to serve out the remainder of that
-term (one year).
+Select(2) timeouts only count the time the machine is up -- not sleeping...
 
-Anyone is eligible to stand for election, simply send your nomination
-to:
+I had a patch for 2.6.20 that I tried (it modified schedule_timeout) -- 
+it didn't do anything useful in 2.6.27-rc5.
 
-Tech-board-discuss@lists.linux-foundation.org
-
-We currently have Nine nominees for the 5+1 places:
-
-Matt Mackall <mpm@selenic.com>
-James Bottomley <James.Bottomley@HansenPartnership.com>
-Theodore Tso <tytso@mit.edu>
-Chris Wright <chrisw@sous-sol.org>
-Randy Dunlap <rdunlap@xenotime.net>
-Kyle McMartin <kyle@mcmartin.ca>
-Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Matthew Wilcox <matthew@wil.cx>
-Christoph Hellwig <hch@lst.de>
-
-The deadline for receiving nominations is up until the BOF where the
-election is held (on the Evening of 16 September. Although, please
-remember if you're not going to be present that things go wrong with
-both networks and mailing lists, so get your nomination in
-early).
-
-James Bottomley (TAB Chair)
+marty
 
 
+--- On Thu, 9/11/08, Pavel Machek <pavel@suse.cz> wrote:
+
+> From: Pavel Machek <pavel@suse.cz>
+> Subject: Re: FW: [linux-pm] select with timeout across S3
+> To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+> Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org, martyleisner@yahoo.com
+> Date: Thursday, September 11, 2008, 5:24 AM
+> On Thu 2008-09-11 02:17:10, Leisner, Martin wrote:
+> > Hi,
+> > 
+> > I finally got 2.6.27-rc5 running...no change in my
+> test program...
+> > 
+> > I'm going to look at the patches we're using
+> for 2.4.20/2.6.20...
+> 
+> So the bug is still there, or did 2.6.27-rc5 magically
+> solve the problem?
+> 
+> > marty
+> > 
+> > 
+> > -----Original Message-----
+> > From: Pavel Machek [mailto:pavel@suse.cz]
+> > Sent: Mon 9/1/2008 2:25 AM
+> > To: Leisner, Martin
+> > Cc: linux-kernel@vger.kernel.org;
+> linux-pm@lists.linux-foundation.org
+> > Subject: Re: FW: [linux-pm] select with timeout across
+> S3
+> >  
+> > Hi!
+> > 
+> > > The behavior of linux (in both 2.4.x and 2.6.x)
+> is when the processor
+> > > sleeps, timeouts on select don't take into
+> account the sleep time,
+> > > only the run time.
+> > > 
+> > > For example, this program should pause for 10
+> minutes -- however
+> > > if we go into S3 in the middle its pausing for
+> (10 minutes + time in
+> > > S3)
+> > > 
+> > > I saw this on both 2.6.20 and 2.6.22...
+> > 
+> > Can you test this on 2.6.27-rc? We did have some fixes
+> in that
+> > area....
+> > 
+> > 							Pavel
+> > 
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures)
+> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+
+      
