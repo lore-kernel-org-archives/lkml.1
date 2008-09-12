@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbYILRlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYILRl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbYILRlO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 13:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYILRjz
+	id S1757846AbYILRl3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 13:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757374AbYILRkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 13:39:55 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:41172 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754435AbYILRjx (ORCPT
+	Fri, 12 Sep 2008 13:40:12 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:14343 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757362AbYILRkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 13:39:53 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=wls2LdCe+Y6z4QUSAED1HSHHGtEJwFjAOzExymQatDM0fDKpakOjAkzEwuTOs6GvMTQxkoCuai7DcmSKqqexyS5J+aoLIGZY6kuPAxWeGzUrBpIGNqEcQemwsb9hHMg6A81zlUwz0neTK68LxpiOOcEE9f++WqpSytplMf7RynQ=  ;
-X-YMail-OSG: lfP3ussVM1n7EZvHK21BUVIwCSglUucC9EVuvx4k28UY88RvtzF5AlMUs7QpAkI0NZd6k1kg0cN2YT2iOLcO44jbQa7BH9lFmrrEvqjw9aNaxBOSy6p1M4xglaAGDUg-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: [patch 2.6.27-rc6] x86_64 minor HPET tweakage
-Date: Fri, 12 Sep 2008 10:18:04 -0700
-User-Agent: KMail/1.9.9
+	Fri, 12 Sep 2008 13:40:10 -0400
+X-BigFish: VPS-31(z21eW34a4lz98dR936fQ3117Kzz10d3izzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K73FQF-01-09E-01
+Date: Fri, 12 Sep 2008 19:39:33 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Rufus & Azrael <rufus-azrael@numericable.fr>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
+	with the same regression
+Message-ID: <20080912173933.GF6743@alberich.amd.com>
+References: <86802c440808231217q3eebc738v863170b178bb03ab@mail.gmail.com> <48B067B3.6020008@numericable.fr> <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com> <48B06FF9.1030404@numericable.fr> <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com> <48B07409.60905@numericable.fr> <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com> <48B074E1.9020106@numericable.fr> <86802c440808231345u7c4f7710k5878928239507b10@mail.gmail.com> <86802c440808231405u42fa8024r89eccc907f36d99e@mail.gmail
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200809121018.04427.david-b@pacbell.net>
+In-Reply-To: <86802c440808231405u42fa8024r89eccc907f36d99e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 12 Sep 2008 17:39:56.0730 (UTC) FILETIME=[9267E1A0:01C914FE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Sat, Aug 23, 2008 at 02:05:19PM -0700, Yinghai Lu wrote:
+> Jordan, or others for AMD could access SB600
+> can you check ATI SB600 doc to produce one quirks patch to set the
+> magic bit to hide 00:14.0 BAR1 to OS ?
 
-Minor HPET tweakage on x86_64: Label the /proc/interrupts entry
-as "hpet" or "pit", matching the device and its clockevent name
-in /proc/timer_list.
+I know this is a very late reply, but
+is there still a quirk desired to hide BAR1 of SB600 SMBus device?
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
- arch/x86/kernel/time_64.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+If yes, I'll provide a patch asap.
 
---- a/arch/x86/kernel/time_64.c
-+++ b/arch/x86/kernel/time_64.c
-@@ -103,13 +103,15 @@ static struct irqaction irq0 = {
- 	.handler	= timer_event_interrupt,
- 	.flags		= IRQF_DISABLED | IRQF_IRQPOLL | IRQF_NOBALANCING,
- 	.mask		= CPU_MASK_NONE,
--	.name		= "timer"
-+	.name		= "hpet"
- };
- 
- void __init hpet_time_init(void)
- {
--	if (!hpet_enable())
-+	if (!hpet_enable()) {
-+		irq0.name = "pit";
- 		setup_pit_timer();
-+	}
- 
- 	setup_irq(0, &irq0);
- }
+
+Regards,
+
+Andreas
+
+
+
+
