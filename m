@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbYILM0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYILMah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbYILM0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 08:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYILM0K
+	id S1755714AbYILMah (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 08:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYILMa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 08:26:10 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:60306 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752852AbYILM0J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 08:26:09 -0400
-Message-ID: <48CA5EEB.4090809@linux.vnet.ibm.com>
-Date: Fri, 12 Sep 2008 14:22:03 +0200
-From: Pierre Morel <pmorel@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20061206)
+	Fri, 12 Sep 2008 08:30:27 -0400
+Received: from iona.labri.fr ([147.210.8.143]:40912 "EHLO iona.labri.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752644AbYILMa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 08:30:27 -0400
+Message-ID: <48CA611A.8060706@inria.fr>
+Date: Fri, 12 Sep 2008 14:31:22 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Cedric Le Goater <clg@fr.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>
-Subject: Re: [PATCH 1/1] system call notification with self_ptrace
-References: <48C51439.7000706@linux.vnet.ibm.com> <20080909124302.GA139@tv-sign.ru> <48C7E3A9.3060602@linux.vnet.ibm.com> <20080910162008.GA401@tv-sign.ru> <1221063805.6781.11.camel@nimitz>
-In-Reply-To: <1221063805.6781.11.camel@nimitz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>,
+       Nathalie Furmento <nathalie.furmento@labri.fr>
+Subject: [PATCH] mm: make do_move_pages() complexity linear
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Page migration is currently very slow because its overhead is quadratic
+with the number of pages. This is caused by each single page migration
+doing a linear lookup in the page array in new_page_node().
+    
+Since pages are stored in the array order in the pagelist and do_move_pages
+process this list in order, new_page_node() can increase the "pm" pointer
+to the page array so that the next iteration will find the next page in
+0 or few lookup steps.
+    
+Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+Signed-off-by: Nathalie Furmento <Nathalie.Furmento@labri.fr>
 
-be optimistic, why not?
-I bet we will ;)
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -837,14 +837,23 @@ struct page_to_node {
+ 	int status;
+ };
+ 
++/*
++ * Allocate a page on the node given as a page_to_node in private.
++ * Increase private to point to the next page_to_node so that the
++ * next iteration does not have to traverse the whole pm array.
++ */
+ static struct page *new_page_node(struct page *p, unsigned long private,
+ 		int **result)
+ {
+-	struct page_to_node *pm = (struct page_to_node *)private;
++	struct page_to_node **pmptr = (struct page_to_node **)private;
++	struct page_to_node *pm = *pmptr;
+ 
+ 	while (pm->node != MAX_NUMNODES && pm->page != p)
+ 		pm++;
+ 
++	/* prepare for the next iteration */
++	*pmptr = pm + 1;
++
+ 	if (pm->node == MAX_NUMNODES)
+ 		return NULL;
+ 
+@@ -926,10 +935,12 @@ set_status:
+ 		pp->status = err;
+ 	}
+ 
+-	if (!list_empty(&pagelist))
++	if (!list_empty(&pagelist)) {
++		/* new_page_node() will modify tmp */
++		struct page_to_node *tmp = pm;
+ 		err = migrate_pages(&pagelist, new_page_node,
+-				(unsigned long)pm);
+-	else
++				    (unsigned long)&tmp);
++	} else
+ 		err = -ENOENT;
+ 
+ 	up_read(&mm->mmap_sem);
 
-Pierre
-
-Dave Hansen wrote:
-> On Wed, 2008-09-10 at 20:20 +0400, Oleg Nesterov wrote:
->   
->> But... well, I think we need Roland's opinion. I must admit, I am a bit
->> sceptical about this patch ;) I mean, I don't really understand why it
->> is useful
->>     
->
-> Yeah, I don't think they're completely coming clean on it, yet.  
->
-> -- Dave
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-
-
--- 
-=============
-Pierre Morel
-RTOS and Embedded Linux
 
