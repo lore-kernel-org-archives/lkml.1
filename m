@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYILOXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYILO1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYILOXj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbYILOX2
+	id S1756111AbYILO1Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYILO1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:23:28 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:51460 "EHLO mgw1.diku.dk"
+	Fri, 12 Sep 2008 10:27:16 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:37285 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752819AbYILOX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:23:27 -0400
-From: Julien Brunel <brunel@diku.dk>
-To: ericvh@gmail.com, rminnich@sandia.gov, lucho@ionkov.net,
-       v9fs-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] fs/9p: Use an IS_ERR test rather than a NULL test
-Date: Fri, 12 Sep 2008 16:23:22 +0200
-User-Agent: KMail/1.9.9
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1751241AbYILO1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:27:16 -0400
+Date: Fri, 12 Sep 2008 18:32:25 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Pierre Morel <pmorel@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>
+Subject: Re: [PATCH 1/1] system call notification with self_ptrace
+Message-ID: <20080912143225.GA108@tv-sign.ru>
+References: <48C51439.7000706@linux.vnet.ibm.com> <20080909124302.GA139@tv-sign.ru> <48C7E3A9.3060602@linux.vnet.ibm.com> <20080910162008.GA401@tv-sign.ru> <48CA5E4F.2020600@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200809121623.22644.brunel@diku.dk>
+In-Reply-To: <48CA5E4F.2020600@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julien Brunel <brunel@diku.dk>
+Hello Pierre,
 
-In case of error, the function p9_client_walk returns an ERR pointer,
-but never returns a NULL pointer. So a NULL test that comes after an
-IS_ERR test should be deleted.
+On 09/12, Pierre Morel wrote:
+>
+> You are right, the functionality can be implemented with the system call.
+> But it means we have the overhead of a system call just to clear two bits,
+> the TIF_SYSCALL_TRACE and the PTS_SELF.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Yes.
 
-// <smpl>
-@match_bad_null_test@
-expression x, E;
-statement S1,S2;
-@@
-x = p9_client_walk(...)
-... when != x = E
-*  if (x != NULL) 
-S1 else S2
-// </smpl>
+So you want to optimize the code for the (imho very exotic) functionality.
+And again, the overhead of a system call is nothing compared to the signal
+delivery. I bet this overhead won't be visible with any benchmark.
 
-Signed-off-by:  Julien Brunel <brunel@diku.dk>
-Signed-off-by:  Julia Lawall <julia@diku.dk>
+> On the other hand we have an overhead of one single "if" inside
+> the handle_signal() function.
 
----
- fs/9p/vfs_inode.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+What if everyone who wants to add the new functionality will add one
+single "if + code" to the core kernel just because he wants to add
+a very minor optimization for his needs?
 
-diff -u -p a/fs/9p/vfs_inode.c b/fs/9p/vfs_inode.c
---- a/fs/9p/vfs_inode.c
-+++ b/fs/9p/vfs_inode.c
-@@ -626,8 +626,7 @@ static struct dentry *v9fs_vfs_lookup(st
- 	return NULL;
- 
- error:
--	if (fid)
--		p9_client_clunk(fid);
-+	p9_client_clunk(fid);
- 
- 	return ERR_PTR(result);
- }
+And you forgot about the maintaince overhead. You forgot that this extra
+"if" uglifies/complicates the code.
+
+This all is imho of course, and I'm not maintainer. But I promise I
+will argue against this change forever ;)
+
+> We can do the same with fork and ptrace, yes, but with a very big 
+> overhead on each system call and this is why this patch is so usefull: 
+> because with this patch you sit inside the thread when analysing it and 
+> have a direct access to all data without the need of IPC, ptrace or any 
+> task switch.
+>
+> I will provide a test program and plan to release a tracing tool based 
+> on it.
+
+Yes please, this would be very nice. Please do not count me, but I'm
+afraid I am not alone who needs to really understand why this patch
+is useful.
+
+Oleg.
+
