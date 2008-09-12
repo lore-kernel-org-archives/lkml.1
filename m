@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbYILPsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYILPvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbYILPsE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 11:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbYILPry
+	id S1756876AbYILPvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 11:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbYILPvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 11:47:54 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:58015 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752093AbYILPrx (ORCPT
+	Fri, 12 Sep 2008 11:51:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37737 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753603AbYILPvA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 11:47:53 -0400
-Subject: Re: Updated: Linux Foundation Technical Advisory Board Election
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: ksummit-2008-discuss@lists.linux-foundation.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Tech Board Discuss 
-	<Tech-board-discuss@lists.linux-foundation.org>
-In-Reply-To: <1221233681.3319.7.camel@localhost.localdomain>
-References: <1219264622.3258.73.camel@localhost.localdomain>
-	 <1221233681.3319.7.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 12 Sep 2008 10:47:48 -0500
-Message-Id: <1221234468.3319.8.camel@localhost.localdomain>
+	Fri, 12 Sep 2008 11:51:00 -0400
+Date: Fri, 12 Sep 2008 08:49:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Marcin Obara <marcin_obara@users.sourceforge.net>,
+       Jiri Slaby <jirislaby@gmail.com>, tpm@selhorst.net, kjhall@us.ibm.com,
+       linux-kernel@vger.kernel.org, srajiv@linux.vnet.ibm.com,
+       debora@linux.vnet.ibm.com
+Subject: Re: tpm-correct-tpm-timeouts-to-jiffies-conversion.patch -> 2.6.27
+Message-Id: <20080912084949.008855e5.akpm@linux-foundation.org>
+In-Reply-To: <7218.1221189008@turing-police.cc.vt.edu>
+References: <48C84619.8030303@gmail.com>
+	<20080910152258.762e3714.akpm@linux-foundation.org>
+	<ea8d860a0809110303g68d7cf2fs7affd9103abc9b24@mail.gmail.com>
+	<7218.1221189008@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-09-12 at 10:34 -0500, James Bottomley wrote:
-> The elections for five of the ten members of the Linux Foundation
-> Technical Advisory Board[TAB] are held every year, currently the
-> election will be at the 2008 Kernel Summit in a BOF session.  This year,
-> in order to allow for wider participation, we thought we'd try holding
-> the BFF last thing before the Plumbers Conf Aura Lounge event (say
-> around 6:30pm---i.e. after dinner but before the Aura event) and allow
-> not only KS attendees but also Plumbers Conf attendees to vote.
+On Thu, 11 Sep 2008 23:10:08 -0400 Valdis.Kletnieks@vt.edu wrote:
+
+> On Thu, 11 Sep 2008 12:03:52 +0200, Marcin Obara said:
 > 
-> Update: The TAB has had one recent resignation, so the person coming
-> sixth in the vote will be appointed to serve out the remainder of that
-> term (one year).
+> > > Why?  I wasn't aware that this fixed anything which anyone had observed
+> > > (pokes tongue out at the changelog).
+> > >
+> > 
+> > This fixes i.e.: long hang while loading TPM driver, if TPM chip
+> > starts in "Idle" state instead of "Ready" state.
+> > Without this patch - 'modprobe' may hang for 30 seconds or more.
+> > Please, push this patch into 2.6.27.
 > 
-> Anyone is eligible to stand for election, simply send your nomination
-> to:
+> I personally don't care whether this goes into .27 or waits till .28.  However,
+> I *would* appreciate it if we make sure that whenever it goes go upstream, we
+> also send tpm-work-around-bug-in-broadcom-bcm0102-chipset.patch at the same
+> time.
 > 
-> Tech-board-discuss@lists.linux-foundation.org
+> I have to admit that it's not exactly confidence inspiring - if the Broadcom
+> chip gets timeout units wrong, what *other* issues lurk in its silicon?  It's
+> bad enough when you find bugs in a RAID chipset or mouse hardware - it's even
+> worse when it's a security chip.. ;)
 > 
-> We currently have Nine nominees for the 5+1 places:
 
-Sorry, missed one; we actually have Ten nominees:
-
-> Matt Mackall <mpm@selenic.com>
-> James Bottomley <James.Bottomley@HansenPartnership.com>
-> Theodore Tso <tytso@mit.edu>
-> Chris Wright <chrisw@sous-sol.org>
-> Randy Dunlap <rdunlap@xenotime.net>
-> Kyle McMartin <kyle@mcmartin.ca>
-> Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> Matthew Wilcox <matthew@wil.cx>
-> Christoph Hellwig <hch@lst.de>
-
-Dave Jones <davej@redhat.com>
-
-> The deadline for receiving nominations is up until the BOF where the
-> election is held (on the Evening of 16 September. Although, please
-> remember if you're not going to be present that things go wrong with
-> both networks and mailing lists, so get your nomination in
-> early).
-> 
-> James Bottomley (TAB Chair)
-
-
+hm, it's rather a lot of patching just to fix a once-off 30-second
+pause.  On second thoughts, let's do it all in 2.6.28.
