@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYILO1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbYILO3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbYILO1Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbYILO1Q
+	id S1756396AbYILO3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYILO3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:27:16 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37285 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbYILO1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:27:16 -0400
-Date: Fri, 12 Sep 2008 18:32:25 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Pierre Morel <pmorel@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       sameske@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>, Daniel Lezcano <dlezcano@fr.ibm.com>
-Subject: Re: [PATCH 1/1] system call notification with self_ptrace
-Message-ID: <20080912143225.GA108@tv-sign.ru>
-References: <48C51439.7000706@linux.vnet.ibm.com> <20080909124302.GA139@tv-sign.ru> <48C7E3A9.3060602@linux.vnet.ibm.com> <20080910162008.GA401@tv-sign.ru> <48CA5E4F.2020600@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48CA5E4F.2020600@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.11
+	Fri, 12 Sep 2008 10:29:00 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:43025 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751273AbYILO27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:28:59 -0400
+Message-ID: <48CA7CA8.2000107@sgi.com>
+Date: Fri, 12 Sep 2008 07:28:56 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, davej@codemonkey.org.uk,
+       David Miller <davem@davemloft.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jack Steiner <steiner@sgi.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jes Sorensen <jes@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] CPUMASK: proposal for replacing cpumask_t
+References: <20080906235036.891970000@polaris-admin.engr.sgi.com> <20080908183852.GA3713@elte.hu> <48C84E9E.7080507@sgi.com> <200809121455.02180.rusty@rustcorp.com.au>
+In-Reply-To: <200809121455.02180.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Pierre,
+Rusty Russell wrote:
+> On Thursday 11 September 2008 08:47:58 Mike Travis wrote:
+>> Here's an initial proposal for abstracting cpumask_t to be either
+>> an array of 1 or a pointer to an array...   Hopefully this will
+>> minimize the amount of code changes while providing the capabilities
+>> this change is attempting to do.
+>>
+>> Comments most welcome. ;-)
+> 
+> I think this is still "wrong way go back".
+> 
+> I'm yet to be convinced that we really need to allocate cpumasks in any fast 
+> paths.  And if not, we should simply allocate them everywhere.  I'd rather 
+> see one #ifdef around a place where we can show a perf issue.
+> 
+> Get rid of CPU_MASK_ALL et al in favour of cpu_mask_all.  And cpu_mask_any_one 
+> instead of CPU_MASK_CPU0 since that's usually what they want.
+> 
+> API looks like so (look Ma, no typedefs!)
+> 
+> 	struct cpumask *cpus;
+> 
+> 	cpus = cpumask_alloc();
+> 	if (!cpus)
+> 		return -ENOMEM;
+> 
+> 	cpumask_init_single(cpunum);
+> 	OR
+> 	cpumask_init(cpu_mask_all);
+> 	...
+> 	cpumask_free(cpus);
+> 
+> Unmistakable and really hard to screw up.  You can even be clever and not 
+> reveal the struct cpumask definition so noone can declare one by accident...
+> 
+> Cheers,
+> Rusty.
 
-On 09/12, Pierre Morel wrote:
->
-> You are right, the functionality can be implemented with the system call.
-> But it means we have the overhead of a system call just to clear two bits,
-> the TIF_SYSCALL_TRACE and the PTS_SELF.
+Using a typedef came from Linus, and the idea is basically if NR_CPUS fits
+into a long, then it's carried as an array of one (ie., local variable).
+If it's bigger, then it's a pointer to a remote array.  The references can
+all be pointers (*cpumask), though most of the references use the cpu_XXX
+operators which already treat the references correctly (in my proposal,
+that is).  That way, small systems can optimize out the indirect reference
+and the overhead becomes zero.
 
-Yes.
+Also, cpumask_alloc/free() becomes nop's for small systems.
 
-So you want to optimize the code for the (imho very exotic) functionality.
-And again, the overhead of a system call is nothing compared to the signal
-delivery. I bet this overhead won't be visible with any benchmark.
+But I like the idea of dumping some of the initializers.  I should have
+made CPU0 "cpumask_of_cpu(0)".  I'll have to look at where they are used to
+see if this is feasible.
 
-> On the other hand we have an overhead of one single "if" inside
-> the handle_signal() function.
-
-What if everyone who wants to add the new functionality will add one
-single "if + code" to the core kernel just because he wants to add
-a very minor optimization for his needs?
-
-And you forgot about the maintaince overhead. You forgot that this extra
-"if" uglifies/complicates the code.
-
-This all is imho of course, and I'm not maintainer. But I promise I
-will argue against this change forever ;)
-
-> We can do the same with fork and ptrace, yes, but with a very big 
-> overhead on each system call and this is why this patch is so usefull: 
-> because with this patch you sit inside the thread when analysing it and 
-> have a direct access to all data without the need of IPC, ptrace or any 
-> task switch.
->
-> I will provide a test program and plan to release a tracing tool based 
-> on it.
-
-Yes please, this would be very nice. Please do not count me, but I'm
-afraid I am not alone who needs to really understand why this patch
-is useful.
-
-Oleg.
-
+Thanks!
+Mike
