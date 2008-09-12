@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYILP61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYILQFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYILP61 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 11:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYILP6T
+	id S1756920AbYILQFh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 12:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYILQF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 11:58:19 -0400
-Received: from waste.org ([66.93.16.53]:42115 "EHLO waste.org"
+	Fri, 12 Sep 2008 12:05:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:26384 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752922AbYILP6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 11:58:18 -0400
-Subject: Re: [PATCH -mm 1/2] sort: Add obj_sort() for sorting all kinds of
-	random-accessible objects
-From: Matt Mackall <mpm@selenic.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <48CA58A4.8020902@cn.fujitsu.com>
-References: <48CA58A4.8020902@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Fri, 12 Sep 2008 10:56:04 -0500
-Message-Id: <1221234964.5277.482.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	id S1752922AbYILQF0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 12:05:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,390,1217833200"; 
+   d="scan'208";a="45562463"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Frans Pop <elendil@planet.nl>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
+Date: Fri, 12 Sep 2008 09:05:02 -0700
+Subject: RE: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
+ and VESA framebuffer
+Thread-Topic: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
+ and VESA framebuffer
+Thread-Index: AckU3D2vlnfUJ8Y6TtWmO5jBVGUsywAFBigw
+Message-ID: <7E82351C108FA840AB1866AC776AEC462C9BB233@orsmsx505.amr.corp.intel.com>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+ <200809121254.02307.elendil@planet.nl>
+ <7E82351C108FA840AB1866AC776AEC462C9BAFC5@orsmsx505.amr.corp.intel.com>
+ <200809121533.43318.elendil@planet.nl>
+In-Reply-To: <200809121533.43318.elendil@planet.nl>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-09-12 at 19:55 +0800, Lai Jiangshan wrote:
-> current sort can only sort objects on continuous memory,
-> but sometimes we need to sort objects on noncontinuous memory,
-> this patch provide obj_sort() for this.
-> 
-> Sometimes a C struct(the container of objects, or objects) may be designed
-> with some high-level language's semantic meaning. obj_sort() can sort
-> for them.
+
+>-----Original Message-----
+>From: Frans Pop [mailto:elendil@planet.nl]
+>Sent: Friday, September 12, 2008 6:34 AM
+>To: Pallipadi, Venkatesh
+>Cc: Siddha, Suresh B; Linux Kernel Mailing List; Ingo Molnar;
+>arjan@linux.intel.com; jbarnes@virtuousgeek.org
+>Subject: Re: [Bug 10843] Display artifacts on XOrg logout with
+>PAT kernel and VESA framebuffer
 >
-> obj_sort() is need for sort pids for cgroup.tasks file.
+>On Friday 12 September 2008, Pallipadi, Venkatesh wrote:
+>> What does the output of x86/pat_memtype_list under debugfs look like?
+>
+>I've attached that file and dmesg output for two of the machines.
+>
 
-Ok, if I understand this correctly, your new function basically changes:
+OK. This is the same issue as the one on this thread here
+http://www.ussg.iu.edu/hypermail/linux/kernel/0808.2/1532.html
 
-cmp(void *a, void *b)            to cmp(void *obj, int a, int b)
-swap(void *a, void *b, int size) to swap(void *obj, int a, int b)
 
-Since neither function actually looks at the data directly, it seems we
-could make a unified sort function with:
+We have too many entires in PAT list due to RAM pages being marked
+UC by drivers. Unfortunately, there are no quick fixes that can fix
+this for 2.6.27. However, we are aware of the problem here and
+working on a more complete fix for this. We should have the patch
+for it soon.
 
-cmp(void *base, int a, int b)
-swap(void *base, int a, int b, int size)
-
-What is the underlying data structure you're sorting by the way? Years
-ago, I wrote a very nice merge sort for linked lists that I never got
-around to submitting. 
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+Thanks,
+Venki
