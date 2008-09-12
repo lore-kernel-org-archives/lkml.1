@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYILDI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbYILDJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbYILDI0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 23:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYILDIR
+	id S1756885AbYILDJy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 23:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYILDJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 23:08:17 -0400
-Received: from gv-out-0910.google.com ([216.239.58.185]:39063 "EHLO
+	Thu, 11 Sep 2008 23:09:42 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:38428 "EHLO
 	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbYILDIQ (ORCPT
+	with ESMTP id S1752087AbYILDJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 23:08:16 -0400
+	Thu, 11 Sep 2008 23:09:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=ULB+sqiq05pp/FTGMGpxsOIVGtn/5SmiB5sAVmON6ls8WqU2L0pTtu2PvcgQ8l2aHD
-         SEMvuJia1m+0B4QLaYNquHLG3/g4ec/+h7rz7uZtAAwwpDeqohjLZ6s8NVSEkTJMCLJ9
-         JXdEoz50b5qnJdG/wqg29Iyv0EqpZhDtw+ags=
-Date: Fri, 12 Sep 2008 07:10:08 +0400
+        b=RLCumrY1eICwrl5q6k+NnSNSkxt59Ojcbo9LLMH0HNuFpMkkntpqe13OlGyoIY6/lL
+         1kgrBHdhvPAJkqVo/Aq53IXirqMjHoVfEU2c739tYEkzMGO+ovpBuK0rHRbp7AmUIpMq
+         JHJxoPuKw4pVigmaeKBuNMpq47JbEggWK/LPs=
+Date: Fri, 12 Sep 2008 07:11:32 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: Grant Coady <gcoady.lk@gmail.com>
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
 Subject: Re: [stable] regression in iptables: recent filter
-Message-ID: <20080912031008.GC3670@x200.localdomain>
+Message-ID: <20080912031132.GA6443@x200.localdomain>
 References: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
