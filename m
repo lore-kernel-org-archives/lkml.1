@@ -1,149 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYILS4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbYILS63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbYILS4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 14:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbYILS4J
+	id S1757305AbYILS63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 14:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYILS6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 14:56:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43876 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753831AbYILS4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 14:56:07 -0400
-Date: Fri, 12 Sep 2008 11:55:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2.6.27 mmotm] rtc-cmos: export second NVRAM bank
-Message-Id: <20080912115530.79a3c1a3.akpm@linux-foundation.org>
-In-Reply-To: <200809120957.55562.david-b@pacbell.net>
-References: <200809120957.55562.david-b@pacbell.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Sep 2008 14:58:21 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42689 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754171AbYILS6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 14:58:21 -0400
+Date: Fri, 12 Sep 2008 19:58:18 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, apw@shadowen.org
+Subject: Re: [PATCH] Mark the correct zone as full when scanning zonelists
+Message-ID: <20080912185817.GA20056@csn.ul.ie>
+References: <20080911212550.GA18087@csn.ul.ie> <20080911144155.c70ef145.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080911144155.c70ef145.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008 09:57:55 -0700
-David Brownell <david-b@pacbell.net> wrote:
-
-> From: David Brownell <dbrownell@users.sourceforge.net>
+On (11/09/08 14:41), Andrew Morton didst pronounce:
+> On Thu, 11 Sep 2008 22:25:51 +0100
+> Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> Teach rtc-cmos about the second bank of registers found on most
-> modern x86 systems, giving access to 128 bytes more NVRAM.
+> > The for_each_zone_zonelist() uses a struct zoneref *z cursor when scanning
+> > zonelists to keep track of where in the zonelist it is. The zoneref that
+> > is returned corresponds to the the next zone that is to be scanned, not
+> > the current one as it originally thought of as an opaque list.
+> > 
+> > When the page allocator is scanning a zonelist, it marks zones that it
+> > temporarily full zones to eliminate near-future scanning attempts.
 > 
-> This version only sees that extra NVRAM when both register banks
-> are provided as part of *one* PNP resource.  Since BIOS on some
-> systems presents them using two IO resources, and nothing merges
-> them, this can't always show all the NVRAM.  (We're supposed to
-> be able to use PNP id PNP0b01 too, but BIOS tables doesn't often
-> seem to use that particular option.)
+> That sentence needs help.
 > 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
-> For 2.6.28; applies after other pending patches
+
+I've posted a revised leader below.
+
+> > It uses
+> > the zoneref for the marking and consequently the incorrect zone gets marked
+> > full. This leads to a suitable zone being skipped in the mistaken belief
+> > it is full. This patch corrects the problem by changing zoneref to be the
+> > current zone being scanned instead of the next one.
 > 
->  drivers/rtc/rtc-cmos.c |   70 ++++++++++++++++++++++++++++++++++++++++++-----
->  1 file changed, 63 insertions(+), 7 deletions(-)
+> Applicable to 2.6.26 as well, yes?
 > 
-> --- a/drivers/rtc/rtc-cmos.c
-> +++ b/drivers/rtc/rtc-cmos.c
-> @@ -153,6 +153,43 @@ static inline int hpet_unregister_irq_ha
->  
->  /*----------------------------------------------------------------*/
->  
-> +#ifdef RTC_PORT
-> +
-> +/* Most newer x86 systems have two register banks, the first used
-> + * for RTC and NVRAM and the second only for NVRAM.  Caller must
-> + * own rtc_lock ... and we won't worry about access during NMI.
-> + */
-> +#define can_bank2	true
 
-It would be more idiomatic to make this upper-case: CAN_BANK2.
+Yes. I was going to get it right for mainline first before posting to
+stable.
 
-> +static inline unsigned char cmos_read_bank2(unsigned char addr)
-> +{
-> +	outb(addr, RTC_PORT(2));
-> +	return inb(RTC_PORT(3));
-> +}
-> +
-> +static inline void cmos_write_bank2(unsigned char val, unsigned char addr)
-> +{
-> +	outb(addr, RTC_PORT(2));
-> +	outb(val, RTC_PORT(2));
-> +}
-> +
-> +#else
-> +
-> +#define can_bank2	false
-> +
-> +static inline unsigned char cmos_read_bank2(unsigned char addr)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void cmos_write_bank2(unsigned char val, unsigned char addr)
-> +{
-> +}
-> +
-> +#endif
-> +
-> +/*----------------------------------------------------------------*/
-> +
->  static int cmos_read_time(struct device *dev, struct rtc_time *t)
->  {
->  	/* REVISIT:  if the clock has a "century" register, use
-> @@ -511,12 +548,21 @@ cmos_nvram_read(struct kobject *kobj, st
->  
->  	if (unlikely(off >= attr->size))
->  		return 0;
-> +	if (unlikely(off < 0))
-> +		return -EINVAL;
->  	if ((off + count) > attr->size)
->  		count = attr->size - off;
-> +	off += NVRAM_OFFSET;
+> 
+> Someone reported a bug a few weeks ago which I think this patch will fix,
+> yes?  I don't remember who that was, nor do I recall the precise details
+> of what the userspace-visible (mis)behaviour was.
+> 
+> Are you able to fill in the gaps here?  Put yourself in the position of
+> a poor little -stable maintainer scratching his head wondering ytf he
+> was sent this patch.
+> 
 
-hm, now what's happening in here.
+I'm not aware of this bug but I'll go digging for it and see what I
+find. Thanks
 
-: static ssize_t
-: cmos_nvram_read(struct kobject *kobj, struct bin_attribute *attr,
-: 		char *buf, loff_t off, size_t count)
-: {
-: 	int	retval;
-: 
-: 	if (unlikely(off >= attr->size))
-: 		return 0;
-: 	if (unlikely(off < 0))
-: 		return -EINVAL;
-: 	if ((off + count) > attr->size)
-: 		count = attr->size - off;
-: 
-: 	off += NVRAM_OFFSET;
-: 
+=== Begin revised changelog ===
 
-The VFS will (hopefully) prevent ->read methods from being called with
-a negative file offset.  What prompted the additional test for that?
+The iterator for_each_zone_zonelist() uses a struct zoneref *z cursor when
+scanning zonelists to keep track of where in the zonelist it is. The zoneref
+that is returned corresponds to the the next zone that is to be scanned,
+not the current one. It was intended to be treated as an opaque list.
 
-I did't look at it exhaustively but I suspect that the above code won't
-work right if attr->size has a value of around (2^31 - 42) and `offset'
-is (2^31 - 54) and NVRAM_OFFSET==54.  Or something like that.  It looks
-holey ;)
+When the page allocator is scanning a zonelist, it marks elements in the
+zonelist corresponding to zones that are temporarily full. As the zonelist
+is being updated, it uses the cursor here;
 
-Of course, the assumption that attr->size is not insanely large is a
-good one, but still..
+  if (NUMA_BUILD)
+        zlc_mark_zone_full(zonelist, z);
 
->  	spin_lock_irq(&rtc_lock);
-> -	for (retval = 0, off += NVRAM_OFFSET; count--; retval++, off++)
-> -		*buf++ = CMOS_READ(off);
-> +	for (retval = 0; count; count--, off++, retval++) {
-> +		if (off < 128)
-> +			*buf++ = CMOS_READ(off);
-> +		else if (can_bank2)
-> +			*buf++ = cmos_read_bank2(off);
-> +		else
-> +			break;
-> +	}
+This is intended to prevent rescanning in the near future but the zoneref
+cursor does not correspond to the zone that has been found to be full. This is
+an easy misunderstanding to make so this patch corrects the problem by changing
+zoneref cursor to be the current zone being scanned instead of the next one.
 
+This issue affects 2.6.26.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
