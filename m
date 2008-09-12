@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYILJG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYILJNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYILJG3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 05:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbYILJGU
+	id S1754512AbYILJNd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 05:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYILJNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 05:06:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50020 "EHLO mx2.mail.elte.hu"
+	Fri, 12 Sep 2008 05:13:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36304 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752477AbYILJGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 05:06:19 -0400
-Date: Fri, 12 Sep 2008 11:06:07 +0200
+	id S1751852AbYILJNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 05:13:22 -0400
+Date: Fri, 12 Sep 2008 11:13:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kmemcheck: lazy checking for MOVS instructions
-Message-ID: <20080912090607.GA6632@elte.hu>
-References: <20080911154616.GA16042@localhost.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       bugme-daemon@bugzilla.kernel.org, j_kernel@hoblitt.com
+Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
+	tick_periodic() ???
+Message-ID: <20080912091308.GA10305@elte.hu>
+References: <bug-11543-10286@http.bugzilla.kernel.org/> <20080911170258.aa0bea0d.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080911154616.GA16042@localhost.localdomain>
+In-Reply-To: <20080911170258.aa0bea0d.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,23 +36,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Comments, anyone?
+> I can't work out who called panic(), nor why.
 > 
-> >From 36190b27a77b8ff5bbea09cf765c1f335c3920e4 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Thu, 11 Sep 2008 17:31:07 +0200
-> Subject: [PATCH] kmemcheck: lazy checking for MOVS instructions
-> 
-> This patch adds the support for lazy (as opposed to eager) checking 
-> for [REP] MOVS instructions (mostly used in memcpy()). This means that 
-> if both the source and destination addresses are tracked by kmemcheck, 
-> we copy the shadow memory instead of checking that it is initialized.
-> 
-> In this way, we get rid of a few more false positives.
+> The panic code called the kexec code which called mutex_trylock() 
+> which called spin_lock_mutex() which then stupidly went and blurted a 
+> load of debug stuff because of in_interrupt().
 
-looks good to me. I've applied it to tip/kmemcheck - but can zap it and 
-pull your for-tip branch as well.
+agreed - applied your fix in the form below to tip/master - thanks 
+Andrew.
+
+J, you might want to try tip/master, it includes all known fixes for 
+this area and this debug improvement as well. You can pick it up via:
+
+  http://people.redhat.com/mingo/tip.git/README
 
 	Ingo
+
+---------->
+>From 53b9d87f41a3d8838210ad7cdef02d814817ce85 Mon Sep 17 00:00:00 2001
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 11 Sep 2008 17:02:58 -0700
+Subject: [PATCH] lock debug: sit tight when we are already in a panic
+
+in:
+
+  > http://bugzilla.kernel.org/show_bug.cgi?id=11543
+
+The panic code called the kexec code which called mutex_trylock() which
+called spin_lock_mutex() which then stupidly went and blurted a load of
+debug stuff because of in_interrupt().
+
+Keep the lock debug code from escallating an already crappy situation.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/debug_locks.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/debug_locks.h b/include/linux/debug_locks.h
+index 4aaa4af..096476f 100644
+--- a/include/linux/debug_locks.h
++++ b/include/linux/debug_locks.h
+@@ -17,7 +17,7 @@ extern int debug_locks_off(void);
+ ({									\
+ 	int __ret = 0;							\
+ 									\
+-	if (unlikely(c)) {						\
++	if (!oops_in_progress && unlikely(c)) {				\
+ 		if (debug_locks_off() && !debug_locks_silent)		\
+ 			WARN_ON(1);					\
+ 		__ret = 1;						\
