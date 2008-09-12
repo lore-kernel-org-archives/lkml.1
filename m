@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332AbYILDkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYILDwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332AbYILDkJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 23:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYILDj5
+	id S1756280AbYILDwL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 23:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYILDv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 23:39:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:52884 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYILDj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 23:39:56 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 0/13] Turn hrtimers into a range capable timer
-Date: Fri, 12 Sep 2008 13:39:49 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
-References: <20080901160343.75a89ec9@infradead.org>
-In-Reply-To: <20080901160343.75a89ec9@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809121339.49902.rusty@rustcorp.com.au>
+	Thu, 11 Sep 2008 23:51:57 -0400
+Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:34787 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752294AbYILDv5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Sep 2008 23:51:57 -0400
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [PATCH] netlink: fix overrun in attribute iteration
+Date: Fri, 12 Sep 2008 03:51:54 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <gacp0q$drj$1@taverner.cs.berkeley.edu>
+References: <20080911205933.GA20032@localhost.localdomain>
+Reply-To: daw-news@cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1221191514 14195 128.32.168.222 (12 Sep 2008 03:51:54 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Fri, 12 Sep 2008 03:51:54 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 September 2008 09:03:43 Arjan van de Ven wrote:
-> This series is a follow-on the the nanosecond select/poll series.
->
-> The goal of this series is to introduce the capability into hrtimers to
-> deal with a "range" rather than a specific point in time.
-> (Several people discussed this recently, but we've been toying with the
-> concept for a while)
+Vegard Nossum  wrote:
+>  /**
+>   * nla_ok - check if the netlink attribute fits into the remaining bytes
+>   * @nla: netlink attribute
+>   * @remaining: number of bytes remaining in attribute stream
+>   */
+>  static inline int nla_ok(const struct nlattr *nla, int remaining)
+>  {
+>          return remaining >= sizeof(*nla) &&
+>                 nla->nla_len >= sizeof(*nla) &&
+>                 nla->nla_len <= remaining;
+>  }
 
-Hi Arjen, sorry for not replying sooner.
+If 'remaining' had been declared to be of type size_t, this would
+not have happened.
 
-I had half a patch to create a new "timer layer to rule them all" called 
-ktimers, which took an explicit "slop" value.  Slop is the "how long before 
-its worth waking the machine for this?" value, with friendly SLOP_USECS, 
-SLOP_SECONDS, SLOP_DAYS etc defines.  Implemented in terms of normal and hr 
-timers, which get deprecated over time.
+Guideline for secure programming: length values (and counts of bytes)
+should be declared as size_t, where possible.
 
-Heuristics work for a while, but IMHO eventually this is going to have to be 
-plumbed through to userspace.
+This guideline eliminates many signed/unsigned bugs.  If one also
+carefully avoids overflow (wraparound), other integer overflow bugs
+are avoided as well.
 
-Cheers,
-Rusty.
+The code above violates the guideline so we shouldn't be terribly
+surprised if it happens to contain signed/unsigned vulnerabilities.
