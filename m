@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbYILUee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbYILUgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736AbYILUee (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 16:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbYILUe0
+	id S1757619AbYILUgh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 16:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbYILUg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 16:34:26 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:40671 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753314AbYILUe0 (ORCPT
+	Fri, 12 Sep 2008 16:36:29 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:33185 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbYILUg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 16:34:26 -0400
+	Fri, 12 Sep 2008 16:36:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=exwIkHB48FhURzRBWdqH6eMC1OaLRZzQziAiXaoU2XquWfAXFnoEIXyuRQI0Ultl67
-         i7DOuehU1RPuKjqXKYZ00BGv4YsBNvmLlp5kEw2KKnfYxuHmJSDYMUtTjBcgStdBgvzi
-         a6WNbsOKttRcHJ3Gf5s036bqwS7rdO43sdPwI=
-Message-ID: <457e13650809121334p53b7f79bra12898d2681385c1@mail.gmail.com>
-Date: Fri, 12 Sep 2008 23:34:24 +0300
-From: "Oleksandr Natalenko" <pfactum@gmail.com>
+        h=date:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent:from;
+        b=ADwql7JQ1vypkHSlT5QJZEEroseAlxNe+S2kmSWpg48yCm4VYG9zWNvrEivSwJFZ76
+         EV/NQEuYP2VZ5j0lYBQl7PZlKNNuM77vo0e27NcdTmMnUjvq7U+N43gNoqDCR/tkd946
+         98IQv7rwqSFQ8hbNm48jDYqNLHMNxpYIiSwI8=
+Date: Fri, 12 Sep 2008 22:36:24 +0200
 To: linux-kernel@vger.kernel.org
-Subject: BUG: scaling doesn't work after waking up (repeated)
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC][PATCH] utsname: completely overwrite prior information
+Message-ID: <20080912203624.GA25965@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After suspending to RAM scaling doesn't work for the second core of my
-Pentium Dual-Core T2330.
+>From 25c69de4760e20cf7562cf92a55b65a71546093e Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Thu, 11 Sep 2008 19:59:50 +0200
+Subject: [PATCH] utsname: completely overwrite prior information
 
-Before suspending:
-cpu MHz         : 800.000       #CPU0
-cpu MHz         : 800.000       #CPU1
+On sethostname() and setdomainname(), previous information may be
+retained if it was longer than than the new hostname/domainname.
 
-After suspending and waking up:
-cpu MHz         : 800.000       #CPU0
-cpu MHz         : 1596.079      #CPU1
+This can be demonstrated trivially by calling sethostname() first
+with a long name, then with a short name, and then calling uname()
+to retrieve the full buffer that contains the hostname (and
+possibly parts of the old hostname), one just has to look past the
+terminating zero.
 
-I've observed it with kernel 2.6.25, 2.6.26, 2.6.27-rc6-git2.
-It has not been fixed since my first bug report to LKML.
+I don't know if we should really care that much (hence the RFC);
+the only scenarios I can possibly think of is administrator
+putting something sensitive in the hostname (or domain name) by
+accident, and changing it back will not undo the mistake entirely,
+though it's not like we can recover gracefully from "rm -rf /"
+either... The other scenario is namespaces (CLONE_NEWUTS) where
+some information may be unintentionally "inherited" from the
+previous namespace (a program wants to hide the original name and
+does clone + sethostname, but some information is still left).
 
-Processor ID:
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Pentium(R) Dual  CPU  T2330  @ 1.60GHz
-stepping        : 13
+I think the patch may be defended on grounds of the principle of
+least surprise. But I am not adamant :-)
 
-Regards,
- post-factum
+(I guess the question now is whether userspace should be able to
+write embedded NULs into the buffer or not...)
+
+At least the observation has been made and the patch has been
+presented.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ kernel/sys.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 038a7bc..78b4515 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1352,7 +1352,8 @@ asmlinkage long sys_sethostname(char __user *name, int len)
+ 	errno = -EFAULT;
+ 	if (!copy_from_user(tmp, name, len)) {
+ 		memcpy(utsname()->nodename, tmp, len);
+-		utsname()->nodename[len] = 0;
++		memset(utsname()->nodename + len, 0,
++			sizeof(utsname()->nodename) - len);
+ 		errno = 0;
+ 	}
+ 	up_write(&uts_sem);
+@@ -1398,7 +1399,8 @@ asmlinkage long sys_setdomainname(char __user *name, int len)
+ 	errno = -EFAULT;
+ 	if (!copy_from_user(tmp, name, len)) {
+ 		memcpy(utsname()->domainname, tmp, len);
+-		utsname()->domainname[len] = 0;
++		memset(utsname()->domainname + len, 0,
++			sizeof(utsname()->domainname) - len);
+ 		errno = 0;
+ 	}
+ 	up_write(&uts_sem);
+-- 
+1.5.5.1
+
