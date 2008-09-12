@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYILDFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYILDFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756944AbYILDFW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 23:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYILDEq
+	id S1756103AbYILDFt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 23:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYILDFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 23:04:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50969
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755892AbYILDEo (ORCPT
+	Thu, 11 Sep 2008 23:05:06 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:51747 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756817AbYILDFC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 23:04:44 -0400
-Date: Thu, 11 Sep 2008 20:04:38 -0700 (PDT)
-Message-Id: <20080911.200438.01253897.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: gcoady.lk@gmail.com, grant_lkml@dodo.com.au, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: [stable] regression in iptables: recent filter
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080911200133.48be32fa.akpm@linux-foundation.org>
-References: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
-	<20080911200133.48be32fa.akpm@linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 11 Sep 2008 23:05:02 -0400
+Message-ID: <48C9DC5C.3040109@lwfinger.net>
+Date: Thu, 11 Sep 2008 22:05:00 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Roland Dreier <rdreier@cisco.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>
+Subject: Re: I need help with a sparse warning
+References: <48C9D040.8010107@lwfinger.net> <ada4p4mm6iy.fsf@cisco.com>
+In-Reply-To: <ada4p4mm6iy.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 11 Sep 2008 20:01:33 -0700
-
-> On Fri, 12 Sep 2008 11:53:35 +1000 Grant Coady <grant_lkml@dodo.com.au> wrote:
+Roland Dreier wrote:
+>  > In file drivers/net/wireless/p54/p54common.c, the statement
+>  > 
+>  >        priv->rx_mtu = (size_t) le16_to_cpu((__le16)bootrec->data[10]);
 > 
-> > Hi there,
-> > 
-> > Last known good kernel: 2.6.24.7
-> > 
-> > # iptables -N calmrate
-> > # iptables -A calmrate -p tcp -m state --state NEW \
-> > 	-m recent --name listrate --update --rttl \
-> > 	--seconds 60 --hitcount 60 -j DROP
-> > iptables: Unknown error 4294967295
-> > 
-> > Fails for 2.6.25.17 and 2.6.26.5
-> > 
-> > dmesg + config: http://bugsplatter.id.au/kernel/boxen/deltree/
-> > 
+> [I don't see this code in Linus's tree]
+
+It is in wireless-testing.
+
 > 
-> (cc netdev)
+> the code in question looks buggy to me.  Since bootrec->data[10] is u32,
+> casting it to a 16-bit type is going to take a different 2 bytes out of
+> the 4 bytes depending on the endianness of the system the driver is
+> built for.  And I assume you are parsing some fixed-layout thing that
+> the firmware is giving you or something like that.
+> 
+> I would guess you want something like:
+> 
+> 	priv->rx_mtu = le16_to_cpu(((__force __le16 *) bootrec->data)[20]);
+> 
+> (__force is what shuts up sparse, and as far as I can see, the size_t
+> cast is useless, since the result will be promoted anyway)
 
-(cc netfilter-devel)
+Yes, that one works. As you suspected, this section is parsing data 
+from the firmware.
 
-For those playing at home, 4294967295 is 32-bit -1.
+When I started, there were 18 sparse warnings, and a number of them 
+were accesses of little-endian variables without an appropriate 
+leXX_to_cpu() conversion. Obviously, this code has never been tested 
+on a big-endian machine.
+
+Thanks,
+
+Larry
+
