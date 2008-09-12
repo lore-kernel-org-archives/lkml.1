@@ -1,147 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbYILNWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbYILNZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755339AbYILNWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 09:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYILNWI
+	id S1755360AbYILNZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 09:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYILNZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 09:22:08 -0400
-Received: from rs02.intra2net.com ([81.169.173.116]:43217 "EHLO
-	rs02.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbYILNWH (ORCPT
+	Fri, 12 Sep 2008 09:25:18 -0400
+Received: from odyssey.analogic.com ([204.178.40.5]:4910 "EHLO
+	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbYILNZR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 09:22:07 -0400
-X-Greylist: delayed 1186 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Sep 2008 09:22:06 EDT
-From: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Organization: Intra2net AG
-To: linux-kernel@vger.kernel.org
-Subject: RFC: [patch] log fatal signals like SIGSEGV
-Date: Fri, 12 Sep 2008 15:02:14 +0200
-User-Agent: KMail/1.10.0 (Linux/2.6.25.14-108.fc9.i686; KDE/4.1.0; i686; ; )
+	Fri, 12 Sep 2008 09:25:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809121502.15264.thomas.jarosch@intra2net.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+x-mimeole: Produced By Microsoft Exchange V6.5
+x-originalarrivaltime: 12 Sep 2008 13:23:17.0766 (UTC) FILETIME=[B7E87260:01C914DA]
+Content-class: urn:content-classes:message
+Subject: Re: Building Kernel with -O0
+Date: Fri, 12 Sep 2008 09:23:16 -0400
+Message-ID: <Pine.LNX.4.61.0809120918570.7332@chaos.analogic.com>
+In-Reply-To: <2cf1ee820809112221w213aa929x32905e1c25897cf3@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Building Kernel with -O0
+Thread-Index: AckU2rfvfd7xhN3QTFm8I8zZoknvsQ==
+References: <b8rB2-6BM-1@gated-at.bofh.it> <badXc-7gl-21@gated-at.bofh.it> <baf2M-bE-7@gated-at.bofh.it> <bagBJ-20J-7@gated-at.bofh.it> <E1KdOFZ-0001Q4-So@be1.7eggert.dyndns.org> <2cf1ee820809112221w213aa929x32905e1c25897cf3@mail.gmail.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "emin ak" <eminak71@gmail.com>
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>, <7eggert@gmx.de>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello together,
 
-we've created a small patch that helped us troubleshoot obscure hardware
-faults several times. Imagine someone calls and complains his box is
-freezing from time to time. We usually check the logs and find various tasks
-segfaulting between the freezes. Most of the time the hardware is broken.
+On Fri, 12 Sep 2008, emin ak wrote:
 
-Attached patch logs fatal signal like SIGSEGV or SIGBUS. It also features
-a log flood protection, though I'm not sure if it works with dynamic ticks.
-The code is a stripped down version of grsecurity's signal logger.
+> 2008/9/10 Bodo Eggert <7eggert@gmx.de>:
+>> linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+>>
+>>> If you have to single-step through kernel procedures, you
+>>> are not writing proper code for a kernel. Furthermore, even
+>>> when using the kernel debugger, you are not executing the
+>>> exact same path that would be executed without the debugger
+>>> attached.
+>>
+>> I sometimes single-step in order to verify my (userspace) code, instead of
+>> just throwing random test data at it. It's easier and makes me feel better.
+>> OTOH, -O2 never was a problem if I used it, so I don't strongly vote
+>> for enabling -O0.
+>>
+>> --
+>
+> I had compiled linux-2.6.23 with -O0 for kgdb only with little
+> modifications, it's  running with no error for a long time. I'am not a
+> linux expert, I think talented kernel hackers can make kernel to
+> compile with -O0 easly but for some reason they dont want to do it.
+> Debug is much understandable for me (and for most people I think) with
+> -O0. Linux kernel programming ability is not a gift, of course you can
+> learn the code with printks and reading, but which age are we living
+> in?
+>
+> Emin
+>
 
-The patch doesn't have Kconfig support or other fancy stuff yet as I first
-wanted to ask if it would make sense to integrate something like this
-upstream. For us it made remote diagnosis a lot easier.
+Well, to use the ** kernel ** to single-
+step through the ** kernel ** is
+really not going to be much more than an
+exercise. It's not going to find the bugs
+that are likely to exist in kernel code.
 
-Please CC: comments.
 
-Best regards,
-Thomas Jarosch
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.25.17 on an i686 machine (4786.38 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
---------------------------------------------------------
-Log fatal signals like SIGSEGV or SIGBUS
-to aid debugging of obscure problems.
 
-The code is a stripped down version
-of grsecurity's signal logger.
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Signed-Off-By: Gerd v. Egidy <gve@intra2net.com>
-Signed-Off-By: Thomas Jarosch <thomas.jarosch@intra2net.com>
-
-diff -u -r -p linux-2.6.22/kernel/signal.c linux.siglog/kernel/signal.c
---- linux-2.6.22/kernel/signal.c	Mon Jul  9 01:32:17 2007
-+++ linux.siglog/kernel/signal.c	Wed Aug 22 11:08:58 2007
-@@ -514,6 +514,64 @@ static int rm_from_queue(unsigned long m
- }
- 
- /*
-+ * Stuff needed for signal logger
-+ */
-+
-+spinlock_t siglog_lock = SPIN_LOCK_UNLOCKED;
-+unsigned long volatile siglog_wtime = 0;
-+unsigned long volatile siglog_fyet = 0;
-+
-+/* time span in which flooding is measured */
-+#define SIGLOG_FLOOD_SECONDS 5
-+
-+/* how many log entries are allowed in this time span */
-+#define SIGLOG_FLOOD_BURST_LINES 20
-+
-+/*
-+ * Log fatal signals
-+ */
-+void
-+log_fatal_signal(const int sig, const struct task_struct *t)
-+{
-+	if ((sig == SIGSEGV) || (sig == SIGILL) || (sig == SIGABRT)
-+        || (sig == SIGBUS) || (sig == SIGKILL) || (sig == SIGFPE)) {
-+
-+		/* flood protection */
-+		spin_lock(&siglog_lock);
-+		if (!siglog_wtime || jiffies - siglog_wtime > SIGLOG_FLOOD_SECONDS * HZ) {
-+			/* no logging activity yet */
-+			siglog_wtime = jiffies;
-+			siglog_fyet = 0;
-+		} else if ((jiffies - siglog_wtime <= SIGLOG_FLOOD_SECONDS * HZ)
-+                    && (siglog_fyet < SIGLOG_FLOOD_BURST_LINES)) {
-+			/* logging within SIGLOG_FLOOD_SECONDS, but below threshold */
-+			siglog_fyet++;
-+		} else {
-+			/* flooding detected, warn once and return */
-+			if (siglog_fyet == SIGLOG_FLOOD_BURST_LINES) {
-+				siglog_wtime = jiffies;
-+				siglog_fyet++;
-+				printk(KERN_ALERT "siglog: more alerts, logging disabled for"
-+                       " %d seconds\n", SIGLOG_FLOOD_SECONDS);
-+			}
-+			spin_unlock(&siglog_lock);
-+			return;
-+		}
-+		spin_unlock(&siglog_lock);
-+
-+		read_lock(&tasklist_lock);
-+		printk(KERN_WARNING "signal %d sent to %.30s[%d] uid:%u, "
-+               "parent %.30s[%d] uid:%u by %.30s[%d] uid:%u, "
-+               "parent %.30s[%d] uid:%u\n", sig, t->comm, t->pid, t->uid,
-+               t->parent->comm, t->parent->pid, t->parent->uid,
-+               current->comm, current->pid, current->uid,
-+               current->parent->comm, current->parent->pid, current->parent->uid);
-+		read_unlock(&tasklist_lock);
-+	}
-+	return;
-+}
-+
-+/*
-  * Bad permissions for sending the signal
-  */
- static int check_kill_permission(int sig, struct siginfo *info,
-@@ -536,6 +594,8 @@ static int check_kill_permission(int sig
- 	    && !capable(CAP_KILL))
- 		return error;
- 
-+	log_fatal_signal(sig, t);
-+
- 	return security_task_kill(t, info, sig, 0);
- }
- 
-@@ -773,6 +833,9 @@ force_sig_info(int sig, struct siginfo *
- 		}
- 	}
- 	ret = specific_send_sig_info(sig, info, t);
-+
-+	log_fatal_signal(sig, t);
-+
- 	spin_unlock_irqrestore(&t->sighand->siglock, flags);
- 
- 	return ret;
-
+Thank you.
