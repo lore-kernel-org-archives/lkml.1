@@ -1,52 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbYILWKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758184AbYILWMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbYILWKc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 18:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYILWKY
+	id S1758184AbYILWMU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 18:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYILWMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 18:10:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54358 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbYILWKX (ORCPT
+	Fri, 12 Sep 2008 18:12:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55423 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753496AbYILWMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 18:10:23 -0400
-Date: Sat, 13 Sep 2008 00:14:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] apci: dump slit
-Message-ID: <20080912221418.GA11730@one.firstfloor.org>
-References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com> <20080912122031.eca8723e.akpm@linux-foundation.org> <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com> <878wtxrrwh.fsf@basil.nowhere.org> <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de> <20080912213053.GR7714@one.firstfloor.org> <alpine.LFD.1.10.0809122345120.13819@apollo.tec.linutronix.de>
+	Fri, 12 Sep 2008 18:12:03 -0400
+Date: Fri, 12 Sep 2008 15:11:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] utsname: completely overwrite prior information
+Message-Id: <20080912151129.1c8d38f8.akpm@linux-foundation.org>
+In-Reply-To: <20080912203624.GA25965@damson.getinternet.no>
+References: <20080912203624.GA25965@damson.getinternet.no>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0809122345120.13819@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 11:49:04PM +0200, Thomas Gleixner wrote:
-> On Fri, 12 Sep 2008, Andi Kleen wrote:
-> > > 1.) what guarantees that we reach user space ?
-> > 
-> > Broken SLITs don't prevent booting.
+On Fri, 12 Sep 2008 22:36:24 +0200
+Vegard Nossum <vegard.nossum@gmail.com> wrote:
+
+> >From 25c69de4760e20cf7562cf92a55b65a71546093e Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Thu, 11 Sep 2008 19:59:50 +0200
+> Subject: [PATCH] utsname: completely overwrite prior information
 > 
-> Of course you can guarantee that.
+> On sethostname() and setdomainname(), previous information may be
+> retained if it was longer than than the new hostname/domainname.
+> 
+> This can be demonstrated trivially by calling sethostname() first
+> with a long name, then with a short name, and then calling uname()
+> to retrieve the full buffer that contains the hostname (and
+> possibly parts of the old hostname), one just has to look past the
+> terminating zero.
+> 
+> I don't know if we should really care that much (hence the RFC);
+> the only scenarios I can possibly think of is administrator
+> putting something sensitive in the hostname (or domain name) by
+> accident, and changing it back will not undo the mistake entirely,
+> though it's not like we can recover gracefully from "rm -rf /"
+> either... The other scenario is namespaces (CLONE_NEWUTS) where
+> some information may be unintentionally "inherited" from the
+> previous namespace (a program wants to hide the original name and
+> does clone + sethostname, but some information is still left).
+> 
+> I think the patch may be defended on grounds of the principle of
+> least surprise. But I am not adamant :-)
+> 
+> (I guess the question now is whether userspace should be able to
+> write embedded NULs into the buffer or not...)
+> 
+> At least the observation has been made and the patch has been
+> presented.
+> 
 
-Yes I'm pretty sure:
+fair enuf.  Did you check allthe other fields in 'struct new_utsname'?
 
-(a) the kernel does a sanity check on SLITs and replaces them
-with a fallback if they're bogus. Even that is not strictly needed
-for correctness, just for performance.
-(b) SLIT information is only an optimization, but does not really break
-anything if it's wrong. In the worst case your scheduler domains
-or your zone fallback lists are not quite optimally set up, but
-they will still work.
+> index 038a7bc..78b4515 100644
+> --- a/kernel/sys.c
+> +++ b/kernel/sys.c
+> @@ -1352,7 +1352,8 @@ asmlinkage long sys_sethostname(char __user *name, int len)
+>  	errno = -EFAULT;
+>  	if (!copy_from_user(tmp, name, len)) {
+>  		memcpy(utsname()->nodename, tmp, len);
+> -		utsname()->nodename[len] = 0;
+> +		memset(utsname()->nodename + len, 0,
+> +			sizeof(utsname()->nodename) - len);
 
--Andi
+We could do the memset before the memcpy.  It's more work, but less
+text.  Whatever.
 
--- 
-ak@linux.intel.com
+
+While we're there, the code generation in there is a bit sloppy.  How's
+this look?
+
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+utsname() is quite expensive to calculate.  Cache it in a local.
+
+          text    data     bss     dec     hex filename
+before:  11136     720      16   11872    2e60 kernel/sys.o
+after:   11096     720      16   11832    2e38 kernel/sys.o
+
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/sys.c |   20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+diff -puN kernel/sys.c~kernel-sysc-improve-code-generation kernel/sys.c
+--- a/kernel/sys.c~kernel-sysc-improve-code-generation
++++ a/kernel/sys.c
+@@ -1415,9 +1415,10 @@ asmlinkage long sys_sethostname(char __u
+ 	down_write(&uts_sem);
+ 	errno = -EFAULT;
+ 	if (!copy_from_user(tmp, name, len)) {
+-		memcpy(utsname()->nodename, tmp, len);
+-		memset(utsname()->nodename + len, 0,
+-			sizeof(utsname()->nodename) - len);
++		struct new_utsname *u = utsname();
++
++		memcpy(u->nodename, tmp, len);
++		memset(u->nodename + len, 0, sizeof(u->nodename) - len);
+ 		errno = 0;
+ 	}
+ 	up_write(&uts_sem);
+@@ -1429,15 +1430,17 @@ asmlinkage long sys_sethostname(char __u
+ asmlinkage long sys_gethostname(char __user *name, int len)
+ {
+ 	int i, errno;
++	struct new_utsname *u;
+ 
+ 	if (len < 0)
+ 		return -EINVAL;
+ 	down_read(&uts_sem);
+-	i = 1 + strlen(utsname()->nodename);
++	u = utsname();
++	i = 1 + strlen(u->nodename);
+ 	if (i > len)
+ 		i = len;
+ 	errno = 0;
+-	if (copy_to_user(name, utsname()->nodename, i))
++	if (copy_to_user(name, u->nodename, i))
+ 		errno = -EFAULT;
+ 	up_read(&uts_sem);
+ 	return errno;
+@@ -1462,9 +1465,10 @@ asmlinkage long sys_setdomainname(char _
+ 	down_write(&uts_sem);
+ 	errno = -EFAULT;
+ 	if (!copy_from_user(tmp, name, len)) {
+-		memcpy(utsname()->domainname, tmp, len);
+-		memset(utsname()->domainname + len, 0,
+-			sizeof(utsname()->domainname) - len);
++		struct new_utsname *u = utsname();
++
++		memcpy(u->domainname, tmp, len);
++		memset(u->domainname + len, 0, sizeof(u->domainname) - len);
+ 		errno = 0;
+ 	}
+ 	up_write(&uts_sem);
+_
+
