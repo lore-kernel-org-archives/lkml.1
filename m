@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbYILVBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761471AbYILVBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760846AbYILVBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 17:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbYILUvp
+	id S1761471AbYILVBz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 17:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbYILU4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 16:51:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64904 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759613AbYILUvo (ORCPT
+	Fri, 12 Sep 2008 16:56:37 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:47553 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760596AbYILU4f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 16:51:44 -0400
-Date: Fri, 12 Sep 2008 16:51:40 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Robert Schwebel <robert@schwebel.de>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.26.5-rt9
-In-Reply-To: <20080912202732.GM9852@pengutronix.de>
-Message-ID: <alpine.DEB.1.10.0809121650250.2332@gandalf.stny.rr.com>
-References: <1221166441.22713.36.camel@localhost.localdomain> <20080912202732.GM9852@pengutronix.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 12 Sep 2008 16:56:35 -0400
+Subject: Re: [Bug #11548] kernel BUG at drivers/pci/intel-iommu.c:1373!
+From: Chris Mason <chris.mason@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <SpS7rta8n4.A.PRG.8bsyIB@albercik>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	 <SpS7rta8n4.A.PRG.8bsyIB@albercik>
+Content-Type: text/plain
+Date: Fri, 12 Sep 2008 16:56:29 -0400
+Message-Id: <1221252989.8709.11.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 12 Sep 2008, Robert Schwebel wrote:
-
-> On Thu, Sep 11, 2008 at 04:54:01PM -0400, Steven Rostedt wrote:
-> > We are pleased to announce the 2.6.26.5-rt9 tree, which can be
-> > downloaded from the location:
+On Fri, 2008-09-12 at 21:06 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> On the MPC5121e-ADS (Powerpc 32) I get this oops during my boot sequence when
-> enabling CONFIG_DYNAMIC_FTRACE. Without that option the oops doesn't happen.
+> The following bug entry is on the current list of known regressions
+> from 2.6.26.  Please verify if it still should be listed and let me know
+> (either way).
+> 
 
-Thanks for the report. Unfortunately, the only PPC32 box I have is my
-powerbook, which has never been able to boot a RT kernel :-( But I'll look
-to see if the issue is with Linus's tree as well.
+This is still a bug, but I haven't tried this workload on 2.6.26, so I'm
+not sure it is a regression.  Unfortunately, I won't be able to test it
+again until after the plumber's conference.
 
-Thanks for the report.
+-chris
 
--- Steve
+
