@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbYILPxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYILP61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbYILPxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 11:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYILPxJ
+	id S1756882AbYILP61 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 11:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYILP6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 11:53:09 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:40305 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752478AbYILPxI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 11:53:08 -0400
-Message-ID: <48CA9059.1020209@nortel.com>
-Date: Fri, 12 Sep 2008 09:52:57 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: ego@in.ibm.com
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>
-Subject: Re: [PATCH] sched: Fix __load_balance_iterator() for cfq with only
- one	task
-References: <20080905123004.GD6238@in.ibm.com>
-In-Reply-To: <20080905123004.GD6238@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 12 Sep 2008 11:58:19 -0400
+Received: from waste.org ([66.93.16.53]:42115 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922AbYILP6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 11:58:18 -0400
+Subject: Re: [PATCH -mm 1/2] sort: Add obj_sort() for sorting all kinds of
+	random-accessible objects
+From: Matt Mackall <mpm@selenic.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CA58A4.8020902@cn.fujitsu.com>
+References: <48CA58A4.8020902@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Fri, 12 Sep 2008 10:56:04 -0500
+Message-Id: <1221234964.5277.482.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Sep 2008 15:53:01.0642 (UTC) FILETIME=[A2B722A0:01C914EF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gautham R Shenoy wrote:
-> sched: Fix __load_balance_iterator() for cfq with only one task.
-> 
-> From: Gautham R Shenoy <ego@in.ibm.com>
-> 
-> The __load_balance_iterator() returns a NULL when there's only one
-> sched_entity which is a task. It is caused by the following code-path.
-> 
-> 
-> 	/* Skip over entities that are not tasks */
-> 	do {
-> 		se = list_entry(next, struct sched_entity, group_node);
-> 		next = next->next;
-> 	} while (next != &cfs_rq->tasks && !entity_is_task(se));
-> 
-> 	if (next == &cfs_rq->tasks)
-> 		return NULL;
-> 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->       This will return NULL even when se is a task.
 
-Thank you!  I'd been looking suspiciously at this routine as well due to 
-strange load-balancing behaviour that I saw while testing the fair group 
-code, but I hadn't yet tracked down the exact problem.
+On Fri, 2008-09-12 at 19:55 +0800, Lai Jiangshan wrote:
+> current sort can only sort objects on continuous memory,
+> but sometimes we need to sort objects on noncontinuous memory,
+> this patch provide obj_sort() for this.
+> 
+> Sometimes a C struct(the container of objects, or objects) may be designed
+> with some high-level language's semantic meaning. obj_sort() can sort
+> for them.
+>
+> obj_sort() is need for sort pids for cgroup.tasks file.
 
-Peter/Ingo, this appears to explain the issues described in the mail I 
-sent on the 4th.  After applying this change the imbalance between tasks 
-in the same group is substantially reduced.
+Ok, if I understand this correctly, your new function basically changes:
 
-Chris
+cmp(void *a, void *b)            to cmp(void *obj, int a, int b)
+swap(void *a, void *b, int size) to swap(void *obj, int a, int b)
+
+Since neither function actually looks at the data directly, it seems we
+could make a unified sort function with:
+
+cmp(void *base, int a, int b)
+swap(void *base, int a, int b, int size)
+
+What is the underlying data structure you're sorting by the way? Years
+ago, I wrote a very nice merge sort for linked lists that I never got
+around to submitting. 
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
