@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759245AbYILUsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbYILUtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759245AbYILUsz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 16:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbYILUor
+	id S1758442AbYILUtY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 16:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758115AbYILUow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 16:44:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42798 "EHLO ogre.sisk.pl"
+	Fri, 12 Sep 2008 16:44:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42803 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758098AbYILUop convert rfc822-to-8bit (ORCPT
+	id S1758118AbYILUov convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 16:44:45 -0400
+	Fri, 12 Sep 2008 16:44:51 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Manny Maxwell" <mannymax@mannymax.net>, "Tejun Heo" <tj@kernel.org>
+       "Ingo Molnar" <mingo@elte.hu>
 References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
 In-Reply-To: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <SpS7rta8n4.A.rU.6dsyIB@albercik>
-Subject: [Bug #11343] SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia 680i
+Message-ID: <SpS7rta8n4.A.1_H.kdsyIB@albercik>
+Subject: [Bug #11380] lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Fri, 12 Sep 2008 21:06:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +35,10 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11343
-Subject		: SATA Cold Boot Problems with 2.6.27-rc[23] on nVidia 680i
-Submitter	: Manny Maxwell <mannymax@mannymax.net>
-Date		: 2008-08-14 4:16 (30 days old)
-References	: http://marc.info/?l=linux-kernel&m=121868782917600&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11380
+Subject		: lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
+Submitter	: Ingo Molnar <mingo@elte.hu>
+Date		: 2008-08-20 6:44 (24 days old)
+References	: http://marc.info/?l=linux-kernel&m=121921480931970&w=4
 
 
