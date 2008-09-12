@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbYILFtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbYILGDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbYILFtT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 01:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYILFtK
+	id S1753831AbYILGDY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 02:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYILGDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 01:49:10 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:40998 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbYILFtJ (ORCPT
+	Fri, 12 Sep 2008 02:03:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59544 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751441AbYILGDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 01:49:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ABkQsy1RlZ313YTK2GByDmTzdDa7mEHKhTYbxq6SS0UB9usIgLw/9Z/cHtAVx7fQ8W
-         sW2cmqb9DNSoMzm5D29Q7oDUUsXqe8ytAmfYtgHYC5//lvkf0BfsnNc08WVEcskx+mkN
-         ihCA1ua5VVinHLnoA/R/vrfxSNwtdEYmRC+9U=
-Message-ID: <19f34abd0809112249j7d289caese42cfc019b4cac2c@mail.gmail.com>
-Date: Fri, 12 Sep 2008 07:49:08 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "David Wagner" <daw-news@cs.berkeley.edu>
+	Fri, 12 Sep 2008 02:03:11 -0400
+Date: Thu, 11 Sep 2008 23:02:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, tgraf@suug.ch,
+       penberg@cs.helsinki.fi, mingo@elte.hu, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] netlink: fix overrun in attribute iteration
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <gacp0q$drj$1@taverner.cs.berkeley.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-Id: <20080911230244.d76a7310.akpm@linux-foundation.org>
+In-Reply-To: <19f34abd0809112242p27928541ydbfbb60ed84e34d2@mail.gmail.com>
 References: <20080911205933.GA20032@localhost.localdomain>
-	 <gacp0q$drj$1@taverner.cs.berkeley.edu>
+	<20080911165243.125a74cc.akpm@linux-foundation.org>
+	<19f34abd0809112242p27928541ydbfbb60ed84e34d2@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 5:51 AM, David Wagner <daw@cs.berkeley.edu> wrote:
-> Vegard Nossum  wrote:
->>  /**
->>   * nla_ok - check if the netlink attribute fits into the remaining bytes
->>   * @nla: netlink attribute
->>   * @remaining: number of bytes remaining in attribute stream
->>   */
->>  static inline int nla_ok(const struct nlattr *nla, int remaining)
->>  {
->>          return remaining >= sizeof(*nla) &&
->>                 nla->nla_len >= sizeof(*nla) &&
->>                 nla->nla_len <= remaining;
->>  }
->
-> If 'remaining' had been declared to be of type size_t, this would
-> not have happened.
+On Fri, 12 Sep 2008 07:42:36 +0200 "Vegard Nossum" <vegard.nossum@gmail.com> wrote:
 
-Hm. Yes, it would!
+> On Fri, Sep 12, 2008 at 1:52 AM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Thu, 11 Sep 2008 22:59:33 +0200
+> > Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> >
+> >>   #include <stdio.h>
+> >>
+> >>   main(void)
+> >>   {
+> >>           printf("%d\n", -1 >= sizeof(int));
+> >>   }
+> >>
+> >
+> > akpm:/home/akpm> gcc -W t.c
+> > t.c: In function 'main':
+> > t.c:5: warning: comparison between signed and unsigned
+> >
+> > Make of that what you will :)
+> 
+> It doesn't show up with -Wall and the kernel isn't compiled with -W
+> (aka. -Wextra) as far as I can see. Should it be turned on?
+> 
 
-The problem here is that "remaining" can legitimately contain negative
-values (see the pointer advancement in nla_next()). And size_t can't
-hold negative values.
+Last time I turned on -W, a full kernel build emitted nearly 10MB of
+warnings.
+
+Alas, some of them are useful, as we see here.  They can be turned on
+piecemeal - this one is -Wsign-compare, I think.
+
+I think it would be good if owners of particular parts of the kernel
+were to occasionally build their stuff with -W and spend half an hour
+contemplating the result.  Ditto `make C=1', to see what sparse thinks.
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
