@@ -1,44 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbYILDHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbYILDI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbYILDHo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 23:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYILDHf
+	id S1757062AbYILDI0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 23:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbYILDIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 23:07:35 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:52069 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751491AbYILDHe (ORCPT
+	Thu, 11 Sep 2008 23:08:17 -0400
+Received: from gv-out-0910.google.com ([216.239.58.185]:39063 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYILDIQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 23:07:34 -0400
-Message-ID: <48C9DCF4.7000604@lwfinger.net>
-Date: Thu, 11 Sep 2008 22:07:32 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Thu, 11 Sep 2008 23:08:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ULB+sqiq05pp/FTGMGpxsOIVGtn/5SmiB5sAVmON6ls8WqU2L0pTtu2PvcgQ8l2aHD
+         SEMvuJia1m+0B4QLaYNquHLG3/g4ec/+h7rz7uZtAAwwpDeqohjLZ6s8NVSEkTJMCLJ9
+         JXdEoz50b5qnJdG/wqg29Iyv0EqpZhDtw+ags=
+Date: Fri, 12 Sep 2008 07:10:08 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [stable] regression in iptables: recent filter
+Message-ID: <20080912031008.GC3670@x200.localdomain>
+References: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Steven Noonan <steven@uplinklabs.net>, LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>
-Subject: Re: I need help with a sparse warning
-References: <48C9D040.8010107@lwfinger.net>	<f488382f0809111932v1cc1eb44kbe0bc0e97347c834@mail.gmail.com>	<48C9DACE.5040308@lwfinger.net> <adavdx2kqt5.fsf@cisco.com>
-In-Reply-To: <adavdx2kqt5.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > This one gets rid of the sparse warning.
->  > 
->  >        priv->rx_mtu = le16_to_cpu((__le16 __force)
->  >                                   bootrec->data[10]);
+On Fri, Sep 12, 2008 at 11:53:35AM +1000, Grant Coady wrote:
+> Last known good kernel: 2.6.24.7
 > 
-> Yes but does it actually work on both big and little endian systems?
-> (See my previous email)
+> # iptables -N calmrate
+> # iptables -A calmrate -p tcp -m state --state NEW \
+> 	-m recent --name listrate --update --rttl \
+> 	--seconds 60 --hitcount 60 -j DROP
+> iptables: Unknown error 4294967295
+> 
+> Fails for 2.6.25.17 and 2.6.26.5
+> 
+> dmesg + config: http://bugsplatter.id.au/kernel/boxen/deltree/
 
-I don't know, but as my previous email stated, the code could not 
-possibly have worked on a big-endian system before I started the 
-sparse cleanup. I don't have access to anything but little-endian 
-hardware.
+You were einvaled by the following commit:
 
-Larry
+Reloading module with ip_pkt_list_tot=60 should fix it.
+
+commit d0ebf133590abdc035af6e19a6568667af0ab3b0
+Author: Daniel Hokka Zakrisson <daniel@hozac.com>
+Date:   Thu Mar 20 15:07:10 2008 -0700
+
+    [NETFILTER]: ipt_recent: sanity check hit count
+    
+    If a rule using ipt_recent is created with a hit count greater than
+    ip_pkt_list_tot, the rule will never match as it cannot keep track
+    of enough timestamps. This patch makes ipt_recent refuse to create such
+    rules.
+    
+    With ip_pkt_list_tot's default value of 20, the following can be used
+    to reproduce the problem.
+    
+    nc -u -l 0.0.0.0 1234 &
+    for i in `seq 1 100`; do echo $i | nc -w 1 -u 127.0.0.1 1234; done
+    
+    This limits it to 20 packets:
+    iptables -A OUTPUT -p udp --dport 1234 -m recent --set --name test \
+             --rsource
+    iptables -A OUTPUT -p udp --dport 1234 -m recent --update --seconds \
+             60 --hitcount 20 --name test --rsource -j DROP
+    
+    While this is unlimited:
+    iptables -A OUTPUT -p udp --dport 1234 -m recent --set --name test \
+             --rsource
+    iptables -A OUTPUT -p udp --dport 1234 -m recent --update --seconds \
+             60 --hitcount 21 --name test --rsource -j DROP
+    
+    With the patch the second rule-set will throw an EINVAL.
+    
+    Reported-by: Sean Kennedy <skennedy@vcn.com>
+    Signed-off-by: Daniel Hokka Zakrisson <daniel@hozac.com>
+    Signed-off-by: Patrick McHardy <kaber@trash.net>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/net/ipv4/netfilter/ipt_recent.c b/net/ipv4/netfilter/ipt_recent.c
+index 68cbe3c..8e8f042 100644
+--- a/net/ipv4/netfilter/ipt_recent.c
++++ b/net/ipv4/netfilter/ipt_recent.c
+@@ -252,6 +252,8 @@ recent_mt_check(const char *tablename, const void *ip,
+ 	if ((info->check_set & (IPT_RECENT_SET | IPT_RECENT_REMOVE)) &&
+ 	    (info->seconds || info->hit_count))
+ 		return false;
++	if (info->hit_count > ip_pkt_list_tot)
++		return false;
+ 	if (info->name[0] == '\0' ||
+ 	    strnlen(info->name, IPT_RECENT_NAME_LEN) == IPT_RECENT_NAME_LEN)
+ 		return false;
