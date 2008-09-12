@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbYILDwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbYILEdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbYILDwL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 23:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYILDv5
+	id S1753602AbYILEdc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 00:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYILEdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 23:51:57 -0400
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:34787 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbYILDv5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 23:51:57 -0400
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: [PATCH] netlink: fix overrun in attribute iteration
-Date: Fri, 12 Sep 2008 03:51:54 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <gacp0q$drj$1@taverner.cs.berkeley.edu>
-References: <20080911205933.GA20032@localhost.localdomain>
-Reply-To: daw-news@cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1221191514 14195 128.32.168.222 (12 Sep 2008 03:51:54 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Fri, 12 Sep 2008 03:51:54 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Fri, 12 Sep 2008 00:33:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:48652 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158AbYILEdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 00:33:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH 1/3] cpumask: add for_each_online_cpu_mask_nr function
+Date: Fri, 12 Sep 2008 14:33:22 +1000
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Steiner <steiner@sgi.com>, Jes Sorensen <jes@sgi.com>,
+       linux-kernel@vger.kernel.org
+References: <20080909155013.455071000@polaris-admin.engr.sgi.com> <20080909155013.735125000@polaris-admin.engr.sgi.com>
+In-Reply-To: <20080909155013.735125000@polaris-admin.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809121433.23593.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum  wrote:
->  /**
->   * nla_ok - check if the netlink attribute fits into the remaining bytes
->   * @nla: netlink attribute
->   * @remaining: number of bytes remaining in attribute stream
->   */
->  static inline int nla_ok(const struct nlattr *nla, int remaining)
->  {
->          return remaining >= sizeof(*nla) &&
->                 nla->nla_len >= sizeof(*nla) &&
->                 nla->nla_len <= remaining;
->  }
+On Wednesday 10 September 2008 01:50:14 Mike Travis wrote:
+>   * Add for_each_online_cpu_mask_nr() function to eliminate need for
+>     a common use of a temporary cpumask_t variable.  When the following
+>     procedure is being used:
+>
+>     funcproto(cpumask_t *mask, ...)
+>     {
+> 	cpumask_t temp;
+>
+> 	cpus_and(temp, *mask, cpu_online_map);
+> 	for_each_cpu_mask_nr(cpu, temp)
+> 		...
+>
+>     If then becomes:
+>
+>     funcproto(cpumask_t *mask, ...)
+>     {
+> 	for_each_online_cpu_mask_nr(cpu, *mask)
+> 		...
+>
+>   * Note the generic __next_cpu_and (and __next_cpu_and_nr) functions
+>     allowing AND'ing with any cpumask_t variable, not just the
+> cpu_online_map.
 
-If 'remaining' had been declared to be of type size_t, this would
-not have happened.
+Good idea!  But I really dislike the _nr versions (too many names!).  Do we 
+really need them, since by definition cpus after nr_cpu_ids are never 
+online...
 
-Guideline for secure programming: length values (and counts of bytes)
-should be declared as size_t, where possible.
+(And we should initialize nr_cpu_ids to NR_CPUS so even early boot works, if 
+we don't already...).
 
-This guideline eliminates many signed/unsigned bugs.  If one also
-carefully avoids overflow (wraparound), other integer overflow bugs
-are avoided as well.
-
-The code above violates the guideline so we shouldn't be terribly
-surprised if it happens to contain signed/unsigned vulnerabilities.
+Cheers,
+Rusty.
