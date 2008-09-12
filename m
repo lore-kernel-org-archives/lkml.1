@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYILMyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbYILNA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbYILMyO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 08:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYILMxz
+	id S1755621AbYILNA4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 09:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYILNAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 08:53:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47974 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752728AbYILMxy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 08:53:54 -0400
-Date: Fri, 12 Sep 2008 09:44:05 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28] tcp_ipv6: fix use of uninitialized memory
-Message-ID: <20080912124405.GF8935@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Vegard Nossum <vegard.nossum@gmail.com>,
-	David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-	Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org
-References: <20080912070525.GA22276@damson.getinternet.no>
-MIME-Version: 1.0
+	Fri, 12 Sep 2008 09:00:46 -0400
+Received: from trinity.fluff.org ([89.145.97.151]:40363 "EHLO
+	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752728AbYILNAp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 09:00:45 -0400
+Date: Fri, 12 Sep 2008 14:00:43 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: PCI: Add ALI M5229 comaptibility mode quirk
+Message-ID: <20080912130043.GF322@trinity.fluff.org>
+References: <20080912112252.505651015@fluff.org.uk> <20080912123339.GA10844@parisc-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080912070525.GA22276@damson.getinternet.no>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20080912123339.GA10844@parisc-linux.org>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Sep 12, 2008 at 09:05:25AM +0200, Vegard Nossum escreveu:
-> >From 6544c4074aa5dde2e3f4d3e02f5601c1c33b770e Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Tue, 9 Sep 2008 07:17:32 +0200
-> Subject: [PATCH] tcp_ipv6: fix use of uninitialized memory
+On Fri, Sep 12, 2008 at 06:33:40AM -0600, Matthew Wilcox wrote:
+> On Fri, Sep 12, 2008 at 12:22:52PM +0100, Ben Dooks wrote:
+> > The libata driver will not work with an M5229 set into native IDE
+> > mode (the old drivers/pci one does) if the M5229 does not provide
+> > it's own IRQ.
+> > 
+> > The M5229 implementation embedded into the ALI M1543 uses the
+> > M1543's ISA PIC to provide the interrupts and thus does not have
+> > an valid PCI IRQ set. This quirk detects the abscence of IRQ and
+> > sets the M5229 back into compatibility mode to use IRQs 14 and 15
+> > so that libata works correctly.
+> > 
+> > Note, I belive that the check for an valid interrupt line is
+> > correct, I only have an M5229 in an ALI M1543 to check this
+> > on. It would be useful to confirm that a M5229 with an valid IRQ
+> > does not trigger this quirk.
 > 
-> inet6_rsk() is called on a struct request_sock * before we
-> have checked whether the socket is an ipv6 socket or a ipv6-
-> mapped ipv4 socket. The access that triggers this is the
-> inet_rsk(rsk)->inet6_rsk_offset dereference in inet6_rsk().
-> 
-> This is arguably not a critical error as the inet6_rsk_offset
-> is only used to compute a pointer which is never really used
-> (in the code path in question) anyway. But it might be a
-> latent error, so let's fix it.
-> 
-> Spotted by kmemcheck.
+> Why does this need to be a quirk rather than something in the libata ALi
+> driver?
 
-Humm, so this was poisoned at allocation and then when inet6_rsk_offset
-was accessed it noticed, interesting, thanks!
+The short answer is that "Alan Cox says not in libata", the longer
+one can be found:
 
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+http://www.archivum.info/linux-ide@vger.kernel.org/2008-07/msg00410.html
  
-- Arnaldo
+> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> > 
+> > Index: linux-2.6.27-rc6-cats1/drivers/pci/quirks.c
+> > ===================================================================
+> > --- linux-2.6.27-rc6-cats1.orig/drivers/pci/quirks.c	2008-09-11 11:26:35.000000000 +0100
+> > +++ linux-2.6.27-rc6-cats1/drivers/pci/quirks.c	2008-09-12 12:18:05.000000000 +0100
+> > @@ -905,6 +905,34 @@ static void __devinit quirk_svwks_csb5id
+> >  }
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_CSB5IDE, quirk_svwks_csb5ide);
+> >  
+> > +/* Some systems set the ALI M5229 in the ALI M1543 bridge to native mode,
+> > + * which cannot be supported by the pata_ali.c driver (the old drivers/ide
+> > + * makes a compatibility effort to change the IDE interrupts).
+> > + */
+> > +static void __devinit quirk_ali_ide_compatibility(struct pci_dev *pdev)
+> > +{
+> > +	u8 tmp;
+> > +
+> > +	/* pdev->irq and pdev->pin have yet to be initialised, so check
+> > +	 * by reading from the configuration header to see if we've got
+> > +	 * a valid interrupt line. */
+> > +
+> > +	pci_read_config_byte(pdev, PCI_INTERRUPT_LINE, &tmp);
+> > +	if (tmp != 0xff)
+> > +		return;
+> > +
+> > +	pci_read_config_byte(pdev, PCI_CLASS_PROG, &tmp);
+> > +	if (tmp & 0x5) {
+> > +		dev_info(&pdev->dev, "quirk: changing to IDE compatibility mode\n");
+> > +
+> > +		tmp &= ~0x05;
+> > +		pdev->class &= ~0x05;
+> > +		pci_write_config_byte(pdev, PCI_CLASS_PROG, tmp);
+> > +	}
+> > +}
+> > +
+> > +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M5229, quirk_ali_ide_compatibility);
+> > +
+> >  /*
+> >   *	Intel 82801CAM ICH3-M datasheet says IDE modes must be the same
+> >   */
+> > 
+> > -- 
+> > Ben (ben@fluff.org, http://www.fluff.org/)
+> > 
+> >   'a smiley only costs 4 bytes'
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> -- 
+> Matthew Wilcox				Intel Open Source Technology Centre
+> "Bill, look, we understand that you're interested in selling us this
+> operating system, but compare it to ours.  We can't possibly take such
+> a retrograde step."
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
