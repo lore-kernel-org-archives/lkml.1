@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbYILLVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYILLXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753757AbYILLVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 07:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYILLUt
+	id S1755843AbYILLXO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 07:23:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYILLW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 07:20:49 -0400
-Received: from ns.suse.de ([195.135.220.2]:45986 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753663AbYILLUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 07:20:48 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Adam Tkac <vonsch@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com
-Subject: Re: [PATCH 2.6.27-rc5] Allow set RLIMIT_NOFILE to RLIM_INFINITY
-References: <20080909071406.GA3814@traged.atkac.englab.brq.redhat.com>
-	<20080910143141.a3bc8258.akpm@linux-foundation.org>
-	<20080911075438.GA2882@traged.atkac.englab.brq.redhat.com>
-	<20080911122219.fd5fdf4c.akpm@linux-foundation.org>
-	<20080912110639.GA2706@traged.atkac.englab.brq.redhat.com>
-X-Yow: Now that I have my ``APPLE,'' I comprehend COST ACCOUNTING!!
-Date: Fri, 12 Sep 2008 13:20:46 +0200
-In-Reply-To: <20080912110639.GA2706@traged.atkac.englab.brq.redhat.com> (Adam
-	Tkac's message of "Fri, 12 Sep 2008 13:06:39 +0200")
-Message-ID: <jesks5wqy9.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 12 Sep 2008 07:22:58 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:61831 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752922AbYILLW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 07:22:57 -0400
+Subject: PCI: Add ALI M5229 comaptibility mode quirk
+Message-Id: <20080912112252.505651015@fluff.org.uk>
+User-Agent: quilt/0.46-1
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Cc: Ben Dooks <ben-linux@fluff.org>
+Content-Disposition: inline; filename=simtec/simtec-add-ali-ide-pci-quirk.patch
+Date: Fri, 12 Sep 2008 12:22:52 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam Tkac <vonsch@gmail.com> writes:
+The libata driver will not work with an M5229 set into native IDE
+mode (the old drivers/pci one does) if the M5229 does not provide
+it's own IRQ.
 
-> diff -puN kernel/sys.c~rlimit-permit-setting-rlimit_nofile-to-rlim_infinity kernel/sys.c
-> --- a/kernel/sys.c~rlimit-permit-setting-rlimit_nofile-to-rlim_infinity
-> +++ a/kernel/sys.c
-> @@ -1532,8 +1532,14 @@ asmlinkage long sys_setrlimit(unsigned i
->  	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
->  	    !capable(CAP_SYS_RESOURCE))
->  		return -EPERM;
-> -	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
-> -		return -EPERM;
-> +	if (resource == RLIMIT_NOFILE) {
-> +		if (new_rlim.rlim_max == RLIM_INFINITY)
-> +			new_rlim.rlim_max = sysctl_nr_open;
-> +		if (new_rlim.rlim_cur == RLIM_INFINITY)
-> +			new_rlim.rlim_cur = sysctl_nr_open;
-> +		if (new_rlim.rlim_max > sysctl_nr_open)
-> +			return -EPERM;
+The M5229 implementation embedded into the ALI M1543 uses the
+M1543's ISA PIC to provide the interrupts and thus does not have
+an valid PCI IRQ set. This quirk detects the abscence of IRQ and
+sets the M5229 back into compatibility mode to use IRQs 14 and 15
+so that libata works correctly.
 
-This makes it possible to set cur > nr_open (when max = INF but nr_open
-< cur < INF).  You need to check that cur <= max after adjustment.
+Note, I belive that the check for an valid interrupt line is
+correct, I only have an M5229 in an ALI M1543 to check this
+on. It would be useful to confirm that a M5229 with an valid IRQ
+does not trigger this quirk.
 
-Andreas.
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+
+Index: linux-2.6.27-rc6-cats1/drivers/pci/quirks.c
+===================================================================
+--- linux-2.6.27-rc6-cats1.orig/drivers/pci/quirks.c	2008-09-11 11:26:35.000000000 +0100
++++ linux-2.6.27-rc6-cats1/drivers/pci/quirks.c	2008-09-12 12:18:05.000000000 +0100
+@@ -905,6 +905,34 @@ static void __devinit quirk_svwks_csb5id
+ }
+ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_CSB5IDE, quirk_svwks_csb5ide);
+ 
++/* Some systems set the ALI M5229 in the ALI M1543 bridge to native mode,
++ * which cannot be supported by the pata_ali.c driver (the old drivers/ide
++ * makes a compatibility effort to change the IDE interrupts).
++ */
++static void __devinit quirk_ali_ide_compatibility(struct pci_dev *pdev)
++{
++	u8 tmp;
++
++	/* pdev->irq and pdev->pin have yet to be initialised, so check
++	 * by reading from the configuration header to see if we've got
++	 * a valid interrupt line. */
++
++	pci_read_config_byte(pdev, PCI_INTERRUPT_LINE, &tmp);
++	if (tmp != 0xff)
++		return;
++
++	pci_read_config_byte(pdev, PCI_CLASS_PROG, &tmp);
++	if (tmp & 0x5) {
++		dev_info(&pdev->dev, "quirk: changing to IDE compatibility mode\n");
++
++		tmp &= ~0x05;
++		pdev->class &= ~0x05;
++		pci_write_config_byte(pdev, PCI_CLASS_PROG, tmp);
++	}
++}
++
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M5229, quirk_ali_ide_compatibility);
++
+ /*
+  *	Intel 82801CAM ICH3-M datasheet says IDE modes must be the same
+  */
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
