@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbYILWZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYILWZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbYILWZj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 18:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbYILWZb
+	id S1758699AbYILWZy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 18:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbYILWZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 18:25:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43506 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755567AbYILWZb (ORCPT
+	Fri, 12 Sep 2008 18:25:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43146 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758202AbYILWZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 18:25:31 -0400
-Date: Sat, 13 Sep 2008 00:29:28 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] apci: dump slit
-Message-ID: <20080912222928.GB11730@one.firstfloor.org>
-References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com> <20080912122031.eca8723e.akpm@linux-foundation.org> <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com> <878wtxrrwh.fsf@basil.nowhere.org> <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de> <20080912213053.GR7714@one.firstfloor.org> <86802c440809121454v5302d79ds8c6e1e6ca948059a@mail.gmail.com>
+	Fri, 12 Sep 2008 18:25:41 -0400
+Date: Fri, 12 Sep 2008 15:24:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Morris <jmorris@namei.org>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       sds@tycho.nsa.gov
+Subject: Re: [Bug #11500] /proc/net bug related to selinux
+Message-Id: <20080912152443.c4e59f42.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	<SpS7rta8n4.A.i9G.ZcsyIB@albercik>
+	<alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809121454v5302d79ds8c6e1e6ca948059a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 02:54:12PM -0700, Yinghai Lu wrote:
-> On Fri, Sep 12, 2008 at 2:30 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> >
-> > Yes excellent point.  Should we dump the complete ACPI tables?
-> > Do you prefer hexdump
+On Sat, 13 Sep 2008 08:14:10 +1000 (EST)
+James Morris <jmorris@namei.org> wrote:
+
+> On Fri, 12 Sep 2008, Rafael J. Wysocki wrote:
 > 
-> good point. there is one time BIOS put blank slit there. (only have
-> acpi table header)
-> only after dump that earlier in kernel boot log, they shut up and go
-> back to fix their problem.
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.26.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
+> > Subject		: /proc/net bug related to selinux
+> > Submitter	: Andrew Morton <akpm@linux-foundation.org>
+> > Date		: 2008-09-04 17:45 (9 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
+> 
+> I think this might be a regression caused by namespace changes which we 
+> addressed in SELinux policy.  Which distro version & policy version is 
+> this seen with?
+> 
 
-You should have asked them to run firmwaretestkit (and if fwtestkit 
-doesn't test for a correct SLIT fix it there). That is what
-it is for. But adding it 
-to all Linux bootlogs ever just for this special case is the wrong way.
-
-
--Andi
-
--- 
-ak@linux.intel.com
+FC5 on x86_32 and FC6 on x86_64.
