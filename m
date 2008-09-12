@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbYILUr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbYILUsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758945AbYILUr7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 16:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758189AbYILUo2
+	id S1759031AbYILUsX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 16:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757435AbYILUoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 16:44:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42781 "EHLO ogre.sisk.pl"
+	Fri, 12 Sep 2008 16:44:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42778 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758177AbYILUoY convert rfc822-to-8bit (ORCPT
+	id S1758173AbYILUoX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 16:44:24 -0400
+	Fri, 12 Sep 2008 16:44:23 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Hugh Dickins" <hugh@veritas.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Torsten Kaiser" <just.for.lkml@googlemail.com>
 References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
 In-Reply-To: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <SpS7rta8n4.A.El.JesyIB@albercik>
-Subject: [Bug #11335] 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
+Message-ID: <SpS7rta8n4.A.Bf.GesyIB@albercik>
+Subject: [Bug #11336] 2.6.27-rc2:stall while mounting root fs
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Fri, 12 Sep 2008 21:06:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,12 +36,12 @@ from 2.6.26.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11335
-Subject		: 2.6.27-rc2-git5 BUG: unable to handle kernel paging request
-Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
-Date		: 2008-08-12 4:18 (32 days old)
-References	: http://marc.info/?l=linux-kernel&m=121851477201960&w=4
-		  http://lkml.org/lkml/2008/8/16/274
-Handled-By	: Hugh Dickins <hugh@veritas.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11336
+Subject		: 2.6.27-rc2:stall while mounting root fs
+Submitter	: Torsten Kaiser <just.for.lkml@googlemail.com>
+Date		: 2008-08-12 12:37 (32 days old)
+References	: http://marc.info/?l=linux-kernel&m=121854484015909&w=4
+Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=17622
 
 
