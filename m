@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYILOoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYILOos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbYILOoW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbYILOoH
+	id S1756826AbYILOos (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbYILOog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:44:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44853 "EHLO mx1.redhat.com"
+	Fri, 12 Sep 2008 10:44:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44901 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752685AbYILOoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:44:05 -0400
-Date: Fri, 12 Sep 2008 10:44:55 -0400 (EDT)
-Message-Id: <20080912.104455.27955868.k-ueda@ct.jp.nec.com>
+	id S1756693AbYILOof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:44:35 -0400
+Date: Fri, 12 Sep 2008 10:45:23 -0400 (EDT)
+Message-Id: <20080912.104523.07457895.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, agk@redhat.com,
        James.Bottomley@HansenPartnership.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 07/13] dm: tidy local_init
+Subject: [PATCH 08/13] dm: add kmem_cache for request-based dm
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 In-Reply-To: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
 References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
@@ -26,80 +26,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch tidies local_init() as preparation for another patch
-(PATCH 08), which creates some kmem_cache for request-based dm.
-No functional change.
-
-This patch is just a clean up of the codes and not functionally
-related to request-based dm.  But included here due to literal
-dependency.
+This patch prepares some kmem_cache for request-based dm.
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 Cc: Alasdair G Kergon <agk@redhat.com>
 ---
- drivers/md/dm.c |   34 +++++++++++++++++-----------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/md/dm.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 44 insertions(+), 1 deletion(-)
 
 Index: 2.6.27-rc6/drivers/md/dm.c
 ===================================================================
 --- 2.6.27-rc6.orig/drivers/md/dm.c
 +++ 2.6.27-rc6/drivers/md/dm.c
-@@ -150,40 +150,40 @@ static struct kmem_cache *_tio_cache;
+@@ -32,6 +32,7 @@ static unsigned int _major = 0;
+ 
+ static DEFINE_SPINLOCK(_minor_lock);
+ /*
++ * For bio based dm.
+  * One of these is allocated per bio.
+  */
+ struct dm_io {
+@@ -43,6 +44,7 @@ struct dm_io {
+ };
+ 
+ /*
++ * For bio based dm.
+  * One of these is allocated per target within a bio.  Hopefully
+  * this will be simplified out one day.
+  */
+@@ -52,6 +54,31 @@ struct dm_target_io {
+ 	union map_info info;
+ };
+ 
++/*
++ * For request based dm.
++ * One of these is allocated per request.
++ *
++ * Since assuming "original request : cloned request = 1 : 1" and
++ * a counter for number of clones like struct dm_io.io_count isn't needed,
++ * struct dm_io and struct target_io can be merged.
++ */
++struct dm_rq_target_io {
++	struct mapped_device *md;
++	struct dm_target *ti;
++	struct request *orig, clone;
++	int error;
++	union map_info info;
++};
++
++/*
++ * For request based dm.
++ * One of these is allocated per bio.
++ */
++struct dm_clone_bio_info {
++	struct bio *orig;
++	struct request *rq;
++};
++
+ union map_info *dm_get_mapinfo(struct bio *bio)
+ {
+ 	if (bio && bio->bi_private)
+@@ -147,6 +174,8 @@ struct mapped_device {
+ #define MIN_IOS 256
+ static struct kmem_cache *_io_cache;
+ static struct kmem_cache *_tio_cache;
++static struct kmem_cache *_rq_tio_cache;
++static struct kmem_cache *_bio_info_cache;
  
  static int __init local_init(void)
  {
--	int r;
-+	int r = -ENOMEM;
+@@ -162,9 +191,17 @@ static int __init local_init(void)
+ 	if (!_tio_cache)
+ 		goto out_free_io_cache;
  
- 	/* allocate a slab for the dm_ios */
- 	_io_cache = KMEM_CACHE(dm_io, 0);
- 	if (!_io_cache)
--		return -ENOMEM;
-+		return r;
- 
- 	/* allocate a slab for the target ios */
- 	_tio_cache = KMEM_CACHE(dm_target_io, 0);
--	if (!_tio_cache) {
--		kmem_cache_destroy(_io_cache);
--		return -ENOMEM;
--	}
-+	if (!_tio_cache)
-+		goto out_free_io_cache;
- 
- 	r = dm_uevent_init();
--	if (r) {
--		kmem_cache_destroy(_tio_cache);
--		kmem_cache_destroy(_io_cache);
--		return r;
--	}
-+	if (r)
++	_rq_tio_cache = KMEM_CACHE(dm_rq_target_io, 0);
++	if (!_rq_tio_cache)
 +		goto out_free_tio_cache;
++
++	_bio_info_cache = KMEM_CACHE(dm_clone_bio_info, 0);
++	if (!_bio_info_cache)
++		goto out_free_rq_tio_cache;
++
+ 	r = dm_uevent_init();
+ 	if (r)
+-		goto out_free_tio_cache;
++		goto out_free_bio_info_cache;
  
  	_major = major;
  	r = register_blkdev(_major, _name);
--	if (r < 0) {
--		kmem_cache_destroy(_tio_cache);
--		kmem_cache_destroy(_io_cache);
--		dm_uevent_exit();
--		return r;
--	}
-+	if (r < 0)
-+		goto out_uevent_exit;
+@@ -178,6 +215,10 @@ static int __init local_init(void)
  
- 	if (!_major)
- 		_major = r;
- 
- 	return 0;
-+
-+out_uevent_exit:
-+	dm_uevent_exit();
-+out_free_tio_cache:
-+	kmem_cache_destroy(_tio_cache);
-+out_free_io_cache:
-+	kmem_cache_destroy(_io_cache);
-+
-+	return r;
- }
+ out_uevent_exit:
+ 	dm_uevent_exit();
++out_free_bio_info_cache:
++	kmem_cache_destroy(_bio_info_cache);
++out_free_rq_tio_cache:
++	kmem_cache_destroy(_rq_tio_cache);
+ out_free_tio_cache:
+ 	kmem_cache_destroy(_tio_cache);
+ out_free_io_cache:
+@@ -188,6 +229,8 @@ out_free_io_cache:
  
  static void local_exit(void)
+ {
++	kmem_cache_destroy(_bio_info_cache);
++	kmem_cache_destroy(_rq_tio_cache);
+ 	kmem_cache_destroy(_tio_cache);
+ 	kmem_cache_destroy(_io_cache);
+ 	unregister_blkdev(_major, _name);
