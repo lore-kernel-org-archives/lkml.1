@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbYILC6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYILDCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756966AbYILC6l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 22:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYILC6Z
+	id S1756661AbYILDCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 23:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbYILDCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 22:58:25 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:64951 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756784AbYILC6Y (ORCPT
+	Thu, 11 Sep 2008 23:02:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60710 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754849AbYILDCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 22:58:24 -0400
-Message-ID: <48C9DACE.5040308@lwfinger.net>
-Date: Thu, 11 Sep 2008 21:58:22 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Steven Noonan <steven@uplinklabs.net>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>
-Subject: Re: I need help with a sparse warning
-References: <48C9D040.8010107@lwfinger.net> <f488382f0809111932v1cc1eb44kbe0bc0e97347c834@mail.gmail.com>
-In-Reply-To: <f488382f0809111932v1cc1eb44kbe0bc0e97347c834@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 11 Sep 2008 23:02:09 -0400
+Date: Thu, 11 Sep 2008 20:01:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Coady <gcoady.lk@gmail.com>
+Cc: Grant Coady <grant_lkml@dodo.com.au>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [stable] regression in iptables: recent filter
+Message-Id: <20080911200133.48be32fa.akpm@linux-foundation.org>
+In-Reply-To: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
+References: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Noonan wrote:
-> On Thu, Sep 11, 2008 at 7:13 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
->> In file drivers/net/wireless/p54/p54common.c, the statement
->>
->>       priv->rx_mtu = (size_t) le16_to_cpu((__le16)bootrec->data[10]);
->>
->> generates the sparse warning
->>
->> .../p54common.c:185:29: warning: cast to restricted __le16
->>
->> where bootrec->data is u32, and priv->rx_mtu is u16.
->>
+On Fri, 12 Sep 2008 11:53:35 +1000 Grant Coady <grant_lkml@dodo.com.au> wrote:
+
+> Hi there,
 > 
-> (Whoops, didn't CC the mailing lists. Sorry about the double-message, Larry.)
+> Last known good kernel: 2.6.24.7
 > 
-> If priv->rx_mtu is u16, I'm surprised it doesn't get noisy about the
-> size_t cast. Unless the machine it's being compiled on is 16-bit, that
-> should throw a truncation warning, because size_t should be a 32-bit
-> integer on 32-bit machines (typically).
+> # iptables -N calmrate
+> # iptables -A calmrate -p tcp -m state --state NEW \
+> 	-m recent --name listrate --update --rttl \
+> 	--seconds 60 --hitcount 60 -j DROP
+> iptables: Unknown error 4294967295
 > 
-> I think if you change the (__le16) cast to (__le16 __force) it will
-> stop warning you about that particular issue.
+> Fails for 2.6.25.17 and 2.6.26.5
+> 
+> dmesg + config: http://bugsplatter.id.au/kernel/boxen/deltree/
+> 
 
-This one gets rid of the sparse warning.
-
-        priv->rx_mtu = le16_to_cpu((__le16 __force)
-                                   bootrec->data[10]);
-
-Thanks,
-
-Larry
+(cc netdev)
