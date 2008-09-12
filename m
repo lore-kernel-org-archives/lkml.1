@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYILC6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756966AbYILC6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYILC6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 22:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754962AbYILC6I
+	id S1756966AbYILC6l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 22:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYILC6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 22:58:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55070 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754951AbYILC6H (ORCPT
+	Thu, 11 Sep 2008 22:58:25 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:64951 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756784AbYILC6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 22:58:07 -0400
-Date: Thu, 11 Sep 2008 19:57:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: j_kernel@hoblitt.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
- tick_periodic() ???
-Message-Id: <20080911195708.f975e9b6.akpm@linux-foundation.org>
-In-Reply-To: <20080912025458.GF27054@hoblitt.com>
-References: <bug-11543-10286@http.bugzilla.kernel.org/>
-	<20080911170258.aa0bea0d.akpm@linux-foundation.org>
-	<20080912025458.GF27054@hoblitt.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Sep 2008 22:58:24 -0400
+Message-ID: <48C9DACE.5040308@lwfinger.net>
+Date: Thu, 11 Sep 2008 21:58:22 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: Steven Noonan <steven@uplinklabs.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>
+Subject: Re: I need help with a sparse warning
+References: <48C9D040.8010107@lwfinger.net> <f488382f0809111932v1cc1eb44kbe0bc0e97347c834@mail.gmail.com>
+In-Reply-To: <f488382f0809111932v1cc1eb44kbe0bc0e97347c834@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Sep 2008 16:54:58 -1000 j_kernel@hoblitt.com wrote:
-
-> > The panic code called the kexec code which called mutex_trylock() which
-> > called spin_lock_mutex() which then stupidly went and blurted a load of
-> > debug stuff because of in_interrupt().
-> > 
-> > Something like this:
-> > 
-> > --- a/include/linux/debug_locks.h~a
-> > +++ a/include/linux/debug_locks.h
-> > @@ -17,7 +17,7 @@ extern int debug_locks_off(void);
-> >  ({									\
-> >  	int __ret = 0;							\
-> >  									\
-> > -	if (unlikely(c)) {						\
-> > +	if (!oops_in_progress && unlikely(c)) {				\
-> >  		if (debug_locks_off() && !debug_locks_silent)		\
-> >  			WARN_ON(1);					\
-> >  		__ret = 1;						\
-> > _
-> > 
-> > might prevent the debugging code from preventing us from finding bugs :(
+Steven Noonan wrote:
+> On Thu, Sep 11, 2008 at 7:13 PM, Larry Finger <Larry.Finger@lwfinger.net> wrote:
+>> In file drivers/net/wireless/p54/p54common.c, the statement
+>>
+>>       priv->rx_mtu = (size_t) le16_to_cpu((__le16)bootrec->data[10]);
+>>
+>> generates the sparse warning
+>>
+>> .../p54common.c:185:29: warning: cast to restricted __le16
+>>
+>> where bootrec->data is u32, and priv->rx_mtu is u16.
+>>
 > 
-> Do you want me to give that patch a try or sit tight for a bit?
+> (Whoops, didn't CC the mailing lists. Sorry about the double-message, Larry.)
+> 
+> If priv->rx_mtu is u16, I'm surprised it doesn't get noisy about the
+> size_t cast. Unless the machine it's being compiled on is 16-bit, that
+> should throw a truncation warning, because size_t should be a 32-bit
+> integer on 32-bit machines (typically).
+> 
+> I think if you change the (__le16) cast to (__le16 __force) it will
+> stop warning you about that particular issue.
 
-It's be good if you can try it please, see if we can get a cleaner
-trace.
+This one gets rid of the sparse warning.
+
+        priv->rx_mtu = le16_to_cpu((__le16 __force)
+                                   bootrec->data[10]);
+
+Thanks,
+
+Larry
