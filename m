@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbYILL0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbYILLqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755563AbYILL0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 07:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYILL0N
+	id S1755041AbYILLqv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 07:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbYILLqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 07:26:13 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:42545 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752739AbYILL0M (ORCPT
+	Fri, 12 Sep 2008 07:46:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52136 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752477AbYILLql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 07:26:12 -0400
-Date: Fri, 12 Sep 2008 13:26:07 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Chuck Ebbert <cebbert@redhat.com>, Greg Kroah-Hartman <greg@kroah.com>
-cc: Geoff Levand <geoffrey.levand@am.sony.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: [stable] Unfixed regressions in 2.6-stable
-In-Reply-To: <48C9A8C4.9080803@redhat.com>
-Message-ID: <Pine.LNX.4.64.0809121324260.20811@vixen.sonytel.be>
-References: <48C9A8C4.9080803@redhat.com>
+	Fri, 12 Sep 2008 07:46:41 -0400
+Date: Fri, 12 Sep 2008 06:46:38 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+Message-ID: <20080912114638.GA2661@sgi.com>
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <48C979D3.5000308@zytor.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-876705403-1221218671=:20811"
-Content-ID: <Pine.LNX.4.64.0809121325140.20811@vixen.sonytel.be>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48C979D3.5000308@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, Sep 11, 2008 at 01:04:35PM -0700, H. Peter Anvin wrote:
+> Dean Nelson wrote:
+> >
+> >We (SGI) need somewhere around eight vectors.
+> >
+> >There are two kernel modules, sgi-gru and sgi-xp (in drivers/misc), that
+> >each need two vectors. And there's the broadcast assist unit (BAU) that is
+> >involved in tlb shootdown on uv, which currently uses statically reserved
+> >vector 0xf8 (UV_BAU_MESSAGE -- see uv_bau_init()). I know of a debugger 
+> >that
+> >also uses 0xf8 because it was previously available until UV_BAU_MESSAGE 
+> >came
+> >along. The BAU would be happy with a dynamically allocated system vector.
+> >We have a couple of other things in the works that also need vectors.
+> >
+> >All of these eight or so vectors are only meaningful on SGI uv systems.
+> >
+> 
+> Are these kernel-internal vectors, or exposed to userspace (i.e. the INT 
+> instruction works in userspace)?  From what I'm gathering, I think this 
+> is the former.
 
----584349381-876705403-1221218671=:20811
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0809121325141.20811@vixen.sonytel.be>
-
-On Thu, 11 Sep 2008, Chuck Ebbert wrote:
-> Description: Kernel hangs when booting on Sony PS3
-> Version(s):  2.6.25.12 - 2.6.25.17
-> Caused-by:
-> http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=releases/2.6.25.12/usb-fix-interrupt-disabling-for-hcds-with-shared-interrupt-handlers.patch;hb=HEAD
-> Version(s):  2.6.26 - 2.6.26.5
-> Caused-by:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=de85422b94ddb23c021126815ea49414047c13dc
-> Patch:
-> http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob_plain;f=usb.current/usb-fix-hcd-interrupt-disabling.patch;hb=HEAD
-> Patch is not in mainline.
-
-Greg, any chance we can get this in 2.6.27?
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-876705403-1221218671=:20811--
+Yeah, these are kernel-internal vectors and are not exposed to userspace.
