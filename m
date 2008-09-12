@@ -1,51 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbYILOmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbYILOnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756986AbYILOmr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYILOmh
+	id S1757266AbYILOnb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYILOm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:42:37 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:23125 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752150AbYILOmg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:42:36 -0400
-Message-Id: <48CA9C18.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Fri, 12 Sep 2008 15:43:04 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: <mingo@elte.hu>, <tglx@linutronix.de>, <hpa@zytor.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86-64: fix combining of regions in
-	 init_memory_mapping()
+	Fri, 12 Sep 2008 10:42:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44802 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757133AbYILOm5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:42:57 -0400
+Date: Fri, 12 Sep 2008 10:43:06 -0400 (EDT)
+Message-Id: <20080912.104306.11596001.k-ueda@ct.jp.nec.com>
+To: jens.axboe@oracle.com, agk@redhat.com,
+       James.Bottomley@HansenPartnership.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
+Subject: [PATCH 04/13] scsi: exports busy status
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
+References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When nr_range gets decremented, the same slot must be considered for
-coalescing with its new successor again.
+This patch change scsi mid-layer to export its busy status.
+Not set the busy flag, when scsi can't dispatch I/Os anymore and
+needs to kill I/Os.  Otherwise, request stacking drivers may hold
+requests forever.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- arch/x86/mm/init_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/scsi.c     |    4 ++--
+ drivers/scsi/scsi_lib.c |   23 ++++++++++++++++++++++-
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
---- linux-2.6.27-rc6/arch/x86/mm/init_64.c	2008-08-29 10:53:00.000000000 +0200
-+++ 2.6.27-rc6-x86_64-mr-coalesce/arch/x86/mm/init_64.c	2008-09-12 11:58:45.000000000 +0200
-@@ -636,7 +636,7 @@ unsigned long __init_refok init_memory_m
- 		old_start = mr[i].start;
- 		memmove(&mr[i], &mr[i+1],
- 			 (nr_range - 1 - i) * sizeof (struct map_range));
--		mr[i].start = old_start;
-+		mr[i--].start = old_start;
- 		nr_range--;
- 	}
+Index: 2.6.27-rc6/drivers/scsi/scsi_lib.c
+===================================================================
+--- 2.6.27-rc6.orig/drivers/scsi/scsi_lib.c
++++ 2.6.27-rc6/drivers/scsi/scsi_lib.c
+@@ -459,17 +459,30 @@ static void scsi_init_cmd_errh(struct sc
  
-
-
-
+ void scsi_device_unbusy(struct scsi_device *sdev)
+ {
++	int host_congested;
+ 	struct Scsi_Host *shost = sdev->host;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(shost->host_lock, flags);
+ 	shost->host_busy--;
++	if ((shost->can_queue > 0 && shost->host_busy >= shost->can_queue) ||
++	    shost->host_blocked || shost->host_self_blocked ||
++	    scsi_host_in_recovery(shost))
++		host_congested = 1;
++	else
++		host_congested = 0;
++
+ 	if (unlikely(scsi_host_in_recovery(shost) &&
+ 		     (shost->host_failed || shost->host_eh_scheduled)))
+ 		scsi_eh_wakeup(shost);
+ 	spin_unlock(shost->host_lock);
++
+ 	spin_lock(sdev->request_queue->queue_lock);
+ 	sdev->device_busy--;
++	if (bdi_lld_congested(&sdev->request_queue->backing_dev_info) &&
++	    !host_congested && !(sdev->device_busy >= sdev->queue_depth) &&
++	    !sdev->device_blocked)
++		clear_bdi_lld_congested(&sdev->request_queue->backing_dev_info);
+ 	spin_unlock_irqrestore(sdev->request_queue->queue_lock, flags);
+ }
+ 
+@@ -1495,9 +1508,14 @@ static void scsi_request_fn(struct reque
+ 		 * accept it.
+ 		 */
+ 		req = elv_next_request(q);
+-		if (!req || !scsi_dev_queue_ready(q, sdev))
++		if (!req)
+ 			break;
+ 
++		if (!scsi_dev_queue_ready(q, sdev)) {
++			set_bdi_lld_congested(&q->backing_dev_info);
++			break;
++		}
++
+ 		if (unlikely(!scsi_device_online(sdev))) {
+ 			sdev_printk(KERN_ERR, sdev,
+ 				    "rejecting I/O to offline device\n");
+@@ -1568,6 +1586,8 @@ static void scsi_request_fn(struct reque
+ 		rtn = scsi_dispatch_cmd(cmd);
+ 		spin_lock_irq(q->queue_lock);
+ 		if(rtn) {
++			set_bdi_lld_congested(&q->backing_dev_info);
++
+ 			/* we're refusing the command; because of
+ 			 * the way locks get dropped, we need to 
+ 			 * check here if plugging is required */
+@@ -1592,6 +1612,7 @@ static void scsi_request_fn(struct reque
+ 	 * later time.
+ 	 */
+ 	spin_lock_irq(q->queue_lock);
++	set_bdi_lld_congested(&q->backing_dev_info);
+ 	blk_requeue_request(q, req);
+ 	sdev->device_busy--;
+ 	if(sdev->device_busy == 0)
+Index: 2.6.27-rc6/drivers/scsi/scsi.c
+===================================================================
+--- 2.6.27-rc6.orig/drivers/scsi/scsi.c
++++ 2.6.27-rc6/drivers/scsi/scsi.c
+@@ -861,8 +861,6 @@ void scsi_finish_command(struct scsi_cmn
+ 	struct scsi_driver *drv;
+ 	unsigned int good_bytes;
+ 
+-	scsi_device_unbusy(sdev);
+-
+         /*
+          * Clear the flags which say that the device/host is no longer
+          * capable of accepting new commands.  These are set in scsi_queue.c
+@@ -874,6 +872,8 @@ void scsi_finish_command(struct scsi_cmn
+         shost->host_blocked = 0;
+         sdev->device_blocked = 0;
+ 
++	scsi_device_unbusy(sdev);
++
+ 	/*
+ 	 * If we have valid sense information, then some kind of recovery
+ 	 * must have taken place.  Make a note of this.
