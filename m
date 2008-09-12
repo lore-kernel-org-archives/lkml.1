@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbYILPKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbYILPKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757035AbYILPKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 11:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYILPKL
+	id S1757289AbYILPKx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 11:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbYILPKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 11:10:11 -0400
+	Fri, 12 Sep 2008 11:10:16 -0400
 Received: from ey-out-2122.google.com ([74.125.78.26]:17907 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754448AbYILPKH (ORCPT
+	with ESMTP id S1756252AbYILPKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 11:10:07 -0400
+	Fri, 12 Sep 2008 11:10:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=iNWw5vhxAN4OkcqYo21ci/DjYXUTAKBKyww/Y3j2zw1xbzTQ9w1cJlaFz4As6QiOii
-         bHxtiAAntUC1TYmTyNsBkpFDFMmdgZy0iBLB9VCSpoqJlB2Ro+R1zskKbJ4O4VQrDv+2
-         Go9AztrZL9jzCSTMjDsaEqVB8SBOeDpvybiHQ=
+        b=UpC03duOaZLUj/Rlk4xIrnGkmZev7C2pLG6xkQzOZDrBVc1CIFcBUDTGaPfkqMgY3j
+         uVwAP3OHhX8l5uBc0cNfqNtXPwE0QFbiypw48EpqxJHp7O9151B3T4o8Y80V1fLlgvbn
+         /0ZDtQlXPa+A60IxtCBfLN3MJHs+NcXItYe0g=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
@@ -32,9 +32,9 @@ Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
        containers@lists.linux-foundation.org,
        LKML <linux-kernel@vger.kernel.org>,
        Andrea Righi <righi.andrea@gmail.com>
-Subject: [RFC] [PATCH -mm 1/2] memcg dirty_ratio and additional page statistics
-Date: Fri, 12 Sep 2008 17:09:51 +0200
-Message-Id: <1221232192-13553-2-git-send-email-righi.andrea@gmail.com>
+Subject: [RFC] [PATCH -mm 2/2] use collected memory cgroup statistics for page writeback
+Date: Fri, 12 Sep 2008 17:09:52 +0200
+Message-Id: <1221232192-13553-3-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -42,617 +42,458 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Collect dirty file and writeback pages to be used by memory cgroup dirty_ratio
-to evaluate dirty limits.
+Use per-cgroup memory statistics to evaluate dirty limits, dirtyable memory and
+start background writeout via pdflush.
 
-Moreover, the following entries are added to the file memory.stat of each
-cgroup to export these statistics to userspace:
- - filedirty (number of dirty file pages)
- - writeback (number of pages under writeback)
-
-[ Note: currently only non-anonymous pages are accounted in writeback pages;
-for swapped-out pages with swap_writepage() it's not possible to retrieve the
-memory cgroup they belong to, so there would be a leak in writeback statistics
-if we also try to account these pages without changing too much stuff. ]
+Also add an argument to pdflush_operation() to pass the memory cgroup that
+requested the background writeout. In this way pdflush is able to check the
+cgroup dirty limits according to the cgroup statistics.
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- fs/buffer.c                |    2 +
- fs/nfs/write.c             |    4 +
- fs/nilfs2/page.h           |    9 ++-
- fs/reiser4/as_ops.c        |    5 +-
- fs/reiser4/page_cache.c    |    5 +-
- include/linux/memcontrol.h |   76 ++++++++++++++++++
- mm/filemap.c               |    2 +
- mm/memcontrol.c            |  187 ++++++++++++++++++++++++++++++++++++++++----
- mm/page-writeback.c        |   13 +++-
- mm/truncate.c              |    2 +
- 10 files changed, 284 insertions(+), 21 deletions(-)
+ fs/super.c                |    4 +-
+ fs/sync.c                 |    7 ++-
+ include/linux/writeback.h |   11 +++--
+ kernel/trace/trace.c      |    2 +-
+ mm/backing-dev.c          |    3 +-
+ mm/page-writeback.c       |  115 +++++++++++++++++++++++++++-----------------
+ mm/pdflush.c              |   10 +++-
+ 7 files changed, 95 insertions(+), 57 deletions(-)
 
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 8274f5e..fc45593 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -31,6 +31,7 @@
- #include <linux/highmem.h>
- #include <linux/module.h>
- #include <linux/writeback.h>
-+#include <linux/memcontrol.h>
- #include <linux/hash.h>
- #include <linux/suspend.h>
- #include <linux/buffer_head.h>
-@@ -718,6 +719,7 @@ static int __set_page_dirty(struct page *page,
- 		WARN_ON_ONCE(warn && !PageUptodate(page));
- 
- 		if (mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_file_dirty(page, 1);
- 			__inc_zone_page_state(page, NR_FILE_DIRTY);
- 			__inc_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 3229e21..cd95d3f 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -12,6 +12,7 @@
- #include <linux/pagemap.h>
- #include <linux/file.h>
- #include <linux/writeback.h>
-+#include <linux/memcontrol.h>
- #include <linux/swap.h>
- 
- #include <linux/sunrpc/clnt.h>
-@@ -410,6 +411,7 @@ nfs_mark_request_commit(struct nfs_page *req)
- 			req->wb_index,
- 			NFS_PAGE_TAG_COMMIT);
- 	spin_unlock(&inode->i_lock);
-+	mem_cgroup_charge_file_dirty(req->wb_page, 1);
- 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
- 	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIMABLE);
- 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
-@@ -421,6 +423,7 @@ nfs_clear_request_commit(struct nfs_page *req)
- 	struct page *page = req->wb_page;
- 
- 	if (test_and_clear_bit(PG_CLEAN, &(req)->wb_flags)) {
-+		mem_cgroup_charge_file_dirty(page, -1);
- 		dec_zone_page_state(page, NR_UNSTABLE_NFS);
- 		dec_bdi_stat(page->mapping->backing_dev_info, BDI_RECLAIMABLE);
- 		return 1;
-@@ -1263,6 +1266,7 @@ nfs_commit_list(struct inode *inode, struct list_head *head, int how)
- 		req = nfs_list_entry(head->next);
- 		nfs_list_remove_request(req);
- 		nfs_mark_request_commit(req);
-+		mem_cgroup_charge_file_dirty(page, -1);
- 		dec_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
- 		dec_bdi_stat(req->wb_page->mapping->backing_dev_info,
- 				BDI_RECLAIMABLE);
-diff --git a/fs/nilfs2/page.h b/fs/nilfs2/page.h
-index b77c91c..a88f84c 100644
---- a/fs/nilfs2/page.h
-+++ b/fs/nilfs2/page.h
-@@ -24,6 +24,7 @@
- #ifndef _NILFS_PAGE_H
- #define _NILFS_PAGE_H
- 
-+#include <linux/memcontrol.h>
- #include "nilfs.h"
- 
- extern struct buffer_head *nilfs_get_page_block(struct page *, unsigned long,
-@@ -68,8 +69,10 @@ nilfs_page_get_nth_block(struct page *page, unsigned int count)
- static inline void nilfs_set_page_writeback(struct page *page)
- {
- 	if (buffer_nilfs_allocated(page_buffers(page))) {
--		if (!TestSetPageWriteback(page))
-+		if (!TestSetPageWriteback(page)) {
-+			mem_cgroup_charge_writeback(page, 1);
- 			inc_zone_page_state(page, NR_WRITEBACK);
-+		}
- 	} else
- 		set_page_writeback(page);
- }
-@@ -77,8 +80,10 @@ static inline void nilfs_set_page_writeback(struct page *page)
- static inline void nilfs_end_page_writeback(struct page *page)
- {
- 	if (buffer_nilfs_allocated(page_buffers(page))) {
--		if (TestClearPageWriteback(page))
-+		if (TestClearPageWriteback(page)) {
-+			mem_cgroup_charge_writeback(page, -1);
- 			dec_zone_page_state(page, NR_WRITEBACK);
-+		}
- 	} else
- 		end_page_writeback(page);
- }
-diff --git a/fs/reiser4/as_ops.c b/fs/reiser4/as_ops.c
-index decb9eb..1e144ec 100644
---- a/fs/reiser4/as_ops.c
-+++ b/fs/reiser4/as_ops.c
-@@ -40,6 +40,7 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/writeback.h>
-+#include <linux/memcontrol.h>
- #include <linux/backing-dev.h>
- #include <linux/quotaops.h>
- #include <linux/security.h>
-@@ -82,9 +83,11 @@ int reiser4_set_page_dirty(struct page *page)
- 			/* check for race with truncate */
- 			if (page->mapping) {
- 				assert("vs-1652", page->mapping == mapping);
--				if (mapping_cap_account_dirty(mapping))
-+				if (mapping_cap_account_dirty(mapping)) {
-+					mem_cgroup_charge_file_dirty(page, 1);
- 					inc_zone_page_state(page,
- 							NR_FILE_DIRTY);
-+				}
- 				radix_tree_tag_set(&mapping->page_tree,
- 						   page->index,
- 						   PAGECACHE_TAG_REISER4_MOVED);
-diff --git a/fs/reiser4/page_cache.c b/fs/reiser4/page_cache.c
-index 654e7ae..7dadb9b 100644
---- a/fs/reiser4/page_cache.c
-+++ b/fs/reiser4/page_cache.c
-@@ -202,6 +202,7 @@
- #include <linux/pagemap.h>
- #include <linux/bio.h>
- #include <linux/writeback.h>
-+#include <linux/memcontrol.h>
- #include <linux/blkdev.h>
- 
- static struct bio *page_bio(struct page *, jnode * , int rw, gfp_t gfp);
-@@ -467,8 +468,10 @@ int reiser4_set_page_dirty_internal(struct page *page)
- 	BUG_ON(mapping == NULL);
- 
- 	if (!TestSetPageDirty(page)) {
--		if (mapping_cap_account_dirty(mapping))
-+		if (mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_file_dirty(page, 1);
- 			inc_zone_page_state(page, NR_FILE_DIRTY);
-+		}
- 
- 		__mark_inode_dirty(mapping->host, I_DIRTY_PAGES);
- 	}
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index ee1b2fc..c3a1f19 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -20,15 +20,48 @@
- #ifndef _LINUX_MEMCONTROL_H
- #define _LINUX_MEMCONTROL_H
- 
-+#include <linux/cgroup.h>
-+
- struct mem_cgroup;
- struct page_cgroup;
- struct page;
- struct mm_struct;
-+extern int vm_dirty_ratio;
-+
-+/*
-+ * Statistics for memory cgroup.
-+ */
-+enum mem_cgroup_stat_index {
-+	/*
-+	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
-+	 */
-+	MEM_CGROUP_STAT_CACHE,		/* # of pages charged as cache */
-+	MEM_CGROUP_STAT_RSS,		/* # of pages charged as rss */
-+	MEM_CGROUP_STAT_FILE_DIRTY,	/* # of dirty pages in page cache */
-+	MEM_CGROUP_STAT_WRITEBACK,	/* # of pages under writeback */
-+	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
-+	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
-+
-+	MEM_CGROUP_STAT_NSTATS,
-+};
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 
- #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
- 
-+struct mem_cgroup *get_current_mem_cgroup(void);
-+extern void put_mem_cgroup(struct mem_cgroup *mem);
-+
-+extern unsigned long mem_cgroup_global_lru_pages(struct mem_cgroup *mem);
-+extern unsigned long mem_cgroup_get_free_pages(struct mem_cgroup *mem);
-+extern long mem_cgroup_dirty_ratio(struct mem_cgroup *mem);
-+
-+extern void mem_cgroup_charge_file_dirty(struct page *page, int charge);
-+extern s64 mem_cgroup_nr_file_dirty(struct mem_cgroup *mem);
-+
-+extern void mem_cgroup_charge_writeback(struct page *page, int charge);
-+extern s64 mem_cgroup_nr_writeback(struct mem_cgroup *mem);
-+
- extern struct page_cgroup *page_get_page_cgroup(struct page *page);
- extern int mem_cgroup_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask);
-@@ -132,6 +165,49 @@ static inline void mem_cgroup_end_migration(struct page *page)
- {
- }
- 
-+static inline struct mem_cgroup *get_current_mem_cgroup(void)
-+{
-+	return NULL;
-+}
-+
-+static inline void put_mem_cgroup(struct mem_cgroup *mem)
-+{
-+}
-+
-+static inline unsigned long mem_cgroup_global_lru_pages(struct mem_cgroup *mem)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned long mem_cgroup_get_free_pages(struct mem_cgroup *mem)
-+{
-+	return 0;
-+}
-+
-+static inline long mem_cgroup_dirty_ratio(struct mem_cgroup *mem)
-+{
-+	return vm_dirty_ratio;
-+}
-+
-+static inline void mem_cgroup_charge_file_dirty(struct page *page, int charge)
-+{
-+}
-+
-+static inline void mem_cgroup_charge_writeback(struct page *page, int charge)
-+{
-+}
-+
-+static inline s64 mem_cgroup_nr_file_dirty(struct mem_cgroup *mem)
-+{
-+	return global_page_state(NR_FILE_DIRTY) +
-+		global_page_state(NR_UNSTABLE_NFS);
-+}
-+
-+static inline s64 mem_cgroup_nr_writeback(struct mem_cgroup *mem)
-+{
-+	return global_page_state(NR_WRITEBACK);
-+}
-+
- static inline int mem_cgroup_calc_mapped_ratio(struct mem_cgroup *mem)
- {
+diff --git a/fs/super.c b/fs/super.c
+index f31ef82..33fbcaa 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -646,7 +646,7 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
  	return 0;
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 0df6e1f..54f8689 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -25,6 +25,7 @@
- #include <linux/uio.h>
- #include <linux/hash.h>
- #include <linux/writeback.h>
-+#include <linux/memcontrol.h>
- #include <linux/backing-dev.h>
- #include <linux/pagevec.h>
- #include <linux/blkdev.h>
-@@ -131,6 +132,7 @@ void __remove_from_page_cache(struct page *page)
- 	 * having removed the page entirely.
- 	 */
- 	if (PageDirty(page) && mapping_cap_account_dirty(mapping)) {
-+		mem_cgroup_charge_file_dirty(page, -1);
- 		dec_zone_page_state(page, NR_FILE_DIRTY);
- 		dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
- 	}
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 2979d22..6de911e 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -40,21 +40,6 @@ struct cgroup_subsys mem_cgroup_subsys __read_mostly;
- static struct kmem_cache *page_cgroup_cache __read_mostly;
- #define MEM_CGROUP_RECLAIM_RETRIES	5
- 
--/*
-- * Statistics for memory cgroup.
-- */
--enum mem_cgroup_stat_index {
--	/*
--	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
--	 */
--	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
--	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
--	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
--	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
--
--	MEM_CGROUP_STAT_NSTATS,
--};
--
- struct mem_cgroup_stat_cpu {
- 	s64 count[MEM_CGROUP_STAT_NSTATS];
- } ____cacheline_aligned_in_smp;
-@@ -73,6 +58,14 @@ static void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat *stat,
- 	stat->cpustat[cpu].count[idx] += val;
  }
  
-+static void __mem_cgroup_stat_add(struct mem_cgroup_stat *stat,
-+		enum mem_cgroup_stat_index idx, int val)
-+{
-+	int cpu = get_cpu();
-+	stat->cpustat[cpu].count[idx] += val;
-+	put_cpu();
-+}
-+
- static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
- 		enum mem_cgroup_stat_index idx)
+-static void do_emergency_remount(unsigned long foo)
++static void do_emergency_remount(struct mem_cgroup *unused, unsigned long foo)
  {
-@@ -133,6 +126,9 @@ struct mem_cgroup {
- 	 * statistics.
- 	 */
- 	struct mem_cgroup_stat stat;
-+
-+	/* per memory cgroup dirty_ratio */
-+	long dirty_ratio;
- };
- static struct mem_cgroup init_mem_cgroup;
+ 	struct super_block *sb;
  
-@@ -358,6 +354,141 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
- 	return ret;
+@@ -674,7 +674,7 @@ static void do_emergency_remount(unsigned long foo)
+ 
+ void emergency_remount(void)
+ {
+-	pdflush_operation(do_emergency_remount, 0);
++	pdflush_operation(do_emergency_remount, NULL, 0);
  }
  
-+static struct mem_cgroup *get_mem_cgroup_from_page(struct page *page)
-+{
-+	struct page_cgroup *pc;
-+	struct mem_cgroup *mem = NULL;
-+
-+	lock_page_cgroup(page);
-+	pc = page_get_page_cgroup(page);
-+	if (pc) {
-+		mem = pc->mem_cgroup;
-+		css_get(&mem->css);
-+	}
-+	unlock_page_cgroup(page);
-+	return mem;
-+}
-+
-+struct mem_cgroup *get_current_mem_cgroup(void)
-+{
-+	struct mem_cgroup *mem;
-+
-+	rcu_read_lock();
-+	mem = mem_cgroup_from_task(current);
-+	if (likely(mem))
-+		css_get(&mem->css);
-+	rcu_read_unlock();
-+
-+	return mem;
-+}
-+
-+void put_mem_cgroup(struct mem_cgroup *mem)
-+{
-+	css_put(&mem->css);
-+}
-+
-+static void mem_cgroup_charge_stat(struct page *page,
-+			enum mem_cgroup_stat_index idx, int charge)
-+{
-+	struct mem_cgroup *mem;
-+
-+	mem = get_mem_cgroup_from_page(page);
-+	VM_BUG_ON(!mem);
-+	__mem_cgroup_stat_add(&mem->stat, idx, charge);
-+	css_put(&mem->css);
-+}
-+
-+void mem_cgroup_charge_file_dirty(struct page *page, int charge)
-+{
-+	mem_cgroup_charge_stat(page, MEM_CGROUP_STAT_FILE_DIRTY, charge);
-+}
-+
-+void mem_cgroup_charge_writeback(struct page *page, int charge)
-+{
-+	mem_cgroup_charge_stat(page, MEM_CGROUP_STAT_WRITEBACK, charge);
-+}
-+
-+s64 mem_cgroup_nr_file_dirty(struct mem_cgroup *mem)
-+{
-+	s64 ret;
-+
-+	if (mem == NULL) {
-+		mem = get_current_mem_cgroup();
-+		if (unlikely(!mem))
-+			return global_page_state(NR_FILE_DIRTY) +
-+				global_page_state(NR_UNSTABLE_NFS);
-+	} else
-+		css_get(&mem->css);
-+	ret = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_FILE_DIRTY);
-+	css_put(&mem->css);
-+	return ret;
-+}
-+
-+s64 mem_cgroup_nr_writeback(struct mem_cgroup *mem)
-+{
-+	s64 ret;
-+
-+	if (mem == NULL) {
-+		mem = get_current_mem_cgroup();
-+		if (unlikely(!mem))
-+			return global_page_state(NR_WRITEBACK);
-+	} else
-+		css_get(&mem->css);
-+	ret = mem_cgroup_read_stat(&mem->stat, MEM_CGROUP_STAT_WRITEBACK);
-+	css_put(&mem->css);
-+	return ret;
-+}
-+
-+unsigned long mem_cgroup_get_free_pages(struct mem_cgroup *mem)
-+{
-+	long ret;
-+
-+	if (mem == NULL) {
-+		mem = get_current_mem_cgroup();
-+		if (unlikely(!mem))
-+			return 0;
-+	} else
-+		css_get(&mem->css);
-+	ret = ((res_counter_read_u64(&mem->res, RES_LIMIT)
-+		- res_counter_read_u64(&mem->res, RES_USAGE))
-+		>> PAGE_SHIFT) + 1; /* Ensure that we never return 0 */
-+	css_put(&mem->css);
-+	return ret;
-+}
-+
-+unsigned long mem_cgroup_global_lru_pages(struct mem_cgroup *mem)
-+{
-+	long ret;
-+
-+	if (mem == NULL) {
-+		mem = get_current_mem_cgroup();
-+		if (unlikely(!mem))
-+			return 0;
-+	} else
-+		css_get(&mem->css);
-+	ret = mem_cgroup_get_all_zonestat(mem, LRU_ACTIVE_ANON)
-+		+ mem_cgroup_get_all_zonestat(mem, LRU_ACTIVE_FILE)
-+		+ mem_cgroup_get_all_zonestat(mem, LRU_INACTIVE_FILE)
-+		+ mem_cgroup_get_all_zonestat(mem, LRU_INACTIVE_FILE);
-+	css_put(&mem->css);
-+	return ret;
-+}
-+
-+long mem_cgroup_dirty_ratio(struct mem_cgroup *mem)
-+{
-+	long ret;
-+
-+	if (mem == NULL) {
-+		mem = get_current_mem_cgroup();
-+		if (unlikely(!mem))
-+			return vm_dirty_ratio;
-+	} else
-+		css_get(&mem->css);
-+	ret = mem->dirty_ratio;
-+	css_put(&mem->css);
-+	return ret;
-+}
-+
  /*
-  * This routine assumes that the appropriate zone's lru lock is already held
-  */
-@@ -953,12 +1084,32 @@ static int mem_force_empty_write(struct cgroup *cont, unsigned int event)
- 	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont));
+diff --git a/fs/sync.c b/fs/sync.c
+index 2967562..aac77c3 100644
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -42,9 +42,14 @@ asmlinkage long sys_sync(void)
+ 	return 0;
  }
  
-+static s64 mem_cgroup_dirty_ratio_read(struct cgroup *cont, struct cftype *cft)
++static void memcg_do_sync(struct mem_cgroup *unused, unsigned long wait)
 +{
-+	return mem_cgroup_from_cont(cont)->dirty_ratio;
++	do_sync(wait);
 +}
 +
-+static int mem_cgroup_dirty_ratio_write(struct cgroup *cont, struct cftype *cft,
-+			const char *buffer)
-+{
-+	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-+	long val;
-+	int ret;
-+
-+	ret = strict_strtol(buffer, 10, &val);
-+	if (!ret)
-+		mem->dirty_ratio = val;
-+	return ret;
-+}
-+
- static const struct mem_cgroup_stat_desc {
- 	const char *msg;
- 	u64 unit;
- } mem_cgroup_stat_desc[] = {
- 	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
- 	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
-+	[MEM_CGROUP_STAT_FILE_DIRTY] = { "filedirty", 1, },
-+	[MEM_CGROUP_STAT_WRITEBACK] = { "writeback", 1, },
- 	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
- 	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
- };
-@@ -1023,6 +1174,11 @@ static struct cftype mem_cgroup_files[] = {
- 		.read_u64 = mem_cgroup_read,
- 	},
- 	{
-+		.name = "dirty_ratio",
-+		.write_string = mem_cgroup_dirty_ratio_write,
-+		.read_s64 = mem_cgroup_dirty_ratio_read,
-+	},
-+	{
- 		.name = "failcnt",
- 		.private = RES_FAILCNT,
- 		.trigger = mem_cgroup_reset,
-@@ -1114,6 +1270,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- 	}
+ void emergency_sync(void)
+ {
+-	pdflush_operation(do_sync, 0);
++	pdflush_operation(memcg_do_sync, NULL, 0);
+ }
  
- 	res_counter_init(&mem->res);
-+	mem->dirty_ratio = vm_dirty_ratio;
+ /*
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index 12b15c5..dd5bc8a 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -5,6 +5,7 @@
+ #define WRITEBACK_H
  
- 	for_each_node_state(node, N_POSSIBLE)
- 		if (alloc_mem_cgroup_per_zone_info(mem, node))
+ #include <linux/sched.h>
++#include <linux/memcontrol.h>
+ #include <linux/fs.h>
+ 
+ struct backing_dev_info;
+@@ -106,7 +107,7 @@ extern int vm_highmem_is_dirtyable;
+ extern int block_dump;
+ extern int laptop_mode;
+ 
+-extern unsigned long determine_dirtyable_memory(void);
++extern unsigned long determine_dirtyable_memory(struct mem_cgroup *mem);
+ 
+ extern int dirty_ratio_handler(struct ctl_table *table, int write,
+ 		struct file *filp, void __user *buffer, size_t *lenp,
+@@ -117,8 +118,9 @@ struct file;
+ int dirty_writeback_centisecs_handler(struct ctl_table *, int, struct file *,
+ 				      void __user *, size_t *, loff_t *);
+ 
+-void get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+-		 struct backing_dev_info *bdi);
++void get_dirty_limits(struct mem_cgroup *mem, long *pbackground,
++		long *pdirty, long *pbdi_dirty,
++		struct backing_dev_info *bdi);
+ 
+ void page_writeback_init(void);
+ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+@@ -133,7 +135,8 @@ balance_dirty_pages_ratelimited(struct address_space *mapping)
+ typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
+ 				void *data);
+ 
+-int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
++int pdflush_operation(void (*fn)(struct mem_cgroup *, unsigned long),
++			struct mem_cgroup *mem, unsigned long arg0);
+ int generic_writepages(struct address_space *mapping,
+ 		       struct writeback_control *wbc);
+ int write_cache_pages(struct address_space *mapping,
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index bc6a22a..ec64004 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2877,7 +2877,7 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 			goto out;
+ 		}
+ 
+-		freeable_pages = determine_dirtyable_memory();
++		freeable_pages = determine_dirtyable_memory(NULL);
+ 
+ 		/* we only allow to request 1/4 of useable memory */
+ 		if (pages_requested >
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index f2e574d..df6a01c 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -28,7 +28,8 @@ static int bdi_debug_stats_show(struct seq_file *m, void *v)
+ 	long dirty_thresh;
+ 	long bdi_thresh;
+ 
+-	get_dirty_limits(&background_thresh, &dirty_thresh, &bdi_thresh, bdi);
++	get_dirty_limits(NULL, &background_thresh, &dirty_thresh,
++			&bdi_thresh, bdi);
+ 
+ #define K(x) ((x) << (PAGE_SHIFT - 10))
+ 	seq_printf(m,
 diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index c6d6088..17c6141 100644
+index 17c6141..1a9b602 100644
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -25,6 +25,7 @@
- #include <linux/task_io_accounting_ops.h>
- #include <linux/blkdev.h>
- #include <linux/mpage.h>
-+#include <linux/memcontrol.h>
- #include <linux/rmap.h>
- #include <linux/percpu.h>
- #include <linux/notifier.h>
-@@ -1090,6 +1091,7 @@ int __set_page_dirty_nobuffers(struct page *page)
- 			BUG_ON(mapping2 != mapping);
- 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
- 			if (mapping_cap_account_dirty(mapping)) {
-+				mem_cgroup_charge_file_dirty(page, 1);
- 				__inc_zone_page_state(page, NR_FILE_DIRTY);
- 				__inc_bdi_stat(mapping->backing_dev_info,
- 						BDI_RECLAIMABLE);
-@@ -1234,6 +1236,7 @@ int clear_page_dirty_for_io(struct page *page)
- 		 * for more comments.
- 		 */
- 		if (TestClearPageDirty(page)) {
-+			mem_cgroup_charge_file_dirty(page, -1);
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
- 			dec_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
-@@ -1269,8 +1272,11 @@ int test_clear_page_writeback(struct page *page)
- 	} else {
- 		ret = TestClearPageWriteback(page);
- 	}
--	if (ret)
-+	if (ret) {
-+		if (!PageAnon(page))
-+			mem_cgroup_charge_writeback(page, -1);
- 		dec_zone_page_state(page, NR_WRITEBACK);
-+	}
- 	return ret;
+@@ -106,7 +106,8 @@ EXPORT_SYMBOL(laptop_mode);
+ /* End of sysctl-exported parameters */
+ 
+ 
+-static void background_writeout(unsigned long _min_pages);
++static void background_writeout(struct mem_cgroup *mem,
++				unsigned long _min_pages);
+ 
+ /*
+  * Scale the writeback cache size proportional to the relative writeout speeds.
+@@ -136,7 +137,9 @@ static int calc_period_shift(void)
+ {
+ 	unsigned long dirty_total;
+ 
+-	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) / 100;
++	dirty_total = (mem_cgroup_dirty_ratio(NULL)
++			* determine_dirtyable_memory(NULL))
++			/ 100;
+ 	return 2 + ilog2(dirty_total - 1);
  }
  
-@@ -1300,8 +1306,11 @@ int test_set_page_writeback(struct page *page)
- 	} else {
- 		ret = TestSetPageWriteback(page);
- 	}
--	if (!ret)
-+	if (!ret) {
-+		if (!PageAnon(page))
-+			mem_cgroup_charge_writeback(page, 1);
- 		inc_zone_page_state(page, NR_WRITEBACK);
-+	}
- 	return ret;
+@@ -147,9 +150,9 @@ int dirty_ratio_handler(struct ctl_table *table, int write,
+ 		struct file *filp, void __user *buffer, size_t *lenp,
+ 		loff_t *ppos)
+ {
+-	int old_ratio = vm_dirty_ratio;
++	int old_ratio = mem_cgroup_dirty_ratio(NULL);
+ 	int ret = proc_dointvec_minmax(table, write, filp, buffer, lenp, ppos);
+-	if (ret == 0 && write && vm_dirty_ratio != old_ratio) {
++	if (ret == 0 && write && mem_cgroup_dirty_ratio(NULL) != old_ratio) {
+ 		int shift = calc_period_shift();
+ 		prop_change_shift(&vm_completions, shift);
+ 		prop_change_shift(&vm_dirties, shift);
+@@ -350,30 +353,35 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
+  * Returns the numebr of pages that can currently be freed and used
+  * by the kernel for direct mappings.
+  */
+-unsigned long determine_dirtyable_memory(void)
++unsigned long determine_dirtyable_memory(struct mem_cgroup *memcg)
+ {
+-	unsigned long x;
++	unsigned long mem_memory, memcg_memory;
  
+-	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
++	memcg_memory = mem_cgroup_get_free_pages(memcg) +
++			mem_cgroup_global_lru_pages(memcg);
++	mem_memory = global_page_state(NR_FREE_PAGES) + global_lru_pages();
++	if (memcg_memory && (memcg_memory < mem_memory))
++		return memcg_memory;
+ 
+ 	if (!vm_highmem_is_dirtyable)
+-		x -= highmem_dirtyable_memory(x);
++		mem_memory -= highmem_dirtyable_memory(mem_memory);
+ 
+-	return x + 1;	/* Ensure that we never return 0 */
++	return mem_memory + 1;	/* Ensure that we never return 0 */
  }
-diff --git a/mm/truncate.c b/mm/truncate.c
-index e2bdd70..f47bd19 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -10,6 +10,7 @@
- #include <linux/kernel.h>
- #include <linux/backing-dev.h>
- #include <linux/mm.h>
-+#include <linux/memcontrol.h>
- #include <linux/swap.h>
- #include <linux/module.h>
- #include <linux/pagemap.h>
-@@ -73,6 +74,7 @@ void cancel_dirty_page(struct page *page, unsigned int account_size)
- 	if (TestClearPageDirty(page)) {
- 		struct address_space *mapping = page->mapping;
- 		if (mapping && mapping_cap_account_dirty(mapping)) {
-+			mem_cgroup_charge_file_dirty(page, -1);
- 			dec_zone_page_state(page, NR_FILE_DIRTY);
- 			dec_bdi_stat(mapping->backing_dev_info,
- 					BDI_RECLAIMABLE);
+ 
+ void
+-get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
++get_dirty_limits(struct mem_cgroup *mem, long *pbackground,
++		long *pdirty, long *pbdi_dirty,
+ 		 struct backing_dev_info *bdi)
+ {
+ 	int background_ratio;		/* Percentages */
+ 	int dirty_ratio;
+ 	long background;
+ 	long dirty;
+-	unsigned long available_memory = determine_dirtyable_memory();
++	unsigned long available_memory = determine_dirtyable_memory(mem);
+ 	struct task_struct *tsk;
+ 
+-	dirty_ratio = vm_dirty_ratio;
++	dirty_ratio = mem_cgroup_dirty_ratio(mem);
+ 	if (dirty_ratio < 5)
+ 		dirty_ratio = 5;
+ 
+@@ -383,10 +391,12 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 
+ 	background = (background_ratio * available_memory) / 100;
+ 	dirty = (dirty_ratio * available_memory) / 100;
+-	tsk = current;
+-	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+-		background += background / 4;
+-		dirty += dirty / 4;
++	if (mem == NULL) {
++		tsk = current;
++		if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
++			background += background / 4;
++			dirty += dirty / 4;
++		}
+ 	}
+ 	*pbackground = background;
+ 	*pdirty = dirty;
+@@ -409,16 +419,17 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 
+ 		*pbdi_dirty = bdi_dirty;
+ 		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
+-		task_dirty_limit(current, pbdi_dirty);
++		if (mem == NULL)
++			task_dirty_limit(current, pbdi_dirty);
+ 	}
+ }
+ 
+ /*
+  * balance_dirty_pages() must be called by processes which are generating dirty
+  * data.  It looks at the number of dirty pages in the machine and will force
+- * the caller to perform writeback if the system is over `vm_dirty_ratio'.
+- * If we're over `background_thresh' then pdflush is woken to perform some
+- * writeout.
++ * the caller to perform writeback if the system is over
++ * `mem_cgroup_dirty_ratio()'.  If we're over `background_thresh' then pdflush
++ * is woken to perform some writeout.
+  */
+ static void balance_dirty_pages(struct address_space *mapping)
+ {
+@@ -441,12 +452,11 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 			.range_cyclic	= 1,
+ 		};
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh,
++		get_dirty_limits(NULL, &background_thresh, &dirty_thresh,
+ 				&bdi_thresh, bdi);
+ 
+-		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+-					global_page_state(NR_UNSTABLE_NFS);
+-		nr_writeback = global_page_state(NR_WRITEBACK);
++		nr_reclaimable = mem_cgroup_nr_file_dirty(NULL);
++		nr_writeback = mem_cgroup_nr_writeback(NULL);
+ 
+ 		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+ 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+@@ -475,8 +485,9 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 		if (bdi_nr_reclaimable) {
+ 			writeback_inodes(&wbc);
+ 			pages_written += write_chunk - wbc.nr_to_write;
+-			get_dirty_limits(&background_thresh, &dirty_thresh,
+-				       &bdi_thresh, bdi);
++			get_dirty_limits(NULL,
++					&background_thresh, &dirty_thresh,
++					&bdi_thresh, bdi);
+ 		}
+ 
+ 		/*
+@@ -521,10 +532,13 @@ static void balance_dirty_pages(struct address_space *mapping)
+ 	 * background_thresh, to keep the amount of dirty memory low.
+ 	 */
+ 	if ((laptop_mode && pages_written) ||
+-			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
+-					  + global_page_state(NR_UNSTABLE_NFS)
+-					  > background_thresh)))
+-		pdflush_operation(background_writeout, 0);
++		(!laptop_mode &&
++			(mem_cgroup_nr_file_dirty(NULL) > background_thresh))) {
++		struct mem_cgroup *mem = get_current_mem_cgroup();
++
++		if (pdflush_operation(background_writeout, mem, 0))
++			put_mem_cgroup(mem);
++	}
+ }
+ 
+ void set_page_dirty_balance(struct page *page, int page_mkwrite)
+@@ -585,8 +599,8 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+ 	long dirty_thresh;
+ 
+         for ( ; ; ) {
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+-
++		get_dirty_limits(NULL, &background_thresh, &dirty_thresh,
++				NULL, NULL);
+                 /*
+                  * Boost the allowable dirty threshold a bit for page
+                  * allocators so they don't get DoS'ed by heavy writers
+@@ -612,7 +626,8 @@ void throttle_vm_writeout(gfp_t gfp_mask)
+  * writeback at least _min_pages, and keep writing until the amount of dirty
+  * memory is less than the background threshold, or until we're all clean.
+  */
+-static void background_writeout(unsigned long _min_pages)
++static void background_writeout(struct mem_cgroup *mem,
++				unsigned long _min_pages)
+ {
+ 	long min_pages = _min_pages;
+ 	struct writeback_control wbc = {
+@@ -628,9 +643,9 @@ static void background_writeout(unsigned long _min_pages)
+ 		long background_thresh;
+ 		long dirty_thresh;
+ 
+-		get_dirty_limits(&background_thresh, &dirty_thresh, NULL, NULL);
+-		if (global_page_state(NR_FILE_DIRTY) +
+-			global_page_state(NR_UNSTABLE_NFS) < background_thresh
++		get_dirty_limits(mem, &background_thresh, &dirty_thresh,
++				NULL, NULL);
++		if (mem_cgroup_nr_file_dirty(mem) < background_thresh
+ 				&& min_pages <= 0)
+ 			break;
+ 		wbc.more_io = 0;
+@@ -647,6 +662,7 @@ static void background_writeout(unsigned long _min_pages)
+ 				break;
+ 		}
+ 	}
++	put_mem_cgroup(mem);
+ }
+ 
+ /*
+@@ -656,10 +672,15 @@ static void background_writeout(unsigned long _min_pages)
+  */
+ int wakeup_pdflush(long nr_pages)
+ {
++	struct mem_cgroup *mem = get_current_mem_cgroup();
++	int ret;
++
+ 	if (nr_pages == 0)
+-		nr_pages = global_page_state(NR_FILE_DIRTY) +
+-				global_page_state(NR_UNSTABLE_NFS);
+-	return pdflush_operation(background_writeout, nr_pages);
++		nr_pages = mem_cgroup_nr_file_dirty(NULL);
++	ret = pdflush_operation(background_writeout, mem, nr_pages);
++	if (ret)
++		put_mem_cgroup(mem);
++	return ret;
+ }
+ 
+ static void wb_timer_fn(unsigned long unused);
+@@ -683,7 +704,7 @@ static DEFINE_TIMER(laptop_mode_wb_timer, laptop_timer_fn, 0, 0);
+  * older_than_this takes precedence over nr_to_write.  So we'll only write back
+  * all dirty pages if they are all attached to "old" mappings.
+  */
+-static void wb_kupdate(unsigned long arg)
++static void wb_kupdate(struct mem_cgroup *mem, unsigned long arg)
+ {
+ 	unsigned long oldest_jif;
+ 	unsigned long start_jif;
+@@ -704,8 +725,7 @@ static void wb_kupdate(unsigned long arg)
+ 	oldest_jif = jiffies - dirty_expire_interval;
+ 	start_jif = jiffies;
+ 	next_jif = start_jif + dirty_writeback_interval;
+-	nr_to_write = global_page_state(NR_FILE_DIRTY) +
+-			global_page_state(NR_UNSTABLE_NFS) +
++	nr_to_write = mem_cgroup_nr_file_dirty(mem) +
+ 			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+ 	while (nr_to_write > 0) {
+ 		wbc.more_io = 0;
+@@ -724,6 +744,7 @@ static void wb_kupdate(unsigned long arg)
+ 		next_jif = jiffies + HZ;
+ 	if (dirty_writeback_interval)
+ 		mod_timer(&wb_timer, next_jif);
++	put_mem_cgroup(mem);
+ }
+ 
+ /*
+@@ -742,18 +763,22 @@ int dirty_writeback_centisecs_handler(ctl_table *table, int write,
+ 
+ static void wb_timer_fn(unsigned long unused)
+ {
+-	if (pdflush_operation(wb_kupdate, 0) < 0)
++	struct mem_cgroup *mem = get_current_mem_cgroup();
++
++	if (pdflush_operation(wb_kupdate, mem, 0) < 0) {
++		put_mem_cgroup(mem);
+ 		mod_timer(&wb_timer, jiffies + HZ); /* delay 1 second */
++	}
+ }
+ 
+-static void laptop_flush(unsigned long unused)
++static void laptop_flush(struct mem_cgroup *mem, unsigned long unused)
+ {
+ 	sys_sync();
+ }
+ 
+ static void laptop_timer_fn(unsigned long unused)
+ {
+-	pdflush_operation(laptop_flush, 0);
++	pdflush_operation(laptop_flush, NULL, 0);
+ }
+ 
+ /*
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+index 0cbe0c6..27f05b6 100644
+--- a/mm/pdflush.c
++++ b/mm/pdflush.c
+@@ -83,7 +83,9 @@ static unsigned long last_empty_jifs;
+  */
+ struct pdflush_work {
+ 	struct task_struct *who;	/* The thread */
+-	void (*fn)(unsigned long);	/* A callback function */
++	void (*fn)(struct mem_cgroup *,
++			unsigned long);	/* A callback function */
++	struct mem_cgroup *mem;		/* callback memory cgroup argument */
+ 	unsigned long arg0;		/* An argument to the callback */
+ 	struct list_head list;		/* On pdflush_list, when idle */
+ 	unsigned long when_i_went_to_sleep;
+@@ -124,7 +126,7 @@ static int __pdflush(struct pdflush_work *my_work)
+ 		}
+ 		spin_unlock_irq(&pdflush_lock);
+ 
+-		(*my_work->fn)(my_work->arg0);
++		(*my_work->fn)(my_work->mem, my_work->arg0);
+ 
+ 		/*
+ 		 * Thread creation: For how long have there been zero
+@@ -198,7 +200,8 @@ static int pdflush(void *dummy)
+  * Returns zero if it indeed managed to find a worker thread, and passed your
+  * payload to it.
+  */
+-int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
++int pdflush_operation(void (*fn)(struct mem_cgroup *, unsigned long),
++		struct mem_cgroup *mem, unsigned long arg0)
+ {
+ 	unsigned long flags;
+ 	int ret = 0;
+@@ -216,6 +219,7 @@ int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
+ 		if (list_empty(&pdflush_list))
+ 			last_empty_jifs = jiffies;
+ 		pdf->fn = fn;
++		pdf->mem = mem;
+ 		pdf->arg0 = arg0;
+ 		wake_up_process(pdf->who);
+ 	}
 -- 
 1.5.4.3
 
