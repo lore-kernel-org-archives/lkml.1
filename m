@@ -1,144 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbYILADb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYILAGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756165AbYILADb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 20:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYILADV
+	id S1755512AbYILAGn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 20:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbYILAGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 20:03:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48916 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752698AbYILADU (ORCPT
+	Thu, 11 Sep 2008 20:06:35 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:12412 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbYILAGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 20:03:20 -0400
-Date: Thu, 11 Sep 2008 17:02:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: bugme-daemon@bugzilla.kernel.org, j_kernel@hoblitt.com
-Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
- tick_periodic() ???
-Message-Id: <20080911170258.aa0bea0d.akpm@linux-foundation.org>
-In-Reply-To: <bug-11543-10286@http.bugzilla.kernel.org/>
-References: <bug-11543-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Sep 2008 20:06:34 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=kQClJZ_Tad0PbbvEho8A:9 a=1IwCd_yZCUFYAjVzB6YA:7 a=Wdd0-MFyE3gX8FGrk14wshNWGCIA:4 a=ObQG5Uc_XFcA:10 a=6TOxP3HYYZQA:10
+Message-ID: <48C9B284.5000109@shaw.ca>
+Date: Thu, 11 Sep 2008 18:06:28 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Miles Lane <miles.lane@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Hard drive not seen by mount when booting using busybox/initrd
+ under 2.6.27-2-generic (Ubuntu)
+References: <fa.MvWZ/xec9z3nsf+J9z2h7HMQv8U@ifi.uio.no>
+In-Reply-To: <fa.MvWZ/xec9z3nsf+J9z2h7HMQv8U@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Miles Lane wrote:
+> I get the messages below during the setup of the drives on my machine.
+>  Is the kernel failing to set up my drives correctly?  One clue is
+> that it looks as though perhaps BOTH pata_acpi and ata_piix are trying
+> to handle the hard drives interface???  I am also puzzled by the line
+> "sda:<6>ata5.00: ATAPI: Optiarc DVD RW AD-7530A", which seems to
+> indicate that sda is somehow getting confused with my DVD-RW drive.
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+That's just two kernel messages stomping on top of each other.
 
-On Thu, 11 Sep 2008 16:46:29 -0700 (PDT)
-bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=11543
 > 
->            Summary: kernel panic: softlockup in tick_periodic() ???
->            Product: Platform Specific/Hardware
->            Version: 2.5
->      KernelVersion: 2.6.27-rc4-21704-gd25e26b
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: x86-64
->         AssignedTo: platform_x86_64@kernel-bugs.osdl.org
->         ReportedBy: j_kernel@hoblitt.com
+> I get a similar problem when I compile and test a 2.6.27-rc6 kernel.
+> The only difference is that I also see a message saying that my
+> modules cannot be found before the mount error occurs.
 > 
+> I tried mounting partitions from my drive from the command line and
+> all attempts gave the same error:  "device not found".
 
-Is this a regression?  Was 2.6.26 OK, for example?
+There doesn't seem like there's anything wrong here, the /dev/sda device 
+should be available. Unless there's some kind of udev problem or 
+something that's screwing up the device nodes..
 
-> [11532.103605] do_IRQ: 0.175 No irq handler for vector
-> <Sep/11 12:13 pm>[11532.103613] do_IRQ: 2.175 No irq handler for vector
-> <Sep/11 12:13 pm>[11532.103617] do_IRQ: 1.175 No irq handler for vector
-> <Sep/11 12:14 pm>[11560.779989] do_IRQ: 0.179 No irq handler for vector
-> <Sep/11 12:15 pm>[11622.181968] Kernel panic - not syncing: softlockup: hung
-> tas<Sep/11 12:15 pm>
->                  <Sep/11 12:15 pm>[11622.181968] ------------[ cut here
-> ]------------
-> <Sep/11 12:15 pm>[11622.181968] WARNING: at kernel/mutex.c:351
-> mutex_trylock+0x45/0xf6()
-> <Sep/11 12:15 pm>[11622.181968] Modules linked in: w83627hf hwmon_vid autofs4
-> smsc37b787_wdt k8temp forcedeth i2c_nforce2 i2c_core tg3 libphy e1000 xfs
-> dm_snapshot dm_mirror dm_log aacraid 3w_9xxx 3w_xxxx atp870u arcmsr aic7xxx
-> scsi_wait_scan
-> <Sep/11 12:15 pm>[11622.181968] Pid: 17192, comm: ppImage Not tainted
-> 2.6.27-rc4-21704-gd25e26b #1
-> <Sep/11 12:15 pm>[11622.181968] 
-> <Sep/11 12:15 pm>[11622.181968] Call Trace:
-> <Sep/11 12:15 pm>[11622.181968]  <IRQ>  [<ffffffff80235319>]
-> warn_on_slowpath+0x51/0x77
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff802357ce>]
-> release_console_sem+0x3e/0x1a1
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff805c6031>] mutex_trylock+0x45/0xf6
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8025efc3>] crash_kexec+0x17/0xef
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff803bb5b9>] bust_spinlocks+0x15/0x30
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff80235218>] panic+0x8f/0x13f
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff802357ce>]
-> release_console_sem+0x3e/0x1a1
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff802357ce>]
-> release_console_sem+0x3e/0x1a1
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff80272145>]
-> softlockup_tick+0x19e/0x1ab
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8023dda4>]
-> update_process_times+0x26/0x4b
 > 
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8024f7a4>] tick_periodic+0x6e/0x79
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8024f7c7>]
-> tick_handle_periodic+0x18/0x59
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8024f96a>]
-> tick_do_broadcast+0x4d/0x86
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8024fa20>]
-> tick_do_periodic_broadcast+0x23/0x31
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8024fa3c>]
-> tick_handle_periodic_broadcast+0xe/0x42
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8020e9f6>]
-> timer_event_interrupt+0x1a/0x21
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff80272591>]
-> handle_IRQ_event+0x1e/0x4c
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff80273885>]
-> handle_edge_irq+0xe8/0x12b
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8020e96f>] do_IRQ+0xf1/0x15e
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8020c3e1>] ret_from_intr+0x0/0xa
-> <Sep/11 12:15 pm>[11622.181968]  <EOI>  [<ffffffff8021b79b>]
-> native_flush_tlb_others+0x64/0xb3
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8021b7c5>]
-> native_flush_tlb_others+0x8e/0xb3
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8021b7be>]
-> native_flush_tlb_others+0x87/0xb3
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8021b8b2>] flush_tlb_page+0x5e/0x65
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff8022531b>]
-> ptep_set_access_flags+0x1b/0x1f
-> <Sep/11 12:15 pm>[11622.181968]  [<ffffffff80285193>] do_wp_page+0x48b/0x51e
-
-argh, death by wordwrapping.
-
-I can't work out who called panic(), nor why.
-
-The panic code called the kexec code which called mutex_trylock() which
-called spin_lock_mutex() which then stupidly went and blurted a load of
-debug stuff because of in_interrupt().
-
-Something like this:
-
---- a/include/linux/debug_locks.h~a
-+++ a/include/linux/debug_locks.h
-@@ -17,7 +17,7 @@ extern int debug_locks_off(void);
- ({									\
- 	int __ret = 0;							\
- 									\
--	if (unlikely(c)) {						\
-+	if (!oops_in_progress && unlikely(c)) {				\
- 		if (debug_locks_off() && !debug_locks_silent)		\
- 			WARN_ON(1);					\
- 		__ret = 1;						\
-_
-
-might prevent the debugging code from preventing us from finding bugs :(
+> [    4.459717] ata1: SATA max UDMA/133 abar m1024@0xd8444400 port
+> 0xd8444500 irq 2301
+> [    4.459720] ata2: DUMMY
+> [    4.459723] ata3: SATA max UDMA/133 abar m1024@0xd8444400 port
+> 0xd8444600 irq 2301
+> [    4.459726] ata4: DUMMY
+> [    5.056152] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> [    5.057177] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+> [    5.057342] ata1.00: ATA-7: Hitachi HTS541616J9SA00, SB4OC70P, max UDMA/100
+> [    5.057345] ata1.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 31/32)
+> [    5.058519] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+> [    5.058686] ata1.00: configured for UDMA/100
+> [    5.392129] ata3: SATA link down (SStatus 0 SControl 300)
+> [    5.408396] scsi 0:0:0:0: Direct-Access     ATA      Hitachi
+> HTS54161 SB4O PQ: 0 ANSI: 5
+> [    5.464760] pata_acpi 0000:00:1f.1: PCI INT B -> GSI 19 (level,
+> low) -> IRQ 19
+> [    5.464798] pata_acpi 0000:00:1f.1: setting latency timer to 64
+> [    5.464821] pata_acpi 0000:00:1f.1: PCI INT B disabled
+> [    5.468055] ata_piix 0000:00:1f.1: version 2.12
+> [    5.468065] ata_piix 0000:00:1f.1: PCI INT B -> GSI 19 (level, low) -> IRQ 19
+> [    5.468109] ata_piix 0000:00:1f.1: setting latency timer to 64
+> [    5.468195] scsi4 : ata_piix
+> [    5.468273] scsi5 : ata_piix
+> [    5.469015] ata5: PATA max UDMA/100 cmd 0x1f0 ctl 0x3f6 bmdma 0x1810 irq 14
+> [    5.469019] ata6: PATA max UDMA/100 cmd 0x170 ctl 0x376 bmdma 0x1818 irq 15
+> [    5.478018] Driver 'sd' needs updating - please use bus_type methods
+> [    5.478163] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
+> [    5.478192] sd 0:0:0:0: [sda] Write Protect is off
+> [    5.478195] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> [    5.478240] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
+> enabled, doesn't support DPO or FUA
+> [    5.478344] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
+> [    5.478369] sd 0:0:0:0: [sda] Write Protect is off
+> [    5.478372] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> [    5.478418] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
+> enabled, doesn't support DPO or FUA
+> [    5.478423]  sda:<6>ata5.00: ATAPI: Optiarc DVD RW AD-7530A, EX32,
+> max UDMA/33
+> [    5.648451] ata5.00: configured for UDMA/33
+> [    5.648503] ata6: port disabled. ignoring.
+> [    5.648548] isa bounce pool size: 16 pages
+> [    5.649976] scsi 4:0:0:0: CD-ROM            Optiarc  DVD RW
+> AD-7530A  EX32 PQ: 0 ANSI: 5
+> [    5.661100] Driver 'sr' needs updating - please use bus_type methods
+> [    5.879315]  sda1 sda2
+> [    5.879493] sd 0:0:0:0: [sda] Attached SCSI disk
+> [    5.886208] sd 0:0:0:0: Attached scsi generic sg0 type 0
+> [    5.886253] sr 4:0:0:0: Attached scsi generic sg1 type 5
+> [    5.894719] sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw
+> xa/form2 cdda tray
+> [    5.894725] Uniform CD-ROM driver Revision: 3.20
+> [    5.894830] sr 4:0:0:0: Attached scsi CD-ROM sr0
 
