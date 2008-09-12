@@ -1,58 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757305AbYILSAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757370AbYILSCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305AbYILSAG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 14:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbYILR7y
+	id S1757370AbYILSCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 14:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbYILSCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 13:59:54 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:60173 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753561AbYILR7w (ORCPT
+	Fri, 12 Sep 2008 14:02:37 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:39806 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbYILSCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 13:59:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=FyEGl8UDZiI33mJ7kqi80hazix/DKTmy+5IGZCsp6x8ztlbmfnP1qj/K6VguT1kwRA
-         8f6M7qUNMpL0TlxnNQSyDKC+g525B4dxDJ9GjWWP2Yoy0uSOAKAyGFZ1BFmCQ+xBjEOo
-         eDNA443BADNV79KZjFipwrmVNpLsjlYaWZ4LM=
-Message-ID: <b6c5339f0809121059s2949a887q81de84ac6ca3a2d7@mail.gmail.com>
-Date: Fri, 12 Sep 2008 13:59:52 -0400
-From: "Bob Copeland" <me@bobcopeland.com>
-To: "Alan Stern" <stern@rowland.harvard.edu>
+	Fri, 12 Sep 2008 14:02:36 -0400
+From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+Organization: Mandriva
+To: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
-Cc: "Herton Ronaldo Krzesinski" <herton@mandriva.com.br>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+Date: Fri, 12 Sep 2008 15:02:49 -0300
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
        bogdano@mandriva.com.br,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Abdel Benamrouche <draconux@gmail.com>,
+       Damien Lallement <dlallement@mandriva.com>
+References: <Pine.LNX.4.44L0.0809121316460.13261-100000@iolanthe.rowland.org>
 In-Reply-To: <Pine.LNX.4.44L0.0809121316460.13261-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200809121401.40158.herton@mandriva.com.br>
-	 <Pine.LNX.4.44L0.0809121316460.13261-100000@iolanthe.rowland.org>
-X-Google-Sender-Auth: 81df75a025cbfd5b
+Message-Id: <200809121502.49644.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 1:36 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
->> I don't know if this change of behaviour in 2.6.27 is desired (not creating
->> partition nodes if its size exceeds media size).
+On Friday 12 September 2008 14:36:47 Alan Stern wrote:
+> On Fri, 12 Sep 2008, Herton Ronaldo Krzesinski wrote:
+> > Hi,
+> >
+> > Recently I found a problem with a buggy camera that doesn't mount anymore
+> > with 2.6.27 (its memory is available via usb-storage), since commit
+> > 04ebd4aee52b06a2c38127d9208546e5b96f3a19
+> >
+> > The camera is an Olympus X-840. The original issue comes from the camera
+> > itself: its format program creates a partition with an off by one error,
+> > while the device reports that its memory has 42079 sectors, the partition
+> > table reports also that the only partition on the disk has the size of
+> > 42079, but it fails to account for the first sector in the memory that
+> > contains the partition table, so in the end the partition exceeds the
+> > limit of the device size (42080, first sector plus 42079 from the first
+> > partition).
+> >
+> > In previous kernels (2.6.26 and before), I still could mount and access
+> > the device (/dev/sdb1), although with the following errors:
+> >
+> > sd 6:0:0:0: [sdb] Assuming drive cache: write through
+> >  sdb: sdb1
+> >  sdb: p1 exceeds device capacity
+> > sd 6:0:0:0: [sdb] Attached SCSI removable disk
+> > sd 6:0:0:0: Attached scsi generic sg2 type 0
+> > usb-storage: device scan complete
+> > attempt to access beyond end of device
+> > sdb: rw=0, want=42080, limit=42079
+> > __ratelimit: 16 messages suppressed
+> > Buffer I/O error on device sdb1, logical block 42078
+> > attempt to access beyond end of device
+> > sdb: rw=0, want=42080, limit=42079
+> >
+> > If you note the log snippet above the first notable thing is "p1 exceeds
+> > device capacity", so looking at commit
+> > 04ebd4aee52b06a2c38127d9208546e5b96f3a19 it is clear why sdb1 isn't
+> > created anymore.
+> >
+> > After formatting the camera is this you get from fdisk (display units in
+> > sectors):
+> >
+> > Disk /dev/sdb: 21 MB, 21544448 bytes
+> > 6 heads, 16 sectors/track, 438 cylinders, total 42079 sectors
+> > Units = sectors of 1 * 512 = 512 bytes
+> > Disk identifier: 0x00000000
+> >
+> >    Device Boot      Start         End      Blocks   Id  System
+> > /dev/sdb1   *           1       42079       21039+   1  FAT12
+> > Partition 1 has different physical/logical endings:
+> >      phys=(328, 5, 16) logical=(438, 1, 16)
+> >
+> > Note the bogus reported CHS values, both physical and logical, but they
+> > don't affect anything here.
+> >
+> > I don't know if this change of behaviour in 2.6.27 is desired (not
+> > creating partition nodes if its size exceeds media size).
 >
 > I have to believe that it _is_ desired.  Why else would that commit
 > have been merged?
+>
+> And why didn't you CC: the author of that commit?
 
-Several people objected to similar patches when they were posted on
-LKML in the past, usually for the reason "this breaks my forensics use
-case."  I guess no one objected this time around.
+I forgot, CC'ing him now.
 
-http://marc.info/?l=linux-kernel&m=116069718613683&w=2
+>
+> > Anyway the device is buggy
+> > itself. Until now the only way I found to mount device inside 2.6.27 is
+> > using hexedit to edit directly the partition table on the device,
+> > decreasing by 1 the length of the first partition (42079 -> 42078).
+> > Clearing the partition table and using fdisk to partition again is not an
+> > option, the camera firmware seems to be lost after this, it starts to
+> > report weird media size (not by 1 sector error only):
+>
+> Why clear the partition table?  Just replace the bogus entry with a
+> correct entry.  (Although using hexedit may be easier...)
 
-(I don't have an opinion, I'm just providing collective memory.)
+Clearing partition table seemed easier than fixing values with fdisk, to make 
+fdisk recreate partition table automatically and set right CHS values.
+
+>
+> > attempt to access beyond end of device
+> > sdb: rw=0, want=42042, limit=42000
+> > attempt to access beyond end of device
+> > sdb: rw=0, want=42042, limit=42000
+> >
+> > Disk /dev/sdb: 21 MB, 21504000 bytes
+> > 1 heads, 42 sectors/track, 1000 cylinders, total 42000 sectors
+> > Units = sectors of 1 * 512 = 512 bytes
+> > Disk identifier: 0x57ea65f0
+> >
+> >    Device Boot      Start         End      Blocks   Id  System
+> > /dev/sdb1              42       42041       21000    1  FAT12
+>
+> This doesn't resemble the original partition table at all.  Did you
+> create this strange table or did the camera's firmware change the data
+> you entered?
+
+No, was what fdisk did automatically.
+
+>
+> > (after zeroing out the partition table I only run fdisk on the device,
+> > created the a new partition with maximum size allowed and change the type
+> > to FAT12)
+>
+> That is not a valid procedure.  You have to go into Expert mode and set
+> the number of sectors, heads, and tracks first.  Most likely you'll
+> want to set them to the same values used by the firmware; it looks like
+> the firmware thinks there are 16 sectors/track, 8 heads, and 329
+> tracks.
+
+8 heads? it reports 6 from the fdisk output:
+phys=(328, 5, 16) logical=(438, 1, 16)
+
+>
+> > On both cases respectively this is relevant info that I get with
+> > usb-storage debugging turned on:
+> >
+> > * With memory formatted by camera firmware:
+> > usb-storage: queuecommand called
+> > usb-storage: *** thread awakened.
+> > usb-storage: Command READ_CAPACITY (10 bytes)
+> > usb-storage:  25 00 00 00 00 00 00 00 00 00
+> > usb-storage: Bulk Command S 0x43425355 T 0x3 L 8 F 128 Trg 0 LUN 0 CL 10
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
+> > usb-storage: Status code 0; transferred 31/31
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk command transfer result=0
+> > usb-storage: usb_stor_bulk_transfer_sglist: xfer 8 bytes, 1 entries
+> > usb-storage: Status code 0; transferred 8/8
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk data transfer result 0x0
+> > usb-storage: Attempting to get CSW...
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
+> > usb-storage: Status code 0; transferred 13/13
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk status result = 0
+> > usb-storage: Bulk Status S 0x53425355 T 0x3 R 0 Stat 0x0
+> > usb-storage: scsi cmd done, result=0x0
+> > usb-storage: *** thread sleeping.
+> > sd 4:0:0:0: [sdb] 42079 512-byte hardware sectors (22 MB)
+> >
+> > * With partition table recreated with fdisk and formated by hand:
+> > usb-storage: queuecommand called
+> > usb-storage: *** thread awakened.
+> > usb-storage: Command READ_CAPACITY (10 bytes)
+> > usb-storage:  25 00 00 00 00 00 00 00 00 00
+> > usb-storage: Bulk Command S 0x43425355 T 0x3 L 8 F 128 Trg 0 LUN 0 CL 10
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
+> > usb-storage: Status code 0; transferred 31/31
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk command transfer result=0
+> > usb-storage: usb_stor_bulk_transfer_sglist: xfer 8 bytes, 1 entries
+> > usb-storage: Status code 0; transferred 8/8
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk data transfer result 0x0
+> > usb-storage: Attempting to get CSW...
+> > usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
+> > usb-storage: Status code 0; transferred 13/13
+> > usb-storage: -- transfer complete
+> > usb-storage: Bulk status result = 0
+> > usb-storage: Bulk Status S 0x53425355 T 0x3 R 0 Stat 0x0
+> > usb-storage: scsi cmd done, result=0x0
+> > usb-storage: *** thread sleeping.
+> > sd 6:0:0:0: [sdb] 42000 512-byte hardware sectors (22 MB)
+>
+> If you don't mind losing 79 sectors, you could just live with this.
+>
+> > After looking at all this I'm in doubt on what fix could be made in this
+> > case. May be reverting the fatal error when partition exceeds media size?
+> > Or adding a new usb-storage quirk to report media size with one more
+> > sector (dangerous, but physically I don't know what's the real media size
+> > as firmware reports a way different value of media size after using
+> > fdisk), or quirk to force something in partition creation to
+> > automatically trim partition size by -1.
+> >
+> > Any ideas?
+>
+> Adding quirks to alter partition sizes sounds very dangerous.  Your
+> best bet is simply to write a valid partition table.
+
+Yes, but this is breaking other devices, not only this olympus camera. Bogdano 
+reported what could be the same case with his cel. phone (Bogdano can you 
+give more details?), also on IRC today Damien Lallement complained about what 
+looks the same issue of "p* exceeds device capacity" (Damien can you give 
+more info too?). But I'm afraid of how much devices this partition error 
+fatal check now can affect, after all it's not "user friendly" to instruct 
+the user to use hexedit or fdisk to fix the device's partitions.
+
+>
+> Alan Stern
 
 -- 
-Bob Copeland %% www.bobcopeland.com
+[]'s
+Herton
