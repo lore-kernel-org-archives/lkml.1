@@ -1,111 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbYIMADl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbYIMAGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbYIMADl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 20:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757502AbYIMADc
+	id S1758801AbYIMAGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 20:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbYIMAGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 20:03:32 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:6275 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757332AbYIMADc (ORCPT
+	Fri, 12 Sep 2008 20:06:05 -0400
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:23312 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756618AbYIMAGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 20:03:32 -0400
-Message-ID: <48CB0353.1020306@ct.jp.nec.com>
-Date: Fri, 12 Sep 2008 17:03:31 -0700
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Fri, 12 Sep 2008 20:06:05 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Sep 2008 20:06:04 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=iQxiLMX0aZAcx6npSOEgIucMO7oD7Bkzq6hAxXwCK9cH4xrjNXkH6gjVhB9Ki6JpSobZX/yixIUv2t5iTTp0lzpv8L72Hzmd+DgEFIoaPwmxyQeWG44nkYlqFNxN6/N9GZbHYIGWZxLE08+2JBc+oLXa/RK/1MnCs4ttkhN+RbI=  ;
+X-YMail-OSG: I96Qh6gVM1mmoKsVpZ6LOdze7qON_x3RgcfBodH3ugeU2fPEC9GIglyc2o5kR05NVzNjkMPy4qGZWfXairpiE1bHDAr8BVWpJGZb.tUKROeUHC9USl3p6sHL5kPlcKLjFB8-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
+Date: Fri, 12 Sep 2008 16:59:20 -0700
+User-Agent: KMail/1.9.9
+Cc: herton@mandriva.com.br, me@bobcopeland.com, stern@rowland.harvard.edu,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       bogdano@mandriva.com.br, lcapitulino@mandriva.com.br,
+       draconux@gmail.com, dlallement@mandriva.com, pterjan@mandriva.com,
+       axboe@kernel.dk
+References: <Pine.LNX.4.44L0.0809121423030.14509-100000@iolanthe.rowland.org> <200809121646.09641.david-b@pacbell.net> <20080912165222.9ed7fc25.akpm@linux-foundation.org>
+In-Reply-To: <20080912165222.9ed7fc25.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: signal: make do_rt_sigreturn()
-References: <48CB02C5.4060805@ct.jp.nec.com>
-In-Reply-To: <48CB02C5.4060805@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809121659.21743.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> > > ________________________________________________________________disk->disk_name, p);
+> > > -______________________________________________continue;
+> > > ________________________________}
+> 
+> wtf-your-email-client-is-insane.
 
-make do_rt_sigreturn() to collect common part of sys_rt_sigreturn().
+I have no idea where that came from.  Wasn't in the original or
+in my copy.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/signal_32.c |   12 +++++++++---
- arch/x86/kernel/signal_64.c |   11 ++++++++---
- 2 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index d433861..da3cf32 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -215,9 +215,8 @@ badframe:
- 	return 0;
- }
- 
--asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-+static long do_rt_sigreturn(struct pt_regs *regs)
- {
--	struct pt_regs *regs = (struct pt_regs *)&__unused;
- 	struct rt_sigframe __user *frame;
- 	unsigned long ax;
- 	sigset_t set;
-@@ -243,10 +242,17 @@ asmlinkage int sys_rt_sigreturn(unsigned long __unused)
- 	return ax;
- 
- badframe:
--	signal_fault(regs, frame, "rt sigreturn");
-+	signal_fault(regs, frame, "rt_sigreturn");
- 	return 0;
- }
- 
-+asmlinkage int sys_rt_sigreturn(unsigned long __unused)
-+{
-+	struct pt_regs *regs = (struct pt_regs *)&__unused;
-+
-+	return do_rt_sigreturn(regs);
-+}
-+
- /*
-  * Set up a signal frame.
-  */
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index a21c851..bf77d47 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -104,11 +104,11 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
- 	return err;
- }
- 
--asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
-+static long do_rt_sigreturn(struct pt_regs *regs)
- {
- 	struct rt_sigframe __user *frame;
--	sigset_t set;
- 	unsigned long ax;
-+	sigset_t set;
- 
- 	frame = (struct rt_sigframe __user *)(regs->sp - sizeof(long));
- 	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-@@ -131,10 +131,15 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- 	return ax;
- 
- badframe:
--	signal_fault(regs, frame, "sigreturn");
-+	signal_fault(regs, frame, "rt_sigreturn");
- 	return 0;
- }
- 
-+asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
-+{
-+	return do_rt_sigreturn(regs);
-+}
-+
- /*
-  * Set up a signal frame.
-  */
--- 
-1.5.6
+> > So that now deserves to be KERN_WARN not KERN_ERR, yes?
+> 
+> spose so.
+> 
+> I'm fairly unenthused about the recent KERN_correctness fad since it
+> went and broke sysrq-T output (you have to set the loglevel beforehand
+> to avoid getting only partial output).
+
+On development systems I generally "echo 8 > /proc/sysrq*"
+to make sure KERN_DEBUG isn't hidden.
+
+In this case it's just that I saw flamage a few minutes
+earlier from someone trying to keep a distro boot from
+spewing scarey messages for things that were NOT errors.
+Like ... this message.  :)
 
