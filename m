@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbYILKBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbYILKA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755633AbYILKBV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 06:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYILKAZ
+	id S1756195AbYILKA5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 06:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYILKAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 06:00:25 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:52228 "EHLO
+	Fri, 12 Sep 2008 06:00:23 -0400
+Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:52224 "EHLO
 	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753002AbYILKAY (ORCPT
+	by vger.kernel.org with ESMTP id S1752926AbYILKAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 06:00:24 -0400
+	Fri, 12 Sep 2008 06:00:22 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<ukleinek@informatik.uni-freiburg.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
 Cc: Paul Bolle <pebolle@tiscali.nl>
-Subject: [PATCH] MAINTAINERS: put corresponding realnames and mail addresses together
-Date: Fri, 12 Sep 2008 12:00:16 +0200
-Message-Id: <1221213616-23299-4-git-send-email-ukleinek@informatik.uni-freiburg.de>
+Subject: [PATCH] MAINTAINERS: remove real names from M fields
+Date: Fri, 12 Sep 2008 12:00:15 +0200
+Message-Id: <1221213616-23299-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1221213616-23299-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
+In-Reply-To: <1221213616-23299-2-git-send-email-ukleinek@informatik.uni-freiburg.de>
 References: <20080912095851.GA3174@informatik.uni-freiburg.de>
  <1221213616-23299-1-git-send-email-ukleinek@informatik.uni-freiburg.de>
  <1221213616-23299-2-git-send-email-ukleinek@informatik.uni-freiburg.de>
- <1221213616-23299-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -32,38 +31,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... otherwise my script to merge P and M fields has not chance to do its
-job.
+One of the next commit merges P and M fields.  So the real name is only
+needed once.
 
 Signed-off-by: Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
 ---
- MAINTAINERS |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ MAINTAINERS |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index a4932fd..29f77fa 100644
+index cd46667..a4932fd 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -1508,8 +1508,8 @@ S:	Supported
+@@ -335,7 +335,7 @@ S:	Maintained
  
- EDAC-E752X
- P:	Mark Gross
--P:	Doug Thompson
- M:	mark.gross@intel.com
-+P:	Doug Thompson
- M:	dougthompson@xmission.com
- L:	bluesmoke-devel@lists.sourceforge.net
- W:	bluesmoke.sourceforge.net
-@@ -1545,8 +1545,8 @@ S:	Maintained
+ AHA152X SCSI DRIVER
+ P:	Juergen E. Fischer
+-M:	Juergen Fischer <fischer@norbit.de>
++M:	fischer@norbit.de
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
  
- EDAC-I82975X
- P:	Ranganathan Desikan
--P:	Arvind R.
- M:	rdesikan@jetzbroadband.com
-+P:	Arvind R.
- M:	arvind@acarlab.com
- L:	bluesmoke-devel@lists.sourceforge.net
- W:	bluesmoke.sourceforge.net
+@@ -1114,7 +1114,7 @@ S:	Supported
+ 
+ CIRRUS LOGIC CS4280/CS461x SOUNDDRIVER
+ P:	Nils Faerber (port to kernel 2.4)
+-M:	Nils Faerber <nils@kernelconcepts.de>
++M:	nils@kernelconcepts.de
+ S:	Maintained
+ 
+ CODA FILE SYSTEM
+@@ -2062,14 +2062,14 @@ S:	Maintained
+ 
+ IDE/ATAPI FLOPPY DRIVERS
+ P:	Paul Bristow
+-M:	Paul Bristow <paul@paulbristow.net>
++M:	paul@paulbristow.net
+ W:	http://paulbristow.net/linux/idefloppy.html
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
+ IDE/ATAPI TAPE DRIVERS
+ P:	Gadi Oxman
+-M:	Gadi Oxman <gadio@netvision.net.il>
++M:	gadio@netvision.net.il
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
 -- 
 1.5.6.5
 
