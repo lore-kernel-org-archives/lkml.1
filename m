@@ -1,25 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYILXeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYILXhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbYILXeg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 19:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYILXe1
+	id S1758281AbYILXhs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 19:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbYILXhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 19:34:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45527 "EHLO
+	Fri, 12 Sep 2008 19:37:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54701 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753386AbYILXe0 (ORCPT
+	by vger.kernel.org with ESMTP id S1756064AbYILXhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 19:34:26 -0400
-Date: Fri, 12 Sep 2008 16:34:16 -0700
+	Fri, 12 Sep 2008 19:37:37 -0400
+Date: Fri, 12 Sep 2008 16:36:50 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Cc: linux-kernel@vger.kernel.org, inux-usb@vger.kernel.org,
-       bogdano@mandriva.com.br, lcapitulino@mandriva.com.br
+Cc: me@bobcopeland.com, stern@rowland.harvard.edu,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       bogdano@mandriva.com.br, lcapitulino@mandriva.com.br,
+       draconux@gmail.com, dlallement@mandriva.com, pterjan@mandriva.com,
+       axboe@kernel.dk
 Subject: Re: Partition check considered as error is breaking mounting in
  2.6.27
-Message-Id: <20080912163416.112152e5.akpm@linux-foundation.org>
-In-Reply-To: <200809121356.50628.herton@mandriva.com.br>
-References: <200809121356.50628.herton@mandriva.com.br>
+Message-Id: <20080912163650.0f85a759.akpm@linux-foundation.org>
+In-Reply-To: <200809121807.28345.herton@mandriva.com.br>
+References: <Pine.LNX.4.44L0.0809121423030.14509-100000@iolanthe.rowland.org>
+	<200809121714.05443.herton@mandriva.com.br>
+	<b6c5339f0809121327k5fd6c980le0ec5d46be089af2@mail.gmail.com>
+	<200809121807.28345.herton@mandriva.com.br>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,27 +34,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008 13:56:49 -0300
+On Fri, 12 Sep 2008 18:07:27 -0300
 Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
 
-> Recently I found a problem with a buggy camera that doesn't mount anymore with 
-> 2.6.27 (its memory is available via usb-storage), since commit 
-> 04ebd4aee52b06a2c38127d9208546e5b96f3a19
-> 
-> The camera is an Olympus X-840. The original issue comes from the camera 
-> itself: its format program creates a partition with an off by one error, 
-> while the device reports that its memory has 42079 sectors, the partition 
-> table reports also that the only partition on the disk has the size of 42079, 
-> but it fails to account for the first sector in the memory that contains the 
-> partition table, so in the end the partition exceeds the limit of the device 
-> size (42080, first sector plus 42079 from the first partition).
-> 
-> In previous kernels (2.6.26 and before), I still could mount and access the 
-> device (/dev/sdb1), although with the following errors:
+> Yes, here goes a new version:
 
-Yeah.
-
-Can you test this please?
+Well gee.  Given a choice, I went and replied to the wrong thread. 
+Here's what I think:
 
 From: Andrew Morton <akpm@linux-foundation.org>
 
