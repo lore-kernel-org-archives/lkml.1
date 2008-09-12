@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757804AbYILOqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbYILOrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757804AbYILOqr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbYILOqf
+	id S1756982AbYILOrd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYILOrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:46:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45049 "EHLO mx1.redhat.com"
+	Fri, 12 Sep 2008 10:47:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45138 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752935AbYILOqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:46:33 -0400
-Date: Fri, 12 Sep 2008 10:46:34 -0400 (EDT)
-Message-Id: <20080912.104634.08318008.k-ueda@ct.jp.nec.com>
+	id S1752962AbYILOrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:47:21 -0400
+Date: Fri, 12 Sep 2008 10:47:27 -0400 (EDT)
+Message-Id: <20080912.104727.38325381.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, agk@redhat.com,
        James.Bottomley@HansenPartnership.com
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 11/13] dm: enable request-based dm
+Subject: [PATCH 13/13] dm-mpath: convert to request-based
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 In-Reply-To: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
 References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
@@ -26,412 +26,398 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables request-based dm.
+This patch converts dm-multipath target to request-based from bio-based.
 
-o Request-based dm and bio-based dm coexist, since there are
-  some target drivers which are more fitting to bio-based dm.
-  Also, there are other bio-based devices in the kernel
-  (e.g. md, loop).
-  Since bio-based device can't receive struct request,
-  there are some limitations on device stacking between
-  bio-based and request-based.
+Basically, the patch just converts the I/O unit from struct bio
+to struct request.
+In the course of the conversion, it also changes the I/O queueing
+mechanism.  The change in the I/O queueing is described in details
+as follows.
 
-                     type of underlying device
-                   bio-based      requeset-based
-   ----------------------------------------------
-    bio-based         OK                OK
-    request-based     NG                OK
+I/O queueing mechanism change
+-----------------------------
+In I/O submission, map_io(), there is no mechanism change from
+bio-based, since the clone request is ready for retry as it is.
+However, in I/O complition, do_end_io(), there is a mechanism change
+from bio-based, since the clone request is not ready for retry.
 
-  The device type is recognized by the queue flag in the kernel,
-  so dm follows that.
+In do_end_io() of bio-based, the clone bio has all needed memory
+for resubmission.  So the target driver can queue it and resubmit
+it later without memory allocations.
+The mechanism has almost no overhead.
 
-o The type of a dm device is decided at the first table loading time.
-  Until then, mempool creations are deferred, since mempools for
-  request-based dm are different from those for bio-based dm.
-  Once the type of a dm device is decided, the type can't be changed.
+On the other hand, in do_end_io() of request-based, the clone request
+doesn't have clone bios, so the target driver can't resubmit it
+as it is.  To resubmit the clone request, memory allocation for
+clone bios is needed, and it takes some overheads.
+To avoid the overheads just for queueing, the target driver doesn't
+queue the clone request inside itself.
+Instead, the target driver asks dm core for queueing and remapping
+the original request of the clone request, since the overhead for
+queueing is just a freeing memory for the clone request.
 
-o Currently, request-based dm supports only tables that have a single
-  target.  To support multiple targets, we need to support request
-  splitting or prevent bio/request from spanning multiple targets.
-  The former needs lots of changes in the block layer, and the latter
-  needs that all target drivers support merge() function.
-  Both will take a time.
+As a result, the target driver doesn't need to record/restore
+the information of the original request for resubmitting
+the clone request.  So dm_bio_details in dm_mpath_io is removed.
+
+
+multipath_busy()
+---------------------
+The target driver returns "busy", only when the following case:
+  o The target driver will map I/Os, if map() function is called
+  and
+  o The mapped I/Os will wait on underlying device's queue due to
+    their congestions, if map() function is called now.
+
+In other cases, the target driver doesn't return "busy".
+Otherwise, dm core will keep the I/Os and the target driver can't
+do what it wants.
+(e.g. the target driver can't map I/Os now, so wants to kill I/Os.)
 
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 Cc: Alasdair G Kergon <agk@redhat.com>
 ---
- drivers/md/dm-ioctl.c         |   13 ++++
- drivers/md/dm-table.c         |   68 +++++++++++++++++++++++
- drivers/md/dm.c               |  122 ++++++++++++++++++++++++++++++++++--------
- drivers/md/dm.h               |   15 +++++
- include/linux/device-mapper.h |    1 
- 5 files changed, 196 insertions(+), 23 deletions(-)
+ drivers/md/dm-mpath.c |  195 +++++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 130 insertions(+), 65 deletions(-)
 
-Index: 2.6.27-rc6/drivers/md/dm-table.c
+Index: 2.6.27-rc6/drivers/md/dm-mpath.c
 ===================================================================
---- 2.6.27-rc6.orig/drivers/md/dm-table.c
-+++ 2.6.27-rc6/drivers/md/dm-table.c
-@@ -108,6 +108,8 @@ static void combine_restrictions_low(str
- 	lhs->bounce_pfn = min_not_zero(lhs->bounce_pfn, rhs->bounce_pfn);
+--- 2.6.27-rc6.orig/drivers/md/dm-mpath.c
++++ 2.6.27-rc6/drivers/md/dm-mpath.c
+@@ -7,8 +7,6 @@
  
- 	lhs->no_cluster |= rhs->no_cluster;
-+
-+	lhs->no_request_stacking |= rhs->no_request_stacking;
- }
+ #include "dm.h"
+ #include "dm-path-selector.h"
+-#include "dm-bio-list.h"
+-#include "dm-bio-record.h"
+ #include "dm-uevent.h"
  
- /*
-@@ -522,6 +524,8 @@ void dm_set_device_limits(struct dm_targ
- 	rs->bounce_pfn = min_not_zero(rs->bounce_pfn, q->bounce_pfn);
+ #include <linux/ctype.h>
+@@ -82,7 +80,7 @@ struct multipath {
+ 	unsigned pg_init_count;		/* Number of times pg_init called */
  
- 	rs->no_cluster |= !test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
-+
-+	rs->no_request_stacking |= !blk_queue_stackable(q);
- }
- EXPORT_SYMBOL_GPL(dm_set_device_limits);
+ 	struct work_struct process_queued_ios;
+-	struct bio_list queued_ios;
++	struct list_head queued_ios;
+ 	unsigned queue_size;
  
-@@ -731,6 +735,66 @@ int dm_table_add_target(struct dm_table 
- 	return r;
- }
- 
-+int dm_table_set_type(struct dm_table *t)
-+{
-+	int i;
-+	int bio_based = 0, request_based = 0;
-+	struct dm_target *tgt;
-+
-+	for (i = 0; i < t->num_targets; i++) {
-+		tgt = t->targets + i;
-+		if (tgt->type->map_rq)
-+			request_based = 1;
-+		else
-+			bio_based = 1;
-+
-+		if (bio_based && request_based) {
-+			DMWARN("Inconsistent table: different target types"
-+			       " can't be mixed up");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (bio_based) {
-+		/* We must use this table as bio-based */
-+		t->limits.no_request_stacking = 1;
-+		return 0;
-+	}
-+
-+	BUG_ON(!request_based); /* No targets in this table */
-+
-+	/* Non-request-stackable devices can't be used for request-based dm */
-+	if (t->limits.no_request_stacking) {
-+		DMWARN("table load rejected: including non-request-stackable"
-+		       " devices");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Request-based dm supports only tables that have a single target now.
-+	 * To support multiple targets, request splitting support is needed,
-+	 * and that needs lots of changes in the block-layer.
-+	 * (e.g. request completion process for partial completion.)
-+	 */
-+	if (t->num_targets > 1) {
-+		DMWARN("Request-based dm doesn't support multiple targets yet");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+int dm_table_get_type(struct dm_table *t)
-+{
-+	return t->limits.no_request_stacking ?
-+		DM_TYPE_BIO_BASED : DM_TYPE_REQUEST_BASED;
-+}
-+
-+int dm_table_request_based(struct dm_table *t)
-+{
-+	return dm_table_get_type(t) == DM_TYPE_REQUEST_BASED;
-+}
-+
- static int setup_indexes(struct dm_table *t)
- {
- 	int i;
-@@ -861,6 +925,10 @@ void dm_table_set_restrictions(struct dm
- 	else
- 		queue_flag_set_unlocked(QUEUE_FLAG_CLUSTER, q);
- 
-+	if (t->limits.no_request_stacking)
-+		queue_flag_clear_unlocked(QUEUE_FLAG_STACKABLE, q);
-+	else
-+		queue_flag_set_unlocked(QUEUE_FLAG_STACKABLE, q);
- }
- 
- unsigned int dm_table_get_num_targets(struct dm_table *t)
-Index: 2.6.27-rc6/drivers/md/dm.c
-===================================================================
---- 2.6.27-rc6.orig/drivers/md/dm.c
-+++ 2.6.27-rc6/drivers/md/dm.c
-@@ -160,6 +160,8 @@ struct mapped_device {
- 
- 	struct bio_set *bs;
- 
-+	unsigned int mempool_type; /* Type of mempools above. */
-+
- 	/*
- 	 * Event handling.
- 	 */
-@@ -1697,10 +1699,22 @@ static struct mapped_device *alloc_dev(i
- 	INIT_LIST_HEAD(&md->uevent_list);
- 	spin_lock_init(&md->uevent_lock);
- 
--	md->queue = blk_alloc_queue(GFP_KERNEL);
-+	md->queue = blk_init_queue(dm_request_fn, NULL);
- 	if (!md->queue)
- 		goto bad_queue;
- 
-+	/*
-+	 * Request-based dm devices cannot be stacked on top of bio-based dm
-+	 * devices.  The type of this dm device has not been decided yet,
-+	 * although we initialized the queue using blk_init_queue().
-+	 * The type is decided at the first table loading time.
-+	 * To prevent problematic device stacking, clear the queue flag
-+	 * for request stacking support until then.
-+	 *
-+	 * This queue is new, so no concurrency on the queue_flags.
-+	 */
-+	queue_flag_clear_unlocked(QUEUE_FLAG_STACKABLE, md->queue);
-+	md->saved_make_request_fn = md->queue->make_request_fn;
- 	md->queue->queuedata = md;
- 	md->queue->backing_dev_info.congested_fn = dm_congested;
- 	md->queue->backing_dev_info.congested_data = md;
-@@ -1708,18 +1722,8 @@ static struct mapped_device *alloc_dev(i
- 	blk_queue_bounce_limit(md->queue, BLK_BOUNCE_ANY);
- 	md->queue->unplug_fn = dm_unplug_all;
- 	blk_queue_merge_bvec(md->queue, dm_merge_bvec);
--
--	md->io_pool = mempool_create_slab_pool(MIN_IOS, _io_cache);
--	if (!md->io_pool)
--		goto bad_io_pool;
--
--	md->tio_pool = mempool_create_slab_pool(MIN_IOS, _tio_cache);
--	if (!md->tio_pool)
--		goto bad_tio_pool;
--
--	md->bs = bioset_create(16, 16);
--	if (!md->bs)
--		goto bad_no_bioset;
-+	blk_queue_softirq_done(md->queue, dm_softirq_done);
-+	blk_queue_prep_rq(md->queue, dm_prep_fn);
- 
- 	md->disk = alloc_disk(1);
- 	if (!md->disk)
-@@ -1754,12 +1758,6 @@ static struct mapped_device *alloc_dev(i
- bad_thread:
- 	put_disk(md->disk);
- bad_disk:
--	bioset_free(md->bs);
--bad_no_bioset:
--	mempool_destroy(md->tio_pool);
--bad_tio_pool:
--	mempool_destroy(md->io_pool);
--bad_io_pool:
- 	blk_cleanup_queue(md->queue);
- bad_queue:
- 	free_minor(minor);
-@@ -1781,9 +1779,12 @@ static void free_dev(struct mapped_devic
- 		bdput(md->suspended_bdev);
- 	}
- 	destroy_workqueue(md->wq);
--	mempool_destroy(md->tio_pool);
--	mempool_destroy(md->io_pool);
--	bioset_free(md->bs);
-+	if (md->tio_pool)
-+		mempool_destroy(md->tio_pool);
-+	if (md->io_pool)
-+		mempool_destroy(md->io_pool);
-+	if (md->bs)
-+		bioset_free(md->bs);
- 	del_gendisk(md->disk);
- 	free_minor(minor);
- 
-@@ -1846,6 +1847,16 @@ static int __bind(struct mapped_device *
- 	dm_table_get(t);
- 	dm_table_event_callback(t, event_callback, md);
- 
-+	/*
-+	 * The queue hasn't been stopped yet, if the old table type wasn't
-+	 * for request-based during suspension.  So stop it to prevent
-+	 * I/O mapping before resume.
-+	 * This must be done before setting the queue restrictions,
-+	 * because request-based dm may be run just after the setting.
-+	 */
-+	if (dm_table_request_based(t) && !blk_queue_stopped(q))
-+		stop_queue(q);
-+
- 	write_lock(&md->map_lock);
- 	md->map = t;
- 	dm_table_set_restrictions(t, q);
-@@ -1995,7 +2006,13 @@ static void __flush_deferred_io(struct m
- 	struct bio *c;
- 
- 	while ((c = bio_list_pop(&md->deferred))) {
--		if (__split_bio(md, c))
-+		/*
-+		 * Some bios might have been queued here during suspension
-+		 * before setting of request-based dm in resume
-+		 */
-+		if (dm_request_based(md))
-+			generic_make_request(c);
-+		else if (__split_bio(md, c))
- 			bio_io_error(c);
- 	}
- 
-@@ -2413,6 +2430,65 @@ int dm_noflush_suspending(struct dm_targ
- }
- EXPORT_SYMBOL_GPL(dm_noflush_suspending);
- 
-+int dm_init_md_mempool(struct mapped_device *md, int type)
-+{
-+	if (unlikely(type == DM_TYPE_NONE)) {
-+		DMWARN("no type is specified, can't initialize mempool");
-+		return -EINVAL;
-+	}
-+
-+	if (md->mempool_type == type)
-+		return 0;
-+
-+	if (md->map) {
-+		/* The md has been using, can't change the mempool type */
-+		DMWARN("can't change mempool type after a table is bound");
-+		return -EINVAL;
-+	}
-+
-+	/* Not using the md yet, we can still change the mempool type */
-+	if (md->mempool_type != DM_TYPE_NONE) {
-+		mempool_destroy(md->io_pool);
-+		md->io_pool = NULL;
-+		mempool_destroy(md->tio_pool);
-+		md->tio_pool = NULL;
-+		bioset_free(md->bs);
-+		md->bs = NULL;
-+		md->mempool_type = DM_TYPE_NONE;
-+	}
-+
-+	md->io_pool = (type == DM_TYPE_BIO_BASED) ?
-+		      mempool_create_slab_pool(MIN_IOS, _io_cache) :
-+		      mempool_create_slab_pool(MIN_IOS, _bio_info_cache);
-+	if (!md->io_pool)
-+		return -ENOMEM;
-+
-+	md->tio_pool = (type == DM_TYPE_BIO_BASED) ?
-+		       mempool_create_slab_pool(MIN_IOS, _tio_cache) :
-+		       mempool_create_slab_pool(MIN_IOS, _rq_tio_cache);
-+	if (!md->tio_pool)
-+		goto free_io_pool_and_out;
-+
-+	md->bs = (type == DM_TYPE_BIO_BASED) ?
-+		 bioset_create(16, 16) : bioset_create(MIN_IOS, MIN_IOS);
-+	if (!md->bs)
-+		goto free_tio_pool_and_out;
-+
-+	md->mempool_type = type;
-+
-+	return 0;
-+
-+free_tio_pool_and_out:
-+	mempool_destroy(md->tio_pool);
-+	md->tio_pool = NULL;
-+
-+free_io_pool_and_out:
-+	mempool_destroy(md->io_pool);
-+	md->io_pool = NULL;
-+
-+	return -ENOMEM;
-+}
-+
- static struct block_device_operations dm_blk_dops = {
- 	.open = dm_blk_open,
- 	.release = dm_blk_close,
-Index: 2.6.27-rc6/drivers/md/dm.h
-===================================================================
---- 2.6.27-rc6.orig/drivers/md/dm.h
-+++ 2.6.27-rc6/drivers/md/dm.h
-@@ -23,6 +23,13 @@
- #define DM_SUSPEND_NOFLUSH_FLAG		(1 << 1)
- 
- /*
-+ * Type of table and mapped_device's mempool
-+ */
-+#define DM_TYPE_NONE		0
-+#define DM_TYPE_BIO_BASED	1
-+#define DM_TYPE_REQUEST_BASED	2
-+
-+/*
-  * List of devices that a metadevice uses and should open/close.
+ 	struct work_struct trigger_event;
+@@ -99,7 +97,6 @@ struct multipath {
   */
- struct dm_dev {
-@@ -51,6 +58,9 @@ int dm_table_resume_targets(struct dm_ta
- int dm_table_any_congested(struct dm_table *t, int bdi_bits);
- int dm_table_any_busy_target(struct dm_table *t);
- void dm_table_unplug_all(struct dm_table *t);
-+int dm_table_set_type(struct dm_table *t);
-+int dm_table_get_type(struct dm_table *t);
-+int dm_table_request_based(struct dm_table *t);
- 
- /*
-  * To check the return value from dm_table_find_target().
-@@ -113,4 +123,9 @@ void dm_kobject_uevent(struct mapped_dev
- int dm_kcopyd_init(void);
- void dm_kcopyd_exit(void);
- 
-+/*
-+ * Mempool initializer for a mapped_device
-+ */
-+int dm_init_md_mempool(struct mapped_device *md, int type);
-+
- #endif
-Index: 2.6.27-rc6/drivers/md/dm-ioctl.c
-===================================================================
---- 2.6.27-rc6.orig/drivers/md/dm-ioctl.c
-+++ 2.6.27-rc6/drivers/md/dm-ioctl.c
-@@ -1045,6 +1045,12 @@ static int populate_table(struct dm_tabl
- 		next = spec->next;
- 	}
- 
-+	r = dm_table_set_type(table);
-+	if (r) {
-+		DMWARN("unable to set table type");
-+		return r;
-+	}
-+
- 	return dm_table_complete(table);
- }
- 
-@@ -1069,6 +1075,13 @@ static int table_load(struct dm_ioctl *p
- 		goto out;
- 	}
- 
-+	r = dm_init_md_mempool(md, dm_table_get_type(t));
-+	if (r) {
-+		DMWARN("unable to initialize the md mempools for this table");
-+		dm_table_put(t);
-+		goto out;
-+	}
-+
- 	down_write(&_hash_lock);
- 	hc = dm_get_mdptr(md);
- 	if (!hc || hc->md != md) {
-Index: 2.6.27-rc6/include/linux/device-mapper.h
-===================================================================
---- 2.6.27-rc6.orig/include/linux/device-mapper.h
-+++ 2.6.27-rc6/include/linux/device-mapper.h
-@@ -140,6 +140,7 @@ struct io_restrictions {
- 	unsigned short max_hw_segments;
- 	unsigned short max_phys_segments;
- 	unsigned char no_cluster; /* inverted so that 0 is default */
-+	unsigned char no_request_stacking;
+ struct dm_mpath_io {
+ 	struct pgpath *pgpath;
+-	struct dm_bio_details details;
  };
  
- struct dm_target {
+ typedef int (*action_fn) (struct pgpath *pgpath);
+@@ -180,6 +177,7 @@ static struct multipath *alloc_multipath
+ 	m = kzalloc(sizeof(*m), GFP_KERNEL);
+ 	if (m) {
+ 		INIT_LIST_HEAD(&m->priority_groups);
++		INIT_LIST_HEAD(&m->queued_ios);
+ 		spin_lock_init(&m->lock);
+ 		m->queue_io = 1;
+ 		INIT_WORK(&m->process_queued_ios, process_queued_ios);
+@@ -304,12 +302,13 @@ static int __must_push_back(struct multi
+ 		dm_noflush_suspending(m->ti));
+ }
+ 
+-static int map_io(struct multipath *m, struct bio *bio,
++static int map_io(struct multipath *m, struct request *clone,
+ 		  struct dm_mpath_io *mpio, unsigned was_queued)
+ {
+ 	int r = DM_MAPIO_REMAPPED;
+ 	unsigned long flags;
+ 	struct pgpath *pgpath;
++	struct block_device *bdev;
+ 
+ 	spin_lock_irqsave(&m->lock, flags);
+ 
+@@ -326,16 +325,18 @@ static int map_io(struct multipath *m, s
+ 	if ((pgpath && m->queue_io) ||
+ 	    (!pgpath && m->queue_if_no_path)) {
+ 		/* Queue for the daemon to resubmit */
+-		bio_list_add(&m->queued_ios, bio);
++		list_add_tail(&clone->queuelist, &m->queued_ios);
+ 		m->queue_size++;
+ 		if ((m->pg_init_required && !m->pg_init_in_progress) ||
+ 		    !m->queue_io)
+ 			queue_work(kmultipathd, &m->process_queued_ios);
+ 		pgpath = NULL;
+ 		r = DM_MAPIO_SUBMITTED;
+-	} else if (pgpath)
+-		bio->bi_bdev = pgpath->path.dev->bdev;
+-	else if (__must_push_back(m))
++	} else if (pgpath) {
++		bdev = pgpath->path.dev->bdev;
++		clone->q = bdev_get_queue(bdev);
++		clone->rq_disk = bdev->bd_disk;
++	} else if (__must_push_back(m))
+ 		r = DM_MAPIO_REQUEUE;
+ 	else
+ 		r = -EIO;	/* Failed */
+@@ -378,30 +379,31 @@ static void dispatch_queued_ios(struct m
+ {
+ 	int r;
+ 	unsigned long flags;
+-	struct bio *bio = NULL, *next;
+ 	struct dm_mpath_io *mpio;
+ 	union map_info *info;
++	struct request *clone, *n;
++	LIST_HEAD(cl);
+ 
+ 	spin_lock_irqsave(&m->lock, flags);
+-	bio = bio_list_get(&m->queued_ios);
++	list_splice_init(&m->queued_ios, &cl);
+ 	spin_unlock_irqrestore(&m->lock, flags);
+ 
+-	while (bio) {
+-		next = bio->bi_next;
+-		bio->bi_next = NULL;
++	list_for_each_entry_safe(clone, n, &cl, queuelist) {
++		list_del_init(&clone->queuelist);
+ 
+-		info = dm_get_mapinfo(bio);
++		info = dm_get_rq_mapinfo(clone);
+ 		mpio = info->ptr;
+ 
+-		r = map_io(m, bio, mpio, 1);
+-		if (r < 0)
+-			bio_endio(bio, r);
+-		else if (r == DM_MAPIO_REMAPPED)
+-			generic_make_request(bio);
+-		else if (r == DM_MAPIO_REQUEUE)
+-			bio_endio(bio, -EIO);
+-
+-		bio = next;
++		r = map_io(m, clone, mpio, 1);
++		if (r < 0) {
++			mempool_free(mpio, m->mpio_pool);
++			dm_kill_request(clone, r);
++		} else if (r == DM_MAPIO_REMAPPED)
++			dm_dispatch_request(clone);
++		else if (r == DM_MAPIO_REQUEUE) {
++			mempool_free(mpio, m->mpio_pool);
++			dm_requeue_request(clone);
++		}
+ 	}
+ }
+ 
+@@ -817,21 +819,24 @@ static void multipath_dtr(struct dm_targ
+ }
+ 
+ /*
+- * Map bios, recording original fields for later in case we have to resubmit
++ * Map cloned requests
+  */
+-static int multipath_map(struct dm_target *ti, struct bio *bio,
++static int multipath_map(struct dm_target *ti, struct request *clone,
+ 			 union map_info *map_context)
+ {
+ 	int r;
+ 	struct dm_mpath_io *mpio;
+ 	struct multipath *m = (struct multipath *) ti->private;
+ 
+-	mpio = mempool_alloc(m->mpio_pool, GFP_NOIO);
+-	dm_bio_record(&mpio->details, bio);
++	mpio = mempool_alloc(m->mpio_pool, GFP_ATOMIC);
++	if (!mpio)
++		/* ENOMEM, requeue */
++		return DM_MAPIO_REQUEUE;
++	memset(mpio, 0, sizeof(*mpio));
+ 
+ 	map_context->ptr = mpio;
+-	bio->bi_rw |= (1 << BIO_RW_FAILFAST);
+-	r = map_io(m, bio, mpio, 0);
++	clone->cmd_flags |= REQ_FAILFAST;
++	r = map_io(m, clone, mpio, 0);
+ 	if (r < 0 || r == DM_MAPIO_REQUEUE)
+ 		mempool_free(mpio, m->mpio_pool);
+ 
+@@ -1105,53 +1110,41 @@ static void activate_path(struct work_st
+ /*
+  * end_io handling
+  */
+-static int do_end_io(struct multipath *m, struct bio *bio,
++static int do_end_io(struct multipath *m, struct request *clone,
+ 		     int error, struct dm_mpath_io *mpio)
+ {
++	/*
++	 * We don't queue any clone request inside the multipath target
++	 * during end I/O handling, since those clone requests don't have
++	 * bio clones.  If we queue them inside the multipath target,
++	 * we need to make bio clones, that requires memory allocation.
++	 * (See drivers/md/dm.c:end_clone_bio() about why the clone requests
++	 *  don't have bio clones.)
++	 * Instead of queueing the clone request here, we queue the original
++	 * request into dm core, which will remake a clone request and
++	 * clone bios for it and resubmit it later.
++	 */
++	int r = DM_ENDIO_REQUEUE;
+ 	unsigned long flags;
+ 
+-	if (!error)
++	if (!error && !clone->errors)
+ 		return 0;	/* I/O complete */
+ 
+-	if ((error == -EWOULDBLOCK) && bio_rw_ahead(bio))
+-		return error;
+-
+ 	if (error == -EOPNOTSUPP)
+ 		return error;
+ 
+-	spin_lock_irqsave(&m->lock, flags);
+-	if (!m->nr_valid_paths) {
+-		if (__must_push_back(m)) {
+-			spin_unlock_irqrestore(&m->lock, flags);
+-			return DM_ENDIO_REQUEUE;
+-		} else if (!m->queue_if_no_path) {
+-			spin_unlock_irqrestore(&m->lock, flags);
+-			return -EIO;
+-		} else {
+-			spin_unlock_irqrestore(&m->lock, flags);
+-			goto requeue;
+-		}
+-	}
+-	spin_unlock_irqrestore(&m->lock, flags);
+-
+ 	if (mpio->pgpath)
+ 		fail_path(mpio->pgpath);
+ 
+-      requeue:
+-	dm_bio_restore(&mpio->details, bio);
+-
+-	/* queue for the daemon to resubmit or fail */
+ 	spin_lock_irqsave(&m->lock, flags);
+-	bio_list_add(&m->queued_ios, bio);
+-	m->queue_size++;
+-	if (!m->queue_io)
+-		queue_work(kmultipathd, &m->process_queued_ios);
++	if (!m->nr_valid_paths && !m->queue_if_no_path && !__must_push_back(m))
++		r = -EIO;
+ 	spin_unlock_irqrestore(&m->lock, flags);
+ 
+-	return DM_ENDIO_INCOMPLETE;	/* io not complete */
++	return r;
+ }
+ 
+-static int multipath_end_io(struct dm_target *ti, struct bio *bio,
++static int multipath_end_io(struct dm_target *ti, struct request *clone,
+ 			    int error, union map_info *map_context)
+ {
+ 	struct multipath *m = ti->private;
+@@ -1160,14 +1153,13 @@ static int multipath_end_io(struct dm_ta
+ 	struct path_selector *ps;
+ 	int r;
+ 
+-	r  = do_end_io(m, bio, error, mpio);
++	r  = do_end_io(m, clone, error, mpio);
+ 	if (pgpath) {
+ 		ps = &pgpath->pg->ps;
+ 		if (ps->type->end_io)
+ 			ps->type->end_io(ps, &pgpath->path);
+ 	}
+-	if (r != DM_ENDIO_INCOMPLETE)
+-		mempool_free(mpio, m->mpio_pool);
++	mempool_free(mpio, m->mpio_pool);
+ 
+ 	return r;
+ }
+@@ -1403,6 +1395,78 @@ static int multipath_ioctl(struct dm_tar
+ 					 bdev->bd_disk, cmd, arg);
+ }
+ 
++static int __pgpath_congested(struct pgpath *pgpath)
++{
++	struct request_queue *q = bdev_get_queue(pgpath->path.dev->bdev);
++
++	if (dm_underlying_device_congested(q))
++		return 1;
++
++	return 0;
++}
++
++/*
++ * We return "busy", only when we can map I/Os but underlying devices
++ * are congested (so even if we map I/Os now, the I/Os will wait on
++ * the underlying queue).
++ * In other words, if we want to kill I/Os or queue them inside us
++ * due to map unavailability, we don't return "busy".  Otherwise,
++ * dm core won't give us the I/Os and we can't do what we want.
++ */
++static int multipath_busy(struct dm_target *ti)
++{
++	int busy = 0, has_active = 0;
++	struct multipath *m = (struct multipath *) ti->private;
++	struct priority_group *pg;
++	struct pgpath *pgpath;
++	unsigned long flags;
++
++	spin_lock_irqsave(&m->lock, flags);
++
++	/* Guess which priority_group will be used at next mapping time */
++	if (unlikely(!m->current_pgpath && m->next_pg))
++		pg = m->next_pg;
++	else if (likely(m->current_pg))
++		pg = m->current_pg;
++	else
++		/*
++		 * We don't know which pg will be used at next mapping time.
++		 * We don't call __choose_pgpath() here to avoid to trigger
++		 * pg_init just by congestion checking.
++		 * So we don't know whether underlying devices we will be using
++		 * at next mapping time are congested or not. Just try mapping.
++		 */
++		goto out;
++
++	/*
++	 * If there is one uncongested active path at least, the path selector
++	 * will be able to select it. So we consider such a pg as uncongested.
++	 */
++	busy = 1;
++	list_for_each_entry(pgpath, &pg->pgpaths, list)
++		if (pgpath->is_active) {
++			has_active = 1;
++
++			if (!__pgpath_congested(pgpath)) {
++				busy = 0;
++				break;
++			}
++		}
++
++	if (!has_active)
++		/*
++		 * No active path in this pg, so this pg won't be used and
++		 * the current_pg will be changed at next mapping time.
++		 * We need to try mapping to determine it.
++		 */
++		busy = 0;
++
++out:
++	spin_unlock_irqrestore(&m->lock, flags);
++
++	return busy;
++}
++
+ /*-----------------------------------------------------------------
+  * Module setup
+  *---------------------------------------------------------------*/
+@@ -1412,13 +1476,14 @@ static struct target_type multipath_targ
+ 	.module = THIS_MODULE,
+ 	.ctr = multipath_ctr,
+ 	.dtr = multipath_dtr,
+-	.map = multipath_map,
+-	.end_io = multipath_end_io,
++	.map_rq = multipath_map,
++	.rq_end_io = multipath_end_io,
+ 	.presuspend = multipath_presuspend,
+ 	.resume = multipath_resume,
+ 	.status = multipath_status,
+ 	.message = multipath_message,
+ 	.ioctl  = multipath_ioctl,
++	.busy = multipath_busy,
+ };
+ 
+ static int __init dm_multipath_init(void)
