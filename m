@@ -1,127 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbYILNA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755641AbYILNGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbYILNA4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 09:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYILNAq
+	id S1755641AbYILNGI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 09:06:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYILNFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 09:00:46 -0400
-Received: from trinity.fluff.org ([89.145.97.151]:40363 "EHLO
-	trinity.fluff.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752728AbYILNAp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 09:00:45 -0400
-Date: Fri, 12 Sep 2008 14:00:43 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: PCI: Add ALI M5229 comaptibility mode quirk
-Message-ID: <20080912130043.GF322@trinity.fluff.org>
-References: <20080912112252.505651015@fluff.org.uk> <20080912123339.GA10844@parisc-linux.org>
-Mime-Version: 1.0
+	Fri, 12 Sep 2008 09:05:55 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:54725 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752852AbYILNFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 09:05:54 -0400
+Date: Fri, 12 Sep 2008 22:05:11 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-arch@vger.kernel.org, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_HAVE_ARCH_TRACEHOOK and you
+Message-ID: <20080912130511.GA11375@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Roland McGrath <roland@redhat.com>, linux-arch@vger.kernel.org,
+	utrace-devel@redhat.com, linux-kernel@vger.kernel.org
+References: <20080912025733.E55F415420D@magilla.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080912123339.GA10844@parisc-linux.org>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.9i
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ben@trinity.fluff.org
-X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
+In-Reply-To: <20080912025733.E55F415420D@magilla.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 06:33:40AM -0600, Matthew Wilcox wrote:
-> On Fri, Sep 12, 2008 at 12:22:52PM +0100, Ben Dooks wrote:
-> > The libata driver will not work with an M5229 set into native IDE
-> > mode (the old drivers/pci one does) if the M5229 does not provide
-> > it's own IRQ.
-> > 
-> > The M5229 implementation embedded into the ALI M1543 uses the
-> > M1543's ISA PIC to provide the interrupts and thus does not have
-> > an valid PCI IRQ set. This quirk detects the abscence of IRQ and
-> > sets the M5229 back into compatibility mode to use IRQs 14 and 15
-> > so that libata works correctly.
-> > 
-> > Note, I belive that the check for an valid interrupt line is
-> > correct, I only have an M5229 in an ALI M1543 to check this
-> > on. It would be useful to confirm that a M5229 with an valid IRQ
-> > does not trigger this quirk.
+On Thu, Sep 11, 2008 at 07:57:33PM -0700, Roland McGrath wrote:
+> The comment in arch/Kconfig lists the items:
 > 
-> Why does this need to be a quirk rather than something in the libata ALi
-> driver?
+> #	task_pt_regs()		in asm/processor.h or asm/ptrace.h
+> #	arch_has_single_step()	if there is hardware single-step support
+> #	arch_has_block_step()	if there is hardware block-step support
+> #	arch_ptrace()		and not #define __ARCH_SYS_PTRACE
+> #	compat_arch_ptrace()	and #define __ARCH_WANT_COMPAT_SYS_PTRACE
+> #	asm/syscall.h		supplying asm-generic/syscall.h interface
+> #	linux/regset.h		user_regset interfaces
+> #	CORE_DUMP_USE_REGSET	#define'd in linux/elf.h
+> #	TIF_SYSCALL_TRACE	calls tracehook_report_syscall_{entry,exit}
+> #	TIF_NOTIFY_RESUME	calls tracehook_notify_resume()
+> #	signal delivery		calls tracehook_signal_handler()
+> 
+[snip]
 
-The short answer is that "Alan Cox says not in libata", the longer
-one can be found:
+> Here's the text that's on that wiki:
+> 
+>     1. task_pt_regs()
+> 
+>           * Define this inline function in asm/processor.h or asm/ptrace.h.
+> 
+user_stack_pointer() is apparently a requirement, too. Although given
+that you already have a task_struct pointer the only place you currently
+use it (lib/syscall.c), it makes more sense to use KSTK_ESP/KSTK_EIP
+which is provided by almost everyone already.
 
-http://www.archivum.info/linux-ide@vger.kernel.org/2008-07/msg00410.html
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+
+---
+
+ lib/syscall.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/lib/syscall.c b/lib/syscall.c
+index a4f7067..888c36a 100644
+--- a/lib/syscall.c
++++ b/lib/syscall.c
+@@ -11,8 +11,8 @@ static int collect_syscall(struct task_struct *target, long *callno,
+ 	if (unlikely(!regs))
+ 		return -EAGAIN;
  
-> > Signed-off-by: Ben Dooks <ben-linux@fluff.org>
-> > 
-> > Index: linux-2.6.27-rc6-cats1/drivers/pci/quirks.c
-> > ===================================================================
-> > --- linux-2.6.27-rc6-cats1.orig/drivers/pci/quirks.c	2008-09-11 11:26:35.000000000 +0100
-> > +++ linux-2.6.27-rc6-cats1/drivers/pci/quirks.c	2008-09-12 12:18:05.000000000 +0100
-> > @@ -905,6 +905,34 @@ static void __devinit quirk_svwks_csb5id
-> >  }
-> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_CSB5IDE, quirk_svwks_csb5ide);
-> >  
-> > +/* Some systems set the ALI M5229 in the ALI M1543 bridge to native mode,
-> > + * which cannot be supported by the pata_ali.c driver (the old drivers/ide
-> > + * makes a compatibility effort to change the IDE interrupts).
-> > + */
-> > +static void __devinit quirk_ali_ide_compatibility(struct pci_dev *pdev)
-> > +{
-> > +	u8 tmp;
-> > +
-> > +	/* pdev->irq and pdev->pin have yet to be initialised, so check
-> > +	 * by reading from the configuration header to see if we've got
-> > +	 * a valid interrupt line. */
-> > +
-> > +	pci_read_config_byte(pdev, PCI_INTERRUPT_LINE, &tmp);
-> > +	if (tmp != 0xff)
-> > +		return;
-> > +
-> > +	pci_read_config_byte(pdev, PCI_CLASS_PROG, &tmp);
-> > +	if (tmp & 0x5) {
-> > +		dev_info(&pdev->dev, "quirk: changing to IDE compatibility mode\n");
-> > +
-> > +		tmp &= ~0x05;
-> > +		pdev->class &= ~0x05;
-> > +		pci_write_config_byte(pdev, PCI_CLASS_PROG, tmp);
-> > +	}
-> > +}
-> > +
-> > +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M5229, quirk_ali_ide_compatibility);
-> > +
-> >  /*
-> >   *	Intel 82801CAM ICH3-M datasheet says IDE modes must be the same
-> >   */
-> > 
-> > -- 
-> > Ben (ben@fluff.org, http://www.fluff.org/)
-> > 
-> >   'a smiley only costs 4 bytes'
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> -- 
-> Matthew Wilcox				Intel Open Source Technology Centre
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
+-	*sp = user_stack_pointer(regs);
+-	*pc = instruction_pointer(regs);
++	*sp = KSTK_ESP(target);
++	*pc = KSTK_EIP(target);
+ 
+ 	*callno = syscall_get_nr(target, regs);
+ 	if (*callno != -1L && maxargs > 0)
 
