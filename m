@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYILDEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbYILDFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756546AbYILDEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Sep 2008 23:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbYILDEl
+	id S1756944AbYILDFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Sep 2008 23:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbYILDEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Sep 2008 23:04:41 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:15866 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbYILDEk (ORCPT
+	Thu, 11 Sep 2008 23:04:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50969
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755892AbYILDEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Sep 2008 23:04:40 -0400
-From: Roland Dreier <rdreier@cisco.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Steven Noonan <steven@uplinklabs.net>, LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>
-Subject: Re: I need help with a sparse warning
-References: <48C9D040.8010107@lwfinger.net>
-	<f488382f0809111932v1cc1eb44kbe0bc0e97347c834@mail.gmail.com>
-	<48C9DACE.5040308@lwfinger.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 11 Sep 2008 20:04:38 -0700
-In-Reply-To: <48C9DACE.5040308@lwfinger.net> (Larry Finger's message of "Thu,
-	11 Sep 2008 21:58:22 -0500")
-Message-ID: <adavdx2kqt5.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 12 Sep 2008 03:04:38.0807 (UTC) FILETIME=[4B48CA70:01C91484]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Thu, 11 Sep 2008 23:04:44 -0400
+Date: Thu, 11 Sep 2008 20:04:38 -0700 (PDT)
+Message-Id: <20080911.200438.01253897.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: gcoady.lk@gmail.com, grant_lkml@dodo.com.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: [stable] regression in iptables: recent filter
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080911200133.48be32fa.akpm@linux-foundation.org>
+References: <ejijc4dc92n75s2el334e7dgdanngs7qv3@4ax.com>
+	<20080911200133.48be32fa.akpm@linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > This one gets rid of the sparse warning.
- > 
- >        priv->rx_mtu = le16_to_cpu((__le16 __force)
- >                                   bootrec->data[10]);
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 11 Sep 2008 20:01:33 -0700
 
-Yes but does it actually work on both big and little endian systems?
-(See my previous email)
+> On Fri, 12 Sep 2008 11:53:35 +1000 Grant Coady <grant_lkml@dodo.com.au> wrote:
+> 
+> > Hi there,
+> > 
+> > Last known good kernel: 2.6.24.7
+> > 
+> > # iptables -N calmrate
+> > # iptables -A calmrate -p tcp -m state --state NEW \
+> > 	-m recent --name listrate --update --rttl \
+> > 	--seconds 60 --hitcount 60 -j DROP
+> > iptables: Unknown error 4294967295
+> > 
+> > Fails for 2.6.25.17 and 2.6.26.5
+> > 
+> > dmesg + config: http://bugsplatter.id.au/kernel/boxen/deltree/
+> > 
+> 
+> (cc netdev)
 
- - R.
+(cc netfilter-devel)
+
+For those playing at home, 4294967295 is 32-bit -1.
