@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbYILUlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYILUnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbYILUlE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 16:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbYILUky
+	id S1757980AbYILUnx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 16:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbYILUnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 16:40:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42717 "EHLO ogre.sisk.pl"
+	Fri, 12 Sep 2008 16:43:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42741 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752724AbYILUky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 16:40:54 -0400
+	id S1756036AbYILUnl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 16:43:41 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dave Jones" <davej@redhat.com>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+In-Reply-To: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-Date: Fri, 12 Sep 2008 22:45:44 +0200
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <20080912083113.GA1625@elf.ucw.cz> <200809122117.05750.rjw@sisk.pl> <alpine.LFD.1.10.0809122113270.13819@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0809122113270.13819@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809122245.45723.rjw@sisk.pl>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <SpS7rta8n4.A.FXB.vfsyIB@albercik>
+Subject: [Bug #11224] Only three cores found on quad-core machine.
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Fri, 12 Sep 2008 21:06:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 12 of September 2008, Thomas Gleixner wrote:
-> On Fri, 12 Sep 2008, Rafael J. Wysocki wrote:
-> 
-> > On Friday, 12 of September 2008, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > The old "you have to press keys to get machine to progress" seems to
-> > > be back :-(. Thinkpad x60.
-> > 
-> > I guess the last bunch of HPET/clockevents patches caused that to happen.
-> 
-> Guessing is hardly a good method to get down to the root cause of
-> those problems.
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-Well, sure.
+The following bug entry is on the current list of known regressions
+from 2.6.26.  Please verify if it still should be listed and let me know
+(either way).
 
-> > We seem to be doing a "one step forward, one step back" thing here ...
-> 
-> Well, the fixes for HPET/clockevents fix real bugs and there are no
-> evident side effects vs. s2ram inside. quite the contrary.
 
-So that must be something different.
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11224
+Subject		: Only three cores found on quad-core machine.
+Submitter	: Dave Jones <davej@redhat.com>
+Date		: 2008-08-01 18:15 (43 days old)
+References	: http://marc.info/?l=linux-kernel&m=121761475224719&w=4
 
-Thanks,
-Rafael
+
