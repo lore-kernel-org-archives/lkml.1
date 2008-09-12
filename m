@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbYILFmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752840AbYILFnM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbYILFmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 01:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYILFmi
+	id S1752840AbYILFnM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 01:43:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYILFmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 01:42:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:61221 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbYILFmh (ORCPT
+	Fri, 12 Sep 2008 01:42:55 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60266 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754357AbYILFmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 01:42:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pZmlymMb7hJLlqHkrSw9GoISNMvSjttQmRoWYZKjkIcls2ai2YNt3XCIVebW3OgTAZ
-         uzbEt+TTa/OoeA9R+rOpD+2F17KWaCk++TrBkkXec0kQpwPUQiu3CHV/Np+4grni/06C
-         +OQiP54gKB9gGePR3agQMjFzzb9cvT7LhFVao=
-Message-ID: <19f34abd0809112242p27928541ydbfbb60ed84e34d2@mail.gmail.com>
-Date: Fri, 12 Sep 2008 07:42:36 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] netlink: fix overrun in attribute iteration
-Cc: davem@davemloft.net, netdev@vger.kernel.org, tgraf@suug.ch,
-       penberg@cs.helsinki.fi, mingo@elte.hu, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080911165243.125a74cc.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 12 Sep 2008 01:42:54 -0400
+Date: Thu, 11 Sep 2008 22:42:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 0/13] Turn hrtimers into a range capable timer
+Message-ID: <20080911224241.13855b23@infradead.org>
+In-Reply-To: <200809121339.49902.rusty@rustcorp.com.au>
+References: <20080901160343.75a89ec9@infradead.org>
+	<200809121339.49902.rusty@rustcorp.com.au>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080911205933.GA20032@localhost.localdomain>
-	 <20080911165243.125a74cc.akpm@linux-foundation.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 1:52 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Thu, 11 Sep 2008 22:59:33 +0200
-> Vegard Nossum <vegard.nossum@gmail.com> wrote:
->
->>   #include <stdio.h>
->>
->>   main(void)
->>   {
->>           printf("%d\n", -1 >= sizeof(int));
->>   }
->>
->
-> akpm:/home/akpm> gcc -W t.c
-> t.c: In function 'main':
-> t.c:5: warning: comparison between signed and unsigned
->
-> Make of that what you will :)
+On Fri, 12 Sep 2008 13:39:49 +1000
+Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-It doesn't show up with -Wall and the kernel isn't compiled with -W
-(aka. -Wextra) as far as I can see. Should it be turned on?
+> On Tuesday 02 September 2008 09:03:43 Arjan van de Ven wrote:
+> > This series is a follow-on the the nanosecond select/poll series.
+> >
+> > The goal of this series is to introduce the capability into
+> > hrtimers to deal with a "range" rather than a specific point in
+> > time. (Several people discussed this recently, but we've been
+> > toying with the concept for a while)
+> 
+> Hi Arjen, sorry for not replying sooner.
+> 
+> I had half a patch to create a new "timer layer to rule them all"
+> called ktimers, which took an explicit "slop" value.  Slop is the
+> "how long before its worth waking the machine for this?" value, with
+> friendly SLOP_USECS, SLOP_SECONDS, SLOP_DAYS etc defines.
+> Implemented in terms of normal and hr timers, which get deprecated
+> over time.
+> 
+> Heuristics work for a while, but IMHO eventually this is going to
+> have to be plumbed through to userspace.
 
+yes we need to add the system calls at some point (beyond the prctl);
+however both Ulrich and Linus indicated that this will be one of those
+"handful of users" kind of things. IMO it needs to work well enough
+without having to change the whole application stack (and with my
+patches that can be done; it works well in practice)
+ 
+> 
+> Cheers,
+> Rusty.
 
-Vegard
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
