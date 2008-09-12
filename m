@@ -1,136 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYILUKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYILULQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbYILUKG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 16:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYILUJz
+	id S1757544AbYILULQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 16:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbYILULC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 16:09:55 -0400
-Received: from smtp8-g19.free.fr ([212.27.42.65]:33787 "EHLO smtp8-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753124AbYILUJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 16:09:55 -0400
-Message-ID: <48CACC8F.4050806@free.fr>
-Date: Fri, 12 Sep 2008 22:09:51 +0200
-From: matthieu castet <castet.matthieu@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080702 Iceape/1.1.11 (Debian-1.1.11-1)
+	Fri, 12 Sep 2008 16:11:02 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:50016 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbYILULA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 16:11:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wCW63T2H2NYdctBskSsBfUwfhVwCYbIyxR5jqXPPcbqi25MoztfkNgZKJVUnHAI6Cv
+         TGyhdeIn91BQ0k5CIW2wYiUfVsq4Qnty20uLaDOEb31L+GBLvUVI2rQ7/tn76v4fwGWu
+         wlq1eUB3bD8glekJusFYZuJztrijpiN6K3TMg=
+Message-ID: <48CACCCD.3020400@gmail.com>
+Date: Fri, 12 Sep 2008 23:10:53 +0300
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: Linux Kernel list <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       "Keith A. Prickett" <keithp@marvell.com>
-Subject: re : Building Kernel with -O0
-Content-Type: multipart/mixed;
- boundary="------------060906000101030207050901"
+To: Mike Waychison <mikew@google.com>
+CC: Andi Kleen <andi@firstfloor.org>, Theodore Tso <tytso@mit.edu>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner mingo@redhat.com" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-mm@kvack.org
+Subject: Re: mmap/munmap latency on multithreaded apps, because pagefaults
+ hold mmap_sem during disk read
+References: <48B1CC15.2040006@gmail.com> <1219643476.20732.1.camel@twins>	<48B25988.8040302@gmail.com> <1219656190.8515.7.camel@twins>	<48B28015.3040602@gmail.com> <1219658527.8515.16.camel@twins>	<48B287D8.1000000@gmail.com> <1219660582.8515.24.camel@twins>	<48B290E7.4070805@gmail.com> <1219664477.8515.54.camel@twins>	<20080825134801.GN1408@mit.edu> <87y72k9otw.fsf@basil.nowhere.org> <48C57898.1080304@gmail.com> <48CAC02B.8090003@gmail.com> <48CAC47F.8070206@google.com>
+In-Reply-To: <48CAC47F.8070206@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060906000101030207050901
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On 2008-09-12 22:35, Mike Waychison wrote:
+> Török Edwin wrote:
+>> On 2008-09-08 22:10, Török Edwin wrote:
+>>> [snip]
+>>> There is however a problem with mmap [mmap with N threads is as slow as
+>>> mmap with 1 thread, i.e. it is sequential :(], pagefaults and disk I/O,
+>>> I think I am hitting the problem described in this thread (2 years
+>>> ago!)
+>>> http://lwn.net/Articles/200215/
+>>> http://lkml.org/lkml/2006/9/19/260
+>>>
+>>> It looks like such a patch is still not part of 2.6.27, what
+>>> happened to it?
+>>> I will see if that patch applies to 2.6.27, and will rerun my test with
+>>> that patch applied too.
+>>>   
+>>
+>> The patch doesn't apply to 2.6.27-rc6, I tried manually applying the
+>> patch.
+>> There have been many changes since 2.6.18 (like replacing find_get_page
+>> with find_lock_page, filemap returning VM_FAULT codes, etc.).
+>> I have probably done something wrong, because the resulting kernel won't
+>> boot: I  get abnormal exits and random sigbus during boot.
+>>
+>> Can you please help porting the patch to 2.6.27-rc6? I have attached my
+>> 2 attempts at the end of this mail.
+>
+> I actually have to forward port this and a bunch of other mm speed-ups
+> in the coming two weeks, though they'll be ports from 2.6.18 to
+> 2.6.26.  I'll be sending them out to linux-mm once I've done so and
+> completed some testing.
+>
 
-Hi,
 
-last time I check kernel build for x86 and arm with -O0, there was 
-several issues.
+That would be great, thanks!
 
-First there some code that rely in function inline and code elimination, 
-and cause usage of disable symbol at  -O0
+>>
+>> Also it looks like the original patch just releases the mmap_sem if
+>> there is lock contention on the page, but keeps mmap_sem during read?
+>> I would like mmap_sem be released during disk I/O too.
+>
+> The 'lock'ing of the page is the part that waits for the read to
+> finish, and is the part that is contentious.
 
-#ifdef CONFIG_FOO
-int foo()
-{
-}
-static inline int toto()
-{
-}
-#else
-static inline int toto()
-{
-return 0
-}
-#endif
+Didn't know that, thanks for explaining.
 
-if (toto())
-    foo();
+>
+>>
+>> I also tried changing i_mmap_lock into a semaphore, however I that won't
+>> work since some users of i_mmap_lock can't sleep.
+>> Taking the i_mmap_lock spinlock in filemap fault is also not possible,
+>> since we would sleep while holding a spinlock.
+>
+> You shouldn't be seeing much contention on the i_mmap_lock, at least
+> not in the fault path (it's mostly just painful when you have a lot of
+> threads in direct reclaim and you have a large file mmaped).
 
-This doesn't work even when using __always_inline (try to build attached 
-undec.c at -O0).
+I was thinking of using i_mmap_lock as an alternative to holding
+mmap_sem, but it didn't seem like a good idea after all.
 
-
-Second, I saw problem with swab macro [1].
-When using -O0, __OPTIMIZE__ is not defined, and constant initialisation 
-of some code fails (I don't remeber exactly the case but removing the 
-defined(__OPTIMIZE__) fix the issue).
-
-Next for x86 there a driver with asm optimisation that fail to build 
-because gcc fail to allocate register.
-
-And finaly as Andi say there some code doing check if undefined symbol. 
-For example slab index_of [2]
-
-In the end I build the kernel at -O instead of -O0.
-
-Matthieu
-
-PS : I am not sure __always_inline always work at -O0...
-
-[1]
-#if defined(__GNUC__) && defined(__OPTIMIZE__)
-#  define __swab16(x) \
-(__builtin_constant_p((__u16)(x)) ? \
-  ___constant_swab16((x)) : \
-  __fswab16((x)))
-#  define __swab32(x) \
-(__builtin_constant_p((__u32)(x)) ? \
-  ___constant_swab32((x)) : \
-  __fswab32((x)))
-#  define __swab64(x) \
-(__builtin_constant_p((__u64)(x)) ? \
-  ___constant_swab64((x)) : \
-  __fswab64((x)))
-#else
-#  define __swab16(x) __fswab16(x)
-#  define __swab32(x) __fswab32(x)
-#  define __swab64(x) __fswab64(x)
-#endif /* OPTIMIZE */
-
-[2]
-static __always_inline int index_of(const size_t size)
-{
-     extern void __bad_size(void);
-
-     if (__builtin_constant_p(size)) {
-         int i = 0;
-
-#define CACHE(x) \
-     if (size <=x) \
-         return i; \
-     else \
-         i++;
-#include <linux/kmalloc_sizes.h>
-#undef CACHE
-         __bad_size();
-     } else
-         __bad_size();
-     return 0;
-}
-
---------------060906000101030207050901
-Content-Type: text/x-csrc;
- name="undec.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="undec.c"
-
-static inline __attribute__((always_inline)) int foo()
-{
-	return 0;
-}
-
-int main()
-{
-	if (foo())
-		bar();
-}
-
---------------060906000101030207050901--
+Best regards,
+--Edwin
