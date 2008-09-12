@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYILOlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbYILOmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbYILOlV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 10:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756680AbYILOlG
+	id S1756922AbYILOmB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYILOlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 10:41:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58987 "EHLO mx1.redhat.com"
+	Fri, 12 Sep 2008 10:41:50 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59040 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbYILOlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 10:41:04 -0400
-Date: Fri, 12 Sep 2008 10:41:52 -0400 (EDT)
-Message-Id: <20080912.104152.63132582.k-ueda@ct.jp.nec.com>
+	id S1752461AbYILOlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:41:49 -0400
+Date: Fri, 12 Sep 2008 10:42:28 -0400 (EDT)
+Message-Id: <20080912.104228.30188313.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, agk@redhat.com,
-       James.Bottomley@HansenPartnership.com
+       James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        dm-devel@redhat.com, j-nomura@ce.jp.nec.com, k-ueda@ct.jp.nec.com
-Subject: [PATCH 02/13] block: add request submission interface
+Subject: [PATCH 03/13] mm: lld busy status exporting interface
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 In-Reply-To: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
 References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com>
@@ -26,129 +26,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds blk_submit_request(), a generic request submission
-interface for request stacking drivers.
-Request-based dm will use it to submit their clones to underlying
-devices.
+This patch adds an interface to check lld's busy status
+from the block layer.  (scsi patch is also included.)
+This resolves a performance problem on request stacking devices below.
 
-blk_rq_check_limits() is also added because it is possible that
-the lower queue has stronger limitations than the upper queue
-if multiple drivers are stacking at request-level.
-Not only for blk_submit_request()'s internal use, the function
-will be used by request-based dm when the queue limitation is
-modified (e.g. by replacing dm's table).
+
+Some drivers like scsi mid layer stop dispatching request when
+they detect busy state on its low-level device like host/bus/device.
+It allows other requests to stay in the I/O scheduler's queue
+for a chance of merging.
+
+Request stacking drivers like request-based dm should follow
+the same logic.
+However, there is no generic interface for the stacked device
+to check if the underlying device(s) are busy.
+If the request stacking driver dispatches and submits requests to
+the busy underlying device, the requests will stay in
+the underlying device's queue without a chance of merging.
+This causes performance problem on burst I/O load.
+
+With this patch, busy state of the underlying device is exported
+via the state flag of queue's backing_dev_info.  So the request
+stacking driver can check it and stop dispatching requests if busy.
+
+The underlying device driver must set/clear the flag appropriately:
+   ON:  when the device driver can't process requests immediately.
+   OFF: when the device driver can process requests immediately,
+        including abnormal situations where the device driver needs
+        to kill all requests.
 
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- block/blk-core.c       |   81 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/blkdev.h |    2 +
- 2 files changed, 83 insertions(+)
+ include/linux/backing-dev.h |    8 ++++++++
+ mm/backing-dev.c            |   13 +++++++++++++
+ 2 files changed, 21 insertions(+)
 
-Index: 2.6.27-rc6/block/blk-core.c
+Index: 2.6.27-rc6/include/linux/backing-dev.h
 ===================================================================
---- 2.6.27-rc6.orig/block/blk-core.c
-+++ 2.6.27-rc6/block/blk-core.c
-@@ -1517,6 +1517,87 @@ void submit_bio(int rw, struct bio *bio)
- EXPORT_SYMBOL(submit_bio);
+--- 2.6.27-rc6.orig/include/linux/backing-dev.h
++++ 2.6.27-rc6/include/linux/backing-dev.h
+@@ -26,6 +26,7 @@ enum bdi_state {
+ 	BDI_pdflush,		/* A pdflush thread is working this device */
+ 	BDI_write_congested,	/* The write queue is getting full */
+ 	BDI_read_congested,	/* The read queue is getting full */
++	BDI_lld_congested,	/* The device/host is busy */
+ 	BDI_unused,		/* Available bits start here */
+ };
  
- /**
-+ * blk_rq_check_limits - Helper function to check a request for the queue limit
-+ * @q:  the queue
-+ * @rq: the request being checked
-+ *
-+ * Description:
-+ *    @rq may have been made based on weaker limitations of upper-level queues
-+ *    in request stacking drivers, and it may violate the limitation of @q.
-+ *    Since the block layer and the underlying device driver trust @rq
-+ *    after it is inserted to @q, it should be checked against @q before
-+ *    the insertion using this generic function.
-+ *
-+ *    This function should also be useful for request stacking drivers
-+ *    in some cases below, so export this fuction.
-+ *    Request stacking drivers like request-based dm may change the queue
-+ *    limits while requests are in the queue (e.g. dm's table swapping).
-+ *    Such request stacking drivers should check those requests agaist
-+ *    the new queue limits again when they dispatch those requests,
-+ *    although such checkings are also done against the old queue limits
-+ *    when submitting requests.
-+ */
-+int blk_rq_check_limits(struct request_queue *q, struct request *rq)
+@@ -226,8 +227,15 @@ static inline int bdi_rw_congested(struc
+ 				  (1 << BDI_write_congested));
+ }
+ 
++static inline int bdi_lld_congested(struct backing_dev_info *bdi)
 +{
-+	if (rq->nr_sectors > q->max_sectors ||
-+	    rq->data_len > q->max_hw_sectors << 9) {
-+		printk(KERN_ERR "%s: over max size limit.\n", __func__);
-+		return -EIO;
-+	}
-+
-+	/*
-+	 * queue's settings related to segment counting like q->bounce_pfn
-+	 * may differ from that of other stacking queues.
-+	 * Recalculate it to check the request correctly on this queue's
-+	 * limitation.
-+	 */
-+	blk_recalc_rq_segments(rq);
-+	if (rq->nr_phys_segments > q->max_phys_segments ||
-+	    rq->nr_hw_segments > q->max_hw_segments) {
-+		printk(KERN_ERR "%s: over max segments limit.\n", __func__);
-+		return -EIO;
-+	}
-+
-+	return 0;
++	return bdi_congested(bdi, 1 << BDI_lld_congested);
 +}
-+EXPORT_SYMBOL_GPL(blk_rq_check_limits);
 +
-+/**
-+ * blk_submit_request - Helper for stacking drivers to submit a request
-+ * @q:  the queue to submit the request
-+ * @rq: the request being queued
-+ */
-+int blk_submit_request(struct request_queue *q, struct request *rq)
-+{
-+	unsigned long flags;
-+
-+	if (blk_rq_check_limits(q, rq))
-+		return -EIO;
-+
-+#ifdef CONFIG_FAIL_MAKE_REQUEST
-+	if (rq->rq_disk && rq->rq_disk->flags & GENHD_FL_FAIL &&
-+	    should_fail(&fail_make_request, blk_rq_bytes(rq)))
-+		return -EIO;
-+#endif
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
-+
-+	/*
-+	 * Submitting request must be dequeued before calling this function
-+	 * because it will be linked to another request_queue
-+	 */
-+	BUG_ON(blk_queued_rq(rq));
-+
-+	drive_stat_acct(rq, 1);
-+	__elv_add_request(q, rq, ELEVATOR_INSERT_BACK, 0);
-+
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(blk_submit_request);
-+
-+/**
-  * __end_that_request_first - end I/O on a request
-  * @req:      the request being processed
-  * @error:    0 for success, < 0 for error
-Index: 2.6.27-rc6/include/linux/blkdev.h
+ void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
+ void set_bdi_congested(struct backing_dev_info *bdi, int rw);
++void clear_bdi_lld_congested(struct backing_dev_info *bdi);
++void set_bdi_lld_congested(struct backing_dev_info *bdi);
+ long congestion_wait(int rw, long timeout);
+ 
+ 
+Index: 2.6.27-rc6/mm/backing-dev.c
 ===================================================================
---- 2.6.27-rc6.orig/include/linux/blkdev.h
-+++ 2.6.27-rc6/include/linux/blkdev.h
-@@ -664,6 +664,8 @@ extern void __blk_put_request(struct req
- extern struct request *blk_get_request(struct request_queue *, int, gfp_t);
- extern void blk_insert_request(struct request_queue *, struct request *, int, void *);
- extern void blk_requeue_request(struct request_queue *, struct request *);
-+extern int blk_rq_check_limits(struct request_queue *q, struct request *rq);
-+extern int blk_submit_request(struct request_queue *q, struct request *rq);
- extern void blk_plug_device(struct request_queue *);
- extern void blk_plug_device_unlocked(struct request_queue *);
- extern int blk_remove_plug(struct request_queue *);
+--- 2.6.27-rc6.orig/mm/backing-dev.c
++++ 2.6.27-rc6/mm/backing-dev.c
+@@ -279,6 +279,19 @@ void set_bdi_congested(struct backing_de
+ }
+ EXPORT_SYMBOL(set_bdi_congested);
+ 
++void clear_bdi_lld_congested(struct backing_dev_info *bdi)
++{
++	clear_bit(BDI_lld_congested, &bdi->state);
++	smp_mb__after_clear_bit();
++}
++EXPORT_SYMBOL_GPL(clear_bdi_lld_congested);
++
++void set_bdi_lld_congested(struct backing_dev_info *bdi)
++{
++	set_bit(BDI_lld_congested, &bdi->state);
++}
++EXPORT_SYMBOL_GPL(set_bdi_lld_congested);
++
+ /**
+  * congestion_wait - wait for a backing_dev to become uncongested
+  * @rw: READ or WRITE
