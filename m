@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbYILNyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbYILOI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbYILNyD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 09:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYILNxv
+	id S1755439AbYILOI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 10:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYILOIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 09:53:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:12253 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756666AbYILNxu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 09:53:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vtp6JG3faUQcojIiwta+coupn8UO8rbVuL04DJuri44MrByegoO9WAe7SB38V8iKLS
-         5zLEe+AeTZ8LveNyPmiHwY4Wr4hl56uYzbrQPZFZizmP+qw4rfZfls9+J+Rf9uSmlcZK
-         S6QV3oH4RrHT/46P27vtZuZkgRhfudt4ANtY4=
-Message-ID: <8bd0f97a0809120653u73340e0cr48900039d281492@mail.gmail.com>
-Date: Fri, 12 Sep 2008 09:53:49 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "sonic zhang" <sonic.adi@gmail.com>
-Subject: Re: [PATCH][kgdb][v2] Make mem access function weak in kgdb.c and kgdb.h
-Cc: "Jason Wessel" <jason.wessel@windriver.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "kgdb mailing list" <kgdb-bugreport@lists.sourceforge.net>
-In-Reply-To: <1221197956.15380.6.camel@eight.analog.com>
+	Fri, 12 Sep 2008 10:08:49 -0400
+Received: from xsmtp1.ethz.ch ([82.130.70.13]:53615 "EHLO xsmtp1.ethz.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752328AbYILOIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 10:08:49 -0400
+X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Sep 2008 10:08:48 EDT
+Message-ID: <48CA745B.2070605@debian.org>
+Date: Fri, 12 Sep 2008 15:53:31 +0200
+From: "Giacomo A. Catenazzi" <cate@debian.org>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Peter Oruba <peter.oruba@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 05/11] [PATCH 05/11] x86: Moved microcode.c to microcode_intel.c.
+References: <20080728164411.490752571@amd.com>	<20080728164448.492961653@amd.com>	<20080907120823.59f8fa47@infradead.org>	<48CA586C.2010104@amd.com> <20080912063517.783b7f85@infradead.org>
+In-Reply-To: <20080912063517.783b7f85@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221197956.15380.6.camel@eight.analog.com>
+X-OriginalArrivalTime: 12 Sep 2008 13:53:34.0989 (UTC) FILETIME=[F30EABD0:01C914DE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 01:39, sonic zhang wrote:
+Arjan van de Ven wrote:
+> On Fri, 12 Sep 2008 13:54:20 +0200
+> Peter Oruba <peter.oruba@amd.com> wrote:
+> 
+>> Arjan,
+>>
+>> could you please provide some more information about that issue?
+> 
+> well.. the fedora boot script just plain fails.
+> I suspect it manually loads microcode.ko or something if CPUID says
+> intel; and this now stops working...
 
-bunch of typos in the comments ...
+Also Debian manually load the module, and it remove it
+after upgrading microcode (no need to have the
+driver loaded after boot), so changing the name of
+module is not so fortunate, also considering the
+long releases cycle of Debian.
 
-> + *      kgdb_mem2hex - (optional arch overide) traslate bin to hex chars
+I would like to have a single microcode module for the
+two drivers: generic kernel need both (thus reduce
+overhead); specialized kernel are configured only with
+the relevant driver, so no additional overhead.
 
-override / translate
+ciao
+	cate
 
-> + *      Archictures which do not support probe_kernel_(read|write),
-
-Architectures
-
-> + *      can make an alternate implmentation of this function.
-
-implementation
-
-> + *      kgdb_hex2mem - (optional arch overide) traslate hex chars to bin
-
-override / translate
-
-> + *      Archictures which do not support probe_kernel_(read|write),
-
-Architectures
-
-> + *      can make an alternate implmentation of this function.
-
-implementation
-
-> + *      kgdb_ebin2mem - (optional arch overide) Copy the binary array
-
-override
-
-> + *      Archictures which do not support probe_kernel_(read|write),
-
-Architectures
-
-> + *      can make an alternate implmentation of this function.
-
-implementation
-
-> + *      This function safely copys binary array into memory
-
-copies
--mike
