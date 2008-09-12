@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbYILPE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbYILPKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756678AbYILPE3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 11:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYILPEV
+	id S1756630AbYILPKP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 11:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYILPKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 11:04:21 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44085 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbYILPEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 11:04:20 -0400
-To: joerg.roedel@amd.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: make GART to respect device's dma_mask about
- virtual mappings
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080912145227.GA24945@amd.com>
-References: <1221216155-17640-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1221216155-17640-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20080912145227.GA24945@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080913001134J.fujita.tomonori@lab.ntt.co.jp>
-Date: Sat, 13 Sep 2008 00:11:34 +0900
+	Fri, 12 Sep 2008 11:10:00 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:17907 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbYILPJ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 11:09:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=UeAv5unxOykFuIIrlVAcF69IDbBbnlST+KuJ+7kSG+YHUaRE+rABd5G8/LFsJ+B0bq
+         r+7oShNVpLFBKZWxo7dLe6RJ1RZQm3TSzynnMfjjmkfAPzBKQhLPb0558vkoNRm5PZDC
+         DoBiQU1IOaeaOQd43vHS34JOwTmUXlt1+nJ84=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       =?utf-8?q?Fernando=20Luis=20V=C3=A1zquez=20Cao?= 
+	<fernando@oss.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>, agk@sourceware.org,
+       Marco Innocenti <m.innocenti@cineca.it>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Matt Heaton <matt@bluehost.com>,
+       David Radford <dradford@bluehost.com>,
+       containers@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] [PATCH -mm 0/2] memcg: per cgroup dirty_ratio
+Date: Fri, 12 Sep 2008 17:09:50 +0200
+Message-Id: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008 16:52:27 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-> On Fri, Sep 12, 2008 at 07:42:35PM +0900, FUJITA Tomonori wrote:
-> > Currently, GART IOMMU ingores device's dma_mask when it does virtual
-> > mappings. So it could give a device a virtual address that the device
-> > can't access to.
-> > 
-> > This patch fixes the above problem.
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  arch/x86/kernel/pci-gart_64.c |   39 ++++++++++++++++++++++++++++-----------
-> >  1 files changed, 28 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-> > index 47abe43..9739d56 100644
-> > --- a/arch/x86/kernel/pci-gart_64.c
-> > +++ b/arch/x86/kernel/pci-gart_64.c
-> > @@ -83,23 +83,34 @@ static unsigned long next_bit;  /* protected by iommu_bitmap_lock */
-> >  static int need_flush;		/* global flush state. set for each gart wrap */
-> >  
-> >  static unsigned long alloc_iommu(struct device *dev, int size,
-> > -				 unsigned long align_mask)
-> > +				 unsigned long align_mask, u64 dma_mask)
-> 
-> You can calculate the dma_mask in this function from the dev parameter.
-> There is no need to pass it two levels down to this function extending
-> various parameter lists.
+The goal of the patch is to control how much dirty file pages a cgroup can have
+at any given time (see also [1]).
 
-No, we can't because we need to use dev->coherent_dma_mask for
-alloc_coherent and dev->dma_mask for the rest.
+Dirty file and writeback pages are accounted for each cgroup using the memory
+controller statistics. Moreover, the dirty_ratio parameter is added to the
+memory controller. It contains, as a percentage of the cgroup memory, the
+number of dirty pages at which the processes belonging to the cgroup which are
+generating disk writes will start writing out dirty data.
+
+So, the behaviour is actually the same as the global dirty_ratio, except that
+it works per cgroup.
+
+Interface:
+- two new entries "writeback" and "filedirty" are added to the file
+  memory.stat, to export to userspace respectively the number of pages under
+  writeback and the number of dirty file pages in the cgroup
+
+- the new file memory.dirty_ratio is added in the cgroup filesystem to show/set
+  the memcg dirty_ratio
+
+[ This patch is still experimental and I only did few quick tests. I'd like to
+do run more detailed benchmarks and compare the results, I guess the overhead
+introduced by this patch shouldn't be so small... and BTW I would prefer a
+dirty limit in bytes, intead of using a percentage of memory. Bytes are hugely
+more flexible IMHO, they allow to define more fine-grained limits and so this
+would work better on large memory machines. ]
+
+[1] http://lkml.org/lkml/2008/9/9/245
+
+-Andrea
