@@ -1,117 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYILRUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYILRbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbYILRUM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 13:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbYILRT4
+	id S1756617AbYILRbo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 13:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYILRbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 13:19:56 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:28308 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757281AbYILRTy (ORCPT
+	Fri, 12 Sep 2008 13:31:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:29798 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780AbYILRbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 13:19:54 -0400
-Date: Fri, 12 Sep 2008 10:18:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
-Subject: [RFC/PATCH] dontdiff: generate from gitignore
-Message-Id: <20080912101840.e0b6dd8c.randy.dunlap@oracle.com>
-In-Reply-To: <20080901231419.GA5602@x200.localdomain>
-References: <20080901150951.5cba4dc7@infradead.org>
-	<20080901231419.GA5602@x200.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 12 Sep 2008 13:31:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uWJuStwym/wlFGIRLJJ+xKRx/7bLAYz7LEth3AOzJss7HnKE0AjOvf7d2a75T+lyMH
+         OGB1a/WZB19AfQx2NZqj+8EQvu4DOry5bU2nNVTtNTjJKf4rvxWnijlhlodv2g1wpfMC
+         tBFA+N/AAfxagW4ndBI2URmyd+Xe4w0sRwmMw=
+Message-ID: <86802c440809121031r3aa498deqec3ecef61bafd21c@mail.gmail.com>
+Date: Fri, 12 Sep 2008 10:31:33 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 6 of 7] x86: use early_ioremap in __acpi_map_table
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080912094955.GB14201@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <patchbomb.1220826072@localhost>
+	 <944fe7ea3da7707eb90f.1220826078@localhost>
+	 <20080907234418.GB26079@one.firstfloor.org>
+	 <48C46BCB.2060209@goop.org> <20080908142619.GA10580@elte.hu>
+	 <20080910115525.GA31692@elte.hu> <48C7FA91.9050302@goop.org>
+	 <86802c440809111334u6d6691c3sd83bcfddc83b1bbd@mail.gmail.com>
+	 <48C9889B.7090901@goop.org> <20080912094955.GB14201@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, Sep 12, 2008 at 2:49 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>> Yinghai Lu wrote:
+>> > void __iomem *__init_refok
+>> > acpi_os_map_memory(acpi_physical_address phys, acpi_size size)
+>> > {
+>> >         if (phys > ULONG_MAX) {
+>> >                 printk(KERN_ERR PREFIX "Cannot map memory that high\n");
+>> >                 return NULL;
+>> >         }
+>> >         if (acpi_gbl_permanent_mmap)
+>> >                 /*
+>> >                 * ioremap checks to ensure this is in reserved space
+>> >                 */
+>> >                 return ioremap((unsigned long)phys, size);
+>> >         else
+>> >                 return __acpi_map_table((unsigned long)phys, size);
+>> > }
+>> > EXPORT_SYMBOL_GPL(acpi_os_map_memory);
+>> >
+>> > void acpi_os_unmap_memory(void __iomem * virt, acpi_size size)
+>> > {
+>> >         if (acpi_gbl_permanent_mmap) {
+>> >                 iounmap(virt);
+>> >         }
+>> > }
+>> > EXPORT_SYMBOL_GPL(acpi_os_unmap_memory);
+>> >
+>> > just let acpi_os_unmap_memory to call __acpi_unmap_table...
+>> >
+>>
+>> That was my first attempt.  Unfortunately a lot of the acpi code seems
+>> pretty sloppy about unmapping its tables, and basically relies on
+>> __acpi_map_table's current behaviour of removing the previous mapping
+>> when creating the new mapping.
+>
+> could we just emit a WARN_ON_ONCE() warning when we have to remove a
+> previous mapping, so that the ACPI code can be fixed eventually?
 
-Generate the "dontdiff" file from the .gitignore files.
-Save it in scripts/dontdiff.
+could be some code is shared between early and permanent, and later
+may not need unmap.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Makefile           |   10 +++++++++-
- scripts/.gitignore |    1 +
- scripts/mkdontdiff |   23 +++++++++++++++++++++++
- 3 files changed, 33 insertions(+), 1 deletion(-)
+anyway those code need to be cleanup, to double check if some fix-map
+is overwrited unexpected..
 
---- linux-2.6.27-rc6-git2.orig/Makefile
-+++ linux-2.6.27-rc6-git2/Makefile
-@@ -398,7 +398,7 @@ endif
- no-dot-config-targets := clean mrproper distclean \
- 			 cscope TAGS tags help %docs check% \
- 			 include/linux/version.h headers_% \
--			 kernelrelease kernelversion
-+			 kernelrelease kernelversion dontdiff
- 
- config-targets := 0
- mixed-targets  := 0
-@@ -1251,6 +1251,7 @@ help:
- 	@echo  '  dir/            - Build all files in dir and below'
- 	@echo  '  dir/file.[ois]  - Build specified target only'
- 	@echo  '  dir/file.ko     - Build module including final link'
-+	@echo  '  dontdiff        - Create a "dontdiff" file'
- 	@echo  '  prepare         - Set up for building external modules'
- 	@echo  '  tags/TAGS	  - Generate tags file for editors'
- 	@echo  '  cscope	  - Generate cscope index'
-@@ -1519,6 +1520,13 @@ endef
- tags: FORCE
- 	$(call cmd,tags)
- 
-+quiet_cmd_dontdiff = MAKE    dontdiff
-+      cmd_dontdiff = $(shell $(CONFIG_SHELL) \
-+	                  $(srctree)/scripts/mkdontdiff $(srctree))
-+
-+dontdiff: FORCE
-+	$(call cmd,dontdiff)
-+
- 
- # Scripts to check various things for consistency
- # ---------------------------------------------------------------------------
---- /dev/null
-+++ linux-2.6.27-rc6-git2/scripts/mkdontdiff
-@@ -0,0 +1,23 @@
-+#! /bin/sh
-+set -f
-+
-+TMPFILE=`mktemp ./.tmpdd.XXXXXX`
-+srctree=$1
-+DDFILE=$srctree/scripts/dontdiff
-+
-+find . -name .gitignore | xargs cat | grep -v '^[#!]' | grep -v '^[:space:]*$' | sort | uniq > $TMPFILE
-+
-+rm -f $DDFILE
-+touch $DDFILE
-+
-+while read PATTERN ; do
-+	if echo "$PATTERN" | grep -q '/' ; then
-+		filename=`basename $PATTERN`
-+	else
-+		filename="$PATTERN"
-+	fi
-+
-+	echo $filename >> $DDFILE
-+done < $TMPFILE
-+
-+rm $TMPFILE
---- linux-2.6.27-rc6-git2.orig/scripts/.gitignore
-+++ linux-2.6.27-rc6-git2/scripts/.gitignore
-@@ -2,6 +2,7 @@
- # Generated files
- #
- conmakehash
-+dontdiff
- kallsyms
- pnmtologo
- bin2c
-
+YH
