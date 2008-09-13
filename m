@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbYIMVAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbYIMVJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbYIMVAF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 17:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbYIMU7z
+	id S1753396AbYIMVJq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 17:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbYIMVJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 16:59:55 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:50757 "EHLO havoc.gtf.org"
+	Sat, 13 Sep 2008 17:09:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:46406 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975AbYIMU7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 16:59:54 -0400
-Date: Sat, 13 Sep 2008 16:59:53 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20080913205953.GA4199@havoc.gtf.org>
+	id S1751462AbYIMVJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 17:09:40 -0400
+Message-ID: <48CC2C12.4080302@goop.org>
+Date: Sat, 13 Sep 2008 14:09:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: roberto@unbit.it
+CC: jeremy@xensource.com, linux-kernel@vger.kernel.org,
+       Mirko Iannella <mirko@unbit.it>, Ingo Molnar <mingo@elte.hu>,
+       Alex Nixon <alex.nixon@citrix.com>
+Subject: Re: Fix for xen guest with mem > 3.7G
+References: <1221333418.6036.9.camel@sirius>
+In-Reply-To: <1221333418.6036.9.camel@sirius>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roberto De Ioris wrote:
+> Xen domU kernel 2.6.26 and 2.6.27-rc cannot allocate
+> more than 3.7GB of ram on my PAE systems (compiled
+> with gcc version 4.2.3 (Ubuntu 4.2.3-2ubuntu7)).
+>
+> I have found the problem is in function xen_memory_setup (in
+> arch/x86/xen/setup.c).
+>
+> It set max_pfn as 'unsigned long' but add_memory_region()
+> takes 'unsigned long long'.
+>
+> I do not know if it is a compiler problem but this is the simple fix
+> (works on my systems):
+>   
 
-The off-by-one bug fix is notable; see extended commit description.
-Verified by several people as fixing their problem here.
+Thanks very much for the patch.  We have a more general fix for this in
+Ingo's tip.git tree, but I overlooked that this particular problem
+affected current -rc.
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+Ingo, this is fixed by the phys_addr_t + PFN_PHYS() patches.  Should we
+send them up to Linus, or do an ad-hoc fix in this one place?
 
-to receive the following updates:
+Thanks,
+    J
 
- drivers/ata/ata_piix.c      |    2 +-
- drivers/ata/sata_inic162x.c |    3 ++-
- include/linux/ata.h         |    2 +-
- 3 files changed, 4 insertions(+), 3 deletions(-)
+> --- setup.c.orig	2008-09-13 21:12:56.000000000 +0200
+> +++ setup.c	2008-09-13 20:35:29.000000000 +0200
+> @@ -36,7 +36,7 @@
+>  
+>  char * __init xen_memory_setup(void)
+>  {
+> -	unsigned long max_pfn = xen_start_info->nr_pages;
+> +	unsigned long long max_pfn = xen_start_info->nr_pages;
+>  
+>  	e820.nr_map = 0;
+>  	add_memory_region(0, LOWMEMSIZE(), E820_RAM);
+>
+>
+>
+>   
 
-Bob Stewart (1):
-      sata_inic162x: enable LED blinking
-
-Stephen Hemminger (1):
-      ata: duplicate variable sparse warning
-
-Taisuke Yamada (1):
-      [libata] LBA28/LBA48 off-by-one bug in ata.h
-
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index b1d08a8..e6b4606 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -1499,7 +1499,7 @@ static int __devinit piix_init_one(struct pci_dev *pdev,
- 	 * off.
- 	 */
- 	if (pdev->vendor == PCI_VENDOR_ID_INTEL && pdev->device == 0x2652) {
--		int rc = piix_disable_ahci(pdev);
-+		rc = piix_disable_ahci(pdev);
- 		if (rc)
- 			return rc;
- 	}
-diff --git a/drivers/ata/sata_inic162x.c b/drivers/ata/sata_inic162x.c
-index 3ead02f..5032c32 100644
---- a/drivers/ata/sata_inic162x.c
-+++ b/drivers/ata/sata_inic162x.c
-@@ -96,6 +96,7 @@ enum {
- 	PORT_SCR		= 0x20,
- 
- 	/* HOST_CTL bits */
-+	HCTL_LEDEN		= (1 << 3),  /* enable LED operation */
- 	HCTL_IRQOFF		= (1 << 8),  /* global IRQ off */
- 	HCTL_FTHD0		= (1 << 10), /* fifo threshold 0 */
- 	HCTL_FTHD1		= (1 << 11), /* fifo threshold 1*/
-@@ -540,7 +541,7 @@ static unsigned int inic_qc_issue(struct ata_queued_cmd *qc)
- 	void __iomem *port_base = inic_port_base(ap);
- 
- 	/* fire up the ADMA engine */
--	writew(HCTL_FTHD0, port_base + HOST_CTL);
-+	writew(HCTL_FTHD0 | HCTL_LEDEN, port_base + HOST_CTL);
- 	writew(IDMA_CTL_GO, port_base + PORT_IDMA_CTL);
- 	writeb(0, port_base + PORT_CPB_PTQFIFO);
- 
-diff --git a/include/linux/ata.h b/include/linux/ata.h
-index 1ce19c1..8a12d71 100644
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -745,7 +745,7 @@ static inline int ata_ok(u8 status)
- static inline int lba_28_ok(u64 block, u32 n_block)
- {
- 	/* check the ending block number */
--	return ((block + n_block - 1) < ((u64)1 << 28)) && (n_block <= 256);
-+	return ((block + n_block) < ((u64)1 << 28)) && (n_block <= 256);
- }
- 
- static inline int lba_48_ok(u64 block, u32 n_block)
