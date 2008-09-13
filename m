@@ -1,75 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbYIMImm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbYIMIrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758331AbYIMImm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 04:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYIMImc
+	id S1758300AbYIMIrX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 04:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYIMIrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 04:42:32 -0400
-Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:60224 "EHLO
-	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752952AbYIMImb (ORCPT
+	Sat, 13 Sep 2008 04:47:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:44633 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754930AbYIMIrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 04:42:31 -0400
-From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Organization: Chemnitz University of Technology
-To: Janne Grunau <j@jannau.net>
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Sat, 13 Sep 2008 10:41:33 +0200
-User-Agent: KMail/1.9.5
-Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
-       Christoph Bartelmus <lirc@bartelmus.de>
-References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809121224.34345.jwilson@redhat.com> <200809130226.35998.j@jannau.net>
-In-Reply-To: <200809130226.35998.j@jannau.net>
+	Sat, 13 Sep 2008 04:47:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=wf4dPBHFMDkh0gaYXjMynSQ/BevFFxwnSGlcBucz5G7YcxU9+tjxtcB+T2sDKTIAHW
+         yJyJ3lPUUBCIyPOKjSuHupNqBQKxqEXXO5FwGq0KxmbCzKvp1LOpNww4xFFI5kBCI5jj
+         qV4CbyxFEIdiZZxDkePKCu/mxpVUiYjfp5Y20=
+Message-ID: <3f9a31f40809130147w5b89cde0of87adbfc0193a441@mail.gmail.com>
+Date: Sat, 13 Sep 2008 04:47:04 -0400
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11271] BUG: fealnx in 2.6.27-rc1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Francois Romieu" <romieu@fr.zoreil.com>,
+       "Jeff Garzik" <jeff@garzik.org>, davem@davemloft.net,
+       netdev@vger.kernel.org
+In-Reply-To: <SpS7rta8n4.A.DCB.IfsyIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809131041.33717.stefan.bauer@cs.tu-chemnitz.de>
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: a37c3661e0372786d6c154dc38711565
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	 <SpS7rta8n4.A.DCB.IfsyIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 September 2008 02:26, Janne Grunau wrote:
-> On Friday 12 September 2008 18:24:33 Jarod Wilson wrote:
-> > > I just want to thank you very much for your work and give you my
-> > > Tested-By. Todays git (b2e9c18a32423310a309f94ea5a659c4bb264378)
-> > > works well here with lirc-0.8.3 userspace on a Pentium
-> > > 3/i815-system.
-> >
-> > Oh good! I haven't broken anything further w/my changes up to
-> > b2e9c18... ;) I've got another slew of updates to lirc_serial still
-> > pending though
->
-> I hope I haven't broken anything with my lirc_dev changes. I doubt I'll
-> have a change to test it before monday.
+Hello all,
 
-Unfortunately, you did. Commit ea74897 (port lirc to dynamic device numbers) 
-broke things.
-This is what ea74897 and further (latest tested was dd13cc7) are telling me:
+On Fri, Sep 12, 2008 at 3:06 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-$ insmod drivers/input/lirc/lirc_dev.ko
-$ insmod drivers/input/lirc/lirc_serial.ko
-insmod: error inserting 'drivers/input/lirc/lirc_serial.ko': -1 Input/output 
-error
-$ dmesg | tail
-lirc_dev: IR Remote Control driver registered, major 253 
-lirc_serial: auto-detected active low receiver
-lirc_dev: lirc_register_driver: sample_rate: 0
-lirc_serial: register_chrdev failed!
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11271
+> Subject         : BUG: fealnx in 2.6.27-rc1
+> Submitter       : Jaswinder Singh <jaswinderlinux@gmail.com>
+> Date            : 2008-08-05 14:58 (39 days old)
+> References      : http://marc.info/?l=linux-netdev&m=121794762016830&w=4
+>                  http://lkml.org/lkml/2008/8/10/98
 
+I am sorry for delay.
 
-There has also been a compile issue in the meanwhile, introduced with 95efa30 
-(inb/outb and readb/writeb deal in u8 types), but this is gone with todays 
-git pull :)
+Now I am testing for same problem with  2.6.27-rc6.:
+1. On different MYSON Technology Inc SURECOM EP-320X-S 100/10M
+Ethernet PCI Adapters
+2. On different Linux PCs
+3. With different Ethernet switches which supports 100 Mb
+4. With different CAT 5 ethernet cables which supports 100 Mb
+5. Also checking old patches on fealnx as per Jeff.
 
+And it seems, I am getting following error, with few ethernet switches
+and cables and when I switch ethernet cables  :
+"NETDEV WATCHDOG: eth0 (fealnx): transmit timed out
+eth0: Transmit timed out, status 00000000, resetting..."
 
-I'll keep on testing (unfortunately only at weekends),
-regards, Stefan
+Now I am trying to confirm that problem is coming from ethernet
+switches and cables.
+
+I am also facing one more Issue :
+
+With same 100 Mb ethernet switch and cable my another NIC run at 100
+Mb/s and full duplex but MYSON Technology Inc SURECOM EP-320X-S
+100/10M runs on 10 Mb/s and half duplex.
+
+I debug fealnx it says : PHYType 1 duplex_mode : 2 line_speed : 2
+crvalue : 0xe40e61 bcrvalue : 0x10 imrvalue : 0x46c flags : 0x1
+
+So it is saying duplex_mode : 2 (full duplex) and line_speed = 2
+(100M) then why I am getting 10MB half duplex ?
+
+#lspci -vv
+02:02.0 Ethernet controller: MYSON Technology Inc SURECOM EP-320X-S
+100/10M Ethernet PCI Adapter
+        Subsystem: MYSON Technology Inc SURECOM EP-320X-S 100/10M
+Ethernet PCI Adapter
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
+ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium
+>TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 32 (8000ns min, 16000ns max), Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 17
+        Region 0: I/O ports at b800 [size=256]
+        Region 1: Memory at ff9ffc00 (32-bit, non-prefetchable) [size=1K]
+        Expansion ROM at 50000000 [disabled] [size=64K]
+        Capabilities: [88] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=375mA
+PME(D0-,D1+,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Kernel driver in use: fealnx
+
+#/sbin/ethtool eth0
+Settings for eth0:
+        Supported ports: [ TP MII ]
+        Supported link modes:   10baseT/Half 10baseT/Full
+                                100baseT/Half 100baseT/Full
+        Supports auto-negotiation: Yes
+        Advertised link modes:  Not reported
+        Advertised auto-negotiation: No
+        Speed: 10Mb/s
+        Duplex: Half
+        Port: MII
+        PHYAD: 32
+        Transceiver: internal
+        Auto-negotiation: off
+        Current message level: 0x00000000 (0)
+        Link detected: no
+
+Thank you,
+
+Jaswinder Singh.
