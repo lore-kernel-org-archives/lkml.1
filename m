@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYIMT31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbYIMT3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbYIMT31 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 15:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYIMT3A
+	id S1753733AbYIMT3l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 15:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYIMT3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 15:29:00 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:35400 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682AbYIMT26 (ORCPT
+	Sat, 13 Sep 2008 15:29:01 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:3787 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752821AbYIMT3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 15:28:58 -0400
+	Sat, 13 Sep 2008 15:29:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=K/hYzxcCQaShb0kpRvP0DbwS3gErJRaiFZbxzIv14RQFL3YWw1uAhiYnc5gsFwOiwS
-         IpbvZHBJdDo1rWZ0+gHkwOAVJYXBA34ypHfJd+0MBTmtjF23NGbNjIY0mpjKHbVY6Jqe
-         Bmu91w/t7p6eb7AnLE8SVSMJ/HnET49AnaX50=
+        b=oVwRyMkilSQCsLS5i9GRqMR9t8dH+u2GEOEJA4wYFlrgIJMzTy2b1AD3mdEWl/Jxfc
+         /kiceaOGiq5Z3JOnxkcaTSNw7iy1nR1WnJ/9RgagViOk22CCD/FeDsWrGf9Pthlnsw9H
+         d3aZ0dd2YgIfGfI4s6PBQStrfoG5dCLYhp2K8=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 2/3] acpi/x86: introduce __apci_map_table v3
-Date: Sat, 13 Sep 2008 12:28:19 -0700
-Message-Id: <1221334101-6464-2-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 1/3] x86: change early_ioremap to use slots instead of nesting
+Date: Sat, 13 Sep 2008 12:28:20 -0700
+Message-Id: <1221334101-6464-3-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1221334101-6464-1-git-send-email-yhlu.kernel@gmail.com>
 References: <1221334101-6464-1-git-send-email-yhlu.kernel@gmail.com>
@@ -31,305 +31,199 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-to prevent wrongly overwriting fixmap that still want to use.
-v2: remove prev_map and prev_size in __apci_map_table
-v3: let acpi_os_unmap_memory() call early_iounmap too, so remove extral calling to
-	early_acpi_os_unmap_memory
+so could remove requirement that need to call early_ioremap in exactly revese
+order of early_iounmap
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
----
- arch/ia64/kernel/acpi.c        |    4 ++++
- arch/x86/kernel/acpi/boot.c    |   17 +++++++----------
- arch/x86/kernel/early-quirks.c |    4 +++-
- drivers/acpi/bus.c             |    6 ------
- drivers/acpi/osl.c             |   11 +++++++++--
- drivers/acpi/tables.c          |   20 ++++++++++++++------
- drivers/acpi/tables/tbxface.c  |   17 ++++++++++++++---
- include/acpi/acpiosxf.h        |    1 +
- include/acpi/acpixf.h          |    4 ++++
- include/linux/acpi.h           |    1 +
- 10 files changed, 57 insertions(+), 28 deletions(-)
+ arch/x86/mm/ioremap.c       |   77 ++++++++++++++++++++++++++++++++------------
+ include/asm-x86/fixmap_32.h |    4 +-
+ include/asm-x86/fixmap_64.h |    4 +-
+ 3 files changed, 61 insertions(+), 24 deletions(-)
 
-Index: linux-2.6/arch/ia64/kernel/acpi.c
+Index: linux-2.6/arch/x86/mm/ioremap.c
 ===================================================================
---- linux-2.6.orig/arch/ia64/kernel/acpi.c
-+++ linux-2.6/arch/ia64/kernel/acpi.c
-@@ -176,6 +176,10 @@ char *__init __acpi_map_table(unsigned l
- 	return __va(phys_addr);
+--- linux-2.6.orig/arch/x86/mm/ioremap.c
++++ linux-2.6/arch/x86/mm/ioremap.c
+@@ -565,16 +565,22 @@ static inline void __init early_clear_fi
+ 		__early_set_fixmap(idx, 0, __pgprot(0));
  }
  
-+char *__init __acpi_unmap_table(unsigned long virt_addr, unsigned long size)
-+{
-+}
-+
- /* --------------------------------------------------------------------------
-                             Boot-time Table Parsing
-    -------------------------------------------------------------------------- */
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -121,21 +121,18 @@ enum acpi_irq_model_id acpi_irq_model =
-  */
- char *__init __acpi_map_table(unsigned long phys, unsigned long size)
- {
--	static char *prev_map;
--	static unsigned long prev_size;
 -
--	if (prev_map) {
--		early_iounmap(prev_map, prev_size);
--		prev_map = NULL;
--	}
- 
- 	if (!phys || !size)
- 		return NULL;
- 
--	prev_size = size;
--	prev_map = early_ioremap(phys, size);
-+	return early_ioremap(phys, size);
-+}
-+void __init __acpi_unmap_table(char *map, unsigned long size)
-+{
-+	if (!map || !size)
-+		return;
- 
--	return prev_map;
-+	early_iounmap(map, size);
- }
- 
- #ifdef CONFIG_PCI_MMCONFIG
-Index: linux-2.6/arch/x86/kernel/early-quirks.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/early-quirks.c
-+++ linux-2.6/arch/x86/kernel/early-quirks.c
-@@ -100,11 +100,13 @@ static void __init intel_g33_dmar(int nu
+-static int __initdata early_ioremap_nested;
+-
++static void *prev_map[FIX_BTMAPS_SLOTS] __initdata;
++static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;
+ static int __init check_early_ioremap_leak(void)
  {
- 	struct acpi_table_header *dmar_tbl;
- 	acpi_status status;
-+	acpi_size *tbl_size;
- 
--	status = acpi_get_table(ACPI_SIG_DMAR, 0, &dmar_tbl);
-+	status = acpi_get_table_with_size(ACPI_SIG_DMAR, 0, &dmar_tbl, &tbl_size);
- 	if (ACPI_SUCCESS(status)) {
- 		printk(KERN_INFO "BIOS BUG: DMAR advertised on Intel G31/G33 chipset -- ignoring\n");
- 		dmar_disabled = 1;
-+		acpi_os_unmap_memory(dmar_tbl, tbl_size);
- 	}
- }
- #endif
-Index: linux-2.6/drivers/acpi/osl.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/osl.c
-+++ linux-2.6/drivers/acpi/osl.c
-@@ -285,12 +285,19 @@ EXPORT_SYMBOL_GPL(acpi_os_map_memory);
- 
- void acpi_os_unmap_memory(void __iomem * virt, acpi_size size)
- {
--	if (acpi_gbl_permanent_mmap) {
-+	if (acpi_gbl_permanent_mmap)
- 		iounmap(virt);
--	}
-+	else
-+		__acpi_unmap_table(virt, size);
- }
- EXPORT_SYMBOL_GPL(acpi_os_unmap_memory);
- 
-+void early_acpi_os_unmap_memory(void __iomem * virt, acpi_size size)
-+{
-+	if (!acpi_gbl_permanent_mmap)
-+		__acpi_unmap_table(virt, size);
-+}
+-	if (!early_ioremap_nested)
++	int count = 0;
++	int i;
 +
- #ifdef ACPI_FUTURE_USAGE
- acpi_status
- acpi_os_get_physical_address(void *virt, acpi_physical_address * phys)
-Index: linux-2.6/drivers/acpi/tables.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/tables.c
-+++ linux-2.6/drivers/acpi/tables.c
-@@ -181,14 +181,15 @@ acpi_table_parse_entries(char *id,
- 	struct acpi_subtable_header *entry;
- 	unsigned int count = 0;
- 	unsigned long table_end;
-+	acpi_size tbl_size;
- 
- 	if (!handler)
- 		return -EINVAL;
- 
- 	if (strncmp(id, ACPI_SIG_MADT, 4) == 0)
--		acpi_get_table(id, acpi_apic_instance, &table_header);
-+		acpi_get_table_with_size(id, acpi_apic_instance, &table_header, &tbl_size);
- 	else
--		acpi_get_table(id, 0, &table_header);
-+		acpi_get_table_with_size(id, 0, &table_header, &tbl_size);
- 
- 	if (!table_header) {
- 		printk(KERN_WARNING PREFIX "%4.4s not present\n", id);
-@@ -206,8 +207,10 @@ acpi_table_parse_entries(char *id,
- 	       table_end) {
- 		if (entry->type == entry_id
- 		    && (!max_entries || count++ < max_entries))
--			if (handler(entry, table_end))
-+			if (handler(entry, table_end)) {
-+				early_acpi_os_unmap_memory((char *)table_header, tbl_size);
- 				return -EINVAL;
-+			}
- 
- 		entry = (struct acpi_subtable_header *)
- 		    ((unsigned long)entry + entry->length);
-@@ -217,6 +220,7 @@ acpi_table_parse_entries(char *id,
- 		       "%i found\n", id, entry_id, count - max_entries, count);
- 	}
- 
-+	early_acpi_os_unmap_memory((char *)table_header, tbl_size);
- 	return count;
- }
- 
-@@ -241,17 +245,19 @@ acpi_table_parse_madt(enum acpi_madt_typ
- int __init acpi_table_parse(char *id, acpi_table_handler handler)
- {
- 	struct acpi_table_header *table = NULL;
-+	acpi_size tbl_size;
- 
- 	if (!handler)
- 		return -EINVAL;
- 
- 	if (strncmp(id, ACPI_SIG_MADT, 4) == 0)
--		acpi_get_table(id, acpi_apic_instance, &table);
-+		acpi_get_table_with_size(id, acpi_apic_instance, &table, &tbl_size);
- 	else
--		acpi_get_table(id, 0, &table);
-+		acpi_get_table_with_size(id, 0, &table, &tbl_size);
- 
- 	if (table) {
- 		handler(table);
-+		early_acpi_os_unmap_memory(table, tbl_size);
++	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
++		if (prev_map[i])
++			count++;
++
++	if (!count)
  		return 0;
- 	} else
- 		return 1;
-@@ -265,8 +271,9 @@ int __init acpi_table_parse(char *id, ac
- static void __init check_multiple_madt(void)
+ 	WARN(1, KERN_WARNING
+ 	       "Debug warning: early ioremap leak of %d areas detected.\n",
+-		early_ioremap_nested);
++		count);
+ 	printk(KERN_WARNING
+ 		"please boot with early_ioremap_debug and report the dmesg.\n");
+ 
+@@ -585,15 +591,30 @@ late_initcall(check_early_ioremap_leak);
+ static void __init *__early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
  {
- 	struct acpi_table_header *table = NULL;
-+	acpi_size tbl_size;
+ 	unsigned long offset, last_addr;
+-	unsigned int nrpages, nesting;
++	unsigned int nrpages;
+ 	enum fixed_addresses idx0, idx;
++	int i, slot;
  
--	acpi_get_table(ACPI_SIG_MADT, 2, &table);
-+	acpi_get_table_with_size(ACPI_SIG_MADT, 2, &table, &tbl_size);
- 	if (table) {
- 		printk(KERN_WARNING PREFIX
- 		       "BIOS bug: multiple APIC/MADT found,"
-@@ -275,6 +282,7 @@ static void __init check_multiple_madt(v
- 		       "If \"acpi_apic_instance=%d\" works better, "
- 		       "notify linux-acpi@vger.kernel.org\n",
- 		       acpi_apic_instance ? 0 : 2);
-+		early_acpi_os_unmap_memory(table, tbl_size);
+ 	WARN_ON(system_state != SYSTEM_BOOTING);
  
- 	} else
- 		acpi_apic_instance = 0;
-Index: linux-2.6/drivers/acpi/tables/tbxface.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/tables/tbxface.c
-+++ linux-2.6/drivers/acpi/tables/tbxface.c
-@@ -364,7 +364,7 @@ ACPI_EXPORT_SYMBOL(acpi_unload_table_id)
+-	nesting = early_ioremap_nested;
++	slot = -1;
++	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
++		if (!prev_map[i]) {
++			slot = i;
++			break;
++		}
++	}
++
++	if (slot < 0) {
++		printk(KERN_INFO "early_iomap(%08lx, %08lx) not found slot\n",
++			 phys_addr, size);
++		WARN_ON(1);
++		return NULL;
++	}
++
+ 	if (early_ioremap_debug) {
+ 		printk(KERN_INFO "early_ioremap(%08lx, %08lx) [%d] => ",
+-		       phys_addr, size, nesting);
++		       phys_addr, size, slot);
+ 		dump_stack();
+ 	}
  
- /*******************************************************************************
-  *
-- * FUNCTION:    acpi_get_table
-+ * FUNCTION:    acpi_get_table_with_size
-  *
-  * PARAMETERS:  Signature           - ACPI signature of needed table
-  *              Instance            - Which instance (for SSDTs)
-@@ -376,8 +376,9 @@ ACPI_EXPORT_SYMBOL(acpi_unload_table_id)
-  *
-  *****************************************************************************/
- acpi_status
--acpi_get_table(char *signature,
--	       u32 instance, struct acpi_table_header **out_table)
-+acpi_get_table_with_size(char *signature,
-+	       u32 instance, struct acpi_table_header **out_table,
-+	       acpi_size *tbl_size)
- {
-        u32 i;
-        u32 j;
-@@ -407,6 +408,7 @@ acpi_get_table(char *signature,
- 		    acpi_tb_verify_table(&acpi_gbl_root_table_list.tables[i]);
- 		if (ACPI_SUCCESS(status)) {
- 			*out_table = acpi_gbl_root_table_list.tables[i].pointer;
-+			*tbl_size = acpi_gbl_root_table_list.tables[i].length;
- 		}
+@@ -604,11 +625,7 @@ static void __init *__early_ioremap(unsi
+ 		return NULL;
+ 	}
  
- 		if (!acpi_gbl_permanent_mmap) {
-@@ -419,6 +421,15 @@ acpi_get_table(char *signature,
- 	return (AE_NOT_FOUND);
+-	if (nesting >= FIX_BTMAPS_NESTING) {
+-		WARN_ON(1);
+-		return NULL;
+-	}
+-	early_ioremap_nested++;
++	prev_size[slot] = size;
+ 	/*
+ 	 * Mappings have to be page-aligned
+ 	 */
+@@ -628,7 +645,7 @@ static void __init *__early_ioremap(unsi
+ 	/*
+ 	 * Ok, go for it..
+ 	 */
+-	idx0 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*nesting;
++	idx0 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
+ 	idx = idx0;
+ 	while (nrpages > 0) {
+ 		early_set_fixmap(idx, phys_addr, prot);
+@@ -639,7 +656,8 @@ static void __init *__early_ioremap(unsi
+ 	if (early_ioremap_debug)
+ 		printk(KERN_CONT "%08lx + %08lx\n", offset, fix_to_virt(idx0));
+ 
+-	return (void *) (offset + fix_to_virt(idx0));
++	prev_map[slot] = (void *) (offset + fix_to_virt(idx0));
++	return prev_map[slot];
  }
  
-+acpi_status
-+acpi_get_table(char *signature,
-+	       u32 instance, struct acpi_table_header **out_table)
-+{
-+	acpi_size tbl_size;
+ /* Remap an IO device */
+@@ -660,15 +678,33 @@ void __init early_iounmap(void *addr, un
+ 	unsigned long offset;
+ 	unsigned int nrpages;
+ 	enum fixed_addresses idx;
+-	int nesting;
++	int i, slot;
+ 
+-	nesting = --early_ioremap_nested;
+-	if (WARN_ON(nesting < 0))
++	slot = -1;
++	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
++		if (prev_map[i] == addr) {
++			slot = i;
++			break;
++		}
++	}
 +
-+	return acpi_get_table_with_size(signature,
-+		       instance, out_table, &tbl_size);
-+}
- ACPI_EXPORT_SYMBOL(acpi_get_table)
++	if (slot < 0) {
++		printk(KERN_INFO "early_iounmap(%p, %08lx) not found slot\n",
++			 addr, size);
++		WARN_ON(1);
+ 		return;
++	}
++
++	if (prev_size[slot] != size) {
++		printk(KERN_INFO "early_iounmap(%p, %08lx) [%d] size not consistent %08lx\n",
++			 addr, size, slot, prev_size[slot]);
++		WARN_ON(1);
++		return;
++	}
  
- /*******************************************************************************
-Index: linux-2.6/include/acpi/acpiosxf.h
+ 	if (early_ioremap_debug) {
+ 		printk(KERN_INFO "early_iounmap(%p, %08lx) [%d]\n", addr,
+-		       size, nesting);
++		       size, slot);
+ 		dump_stack();
+ 	}
+ 
+@@ -680,12 +716,13 @@ void __init early_iounmap(void *addr, un
+ 	offset = virt_addr & ~PAGE_MASK;
+ 	nrpages = PAGE_ALIGN(offset + size - 1) >> PAGE_SHIFT;
+ 
+-	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*nesting;
++	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
+ 	while (nrpages > 0) {
+ 		early_clear_fixmap(idx);
+ 		--idx;
+ 		--nrpages;
+ 	}
++	prev_map[slot] = 0;
+ }
+ 
+ void __this_fixmap_does_not_exist(void)
+Index: linux-2.6/include/asm-x86/fixmap_32.h
 ===================================================================
---- linux-2.6.orig/include/acpi/acpiosxf.h
-+++ linux-2.6/include/acpi/acpiosxf.h
-@@ -147,6 +147,7 @@ void __iomem *acpi_os_map_memory(acpi_ph
- 				acpi_size length);
- 
- void acpi_os_unmap_memory(void __iomem * logical_address, acpi_size size);
-+void early_acpi_os_unmap_memory(void __iomem * virt, acpi_size size);
- 
- #ifdef ACPI_FUTURE_USAGE
- acpi_status
-Index: linux-2.6/include/acpi/acpixf.h
+--- linux-2.6.orig/include/asm-x86/fixmap_32.h
++++ linux-2.6/include/asm-x86/fixmap_32.h
+@@ -94,10 +94,10 @@ enum fixed_addresses {
+ 	 * can have a single pgd entry and a single pte table:
+ 	 */
+ #define NR_FIX_BTMAPS		64
+-#define FIX_BTMAPS_NESTING	4
++#define FIX_BTMAPS_SLOTS	4
+ 	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
+ 			(__end_of_permanent_fixed_addresses & 255),
+-	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_NESTING - 1,
++	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
+ 	FIX_WP_TEST,
+ #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
+ 	FIX_OHCI1394_BASE,
+Index: linux-2.6/include/asm-x86/fixmap_64.h
 ===================================================================
---- linux-2.6.orig/include/acpi/acpixf.h
-+++ linux-2.6/include/acpi/acpixf.h
-@@ -112,6 +112,10 @@ acpi_get_table_header(acpi_string signat
- 		      struct acpi_table_header *out_table_header);
+--- linux-2.6.orig/include/asm-x86/fixmap_64.h
++++ linux-2.6/include/asm-x86/fixmap_64.h
+@@ -61,10 +61,10 @@ enum fixed_addresses {
+ 	 * can have a single pgd entry and a single pte table:
+ 	 */
+ #define NR_FIX_BTMAPS		64
+-#define FIX_BTMAPS_NESTING	4
++#define FIX_BTMAPS_SLOTS	4
+ 	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
+ 			(__end_of_permanent_fixed_addresses & 255),
+-	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_NESTING - 1,
++	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
+ 	__end_of_fixed_addresses
+ };
  
- acpi_status
-+acpi_get_table_with_size(acpi_string signature,
-+	       u32 instance, struct acpi_table_header **out_table,
-+	       acpi_size *tbl_size);
-+acpi_status
- acpi_get_table(acpi_string signature,
- 	       u32 instance, struct acpi_table_header **out_table);
- 
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -79,6 +79,7 @@ typedef int (*acpi_table_handler) (struc
- typedef int (*acpi_table_entry_handler) (struct acpi_subtable_header *header, const unsigned long end);
- 
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
-+void __init __acpi_unmap_table(char *map, unsigned long size);
- int early_acpi_boot_init(void);
- int acpi_boot_init (void);
- int acpi_boot_table_init (void);
-Index: linux-2.6/drivers/acpi/bus.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/bus.c
-+++ linux-2.6/drivers/acpi/bus.c
-@@ -650,12 +650,6 @@ void __init acpi_early_init(void)
- 	if (!acpi_strict)
- 		acpi_gbl_enable_interpreter_slack = TRUE;
- 
--	/*
--	 * Doing a zero-sized mapping will clear out the previous
--	 * __acpi_map_table() mapping, if any.
--	 */
--	__acpi_map_table(0, 0);
--
- 	acpi_gbl_permanent_mmap = 1;
- 
- 	status = acpi_reallocate_root_table();
