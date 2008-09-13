@@ -1,81 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYIMHYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758029AbYIMHZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755974AbYIMHYf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 03:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbYIMHYY
+	id S1758029AbYIMHZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 03:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYIMHZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 03:24:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:55586 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758264AbYIMHYX (ORCPT
+	Sat, 13 Sep 2008 03:25:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:2090 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752745AbYIMHZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 03:24:23 -0400
-Date: 13 Sep 2008 09:21:00 +0200
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: jwilson@redhat.com
-Cc: j@jannau.net
+	Sat, 13 Sep 2008 03:25:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=WGnXg3YynTF4foWX0CGma6Of+lig1J7ROdrILAofVXzRFkszP5Coy2tA4opp47h8jf
+         xtBfZpOstNdJ4d4S4c368+jSTZq2O9lS8vmwdP5ZHhhK5V8f5+KOeOyLuRO7HvcC0EXy
+         9+snrH7mGD5IbJMC8ngvFUOUImh7iExGSfAXw=
+Message-ID: <19f34abd0809130025x4901c749u987bc2cd30a1586e@mail.gmail.com>
+Date: Sat, 13 Sep 2008 09:25:48 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] utsname: completely overwrite prior information
 Cc: linux-kernel@vger.kernel.org
-Cc: lkml@ml.breakpoint.cc
-Cc: superm1@ubuntu.com
-Message-ID: <AlnE4cF3jFB@christoph>
-In-Reply-To: <200809111509.51901.jwilson@redhat.com>
-Subject: Re: [PATCH 01/18] lirc core device driver infrastructure
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+In-Reply-To: <20080912151129.1c8d38f8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX194uGBYycjRa3dL/UZHHZjsc57YaDJ9ag6R1D9
- mi7pKpwJ8sAgWHyyXOYg9i/HDvqv/O/XFuLv8GStQzucUjOygv
- tf5zejGQveF4Xb6o5ZBbPnjPsXZhwqms8olrVz8h3g=
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080912203624.GA25965@damson.getinternet.no>
+	 <20080912151129.1c8d38f8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jarod,
+On Sat, Sep 13, 2008 at 12:11 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> fair enuf.  Did you check allthe other fields in 'struct new_utsname'?
 
-on 11 Sep 08 at 15:09, Jarod Wilson wrote:
-> On Thursday 11 September 2008 14:30:00 Christoph Bartelmus wrote:
->> on 09 Sep 08 at 13:03, Jarod Wilson wrote:
->>> On Tuesday 09 September 2008 03:40:18 Sebastian Siewior wrote:
->>>>>+EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
->>>>
->>>> Do you rely on this specific major? Since your daemon opens /dev/lirc0
->>>> you don't need a fixed major do you?
->>>
->>> Good question. Quite honestly, I'm not sure. Christoph?
->>
->> LIRC does not rely on a specific major. But to be honest, the last time I
->> looked into this issue, was when devfs was bleeding-edge...
->>
->> So, we need some advice here how to proceed. Should we try to register an
->> official major number for LIRC? Should we try to have a minor number
->> mapping, e.g.
->> /dev/lirc/serial/0 LIRC device on 1st UART serial port
->> ...
->> /dev/lirc/serial/n LIRC device on n-th UART serial port
->> /dev/lirc/parallel/0 LIRC device on 1st parallel port
->> ...
->> /dev/lirc/parallel/n LIRC device on n-th parallel port
->> /dev/lirc/usb/0 1st LIRC USB device
->> ...
+As far as I can tell, only nodename (hostname) and domainname may be
+changed by userspace.
 
-> Janne took a crack at dynamic device allocation earlier today, committed
-> into my git tree:
+>
+>> index 038a7bc..78b4515 100644
+>> --- a/kernel/sys.c
+>> +++ b/kernel/sys.c
+>> @@ -1352,7 +1352,8 @@ asmlinkage long sys_sethostname(char __user *name, int len)
+>>       errno = -EFAULT;
+>>       if (!copy_from_user(tmp, name, len)) {
+>>               memcpy(utsname()->nodename, tmp, len);
+>> -             utsname()->nodename[len] = 0;
+>> +             memset(utsname()->nodename + len, 0,
+>> +                     sizeof(utsname()->nodename) - len);
+>
+> We could do the memset before the memcpy.  It's more work, but less
+> text.  Whatever.
 
-The problem is this:
-http://www.lirc.org/html/configure.html#multiple
+Whatever :-)
 
-Quoting the very last paragraph:
-"The only situation where the described procedure will not work is when  
-you have two devices that both use a kernel driver that can only handle  
-one device at once like e.g. lirc_serial, lirc_sir or lirc_parallel. You  
-can still make it work with a trick by compiling the affected driver  
-multiple times using different names and different major numbers. You will  
-find detailed instructions how to achieve this by searching the mailing  
-list. Lifting this limitation is one of the todo items for future  
-releases."
+> While we're there, the code generation in there is a bit sloppy.  How's
+> this look?
+>
+>
+> From: Andrew Morton <akpm@linux-foundation.org>
+>
+> utsname() is quite expensive to calculate.  Cache it in a local.
+>
+>          text    data     bss     dec     hex filename
+> before:  11136     720      16   11872    2e60 kernel/sys.o
+> after:   11096     720      16   11832    2e38 kernel/sys.o
+>
+> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+> Cc: "Serge E. Hallyn" <serue@us.ibm.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-The limitation that lirc_serial can only handle one device at a time still  
-exists and I think we should have a concept how to solve it before the  
-drivers are merged into the kernel.
+I agree with this change. FWIW: Acked-by: Vegard Nossum
+<vegard.nossum@gmail.com>
 
-Christoph
+There seems to be a few more places throughout the kernel which
+needlessly call utsname() more than once. I will keep it in mind.
+
+Thanks,
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
