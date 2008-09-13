@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbYIMQzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbYIMQ5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991AbYIMQzO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 12:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYIMQy6
+	id S1753145AbYIMQ5S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 12:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbYIMQ5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 12:54:58 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:60347 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbYIMQy5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 12:54:57 -0400
-Date: Sat, 13 Sep 2008 11:54:01 -0500
-From: David Fries <david@fries.net>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: paul.gortmaker@gmail.com, akpm@linux-foundation.org, p_gortmaker@yahoo.com,
-       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: [PATCH 2/2] ne.c Fix suspend and resume for ISA PnP cards.
-Message-ID: <20080913165401.GI28469@spacedout.fries.net>
-References: <20080913144457.GE28469@spacedout.fries.net> <20080914.001300.15242170.anemo@mba.ocn.ne.jp> <20080913151906.GG28469@spacedout.fries.net> <20080914.002906.48532607.anemo@mba.ocn.ne.jp> <20080913164736.GH28469@spacedout.fries.net>
+	Sat, 13 Sep 2008 12:57:05 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1209 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751982AbYIMQ5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 12:57:02 -0400
+Date: Sat, 13 Sep 2008 18:56:49 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Andi Kleen <ak@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: [patch 00/42] 2.6.26-stable review
+Message-ID: <20080913165649.GA8319@ucw.cz>
+References: <20080903172447.GA7731@suse.de> <20080904023905.GA1071@khazad-dum.debian.net> <20080912142251.GA6028@ucw.cz> <48CA8CAA.1000004@linux.intel.com> <20080912194634.GA32638@khazad-dum.debian.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080913164736.GH28469@spacedout.fries.net>
-User-Agent: Mutt/1.5.4i
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sat, 13 Sep 2008 11:54:02 -0500 (CDT)
+In-Reply-To: <20080912194634.GA32638@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Fries <david@fries.net>
+On Fri 2008-09-12 16:46:35, Henrique de Moraes Holschuh wrote:
+> On Fri, 12 Sep 2008, Andi Kleen wrote:
+> > Pavel Machek wrote:
+> >> On Wed 2008-09-03 23:39:05, Henrique de Moraes Holschuh wrote:
+> >>> What about this one:
+> >>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9f497bcc695fb828da023d74ad3c966b1e58ad21
+> >>>
+> >>> "ACPI: Fix thermal shutdowns" ?
+> >>>
+> >>> It should have been submitted to stable@k.o well before 2.6.26.3, but it
+> >>> wasn't for some stupid reason.  Then some of us noticed it was missing in
+> >>> 2.6.26.3, and gave everyone a head's up, but it was too late for 2.6.26.3.
+> >>>
+> >>> And now it also apparently failed to make it to 2.6.26.4?
+> >>>
+> >>> As far as I recall, without this patch, all X6* ThinkPads that are not in
+> >>> absolute top-notch thermal condition heat up until they are forced to
+> >>> shutdown due to overtemperature (thus, slowly further damaging hardware that
+> >>> is not in good shape to begin with).
+> >>>
+> >>> Greg, is there any way to include the above patch for 2.6.26.4?
+> >>
+> >>
+> >>
+> >> Agreed. This patch makes thinkpads unusable... and it was actually
+> >> included in 2.6.26.2...
+> >
+> > I guess the best/safest course right now is to just revert in stable.
+> 
+> I am not so sure.  You can fix it with an one-line patch that is in mainline
+> since before -rc4 and is known to work, or you can drop the _PPC fixes
+> entirely.  But I presume those fixes were NOT sent to stable gratuitously in
+> the first place, so it seems safer to just fix them instead of reverting
+> them.
 
-A call to pnp_stop_dev and pnp_start_dev now shuts down and
-initializes plug and play devices for suspend and resume.
+Agreed. Bugfix was tested and is pretty obvious.
 
-Signed-off-by: David Fries <david@fries.net>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>
----
-This version is the same as the last PATCH 2/2, only with updated line
-offsets.
+...but complete revert is still better than keeping 'thinpkad-cooking'
+bug.
+							Pavel
 
- drivers/net/ne.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-index 4cb9c11..f9da162 100644
---- a/drivers/net/ne.c
-+++ b/drivers/net/ne.c
-@@ -895,8 +895,12 @@ static int ne_drv_suspend(struct platform_device *pdev, pm_message_t state)
- {
- 	struct net_device *dev = platform_get_drvdata(pdev);
- 
--	if (netif_running(dev))
-+	if (netif_running(dev)) {
-+		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
- 		netif_device_detach(dev);
-+		if (idev)
-+			pnp_stop_dev(idev);
-+	}
- 	return 0;
- }
- 
-@@ -905,6 +909,9 @@ static int ne_drv_resume(struct platform_device *pdev)
- 	struct net_device *dev = platform_get_drvdata(pdev);
- 
- 	if (netif_running(dev)) {
-+		struct pnp_dev *idev = (struct pnp_dev *)ei_status.priv;
-+		if (idev)
-+			pnp_start_dev(idev);
- 		ne_reset_8390(dev);
- 		NS8390p_init(dev, 1);
- 		netif_device_attach(dev);
 -- 
-1.4.4.4
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
