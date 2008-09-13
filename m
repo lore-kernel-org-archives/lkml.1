@@ -1,147 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYIMTaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbYIMTbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYIMTaA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 15:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYIMT3E
+	id S1753611AbYIMTbV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 15:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYIMTbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 15:29:04 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:3787 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753083AbYIMT3B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 15:29:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=JfLX69Z8YdiSzCcn4riW74q+LGvcfj61qFOxUPJiMShYZt3tP0Or9RGsC5k0Kx5Yon
-         XSjQPtn3fmfukpedgLNg54LcdiHTj178nhaPxJg9PkFeivHkCT/bJdB+gSdxkVKcGCga
-         zYW567b1JKLMhpm2i0n1Tm4Qz//Rb6Kb4+9Ik=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 3/3] x86: check dsdt before find oem table for es7000 v2
-Date: Sat, 13 Sep 2008 12:28:21 -0700
-Message-Id: <1221334101-6464-4-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1221334101-6464-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1221334101-6464-1-git-send-email-yhlu.kernel@gmail.com>
+	Sat, 13 Sep 2008 15:31:09 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50166 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752730AbYIMTbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 15:31:08 -0400
+Message-ID: <48CC14EE.3070400@garzik.org>
+Date: Sat, 13 Sep 2008 15:30:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, themann@de.ibm.com, tklein@de.ibm.com,
+       raisch@de.ibm.com, jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com
+Subject: Re: [PATCH 2/2] ehea: fix mutex and spinlock use
+References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net> <1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>
+In-Reply-To: <1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: use __acpi_unmap_table()
+Sebastien Dugue wrote:
+>   Looks like to me that the ehea_fw_handles.lock mutex and the
+> ehea_bcmc_regs.lock spinlock are taken much longer than necessary and could
+> as well be pushed inside the functions that need them
+> (ehea_update_firmware_handles() and ehea_update_bcmc_registrations())
+> rather than at each callsite.
+> 
+> Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> ---
+>  drivers/net/ehea/ehea_main.c |   26 ++++----------------------
+>  1 files changed, 4 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> index b70c531..c765ec6 100644
+> --- a/drivers/net/ehea/ehea_main.c
+> +++ b/drivers/net/ehea/ehea_main.c
+> @@ -219,9 +219,11 @@ static void ehea_update_firmware_handles(void)
+>  	}
+>  
+>  out_update:
+> +	mutex_lock(&ehea_fw_handles.lock);
+>  	kfree(ehea_fw_handles.arr);
+>  	ehea_fw_handles.arr = arr;
+>  	ehea_fw_handles.num_entries = i;
+> +	mutex_unlock(&ehea_fw_handles.lock);
+>  }
+>  
+>  static void ehea_update_bcmc_registrations(void)
+> @@ -293,9 +295,11 @@ static void ehea_update_bcmc_registrations(void)
+>  	}
+>  
+>  out_update:
+> +	spin_lock(&ehea_bcmc_regs.lock);
+>  	kfree(ehea_bcmc_regs.arr);
+>  	ehea_bcmc_regs.arr = arr;
+>  	ehea_bcmc_regs.num_entries = i;
+> +	spin_unlock(&ehea_bcmc_regs.lock);
+>  }
+>  
+>  static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+> @@ -1770,8 +1774,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
+>  
+>  	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
+>  
+> -	spin_lock(&ehea_bcmc_regs.lock);
+> -
+>  	/* Deregister old MAC in pHYP */
+>  	if (port->state == EHEA_PORT_UP) {
+>  		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+> @@ -1792,7 +1794,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
+>  
+>  out_upregs:
+>  	ehea_update_bcmc_registrations();
+> -	spin_unlock(&ehea_bcmc_regs.lock);
+>  out_free:
+>  	kfree(cb0);
+>  out:
+> @@ -1954,8 +1955,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+>  	}
+>  	ehea_promiscuous(dev, 0);
+>  
+> -	spin_lock(&ehea_bcmc_regs.lock);
+> -
+>  	if (dev->flags & IFF_ALLMULTI) {
+>  		ehea_allmulti(dev, 1);
+>  		goto out;
+> @@ -1985,7 +1984,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+>  	}
+>  out:
+>  	ehea_update_bcmc_registrations();
+> -	spin_unlock(&ehea_bcmc_regs.lock);
+>  	return;
+>  }
+>  
+> @@ -2466,8 +2464,6 @@ static int ehea_up(struct net_device *dev)
+>  	if (port->state == EHEA_PORT_UP)
+>  		return 0;
+>  
+> -	mutex_lock(&ehea_fw_handles.lock);
+> -
+>  	ret = ehea_port_res_setup(port, port->num_def_qps,
+>  				  port->num_add_tx_qps);
+>  	if (ret) {
+> @@ -2504,8 +2500,6 @@ static int ehea_up(struct net_device *dev)
+>  		}
+>  	}
+>  
+> -	spin_lock(&ehea_bcmc_regs.lock);
+> -
+>  	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+>  	if (ret) {
+>  		ret = -EIO;
+> @@ -2527,10 +2521,8 @@ out:
+>  		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
+>  
+>  	ehea_update_bcmc_registrations();
+> -	spin_unlock(&ehea_bcmc_regs.lock);
+>  
+>  	ehea_update_firmware_handles();
+> -	mutex_unlock(&ehea_fw_handles.lock);
+>  
+>  	return ret;
+>  }
+> @@ -2580,9 +2572,6 @@ static int ehea_down(struct net_device *dev)
+>  	if (port->state == EHEA_PORT_DOWN)
+>  		return 0;
+>  
+> -	mutex_lock(&ehea_fw_handles.lock);
+> -
+> -	spin_lock(&ehea_bcmc_regs.lock);
+>  	ehea_drop_multicast_list(dev);
+>  	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+>  
+> @@ -2591,7 +2580,6 @@ static int ehea_down(struct net_device *dev)
+>  	port->state = EHEA_PORT_DOWN;
+>  
+>  	ehea_update_bcmc_registrations();
+> -	spin_unlock(&ehea_bcmc_regs.lock);
+>  
+>  	ret = ehea_clean_all_portres(port);
+>  	if (ret)
+> @@ -2599,7 +2587,6 @@ static int ehea_down(struct net_device *dev)
+>  			  dev->name, ret);
+>  
+>  	ehea_update_firmware_handles();
+> -	mutex_unlock(&ehea_fw_handles.lock);
+>  
+>  	return ret;
+>  }
+> @@ -3378,7 +3365,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
+>  		ehea_error("Invalid ibmebus device probed");
+>  		return -EINVAL;
+>  	}
+> -	mutex_lock(&ehea_fw_handles.lock);
+>  
+>  	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+>  	if (!adapter) {
+> @@ -3462,7 +3448,6 @@ out_free_ad:
+>  
+>  out:
+>  	ehea_update_firmware_handles();
+> -	mutex_unlock(&ehea_fw_handles.lock);
+>  	return ret;
+>  }
+>  
+> @@ -3481,8 +3466,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+>  
+>  	flush_scheduled_work();
+>  
+> -	mutex_lock(&ehea_fw_handles.lock);
+> -
+>  	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
+>  	tasklet_kill(&adapter->neq_tasklet);
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+applied
 
----
- arch/x86/kernel/es7000_32.c      |   28 +++++++++++++++++++++++-----
- arch/x86/mach-generic/es7000.c   |   20 +++++++++++++++-----
- include/asm-x86/es7000/mpparse.h |    1 +
- 3 files changed, 39 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/arch/x86/mach-generic/es7000.c
-===================================================================
---- linux-2.6.orig/arch/x86/mach-generic/es7000.c
-+++ linux-2.6/arch/x86/mach-generic/es7000.c
-@@ -47,16 +47,26 @@ static __init int mps_oem_check(struct m
- /* Hook from generic ACPI tables.c */
- static int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
--	unsigned long oem_addr;
-+	unsigned long oem_addr = 0;
-+	int check_dsdt;
-+	int ret = 0;
-+
-+	/* check dsdt at first to avoid clear fix_map for oem_addr */
-+	check_dsdt = es7000_check_dsdt();
-+
- 	if (!find_unisys_acpi_oem_table(&oem_addr)) {
--		if (es7000_check_dsdt())
--			return parse_unisys_oem((char *)oem_addr);
-+		if (check_dsdt)
-+			ret = parse_unisys_oem((char *)oem_addr);
- 		else {
- 			setup_unisys();
--			return 1;
-+			ret = 1;
- 		}
-+		/*
-+		 * we need to unmap it
-+		 */
-+		unmap_unisys_acpi_oem_table(oem_addr);
- 	}
--	return 0;
-+	return ret;
- }
- #else
- static int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-Index: linux-2.6/arch/x86/kernel/es7000_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/es7000_32.c
-+++ linux-2.6/arch/x86/kernel/es7000_32.c
-@@ -109,6 +109,7 @@ struct oem_table {
- };
- 
- extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
-+extern void unmap_unisys_acpi_oem_table(unsigned long oem_addr);
- #endif
- 
- struct mip_reg {
-@@ -243,21 +244,38 @@ parse_unisys_oem (char *oemptr)
- }
- 
- #ifdef CONFIG_ACPI
--int __init
--find_unisys_acpi_oem_table(unsigned long *oem_addr)
-+static unsigned long oem_addrX;
-+static unsigned long oem_size;
-+int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
- {
- 	struct acpi_table_header *header = NULL;
- 	int i = 0;
--	while (ACPI_SUCCESS(acpi_get_table("OEM1", i++, &header))) {
-+	acpi_size tbl_size;
-+
-+	while (ACPI_SUCCESS(acpi_get_table_with_size("OEM1", i++, &header, &tbl_size))) {
- 		if (!memcmp((char *) &header->oem_id, "UNISYS", 6)) {
- 			struct oem_table *t = (struct oem_table *)header;
--			*oem_addr = (unsigned long)__acpi_map_table(t->OEMTableAddr,
--								    t->OEMTableSize);
-+
-+			oem_addrX = t->OEMTableAddr;
-+			oem_size = t->OEMTableSize;
-+			early_acpi_os_unmap_memory(header, tbl_size);
-+
-+			*oem_addr = (unsigned long)__acpi_map_table(oem_addrX,
-+								    oem_size);
- 			return 0;
- 		}
-+		early_acpi_os_unmap_memory(header, tbl_size);
- 	}
- 	return -1;
- }
-+
-+void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
-+{
-+	if (!oem_addr)
-+		return;
-+
-+	__acpi_unmap_table((char *)oem_addr, oem_size);
-+}
- #endif
- 
- static void
-Index: linux-2.6/include/asm-x86/es7000/mpparse.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/es7000/mpparse.h
-+++ linux-2.6/include/asm-x86/es7000/mpparse.h
-@@ -5,6 +5,7 @@
- 
- extern int parse_unisys_oem (char *oemptr);
- extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
-+extern void unmap_unisys_acpi_oem_table(unsigned long oem_addr);
- extern void setup_unisys(void);
- 
- #ifndef CONFIG_X86_GENERICARCH
