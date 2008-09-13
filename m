@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbYIMDY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYIMETS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757764AbYIMDY7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 23:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbYIMDYt
+	id S1755068AbYIMETS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 00:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751114AbYIMETB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 23:24:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:28838 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756499AbYIMDYt (ORCPT
+	Sat, 13 Sep 2008 00:19:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34978
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750981AbYIMETA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 23:24:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=J52rtoJvbK2dH6NNzW/WkD7G6DJdhm6RM0o0jKK57enIIwYdrOJLWA/8ufBhKOSklF
-         ywGLjFZkICgviAUbrQsECm83XIO6ZAGqdKrQ8yWoQycuTXpmLQp/7UfiwViLxSOaShuU
-         O0xFDy2ldNy2Tixac8TRKcP4dybKX5uw46sfs=
-Message-ID: <dd18b0c30809122024g7fc2f77cpc3dedd8d7d1053a5@mail.gmail.com>
-Date: Fri, 12 Sep 2008 20:24:48 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #11552] Disabling IRQ #23
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <SpS7rta8n4.A.h8F.xbsyIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 13 Sep 2008 00:19:00 -0400
+Date: Fri, 12 Sep 2008 21:18:54 -0700 (PDT)
+Message-Id: <20080912.211854.102505246.davem@davemloft.net>
+To: linux-serial@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       joy@entuzijast.net
+Subject: [PATCH 0/2]: Allow 8250 to work on sparc.
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	 <SpS7rta8n4.A.h8F.xbsyIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 12, 2008 at 12:06 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11552
-> Subject         : Disabling IRQ #23
-> Submitter       : Justin Mattock <justinmattock@gmail.com>
-> Date            : 2008-09-09 19:08 (4 days old)
-> References      : http://marc.info/?l=linux-kernel&m=122098735230906&w=4
->                  http://marc.info/?l=linux-kernel&m=122107367715361&w=4
-> Handled-By      : Yinghai Lu <yhlu.kernel@gmail.com>
->
->
->
 
-yeah I think it would be a good idea.
-something to do with ehci_hcd, i.g. if I blacklist
-ehci_hcd  Disabling IRQ#23 message doesnt seem to be showing up.
+Currently there is a "BROKEN || SPARC" dependency for CONFIG_SERIAL_8250
+in drivers/serial/Kconfig.  These changes try to eliminate that restriction
+so that Sparc users can use add-on PCI cards with 8250 serial controllers.
 
--- 
-Justin P. Mattock
+The core issue that prevents this from working is that all of the onboard
+Sun specific serial drivers use the major=TTY_MAJOR, minor=64,65,66,...
+driver major/minor namespace, just like 8250.
+
+They coordinate amongst themselves using an internal allocator for the
+minor number space.  This is contained in drivers/serial/suncore.c
+
+This presents two problems:
+
+1) We have to make sure the Sun drivers register first, so that their
+   device indexes don't change and thus people get broken serial consoles
+   and stuff like that.
+
+2) Also, it is necessary for 8250 to partake in this minor number
+   allocation scheme, otherwise it cannot register because it'll try
+   to use '64' as it's base minor number and one of the Sun serial drivers
+   will have taken over that minor already.
+
+Working on this and testing it also uncovered another portability bug.
+The uart_port structure uses an "unsigned int" for the "ioport" member,
+but even I/O ports in PCI devices are 64-bit on sparc64, so the high
+bits were being chopped off when 8250 PCI cards were tested.  The fix
+is to use "unsigned long" for this type and that's what the first patch
+does.
+
+The second patch removes the !SPARC dependency for 8250 and adds the hooks
+to use the Sun serial minor number allocator when registering serial8250_reg
+with the UART layer.
+
+Yes, I know, this part is a bit ugly but I can't think of any workable
+alternative.  I could change all the major/minor numbers all the Sun
+serial drivers use, to get out of the way of 8250's space.  But that
+will break every single Sparc system out there, all the serial device
+names will change as will the serial console device.  I did write a patch
+which does such a set of changes, but I can't see any way in which we can
+consider it seriously.
+
+If there are no objections I'd like to toss this into my sparc-next-2.6
+tree for 2.6.28 inclusion.  Is that OK with everyone?
+
+I'd like to thank Josip Rodin for bringing this to my attention, and
+testing various revisions of these patches.
