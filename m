@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbYIMP3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYIMPdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751284AbYIMP3L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 11:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYIMP26
+	id S1752756AbYIMPdN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 11:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbYIMPc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 11:28:58 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:58749 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYIMP25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 11:28:57 -0400
-Date: Sun, 14 Sep 2008 00:29:06 +0900 (JST)
-Message-Id: <20080914.002906.48532607.anemo@mba.ocn.ne.jp>
-To: david@fries.net
-Cc: paul.gortmaker@gmail.com, akpm@linux-foundation.org, p_gortmaker@yahoo.com,
-       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] [PATCH] ne.c fix rmmod, platform driver
- improvements
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080913151906.GG28469@spacedout.fries.net>
-References: <20080913144457.GE28469@spacedout.fries.net>
-	<20080914.001300.15242170.anemo@mba.ocn.ne.jp>
-	<20080913151906.GG28469@spacedout.fries.net>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Sep 2008 11:32:57 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:50913 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751384AbYIMPc4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 11:32:56 -0400
+From: "Theodore Ts'o" <tytso@MIT.EDU>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@MIT.EDU>,
+       Eugene Dashevsky <eugene@ibrix.com>, Mike Snitzer <msnitzer@ibrix.com>,
+       linux-ext4@vger.kernel.org
+Subject: [PATCH 1/4] ext3: Fix ext3_dx_readdir hash collision handling
+Date: Sat, 13 Sep 2008 11:32:48 -0400
+Message-Id: <1221319971-29879-1-git-send-email-tytso@mit.edu>
+X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Sep 2008 10:19:06 -0500, David Fries <david@fries.net> wrote:
-> > For now rbtx49xx ne platform devices use -1 for pdev->id, but it may
-> > change.  Please don't assume it.
-> 
-> Does this work?
-> -	if (0 <= this_dev && this_dev < MAX_NE_CARDS) {
-> +	if (!res) {
+This fixes a bug where readdir() would return a directory entry twice
+if there was a hash collision in an hash tree indexed directory.
 
-It should work (not tested: I have no access to the board few days),
-but if someone defined ne platform device with pdev->id == -1 and he
-forgot to declare IO resources, but things happen.  Checking this_dev
-range before accessing io[] array would be better.
-
+Signed-off-by: Eugene Dashevsky <eugene@ibrix.com>
+Signed-off-by: Mike Snitzer <msnitzer@ibrix.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org
 ---
-Atsushi Nemoto
+ fs/ext3/dir.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
+index 2eea96e..42c5391 100644
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -410,7 +410,7 @@ static int call_filldir(struct file * filp, void * dirent,
+ 				get_dtype(sb, fname->file_type));
+ 		if (error) {
+ 			filp->f_pos = curr_pos;
+-			info->extra_fname = fname->next;
++			info->extra_fname = fname;
+ 			return error;
+ 		}
+ 		fname = fname->next;
+@@ -449,11 +449,21 @@ static int ext3_dx_readdir(struct file * filp,
+ 	 * If there are any leftover names on the hash collision
+ 	 * chain, return them first.
+ 	 */
+-	if (info->extra_fname &&
+-	    call_filldir(filp, dirent, filldir, info->extra_fname))
+-		goto finished;
+-
+-	if (!info->curr_node)
++	if (info->extra_fname) {
++                if (call_filldir(filp, dirent, filldir, info->extra_fname))
++                        goto finished;
++
++                info->extra_fname = NULL;
++                info->curr_node = rb_next(info->curr_node);
++                if (!info->curr_node) {
++                        if (info->next_hash == ~0) {
++                                filp->f_pos = EXT3_HTREE_EOF;
++                                goto finished;
++                        }
++                        info->curr_hash = info->next_hash;
++                        info->curr_minor_hash = 0;
++                }
++        } else if (!info->curr_node)
+ 		info->curr_node = rb_first(&info->root);
+ 
+ 	while (1) {
+-- 
+1.5.6.1.205.ge2c7.dirty
+
