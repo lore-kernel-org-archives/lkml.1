@@ -1,254 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYIMI37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYIMIdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbYIMI37 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 04:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758799AbYIMI1y
+	id S1758800AbYIMIdt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 04:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbYIMIdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 04:27:54 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38977 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758745AbYIMI1w (ORCPT
+	Sat, 13 Sep 2008 04:33:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36413
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754544AbYIMIdh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 04:27:52 -0400
-From: Rodolfo Giometti <giometti@linux.it>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Rodolfo Giometti <giometti@linux.it>
-Date: Wed, 10 Sep 2008 09:52:21 +0200
-Message-Id: <1221033149-15405-3-git-send-email-giometti@linux.it>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <1221033149-15405-2-git-send-email-giometti@linux.it>
-References: <>
- <1221033149-15405-1-git-send-email-giometti@linux.it>
- <1221033149-15405-2-git-send-email-giometti@linux.it>
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH 02/10] PPS: userland header file for PPS API.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+	Sat, 13 Sep 2008 04:33:37 -0400
+Date: Sat, 13 Sep 2008 01:33:30 -0700 (PDT)
+Message-Id: <20080913.013330.29519747.davem@davemloft.net>
+To: gitster@pobox.com
+Cc: peterz@infradead.org, git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.6.0-rc2
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080807.052648.239243998.davem@davemloft.net>
+References: <1218099517.8625.3.camel@twins>
+	<7v3alhjgau.fsf@gitster.siamese.dyndns.org>
+	<20080807.052648.239243998.davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds into the PPS's documentation directory a possible
-implementation of the PPS API (RFC 2783) by using the LinuxPPS's char
-devices.
+From: David Miller <davem@davemloft.net>
+Date: Thu, 07 Aug 2008 05:26:48 -0700 (PDT)
 
-This file is not just an example but it can be used into real
-systems. :)
+> From: Junio C Hamano <gitster@pobox.com>
+> Date: Thu, 07 Aug 2008 03:00:25 -0700
+> 
+> > Peter Zijlstra <peterz@infradead.org> writes:
+> > 
+> > > Quick question - where does one go to find out the cool new features
+> > > that make it 1.6 and should convince me to upgrade and try this whicked
+> > > new release?
+> > 
+> > Draft release notes for 1.6.0 was posted to the list some time ago
+> > already, but as always:
+> > 
+> >     http://www.kernel.org/pub/software/scm/git/docs/RelNotes-1.6.0.txt
+> 
+> Just FYI, I have some issue with 1.6.x git when pulling remotely from
+> it on sparc64.  I suspect it is the usual unaligned access issue and I
+> will debug it further soon.
 
-Signed-off-by: Rodolfo Giometti <giometti@linux.it>
----
- Documentation/pps/timepps.h |  195 +++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 195 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/pps/timepps.h
+As a followup this turned out to be the classic "PATH when doing GIT over
+SSH" problem.
 
-diff --git a/Documentation/pps/timepps.h b/Documentation/pps/timepps.h
-new file mode 100644
-index 0000000..2372949
---- /dev/null
-+++ b/Documentation/pps/timepps.h
-@@ -0,0 +1,195 @@
-+/*
-+ * timepps.h -- PPS API main header
-+ *
-+ * Copyright (C) 2005-2007   Rodolfo Giometti <giometti@linux.it>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify
-+ *   it under the terms of the GNU General Public License as published by
-+ *   the Free Software Foundation; either version 2 of the License, or
-+ *   (at your option) any later version.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License
-+ *   along with this program; if not, write to the Free Software
-+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef _SYS_TIMEPPS_H_
-+#define _SYS_TIMEPPS_H_
-+
-+#include <sys/syscall.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <linux/pps.h>
-+
-+#define LINUXPPS	1		/* signal we are using LinuxPPS */
-+
-+/*
-+ * New data structures
-+ */
-+
-+struct ntp_fp {
-+	unsigned int integral;
-+	unsigned int fractional;
-+};
-+
-+union pps_timeu {
-+	struct timespec tspec;
-+	struct ntp_fp ntpfp;
-+	unsigned long longpad[3];
-+};
-+
-+struct pps_info {
-+	unsigned long assert_sequence;	/* seq. num. of assert event */
-+	unsigned long clear_sequence;	/* seq. num. of clear event */
-+	union pps_timeu assert_tu;	/* time of assert event */
-+	union pps_timeu clear_tu;	/* time of clear event */
-+	int current_mode;		/* current mode bits */
-+};
-+
-+struct pps_params {
-+	int api_version;		/* API version # */
-+	int mode;			/* mode bits */
-+	union pps_timeu assert_off_tu;	/* offset compensation for assert */
-+	union pps_timeu clear_off_tu;	/* offset compensation for clear */
-+};
-+
-+typedef int pps_handle_t;		/* represents a PPS source */
-+typedef unsigned long pps_seq_t;	/* sequence number */
-+typedef struct ntp_fp ntp_fp_t;		/* NTP-compatible time stamp */
-+typedef union pps_timeu pps_timeu_t;	/* generic data type for time stamps */
-+typedef struct pps_info pps_info_t;
-+typedef struct pps_params pps_params_t;
-+
-+#define assert_timestamp        assert_tu.tspec
-+#define clear_timestamp         clear_tu.tspec
-+
-+#define assert_timestamp_ntpfp  assert_tu.ntpfp
-+#define clear_timestamp_ntpfp   clear_tu.ntpfp
-+
-+#define assert_offset		assert_off_tu.tspec
-+#define clear_offset		clear_off_tu.tspec
-+
-+#define assert_offset_ntpfp     assert_off_tu.ntpfp
-+#define clear_offset_ntpfp      clear_off_tu.ntpfp
-+
-+/*
-+ * The PPS API
-+ */
-+
-+static __inline int time_pps_create(int source, pps_handle_t *handle)
-+{
-+	int ret;
-+
-+	if (!handle) {
-+		errno = EINVAL;
-+		return -1;
-+	}
-+
-+	/* First we check if current device is a PPS valid PPS one...
-+	 */
-+	ret = ioctl(source, PPS_CHECK);
-+	if (ret) {
-+		errno = EOPNOTSUPP;
-+		return -1;
-+	}
-+
-+	/* ... then since in LinuxPPS there are no differences between a
-+	 * "PPS source" and a "PPS handle", we simply return the same value.
-+	 */
-+	*handle = source;
-+
-+	return 0;
-+}
-+
-+static __inline int time_pps_destroy(pps_handle_t handle)
-+{
-+	return close(handle);
-+}
-+
-+static __inline int time_pps_getparams(pps_handle_t handle,
-+					pps_params_t *ppsparams)
-+{
-+	int ret;
-+	struct pps_kparams __ppsparams;
-+
-+	ret = ioctl(handle, PPS_GETPARAMS, &__ppsparams);
-+
-+	ppsparams->api_version = __ppsparams.api_version;
-+	ppsparams->mode = __ppsparams.mode;
-+	ppsparams->assert_off_tu.tspec.tv_sec = __ppsparams.assert_off_tu.sec;
-+	ppsparams->assert_off_tu.tspec.tv_nsec = __ppsparams.assert_off_tu.nsec;
-+	ppsparams->clear_off_tu.tspec.tv_sec = __ppsparams.clear_off_tu.sec;
-+	ppsparams->clear_off_tu.tspec.tv_nsec = __ppsparams.clear_off_tu.nsec;
-+
-+	return ret;
-+}
-+
-+static __inline int time_pps_setparams(pps_handle_t handle,
-+					const pps_params_t *ppsparams)
-+{
-+	struct pps_kparams __ppsparams;
-+
-+	__ppsparams.api_version = ppsparams->api_version;
-+	__ppsparams.mode = ppsparams->mode;
-+	__ppsparams.assert_off_tu.sec = ppsparams->assert_off_tu.tspec.tv_sec;
-+	__ppsparams.assert_off_tu.nsec = ppsparams->assert_off_tu.tspec.tv_nsec;
-+	__ppsparams.clear_off_tu.sec = ppsparams->clear_off_tu.tspec.tv_sec;
-+	__ppsparams.clear_off_tu.nsec = ppsparams->clear_off_tu.tspec.tv_nsec;
-+
-+	return ioctl(handle, PPS_SETPARAMS, &__ppsparams);
-+}
-+
-+/* Get capabilities for handle */
-+static __inline int time_pps_getcap(pps_handle_t handle, int *mode)
-+{
-+	return ioctl(handle, PPS_GETCAP, mode);
-+}
-+
-+static __inline int time_pps_fetch(pps_handle_t handle, const int tsformat,
-+					pps_info_t *ppsinfobuf,
-+					const struct timespec *timeout)
-+{
-+	struct pps_fdata __fdata;
-+	int ret;
-+
-+	/* Sanity checks */
-+	if (tsformat != PPS_TSFMT_TSPEC) {
-+		errno = EINVAL;
-+		return -1;
-+	}
-+
-+	if (timeout) {
-+		__fdata.timeout.sec = timeout->tv_sec;
-+		__fdata.timeout.nsec = timeout->tv_nsec;
-+		__fdata.timeout.flags = ~PPS_TIME_INVALID;
-+	} else
-+		__fdata.timeout.flags = PPS_TIME_INVALID;
-+
-+	ret = ioctl(handle, PPS_FETCH, &__fdata);
-+
-+	ppsinfobuf->assert_sequence = __fdata.info.assert_sequence;
-+	ppsinfobuf->clear_sequence = __fdata.info.clear_sequence;
-+	ppsinfobuf->assert_tu.tspec.tv_sec = __fdata.info.assert_tu.sec;
-+	ppsinfobuf->assert_tu.tspec.tv_nsec = __fdata.info.assert_tu.nsec;
-+	ppsinfobuf->clear_tu.tspec.tv_sec = __fdata.info.clear_tu.sec;
-+	ppsinfobuf->clear_tu.tspec.tv_nsec = __fdata.info.clear_tu.nsec;
-+	ppsinfobuf->current_mode = __fdata.info.current_mode;
-+
-+	return ret;
-+}
-+
-+static __inline int time_pps_kcbind(pps_handle_t handle,
-+					const int kernel_consumer,
-+					const int edge, const int tsformat)
-+{
-+	/* LinuxPPS doesn't implement kernel consumer feature */
-+	errno = EOPNOTSUPP;
-+	return -1;
-+}
-+
-+#endif				/* _SYS_TIMEPPS_H_ */
--- 
-1.5.4.3
+I have to say this is very unfun to debug, and even less fun to "fix"
+even once you know this is the problem.  And what's more I know this is
+the second time I've had to spend a night debugging this very problem.
+
+I ended up having to make a ~/.ssh/environment file and then restart my
+SSH server with "PermitUserEnvironment yes" added to sshd_config.
+
+But I can't believe this is what I have to do just to pull from a machine
+where I have GIT only installed in my home directory.  What if I were just
+a normal user and couldn't change the SSHD config?  What hoops would I
+need to jump through to get my PATH setup correctly? :)
+
+It doesn't even work to put ~/bin into the PATH listed in the system wide
+/etc/environment, because that does not do tilde expansion, SSHD just takes
+it as-is.
+
+Wouldn't it make sense to put the bindir into PATH when we try to do
+execv_git_cmd()?  The code has already put the gitexecdir into the
+PATH at this point.
+
+Thanks!
 
