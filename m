@@ -1,213 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbYIMQm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986AbYIMQpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbYIMQm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 12:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYIMQmS
+	id S1752986AbYIMQpZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 12:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYIMQpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 12:42:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54491 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751740AbYIMQmR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 12:42:17 -0400
-Date: Sat, 13 Sep 2008 09:42:19 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu
-Subject: [PATCH] fastboot: Add a script to visualize the kernel boot process
- / time
-Message-ID: <20080913094219.5d314e5e@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Sat, 13 Sep 2008 12:45:15 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4094 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751863AbYIMQpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 12:45:13 -0400
+Date: Sat, 13 Sep 2008 18:24:10 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       dwmw2@infradead.org, drepper@redhat.com, mingo@elte.hu, tglx@tglx.de
+Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the task struct
+Message-ID: <20080913162409.GC6827@ucw.cz>
+References: <20080901160343.75a89ec9@infradead.org> <20080901161423.59ebf2fc@infradead.org> <20080902100439.GA11383@elf.ucw.cz> <20080902060323.70245b83@infradead.org> <20080908132713.GA18486@elf.ucw.cz> <20080908064002.7abc2a22@infradead.org> <20080908141555.GB31784@elf.ucw.cz> <20080908072220.75fc3dfd@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080908072220.75fc3dfd@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
+> > Yes, it is a great advantage, but it feels like a hack. Maybe it is
+> > better done with LD_PRELOAD or something?
+> 
+> that's not working very well in general, and doesn't work across exec
+> etc.
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] fastboot: Add a script to visualize the kernel boot process / time
+LD_PRELOAD should work over exec...
 
-When optimizing the kernel boot time, it's very valuable to visualize
-what is going on at which time. In addition, with the fastboot asynchronous
-initcall level, it's very valuable to see which initcall gets run where
-and when.
+Another possibility would be to declare new syscalls, and have glibc
+automatically use select_slack(, foo) if GLIBC_SLACK=foo.
 
-This patch adds a script to turn a dmesg into a SVG graph (that can be
-shown with tools such as InkScape, Gimp or Firefox) and a small change
-to the initcall code to print the PID of the thread calling the initcall
-(so that the script can work out the parallelism).
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- init/main.c          |    3 +-
- scripts/bootgraph.pl |  132 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 134 insertions(+), 1 deletions(-)
- create mode 100644 scripts/bootgraph.pl
-
-diff --git a/init/main.c b/init/main.c
-index 73785a4..d74757c 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -702,7 +702,8 @@ int do_one_initcall(initcall_t fn)
- 	int result;
- 
- 	if (initcall_debug) {
--		print_fn_descriptor_symbol("calling  %s\n", fn);
-+		print_fn_descriptor_symbol("calling  %s", fn);
-+		printk(" @ %i\n",  task_pid_nr(current));
- 		t0 = ktime_get();
- 	}
- 
-diff --git a/scripts/bootgraph.pl b/scripts/bootgraph.pl
-new file mode 100644
-index 0000000..54907d6
---- /dev/null
-+++ b/scripts/bootgraph.pl
-@@ -0,0 +1,132 @@
-+#!/usr/bin/perl
-+
-+# Copyright 2007, Intel Corporation
-+#
-+# This file is part of the Linux kernel
-+#
-+# This program file is free software; you can redistribute it and/or modify it
-+# under the terms of the GNU General Public License as published by the
-+# Free Software Foundation; version 2 of the License.
-+#
-+# This program is distributed in the hope that it will be useful, but WITHOUT
-+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-+# for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program in a file named COPYING; if not, write to the
-+# Free Software Foundation, Inc.,
-+# 51 Franklin Street, Fifth Floor,
-+# Boston, MA 02110-1301 USA
-+#
-+# Authors:
-+# 	Arjan van de Ven <arjan@linux.intel.com>
-+
-+
-+#
-+# This script turns a dmesg output into a SVG graphic that shows which
-+# functions take how much time. You can view SVG graphics with various
-+# programs, including Inkscape, The Gimp and Firefox.
-+#
-+#
-+# For this script to work, the kernel needs to be compiled with the
-+# CONFIG_PRINTK_TIME configuration option enabled, and with
-+# "initcall_debug" passed on the kernel command line.
-+#
-+# usage:
-+# 	dmesg | perl scripts/bootgraph.pl > output.svg
-+#
-+
-+my @rows;
-+my %start, %end, %row;
-+my $done = 0;
-+my $rowcount = 0;
-+my $maxtime = 0;
-+my $count = 0;
-+while (<>) {
-+	my $line = $_;
-+	if ($line =~ /([0-9\.]+)\] calling  ([a-zA-Z\_]+)\+/) {
-+		my $func = $2;
-+		if ($done == 0) {
-+			$start{$func} = $1;
-+		}
-+		$row{$func} = 1;
-+		if ($line =~ /\@ ([0-9]+)/) {
-+			my $pid = $1;
-+			if (!defined($rows[$pid])) {
-+				$rowcount = $rowcount + 1;
-+				$rows[$pid] = $rowcount;
-+			}
-+			$row{$func} = $rows[$pid];
-+		}
-+		$count = $count + 1;
-+	}
-+
-+	if ($line =~ /([0-9\.]+)\] initcall ([a-zA-Z\_]+)\+.*returned/) {
-+		if ($done == 0) {
-+			$end{$2} = $1;
-+			$maxtime = $1;
-+		}
-+	}
-+	if ($line =~ /Write protecting the/) {
-+		$done = 1;
-+	}
-+}
-+
-+if ($count == 0) {
-+	print "No data found in the dmesg. Make sure CONFIG_PRINTK_TIME is enabled and\n";
-+	print "that initcall_debug is passed on the kernel command line.\n\n";
-+	print "Usage: \n";
-+	print "      dmesg | perl scripts/bootgraph.pl > output.svg\n\n";
-+	exit;
-+}
-+
-+print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
-+print "<svg width=\"1000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
-+
-+my @styles;
-+
-+$styles[0] = "fill:rgb(0,0,255);stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[1] = "fill:rgb(0,255,0);stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[2] = "fill:rgb(255,0,20);stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[3] = "fill:rgb(255,255,20);stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[4] = "fill:rgb(255,0,255);stroke-width:1;stroke:rgb(0,0,0)";
-+$styles[5] = "fill:rgb(0,255,255);stroke-width:1;stroke:rgb(0,0,0)";
-+
-+my $mult = 950.0 / $maxtime;
-+my $threshold = 0.0800 / $maxtime;
-+my $stylecounter = 0;
-+while (($key,$value) = each %start) {
-+	my $duration = $end{$key} - $start{$key};
-+
-+	if ($duration >= $threshold) {
-+		my $s, $s2, $e, $y;
-+		$s = $value * $mult;
-+		$s2 = $s + 6;
-+		$e = $end{$key} * $mult;
-+		$w = $e - $s;
-+
-+		$y = $row{$key} * 150;
-+		$y2 = $y + 4;
-+
-+		$style = $styles[$stylecounter];
-+		$stylecounter = $stylecounter + 1;
-+		if ($stylecounter > 5) {
-+			$stylecounter = 0;
-+		};
-+
-+		print "<rect x=\"$s\" width=\"$w\" y=\"$y\" height=\"145\" style=\"$style\"/>\n";
-+		print "<text transform=\"translate($s2,$y2) rotate(90)\">$key</text>\n";
-+	}
-+}
-+
-+
-+# print the time line on top
-+my $time = 0.0;
-+while ($time < $maxtime) {
-+	my $s2 = $time * $mult;
-+	print "<text transform=\"translate($s2,89) rotate(90)\">$time</text>\n";
-+	$time = $time + 0.1;
-+}
-+
-+print "</svg>\n";
+							Pavel
 -- 
-1.5.5.1
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
