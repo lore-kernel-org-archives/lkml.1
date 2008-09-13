@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbYIMAQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYIMAZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758839AbYIMAQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 20:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbYIMAQO
+	id S1758030AbYIMAZb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 20:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbYIMAZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 20:16:14 -0400
-Received: from tundra.namei.org ([65.99.196.166]:41400 "EHLO tundra.namei.org"
+	Fri, 12 Sep 2008 20:25:21 -0400
+Received: from mga14.intel.com ([143.182.124.37]:55189 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbYIMAQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 20:16:13 -0400
-Date: Sat, 13 Sep 2008 10:15:43 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       sds@tycho.nsa.gov
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-In-Reply-To: <20080912152443.c4e59f42.akpm@linux-foundation.org>
-Message-ID: <alpine.LRH.1.10.0809131012310.13073@tundra.namei.org>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <SpS7rta8n4.A.i9G.ZcsyIB@albercik> <alpine.LRH.1.10.0809130812460.12313@tundra.namei.org> <20080912152443.c4e59f42.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1756384AbYIMAZV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 20:25:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.32,392,1217833200"; 
+   d="scan'208";a="45765360"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Frans Pop <elendil@planet.nl>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
+Date: Fri, 12 Sep 2008 17:24:56 -0700
+Subject: RE: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
+ and VESA framebuffer
+Thread-Topic: [Bug 10843] Display artifacts on XOrg logout with PAT kernel
+ and VESA framebuffer
+Thread-Index: AckU3D2vlnfUJ8Y6TtWmO5jBVGUsywAFBigwABGeMJA=
+Message-ID: <7E82351C108FA840AB1866AC776AEC462CA8E8B0@orsmsx505.amr.corp.intel.com>
+References: <RzbtSgMztjP.A.R0C.dIDVIB@albercik>
+ <200809121254.02307.elendil@planet.nl>
+ <7E82351C108FA840AB1866AC776AEC462C9BAFC5@orsmsx505.amr.corp.intel.com>
+ <200809121533.43318.elendil@planet.nl> 
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008, Andrew Morton wrote:
-
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
-> > > Subject		: /proc/net bug related to selinux
-> > > Submitter	: Andrew Morton <akpm@linux-foundation.org>
-> > > Date		: 2008-09-04 17:45 (9 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
-> > 
-> > I think this might be a regression caused by namespace changes which we 
-
-By which I mean, this was caused by a non-SELinux change to the upstream 
-kernel many, many eons ago.
-
-> > addressed in SELinux policy.  Which distro version & policy version is 
-> > this seen with?
-> > 
-> 
-> FC5 on x86_32 and FC6 on x86_64.
-
-As mentioned in the bugzilla, any related avc messages would be useful.
 
 
--- 
-James Morris
-<jmorris@namei.org>
+>-----Original Message-----
+>From: Pallipadi, Venkatesh
+>
+>>-----Original Message-----
+>>From: Frans Pop [mailto:elendil@planet.nl]
+>>Sent: Friday, September 12, 2008 6:34 AM
+>>
+>>
+>>I've attached that file and dmesg output for two of the machines.
+>>
+>
+>OK. This is the same issue as the one on this thread here
+>http://www.ussg.iu.edu/hypermail/linux/kernel/0808.2/1532.html
+>
+>
+>We have too many entires in PAT list due to RAM pages being marked
+>UC by drivers. Unfortunately, there are no quick fixes that can fix
+>this for 2.6.27. However, we are aware of the problem here and
+>working on a more complete fix for this. We should have the patch
+>for it soon.
+>
+
+Can you try the patch here
+http://www.ussg.iu.edu/hypermail/linux/kernel/0809.1/2074.html
+And report back whether that resolves the issue.
+
+Thanks,
+Venki
