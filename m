@@ -1,103 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYIMW5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYIMXH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbYIMW5S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 18:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYIMW5B
+	id S1753626AbYIMXH4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 19:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYIMXHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 18:57:01 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:55219 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbYIMW5A (ORCPT
+	Sat, 13 Sep 2008 19:07:47 -0400
+Received: from jalapeno.cc.columbia.edu ([128.59.29.5]:40872 "EHLO
+	jalapeno.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbYIMXHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 18:57:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=XBxj/KO3X8/xTmWw25990DKicW021SlQ4XH5Z01LuLIUoaUkSr2BhG2FX2vLY95XSX
-         VvcGZ+drQBRZA13ew32tB1fGDU79yFd9Dz9CJgdkTXHMT4OpUjLmohXAUJFohwvisrcL
-         EIon7OxdPtGggEegyUz7tWeDC48UvEsP1FMq4=
-Message-ID: <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
-Date: Sun, 14 Sep 2008 00:56:58 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Subject: Re: [linux-dvb] Multiproto API/Driver Update
-Cc: linux-dvb@linuxtv.org, "Rudy Zijlstra" <rudy@grumpydevil.homelinux.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48CC42D8.8080806@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
-	 <48C66829.1010902@grumpydevil.homelinux.org>
-	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
-	 <48CC42D8.8080806@gmail.com>
+	Sat, 13 Sep 2008 19:07:45 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+To: dave@linux.vnet.ibm.com
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v5][PATCH 0/9] Kernel based checkpoint/restart
+Date: Sat, 13 Sep 2008 19:05:58 -0400
+Message-Id: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu>
+X-Mailer: git-send-email 1.6.0.1
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
-> Markus Rechberger wrote:
->
->> How many devices are currently supported by the multiproto API
->> compared with the s2 tree?
->
-> The initial set of DVB-S2 multistandard devices supported by the
-> multiproto tree is follows. This is just the stb0899 based dvb-s2 driver
-> alone. There are more additions by 2 more modules (not devices), but for
-> the simple comparison here is the quick list of them, for which some of
-> the manufacturers have shown support in some way. (There has been quite
-> some contributions from the community as well.):
->
-> (Also to be noted is that, some BSD chaps also have shown interest in
-> the same)
->
+These patches implement basic checkpoint-restart [CR]. This version (v5)
+supports basic tasks with simple private memory, and open files (regular
+files and directories only). The main changes include rework of memory
+restart code and response to feedback. See original announcements below.
 
-they're heavy into moving the whole framework over as far as I've seen
-yes, also including yet unmerged drivers.
+Oren.
 
-> * STB0899 based
->
-> Anubis
-> Typhoon DVB-S2 PCI
->
-> Azurewave/Twinhan
-> VP-1041
-> VP-7050
->
-> Digital Now
-> AD SP400
-> AD SB300
->
-> KNC1
-> TV Station DVB-S2
-> TV Station DVB-S2 Plus
->
-> Pinnacle
-> PCTV Sat HDTV Pro USB 452e
->
-> Satelco
-> TV Station DVB-S2
-> Easywatch HDTV USB CI
-> Easywatch HDTV PCI
->
-> Technisat
-> Skystar HD
-> Skystar HD2
-> Skystar USB2 HDCI
->
-> Technotrend
-> TT S2 3200
-> TT S2 3600
-> TT S2 3650
->
-> Terratec
-> Cinergy S2 PCI HD
-> Cinergy S2 PCI HDCI
->
+--
+Todo:
+- Add support for x86-64 and improve ABI
+- Refine or change syscall interface
+- Extend to handle (multiple) tasks in a container
+- Security (without CAPS_SYS_ADMIN files restore may fail)
 
-those are pullable now against the current tree?
+Changelog:
 
-Markus
+[2008-Sep-11] v5:
+  - Config is now 'def_bool n' by default
+  - Improve memory dump/restore code (following Dave Hansen's comments)
+  - Change dump format (and code) to allow chunks of <vaddrs, pages>
+    instead of one long list of each
+  - Fix use of follow_page() to avoid faulting in non-present pages
+  - Memory restore now maps user pages explicitly to copy data into them,
+    instead of reading directly to user space; got rid of mprotect_fixup()
+  - Remove preempt_disable() when restoring debug registers
+  - Rename headers files s/ckpt/checkpoint/
+  - Fix misc bugs in files dump/restore
+  - Fixes and cleanups on some error paths
+  - Fix misc coding style
+
+[2008-Sep-09] v4:
+  - Various fixes and clean-ups
+  - Fix calculation of hash table size
+  - Fix header structure alignment
+  - Use stand list_... for cr_pgarr
+
+[2008-Aug-29] v3:
+  - Various fixes and clean-ups
+  - Use standard hlist_... for hash table
+  - Better use of standard kmalloc/kfree
+
+[2008-Aug-20] v2:
+  - Added Dump and restore of open files (regular and directories)
+  - Added basic handling of shared objects, and improve handling of
+    'parent tag' concept
+  - Added documentation
+  - Improved ABI, 64bit padding for image data
+  - Improved locking when saving/restoring memory
+  - Added UTS information to header (release, version, machine)
+  - Cleanup extraction of filename from a file pointer
+  - Refactor to allow easier reviewing
+  - Remove requirement for CAPS_SYS_ADMIN until we come up with a
+    security policy (this means that file restore may fail)
+  - Other cleanup and response to comments for v1
+
+[2008-Jul-29] v1:
+  - Initial version: support a single task with address space of only
+    private anonymous or file-mapped VMAs; syscalls ignore pid/crid
+    argument and act on current process.
+
+--
+(Dave Hansen's announcement)
+
+At the containers mini-conference before OLS, the consensus among
+all the stakeholders was that doing checkpoint/restart in the kernel
+as much as possible was the best approach.  With this approach, the
+kernel will export a relatively opaque 'blob' of data to userspace
+which can then be handed to the new kernel at restore time.
+
+This is different than what had been proposed before, which was
+that a userspace application would be responsible for collecting
+all of this data.  We were also planning on adding lots of new,
+little kernel interfaces for all of the things that needed
+checkpointing.  This unites those into a single, grand interface.
+
+The 'blob' will contain copies of select portions of kernel
+structures such as vmas and mm_structs.  It will also contain
+copies of the actual memory that the process uses.  Any changes
+in this blob's format between kernel revisions can be handled by
+an in-userspace conversion program.
+
+This is a similar approach to virtually all of the commercial
+checkpoint/restart products out there, as well as the research
+project Zap.
+
+These patches basically serialize internel kernel state and write
+it out to a file descriptor.  The checkpoint and restore are done
+with two new system calls: sys_checkpoint and sys_restart.
+
+In this incarnation, they can only work checkpoint and restore a
+single task. The task's address space may consist of only private,
+simple vma's - anonymous or file-mapped. The open files may consist
+of only simple files and directories.
+
+--
+(Original announcement)
+
+In the recent mini-summit at OLS 2008 and the following days it was
+agreed to tackle the checkpoint/restart (CR) by beginning with a very
+simple case: save and restore a single task, with simple memory
+layout, disregarding other task state such as files, signals etc.
+
+Following these discussions I coded a prototype that can do exactly
+that, as a starter. This code adds two system calls - sys_checkpoint
+and sys_restart - that a task can call to save and restore its state
+respectively. It also demonstrates how the checkpoint image file can
+be formatted, as well as show its nested nature (e.g. cr_write_mm()
+-> cr_write_vma() nesting).
+
+The state that is saved/restored is the following:
+* some of the task_struct
+* some of the thread_struct and thread_info
+* the cpu state (including FPU)
+* the memory address space
+
+In the current code, sys_checkpoint will checkpoint the current task,
+although the logic exists to checkpoint other tasks (not in the
+checkpointee's execution context). A simple loop will extend this to
+handle multiple processes. sys_restart restarts the current tasks, and
+with multiple tasks each task will call the syscall independently.
+(Actually, to checkpoint outside the context of a task, it is also
+necessary to also handle restart-block logic when saving/restoring the
+thread data).
+
+It takes longer to describe what isn't implemented or supported by
+this prototype ... basically everything that isn't as simple as the
+above.
+
+As for containers - since we still don't have a representation for a
+container, this patch has no notion of a container. The tests for
+consistent namespaces (and isolation) are also omitted.
+
+Below are two example programs: one uses checkpoint (called ckpt) and
+one uses restart (called rstr). Note the use of "dup2" to create a 
+copy of an open file and show how shared objects are treated. Execute
+like this (as a superuser):
+
+orenl:~/test$ ./ckpt > out.1
+				<-- ctrl-c
+orenl:~/test$ cat /tmp/cr-rest.out
+hello, world!
+world, hello!
+(ret = 1)
+
+orenl:~/test$ ./ckpt > out.1
+				<-- ctrl-c
+orenl:~/test$ cat /tmp/cr-rest.out
+hello, world!
+world, hello!
+(ret = 2)
+
+				<-- now change the contents of the file
+orenl:~/test$ sed -i 's/world, hello!/xxxx/' /tmp/cr-rest.out
+orenl:~/test$ cat /tmp/cr-rest.out
+hello, world!
+xxxx
+(ret = 2)
+
+				<-- and do the restart
+orenl:~/test$ ./rstr < out.1
+				<-- ctrl-c
+orenl:~/test$ cat /tmp/cr-rest.out
+hello, world!
+world, hello!
+(ret = 0)
+
+(if you check the output of ps, you'll see that "rstr" changed its
+name to "ckpt", as expected). 
+
+============================== ckpt.c ================================
+
+#define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <asm/unistd.h>
+#include <sys/syscall.h>
+
+#define OUTFILE "/tmp/cr-test.out"
+
+int main(int argc, char *argv[])
+{
+	pid_t pid = getpid();
+	FILE *file;
+	int ret;
+
+	close(0);
+	close(2);
+
+	unlink(OUTFILE);
+	file = fopen(OUTFILE, "w+");
+	if (!file) {
+		perror("open");
+		exit(1);
+	}
+
+	if (dup2(0,2) < 0) {
+		perror("dups");
+		exit(1);
+	}
+
+	fprintf(file, "hello, world!\n");
+	fflush(file);
+
+	ret = syscall(__NR_checkpoint, pid, STDOUT_FILENO, 0);
+	if (ret < 0) {
+		perror("checkpoint");
+		exit(2);
+	}
+
+	fprintf(file, "world, hello!\n");
+	fprintf(file, "(ret = %d)\n", ret);
+	fflush(file);
+
+	while (1)
+		;
+
+	return 0;
+}
+
+============================== rstr.c ================================
+
+#define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <asm/unistd.h>
+#include <sys/syscall.h>
+
+int main(int argc, char *argv[])
+{
+	pid_t pid = getpid();
+	int ret;
+
+	ret = syscall(__NR_restart, pid, STDIN_FILENO, 0);
+	if (ret < 0)
+		perror("restart");
+
+	printf("should not reach here !\n");
+
+	return 0;
+}
