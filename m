@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbYIMSs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753282AbYIMTM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbYIMSs2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 14:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYIMSsV
+	id S1753282AbYIMTM4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 15:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYIMTMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 14:48:21 -0400
-Received: from sh.osrg.net ([192.16.179.4]:39283 "EHLO sh.osrg.net"
+	Sat, 13 Sep 2008 15:12:49 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59912 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752386AbYIMSsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 14:48:21 -0400
-Date: Sun, 14 Sep 2008 03:47:06 +0900
-To: daniel.blueman@gmail.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jbeulich@novell.com, jens.axboe@oracle.com, tony.luck@intel.com,
-       akpm@linux-foundation.org
-Subject: Re: [2.6.27-rc6, patch] fix SWIOTLB oops...
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <6278d2220809131053p303e839dy5521d5975523fea8@mail.gmail.com>
-References: <6278d2220809101307h798bb921m3b471f29ce8150ad@mail.gmail.com>
-	<20080911222838V.fujita.tomonori@lab.ntt.co.jp>
-	<6278d2220809131053p303e839dy5521d5975523fea8@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1752538AbYIMTMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 15:12:48 -0400
+Message-ID: <48CC10A3.6020608@garzik.org>
+Date: Sat, 13 Sep 2008 15:12:35 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, themann@de.ibm.com, tklein@de.ibm.com,
+       raisch@de.ibm.com, jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com
+Subject: Re: [PATCH 1/2] ehea: fix phyp debugging typo
+References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net> <1221140080-9853-2-git-send-email-sebastien.dugue@bull.net>
+In-Reply-To: <1221140080-9853-2-git-send-email-sebastien.dugue@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080914034719Y.fujita.tomonori@lab.ntt.co.jp>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Sep 2008 18:53:13 +0100
-"Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
-
-> >> Fix back-off path when memory allocation fails
-> >> Signed-off-by: Daniel J Blueman <daniel.blueman@gmail.com>
-> >>
-> >> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> >> index 977edbd..8826fdf 100644
-> >> --- a/lib/swiotlb.c
-> >> +++ b/lib/swiotlb.c
-> >> @@ -491,7 +491,7 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
-> >>                * the lowest available address range.
-> >>                */
-> >>               dma_addr_t handle;
-> >> -             handle = swiotlb_map_single(NULL, NULL, size, DMA_FROM_DEVICE);
-> >> +             handle = swiotlb_map_single(hwdev, NULL, size, DMA_FROM_DEVICE);
-> >
-> > I think that it's better to use map_single instead of
-> > swiotlb_map_single since we always need swiotlb memory here.
-> >
-> > http://www.uwsg.iu.edu/hypermail/linux/kernel/0809.1/0043.html
+Sebastien Dugue wrote:
+>   Fix typo in ehea_h_query_ehea() which prevents building when DEBUG is on.
 > 
-> Thanks Fujita; this looks a better way of doing this. I've tested the
-> three patches you posted and they address the original issue I bumped
-> into, so seem an appropriate fix for -rc7. Not sure if preceding
-> comments need tweaking though.
+> Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> ---
+>  drivers/net/ehea/ehea_phyp.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Our work isn't done yet though, since we see unexpected page state [5]
-> on the release path. Calling the appropriate IOMMU/SWIOTLB release
-> function [6] corrects this. Verified on x86-64 Intel system with
-> SWIOTLB in use due to large memory; without this, processes end up
-> hosed, so I'd say it's -rc7 material.
+> diff --git a/drivers/net/ehea/ehea_phyp.c b/drivers/net/ehea/ehea_phyp.c
+> index 156eb63..2a33a61 100644
+> --- a/drivers/net/ehea/ehea_phyp.c
+> +++ b/drivers/net/ehea/ehea_phyp.c
+> @@ -535,7 +535,7 @@ u64 ehea_h_query_ehea(const u64 adapter_handle, void *cb_addr)
+>  				       cb_logaddr,		/* R5 */
+>  				       0, 0, 0, 0, 0);		/* R6-R10 */
+>  #ifdef DEBUG
+> -	ehea_dmp(cb_addr, sizeof(struct hcp_query_ehea), "hcp_query_ehea");
+> +	ehea_dump(cb_addr, sizeof(struct hcp_query_ehea), "hcp_query_ehea");
+>  #endif
+>  	return hret;
 
-Are you sure your patch doesn't break other x86 IOMMU implementations
-(note that this patch affects all the IOMMUs)?
+applied
 
-x86 IOMMU coherent code has been broken for a long time. The coherent
-code was completely rewritten for 2.6.28 to fix all the issues.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
-
-I think it's too late to try to fix v2.6.27.
