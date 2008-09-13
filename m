@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYIMKDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbYIMKH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYIMKDt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 06:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbYIMKDl
+	id S1758417AbYIMKH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 06:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYIMKHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 06:03:41 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:25450 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754946AbYIMKDl (ORCPT
+	Sat, 13 Sep 2008 06:07:19 -0400
+Received: from relay03.mail-hub.dodo.com.au ([123.2.6.238]:49254 "EHLO
+	relay03.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755128AbYIMKHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 06:03:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=E1SiXPwZJOUDxJjFpp+SdIKh/CDiREYrKx2i03QJIVhSuNKcUue6Q2nDE0GgrBP9Jc
-         Ms1FY4qTiOe4UZtfoCuBHIUGEu25segOldaz/OkMWktvPQUqJpeibeGH+vQfS8Bz99Pn
-         kDc972gSjDz5Foq4RSE8oZuOjvPhHmAXJ+l2Q=
-Date: Sat, 13 Sep 2008 19:03:32 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Subject: [PATCH] mmc_test: initialize mmc_test_lock statically
-Message-ID: <20080913100331.GB3746@localhost.localdomain>
+	Sat, 13 Sep 2008 06:07:17 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: "karthikeyan S" <karthispeaks@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Willy Tarreau <w@1wt.eu>
+Subject: Re: A bug (probably) in stop_all_threads
+Date: Sat, 13 Sep 2008 20:07:04 +1000
+Organization: http://bugsplatter.id.au/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com>
+References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com>
+In-Reply-To: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com>
+X-Mailer: Forte Agent 2.0/32.652
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mutex mmc_test_lock is initialized at every time mmc_test device
-is probed. Probing another mmc_test device may break the mutex, if
-the probe function is called while the mutex is locked.
+On Sat, 13 Sep 2008 13:57:28 +0530, "karthikeyan S" <karthispeaks@gmail.com> wrote:
 
-This patch fixes it by statically initializing mmc_test_lock.
+CC added.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
----
- drivers/mmc/card/mmc_test.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+>Hi,
+>
+>Apologies if I am posting this message in an incorrect mailing list
+>and for bringing up an issue with older kernel version (2.4), and if
+>the issue had been brought up earlier and I missed it.
+>
+>There seems to be a bug with stop_all_threads function in 2.4. The
+>function sends SIGSTOP to all the threads in the thread group and
+>waits until all the threads get their state changed accordingly.
+>
+>While waiting, if it finds that the event has not occurred, it tires
+>to yield the processor to other processes by calling
+>schedule_timeout().
+>
+>Bur before calling schedule_timeout() it does not set the task state
+>to either TASK_INTERRUPTIBLE or TASK_UNINTERRUPTIBLE.
+>So schedule_timeout() does not do anything effectively.
+>
+>This causes a problem in our device which uses kernel 2.4. When we
+>have a sigsegv from the task which runs at highest priority, the
+>control is stuck waiting for all the threads in the thread group to
+>change their task state. But the other threads never get a chance to
+>run and the SIGSTOP sent to them is of no effect.
+>
+>When  I changed the stop_all_threads function to set the task state to
+>TASK_INTERRUPTIBLE, the problem disappears.
+>
+>So is this a real issue that stop_all_threads() does not set the
+>current task to TASK_INTERRUPTIBLE before calling schedule_timeout()?
+>
+>Please provide your feedback. Thanks a lot.
+>
+>-karthik
 
-Index: 2.6-git/drivers/mmc/card/mmc_test.c
-===================================================================
---- 2.6-git.orig/drivers/mmc/card/mmc_test.c
-+++ 2.6-git/drivers/mmc/card/mmc_test.c
-@@ -1040,7 +1040,7 @@ static const struct mmc_test_case mmc_te
- 
- };
- 
--static struct mutex mmc_test_lock;
-+static DEFINE_MUTEX(mmc_test_lock);
- 
- static void mmc_test_run(struct mmc_test_card *test, int testcase)
- {
-@@ -1171,8 +1171,6 @@ static int mmc_test_probe(struct mmc_car
- 	if ((card->type != MMC_TYPE_MMC) && (card->type != MMC_TYPE_SD))
- 		return -ENODEV;
- 
--	mutex_init(&mmc_test_lock);
--
- 	ret = device_create_file(&card->dev, &dev_attr_test);
- 	if (ret)
- 		return ret;
