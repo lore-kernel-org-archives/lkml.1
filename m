@@ -1,61 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753707AbYIMXZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbYIMXbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753707AbYIMXZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 19:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYIMXZr
+	id S1753479AbYIMXbU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 19:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYIMXbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 19:25:47 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:50256 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752176AbYIMXZq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 19:25:46 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: 7eggert@gmx.de
-Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
-Date: Sat, 13 Sep 2008 20:25:39 -0300
-User-Agent: KMail/1.9.10
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, bogdano@mandriva.com.br,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Abdel Benamrouche <draconux@gmail.com>,
-       Damien Lallement <dlallement@mandriva.com>,
-       "pterjan@mandriva.com" <pterjan@mandriva.com>,
-       Jens Axboe <axboe@kernel.dk>
-References: <bblSy-60j-19@gated-at.bofh.it> <bbnhC-7Vd-5@gated-at.bofh.it> <E1KeRMh-0001Ay-Uj@be1.7eggert.dyndns.org>
-In-Reply-To: <E1KeRMh-0001Ay-Uj@be1.7eggert.dyndns.org>
+	Sat, 13 Sep 2008 19:31:10 -0400
+Received: from mail.work.de ([212.12.32.20]:38443 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752180AbYIMXbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 19:31:09 -0400
+Message-ID: <48CC4D35.3000003@gmail.com>
+Date: Sun, 14 Sep 2008 03:31:01 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Markus Rechberger <mrechberger@gmail.com>
+CC: linux-dvb@linuxtv.org, Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>	 <48C66829.1010902@grumpydevil.homelinux.org>	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>	 <48CC42D8.8080806@gmail.com> <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+In-Reply-To: <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809132025.40300.herton@mandriva.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 September 2008 06:24:27 Bodo Eggert wrote:
-> Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
+Markus Rechberger wrote:
+> On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
+>> Markus Rechberger wrote:
+>>
+>>> How many devices are currently supported by the multiproto API
+>>> compared with the s2 tree?
+>> The initial set of DVB-S2 multistandard devices supported by the
+>> multiproto tree is follows. This is just the stb0899 based dvb-s2 driver
+>> alone. There are more additions by 2 more modules (not devices), but for
+>> the simple comparison here is the quick list of them, for which some of
+>> the manufacturers have shown support in some way. (There has been quite
+>> some contributions from the community as well.):
+>>
+>> (Also to be noted is that, some BSD chaps also have shown interest in
+>> the same)
+>>
 > 
-> > +++ b/fs/partitions/check.c
-> > @@ -499,9 +499,9 @@ int rescan_partitions(struct gendisk *disk, struct
-> > block_device *bdev)
-> >  if (!size)
-> >  continue;
-> >  if (from + size > get_capacity(disk)) {
-> > -                     printk(KERN_ERR " %s: p%d exceeds device capacity\n",
-> > +                     printk(KERN_WARNING
-> > +                             " %s: p%d exceeds device capacity"
->                                 ", trimmed\n",
-> >  disk->disk_name, p);
+> they're heavy into moving the whole framework over as far as I've seen
+> yes, also including yet unmerged drivers.
+
+
+Using the same interface, the same applications will work there as well
+which is a bonus, but isn't the existing user interface GPL ? (A bit
+confused on that aspect)
+
+
+>> * STB0899 based
+>>
+>> Anubis
+>> Typhoon DVB-S2 PCI
+>>
+>> Azurewave/Twinhan
+>> VP-1041
+>> VP-7050
+>>
+>> Digital Now
+>> AD SP400
+>> AD SB300
+>>
+>> KNC1
+>> TV Station DVB-S2
+>> TV Station DVB-S2 Plus
+>>
+>> Pinnacle
+>> PCTV Sat HDTV Pro USB 452e
+>>
+>> Satelco
+>> TV Station DVB-S2
+>> Easywatch HDTV USB CI
+>> Easywatch HDTV PCI
+>>
+>> Technisat
+>> Skystar HD
+>> Skystar HD2
+>> Skystar USB2 HDCI
+>>
+>> Technotrend
+>> TT S2 3200
+>> TT S2 3600
+>> TT S2 3650
+>>
+>> Terratec
+>> Cinergy S2 PCI HD
+>> Cinergy S2 PCI HDCI
+>>
 > 
-> Add "size = get_capacity(disk) - from" here?
-> (Possibly using a cached value for get_capacity(disk)?)
+> those are pullable now against the current tree?
 
-Trim was already proposed here before (not accepted):
-http://lkml.org/lkml/2006/10/12/364
 
---
-[]'s
-Herton
+These devices, depend upon the DVB API update without which it wouldn't
+work as they depend heavily on the DVB API framework. Without the
+updated framework, it doesn't make any sense to pull them: they won't
+even compile. The last but not least reason is that, the stb0899 driver
+is a DVB-S2 multistandard device which requires DVB-S2/DSS support
+additionally.
+
+Regards,
+Manu
