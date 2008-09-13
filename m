@@ -1,63 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbYIMACq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYIMADK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758236AbYIMACq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 20:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbYIMACh
+	id S1757494AbYIMADK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 20:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332AbYIMACz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 20:02:37 -0400
-Received: from outbound-mail-31.bluehost.com ([69.89.18.151]:46882 "HELO
-	outbound-mail-31.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753680AbYIMACh (ORCPT
+	Fri, 12 Sep 2008 20:02:55 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:6161 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757290AbYIMACy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 20:02:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=DGFWAdcqqqjtCNCIaEH1HjQjWVt8TZn6a6Ggu6ZB13tIbOcURX+gIJvOFrcQfyW8bXUx23w1a7z2Zo6kllGK9GiZX5tMquJGFCLRxr/86wYX0JKMvx/Bur6pka3uo01/;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] PCI fixes
-Date: Fri, 12 Sep 2008 17:02:34 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+	Fri, 12 Sep 2008 20:02:54 -0400
+Message-ID: <48CB032D.3040608@ct.jp.nec.com>
+Date: Fri, 12 Sep 2008 17:02:53 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/3] x86: signal: remove unneeded err handling
+References: <48CB02C5.4060805@ct.jp.nec.com>
+In-Reply-To: <48CB02C5.4060805@ct.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809121702.34242.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please, sir, please pull some more:
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-This pull has a few more regression fixes, though I don't think any are listed
-on Rafael's list atm.  The fakephp and iommu fixes are the most important, but
-the others are definite regressions vs. earlier kernels as well, but don't have
-very visible symptoms in most configurations.
+This patch eliminates unused or unneeded variable handling.
 
-Adrian Bunk (1):
-      PCI: fix pciehp_free_irq()
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/ia32/ia32_signal.c |   11 ++++-------
+ arch/x86/kernel/signal_32.c |   11 ++++-------
+ arch/x86/kernel/signal_64.c |    5 ++---
+ 3 files changed, 10 insertions(+), 17 deletions(-)
 
-Alex Chiang (1):
-      PCI Hotplug: fakephp: fix deadlock... again
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index 5f42cfc..e47bed2 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -446,18 +446,15 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+ 		return -EFAULT;
+ 
+-	err |= __put_user(sig, &frame->sig);
+-	if (err)
++	if (__put_user(sig, &frame->sig))
+ 		return -EFAULT;
+ 
+-	err |= ia32_setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]);
+-	if (err)
++	if (ia32_setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]))
+ 		return -EFAULT;
+ 
+ 	if (_COMPAT_NSIG_WORDS > 1) {
+-		err |= __copy_to_user(frame->extramask, &set->sig[1],
+-				      sizeof(frame->extramask));
+-		if (err)
++		if (__copy_to_user(frame->extramask, &set->sig[1],
++				   sizeof(frame->extramask)))
+ 			return -EFAULT;
+ 	}
+ 
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index 1c22e00..d433861 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -351,18 +351,15 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+ 		return -EFAULT;
+ 
+-	err = __put_user(sig, &frame->sig);
+-	if (err)
++	if (__put_user(sig, &frame->sig))
+ 		return -EFAULT;
+ 
+-	err = setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]);
+-	if (err)
++	if (setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]))
+ 		return -EFAULT;
+ 
+ 	if (_NSIG_WORDS > 1) {
+-		err = __copy_to_user(&frame->extramask, &set->sig[1],
+-				      sizeof(frame->extramask));
+-		if (err)
++		if (__copy_to_user(&frame->extramask, &set->sig[1],
++				   sizeof(frame->extramask)))
+ 			return -EFAULT;
+ 	}
+ 
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 3b79e17..a21c851 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -210,7 +210,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 			(unsigned long)fp - sizeof(struct rt_sigframe), 16) - 8;
+ 
+ 		if (save_i387_xstate(fp) < 0)
+-			err |= -1;
++			return -EFAULT;
+ 	} else
+ 		frame = get_stack(ka, regs, sizeof(struct rt_sigframe)) - 8;
+ 
+@@ -218,8 +218,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 		return -EFAULT;
+ 
+ 	if (ka->sa.sa_flags & SA_SIGINFO) {
+-		err |= copy_siginfo_to_user(&frame->info, info);
+-		if (err)
++		if (copy_siginfo_to_user(&frame->info, info))
+ 			return -EFAULT;
+ 	}
+ 
+-- 
+1.5.6
 
-David Woodhouse (1):
-      PCI/iommu: blacklist DMAR on Intel G31/G33 chipsets
-
-Johann Felix Soden (2):
-      PCI: Fix printk warnings in probe.c
-      PCI: Fix printk warnings in setup-bus.c
-
-Yinghai Lu (1):
-      PCI: re-add debug prints for unmodified BARs
-
-
- drivers/pci/hotplug/fakephp.c    |    6 +++---
- drivers/pci/hotplug/pciehp_hpc.c |    2 +-
- drivers/pci/intel-iommu.c        |   23 +++++++++++++++++++++++
- drivers/pci/probe.c              |   18 +++++++++++++++---
- drivers/pci/setup-bus.c          |    6 +++++-
- 5 files changed, 47 insertions(+), 8 deletions(-)
