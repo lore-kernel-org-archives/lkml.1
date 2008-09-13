@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbYIMK4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYIMLVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbYIMK4F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 06:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbYIMKzy
+	id S1758016AbYIMLVU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 07:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbYIMLVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 06:55:54 -0400
-Received: from mx1.wp.pl ([212.77.101.5]:63147 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753728AbYIMKzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 06:55:53 -0400
-Date: Sat, 13 Sep 2008 12:56:06 +0200
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: linux-kernel@vger.kernel.org
-Cc: hpa@zytor.com, tglx@linutronix.de, mingo@redhat.com
-Subject: [PATCH] x86: better CPU identification without the CPUID
-Message-Id: <20080913125606.d655bdcf.krzysztof.h1@wp.pl>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
+	Sat, 13 Sep 2008 07:21:11 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1553 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753399AbYIMLVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 07:21:09 -0400
+Date: Sat, 13 Sep 2008 13:20:51 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Frans Pop <elendil@planet.nl>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@osdl.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] Document use of RTC in pm_trace
+Message-ID: <20080913112051.GA6827@ucw.cz>
+References: <200809101658.06935.elendil@planet.nl> <200809101856.24997.elendil@planet.nl> <alpine.LFD.1.10.0809101001360.3384@nehalem.linux-foundation.org> <200809102007.09670.elendil@planet.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [YRP0]                               
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809102007.09670.elendil@planet.nl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+On Wed 2008-09-10 20:07:08, Frans Pop wrote:
+> On Wednesday 10 September 2008, Linus Torvalds wrote:
+> > On Wed, 10 Sep 2008, Frans Pop wrote:
+> > > But I would not expect the RTC to get changed when the resume is
+> > > successful. Or does it just get updated with every resume step
+> > > without a reset to the pre-trace value on completion?
+> >
+> > Indeed. We don't know where the bug happens when tracing, so each
+> > trace-point just writes its hash value into it. And nothing restores
+> > it, since nothing knows that the resume is "done" (a lot of problems
+> > happen due to X interactions much later than the 'core' resume thing).
+> 
+> Right. How about this patch then?
+> 
+> ---
+> From: Frans Pop <elendil@planet.nl>
+> 
+> As pm_trace uses the system's hardware clock to save its magic
+> value, users of that option should be warned that using this debug
+> option will result in an incorrect system time after resume.
+>     
+> Signed-off-by: Frans Pop <elendil@planet.nl>
 
-cpus without the CPUID instruction are identified
-as general 386 or 486 while some cpus (mostly made
-by Cyrix) provide c_identify function which identify
-correctly older cpus using cpu specific registers).
+ACK.
 
-Cyrix cpus are even worse as 5x86 and 6x68 have
-the CPUID instruction disabled. The CPUID is
-enabled by the c_identify() but the c_identify
-is only called when the CPUID is available.
+> diff --git a/Documentation/power/s2ram.txt b/Documentation/power/s2ram.txt
+> index b05f512..2ebdc60 100644
+> --- a/Documentation/power/s2ram.txt
+> +++ b/Documentation/power/s2ram.txt
+> @@ -54,3 +54,21 @@ used to run with "radeonfb" (it's an ATI Radeon mobility). It turns out
+>  that "radeonfb" simply cannot resume that device - it tries to set the
+>  PLL's, and it just _hangs_. Using the regular VGA console and letting X
+>  resume it instead works fine.
+> +
+> +NOTE
+> +====
+> +pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
+> +Reason for this is that the RTC is the only reliably available piece of
+> +hardware during resume operations where a value can be set that will
+> +survive a reboot.
+> +
+> +Consequence is that after a resume (even if it is successful) your system
+> +clock will have a value corresponding to the magic mumber instead of the
+> +correct date/time! It is therefore advisable to use a program like ntp-date
+> +or rdate to reset the correct date/time from an external time source when
+> +using this trace option.
+> +
+> +As the clock keeps ticking it is also essential that the reboot is done
+> +quickly after the resume failure. The trace option does not use the seconds
+> +or the low order bits of the minutes of the RTC, but a too long delay will
+> +corrupt the magic value.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Fix this by calling the c_identify() for all known
-cpu families if there is no the CPUID instruction
-
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
----
-
-I have tested it on Cyrix Cx486DX2 cpu.
-
-I suspect that coma_bug field and mtrr support is not
-set correctly for the Cyrix 6x86 family. I have not a cpu from
-the Cyrix 6x68 family to test. 
-
-The code path is (+ where the patch code is added)
-
-if (have_cpuid_p()) {
-
-}
-+ } else {
-...
-+ }
-
-so it does not affect cpus with the CPUID instruction.
-
-Regards,
-Krzysztof
-
-diff -urp linux-mm/arch/x86/kernel/cpu/common.c linux-486/arch/x86/kernel/cpu/common.c
---- linux-mm/arch/x86/kernel/cpu/common.c	2008-09-05 23:38:20.295563396 +0200
-+++ linux-486/arch/x86/kernel/cpu/common.c	2008-09-12 22:53:27.062265329 +0200
-@@ -444,6 +444,17 @@ static void __cpuinit generic_identify(s
- 
- 		init_scattered_cpuid_features(c);
- 		detect_nopl(c);
-+	} else {
-+		int i;
-+		for (i = 0; i < X86_VENDOR_NUM; i++)
-+			if (cpu_devs[i] && cpu_devs[i]->c_identify) {
-+				c->x86_vendor_id[0] = 0;
-+				cpu_devs[i]->c_identify(c);
-+				if (c->x86_vendor_id[0]) {
-+					get_cpu_vendor(c, 0);
-+					break;
-+				}
-+			}
- 	}
- }
- 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
