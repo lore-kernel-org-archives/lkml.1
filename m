@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753073AbYIMRbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYIMRei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753073AbYIMRbq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 13:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbYIMRbe
+	id S1753223AbYIMRei (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 13:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbYIMRea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 13:31:34 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:35145 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751380AbYIMRbd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 13:31:33 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=QSdRsYuzykgZXMnJddIA:9 a=WAboloLgHrBUfwVtSRwA:7 a=jD5P6RM6ChrL1H2Y-o61wsT3SeAA:4 a=XCHgF3Esco0A:10 a=oWG72qQcp8QA:10 a=tP3kHmU_FAoA:10
-Message-ID: <48CBF8EF.7030909@shaw.ca>
-Date: Sat, 13 Sep 2008 11:31:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Ben Dooks <ben-linux@fluff.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: PCI: Add ALI M5229 comaptibility mode quirk
-References: <fa.5x39Eh02m9rtrn5GDRnZ3IcV/z8@ifi.uio.no> <fa.bfF4DSr1eMYmEl5E90sppi2wbuU@ifi.uio.no>
-In-Reply-To: <fa.bfF4DSr1eMYmEl5E90sppi2wbuU@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Sep 2008 13:34:30 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2246 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751215AbYIMRe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 13:34:29 -0400
+Date: Sat, 13 Sep 2008 19:34:19 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: Andrey Mirkin <major@openvz.org>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH 8/9] Introduce functions to restart a process
+Message-ID: <20080913173418.GA8822@ucw.cz>
+References: <1220439476-16465-1-git-send-email-major@openvz.org> <1220439476-16465-2-git-send-email-major@openvz.org> <1220439476-16465-3-git-send-email-major@openvz.org> <1220439476-16465-4-git-send-email-major@openvz.org> <1220439476-16465-5-git-send-email-major@openvz.org> <1220439476-16465-6-git-send-email-major@openvz.org> <1220439476-16465-7-git-send-email-major@openvz.org> <1220439476-16465-8-git-send-email-major@openvz.org> <1220439476-16465-9-git-send-email-major@openvz.org> <20080903143248.GU14473@hawkmoon.kerlabs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080903143248.GU14473@hawkmoon.kerlabs.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Ben Dooks wrote:
->> The libata driver will not work with an M5229 set into native IDE
->> mode (the old drivers/pci one does) if the M5229 does not provide
->> it's own IRQ.
->>
->> The M5229 implementation embedded into the ALI M1543 uses the
->> M1543's ISA PIC to provide the interrupts and thus does not have
->> an valid PCI IRQ set. This quirk detects the abscence of IRQ and
->> sets the M5229 back into compatibility mode to use IRQs 14 and 15
->> so that libata works correctly.
->>
->> Note, I belive that the check for an valid interrupt line is
->> correct, I only have an M5229 in an ALI M1543 to check this
->> on. It would be useful to confirm that a M5229 with an valid IRQ
->> does not trigger this quirk.
->>
->> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
->>
->> Index: linux-2.6.27-rc6-cats1/drivers/pci/quirks.c
->> ===================================================================
->> --- linux-2.6.27-rc6-cats1.orig/drivers/pci/quirks.c    2008-09-11 
->> 11:26:35.000000000 +0100
->> +++ linux-2.6.27-rc6-cats1/drivers/pci/quirks.c    2008-09-12 
->> 12:18:05.000000000 +0100
->> @@ -905,6 +905,34 @@ static void __devinit quirk_svwks_csb5id
->>  }
->>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS, 
->> PCI_DEVICE_ID_SERVERWORKS_CSB5IDE, quirk_svwks_csb5ide);
->>  
->> +/* Some systems set the ALI M5229 in the ALI M1543 bridge to native 
->> mode,
->> + * which cannot be supported by the pata_ali.c driver (the old 
->> drivers/ide
->> + * makes a compatibility effort to change the IDE interrupts).
->> + */
->> +static void __devinit quirk_ali_ide_compatibility(struct pci_dev *pdev)
->> +{
->> +    u8 tmp;
->> +
->> +    /* pdev->irq and pdev->pin have yet to be initialised, so check
->> +     * by reading from the configuration header to see if we've got
->> +     * a valid interrupt line. */
->> +
->> +    pci_read_config_byte(pdev, PCI_INTERRUPT_LINE, &tmp);
->> +    if (tmp != 0xff)
->> +        return;
->> +
->> +    pci_read_config_byte(pdev, PCI_CLASS_PROG, &tmp);
->> +    if (tmp & 0x5) {
->> +        dev_info(&pdev->dev, "quirk: changing to IDE compatibility 
->> mode\n");
->> +
->> +        tmp &= ~0x05;
->> +        pdev->class &= ~0x05;
->> +        pci_write_config_byte(pdev, PCI_CLASS_PROG, tmp);
->> +    }
->> +}
->> +
->> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M5229, 
->> quirk_ali_ide_compatibility);
-> 
-> 
-> This is a bit surprising, considering that libata works for all IDE mode 
-> of other controllers...
-> 
->     Jeff
+Hi!
 
-Not if the controller has no native-mode IRQ assigned, it won't..
+> > @@ -233,6 +234,26 @@ ENTRY(ret_from_fork)
+> >  	CFI_ENDPROC
+> >  END(ret_from_fork)
+> >  
+> > +ENTRY(i386_ret_from_resume)
+> > +	CFI_STARTPROC
+> > +	pushl %eax
+> > +	CFI_ADJUST_CFA_OFFSET 4
+> > +	call schedule_tail
+> > +	GET_THREAD_INFO(%ebp)
+> > +	popl %eax
+> > +	CFI_ADJUST_CFA_OFFSET -4
+> > +	movl (%esp), %eax
+> > +	testl %eax, %eax
+> > +	jz    1f
+> > +	pushl %esp
+> > +	call  *%eax
+> > +	addl  $4, %esp
+> > +1:
+> > +	addl  $256, %esp
+
+Can we do something with naming here? resume usually means 'resume
+from s2ram'...
+
+> > diff --git a/cpt/rst_process.c b/cpt/rst_process.c
+> > new file mode 100644
+> > index 0000000..6d47f3c
+> > --- /dev/null
+> > +++ b/cpt/rst_process.c
+> > @@ -0,0 +1,277 @@
+
+....and you are not even consistent. Plus, rst_ will probably be
+understood as a reset by most people.
+
+Hmmm... your syscalls get fd. What happens if I pass something like
+/proc/self/maps to them?
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
