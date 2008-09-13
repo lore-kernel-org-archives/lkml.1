@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYIMCSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYIMCXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461AbYIMCSA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 22:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbYIMCRv
+	id S1757497AbYIMCXK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 22:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYIMCWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 22:17:51 -0400
-Received: from qb-out-0506.google.com ([72.14.204.236]:33681 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755099AbYIMCRu (ORCPT
+	Fri, 12 Sep 2008 22:22:55 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2228 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755099AbYIMCWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 22:17:50 -0400
-Message-ID: <f488382f0809121917vaabfcre710c9e6d4f39a12@mail.gmail.com>
-Date: Fri, 12 Sep 2008 19:17:49 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: frustrating ath9k issues in 2.6.27-rc6-00036-ga551b98 (Linus pristine tree)
-In-Reply-To: <f488382f0809121837n69cf4bc5i3dfa04cbf671957b@mail.gmail.com>
+	Fri, 12 Sep 2008 22:22:54 -0400
+Date: Fri, 12 Sep 2008 22:22:54 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
+       <me@bobcopeland.com>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, <bogdano@mandriva.com.br>,
+       <lcapitulino@mandriva.com.br>, <draconux@gmail.com>,
+       <dlallement@mandriva.com>, <pterjan@mandriva.com>, <axboe@kernel.dk>
+Subject: Re: Partition check considered as error is breaking mounting in
+ 2.6.27
+In-Reply-To: <200809121646.09641.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0809122222120.16077-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f488382f0809121837n69cf4bc5i3dfa04cbf671957b@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just had another incident where it disassociated and refused to
-reassociate. I got about 100 of these in my dmesg (fixed by unloading
-and reloading ath9k):
+On Fri, 12 Sep 2008, David Brownell wrote:
 
-[...]
-[ 1279.031033] ath_set_channel: unable to reset channel 149 (5745Mhz)
-flags 0x30142 hal status 4294967277
-[ 1279.031203] ath9k_config: Unable to set channel
-[ 1279.323427] ath_set_channel: unable to reset channel 153 (5765Mhz)
-flags 0x50142 hal status 4294967277
-[ 1279.323577] ath9k_config: Unable to set channel
-[ 1279.624562] ath_set_channel: unable to reset channel 157 (5785Mhz)
-flags 0x30142 hal status 4294967277
-[ 1279.624687] ath9k_config: Unable to set channel
-[ 1279.916441] ath_set_channel: unable to reset channel 161 (5805Mhz)
-flags 0x50142 hal status 4294967277
-[ 1279.916586] ath9k_config: Unable to set channel
-[ 1280.207274] ath_set_channel: unable to reset channel 165 (5825Mhz)
-flags 0x10142 hal status 4294967277
-[ 1280.207387] ath9k_config: Unable to set channel
-[...]
+> On Friday 12 September 2008, Andrew Morton wrote:
+> >                         printk(KERN_ERR " %s: p%d exceeds device capacity\n",
+> >                                 disk->disk_name, p);
+> > -                       continue;
+> >                 }
+> 
+> So that now deserves to be KERN_WARN not KERN_ERR, yes?
 
-- Steven
+In addition it deserves to be commented so that somebody doesn't go and 
+change it yet again.
+
+Alan Stern
+
