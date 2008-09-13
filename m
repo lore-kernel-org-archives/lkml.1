@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758663AbYIMIf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758331AbYIMImm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758663AbYIMIf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 04:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYIMIfW
+	id S1758331AbYIMImm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 04:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYIMImc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 04:35:22 -0400
-Received: from cpsmtpo-eml03.kpnxchange.com ([213.75.38.152]:28369 "EHLO
-	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752574AbYIMIfV (ORCPT
+	Sat, 13 Sep 2008 04:42:32 -0400
+Received: from john.hrz.tu-chemnitz.de ([134.109.132.2]:60224 "EHLO
+	john.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752952AbYIMImb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 04:35:21 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Jonathan McDowell <noodles@earth.li>
-Subject: Re: [PATCH] Fixup deb-pkg target to generate separate firmware deb.
-Date: Sat, 13 Sep 2008 10:35:18 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20080912112042.GX30927@earth.li>
-In-Reply-To: <20080912112042.GX30927@earth.li>
+	Sat, 13 Sep 2008 04:42:31 -0400
+From: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+Organization: Chemnitz University of Technology
+To: Janne Grunau <j@jannau.net>
+Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
+Date: Sat, 13 Sep 2008 10:41:33 +0200
+User-Agent: KMail/1.9.5
+Cc: Jarod Wilson <jwilson@redhat.com>, linux-kernel@vger.kernel.org,
+       Christoph Bartelmus <lirc@bartelmus.de>
+References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809121224.34345.jwilson@redhat.com> <200809130226.35998.j@jannau.net>
+In-Reply-To: <200809130226.35998.j@jannau.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809131035.18477.elendil@planet.nl>
-X-OriginalArrivalTime: 13 Sep 2008 08:35:19.0213 (UTC) FILETIME=[A7803DD0:01C9157B]
+Message-Id: <200809131041.33717.stefan.bauer@cs.tu-chemnitz.de>
+X-Spam-Score: -1.4 (-)
+X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
+	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
+	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
+	weitergeleitet
+	--- Ende der SpamAssassin Textanalyse
+X-Scan-Signature: a37c3661e0372786d6c154dc38711565
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 September 2008, Jonathan McDowell wrote:
-> The below is a simplistic fix for "make deb-pkg"; it splits the
-> firmware out to a linux-firmware-image package and adds an
-> (unversioned) Suggests to the linux package for this firmware.
+On Saturday 13 September 2008 02:26, Janne Grunau wrote:
+> On Friday 12 September 2008 18:24:33 Jarod Wilson wrote:
+> > > I just want to thank you very much for your work and give you my
+> > > Tested-By. Todays git (b2e9c18a32423310a309f94ea5a659c4bb264378)
+> > > works well here with lirc-0.8.3 userspace on a Pentium
+> > > 3/i815-system.
+> >
+> > Oh good! I haven't broken anything further w/my changes up to
+> > b2e9c18... ;) I've got another slew of updates to lirc_serial still
+> > pending though
 >
-> Frans, does this solve your problem in an acceptable manner?
+> I hope I haven't broken anything with my lirc_dev changes. I doubt I'll
+> have a change to test it before monday.
 
-Yes it does. Thanks for the patch Jonathan.
-Tested both with kernel configs that result in firmware and that do not 
-result in firmware.
+Unfortunately, you did. Commit ea74897 (port lirc to dynamic device numbers) 
+broke things.
+This is what ea74897 and further (latest tested was dd13cc7) are telling me:
 
-A few minor nitpicks below.
+$ insmod drivers/input/lirc/lirc_dev.ko
+$ insmod drivers/input/lirc/lirc_serial.ko
+insmod: error inserting 'drivers/input/lirc/lirc_serial.ko': -1 Input/output 
+error
+$ dmesg | tail
+lirc_dev: IR Remote Control driver registered, major 253 
+lirc_serial: auto-detected active low receiver
+lirc_dev: lirc_register_driver: sample_rate: 0
+lirc_serial: register_chrdev failed!
 
-> Signed-Off-By: Jonathan McDowell <noodles@earth.li>
 
-Acked-by: Frans Pop <elendil@planet.nl>
+There has also been a compile issue in the meanwhile, introduced with 95efa30 
+(inb/outb and readb/writeb deal in u8 types), but this is gone with todays 
+git pull :)
 
-> @@ -118,8 +122,24 @@ fi 
->  chown -R root:root "$tmpdir"
->  chmod -R go-w "$tmpdir"
->
-> +# Do we have firmware? Move it out of the way and build it into a
-> package. +if [ -e "$tmpdir/lib/firmware" ]; then
-> +	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
-> +
-> +cat <<EOF >> debian/control
 
-This line should be indented one level.
-
-> +
-> +Package: $fwpackagename
-> +Architecture: any
-> +Description: Linux kernel firmware, version $version
-> + This package contains firmware from the Linux kernel, version
-> $version
-> +EOF 
-> +
-> +dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
-> +dpkg --build "$fwdir" ..
-
-Same for these two lines.
-
-> +fi
-> +
->  # Perform the final magic
-> -dpkg-gencontrol -isp
-> +dpkg-gencontrol -isp -p$packagename
->  dpkg --build "$tmpdir" ..
->
->  exit 0
-> -----
->
-> J.
-
+I'll keep on testing (unfortunately only at weekends),
+regards, Stefan
