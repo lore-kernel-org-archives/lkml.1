@@ -1,35 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYIMExl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758841AbYIMEx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYIMExl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 00:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbYIMEwz
+	id S1758841AbYIMEx6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 00:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYIMEw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 00:52:55 -0400
+	Sat, 13 Sep 2008 00:52:56 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37682 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751931AbYIMEwy (ORCPT
+	by vger.kernel.org with ESMTP id S1751555AbYIMEwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 00:52:54 -0400
+	Sat, 13 Sep 2008 00:52:55 -0400
 From: Jeffrey Brian Arnold <jbarnold@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>
-Subject: [RFC PATCH 8/9] Ksplice: ARM support
-Date: Sat, 13 Sep 2008 00:49:56 -0400
-Message-Id: <9db918711d1108cc89f991e2494f58d60cbd2555.1221280912.git.jbarnold@mit.edu>
+Subject: [RFC PATCH 3/9] Ksplice: Add functions for walking kallsyms symbols
+Date: Sat, 13 Sep 2008 00:49:49 -0400
+Message-Id: <bdf8d7b52e2cb9ff3bbed52cedd28294086c9f56.1221280912.git.jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <95a158bee29bdcfa7d2bb537fdfe1e6af21599c7.1221280912.git.jbarnold@mit.edu>
+In-Reply-To: <8cfda1c8f6c46e2f0fa9e9279aa2b2a213fba7a4.1221280912.git.jbarnold@mit.edu>
 References: <1221281397-7045-1-git-send-email-jbarnold@mit.edu>
  <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
  <8cfda1c8f6c46e2f0fa9e9279aa2b2a213fba7a4.1221280912.git.jbarnold@mit.edu>
- <bdf8d7b52e2cb9ff3bbed52cedd28294086c9f56.1221280912.git.jbarnold@mit.edu>
- <401afda17296e380049b129c92a9ae27e8e47fc3.1221280912.git.jbarnold@mit.edu>
- <a827aed330aec871b73c468cf61c27048b26574d.1221280912.git.jbarnold@mit.edu>
- <35453d23e28b34f8a3ccc4610fbc4f8fce299cca.1221271644.git.jbarnold@mit.edu>
- <6ba306125ffc8fbcf9ceb2960645827523247689.1221280912.git.jbarnold@mit.edu>
- <1400216dcddf0a06152b92b2d0a463097ba6c0e2.1221271644.git.jbarnold@mit.edu>
- <95a158bee29bdcfa7d2bb537fdfe1e6af21599c7.1221280912.git.jbarnold@mit.edu>
 In-Reply-To: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
 References: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
 X-Spam-Flag: NO
@@ -38,114 +31,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for Ksplice on ARM.
+From: Anders Kaseorg <andersk@mit.edu>
 
-Signed-off-by: Jeffrey Brian Arnold <jbarnold@mit.edu>
+kallsyms_lookup_name only returns the first match that it finds.
+Ksplice needs information about all symbols with a given name in order
+to correctly resolve local symbols.
+
+kallsyms_on_each_symbol provides a generic mechanism for iterating
+over the kallsyms table.
+
 Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
 ---
- arch/arm/Kconfig               |    1 +
- arch/arm/kernel/ksplice-arch.c |   79 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 80 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/kernel/ksplice-arch.c
+ include/linux/kallsyms.h |   13 +++++++++++++
+ include/linux/module.h   |   12 ++++++++++++
+ kernel/kallsyms.c        |   18 ++++++++++++++++++
+ kernel/module.c          |   19 +++++++++++++++++++
+ 4 files changed, 62 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 70dba16..e73f205 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -14,6 +14,7 @@ config ARM
- 	select HAVE_OPROFILE
- 	select HAVE_ARCH_KGDB
- 	select HAVE_KPROBES if (!XIP_KERNEL)
-+	select HAVE_KSPLICE if (!XIP_KERNEL)
- 	select HAVE_KRETPROBES if (HAVE_KPROBES)
- 	select HAVE_FTRACE if (!XIP_KERNEL)
- 	select HAVE_DYNAMIC_FTRACE if (HAVE_FTRACE)
-diff --git a/arch/arm/kernel/ksplice-arch.c b/arch/arm/kernel/ksplice-arch.c
-new file mode 100644
-index 0000000..981cf75
---- /dev/null
-+++ b/arch/arm/kernel/ksplice-arch.c
-@@ -0,0 +1,79 @@
-+/*  Copyright (C) 2007-2008  Jeffrey Brian Arnold <jbarnold@mit.edu>
-+ *  Copyright (C) 2008  Anders Kaseorg <andersk@mit.edu>,
-+ *                      Tim Abbott <tabbott@mit.edu>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License, version 2.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
-+ *  02110-1301, USA.
-+ */
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index b961448..b8ee4d2 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -17,6 +17,11 @@
+ /* Lookup the address for a symbol. Returns 0 if not found. */
+ unsigned long kallsyms_lookup_name(const char *name);
+ 
++/* Call a function on each kallsyms symbol in the core kernel */
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data);
 +
-+#include <linux/thread_info.h>
-+#define KSPLICE_IP(x) thread_saved_pc(x)
-+#define KSPLICE_SP(x) thread_saved_fp(x)
-+
-+static const struct ksplice_symbol trampoline_symbol = {
-+	.name = NULL,
-+	.label = "<trampoline>",
-+};
-+
-+static const struct ksplice_reloc trampoline_reloc = {
-+	.symbol = &trampoline_symbol,
-+	.pcrel = 1,
-+	.addend = -8,
-+	.size = 4,
-+	.dst_mask = 0x00ffffffL,
-+	.rightshift = 2,
-+	.signed_addend = 1,
-+};
-+
-+static abort_t trampoline_target(struct ksplice_pack *pack, unsigned long addr,
-+				 unsigned long *new_addr)
+ extern int kallsyms_lookup_size_offset(unsigned long addr,
+ 				  unsigned long *symbolsize,
+ 				  unsigned long *offset);
+@@ -43,6 +48,14 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++						    struct module *,
++						    unsigned long),
++					  void *data)
 +{
-+	abort_t ret;
-+	uint32_t word;
-+	if (probe_kernel_read(&word, (void *)addr, sizeof(word)) == -EFAULT)
-+		return NO_MATCH;
-+
-+	if ((word & 0xff000000) != 0xea000000)
-+		return NO_MATCH;
-+
-+	ret = read_reloc_value(pack, &trampoline_reloc, addr, new_addr);
-+	if (ret != OK)
-+		return ret;
-+
-+	*new_addr += addr;
-+	return OK;
++	return 0;
 +}
 +
-+static abort_t prepare_trampoline(struct ksplice_pack *pack,
-+				  struct ksplice_trampoline *t)
+ static inline int kallsyms_lookup_size_offset(unsigned long addr,
+ 					      unsigned long *symbolsize,
+ 					      unsigned long *offset)
+diff --git a/include/linux/module.h b/include/linux/module.h
+index b7cdfb4..cd982cd 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -374,6 +374,10 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name);
+ 
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data);
++
+ extern void __module_put_and_exit(struct module *mod, long code)
+ 	__attribute__((noreturn));
+ #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
+@@ -539,6 +543,14 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++							   struct module *,
++							   unsigned long),
++						 void *data)
 +{
-+	t->size = 4;
-+	*(uint32_t *)t->trampoline = 0xea000000;
-+	return write_reloc_value(pack, &trampoline_reloc,
-+				 (unsigned long)t->trampoline,
-+				 t->repladdr - t->oldaddr);
++	return 0;
 +}
 +
-+static abort_t handle_paravirt(struct ksplice_pack *pack,
-+			       unsigned long pre_addr, unsigned long run_addr,
-+			       int *matched)
+ static inline int register_module_notifier(struct notifier_block * nb)
+ {
+ 	/* no events will happen anyway, so this can always succeed */
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 38fc10a..47d3e94 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -161,6 +161,24 @@ unsigned long kallsyms_lookup_name(const char *name)
+ 	return module_kallsyms_lookup_name(name);
+ }
+ 
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data)
 +{
-+	*matched = 0;
-+	return OK;
++	char namebuf[KSYM_NAME_LEN];
++	unsigned long i;
++	unsigned int off;
++	int ret;
++
++	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
++		off = kallsyms_expand_symbol(off, namebuf);
++		ret = fn(data, namebuf, NULL, kallsyms_addresses[i]);
++		if (ret != 0)
++			return ret;
++	}
++	return module_kallsyms_on_each_symbol(fn, data);
 +}
 +
-+static bool valid_stack_ptr(const struct thread_info *tinfo, const void *p)
+ static unsigned long get_symbol_pos(unsigned long addr,
+ 				    unsigned long *symbolsize,
+ 				    unsigned long *offset)
+diff --git a/kernel/module.c b/kernel/module.c
+index dda2f80..343c8f8 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2523,6 +2523,25 @@ unsigned long module_kallsyms_lookup_name(const char *name)
+ 	preempt_enable();
+ 	return ret;
+ }
++
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data)
 +{
-+	return p > (const void *)tinfo
-+	    && p <= (const void *)tinfo + THREAD_SIZE - sizeof(long);
++	struct module *mod;
++	unsigned int i;
++	int ret;
++
++	list_for_each_entry(mod, &modules, list) {
++		for (i = 0; i < mod->num_symtab; i++) {
++			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
++				 mod, mod->symtab[i].st_value);
++			if (ret != 0)
++				return ret;
++		}
++	}
++	return 0;
 +}
+ #endif /* CONFIG_KALLSYMS */
+ 
+ /* Called by the /proc file system to return a list of modules. */
 -- 
 1.5.4.3
 
