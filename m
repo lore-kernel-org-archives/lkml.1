@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753402AbYIMU3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbYIMUfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753402AbYIMU3o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 16:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYIMU3g
+	id S1753525AbYIMUfd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 16:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYIMUfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 16:29:36 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:60602 "EHLO
-	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752004AbYIMU3f (ORCPT
+	Sat, 13 Sep 2008 16:35:21 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:35544 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752821AbYIMUfV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 16:29:35 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-To: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] =?utf-8?q?Add=20Uwe=20Kleine-K=C3=B6nig=20to=20.mailmap?=
-Date: Sat, 13 Sep 2008 22:29:31 +0200
-Message-Id: <1221337771-31332-1-git-send-email-ukleinek@informatik.uni-freiburg.de>
-X-Mailer: git-send-email 1.5.6.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Organization: Universitaet Freiburg, Institut f. Informatik
+	Sat, 13 Sep 2008 16:35:21 -0400
+Date: Sat, 13 Sep 2008 15:32:48 -0500
+From: David Fries <david@fries.net>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Paul Gortmaker <paul.gortmaker@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] ne.c Fix suspend and resume for ISA PnP cards.
+Message-ID: <20080913203248.GP7877@spacedout.fries.net>
+References: <20080904030212.GA23493@spacedout.fries.net> <7d1d9c250809050101v9ab3907l649781ee38a5a243@mail.gmail.com> <20080909025434.GB28469@spacedout.fries.net> <20080909030114.GC28469@spacedout.fries.net> <48CC1ABC.3090903@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48CC1ABC.3090903@garzik.org>
+User-Agent: Mutt/1.5.4i
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Sat, 13 Sep 2008 15:32:53 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are a few commits that misencoded my name (or used "oe" instead of
-"ö").  So add a correct version to .mailmap.
+On Sat, Sep 13, 2008 at 03:55:40PM -0400, Jeff Garzik wrote:
+> David Fries wrote:
+> >From: David Fries <david@fries.net>
+> >
+> >A call to pnp_stop_dev and pnp_start_dev now shuts down and
+> >initializes plug and play devices for suspend and resume.
+> >
+> >Signed-off-by: David Fries <david@fries.net>
+> >Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> >Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+> >Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> >Cc: Jeff Garzik <jeff@garzik.org>
+> >---
+> > drivers/net/ne.c |    9 ++++++++-
+> > 1 files changed, 8 insertions(+), 1 deletions(-)
+> >
+> >diff --git a/drivers/net/ne.c b/drivers/net/ne.c
+> >index 2bece66..cd31e77 100644
+> 
+> applied
 
-Signed-off-by: Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
----
- .mailmap |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+I just wanted to make it clear for anyone testing, this patch 2/2 by
+itself changes suspend and resume functions which aren't executed
+without patch 1/2 "ne.c fix rmmod, platform driver improvements".  
 
-diff --git a/.mailmap b/.mailmap
-index 7260842..dfab12f 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -96,4 +96,6 @@ Tejun Heo <htejun@gmail.com>
- Thomas Graf <tgraf@suug.ch>
- Tony Luck <tony.luck@intel.com>
- Tsuneo Yoshioka <Tsuneo.Yoshioka@f-secure.com>
-+Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-+Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
- Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
 -- 
-1.5.6.5
-
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
