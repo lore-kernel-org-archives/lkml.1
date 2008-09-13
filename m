@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbYIMEzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758356AbYIMEzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013AbYIMEzX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 00:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbYIMExA
+	id S1758356AbYIMEzn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 00:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbYIMExB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 00:53:00 -0400
+	Sat, 13 Sep 2008 00:53:01 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37682 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753245AbYIMEw7 (ORCPT
+	by vger.kernel.org with ESMTP id S1753480AbYIMExA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 00:52:59 -0400
+	Sat, 13 Sep 2008 00:53:00 -0400
 From: Jeffrey Brian Arnold <jbarnold@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>
-Subject: [RFC PATCH 6/9] Ksplice: Documentation
-Date: Sat, 13 Sep 2008 00:49:53 -0400
-Message-Id: <6ba306125ffc8fbcf9ceb2960645827523247689.1221280912.git.jbarnold@mit.edu>
+Subject: [RFC PATCH 6/9] Ksplice documentation
+Date: Sat, 13 Sep 2008 00:49:54 -0400
+Message-Id: <1400216dcddf0a06152b92b2d0a463097ba6c0e2.1221271644.git.jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <35453d23e28b34f8a3ccc4610fbc4f8fce299cca.1221271644.git.jbarnold@mit.edu>
+In-Reply-To: <6ba306125ffc8fbcf9ceb2960645827523247689.1221280912.git.jbarnold@mit.edu>
 References: <1221281397-7045-1-git-send-email-jbarnold@mit.edu>
  <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
  <8cfda1c8f6c46e2f0fa9e9279aa2b2a213fba7a4.1221280912.git.jbarnold@mit.edu>
@@ -27,8 +27,9 @@ References: <1221281397-7045-1-git-send-email-jbarnold@mit.edu>
  <401afda17296e380049b129c92a9ae27e8e47fc3.1221280912.git.jbarnold@mit.edu>
  <a827aed330aec871b73c468cf61c27048b26574d.1221280912.git.jbarnold@mit.edu>
  <35453d23e28b34f8a3ccc4610fbc4f8fce299cca.1221271644.git.jbarnold@mit.edu>
-In-Reply-To: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
-References: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
+ <6ba306125ffc8fbcf9ceb2960645827523247689.1221280912.git.jbarnold@mit.edu>
+In-Reply-To: <8d86b7714a1012014ce3533aa24dc88704fe14a6.1221271644.git.jbarnold@mit.edu>
+References: <8d86b7714a1012014ce3533aa24dc88704fe14a6.1221271644.git.jbarnold@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,22 +43,22 @@ Ksplice kernel component and the Ksplice user space component.
 Signed-off-by: Jeffrey Brian Arnold <jbarnold@mit.edu>
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 ---
- Documentation/ksplice.txt |  247 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 247 insertions(+), 0 deletions(-)
+ Documentation/ksplice.txt |  251 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 251 insertions(+), 0 deletions(-)
  create mode 100644 Documentation/ksplice.txt
 
 diff --git a/Documentation/ksplice.txt b/Documentation/ksplice.txt
 new file mode 100644
-index 0000000..a8fb0ba
+index 0000000..5ec9173
 --- /dev/null
 +++ b/Documentation/ksplice.txt
-@@ -0,0 +1,247 @@
+@@ -0,0 +1,251 @@
 +Ksplice
 +-------
 +
 +CONTENTS:
 +
-+1. Concepts: Updates, packs, helper modules, primary modules
++1. Concepts: updates, packs, helper modules, primary modules
 +2. What changes can Ksplice handle?
 +3. Dependency model
 +4. Locking model
@@ -76,11 +77,11 @@ index 0000000..a8fb0ba
 +notable implementation details and the interface between the Ksplice kernel
 +component and the Ksplice user space component.
 +
-+1. Concepts: Updates, packs, helper modules, primary modules
-+------------------------------------------------------------
++1. Updates, packs, helper modules, primary modules
++--------------------------------------------------
 +
 +A Ksplice update (struct update) contains one or more Ksplice packs, one for
-+each target kernel module that should be changed by the update.  Ksplice packs
++each "target" kernel module that should be changed by the update.  Ksplice packs
 +are grouped together into a Ksplice update in order to allow multiple
 +compilation units to be changed atomically.
 +
@@ -134,9 +135,10 @@ index 0000000..a8fb0ba
 +The Ksplice user space component takes a source code patch and uses it to
 +construct appropriate Ksplice packs for an update.  Ksplice can handle source
 +code patches that add new functions, modify the text or arguments of existing
-+functions, delete functions, change functions from local to global (or vice
-+versa), add exported symbols, rename exported symbols, and delete exported
-+symbols.  Ksplice can handle patches that modify either C code or assembly code.
++functions, delete functions, move functions between compilation units, change
++functions from local to global (or vice versa), add exported symbols, rename
++exported symbols, delete exported symbols.  Ksplice can handle patches that
++modify either C code or assembly code.
 +
 +As described in the Ksplice technical overview document, Ksplice cannot handle
 +semantic changes to kernel data structures.  Some other limitations also apply:
@@ -145,11 +147,6 @@ index 0000000..a8fb0ba
 +kernel memory.  Ksplice also does not support changes to functions in .exit.text
 +sections since Ksplice currently requires that all Ksplice updates affecting a
 +module be reversed before that module can be unloaded.
-+
-+The Ksplice user space implementation does not currently support moving
-+functions between compilation units, changes to weak symbols, and changes to
-+global read-only data structures (changes to read-only data structures that are
-+local to a compilation unit are fine).
 +
 +Exported symbols:
 +
@@ -169,6 +166,14 @@ index 0000000..a8fb0ba
 +Ksplice primary module, if a module using one of the newly exported symbols is
 +loaded, that module will correctly depend on the Ksplice primary module that
 +exported the symbol.
++
++Read-only data:
++
++The current Ksplice user space implementation does not support changes to global
++read-only data structures (changes to read-only data structures that are local
++to a compilation unit are fine).  The user space implementation currently
++handles changes to read-only data structures by patching all functions that
++reference those data structures.
 +
 +3. Dependency model
 +-------------------
