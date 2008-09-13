@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbYIMT4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYIMUHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbYIMT4g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 15:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYIMT4Q
+	id S1753400AbYIMUHc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 16:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYIMUHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 15:56:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52804 "EHLO mail.dvmed.net"
+	Sat, 13 Sep 2008 16:07:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35166 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbYIMTzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 15:55:52 -0400
-Message-ID: <48CC1AC3.7090406@garzik.org>
-Date: Sat, 13 Sep 2008 15:55:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Hannes Hering <hannes.hering@gmx.de>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
-       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
-       osstklei@de.ibm.com
-Subject: Re: [PATCH 1/2] ehea: Fix DLPAR memory handling
-References: <200809051636.26545.hannes.hering@gmx.de>
-In-Reply-To: <200809051636.26545.hannes.hering@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1751831AbYIMUHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 16:07:22 -0400
+Date: Sat, 13 Sep 2008 14:05:07 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH] usbmon: fix tiny race exposed by the fastboot patches
+Message-Id: <20080913140507.91f8b0fe.zaitcev@redhat.com>
+In-Reply-To: <20080913124858.529fb8e2@infradead.org>
+References: <20080913124858.529fb8e2@infradead.org>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Hering wrote:
-> The ehea busmap must be allocated only once in the first of many calls of the
-> ehea_create_busmap_callback.
-> 
-> Signed-off-by: Hannes Hering <hering2@de.ibm.com>
-> ---
-> 
-> diff -Nurp -X dontdiff linux-2.6.27-rc5/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
-> --- linux-2.6.27-rc5/drivers/net/ehea/ehea_qmr.c	2008-08-29 00:52:02.000000000 +0200
-> +++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-09-05 15:31:30.000000000 +0200
-> @@ -595,7 +595,8 @@ static int ehea_create_busmap_callback(u
->  	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
->  	mr_len = *(unsigned long *)arg;
+On Sat, 13 Sep 2008 12:48:58 -0700, Arjan van de Ven <arjan@infradead.org> wrote:
+
+> +++ b/drivers/usb/mon/mon_main.c
+> @@ -361,12 +361,12 @@ static int __init mon_init(void)
+>  	}
+>  	// MOD_INC_USE_COUNT(which_module?);
 >  
-> -	ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
-> +	if (!ehea_bmap)
-> +		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
->  	if (!ehea_bmap)
->  		return -ENOMEM;
+> -	usb_register_notify(&mon_nb);
+>  
+>  	mutex_lock(&usb_bus_list_lock);
+>  	list_for_each_entry (ubus, &usb_bus_list, bus_list) {
+>  		mon_bus_init(ubus);
+>  	}
+> +	usb_register_notify(&mon_nb);
+>  	mutex_unlock(&usb_bus_list_lock);
 
-applied
+Looks like the above does not add new deadlocks and does not
+miss notifications, so ACK.
 
-
+-- Pete
