@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbYIMFSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759095AbYIMFS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbYIMFSm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 01:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYIMFRz
+	id S1759095AbYIMFS7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 01:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYIMFR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 01:17:55 -0400
+	Sat, 13 Sep 2008 01:17:56 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40806 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752388AbYIMFRy (ORCPT
+	by vger.kernel.org with ESMTP id S1752022AbYIMFRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 01:17:54 -0400
+	Sat, 13 Sep 2008 01:17:55 -0400
 From: Jeffrey Brian Arnold <jbarnold@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>
-Subject: [RFC v2 PATCH 4/9] Ksplice: Make needed symbol and module functions global
-Date: Sat, 13 Sep 2008 01:14:40 -0400
-Message-Id: <401afda17296e380049b129c92a9ae27e8e47fc3.1221282535.git.jbarnold@mit.edu>
+Subject: [RFC v2 PATCH 3/9] Ksplice: Add functions for walking kallsyms symbols
+Date: Sat, 13 Sep 2008 01:14:39 -0400
+Message-Id: <bdf8d7b52e2cb9ff3bbed52cedd28294086c9f56.1221282535.git.jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <bdf8d7b52e2cb9ff3bbed52cedd28294086c9f56.1221282535.git.jbarnold@mit.edu>
+In-Reply-To: <8cfda1c8f6c46e2f0fa9e9279aa2b2a213fba7a4.1221282535.git.jbarnold@mit.edu>
 References: <1221282885-1150-1-git-send-email-jbarnold@mit.edu>
  <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221282535.git.jbarnold@mit.edu>
  <8cfda1c8f6c46e2f0fa9e9279aa2b2a213fba7a4.1221282535.git.jbarnold@mit.edu>
- <bdf8d7b52e2cb9ff3bbed52cedd28294086c9f56.1221282535.git.jbarnold@mit.edu>
 In-Reply-To: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221282535.git.jbarnold@mit.edu>
 References: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221282535.git.jbarnold@mit.edu>
 X-Spam-Flag: NO
@@ -32,113 +31,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Abbott <tabbott@mit.edu>
+From: Anders Kaseorg <andersk@mit.edu>
 
-Make module_mutex, find_module(), find_symbol(), and use_module()
-global.  Ksplice needs access to these functions from module.c in
-order to resolve symbols and implement dependency handling.
+kallsyms_lookup_name only returns the first match that it finds.
+Ksplice needs information about all symbols with a given name in order
+to correctly resolve local symbols.
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
+kallsyms_on_each_symbol provides a generic mechanism for iterating
+over the kallsyms table.
+
+Signed-off-by: Anders Kaseorg <andersk@mit.edu>
 ---
- include/linux/module.h |   13 +++++++++++++
- kernel/module.c        |   18 +++++++++---------
- 2 files changed, 22 insertions(+), 9 deletions(-)
+ include/linux/kallsyms.h |   13 +++++++++++++
+ include/linux/module.h   |   12 ++++++++++++
+ kernel/kallsyms.c        |   18 ++++++++++++++++++
+ kernel/module.c          |   19 +++++++++++++++++++
+ 4 files changed, 62 insertions(+), 0 deletions(-)
 
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index b961448..b8ee4d2 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -17,6 +17,11 @@
+ /* Lookup the address for a symbol. Returns 0 if not found. */
+ unsigned long kallsyms_lookup_name(const char *name);
+ 
++/* Call a function on each kallsyms symbol in the core kernel */
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data);
++
+ extern int kallsyms_lookup_size_offset(unsigned long addr,
+ 				  unsigned long *symbolsize,
+ 				  unsigned long *offset);
+@@ -43,6 +48,14 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
+ 
++static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++						    struct module *,
++						    unsigned long),
++					  void *data)
++{
++	return 0;
++}
++
+ static inline int kallsyms_lookup_size_offset(unsigned long addr,
+ 					      unsigned long *symbolsize,
+ 					      unsigned long *offset)
 diff --git a/include/linux/module.h b/include/linux/module.h
-index cd982cd..6ae0fc9 100644
+index b7cdfb4..cd982cd 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
-@@ -351,6 +351,8 @@ struct module
- #define MODULE_ARCH_INIT {}
- #endif
+@@ -374,6 +374,10 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
+ /* Look for this name: can be of form module:name. */
+ unsigned long module_kallsyms_lookup_name(const char *name);
  
-+extern struct mutex module_mutex;
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data);
 +
- /* FIXME: It'd be nice to isolate modules during init, too, so they
-    aren't used before they (may) fail.  But presently too much code
-    (IDE & SCSI) require entry into the module during init.*/
-@@ -366,6 +368,16 @@ struct module *module_data_address(unsigned long addr);
- struct module *__module_data_address(unsigned long addr);
- int is_module_address(unsigned long addr);
+ extern void __module_put_and_exit(struct module *mod, long code)
+ 	__attribute__((noreturn));
+ #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
+@@ -539,6 +543,14 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
+ 	return 0;
+ }
  
-+/* Search for module by name: must hold module_mutex. */
-+struct module *find_module(const char *name);
++static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++							   struct module *,
++							   unsigned long),
++						 void *data)
++{
++	return 0;
++}
 +
-+/* Search for an exported symbol by name. */
-+const struct kernel_symbol *find_symbol(const char *name,
-+					struct module **owner,
-+					const unsigned long **crc,
-+					bool gplok,
-+					bool warn);
+ static inline int register_module_notifier(struct notifier_block * nb)
+ {
+ 	/* no events will happen anyway, so this can always succeed */
+diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+index 38fc10a..47d3e94 100644
+--- a/kernel/kallsyms.c
++++ b/kernel/kallsyms.c
+@@ -161,6 +161,24 @@ unsigned long kallsyms_lookup_name(const char *name)
+ 	return module_kallsyms_lookup_name(name);
+ }
+ 
++int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
++				      unsigned long),
++			    void *data)
++{
++	char namebuf[KSYM_NAME_LEN];
++	unsigned long i;
++	unsigned int off;
++	int ret;
 +
- /* Returns 0 and fills in value, defined and namebuf, or -ERANGE if
-    symnum out of range. */
- int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
-@@ -431,6 +443,7 @@ static inline void __module_get(struct module *module)
- #define symbol_put_addr(p) do { } while(0)
- 
- #endif /* CONFIG_MODULE_UNLOAD */
-+int use_module(struct module *a, struct module *b);
- 
- /* This is a #define so the string doesn't get put in every .o file */
- #define module_name(mod)			\
++	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
++		off = kallsyms_expand_symbol(off, namebuf);
++		ret = fn(data, namebuf, NULL, kallsyms_addresses[i]);
++		if (ret != 0)
++			return ret;
++	}
++	return module_kallsyms_on_each_symbol(fn, data);
++}
++
+ static unsigned long get_symbol_pos(unsigned long addr,
+ 				    unsigned long *symbolsize,
+ 				    unsigned long *offset)
 diff --git a/kernel/module.c b/kernel/module.c
-index 343c8f8..2acb646 100644
+index dda2f80..343c8f8 100644
 --- a/kernel/module.c
 +++ b/kernel/module.c
-@@ -62,7 +62,7 @@
- 
- /* List of modules, protected by module_mutex or preempt_disable
-  * (add/delete uses stop_machine). */
--static DEFINE_MUTEX(module_mutex);
-+DEFINE_MUTEX(module_mutex);
- static LIST_HEAD(modules);
- 
- /* Waiting for a module to finish initializing? */
-@@ -301,11 +301,11 @@ static bool find_symbol_in_section(const struct symsearch *syms,
- 
- /* Find a symbol and return it, along with, (optional) crc and
-  * (optional) module which owns it */
--static const struct kernel_symbol *find_symbol(const char *name,
--					       struct module **owner,
--					       const unsigned long **crc,
--					       bool gplok,
--					       bool warn)
-+const struct kernel_symbol *find_symbol(const char *name,
-+					struct module **owner,
-+					const unsigned long **crc,
-+					bool gplok,
-+					bool warn)
- {
- 	struct find_symbol_arg fsa;
- 
-@@ -326,7 +326,7 @@ static const struct kernel_symbol *find_symbol(const char *name,
+@@ -2523,6 +2523,25 @@ unsigned long module_kallsyms_lookup_name(const char *name)
+ 	preempt_enable();
+ 	return ret;
  }
++
++int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
++					     struct module *, unsigned long),
++				   void *data)
++{
++	struct module *mod;
++	unsigned int i;
++	int ret;
++
++	list_for_each_entry(mod, &modules, list) {
++		for (i = 0; i < mod->num_symtab; i++) {
++			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
++				 mod, mod->symtab[i].st_value);
++			if (ret != 0)
++				return ret;
++		}
++	}
++	return 0;
++}
+ #endif /* CONFIG_KALLSYMS */
  
- /* Search for module by name: must hold module_mutex. */
--static struct module *find_module(const char *name)
-+struct module *find_module(const char *name)
- {
- 	struct module *mod;
- 
-@@ -579,7 +579,7 @@ static int already_uses(struct module *a, struct module *b)
- }
- 
- /* Module a uses b */
--static int use_module(struct module *a, struct module *b)
-+int use_module(struct module *a, struct module *b)
- {
- 	struct module_use *use;
- 	int no_warn, err;
-@@ -874,7 +874,7 @@ static inline void module_unload_free(struct module *mod)
- {
- }
- 
--static inline int use_module(struct module *a, struct module *b)
-+int use_module(struct module *a, struct module *b)
- {
- 	return strong_try_module_get(b) == 0;
- }
+ /* Called by the /proc file system to return a list of modules. */
 -- 
 1.5.4.3
 
