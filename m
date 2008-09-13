@@ -1,99 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbYIMBiF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYIMB4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757579AbYIMBiF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 21:38:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbYIMBhx
+	id S1758058AbYIMB4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 21:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbYIMB4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 21:37:53 -0400
-Received: from qb-out-0506.google.com ([72.14.204.230]:28280 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755217AbYIMBhw (ORCPT
+	Fri, 12 Sep 2008 21:56:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:34687 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbYIMB4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 21:37:52 -0400
-Message-ID: <f488382f0809121837n69cf4bc5i3dfa04cbf671957b@mail.gmail.com>
-Date: Fri, 12 Sep 2008 18:37:50 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: frustrating ath9k issues in 2.6.27-rc6-00036-ga551b98 (Linus pristine tree)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Fri, 12 Sep 2008 21:56:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=kqkM3TKBy+zAjCx8cOvvKSTcoPtuLGsh3EQFIL/n7hufSBp32CPCQct6aDLmXRFpxm
+         suvxRWf+cVyO8RCkxgLUNfd9cdWkix1UaJQsFwn8t950KqTTsvKftzOeSBcnZhC4hepT
+         RxceE4xjVbACzuSRw57uPOp7xxPxnP2Wyh0Uw=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 2/2] x86: check dsdt before find oem table for es7000 v2
+Date: Fri, 12 Sep 2008 18:55:30 -0700
+Message-Id: <1221270930-13057-2-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1221270930-13057-1-git-send-email-yhlu.kernel@gmail.com>
+References: <1221270930-13057-1-git-send-email-yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heya folks,
+v2: use __acpi_unmap_table()
 
-I'm having some problems with ath9k in the 2.6.27-rc6 kernel. First of
-all, it incorrectly reports the connection bitrate as 1 megabit per
-second:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-wlan0     IEEE 802.11abgn  ESSID:"Introversion"
-          Mode:Managed  Frequency:2.437 GHz  Access Point: 00:1E:52:79:4D:01
-          Bit Rate=1 Mb/s   Tx-Power=23 dBm
-          Retry min limit:7   RTS thr:off   Fragment thr=2352 B
-          Encryption key: [snip]   Security mode:open
-          Power Management:off
-          Link Quality=67/100  Signal level:-52 dBm  Noise level=-95 dBm
-          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
-          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+---
+ arch/x86/kernel/es7000_32.c      |   28 +++++++++++++++++++++++-----
+ arch/x86/mach-generic/es7000.c   |   20 +++++++++++++++-----
+ include/asm-x86/es7000/mpparse.h |    1 +
+ 3 files changed, 39 insertions(+), 10 deletions(-)
 
-Second, it will randomly drop the connection (could it possibly be
-related to the message ' wlan0 (WE) : Wireless Event too big (320)'?).
-One time, the connection dropped and I couldn't get it to reassociate,
-and the dmesg showed the following:
-
-[53963.201797] ADDRCONF(NETDEV_UP): wlan0: link is not ready
-[53964.809889] wlan0: authenticate with AP 00:1e:52:79:4d:01
-[53964.811598] wlan0: authenticated
-[53964.811742] wlan0: associate with AP 00:1e:52:79:4d:01
-[53965.011340] wlan0: associate with AP 00:1e:52:79:4d:01
-[53965.211343] wlan0: associate with AP 00:1e:52:79:4d:01
-[53965.411345] wlan0: association with AP 00:1e:52:79:4d:01 timed out
-[53976.532464] wlan0: authenticate with AP 00:1e:52:79:4d:01
-[53976.542516] wlan0: authenticate with AP 00:1e:52:79:4d:01
-[53976.751331] wlan0: authenticate with AP 00:1e:52:79:4d:01
-[53976.752757] wlan0: authenticated
-[53976.752762] wlan0: associate with AP 00:1e:52:79:4d:01
-[53976.760374] wlan0: RX AssocResp from 00:1e:52:79:4d:01 (capab=0x431
-status=0 aid=1)
-[53976.760380] wlan0: associated
-[53976.760721] wlan0 (WE) : Wireless Event too big (320)
-[53976.772243] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-
-So I figured I'd try unloading and reloading the ath9k module. This
-was the result:
-
-[53997.493777] ath9k: driver unloaded
-[54001.098532] ath9k: 0.1
-[54001.098833] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-[54001.099013] ath9k 0000:03:00.0: setting latency timer to 64
-[54001.233825] phy1: Selected rate control algorithm 'ath9k_rate_control'
-[54001.236980] phy1: Atheros 5416: mem=0xffffc20000060000, irq=17
-[54002.136218] irq 17: nobody cared (try booting with the "irqpoll" option)
-[54002.136229] Pid: 0, comm: swapper Tainted: P
-2.6.27-rc6-00036-ga551b98 #2
-[54002.136234]
-[54002.136235] Call Trace:
-[54002.136241]  <IRQ>  [<ffffffff80265231>] __report_bad_irq+0x3d/0x81
-[54002.136258]  [<ffffffff80265477>] note_interrupt+0x202/0x267
-[54002.136265]  [<ffffffff80265bfc>] handle_fasteoi_irq+0xba/0xe4
-[54002.136273]  [<ffffffff8020e7ff>] do_IRQ+0x115/0x191
-[54002.136279]  [<ffffffff8020bc01>] ret_from_intr+0x0/0xa
-[54002.136283]  <EOI>  [<ffffffff802541bb>] ?
-tick_nohz_stop_sched_tick+0x2c5/0x2d4
-[54002.136296]  [<ffffffff8020a69f>] ? cpu_idle+0x2d/0xed
-[54002.136304]  [<ffffffff8060d741>] ? rest_init+0x75/0x77
-[54002.136309]
-[54002.136312] handlers:
-[54002.136315] [<ffffffffa0209016>] (ath_isr+0x0/0x160 [ath9k])
-[54002.136340] Disabling IRQ #17
-
-And finally, I'm most certainly not getting 802.11n connection speeds
-with this driver. The connection speed seems to be about equivalent to
-802.11g (54mb/s), but I can't tell for certain with the messed up
-bitrate reporting from iwconfig.
-
--- 
-- Steven
+Index: linux-2.6/arch/x86/mach-generic/es7000.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mach-generic/es7000.c
++++ linux-2.6/arch/x86/mach-generic/es7000.c
+@@ -47,16 +47,26 @@ static __init int mps_oem_check(struct m
+ /* Hook from generic ACPI tables.c */
+ static int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+-	unsigned long oem_addr;
++	unsigned long oem_addr = 0;
++	int check_dsdt;
++	int ret = 0;
++
++	/* check dsdt at first to avoid clear fix_map for oem_addr */
++	check_dsdt = es7000_check_dsdt();
++
+ 	if (!find_unisys_acpi_oem_table(&oem_addr)) {
+-		if (es7000_check_dsdt())
+-			return parse_unisys_oem((char *)oem_addr);
++		if (check_dsdt)
++			ret = parse_unisys_oem((char *)oem_addr);
+ 		else {
+ 			setup_unisys();
+-			return 1;
++			ret = 1;
+ 		}
++		/*
++		 * we need to unmap it
++		 */
++		unmap_unisys_acpi_oem_table(oem_addr);
+ 	}
+-	return 0;
++	return ret;
+ }
+ #else
+ static int __init acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+Index: linux-2.6/arch/x86/kernel/es7000_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/es7000_32.c
++++ linux-2.6/arch/x86/kernel/es7000_32.c
+@@ -109,6 +109,7 @@ struct oem_table {
+ };
+ 
+ extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
++extern void unmap_unisys_acpi_oem_table(unsigned long oem_addr);
+ #endif
+ 
+ struct mip_reg {
+@@ -243,21 +244,38 @@ parse_unisys_oem (char *oemptr)
+ }
+ 
+ #ifdef CONFIG_ACPI
+-int __init
+-find_unisys_acpi_oem_table(unsigned long *oem_addr)
++static unsigned long oem_addrX;
++static unsigned long oem_size;
++int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ {
+ 	struct acpi_table_header *header = NULL;
+ 	int i = 0;
+-	while (ACPI_SUCCESS(acpi_get_table("OEM1", i++, &header))) {
++	acpi_size tbl_size;
++
++	while (ACPI_SUCCESS(acpi_get_table_with_size("OEM1", i++, &header, &tbl_size))) {
+ 		if (!memcmp((char *) &header->oem_id, "UNISYS", 6)) {
+ 			struct oem_table *t = (struct oem_table *)header;
+-			*oem_addr = (unsigned long)__acpi_map_table(t->OEMTableAddr,
+-								    t->OEMTableSize);
++
++			oem_addrX = t->OEMTableAddr;
++			oem_size = t->OEMTableSize;
++			early_acpi_os_unmap_memory(header, tbl_size);
++
++			*oem_addr = (unsigned long)__acpi_map_table(oem_addrX,
++								    oem_size);
+ 			return 0;
+ 		}
++		early_acpi_os_unmap_memory(header, tbl_size);
+ 	}
+ 	return -1;
+ }
++
++void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
++{
++	if (!oem_addr)
++		return;
++
++	__acpi_unmap_table((char *)oem_addr, oem_size);
++}
+ #endif
+ 
+ static void
+Index: linux-2.6/include/asm-x86/es7000/mpparse.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/es7000/mpparse.h
++++ linux-2.6/include/asm-x86/es7000/mpparse.h
+@@ -5,6 +5,7 @@
+ 
+ extern int parse_unisys_oem (char *oemptr);
+ extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
++extern void unmap_unisys_acpi_oem_table(unsigned long oem_addr);
+ extern void setup_unisys(void);
+ 
+ #ifndef CONFIG_X86_GENERICARCH
