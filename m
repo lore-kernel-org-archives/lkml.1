@@ -1,94 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYILX7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbYIMABU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbYILX7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Sep 2008 19:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbYILX6v
+	id S1758725AbYIMABU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Sep 2008 20:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbYIMABM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 12 Sep 2008 19:58:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48864 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753137AbYILX6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Sep 2008 19:58:50 -0400
+	Fri, 12 Sep 2008 20:01:12 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:4772 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757281AbYIMABL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Sep 2008 20:01:11 -0400
+Message-ID: <48CB02C5.4060805@ct.jp.nec.com>
+Date: Fri, 12 Sep 2008 17:01:09 -0700
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/3] x86: signal: get give_sigsegv of setup frames together
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Russell King <rmk@arm.linux.org.uk>
-X-Fcc: ~/Mail/linus
-Cc: linux-arch@vger.kernel.org, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_HAVE_ARCH_TRACEHOOK and you
-In-Reply-To: Russell King's message of  Friday, 12 September 2008 14:40:11 +0100 <20080912134011.GA7385@flint.arm.linux.org.uk>
-References: <20080912134011.GA7385@flint.arm.linux.org.uk>
-X-Zippy-Says: Hold the MAYO & pass the COSMIC AWARENESS...
-Message-Id: <20080912235742.C8FA915420D@magilla.localdomain>
-Date: Fri, 12 Sep 2008 16:57:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ptrace_report_syscall
-> ---------------------
-> 
-> What's the purpose of the PT_PTRACED check in there?  [...]
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-The short answer is that tracehook_report_syscall_* is just about moving
-the current ptrace logic into the shared inline, not changing that logic.
-So it's a separate issue.  The current logic (in arch/arm/kernel/ptrace.c
-too) has the check, I didn't change that.
+When setup frame failed, force_sigsegv is called and returns -EFAULT.
+There are same code in ia32_setup_fram(), ia32_setup_rt_frame(),
+__setup_frame() and __setup_rt_frame().
+Get them together.
 
-In fact, I think it's not entirely redundant.  When the tracer exits
-suddenly without doing PTRACE_DETACH (kill -9 gdb or whatnot), then
-->ptrace gets cleared but TIF_SYSCALL_TRACE never gets reset.  
-(That very arguably should be fixed, but it's not anything new.)
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/ia32/ia32_signal.c |   26 +++++++++-----------------
+ arch/x86/kernel/signal_32.c |   31 ++++++++++++++-----------------
+ arch/x86/kernel/signal_64.c |   17 +++++++++--------
+ 3 files changed, 32 insertions(+), 42 deletions(-)
 
-But all that's entirely orthogonal to consolidating each arch's copy of the
-code into ptrace_report_syscall, which is the only change to this area of
-ptrace that the tracehook migration itself does.
+diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+index 8d64c1b..5f42cfc 100644
+--- a/arch/x86/ia32/ia32_signal.c
++++ b/arch/x86/ia32/ia32_signal.c
+@@ -444,21 +444,21 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err |= __put_user(sig, &frame->sig);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err |= ia32_setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	if (_COMPAT_NSIG_WORDS > 1) {
+ 		err |= __copy_to_user(frame->extramask, &set->sig[1],
+ 				      sizeof(frame->extramask));
+ 		if (err)
+-			goto give_sigsegv;
++			return -EFAULT;
+ 	}
+ 
+ 	if (ka->sa.sa_flags & SA_RESTORER) {
+@@ -479,7 +479,7 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ 	 */
+ 	err |= __copy_to_user(frame->retcode, &code, 8);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long) frame;
+@@ -502,10 +502,6 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
+ #endif
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+@@ -533,14 +529,14 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err |= __put_user(sig, &frame->sig);
+ 	err |= __put_user(ptr_to_compat(&frame->info), &frame->pinfo);
+ 	err |= __put_user(ptr_to_compat(&frame->uc), &frame->puc);
+ 	err |= copy_siginfo_to_user32(&frame->info, info);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Create the ucontext.  */
+ 	if (cpu_has_xsave)
+@@ -556,7 +552,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 				     regs, set->sig[0]);
+ 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	if (ka->sa.sa_flags & SA_RESTORER)
+ 		restorer = ka->sa.sa_restorer;
+@@ -571,7 +567,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	 */
+ 	err |= __copy_to_user(frame->retcode, &code, 8);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long) frame;
+@@ -599,8 +595,4 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ #endif
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index b668efc..1c22e00 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -349,21 +349,21 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err = __put_user(sig, &frame->sig);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err = setup_sigcontext(&frame->sc, fpstate, regs, set->sig[0]);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	if (_NSIG_WORDS > 1) {
+ 		err = __copy_to_user(&frame->extramask, &set->sig[1],
+ 				      sizeof(frame->extramask));
+ 		if (err)
+-			goto give_sigsegv;
++			return -EFAULT;
+ 	}
+ 
+ 	if (current->mm->context.vdso)
+@@ -388,7 +388,7 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	err |= __put_user(0x80cd, (short __user *)(frame->retcode+6));
+ 
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long)frame;
+@@ -403,10 +403,6 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	regs->cs = __USER_CS;
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+@@ -420,14 +416,14 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	err |= __put_user(sig, &frame->sig);
+ 	err |= __put_user(&frame->info, &frame->pinfo);
+ 	err |= __put_user(&frame->uc, &frame->puc);
+ 	err |= copy_siginfo_to_user(&frame->info, info);
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Create the ucontext.  */
+ 	if (cpu_has_xsave)
+@@ -443,7 +439,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 				regs, set->sig[0]);
+ 	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up to return from userspace.  */
+ 	restorer = VDSO32_SYMBOL(current->mm->context.vdso, rt_sigreturn);
+@@ -463,7 +459,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	err |= __put_user(0x80cd, (short __user *)(frame->retcode+5));
+ 
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->sp = (unsigned long)frame;
+@@ -478,10 +474,6 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->cs = __USER_CS;
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ /*
+@@ -506,6 +498,11 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	else
+ 		ret = __setup_frame(usig, ka, set, regs);
+ 
++	if (ret) {
++		force_sigsegv(sig, current);
++		return -EFAULT;
++	}
++
+ 	return ret;
+ }
+ 
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 43e6862..3b79e17 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -215,12 +215,12 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 		frame = get_stack(ka, regs, sizeof(struct rt_sigframe)) - 8;
+ 
+ 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	if (ka->sa.sa_flags & SA_SIGINFO) {
+ 		err |= copy_siginfo_to_user(&frame->info, info);
+ 		if (err)
+-			goto give_sigsegv;
++			return -EFAULT;
+ 	}
+ 
+ 	/* Create the ucontext.  */
+@@ -248,11 +248,11 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 		err |= __put_user(ka->sa.sa_restorer, &frame->pretcode);
+ 	} else {
+ 		/* could use a vstub here */
+-		goto give_sigsegv;
++		return -EFAULT;
+ 	}
+ 
+ 	if (err)
+-		goto give_sigsegv;
++		return -EFAULT;
+ 
+ 	/* Set up registers for signal handler */
+ 	regs->di = sig;
+@@ -272,10 +272,6 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	regs->cs = __USER_CS;
+ 
+ 	return 0;
+-
+-give_sigsegv:
+-	force_sigsegv(sig, current);
+-	return -EFAULT;
+ }
+ 
+ /*
+@@ -297,6 +293,11 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ #endif
+ 	ret = __setup_rt_frame(sig, ka, info, set, regs);
+ 
++	if (ret) {
++		force_sigsegv(sig, current);
++		return -EFAULT;
++	}
++
+ 	return ret;
+ }
+ 
+-- 
+1.5.6
 
-> Also, shouldn't ptrace_report_syscall() be in linux/ptrace.h, since it's
-> just the guts of the existing syscall tracing hook irrespective of the
-> tracehook stuff?
-
-I have no objection.
-
-> So, in order to know which register argument N is in, you need to know
-> all the types of the arguments which come before it.  That means
-> creating and maintaining a table of syscall arguments which sounds
-> really sucky.
-
-I certainly don't propose that you do any of that.  I think this is just a
-documentation issue.  Instead of "syscall arguments", read "syscall
-argument registers, in the most naturally useful order for your arch".
-
-Everything about these values, and the syscall # value (when != -1L), is
-entirely arch-specific.  The asm/syscall.h interfaces aren't meant to make
-the meaning of those bits generic.
-
-For example, on all 32-bit machines, __NR_pread64 logically takes 4
-arguments but that's in 5 argument registers.  In the syscall.h calls,
-args[3] means only the 4th argument register, not the whole "4th argument"
-(which is (args[3] | (args[4] << 32)) on LE-32).
-
-Indeed, we do expect userland to know exactly which registers, in which
-order, we mean by "the 6 syscall arg registers" on the particular arch/ABI.
-It may be handy for userland that on some arch's or for many syscalls on
-most arch's, this happens to correspond with one argument per register in
-the natural order of syscall arguments at source level.  But it's
-userland's problem to grok the ABI enough to know what these 6 registers
-plus the syscall # mean.
-
-The reason we need syscall_get_arguments is that it can be used in places
-that the full user_regset calls can't be, such as in task_current_syscall.
-It's deep knowledge of the internals of the kernel's entry paths to know
-which user registers can and can't be found correctly in pt_regs when
-inside a fast-path system call entry.  Nothing in userland knows that, nor
-should it.  (And anyway, the user_regset calls are only kosher to call at
-"safe spots" like ptrace/signal stops--so that the arch's regset code is
-not obliged to carefully slice and dice for partially-available regsets.)
-When inside a syscall, the argument registers were certainly copied in, so
-we specify syscall_get_arguments assuming that these can always be got.
-
-
-Thanks,
-Roland
