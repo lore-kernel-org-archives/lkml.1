@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYIMPNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbYIMPNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbYIMPNG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 11:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYIMPMx
+	id S1752855AbYIMPNo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 11:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYIMPNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 11:12:53 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:52104 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYIMPMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 11:12:52 -0400
-Date: Sun, 14 Sep 2008 00:13:00 +0900 (JST)
-Message-Id: <20080914.001300.15242170.anemo@mba.ocn.ne.jp>
-To: david@fries.net
-Cc: paul.gortmaker@gmail.com, akpm@linux-foundation.org, p_gortmaker@yahoo.com,
-       alan@lxorguk.ukuu.org.uk, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] [PATCH] ne.c fix rmmod, platform driver
- improvements
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080913144457.GE28469@spacedout.fries.net>
-References: <20080909025821.GA25019@spacedout.fries.net>
-	<20080911.225503.59032738.anemo@mba.ocn.ne.jp>
-	<20080913144457.GE28469@spacedout.fries.net>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Sep 2008 11:13:36 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:54662 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751537AbYIMPNf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 11:13:35 -0400
+Date: Sat, 13 Sep 2008 16:13:30 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: [Bug #11557] Controlling backlight on thinkpad x60
+Message-ID: <20080913151330.GA20761@srcf.ucam.org>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <SpS7rta8n4.A.UcF.jbsyIB@albercik>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <SpS7rta8n4.A.UcF.jbsyIB@albercik>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Sep 2008 09:44:57 -0500, David Fries <david@fries.net> wrote:
-> I reformatted your patch and added a comment.  Does this work for you?
-> 
-> diff --git a/drivers/net/ne.c b/drivers/net/ne.c
-...
->  	/* Update with any values found by probing. */
-> -	io[this_dev] = dev->base_addr;
-> -	irq[this_dev] = dev->irq;
-> +	if (0 <= this_dev && this_dev < MAX_NE_CARDS) {
-> +		io[this_dev] = dev->base_addr;
-> +		irq[this_dev] = dev->irq;
-> +	}
->  	return 0;
->  }
+I don't think this is a regression. The correct way to drive this 
+hardware has always been through the ACPI video driver. The fact that 
+thinkpad-acpi would also attempt to drive it was a bug.
 
-For now rbtx49xx ne platform devices use -1 for pdev->id, but it may
-change.  Please don't assume it.
-
----
-Atsushi Nemoto
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
