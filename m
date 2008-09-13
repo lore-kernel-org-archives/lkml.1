@@ -1,227 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbYIMJOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbYIMJQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758643AbYIMJOg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 05:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYIMJO3
+	id S1758811AbYIMJQT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 05:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbYIMJQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 05:14:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:11757 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbYIMJO1 (ORCPT
+	Sat, 13 Sep 2008 05:16:08 -0400
+Received: from mail-in-02.arcor-online.net ([151.189.21.42]:60272 "EHLO
+	mail-in-02.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755626AbYIMJQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 05:14:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=WXn8kVU2zWWHHtvR8QIQdgLKthiuB55lcS5ypL2hqu5BPH/Ebvn3XVOwsfcwsSOAm/
-         du9sps9zYgeNuuo/Sl45LBbQGKbObqnfCcJeNBfRxNQWs8Ih3/BvamMFlU0MlDY3Hizh
-         HBrhR70K+2XsfEczth2u+lcKRsPDhsqSj0V5U=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] x86: change early_ioremap to use slots instead of nesting
-Date: Sat, 13 Sep 2008 02:13:52 -0700
-Message-Id: <1221297232-11949-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
+	Sat, 13 Sep 2008 05:16:05 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, bogdano@mandriva.com.br,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Abdel Benamrouche <draconux@gmail.com>,
+       Damien Lallement <dlallement@mandriva.com>,
+       "pterjan@mandriva.com" <pterjan@mandriva.com>,
+       Jens Axboe <axboe@kernel.dk>
+Reply-To: 7eggert@gmx.de
+Date: Sat, 13 Sep 2008 11:24:27 +0200
+References: <bblSy-60j-19@gated-at.bofh.it> <bbnhC-7Vd-5@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1KeRMh-0001Ay-Uj@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could remove requirement that need to call early_ioremap in exactly revese
-order of early_iounmap
+Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> +++ b/fs/partitions/check.c
+> @@ -499,9 +499,9 @@ int rescan_partitions(struct gendisk *disk, struct
+> block_device *bdev)
+>  if (!size)
+>  continue;
+>  if (from + size > get_capacity(disk)) {
+> -                     printk(KERN_ERR " %s: p%d exceeds device capacity\n",
+> +                     printk(KERN_WARNING
+> +                             " %s: p%d exceeds device capacity"
+                                ", trimmed\n",
+>  disk->disk_name, p);
 
----
- arch/x86/mm/ioremap.c       |   77 ++++++++++++++++++++++++++++++++------------
- include/asm-x86/fixmap_32.h |    4 +-
- include/asm-x86/fixmap_64.h |    4 +-
- 3 files changed, 61 insertions(+), 24 deletions(-)
+Add "size = get_capacity(disk) - from" here?
+(Possibly using a cached value for get_capacity(disk)?)
 
-Index: linux-2.6/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/ioremap.c
-+++ linux-2.6/arch/x86/mm/ioremap.c
-@@ -565,16 +565,22 @@ static inline void __init early_clear_fi
- 		__early_set_fixmap(idx, 0, __pgprot(0));
- }
- 
--
--static int __initdata early_ioremap_nested;
--
-+static void *prev_map[FIX_BTMAPS_SLOTS] __initdata;
-+static unsigned long prev_size[FIX_BTMAPS_SLOTS] __initdata;
- static int __init check_early_ioremap_leak(void)
- {
--	if (!early_ioremap_nested)
-+	int count = 0;
-+	int i;
-+
-+	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
-+		if (prev_map[i])
-+			count++;
-+
-+	if (!count)
- 		return 0;
- 	WARN(1, KERN_WARNING
- 	       "Debug warning: early ioremap leak of %d areas detected.\n",
--		early_ioremap_nested);
-+		count);
- 	printk(KERN_WARNING
- 		"please boot with early_ioremap_debug and report the dmesg.\n");
- 
-@@ -585,15 +591,30 @@ late_initcall(check_early_ioremap_leak);
- static void __init *__early_ioremap(unsigned long phys_addr, unsigned long size, pgprot_t prot)
- {
- 	unsigned long offset, last_addr;
--	unsigned int nrpages, nesting;
-+	unsigned int nrpages;
- 	enum fixed_addresses idx0, idx;
-+	int i, slot;
- 
- 	WARN_ON(system_state != SYSTEM_BOOTING);
- 
--	nesting = early_ioremap_nested;
-+	slot = -1;
-+	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
-+		if (!prev_map[i]) {
-+			slot = i;
-+			break;
-+		}
-+	}
-+
-+	if (slot < 0) {
-+		printk(KERN_INFO "early_iomap(%08lx, %08lx) not found slot\n",
-+			 phys_addr, size);
-+		WARN_ON(1);
-+		return NULL;
-+	}
-+
- 	if (early_ioremap_debug) {
- 		printk(KERN_INFO "early_ioremap(%08lx, %08lx) [%d] => ",
--		       phys_addr, size, nesting);
-+		       phys_addr, size, slot);
- 		dump_stack();
- 	}
- 
-@@ -604,11 +625,7 @@ static void __init *__early_ioremap(unsi
- 		return NULL;
- 	}
- 
--	if (nesting >= FIX_BTMAPS_NESTING) {
--		WARN_ON(1);
--		return NULL;
--	}
--	early_ioremap_nested++;
-+	prev_size[slot] = size;
- 	/*
- 	 * Mappings have to be page-aligned
- 	 */
-@@ -628,7 +645,7 @@ static void __init *__early_ioremap(unsi
- 	/*
- 	 * Ok, go for it..
- 	 */
--	idx0 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*nesting;
-+	idx0 = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
- 	idx = idx0;
- 	while (nrpages > 0) {
- 		early_set_fixmap(idx, phys_addr, prot);
-@@ -639,7 +656,8 @@ static void __init *__early_ioremap(unsi
- 	if (early_ioremap_debug)
- 		printk(KERN_CONT "%08lx + %08lx\n", offset, fix_to_virt(idx0));
- 
--	return (void *) (offset + fix_to_virt(idx0));
-+	prev_map[slot] = (void *) (offset + fix_to_virt(idx0));
-+	return prev_map[slot];
- }
- 
- /* Remap an IO device */
-@@ -660,15 +678,33 @@ void __init early_iounmap(void *addr, un
- 	unsigned long offset;
- 	unsigned int nrpages;
- 	enum fixed_addresses idx;
--	int nesting;
-+	int i, slot;
- 
--	nesting = --early_ioremap_nested;
--	if (WARN_ON(nesting < 0))
-+	slot = -1;
-+	for (i = 0; i < FIX_BTMAPS_SLOTS; i++) {
-+		if (prev_map[i] == addr) {
-+			slot = i;
-+			break;
-+		}
-+	}
-+
-+	if (slot < 0) {
-+		printk(KERN_INFO "early_iounmap(%p, %08lx) not found slot\n",
-+			 addr, size);
-+		WARN_ON(1);
- 		return;
-+	}
-+
-+	if (prev_size[slot] != size) {
-+		printk(KERN_INFO "early_iounmap(%p, %08lx) [%d] size not consistent %08lx\n",
-+			 addr, size, slot, prev_size[slot]);
-+		WARN_ON(1);
-+		return;
-+	}
- 
- 	if (early_ioremap_debug) {
- 		printk(KERN_INFO "early_iounmap(%p, %08lx) [%d]\n", addr,
--		       size, nesting);
-+		       size, slot);
- 		dump_stack();
- 	}
- 
-@@ -680,12 +716,13 @@ void __init early_iounmap(void *addr, un
- 	offset = virt_addr & ~PAGE_MASK;
- 	nrpages = PAGE_ALIGN(offset + size - 1) >> PAGE_SHIFT;
- 
--	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*nesting;
-+	idx = FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*slot;
- 	while (nrpages > 0) {
- 		early_clear_fixmap(idx);
- 		--idx;
- 		--nrpages;
- 	}
-+	prev_map[slot] = 0;
- }
- 
- void __this_fixmap_does_not_exist(void)
-Index: linux-2.6/include/asm-x86/fixmap_32.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/fixmap_32.h
-+++ linux-2.6/include/asm-x86/fixmap_32.h
-@@ -94,10 +94,10 @@ enum fixed_addresses {
- 	 * can have a single pgd entry and a single pte table:
- 	 */
- #define NR_FIX_BTMAPS		64
--#define FIX_BTMAPS_NESTING	4
-+#define FIX_BTMAPS_SLOTS	4
- 	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
- 			(__end_of_permanent_fixed_addresses & 255),
--	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_NESTING - 1,
-+	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
- 	FIX_WP_TEST,
- #ifdef CONFIG_PROVIDE_OHCI1394_DMA_INIT
- 	FIX_OHCI1394_BASE,
-Index: linux-2.6/include/asm-x86/fixmap_64.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/fixmap_64.h
-+++ linux-2.6/include/asm-x86/fixmap_64.h
-@@ -61,10 +61,10 @@ enum fixed_addresses {
- 	 * can have a single pgd entry and a single pte table:
- 	 */
- #define NR_FIX_BTMAPS		64
--#define FIX_BTMAPS_NESTING	4
-+#define FIX_BTMAPS_SLOTS	4
- 	FIX_BTMAP_END = __end_of_permanent_fixed_addresses + 256 -
- 			(__end_of_permanent_fixed_addresses & 255),
--	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_NESTING - 1,
-+	FIX_BTMAP_BEGIN = FIX_BTMAP_END + NR_FIX_BTMAPS*FIX_BTMAPS_SLOTS - 1,
- 	__end_of_fixed_addresses
- };
- 
+
