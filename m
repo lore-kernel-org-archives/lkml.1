@@ -1,398 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758249AbYIMI5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYIMJLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758249AbYIMI5z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 04:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYIMI5p
+	id S1758174AbYIMJLU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 05:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbYIMJLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 04:57:45 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:11625 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751241AbYIMI5n (ORCPT
+	Sat, 13 Sep 2008 05:11:11 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:15636 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755496AbYIMJLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 04:57:43 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       John Ronciak <john.ronciak@gmail.com>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Bruce Allan <bruce.w.allan@intel.com>,
-       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       e1000-devel@lists.sourceforge.net
-In-Reply-To: <48CAF80A.4010109@opengridcomputing.com>
-References: <48B2D7F8.5020206@opengridcomputing.com>
-	 <20080826192711.GJ4380@fieldses.org>
-	 <48B567F5.2090605@opengridcomputing.com>
-	 <1220111261.31172.14.camel@localhost.localdomain>
-	 <20080831193037.GB14876@fieldses.org>
-	 <1220211842.31172.18.camel@localhost.localdomain>
-	 <48BAF643.4070808@opengridcomputing.com>
-	 <1220217505.31172.26.camel@localhost.localdomain>
-	 <48BC2466.2070806@opengridcomputing.com>
-	 <1221036015.24993.27.camel@zakaz.uk.xensource.com>
-	 <20080912224323.GN22126@fieldses.org>
-	 <48CAF80A.4010109@opengridcomputing.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-42jzwptTytqI233noPIb"
-Date: Sat, 13 Sep 2008 09:57:23 +0100
-Message-Id: <1221296243.2534.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-SA-Exim-Connect-IP: 192.168.1.5
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=unbeb6qN2T0A:10 a=497XeZ5pv4kA:10 a=ukML0XzIjjZvReJk07AA:9 a=LD4i3FaH5rV--kCQI6cA:7 a=ptGNI9JyhJYVInfghYUoZK-YnRcA:4 a=U62fhAwekXMA:10 a=LY0hPdMaydYA:10 a=l6fIlOhG9FeHF32jD3oA:9 a=4to0Ih_aPY-E6jufsnNz10X8r90A:4 a=rPt6xJ-oxjAA:10
+	Sat, 13 Sep 2008 05:11:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vKdPM8aCV1EZuIxYFWu7qGYzkVdg0p0gWnAXB+1zC/F4ZkU/0VTL3qEB+orR3g74Be
+         1W4YB1+o7Vwol2M9unWdTfpIt/nVuKVEiUj+rgl/4FNBw0x+senBePjIdETmJtBp9yla
+         qu64XfFgG1o3mhpcyrNscl8C0KXePY0g2mGKY=
+Date: Sat, 13 Sep 2008 13:11:16 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [PATCH] x86: io-apic - do not use KERN_DEBUG marker too much
+Message-ID: <20080913091116.GA12564@lenovo>
+References: <20080908153806.GB7278@lenovo> <86802c440809121255k1af2881dwb00ebb6f4a58057b@mail.gmail.com> <86802c440809121257s23e5193aqb7939fdc94473c9d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809121257s23e5193aqb7939fdc94473c9d@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Yinghai Lu - Fri, Sep 12, 2008 at 12:57:21PM -0700]
+...
+| >  0 add_pin_to_irq: irq 15 --> apic 0 pin 15
+| > IOAPIC[0]: Set routing entry (8-15 -> 0x3f -> IRQ 15 Mode:0 Active:0)
+| >  8-16 8-17 8-18 8-19 8-20 8-21 8-22 8-23 (apicid-pin) not connected
+| >  9-0 9-1 9-2 9-3 9-4 9-5 9-6 9-7 9-8 9-9 9-10 9-11 9-12 9-13 9-14 9-15
+| > 9-16 9-17 9-18 9-19 9-20 9-21 9-22 9-23 (apicid-pin) not connected
+| >
+| 
+| only first one not connected at first, and ...
+| 
+| why not just revert those two patches?
+| 
+| YH
+| 
 
---=-42jzwptTytqI233noPIb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ingo, Yinghai,
 
-On Fri, 2008-09-12 at 18:15 -0500, Tom Tucker wrote:
-> Iain sadly yes. There's a thread stuck holding the BUSY bit or a thread=20
-> failed to clear the bit properly
-> (maybe an error path). Data continues to arrives, but the transport=20
-> never gets put back on the queue
-> because it's BUSY bit is set.  In other words, this is a different error=20
-> than the one we've been chasing.
->=20
-> If I sent you a patch, could you rebuild the kernel and give it a whirl?=20
-> Also, can you give me a
-> kernel.org relative commit-id or tag for the kernel that you're using?
+here is a quick fix for this.
 
-I sure could. I'm using the Debian kernel which is currently at 2.6.26.3
-(pkg version 2.6.26-4) although I have an update to 2.6.26.4 (via pkg
-2.6.26-5) pending.
+Ingo - choose either use this patch or just _revert_ both
+previous - i do accept any decision.
 
-If I'm going to build my own I'll start with current git
-(a551b98d5f6fce5897d497abd8bfb262efb33d2a) and repro there before trying
-your patch.
+		- Cyrill -
+---
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+Subject: [PATCH] x86: io-apic - fix misplaced EOL in setup_IO_APIC_irqs
 
-Ian.
+This issue is brought by mine commit
+f5143bce9d424bd400da48b1c7a2bc6a24403ada.
 
->=20
-> Thanks,
-> Tom
->=20
-> >> vc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.094587] svc: TCP record, 140 bytes
-> >> [4009900.098604] svc: socket ee5fd600 recvfrom(e996b08c, 3956) =3D 140
-> >> [4009900.102587] svc: TCP complete record (140 bytes)
-> >> [4009900.106592] svc: transport ee5fd600 put into queue
-> >> [4009900.110613] svc: got len=3D140
-> >> [4009900.114645] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.118752] svc: socket ee5fd600 sendto([dfbb0000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009900.122636] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.126588] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.130601] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.134593] svc: server eefc4000 waiting for data (to =3D 900000)
-> >> [4009900.162711] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.166598] svc: server eef4a000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.170594] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.174611] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.178592] svc: TCP record, 136 bytes
-> >> [4009900.182606] svc: socket ee5fd600 recvfrom(e975a088, 3960) =3D 136
-> >> [4009900.186592] svc: TCP complete record (136 bytes)
-> >> [4009900.190599] svc: transport ee5fd600 put into queue
-> >> [4009900.194605] svc: got len=3D136
-> >> [4009900.198632] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.202717] svc: socket ee5fd600 sendto([d6464000 124... ], 124) =
-=3D 124 (addr 192.168.1.5, port=3D910)
-> >> [4009900.206664] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.210594] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.214611] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.218599] svc: server eef4a000 waiting for data (to =3D 900000)
-> >> [4009900.254640] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.258603] svc: server ee978000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.262601] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.266625] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.270598] svc: TCP record, 128 bytes
-> >> [4009900.274618] svc: socket ee5fd600 recvfrom(dd54d080, 3968) =3D 128
-> >> [4009900.278598] svc: TCP complete record (128 bytes)
-> >> [4009900.282605] svc: transport ee5fd600 put into queue
-> >> [4009900.286611] svc: got len=3D128
-> >> [4009900.290642] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.294788] svc: socket ee5fd600 sendto([efb5c000 116... ], 116) =
-=3D 116 (addr 192.168.1.5, port=3D910)
-> >> [4009900.298707] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.302600] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.306622] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.310604] svc: server ee978000 waiting for data (to =3D 900000)
-> >> [4009900.346682] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.350609] svc: server ee8fe000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.354606] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.358626] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.362603] svc: TCP record, 148 bytes
-> >> [4009900.366622] svc: socket ee5fd600 recvfrom(eec92094, 3948) =3D 148
-> >> [4009900.370604] svc: TCP complete record (148 bytes)
-> >> [4009900.374612] svc: transport ee5fd600 put into queue
-> >> [4009900.378610] svc: got len=3D148
-> >> [4009900.382652] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.386829] svc: socket ee5fd600 sendto([e98bf000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009900.390688] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.394606] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.398621] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.402611] svc: server ee8fe000 waiting for data (to =3D 900000)
-> >> [4009900.438683] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.442614] svc: server eef12000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.446612] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.450634] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.454609] svc: TCP record, 156 bytes
-> >> [4009900.458631] svc: socket ee5fd600 recvfrom(dd78509c, 3940) =3D 156
-> >> [4009900.462692] svc: TCP complete record (156 bytes)
-> >> [4009900.466693] svc: transport ee5fd600 put into queue
-> >> [4009900.470610] svc: got len=3D156
-> >> [4009900.474657] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.478801] svc: socket ee5fd600 sendto([ee92b000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009900.482696] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.486611] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.490630] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.494617] svc: server eef12000 waiting for data (to =3D 900000)
-> >> [4009900.522817] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.526622] svc: server ee9f2000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.530617] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.534639] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.538615] svc: TCP record, 124 bytes
-> >> [4009900.542632] svc: socket ee5fd600 recvfrom(e977007c, 3972) =3D 124
-> >> [4009900.546615] svc: TCP complete record (124 bytes)
-> >> [4009900.550621] svc: transport ee5fd600 put into queue
-> >> [4009900.554616] svc: got len=3D124
-> >> [4009900.558656] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.562766] svc: socket ee5fd600 sendto([dd5e1000 124... ], 124) =
-=3D 124 (addr 192.168.1.5, port=3D910)
-> >> [4009900.566724] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.570622] svc: server ee9f2000 waiting for data (to =3D 900000)
-> >> [4009900.607202] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.610629] svc: server eeeb7000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.614623] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.618647] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.622619] svc: TCP record, 124 bytes
-> >> [4009900.626641] svc: socket ee5fd600 recvfrom(e971607c, 3972) =3D 124
-> >> [4009900.630620] svc: TCP complete record (124 bytes)
-> >> [4009900.634630] svc: transport ee5fd600 put into queue
-> >> [4009900.638621] svc: got len=3D124
-> >> [4009900.642661] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.646760] svc: socket ee5fd600 sendto([e95ee000 124... ], 124) =
-=3D 124 (addr 192.168.1.5, port=3D910)
-> >> [4009900.650734] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.654622] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.658640] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.662626] svc: server eeeb7000 waiting for data (to =3D 900000)
-> >> [4009900.691707] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.694637] svc: server eef31000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.698628] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.702646] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.706625] svc: TCP record, 156 bytes
-> >> [4009900.710654] svc: socket ee5fd600 recvfrom(e99b009c, 3940) =3D 156
-> >> [4009900.714626] svc: TCP complete record (156 bytes)
-> >> [4009900.718632] svc: transport ee5fd600 put into queue
-> >> [4009900.722626] svc: got len=3D156
-> >> [4009900.725731] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.726797] svc: socket ee5fd600 sendto([e9bee000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009900.730717] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.734627] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.738646] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.742631] svc: server eef31000 waiting for data (to =3D 900000)
-> >> [4009900.778691] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.782635] svc: server eefc4000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.786633] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.790649] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.794631] svc: TCP record, 144 bytes
-> >> [4009900.798663] svc: socket ee5fd600 recvfrom(e996b090, 3952) =3D 144
-> >> [4009900.802632] svc: TCP complete record (144 bytes)
-> >> [4009900.806638] svc: transport ee5fd600 put into queue
-> >> [4009900.810632] svc: got len=3D144
-> >> [4009900.814675] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.818858] svc: socket ee5fd600 sendto([dfbb0000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009900.822707] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.826632] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.830647] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.834638] svc: server eefc4000 waiting for data (to =3D 900000)
-> >> [4009900.862781] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.866647] svc: server eef4a000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.870644] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.874651] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.878636] svc: TCP record, 136 bytes
-> >> [4009900.882649] svc: socket ee5fd600 recvfrom(e975a088, 3960) =3D 136
-> >> [4009900.886636] svc: TCP complete record (136 bytes)
-> >> [4009900.890642] svc: transport ee5fd600 put into queue
-> >> [4009900.894654] svc: got len=3D136
-> >> [4009900.898678] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.902761] svc: socket ee5fd600 sendto([d6464000 124... ], 124) =
-=3D 124 (addr 192.168.1.5, port=3D910)
-> >> [4009900.906714] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009900.910638] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.914654] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.918643] svc: server eef4a000 waiting for data (to =3D 900000)
-> >> [4009900.954826] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009900.958648] svc: server ee978000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009900.962645] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009900.966667] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009900.970642] svc: TCP record, 140 bytes
-> >> [4009900.974659] svc: socket ee5fd600 recvfrom(dd54d08c, 3956) =3D 140
-> >> [4009900.978652] svc: TCP complete record (140 bytes)
-> >> [4009900.982649] svc: transport ee5fd600 put into queue
-> >> [4009900.986642] svc: got len=3D140
-> >> [4009900.990686] svc: transport ee5fd600 busy, not enqueued
-> >> [4009900.994848] svc: socket ee5fd600 sendto([efb5c000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009900.998725] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.002644] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.006662] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.010648] svc: server ee978000 waiting for data (to =3D 900000)
-> >> [4009901.046694] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009901.050652] svc: server ee8fe000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009901.054650] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009901.058666] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009901.062647] svc: TCP record, 156 bytes
-> >> [4009901.066669] svc: socket ee5fd600 recvfrom(eec9209c, 3940) =3D 156
-> >> [4009901.070648] svc: TCP complete record (156 bytes)
-> >> [4009901.074655] svc: transport ee5fd600 put into queue
-> >> [4009901.078648] svc: got len=3D156
-> >> [4009901.082688] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.086844] svc: socket ee5fd600 sendto([e98bf000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009901.090750] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.094650] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.098671] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.102655] svc: server ee8fe000 waiting for data (to =3D 900000)
-> >> [4009901.138700] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009901.142658] svc: server ee9f2000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009901.146656] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009901.150678] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009901.154654] svc: TCP record, 124 bytes
-> >> [4009901.158671] svc: socket ee5fd600 recvfrom(e977007c, 3972) =3D 124
-> >> [4009901.162654] svc: TCP complete record (124 bytes)
-> >> [4009901.166659] svc: transport ee5fd600 put into queue
-> >> [4009901.170654] svc: got len=3D124
-> >> [4009901.174694] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.178811] svc: socket ee5fd600 sendto([dd67d000 124... ], 124) =
-=3D 124 (addr 192.168.1.5, port=3D910)
-> >> [4009901.182741] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.186655] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.190673] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.194661] svc: server ee9f2000 waiting for data (to =3D 900000)
-> >> [4009901.222747] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009901.226690] svc: server eef12000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009901.230661] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009901.234677] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009901.238658] svc: TCP record, 152 bytes
-> >> [4009901.242673] svc: socket ee5fd600 recvfrom(dd785098, 3944) =3D 152
-> >> [4009901.246659] svc: TCP complete record (152 bytes)
-> >> [4009901.250664] svc: transport ee5fd600 put into queue
-> >> [4009901.254659] svc: got len=3D152
-> >> [4009901.258700] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.262809] svc: socket ee5fd600 sendto([ee92b000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009901.266734] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.270660] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.274677] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.278665] svc: server eef12000 waiting for data (to =3D 900000)
-> >> [4009901.314692] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009901.318668] svc: server eeeb7000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009901.322667] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009901.326682] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009901.330664] svc: TCP record, 156 bytes
-> >> [4009901.334681] svc: socket ee5fd600 recvfrom(e971609c, 3940) =3D 156
-> >> [4009901.338665] svc: TCP complete record (156 bytes)
-> >> [4009901.342672] svc: transport ee5fd600 put into queue
-> >> [4009901.346665] svc: got len=3D156
-> >> [4009901.350707] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.354849] svc: socket ee5fd600 sendto([e95ee000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009901.358747] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.362666] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.366683] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.370672] svc: server eeeb7000 waiting for data (to =3D 900000)
-> >> [4009901.406725] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009901.410674] svc: server eef31000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009901.414672] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009901.418691] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009901.422670] svc: TCP record, 136 bytes
-> >> [4009901.426690] svc: socket ee5fd600 recvfrom(e99b0088, 3960) =3D 136
-> >> [4009901.430671] svc: TCP complete record (136 bytes)
-> >> [4009901.434677] svc: transport ee5fd600 put into queue
-> >> [4009901.438684] svc: got len=3D136
-> >> [4009901.442710] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.446878] svc: socket ee5fd600 sendto([e9bee000 124... ], 124) =
-=3D 124 (addr 192.168.1.5, port=3D910)
-> >> [4009901.450767] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.454672] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.458754] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.462690] svc: server eef31000 waiting for data (to =3D 900000)
-> >> [4009901.499151] svc: transport ee5fd600 dequeued, inuse=3D1
-> >> [4009901.502687] svc: server eefc4000, pool 0, transport ee5fd600, inu=
-se=3D2
-> >> [4009901.506679] svc: tcp_recv ee5fd600 data 1 conn 0 close 0
-> >> [4009901.510698] svc: socket ee5fd600 recvfrom(ee5fd764, 0) =3D 4
-> >> [4009901.514675] svc: TCP record, 140 bytes
-> >> [4009901.518694] svc: socket ee5fd600 recvfrom(e996b08c, 3956) =3D 140
-> >> [4009901.522676] svc: TCP complete record (140 bytes)
-> >> [4009901.526683] svc: transport ee5fd600 put into queue
-> >> [4009901.530676] svc: got len=3D140
-> >> [4009901.534716] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.542824] svc: socket ee5fd600 sendto([dfbb0000 232... ], 232) =
-=3D 232 (addr 192.168.1.5, port=3D910)
-> >> [4009901.546806] svc: socket c1888960 TCP data ready (svsk ee5fd600)
-> >> [4009901.550678] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.554700] svc: transport ee5fd600 busy, not enqueued
-> >> [4009901.558682] svc: server eefc4000 waiting for data (to =3D 900000)
-> >>
-> >>
-> >> --=20
-> >> Ian Campbell
-> >>
-> >> GIVE:	Support the helpless victims of computer error.
-> >>
-> >>    =20
->=20
->=20
---=20
-Ian Campbell
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-No rock so hard but that a little wave
-May beat admission in a thousand years.
-		-- Tennyson
-
---=-42jzwptTytqI233noPIb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjLgG8ACgkQM0+0qS9rzVkLugCbBRkuGGnPnj7X8BP0znpos7je
-jRoAn2CgEbd1wdwnMMAXWTN++yuLZvab
-=pRez
------END PGP SIGNATURE-----
-
---=-42jzwptTytqI233noPIb--
-
+Index: linux-2.6.git/arch/x86/kernel/io_apic.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/io_apic.c	2008-09-11 22:37:18.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/io_apic.c	2008-09-13 13:02:20.000000000 +0400
+@@ -1541,6 +1541,11 @@ static void __init setup_IO_APIC_irqs(vo
+ 						pin);
+ 				continue;
+ 			}
++			if (notcon) {
++				apic_printk(APIC_VERBOSE,
++					" (apicid-pin) not connected\n");
++				notcon = 0;
++			}
+ 
+ 			irq = pin_2_irq(idx, apic, pin);
+ #ifdef CONFIG_X86_32
+@@ -1552,11 +1557,6 @@ static void __init setup_IO_APIC_irqs(vo
+ 			setup_IO_APIC_irq(apic, pin, irq,
+ 					irq_trigger(idx), irq_polarity(idx));
+ 		}
+-		if (notcon) {
+-			apic_printk(APIC_VERBOSE,
+-				" (apicid-pin) not connected\n");
+-			notcon = 0;
+-		}
+ 	}
+ 
+ 	if (notcon)
