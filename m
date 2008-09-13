@@ -1,213 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYIMEyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbYIMEyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbYIMEyY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 00:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYIMEw5
+	id S1759026AbYIMEyj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 00:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYIMEw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 00:52:57 -0400
+	Sat, 13 Sep 2008 00:52:58 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37682 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751931AbYIMEw4 (ORCPT
+	by vger.kernel.org with ESMTP id S1752652AbYIMEw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 00:52:56 -0400
+	Sat, 13 Sep 2008 00:52:57 -0400
 From: Jeffrey Brian Arnold <jbarnold@MIT.EDU>
 To: linux-kernel@vger.kernel.org
 Cc: Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
        Waseem Daher <wdaher@MIT.EDU>,
        Denys Vlasenko <vda.linux@googlemail.com>
-Subject: [RFC PATCH 1/9] Ksplice: Make find_symbol return a struct kernel_symbol
-Date: Sat, 13 Sep 2008 00:49:47 -0400
-Message-Id: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
+Subject: [RFC PATCH 7/9] Ksplice: x86-32 and x86-64 support
+Date: Sat, 13 Sep 2008 00:49:55 -0400
+Message-Id: <95a158bee29bdcfa7d2bb537fdfe1e6af21599c7.1221280912.git.jbarnold@mit.edu>
 X-Mailer: git-send-email 1.6.0
-In-Reply-To: <1221281397-7045-1-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1400216dcddf0a06152b92b2d0a463097ba6c0e2.1221271644.git.jbarnold@mit.edu>
 References: <1221281397-7045-1-git-send-email-jbarnold@mit.edu>
+ <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
+ <8cfda1c8f6c46e2f0fa9e9279aa2b2a213fba7a4.1221280912.git.jbarnold@mit.edu>
+ <bdf8d7b52e2cb9ff3bbed52cedd28294086c9f56.1221280912.git.jbarnold@mit.edu>
+ <401afda17296e380049b129c92a9ae27e8e47fc3.1221280912.git.jbarnold@mit.edu>
+ <a827aed330aec871b73c468cf61c27048b26574d.1221280912.git.jbarnold@mit.edu>
+ <35453d23e28b34f8a3ccc4610fbc4f8fce299cca.1221271644.git.jbarnold@mit.edu>
+ <6ba306125ffc8fbcf9ceb2960645827523247689.1221280912.git.jbarnold@mit.edu>
+ <1400216dcddf0a06152b92b2d0a463097ba6c0e2.1221271644.git.jbarnold@mit.edu>
+In-Reply-To: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
+References: <bfbae790a8f63d8697062036d47e0756e9f3ad5f.1221280912.git.jbarnold@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Abbott <tabbott@mit.edu>
+Add support for Ksplice on x86.
 
-Ksplice needs access to the kernel_symbol structure in order to
-support modifications to the exported symbol table.
-
+Signed-off-by: Jeffrey Brian Arnold <jbarnold@mit.edu>
+Signed-off-by: Anders Kaseorg <andersk@mit.edu>
 Signed-off-by: Tim Abbott <tabbott@mit.edu>
 ---
- kernel/module.c |   80 ++++++++++++++++++++++++++----------------------------
- 1 files changed, 39 insertions(+), 41 deletions(-)
+ arch/x86/Kconfig               |    1 +
+ arch/x86/kernel/ksplice-arch.c |   91 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/mm/init_32.c          |    6 +-
+ arch/x86/mm/init_64.c          |    4 +-
+ 4 files changed, 97 insertions(+), 5 deletions(-)
+ create mode 100644 arch/x86/kernel/ksplice-arch.c
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 6cedfc7..8954556 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -254,7 +254,7 @@ struct find_symbol_arg {
- 	/* Output */
- 	struct module *owner;
- 	const unsigned long *crc;
--	unsigned long value;
-+	const struct kernel_symbol *sym;
- };
- 
- static bool find_symbol_in_section(const struct symsearch *syms,
-@@ -295,17 +295,17 @@ static bool find_symbol_in_section(const struct symsearch *syms,
- 
- 	fsa->owner = owner;
- 	fsa->crc = symversion(syms->crcs, symnum);
--	fsa->value = syms->start[symnum].value;
-+	fsa->sym = &syms->start[symnum];
- 	return true;
- }
- 
--/* Find a symbol, return value, (optional) crc and (optional) module
-- * which owns it */
--static unsigned long find_symbol(const char *name,
--				 struct module **owner,
--				 const unsigned long **crc,
--				 bool gplok,
--				 bool warn)
-+/* Find a symbol and return it, along with, (optional) crc and
-+ * (optional) module which owns it */
-+static const struct kernel_symbol *find_symbol(const char *name,
-+					       struct module **owner,
-+					       const unsigned long **crc,
-+					       bool gplok,
-+					       bool warn)
- {
- 	struct find_symbol_arg fsa;
- 
-@@ -318,11 +318,11 @@ static unsigned long find_symbol(const char *name,
- 			*owner = fsa.owner;
- 		if (crc)
- 			*crc = fsa.crc;
--		return fsa.value;
-+		return fsa.sym;
- 	}
- 
- 	DEBUGP("Failed to find symbol %s\n", name);
--	return -ENOENT;
-+	return NULL;
- }
- 
- /* Search for module by name: must hold module_mutex. */
-@@ -819,7 +819,7 @@ void __symbol_put(const char *symbol)
- 	struct module *owner;
- 
- 	preempt_disable();
--	if (IS_ERR_VALUE(find_symbol(symbol, &owner, NULL, true, false)))
-+	if (find_symbol(symbol, &owner, NULL, true, false) == NULL)
- 		BUG();
- 	module_put(owner);
- 	preempt_enable();
-@@ -982,7 +982,7 @@ static inline int check_modstruct_version(Elf_Shdr *sechdrs,
- {
- 	const unsigned long *crc;
- 
--	if (IS_ERR_VALUE(find_symbol("struct_module", NULL, &crc, true, false)))
-+	if (find_symbol("struct_module", NULL, &crc, true, false) == NULL)
- 		BUG();
- 	return check_version(sechdrs, versindex, "struct_module", mod, crc);
- }
-@@ -1023,25 +1023,23 @@ static inline int same_magic(const char *amagic, const char *bmagic,
- 
- /* Resolve a symbol for this module.  I.e. if we find one, record usage.
-    Must be holding module_mutex. */
--static unsigned long resolve_symbol(Elf_Shdr *sechdrs,
--				    unsigned int versindex,
--				    const char *name,
--				    struct module *mod)
-+static const struct kernel_symbol *resolve_symbol(Elf_Shdr *sechdrs,
-+						  unsigned int versindex,
-+						  const char *name,
-+						  struct module *mod)
- {
- 	struct module *owner;
--	unsigned long ret;
-+	const struct kernel_symbol *sym;
- 	const unsigned long *crc;
- 
--	ret = find_symbol(name, &owner, &crc,
-+	sym = find_symbol(name, &owner, &crc,
- 			  !(mod->taints & TAINT_PROPRIETARY_MODULE), true);
--	if (!IS_ERR_VALUE(ret)) {
--		/* use_module can fail due to OOM,
--		   or module initialization or unloading */
--		if (!check_version(sechdrs, versindex, name, mod, crc) ||
--		    !use_module(mod, owner))
--			ret = -EINVAL;
--	}
--	return ret;
-+	/* use_module can fail due to OOM,
-+	   or module initialization or unloading */
-+	if (!check_version(sechdrs, versindex, name, mod, crc) ||
-+	    !use_module(mod, owner))
-+		sym = NULL;
-+	return sym;
- }
- 
- /*
-@@ -1445,17 +1443,15 @@ static void free_module(struct module *mod)
- void *__symbol_get(const char *symbol)
- {
- 	struct module *owner;
--	unsigned long value;
-+	const struct kernel_symbol *sym;
- 
- 	preempt_disable();
--	value = find_symbol(symbol, &owner, NULL, true, true);
--	if (IS_ERR_VALUE(value))
--		value = 0;
--	else if (strong_try_module_get(owner))
--		value = 0;
-+	sym = find_symbol(symbol, &owner, NULL, true, true);
-+	if (sym != NULL && strong_try_module_get(owner))
-+		sym = NULL;
- 	preempt_enable();
- 
--	return (void *)value;
-+	return sym == NULL ? (void *)0 : (void *)sym->value;
- }
- EXPORT_SYMBOL_GPL(__symbol_get);
- 
-@@ -1483,8 +1479,8 @@ static int verify_export_symbols(struct module *mod)
- 
- 	for (i = 0; i < ARRAY_SIZE(arr); i++) {
- 		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
--			if (!IS_ERR_VALUE(find_symbol(s->name, &owner,
--						      NULL, true, false))) {
-+			if (find_symbol(s->name, &owner, NULL, true, false)
-+			    != NULL) {
- 				printk(KERN_ERR
- 				       "%s: exports duplicate symbol %s"
- 				       " (owned by %s)\n",
-@@ -1508,6 +1504,7 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
- 	unsigned long secbase;
- 	unsigned int i, n = sechdrs[symindex].sh_size / sizeof(Elf_Sym);
- 	int ret = 0;
-+	const struct kernel_symbol *ksym;
- 
- 	for (i = 1; i < n; i++) {
- 		switch (sym[i].st_shndx) {
-@@ -1527,13 +1524,14 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
- 			break;
- 
- 		case SHN_UNDEF:
--			sym[i].st_value
--			  = resolve_symbol(sechdrs, versindex,
--					   strtab + sym[i].st_name, mod);
--
-+			ksym = resolve_symbol(sechdrs, versindex,
-+					      strtab + sym[i].st_name, mod);
- 			/* Ok if resolved.  */
--			if (!IS_ERR_VALUE(sym[i].st_value))
-+			if (ksym != NULL) {
-+				sym[i].st_value = ksym->value;
- 				break;
-+			}
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index ed92864..b5ec2f4 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -23,6 +23,7 @@ config X86
+ 	select HAVE_OPROFILE
+ 	select HAVE_IOREMAP_PROT
+ 	select HAVE_KPROBES
++	select HAVE_KSPLICE
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select HAVE_KRETPROBES
+ 	select HAVE_DYNAMIC_FTRACE
+diff --git a/arch/x86/kernel/ksplice-arch.c b/arch/x86/kernel/ksplice-arch.c
+new file mode 100644
+index 0000000..52314c4
+--- /dev/null
++++ b/arch/x86/kernel/ksplice-arch.c
+@@ -0,0 +1,91 @@
++/*  Copyright (C) 2007-2008  Jeffrey Brian Arnold <jbarnold@mit.edu>
++ *  Copyright (C) 2008  Anders Kaseorg <andersk@mit.edu>,
++ *                      Tim Abbott <tabbott@mit.edu>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License, version 2.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
++ *  02110-1301, USA.
++ */
 +
- 			/* Ok if weak.  */
- 			if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
- 				break;
++#define KSPLICE_IP(x) ((x)->thread.ip)
++#define KSPLICE_SP(x) ((x)->thread.sp)
++
++static const struct ksplice_symbol trampoline_symbol = {
++	.name = NULL,
++	.label = "<trampoline>",
++};
++
++static const struct ksplice_reloc trampoline_reloc = {
++	.symbol = &trampoline_symbol,
++	.pcrel = 1,
++	.addend = -4,
++	.size = 4,
++	.dst_mask = 0xffffffffL,
++	.rightshift = 0,
++	.signed_addend = 1,
++};
++
++static abort_t trampoline_target(struct ksplice_pack *pack, unsigned long addr,
++				 unsigned long *new_addr)
++{
++	abort_t ret;
++	unsigned char byte;
++
++	if (probe_kernel_read(&byte, (void *)addr, sizeof(byte)) == -EFAULT)
++		return NO_MATCH;
++
++	if (byte != 0xe9)
++		return NO_MATCH;
++
++	ret = read_reloc_value(pack, &trampoline_reloc, addr + 1, new_addr);
++	if (ret != OK)
++		return ret;
++
++	*new_addr += addr + 1;
++	return OK;
++}
++
++static abort_t prepare_trampoline(struct ksplice_pack *pack,
++				  struct ksplice_trampoline *t)
++{
++	t->size = 5;
++	t->trampoline[0] = 0xe9;
++	return write_reloc_value(pack, &trampoline_reloc,
++				 (unsigned long)t->trampoline + 1,
++				 t->repladdr - (t->oldaddr + 1));
++}
++
++static abort_t handle_paravirt(struct ksplice_pack *pack,
++			       unsigned long pre_addr, unsigned long run_addr,
++			       int *matched)
++{
++	unsigned char run[5], pre[5];
++	*matched = 0;
++
++	if (probe_kernel_read(&run, (void *)run_addr, sizeof(run)) == -EFAULT ||
++	    probe_kernel_read(&pre, (void *)pre_addr, sizeof(pre)) == -EFAULT)
++		return OK;
++
++	if ((run[0] == 0xe8 && pre[0] == 0xe8) ||
++	    (run[0] == 0xe9 && pre[0] == 0xe9))
++		if (run_addr + 1 + *(int32_t *)&run[1] ==
++		    pre_addr + 1 + *(int32_t *)&pre[1])
++			*matched = 5;
++	return OK;
++}
++
++static bool valid_stack_ptr(const struct thread_info *tinfo, const void *p)
++{
++	return p > (const void *)tinfo
++	    && p <= (const void *)tinfo + THREAD_SIZE - sizeof(long);
++}
++
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index d37f293..5998d5c 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -1036,8 +1036,8 @@ void mark_rodata_ro(void)
+ 	unsigned long start = PFN_ALIGN(_text);
+ 	unsigned long size = PFN_ALIGN(_etext) - start;
+ 
+-#ifndef CONFIG_DYNAMIC_FTRACE
+-	/* Dynamic tracing modifies the kernel text section */
++#if !defined(CONFIG_DYNAMIC_FTRACE) && !defined(CONFIG_KSPLICE)
++	/* Dynamic tracing and Ksplice modify the kernel text section */
+ 	set_pages_ro(virt_to_page(start), size >> PAGE_SHIFT);
+ 	printk(KERN_INFO "Write protecting the kernel text: %luk\n",
+ 		size >> 10);
+@@ -1050,7 +1050,7 @@ void mark_rodata_ro(void)
+ 	printk(KERN_INFO "Testing CPA: write protecting again\n");
+ 	set_pages_ro(virt_to_page(start), size>>PAGE_SHIFT);
+ #endif
+-#endif /* CONFIG_DYNAMIC_FTRACE */
++#endif /* !CONFIG_DYNAMIC_FTRACE && !CONFIG_KSPLICE */
+ 
+ 	start += size;
+ 	size = (unsigned long)__end_rodata - start;
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index d3746ef..31db657 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -857,8 +857,8 @@ void mark_rodata_ro(void)
+ 	unsigned long rodata_start =
+ 		((unsigned long)__start_rodata + PAGE_SIZE - 1) & PAGE_MASK;
+ 
+-#ifdef CONFIG_DYNAMIC_FTRACE
+-	/* Dynamic tracing modifies the kernel text section */
++#if defined(CONFIG_DYNAMIC_FTRACE) || defined(CONFIG_KSPLICE)
++	/* Dynamic tracing and Ksplice modify the kernel text section */
+ 	start = rodata_start;
+ #endif
+ 
 -- 
 1.5.4.3
 
