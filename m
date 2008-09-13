@@ -1,99 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbYIMW4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbYIMW5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbYIMW4o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 18:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYIMW4f
+	id S1753847AbYIMW5S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 18:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbYIMW5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 18:56:35 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:57818 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623AbYIMW4e (ORCPT
+	Sat, 13 Sep 2008 18:57:01 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:55219 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbYIMW5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 18:56:34 -0400
-From: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Organization: Mandriva
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Partition check considered as error is breaking mounting in 2.6.27
-Date: Sat, 13 Sep 2008 19:56:30 -0300
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, inux-usb@vger.kernel.org,
-       bogdano@mandriva.com.br, lcapitulino@mandriva.com.br
-References: <200809121356.50628.herton@mandriva.com.br> <20080912163416.112152e5.akpm@linux-foundation.org>
-In-Reply-To: <20080912163416.112152e5.akpm@linux-foundation.org>
+	Sat, 13 Sep 2008 18:57:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XBxj/KO3X8/xTmWw25990DKicW021SlQ4XH5Z01LuLIUoaUkSr2BhG2FX2vLY95XSX
+         VvcGZ+drQBRZA13ew32tB1fGDU79yFd9Dz9CJgdkTXHMT4OpUjLmohXAUJFohwvisrcL
+         EIon7OxdPtGggEegyUz7tWeDC48UvEsP1FMq4=
+Message-ID: <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+Date: Sun, 14 Sep 2008 00:56:58 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+Cc: linux-dvb@linuxtv.org, "Rudy Zijlstra" <rudy@grumpydevil.homelinux.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CC42D8.8080806@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809131956.30304.herton@mandriva.com.br>
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
+	 <48C66829.1010902@grumpydevil.homelinux.org>
+	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
+	 <48CC42D8.8080806@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 September 2008 20:34:16 Andrew Morton wrote:
-> On Fri, 12 Sep 2008 13:56:49 -0300
-> Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
-> 
-> > Recently I found a problem with a buggy camera that doesn't mount anymore with 
-> > 2.6.27 (its memory is available via usb-storage), since commit 
-> > 04ebd4aee52b06a2c38127d9208546e5b96f3a19
-> > 
-> > The camera is an Olympus X-840. The original issue comes from the camera 
-> > itself: its format program creates a partition with an off by one error, 
-> > while the device reports that its memory has 42079 sectors, the partition 
-> > table reports also that the only partition on the disk has the size of 42079, 
-> > but it fails to account for the first sector in the memory that contains the 
-> > partition table, so in the end the partition exceeds the limit of the device 
-> > size (42080, first sector plus 42079 from the first partition).
-> > 
-> > In previous kernels (2.6.26 and before), I still could mount and access the 
-> > device (/dev/sdb1), although with the following errors:
-> 
-> Yeah.
-> 
-> Can you test this please?
+On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
+> Markus Rechberger wrote:
+>
+>> How many devices are currently supported by the multiproto API
+>> compared with the s2 tree?
+>
+> The initial set of DVB-S2 multistandard devices supported by the
+> multiproto tree is follows. This is just the stb0899 based dvb-s2 driver
+> alone. There are more additions by 2 more modules (not devices), but for
+> the simple comparison here is the quick list of them, for which some of
+> the manufacturers have shown support in some way. (There has been quite
+> some contributions from the community as well.):
+>
+> (Also to be noted is that, some BSD chaps also have shown interest in
+> the same)
+>
 
-I have seen your reply on the other thread, but just to confirm yes, I tested
-yesterday the same change that fixed the problem. I saw that the commit is
-now on mainline, so regression fixed, thanks.
+they're heavy into moving the whole framework over as far as I've seen
+yes, also including yet unmerged drivers.
 
-> 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> Herton Krzesinski reports that the error-checking changes in
-> 04ebd4aee52b06a2c38127d9208546e5b96f3a19 ("block/ioctl.c and
-> fs/partition/check.c: check value returned by add_partition") cause his
-> buggy USB camera to no longer mount.  "The camera is an Olympus X-840. 
-> The original issue comes from the camera itself: its format program
-> creates a partition with an off by one error".
-> 
-> Buggy devices happen.  It is better for the kernel to warn and to proceed
-> with the mount.
-> 
-> Reported-by: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> Cc: Abdel Benamrouche <draconux@gmail.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  fs/partitions/check.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff -puN fs/partitions/check.c~rescan_partitions-make-device-capacity-errors-non-fatal fs/partitions/check.c
-> --- a/fs/partitions/check.c~rescan_partitions-make-device-capacity-errors-non-fatal
-> +++ a/fs/partitions/check.c
-> @@ -540,7 +540,6 @@ int rescan_partitions(struct gendisk *di
->  		if (from + size > get_capacity(disk)) {
->  			printk(KERN_ERR " %s: p%d exceeds device capacity\n",
->  				disk->disk_name, p);
-> -			continue;
->  		}
->  		res = add_partition(disk, p, from, size, state->parts[p].flags);
->  		if (res) {
-> _
-> 
-> 
+> * STB0899 based
+>
+> Anubis
+> Typhoon DVB-S2 PCI
+>
+> Azurewave/Twinhan
+> VP-1041
+> VP-7050
+>
+> Digital Now
+> AD SP400
+> AD SB300
+>
+> KNC1
+> TV Station DVB-S2
+> TV Station DVB-S2 Plus
+>
+> Pinnacle
+> PCTV Sat HDTV Pro USB 452e
+>
+> Satelco
+> TV Station DVB-S2
+> Easywatch HDTV USB CI
+> Easywatch HDTV PCI
+>
+> Technisat
+> Skystar HD
+> Skystar HD2
+> Skystar USB2 HDCI
+>
+> Technotrend
+> TT S2 3200
+> TT S2 3600
+> TT S2 3650
+>
+> Terratec
+> Cinergy S2 PCI HD
+> Cinergy S2 PCI HDCI
+>
 
--- 
-[]'s
-Herton
+those are pullable now against the current tree?
+
+Markus
