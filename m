@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYINJvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYINKHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065AbYINJvV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 05:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbYINJvL
+	id S1754109AbYINKHz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 06:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYINKHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 05:51:11 -0400
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:42405 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752738AbYINJvJ (ORCPT
+	Sun, 14 Sep 2008 06:07:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59412 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbYINKHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 05:51:09 -0400
-Date: Sun, 14 Sep 2008 11:51:06 +0200
-From: Bastian Blank <bastian@waldi.eu.org>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [RFC v5][PATCH 8/8] Dump open file descriptors
-Message-ID: <20080914095106.GA6300@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Oren Laadan <orenl@cs.columbia.edu>, dave@linux.vnet.ibm.com,
-	containers@lists.linux-foundation.org, jeremy@goop.org,
-	linux-kernel@vger.kernel.org, arnd@arndb.de
-References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu> <1221347167-9956-9-git-send-email-orenl@cs.columbia.edu>
+	Sun, 14 Sep 2008 06:07:45 -0400
+Date: Sun, 14 Sep 2008 12:09:13 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+Message-ID: <20080914100913.GB7909@elf.ucw.cz>
+References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1221347167-9956-9-git-send-email-orenl@cs.columbia.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 13, 2008 at 07:06:06PM -0400, Oren Laadan wrote:
-> +int cr_scan_fds(struct files_struct *files, int **fdtable)
-> +{
-> +	struct fdtable *fdt;
-> +	int *fds;
-> +	int i, n, tot;
-> +
-> +	n = 0;
-> +	tot = CR_DEFAULT_FDTABLE;
+On Sun 2008-09-14 04:56:48, Thomas Gleixner wrote:
+> Pavel,
+> 
+> On Fri, 12 Sep 2008, Pavel Machek wrote:
+> > The old "you have to press keys to get machine to progress" seems to
+> > be back :-(. Thinkpad x60.
+> 
+> Is there a chance that we get some more information than that ?
 
-Why not?
-| int i;
-| int n = 0;
-| int tot = CR_DEFAULT_FDTABLE;
+Yep.
 
-IHMO easier readable.
+It does not happen after _every_ s2ram, but when it happens the system
+limps around in half-dead state with non-blinking cursor etc. Next
+s2ram will not fix it.
 
-> +	spin_lock(&files->file_lock);
-> +	fdt = files_fdtable(files);
-> +	for (i = 0; i < fdt->max_fds; i++) {
+nohz=off helps.
 
-The process is suspended at this state?
+Will try 2.6.27-rc6 w/o any custom patches next (not that I have
+anything interesting in that area), and then probably 2.6.26.
 
-> +		if (n == tot) {
-> +			/*
-> +			 * fcheck_files() is safe with drop/re-acquire
-> +			 * of the lock, because it tests:  fd < max_fds
-> +			 */
-> +			spin_unlock(&files->file_lock);
-> +			tot *= 2;
-> +			if (tot < 0) {		/* overflow ? */
+(I had nohz turned off before 2.6.27-rc6...)
 
-_NO_. tot is signed, this does not have documented overflow behaviour.
-You need to restrict this to a sane number.
-
-> +				kfree(fds);
-> +				return -EMFILE;
-> +			}
-> +			fds = krealloc(fds, tot * sizeof(*fds), GFP_KERNEL);
-> +			if (!fds)
-
-krealloc does not free the memory on error, so this is a leak.
-
-Bastian
-
+									Pavel
 -- 
-The more complex the mind, the greater the need for the simplicity of play.
-		-- Kirk, "Shore Leave", stardate 3025.8
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
