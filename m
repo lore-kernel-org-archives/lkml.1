@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYINSNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYINSUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbYINSNe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 14:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYINSNZ
+	id S1755401AbYINSUn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 14:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYINSUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 14:13:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:18643 "EHLO
+	Sun, 14 Sep 2008 14:20:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:20101 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbYINSNZ (ORCPT
+	with ESMTP id S1752836AbYINSUc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 14:13:25 -0400
+	Sun, 14 Sep 2008 14:20:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=BwTCaNq5jnovDxBBdM6XkbnHoySLvFFIBmrL10gUSx7H3lREzIM7pGLfUumCZNUsKL
-         weiXjmCE7bkfrwwjiOO++nk9zInQN672aZ4ddBpToCa4nzHL1TLKM2ALqU9XB+kI8g9d
-         PRzocpB7EpEZ0gfj+/d/AOZFlCJjeGRk3HGxQ=
-Message-ID: <86802c440809141113r62199a6as44cacecb960ebaf7@mail.gmail.com>
-Date: Sun, 14 Sep 2008 11:13:24 -0700
+        b=ETY3gsNftAJe3TywdHRpzphSfdZlr7TpQn9c4IWnJtKmL7mis43PlVjDvEi5CathT5
+         1rkRU83H7RnGu+95R8rb2yXYtT47UVgN6mFo1Fic9hnOB9tDzaBLrahiD01McURR8B22
+         9rAj4eUrq4DBTcb/HY0ScO3kDobr2LVeF/FEE=
+Message-ID: <86802c440809141120v5f468775n81de6a29bbb89019@mail.gmail.com>
+Date: Sun, 14 Sep 2008 11:20:31 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] apci: dump slit
-Cc: "Pavel Machek" <pavel@suse.cz>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, hpa@zytor.com,
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [PATCH] x86-64: fix combining of regions in init_memory_mapping()
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080914160403.GA20082@elte.hu>
+In-Reply-To: <48CA9C18.76E4.0078.0@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080912122031.eca8723e.akpm@linux-foundation.org>
-	 <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com>
-	 <878wtxrrwh.fsf@basil.nowhere.org>
-	 <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de>
-	 <20080914112222.GA3956@ucw.cz> <20080914122618.GD16097@elte.hu>
-	 <20080914155928.GB4845@ucw.cz> <20080914160403.GA20082@elte.hu>
+References: <48CA9C18.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 14, 2008 at 9:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> Dumping when user requested it on commandline seems like good
->> compromise to me.
+On Fri, Sep 12, 2008 at 7:43 AM, Jan Beulich <jbeulich@novell.com> wrote:
+> When nr_range gets decremented, the same slot must be considered for
+> coalescing with its new successor again.
 >
-> great! Yinghai, mind reworking the patch in that direction please? I'd
-> suggest to enable the optional dumping of all things BIOS environment
-> related, not just the ACPI/SLIT.
+> Signed-off-by: Jan Beulich <jbeulich@novell.com>
 >
-> there's also CONFIG_X86_VERBOSE_BOOTUP=y [default disabled] - which
-> could be coupled with an x86=verbose boot parameter or so.
+> ---
+>  arch/x86/mm/init_64.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- linux-2.6.27-rc6/arch/x86/mm/init_64.c      2008-08-29 10:53:00.000000000 +0200
+> +++ 2.6.27-rc6-x86_64-mr-coalesce/arch/x86/mm/init_64.c 2008-09-12 11:58:45.000000000 +0200
+> @@ -636,7 +636,7 @@ unsigned long __init_refok init_memory_m
+>                old_start = mr[i].start;
+>                memmove(&mr[i], &mr[i+1],
+>                         (nr_range - 1 - i) * sizeof (struct map_range));
+> -               mr[i].start = old_start;
+> +               mr[i--].start = old_start;
+>                nr_range--;
+>        }
+>
 
-will work on it.
+this patch seems not right.
+Ingo, please don't apply it.
+
+original code:
+        /* try to merge same page size and continuous */
+        for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
+                unsigned long old_start;
+                if (mr[i].end != mr[i+1].start ||
+                    mr[i].page_size_mask != mr[i+1].page_size_mask)
+                        continue;
+                /* move it */
+                old_start = mr[i].start;
+                memmove(&mr[i], &mr[i+1],
+                         (nr_range - 1 - i) * sizeof (struct map_range));
+                mr[i].start = old_start;
+                nr_range--;
+        }
+
+so it save old_start and first, and move entries forward (so old one
+is overwriten), and put back old_start ...
 
 YH
