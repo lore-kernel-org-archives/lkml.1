@@ -1,46 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYINVDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYINVQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYINVDe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 17:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbYINVD0
+	id S1755546AbYINVQw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 17:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYINVQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 17:03:26 -0400
-Received: from mail.work.de ([212.12.32.20]:47600 "EHLO mail.work.de"
+	Sun, 14 Sep 2008 17:16:44 -0400
+Received: from mail1.radix.net ([207.192.128.31]:39009 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754298AbYINVD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 17:03:26 -0400
-Message-ID: <48CD7C17.3060009@gmail.com>
-Date: Mon, 15 Sep 2008 01:03:19 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: Andy Walls <awalls@radix.net>
-CC: Steven Toth <stoth@linuxtv.org>, linux-dvb@linuxtv.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	id S1754266AbYINVQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 17:16:44 -0400
+X-Greylist: delayed 1782 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Sep 2008 17:16:43 EDT
 Subject: Re: [linux-dvb] Multiproto API/Driver Update
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>	 <48C66829.1010902@grumpydevil.homelinux.org>	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>	 <48CC42D8.8080806@gmail.com>	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>	 <48CC4D35.3000003@gmail.com>	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com> <1221425146.4278.30.camel@morgan.walls.org>
-In-Reply-To: <1221425146.4278.30.camel@morgan.walls.org>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Andy Walls <awalls@radix.net>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-dvb@linuxtv.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CD5D19.1070700@gmail.com>
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
+	 <48C66829.1010902@grumpydevil.homelinux.org>
+	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
+	 <48CC42D8.8080806@gmail.com>
+	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+	 <48CC4D35.3000003@gmail.com>
+	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>
+	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com>
+Content-Type: text/plain
+Date: Sun, 14 Sep 2008 16:45:46 -0400
+Message-Id: <1221425146.4278.30.camel@morgan.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy,
+On Sun, 2008-09-14 at 22:51 +0400, Manu Abraham wrote:
+> Steven Toth wrote:
+> > Markus Rechberger wrote:
+> >> On Sun, Sep 14, 2008 at 1:31 AM, Manu Abraham <abraham.manu@gmail.com>
+> >> wrote:
+> >>> Markus Rechberger wrote:
+> >>>> On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham
+> >>>> <abraham.manu@gmail.com> wrote:
+> >>>>> Markus Rechberger wrote:
 
-
-Andy Walls wrote:
-
-> Manu,
+ 
+> > Me. I'll port the 3200 cards and their derivatives, including the 6100
+> > and the 0899. I've already said I'd do that.... but it's manu's code and
+> > he retains all rights. He gets to decide first.
 > 
-> Though I can't read much German, after looking at the jusst.de website I
+> 
+> The STB0899 based devices are much different from the crappy handicapped
+> Hauppauge S2 cards and hence the API that you work upon is quite limited
+> to what you see with regards to the Hauppauge (CX24116 based) cards.
+> 
+> Even the bare specifications from Conexant point to a handicapped DVB-S2
+> demodulator.
+> 
+> Attempts to do so, will break those devices at least for most of the
+> features and more yet to come. The DVB-S2 transport is a bit more
+> advanced delivery system than what your API based on the CX24116
+> demodulator.
+> 
+> At least it will be great for Hauppauge as you can point to people that
+> Hauppauge hardware is much better, for the marketing aspects as you have
+> done in the past on IRC lists.
+> 
+> Very good marketing strategy, Steven keep it up, you have earned more
+> sales for the Hauppauge cards ...
+> <claps hands>
 
 
-A piece that i forgot to write. Just like what you said, i too can't
-read German that much what you can even.
+Manu,
+
+Though I can't read much German, after looking at the jusst.de website I
+can't help but think that you as well have financial interests driving
+your actions.  If so, then your statements display quite a bit of
+hypocrisy.
+
+Manipulating (i.e. stalling) the timing of Multiproto being merged into
+the v4l-dvb tree or kernel, for you or your employer's gain, would be
+little different from the motivations you allege Steve of having.
+
+Since the major gripe I'm reading on the list "is that multiproto has
+taken too long" and since it seems to me the only thing that shook it
+loose was a competing proposal, please save the venom for when you
+actually have some clear moral high-ground to stand on.  I don't see it
+from here.
+ 
+
+
+As for the technical superiority of either API proposal; that probably
+just doesn't matter.  I've seen policy/political decisions force
+suboptimal technical solutions at work time and time again.  If you
+really believe you have a superior product technically; then perhaps you
+should work to make it superior politically as well.  Mud-slinging can't
+be a good long term strategy toward that end.
+
 
 
 Regards,
-Manu
+Andy
 
