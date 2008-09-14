@@ -1,97 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbYINQEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYINQFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbYINQEf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 12:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYINQEY
+	id S1754782AbYINQFh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 12:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYINQF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 12:04:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43203 "EHLO mx2.mail.elte.hu"
+	Sun, 14 Sep 2008 12:05:29 -0400
+Received: from main.gmane.org ([80.91.229.2]:54338 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbYINQEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 12:04:23 -0400
-Date: Sun, 14 Sep 2008 18:04:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] apci: dump slit
-Message-ID: <20080914160403.GA20082@elte.hu>
-References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com> <20080912122031.eca8723e.akpm@linux-foundation.org> <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com> <878wtxrrwh.fsf@basil.nowhere.org> <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de> <20080914112222.GA3956@ucw.cz> <20080914122618.GD16097@elte.hu> <20080914155928.GB4845@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080914155928.GB4845@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752280AbYINQF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 12:05:28 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Turning off camera also kills card reader on EeePC 900
+Date: Sun, 14 Sep 2008 16:05:16 +0000 (UTC)
+Message-ID: <gajcns$pit$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 87.112.233.179
+User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When running Ubuntu from an SD card issuing
+echo 0 > /sys/devices/platform/eeepc/camera
+as root will cause the camera to be turned off AND the SD card to 
+immediately disappear (which is rather fatal when you are using it). It's 
+hard to know if this is intended behaviour by the BIOS (given that they 
+are both USB devices) or a mistake in the platform driver... 
 
-* Pavel Machek <pavel@suse.cz> wrote:
+-- 
+Sitsofe | http://sucs.org/~sits/
 
-> On Sun 2008-09-14 14:26:18, Ingo Molnar wrote:
-> > 
-> > * Pavel Machek <pavel@suse.cz> wrote:
-> > 
-> > > On Fri 2008-09-12 23:19:21, Thomas Gleixner wrote:
-> > > > On Fri, 12 Sep 2008, Andi Kleen wrote:
-> > > > > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
-> > > > > >
-> > > > > > to see how wrong could be set by BIOS.
-> > > > > 
-> > > > > Just dump it from user space then.  There are plenty of tools
-> > > > > to access ACPI tables.
-> > > > 
-> > > > 1.) what guarantees that we reach user space ?
-> > > 
-> > > We can dump in *any* kernel.
-> > >
-> > > > 2) If it is _valuable_ information which we can gather via kernel
-> > > >    output, then it is much more conveniant than asking the user to type
-> > > >    whatevercryptictoolcommandline and provide the output.
-> > > 
-> > > Ooh, 'lets dump more junk at everyone, typing commands is hard' :-(.
-> > 
-> > no, the principle is, information like the boot-time CPUID information 
-> > (and even the BIOS environment) can be indicative of _kernel bugs_. It 
-> > is often essential to dump what the booting (and failing) kernel thinks 
-> > is its environment.
-> > 
-> > Often that environment is corrupted (by the kernel) and that leads to 
-> > problems. This 'environment' can also be affected by things like hard 
-> > boot vs cold boot differences, whether it's in a kexec environment, 
-> > whether it's booted as a virtual guest, etc., etc.
-> > 
-> > For a long time we had the kernel's x86 bootup pretty much as a mostly 
-> > silent black box and when it broke we tried to figure things out 
-> > afterwards which was difficult and error-prone. Now we've got various 
-> > quite effective debug mechanisms (which includes printouts as well) and 
-> > figuring out x86 problems is visibly easier. We definitely wont go back 
-> > to the 'black box code, can only be debugged by a few experts' method.
-> > 
-> > So extending on that is a good and obvious idea in general - and i agree 
-> > with Peter that this should be command-line dependent, i.e. not printed 
-> > by default. Only printing it when 'debug' is specified on the command 
-> > line is a good solution.
-> 
-> Dumping when user requested it on commandline seems like good
-> compromise to me.
-
-great! Yinghai, mind reworking the patch in that direction please? I'd 
-suggest to enable the optional dumping of all things BIOS environment 
-related, not just the ACPI/SLIT.
-
-there's also CONFIG_X86_VERBOSE_BOOTUP=y [default disabled] - which 
-could be coupled with an x86=verbose boot parameter or so.
-
-	Ingo
