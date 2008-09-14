@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYINSxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYINTBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYINSxr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 14:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbYINSxj
+	id S1755370AbYINTBM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbYINTA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 14:53:39 -0400
-Received: from main.gmane.org ([80.91.229.2]:35993 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753419AbYINSxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 14:53:39 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frederik Himpe <fhimpe@telenet.be>
-Subject: XFS does not recognise mount options in 2.6.27-rc6
-Date: Sun, 14 Sep 2008 18:53:21 +0000 (UTC)
-Message-ID: <pan.2008.09.14.18.53.20@telenet.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 14 Sep 2008 15:00:56 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:32803 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753849AbYINTAz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:00:55 -0400
+X-Greylist: delayed 1336 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Sep 2008 15:00:54 EDT
+X-Sasl-enc: WFzxLZ8nL9/j2YV3SsTm93WCmK3QLtaPCCK1H2MZJ9hh 1221417516
+Date: Sun, 14 Sep 2008 15:38:29 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: Helge Deller <deller@gmx.de>, Jan Beulich <jbeulich@novell.com>,
+       linux-input@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: __initdata and struct dmi_system_id?
+Message-ID: <20080914183829.GB18150@khazad-dum.debian.net>
+References: <48C0C786.5020809@freemail.hu> <48CCBD83.1030001@freemail.hu> <20080914113316.GA27289@khazad-dum.debian.net> <48CD3B4C.8010106@freemail.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 78-21-61-244.access.telenet.be
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-xfs@oss.sgi.com
+In-Reply-To: <48CD3B4C.8010106@freemail.hu>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In 2.6.27-rc6, XFS still does not recognise mount options like logbufs and 
-others. Because of this, at boot time it fails to mount the partitions rw, 
-making the system unusable.
+On Sun, 14 Sep 2008, Németh Márton wrote:
+> Henrique de Moraes Holschuh wrote:
+> > On Sun, 14 Sep 2008, Németh Márton wrote:
+> >> The other interesting question on this topic is that what about the
+> >> error message strings which are used as parameter of the printk() calls.
+> >> Those strings are combined together for a function which is marked with
+> >> __init and the functions which are normal functions. The strings which
+> >> are only used by the functions marked with __init could be freed, but
+> >> the strings of the normal functions shouldn't be.
+> > 
+> > Yeah, if we could get them all in a init.rodata section, we could just throw
+> > them away along with the init section afterwards...
+> > 
+> > I do think I have seen a patch about init.rodata in LKML not too long ago,
+> > though.
+> 
+> Do you mean this one?
 
-Some time ago, it seems a patch was about to be committed, but apparently 
-this has not been done yet:
-http://lkml.org/lkml/2008/8/14/340
-
-What's the status of this now?
+Yeah.  I don't know if it does (or is related to) what you want, though.
 
 -- 
-Frederik Himpe
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
