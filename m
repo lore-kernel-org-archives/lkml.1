@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbYINWvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYINXkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbYINWvX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 18:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYINWvO
+	id S1754661AbYINXkH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 19:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbYINXjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 18:51:14 -0400
-Received: from smtprelay09.ispgateway.de ([80.67.29.23]:41129 "EHLO
-	smtprelay09.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753131AbYINWvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 18:51:14 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
+	Sun, 14 Sep 2008 19:39:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50827 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752738AbYINXjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 19:39:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [git patches] net driver fixes
-Date: Mon, 15 Sep 2008 00:51:08 +0200
-User-Agent: KMail/1.9.10
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <20080913203548.GA2989@havoc.gtf.org>
-In-Reply-To: <20080913203548.GA2989@havoc.gtf.org>
+Subject: Re: [PATCH] e100: Use pci_pme_active to clear PME_Status and disable PME#
+Date: Mon, 15 Sep 2008 01:44:35 +0200
+User-Agent: KMail/1.9.9
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Alessandro Guido <alessandro.guido@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200808051730.27599.alessandro.guido@gmail.com> <200808080018.05887.rjw@sisk.pl> <48CC1F7C.7050908@garzik.org>
+In-Reply-To: <48CC1F7C.7050908@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809150051.10293.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
+Message-Id: <200809150144.36142.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
+On Saturday, 13 of September 2008, Jeff Garzik wrote:
+> Rafael J. Wysocki wrote:
+> > e100: Use pci_pme_active to clear PME_Status and disable PME#
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > ---
+> >  drivers/net/e100.c |    4 +---
+> >  1 file changed, 1 insertion(+), 3 deletions(-)
+> > 
+> > Index: linux-2.6/drivers/net/e100.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/net/e100.c
+> > +++ linux-2.6/drivers/net/e100.c
+> > @@ -2738,9 +2738,7 @@ static int __devinit e100_probe(struct p
+> >  		nic->flags |= wol_magic;
+> >  
+> >  	/* ack any pending wake events, disable PME */
+> > -	err = pci_enable_wake(pdev, 0, 0);
+> > -	if (err)
+> > -		DPRINTK(PROBE, ERR, "Error clearing wake event\n");
+> > +	pci_pme_active(pdev, false);
+> 
+> Since I am rusty on my PCI...  why is this needed?
 
+Because we just want to clear PME_Status and disable PME#, but
+pci_enable_wake() involves an ACPI call and generally depends on the
+dev->power.can_wakeup and dev->power.should_wakeup flags being set.
 
-On Saturday 13 September 2008, Jeff Garzik wrote:
-> Vlad Yasevich (1):
->       bonding: Do not tx-balance some IPv6 packets on ALB/TLB bonds
+The patch I sent here http://marc.info/?l=linux-kernel&m=122096638020191&w=4
+has a better changelog.
 
-Regarding this change and include/linux/etherdevice.h
-
-> diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
-> index b211486..c219262 100644
-> --- a/drivers/net/bonding/bond_alb.c
-> +++ b/drivers/net/bonding/bond_alb.c
-> @@ -38,6 +38,7 @@
->  #include <linux/in.h>
->  #include <net/ipx.h>
->  #include <net/arp.h>
-> +#include <net/ipv6.h>
->  #include <asm/byteorder.h>
->  #include "bonding.h"
->  #include "bond_alb.h"
-> @@ -81,6 +82,7 @@
->  #define RLB_PROMISC_TIMEOUT	10*ALB_TIMER_TICKS_PER_SEC
->  
->  static const u8 mac_bcast[ETH_ALEN] = {0xff,0xff,0xff,0xff,0xff,0xff};
-> +static const u8 mac_v6_allmcast[ETH_ALEN] = {0x33,0x33,0x00,0x00,0x00,0x01};
->  static const int alb_delta_in_ticks = HZ / ALB_TIMER_TICKS_PER_SEC;
->  
->  #pragma pack(1)
-> @@ -1290,6 +1292,7 @@ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev)
->  	u32 hash_index = 0;
->  	const u8 *hash_start = NULL;
->  	int res = 1;
-> +	struct ipv6hdr *ip6hdr;
->  
->  	skb_reset_mac_header(skb);
->  	eth_data = eth_hdr(skb);
-> @@ -1319,11 +1322,32 @@ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev)
->  	}
->  		break;
->  	case ETH_P_IPV6:
-> +		/* IPv6 doesn't really use broadcast mac address, but leave
-> +		 * that here just in case.
-> +		 */
->  		if (memcmp(eth_data->h_dest, mac_bcast, ETH_ALEN) == 0) {
-
-Didn't someone introduce compare_ether_addr() just for this?
-
->  			do_tx_balance = 0;
->  			break;
->  		}
->  
-> +		/* IPv6 uses all-nodes multicast as an equivalent to
-> +		 * broadcasts in IPv4.
-> +		 */
-> +		if (memcmp(eth_data->h_dest, mac_v6_allmcast, ETH_ALEN) == 0) {
-> +			do_tx_balance = 0;
-> +			break;
-> +		}
-
-compare_ether_addr()
-
-Maybe fix this in a followup patch?
-
-
-Best Regards
-
-Ingo Oeser
+Thanks,
+Rafael
