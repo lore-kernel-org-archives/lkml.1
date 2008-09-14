@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYINREB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYINReV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004AbYINREB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 13:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYINRDx
+	id S1755277AbYINReV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 13:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYINReM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 13:03:53 -0400
-Received: from ik-out-1112.google.com ([66.249.90.183]:50650 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbYINRDv (ORCPT
+	Sun, 14 Sep 2008 13:34:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49328 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753137AbYINReL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 13:03:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=kJZRj+LfDh1Y1bcYImD97IP8VFyvLFigTBukHjAQwnaoyhU+bQ4Bv8nVY9hdvzg9Qp
-         DPM4pdJZbLUt0QcPuZST61GoVxA5aHth3gVXS14EELgqnkTkOsiK12cfGoEyokazgBre
-         YCmAi8XN/1HrfCKE/qTPIBKulBNgw2TySqUiM=
-Date: Sun, 14 Sep 2008 19:03:53 +0200
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] x86: add memory clobber in switch_to()
-Message-ID: <20080914170353.GA15729@damson.getinternet.no>
+	Sun, 14 Sep 2008 13:34:11 -0400
+Date: Sun, 14 Sep 2008 19:35:36 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+Message-ID: <20080914173536.GA1687@elf.ucw.cz>
+References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <20080914101406.GA1625@elf.ucw.cz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are more places which have segment register reloads without
-adding memory clobbers. Should we fix them up? Here's one of them:
+On Sun 2008-09-14 12:14:06, Pavel Machek wrote:
+> On Sun 2008-09-14 12:09:13, Pavel Machek wrote:
+> > On Sun 2008-09-14 04:56:48, Thomas Gleixner wrote:
+> > > Pavel,
+> > > 
+> > > On Fri, 12 Sep 2008, Pavel Machek wrote:
+> > > > The old "you have to press keys to get machine to progress" seems to
+> > > > be back :-(. Thinkpad x60.
+> > > 
+> > > Is there a chance that we get some more information than that ?
+> > 
+> > Yep.
+> > 
+> > It does not happen after _every_ s2ram, but when it happens the system
+> > limps around in half-dead state with non-blinking cursor etc. Next
+> > s2ram will not fix it.
+> > 
+> > nohz=off helps.
+> > 
+> > Will try 2.6.27-rc6 w/o any custom patches next (not that I have
+> > anything interesting in that area), and then probably 2.6.26.
+> 
+> It _does_ happen with mainline 2.6.27-rc6.
 
->From 5f135687f7730fbdd979b6fb408fd3ca08a0a678 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sun, 14 Sep 2008 18:53:22 +0200
-Subject: [PATCH] x86: add memory clobber in switch_to()
+s2ram hs problem in mainline 2.6.26, too. (Different problem: no
+ammount pressing shift helps there.) nohz=off cures it, too.
 
-Segment registers are reloaded, so we should add a memory clobber. The
-generated assembly code is identical in my tests, but this doesn't mean
-it is necessarily true for all configurations/compilers.
+How to proceed?
 
-x86_64 already has the memory clobber.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- include/asm-x86/system.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
-index 983ce37..fed6482 100644
---- a/include/asm-x86/system.h
-+++ b/include/asm-x86/system.h
-@@ -64,7 +64,10 @@ do {									\
- 		       							\
- 		       /* regparm parameters for __switch_to(): */	\
- 		       [prev]     "a" (prev),				\
--		       [next]     "d" (next));				\
-+		       [next]     "d" (next)				\
-+									\
-+		     : /* reloaded segment registers */			\
-+			"memory");					\
- } while (0)
- 
- /*
+									Pavel
 -- 
-1.5.5.1
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
