@@ -1,150 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYINWgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYINWt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbYINWgl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 18:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYINWgc
+	id S1755226AbYINWt3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 18:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbYINWtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 18:36:32 -0400
-Received: from mail.work.de ([212.12.32.20]:36317 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753131AbYINWgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 18:36:32 -0400
-Message-ID: <48CD91E7.2060904@gmail.com>
-Date: Mon, 15 Sep 2008 02:36:23 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Sun, 14 Sep 2008 18:49:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:39692 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbYINWtQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 18:49:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=RIPW36354dPcA8rICNdGPxyMLqwFrbR10vErcdhDoxXQoOZiGyKgP11duHbimZKUQu
+         jeC3e4AL7W1ec3wvBwlCrmfwiIvERqinNX0dM3mIqqq3LsIdiYfXoACgAQsus5B+5WDi
+         PM7vg/INI0brOQ3kWSaB/nok6wHMQ6Wgs6LLk=
+Message-ID: <d6c8ef150809141549m52289f1cr7b4da508b311af1f@mail.gmail.com>
+Date: Mon, 15 Sep 2008 00:49:15 +0200
+From: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org
+Subject: GRE keepalives, again
 MIME-Version: 1.0
-To: Andy Walls <awalls@radix.net>
-CC: Steven Toth <stoth@linuxtv.org>, linux-dvb@linuxtv.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-dvb] Multiproto API/Driver Update
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>	 <48C66829.1010902@grumpydevil.homelinux.org>	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>	 <48CC42D8.8080806@gmail.com>	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>	 <48CC4D35.3000003@gmail.com>	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com>	 <1221425146.4278.30.camel@morgan.walls.org>  <48CD7BC2.1080708@gmail.com> <1221430822.4278.86.camel@morgan.walls.org>
-In-Reply-To: <1221430822.4278.86.camel@morgan.walls.org>
-X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Walls wrote:
-> On Mon, 2008-09-15 at 01:01 +0400, Manu Abraham wrote:
->> Andy,
->>
->>
->> Andy Walls wrote:
->>
->>> Manu,
->>>
->>> Though I can't read much German, after looking at the jusst.de website I
->>> can't help but think that you as well have financial interests driving
->>> your actions.  If so, then your statements display quite a bit of
->>> hypocrisy.
->> To your utter disappointment as i should say, i am not working for any
->> vendor, but just get device support out to the community.
-> 
-> Not to my disappointment.  I'm glad to hear it.  Someone who appears to
-> have an EE background without corporate bias can be an asset to the
-> community. 
-> 
-> 
->> The jusst.de domain is owned by Julian Scheel who runs Jusst
->> Technologies, just happened to offer me hosting for me repositories for
->> my work, using full ssh access, so that my workflow is easier.
->>
->> Not that i have anything to do with jusst.de otherwise. OTOH, i do have
->> the patches at kernel.org
->>
->> Maybe Julian can comment on this to make things more clearer on the
->> financial interests.
-> 
-> Then what I perceived was wrong.  My apologies.
-> 
-> 
-> 
->>> Manipulating (i.e. stalling) the timing of Multiproto being merged into
->>> the v4l-dvb tree or kernel, for you or your employer's gain, would be
->>> little different from the motivations you allege Steve of having.
->>
->> I am not manipulating any timing of multiproto being merged. In fact i
->> had been away, for a few months due to certain reasons, that you are
->> perfectly aware by now as far as i can understand.
-> 
-> I was aware you were away.  For what dates I do not know (I have emails
-> from you in May 2008).  For what reasons, I do not know for sure (nor do
-> I feel is it my business).
-> 
-> 
-> 
->>  So the points that
->> you raise are quite baseless.
-> 
-> Not entirely, there is a basis for the timing point.  The pull requests
-> seemed to have come in short order when confronted with a competing
-> proposal.  Yet the project had been ongoing for at least over a year (as
-> far as I can ascertain).  Here's a gripe about delays from Jan 2008:
-> http://www.mail-archive.com/linux-dvb@linuxtv.org/msg28606.html
-> 
-> There seemed to have been no other visible motivation for the pull
-> requests except competition.
+Hi all
 
+Ten days ago I asked if anyone has some info regarding Cisco's GRE
+keepalive support. Later I've realized that idea behing that feature
+is quite simple and nice. As it says on Cisco site:
 
-I got back on the beginning of September.
+> Router constructs the inner IP header and GRE header with a Protocol
+> Type (PT) of 0. It then sends that packet out its tunnel interface, which
+> results in the encapsulation of the packet with the outer IP header and a
+> GRE header with PT = IP
 
+Using the same idea, I've written small userspace app that do almost
+the same - instead of constructing "inner" packet with GRE header, I'm
+constructing UDP packet (it is easier to receive it in user space).
+After all, that "keepalive" packet looks like - IP|GRE|IP|UDP. When
+other end decapsulate it, inner IP|UDP packet should be sent back to
+the originating end. So, my primary task to support GRE keepalives on
+Linux side in Cisco-to-Linux "network" is accomplished. It's working
+fine.
 
->>> Since the major gripe I'm reading on the list "is that multiproto has
->>> taken too long" and since it seems to me the only thing that shook it
->>> loose was a competing proposal, please save the venom for when you
->>> actually have some clear moral high-ground to stand on.  I don't see it
->>> from here.
->> Crap, just read above.
-> 
-> OK, then you do have some high ground.  But you also had essentially a
-> monopoly position and now you have competition.  That is not crap. 
-> 
+Problem is the other situation, when Cisco is sending keepalives, or
+if a GRE tunnel is created between two Linux boxes and my app started
+on any of them. Linux is not sending back the "inner" packet (when
+"keepalive" packet is decapsulated on the other end, inner IP|UDP or
+IP|GRE packet should be sent back to the originating end). Nor Cisco's
+generated, nor generated by my app.
 
-Monopoly, competition .. sounds nonsense to me.
+At the beginning I taught it has something with rp_filters or
+something "adjustable" in /proc/sys/net/... But I was wrong. What
+could be a reason for this behavior? I spent some time trying to debug
+this, and it looks like inner packet never leave ip_gre code. It looks
+like the journey of the packet ends in  ipgre_ecn_decapsulate() at the
+very beginning:  if (INET_ECN_is_ce(iph->tos)) {
 
+Does anyone have some hint for me? :)
 
->>> As for the technical superiority of either API proposal; that probably
->>> just doesn't matter.  I've seen policy/political decisions force
->>> suboptimal technical solutions at work time and time again.  If you
->>> really believe you have a superior product technically; then perhaps you
->>> should work to make it superior politically as well.  Mud-slinging can't
->>> be a good long term strategy toward that end.
->>
->> I don't have to do any mud-slinging, just wrote the exact facts out here.
-> 
-> No, you are mud slinging.  Let's count the derogatory terms you use in
-> addressing your competition in the following quote:
-> 
-> "No need for you to break the compliant devices in favour of your
-> mediocre cards. As i wrote just above, the STB0899 is not the only one
-> device using the said features. Also i can guarantee that the CX24116
-> (HVR4000) is the most handicapped DVB-S2 device that you are basing the
+Thanks!
 
-
-Conexant themselves mentions what their demodulators can do. (In fact,
-they stopped their satellite demodulator businesses and sold it to NXP,
-AFAIK) I don't know what you want to add more into it, what Conexant
-hasn't. Only basic 8PSK NBC mode of operation. The DVB-S2 specification
-and supported devices do a lot more than that.
-
-
-> DVB-S2 API on: and i can guarantee that what you do will be just be
-> broken as you have done for other devices in the past."
-
-
-> "Also i do not understand, why you have to make a lot of noise to port
-> the STB0899 drivers to your crap, when all your cards work as expected
-> by you with the multiproto tree. I don't see any reason why the STB0899
-> has to be ported to the handicapped API of yours, handicapping the
-> STB0899 based devices."
-
-
-True it is.
-
-
-Regards,
-Manu
-
+PS. More info about GRE keepalive -
+http://www.cisco.com/en/US/tech/tk827/tk369/technologies_tech_note09186a008048cffc.shtml#t6
