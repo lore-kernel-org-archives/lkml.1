@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbYINTJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbYINTJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbYINTJV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYINTIo
+	id S1755565AbYINTJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbYINTI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:08:44 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50956 "EHLO sh.osrg.net"
+	Sun, 14 Sep 2008 15:08:58 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50963 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753869AbYINTIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:08:41 -0400
+	id S1754731AbYINTIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:08:44 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 16/27] nilfs2: file operations
-Date: Mon, 15 Sep 2008 04:08:13 +0900
-Message-Id: <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 18/27] nilfs2: pathname operations
+Date: Mon, 15 Sep 2008 04:08:15 +0900
+Message-Id: <1221419304-18572-19-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
@@ -34,26 +34,29 @@ References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds primitives for regular file handling.
+This adds pathname operations, most of which comes from the ext2 file
+system.
 
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/nilfs2/file.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 125 insertions(+), 0 deletions(-)
- create mode 100644 fs/nilfs2/file.c
+ fs/nilfs2/namei.c |  452 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 452 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/namei.c
 
-diff --git a/fs/nilfs2/file.c b/fs/nilfs2/file.c
+diff --git a/fs/nilfs2/namei.c b/fs/nilfs2/namei.c
 new file mode 100644
-index 0000000..7ddd42e
+index 0000000..daf382c
 --- /dev/null
-+++ b/fs/nilfs2/file.c
-@@ -0,0 +1,125 @@
++++ b/fs/nilfs2/namei.c
+@@ -0,0 +1,452 @@
 +/*
-+ * file.c - NILFS regular file handling primitives including fsync().
++ * namei.c - NILFS pathname lookup operations.
 + *
 + * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
 + *
@@ -71,112 +74,439 @@ index 0000000..7ddd42e
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Amagai Yoshiji <amagai@osrg.net>,
-+ *            Ryusuke Konishi <ryusuke@osrg.net>
++ * Modified for NILFS by Amagai Yoshiji <amagai@osrg.net>,
++ *                       Ryusuke Konishi <ryusuke@osrg.net>
++ */
++/*
++ *  linux/fs/ext2/namei.c
++ *
++ * Copyright (C) 1992, 1993, 1994, 1995
++ * Remy Card (card@masi.ibp.fr)
++ * Laboratoire MASI - Institut Blaise Pascal
++ * Universite Pierre et Marie Curie (Paris VI)
++ *
++ *  from
++ *
++ *  linux/fs/minix/namei.c
++ *
++ *  Copyright (C) 1991, 1992  Linus Torvalds
++ *
++ *  Big-endian to little-endian byte-swapping/bitmaps by
++ *        David S. Miller (davem@caip.rutgers.edu), 1995
 + */
 +
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <linux/writeback.h>
++#include <linux/pagemap.h>
 +#include "nilfs.h"
-+#include "segment.h"
 +
-+int nilfs_sync_file(struct file *file, struct dentry *dentry, int datasync)
++
++static inline int nilfs_add_nondir(struct dentry *dentry, struct inode *inode)
 +{
-+	/*
-+	 * Called from fsync() system call
-+	 * This is the only entry point that can catch write and synch
-+	 * timing for both data blocks and intermediate blocks.
-+	 *
-+	 * This function should be implemented when the writeback function
-+	 * will be implemented.
-+	 */
-+	struct inode *inode = dentry->d_inode;
-+	int err;
-+
-+	if (!nilfs_inode_dirty(inode))
++	int err = nilfs_add_link(dentry, inode);
++	if (!err) {
++		d_instantiate(dentry, inode);
 +		return 0;
-+
-+	if (datasync)
-+		err = nilfs_construct_dsync_segment(inode->i_sb, inode);
-+	else
-+		err = nilfs_construct_segment(inode->i_sb);
-+
++	}
++	inode_dec_link_count(inode);
++	iput(inode);
 +	return err;
 +}
 +
-+static ssize_t
-+nilfs_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
-+		     unsigned long nr_segs, loff_t pos)
++/*
++ * Methods themselves.
++ */
++
++static struct dentry *
++nilfs_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd)
 +{
-+	struct file *file = iocb->ki_filp;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	ssize_t ret;
++	struct inode *inode;
++	ino_t ino;
 +
-+	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
-+	if (ret <= 0)
-+		return ret;
++	if (dentry->d_name.len > NILFS_NAME_LEN)
++		return ERR_PTR(-ENAMETOOLONG);
 +
-+	if ((file->f_flags & O_SYNC) || IS_SYNC(inode)) {
-+		int err;
-+
-+		err = nilfs_construct_dsync_segment(inode->i_sb, inode);
-+		if (unlikely(err))
-+			return err;
++	ino = nilfs_inode_by_name(dir, dentry);
++	inode = NULL;
++	if (ino) {
++		inode = nilfs_iget(dir->i_sb, ino);
++		if (IS_ERR(inode))
++			return ERR_CAST(inode);
 +	}
-+	return ret;
++	return d_splice_alias(inode, dentry);
 +}
 +
-+static int nilfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++struct dentry *nilfs_get_parent(struct dentry *child)
 +{
-+	if (!(vma->vm_flags & (VM_WRITE | VM_MAYWRITE)))
-+		return -EPERM;
-+	SetPageChecked(page);
-+	wait_on_page_writeback(page);
-+	return 0;
-+}
++	unsigned long ino;
++	struct dentry *parent;
++	struct inode *inode;
++	struct dentry dotdot;
 +
-+struct vm_operations_struct nilfs_file_vm_ops = {
-+	.fault		= filemap_fault,
-+	.page_mkwrite	= nilfs_page_mkwrite,
-+};
++	dotdot.d_name.name = "..";
++	dotdot.d_name.len = 2;
 +
-+static int nilfs_file_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	file_accessed(file);
-+	vma->vm_ops = &nilfs_file_vm_ops;
-+	vma->vm_flags |= VM_CAN_NONLINEAR;
-+	return 0;
++	ino = nilfs_inode_by_name(child->d_inode, &dotdot);
++	if (!ino)
++		return ERR_PTR(-ENOENT);
++
++	inode = nilfs_iget(child->d_inode->i_sb, ino);
++	if (IS_ERR(inode))
++		return ERR_CAST(inode);
++	parent = d_alloc_anon(inode);
++	if (!parent) {
++		iput(inode);
++		parent = ERR_PTR(-ENOMEM);
++	}
++	return parent;
 +}
 +
 +/*
-+ * We have mostly NULL's here: the current defaults are ok for
-+ * the nilfs filesystem.
++ * By the time this is called, we already have created
++ * the directory cache entry for the new file, but it
++ * is so far negative - it has no inode.
++ *
++ * If the create succeeds, we fill in the inode information
++ * with d_instantiate().
 + */
-+struct file_operations nilfs_file_operations = {
-+	.llseek		= generic_file_llseek,
-+	.read		= do_sync_read,
-+	.write		= do_sync_write,
-+	.aio_read	= generic_file_aio_read,
-+	.aio_write	= nilfs_file_aio_write,
-+	.ioctl		= nilfs_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= nilfs_compat_ioctl,
-+#endif	/* CONFIG_COMPAT */
-+	.mmap		= nilfs_file_mmap,
-+	.open		= generic_file_open,
-+	/* .release	= nilfs_release_file, */
-+	.fsync		= nilfs_sync_file,
-+	.splice_read	= generic_file_splice_read,
-+};
++static int nilfs_create(struct inode *dir, struct dentry *dentry, int mode,
++			struct nameidata *nd)
++{
++	struct inode *inode;
++	struct nilfs_transaction_info ti;
++	int err, err2;
 +
-+struct inode_operations nilfs_file_inode_operations = {
-+	.truncate	= nilfs_truncate,
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 1);
++	if (err)
++		return err;
++	inode = nilfs_new_inode(dir, mode);
++	err = PTR_ERR(inode);
++	if (!IS_ERR(inode)) {
++		inode->i_op = &nilfs_file_inode_operations;
++		inode->i_fop = &nilfs_file_operations;
++		inode->i_mapping->a_ops = &nilfs_aops;
++		mark_inode_dirty(inode);
++		err = nilfs_add_nondir(dentry, inode);
++	}
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++}
++
++static int
++nilfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t rdev)
++{
++	struct inode *inode;
++	struct nilfs_transaction_info ti;
++	int err, err2;
++
++	if (!new_valid_dev(rdev))
++		return -EINVAL;
++
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 1);
++	if (err)
++		return err;
++	inode = nilfs_new_inode(dir, mode);
++	err = PTR_ERR(inode);
++	if (!IS_ERR(inode)) {
++		init_special_inode(inode, inode->i_mode, rdev);
++		mark_inode_dirty(inode);
++		err = nilfs_add_nondir(dentry, inode);
++	}
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++}
++
++static int nilfs_symlink(struct inode *dir, struct dentry *dentry,
++			 const char *symname)
++{
++	struct nilfs_transaction_info ti;
++	struct super_block *sb = dir->i_sb;
++	unsigned l = strlen(symname)+1;
++	struct inode *inode;
++	int err, err2;
++
++	if (l > sb->s_blocksize)
++		return -ENAMETOOLONG;
++
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 1);
++	if (err)
++		return err;
++
++	inode = nilfs_new_inode(dir, S_IFLNK | S_IRWXUGO);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out;
++
++	/* slow symlink */
++	inode->i_op = &nilfs_symlink_inode_operations;
++	inode->i_mapping->a_ops = &nilfs_aops;
++	err = page_symlink(inode, symname, l);
++	if (err)
++		goto out_fail;
++
++	/* mark_inode_dirty(inode); */
++	/* nilfs_new_inode() and page_symlink() do this */
++
++	err = nilfs_add_nondir(dentry, inode);
++out:
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++
++out_fail:
++	inode_dec_link_count(inode);
++	iput(inode);
++	goto out;
++}
++
++static int nilfs_link(struct dentry *old_dentry, struct inode *dir,
++		      struct dentry *dentry)
++{
++	struct inode *inode = old_dentry->d_inode;
++	struct nilfs_transaction_info ti;
++	int err, err2;
++
++	if (inode->i_nlink >= NILFS_LINK_MAX)
++		return -EMLINK;
++
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 1);
++	if (err)
++		return err;
++
++	inode->i_ctime = CURRENT_TIME;
++	inode_inc_link_count(inode);
++	atomic_inc(&inode->i_count);
++
++	err = nilfs_add_nondir(dentry, inode);
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++}
++
++static int nilfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	struct inode *inode;
++	struct nilfs_transaction_info ti;
++	int err, err2;
++
++	if (dir->i_nlink >= NILFS_LINK_MAX)
++		return -EMLINK;
++
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 1);
++	if (err)
++		return err;
++
++	inode_inc_link_count(dir);
++
++	inode = nilfs_new_inode(dir, S_IFDIR | mode);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out_dir;
++
++	inode->i_op = &nilfs_dir_inode_operations;
++	inode->i_fop = &nilfs_dir_operations;
++	inode->i_mapping->a_ops = &nilfs_aops;
++
++	inode_inc_link_count(inode);
++
++	err = nilfs_make_empty(inode, dir);
++	if (err)
++		goto out_fail;
++
++	err = nilfs_add_link(dentry, inode);
++	if (err)
++		goto out_fail;
++
++	d_instantiate(dentry, inode);
++out:
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++
++out_fail:
++	inode_dec_link_count(inode);
++	inode_dec_link_count(inode);
++	iput(inode);
++out_dir:
++	inode_dec_link_count(dir);
++	goto out;
++}
++
++static int nilfs_unlink(struct inode *dir, struct dentry *dentry)
++{
++	struct inode *inode;
++	struct nilfs_dir_entry *de;
++	struct page *page;
++	struct nilfs_transaction_info ti;
++	int err, err2;
++
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 0);
++	if (err)
++		return err;
++
++	err = -ENOENT;
++	de = nilfs_find_entry(dir, dentry, &page);
++	if (!de)
++		goto out;
++
++	inode = dentry->d_inode;
++	err = -EIO;
++	if (le64_to_cpu(de->inode) != inode->i_ino)
++		goto out;
++
++	if (!inode->i_nlink) {
++		nilfs_warning(inode->i_sb, __func__,
++			      "deleting nonexistent file (%lu), %d\n",
++			      inode->i_ino, inode->i_nlink);
++		inode->i_nlink = 1;
++	}
++	err = nilfs_delete_entry(de, page);
++	if (err)
++		goto out;
++
++	inode->i_ctime = dir->i_ctime;
++	inode_dec_link_count(inode);
++	err = 0;
++out:
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++}
++
++static int nilfs_rmdir(struct inode *dir, struct dentry *dentry)
++{
++	struct inode *inode = dentry->d_inode;
++	struct nilfs_transaction_info ti;
++	int err, err2;
++
++	err = nilfs_transaction_begin(dir->i_sb, &ti, 0);
++	if (err)
++		return err;
++
++	err = -ENOTEMPTY;
++	if (nilfs_empty_dir(inode)) {
++		err = nilfs_unlink(dir, dentry);
++		if (!err) {
++			inode->i_size = 0;
++			inode_dec_link_count(inode);
++			inode_dec_link_count(dir);
++		}
++	}
++	err2 = nilfs_transaction_end(dir->i_sb, !err);
++	return err ? : err2;
++}
++
++static int nilfs_rename(struct inode *old_dir, struct dentry *old_dentry,
++			struct inode *new_dir,	struct dentry *new_dentry)
++{
++	struct inode *old_inode = old_dentry->d_inode;
++	struct inode *new_inode = new_dentry->d_inode;
++	struct page *dir_page = NULL;
++	struct nilfs_dir_entry *dir_de = NULL;
++	struct page *old_page;
++	struct nilfs_dir_entry *old_de;
++	struct nilfs_transaction_info ti;
++	int err;
++
++	err = nilfs_transaction_begin(old_dir->i_sb, &ti, 1);
++	if (unlikely(err))
++		return err;
++
++	err = -ENOENT;
++	old_de = nilfs_find_entry(old_dir, old_dentry, &old_page);
++	if (!old_de)
++		goto out;
++
++	if (S_ISDIR(old_inode->i_mode)) {
++		err = -EIO;
++		dir_de = nilfs_dotdot(old_inode, &dir_page);
++		if (!dir_de)
++			goto out_old;
++	}
++
++	if (new_inode) {
++		struct page *new_page;
++		struct nilfs_dir_entry *new_de;
++
++		err = -ENOTEMPTY;
++		if (dir_de && !nilfs_empty_dir(new_inode))
++			goto out_dir;
++
++		err = -ENOENT;
++		new_de = nilfs_find_entry(new_dir, new_dentry, &new_page);
++		if (!new_de)
++			goto out_dir;
++		inode_inc_link_count(old_inode);
++		nilfs_set_link(new_dir, new_de, new_page, old_inode);
++		new_inode->i_ctime = CURRENT_TIME;
++		if (dir_de)
++			drop_nlink(new_inode);
++		inode_dec_link_count(new_inode);
++	} else {
++		if (dir_de) {
++			err = -EMLINK;
++			if (new_dir->i_nlink >= NILFS_LINK_MAX)
++				goto out_dir;
++		}
++		inode_inc_link_count(old_inode);
++		err = nilfs_add_link(new_dentry, old_inode);
++		if (err) {
++			inode_dec_link_count(old_inode);
++			goto out_dir;
++		}
++		if (dir_de)
++			inode_inc_link_count(new_dir);
++	}
++
++	/*
++	 * Like most other Unix systems, set the ctime for inodes on a
++	 * rename.
++	 * inode_dec_link_count() will mark the inode dirty.
++	 */
++	old_inode->i_ctime = CURRENT_TIME;
++
++	nilfs_delete_entry(old_de, old_page);
++	inode_dec_link_count(old_inode);
++
++	if (dir_de) {
++		nilfs_set_link(old_inode, dir_de, dir_page, new_dir);
++		inode_dec_link_count(old_dir);
++	}
++
++	err = nilfs_transaction_end(old_dir->i_sb, 1);
++	return err;
++
++out_dir:
++	if (dir_de) {
++		kunmap(dir_page);
++		page_cache_release(dir_page);
++	}
++out_old:
++	kunmap(old_page);
++	page_cache_release(old_page);
++out:
++	nilfs_transaction_end(old_dir->i_sb, 0);
++	return err;
++}
++
++struct inode_operations nilfs_dir_inode_operations = {
++	.create		= nilfs_create,
++	.lookup		= nilfs_lookup,
++	.link		= nilfs_link,
++	.unlink		= nilfs_unlink,
++	.symlink	= nilfs_symlink,
++	.mkdir		= nilfs_mkdir,
++	.rmdir		= nilfs_rmdir,
++	.mknod		= nilfs_mknod,
++	.rename		= nilfs_rename,
 +	.setattr	= nilfs_setattr,
-+	.permission     = nilfs_permission,
++	.permission	= nilfs_permission,
 +};
 +
-+/* end of file */
++struct inode_operations nilfs_special_inode_operations = {
++	.setattr	= nilfs_setattr,
++	.permission	= nilfs_permission,
++};
++
++struct inode_operations nilfs_symlink_inode_operations = {
++	.readlink	= generic_readlink,
++	.follow_link	= page_follow_link_light,
++	.put_link	= page_put_link,
++};
 -- 
 1.5.6.3
 
