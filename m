@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYINTNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYINTOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbYINTNY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbYINTJg
+	id S1756907AbYINTOA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbYINTJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:09:36 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50989 "EHLO sh.osrg.net"
+	Sun, 14 Sep 2008 15:09:46 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50974 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754243AbYINTJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:09:05 -0400
+	id S1755538AbYINTIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:08:51 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Koji Sato <sato.koji@lab.ntt.co.jp>,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 21/27] nilfs2: segment buffer
-Date: Mon, 15 Sep 2008 04:08:18 +0900
-Message-Id: <1221419304-18572-22-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 11/27] nilfs2: disk address translator
+Date: Mon, 15 Sep 2008 04:08:08 +0900
+Message-Id: <1221419304-18572-12-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221419304-18572-11-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
@@ -29,40 +30,39 @@ References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-9-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-10-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-11-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-12-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-13-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-19-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-20-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds the segment buffer which is used to constuct logs.
+From: Koji Sato <sato.koji@lab.ntt.co.jp>
 
+This adds the disk address translation file (DAT) whose primary
+function is to convert virtual disk block numbers to actual disk block
+numbers.
+
+The virtual block numbers of NILFS are associated with checkpoint
+generation numbers, and this file also provides functions to manage
+the lifetime information of each virtual block number.
+
+Signed-off-by: Koji Sato <sato.koji@lab.ntt.co.jp>
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/nilfs2/segbuf.c |  461 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/nilfs2/segbuf.h |  203 +++++++++++++++++++++++
- 2 files changed, 664 insertions(+), 0 deletions(-)
- create mode 100644 fs/nilfs2/segbuf.c
- create mode 100644 fs/nilfs2/segbuf.h
+ fs/nilfs2/dat.c |  429 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nilfs2/dat.h |   52 +++++++
+ 2 files changed, 481 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/dat.c
+ create mode 100644 fs/nilfs2/dat.h
 
-diff --git a/fs/nilfs2/segbuf.c b/fs/nilfs2/segbuf.c
+diff --git a/fs/nilfs2/dat.c b/fs/nilfs2/dat.c
 new file mode 100644
-index 0000000..6505a6a
+index 0000000..9360920
 --- /dev/null
-+++ b/fs/nilfs2/segbuf.c
-@@ -0,0 +1,461 @@
++++ b/fs/nilfs2/dat.c
+@@ -0,0 +1,429 @@
 +/*
-+ * segbuf.c - NILFS segment buffer
++ * dat.c - NILFS disk address translation.
 + *
-+ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
++ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -78,458 +78,426 @@ index 0000000..6505a6a
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Ryusuke Konishi <ryusuke@osrg.net>
-+ *
++ * Written by Koji Sato <koji@osrg.net>.
 + */
 +
++#include <linux/types.h>
 +#include <linux/buffer_head.h>
-+#include <linux/writeback.h>
-+#include <linux/crc32.h>
-+#include "page.h"
-+#include "segbuf.h"
-+#include "seglist.h"
++#include <linux/string.h>
++#include <linux/errno.h>
++#include "nilfs.h"
++#include "mdt.h"
++#include "alloc.h"
++#include "dat.h"
 +
 +
-+static struct kmem_cache *nilfs_segbuf_cachep;
++#define NILFS_CNO_MIN	((__u64)1)
++#define NILFS_CNO_MAX	(~(__u64)0)
 +
-+static void nilfs_segbuf_init_once(void *obj)
++static int nilfs_dat_prepare_entry(struct inode *dat,
++				   struct nilfs_palloc_req *req, int create)
 +{
-+	memset(obj, 0, sizeof(struct nilfs_segment_buffer));
++	return nilfs_palloc_get_entry_block(dat, req->pr_entry_nr,
++					    create, &req->pr_entry_bh);
 +}
 +
-+int __init nilfs_init_segbuf_cache(void)
++static void nilfs_dat_commit_entry(struct inode *dat,
++				   struct nilfs_palloc_req *req)
 +{
-+	nilfs_segbuf_cachep =
-+		kmem_cache_create("nilfs2_segbuf_cache",
-+				  sizeof(struct nilfs_segment_buffer),
-+				  0, SLAB_RECLAIM_ACCOUNT,
-+				  nilfs_segbuf_init_once);
-+
-+	return (nilfs_segbuf_cachep == NULL) ? -ENOMEM : 0;
++	nilfs_mdt_mark_buffer_dirty(req->pr_entry_bh);
++	nilfs_mdt_mark_dirty(dat);
++	brelse(req->pr_entry_bh);
 +}
 +
-+void nilfs_destroy_segbuf_cache(void)
++static void nilfs_dat_abort_entry(struct inode *dat,
++				  struct nilfs_palloc_req *req)
 +{
-+	kmem_cache_destroy(nilfs_segbuf_cachep);
++	brelse(req->pr_entry_bh);
 +}
 +
-+struct nilfs_segment_buffer *nilfs_segbuf_new(struct super_block *sb)
++int nilfs_dat_prepare_alloc(struct inode *dat, struct nilfs_palloc_req *req)
 +{
-+	struct nilfs_segment_buffer *segbuf;
++	int ret;
 +
-+	segbuf = kmem_cache_alloc(nilfs_segbuf_cachep, GFP_NOFS);
-+	if (unlikely(!segbuf))
-+		return NULL;
++	ret = nilfs_palloc_prepare_alloc_entry(dat, req);
++	if (ret < 0)
++		return ret;
 +
-+	segbuf->sb_super = sb;
-+	INIT_LIST_HEAD(&segbuf->sb_list);
-+	INIT_LIST_HEAD(&segbuf->sb_segsum_buffers);
-+	INIT_LIST_HEAD(&segbuf->sb_payload_buffers);
-+	segbuf->sb_segent = NULL;
-+	return segbuf;
++	ret = nilfs_dat_prepare_entry(dat, req, 1);
++	if (ret < 0)
++		nilfs_palloc_abort_alloc_entry(dat, req);
++
++	return ret;
 +}
 +
-+void nilfs_segbuf_free(struct nilfs_segment_buffer *segbuf)
++void nilfs_dat_commit_alloc(struct inode *dat, struct nilfs_palloc_req *req)
 +{
-+	struct nilfs_segment_entry *ent = segbuf->sb_segent;
-+
-+	if (ent != NULL && list_empty(&ent->list)) {
-+		/* free isolated segment list head */
-+		nilfs_free_segment_entry(segbuf->sb_segent);
-+		segbuf->sb_segent = NULL;
-+	}
-+	kmem_cache_free(nilfs_segbuf_cachep, segbuf);
-+}
-+
-+int nilfs_segbuf_map(struct nilfs_segment_buffer *segbuf, __u64 segnum,
-+		     unsigned long offset, struct the_nilfs *nilfs)
-+{
-+	struct nilfs_segment_entry *ent;
-+
-+	segbuf->sb_segnum = segnum;
-+	nilfs_get_segment_range(nilfs, segnum, &segbuf->sb_fseg_start,
-+				&segbuf->sb_fseg_end);
-+
-+	segbuf->sb_pseg_start = segbuf->sb_fseg_start + offset;
-+	segbuf->sb_rest_blocks =
-+		segbuf->sb_fseg_end - segbuf->sb_pseg_start + 1;
-+
-+	/* Attach a segment list head */
-+	ent = segbuf->sb_segent;
-+	if (ent == NULL) {
-+		segbuf->sb_segent = nilfs_alloc_segment_entry(segnum);
-+		if (unlikely(!segbuf->sb_segent))
-+			return -ENOMEM;
-+	} else {
-+		BUG_ON(ent->bh_su || !list_empty(&ent->list));
-+		ent->segnum = segnum;
-+	}
-+	return 0;
-+}
-+
-+void nilfs_segbuf_set_next_segnum(struct nilfs_segment_buffer *segbuf,
-+				  __u64 nextnum, struct the_nilfs *nilfs)
-+{
-+	segbuf->sb_nextnum = nextnum;
-+	segbuf->sb_sum.next = nilfs_get_segment_start_blocknr(nilfs, nextnum);
-+}
-+
-+int nilfs_segbuf_extend_segsum(struct nilfs_segment_buffer *segbuf)
-+{
-+	struct buffer_head *bh;
-+
-+	bh = sb_getblk(segbuf->sb_super,
-+		       segbuf->sb_pseg_start + segbuf->sb_sum.nsumblk);
-+	if (unlikely(!bh))
-+		return -ENOMEM;
-+
-+	nilfs_segbuf_add_segsum_buffer(segbuf, bh);
-+	return 0;
-+}
-+
-+int nilfs_segbuf_extend_payload(struct nilfs_segment_buffer *segbuf,
-+				struct buffer_head **bhp)
-+{
-+	struct buffer_head *bh;
-+
-+	bh = sb_getblk(segbuf->sb_super,
-+		       segbuf->sb_pseg_start + segbuf->sb_sum.nblocks);
-+	if (unlikely(!bh))
-+		return -ENOMEM;
-+
-+	nilfs_segbuf_add_payload_buffer(segbuf, bh);
-+	*bhp = bh;
-+	return 0;
-+}
-+
-+int nilfs_segbuf_reset(struct nilfs_segment_buffer *segbuf, unsigned flags,
-+		       time_t ctime)
-+{
-+	int err;
-+
-+	segbuf->sb_sum.nblocks = segbuf->sb_sum.nsumblk = 0;
-+	err = nilfs_segbuf_extend_segsum(segbuf);
-+	if (unlikely(err))
-+		return err;
-+
-+	segbuf->sb_sum.flags = flags;
-+	segbuf->sb_sum.sumbytes = sizeof(struct nilfs_segment_summary);
-+	segbuf->sb_sum.nfinfo = segbuf->sb_sum.nfileblk = 0;
-+	segbuf->sb_sum.ctime = ctime;
-+
-+	segbuf->sb_io_error = 0;
-+	return 0;
-+}
-+
-+/*
-+ * Setup segument summary
-+ */
-+void nilfs_segbuf_fill_in_segsum(struct nilfs_segment_buffer *segbuf)
-+{
-+	struct nilfs_segment_summary *raw_sum;
-+	struct buffer_head *bh_sum;
-+
-+	bh_sum = list_entry(segbuf->sb_segsum_buffers.next,
-+			    struct buffer_head, b_assoc_buffers);
-+	raw_sum = (struct nilfs_segment_summary *)bh_sum->b_data;
-+
-+	raw_sum->ss_magic    = cpu_to_le32(NILFS_SEGSUM_MAGIC);
-+	raw_sum->ss_bytes    = cpu_to_le16(sizeof(*raw_sum));
-+	raw_sum->ss_flags    = cpu_to_le16(segbuf->sb_sum.flags);
-+	raw_sum->ss_seq      = cpu_to_le64(segbuf->sb_sum.seg_seq);
-+	raw_sum->ss_create   = cpu_to_le64(segbuf->sb_sum.ctime);
-+	raw_sum->ss_next     = cpu_to_le64(segbuf->sb_sum.next);
-+	raw_sum->ss_nblocks  = cpu_to_le32(segbuf->sb_sum.nblocks);
-+	raw_sum->ss_nfinfo   = cpu_to_le32(segbuf->sb_sum.nfinfo);
-+	raw_sum->ss_sumbytes = cpu_to_le32(segbuf->sb_sum.sumbytes);
-+	raw_sum->ss_pad      = 0;
-+}
-+
-+/*
-+ * CRC calculation routines
-+ */
-+void nilfs_segbuf_fill_in_segsum_crc(struct nilfs_segment_buffer *segbuf,
-+				     u32 seed)
-+{
-+	struct buffer_head *bh;
-+	struct nilfs_segment_summary *raw_sum;
-+	unsigned long size, bytes = segbuf->sb_sum.sumbytes;
-+	u32 crc;
-+
-+	bh = list_entry(segbuf->sb_segsum_buffers.next, struct buffer_head,
-+			b_assoc_buffers);
-+
-+	raw_sum = (struct nilfs_segment_summary *)bh->b_data;
-+	size = min_t(unsigned long, bytes, bh->b_size);
-+	crc = crc32_le(seed,
-+		       (unsigned char *)raw_sum +
-+		       sizeof(raw_sum->ss_datasum) + sizeof(raw_sum->ss_sumsum),
-+		       size - (sizeof(raw_sum->ss_datasum) +
-+			       sizeof(raw_sum->ss_sumsum)));
-+
-+	list_for_each_entry_continue(bh, &segbuf->sb_segsum_buffers,
-+				     b_assoc_buffers) {
-+		bytes -= size;
-+		size = min_t(unsigned long, bytes, bh->b_size);
-+		crc = crc32_le(crc, bh->b_data, size);
-+	}
-+	raw_sum->ss_sumsum = cpu_to_le32(crc);
-+}
-+
-+void nilfs_segbuf_fill_in_data_crc(struct nilfs_segment_buffer *segbuf,
-+				   u32 seed)
-+{
-+	struct buffer_head *bh;
-+	struct nilfs_segment_summary *raw_sum;
++	struct nilfs_dat_entry *entry;
 +	void *kaddr;
-+	u32 crc;
 +
-+	bh = list_entry(segbuf->sb_segsum_buffers.next, struct buffer_head,
-+			b_assoc_buffers);
-+	raw_sum = (struct nilfs_segment_summary *)bh->b_data;
-+	crc = crc32_le(seed,
-+		       (unsigned char *)raw_sum + sizeof(raw_sum->ss_datasum),
-+		       bh->b_size - sizeof(raw_sum->ss_datasum));
++	kaddr = kmap_atomic(req->pr_entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
++					     req->pr_entry_bh, kaddr);
++	entry->de_start = cpu_to_le64(NILFS_CNO_MIN);
++	entry->de_end = cpu_to_le64(NILFS_CNO_MAX);
++	entry->de_blocknr = cpu_to_le64(0);
++	kunmap_atomic(kaddr, KM_USER0);
 +
-+	list_for_each_entry_continue(bh, &segbuf->sb_segsum_buffers,
-+				     b_assoc_buffers) {
-+		crc = crc32_le(crc, bh->b_data, bh->b_size);
-+	}
-+	list_for_each_entry(bh, &segbuf->sb_payload_buffers, b_assoc_buffers) {
-+		kaddr = kmap_atomic(bh->b_page, KM_USER0);
-+		crc = crc32_le(crc, kaddr + bh_offset(bh), bh->b_size);
-+		kunmap_atomic(kaddr, KM_USER0);
-+	}
-+	raw_sum->ss_datasum = cpu_to_le32(crc);
++	nilfs_palloc_commit_alloc_entry(dat, req);
++	nilfs_dat_commit_entry(dat, req);
 +}
 +
-+void nilfs_release_buffers(struct list_head *list)
++void nilfs_dat_abort_alloc(struct inode *dat, struct nilfs_palloc_req *req)
 +{
-+	struct buffer_head *bh, *n;
-+
-+	list_for_each_entry_safe(bh, n, list, b_assoc_buffers) {
-+		list_del_init(&bh->b_assoc_buffers);
-+		if (buffer_nilfs_allocated(bh)) {
-+			struct page *clone_page = bh->b_page;
-+
-+			/* remove clone page */
-+			brelse(bh);
-+			page_cache_release(clone_page); /* for each bh */
-+			if (page_count(clone_page) <= 2) {
-+				lock_page(clone_page);
-+				nilfs_free_private_page(clone_page);
-+			}
-+			continue;
-+		}
-+		brelse(bh);
-+	}
++	nilfs_dat_abort_entry(dat, req);
++	nilfs_palloc_abort_alloc_entry(dat, req);
 +}
 +
-+/*
-+ * BIO operations
-+ */
-+static void nilfs_end_bio_write(struct bio *bio, int err)
++int nilfs_dat_prepare_free(struct inode *dat, struct nilfs_palloc_req *req)
 +{
-+	const int uptodate = test_bit(BIO_UPTODATE, &bio->bi_flags);
-+	struct nilfs_write_info *wi = bio->bi_private;
++	int ret;
 +
-+	if (err == -EOPNOTSUPP) {
-+		set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
-+		bio_put(bio);
-+		/* to be detected by submit_seg_bio() */
++	ret = nilfs_palloc_prepare_free_entry(dat, req);
++	if (ret < 0)
++		return ret;
++	ret = nilfs_dat_prepare_entry(dat, req, 0);
++	if (ret < 0) {
++		nilfs_palloc_abort_free_entry(dat, req);
++		return ret;
 +	}
-+
-+	if (!uptodate)
-+		atomic_inc(&wi->err);
-+
-+	bio_put(bio);
-+	complete(&wi->bio_event);
-+}
-+
-+static int nilfs_submit_seg_bio(struct nilfs_write_info *wi, int mode)
-+{
-+	struct bio *bio = wi->bio;
-+	int err;
-+
-+	if (wi->nbio > 0 && bdi_write_congested(wi->bdi)) {
-+		wait_for_completion(&wi->bio_event);
-+		wi->nbio--;
-+		if (unlikely(atomic_read(&wi->err))) {
-+			bio_put(bio);
-+			err = -EIO;
-+			goto failed;
-+		}
-+	}
-+
-+	bio->bi_end_io = nilfs_end_bio_write;
-+	bio->bi_private = wi;
-+	bio_get(bio);
-+	submit_bio(mode, bio);
-+	if (bio_flagged(bio, BIO_EOPNOTSUPP)) {
-+		bio_put(bio);
-+		err = -EOPNOTSUPP;
-+		goto failed;
-+	}
-+	wi->nbio++;
-+	bio_put(bio);
-+
-+	wi->bio = NULL;
-+	wi->rest_blocks -= wi->end - wi->start;
-+	wi->nr_vecs = min(wi->max_pages, wi->rest_blocks);
-+	wi->start = wi->end;
 +	return 0;
++}
 +
-+ failed:
-+	wi->bio = NULL;
-+	return err;
++void nilfs_dat_commit_free(struct inode *dat, struct nilfs_palloc_req *req)
++{
++	struct nilfs_dat_entry *entry;
++	void *kaddr;
++
++	kaddr = kmap_atomic(req->pr_entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
++					     req->pr_entry_bh, kaddr);
++	entry->de_start = cpu_to_le64(NILFS_CNO_MIN);
++	entry->de_end = cpu_to_le64(NILFS_CNO_MIN);
++	entry->de_blocknr = cpu_to_le64(0);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	nilfs_dat_commit_entry(dat, req);
++	nilfs_palloc_commit_free_entry(dat, req);
++}
++
++void nilfs_dat_abort_free(struct inode *dat, struct nilfs_palloc_req *req)
++{
++	nilfs_dat_abort_entry(dat, req);
++	nilfs_palloc_abort_free_entry(dat, req);
++}
++
++int nilfs_dat_prepare_start(struct inode *dat, struct nilfs_palloc_req *req)
++{
++	int ret;
++
++	ret = nilfs_dat_prepare_entry(dat, req, 0);
++	BUG_ON(ret == -ENOENT);
++	return ret;
++}
++
++void nilfs_dat_commit_start(struct inode *dat, struct nilfs_palloc_req *req,
++			    sector_t blocknr)
++{
++	struct nilfs_dat_entry *entry;
++	void *kaddr;
++
++	kaddr = kmap_atomic(req->pr_entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
++					     req->pr_entry_bh, kaddr);
++	entry->de_start = cpu_to_le64(nilfs_mdt_cno(dat));
++	if (entry->de_blocknr != cpu_to_le64(0) ||
++	    entry->de_end != cpu_to_le64(NILFS_CNO_MAX)) {
++		printk(KERN_CRIT
++		       "%s: vbn = %llu, start = %llu, end = %llu, pbn = %llu\n",
++		       __func__, (unsigned long long)req->pr_entry_nr,
++		       (unsigned long long)le64_to_cpu(entry->de_start),
++		       (unsigned long long)le64_to_cpu(entry->de_end),
++		       (unsigned long long)le64_to_cpu(entry->de_blocknr));
++		BUG();
++	}
++	entry->de_blocknr = cpu_to_le64(blocknr);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	nilfs_dat_commit_entry(dat, req);
++}
++
++void nilfs_dat_abort_start(struct inode *dat, struct nilfs_palloc_req *req)
++{
++	nilfs_dat_abort_entry(dat, req);
++}
++
++int nilfs_dat_prepare_end(struct inode *dat, struct nilfs_palloc_req *req)
++{
++	struct nilfs_dat_entry *entry;
++	__u64 start;
++	sector_t blocknr;
++	void *kaddr;
++	int ret;
++
++	ret = nilfs_dat_prepare_entry(dat, req, 0);
++	if (ret < 0) {
++		BUG_ON(ret == -ENOENT);
++		return ret;
++	}
++
++	kaddr = kmap_atomic(req->pr_entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
++					     req->pr_entry_bh, kaddr);
++	start = le64_to_cpu(entry->de_start);
++	blocknr = le64_to_cpu(entry->de_blocknr);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	if (blocknr == 0) {
++		ret = nilfs_palloc_prepare_free_entry(dat, req);
++		if (ret < 0) {
++			nilfs_dat_abort_entry(dat, req);
++			return ret;
++		}
++	}
++
++	return 0;
++}
++
++void nilfs_dat_commit_end(struct inode *dat, struct nilfs_palloc_req *req,
++			  int dead)
++{
++	struct nilfs_dat_entry *entry;
++	__u64 start, end;
++	sector_t blocknr;
++	void *kaddr;
++
++	kaddr = kmap_atomic(req->pr_entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
++					     req->pr_entry_bh, kaddr);
++	end = start = le64_to_cpu(entry->de_start);
++	if (!dead) {
++		end = nilfs_mdt_cno(dat);
++		BUG_ON(start > end);
++	}
++	entry->de_end = cpu_to_le64(end);
++	blocknr = le64_to_cpu(entry->de_blocknr);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	if (blocknr == 0)
++		nilfs_dat_commit_free(dat, req);
++	else
++		nilfs_dat_commit_entry(dat, req);
++}
++
++void nilfs_dat_abort_end(struct inode *dat, struct nilfs_palloc_req *req)
++{
++	struct nilfs_dat_entry *entry;
++	__u64 start;
++	sector_t blocknr;
++	void *kaddr;
++
++	kaddr = kmap_atomic(req->pr_entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
++					     req->pr_entry_bh, kaddr);
++	start = le64_to_cpu(entry->de_start);
++	blocknr = le64_to_cpu(entry->de_blocknr);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	if (start == nilfs_mdt_cno(dat) && blocknr == 0)
++		nilfs_palloc_abort_free_entry(dat, req);
++	nilfs_dat_abort_entry(dat, req);
 +}
 +
 +/**
-+ * nilfs_alloc_seg_bio - allocate a bio for writing segment.
-+ * @sb: super block
-+ * @start: beginning disk block number of this BIO.
-+ * @nr_vecs: request size of page vector.
++ * nilfs_dat_mark_dirty -
++ * @dat: DAT file inode
++ * @vblocknr: virtual block number
 + *
-+ * alloc_seg_bio() allocates a new BIO structure and initialize it.
++ * Description:
 + *
-+ * Return Value: On success, pointer to the struct bio is returned.
-+ * On error, NULL is returned.
++ * Return Value: On success, 0 is returned. On error, one of the following
++ * negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
 + */
-+static struct bio *nilfs_alloc_seg_bio(struct super_block *sb, sector_t start,
-+				       int nr_vecs)
++int nilfs_dat_mark_dirty(struct inode *dat, __u64 vblocknr)
 +{
-+	struct bio *bio;
++	struct nilfs_palloc_req req;
++	int ret;
 +
-+	bio = bio_alloc(GFP_NOWAIT, nr_vecs);
-+	if (bio == NULL) {
-+		while (!bio && (nr_vecs >>= 1))
-+			bio = bio_alloc(GFP_NOWAIT, nr_vecs);
-+	}
-+	if (likely(bio)) {
-+		bio->bi_bdev = sb->s_bdev;
-+		bio->bi_sector = (sector_t)start << (sb->s_blocksize_bits - 9);
-+	}
-+	return bio;
++	req.pr_entry_nr = vblocknr;
++	ret = nilfs_dat_prepare_entry(dat, &req, 0);
++	if (ret == 0)
++		nilfs_dat_commit_entry(dat, &req);
++	return ret;
 +}
 +
-+void nilfs_segbuf_prepare_write(struct nilfs_segment_buffer *segbuf,
-+				struct nilfs_write_info *wi)
++/**
++ * nilfs_dat_freev - free virtual block numbers
++ * @dat: DAT file inode
++ * @vblocknrs: array of virtual block numbers
++ * @nitems: number of virtual block numbers
++ *
++ * Description: nilfs_dat_freev() frees the virtual block numbers specified by
++ * @vblocknrs and @nitems.
++ *
++ * Return Value: On success, 0 is returned. On error, one of the following
++ * nagative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ *
++ * %-ENOENT - The virtual block number have not been allocated.
++ */
++int nilfs_dat_freev(struct inode *dat, __u64 *vblocknrs, size_t nitems)
 +{
-+	wi->bio = NULL;
-+	wi->rest_blocks = segbuf->sb_sum.nblocks;
-+	wi->max_pages = bio_get_nr_vecs(wi->sb->s_bdev);
-+	wi->nr_vecs = min(wi->max_pages, wi->rest_blocks);
-+	wi->start = wi->end = 0;
-+	wi->nbio = 0;
-+	wi->blocknr = segbuf->sb_pseg_start;
-+
-+	atomic_set(&wi->err, 0);
-+	init_completion(&wi->bio_event);
++	return nilfs_palloc_freev(dat, vblocknrs, nitems);
 +}
 +
-+static int nilfs_submit_bh(struct nilfs_write_info *wi, struct buffer_head *bh,
-+			   int mode)
++/**
++ * nilfs_dat_move - change a block number
++ * @dat: DAT file inode
++ * @vblocknr: virtual block number
++ * @blocknr: block number
++ *
++ * Description: nilfs_dat_move() changes the block number associated with
++ * @vblocknr to @blocknr.
++ *
++ * Return Value: On success, 0 is returned. On error, one of the following
++ * negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ */
++int nilfs_dat_move(struct inode *dat, __u64 vblocknr, sector_t blocknr)
 +{
-+	int len, err;
++	struct buffer_head *entry_bh;
++	struct nilfs_dat_entry *entry;
++	void *kaddr;
++	int ret;
 +
-+	BUG_ON(wi->nr_vecs <= 0);
-+ repeat:
-+	if (!wi->bio) {
-+		wi->bio = nilfs_alloc_seg_bio(wi->sb, wi->blocknr + wi->end,
-+					      wi->nr_vecs);
-+		if (unlikely(!wi->bio))
-+			return -ENOMEM;
++	ret = nilfs_palloc_get_entry_block(dat, vblocknr, 0, &entry_bh);
++	if (ret < 0)
++		return ret;
++	kaddr = kmap_atomic(entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, vblocknr, entry_bh, kaddr);
++	if (entry->de_blocknr == cpu_to_le64(0)) {
++		printk(KERN_CRIT "%s: vbn = %llu, [%llu, %llu)\n", __func__,
++		       (unsigned long long)vblocknr,
++		       (unsigned long long)le64_to_cpu(entry->de_start),
++		       (unsigned long long)le64_to_cpu(entry->de_end));
++		BUG();
 +	}
++	BUG_ON(blocknr == 0);
++	entry->de_blocknr = cpu_to_le64(blocknr);
++	kunmap_atomic(kaddr, KM_USER0);
 +
-+	len = bio_add_page(wi->bio, bh->b_page, bh->b_size, bh_offset(bh));
-+	if (len == bh->b_size) {
-+		wi->end++;
-+		return 0;
-+	}
-+	/* bio is FULL */
-+	err = nilfs_submit_seg_bio(wi, mode);
-+	/* never submit current bh */
-+	if (likely(!err))
-+		goto repeat;
-+	return err;
++	nilfs_mdt_mark_buffer_dirty(entry_bh);
++	nilfs_mdt_mark_dirty(dat);
++
++	brelse(entry_bh);
++
++	return 0;
 +}
 +
-+int nilfs_segbuf_write(struct nilfs_segment_buffer *segbuf,
-+		       struct nilfs_write_info *wi)
++/**
++ * nilfs_dat_translate - translate a virtual block number to a block number
++ * @dat: DAT file inode
++ * @vblocknr: virtual block number
++ * @blocknrp: pointer to a block number
++ *
++ * Description: nilfs_dat_translate() maps the virtual block number @vblocknr
++ * to the corresponding block number.
++ *
++ * Return Value: On success, 0 is returned and the block number associated
++ * with @vblocknr is stored in the place pointed by @blocknrp. On error, one
++ * of the following negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ *
++ * %-ENOENT - A block number associated with @vblocknr does not exist.
++ */
++int nilfs_dat_translate(struct inode *dat, __u64 vblocknr, sector_t *blocknrp)
 +{
-+	struct buffer_head *bh;
-+	int res, rw = WRITE;
++	struct buffer_head *entry_bh;
++	struct nilfs_dat_entry *entry;
++	sector_t blocknr;
++	void *kaddr;
++	int ret;
 +
-+	list_for_each_entry(bh, &segbuf->sb_segsum_buffers, b_assoc_buffers) {
-+		res = nilfs_submit_bh(wi, bh, rw);
-+		if (unlikely(res))
-+			goto failed_bio;
++	ret = nilfs_palloc_get_entry_block(dat, vblocknr, 0, &entry_bh);
++	if (ret < 0)
++		return ret;
++
++	kaddr = kmap_atomic(entry_bh->b_page, KM_USER0);
++	entry = nilfs_palloc_block_get_entry(dat, vblocknr, entry_bh, kaddr);
++	blocknr = le64_to_cpu(entry->de_blocknr);
++	if (blocknr == 0) {
++		ret = -ENOENT;
++		goto out;
 +	}
++	if (blocknrp != NULL)
++		*blocknrp = blocknr;
 +
-+	list_for_each_entry(bh, &segbuf->sb_payload_buffers, b_assoc_buffers) {
-+		res = nilfs_submit_bh(wi, bh, rw);
-+		if (unlikely(res))
-+			goto failed_bio;
-+	}
-+
-+	if (wi->bio) {
-+		/*
-+		 * Last BIO is always sent through the following
-+		 * submission.
-+		 */
-+		rw |= (1 << BIO_RW_SYNC);
-+		res = nilfs_submit_seg_bio(wi, rw);
-+		if (unlikely(res))
-+			goto failed_bio;
-+	}
-+
-+	res = 0;
 + out:
-+	return res;
-+
-+ failed_bio:
-+	atomic_inc(&wi->err);
-+	goto out;
++	kunmap_atomic(kaddr, KM_USER0);
++	brelse(entry_bh);
++	return ret;
 +}
 +
-+/**
-+ * nilfs_segbuf_wait - wait for completion of requested BIOs
-+ * @wi: nilfs_write_info
-+ *
-+ * Return Value: On Success, 0 is returned. On Error, one of the following
-+ * negative error code is returned.
-+ *
-+ * %-EIO - I/O error
-+ */
-+int nilfs_segbuf_wait(struct nilfs_segment_buffer *segbuf,
-+		      struct nilfs_write_info *wi)
++ssize_t nilfs_dat_get_vinfo(struct inode *dat, struct nilfs_vinfo *vinfo,
++			    size_t nvi)
 +{
-+	int err = 0;
++	struct buffer_head *entry_bh;
++	struct nilfs_dat_entry *entry;
++	__u64 first, last;
++	void *kaddr;
++	unsigned long entries_per_block = NILFS_MDT(dat)->mi_entries_per_block;
++	int i, j, n, ret;
 +
-+	if (!wi->nbio)
-+		return 0;
-+
-+	do {
-+		wait_for_completion(&wi->bio_event);
-+	} while (--wi->nbio > 0);
-+
-+	if (unlikely(atomic_read(&wi->err) > 0)) {
-+		printk(KERN_ERR "NILFS: IO error writing segment\n");
-+		err = -EIO;
-+		segbuf->sb_io_error = 1;
++	for (i = 0; i < nvi; i += n) {
++		ret = nilfs_palloc_get_entry_block(dat, vinfo[i].vi_vblocknr,
++						   0, &entry_bh);
++		if (ret < 0)
++			return ret;
++		kaddr = kmap_atomic(entry_bh->b_page, KM_USER0);
++		/* last virtual block number in this block */
++		first = vinfo[i].vi_vblocknr;
++		do_div(first, entries_per_block);
++		first *= entries_per_block;
++		last = first + entries_per_block - 1;
++		for (j = i, n = 0;
++		     j < nvi && vinfo[j].vi_vblocknr >= first &&
++			     vinfo[j].vi_vblocknr <= last;
++		     j++, n++) {
++			entry = nilfs_palloc_block_get_entry(
++				dat, vinfo[j].vi_vblocknr, entry_bh, kaddr);
++			vinfo[j].vi_start = le64_to_cpu(entry->de_start);
++			vinfo[j].vi_end = le64_to_cpu(entry->de_end);
++			vinfo[j].vi_blocknr = le64_to_cpu(entry->de_blocknr);
++		}
++		kunmap_atomic(kaddr, KM_USER0);
++		brelse(entry_bh);
 +	}
-+	return err;
++
++	return nvi;
 +}
-diff --git a/fs/nilfs2/segbuf.h b/fs/nilfs2/segbuf.h
+diff --git a/fs/nilfs2/dat.h b/fs/nilfs2/dat.h
 new file mode 100644
-index 0000000..25f2a5f
+index 0000000..d956065
 --- /dev/null
-+++ b/fs/nilfs2/segbuf.h
-@@ -0,0 +1,203 @@
++++ b/fs/nilfs2/dat.h
+@@ -0,0 +1,52 @@
 +/*
-+ * segbuf.h - NILFS Segment buffer prototypes and definitions
++ * dat.h - NILFS disk address translation.
 + *
-+ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
++ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -545,190 +513,39 @@ index 0000000..25f2a5f
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Ryusuke Konishi <ryusuke@osrg.net>
-+ *
++ * Written by Koji Sato <koji@osrg.net>.
 + */
-+#ifndef _NILFS_SEGBUF_H
-+#define _NILFS_SEGBUF_H
 +
-+#include <linux/fs.h>
++#ifndef _NILFS_DAT_H
++#define _NILFS_DAT_H
++
++#include <linux/types.h>
 +#include <linux/buffer_head.h>
-+#include <linux/bio.h>
-+#include <linux/completion.h>
-+#include <linux/backing-dev.h>
++#include <linux/fs.h>
 +
-+/**
-+ * struct nilfs_segsum_info - On-memory segment summary
-+ * @flags: Flags
-+ * @nfinfo: Number of file information structures
-+ * @nblocks: Number of blocks included in the partial segment
-+ * @nsumblk: Number of summary blocks
-+ * @sumbytes: Byte count of segment summary
-+ * @nfileblk: Total number of file blocks
-+ * @seg_seq: Segment sequence number
-+ * @ctime: Creation time
-+ * @next: Block number of the next full segment
-+ */
-+struct nilfs_segsum_info {
-+	unsigned int		flags;
-+	unsigned long		nfinfo;
-+	unsigned long		nblocks;
-+	unsigned long		nsumblk;
-+	unsigned long		sumbytes;
-+	unsigned long		nfileblk;
-+	u64			seg_seq;
-+	time_t			ctime;
-+	sector_t		next;
-+};
++#define NILFS_DAT_GFP	NILFS_MDT_GFP
 +
-+/* macro for the flags */
-+#define NILFS_SEG_HAS_SR(sum)    ((sum)->flags & NILFS_SS_SR)
-+#define NILFS_SEG_LOGBGN(sum)    ((sum)->flags & NILFS_SS_LOGBGN)
-+#define NILFS_SEG_LOGEND(sum)    ((sum)->flags & NILFS_SS_LOGEND)
-+#define NILFS_SEG_DSYNC(sum)     ((sum)->flags & NILFS_SS_SYNDT)
-+#define NILFS_SEG_SIMPLEX(sum) \
-+	(((sum)->flags & (NILFS_SS_LOGBGN | NILFS_SS_LOGEND)) == \
-+	 (NILFS_SS_LOGBGN | NILFS_SS_LOGEND))
++struct nilfs_palloc_req;
 +
-+#define NILFS_SEG_EMPTY(sum)	((sum)->nblocks == (sum)->nsumblk)
++int nilfs_dat_translate(struct inode *, __u64, sector_t *);
 +
-+/**
-+ * struct nilfs_segment_buffer - Segment buffer
-+ * @sb_super: back pointer to a superblock struct
-+ * @sb_list: List head to chain this structure
-+ * @sb_segent: Pointer for attaching a segment entry
-+ * @sb_sum: On-memory segment summary
-+ * @sb_segnum: Index number of the full segment
-+ * @sb_nextnum: Index number of the next full segment
-+ * @sb_fseg_start: Start block number of the full segment
-+ * @sb_fseg_end: End block number of the full segment
-+ * @sb_pseg_start: Disk block number of partial segment
-+ * @sb_rest_blocks: Number of residual blocks in the current segment
-+ * @sb_segsum_buffers: List of buffers for segment summaries
-+ * @sb_payload_buffers: List of buffers for segment payload
-+ * @sb_io_error: I/O error status
-+ */
-+struct nilfs_segment_buffer {
-+	struct super_block     *sb_super;
-+	struct list_head	sb_list;
-+	struct nilfs_segment_entry *sb_segent;
++int nilfs_dat_prepare_alloc(struct inode *, struct nilfs_palloc_req *);
++void nilfs_dat_commit_alloc(struct inode *, struct nilfs_palloc_req *);
++void nilfs_dat_abort_alloc(struct inode *, struct nilfs_palloc_req *);
++int nilfs_dat_prepare_start(struct inode *, struct nilfs_palloc_req *);
++void nilfs_dat_commit_start(struct inode *, struct nilfs_palloc_req *,
++			    sector_t);
++void nilfs_dat_abort_start(struct inode *, struct nilfs_palloc_req *);
++int nilfs_dat_prepare_end(struct inode *, struct nilfs_palloc_req *);
++void nilfs_dat_commit_end(struct inode *, struct nilfs_palloc_req *, int);
++void nilfs_dat_abort_end(struct inode *, struct nilfs_palloc_req *);
 +
-+	/* Segment information */
-+	struct nilfs_segsum_info sb_sum;
-+	__u64			sb_segnum;
-+	__u64			sb_nextnum;
-+	sector_t		sb_fseg_start, sb_fseg_end;
-+	sector_t		sb_pseg_start;
-+	unsigned		sb_rest_blocks;
++int nilfs_dat_mark_dirty(struct inode *, __u64);
++int nilfs_dat_freev(struct inode *, __u64 *, size_t);
++int nilfs_dat_move(struct inode *, __u64, sector_t);
++ssize_t nilfs_dat_get_vinfo(struct inode *, struct nilfs_vinfo *, size_t);
 +
-+	/* Buffers */
-+	struct list_head	sb_segsum_buffers;
-+	struct list_head	sb_payload_buffers; /* including super root */
-+
-+	/* io status */
-+	int			sb_io_error;
-+};
-+
-+#define NILFS_LIST_SEGBUF(head)  \
-+	list_entry((head), struct nilfs_segment_buffer, sb_list)
-+#define NILFS_NEXT_SEGBUF(segbuf)  NILFS_LIST_SEGBUF((segbuf)->sb_list.next)
-+#define NILFS_PREV_SEGBUF(segbuf)  NILFS_LIST_SEGBUF((segbuf)->sb_list.prev)
-+#define NILFS_LAST_SEGBUF(head)    NILFS_LIST_SEGBUF((head)->prev)
-+#define NILFS_FIRST_SEGBUF(head)   NILFS_LIST_SEGBUF((head)->next)
-+#define NILFS_SEGBUF_IS_LAST(segbuf, head)  ((segbuf)->sb_list.next == (head))
-+
-+#define nilfs_for_each_segbuf_before(s, t, h) \
-+	for ((s) = NILFS_FIRST_SEGBUF(h); (s) != (t); \
-+	     (s) = NILFS_NEXT_SEGBUF(s))
-+
-+#define NILFS_SEGBUF_FIRST_BH(head)  \
-+	(list_entry((head)->next, struct buffer_head, b_assoc_buffers))
-+#define NILFS_SEGBUF_NEXT_BH(bh)  \
-+	(list_entry((bh)->b_assoc_buffers.next, struct buffer_head, \
-+		    b_assoc_buffers))
-+#define NILFS_SEGBUF_BH_IS_LAST(bh, head)  ((bh)->b_assoc_buffers.next == head)
-+
-+
-+int __init nilfs_init_segbuf_cache(void);
-+void nilfs_destroy_segbuf_cache(void);
-+struct nilfs_segment_buffer *nilfs_segbuf_new(struct super_block *);
-+void nilfs_segbuf_free(struct nilfs_segment_buffer *);
-+int nilfs_segbuf_map(struct nilfs_segment_buffer *, __u64, unsigned long,
-+		     struct the_nilfs *);
-+void nilfs_segbuf_set_next_segnum(struct nilfs_segment_buffer *, __u64,
-+				  struct the_nilfs *);
-+int nilfs_segbuf_reset(struct nilfs_segment_buffer *, unsigned, time_t);
-+int nilfs_segbuf_extend_segsum(struct nilfs_segment_buffer *);
-+int nilfs_segbuf_extend_payload(struct nilfs_segment_buffer *,
-+				struct buffer_head **);
-+void nilfs_segbuf_fill_in_segsum(struct nilfs_segment_buffer *);
-+void nilfs_segbuf_fill_in_segsum_crc(struct nilfs_segment_buffer *, u32);
-+void nilfs_segbuf_fill_in_data_crc(struct nilfs_segment_buffer *, u32);
-+
-+static inline void
-+nilfs_segbuf_add_segsum_buffer(struct nilfs_segment_buffer *segbuf,
-+			       struct buffer_head *bh)
-+{
-+	list_add_tail(&bh->b_assoc_buffers, &segbuf->sb_segsum_buffers);
-+	segbuf->sb_sum.nblocks++;
-+	segbuf->sb_sum.nsumblk++;
-+}
-+
-+static inline void
-+nilfs_segbuf_add_payload_buffer(struct nilfs_segment_buffer *segbuf,
-+				struct buffer_head *bh)
-+{
-+	list_add_tail(&bh->b_assoc_buffers, &segbuf->sb_payload_buffers);
-+	segbuf->sb_sum.nblocks++;
-+}
-+
-+static inline void
-+nilfs_segbuf_add_file_buffer(struct nilfs_segment_buffer *segbuf,
-+			     struct buffer_head *bh)
-+{
-+	get_bh(bh);
-+	nilfs_segbuf_add_payload_buffer(segbuf, bh);
-+	segbuf->sb_sum.nfileblk++;
-+}
-+
-+void nilfs_release_buffers(struct list_head *);
-+
-+static inline void nilfs_segbuf_clear(struct nilfs_segment_buffer *segbuf)
-+{
-+	nilfs_release_buffers(&segbuf->sb_segsum_buffers);
-+	nilfs_release_buffers(&segbuf->sb_payload_buffers);
-+}
-+
-+struct nilfs_write_info {
-+	struct bio	       *bio;
-+	int 			start, end; /* The region to be submitted */
-+	int			rest_blocks;
-+	int			max_pages;
-+	int			nr_vecs;
-+	sector_t		blocknr;
-+
-+	int			nbio;
-+	atomic_t		err;
-+	struct completion	bio_event;
-+				/* completion event of segment write */
-+
-+	/*
-+	 * The following fields must be set explicitly
-+	 */
-+	struct super_block     *sb;
-+	struct backing_dev_info *bdi; /* backing dev info */
-+	struct buffer_head     *bh_sr;
-+};
-+
-+
-+void nilfs_segbuf_prepare_write(struct nilfs_segment_buffer *,
-+				struct nilfs_write_info *);
-+int nilfs_segbuf_write(struct nilfs_segment_buffer *,
-+		       struct nilfs_write_info *);
-+int nilfs_segbuf_wait(struct nilfs_segment_buffer *,
-+		      struct nilfs_write_info *);
-+
-+#endif /* _NILFS_SEGBUF_H */
++#endif	/* _NILFS_DAT_H */
 -- 
 1.5.6.3
 
