@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYINP14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYINPaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbYINP14 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 11:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYINP1t
+	id S1755207AbYINPaU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 11:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYINPaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 11:27:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43674 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752396AbYINP1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 11:27:48 -0400
-Date: Sun, 14 Sep 2008 08:27:37 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Ulrich Drepper" <drepper@gmail.com>
-Cc: "Pavel Machek" <pavel@suse.cz>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, dwmw2@infradead.org, drepper@redhat.com,
-       mingo@elte.hu, tglx@tglx.de
-Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the task
- struct
-Message-ID: <20080914082737.3ce5661f@infradead.org>
-In-Reply-To: <a36005b50809140821w2caeb810p431cf5625b0297f5@mail.gmail.com>
-References: <20080901160343.75a89ec9@infradead.org>
-	<20080901161423.59ebf2fc@infradead.org>
-	<20080902100439.GA11383@elf.ucw.cz>
-	<20080902060323.70245b83@infradead.org>
-	<20080908132713.GA18486@elf.ucw.cz>
-	<20080908064002.7abc2a22@infradead.org>
-	<20080908141555.GB31784@elf.ucw.cz>
-	<a36005b50809140821w2caeb810p431cf5625b0297f5@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 14 Sep 2008 11:30:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43600 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752396AbYINPaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 11:30:06 -0400
+Date: Sun, 14 Sep 2008 17:29:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, arjan@linux.intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/7] x86, cpa: cpa related changes to be inline with
+	TLB Application note
+Message-ID: <20080914152947.GH29290@elte.hu>
+References: <20080911203048.929515000@linux-os.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080911203048.929515000@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008 08:21:26 -0700
-"Ulrich Drepper" <drepper@gmail.com> wrote:
 
-> The prctl() way plus a default non-zero value is the best way for
-> legacy apps.  And you'll hopefully get your wish that apps will take
-> fate into their own hand by specifying the slack themselves.  Arjan's
-> proposal also introduces new poll/select-like interface which take the
-> additional slack value (at least that's what we discussed before).
+* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
 
-I have not posted the code for this yet (the patch set is huge
-already :0) but yes it's going to happen.
-You and I do need to figure out what a sensible interface will be for
-these ;-)
+> TLB Application note[1] says:
+> 	
+> "The TLBs may contain both ordinary and large-page translations for a 4-KByte
+>  range of linear addresses. This may occur if software modifies the paging
+>  structures so that the page size used for the address range changes. If the
+>  two translations differ with respect to page frame or attributes (e.g.,
+>  permissions), processor behavior is undefined and may be implementation 
+>  specific. The processor may use a page frame or attributes that correspond to
+>  neither translation; it may improperly set or fail to set the dirty bit in the
+>  appropriate paging-structure entry.
+>  
+>  Such undefined behavior is problematic because prefetches and memory accesses
+>  that are a result of speculative execution may occur, using the affected range
+>  of linear addresses. It is also problematic if software (including the software
+>  modifying the paging structures) is accessing data or executing code in the
+>  affected range of linear addresses. Software should not write to a
+>  paging-structure entry in a way that would change, for any linear address,
+>  both the page size and either the page frame or attributes."
+> 
+> Currently we violate this at:
+> 
+> a. kernel identity mapping, where large/small pages setup very early in the
+>    boot will be split up/merged into large pages along with attribute changes
+>    during the direct memory mapping init.
+> 
+> b. while doing cpa(), potentially we will split large page and change attribute
+>    both at the same time.
+> 
+> Following patches fixes this behavior.
+> 
+> [1] http://developer.intel.com/design/processor/applnots/317080.pdf
+> 
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
+applied to tip/x86/pat, thanks Suresh.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
