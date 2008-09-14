@@ -1,59 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYINTBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYINTIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbYINTBM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbYINTA4
+	id S1755513AbYINTIs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbYINTIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:00:56 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:32803 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753849AbYINTAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:00:55 -0400
-X-Greylist: delayed 1336 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Sep 2008 15:00:54 EDT
-X-Sasl-enc: WFzxLZ8nL9/j2YV3SsTm93WCmK3QLtaPCCK1H2MZJ9hh 1221417516
-Date: Sun, 14 Sep 2008 15:38:29 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: Helge Deller <deller@gmx.de>, Jan Beulich <jbeulich@novell.com>,
-       linux-input@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: __initdata and struct dmi_system_id?
-Message-ID: <20080914183829.GB18150@khazad-dum.debian.net>
-References: <48C0C786.5020809@freemail.hu> <48CCBD83.1030001@freemail.hu> <20080914113316.GA27289@khazad-dum.debian.net> <48CD3B4C.8010106@freemail.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48CD3B4C.8010106@freemail.hu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 14 Sep 2008 15:08:35 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50923 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753419AbYINTId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:08:33 -0400
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 27/27] nilfs2: update makefile and Kconfig
+Date: Mon, 15 Sep 2008 04:08:24 +0900
+Message-Id: <1221419304-18572-28-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1221419304-18572-27-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-5-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-6-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-7-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-8-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-9-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-10-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-11-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-12-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-13-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-19-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-20-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-22-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-23-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-24-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-25-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-26-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-27-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008, Németh Márton wrote:
-> Henrique de Moraes Holschuh wrote:
-> > On Sun, 14 Sep 2008, Németh Márton wrote:
-> >> The other interesting question on this topic is that what about the
-> >> error message strings which are used as parameter of the printk() calls.
-> >> Those strings are combined together for a function which is marked with
-> >> __init and the functions which are normal functions. The strings which
-> >> are only used by the functions marked with __init could be freed, but
-> >> the strings of the normal functions shouldn't be.
-> > 
-> > Yeah, if we could get them all in a init.rodata section, we could just throw
-> > them away along with the init section afterwards...
-> > 
-> > I do think I have seen a patch about init.rodata in LKML not too long ago,
-> > though.
-> 
-> Do you mean this one?
+This adds a Makefile for the nilfs2 file system, and updates the
+makefile and Kconfig file in the file system directory.
 
-Yeah.  I don't know if it does (or is related to) what you want, though.
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+---
+ fs/Kconfig         |   26 ++++++++++++++++++++++++++
+ fs/Makefile        |    1 +
+ fs/nilfs2/Makefile |    5 +++++
+ 3 files changed, 32 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/Makefile
 
+diff --git a/fs/Kconfig b/fs/Kconfig
+index abccb5d..294092c 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1383,6 +1383,32 @@ config MINIX_FS
+ 	  partition (the one containing the directory /) cannot be compiled as
+ 	  a module.
+ 
++config NILFS2_FS
++	tristate "NILFS2 file system support (EXPERIMENTAL)"
++	depends on BLOCK && EXPERIMENTAL
++	select CRC32
++	help
++	  NILFS2 is a log-structured file system (LFS) supporting continuous
++	  snapshotting.  In addition to versioning capability of the entire
++	  file system, users can even restore files mistakenly overwritten or
++	  destroyed just a few seconds ago.  Since this file system can keep
++	  consistency like conventional LFS, it achieves quick recovery after
++	  system crashes.
++
++	  NILFS2 creates a number of checkpoints every few seconds or per
++	  synchronous write basis (unless there is no change).  Users can
++	  select significant versions among continuously created checkpoints,
++	  and can change them into snapshots which will be preserved for long
++	  periods until they are changed back to checkpoints.  Each
++	  snapshot is mountable as a read-only file system concurrently with
++	  its writable mount, and this feature is convenient for online backup.
++
++	  Some features including atime, extended attributes, and POSIX ACLs,
++	  are not supported yet.
++
++	  To compile this file system support as a module, choose M here: the
++	  module will be called nilfs2.  If unsure, say N.
++
+ config OMFS_FS
+ 	tristate "SonicBlue Optimized MPEG File System support"
+ 	depends on BLOCK
+diff --git a/fs/Makefile b/fs/Makefile
+index a1482a5..ddcf879 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
+ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+ obj-$(CONFIG_GFS2_FS)           += gfs2/
++obj-$(CONFIG_NILFS2_FS)		+= nilfs2/
+diff --git a/fs/nilfs2/Makefile b/fs/nilfs2/Makefile
+new file mode 100644
+index 0000000..df3e62c
+--- /dev/null
++++ b/fs/nilfs2/Makefile
+@@ -0,0 +1,5 @@
++obj-$(CONFIG_NILFS2_FS) += nilfs2.o
++nilfs2-y := inode.o file.o dir.o super.o namei.o page.o mdt.o \
++	btnode.o bmap.o btree.o direct.o dat.o recovery.o \
++	the_nilfs.o segbuf.o segment.o cpfile.o sufile.o \
++	ifile.o alloc.o gcinode.o ioctl.o gcdat.o
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+1.5.6.3
+
