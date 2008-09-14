@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYINReV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYINRiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYINReV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 13:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbYINReM
+	id S1755213AbYINRiM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 13:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYINRh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 13:34:12 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49328 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbYINReL (ORCPT
+	Sun, 14 Sep 2008 13:37:57 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:41487 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753249AbYINRh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 13:34:11 -0400
-Date: Sun, 14 Sep 2008 19:35:36 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-Message-ID: <20080914173536.GA1687@elf.ucw.cz>
-References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz>
-MIME-Version: 1.0
+	Sun, 14 Sep 2008 13:37:56 -0400
+Date: Sun, 14 Sep 2008 20:37:54 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, menage@google.com, balbir@linux.vnet.ibm.com
+Subject: [PATCH] cgroups: don't depend on CONFIG_MM_OWNER
+Message-ID: <Pine.LNX.4.64.0809142037070.30252@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080914101406.GA1625@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-09-14 12:14:06, Pavel Machek wrote:
-> On Sun 2008-09-14 12:09:13, Pavel Machek wrote:
-> > On Sun 2008-09-14 04:56:48, Thomas Gleixner wrote:
-> > > Pavel,
-> > > 
-> > > On Fri, 12 Sep 2008, Pavel Machek wrote:
-> > > > The old "you have to press keys to get machine to progress" seems to
-> > > > be back :-(. Thinkpad x60.
-> > > 
-> > > Is there a chance that we get some more information than that ?
-> > 
-> > Yep.
-> > 
-> > It does not happen after _every_ s2ram, but when it happens the system
-> > limps around in half-dead state with non-blinking cursor etc. Next
-> > s2ram will not fix it.
-> > 
-> > nohz=off helps.
-> > 
-> > Will try 2.6.27-rc6 w/o any custom patches next (not that I have
-> > anything interesting in that area), and then probably 2.6.26.
-> 
-> It _does_ happen with mainline 2.6.27-rc6.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-s2ram hs problem in mainline 2.6.26, too. (Different problem: no
-ammount pressing shift helps there.) nohz=off cures it, too.
+The revoke patches, for example, select CONFIG_MM_OWNER independently of
+cgroups. Therefore, don't depend on CONFIG_MM_OWNER in cgroup specific code.
 
-How to proceed?
+Cc: Paul Menage <menage@google.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/cgroup.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-									Pavel
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index c98dd7c..e270ec3 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -413,10 +413,10 @@ static inline int cgroupstats_build(struct cgroupstats *stats,
+ 
+ #endif /* !CONFIG_CGROUPS */
+ 
+-#ifdef CONFIG_MM_OWNER
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ extern void
+ cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new);
+-#else /* !CONFIG_MM_OWNER */
++#else /* !CONFIG_CGROUP_MEM_RES_CTLR */
+ static inline void
+ cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct *new)
+ {
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.5.4.3
+
