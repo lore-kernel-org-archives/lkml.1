@@ -1,47 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbYINMRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYINM0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbYINMRz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 08:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYINMRr
+	id S1754466AbYINM0s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 08:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYINM0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 08:17:47 -0400
-Received: from mailsvr.yanbulink.net ([79.98.184.44]:35868 "EHLO
-	mail.yanbulink.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbYINMRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 08:17:46 -0400
-X-Greylist: delayed 1951 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Sep 2008 08:17:46 EDT
-X-Spam-Flag: NO
-X-Spam-Score: -4.063
-Date: Sun, 14 Sep 2008 15:04:11 +0300 (AST)
-From: "Wennie V. Lagmay" <wlagmay@yanbulink.net>
-To: linux-kernel@vger.kernel.org
-Cc: wlagmay <wlagmay@yanbulink.net>
-Message-ID: <23541694.2961221393851646.JavaMail.root@mail.yanbulink.net>
-Subject: Kernel upgarde causes IPTABLES SAME not working for me
+	Sun, 14 Sep 2008 08:26:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59384 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753008AbYINM0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 08:26:38 -0400
+Date: Sun, 14 Sep 2008 14:26:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] apci: dump slit
+Message-ID: <20080914122618.GD16097@elte.hu>
+References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com> <20080912122031.eca8723e.akpm@linux-foundation.org> <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com> <878wtxrrwh.fsf@basil.nowhere.org> <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de> <20080914112222.GA3956@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [192.168.24.5]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080914112222.GA3956@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all, 
 
-I am having a problem with the recent version of kernel (2.6.25-14-108) on Fedora Core 9 64 bit.
-I am trying to enable the NATting using SAME command but I am getting an error "Iptables: No chain/target match by this name" but with earlier version of linux 2.6.23.1-42 iptables with SAME target is working; "iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j SAME --to 10.10.10.1-10.10.10.2 --nodst"
+* Pavel Machek <pavel@suse.cz> wrote:
 
-I also try to recompile a 2.6.25 kernel but there is no luck.  Can you please help me to activate SAME target on the latest release of  kernel probably from 2.6.23 and latest.
+> On Fri 2008-09-12 23:19:21, Thomas Gleixner wrote:
+> > On Fri, 12 Sep 2008, Andi Kleen wrote:
+> > > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+> > > >
+> > > > to see how wrong could be set by BIOS.
+> > > 
+> > > Just dump it from user space then.  There are plenty of tools
+> > > to access ACPI tables.
+> > 
+> > 1.) what guarantees that we reach user space ?
+> 
+> We can dump in *any* kernel.
+>
+> > 2) If it is _valuable_ information which we can gather via kernel
+> >    output, then it is much more conveniant than asking the user to type
+> >    whatevercryptictoolcommandline and provide the output.
+> 
+> Ooh, 'lets dump more junk at everyone, typing commands is hard' :-(.
 
-My objective is to have a multiple source private IP going/NATed to multiple destination public IP with voice chat enable. 
+no, the principle is, information like the boot-time CPUID information 
+(and even the BIOS environment) can be indicative of _kernel bugs_. It 
+is often essential to dump what the booting (and failing) kernel thinks 
+is its environment.
 
-Please take note that using SNAT I cannot enable voice chat; using masquerade I can enable voice chat but this is not suitable to our requirements. The best suitable for us is using SAME.
+Often that environment is corrupted (by the kernel) and that leads to 
+problems. This 'environment' can also be affected by things like hard 
+boot vs cold boot differences, whether it's in a kexec environment, 
+whether it's booted as a virtual guest, etc., etc.
 
-Can you please help me solve this problem. Also please put me on Cc: on any reply or comment so that I can see all of your reply.
+For a long time we had the kernel's x86 bootup pretty much as a mostly 
+silent black box and when it broke we tried to figure things out 
+afterwards which was difficult and error-prone. Now we've got various 
+quite effective debug mechanisms (which includes printouts as well) and 
+figuring out x86 problems is visibly easier. We definitely wont go back 
+to the 'black box code, can only be debugged by a few experts' method.
 
-Thank you very much and best regards,
+So extending on that is a good and obvious idea in general - and i agree 
+with Peter that this should be command-line dependent, i.e. not printed 
+by default. Only printing it when 'debug' is specified on the command 
+line is a good solution.
 
-Wennie
-
-
+	Ingo
