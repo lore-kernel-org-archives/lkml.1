@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYINVCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYINVDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYINVCR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 17:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYINVCE
+	id S1755607AbYINVDe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 17:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbYINVD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 17:02:04 -0400
-Received: from mail.work.de ([212.12.32.20]:47579 "EHLO mail.work.de"
+	Sun, 14 Sep 2008 17:03:26 -0400
+Received: from mail.work.de ([212.12.32.20]:47600 "EHLO mail.work.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754266AbYINVCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 17:02:03 -0400
-Message-ID: <48CD7BC2.1080708@gmail.com>
-Date: Mon, 15 Sep 2008 01:01:54 +0400
+	id S1754298AbYINVD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 17:03:26 -0400
+Message-ID: <48CD7C17.3060009@gmail.com>
+Date: Mon, 15 Sep 2008 01:03:19 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
@@ -35,53 +35,10 @@ Andy Walls wrote:
 > Manu,
 > 
 > Though I can't read much German, after looking at the jusst.de website I
-> can't help but think that you as well have financial interests driving
-> your actions.  If so, then your statements display quite a bit of
-> hypocrisy.
-
-To your utter disappointment as i should say, i am not working for any
-vendor, but just get device support out to the community.
-
-The jusst.de domain is owned by Julian Scheel who runs Jusst
-Technologies, just happened to offer me hosting for me repositories for
-my work, using full ssh access, so that my workflow is easier.
-
-Not that i have anything to do with jusst.de otherwise. OTOH, i do have
-the patches at kernel.org
-
-Maybe Julian can comment on this to make things more clearer on the
-financial interests.
 
 
-> Manipulating (i.e. stalling) the timing of Multiproto being merged into
-> the v4l-dvb tree or kernel, for you or your employer's gain, would be
-> little different from the motivations you allege Steve of having.
-
-
-I am not manipulating any timing of multiproto being merged. In fact i
-had been away, for a few months due to certain reasons, that you are
-perfectly aware by now as far as i can understand. So the points that
-you raise are quite baseless.
-
-
-> Since the major gripe I'm reading on the list "is that multiproto has
-> taken too long" and since it seems to me the only thing that shook it
-> loose was a competing proposal, please save the venom for when you
-> actually have some clear moral high-ground to stand on.  I don't see it
-> from here.
-
-Crap, just read above.
-
-
-> As for the technical superiority of either API proposal; that probably
-> just doesn't matter.  I've seen policy/political decisions force
-> suboptimal technical solutions at work time and time again.  If you
-> really believe you have a superior product technically; then perhaps you
-> should work to make it superior politically as well.  Mud-slinging can't
-> be a good long term strategy toward that end.
-
-
-I don't have to do any mud-slinging, just wrote the exact facts out here.
+A piece that i forgot to write. Just like what you said, i too can't
+read German that much what you can even.
 
 
 Regards,
