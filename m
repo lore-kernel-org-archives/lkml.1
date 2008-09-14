@@ -1,130 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYINPiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYINPj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYINPiS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 11:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYINPiI
+	id S1755273AbYINPj7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 11:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYINPjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 11:38:08 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:61790 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751952AbYINPiF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 11:38:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vbJajPRWnFmj3mWDmP0MLPMy1X3gI0YFSIT6MyUyGsSb0oPyVJlMmM0/8gkOK93UPV
-         6m4U4h4fVzNM1QuB6Iy5qt15YJZY3MLBx2G1oyK3SWJVpP00q/jMxuiJDESqm5q/4BcF
-         oIOL4mjzMNXHvAOycucKgipV4bWXG0GeA/HYk=
-Message-ID: <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>
-Date: Sun, 14 Sep 2008 17:38:03 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Subject: Re: [linux-dvb] Multiproto API/Driver Update
-Cc: linux-dvb@linuxtv.org, "Rudy Zijlstra" <rudy@grumpydevil.homelinux.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48CC4D35.3000003@gmail.com>
+	Sun, 14 Sep 2008 11:39:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46655 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752623AbYINPjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 11:39:51 -0400
+Date: Sun, 14 Sep 2008 17:39:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dean Nelson <dcn@sgi.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 2/4] introduce dynamically allocated system vectors
+Message-ID: <20080914153922.GK29290@elte.hu>
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080911152732.GC13655@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
-	 <48C66829.1010902@grumpydevil.homelinux.org>
-	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
-	 <48CC42D8.8080806@gmail.com>
-	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
-	 <48CC4D35.3000003@gmail.com>
+In-Reply-To: <20080911152732.GC13655@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 14, 2008 at 1:31 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
-> Markus Rechberger wrote:
->> On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
->>> Markus Rechberger wrote:
->>>
->>>> How many devices are currently supported by the multiproto API
->>>> compared with the s2 tree?
->>> The initial set of DVB-S2 multistandard devices supported by the
->>> multiproto tree is follows. This is just the stb0899 based dvb-s2 driver
->>> alone. There are more additions by 2 more modules (not devices), but for
->>> the simple comparison here is the quick list of them, for which some of
->>> the manufacturers have shown support in some way. (There has been quite
->>> some contributions from the community as well.):
->>>
->>> (Also to be noted is that, some BSD chaps also have shown interest in
->>> the same)
->>>
->>
->> they're heavy into moving the whole framework over as far as I've seen
->> yes, also including yet unmerged drivers.
->
->
-> Using the same interface, the same applications will work there as well
-> which is a bonus, but isn't the existing user interface GPL ? (A bit
-> confused on that aspect)
->
->
->>> * STB0899 based
->>>
->>> Anubis
->>> Typhoon DVB-S2 PCI
->>>
->>> Azurewave/Twinhan
->>> VP-1041
->>> VP-7050
->>>
->>> Digital Now
->>> AD SP400
->>> AD SB300
->>>
->>> KNC1
->>> TV Station DVB-S2
->>> TV Station DVB-S2 Plus
->>>
->>> Pinnacle
->>> PCTV Sat HDTV Pro USB 452e
->>>
->>> Satelco
->>> TV Station DVB-S2
->>> Easywatch HDTV USB CI
->>> Easywatch HDTV PCI
->>>
->>> Technisat
->>> Skystar HD
->>> Skystar HD2
->>> Skystar USB2 HDCI
->>>
->>> Technotrend
->>> TT S2 3200
->>> TT S2 3600
->>> TT S2 3650
->>>
->>> Terratec
->>> Cinergy S2 PCI HD
->>> Cinergy S2 PCI HDCI
->>>
->>
->> those are pullable now against the current tree?
->
->
-> These devices, depend upon the DVB API update without which it wouldn't
-> work as they depend heavily on the DVB API framework. Without the
-> updated framework, it doesn't make any sense to pull them: they won't
-> even compile. The last but not least reason is that, the stb0899 driver
-> is a DVB-S2 multistandard device which requires DVB-S2/DSS support
-> additionally.
->
 
-so the framework is available, and the drivers could be pushed in
-right afterwards, I wonder
-who is willing to port those drivers to the other API (including testing).
-It's not going to happen any time soon I guess, if there's not an
-agreement with Manu's
-work. Dumping this code would show another step of ignorance and
-selfishness against the
-people who worked on it.
+* Dean Nelson <dcn@sgi.com> wrote:
 
-Markus
+> Introduce the dynamic allocation and deallocation of system vectors which
+> are mapped to irq numbers allowing the use of request_irq()/free_irq().
+> 
+> Signed-off-by: Dean Nelson <dcn@sgi.com>
+> 
+> ---
+> 
+>  arch/x86/kernel/apic.c        |    3 
+>  arch/x86/kernel/io_apic.c     |  264 +++++++++++++++++++++++++++++++++-----
+
+it's not clean to put it into io_apic.c:
+
+> -static int __assign_irq_vector(int irq, cpumask_t mask)
+> +bool __grab_irq_vector(struct irq_desc *desc, unsigned int vector,
+> +		       cpumask_t *new_domain_mask)
+
+please put it into arch/x86/kernel/irq.c or so.
+
+this bit:
+
+> Index: linux/include/linux/irq.h
+> ===================================================================
+> --- linux.orig/include/linux/irq.h	2008-09-10 12:08:46.000000000 -0500
+> +++ linux/include/linux/irq.h	2008-09-11 06:53:16.000000000 -0500
+> @@ -390,11 +390,22 @@ set_irq_chained_handler(unsigned int irq
+>  extern void set_irq_noprobe(unsigned int irq);
+>  extern void set_irq_probe(unsigned int irq);
+>  
+> -/* Handle dynamic irq creation and destruction */
+> +/* Handle dynamic irq device vector allocation and deallocation */
+>  extern unsigned int create_irq_nr(unsigned int irq_want);
+>  extern int create_irq(void);
+>  extern void destroy_irq(unsigned int irq);
+>  
+> +/* Handle dynamic irq system vector allocation and deallocation */
+> +extern unsigned int create_irq_system_vector(cpumask_t *mask, int priority,
+> +					     char *irq_name,
+> +					     int *assigned_vector);
+> +#define IRQ_PRIORITY_LOW	1
+> +#define IRQ_PRIORITY_HIGH	2
+> +
+> +extern void destroy_irq_system_vector(unsigned int irq);
+> +
+> +extern int reserve_system_vectors(int number);
+
+does not belong into the generic kernel code - it's an x86 property.
+
+	Ingo
