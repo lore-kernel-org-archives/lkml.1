@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbYINLdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbYINLga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbYINLdf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 07:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYINLdZ
+	id S1754335AbYINLga (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 07:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYINLgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 07:33:25 -0400
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:46302 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752544AbYINLdY (ORCPT
+	Sun, 14 Sep 2008 07:36:06 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:4760 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752817AbYINLgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 07:33:24 -0400
-X-Sasl-enc: 9e+KOk9g5CWAeNyWpg+56GmzclH0IpomV/wYXesZcGMQ 1221392001
-Date: Sun, 14 Sep 2008 08:33:16 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: =?iso-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Helge Deller <deller@gmx.de>,
-       linux-input@vger.kernel.org
-Subject: Re: __initdata and struct dmi_system_id?
-Message-ID: <20080914113316.GA27289@khazad-dum.debian.net>
-References: <48C0C786.5020809@freemail.hu> <48CCBD83.1030001@freemail.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <48CCBD83.1030001@freemail.hu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 14 Sep 2008 07:36:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:from;
+        b=CUWYEv6rc5LyBpq7Si2n1lus4vWS4wzeQo1XxjQUrOHi8TTUHaQCfmIEXFa5oofWGt
+         c6Bu7F3tlcgGLacGeFV9pzspy/vDV+/U+cShXHcqW3NhjYYb5KQGLHcST6Sd7fFLKZvq
+         +cjVi2AiAHrocel3YQh4GWaboXlsYvYGu8YL8=
+To: <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+Subject: [PATCH 00/10] ide-cd: use generic ide_issue_pc
+Date: Sun, 14 Sep 2008 13:35:48 +0200
+Message-Id: <1221392158-3848-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: git-send-email 1.5.5.1
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008, Németh Márton wrote:
-> The other interesting question on this topic is that what about the
-> error message strings which are used as parameter of the printk() calls.
-> Those strings are combined together for a function which is marked with
-> __init and the functions which are normal functions. The strings which
-> are only used by the functions marked with __init could be freed, but
-> the strings of the normal functions shouldn't be.
+Hi Bart,
 
-Yeah, if we could get them all in a init.rodata section, we could just throw
-them away along with the init section afterwards...
+here are some patches converting ide-cd to using ide_issue_pc. Next is
+replacing cdrom_transfer_packet_command with ide_transfer_pc.
 
-I do think I have seen a patch about init.rodata in LKML not too long ago,
-though.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+ drivers/ide/ide-atapi.c  |   71 ++++++++++++++++++++++---------
+ drivers/ide/ide-cd.c     |  104 ++++++---------------------------------------
+ drivers/ide/ide-cd.h     |   30 +++++++++++++-
+ drivers/ide/ide-floppy.c |    2 +-
+ drivers/ide/ide-tape.c   |    2 +-
+ drivers/scsi/ide-scsi.c  |    3 +-
+ include/linux/ide.h      |    5 ++-
+ 7 files changed, 102 insertions(+), 115 deletions(-)
