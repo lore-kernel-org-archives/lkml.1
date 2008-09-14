@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYINPcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbYINPgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYINPcd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 11:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYINPcI
+	id S1755004AbYINPgF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 11:36:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbYINPfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 11:32:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40258 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753857AbYINPcH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 11:32:07 -0400
-Date: Sun, 14 Sep 2008 08:32:06 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Cc: greg@kroah.com
-Subject: [PATCH] device model: Do a quickcheck for driver binding before
- doing an expensive check
-Message-ID: <20080914083206.0f42b2a7@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 14 Sep 2008 11:35:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50546 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753226AbYINPfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 11:35:53 -0400
+Date: Sun, 14 Sep 2008 17:35:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dean Nelson <dcn@sgi.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+Message-ID: <20080914153522.GJ29290@elte.hu>
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080911152304.GA13655@sgi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] device model: Do a quickcheck for driver binding before doing an expensive check
+* Dean Nelson <dcn@sgi.com> wrote:
 
-This patch adds a quick check for the driver<->device match before taking
-the locks and doin gthe expensive checks. Taking the lock hurts in asynchronous
-boot context where the device lock gets hit; one of the init functions takes
-the lock and goes to do an expensive hardware init; the other init functions
-walk the same PCI list and get stuck on the lock as a result.
+> On Mon, Aug 11, 2008 at 12:39:22PM -0700, Eric W. Biederman wrote:
+> >
+> > Although I am not at all convinced that dynamic allocation of
+> > the vector number (instead of statically reserving it makes sense).
+> 
+> We (SGI) need somewhere around eight vectors.
+> 
+> There are two kernel modules, sgi-gru and sgi-xp (in drivers/misc), 
+> that each need two vectors. And there's the broadcast assist unit 
+> (BAU) that is involved in tlb shootdown on uv, which currently uses 
+> statically reserved vector 0xf8 (UV_BAU_MESSAGE -- see uv_bau_init()). 
 
-For the common case, we can know there's no chance whatsoever of a match
-if the device isn't in the drivers ID table... so this patch does that check
-as a best-effort-avoid-the-lock approach.
+while i understand the UV_BAU_MESSAGE case (TLB flushes are special), 
+why does sgi-gru and sgi-xp need to go that deep? They are drivers, they 
+should be able to make use of an ordinary irq just like the other 2000 
+drivers we have do.
 
-Bootcharts for before and after can be seen at
-http://www.fenrus.org/before.svg
-http://www.fenrus.org/after.svg
+> I know of a debugger that also uses 0xf8 because it was previously 
+> available until UV_BAU_MESSAGE came along. The BAU would be happy with 
+> a dynamically allocated system vector. We have a couple of other 
+> things in the works that also need vectors.
 
-Note the long time "agp_ali_init" takes in the first graph; my laptop doesn't
-even have an ALI chip in it!
-(the bootgraphs look a bit dissimilar, but that's the point, the first one has a bunch
-of arbitrary delays in it that cause it to look very different)
+which debugger is this?
 
-This reduces my kernel boot time by about 20%
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/base/dd.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 3ac443b..20febc0 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -257,6 +257,9 @@ static int __driver_attach(struct device *dev, void *data)
- 	 * is an error.
- 	 */
- 
-+	if (drv->bus->match && !drv->bus->match(dev, drv))
-+		return 0;
-+
- 	if (dev->parent)	/* Needed for USB */
- 		down(&dev->parent->sem);
- 	down(&dev->sem);
--- 
-1.5.5.1
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
