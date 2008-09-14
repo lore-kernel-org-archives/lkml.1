@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbYINOtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYINOz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbYINOtY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 10:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYINOtM
+	id S1754740AbYINOz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 10:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYINOzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 10:49:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59686 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbYINOtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 10:49:10 -0400
-Date: Sun, 14 Sep 2008 16:48:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: acme@redhat.com, vegard.nossum@gmail.com, netdev@vger.kernel.org,
-       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28] tcp_ipv6: fix use of uninitialized memory
-Message-ID: <20080914144849.GI12522@elte.hu>
-References: <20080912070525.GA22276@damson.getinternet.no> <20080912124405.GF8935@ghostprotocols.net> <20080912.161711.206773065.davem@davemloft.net>
+	Sun, 14 Sep 2008 10:55:14 -0400
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:39480 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751941AbYINOzN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 10:55:13 -0400
+Message-ID: <48CD25C3.8050008@euromail.se>
+Date: Sun, 14 Sep 2008 16:54:59 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080912.161711.206773065.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: akpm@osdl.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] input: bcm5974: Switch back to normal mode when closing
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.33.63
+X-Scan-Result: No virus found in message 1Ket0J-0007br-6V.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Ket0J-0007br-6V fc25e4d6ecb94207ca4cbc87c02210fc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Staying in multi-touch mode after closing the device sometimes makes the keyboard drop keys or
+repeat keys irratically. The conjecture is that some internal buffer starts to overflow,
+resulting in undefined behavior. Switching back to normal mode when closing the device makes the
+problem go away.
 
-* David Miller <davem@davemloft.net> wrote:
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/input/mouse/bcm5974.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> Date: Fri, 12 Sep 2008 09:44:05 -0300
-> 
-> > Em Fri, Sep 12, 2008 at 09:05:25AM +0200, Vegard Nossum escreveu:
-> > > >From 6544c4074aa5dde2e3f4d3e02f5601c1c33b770e Mon Sep 17 00:00:00 2001
-> > > From: Vegard Nossum <vegard.nossum@gmail.com>
-> > > Date: Tue, 9 Sep 2008 07:17:32 +0200
-> > > Subject: [PATCH] tcp_ipv6: fix use of uninitialized memory
-> > > 
-> > > inet6_rsk() is called on a struct request_sock * before we
-> > > have checked whether the socket is an ipv6 socket or a ipv6-
-> > > mapped ipv4 socket. The access that triggers this is the
-> > > inet_rsk(rsk)->inet6_rsk_offset dereference in inet6_rsk().
-> > > 
-> > > This is arguably not a critical error as the inet6_rsk_offset
-> > > is only used to compute a pointer which is never really used
-> > > (in the code path in question) anyway. But it might be a
-> > > latent error, so let's fix it.
-> > > 
-> > > Spotted by kmemcheck.
-> > 
-> > Humm, so this was poisoned at allocation and then when inet6_rsk_offset
-> > was accessed it noticed, interesting, thanks!
-> > 
-> > Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> Good find :)  I'll add this to net-next-2.6, thanks!
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+index 18f4d7f..2998a6a 100644
+--- a/drivers/input/mouse/bcm5974.c
++++ b/drivers/input/mouse/bcm5974.c
+@@ -351,8 +351,9 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ #define BCM5974_WELLSPRING_MODE_REQUEST_VALUE		0x300
+ #define BCM5974_WELLSPRING_MODE_REQUEST_INDEX		0
+ #define BCM5974_WELLSPRING_MODE_VENDOR_VALUE		0x01
++#define BCM5974_WELLSPRING_MODE_NORMAL_VALUE		0x08
 
-nice - i think kmemcheck is starting to build up a healthy list of 
-references :-)
+-static int bcm5974_wellspring_mode(struct bcm5974 *dev)
++static int bcm5974_wellspring_mode(struct bcm5974 *dev, bool on)
+ {
+ 	char *data = kmalloc(8, GFP_KERNEL);
+ 	int retval = 0, size;
+@@ -377,7 +378,9 @@ static int bcm5974_wellspring_mode(struct bcm5974 *dev)
+ 	}
 
-	Ingo
+ 	/* apply the mode switch */
+-	data[0] = BCM5974_WELLSPRING_MODE_VENDOR_VALUE;
++	data[0] = on ?
++		BCM5974_WELLSPRING_MODE_VENDOR_VALUE :
++		BCM5974_WELLSPRING_MODE_NORMAL_VALUE;
+
+ 	/* write configuration */
+ 	size = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
+@@ -392,7 +395,8 @@ static int bcm5974_wellspring_mode(struct bcm5974 *dev)
+ 		goto out;
+ 	}
+
+-	dprintk(2, "bcm5974: switched to wellspring mode.\n");
++	dprintk(2, "bcm5974: switched to %s mode.\n",
++		on ? "wellspring" : "normal");
+
+  out:
+ 	kfree(data);
+@@ -481,7 +485,7 @@ exit:
+  */
+ static int bcm5974_start_traffic(struct bcm5974 *dev)
+ {
+-	if (bcm5974_wellspring_mode(dev)) {
++	if (bcm5974_wellspring_mode(dev, true)) {
+ 		dprintk(1, "bcm5974: mode switch failed\n");
+ 		goto error;
+ 	}
+@@ -504,6 +508,7 @@ static void bcm5974_pause_traffic(struct bcm5974 *dev)
+ {
+ 	usb_kill_urb(dev->tp_urb);
+ 	usb_kill_urb(dev->bt_urb);
++	bcm5974_wellspring_mode(dev, false);
+ }
+
+ /*
+-- 
+1.5.4.3
+
