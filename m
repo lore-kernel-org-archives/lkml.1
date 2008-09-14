@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbYINHuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYINIBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753659AbYINHuQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 03:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYINHuE
+	id S1753801AbYINIBx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 04:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbYINIBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 03:50:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57096 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751914AbYINHuB (ORCPT
+	Sun, 14 Sep 2008 04:01:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:15256 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623AbYINIBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 03:50:01 -0400
-Date: Sun, 14 Sep 2008 00:44:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [lockdep] possible circular locking, between &mm->mmap_sem and
- &dev->ev_mutex
-Message-Id: <20080914004442.4f8e851f.akpm@linux-foundation.org>
-In-Reply-To: <20080914073906.GA6184@elte.hu>
-References: <20080910113717.GB16811@wotan.suse.de>
-	<1221046892.30429.85.camel@twins.programming.kicks-ass.net>
-	<20080910114755.GA9696@elte.hu>
-	<20080910121217.GA16013@elte.hu>
-	<20080910144812.GB18644@wotan.suse.de>
-	<1221058864.30429.291.camel@twins.programming.kicks-ass.net>
-	<20080910152651.GE18644@wotan.suse.de>
-	<20080911082709.GA14378@elte.hu>
-	<20080914073906.GA6184@elte.hu>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 14 Sep 2008 04:01:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=user-agent:date:from:to:cc:subject:message-id;
+        b=DO84L/u4NAaSULVBf3nOa3iUGSspzBJf+OhmxKez0XEgWFZltphC6h9pP68k3Nl6Cv
+         RfZwpgja91hqZwP/JuqNPu7/grVTrOf2FUA9A/ABzMXbou1qtp1oHKBmUTiuSL8v/xyt
+         ZjD0ISYvxHMBbaTfEt8/rqHVGmE8CTREa+PTk=
+User-Agent: quilt/0.46-1
+Date: Sun, 14 Sep 2008 11:55:36 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: mingo@elte.hu, macro@linux-mips.org, linux-kernel@vger.kernel.org
+Cc: yhlu.kernel@gmail.com
+Subject: [patch 0/2] -tip/master APIC fixes
+Message-ID: <48ccc4e3.0437560a.2f7a.5608@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008 09:39:06 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+  Here are two patches with a few nits fixed
 
-> with the new mmap_sem lockdep annotations, -tip testing found a third 
-> lockdep assert, see below. Config attached.
-> 
-> 	Ingo
-> 
-> ----------------->
-> [ 6460.634452] 
-> [ 6460.634465] =======================================================
-> [ 6460.634494] [ INFO: possible circular locking dependency detected ]
-> [ 6460.634517] 2.6.27-rc6-tip-00290-g8e229c3-dirty #1
-> [ 6460.634535] -------------------------------------------------------
-> [ 6460.634555] gdm-simple-gree/4778 is trying to acquire lock:
-> [ 6460.634574]  (&mm->mmap_sem){----}, at: [<c018fe33>] might_fault+0x36/0x73
-> [ 6460.634639] 
-> [ 6460.634645] but task is already holding lock:
-> [ 6460.634662]  (&dev->ev_mutex){--..}, at: [<c01c7a76>] inotify_read+0xd8/0x16e
-> [ 6460.634715] 
-> [ 6460.634721] which lock already depends on the new lock.
+- lapic_setup_esr should inform us if ESR was asked to
+  not being touched (this nit is brough in by one of mine
+  commit during unification process -- not a serious issue
+  but...actually nit, sorry for this)
+- dont touch ESR register on 82489DX in setup_local_APIC
 
-Yes, there's a thread in my intray called "inotify_read's ev_mutex vs
-do_page_fault's mmap_sem...".  It's a bit flakey-looking, but there's a
-patch in there.
+  Please review, any comments are highly appreciated!
 
+		- Cyrill-
+-- 
