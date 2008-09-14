@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbYINTRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757982AbYINTR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755925AbYINTRl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbYINTKd
+	id S1757982AbYINTR6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbYINTKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:10:33 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53344 "EHLO sh.osrg.net"
+	Sun, 14 Sep 2008 15:10:36 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53360 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754617AbYINTJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:09:32 -0400
+	id S1754249AbYINTJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:09:46 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Koji Sato <sato.koji@lab.ntt.co.jp>,
+       Yoshiji Amagai <amagai.yoshiji@lab.ntt.co.jp>,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 06/27] nilfs2: direct block mapping
-Date: Mon, 15 Sep 2008 04:08:03 +0900
-Message-Id: <1221419304-18572-7-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 17/27] nilfs2: directory entry operations
+Date: Mon, 15 Sep 2008 04:08:14 +0900
+Message-Id: <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1221419304-18572-6-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-5-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-6-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-7-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-8-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-9-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-10-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-11-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-12-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-13-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Koji Sato <sato.koji@lab.ntt.co.jp>
+From: Yoshiji Amagai <amagai.yoshiji@lab.ntt.co.jp>
 
-This adds block mappings using direct pointers which are stored in the
-i_bmap array of inode.
+This adds directory handling functions, most of which comes from the
+ext2 file system.
 
-Signed-off-by: Koji Sato <sato.koji@lab.ntt.co.jp>
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Signed-off-by: Yoshiji Amagai <amagai.yoshiji@lab.ntt.co.jp>
 ---
- fs/nilfs2/direct.c |  429 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/nilfs2/direct.h |   78 ++++++++++
- 2 files changed, 507 insertions(+), 0 deletions(-)
- create mode 100644 fs/nilfs2/direct.c
- create mode 100644 fs/nilfs2/direct.h
+ fs/nilfs2/dir.c |  711 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 711 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/dir.c
 
-diff --git a/fs/nilfs2/direct.c b/fs/nilfs2/direct.c
+diff --git a/fs/nilfs2/dir.c b/fs/nilfs2/dir.c
 new file mode 100644
-index 0000000..303d7f1
+index 0000000..1b7e6dd
 --- /dev/null
-+++ b/fs/nilfs2/direct.c
-@@ -0,0 +1,429 @@
++++ b/fs/nilfs2/dir.c
+@@ -0,0 +1,711 @@
 +/*
-+ * direct.c - NILFS direct block pointer.
++ * dir.c - NILFS directory entry operations
 + *
-+ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
++ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -68,500 +77,698 @@ index 0000000..303d7f1
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Koji Sato <koji@osrg.net>.
++ * Modified for NILFS by Amagai Yoshiji <amagai@osrg.net>
++ */
++/*
++ *  linux/fs/ext2/dir.c
++ *
++ * Copyright (C) 1992, 1993, 1994, 1995
++ * Remy Card (card@masi.ibp.fr)
++ * Laboratoire MASI - Institut Blaise Pascal
++ * Universite Pierre et Marie Curie (Paris VI)
++ *
++ *  from
++ *
++ *  linux/fs/minix/dir.c
++ *
++ *  Copyright (C) 1991, 1992  Linus Torvalds
++ *
++ *  ext2 directory handling functions
++ *
++ *  Big-endian to little-endian byte-swapping/bitmaps by
++ *        David S. Miller (davem@caip.rutgers.edu), 1995
++ *
++ * All code that works with directory layout had been switched to pagecache
++ * and moved here. AV
 + */
 +
-+#include <linux/errno.h>
++#include <linux/pagemap.h>
++#include <linux/smp_lock.h>
 +#include "nilfs.h"
 +#include "page.h"
-+#include "direct.h"
-+#include "alloc.h"
 +
-+static inline __le64 *nilfs_direct_dptrs(const struct nilfs_direct *direct)
++/*
++ * nilfs uses block-sized chunks. Arguably, sector-sized ones would be
++ * more robust, but we have what we have
++ */
++static inline unsigned nilfs_chunk_size(struct inode *inode)
 +{
-+	return (__le64 *)
-+		((struct nilfs_direct_node *)direct->d_bmap.b_u.u_data + 1);
++	return inode->i_sb->s_blocksize;
 +}
 +
-+static inline __u64
-+nilfs_direct_get_ptr(const struct nilfs_direct *direct, __u64 key)
++static inline void nilfs_put_page(struct page *page)
 +{
-+	return nilfs_bmap_dptr_to_ptr(*(nilfs_direct_dptrs(direct) + key));
++	kunmap(page);
++	page_cache_release(page);
 +}
 +
-+static inline void nilfs_direct_set_ptr(struct nilfs_direct *direct,
-+					__u64 key, __u64 ptr)
++static inline unsigned long dir_pages(struct inode *inode)
 +{
-+	*(nilfs_direct_dptrs(direct) + key) = nilfs_bmap_ptr_to_dptr(ptr);
++	return (inode->i_size+PAGE_CACHE_SIZE-1)>>PAGE_CACHE_SHIFT;
 +}
 +
-+static int nilfs_direct_lookup(const struct nilfs_bmap *bmap,
-+			       __u64 key, int level, __u64 *ptrp)
++/*
++ * Return the offset into page `page_nr' of the last valid
++ * byte in that page, plus one.
++ */
++static unsigned nilfs_last_byte(struct inode *inode, unsigned long page_nr)
 +{
-+	struct nilfs_direct *direct;
-+	__u64 ptr;
++	unsigned last_byte = inode->i_size;
 +
-+	direct = (struct nilfs_direct *)bmap;
-+	if ((key > NILFS_DIRECT_KEY_MAX) ||
-+	    (level != 1) ||	/* XXX: use macro for level 1 */
-+	    ((ptr = nilfs_direct_get_ptr(direct, key)) ==
-+	     NILFS_BMAP_INVALID_PTR))
-+		return -ENOENT;
-+
-+	if (ptrp != NULL)
-+		*ptrp = ptr;
-+	return 0;
++	last_byte -= page_nr << PAGE_CACHE_SHIFT;
++	if (last_byte > PAGE_CACHE_SIZE)
++		last_byte = PAGE_CACHE_SIZE;
++	return last_byte;
 +}
 +
-+static __u64
-+nilfs_direct_find_target_v(const struct nilfs_direct *direct, __u64 key)
++static int nilfs_prepare_chunk_uninterruptible(struct page *page,
++					       struct address_space *mapping,
++					       unsigned from, unsigned to)
 +{
-+	__u64 ptr;
-+
-+	ptr = nilfs_bmap_find_target_seq(&direct->d_bmap, key);
-+	if (ptr != NILFS_BMAP_INVALID_PTR)
-+		/* sequential access */
-+		return ptr;
-+	else
-+		/* block group */
-+		return nilfs_bmap_find_target_in_group(&direct->d_bmap);
++	loff_t pos = page_offset(page) + from;
++	return block_write_begin(NULL, mapping, pos, to - from,
++				 AOP_FLAG_UNINTERRUPTIBLE, &page,
++				 NULL, nilfs_get_block);
 +}
 +
-+static void nilfs_direct_set_target_v(struct nilfs_direct *direct,
-+				      __u64 key, __u64 ptr)
++static int nilfs_prepare_chunk(struct page *page,
++			       struct address_space *mapping,
++			       unsigned from, unsigned to)
 +{
-+	direct->d_bmap.b_last_allocated_key = key;
-+	direct->d_bmap.b_last_allocated_ptr = ptr;
++	loff_t pos = page_offset(page) + from;
++	return block_write_begin(NULL, mapping, pos, to - from, 0, &page,
++				 NULL, nilfs_get_block);
 +}
 +
-+static int nilfs_direct_prepare_insert(struct nilfs_direct *direct,
-+				       __u64 key,
-+				       union nilfs_bmap_ptr_req *req,
-+				       struct nilfs_bmap_stats *stats)
++static int nilfs_commit_chunk(struct page *page,
++			      struct address_space *mapping,
++			      unsigned from, unsigned to)
 +{
-+	int ret;
++	struct inode *dir = mapping->host;
++	struct nilfs_sb_info *sbi = NILFS_SB(dir->i_sb);
++	loff_t pos = page_offset(page) + from;
++	unsigned len = to - from;
++	unsigned nr_dirty, copied;
++	int err;
 +
-+	if (direct->d_ops->dop_find_target != NULL)
-+		req->bpr_ptr = (*direct->d_ops->dop_find_target)(direct, key);
-+	ret = (*direct->d_bmap.b_pops->bpop_prepare_alloc_ptr)(&direct->d_bmap,
-+							       req);
-+	if (ret < 0)
-+		return ret;
-+
-+	stats->bs_nblocks = 1;
-+	return 0;
-+}
-+
-+static void nilfs_direct_commit_insert(struct nilfs_direct *direct,
-+				       union nilfs_bmap_ptr_req *req,
-+				       __u64 key, __u64 ptr)
-+{
-+	struct buffer_head *bh;
-+
-+	/* ptr must be a pointer to a buffer head. */
-+	bh = (struct buffer_head *)((unsigned long)ptr);
-+	set_buffer_nilfs_volatile(bh);
-+
-+	if (direct->d_bmap.b_pops->bpop_commit_alloc_ptr != NULL)
-+		(*direct->d_bmap.b_pops->bpop_commit_alloc_ptr)(
-+			&direct->d_bmap, req);
-+	nilfs_direct_set_ptr(direct, key, req->bpr_ptr);
-+
-+	if (!nilfs_bmap_dirty(&direct->d_bmap))
-+		nilfs_bmap_set_dirty(&direct->d_bmap);
-+
-+	if (direct->d_ops->dop_set_target != NULL)
-+		(*direct->d_ops->dop_set_target)(direct, key, req->bpr_ptr);
-+}
-+
-+static int nilfs_direct_insert(struct nilfs_bmap *bmap, __u64 key, __u64 ptr)
-+{
-+	struct nilfs_direct *direct;
-+	union nilfs_bmap_ptr_req req;
-+	struct nilfs_bmap_stats stats;
-+	int ret;
-+
-+	direct = (struct nilfs_direct *)bmap;
-+	if (key > NILFS_DIRECT_KEY_MAX)
-+		return -ENOENT;
-+	if (nilfs_direct_get_ptr(direct, key) != NILFS_BMAP_INVALID_PTR)
-+		return -EEXIST;
-+
-+	ret = nilfs_direct_prepare_insert(direct, key, &req, &stats);
-+	if (ret < 0)
-+		return ret;
-+	nilfs_direct_commit_insert(direct, &req, key, ptr);
-+	nilfs_bmap_add_blocks(bmap, stats.bs_nblocks);
-+
-+	return 0;
-+}
-+
-+static int nilfs_direct_prepare_delete(struct nilfs_direct *direct,
-+				       union nilfs_bmap_ptr_req *req,
-+				       __u64 key,
-+				       struct nilfs_bmap_stats *stats)
-+{
-+	int ret;
-+
-+	if (direct->d_bmap.b_pops->bpop_prepare_end_ptr != NULL) {
-+		req->bpr_ptr = nilfs_direct_get_ptr(direct, key);
-+		ret = (*direct->d_bmap.b_pops->bpop_prepare_end_ptr)(
-+			&direct->d_bmap, req);
-+		if (ret < 0)
-+			return ret;
++	nr_dirty = nilfs_page_count_clean_buffers(page, from, to);
++	copied = block_write_end(NULL, mapping, pos, len, len, page, NULL);
++	if (pos + copied > dir->i_size) {
++		i_size_write(dir, pos + copied);
++		mark_inode_dirty(dir);
 +	}
-+
-+	stats->bs_nblocks = 1;
-+	return 0;
++	if (IS_DIRSYNC(dir))
++		nilfs_set_transaction_flag(NILFS_TI_SYNC);
++	err = nilfs_set_file_dirty(sbi, dir, nr_dirty);
++	unlock_page(page);
++	return err;
 +}
 +
-+static void nilfs_direct_commit_delete(struct nilfs_direct *direct,
-+				       union nilfs_bmap_ptr_req *req,
-+				       __u64 key)
++static void nilfs_check_page(struct page *page)
 +{
-+	if (direct->d_bmap.b_pops->bpop_commit_end_ptr != NULL)
-+		(*direct->d_bmap.b_pops->bpop_commit_end_ptr)(
-+			&direct->d_bmap, req);
-+	nilfs_direct_set_ptr(direct, key, NILFS_BMAP_INVALID_PTR);
++	struct inode *dir = page->mapping->host;
++	struct super_block *sb = dir->i_sb;
++	unsigned chunk_size = nilfs_chunk_size(dir);
++	char *kaddr = page_address(page);
++	unsigned offs, rec_len;
++	unsigned limit = PAGE_CACHE_SIZE;
++	struct nilfs_dir_entry *p;
++	char *error;
++
++	if ((dir->i_size >> PAGE_CACHE_SHIFT) == page->index) {
++		limit = dir->i_size & ~PAGE_CACHE_MASK;
++		if (limit & (chunk_size - 1))
++			goto Ebadsize;
++		if (!limit)
++			goto out;
++	}
++	for (offs = 0; offs <= limit - NILFS_DIR_REC_LEN(1); offs += rec_len) {
++		p = (struct nilfs_dir_entry *)(kaddr + offs);
++		rec_len = le16_to_cpu(p->rec_len);
++
++		if (rec_len < NILFS_DIR_REC_LEN(1))
++			goto Eshort;
++		if (rec_len & 3)
++			goto Ealign;
++		if (rec_len < NILFS_DIR_REC_LEN(p->name_len))
++			goto Enamelen;
++		if (((offs + rec_len - 1) ^ offs) & ~(chunk_size-1))
++			goto Espan;
++	}
++	if (offs != limit)
++		goto Eend;
++out:
++	SetPageChecked(page);
++	return;
++
++	/* Too bad, we had an error */
++
++Ebadsize:
++	nilfs_error(sb, "nilfs_check_page",
++		    "size of directory #%lu is not a multiple of chunk size",
++		    dir->i_ino
++	);
++	goto fail;
++Eshort:
++	error = "rec_len is smaller than minimal";
++	goto bad_entry;
++Ealign:
++	error = "unaligned directory entry";
++	goto bad_entry;
++Enamelen:
++	error = "rec_len is too small for name_len";
++	goto bad_entry;
++Espan:
++	error = "directory entry across blocks";
++bad_entry:
++	nilfs_error(sb, "nilfs_check_page", "bad entry in directory #%lu: %s - "
++		    "offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
++		    dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
++		    (unsigned long) le64_to_cpu(p->inode),
++		    rec_len, p->name_len);
++	goto fail;
++Eend:
++	p = (struct nilfs_dir_entry *)(kaddr + offs);
++	nilfs_error(sb, "nilfs_check_page",
++		    "entry in directory #%lu spans the page boundary"
++		    "offset=%lu, inode=%lu",
++		    dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
++		    (unsigned long) le64_to_cpu(p->inode));
++fail:
++	SetPageChecked(page);
++	SetPageError(page);
 +}
 +
-+static int nilfs_direct_delete(struct nilfs_bmap *bmap, __u64 key)
++static struct page *nilfs_get_page(struct inode *dir, unsigned long n)
 +{
-+	struct nilfs_direct *direct;
-+	union nilfs_bmap_ptr_req req;
-+	struct nilfs_bmap_stats stats;
++	struct address_space *mapping = dir->i_mapping;
++	struct page *page = read_cache_page(mapping, n,
++				(filler_t *)mapping->a_ops->readpage, NULL);
++	if (!IS_ERR(page)) {
++		wait_on_page_locked(page);
++		kmap(page);
++		if (!PageUptodate(page))
++			goto fail;
++		if (!PageChecked(page))
++			nilfs_check_page(page);
++		if (PageError(page))
++			goto fail;
++	}
++	return page;
++
++fail:
++	nilfs_put_page(page);
++	return ERR_PTR(-EIO);
++}
++
++/*
++ * NOTE! unlike strncmp, nilfs_match returns 1 for success, 0 for failure.
++ *
++ * len <= NILFS_NAME_LEN and de != NULL are guaranteed by caller.
++ */
++static int
++nilfs_match(int len, const char * const name, struct nilfs_dir_entry *de)
++{
++	if (len != de->name_len)
++		return 0;
++	if (!de->inode)
++		return 0;
++	return !memcmp(name, de->name, len);
++}
++
++/*
++ * p is at least 6 bytes before the end of page
++ */
++static struct nilfs_dir_entry *nilfs_next_entry(struct nilfs_dir_entry *p)
++{
++	return (struct nilfs_dir_entry *)((char *)p + le16_to_cpu(p->rec_len));
++}
++
++static unsigned char
++nilfs_filetype_table[NILFS_FT_MAX] = {
++	[NILFS_FT_UNKNOWN]	= DT_UNKNOWN,
++	[NILFS_FT_REG_FILE]	= DT_REG,
++	[NILFS_FT_DIR]		= DT_DIR,
++	[NILFS_FT_CHRDEV]	= DT_CHR,
++	[NILFS_FT_BLKDEV]	= DT_BLK,
++	[NILFS_FT_FIFO]		= DT_FIFO,
++	[NILFS_FT_SOCK]		= DT_SOCK,
++	[NILFS_FT_SYMLINK]	= DT_LNK,
++};
++
++#define S_SHIFT 12
++static unsigned char
++nilfs_type_by_mode[S_IFMT >> S_SHIFT] = {
++	[S_IFREG >> S_SHIFT]	= NILFS_FT_REG_FILE,
++	[S_IFDIR >> S_SHIFT]	= NILFS_FT_DIR,
++	[S_IFCHR >> S_SHIFT]	= NILFS_FT_CHRDEV,
++	[S_IFBLK >> S_SHIFT]	= NILFS_FT_BLKDEV,
++	[S_IFIFO >> S_SHIFT]	= NILFS_FT_FIFO,
++	[S_IFSOCK >> S_SHIFT]	= NILFS_FT_SOCK,
++	[S_IFLNK >> S_SHIFT]	= NILFS_FT_SYMLINK,
++};
++
++static void nilfs_set_de_type(struct nilfs_dir_entry *de, struct inode *inode)
++{
++	mode_t mode = inode->i_mode;
++
++	de->file_type = nilfs_type_by_mode[(mode & S_IFMT)>>S_SHIFT];
++}
++
++static int nilfs_readdir(struct file *filp, void *dirent, filldir_t filldir)
++{
++	loff_t pos = filp->f_pos;
++	struct inode *inode = filp->f_dentry->d_inode;
++	struct super_block *sb = inode->i_sb;
++	unsigned int offset = pos & ~PAGE_CACHE_MASK;
++	unsigned long n = pos >> PAGE_CACHE_SHIFT;
++	unsigned long npages = dir_pages(inode);
++/*	unsigned chunk_mask = ~(nilfs_chunk_size(inode)-1); */
++	unsigned char *types = NULL;
 +	int ret;
 +
-+	direct = (struct nilfs_direct *)bmap;
-+	if ((key > NILFS_DIRECT_KEY_MAX) ||
-+	    nilfs_direct_get_ptr(direct, key) == NILFS_BMAP_INVALID_PTR)
-+		return -ENOENT;
++	if (pos > inode->i_size - NILFS_DIR_REC_LEN(1))
++		goto success;
 +
-+	ret = nilfs_direct_prepare_delete(direct, &req, key, &stats);
-+	if (ret < 0)
-+		return ret;
-+	nilfs_direct_commit_delete(direct, &req, key);
-+	nilfs_bmap_sub_blocks(bmap, stats.bs_nblocks);
++	types = nilfs_filetype_table;
 +
-+	return 0;
-+}
++	for ( ; n < npages; n++, offset = 0) {
++		char *kaddr, *limit;
++		struct nilfs_dir_entry *de;
++		struct page *page = nilfs_get_page(inode, n);
 +
-+static int nilfs_direct_last_key(const struct nilfs_bmap *bmap, __u64 *keyp)
-+{
-+	struct nilfs_direct *direct;
-+	__u64 key, lastkey;
-+
-+	direct = (struct nilfs_direct *)bmap;
-+	lastkey = NILFS_DIRECT_KEY_MAX + 1;
-+	for (key = NILFS_DIRECT_KEY_MIN; key <= NILFS_DIRECT_KEY_MAX; key++)
-+		if (nilfs_direct_get_ptr(direct, key) !=
-+		    NILFS_BMAP_INVALID_PTR)
-+			lastkey = key;
-+
-+	if (lastkey == NILFS_DIRECT_KEY_MAX + 1)
-+		return -ENOENT;
-+
-+	BUG_ON(keyp == NULL);
-+	*keyp = lastkey;
-+
-+	return 0;
-+}
-+
-+static int nilfs_direct_check_insert(const struct nilfs_bmap *bmap, __u64 key)
-+{
-+	return key > NILFS_DIRECT_KEY_MAX;
-+}
-+
-+static int nilfs_direct_gather_data(struct nilfs_bmap *bmap,
-+				    __u64 *keys, __u64 *ptrs, int nitems)
-+{
-+	struct nilfs_direct *direct;
-+	__u64 key;
-+	__u64 ptr;
-+	int n;
-+
-+	direct = (struct nilfs_direct *)bmap;
-+	if (nitems > NILFS_DIRECT_NBLOCKS)
-+		nitems = NILFS_DIRECT_NBLOCKS;
-+	n = 0;
-+	for (key = 0; key < nitems; key++) {
-+		ptr = nilfs_direct_get_ptr(direct, key);
-+		if (ptr != NILFS_BMAP_INVALID_PTR) {
-+			keys[n] = key;
-+			ptrs[n] = ptr;
-+			n++;
++		if (IS_ERR(page)) {
++			nilfs_error(sb, __func__, "bad page in #%lu",
++				    inode->i_ino);
++			filp->f_pos += PAGE_CACHE_SIZE - offset;
++			ret = -EIO;
++			goto done;
 +		}
-+	}
-+	return n;
-+}
++		kaddr = page_address(page);
++		de = (struct nilfs_dir_entry *)(kaddr + offset);
++		limit = kaddr + nilfs_last_byte(inode, n) -
++			NILFS_DIR_REC_LEN(1);
++		for ( ; (char *)de <= limit; de = nilfs_next_entry(de)) {
++			if (de->rec_len == 0) {
++				nilfs_error(sb, __func__,
++					    "zero-length directory entry");
++				ret = -EIO;
++				nilfs_put_page(page);
++				goto done;
++			}
++			if (de->inode) {
++				int over;
++				unsigned char d_type = DT_UNKNOWN;
 +
-+int nilfs_direct_delete_and_convert(struct nilfs_bmap *bmap,
-+				    __u64 key, __u64 *keys, __u64 *ptrs,
-+				    int n, __u64 low, __u64 high)
-+{
-+	struct nilfs_direct *direct;
-+	__le64 *dptrs;
-+	int ret, i, j;
++				if (types && de->file_type < NILFS_FT_MAX)
++					d_type = types[de->file_type];
 +
-+	/* no need to allocate any resource for conversion */
-+
-+	/* delete */
-+	ret = (*bmap->b_ops->bop_delete)(bmap, key);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* free resources */
-+	if (bmap->b_ops->bop_clear != NULL)
-+		(*bmap->b_ops->bop_clear)(bmap);
-+
-+	/* convert */
-+	direct = (struct nilfs_direct *)bmap;
-+	dptrs = nilfs_direct_dptrs(direct);
-+	for (i = 0, j = 0; i < NILFS_DIRECT_NBLOCKS; i++) {
-+		if ((j < n) && (i == keys[j])) {
-+			dptrs[i] = (i != key) ?
-+				nilfs_bmap_ptr_to_dptr(ptrs[j]) :
-+				NILFS_BMAP_INVALID_PTR;
-+			j++;
-+		} else
-+			dptrs[i] = NILFS_BMAP_INVALID_PTR;
++				offset = (char *)de - kaddr;
++				over = filldir(dirent, de->name, de->name_len,
++						(n<<PAGE_CACHE_SHIFT) | offset,
++						le64_to_cpu(de->inode), d_type);
++				if (over) {
++					nilfs_put_page(page);
++					goto success;
++				}
++			}
++			filp->f_pos += le16_to_cpu(de->rec_len);
++		}
++		nilfs_put_page(page);
 +	}
 +
-+	nilfs_direct_init(bmap, low, high);
-+
-+	return 0;
-+}
-+
-+static int nilfs_direct_propagate_v(struct nilfs_direct *direct,
-+				    struct buffer_head *bh)
-+{
-+	union nilfs_bmap_ptr_req oldreq, newreq;
-+	__u64 key;
-+	__u64 ptr;
-+	int ret;
-+
-+	key = nilfs_bmap_data_get_key(&direct->d_bmap, bh);
-+	ptr = nilfs_direct_get_ptr(direct, key);
-+	if (!buffer_nilfs_volatile(bh)) {
-+		oldreq.bpr_ptr = ptr;
-+		newreq.bpr_ptr = ptr;
-+		ret = nilfs_bmap_prepare_update(&direct->d_bmap, &oldreq,
-+						&newreq);
-+		if (ret < 0)
-+			return ret;
-+		nilfs_bmap_commit_update(&direct->d_bmap, &oldreq, &newreq);
-+		set_buffer_nilfs_volatile(bh);
-+		nilfs_direct_set_ptr(direct, key, newreq.bpr_ptr);
-+	} else
-+		ret = nilfs_bmap_mark_dirty(&direct->d_bmap, ptr);
-+
++success:
++	ret = 0;
++done:
 +	return ret;
 +}
 +
-+static int nilfs_direct_propagate(const struct nilfs_bmap *bmap,
-+				  struct buffer_head *bh)
-+{
-+	struct nilfs_direct *direct;
-+
-+	direct = (struct nilfs_direct *)bmap;
-+	return (direct->d_ops->dop_propagate != NULL) ?
-+		(*direct->d_ops->dop_propagate)(direct, bh) :
-+		0;
-+}
-+
-+static int nilfs_direct_assign_v(struct nilfs_direct *direct,
-+				 __u64 key, __u64 ptr,
-+				 struct buffer_head **bh,
-+				 sector_t blocknr,
-+				 union nilfs_binfo *binfo)
-+{
-+	union nilfs_bmap_ptr_req req;
-+	int ret;
-+
-+	req.bpr_ptr = ptr;
-+	ret = (*direct->d_bmap.b_pops->bpop_prepare_start_ptr)(
-+		&direct->d_bmap, &req);
-+	if (ret < 0)
-+		return ret;
-+	(*direct->d_bmap.b_pops->bpop_commit_start_ptr)(&direct->d_bmap,
-+							&req, blocknr);
-+
-+	binfo->bi_v.bi_vblocknr = nilfs_bmap_ptr_to_dptr(ptr);
-+	binfo->bi_v.bi_blkoff = nilfs_bmap_key_to_dkey(key);
-+
-+	return 0;
-+}
-+
-+static int nilfs_direct_assign_p(struct nilfs_direct *direct,
-+				 __u64 key, __u64 ptr,
-+				 struct buffer_head **bh,
-+				 sector_t blocknr,
-+				 union nilfs_binfo *binfo)
-+{
-+	nilfs_direct_set_ptr(direct, key, blocknr);
-+
-+	binfo->bi_dat.bi_blkoff = nilfs_bmap_key_to_dkey(key);
-+	binfo->bi_dat.bi_level = 0;
-+
-+	return 0;
-+}
-+
-+static int nilfs_direct_assign(struct nilfs_bmap *bmap,
-+			       struct buffer_head **bh,
-+			       sector_t blocknr,
-+			       union nilfs_binfo *binfo)
-+{
-+	struct nilfs_direct *direct;
-+	__u64 key;
-+	__u64 ptr;
-+
-+	direct = (struct nilfs_direct *)bmap;
-+	key = nilfs_bmap_data_get_key(bmap, *bh);
-+	BUG_ON(key > NILFS_DIRECT_KEY_MAX);
-+	ptr = nilfs_direct_get_ptr(direct, key);
-+	BUG_ON(ptr == NILFS_BMAP_INVALID_PTR);
-+
-+	return (*direct->d_ops->dop_assign)(direct, key, ptr, bh,
-+					    blocknr, binfo);
-+}
-+
-+static const struct nilfs_bmap_operations nilfs_direct_ops = {
-+	.bop_lookup		=	nilfs_direct_lookup,
-+	.bop_insert		=	nilfs_direct_insert,
-+	.bop_delete		=	nilfs_direct_delete,
-+	.bop_clear		=	NULL,
-+
-+	.bop_propagate		=	nilfs_direct_propagate,
-+
-+	.bop_lookup_dirty_buffers	=	NULL,
-+
-+	.bop_assign		=	nilfs_direct_assign,
-+	.bop_mark		=	NULL,
-+
-+	.bop_last_key		=	nilfs_direct_last_key,
-+	.bop_check_insert	=	nilfs_direct_check_insert,
-+	.bop_check_delete	=	NULL,
-+	.bop_gather_data	=	nilfs_direct_gather_data,
-+};
-+
-+
-+static const struct nilfs_direct_operations nilfs_direct_ops_v = {
-+	.dop_find_target	=	nilfs_direct_find_target_v,
-+	.dop_set_target		=	nilfs_direct_set_target_v,
-+	.dop_propagate		=	nilfs_direct_propagate_v,
-+	.dop_assign		=	nilfs_direct_assign_v,
-+};
-+
-+static const struct nilfs_direct_operations nilfs_direct_ops_p = {
-+	.dop_find_target	=	NULL,
-+	.dop_set_target		=	NULL,
-+	.dop_propagate		=	NULL,
-+	.dop_assign		=	nilfs_direct_assign_p,
-+};
-+
-+int nilfs_direct_init(struct nilfs_bmap *bmap, __u64 low, __u64 high)
-+{
-+	struct nilfs_direct *direct;
-+
-+	direct = (struct nilfs_direct *)bmap;
-+	bmap->b_ops = &nilfs_direct_ops;
-+	bmap->b_low = low;
-+	bmap->b_high = high;
-+	switch (bmap->b_inode->i_ino) {
-+	case NILFS_DAT_INO:
-+		direct->d_ops = &nilfs_direct_ops_p;
-+		break;
-+	default:
-+		direct->d_ops = &nilfs_direct_ops_v;
-+		break;
-+	}
-+
-+	return 0;
-+}
-diff --git a/fs/nilfs2/direct.h b/fs/nilfs2/direct.h
-new file mode 100644
-index 0000000..45d2c5c
---- /dev/null
-+++ b/fs/nilfs2/direct.h
-@@ -0,0 +1,78 @@
 +/*
-+ * direct.h - NILFS direct block pointer.
++ *	nilfs_find_entry()
 + *
-+ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ * Written by Koji Sato <koji@osrg.net>.
++ * finds an entry in the specified directory with the wanted name. It
++ * returns the page in which the entry was found, and the entry itself
++ * (as a parameter - res_dir). Page is returned mapped and unlocked.
++ * Entry is guaranteed to be valid.
 + */
++struct nilfs_dir_entry *
++nilfs_find_entry(struct inode *dir, struct dentry *dentry,
++		 struct page **res_page)
++{
++	const char *name = dentry->d_name.name;
++	int namelen = dentry->d_name.len;
++	unsigned reclen = NILFS_DIR_REC_LEN(namelen);
++	unsigned long start, n;
++	unsigned long npages = dir_pages(dir);
++	struct page *page = NULL;
++	struct nilfs_inode_info *ei = NILFS_I(dir);
++	struct nilfs_dir_entry *de;
 +
-+#ifndef _NILFS_DIRECT_H
-+#define _NILFS_DIRECT_H
++	if (npages == 0)
++		goto out;
 +
-+#include <linux/types.h>
-+#include <linux/buffer_head.h>
-+#include "bmap.h"
++	/* OFFSET_CACHE */
++	*res_page = NULL;
 +
++	start = ei->i_dir_start_lookup;
++	if (start >= npages)
++		start = 0;
++	n = start;
++	do {
++		char *kaddr;
++		page = nilfs_get_page(dir, n);
++		if (!IS_ERR(page)) {
++			kaddr = page_address(page);
++			de = (struct nilfs_dir_entry *)kaddr;
++			kaddr += nilfs_last_byte(dir, n) - reclen;
++			while ((char *) de <= kaddr) {
++				if (de->rec_len == 0) {
++					nilfs_error(dir->i_sb, __func__,
++						"zero-length directory entry");
++					nilfs_put_page(page);
++					goto out;
++				}
++				if (nilfs_match(namelen, name, de))
++					goto found;
++				de = nilfs_next_entry(de);
++			}
++			nilfs_put_page(page);
++		}
++		if (++n >= npages)
++			n = 0;
++		/* next page is past the blocks we've got */
++		if (unlikely(n > (dir->i_blocks >> (PAGE_CACHE_SHIFT - 9)))) {
++			nilfs_error(dir->i_sb, __func__,
++			       "dir %lu size %lld exceeds block cout %llu",
++			       dir->i_ino, dir->i_size,
++			       (unsigned long long)dir->i_blocks);
++			goto out;
++		}
++	} while (n != start);
++out:
++	return NULL;
 +
-+struct nilfs_direct;
++found:
++	*res_page = page;
++	ei->i_dir_start_lookup = n;
++	return de;
++}
 +
-+/**
-+ * struct nilfs_direct_operations - direct mapping operation table
++struct nilfs_dir_entry *nilfs_dotdot(struct inode *dir, struct page **p)
++{
++	struct page *page = nilfs_get_page(dir, 0);
++	struct nilfs_dir_entry *de = NULL;
++
++	if (!IS_ERR(page)) {
++		de = nilfs_next_entry(
++			(struct nilfs_dir_entry *)page_address(page));
++		*p = page;
++	}
++	return de;
++}
++
++ino_t nilfs_inode_by_name(struct inode *dir, struct dentry *dentry)
++{
++	ino_t res = 0;
++	struct nilfs_dir_entry *de;
++	struct page *page;
++
++	de = nilfs_find_entry(dir, dentry, &page);
++	if (de) {
++		res = le64_to_cpu(de->inode);
++		kunmap(page);
++		page_cache_release(page);
++	}
++	return res;
++}
++
++/* Releases the page */
++void nilfs_set_link(struct inode *dir, struct nilfs_dir_entry *de,
++		    struct page *page, struct inode *inode)
++{
++	unsigned from = (char *) de - (char *) page_address(page);
++	unsigned to = from + le16_to_cpu(de->rec_len);
++	struct address_space *mapping = page->mapping;
++	int err;
++
++	lock_page(page);
++	err = nilfs_prepare_chunk_uninterruptible(page, mapping, from, to);
++	BUG_ON(err);
++	de->inode = cpu_to_le64(inode->i_ino);
++	nilfs_set_de_type(de, inode);
++	err = nilfs_commit_chunk(page, mapping, from, to);
++	nilfs_put_page(page);
++	dir->i_mtime = dir->i_ctime = CURRENT_TIME;
++/*	NILFS_I(dir)->i_flags &= ~NILFS_BTREE_FL; */
++	mark_inode_dirty(dir);
++}
++
++/*
++ *	Parent is locked.
 + */
-+struct nilfs_direct_operations {
-+	__u64 (*dop_find_target)(const struct nilfs_direct *, __u64);
-+	void (*dop_set_target)(struct nilfs_direct *, __u64, __u64);
-+	int (*dop_propagate)(struct nilfs_direct *, struct buffer_head *);
-+	int (*dop_assign)(struct nilfs_direct *, __u64, __u64,
-+			  struct buffer_head **, sector_t,
-+			  union nilfs_binfo *);
++int nilfs_add_link(struct dentry *dentry, struct inode *inode)
++{
++	struct inode *dir = dentry->d_parent->d_inode;
++	const char *name = dentry->d_name.name;
++	int namelen = dentry->d_name.len;
++	unsigned chunk_size = nilfs_chunk_size(dir);
++	unsigned reclen = NILFS_DIR_REC_LEN(namelen);
++	unsigned short rec_len, name_len;
++	struct page *page = NULL;
++	struct nilfs_dir_entry *de;
++	unsigned long npages = dir_pages(dir);
++	unsigned long n;
++	char *kaddr;
++	unsigned from, to;
++	int err;
++
++	/*
++	 * We take care of directory expansion in the same loop.
++	 * This code plays outside i_size, so it locks the page
++	 * to protect that region.
++	 */
++	for (n = 0; n <= npages; n++) {
++		char *dir_end;
++
++		page = nilfs_get_page(dir, n);
++		err = PTR_ERR(page);
++		if (IS_ERR(page))
++			goto out;
++		lock_page(page);
++		kaddr = page_address(page);
++		dir_end = kaddr + nilfs_last_byte(dir, n);
++		de = (struct nilfs_dir_entry *)kaddr;
++		kaddr += PAGE_CACHE_SIZE - reclen;
++		while ((char *)de <= kaddr) {
++			if ((char *)de == dir_end) {
++				/* We hit i_size */
++				name_len = 0;
++				rec_len = chunk_size;
++				de->rec_len = cpu_to_le16(chunk_size);
++				de->inode = 0;
++				goto got_it;
++			}
++			if (de->rec_len == 0) {
++				nilfs_error(dir->i_sb, __func__,
++					    "zero-length directory entry");
++				err = -EIO;
++				goto out_unlock;
++			}
++			err = -EEXIST;
++			if (nilfs_match(namelen, name, de))
++				goto out_unlock;
++			name_len = NILFS_DIR_REC_LEN(de->name_len);
++			rec_len = le16_to_cpu(de->rec_len);
++			if (!de->inode && rec_len >= reclen)
++				goto got_it;
++			if (rec_len >= name_len + reclen)
++				goto got_it;
++			de = (struct nilfs_dir_entry *)((char *)de + rec_len);
++		}
++		unlock_page(page);
++		nilfs_put_page(page);
++	}
++	BUG();
++	return -EINVAL;
++
++got_it:
++	from = (char *)de - (char *)page_address(page);
++	to = from + rec_len;
++	err = nilfs_prepare_chunk(page, page->mapping, from, to);
++	if (err)
++		goto out_unlock;
++	if (de->inode) {
++		struct nilfs_dir_entry *de1;
++
++		de1 = (struct nilfs_dir_entry *)((char *)de + name_len);
++		de1->rec_len = cpu_to_le16(rec_len - name_len);
++		de->rec_len = cpu_to_le16(name_len);
++		de = de1;
++	}
++	de->name_len = namelen;
++	memcpy(de->name, name, namelen);
++	de->inode = cpu_to_le64(inode->i_ino);
++	nilfs_set_de_type(de, inode);
++	err = nilfs_commit_chunk(page, page->mapping, from, to);
++	dir->i_mtime = dir->i_ctime = CURRENT_TIME;
++/*	NILFS_I(dir)->i_flags &= ~NILFS_BTREE_FL; */
++	mark_inode_dirty(dir);
++	/* OFFSET_CACHE */
++out_put:
++	nilfs_put_page(page);
++out:
++	return err;
++out_unlock:
++	unlock_page(page);
++	goto out_put;
++}
++
++/*
++ * nilfs_delete_entry deletes a directory entry by merging it with the
++ * previous entry. Page is up-to-date. Releases the page.
++ */
++int nilfs_delete_entry(struct nilfs_dir_entry *dir, struct page *page)
++{
++	struct address_space *mapping = page->mapping;
++	struct inode *inode = mapping->host;
++	char *kaddr = page_address(page);
++	unsigned from = ((char *)dir - kaddr) & ~(nilfs_chunk_size(inode) - 1);
++	unsigned to = ((char *)dir - kaddr) + le16_to_cpu(dir->rec_len);
++	struct nilfs_dir_entry *pde = NULL;
++	struct nilfs_dir_entry *de = (struct nilfs_dir_entry *)(kaddr + from);
++	int err;
++
++	while ((char *)de < (char *)dir) {
++		if (de->rec_len == 0) {
++			nilfs_error(inode->i_sb, __func__,
++				    "zero-length directory entry");
++			err = -EIO;
++			goto out;
++		}
++		pde = de;
++		de = nilfs_next_entry(de);
++	}
++	if (pde)
++		from = (char *)pde - (char *)page_address(page);
++	lock_page(page);
++	err = nilfs_prepare_chunk(page, mapping, from, to);
++	BUG_ON(err);
++	if (pde)
++		pde->rec_len = cpu_to_le16(to - from);
++	dir->inode = 0;
++	err = nilfs_commit_chunk(page, mapping, from, to);
++	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
++/*	NILFS_I(inode)->i_flags &= ~NILFS_BTREE_FL; */
++	mark_inode_dirty(inode);
++out:
++	nilfs_put_page(page);
++	return err;
++}
++
++/*
++ * Set the first fragment of directory.
++ */
++int nilfs_make_empty(struct inode *inode, struct inode *parent)
++{
++	struct address_space *mapping = inode->i_mapping;
++	struct page *page = grab_cache_page(mapping, 0);
++	unsigned chunk_size = nilfs_chunk_size(inode);
++	struct nilfs_dir_entry *de;
++	int err;
++	void *kaddr;
++
++	if (!page)
++		return -ENOMEM;
++
++	err = nilfs_prepare_chunk(page, mapping, 0, chunk_size);
++	if (unlikely(err)) {
++		unlock_page(page);
++		goto fail;
++	}
++	kaddr = kmap_atomic(page, KM_USER0);
++	memset(kaddr, 0, chunk_size);
++	de = (struct nilfs_dir_entry *)kaddr;
++	de->name_len = 1;
++	de->rec_len = cpu_to_le16(NILFS_DIR_REC_LEN(1));
++	memcpy(de->name, ".\0\0", 4);
++	de->inode = cpu_to_le64(inode->i_ino);
++	nilfs_set_de_type(de, inode);
++
++	de = (struct nilfs_dir_entry *)(kaddr + NILFS_DIR_REC_LEN(1));
++	de->name_len = 2;
++	de->rec_len = cpu_to_le16(chunk_size - NILFS_DIR_REC_LEN(1));
++	de->inode = cpu_to_le64(parent->i_ino);
++	memcpy(de->name, "..\0", 4);
++	nilfs_set_de_type(de, inode);
++	kunmap_atomic(kaddr, KM_USER0);
++	err = nilfs_commit_chunk(page, mapping, 0, chunk_size);
++fail:
++	page_cache_release(page);
++	return err;
++}
++
++/*
++ * routine to check that the specified directory is empty (for rmdir)
++ */
++int nilfs_empty_dir(struct inode *inode)
++{
++	struct page *page = NULL;
++	unsigned long i, npages = dir_pages(inode);
++
++	for (i = 0; i < npages; i++) {
++		char *kaddr;
++		struct nilfs_dir_entry *de;
++
++		page = nilfs_get_page(inode, i);
++		if (IS_ERR(page))
++			continue;
++
++		kaddr = page_address(page);
++		de = (struct nilfs_dir_entry *)kaddr;
++		kaddr += nilfs_last_byte(inode, i) - NILFS_DIR_REC_LEN(1);
++
++		while ((char *)de <= kaddr) {
++			if (de->rec_len == 0) {
++				nilfs_error(inode->i_sb, __func__,
++					    "zero-length directory entry "
++					    "(kaddr=%p, de=%p)\n", kaddr, de);
++				goto not_empty;
++			}
++			if (de->inode != 0) {
++				/* check for . and .. */
++				if (de->name[0] != '.')
++					goto not_empty;
++				if (de->name_len > 2)
++					goto not_empty;
++				if (de->name_len < 2) {
++					if (de->inode !=
++					    cpu_to_le64(inode->i_ino))
++						goto not_empty;
++				} else if (de->name[1] != '.')
++					goto not_empty;
++			}
++			de = nilfs_next_entry(de);
++		}
++		nilfs_put_page(page);
++	}
++	return 1;
++
++not_empty:
++	nilfs_put_page(page);
++	return 0;
++}
++
++struct file_operations nilfs_dir_operations = {
++	.llseek		= generic_file_llseek,
++	.read		= generic_read_dir,
++	.readdir	= nilfs_readdir,
++	.ioctl		= nilfs_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= nilfs_compat_ioctl,
++#endif	/* CONFIG_COMPAT */
++	.fsync		= nilfs_sync_file,
++
 +};
-+
-+/**
-+ * struct nilfs_direct_node - direct node
-+ * @dn_flags: flags
-+ * @dn_pad: padding
-+ */
-+struct nilfs_direct_node {
-+	__u8 dn_flags;
-+	__u8 pad[7];
-+};
-+
-+/**
-+ * struct nilfs_direct - direct mapping
-+ * @d_bmap: bmap structure
-+ * @d_ops: direct mapping operation table
-+ */
-+struct nilfs_direct {
-+	struct nilfs_bmap d_bmap;
-+
-+	/* direct-mapping-specific members */
-+	const struct nilfs_direct_operations *d_ops;
-+};
-+
-+
-+#define NILFS_DIRECT_NBLOCKS	(NILFS_BMAP_SIZE / sizeof(__le64) - 1)
-+#define NILFS_DIRECT_KEY_MIN	0
-+#define NILFS_DIRECT_KEY_MAX	(NILFS_DIRECT_NBLOCKS - 1)
-+
-+
-+int nilfs_direct_init(struct nilfs_bmap *, __u64, __u64);
-+int nilfs_direct_delete_and_convert(struct nilfs_bmap *, __u64, __u64 *,
-+				    __u64 *, int, __u64, __u64);
-+
-+
-+#endif	/* _NILFS_DIRECT_H */
 -- 
 1.5.6.3
 
