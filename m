@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYINPtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYINPxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754244AbYINPtX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 11:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYINPtG
+	id S1755261AbYINPxT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 11:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYINPxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 11:49:06 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:52326 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755163AbYINPtE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 11:49:04 -0400
-Date: Sun, 14 Sep 2008 17:49:02 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pmmailinglist@rhlx01.hs-esslingen.de
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-Message-ID: <20080914154902.GA30891@rhlx01.hs-esslingen.de>
+	Sun, 14 Sep 2008 11:53:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33471 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbYINPxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 11:53:08 -0400
+Date: Sun, 14 Sep 2008 17:52:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, hpa@zytor.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/7] x86, cpa: cpa related changes to be inline with
+	TLB Application note
+Message-ID: <20080914155251.GA13972@elte.hu>
+References: <20080911203048.929515000@linux-os.sc.intel.com> <20080914084050.07e036d3@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080914084050.07e036d3@linux.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel
-Machek <pavel@suse.cz>
-Bcc: 
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-Reply-To: 
-In-Reply-To: <alpine.LFD.1.10.0809122111480.13819@apollo.tec.linutronix.de>
-X-Priority: none
 
-Hi,
+* Arjan van de Ven <arjan@linux.intel.com> wrote:
 
-> did this happen between rc5 and rc6 ?
+> On Thu, 11 Sep 2008 13:30:48 -0700
+> Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> 
+> > Following patches fixes this behavior.
+> > 
+> > [1] http://developer.intel.com/design/processor/applnots/317080.pdf
+> > 
+> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 
+> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-On Sun Sept 7 you told me privately that a full git pull of
-linus tree would get me the whole clockevent patch series as well,
-so I did that at most one day later and this git status quo was
-buggy for me here, too (no s2r progress without external events).
-Of course I blamed that problem on my own pretty experimental azf3328
-clock_event_device work, but apparently not so ;)
+applied them to tip/x86/pat:
 
-So all this is is a "me too" for a state right after the recent clockevent
-patch series, not sure when this started.
-I did not _notice_ such trouble for any pretty recent kernel right before
-this series, though (in particular the noop fixes alone did not exhibit that,
-I think).
+3196625: x86, cpa: global flush tlb after splitting large page and before doing cpa
+79abc89: x86, cpa: remove cpa pool code
+e96d59b: x86, cpa: fix taking the pgd_lock with interrupts off
+888fdd9: x86, cpa: dont use large pages for kernel identity mapping with DEBUG_PAGEALLOC
+e579af6: x86, cpa: make the kernel physical mapping initialization a two pass sequence
+c86eefc: x86, cpa: remove USER permission from the very early identity mapping attribute
+e8729a5: x86, cpa: rename PTE attribute macros for kernel direct mapping in early boot
 
-Andreas
+thanks!
+
+	Ingo
