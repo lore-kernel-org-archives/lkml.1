@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbYINOM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYINOSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbYINOM6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 10:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYINOMu
+	id S1754740AbYINOSS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 10:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbYINOSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 10:12:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57772 "EHLO mx3.mail.elte.hu"
+	Sun, 14 Sep 2008 10:18:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:46041 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbYINOMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 10:12:50 -0400
-Date: Sun, 14 Sep 2008 16:12:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: arjan@linux.intel.com, tglx@linutronix.de, hpa@zytor.com,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch 1/2] x86: track memtype for RAM in page struct
-Message-ID: <20080914141230.GB17727@elte.hu>
-References: <20080913000003.732756000@linux-os.sc.intel.com> <20080913000051.819383000@linux-os.sc.intel.com>
+	id S1753519AbYINOSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 10:18:08 -0400
+Message-ID: <48CD1D1E.1050906@goop.org>
+Date: Sun, 14 Sep 2008 07:18:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080913000051.819383000@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, arjan@linux.intel.com,
+       tglx@linutronix.de, hpa@zytor.com, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch 1/2] x86: track memtype for RAM in page struct
+References: <20080913000003.732756000@linux-os.sc.intel.com> <20080913000051.819383000@linux-os.sc.intel.com> <48CBF25B.5030107@goop.org> <20080914132952.GC554@elte.hu>
+In-Reply-To: <20080914132952.GC554@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Venkatesh Pallipadi wrote:
+>>     
+>>> From: Suresh Siddha <suresh.b.siddha@intel.com>
+>>> Subject: [patch 1/2] x86: track memtype for RAM in page struct
+>>>
+>>> Track the memtype for RAM pages in page struct instead of using the memtype
+>>> list. This avoids the explosion in the number of entries in memtype list
+>>> (of the order of 20,000 with AGP) and makes the PAT tracking simpler. We are
+>>> using PG_arch_1 bit in page->flags.
+>>>   
+>>>       
+>> Please define PG_arch_1 a proper name so that its easy to tell its 
+>> being used just by looking at page-flags.h.
+>>     
+>
+> it should be defined in include/asm-x86/page.h though, not in 
+> page-flags.h - other architectures are using this flag for other 
+> purposes.
+>   
 
-* Venkatesh Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+No, other shared-use flags are all defined in page-flags.h:
 
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: [patch 1/2] x86: track memtype for RAM in page struct
-> 
-> Track the memtype for RAM pages in page struct instead of using the 
-> memtype list. This avoids the explosion in the number of entries in 
-> memtype list (of the order of 20,000 with AGP) and makes the PAT 
-> tracking simpler. We are using PG_arch_1 bit in page->flags.
+enum pageflags {
+[...]
+	__NR_PAGEFLAGS,
 
-this is in contradiction to this comment:
+	/* Filesystems */
+	PG_checked = PG_owner_priv_1,
 
->  /*
-> + * RED-PEN:  TODO: Add PageReserved() check aswell here,
-> + * once we add SetPageReserved() to all the drivers using
-> + * set_memory_* or set_pages_*
+	/* XEN */
+	PG_pinned = PG_owner_priv_1,
+	PG_savepinned = PG_dirty,
 
-if it's marked PG_arch_1, why is there any need for PageReserved?
+	/* SLOB */
+	PG_slob_page = PG_active,
+	PG_slob_free = PG_private,
 
-> + *
-> + * This will help prevent accidentally freeing pages
-> + * before setting the attribute back to WB.
+	/* SLUB */
+	PG_slub_frozen = PG_active,
+	PG_slub_debug = PG_error,
+};
 
-setting it PageReserved is a hack. We should set it PG_arch_1 and extend 
-the page allocator to emit a kernel warning if a PG_arch_1 page is 
-freed.
 
-	Ingo
+We could #ifdef CONFIG_X86 just to make it clear we're talking about a
+specific X86 usage.  But page-flags.h does seem to have become the
+central authority on all struct page flags usage.
+
+    J
