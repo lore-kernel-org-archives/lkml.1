@@ -1,130 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYINU5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYINVCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbYINU5c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 16:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbYINU5X
+	id S1755513AbYINVCR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 17:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYINVCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 16:57:23 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:62515 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753950AbYINU5W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 16:57:22 -0400
-Subject: GPIO: Add generic gpio_to_irq call.
-Message-Id: <20080914205718.377654695@fluff.org.uk>
-User-Agent: quilt/0.46-1
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-kernel@vger.kernel.org, david-b@pacbell.net
-Cc: Ben Dooks <ben-linux@fluff.org>
-Content-Disposition: inline; filename=simtec/simtec-gpiolib-add-irqmappings.patch
-Date: Sun, 14 Sep 2008 21:57:18 +0100
+	Sun, 14 Sep 2008 17:02:04 -0400
+Received: from mail.work.de ([212.12.32.20]:47579 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754266AbYINVCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 17:02:03 -0400
+Message-ID: <48CD7BC2.1080708@gmail.com>
+Date: Mon, 15 Sep 2008 01:01:54 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+MIME-Version: 1.0
+To: Andy Walls <awalls@radix.net>
+CC: Steven Toth <stoth@linuxtv.org>, linux-dvb@linuxtv.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>	 <48C66829.1010902@grumpydevil.homelinux.org>	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>	 <48CC42D8.8080806@gmail.com>	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>	 <48CC4D35.3000003@gmail.com>	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com> <1221425146.4278.30.camel@morgan.walls.org>
+In-Reply-To: <1221425146.4278.30.camel@morgan.walls.org>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add gpio_to_irq() implementation allowing the
-gpio_chip registration to also specify an function
-to map GPIO offsets into IRQs.
+Andy,
 
-Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Index: linux-2.6.27-rc1-quilt1/drivers/gpio/gpiolib.c
-===================================================================
---- linux-2.6.27-rc1-quilt1.orig/drivers/gpio/gpiolib.c	2008-07-30 09:20:12.000000000 +0100
-+++ linux-2.6.27-rc1-quilt1/drivers/gpio/gpiolib.c	2008-07-30 10:08:05.000000000 +0100
-@@ -842,6 +842,36 @@ const char *gpiochip_is_requested(struct
- }
- EXPORT_SYMBOL_GPL(gpiochip_is_requested);
- 
-+int __gpio_to_irq(unsigned gpio)
-+{
-+	struct gpio_chip	*chip;
-+	struct gpio_desc	*desc = &gpio_desc[gpio];
-+	unsigned long		flags;
-+	int			status = -EINVAL;
-+
-+	spin_lock_irqsave(&gpio_lock, flags);
-+
-+	if (!gpio_is_valid(gpio))
-+		goto fail;
-+
-+	chip = desc->chip;
-+	if (!chip || !chip->to_irq)
-+		goto fail;
-+
-+	gpio -= chip->base;
-+	if (gpio >= chip->ngpio)
-+		goto fail;
-+
-+	status = chip->to_irq(chip, gpio);
-+
-+ fail:
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+	if (status)
-+		pr_debug("%s: gpio-%d status %d\n",
-+			__func__, gpio, status);
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(__gpio_to_irq);
- 
- /* Drivers MUST set GPIO direction before making get/set calls.  In
-  * some cases this is done in early boot, before IRQs are enabled.
-Index: linux-2.6.27-rc1-quilt1/include/asm-generic/gpio.h
-===================================================================
---- linux-2.6.27-rc1-quilt1.orig/include/asm-generic/gpio.h	2008-07-30 09:20:16.000000000 +0100
-+++ linux-2.6.27-rc1-quilt1/include/asm-generic/gpio.h	2008-07-30 10:08:05.000000000 +0100
-@@ -43,6 +43,7 @@ struct module;
-  * @dbg_show: optional routine to show contents in debugfs; default code
-  *	will be used when this is omitted, but custom code can show extra
-  *	state (such as pullup/pulldown configuration).
-+ * @to_irq: convert gpio offset to IRQ number.
-  * @base: identifies the first GPIO number handled by this chip; or, if
-  *	negative during registration, requests dynamic ID allocation.
-  * @ngpio: the number of GPIOs handled by this controller; the last GPIO
-@@ -75,6 +76,9 @@ struct gpio_chip {
- 						unsigned offset, int value);
- 	void			(*dbg_show)(struct seq_file *s,
- 						struct gpio_chip *chip);
-+	int			(*to_irq)(struct gpio_chip *chip,
-+					  unsigned offset);
-+
- 	int			base;
- 	u16			ngpio;
- 	unsigned		can_sleep:1;
-@@ -102,6 +106,7 @@ extern int gpio_direction_output(unsigne
- extern int gpio_get_value_cansleep(unsigned gpio);
- extern void gpio_set_value_cansleep(unsigned gpio, int value);
- 
-+extern int __gpio_to_irq(unsigned gpio);
- 
- /* A platform's <asm/gpio.h> code may want to inline the I/O calls when
-  * the GPIO is constant and refers to some always-present controller,
-Index: linux-2.6.27-rc1-quilt1/Documentation/gpio.txt
-===================================================================
---- linux-2.6.27-rc1-quilt1.orig/Documentation/gpio.txt	2008-07-30 09:20:08.000000000 +0100
-+++ linux-2.6.27-rc1-quilt1/Documentation/gpio.txt	2008-07-30 10:08:05.000000000 +0100
-@@ -273,8 +273,9 @@ some GPIOs can't be used as IRQs.)  It i
- number that wasn't set up as an input using gpio_direction_input(), or
- to use an IRQ number that didn't originally come from gpio_to_irq().
- 
--These two mapping calls are expected to cost on the order of a single
--addition or subtraction.  They're not allowed to sleep.
-+These two mapping calls are expected to cost on between the order of a
-+single addition or subtraction to obtaining an spinlock and using the
-+to_irq method of the relevant gpio chip. They're not allowed to sleep.
- 
- Non-error values returned from gpio_to_irq() can be passed to request_irq()
- or free_irq().  They will often be stored into IRQ resources for platform
-@@ -407,6 +408,7 @@ GPIOs through GPIO-lib and the code cann
- Trivial implementations of those functions can directly use framework
- code, which always dispatches through the gpio_chip:
- 
-+  #define gpio_to_irq	        __gpio_to_irq
-   #define gpio_get_value	__gpio_get_value
-   #define gpio_set_value	__gpio_set_value
-   #define gpio_cansleep		__gpio_cansleep
+Andy Walls wrote:
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+> Manu,
+> 
+> Though I can't read much German, after looking at the jusst.de website I
+> can't help but think that you as well have financial interests driving
+> your actions.  If so, then your statements display quite a bit of
+> hypocrisy.
 
-  'a smiley only costs 4 bytes'
+To your utter disappointment as i should say, i am not working for any
+vendor, but just get device support out to the community.
+
+The jusst.de domain is owned by Julian Scheel who runs Jusst
+Technologies, just happened to offer me hosting for me repositories for
+my work, using full ssh access, so that my workflow is easier.
+
+Not that i have anything to do with jusst.de otherwise. OTOH, i do have
+the patches at kernel.org
+
+Maybe Julian can comment on this to make things more clearer on the
+financial interests.
+
+
+> Manipulating (i.e. stalling) the timing of Multiproto being merged into
+> the v4l-dvb tree or kernel, for you or your employer's gain, would be
+> little different from the motivations you allege Steve of having.
+
+
+I am not manipulating any timing of multiproto being merged. In fact i
+had been away, for a few months due to certain reasons, that you are
+perfectly aware by now as far as i can understand. So the points that
+you raise are quite baseless.
+
+
+> Since the major gripe I'm reading on the list "is that multiproto has
+> taken too long" and since it seems to me the only thing that shook it
+> loose was a competing proposal, please save the venom for when you
+> actually have some clear moral high-ground to stand on.  I don't see it
+> from here.
+
+Crap, just read above.
+
+
+> As for the technical superiority of either API proposal; that probably
+> just doesn't matter.  I've seen policy/political decisions force
+> suboptimal technical solutions at work time and time again.  If you
+> really believe you have a superior product technically; then perhaps you
+> should work to make it superior politically as well.  Mud-slinging can't
+> be a good long term strategy toward that end.
+
+
+I don't have to do any mud-slinging, just wrote the exact facts out here.
+
+
+Regards,
+Manu
+
