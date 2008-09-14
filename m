@@ -1,134 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668AbYINBkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbYINB47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668AbYINBkx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 21:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYINBko
+	id S1753787AbYINB47 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 21:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYINB4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 21:40:44 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35118 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751759AbYINBkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 21:40:43 -0400
-Date: Sat, 13 Sep 2008 20:40:24 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, vegard.nossum@gmail.com, ebiederm@xmission.com
-Subject: Re: + utsname-completely-overwrite-prior-information.patch added
-	to -mm tree
-Message-ID: <20080914014024.GA18604@us.ibm.com>
-References: <200809122211.m8CMBbAM007090@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809122211.m8CMBbAM007090@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 13 Sep 2008 21:56:49 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:40873 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753137AbYINB4s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 21:56:48 -0400
+X-YMail-OSG: NNqdX.4VM1lfm9Qvha_EtsW.dNLhUOAVDPr2ZVtUI6wi01FwoBNOivR9VeSAMDrnxBhvXbxmsNAi51jdmX7u.N8OQbLTf6OGpHm18zjIeXWhxS5OR6o7wUgsgdlFu1w8uBxSDFblRFeM1XpwbvhgRzW.b4YY9LBzqy0wqqjF9Ntgmj9mxUBSxHlhZvjzEg--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: ConfigFS + Target Mode Engine API discussion
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: linux-iscsi-target-dev@googlegroups.com
+Cc: Joel Becker <Joel.Becker@oracle.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       SCST-Devel <scst-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1221333732.3401.143.camel@haakon2.linux-iscsi.org>
+References: <1221087547.27831.165.camel@haakon2.linux-iscsi.org>
+	 <20080910233107.GC23864@mail.oracle.com>
+	 <1221097366.27831.216.camel@haakon2.linux-iscsi.org>
+	 <20080911021331.GA12902@mail.oracle.com>
+	 <1221107358.27831.289.camel@haakon2.linux-iscsi.org>
+	 <20080911063846.GB16583@mail.oracle.com>
+	 <1221123529.27831.343.camel@haakon2.linux-iscsi.org>
+	 <20080912201541.GA26469@mail.oracle.com>
+	 <1221258477.3401.81.camel@haakon2.linux-iscsi.org>
+	 <20080913044948.GA31135@mail.oracle.com>
+	 <1221333732.3401.143.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Sat, 13 Sep 2008 18:56:45 -0700
+Message-Id: <1221357405.3401.167.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting akpm@linux-foundation.org (akpm@linux-foundation.org):
+On Sat, 2008-09-13 at 12:22 -0700, Nicholas A. Bellinger wrote:
+> On Fri, 2008-09-12 at 21:49 -0700, Joel Becker wrote:
+> > On Fri, Sep 12, 2008 at 03:27:57PM -0700, Nicholas A. Bellinger wrote:
+> > > On Fri, 2008-09-12 at 13:15 -0700, Joel Becker wrote:
+> > > > 	No, you don't do this.  Like I said, configfs clients let
+> > > > userspace create and destroy items.  Not kernelspace.  Do not call
+> > > > sys_mkdir()/sys_rmdir() from your modules.
+> > > 
+> > > Well, the startup 'fabric registration' is only case where I figured
+> > > vfs_mkdir($CONFIGFS/target/$FABRIC) being called in order to have the
+> > > fabric struct config_item appear at modprobe $FABRIC_MOD *BEFORE* the
+> > > user did anything would be beneficial at all.   If vfs_mkdir() was not
+> > > called from transport_fabric_register_configfs(), it only means user
+> > > would have call mkdir $CONFIGFS/target/$FABRIC and/or mkdir -p
+> > > $CONFIGFS/target/$FABRIC/endpoint to kick off one common make_group()
+> > > for $FABRIC (that lives in target_core_configfs.c) and then make_group()
+> > > that likes inside of $FABRIC_MOD who's parent is $CONFIGFS/target.  In
+> > > LIO-Target's case, this would be creating a new iSCSI Qualified Name
+> > > with mkdir $CONFIGFS/target/iscsi/iqn.superturobdiskarry
+> > 
+> > 	I'm still totally unclear as to why $FABRIC has to live under
+> > target/.
 > 
-> The patch titled
->      utsname: completely overwrite prior information
-> has been added to the -mm tree.  Its filename is
->      utsname-completely-overwrite-prior-information.patch
+> Well, I figured that since $FABRIC would be depending upon LUN mappings
+> to target/core/$STORAGE_OBJECT struct config_items , it would make sense
+> sense for $FABRIC to appear under a common target mode engine..
 > 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
+> Having $CONFIGFS/target/core for storage objects and
+> $CONFIG/$FABRIC/endpoint/lun_0 and setting up symlinks between the two
+> entities is what I think you have in mind.  This setup you mention may
+> have other advantages/disadvantages when it goes to a generic target
+> mode, but I have been focused on getting the initial setup (see below..)
+> up and running, sooo.. :-) Obviously if things can be done easier I am
+> all for it.  Also I think for debugging and [PROC,IOCTL] -> ConfigFS
+> conversion purposes, being able to call my do_configfs_[mkdir,rmdir]
+> wrappers when existing legacy target functionality get called to
+> add/remove the ConfigFS entries may have some value as well..  At least
+> to make it easier for kernel level $FABRIC_MOD maintainers to see how
+> generic kernel target mode configfs works... Just wanted to mention
+> that..
 > 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+> >   I'm not clear if there can be more than one $FABRIC at a time.
 > 
-> See http://userweb.kernel.org/~akpm/added-to-mm.txt to find
-> out what to do about this
+> Absoulutely.  Current each $FABRIC_MOD that registers itself with the
+> common target engine calls the target_fabric_configfs_register() that
+> creates its own struct config_group with fabric dependent configfs
+> ops/abstractions.  This could very well be hidden behind the actual non
+> configfs related target engine infrastructure when $FABRIC_MOD does
+> actual fabric registration.  Also having common code for $FABRIC_MOD to
+> use to allow those LUN mappings across multiple independent $FABRIC_MODs
+> from target/core/$STORAGE_OBJECT is the main idea, but point taken that
+> $FABRIC does not necessary need to be hanging directly off
+> $CONFIGS/target to function..
 > 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
+> Also why I think having $FABRIC under $CONFIGFS/target/ makes sense, I
+> would like to be able to do rm -rf $CONFIGFS/target to shutdown all LUN
+> mappings on all fabrics on all storage objects instead of rm -rf
+> $CONFIGFS/iscsi ; rm -rf $CONFIGFS/sas ; rm -rf $CONFIGFS/pscsi ; rm -rf
+> $CONFIGFS/target.. :-)
 > 
-> ------------------------------------------------------
-> Subject: utsname: completely overwrite prior information
-> From: Vegard Nossum <vegard.nossum@gmail.com>
+> > etc.  That's what I'm trying to understand so I can help you out.
+> > 
 > 
-> On sethostname() and setdomainname(), previous information may be retained
-> if it was longer than than the new hostname/domainname.
+> :-)
 > 
-> This can be demonstrated trivially by calling sethostname() first with a
-> long name, then with a short name, and then calling uname() to retrieve
-> the full buffer that contains the hostname (and possibly parts of the old
-> hostname), one just has to look past the terminating zero.
+> So, as of this morning I have basic iqn.foo/tpgt_1 ConfigFS
+> functionality for LIO-Target.. Here is what it looks like..
 > 
-> I don't know if we should really care that much (hence the RFC); the only
-> scenarios I can possibly think of is administrator putting something
-> sensitive in the hostname (or domain name) by accident, and changing it
-> back will not undo the mistake entirely, though it's not like we can
-> recover gracefully from "rm -rf /" either...  The other scenario is
-> namespaces (CLONE_NEWUTS) where some information may be unintentionally
-> "inherited" from the previous namespace (a program wants to hide the
-> original name and does clone + sethostname, but some information is still
-> left).
+> <snip>
 > 
-> I think the patch may be defended on grounds of the principle of least
-> surprise.  But I am not adamant :-)
+> # Create some 
 > 
-> (I guess the question now is whether userspace should be able to
-> write embedded NULs into the buffer or not...)
+> target:/sys/kernel/config/target/iscsi# mkdir -p iqn.iscsi-hd.renderbox/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p iqn.lio-production/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p iqn.upstreamtargetmodestorage/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p iqn.superturbodiskarray/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p `iscsi-name`/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p `iscsi-name`/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p `iscsi-name`/tpgt_1
+> target:/sys/kernel/config/target/iscsi# mkdir -p `iscsi-name`/tpgt_1
+> target:/sys/kernel/config/target/iscsi# tree
+> .
+> |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.11c045e90b
+> |   `-- tpgt_1
+> |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.acc810f5a2fc
+> |   `-- tpgt_1
+> |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.b341232f3595
+> |   `-- tpgt_1
+> |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.b5ada4ff123a
+> |   `-- tpgt_1
+> |-- iqn.iscsi-hd.renderbox
+> |   `-- tpgt_1
+> |-- iqn.lio-production
+> |   `-- tpgt_1
+> |-- iqn.superturbodiskarray
+> |   `-- tpgt_1
+> |-- iqn.upstreamtargetmodestorage
+> |   `-- tpgt_1
+> `-- lio_version
 > 
-> At least the observation has been made and the patch has been presented.
+> 16 directories, 1 file
 > 
-> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-> Cc: "Serge E. Hallyn" <serue@us.ibm.com>
+> # Notice the module count..
+> target:/sys/kernel/config/target/iscsi# lsmod
+> Module                  Size  Used by
+> iscsi_target_mod      369004  17 
+> target_core_configfs    11416  18 iscsi_target_mod
+> configfs               24216  3 iscsi_target_mod,target_core_configfs
+> 
+> # Delete the IQNs and TPGTs created with /sbin/iscsi-name prefix.. 
+> target:/sys/kernel/config/target/iscsi# rm -rf iqn.2003-01.org.linux-iscsi.target.i686\:sn.*
+> 
+> target:/sys/kernel/config/target/iscsi# tree
+> .
+> |-- iqn.iscsi-hd.renderbox
+> |   `-- tpgt_1
+> |-- iqn.lio-production
+> |   `-- tpgt_1
+> |-- iqn.superturbodiskarray
+> |   `-- tpgt_1
+> |-- iqn.upstreamtargetmodestorage
+> |   `-- tpgt_1
+> `-- lio_version
+> 
+> 8 directories, 1 file
+> 
+> # And the module counts..
+> target:/sys/kernel/config/target/iscsi# lsmod
+> Module                  Size  Used by
+> iscsi_target_mod      369004  9 
+> target_core_configfs    11416  10 iscsi_target_mod
+> configfs               24216  3 iscsi_target_mod,target_core_configfs
+> 
 
-Agreed it seems an implausible attack vector :)  But especially for
-something as rare as setting a hostname, seems worthwhile.
+Ok, just commited first working code for ops for targetname, target
+portal group and Network Portal <-> target portal group logic under
+$CONFIGFS/target/iscsi/$IQN/
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Here is what it looks like:
 
-Thanks, Vegard.
+export CONFIGFS=/sys/kernel/config/
+export FABRIC=/sys/kernel/config/target/iscsi
 
--serge
+# Create four iSCSI Target Nodes with Target Portal Group Tag: 1
+target:/# mkdir -p $FABRIC/`iscsi-name`/tpgt_1
+target:/# mkdir -p $FABRIC/`iscsi-name`/tpgt_1
+target:/# mkdir -p $FABRIC/`iscsi-name`/tpgt_1
+target:/# mkdir -p $FABRIC/`iscsi-name`/tpgt_1
+target:/# cd $CONFIGFS
+target:/sys/kernel/config# tree
+.
+`-- target
+    |-- iscsi
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.4b471a663865
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.60a44da1dea
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.7c988087f45c
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.ed63ac2a3da7
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   `-- lio_version
+    `-- version
+18 directories, 2 files
 
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/sys.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff -puN kernel/sys.c~utsname-completely-overwrite-prior-information kernel/sys.c
-> --- a/kernel/sys.c~utsname-completely-overwrite-prior-information
-> +++ a/kernel/sys.c
-> @@ -1416,7 +1416,8 @@ asmlinkage long sys_sethostname(char __u
->  	errno = -EFAULT;
->  	if (!copy_from_user(tmp, name, len)) {
->  		memcpy(utsname()->nodename, tmp, len);
-> -		utsname()->nodename[len] = 0;
-> +		memset(utsname()->nodename + len, 0,
-> +			sizeof(utsname()->nodename) - len);
->  		errno = 0;
->  	}
->  	up_write(&uts_sem);
-> @@ -1462,7 +1463,8 @@ asmlinkage long sys_setdomainname(char _
->  	errno = -EFAULT;
->  	if (!copy_from_user(tmp, name, len)) {
->  		memcpy(utsname()->domainname, tmp, len);
-> -		utsname()->domainname[len] = 0;
-> +		memset(utsname()->domainname + len, 0,
-> +			sizeof(utsname()->domainname) - len);
->  		errno = 0;
->  	}
->  	up_write(&uts_sem);
-> _
-> 
-> Patches currently in -mm which might be from vegard.nossum@gmail.com are
-> 
-> origin.patch
-> linux-next.patch
-> ia64-avoid-invoking-irq-handlers-on-offline-cpus.patch
-> utsname-completely-overwrite-prior-information.patch
-> kernel-sysc-improve-code-generation.patch
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+# Create some iSCSI network portals on the first two targetname+tpgt tuples
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.4b471a663865/tpgt_1/np/172.16.201.137:3260
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.4b471a663865/tpgt_1/np/172.16.201.137:3261
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.4b471a663865/tpgt_1/np/172.16.201.137:3262
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.4b471a663865/tpgt_1/np/172.16.201.137:3263
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.60a44da1dea/tpgt_1/np/172.16.201.137:3260
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.60a44da1dea/tpgt_1/np/172.16.201.137:3261
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.60a44da1dea/tpgt_1/np/172.16.201.137:3262
+target:/sys/kernel/config# mkdir target/iscsi/iqn.2003-01.org.linux-iscsi.target.i686\:sn.60a44da1dea/tpgt_1/np/172.16.201.137:3263
+
+target:/sys/kernel/config# tree
+.
+`-- target
+    |-- iscsi
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.4b471a663865
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   |           |-- 172.16.201.137:3260
+    |   |           |   `-- portal_info
+    |   |           |-- 172.16.201.137:3261
+    |   |           |   `-- portal_info
+    |   |           |-- 172.16.201.137:3262
+    |   |           |   `-- portal_info
+    |   |           `-- 172.16.201.137:3263
+    |   |               `-- portal_info
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.60a44da1dea
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   |           |-- 172.16.201.137:3260
+    |   |           |   `-- portal_info
+    |   |           |-- 172.16.201.137:3261
+    |   |           |   `-- portal_info
+    |   |           |-- 172.16.201.137:3262
+    |   |           |   `-- portal_info
+    |   |           `-- 172.16.201.137:3263
+    |   |               `-- portal_info
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.7c988087f45c
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   |-- iqn.2003-01.org.linux-iscsi.target.i686:sn.ed63ac2a3da7
+    |   |   `-- tpgt_1
+    |   |       |-- lun
+    |   |       `-- np
+    |   `-- lio_version
+    `-- version
+
+26 directories, 10 files
+
+Here is the commit:
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=commit;h=4098f1bcbe8406b882c4e265427f54a35f3c8b40
+
+--nab
+
+
