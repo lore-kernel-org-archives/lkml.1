@@ -1,129 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYINB5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbYINCLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYINB5n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Sep 2008 21:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYINB5d
+	id S1753810AbYINCLJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Sep 2008 22:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbYINCK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 13 Sep 2008 21:57:33 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54791 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753203AbYINB5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Sep 2008 21:57:31 -0400
-Date: Sat, 13 Sep 2008 20:56:46 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mounts git tree
-Message-ID: <20080914015646.GC18604@us.ibm.com>
-References: <E1KbFU3-0002Ne-Oe@pomaz-ex.szeredi.hu> <E1KbGwb-0002rl-49@pomaz-ex.szeredi.hu> <20080905153134.GA18367@us.ibm.com> <E1Kd3Mh-0001vk-F5@pomaz-ex.szeredi.hu> <m11vzrge86.fsf@frodo.ebiederm.org> <E1KdnOb-00068L-Eq@pomaz-ex.szeredi.hu> <20080911152033.GA29318@us.ibm.com> <m13ak6ecoi.fsf@frodo.ebiederm.org> <20080912220802.GA23230@us.ibm.com> <m1tzck68od.fsf@frodo.ebiederm.org>
+	Sat, 13 Sep 2008 22:10:56 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:43508 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753229AbYINCKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Sep 2008 22:10:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bJA+r04N81AKwMGUSrLzSsQFdaliSFMscJbpal9FDVEcyyN3/4K8Wlk0hAsB4mU0WF
+         kaYt9m+OmBMMNQpLFToPFVbZYF0elruKvh9HOBx7QnpfAz6mBlXngeeOiwpBbRvGf8lY
+         IrkRItxFma8fzdMYAEjh3BXzMQWHUTzjnDaVA=
+Message-ID: <d9def9db0809131910h2ff43b9auf86eb340adb2fac8@mail.gmail.com>
+Date: Sun, 14 Sep 2008 04:10:53 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+Cc: linux-dvb@linuxtv.org, "Rudy Zijlstra" <rudy@grumpydevil.homelinux.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CC4D35.3000003@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1tzck68od.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
+	 <48C66829.1010902@grumpydevil.homelinux.org>
+	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
+	 <48CC42D8.8080806@gmail.com>
+	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+	 <48CC4D35.3000003@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Serge E. Hallyn" <serue@us.ibm.com> writes:
-> 
-> 
-> > Ok, but this is all done as root.  Kind of a silly thing for root to
-> > do :)
-> 
-> There are less silly examples like setting up a chroot type
-> environment contained in a mount namespace and having a kernel oops
-> and then not being able to delete all of your files.
+On Sun, Sep 14, 2008 at 1:31 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
+> Markus Rechberger wrote:
+>> On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham <abraham.manu@gmail.com> wrote:
+>>> Markus Rechberger wrote:
+>>>
+>>>> How many devices are currently supported by the multiproto API
+>>>> compared with the s2 tree?
+>>> The initial set of DVB-S2 multistandard devices supported by the
+>>> multiproto tree is follows. This is just the stb0899 based dvb-s2 driver
+>>> alone. There are more additions by 2 more modules (not devices), but for
+>>> the simple comparison here is the quick list of them, for which some of
+>>> the manufacturers have shown support in some way. (There has been quite
+>>> some contributions from the community as well.):
+>>>
+>>> (Also to be noted is that, some BSD chaps also have shown interest in
+>>> the same)
+>>>
+>>
+>> they're heavy into moving the whole framework over as far as I've seen
+>> yes, also including yet unmerged drivers.
+>
+>
+> Using the same interface, the same applications will work there as well
+> which is a bonus, but isn't the existing user interface GPL ? (A bit
+> confused on that aspect)
+>
 
-I wasn't saying that I believe I can win an argument by knocking down
-one example :)
+I think it's good to have something that competes with Linux, I talked to some
+guys at that front too, and they seem to work close with application
+developers too
+As for the em28xx driver I agreed with pushing all my code (in case of
+linux, which
+includes unmerged independent drivercode from manufacturers) into their system
+using their license.
 
-In fact I'm not trying to win an argument.  Because I'm quite sure you
-and Miklos are right, and I just need to figure out what I'm missing.
+>
+>>> * STB0899 based
+>>>
+>>> Anubis
+>>> Typhoon DVB-S2 PCI
+>>>
+>>> Azurewave/Twinhan
+>>> VP-1041
+>>> VP-7050
+>>>
+>>> Digital Now
+>>> AD SP400
+>>> AD SB300
+>>>
+>>> KNC1
+>>> TV Station DVB-S2
+>>> TV Station DVB-S2 Plus
+>>>
+>>> Pinnacle
+>>> PCTV Sat HDTV Pro USB 452e
+>>>
+>>> Satelco
+>>> TV Station DVB-S2
+>>> Easywatch HDTV USB CI
+>>> Easywatch HDTV PCI
+>>>
+>>> Technisat
+>>> Skystar HD
+>>> Skystar HD2
+>>> Skystar USB2 HDCI
+>>>
+>>> Technotrend
+>>> TT S2 3200
+>>> TT S2 3600
+>>> TT S2 3650
+>>>
+>>> Terratec
+>>> Cinergy S2 PCI HD
+>>> Cinergy S2 PCI HDCI
+>>>
+>>
+>> those are pullable now against the current tree?
+>
+>
+> These devices, depend upon the DVB API update without which it wouldn't
+> work as they depend heavily on the DVB API framework. Without the
+> updated framework, it doesn't make any sense to pull them: they won't
+> even compile. The last but not least reason is that, the stb0899 driver
+> is a DVB-S2 multistandard device which requires DVB-S2/DSS support
+> additionally.
+>
 
-> > So in order for me as an unprivileged user to pin a dentry by mounting
-> > over it, I have to have write permission to the dentry to begin with
-> > as well as the dentry being under a user=hallyn mount.
-> 
-> That second condition is interesting requiring write permission of the
-> dentry.  I thought we had obviated the need for that when we added
-> ownership to the mounts themselves.  In this case at least it shouldn't
-> it be write permission on the directory containing the dentry.
+as far as I understood here it's that alot code is already available
+and has been tested for
+a couple of years, a few guys are trying to run their own game since
+they already have
+ "some" code, and the problem is that people would have to port your
+drivers to the
+other system without your support. We've seen the same issue with the
+em28xx a year ago,
+although this one is participating at the BSD and OSX project now too
+(which takes the same
+source and makes alot more sence in terms of contributions).
+As soon as the em28xx code supports the mt2060 and saa7114 devices it
+would be ready
+to go into the kernel again separated from linuxtv...
 
-Oh no, it seems I'm wrong, that's not a condition.  Just tested it.
-
-> >> Now you can't create /etc/passwd.new and rename it to /etc/passwd.
-> >> Stopping adduser from working.
-> >> 
-> >> As Miklos said this can apply to any file or any directory, so it can
-> >> be a DOS against any other user on the system.
-> >
-> > Except I need to own the mount as well as the dentry.  So after
-> > root does
-> >
-> > 	mmount --bind -o user=hallyn /home/hallyn /home/hallyn
-> > 	mmount --bind -o user=hallyn /home/serge /home/serge
-> >
-> > if user serge (uid 501) tries to
-> >
-> > 	mmount --bind /etc /home/hallyn/etc
-> > 	mmount --bind /etc /home/serge/etc
-> >
-> > permission for the first will be denied because serge does not
-> > have write perms to /home/hallyn/etc, and permission for the second
-> > will be denied because only hallyn may mount under /home/serge.
-> >
-> > If root properly did
-> >
-> > 	mmount --bind -o user=hallyn /home/hallyn /home/hallyn
-> > 	mmount --bind -o user=serge /home/serge /home/serge
-> >
-> > and then hallyn does
-> >
-> > 	mmount --bind /etc /home/hallyn/etc
-> >
-> > and serge does
-> >
-> > 	mmount --bind /home/hallyn/etc /home/serge/etc
-> >
-> > then hallyn can still ummount /home/hallyn/etc.
-> >
-> > And we've decided that users cannot (for now) do shared mounts.
-> > So I'm still not sure where there is the potential for danger?
-> 
-> Ok.  Let's pick on something a little more interesting.
-> 
-> root does:
-> 	mmount --bind -o user=hallyn /home/hallyn /home/hallyn
-> hallyn does:
-> 	mount --bind /tmp /home/hallyn/tmp
->         touch dummy
-> 	mount --bind dummy /home/hallyn/tmp/some_shared_file_I_have_write_access_to.
-> 
-> Which allows me to transform write permissions into the ability to
-> deny someone else the ability to delete a file.
-
-Yup, that's an interesting example.
-
-Still an admin *can* work around that, if he can sufficiently parse
-/proc/self/mountinfo to know to umount
-/home/hallyn/tmp/some_shared_file_I_have_write_access_to.
-
-Is that sufficient?  Probably not?
-
-> This seems to mess up things like revoke.
-
-Hey, do we have revoke now?  :)
-
-> At a practical level it is a real annoyance, regardless of the security
-> implications.
-> 
-> As a point of comparison plan9 does not have that restriction.
-
-Why doesn't it have that restriction?  Does it always allow you to rm a
-mounted-over file?
-
--serge
+Markus
