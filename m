@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbYINTwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYINUYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbYINTwE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbYINTvx
+	id S1755015AbYINUYX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 16:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYINUYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:51:53 -0400
-Received: from mail.gmx.net ([213.165.64.20]:40806 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753827AbYINTvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:51:52 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+U44Fu+HaU43iVruN5kkrablYCmO9oAXBnd1GMYX
-	Tgmo4Hl/w9bcCx
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
-	2.6.22 -&gt; 2.6.28
-From: Mike Galbraith <efault@gmx.de>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <48CD1D25.9080301@linux-foundation.org>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	 <SpS7rta8n4.A.mr.ZesyIB@albercik>  <48CAE7A0.8000004@linux-foundation.org>
-	 <1221306287.5213.111.camel@marge.simson.net>
-	 <48CD1D25.9080301@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 14 Sep 2008 21:51:47 +0200
-Message-Id: <1221421907.4597.24.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.68
+	Sun, 14 Sep 2008 16:24:14 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:39551 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752903AbYINUYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 16:24:13 -0400
+Date: Sun, 14 Sep 2008 16:24:09 -0400 (EDT)
+From: Jeff Arnold <jbarnold@MIT.EDU>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: linux-kernel@vger.kernel.org, Tim Abbott <tabbott@MIT.EDU>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>
+Subject: Re: [RFC PATCH 0/9] Ksplice: Rebootless kernel updates
+In-Reply-To: <20080913051252.GA6306@x200.localdomain>
+Message-ID: <alpine.DEB.1.10.0809131801170.31430@vinegar-pot.mit.edu>
+References: <1221281397-7045-1-git-send-email-jbarnold@mit.edu> <20080913051252.GA6306@x200.localdomain>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-09-14 at 09:18 -0500, Christoph Lameter wrote:
-> Mike Galbraith wrote:
-> > Numbers from my Q6600 Aldi supermarket box (hm, your box is from different shelf)
-> >   
-> My box is an 8p with recent quad core processors. 8G, 32bit Linux.
+On Sat, 13 Sep 2008, Alexey Dobriyan wrote:
+> Please, taint kernel after first update so some of us can ignore oopses
+> of hopelessly broken kernels.
 
-Don't hold your breath, but after putting my network config of a very
-severe diet, I'm starting to see something resembling sensible results.
+OK.
 
-	-Mike
-
+Jeff Arnold
+jbarnold@mit.edu 
