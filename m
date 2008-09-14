@@ -1,145 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYINSMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbYINSNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755527AbYINSMW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 14:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYINSMO
+	id S1755484AbYINSNe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 14:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYINSNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 14:12:14 -0400
-Received: from gv-out-0910.google.com ([216.239.58.187]:44808 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbYINSMM (ORCPT
+	Sun, 14 Sep 2008 14:13:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:18643 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbYINSNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 14:12:12 -0400
+	Sun, 14 Sep 2008 14:13:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=qFzwDsdr0MumzeUXrzUzfeJifj98v6IlBSIeOR//ELApplda30eioWNS3z4Yqgr2xK
-         5O3EG1pJ4Kd0K/grLkOBgKlszL4xht1unWaLGCaWyts/UbLanVkqOXs7nM7bZr53IJYh
-         o/J0AEpw5Krdh33kUEwm1+JZ6BG++hi3Om6ng=
-Date: Sun, 14 Sep 2008 20:11:27 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, stable@kernel.org
-Subject: [PATCH] rtc: fix kernel panic on second use of SIGIO nofitication
-Message-ID: <20080914181122.GA32250@joi>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=BwTCaNq5jnovDxBBdM6XkbnHoySLvFFIBmrL10gUSx7H3lREzIM7pGLfUumCZNUsKL
+         weiXjmCE7bkfrwwjiOO++nk9zInQN672aZ4ddBpToCa4nzHL1TLKM2ALqU9XB+kI8g9d
+         PRzocpB7EpEZ0gfj+/d/AOZFlCJjeGRk3HGxQ=
+Message-ID: <86802c440809141113r62199a6as44cacecb960ebaf7@mail.gmail.com>
+Date: Sun, 14 Sep 2008 11:13:24 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] apci: dump slit
+Cc: "Pavel Machek" <pavel@suse.cz>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080914160403.GA20082@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080912122031.eca8723e.akpm@linux-foundation.org>
+	 <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com>
+	 <878wtxrrwh.fsf@basil.nowhere.org>
+	 <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de>
+	 <20080914112222.GA3956@ucw.cz> <20080914122618.GD16097@elte.hu>
+	 <20080914155928.GB4845@ucw.cz> <20080914160403.GA20082@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When user space uses SIGIO notification and forgets to disable it before
-closing file descriptor, rtc->async_queue contains stale pointer to struct
-file. When user space enables again SIGIO notification in different process,
-kernel dereferences this (poisoned) pointer and crashes.
+On Sun, Sep 14, 2008 at 9:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> Dumping when user requested it on commandline seems like good
+>> compromise to me.
+>
+> great! Yinghai, mind reworking the patch in that direction please? I'd
+> suggest to enable the optional dumping of all things BIOS environment
+> related, not just the ACPI/SLIT.
+>
+> there's also CONFIG_X86_VERBOSE_BOOTUP=y [default disabled] - which
+> could be coupled with an x86=verbose boot parameter or so.
 
-So disable SIGIO notification on close.
+will work on it.
 
-Kernel panic:
-(second run of qemu (requires echo 1024 > /sys/class/rtc/rtc0/max_user_freq))
-
-general protection fault: 0000 [1] PREEMPT
-CPU 0
-Modules linked in: af_packet snd_pcm_oss snd_mixer_oss snd_seq_oss snd_seq_midi_event snd_seq usbhid tuner tea5767 tda8290 tuner_xc2028 xc5000 tda9887 tuner_simple tuner_types mt20xx tea5761 tda9875 uhci_hcd ehci_hcd usbcore bttv snd_via82xx snd_ac97_codec ac97_bus snd_pcm snd_timer ir_common compat_ioctl32 snd_page_alloc videodev v4l1_compat snd_mpu401_uart snd_rawmidi v4l2_common videobuf_dma_sg videobuf_core snd_seq_device snd btcx_risc soundcore tveeprom i2c_viapro
-Pid: 5781, comm: qemu-system-x86 Not tainted 2.6.27-rc6 #363
-RIP: 0010:[<ffffffff8024f891>]  [<ffffffff8024f891>] __lock_acquire+0x3db/0x73f
-RSP: 0000:ffffffff80674cb8  EFLAGS: 00010002
-RAX: ffff8800224c62f0 RBX: 0000000000000046 RCX: 0000000000000002
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff8800224c62f0
-RBP: ffffffff80674d08 R08: 0000000000000002 R09: 0000000000000001
-R10: ffffffff80238941 R11: 0000000000000001 R12: 0000000000000000
-R13: 6b6b6b6b6b6b6b6b R14: ffff88003a450080 R15: 0000000000000000
-FS:  00007f98b69516f0(0000) GS:ffffffff80623200(0000) knlGS:00000000f7cc86d0
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000a87000 CR3: 0000000022598000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process qemu-system-x86 (pid: 5781, threadinfo ffff880028812000, task ffff88003a450080)
-Stack:  ffffffff80674cf8 0000000180238440 0000000200000002 0000000000000000
- ffff8800224c62f0 0000000000000046 0000000000000000 0000000000000002
- 0000000000000002 0000000000000000 ffffffff80674d68 ffffffff8024fc7a
-Call Trace:
- <IRQ>  [<ffffffff8024fc7a>] lock_acquire+0x85/0xa9
- [<ffffffff8029cb62>] ? send_sigio+0x2a/0x184
- [<ffffffff80491d1f>] _read_lock+0x3e/0x4a
- [<ffffffff8029cb62>] ? send_sigio+0x2a/0x184
- [<ffffffff8029cb62>] send_sigio+0x2a/0x184
- [<ffffffff8024fb97>] ? __lock_acquire+0x6e1/0x73f
- [<ffffffff8029cd4d>] ? kill_fasync+0x2c/0x4e
- [<ffffffff8029cd10>] __kill_fasync+0x54/0x65
- [<ffffffff8029cd5b>] kill_fasync+0x3a/0x4e
- [<ffffffff80402896>] rtc_update_irq+0x9c/0xa5
- [<ffffffff80404640>] cmos_interrupt+0xae/0xc0
- [<ffffffff8025d1c1>] handle_IRQ_event+0x25/0x5a
- [<ffffffff8025e5e4>] handle_edge_irq+0xdd/0x123
- [<ffffffff8020da34>] do_IRQ+0xe4/0x144
- [<ffffffff8020bad6>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8026fdc2>] ? __alloc_pages_internal+0xe7/0x3ad
- [<ffffffff8033fe67>] ? clear_page_c+0x7/0x10
- [<ffffffff8026fc10>] ? get_page_from_freelist+0x385/0x450
- [<ffffffff8026fdc2>] ? __alloc_pages_internal+0xe7/0x3ad
- [<ffffffff80280aac>] ? anon_vma_prepare+0x2e/0xf6
- [<ffffffff80279400>] ? handle_mm_fault+0x227/0x6a5
- [<ffffffff80494716>] ? do_page_fault+0x494/0x83f
- [<ffffffff8049251d>] ? error_exit+0x0/0xa9
-
-Code: cc 41 39 45 28 74 24 e8 5e 1d 0f 00 85 c0 0f 84 6a 03 00 00 83 3d 8f a9 aa 00 00 be 47 03 00 00 0f 84 6a 02 00 00 e9 53 03 00 00 <41> ff 85 38 01 00 00 45 8b be 90 06 00 00 41 83 ff 2f 76 24 e8
-RIP  [<ffffffff8024f891>] __lock_acquire+0x3db/0x73f
- RSP <ffffffff80674cb8>
----[ end trace 431877d860448760 ]---
-Kernel panic - not syncing: Aiee, killing interrupt handler!
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: rtc-linux@googlegroups.com
-Cc: stable@kernel.org
----
- drivers/rtc/rtc-dev.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/rtc/rtc-dev.c b/drivers/rtc/rtc-dev.c
-index f118252..52e2743 100644
---- a/drivers/rtc/rtc-dev.c
-+++ b/drivers/rtc/rtc-dev.c
-@@ -422,6 +422,12 @@ done:
- 	return err;
- }
- 
-+static int rtc_dev_fasync(int fd, struct file *file, int on)
-+{
-+	struct rtc_device *rtc = file->private_data;
-+	return fasync_helper(fd, file, on, &rtc->async_queue);
-+}
-+
- static int rtc_dev_release(struct inode *inode, struct file *file)
- {
- 	struct rtc_device *rtc = file->private_data;
-@@ -434,16 +440,13 @@ static int rtc_dev_release(struct inode *inode, struct file *file)
- 	if (rtc->ops->release)
- 		rtc->ops->release(rtc->dev.parent);
- 
-+	if (file->f_flags & FASYNC)
-+		rtc_dev_fasync(-1, file, 0);
-+
- 	clear_bit_unlock(RTC_DEV_BUSY, &rtc->flags);
- 	return 0;
- }
- 
--static int rtc_dev_fasync(int fd, struct file *file, int on)
--{
--	struct rtc_device *rtc = file->private_data;
--	return fasync_helper(fd, file, on, &rtc->async_queue);
--}
--
- static const struct file_operations rtc_dev_fops = {
- 	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
--- 
-1.5.6.4
-
+YH
