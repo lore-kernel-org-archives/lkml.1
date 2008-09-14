@@ -1,123 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYINWMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbYINWUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbYINWMn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 18:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYINWMe
+	id S1755781AbYINWUw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 18:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbYINWUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 18:12:34 -0400
-Received: from ns2.suse.de ([195.135.220.15]:34222 "EHLO mx2.suse.de"
+	Sun, 14 Sep 2008 18:20:44 -0400
+Received: from mail1.radix.net ([207.192.128.31]:43346 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752429AbYINWMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 18:12:33 -0400
-Date: Mon, 15 Sep 2008 00:12:31 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       mpm@selenic.com
-Subject: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-Message-ID: <20080914221231.GG27080@wotan.suse.de>
-References: <1221046892.30429.85.camel@twins.programming.kicks-ass.net> <20080910114755.GA9696@elte.hu> <20080910121217.GA16013@elte.hu> <20080910144812.GB18644@wotan.suse.de> <1221058864.30429.291.camel@twins.programming.kicks-ass.net> <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu>
+	id S1753965AbYINWUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 18:20:44 -0400
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+From: Andy Walls <awalls@radix.net>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Steven Toth <stoth@linuxtv.org>, linux-dvb@linuxtv.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CD7BC2.1080708@gmail.com>
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
+	 <48C66829.1010902@grumpydevil.homelinux.org>
+	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
+	 <48CC42D8.8080806@gmail.com>
+	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+	 <48CC4D35.3000003@gmail.com>
+	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>
+	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com>
+	 <1221425146.4278.30.camel@morgan.walls.org>  <48CD7BC2.1080708@gmail.com>
+Content-Type: text/plain
+Date: Sun, 14 Sep 2008 18:20:22 -0400
+Message-Id: <1221430822.4278.86.camel@morgan.walls.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080914080631.GA10720@elte.hu>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 14, 2008 at 10:06:31AM +0200, Ingo Molnar wrote:
+On Mon, 2008-09-15 at 01:01 +0400, Manu Abraham wrote:
+> Andy,
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> > > [ 6460.634452] 
-> > > [ 6460.634465] =======================================================
-> > > [ 6460.634494] [ INFO: possible circular locking dependency detected ]
-> > > [ 6460.634517] 2.6.27-rc6-tip-00290-g8e229c3-dirty #1
-> > > [ 6460.634535] -------------------------------------------------------
-> > > [ 6460.634555] gdm-simple-gree/4778 is trying to acquire lock:
-> > > [ 6460.634574]  (&mm->mmap_sem){----}, at: [<c018fe33>] might_fault+0x36/0x73
-> > > [ 6460.634639] 
-> > > [ 6460.634645] but task is already holding lock:
-> > > [ 6460.634662]  (&dev->ev_mutex){--..}, at: [<c01c7a76>] inotify_read+0xd8/0x16e
-> > > [ 6460.634715] 
-> > > [ 6460.634721] which lock already depends on the new lock.
+> Andy Walls wrote:
+> 
+> > Manu,
 > > 
-> > Yes, there's a thread in my intray called "inotify_read's ev_mutex vs 
-> > do_page_fault's mmap_sem...".  It's a bit flakey-looking, but there's 
-> > a patch in there.
+> > Though I can't read much German, after looking at the jusst.de website I
+> > can't help but think that you as well have financial interests driving
+> > your actions.  If so, then your statements display quite a bit of
+> > hypocrisy.
 > 
-> ah, thx. I picked up the patch into tip/out-of-tree. (see below for a 
-> tided up changelog) Please queue it up as v2.6.27 material. (i'll report 
-> it if anything breaks due to the patch)
+> To your utter disappointment as i should say, i am not working for any
+> vendor, but just get device support out to the community.
+
+Not to my disappointment.  I'm glad to hear it.  Someone who appears to
+have an EE background without corporate bias can be an asset to the
+community. 
+
+
+> The jusst.de domain is owned by Julian Scheel who runs Jusst
+> Technologies, just happened to offer me hosting for me repositories for
+> my work, using full ssh access, so that my workflow is easier.
 > 
-> 	Ingo
+> Not that i have anything to do with jusst.de otherwise. OTOH, i do have
+> the patches at kernel.org
 > 
-> --------------->
-> >From 1eb0a42e4eb3283521ee1de99adbf567874b622f Mon Sep 17 00:00:00 2001
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Thu, 11 Sep 2008 06:12:51 +1000
-> Subject: [PATCH] mm: fix locking, inotify_read's ev_mutex vs do_page_fault's mmap_sem...
+> Maybe Julian can comment on this to make things more clearer on the
+> financial interests.
 
-I would call this "fs: fix inotify locking....", it's not really an mm bug
-if another subsystem misuses mm's APIs. But that's a nitpick.
-
-Here is the other patch I did too.
+Then what I perceived was wrong.  My apologies.
 
 
-tiny-shmem calls do_truncate in shmem_file_setup. do_truncate takes i_mutex,
-and shmem_file_setup is called with mmap_sem held. However i_mutex nests
-outside mmap_sem.
 
-Copy the code in shmem.c to avoid this problem.
+> > Manipulating (i.e. stalling) the timing of Multiproto being merged into
+> > the v4l-dvb tree or kernel, for you or your employer's gain, would be
+> > little different from the motivations you allege Steve of having.
+> 
+> 
+> I am not manipulating any timing of multiproto being merged. In fact i
+> had been away, for a few months due to certain reasons, that you are
+> perfectly aware by now as far as i can understand.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
-Index: linux-2.6/mm/tiny-shmem.c
-===================================================================
---- linux-2.6.orig/mm/tiny-shmem.c
-+++ linux-2.6/mm/tiny-shmem.c
-@@ -65,31 +65,25 @@ struct file *shmem_file_setup(char *name
- 	if (!dentry)
- 		goto put_memory;
- 
-+        error = -ENFILE;
-+        file = get_empty_filp();
-+        if (!file)
-+                goto put_dentry;
-+
- 	error = -ENOSPC;
- 	inode = ramfs_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0);
- 	if (!inode)
--		goto put_dentry;
--
--	d_instantiate(dentry, inode);
--	error = -ENFILE;
--	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
--			&ramfs_file_operations);
--	if (!file)
--		goto put_dentry;
--
--	inode->i_nlink = 0;	/* It is unlinked */
--
--	/* notify everyone as to the change of file size */
--	error = do_truncate(dentry, size, 0, file);
--	if (error < 0)
- 		goto close_file;
- 
-+        d_instantiate(dentry, inode);
-+        inode->i_size = size;
-+        inode->i_nlink = 0;     /* It is unlinked */
-+        init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-+                        &ramfs_file_operations);
- 	return file;
- 
- close_file:
- 	put_filp(file);
--	return ERR_PTR(error);
--
- put_dentry:
- 	dput(dentry);
- put_memory:
+I was aware you were away.  For what dates I do not know (I have emails
+from you in May 2008).  For what reasons, I do not know for sure (nor do
+I feel is it my business).
+
+
+
+>  So the points that
+> you raise are quite baseless.
+
+Not entirely, there is a basis for the timing point.  The pull requests
+seemed to have come in short order when confronted with a competing
+proposal.  Yet the project had been ongoing for at least over a year (as
+far as I can ascertain).  Here's a gripe about delays from Jan 2008:
+http://www.mail-archive.com/linux-dvb@linuxtv.org/msg28606.html
+
+There seemed to have been no other visible motivation for the pull
+requests except competition.  
+
+
+
+> > Since the major gripe I'm reading on the list "is that multiproto has
+> > taken too long" and since it seems to me the only thing that shook it
+> > loose was a competing proposal, please save the venom for when you
+> > actually have some clear moral high-ground to stand on.  I don't see it
+> > from here.
+> 
+> Crap, just read above.
+
+OK, then you do have some high ground.  But you also had essentially a
+monopoly position and now you have competition.  That is not crap. 
+
+
+> > As for the technical superiority of either API proposal; that probably
+> > just doesn't matter.  I've seen policy/political decisions force
+> > suboptimal technical solutions at work time and time again.  If you
+> > really believe you have a superior product technically; then perhaps you
+> > should work to make it superior politically as well.  Mud-slinging can't
+> > be a good long term strategy toward that end.
+> 
+> 
+> I don't have to do any mud-slinging, just wrote the exact facts out here.
+
+No, you are mud slinging.  Let's count the derogatory terms you use in
+addressing your competition in the following quote:
+
+"No need for you to break the compliant devices in favour of your
+mediocre cards. As i wrote just above, the STB0899 is not the only one
+device using the said features. Also i can guarantee that the CX24116
+(HVR4000) is the most handicapped DVB-S2 device that you are basing the
+DVB-S2 API on: and i can guarantee that what you do will be just be
+broken as you have done for other devices in the past."
+
+"Also i do not understand, why you have to make a lot of noise to port
+the STB0899 drivers to your crap, when all your cards work as expected
+by you with the multiproto tree. I don't see any reason why the STB0899
+has to be ported to the handicapped API of yours, handicapping the
+STB0899 based devices."
+
+
+1 mediocre
+3 handicap (or variation thereof)
+1 crap
+2 break (or variation thereof) when referring to competing work
+1 noise, when referring to another offer to do work competing work
+
+And that's just part of the email.  I'd hate to read when you actually
+claim to be mud-slinging.
+
+Regards,
+Andy
+
+> Regards,
+> Manu
+
+
