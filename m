@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYINQOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYINQZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYINQOq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 12:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYINQOi
+	id S1755186AbYINQZh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 12:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbYINQZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 12:14:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50983 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYINQOh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 12:14:37 -0400
-Date: Sun, 14 Sep 2008 09:14:22 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Ulrich Drepper" <drepper@gmail.com>
-Cc: "Pavel Machek" <pavel@suse.cz>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, dwmw2@infradead.org, drepper@redhat.com,
-       mingo@elte.hu, tglx@tglx.de
-Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the task
- struct
-Message-ID: <20080914091422.0aaaee8c@infradead.org>
-In-Reply-To: <a36005b50809140904h690d00b0sa66f166a64850114@mail.gmail.com>
-References: <20080901160343.75a89ec9@infradead.org>
-	<20080901161423.59ebf2fc@infradead.org>
-	<20080902100439.GA11383@elf.ucw.cz>
-	<20080902060323.70245b83@infradead.org>
-	<20080908132713.GA18486@elf.ucw.cz>
-	<20080908064002.7abc2a22@infradead.org>
-	<20080908141555.GB31784@elf.ucw.cz>
-	<a36005b50809140821w2caeb810p431cf5625b0297f5@mail.gmail.com>
-	<20080914155744.GA4845@ucw.cz>
-	<a36005b50809140904h690d00b0sa66f166a64850114@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 14 Sep 2008 12:25:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43601 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752280AbYINQZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 12:25:27 -0400
+Date: Sun, 14 Sep 2008 18:25:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Rufus & Azrael <rufus-azrael@numericable.fr>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Witbrodt <dawitbro@sbcglobal.net>
+Subject: Re: HPET regression in 2.6.26 versus 2.6.25 -- found another user
+	with the same regression
+Message-ID: <20080914162514.GD22385@elte.hu>
+References: <86802c440808231310hdafc30aw6931b77ea926338e@mail.gmail.com> <48B06FF9.1030404@numericable.fr> <86802c440808231328w5c6a3fa3s9be9d90ec1f30aa1@mail.gmail.com> <48B07409.60905@numericable.fr> <86802c440808231335n9214e38q5141a3560c698f76@mail.gmail.com> <48B074E1.9020106@numericable.fr> <86802c440808231345u7c4f7710k5878928239507b10@mail.gmail.com> <86802c440808231405u42fa8024r89eccc907f36d99e@mail.gmail.com> <20080912173933.GF6743@alberich.amd.com> <20080912174522.GB8042@cosmic.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080912174522.GB8042@cosmic.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008 09:04:08 -0700
-"Ulrich Drepper" <drepper@gmail.com> wrote:
 
+* Jordan Crouse <jordan.crouse@amd.com> wrote:
+
+> On 12/09/08 19:39 +0200, Andreas Herrmann wrote:
+> > On Sat, Aug 23, 2008 at 02:05:19PM -0700, Yinghai Lu wrote:
+> > > Jordan, or others for AMD could access SB600
+> > > can you check ATI SB600 doc to produce one quirks patch to set the
+> > > magic bit to hide 00:14.0 BAR1 to OS ?
+> > 
+> > I know this is a very late reply, but
+> > is there still a quirk desired to hide BAR1 of SB600 SMBus device?
+> > 
+> > If yes, I'll provide a patch asap.
 > 
-> You cannot really use the environment for anything meaningful.
-> Especially for this case, you couldn't change the setting for a
-> running process.  What a fully-userlevel implementation would have to
-> do is read the value from a file and monitor the file for changes for
-> every new poll/select call.  That's a huge cost.
+> I sent one up last week, but it was overshadowed by the much
+> more serious R790 problem that Linus and Rafael was looking
+> at.  I have re-attached the patch for posterity.
 
-in addition, the value really is per thread, not per process, and how
-do you want to do that with env. variables?
+i think that quirk still makes sense (even with a perfect PCI resources 
+engine it gets rid of a debug warning), i've applied it to 
+tip/timers/hpet. Thanks Jordan,
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
