@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbYINQn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYINQqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbYINQn7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 12:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYINQnu
+	id S1755251AbYINQqt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 12:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYINQql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 12:43:50 -0400
-Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:40505
-	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751977AbYINQnu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 12:43:50 -0400
-Date: Sun, 14 Sep 2008 09:43:49 -0700
-From: Phil Oester <kernel@linuxace.com>
-To: "Wennie V. Lagmay" <wlagmay@yanbulink.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel upgarde causes IPTABLES SAME not working for me
-Message-ID: <20080914164349.GA6664@linuxace.com>
-References: <23541694.2961221393851646.JavaMail.root@mail.yanbulink.net>
+	Sun, 14 Sep 2008 12:46:41 -0400
+Received: from smtpi1.ngi.it ([88.149.128.20]:34372 "EHLO smtpi1.ngi.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751992AbYINQql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 12:46:41 -0400
+From: Fabio Coatti <cova@ferrara.linux.it>
+To: linux-kernel@vger.kernel.org
+Subject: hp smart array E200i kernel panic upon boot (bug 9859)
+Date: Sun, 14 Sep 2008 18:46:38 +0200
+User-Agent: KMail/1.9.9
+Organization: FerraraLUG
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <23541694.2961221393851646.JavaMail.root@mail.yanbulink.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200809141846.38808.cova@ferrara.linux.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 14, 2008 at 03:04:11PM +0300, Wennie V. Lagmay wrote:
-> Dear all, 
-> 
-> I am having a problem with the recent version of kernel (2.6.25-14-108) on Fedora Core 9 64 bit.
-> I am trying to enable the NATting using SAME command but I am getting an error "Iptables: No chain/target match by this name" but with earlier version of linux 2.6.23.1-42 iptables with SAME target is working; "iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -j SAME --to 10.10.10.1-10.10.10.2 --nodst"
+Hi all, 
+I'm still facing the issue described here: 
+http://bugzilla.kernel.org/show_bug.cgi?id=9859
 
-The SAME target has been removed from the kernel, and no longer
-exists in 2.6.25.  You will have to use the SNAT or MASQUERADE
-targets.
+(basically, kernels newer than 2.6.23.12 fails to find root device on E200i 
+scsi controllers, i.e. available on HP c-class blades BL465C )
 
-Phil
+Maybe I'm missing something, but even googling I've found no solutions or 
+hint.
+
+Can someone help me in getting out from this ? basically we are unable to 
+upgrade kernels on that machines. Maybe I'm doing something incredibly wrong, 
+but I can't figure out what, honestly.
+
+Many thanks for any help.
+
+
+-- 
+Fabio Coatti       http://members.ferrara.linux.it/cova     
+Ferrara Linux Users Group           http://ferrara.linux.it
+GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703
+Old SysOps never die... they simply forget their password.
