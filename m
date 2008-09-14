@@ -1,185 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbYINIHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbYINIOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbYINIHL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 04:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYINIGx
+	id S1753962AbYINIOY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 04:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbYINIOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 04:06:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37248 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751474AbYINIGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 04:06:51 -0400
-Date: Sun, 14 Sep 2008 10:06:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] mm: fix locking, inotify_read's ev_mutex vs
-	do_page_fault's mmap_sem...
-Message-ID: <20080914080631.GA10720@elte.hu>
-References: <20080910113717.GB16811@wotan.suse.de> <1221046892.30429.85.camel@twins.programming.kicks-ass.net> <20080910114755.GA9696@elte.hu> <20080910121217.GA16013@elte.hu> <20080910144812.GB18644@wotan.suse.de> <1221058864.30429.291.camel@twins.programming.kicks-ass.net> <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080914004442.4f8e851f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 14 Sep 2008 04:14:09 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:4077 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751777AbYINIOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 04:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=SymopjIVfr/4MImIGsdB3ckng15K8b5iZr2XBiQZEpEeaxgQAEvo/tfIBpasQ0kFIB
+         Epc7BbslC42Xuc7mVi0FJNjsXlejeVukeROjf3GwjI1GzcWCJ2W9xBGPgw0ULQRv3JoM
+         SmznvQFvblwP4XZCNy8StC3hk6fZSam8+afu8=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] x86: move transmeta cap read to early_init_transmeta()
+Date: Sun, 14 Sep 2008 01:13:30 -0700
+Message-Id: <1221380010-6433-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> > [ 6460.634452] 
-> > [ 6460.634465] =======================================================
-> > [ 6460.634494] [ INFO: possible circular locking dependency detected ]
-> > [ 6460.634517] 2.6.27-rc6-tip-00290-g8e229c3-dirty #1
-> > [ 6460.634535] -------------------------------------------------------
-> > [ 6460.634555] gdm-simple-gree/4778 is trying to acquire lock:
-> > [ 6460.634574]  (&mm->mmap_sem){----}, at: [<c018fe33>] might_fault+0x36/0x73
-> > [ 6460.634639] 
-> > [ 6460.634645] but task is already holding lock:
-> > [ 6460.634662]  (&dev->ev_mutex){--..}, at: [<c01c7a76>] inotify_read+0xd8/0x16e
-> > [ 6460.634715] 
-> > [ 6460.634721] which lock already depends on the new lock.
-> 
-> Yes, there's a thread in my intray called "inotify_read's ev_mutex vs 
-> do_page_fault's mmap_sem...".  It's a bit flakey-looking, but there's 
-> a patch in there.
-
-ah, thx. I picked up the patch into tip/out-of-tree. (see below for a 
-tided up changelog) Please queue it up as v2.6.27 material. (i'll report 
-it if anything breaks due to the patch)
-
-	Ingo
-
---------------->
->From 1eb0a42e4eb3283521ee1de99adbf567874b622f Mon Sep 17 00:00:00 2001
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Thu, 11 Sep 2008 06:12:51 +1000
-Subject: [PATCH] mm: fix locking, inotify_read's ev_mutex vs do_page_fault's mmap_sem...
-
-Daniel J Blueman wrote:
-> I observed this locking violation [1] while gnome-panel was loading;
-> this was previously reported at
-> http://uwsg.iu.edu/hypermail/linux/kernel/0806.3/2881.html .
-
-Fix inotify lock order reversal with mmap_sem due to holding locks over
-copy_to_user.
-
-Reported-by: "Daniel J Blueman" <daniel.blueman@gmail.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- fs/inotify_user.c            |   27 ++++++++++++++++++++-------
- include/asm-x86/uaccess_64.h |    1 +
- 2 files changed, 21 insertions(+), 7 deletions(-)
+ arch/x86/kernel/cpu/common.c    |    8 --------
+ arch/x86/kernel/cpu/transmeta.c |   28 +++++++++++++++-------------
+ 2 files changed, 15 insertions(+), 21 deletions(-)
 
-diff --git a/fs/inotify_user.c b/fs/inotify_user.c
-index 6024942..d85c7d9 100644
---- a/fs/inotify_user.c
-+++ b/fs/inotify_user.c
-@@ -323,7 +323,7 @@ out:
- }
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 8c831a0..b305664 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -465,14 +465,6 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
+ 	}
  
- /*
-- * remove_kevent - cleans up and ultimately frees the given kevent
-+ * remove_kevent - cleans up the given kevent
-  *
-  * Caller must hold dev->ev_mutex.
-  */
-@@ -334,7 +334,13 @@ static void remove_kevent(struct inotify_device *dev,
+ #ifdef CONFIG_X86_64
+-	/* Transmeta-defined flags: level 0x80860001 */
+-	xlvl = cpuid_eax(0x80860000);
+-	if ((xlvl & 0xffff0000) == 0x80860000) {
+-		/* Don't set x86_cpuid_level here for now to not confuse. */
+-		if (xlvl >= 0x80860001)
+-			c->x86_capability[2] = cpuid_edx(0x80860001);
+-	}
+-
+ 	if (c->extended_cpuid_level >= 0x80000008) {
+ 		u32 eax = cpuid_eax(0x80000008);
  
- 	dev->event_count--;
- 	dev->queue_size -= sizeof(struct inotify_event) + kevent->event.len;
-+}
+diff --git a/arch/x86/kernel/cpu/transmeta.c b/arch/x86/kernel/cpu/transmeta.c
+index 738e032..52b3fef 100644
+--- a/arch/x86/kernel/cpu/transmeta.c
++++ b/arch/x86/kernel/cpu/transmeta.c
+@@ -5,6 +5,18 @@
+ #include <asm/msr.h>
+ #include "cpu.h"
  
-+/*
-+ * free_kevent - frees the given kevent.
-+ */
-+static void free_kevent(struct inotify_kernel_event *kevent)
++static void __cpuinit early_init_transmeta(struct cpuinfo_x86 *c)
 +{
- 	kfree(kevent->name);
- 	kmem_cache_free(event_cachep, kevent);
- }
-@@ -350,6 +356,7 @@ static void inotify_dev_event_dequeue(struct inotify_device *dev)
- 		struct inotify_kernel_event *kevent;
- 		kevent = inotify_dev_get_event(dev);
- 		remove_kevent(dev, kevent);
-+		free_kevent(kevent);
- 	}
- }
- 
-@@ -433,17 +440,15 @@ static ssize_t inotify_read(struct file *file, char __user *buf,
- 	dev = file->private_data;
- 
- 	while (1) {
--		int events;
- 
- 		prepare_to_wait(&dev->wq, &wait, TASK_INTERRUPTIBLE);
- 
- 		mutex_lock(&dev->ev_mutex);
--		events = !list_empty(&dev->events);
--		mutex_unlock(&dev->ev_mutex);
--		if (events) {
-+		if (!list_empty(&dev->events)) {
- 			ret = 0;
- 			break;
- 		}
-+		mutex_unlock(&dev->ev_mutex);
- 
- 		if (file->f_flags & O_NONBLOCK) {
- 			ret = -EAGAIN;
-@@ -462,7 +467,6 @@ static ssize_t inotify_read(struct file *file, char __user *buf,
- 	if (ret)
- 		return ret;
- 
--	mutex_lock(&dev->ev_mutex);
- 	while (1) {
- 		struct inotify_kernel_event *kevent;
- 
-@@ -481,6 +485,13 @@ static ssize_t inotify_read(struct file *file, char __user *buf,
- 			}
- 			break;
- 		}
-+		remove_kevent(dev, kevent);
++	u32 xlvl;
 +
-+		/*
-+		 * Must perform the copy_to_user outside the mutex in order
-+		 * to avoid a lock order reversal with mmap_sem.
-+		 */
-+		mutex_unlock(&dev->ev_mutex);
- 
- 		if (copy_to_user(buf, &kevent->event, event_size)) {
- 			ret = -EFAULT;
-@@ -498,7 +509,9 @@ static ssize_t inotify_read(struct file *file, char __user *buf,
- 			count -= kevent->event.len;
- 		}
- 
--		remove_kevent(dev, kevent);
-+		free_kevent(kevent);
++	/* Transmeta-defined flags: level 0x80860001 */
++	xlvl = cpuid_eax(0x80860000);
++	if ((xlvl & 0xffff0000) == 0x80860000) {
++		if (xlvl >= 0x80860001)
++			c->x86_capability[2] = cpuid_edx(0x80860001);
++	}
++}
 +
-+		mutex_lock(&dev->ev_mutex);
- 	}
- 	mutex_unlock(&dev->ev_mutex);
+ static void __cpuinit init_transmeta(struct cpuinfo_x86 *c)
+ {
+ 	unsigned int cap_mask, uk, max, dummy;
+@@ -12,6 +24,8 @@ static void __cpuinit init_transmeta(struct cpuinfo_x86 *c)
+ 	unsigned int cpu_rev, cpu_freq = 0, cpu_flags, new_cpu_rev;
+ 	char cpu_info[65];
  
-diff --git a/include/asm-x86/uaccess_64.h b/include/asm-x86/uaccess_64.h
-index 515d4dc..45806d6 100644
---- a/include/asm-x86/uaccess_64.h
-+++ b/include/asm-x86/uaccess_64.h
-@@ -7,6 +7,7 @@
- #include <linux/compiler.h>
- #include <linux/errno.h>
- #include <linux/prefetch.h>
-+#include <linux/lockdep.h>
- #include <asm/page.h>
++	early_init_transmeta(c);
++
+ 	display_cacheinfo(c);
  
- /*
+ 	/* Print CMS and CPU revision */
+@@ -84,23 +98,11 @@ static void __cpuinit init_transmeta(struct cpuinfo_x86 *c)
+ #endif
+ }
+ 
+-static void __cpuinit transmeta_identify(struct cpuinfo_x86 *c)
+-{
+-	u32 xlvl;
+-
+-	/* Transmeta-defined flags: level 0x80860001 */
+-	xlvl = cpuid_eax(0x80860000);
+-	if ((xlvl & 0xffff0000) == 0x80860000) {
+-		if (xlvl >= 0x80860001)
+-			c->x86_capability[2] = cpuid_edx(0x80860001);
+-	}
+-}
+-
+ static struct cpu_dev transmeta_cpu_dev __cpuinitdata = {
+ 	.c_vendor	= "Transmeta",
+ 	.c_ident	= { "GenuineTMx86", "TransmetaCPU" },
++	.c_early_init	= early_init_transmeta,
+ 	.c_init		= init_transmeta,
+-	.c_identify	= transmeta_identify,
+ 	.c_x86_vendor	= X86_VENDOR_TRANSMETA,
+ };
+ 
+-- 
+1.5.6
+
