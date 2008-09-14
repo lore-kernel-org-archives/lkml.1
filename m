@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbYINTIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbYINTJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbYINTIs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbYINTIf
+	id S1755703AbYINTJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYINTIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:08:35 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50923 "EHLO sh.osrg.net"
+	Sun, 14 Sep 2008 15:08:44 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50956 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753419AbYINTId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:08:33 -0400
+	id S1753869AbYINTIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:08:41 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 27/27] nilfs2: update makefile and Kconfig
-Date: Mon, 15 Sep 2008 04:08:24 +0900
-Message-Id: <1221419304-18572-28-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 16/27] nilfs2: file operations
+Date: Mon, 15 Sep 2008 04:08:13 +0900
+Message-Id: <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1221419304-18572-27-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
@@ -34,89 +34,149 @@ References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-19-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-20-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-22-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-23-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-24-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-25-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-26-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-27-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a Makefile for the nilfs2 file system, and updates the
-makefile and Kconfig file in the file system directory.
+This adds primitives for regular file handling.
 
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/Kconfig         |   26 ++++++++++++++++++++++++++
- fs/Makefile        |    1 +
- fs/nilfs2/Makefile |    5 +++++
- 3 files changed, 32 insertions(+), 0 deletions(-)
- create mode 100644 fs/nilfs2/Makefile
+ fs/nilfs2/file.c |  125 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 125 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/file.c
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index abccb5d..294092c 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1383,6 +1383,32 @@ config MINIX_FS
- 	  partition (the one containing the directory /) cannot be compiled as
- 	  a module.
- 
-+config NILFS2_FS
-+	tristate "NILFS2 file system support (EXPERIMENTAL)"
-+	depends on BLOCK && EXPERIMENTAL
-+	select CRC32
-+	help
-+	  NILFS2 is a log-structured file system (LFS) supporting continuous
-+	  snapshotting.  In addition to versioning capability of the entire
-+	  file system, users can even restore files mistakenly overwritten or
-+	  destroyed just a few seconds ago.  Since this file system can keep
-+	  consistency like conventional LFS, it achieves quick recovery after
-+	  system crashes.
-+
-+	  NILFS2 creates a number of checkpoints every few seconds or per
-+	  synchronous write basis (unless there is no change).  Users can
-+	  select significant versions among continuously created checkpoints,
-+	  and can change them into snapshots which will be preserved for long
-+	  periods until they are changed back to checkpoints.  Each
-+	  snapshot is mountable as a read-only file system concurrently with
-+	  its writable mount, and this feature is convenient for online backup.
-+
-+	  Some features including atime, extended attributes, and POSIX ACLs,
-+	  are not supported yet.
-+
-+	  To compile this file system support as a module, choose M here: the
-+	  module will be called nilfs2.  If unsure, say N.
-+
- config OMFS_FS
- 	tristate "SonicBlue Optimized MPEG File System support"
- 	depends on BLOCK
-diff --git a/fs/Makefile b/fs/Makefile
-index a1482a5..ddcf879 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -122,3 +122,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
- obj-$(CONFIG_DEBUG_FS)		+= debugfs/
- obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
- obj-$(CONFIG_GFS2_FS)           += gfs2/
-+obj-$(CONFIG_NILFS2_FS)		+= nilfs2/
-diff --git a/fs/nilfs2/Makefile b/fs/nilfs2/Makefile
+diff --git a/fs/nilfs2/file.c b/fs/nilfs2/file.c
 new file mode 100644
-index 0000000..df3e62c
+index 0000000..7ddd42e
 --- /dev/null
-+++ b/fs/nilfs2/Makefile
-@@ -0,0 +1,5 @@
-+obj-$(CONFIG_NILFS2_FS) += nilfs2.o
-+nilfs2-y := inode.o file.o dir.o super.o namei.o page.o mdt.o \
-+	btnode.o bmap.o btree.o direct.o dat.o recovery.o \
-+	the_nilfs.o segbuf.o segment.o cpfile.o sufile.o \
-+	ifile.o alloc.o gcinode.o ioctl.o gcdat.o
++++ b/fs/nilfs2/file.c
+@@ -0,0 +1,125 @@
++/*
++ * file.c - NILFS regular file handling primitives including fsync().
++ *
++ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ *
++ * Written by Amagai Yoshiji <amagai@osrg.net>,
++ *            Ryusuke Konishi <ryusuke@osrg.net>
++ */
++
++#include <linux/fs.h>
++#include <linux/mm.h>
++#include <linux/writeback.h>
++#include "nilfs.h"
++#include "segment.h"
++
++int nilfs_sync_file(struct file *file, struct dentry *dentry, int datasync)
++{
++	/*
++	 * Called from fsync() system call
++	 * This is the only entry point that can catch write and synch
++	 * timing for both data blocks and intermediate blocks.
++	 *
++	 * This function should be implemented when the writeback function
++	 * will be implemented.
++	 */
++	struct inode *inode = dentry->d_inode;
++	int err;
++
++	if (!nilfs_inode_dirty(inode))
++		return 0;
++
++	if (datasync)
++		err = nilfs_construct_dsync_segment(inode->i_sb, inode);
++	else
++		err = nilfs_construct_segment(inode->i_sb);
++
++	return err;
++}
++
++static ssize_t
++nilfs_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
++		     unsigned long nr_segs, loff_t pos)
++{
++	struct file *file = iocb->ki_filp;
++	struct inode *inode = file->f_dentry->d_inode;
++	ssize_t ret;
++
++	ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
++	if (ret <= 0)
++		return ret;
++
++	if ((file->f_flags & O_SYNC) || IS_SYNC(inode)) {
++		int err;
++
++		err = nilfs_construct_dsync_segment(inode->i_sb, inode);
++		if (unlikely(err))
++			return err;
++	}
++	return ret;
++}
++
++static int nilfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++{
++	if (!(vma->vm_flags & (VM_WRITE | VM_MAYWRITE)))
++		return -EPERM;
++	SetPageChecked(page);
++	wait_on_page_writeback(page);
++	return 0;
++}
++
++struct vm_operations_struct nilfs_file_vm_ops = {
++	.fault		= filemap_fault,
++	.page_mkwrite	= nilfs_page_mkwrite,
++};
++
++static int nilfs_file_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	file_accessed(file);
++	vma->vm_ops = &nilfs_file_vm_ops;
++	vma->vm_flags |= VM_CAN_NONLINEAR;
++	return 0;
++}
++
++/*
++ * We have mostly NULL's here: the current defaults are ok for
++ * the nilfs filesystem.
++ */
++struct file_operations nilfs_file_operations = {
++	.llseek		= generic_file_llseek,
++	.read		= do_sync_read,
++	.write		= do_sync_write,
++	.aio_read	= generic_file_aio_read,
++	.aio_write	= nilfs_file_aio_write,
++	.ioctl		= nilfs_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= nilfs_compat_ioctl,
++#endif	/* CONFIG_COMPAT */
++	.mmap		= nilfs_file_mmap,
++	.open		= generic_file_open,
++	/* .release	= nilfs_release_file, */
++	.fsync		= nilfs_sync_file,
++	.splice_read	= generic_file_splice_read,
++};
++
++struct inode_operations nilfs_file_inode_operations = {
++	.truncate	= nilfs_truncate,
++	.setattr	= nilfs_setattr,
++	.permission     = nilfs_permission,
++};
++
++/* end of file */
 -- 
 1.5.6.3
 
