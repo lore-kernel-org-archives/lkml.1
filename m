@@ -1,83 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbYINM0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbYINMgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbYINM0s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 08:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYINM0j
+	id S1754477AbYINMgx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 08:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYINMgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 08:26:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59384 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753008AbYINM0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 08:26:38 -0400
-Date: Sun, 14 Sep 2008 14:26:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] apci: dump slit
-Message-ID: <20080914122618.GD16097@elte.hu>
-References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com> <20080912122031.eca8723e.akpm@linux-foundation.org> <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com> <878wtxrrwh.fsf@basil.nowhere.org> <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de> <20080914112222.GA3956@ucw.cz>
+	Sun, 14 Sep 2008 08:36:43 -0400
+Received: from mail-in-01.arcor-online.net ([151.189.21.41]:59207 "EHLO
+	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753008AbYINMgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 08:36:41 -0400
+Date: Sun, 14 Sep 2008 14:36:30 +0200 (CEST)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
+cc: 7eggert@gmx.de, Alan Stern <stern@rowland.harvard.edu>,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       bogdano@mandriva.com.br,
+       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       Abdel Benamrouche <draconux@gmail.com>,
+       Damien Lallement <dlallement@mandriva.com>,
+       "pterjan@mandriva.com" <pterjan@mandriva.com>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: Re: Partition check considered as error is breaking mounting in
+ 2.6.27
+In-Reply-To: <200809132025.40300.herton@mandriva.com.br>
+Message-ID: <Pine.LNX.4.58.0809141223300.16805@be10.lrz>
+References: <bblSy-60j-19@gated-at.bofh.it> <bbnhC-7Vd-5@gated-at.bofh.it>
+ <E1KeRMh-0001Ay-Uj@be1.7eggert.dyndns.org> <200809132025.40300.herton@mandriva.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080914112222.GA3956@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 13 Sep 2008, Herton Ronaldo Krzesinski wrote:
+> On Saturday 13 September 2008 06:24:27 Bodo Eggert wrote:
+> > Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
 
-* Pavel Machek <pavel@suse.cz> wrote:
-
-> On Fri 2008-09-12 23:19:21, Thomas Gleixner wrote:
-> > On Fri, 12 Sep 2008, Andi Kleen wrote:
-> > > "Yinghai Lu" <yhlu.kernel@gmail.com> writes:
-> > > >
-> > > > to see how wrong could be set by BIOS.
-> > > 
-> > > Just dump it from user space then.  There are plenty of tools
-> > > to access ACPI tables.
+> > > +++ b/fs/partitions/check.c
+> > > @@ -499,9 +499,9 @@ int rescan_partitions(struct gendisk *disk, struct
+> > > block_device *bdev)
+> > >  if (!size)
+> > >  continue;
+> > >  if (from + size > get_capacity(disk)) {
+> > > -                     printk(KERN_ERR " %s: p%d exceeds device capacity\n",
+> > > +                     printk(KERN_WARNING
+> > > +                             " %s: p%d exceeds device capacity"
+> >                                 ", trimmed\n",
+> > >  disk->disk_name, p);
 > > 
-> > 1.) what guarantees that we reach user space ?
+> > Add "size = get_capacity(disk) - from" here?
+> > (Possibly using a cached value for get_capacity(disk)?)
 > 
-> We can dump in *any* kernel.
->
-> > 2) If it is _valuable_ information which we can gather via kernel
-> >    output, then it is much more conveniant than asking the user to type
-> >    whatevercryptictoolcommandline and provide the output.
-> 
-> Ooh, 'lets dump more junk at everyone, typing commands is hard' :-(.
+> Trim was already proposed here before (not accepted):
+> http://lkml.org/lkml/2006/10/12/364
 
-no, the principle is, information like the boot-time CPUID information 
-(and even the BIOS environment) can be indicative of _kernel bugs_. It 
-is often essential to dump what the booting (and failing) kernel thinks 
-is its environment.
+Because of - as far as I read - possible special-case-forensic-situations 
+and possible meddling-with-the-jumper.
 
-Often that environment is corrupted (by the kernel) and that leads to 
-problems. This 'environment' can also be affected by things like hard 
-boot vs cold boot differences, whether it's in a kexec environment, 
-whether it's booted as a virtual guest, etc., etc.
+IMO:
 
-For a long time we had the kernel's x86 bootup pretty much as a mostly 
-silent black box and when it broke we tried to figure things out 
-afterwards which was difficult and error-prone. Now we've got various 
-quite effective debug mechanisms (which includes printouts as well) and 
-figuring out x86 problems is visibly easier. We definitely wont go back 
-to the 'black box code, can only be debugged by a few experts' method.
+a) If you need fancy partition handling, you can do it in userspace.
+Copying a few MB to a completely different machine, expecting it to work
+correctly while depending on the partition numbering to stay the same is
+just stupid, and it won't work if you mount by path, anyway. It won't work 
+for extended partitions, too, if they don't start in the copied area, 
+because they are a chain of partition tables.
 
-So extending on that is a good and obvious idea in general - and i agree 
-with Peter that this should be command-line dependent, i.e. not printed 
-by default. Only printing it when 'debug' is specified on the command 
-line is a good solution.
+Ordinary users need a correctly-working, non-logspewing ("Access beyond
+end of disk") system, including the possibility to correctly create
+filesystems or to use md on the disks. Having an IO-error-area at the end
+of the partition won't exactly help, but maybe destroy the 
+HAL-automounted-using-the-wrong-options* filesystem.
 
-	Ingo
+Advanced users like me can set up a system in qemu, transfer it to a 
+temporary directory, start the old system into /bin/sh, make some bind 
+mounts and start the new system.
+
+I might also copy one disk onto two disks, planning to concatenate the
+split partition using dmsetup.
+
+Even more advanced users do forensics. Do they really need us to prevent
+partition renumbering, as long as there ia a hex editor to trim the
+partitions? Can't they just write a small program to fix these partitions
+and run it after dd finished? Or create an intrd doing what they want?
+Or wouldn't they be be better of with something like "hda.size=0815"?
+
+(*BTW: Is there any documentation for the pile-of-HAL-DBUS-KDE-and-stuff,
+which would allow me to actually configure it, and possibly unmount the
+devices without sudo?)
+
+
+b) If there is a soft-clipped disk, find out the unclipped size (and 
+unclip it on finding a large partition, if possible and if the partition 
+is not "hidden").
+
+If you need to enter a password, the partial partitions should be
+read-only and be switched to read-write after entering the password.
+Having a corrupted fs because of entering a wrong password is not a good
+start for a day. (Yes, my suggestion to just clip it was not enough.)
+
+If you should ever need to access a partition exceeding the true disk
+size, you can always use dmsetup or losetup. And don't write to it until
+you've copied all the data you want. And especially dont complain about
+resulting corruptions.
