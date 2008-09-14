@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbYINTQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYINTQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbYINTQU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755779AbYINTKS
+	id S1756708AbYINTQw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755923AbYINTK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:10:18 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50992 "EHLO sh.osrg.net"
+	Sun, 14 Sep 2008 15:10:26 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53341 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755636AbYINTJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:09:09 -0400
+	id S1755625AbYINTJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:09:29 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Koji Sato <sato.koji@lab.ntt.co.jp>,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 23/27] nilfs2: recovery functions
-Date: Mon, 15 Sep 2008 04:08:20 +0900
-Message-Id: <1221419304-18572-24-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 14/27] nilfs2: segment usage file
+Date: Mon, 15 Sep 2008 04:08:11 +0900
+Message-Id: <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1221419304-18572-23-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
@@ -32,42 +33,34 @@ References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-12-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-13-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-19-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-20-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-22-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
- <1221419304-18572-23-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds recovery function on mount.
+From: Koji Sato <sato.koji@lab.ntt.co.jp>
 
-Usually the recovery is achieved by just finding the latest super
-root.  When logs without checkpoints were appended for data sync
-operations after the latest super root, the recovery function will
-perform roll forwarding and reconstruct new log(s) with a super root.
+This adds a meta data file which stores the allocation state of
+segments.
 
+Signed-off-by: Koji Sato <sato.koji@lab.ntt.co.jp>
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/nilfs2/recovery.c |  941 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 941 insertions(+), 0 deletions(-)
- create mode 100644 fs/nilfs2/recovery.c
+ fs/nilfs2/sufile.c |  627 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nilfs2/sufile.h |   54 +++++
+ 2 files changed, 681 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/sufile.c
+ create mode 100644 fs/nilfs2/sufile.h
 
-diff --git a/fs/nilfs2/recovery.c b/fs/nilfs2/recovery.c
+diff --git a/fs/nilfs2/sufile.c b/fs/nilfs2/sufile.c
 new file mode 100644
-index 0000000..877dc1b
+index 0000000..d672924
 --- /dev/null
-+++ b/fs/nilfs2/recovery.c
-@@ -0,0 +1,941 @@
++++ b/fs/nilfs2/sufile.c
+@@ -0,0 +1,627 @@
 +/*
-+ * recovery.c - NILFS recovery logic
++ * sufile.c - NILFS segment usage file.
 + *
-+ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
++ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -83,928 +76,674 @@ index 0000000..877dc1b
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Ryusuke Konishi <ryusuke@osrg.net>
++ * Written by Koji Sato <koji@osrg.net>.
 + */
 +
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/string.h>
 +#include <linux/buffer_head.h>
-+#include <linux/blkdev.h>
-+#include <linux/swap.h>
-+#include <linux/crc32.h>
-+#include "nilfs.h"
-+#include "segment.h"
++#include <linux/errno.h>
++#include <linux/nilfs2_fs.h>
++#include "mdt.h"
 +#include "sufile.h"
-+#include "page.h"
-+#include "seglist.h"
-+#include "segbuf.h"
-+
-+/*
-+ * Segment check result
-+ */
-+enum {
-+	NILFS_SEG_VALID,
-+	NILFS_SEG_NO_SUPER_ROOT,
-+	NILFS_SEG_FAIL_IO,
-+	NILFS_SEG_FAIL_MAGIC,
-+	NILFS_SEG_FAIL_SEQ,
-+	NILFS_SEG_FAIL_CHECKSUM_SEGSUM,
-+	NILFS_SEG_FAIL_CHECKSUM_SUPER_ROOT,
-+	NILFS_SEG_FAIL_CHECKSUM_FULL,
-+	NILFS_SEG_FAIL_CONSISTENCY,
-+};
-+
-+/* work structure for recovery */
-+struct nilfs_recovery_block {
-+	ino_t ino;		/* Inode number of the file that this block
-+				   belongs to */
-+	sector_t blocknr;	/* block number */
-+	__u64 vblocknr;		/* virtual block number */
-+	unsigned long blkoff;	/* File offset of the data block (per block) */
-+	struct list_head list;
-+};
 +
 +
-+static int nilfs_warn_segment_error(int err)
++static inline unsigned long
++nilfs_sufile_segment_usages_per_block(const struct inode *sufile)
 +{
-+	switch (err) {
-+	case NILFS_SEG_FAIL_IO:
-+		printk(KERN_WARNING
-+		       "NILFS warning: I/O error on loading last segment\n");
-+		return -EIO;
-+	case NILFS_SEG_FAIL_MAGIC:
-+		printk(KERN_WARNING
-+		       "NILFS warning: Segment magic number invalid\n");
-+		break;
-+	case NILFS_SEG_FAIL_SEQ:
-+		printk(KERN_WARNING
-+		       "NILFS warning: Sequence number mismatch\n");
-+		break;
-+	case NILFS_SEG_FAIL_CHECKSUM_SEGSUM:
-+		printk(KERN_WARNING
-+		       "NILFS warning: Checksum error in segment summary\n");
-+		break;
-+	case NILFS_SEG_FAIL_CHECKSUM_SUPER_ROOT:
-+		printk(KERN_WARNING
-+		       "NILFS warning: Checksum error in super root\n");
-+		break;
-+	case NILFS_SEG_FAIL_CHECKSUM_FULL:
-+		printk(KERN_WARNING
-+		       "NILFS warning: Checksum error in segment payload\n");
-+		break;
-+	case NILFS_SEG_FAIL_CONSISTENCY:
-+		printk(KERN_WARNING
-+		       "NILFS warning: Inconsistent segment\n");
-+		break;
-+	case NILFS_SEG_NO_SUPER_ROOT:
-+		printk(KERN_WARNING
-+		       "NILFS warning: No super root in the last segment\n");
-+		break;
-+	case NILFS_SEG_VALID:
-+	default:
-+		BUG();
-+	}
-+	return -EINVAL;
++	return NILFS_MDT(sufile)->mi_entries_per_block;
 +}
 +
-+static void store_segsum_info(struct nilfs_segsum_info *ssi,
-+			      struct nilfs_segment_summary *sum,
-+			      unsigned int blocksize)
++static unsigned long
++nilfs_sufile_get_blkoff(const struct inode *sufile, __u64 segnum)
 +{
-+	ssi->flags = le16_to_cpu(sum->ss_flags);
-+	ssi->seg_seq = le64_to_cpu(sum->ss_seq);
-+	ssi->ctime = le64_to_cpu(sum->ss_create);
-+	ssi->next = le64_to_cpu(sum->ss_next);
-+	ssi->nblocks = le32_to_cpu(sum->ss_nblocks);
-+	ssi->nfinfo = le32_to_cpu(sum->ss_nfinfo);
-+	ssi->sumbytes = le32_to_cpu(sum->ss_sumbytes);
++	__u64 t = segnum + NILFS_MDT(sufile)->mi_first_entry_offset;
++	do_div(t, nilfs_sufile_segment_usages_per_block(sufile));
++	return (unsigned long)t;
++}
 +
-+	ssi->nsumblk = DIV_ROUND_UP(ssi->sumbytes, blocksize);
-+	ssi->nfileblk = ssi->nblocks - ssi->nsumblk - !!NILFS_SEG_HAS_SR(ssi);
++static unsigned long
++nilfs_sufile_get_offset(const struct inode *sufile, __u64 segnum)
++{
++	__u64 t = segnum + NILFS_MDT(sufile)->mi_first_entry_offset;
++	return do_div(t, nilfs_sufile_segment_usages_per_block(sufile));
++}
++
++static unsigned long
++nilfs_sufile_segment_usages_in_block(const struct inode *sufile, __u64 curr,
++				     __u64 max)
++{
++	return min_t(unsigned long,
++		     nilfs_sufile_segment_usages_per_block(sufile) -
++		     nilfs_sufile_get_offset(sufile, curr),
++		     max - curr + 1);
++}
++
++static inline struct nilfs_sufile_header *
++nilfs_sufile_block_get_header(const struct inode *sufile,
++			      struct buffer_head *bh,
++			      void *kaddr)
++{
++	return kaddr + bh_offset(bh);
++}
++
++static struct nilfs_segment_usage *
++nilfs_sufile_block_get_segment_usage(const struct inode *sufile, __u64 segnum,
++				     struct buffer_head *bh, void *kaddr)
++{
++	return kaddr + bh_offset(bh) +
++		nilfs_sufile_get_offset(sufile, segnum) *
++		NILFS_MDT(sufile)->mi_entry_size;
++}
++
++static inline int nilfs_sufile_get_header_block(struct inode *sufile,
++						struct buffer_head **bhp)
++{
++	return nilfs_mdt_get_block(sufile, 0, 0, NULL, bhp);
++}
++
++static inline int
++nilfs_sufile_get_segment_usage_block(struct inode *sufile, __u64 segnum,
++				     int create, struct buffer_head **bhp)
++{
++	return nilfs_mdt_get_block(sufile,
++				   nilfs_sufile_get_blkoff(sufile, segnum),
++				   create, NULL, bhp);
 +}
 +
 +/**
-+ * calc_crc_cont - check CRC of blocks continuously
-+ * @sbi: nilfs_sb_info
-+ * @bhs: buffer head of start block
-+ * @sum: place to store result
-+ * @offset: offset bytes in the first block
-+ * @check_bytes: number of bytes to be checked
-+ * @start: DBN of start block
-+ * @nblock: number of blocks to be checked
++ * nilfs_sufile_alloc - allocate a segment
++ * @sufile: inode of segment usage file
++ * @segnump: pointer to segment number
++ *
++ * Description: nilfs_sufile_alloc() allocates a clean segment.
++ *
++ * Return Value: On success, 0 is returned and the segment number of the
++ * allocated segment is stored in the place pointed by @segnump. On error, one
++ * of the following negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ *
++ * %-ENOSPC - No clean segment left.
 + */
-+static int calc_crc_cont(struct nilfs_sb_info *sbi, struct buffer_head *bhs,
-+			 u32 *sum, unsigned long offset, u64 check_bytes,
-+			 sector_t start, unsigned long nblock)
++int nilfs_sufile_alloc(struct inode *sufile, __u64 *segnump)
 +{
-+	unsigned long blocksize = sbi->s_super->s_blocksize;
-+	unsigned long size;
-+	u32 crc;
++	struct buffer_head *header_bh, *su_bh;
++	struct the_nilfs *nilfs;
++	struct nilfs_sufile_header *header;
++	struct nilfs_segment_usage *su;
++	size_t susz = NILFS_MDT(sufile)->mi_entry_size;
++	__u64 segnum, maxsegnum, last_alloc;
++	void *kaddr;
++	unsigned long nsegments, ncleansegs, nsus;
++	int ret, i, j;
 +
-+	BUG_ON(offset >= blocksize);
-+	check_bytes -= offset;
-+	size = min_t(u64, check_bytes, blocksize - offset);
-+	crc = crc32_le(sbi->s_nilfs->ns_crc_seed,
-+		       (unsigned char *)bhs->b_data + offset, size);
-+	if (--nblock > 0) {
-+		do {
-+			struct buffer_head *bh
-+				= sb_bread(sbi->s_super, ++start);
-+			if (!bh)
-+				return -EIO;
-+			check_bytes -= size;
-+			size = min_t(u64, check_bytes, blocksize);
-+			crc = crc32_le(crc, bh->b_data, size);
-+			brelse(bh);
-+		} while (--nblock > 0);
-+	}
-+	*sum = crc;
-+	return 0;
-+}
++	down_write(&NILFS_MDT(sufile)->mi_sem);
 +
-+/**
-+ * nilfs_read_super_root_block - read super root block
-+ * @sb: super_block
-+ * @sr_block: disk block number of the super root block
-+ * @pbh: address of a buffer_head pointer to return super root buffer
-+ * @check: CRC check flag
-+ */
-+int nilfs_read_super_root_block(struct super_block *sb, sector_t sr_block,
-+				struct buffer_head **pbh, int check)
-+{
-+	struct buffer_head *bh_sr;
-+	struct nilfs_super_root *sr;
-+	u32 crc;
-+	int ret;
++	nilfs = NILFS_MDT(sufile)->mi_nilfs;
 +
-+	*pbh = NULL;
-+	bh_sr = sb_bread(sb, sr_block);
-+	if (unlikely(!bh_sr)) {
-+		ret = NILFS_SEG_FAIL_IO;
-+		goto failed;
-+	}
++	ret = nilfs_sufile_get_header_block(sufile, &header_bh);
++	if (ret < 0)
++		goto out_sem;
++	kaddr = kmap_atomic(header_bh->b_page, KM_USER0);
++	header = nilfs_sufile_block_get_header(sufile, header_bh, kaddr);
++	ncleansegs = le64_to_cpu(header->sh_ncleansegs);
++	last_alloc = le64_to_cpu(header->sh_last_alloc);
++	kunmap_atomic(kaddr, KM_USER0);
 +
-+	sr = (struct nilfs_super_root *)bh_sr->b_data;
-+	if (check) {
-+		unsigned bytes = le16_to_cpu(sr->sr_bytes);
-+
-+		if (bytes == 0 || bytes > sb->s_blocksize) {
-+			ret = NILFS_SEG_FAIL_CHECKSUM_SUPER_ROOT;
-+			goto failed_bh;
++	nsegments = nilfs_sufile_get_nsegments(sufile);
++	segnum = last_alloc + 1;
++	maxsegnum = nsegments - 1;
++	for (i = 0; i < nsegments; i += nsus) {
++		if (segnum >= nsegments) {
++			/* wrap around */
++			segnum = 0;
++			maxsegnum = last_alloc;
 +		}
-+		if (calc_crc_cont(NILFS_SB(sb), bh_sr, &crc,
-+				  sizeof(sr->sr_sum), bytes, sr_block, 1)) {
-+			ret = NILFS_SEG_FAIL_IO;
-+			goto failed_bh;
++		ret = nilfs_sufile_get_segment_usage_block(sufile, segnum, 1,
++							   &su_bh);
++		if (ret < 0)
++			goto out_header;
++		kaddr = kmap_atomic(su_bh->b_page, KM_USER0);
++		su = nilfs_sufile_block_get_segment_usage(
++			sufile, segnum, su_bh, kaddr);
++
++		nsus = nilfs_sufile_segment_usages_in_block(
++			sufile, segnum, maxsegnum);
++		for (j = 0; j < nsus; j++, su = (void *)su + susz, segnum++) {
++			if (!nilfs_segment_usage_clean(su))
++				continue;
++			/* found a clean segment */
++			nilfs_segment_usage_set_active(su);
++			nilfs_segment_usage_set_dirty(su);
++			kunmap_atomic(kaddr, KM_USER0);
++
++			kaddr = kmap_atomic(header_bh->b_page, KM_USER0);
++			header = nilfs_sufile_block_get_header(
++				sufile, header_bh, kaddr);
++			le64_add_cpu(&header->sh_ncleansegs, -1);
++			le64_add_cpu(&header->sh_ndirtysegs, 1);
++			header->sh_last_alloc = cpu_to_le64(segnum);
++			kunmap_atomic(kaddr, KM_USER0);
++
++			nilfs_mdt_mark_buffer_dirty(header_bh);
++			nilfs_mdt_mark_buffer_dirty(su_bh);
++			nilfs_mdt_mark_dirty(sufile);
++			brelse(su_bh);
++			*segnump = segnum;
++			goto out_header;
 +		}
-+		if (crc != le32_to_cpu(sr->sr_sum)) {
-+			ret = NILFS_SEG_FAIL_CHECKSUM_SUPER_ROOT;
-+			goto failed_bh;
-+		}
-+	}
-+	*pbh = bh_sr;
-+	return 0;
 +
-+ failed_bh:
-+	brelse(bh_sr);
-+
-+ failed:
-+	return nilfs_warn_segment_error(ret);
-+}
-+
-+/**
-+ * load_segment_summary - read segment summary of the specified partial segment
-+ * @sbi: nilfs_sb_info
-+ * @pseg_start: start disk block number of partial segment
-+ * @seg_seq: sequence number requested
-+ * @ssi: pointer to nilfs_segsum_info struct to store information
-+ * @full_check: full check flag
-+ *              (0: only checks segment summary CRC, 1: data CRC)
-+ */
-+static int
-+load_segment_summary(struct nilfs_sb_info *sbi, sector_t pseg_start,
-+		     u64 seg_seq, struct nilfs_segsum_info *ssi,
-+		     int full_check)
-+{
-+	struct buffer_head *bh_sum;
-+	struct nilfs_segment_summary *sum;
-+	unsigned long offset, nblock;
-+	u64 check_bytes;
-+	u32 crc, crc_sum;
-+	int ret = NILFS_SEG_FAIL_IO;
-+
-+	bh_sum = sb_bread(sbi->s_super, pseg_start);
-+	if (!bh_sum)
-+		goto out;
-+
-+	sum = (struct nilfs_segment_summary *)bh_sum->b_data;
-+
-+	/* Check consistency of segment summary */
-+	if (le32_to_cpu(sum->ss_magic) != NILFS_SEGSUM_MAGIC) {
-+		ret = NILFS_SEG_FAIL_MAGIC;
-+		goto failed;
-+	}
-+	store_segsum_info(ssi, sum, sbi->s_super->s_blocksize);
-+	if (seg_seq != ssi->seg_seq) {
-+		ret = NILFS_SEG_FAIL_SEQ;
-+		goto failed;
-+	}
-+	if (full_check) {
-+		offset = sizeof(sum->ss_datasum);
-+		check_bytes =
-+			((u64)ssi->nblocks << sbi->s_super->s_blocksize_bits);
-+		nblock = ssi->nblocks;
-+		crc_sum = le32_to_cpu(sum->ss_datasum);
-+		ret = NILFS_SEG_FAIL_CHECKSUM_FULL;
-+	} else { /* only checks segment summary */
-+		offset = sizeof(sum->ss_datasum) + sizeof(sum->ss_sumsum);
-+		check_bytes = ssi->sumbytes;
-+		nblock = ssi->nsumblk;
-+		crc_sum = le32_to_cpu(sum->ss_sumsum);
-+		ret = NILFS_SEG_FAIL_CHECKSUM_SEGSUM;
++		kunmap_atomic(kaddr, KM_USER0);
++		brelse(su_bh);
 +	}
 +
-+	if (unlikely(nblock == 0 ||
-+		     nblock > sbi->s_nilfs->ns_blocks_per_segment)) {
-+		/* This limits the number of blocks read in the CRC check */
-+		ret = NILFS_SEG_FAIL_CONSISTENCY;
-+		goto failed;
-+	}
-+	if (calc_crc_cont(sbi, bh_sum, &crc, offset, check_bytes,
-+			  pseg_start, nblock)) {
-+		ret = NILFS_SEG_FAIL_IO;
-+		goto failed;
-+	}
-+	if (crc == crc_sum)
-+		ret = 0;
-+ failed:
-+	brelse(bh_sum);
-+ out:
++	/* no segments left */
++	ret = -ENOSPC;
++
++ out_header:
++	brelse(header_bh);
++
++ out_sem:
++	up_write(&NILFS_MDT(sufile)->mi_sem);
 +	return ret;
 +}
 +
-+static void *segsum_get(struct super_block *sb, struct buffer_head **pbh,
-+			unsigned int *offset, unsigned int bytes)
++/**
++ * nilfs_sufile_cancel_free -
++ * @sufile: inode of segment usage file
++ * @segnum: segment number
++ *
++ * Description:
++ *
++ * Return Value: On success, 0 is returned. On error, one of the following
++ * negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ */
++int nilfs_sufile_cancel_free(struct inode *sufile, __u64 segnum)
 +{
-+	void *ptr;
-+	sector_t blocknr;
-+
-+	BUG_ON((*pbh)->b_size < *offset);
-+	if (bytes > (*pbh)->b_size - *offset) {
-+		blocknr = (*pbh)->b_blocknr;
-+		brelse(*pbh);
-+		*pbh = sb_bread(sb, blocknr + 1);
-+		if (unlikely(!*pbh))
-+			return NULL;
-+		*offset = 0;
-+	}
-+	ptr = (*pbh)->b_data + *offset;
-+	*offset += bytes;
-+	return ptr;
-+}
-+
-+static void segsum_skip(struct super_block *sb, struct buffer_head **pbh,
-+			unsigned int *offset, unsigned int bytes,
-+			unsigned long count)
-+{
-+	unsigned int rest_item_in_current_block
-+		= ((*pbh)->b_size - *offset) / bytes;
-+
-+	if (count <= rest_item_in_current_block) {
-+		*offset += bytes * count;
-+	} else {
-+		sector_t blocknr = (*pbh)->b_blocknr;
-+		unsigned int nitem_per_block = (*pbh)->b_size / bytes;
-+		unsigned int bcnt;
-+
-+		count -= rest_item_in_current_block;
-+		bcnt = DIV_ROUND_UP(count, nitem_per_block);
-+		*offset = bytes * (count - (bcnt - 1) * nitem_per_block);
-+
-+		brelse(*pbh);
-+		*pbh = sb_bread(sb, blocknr + bcnt);
-+	}
-+}
-+
-+static int
-+collect_blocks_from_segsum(struct nilfs_sb_info *sbi, sector_t sum_blocknr,
-+			   struct nilfs_segsum_info *ssi,
-+			   struct list_head *head)
-+{
-+	struct buffer_head *bh;
-+	unsigned int offset;
-+	unsigned long nfinfo = ssi->nfinfo;
-+	sector_t blocknr = sum_blocknr + ssi->nsumblk;
-+	ino_t ino;
-+	int err = -EIO;
-+
-+	if (!nfinfo)
-+		return 0;
-+
-+	bh = sb_bread(sbi->s_super, sum_blocknr);
-+	if (unlikely(!bh))
-+		goto out;
-+
-+	offset = le16_to_cpu(
-+		((struct nilfs_segment_summary *)bh->b_data)->ss_bytes);
-+	for (;;) {
-+		unsigned long nblocks, ndatablk, nnodeblk;
-+		struct nilfs_finfo *finfo;
-+
-+		finfo = segsum_get(sbi->s_super, &bh, &offset, sizeof(*finfo));
-+		if (unlikely(!finfo))
-+			goto out;
-+
-+		ino = le64_to_cpu(finfo->fi_ino);
-+		nblocks = le32_to_cpu(finfo->fi_nblocks);
-+		ndatablk = le32_to_cpu(finfo->fi_ndatablk);
-+		nnodeblk = nblocks - ndatablk;
-+
-+		while (ndatablk-- > 0) {
-+			struct nilfs_recovery_block *rb;
-+			struct nilfs_binfo_v *binfo;
-+
-+			binfo = segsum_get(sbi->s_super, &bh, &offset,
-+					   sizeof(*binfo));
-+			if (unlikely(!binfo))
-+				goto out;
-+
-+			rb = kmalloc(sizeof(*rb), GFP_NOFS);
-+			if (unlikely(!rb)) {
-+				err = -ENOMEM;
-+				goto out;
-+			}
-+			rb->ino = ino;
-+			rb->blocknr = blocknr++;
-+			rb->vblocknr = le64_to_cpu(binfo->bi_vblocknr);
-+			rb->blkoff = le64_to_cpu(binfo->bi_blkoff);
-+			/* INIT_LIST_HEAD(&rb->list); */
-+			list_add_tail(&rb->list, head);
-+		}
-+		if (--nfinfo == 0)
-+			break;
-+		blocknr += nnodeblk; /* always 0 for the data sync segments */
-+		segsum_skip(sbi->s_super, &bh, &offset, sizeof(__le64),
-+			    nnodeblk);
-+		if (unlikely(!bh))
-+			goto out;
-+	}
-+	err = 0;
-+ out:
-+	brelse(bh);   /* brelse(NULL) is just ignored */
-+	return err;
-+}
-+
-+static void dispose_recovery_list(struct list_head *head)
-+{
-+	while (!list_empty(head)) {
-+		struct nilfs_recovery_block *rb
-+			= list_entry(head->next,
-+				     struct nilfs_recovery_block, list);
-+		list_del(&rb->list);
-+		kfree(rb);
-+	}
-+}
-+
-+void nilfs_dispose_segment_list(struct list_head *head)
-+{
-+	while (!list_empty(head)) {
-+		struct nilfs_segment_entry *ent
-+			= list_entry(head->next,
-+				     struct nilfs_segment_entry, list);
-+		list_del(&ent->list);
-+		nilfs_free_segment_entry(ent);
-+	}
-+}
-+
-+static int nilfs_prepare_segment_for_recovery(struct the_nilfs *nilfs,
-+					      struct nilfs_recovery_info *ri)
-+{
-+	struct list_head *head = &ri->ri_used_segments;
-+	struct nilfs_segment_entry *ent, *n;
-+	struct inode *sufile = nilfs->ns_sufile;
-+	__u64 segnum[4];
-+	int err;
-+	int i;
-+
-+	segnum[0] = nilfs->ns_segnum;
-+	segnum[1] = nilfs->ns_nextnum;
-+	segnum[2] = ri->ri_segnum;
-+	segnum[3] = ri->ri_nextnum;
-+
-+	/*
-+	 * Releasing the next segment of the latest super root.
-+	 * The next segment is invalidated by this recovery.
-+	 */
-+	err = nilfs_sufile_free(sufile, segnum[1]);
-+	if (unlikely(err))
-+		goto failed;
-+
-+	err = -ENOMEM;
-+	for (i = 1; i < 4; i++) {
-+		ent = nilfs_alloc_segment_entry(segnum[i]);
-+		if (unlikely(!ent))
-+			goto failed;
-+		list_add_tail(&ent->list, head);
-+	}
-+
-+	/*
-+	 * Collecting segments written after the latest super root.
-+	 * These are marked volatile active, and won't be reallocated in
-+	 * the next construction.
-+	 */
-+	list_for_each_entry_safe(ent, n, head, list) {
-+		if (ent->segnum == segnum[0]) {
-+			list_del(&ent->list);
-+			nilfs_free_segment_entry(ent);
-+			continue;
-+		}
-+		err = nilfs_open_segment_entry(ent, sufile);
-+		if (unlikely(err))
-+			goto failed;
-+		if (nilfs_segment_usage_clean(ent->raw_su)) {
-+			nilfs_segment_usage_set_volatile_active(ent->raw_su);
-+			/* Keep it open */
-+		} else {
-+			/* Removing duplicated entries */
-+			list_del(&ent->list);
-+			nilfs_close_segment_entry(ent, sufile);
-+			nilfs_free_segment_entry(ent);
-+		}
-+	}
-+	list_splice_init(head, nilfs->ns_used_segments.prev);
-+
-+	/*
-+	 * The segment having the latest super root is active, and
-+	 * should be deactivated on the next construction for recovery.
-+	 */
-+	err = -ENOMEM;
-+	ent = nilfs_alloc_segment_entry(segnum[0]);
-+	if (unlikely(!ent))
-+		goto failed;
-+	list_add_tail(&ent->list, &ri->ri_used_segments);
-+
-+	/* Allocate new segments for recovery */
-+	err = nilfs_sufile_alloc(sufile, &segnum[0]);
-+	if (unlikely(err))
-+		goto failed;
-+
-+	nilfs->ns_pseg_offset = 0;
-+	nilfs->ns_seg_seq = ri->ri_seq + 2;
-+	nilfs->ns_nextnum = nilfs->ns_segnum = segnum[0];
-+	return 0;
-+
-+ failed:
-+	/* No need to recover sufile because it will be destroyed on error */
-+	return err;
-+}
-+
-+static int nilfs_recovery_copy_block(struct nilfs_sb_info *sbi,
-+				     struct nilfs_recovery_block *rb,
-+				     struct page *page)
-+{
-+	struct buffer_head *bh_org;
++	struct buffer_head *header_bh, *su_bh;
++	struct the_nilfs *nilfs;
++	struct nilfs_sufile_header *header;
++	struct nilfs_segment_usage *su;
 +	void *kaddr;
++	int ret;
 +
-+	bh_org = sb_bread(sbi->s_super, rb->blocknr);
-+	if (unlikely(!bh_org))
-+		return -EIO;
++	down_write(&NILFS_MDT(sufile)->mi_sem);
 +
-+	kaddr = kmap_atomic(page, KM_USER0);
-+	memcpy(kaddr + bh_offset(bh_org), bh_org->b_data, bh_org->b_size);
-+	kunmap_atomic(kaddr, KM_USER0);
-+	brelse(bh_org);
-+	return 0;
-+}
++	nilfs = NILFS_MDT(sufile)->mi_nilfs;
 +
-+static int recover_dsync_blocks(struct nilfs_sb_info *sbi,
-+				struct list_head *head,
-+				unsigned long *nr_salvaged_blocks)
-+{
-+	struct inode *inode;
-+	struct nilfs_recovery_block *rb, *n;
-+	unsigned blocksize = sbi->s_super->s_blocksize;
-+	struct page *page;
-+	loff_t pos;
-+	int err = 0, err2 = 0;
++	ret = nilfs_sufile_get_header_block(sufile, &header_bh);
++	if (ret < 0)
++		goto out_sem;
 +
-+	list_for_each_entry_safe(rb, n, head, list) {
-+		inode = nilfs_iget(sbi->s_super, rb->ino);
-+		if (IS_ERR(inode)) {
-+			err = PTR_ERR(inode);
-+			inode = NULL;
-+			goto failed_inode;
-+		}
++	ret = nilfs_sufile_get_segment_usage_block(sufile, segnum, 0, &su_bh);
++	if (ret < 0)
++		goto out_header;
 +
-+		pos = rb->blkoff << inode->i_blkbits;
-+		page = NULL;
-+		err = block_write_begin(NULL, inode->i_mapping, pos, blocksize,
-+					0, &page, NULL, nilfs_get_block);
-+		if (unlikely(err))
-+			goto failed_inode;
-+
-+		err = nilfs_recovery_copy_block(sbi, rb, page);
-+		if (unlikely(err))
-+			goto failed_page;
-+
-+		err = nilfs_set_file_dirty(sbi, inode, 1);
-+		if (unlikely(err))
-+			goto failed_page;
-+
-+		block_write_end(NULL, inode->i_mapping, pos, blocksize,
-+				blocksize, page, NULL);
-+
-+		unlock_page(page);
-+		page_cache_release(page);
-+
-+		(*nr_salvaged_blocks)++;
-+		goto next;
-+
-+ failed_page:
-+		unlock_page(page);
-+		page_cache_release(page);
-+
-+ failed_inode:
-+		printk(KERN_WARNING
-+		       "NILFS warning: error recovering data block "
-+		       "(err=%d, ino=%lu, block-offset=%llu)\n",
-+		       err, rb->ino, (unsigned long long)rb->blkoff);
-+		if (!err2)
-+			err2 = err;
-+ next:
-+		iput(inode); /* iput(NULL) is just ignored */
-+		list_del_init(&rb->list);
-+		kfree(rb);
++	kaddr = kmap_atomic(su_bh->b_page, KM_USER0);
++	su = nilfs_sufile_block_get_segment_usage(
++		sufile, segnum, su_bh, kaddr);
++	if (!nilfs_segment_usage_clean(su)) {
++		printk(KERN_CRIT "%s: segment %llu must be clean\n",
++		       __func__, (unsigned long long)segnum);
++		BUG();
 +	}
-+	return err2;
++	nilfs_segment_usage_set_dirty(su);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	kaddr = kmap_atomic(header_bh->b_page, KM_USER0);
++	header = nilfs_sufile_block_get_header(sufile, header_bh, kaddr);
++	le64_add_cpu(&header->sh_ncleansegs, -1);
++	le64_add_cpu(&header->sh_ndirtysegs, 1);
++	kunmap_atomic(kaddr, KM_USER0);
++
++	nilfs_mdt_mark_buffer_dirty(header_bh);
++	nilfs_mdt_mark_buffer_dirty(su_bh);
++	nilfs_mdt_mark_dirty(sufile);
++
++	brelse(su_bh);
++
++ out_header:
++	brelse(header_bh);
++
++ out_sem:
++	up_write(&NILFS_MDT(sufile)->mi_sem);
++	return ret;
 +}
 +
 +/**
-+ * nilfs_do_roll_forward - salvage logical segments newer than the latest
-+ * checkpoint
-+ * @sbi: nilfs_sb_info
-+ * @nilfs: the_nilfs
-+ * @ri: pointer to a nilfs_recovery_info
++ * nilfs_sufile_freev - free segments
++ * @sufile: inode of segment usage file
++ * @segnum: array of segment numbers
++ * @nsegs: number of segments
++ *
++ * Description: nilfs_sufile_freev() frees segments specified by @segnum and
++ * @nsegs, which must have been returned by a previous call to
++ * nilfs_sufile_alloc().
++ *
++ * Return Value: On success, 0 is returned. On error, one of the following
++ * negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
 + */
-+static int nilfs_do_roll_forward(struct the_nilfs *nilfs,
-+				 struct nilfs_sb_info *sbi,
-+				 struct nilfs_recovery_info *ri)
++#define NILFS_SUFILE_FREEV_PREALLOC	16
++int nilfs_sufile_freev(struct inode *sufile, __u64 *segnum, size_t nsegs)
 +{
-+	struct nilfs_segsum_info ssi;
-+	sector_t pseg_start;
-+	sector_t seg_start, seg_end;  /* Starting/ending DBN of full segment */
-+	unsigned long nsalvaged_blocks = 0;
-+	u64 seg_seq;
-+	__u64 segnum, nextnum = 0;
-+	int empty_seg = 0;
-+	int err = 0, ret;
-+	LIST_HEAD(dsync_blocks);  /* list of data blocks to be recovered */
-+	enum {
-+		RF_INIT_ST,
-+		RF_DSYNC_ST,   /* scanning data-sync segments */
-+	};
-+	int state = RF_INIT_ST;
++	struct buffer_head *header_bh, **su_bh,
++		*su_bh_prealloc[NILFS_SUFILE_FREEV_PREALLOC];
++	struct the_nilfs *nilfs;
++	struct nilfs_sufile_header *header;
++	struct nilfs_segment_usage *su;
++	void *kaddr;
++	int ret, i;
 +
-+	nilfs_attach_writer(nilfs, sbi);
-+	pseg_start = ri->ri_lsegs_start;
-+	seg_seq = ri->ri_lsegs_start_seq;
-+	segnum = nilfs_get_segnum_of_block(nilfs, pseg_start);
-+	nilfs_get_segment_range(nilfs, segnum, &seg_start, &seg_end);
++	down_write(&NILFS_MDT(sufile)->mi_sem);
 +
-+	while (segnum != ri->ri_segnum || pseg_start <= ri->ri_pseg_start) {
++	nilfs = NILFS_MDT(sufile)->mi_nilfs;
 +
-+		ret = load_segment_summary(sbi, pseg_start, seg_seq, &ssi, 1);
-+		if (ret) {
-+			if (ret == NILFS_SEG_FAIL_IO) {
-+				err = -EIO;
-+				goto failed;
-+			}
-+			goto strayed;
++	/* prepare resources */
++	if (nsegs <= NILFS_SUFILE_FREEV_PREALLOC)
++		su_bh = su_bh_prealloc;
++	else {
++		su_bh = kmalloc(sizeof(*su_bh) * nsegs, GFP_NOFS);
++		if (su_bh == NULL) {
++			ret = -ENOMEM;
++			goto out_sem;
 +		}
-+		if (unlikely(NILFS_SEG_HAS_SR(&ssi)))
-+			goto confused;
-+
-+		/* Found a valid partial segment; do recovery actions */
-+		nextnum = nilfs_get_segnum_of_block(nilfs, ssi.next);
-+		empty_seg = 0;
-+		nilfs->ns_ctime = ssi.ctime;
-+		if (!(ssi.flags & NILFS_SS_GC))
-+			nilfs->ns_nongc_ctime = ssi.ctime;
-+
-+		switch (state) {
-+		case RF_INIT_ST:
-+			if (!NILFS_SEG_LOGBGN(&ssi) || !NILFS_SEG_DSYNC(&ssi))
-+				goto try_next_pseg;
-+			state = RF_DSYNC_ST;
-+			/* Fall through */
-+		case RF_DSYNC_ST:
-+			if (!NILFS_SEG_DSYNC(&ssi))
-+				goto confused;
-+
-+			err = collect_blocks_from_segsum(
-+				sbi, pseg_start, &ssi, &dsync_blocks);
-+			if (unlikely(err))
-+				goto failed;
-+			if (NILFS_SEG_LOGEND(&ssi)) {
-+				err = recover_dsync_blocks(
-+					sbi, &dsync_blocks, &nsalvaged_blocks);
-+				if (unlikely(err))
-+					goto failed;
-+				state = RF_INIT_ST;
-+			}
-+			break; /* Fall through to try_next_pseg */
-+		}
-+
-+ try_next_pseg:
-+		if (pseg_start == ri->ri_lsegs_end)
-+			break;
-+		pseg_start += ssi.nblocks;
-+		if (pseg_start < seg_end)
-+			continue;
-+		goto feed_segment;
-+
-+ strayed:
-+		if (pseg_start == ri->ri_lsegs_end)
-+			break;
-+
-+ feed_segment:
-+		/* Looking to the next full segment */
-+		if (empty_seg++)
-+			break;
-+		seg_seq++;
-+		segnum = nextnum;
-+		nilfs_get_segment_range(nilfs, segnum, &seg_start, &seg_end);
-+		pseg_start = seg_start;
 +	}
 +
-+	if (nsalvaged_blocks) {
-+		printk(KERN_INFO "NILFS (device %s): salvaged %lu blocks\n",
-+		       sbi->s_super->s_id, nsalvaged_blocks);
-+		ri->ri_need_recovery = NILFS_RECOVERY_ROLLFORWARD_DONE;
++	ret = nilfs_sufile_get_header_block(sufile, &header_bh);
++	if (ret < 0)
++		goto out_su_bh;
++	for (i = 0; i < nsegs; i++) {
++		ret = nilfs_sufile_get_segment_usage_block(sufile, segnum[i],
++							   0, &su_bh[i]);
++		if (ret < 0)
++			goto out_bh;
 +	}
-+ out:
-+	dispose_recovery_list(&dsync_blocks);
-+	nilfs_detach_writer(sbi->s_nilfs, sbi);
-+	return err;
 +
-+ confused:
-+	err = -EINVAL;
-+ failed:
-+	printk(KERN_ERR
-+	       "NILFS (device %s): Error roll-forwarding "
-+	       "(err=%d, pseg block=%llu). ",
-+	       sbi->s_super->s_id, err, (unsigned long long)pseg_start);
-+	goto out;
++	/* free segments */
++	for (i = 0; i < nsegs; i++) {
++		kaddr = kmap_atomic(su_bh[i]->b_page, KM_USER0);
++		su = nilfs_sufile_block_get_segment_usage(
++			sufile, segnum[i], su_bh[i], kaddr);
++		BUG_ON(nilfs_segment_usage_error(su));
++		nilfs_segment_usage_set_clean(su);
++		kunmap_atomic(kaddr, KM_USER0);
++		nilfs_mdt_mark_buffer_dirty(su_bh[i]);
++	}
++	kaddr = kmap_atomic(header_bh->b_page, KM_USER0);
++	header = nilfs_sufile_block_get_header(sufile, header_bh, kaddr);
++	le64_add_cpu(&header->sh_ncleansegs, nsegs);
++	le64_add_cpu(&header->sh_ndirtysegs, -nsegs);
++	kunmap_atomic(kaddr, KM_USER0);
++	nilfs_mdt_mark_buffer_dirty(header_bh);
++	nilfs_mdt_mark_dirty(sufile);
++
++ out_bh:
++	for (i--; i >= 0; i--)
++		brelse(su_bh[i]);
++	brelse(header_bh);
++
++ out_su_bh:
++	if (su_bh != su_bh_prealloc)
++		kfree(su_bh);
++
++ out_sem:
++	up_write(&NILFS_MDT(sufile)->mi_sem);
++	return ret;
 +}
 +
-+static void nilfs_finish_roll_forward(struct the_nilfs *nilfs,
-+				      struct nilfs_sb_info *sbi,
-+				      struct nilfs_recovery_info *ri)
++/**
++ * nilfs_sufile_free -
++ * @sufile:
++ * @segnum:
++ */
++int nilfs_sufile_free(struct inode *sufile, __u64 segnum)
++{
++	return nilfs_sufile_freev(sufile, &segnum, 1);
++}
++
++/**
++ * nilfs_sufile_get_segment_usage - get a segment usage
++ * @sufile: inode of segment usage file
++ * @segnum: segment number
++ * @sup: pointer to segment usage
++ * @bhp: pointer to buffer head
++ *
++ * Description: nilfs_sufile_get_segment_usage() acquires the segment usage
++ * specified by @segnum.
++ *
++ * Return Value: On success, 0 is returned, and the segment usage and the
++ * buffer head of the buffer on which the segment usage is located are stored
++ * in the place pointed by @sup and @bhp, respectively. On error, one of the
++ * following negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ *
++ * %-EINVAL - Invalid segment usage number.
++ */
++int nilfs_sufile_get_segment_usage(struct inode *sufile, __u64 segnum,
++				   struct nilfs_segment_usage **sup,
++				   struct buffer_head **bhp)
 +{
 +	struct buffer_head *bh;
-+	int err;
++	struct nilfs_segment_usage *su;
++	void *kaddr;
++	int ret;
 +
-+	if (nilfs_get_segnum_of_block(nilfs, ri->ri_lsegs_start) !=
-+	    nilfs_get_segnum_of_block(nilfs, ri->ri_super_root))
-+		return;
++	/* segnum is 0 origin */
++	BUG_ON(segnum >= nilfs_sufile_get_nsegments(sufile));
 +
-+	bh = sb_getblk(sbi->s_super, ri->ri_lsegs_start);
-+	BUG_ON(!bh);
-+	memset(bh->b_data, 0, bh->b_size);
-+	set_buffer_dirty(bh);
-+	err = sync_dirty_buffer(bh);
-+	if (unlikely(err))
-+		printk(KERN_WARNING
-+		       "NILFS warning: buffer sync write failed during "
-+		       "post-cleaning of recovery.\n");
++	down_write(&NILFS_MDT(sufile)->mi_sem);
++	ret = nilfs_sufile_get_segment_usage_block(sufile, segnum, 1, &bh);
++	if (ret < 0)
++		goto out_sem;
++	kaddr = kmap(bh->b_page);
++	su = nilfs_sufile_block_get_segment_usage(sufile, segnum, bh, kaddr);
++	if (nilfs_segment_usage_error(su)) {
++		kunmap(bh->b_page);
++		brelse(bh);
++		ret = -EINVAL;
++		goto out_sem;
++	}
++
++	if (sup != NULL)
++		*sup = su;
++	*bhp = bh;
++
++ out_sem:
++	up_write(&NILFS_MDT(sufile)->mi_sem);
++	return ret;
++}
++
++/**
++ * nilfs_sufile_put_segment_usage - put a segment usage
++ * @sufile: inode of segment usage file
++ * @segnum: segment number
++ * @bh: buffer head
++ *
++ * Description: nilfs_sufile_put_segment_usage() releases the segment usage
++ * specified by @segnum. @bh must be the buffer head which have been returned
++ * by a previous call to nilfs_sufile_get_segment_usage() with @segnum.
++ */
++void nilfs_sufile_put_segment_usage(struct inode *sufile, __u64 segnum,
++				    struct buffer_head *bh)
++{
++	kunmap(bh->b_page);
 +	brelse(bh);
 +}
 +
 +/**
-+ * nilfs_recover_logical_segments - salvage logical segments written after
-+ * the latest super root
-+ * @nilfs: the_nilfs
-+ * @sbi: nilfs_sb_info
-+ * @ri: pointer to a nilfs_recovery_info struct to store search results.
++ * nilfs_sufile_get_stat - get segment usage statistics
++ * @sufile: inode of segment usage file
++ * @stat: pointer to a structure of segment usage statistics
 + *
-+ * Return Value: On success, 0 is returned.  On error, one of the following
-+ * negative error code is returned.
++ * Description: nilfs_sufile_get_stat() returns information about segment
++ * usage.
 + *
-+ * %-EINVAL - Inconsistent filesystem state.
++ * Return Value: On success, 0 is returned, and segment usage information is
++ * stored in the place pointed by @stat. On error, one of the following
++ * negative error codes is returned.
 + *
-+ * %-EIO - I/O error
++ * %-EIO - I/O error.
 + *
-+ * %-ENOSPC - No space left on device (only in a panic state).
-+ *
-+ * %-ERESTARTSYS - Interrupted.
-+ *
-+ * %-ENOMEM - Insufficient memory available.
++ * %-ENOMEM - Insufficient amount of memory available.
 + */
-+int nilfs_recover_logical_segments(struct the_nilfs *nilfs,
-+				   struct nilfs_sb_info *sbi,
-+				   struct nilfs_recovery_info *ri)
++int nilfs_sufile_get_stat(struct inode *sufile, struct nilfs_sustat *sustat)
 +{
-+	int err;
++	struct buffer_head *header_bh;
++	struct nilfs_sufile_header *header;
++	void *kaddr;
++	int ret;
 +
-+	if (ri->ri_lsegs_start == 0 || ri->ri_lsegs_end == 0)
-+		return 0;
++	down_read(&NILFS_MDT(sufile)->mi_sem);
 +
-+	err = nilfs_attach_checkpoint(sbi, ri->ri_cno);
-+	if (unlikely(err)) {
-+		printk(KERN_ERR
-+		       "NILFS: error loading the latest checkpoint.\n");
-+		return err;
-+	}
++	ret = nilfs_sufile_get_header_block(sufile, &header_bh);
++	if (ret < 0)
++		goto out_sem;
 +
-+	err = nilfs_do_roll_forward(nilfs, sbi, ri);
-+	if (unlikely(err))
-+		goto failed;
++	kaddr = kmap_atomic(header_bh->b_page, KM_USER0);
++	header = nilfs_sufile_block_get_header(sufile, header_bh, kaddr);
++	sustat->ss_nsegs = nilfs_sufile_get_nsegments(sufile);
++	sustat->ss_ncleansegs = le64_to_cpu(header->sh_ncleansegs);
++	sustat->ss_ndirtysegs = le64_to_cpu(header->sh_ndirtysegs);
++	sustat->ss_ctime = NILFS_MDT(sufile)->mi_nilfs->ns_ctime;
++	sustat->ss_nongc_ctime = NILFS_MDT(sufile)->mi_nilfs->ns_nongc_ctime;
++	kunmap_atomic(kaddr, KM_USER0);
++	brelse(header_bh);
 +
-+	if (ri->ri_need_recovery == NILFS_RECOVERY_ROLLFORWARD_DONE) {
-+		err = nilfs_prepare_segment_for_recovery(nilfs, ri);
-+		if (unlikely(err)) {
-+			printk(KERN_ERR "NILFS: Error preparing segments for "
-+			       "recovery.\n");
-+			goto failed;
-+		}
-+
-+		err = nilfs_attach_segment_constructor(sbi, ri);
-+		if (unlikely(err))
-+			goto failed;
-+
-+		set_nilfs_discontinued(nilfs);
-+		err = nilfs_construct_segment(sbi->s_super);
-+		nilfs_detach_segment_constructor(sbi);
-+
-+		if (unlikely(err)) {
-+			printk(KERN_ERR "NILFS: Oops! recovery failed. "
-+			       "(err=%d)\n", err);
-+			goto failed;
-+		}
-+
-+		nilfs_finish_roll_forward(nilfs, sbi, ri);
-+	}
-+
-+	nilfs_detach_checkpoint(sbi);
-+	return 0;
-+
-+ failed:
-+	nilfs_detach_checkpoint(sbi);
-+	nilfs_mdt_clear(nilfs->ns_cpfile);
-+	nilfs_mdt_clear(nilfs->ns_sufile);
-+	nilfs_mdt_clear(nilfs->ns_dat);
-+	return err;
++ out_sem:
++	up_read(&NILFS_MDT(sufile)->mi_sem);
++	return ret;
 +}
 +
 +/**
-+ * nilfs_search_super_root - search the latest valid super root
-+ * @nilfs: the_nilfs
-+ * @sbi: nilfs_sb_info
-+ * @ri: pointer to a nilfs_recovery_info struct to store search results.
++ * nilfs_sufile_get_ncleansegs - get the number of clean segments
++ * @sufile: inode of segment usage file
++ * @nsegsp: pointer to the number of clean segments
 + *
-+ * nilfs_search_super_root() looks for the latest super-root from a partial
-+ * segment pointed by the superblock.  It sets up struct the_nilfs through
-+ * this search. It fills nilfs_recovery_info (ri) required for recovery.
++ * Description: nilfs_sufile_get_ncleansegs() acquires the number of clean
++ * segments.
 + *
-+ * Return Value: On success, 0 is returned.  On error, one of the following
-+ * negative error code is returned.
++ * Return Value: On success, 0 is returned and the number of clean segments is
++ * stored in the place pointed by @nsegsp. On error, one of the following
++ * negative error codes is returned.
 + *
-+ * %-EINVAL - No valid segment found
++ * %-EIO - I/O error.
 + *
-+ * %-EIO - I/O error
++ * %-ENOMEM - Insufficient amount of memory available.
 + */
-+int nilfs_search_super_root(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi,
-+			    struct nilfs_recovery_info *ri)
++int nilfs_sufile_get_ncleansegs(struct inode *sufile, unsigned long *nsegsp)
 +{
-+	struct nilfs_segsum_info ssi;
-+	sector_t pseg_start, pseg_end, sr_pseg_start = 0;
-+	sector_t seg_start, seg_end; /* range of full segment (block number) */
-+	u64 seg_seq;
-+	__u64 segnum, nextnum = 0;
-+	__u64 cno;
-+	struct nilfs_segment_entry *ent;
-+	LIST_HEAD(segments);
-+	int empty_seg = 0, scan_newer = 0;
++	struct nilfs_sustat sustat;
 +	int ret;
 +
-+	pseg_start = nilfs->ns_last_pseg;
-+	seg_seq = nilfs->ns_last_seq;
-+	cno = nilfs->ns_last_cno;
-+	segnum = nilfs_get_segnum_of_block(nilfs, pseg_start);
++	ret = nilfs_sufile_get_stat(sufile, &sustat);
++	if (ret == 0)
++		*nsegsp = sustat.ss_ncleansegs;
++	return ret;
++}
 +
-+	/* Calculate range of segment */
-+	nilfs_get_segment_range(nilfs, segnum, &seg_start, &seg_end);
++/**
++ * nilfs_sufile_set_error - mark a segment as erroneous
++ * @sufile: inode of segment usage file
++ * @segnum: segment number
++ *
++ * Description: nilfs_sufile_set_error() marks the segment specified by
++ * @segnum as erroneous. The error segment will never be used again.
++ *
++ * Return Value: On success, 0 is returned. On error, one of the following
++ * negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ */
++int nilfs_sufile_set_error(struct inode *sufile, __u64 segnum)
++{
++	struct buffer_head *header_bh, *su_bh;
++	struct nilfs_segment_usage *su;
++	struct nilfs_sufile_header *header;
++	void *kaddr;
++	int ret;
 +
-+	for (;;) {
-+		/* Load segment summary */
-+		ret = load_segment_summary(sbi, pseg_start, seg_seq, &ssi, 1);
-+		if (ret) {
-+			if (ret == NILFS_SEG_FAIL_IO)
-+				goto failed;
-+			goto strayed;
-+		}
-+		pseg_end = pseg_start + ssi.nblocks - 1;
-+		if (unlikely(pseg_end > seg_end)) {
-+			ret = NILFS_SEG_FAIL_CONSISTENCY;
-+			goto strayed;
-+		}
++	BUG_ON(segnum >= nilfs_sufile_get_nsegments(sufile));
 +
-+		/* A valid partial segment */
-+		ri->ri_pseg_start = pseg_start;
-+		ri->ri_seq = seg_seq;
-+		ri->ri_segnum = segnum;
-+		nextnum = nilfs_get_segnum_of_block(nilfs, ssi.next);
-+		ri->ri_nextnum = nextnum;
-+		empty_seg = 0;
++	down_write(&NILFS_MDT(sufile)->mi_sem);
 +
-+		if (!NILFS_SEG_HAS_SR(&ssi)) {
-+			if (!scan_newer) {
-+				/* This will never happen because a superblock
-+				   (last_segment) always points to a pseg
-+				   having a super root. */
-+				ret = NILFS_SEG_FAIL_CONSISTENCY;
-+				goto failed;
-+			}
-+			if (!ri->ri_lsegs_start && NILFS_SEG_LOGBGN(&ssi)) {
-+				ri->ri_lsegs_start = pseg_start;
-+				ri->ri_lsegs_start_seq = seg_seq;
-+			}
-+			if (NILFS_SEG_LOGEND(&ssi))
-+				ri->ri_lsegs_end = pseg_start;
-+			goto try_next_pseg;
-+		}
++	ret = nilfs_sufile_get_header_block(sufile, &header_bh);
++	if (ret < 0)
++		goto out_sem;
++	ret = nilfs_sufile_get_segment_usage_block(sufile, segnum, 0, &su_bh);
++	if (ret < 0)
++		goto out_header;
 +
-+		/* A valid super root was found. */
-+		ri->ri_cno = cno++;
-+		ri->ri_super_root = pseg_end;
-+		ri->ri_lsegs_start = ri->ri_lsegs_end = 0;
-+
-+		nilfs_dispose_segment_list(&segments);
-+		nilfs->ns_pseg_offset = (sr_pseg_start = pseg_start)
-+			+ ssi.nblocks - seg_start;
-+		nilfs->ns_seg_seq = seg_seq;
-+		nilfs->ns_segnum = segnum;
-+		nilfs->ns_cno = cno;  /* nilfs->ns_cno = ri->ri_cno + 1 */
-+		nilfs->ns_ctime = ssi.ctime;
-+		nilfs->ns_nextnum = nextnum;
-+
-+		if (scan_newer)
-+			ri->ri_need_recovery = NILFS_RECOVERY_SR_UPDATED;
-+		else if (nilfs->ns_mount_state & NILFS_VALID_FS)
-+			goto super_root_found;
-+
-+		scan_newer = 1;
-+
-+		/* reset region for roll-forward */
-+		pseg_start += ssi.nblocks;
-+		if (pseg_start < seg_end)
-+			continue;
-+		goto feed_segment;
-+
-+ try_next_pseg:
-+		/* Standing on a course, or met an inconsistent state */
-+		pseg_start += ssi.nblocks;
-+		if (pseg_start < seg_end)
-+			continue;
-+		goto feed_segment;
-+
-+ strayed:
-+		/* Off the trail */
-+		if (!scan_newer)
-+			/*
-+			 * This can happen if a checkpoint was written without
-+			 * barriers, or as a result of an I/O failure.
-+			 */
-+			goto failed;
-+
-+ feed_segment:
-+		/* Looking to the next full segment */
-+		if (empty_seg++)
-+			goto super_root_found; /* found a valid super root */
-+
-+		ent = nilfs_alloc_segment_entry(segnum);
-+		if (unlikely(!ent)) {
-+			ret = -ENOMEM;
-+			goto failed;
-+		}
-+		list_add_tail(&ent->list, &segments);
-+
-+		seg_seq++;
-+		segnum = nextnum;
-+		nilfs_get_segment_range(nilfs, segnum, &seg_start, &seg_end);
-+		pseg_start = seg_start;
++	kaddr = kmap_atomic(su_bh->b_page, KM_USER0);
++	su = nilfs_sufile_block_get_segment_usage(sufile, segnum, su_bh, kaddr);
++	if (nilfs_segment_usage_error(su)) {
++		kunmap_atomic(kaddr, KM_USER0);
++		brelse(su_bh);
++		goto out_header;
 +	}
 +
-+ super_root_found:
-+	/* Updating pointers relating to the latest checkpoint */
-+	list_splice(&segments, ri->ri_used_segments.prev);
-+	nilfs->ns_last_pseg = sr_pseg_start;
-+	nilfs->ns_last_seq = nilfs->ns_seg_seq;
-+	nilfs->ns_last_cno = ri->ri_cno;
-+	return 0;
++	nilfs_segment_usage_set_error(su);
++	kunmap_atomic(kaddr, KM_USER0);
++	brelse(su_bh);
 +
-+ failed:
-+	nilfs_dispose_segment_list(&segments);
-+	return (ret < 0) ? ret : nilfs_warn_segment_error(ret);
++	kaddr = kmap_atomic(header_bh->b_page, KM_USER0);
++	header = nilfs_sufile_block_get_header(sufile, header_bh, kaddr);
++	le64_add_cpu(&header->sh_ndirtysegs, -1);
++	kunmap_atomic(kaddr, KM_USER0);
++	nilfs_mdt_mark_buffer_dirty(header_bh);
++	nilfs_mdt_mark_buffer_dirty(su_bh);
++	nilfs_mdt_mark_dirty(sufile);
++	brelse(su_bh);
++
++ out_header:
++	brelse(header_bh);
++
++ out_sem:
++	up_write(&NILFS_MDT(sufile)->mi_sem);
++	return ret;
 +}
++
++/**
++ * nilfs_sufile_get_suinfo -
++ * @sufile: inode of segment usage file
++ * @segnum: segment number to start looking
++ * @si: array of suinfo
++ * @nsi: size of suinfo array
++ *
++ * Description:
++ *
++ * Return Value: On success, 0 is returned and .... On error, one of the
++ * following negative error codes is returned.
++ *
++ * %-EIO - I/O error.
++ *
++ * %-ENOMEM - Insufficient amount of memory available.
++ */
++ssize_t nilfs_sufile_get_suinfo(struct inode *sufile, __u64 segnum,
++				struct nilfs_suinfo *si, size_t nsi)
++{
++	struct buffer_head *su_bh;
++	struct nilfs_segment_usage *su;
++	size_t susz = NILFS_MDT(sufile)->mi_entry_size;
++	void *kaddr;
++	unsigned long nsegs, segusages_per_block;
++	ssize_t n;
++	int ret, i, j;
++
++	down_read(&NILFS_MDT(sufile)->mi_sem);
++
++	segusages_per_block = nilfs_sufile_segment_usages_per_block(sufile);
++	nsegs = min_t(unsigned long,
++		      nilfs_sufile_get_nsegments(sufile) - segnum,
++		      nsi);
++	for (i = 0; i < nsegs; i += n, segnum += n) {
++		n = min_t(unsigned long,
++			  segusages_per_block -
++				  nilfs_sufile_get_offset(sufile, segnum),
++			  nsegs - i);
++		ret = nilfs_sufile_get_segment_usage_block(sufile, segnum, 0,
++							   &su_bh);
++		if (ret < 0) {
++			if (ret != -ENOENT)
++				goto out;
++			/* hole */
++			memset(&si[i], 0, sizeof(struct nilfs_suinfo) * n);
++			continue;
++		}
++
++		kaddr = kmap_atomic(su_bh->b_page, KM_USER0);
++		su = nilfs_sufile_block_get_segment_usage(
++			sufile, segnum, su_bh, kaddr);
++		for (j = 0; j < n; j++, su = (void *)su + susz) {
++			si[i + j].sui_lastmod = le64_to_cpu(su->su_lastmod);
++			si[i + j].sui_nblocks = le32_to_cpu(su->su_nblocks);
++			si[i + j].sui_flags = le32_to_cpu(su->su_flags);
++		}
++		kunmap_atomic(kaddr, KM_USER0);
++		brelse(su_bh);
++	}
++	ret = nsegs;
++
++ out:
++	up_read(&NILFS_MDT(sufile)->mi_sem);
++	return ret;
++}
+diff --git a/fs/nilfs2/sufile.h b/fs/nilfs2/sufile.h
+new file mode 100644
+index 0000000..d595f33
+--- /dev/null
++++ b/fs/nilfs2/sufile.h
+@@ -0,0 +1,54 @@
++/*
++ * sufile.h - NILFS segment usage file.
++ *
++ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ *
++ * Written by Koji Sato <koji@osrg.net>.
++ */
++
++#ifndef _NILFS_SUFILE_H
++#define _NILFS_SUFILE_H
++
++#include <linux/fs.h>
++#include <linux/buffer_head.h>
++#include <linux/nilfs2_fs.h>
++#include "mdt.h"
++
++#define NILFS_SUFILE_GFP	NILFS_MDT_GFP
++
++static inline unsigned long nilfs_sufile_get_nsegments(struct inode *sufile)
++{
++	return NILFS_MDT(sufile)->mi_nilfs->ns_nsegments;
++}
++
++int nilfs_sufile_alloc(struct inode *, __u64 *);
++int nilfs_sufile_cancel_free(struct inode *, __u64);
++int nilfs_sufile_freev(struct inode *, __u64 *, size_t);
++int nilfs_sufile_free(struct inode *, __u64);
++int nilfs_sufile_get_segment_usage(struct inode *, __u64,
++				   struct nilfs_segment_usage **,
++				   struct buffer_head **);
++void nilfs_sufile_put_segment_usage(struct inode *, __u64,
++				    struct buffer_head *);
++int nilfs_sufile_get_stat(struct inode *, struct nilfs_sustat *);
++int nilfs_sufile_get_ncleansegs(struct inode *, unsigned long *);
++int nilfs_sufile_set_error(struct inode *, __u64);
++ssize_t nilfs_sufile_get_suinfo(struct inode *, __u64, struct nilfs_suinfo *,
++				size_t);
++
++
++#endif	/* _NILFS_SUFILE_H */
 -- 
 1.5.6.3
 
