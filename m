@@ -1,109 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbYINMgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754457AbYINMzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbYINMgx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 08:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYINMgn
+	id S1754457AbYINMzn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 08:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYINMze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 08:36:43 -0400
-Received: from mail-in-01.arcor-online.net ([151.189.21.41]:59207 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753008AbYINMgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 08:36:41 -0400
-Date: Sun, 14 Sep 2008 14:36:30 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-cc: 7eggert@gmx.de, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       bogdano@mandriva.com.br,
-       "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
-       Abdel Benamrouche <draconux@gmail.com>,
-       Damien Lallement <dlallement@mandriva.com>,
-       "pterjan@mandriva.com" <pterjan@mandriva.com>,
-       Jens Axboe <axboe@kernel.dk>
-Subject: Re: Partition check considered as error is breaking mounting in
- 2.6.27
-In-Reply-To: <200809132025.40300.herton@mandriva.com.br>
-Message-ID: <Pine.LNX.4.58.0809141223300.16805@be10.lrz>
-References: <bblSy-60j-19@gated-at.bofh.it> <bbnhC-7Vd-5@gated-at.bofh.it>
- <E1KeRMh-0001Ay-Uj@be1.7eggert.dyndns.org> <200809132025.40300.herton@mandriva.com.br>
+	Sun, 14 Sep 2008 08:55:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42045 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753237AbYINMzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 08:55:33 -0400
+Date: Sun, 14 Sep 2008 14:55:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Peter Oruba <peter.oruba@amd.com>,
+       Tigran Aivazian <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [x86-tip, patch] rework of the microcode splitup
+Message-ID: <20080914125513.GA22281@elte.hu>
+References: <1221383648.6184.28.camel@earth>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221383648.6184.28.camel@earth>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Sep 2008, Herton Ronaldo Krzesinski wrote:
-> On Saturday 13 September 2008 06:24:27 Bodo Eggert wrote:
-> > Herton Ronaldo Krzesinski <herton@mandriva.com.br> wrote:
 
-> > > +++ b/fs/partitions/check.c
-> > > @@ -499,9 +499,9 @@ int rescan_partitions(struct gendisk *disk, struct
-> > > block_device *bdev)
-> > >  if (!size)
-> > >  continue;
-> > >  if (from + size > get_capacity(disk)) {
-> > > -                     printk(KERN_ERR " %s: p%d exceeds device capacity\n",
-> > > +                     printk(KERN_WARNING
-> > > +                             " %s: p%d exceeds device capacity"
-> >                                 ", trimmed\n",
-> > >  disk->disk_name, p);
-> > 
-> > Add "size = get_capacity(disk) - from" here?
-> > (Possibly using a cached value for get_capacity(disk)?)
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+
+> Ingo, Peter,
 > 
-> Trim was already proposed here before (not accepted):
-> http://lkml.org/lkml/2006/10/12/364
+> 
+> this version is slightly different from the current one in -tip (added 
+> missing vfree()).
 
-Because of - as far as I read - possible special-case-forensic-situations 
-and possible meddling-with-the-jumper.
+i've added the delta patch below. I removed the #if 0's as they are 
+ugly. (and editing the file to enable debug printouts is easy anyway)
 
-IMO:
+regarding this FIXME:
 
-a) If you need fancy partition handling, you can do it in userspace.
-Copying a few MB to a completely different machine, expecting it to work
-correctly while depending on the partition numbering to stay the same is
-just stupid, and it won't work if you mount by path, anyway. It won't work 
-for extended partitions, too, if they don't start in the copied area, 
-because they are a chain of partition tables.
++       /* FIXME! dimm: Why not by means of get_totalsize(hdr)? */
+        total_size = (unsigned long) (hdr[4] + (hdr[5] << 8));
 
-Ordinary users need a correctly-working, non-logspewing ("Access beyond
-end of disk") system, including the possibility to correctly create
-filesystems or to use md on the disks. Having an IO-error-area at the end
-of the partition won't exactly help, but maybe destroy the 
-HAL-automounted-using-the-wrong-options* filesystem.
+please just use get_totalsize(hdr) and get rid of the fixme that way :)
 
-Advanced users like me can set up a system in qemu, transfer it to a 
-temporary directory, start the old system into /bin/sh, make some bind 
-mounts and start the new system.
+	Ingo
 
-I might also copy one disk onto two disks, planning to concatenate the
-split partition using dmsetup.
+------------------>
+>From a1c75cc5018f17ff6d80ce45a13435b1536f76db Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 14 Sep 2008 14:50:26 +0200
+Subject: [PATCH] x86, microcode rework, v2, fix
 
-Even more advanced users do forensics. Do they really need us to prevent
-partition renumbering, as long as there ia a hex editor to trim the
-partitions? Can't they just write a small program to fix these partitions
-and run it after dd finished? Or create an intrd doing what they want?
-Or wouldn't they be be better of with something like "hda.size=0815"?
+based on patch from Dmitry Adamushko.
 
-(*BTW: Is there any documentation for the pile-of-HAL-DBUS-KDE-and-stuff,
-which would allow me to actually configure it, and possibly unmount the
-devices without sudo?)
+- add missing vfree()
+- update debug printks
 
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/microcode.c       |    4 +---
+ arch/x86/kernel/microcode_amd.c   |    6 ++++--
+ arch/x86/kernel/microcode_intel.c |    4 ++--
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-b) If there is a soft-clipped disk, find out the unclipped size (and 
-unclip it on finding a large partition, if possible and if the partition 
-is not "hidden").
-
-If you need to enter a password, the partial partitions should be
-read-only and be switched to read-write after entering the password.
-Having a corrupted fs because of entering a wrong password is not a good
-start for a day. (Yes, my suggestion to just clip it was not enough.)
-
-If you should ever need to access a partition exceeding the true disk
-size, you can always use dmsetup or losetup. And don't write to it until
-you've copied all the data you want. And especially dont complain about
-resulting corruptions.
+diff --git a/arch/x86/kernel/microcode.c b/arch/x86/kernel/microcode.c
+index 902dada..0c2634f 100644
+--- a/arch/x86/kernel/microcode.c
++++ b/arch/x86/kernel/microcode.c
+@@ -70,8 +70,6 @@
+  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
+-
+-/* #define DEBUG pr_debug */
+ #include <linux/capability.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+@@ -396,7 +394,7 @@ static int mc_sysdev_resume(struct sys_device *dev)
+ 
+ 	if (!cpu_online(cpu))
+ 		return 0;
+-	pr_debug("microcode: CPU%d resumed\n", cpu);
++
+ 	/* only CPU 0 will apply ucode here */
+ 	microcode_update_cpu(0);
+ 	return 0;
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 6815837..48aec9f 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -92,7 +92,7 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+ 	unsigned int i = 0;
+ 
+ 	/*
+-	 * dimm: do we need this? Why an update via /dev/... is different
++	 * FIXME! dimm: do we need this? Why an update via /dev/... is different
+ 	 * from the one via firmware?
+ 	 *
+ 	 * This is a tricky part. We might be called from a write operation
+@@ -246,7 +246,7 @@ static void * get_next_ucode(u8 *buf, unsigned int size,
+ 		return NULL;
+ 	}
+ 
+-	/* Why not by means of get_totalsize(hdr)? */
++	/* FIXME! dimm: Why not by means of get_totalsize(hdr)? */
+ 	total_size = (unsigned long) (hdr[4] + (hdr[5] << 8));
+ 
+ 	printk(KERN_INFO "microcode: size %u, total_size %u\n",
+@@ -342,6 +342,8 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
+ 
+ 		mc_header = (struct microcode_header_amd *)mc;
+ 		if (get_matching_microcode(cpu, mc, new_rev)) {
++			if (new_mc)
++				vfree(new_mc);
+ 			new_rev = mc_header->patch_id;
+ 			new_mc  = mc;
+ 		} else 
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index f4930b5..48ed3ce 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -70,8 +70,6 @@
+  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
+  *		Thanks to Stuart Swales for pointing out this bug.
+  */
+-
+-/* #define DEBUG */ /* pr_debug */
+ #include <linux/capability.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+@@ -356,6 +354,8 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
+ 		}
+ 
+ 		if (get_matching_microcode(&uci->cpu_sig, mc, new_rev)) {
++			if (new_mc)
++				vfree(new_mc);
+ 			new_rev = mc_header.rev;
+ 			new_mc  = mc;
+ 		} else
