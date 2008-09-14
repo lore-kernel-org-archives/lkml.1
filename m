@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYINTNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYINTNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbYINTNn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 15:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYINTJl
+	id S1756081AbYINTNY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 15:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755778AbYINTJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 15:09:41 -0400
-Received: from sh.osrg.net ([192.16.179.4]:50990 "EHLO sh.osrg.net"
+	Sun, 14 Sep 2008 15:09:36 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50989 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754380AbYINTJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 15:09:06 -0400
+	id S1754243AbYINTJF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 15:09:05 -0400
 From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Koji Sato <sato.koji@lab.ntt.co.jp>,
        Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH 04/27] nilfs2: integrated block mapping
-Date: Mon, 15 Sep 2008 04:08:01 +0900
-Message-Id: <1221419304-18572-5-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH 21/27] nilfs2: segment buffer
+Date: Mon, 15 Sep 2008 04:08:18 +0900
+Message-Id: <1221419304-18572-22-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1221419304-18572-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-3-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
  <1221419304-18572-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-5-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-6-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-7-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-8-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-9-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-10-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-11-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-12-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-13-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-14-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-15-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-16-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-17-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-18-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-19-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-20-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+ <1221419304-18572-21-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Koji Sato <sato.koji@lab.ntt.co.jp>
+This adds the segment buffer which is used to constuct logs.
 
-This adds structures and operations for the block mapping
-(bmap for short). NILFS2 uses direct mappings for short files or
-B-tree based mappings for longer files.
-
-Every on-disk data block is held with inodes and managed through this
-block mapping.  The nilfs_bmap structure and a set of functions here
-provide this capability to the NILFS2 inode.
-
-Signed-off-by: Koji Sato <sato.koji@lab.ntt.co.jp>
 Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/nilfs2/bmap.c       |  783 ++++++++++++++++++++++++++++++++++++++++++++++++
- fs/nilfs2/bmap.h       |  251 ++++++++++++++++
- fs/nilfs2/bmap_union.h |   42 +++
- 3 files changed, 1076 insertions(+), 0 deletions(-)
- create mode 100644 fs/nilfs2/bmap.c
- create mode 100644 fs/nilfs2/bmap.h
- create mode 100644 fs/nilfs2/bmap_union.h
+ fs/nilfs2/segbuf.c |  461 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/nilfs2/segbuf.h |  203 +++++++++++++++++++++++
+ 2 files changed, 664 insertions(+), 0 deletions(-)
+ create mode 100644 fs/nilfs2/segbuf.c
+ create mode 100644 fs/nilfs2/segbuf.h
 
-diff --git a/fs/nilfs2/bmap.c b/fs/nilfs2/bmap.c
+diff --git a/fs/nilfs2/segbuf.c b/fs/nilfs2/segbuf.c
 new file mode 100644
-index 0000000..4c6b481
+index 0000000..6505a6a
 --- /dev/null
-+++ b/fs/nilfs2/bmap.c
-@@ -0,0 +1,783 @@
++++ b/fs/nilfs2/segbuf.c
+@@ -0,0 +1,461 @@
 +/*
-+ * bmap.c - NILFS block mapping.
++ * segbuf.c - NILFS segment buffer
 + *
-+ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
++ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -73,780 +78,458 @@ index 0000000..4c6b481
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Koji Sato <koji@osrg.net>.
++ * Written by Ryusuke Konishi <ryusuke@osrg.net>
++ *
 + */
 +
-+#include <linux/fs.h>
-+#include <linux/string.h>
-+#include <linux/errno.h>
-+#include "nilfs.h"
-+#include "bmap.h"
-+#include "sb.h"
-+#include "btnode.h"
-+#include "mdt.h"
-+#include "dat.h"
-+#include "alloc.h"
++#include <linux/buffer_head.h>
++#include <linux/writeback.h>
++#include <linux/crc32.h>
++#include "page.h"
++#include "segbuf.h"
++#include "seglist.h"
 +
-+int nilfs_bmap_lookup_at_level(struct nilfs_bmap *bmap, __u64 key, int level,
-+			       __u64 *ptrp)
++
++static struct kmem_cache *nilfs_segbuf_cachep;
++
++static void nilfs_segbuf_init_once(void *obj)
 +{
-+	__u64 ptr;
-+	int ret;
-+
-+	down_read(&bmap->b_sem);
-+	ret = (*bmap->b_ops->bop_lookup)(bmap, key, level, ptrp);
-+	if (ret < 0)
-+		goto out;
-+	if (bmap->b_pops->bpop_translate != NULL) {
-+		ret = (*bmap->b_pops->bpop_translate)(bmap, *ptrp, &ptr);
-+		if (ret < 0)
-+			goto out;
-+		*ptrp = ptr;
-+	}
-+
-+ out:
-+	up_read(&bmap->b_sem);
-+	return ret;
++	memset(obj, 0, sizeof(struct nilfs_segment_buffer));
 +}
 +
++int __init nilfs_init_segbuf_cache(void)
++{
++	nilfs_segbuf_cachep =
++		kmem_cache_create("nilfs2_segbuf_cache",
++				  sizeof(struct nilfs_segment_buffer),
++				  0, SLAB_RECLAIM_ACCOUNT,
++				  nilfs_segbuf_init_once);
 +
-+/**
-+ * nilfs_bmap_lookup - find a record
-+ * @bmap: bmap
-+ * @key: key
-+ * @recp: pointer to record
-+ *
-+ * Description: nilfs_bmap_lookup() finds a record whose key matches @key in
-+ * @bmap.
-+ *
-+ * Return Value: On success, 0 is returned and the record associated with @key
-+ * is stored in the place pointed by @recp. On error, one of the following
-+ * negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ *
-+ * %-ENOENT - A record associated with @key does not exist.
++	return (nilfs_segbuf_cachep == NULL) ? -ENOMEM : 0;
++}
++
++void nilfs_destroy_segbuf_cache(void)
++{
++	kmem_cache_destroy(nilfs_segbuf_cachep);
++}
++
++struct nilfs_segment_buffer *nilfs_segbuf_new(struct super_block *sb)
++{
++	struct nilfs_segment_buffer *segbuf;
++
++	segbuf = kmem_cache_alloc(nilfs_segbuf_cachep, GFP_NOFS);
++	if (unlikely(!segbuf))
++		return NULL;
++
++	segbuf->sb_super = sb;
++	INIT_LIST_HEAD(&segbuf->sb_list);
++	INIT_LIST_HEAD(&segbuf->sb_segsum_buffers);
++	INIT_LIST_HEAD(&segbuf->sb_payload_buffers);
++	segbuf->sb_segent = NULL;
++	return segbuf;
++}
++
++void nilfs_segbuf_free(struct nilfs_segment_buffer *segbuf)
++{
++	struct nilfs_segment_entry *ent = segbuf->sb_segent;
++
++	if (ent != NULL && list_empty(&ent->list)) {
++		/* free isolated segment list head */
++		nilfs_free_segment_entry(segbuf->sb_segent);
++		segbuf->sb_segent = NULL;
++	}
++	kmem_cache_free(nilfs_segbuf_cachep, segbuf);
++}
++
++int nilfs_segbuf_map(struct nilfs_segment_buffer *segbuf, __u64 segnum,
++		     unsigned long offset, struct the_nilfs *nilfs)
++{
++	struct nilfs_segment_entry *ent;
++
++	segbuf->sb_segnum = segnum;
++	nilfs_get_segment_range(nilfs, segnum, &segbuf->sb_fseg_start,
++				&segbuf->sb_fseg_end);
++
++	segbuf->sb_pseg_start = segbuf->sb_fseg_start + offset;
++	segbuf->sb_rest_blocks =
++		segbuf->sb_fseg_end - segbuf->sb_pseg_start + 1;
++
++	/* Attach a segment list head */
++	ent = segbuf->sb_segent;
++	if (ent == NULL) {
++		segbuf->sb_segent = nilfs_alloc_segment_entry(segnum);
++		if (unlikely(!segbuf->sb_segent))
++			return -ENOMEM;
++	} else {
++		BUG_ON(ent->bh_su || !list_empty(&ent->list));
++		ent->segnum = segnum;
++	}
++	return 0;
++}
++
++void nilfs_segbuf_set_next_segnum(struct nilfs_segment_buffer *segbuf,
++				  __u64 nextnum, struct the_nilfs *nilfs)
++{
++	segbuf->sb_nextnum = nextnum;
++	segbuf->sb_sum.next = nilfs_get_segment_start_blocknr(nilfs, nextnum);
++}
++
++int nilfs_segbuf_extend_segsum(struct nilfs_segment_buffer *segbuf)
++{
++	struct buffer_head *bh;
++
++	bh = sb_getblk(segbuf->sb_super,
++		       segbuf->sb_pseg_start + segbuf->sb_sum.nsumblk);
++	if (unlikely(!bh))
++		return -ENOMEM;
++
++	nilfs_segbuf_add_segsum_buffer(segbuf, bh);
++	return 0;
++}
++
++int nilfs_segbuf_extend_payload(struct nilfs_segment_buffer *segbuf,
++				struct buffer_head **bhp)
++{
++	struct buffer_head *bh;
++
++	bh = sb_getblk(segbuf->sb_super,
++		       segbuf->sb_pseg_start + segbuf->sb_sum.nblocks);
++	if (unlikely(!bh))
++		return -ENOMEM;
++
++	nilfs_segbuf_add_payload_buffer(segbuf, bh);
++	*bhp = bh;
++	return 0;
++}
++
++int nilfs_segbuf_reset(struct nilfs_segment_buffer *segbuf, unsigned flags,
++		       time_t ctime)
++{
++	int err;
++
++	segbuf->sb_sum.nblocks = segbuf->sb_sum.nsumblk = 0;
++	err = nilfs_segbuf_extend_segsum(segbuf);
++	if (unlikely(err))
++		return err;
++
++	segbuf->sb_sum.flags = flags;
++	segbuf->sb_sum.sumbytes = sizeof(struct nilfs_segment_summary);
++	segbuf->sb_sum.nfinfo = segbuf->sb_sum.nfileblk = 0;
++	segbuf->sb_sum.ctime = ctime;
++
++	segbuf->sb_io_error = 0;
++	return 0;
++}
++
++/*
++ * Setup segument summary
 + */
-+int nilfs_bmap_lookup(struct nilfs_bmap *bmap,
-+		      unsigned long key,
-+		      unsigned long *recp)
++void nilfs_segbuf_fill_in_segsum(struct nilfs_segment_buffer *segbuf)
 +{
-+	__u64 ptr;
-+	int ret;
++	struct nilfs_segment_summary *raw_sum;
++	struct buffer_head *bh_sum;
 +
-+	/* XXX: use macro for level 1 */
-+	ret = nilfs_bmap_lookup_at_level(bmap, key, 1, &ptr);
-+	if (recp != NULL)
-+		*recp = ptr;
-+	return ret;
++	bh_sum = list_entry(segbuf->sb_segsum_buffers.next,
++			    struct buffer_head, b_assoc_buffers);
++	raw_sum = (struct nilfs_segment_summary *)bh_sum->b_data;
++
++	raw_sum->ss_magic    = cpu_to_le32(NILFS_SEGSUM_MAGIC);
++	raw_sum->ss_bytes    = cpu_to_le16(sizeof(*raw_sum));
++	raw_sum->ss_flags    = cpu_to_le16(segbuf->sb_sum.flags);
++	raw_sum->ss_seq      = cpu_to_le64(segbuf->sb_sum.seg_seq);
++	raw_sum->ss_create   = cpu_to_le64(segbuf->sb_sum.ctime);
++	raw_sum->ss_next     = cpu_to_le64(segbuf->sb_sum.next);
++	raw_sum->ss_nblocks  = cpu_to_le32(segbuf->sb_sum.nblocks);
++	raw_sum->ss_nfinfo   = cpu_to_le32(segbuf->sb_sum.nfinfo);
++	raw_sum->ss_sumbytes = cpu_to_le32(segbuf->sb_sum.sumbytes);
++	raw_sum->ss_pad      = 0;
 +}
 +
-+static int nilfs_bmap_do_insert(struct nilfs_bmap *bmap, __u64 key, __u64 ptr)
-+{
-+	__u64 keys[NILFS_BMAP_SMALL_HIGH + 1];
-+	__u64 ptrs[NILFS_BMAP_SMALL_HIGH + 1];
-+	int ret, n;
-+
-+	if (bmap->b_ops->bop_check_insert != NULL) {
-+		ret = (*bmap->b_ops->bop_check_insert)(bmap, key);
-+		if (ret > 0) {
-+			n = (*bmap->b_ops->bop_gather_data)(
-+				bmap, keys, ptrs, NILFS_BMAP_SMALL_HIGH + 1);
-+			if (n < 0)
-+				return n;
-+			ret = (*nilfs_bmap_large_convert_and_insert)(
-+				bmap, key, ptr, keys, ptrs, n,
-+				NILFS_BMAP_LARGE_LOW, NILFS_BMAP_LARGE_HIGH);
-+			if (ret == 0)
-+				bmap->b_u.u_flags |= NILFS_BMAP_LARGE;
-+
-+			return ret;
-+		} else if (ret < 0)
-+			return ret;
-+	}
-+
-+	return (*bmap->b_ops->bop_insert)(bmap, key, ptr);
-+}
-+
-+/**
-+ * nilfs_bmap_insert - insert a new key-record pair into a bmap
-+ * @bmap: bmap
-+ * @key: key
-+ * @rec: record
-+ *
-+ * Description: nilfs_bmap_insert() inserts the new key-record pair specified
-+ * by @key and @rec into @bmap.
-+ *
-+ * Return Value: On success, 0 is returned. On error, one of the following
-+ * negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ *
-+ * %-EEXIST - A record associated with @key already exist.
++/*
++ * CRC calculation routines
 + */
-+int nilfs_bmap_insert(struct nilfs_bmap *bmap,
-+		      unsigned long key,
-+		      unsigned long rec)
++void nilfs_segbuf_fill_in_segsum_crc(struct nilfs_segment_buffer *segbuf,
++				     u32 seed)
 +{
-+	int ret;
++	struct buffer_head *bh;
++	struct nilfs_segment_summary *raw_sum;
++	unsigned long size, bytes = segbuf->sb_sum.sumbytes;
++	u32 crc;
 +
-+	down_write(&bmap->b_sem);
-+	ret = nilfs_bmap_do_insert(bmap, key, rec);
-+	up_write(&bmap->b_sem);
-+	return ret;
-+}
++	bh = list_entry(segbuf->sb_segsum_buffers.next, struct buffer_head,
++			b_assoc_buffers);
 +
-+static int nilfs_bmap_do_delete(struct nilfs_bmap *bmap, __u64 key)
-+{
-+	__u64 keys[NILFS_BMAP_LARGE_LOW + 1];
-+	__u64 ptrs[NILFS_BMAP_LARGE_LOW + 1];
-+	int ret, n;
++	raw_sum = (struct nilfs_segment_summary *)bh->b_data;
++	size = min_t(unsigned long, bytes, bh->b_size);
++	crc = crc32_le(seed,
++		       (unsigned char *)raw_sum +
++		       sizeof(raw_sum->ss_datasum) + sizeof(raw_sum->ss_sumsum),
++		       size - (sizeof(raw_sum->ss_datasum) +
++			       sizeof(raw_sum->ss_sumsum)));
 +
-+	if (bmap->b_ops->bop_check_delete != NULL) {
-+		ret = (*bmap->b_ops->bop_check_delete)(bmap, key);
-+		if (ret > 0) {
-+			n = (*bmap->b_ops->bop_gather_data)(
-+				bmap, keys, ptrs, NILFS_BMAP_LARGE_LOW + 1);
-+			if (n < 0)
-+				return n;
-+			ret = (*nilfs_bmap_small_delete_and_convert)(
-+				bmap, key, keys, ptrs, n,
-+				NILFS_BMAP_SMALL_LOW, NILFS_BMAP_SMALL_HIGH);
-+			if (ret == 0)
-+				bmap->b_u.u_flags &= ~NILFS_BMAP_LARGE;
-+
-+			return ret;
-+		} else if (ret < 0)
-+			return ret;
++	list_for_each_entry_continue(bh, &segbuf->sb_segsum_buffers,
++				     b_assoc_buffers) {
++		bytes -= size;
++		size = min_t(unsigned long, bytes, bh->b_size);
++		crc = crc32_le(crc, bh->b_data, size);
 +	}
-+
-+	return (*bmap->b_ops->bop_delete)(bmap, key);
++	raw_sum->ss_sumsum = cpu_to_le32(crc);
 +}
 +
-+int nilfs_bmap_last_key(struct nilfs_bmap *bmap, unsigned long *key)
++void nilfs_segbuf_fill_in_data_crc(struct nilfs_segment_buffer *segbuf,
++				   u32 seed)
 +{
-+	__u64 lastkey;
-+	int ret;
++	struct buffer_head *bh;
++	struct nilfs_segment_summary *raw_sum;
++	void *kaddr;
++	u32 crc;
 +
-+	down_read(&bmap->b_sem);
-+	ret = (*bmap->b_ops->bop_last_key)(bmap, &lastkey);
-+	if (!ret)
-+		*key = lastkey;
-+	up_read(&bmap->b_sem);
-+	return ret;
++	bh = list_entry(segbuf->sb_segsum_buffers.next, struct buffer_head,
++			b_assoc_buffers);
++	raw_sum = (struct nilfs_segment_summary *)bh->b_data;
++	crc = crc32_le(seed,
++		       (unsigned char *)raw_sum + sizeof(raw_sum->ss_datasum),
++		       bh->b_size - sizeof(raw_sum->ss_datasum));
++
++	list_for_each_entry_continue(bh, &segbuf->sb_segsum_buffers,
++				     b_assoc_buffers) {
++		crc = crc32_le(crc, bh->b_data, bh->b_size);
++	}
++	list_for_each_entry(bh, &segbuf->sb_payload_buffers, b_assoc_buffers) {
++		kaddr = kmap_atomic(bh->b_page, KM_USER0);
++		crc = crc32_le(crc, kaddr + bh_offset(bh), bh->b_size);
++		kunmap_atomic(kaddr, KM_USER0);
++	}
++	raw_sum->ss_datasum = cpu_to_le32(crc);
 +}
 +
-+/**
-+ * nilfs_bmap_delete - delete a key-record pair from a bmap
-+ * @bmap: bmap
-+ * @key: key
-+ *
-+ * Description: nilfs_bmap_delete() deletes the key-record pair specified by
-+ * @key from @bmap.
-+ *
-+ * Return Value: On success, 0 is returned. On error, one of the following
-+ * negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ *
-+ * %-ENOENT - A record associated with @key does not exist.
++void nilfs_release_buffers(struct list_head *list)
++{
++	struct buffer_head *bh, *n;
++
++	list_for_each_entry_safe(bh, n, list, b_assoc_buffers) {
++		list_del_init(&bh->b_assoc_buffers);
++		if (buffer_nilfs_allocated(bh)) {
++			struct page *clone_page = bh->b_page;
++
++			/* remove clone page */
++			brelse(bh);
++			page_cache_release(clone_page); /* for each bh */
++			if (page_count(clone_page) <= 2) {
++				lock_page(clone_page);
++				nilfs_free_private_page(clone_page);
++			}
++			continue;
++		}
++		brelse(bh);
++	}
++}
++
++/*
++ * BIO operations
 + */
-+int nilfs_bmap_delete(struct nilfs_bmap *bmap, unsigned long key)
++static void nilfs_end_bio_write(struct bio *bio, int err)
 +{
-+	int ret;
++	const int uptodate = test_bit(BIO_UPTODATE, &bio->bi_flags);
++	struct nilfs_write_info *wi = bio->bi_private;
 +
-+	down_write(&bmap->b_sem);
-+	ret = nilfs_bmap_do_delete(bmap, key);
-+	up_write(&bmap->b_sem);
-+	return ret;
-+}
-+
-+static int nilfs_bmap_do_truncate(struct nilfs_bmap *bmap, unsigned long key)
-+{
-+	__u64 lastkey;
-+	int ret;
-+
-+	ret = (*bmap->b_ops->bop_last_key)(bmap, &lastkey);
-+	if (ret < 0) {
-+		if (ret == -ENOENT)
-+			ret = 0;
-+		return ret;
++	if (err == -EOPNOTSUPP) {
++		set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
++		bio_put(bio);
++		/* to be detected by submit_seg_bio() */
 +	}
 +
-+	while (key <= lastkey) {
-+		ret = nilfs_bmap_do_delete(bmap, lastkey);
-+		if (ret < 0)
-+			return ret;
-+		ret = (*bmap->b_ops->bop_last_key)(bmap, &lastkey);
-+		if (ret < 0) {
-+			if (ret == -ENOENT)
-+				ret = 0;
-+			return ret;
++	if (!uptodate)
++		atomic_inc(&wi->err);
++
++	bio_put(bio);
++	complete(&wi->bio_event);
++}
++
++static int nilfs_submit_seg_bio(struct nilfs_write_info *wi, int mode)
++{
++	struct bio *bio = wi->bio;
++	int err;
++
++	if (wi->nbio > 0 && bdi_write_congested(wi->bdi)) {
++		wait_for_completion(&wi->bio_event);
++		wi->nbio--;
++		if (unlikely(atomic_read(&wi->err))) {
++			bio_put(bio);
++			err = -EIO;
++			goto failed;
 +		}
 +	}
++
++	bio->bi_end_io = nilfs_end_bio_write;
++	bio->bi_private = wi;
++	bio_get(bio);
++	submit_bio(mode, bio);
++	if (bio_flagged(bio, BIO_EOPNOTSUPP)) {
++		bio_put(bio);
++		err = -EOPNOTSUPP;
++		goto failed;
++	}
++	wi->nbio++;
++	bio_put(bio);
++
++	wi->bio = NULL;
++	wi->rest_blocks -= wi->end - wi->start;
++	wi->nr_vecs = min(wi->max_pages, wi->rest_blocks);
++	wi->start = wi->end;
 +	return 0;
++
++ failed:
++	wi->bio = NULL;
++	return err;
 +}
 +
 +/**
-+ * nilfs_bmap_truncate - truncate a bmap to a specified key
-+ * @bmap: bmap
-+ * @key: key
++ * nilfs_alloc_seg_bio - allocate a bio for writing segment.
++ * @sb: super block
++ * @start: beginning disk block number of this BIO.
++ * @nr_vecs: request size of page vector.
 + *
-+ * Description: nilfs_bmap_truncate() removes key-record pairs whose keys are
-+ * greater than or equal to @key from @bmap.
++ * alloc_seg_bio() allocates a new BIO structure and initialize it.
 + *
-+ * Return Value: On success, 0 is returned. On error, one of the following
-+ * negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
++ * Return Value: On success, pointer to the struct bio is returned.
++ * On error, NULL is returned.
 + */
-+int nilfs_bmap_truncate(struct nilfs_bmap *bmap, unsigned long key)
++static struct bio *nilfs_alloc_seg_bio(struct super_block *sb, sector_t start,
++				       int nr_vecs)
 +{
-+	int ret;
++	struct bio *bio;
 +
-+	down_write(&bmap->b_sem);
-+	ret = nilfs_bmap_do_truncate(bmap, key);
-+	up_write(&bmap->b_sem);
-+	return ret;
++	bio = bio_alloc(GFP_NOWAIT, nr_vecs);
++	if (bio == NULL) {
++		while (!bio && (nr_vecs >>= 1))
++			bio = bio_alloc(GFP_NOWAIT, nr_vecs);
++	}
++	if (likely(bio)) {
++		bio->bi_bdev = sb->s_bdev;
++		bio->bi_sector = (sector_t)start << (sb->s_blocksize_bits - 9);
++	}
++	return bio;
 +}
 +
-+/**
-+ * nilfs_bmap_clear - free resources a bmap holds
-+ * @bmap: bmap
-+ *
-+ * Description: nilfs_bmap_clear() frees resources associated with @bmap.
-+ */
-+void nilfs_bmap_clear(struct nilfs_bmap *bmap)
++void nilfs_segbuf_prepare_write(struct nilfs_segment_buffer *segbuf,
++				struct nilfs_write_info *wi)
 +{
-+	down_write(&bmap->b_sem);
-+	if (bmap->b_ops->bop_clear != NULL)
-+		(*bmap->b_ops->bop_clear)(bmap);
-+	up_write(&bmap->b_sem);
++	wi->bio = NULL;
++	wi->rest_blocks = segbuf->sb_sum.nblocks;
++	wi->max_pages = bio_get_nr_vecs(wi->sb->s_bdev);
++	wi->nr_vecs = min(wi->max_pages, wi->rest_blocks);
++	wi->start = wi->end = 0;
++	wi->nbio = 0;
++	wi->blocknr = segbuf->sb_pseg_start;
++
++	atomic_set(&wi->err, 0);
++	init_completion(&wi->bio_event);
 +}
 +
-+/**
-+ * nilfs_bmap_propagate - propagate dirty state
-+ * @bmap: bmap
-+ * @bh: buffer head
-+ *
-+ * Description: nilfs_bmap_propagate() marks the buffers that directly or
-+ * indirectly refer to the block specified by @bh dirty.
-+ *
-+ * Return Value: On success, 0 is returned. On error, one of the following
-+ * negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ */
-+int nilfs_bmap_propagate(struct nilfs_bmap *bmap, struct buffer_head *bh)
++static int nilfs_submit_bh(struct nilfs_write_info *wi, struct buffer_head *bh,
++			   int mode)
 +{
-+	int ret;
++	int len, err;
 +
-+	down_write(&bmap->b_sem);
-+	ret = (*bmap->b_ops->bop_propagate)(bmap, bh);
-+	up_write(&bmap->b_sem);
-+	return ret;
-+}
-+
-+/**
-+ * nilfs_bmap_lookup_dirty_buffers -
-+ * @bmap: bmap
-+ * @listp: pointer to buffer head list
-+ */
-+void nilfs_bmap_lookup_dirty_buffers(struct nilfs_bmap *bmap,
-+				     struct list_head *listp)
-+{
-+	if (bmap->b_ops->bop_lookup_dirty_buffers != NULL)
-+		(*bmap->b_ops->bop_lookup_dirty_buffers)(bmap, listp);
-+}
-+
-+/**
-+ * nilfs_bmap_assign - assign a new block number to a block
-+ * @bmap: bmap
-+ * @bhp: pointer to buffer head
-+ * @blocknr: block number
-+ * @binfo: block information
-+ *
-+ * Description: nilfs_bmap_assign() assigns the block number @blocknr to the
-+ * buffer specified by @bh.
-+ *
-+ * Return Value: On success, 0 is returned and the buffer head of a newly
-+ * create buffer and the block information associated with the buffer are
-+ * stored in the place pointed by @bh and @binfo, respectively. On error, one
-+ * of the following negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ */
-+int nilfs_bmap_assign(struct nilfs_bmap *bmap,
-+		      struct buffer_head **bh,
-+		      unsigned long blocknr,
-+		      union nilfs_binfo *binfo)
-+{
-+	int ret;
-+
-+	down_write(&bmap->b_sem);
-+	ret = (*bmap->b_ops->bop_assign)(bmap, bh, blocknr, binfo);
-+	up_write(&bmap->b_sem);
-+	return ret;
-+}
-+
-+/**
-+ * nilfs_bmap_mark - mark block dirty
-+ * @bmap: bmap
-+ * @key: key
-+ * @level: level
-+ *
-+ * Description: nilfs_bmap_mark() marks the block specified by @key and @level
-+ * as dirty.
-+ *
-+ * Return Value: On success, 0 is returned. On error, one of the following
-+ * negative error codes is returned.
-+ *
-+ * %-EIO - I/O error.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ */
-+int nilfs_bmap_mark(struct nilfs_bmap *bmap, __u64 key, int level)
-+{
-+	int ret;
-+
-+	if (bmap->b_ops->bop_mark == NULL)
-+		return 0;
-+
-+	down_write(&bmap->b_sem);
-+	ret = (*bmap->b_ops->bop_mark)(bmap, key, level);
-+	up_write(&bmap->b_sem);
-+	return ret;
-+}
-+
-+/**
-+ * nilfs_bmap_test_and_clear_dirty - test and clear a bmap dirty state
-+ * @bmap: bmap
-+ *
-+ * Description: nilfs_test_and_clear() is the atomic operation to test and
-+ * clear the dirty state of @bmap.
-+ *
-+ * Return Value: 1 is returned if @bmap is dirty, or 0 if clear.
-+ */
-+int nilfs_bmap_test_and_clear_dirty(struct nilfs_bmap *bmap)
-+{
-+	int ret;
-+
-+	down_write(&bmap->b_sem);
-+	ret = nilfs_bmap_dirty(bmap);
-+	nilfs_bmap_clear_dirty(bmap);
-+	up_write(&bmap->b_sem);
-+	return ret;
-+}
-+
-+
-+/*
-+ * Internal use only
-+ */
-+
-+void nilfs_bmap_add_blocks(const struct nilfs_bmap *bmap, int n)
-+{
-+	inode_add_bytes(bmap->b_inode, (1 << bmap->b_inode->i_blkbits) * n);
-+	if (NILFS_MDT(bmap->b_inode))
-+		nilfs_mdt_mark_dirty(bmap->b_inode);
-+	else
-+		mark_inode_dirty(bmap->b_inode);
-+}
-+
-+void nilfs_bmap_sub_blocks(const struct nilfs_bmap *bmap, int n)
-+{
-+	inode_sub_bytes(bmap->b_inode, (1 << bmap->b_inode->i_blkbits) * n);
-+	if (NILFS_MDT(bmap->b_inode))
-+		nilfs_mdt_mark_dirty(bmap->b_inode);
-+	else
-+		mark_inode_dirty(bmap->b_inode);
-+}
-+
-+int nilfs_bmap_get_block(const struct nilfs_bmap *bmap, __u64 ptr,
-+			 struct buffer_head **bhp)
-+{
-+	return nilfs_btnode_get(&NILFS_BMAP_I(bmap)->i_btnode_cache,
-+				ptr, 0, bhp, 0);
-+}
-+
-+void nilfs_bmap_put_block(const struct nilfs_bmap *bmap,
-+			  struct buffer_head *bh)
-+{
-+	brelse(bh);
-+}
-+
-+int nilfs_bmap_get_new_block(const struct nilfs_bmap *bmap, __u64 ptr,
-+			     struct buffer_head **bhp)
-+{
-+	int ret;
-+
-+	ret = nilfs_btnode_get(&NILFS_BMAP_I(bmap)->i_btnode_cache,
-+			       ptr, 0, bhp, 1);
-+	if (ret < 0)
-+		return ret;
-+	set_buffer_nilfs_volatile(*bhp);
-+	return 0;
-+}
-+
-+void nilfs_bmap_delete_block(const struct nilfs_bmap *bmap,
-+			     struct buffer_head *bh)
-+{
-+	nilfs_btnode_delete(bh);
-+}
-+
-+__u64 nilfs_bmap_data_get_key(const struct nilfs_bmap *bmap,
-+			      const struct buffer_head *bh)
-+{
-+	struct buffer_head *pbh;
-+	__u64 key;
-+
-+	key = page_index(bh->b_page) << (PAGE_CACHE_SHIFT -
-+					 bmap->b_inode->i_blkbits);
-+	for (pbh = page_buffers(bh->b_page); pbh != bh;
-+	     pbh = pbh->b_this_page, key++);
-+
-+	return key;
-+}
-+
-+__u64 nilfs_bmap_find_target_seq(const struct nilfs_bmap *bmap, __u64 key)
-+{
-+	__s64 diff;
-+
-+	diff = key - bmap->b_last_allocated_key;
-+	if ((nilfs_bmap_keydiff_abs(diff) < NILFS_INODE_BMAP_SIZE) &&
-+	    (bmap->b_last_allocated_ptr != NILFS_BMAP_INVALID_PTR) &&
-+	    (bmap->b_last_allocated_ptr + diff > 0))
-+		return bmap->b_last_allocated_ptr + diff;
-+	else
-+		return NILFS_BMAP_INVALID_PTR;
-+}
-+
-+static struct inode *nilfs_bmap_get_dat(const struct nilfs_bmap *bmap)
-+{
-+	return nilfs_dat_inode(NILFS_I_NILFS(bmap->b_inode));
-+}
-+
-+#define NILFS_BMAP_GROUP_DIV	8
-+__u64 nilfs_bmap_find_target_in_group(const struct nilfs_bmap *bmap)
-+{
-+	struct inode *dat = nilfs_bmap_get_dat(bmap);
-+	unsigned long entries_per_group = nilfs_palloc_entries_per_group(dat);
-+	unsigned long group = bmap->b_inode->i_ino / entries_per_group;
-+
-+	return group * entries_per_group +
-+		(bmap->b_inode->i_ino % NILFS_BMAP_GROUP_DIV) *
-+		(entries_per_group / NILFS_BMAP_GROUP_DIV);
-+}
-+
-+static int nilfs_bmap_prepare_alloc_v(struct nilfs_bmap *bmap,
-+				      union nilfs_bmap_ptr_req *req)
-+{
-+	return nilfs_dat_prepare_alloc(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+static void nilfs_bmap_commit_alloc_v(struct nilfs_bmap *bmap,
-+				      union nilfs_bmap_ptr_req *req)
-+{
-+	nilfs_dat_commit_alloc(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+static void nilfs_bmap_abort_alloc_v(struct nilfs_bmap *bmap,
-+				     union nilfs_bmap_ptr_req *req)
-+{
-+	nilfs_dat_abort_alloc(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+static int nilfs_bmap_prepare_start_v(struct nilfs_bmap *bmap,
-+				      union nilfs_bmap_ptr_req *req)
-+{
-+	return nilfs_dat_prepare_start(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+static void nilfs_bmap_commit_start_v(struct nilfs_bmap *bmap,
-+				      union nilfs_bmap_ptr_req *req,
-+				      sector_t blocknr)
-+{
-+	nilfs_dat_commit_start(nilfs_bmap_get_dat(bmap), &req->bpr_req,
-+			       blocknr);
-+}
-+
-+static void nilfs_bmap_abort_start_v(struct nilfs_bmap *bmap,
-+				     union nilfs_bmap_ptr_req *req)
-+{
-+	nilfs_dat_abort_start(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+static int nilfs_bmap_prepare_end_v(struct nilfs_bmap *bmap,
-+				    union nilfs_bmap_ptr_req *req)
-+{
-+	return nilfs_dat_prepare_end(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+static void nilfs_bmap_commit_end_v(struct nilfs_bmap *bmap,
-+				    union nilfs_bmap_ptr_req *req)
-+{
-+	nilfs_dat_commit_end(nilfs_bmap_get_dat(bmap), &req->bpr_req, 0);
-+}
-+
-+static void nilfs_bmap_commit_end_vmdt(struct nilfs_bmap *bmap,
-+				       union nilfs_bmap_ptr_req *req)
-+{
-+	nilfs_dat_commit_end(nilfs_bmap_get_dat(bmap), &req->bpr_req, 1);
-+}
-+
-+static void nilfs_bmap_abort_end_v(struct nilfs_bmap *bmap,
-+				   union nilfs_bmap_ptr_req *req)
-+{
-+	nilfs_dat_abort_end(nilfs_bmap_get_dat(bmap), &req->bpr_req);
-+}
-+
-+int nilfs_bmap_move_v(const struct nilfs_bmap *bmap, __u64 vblocknr,
-+		      sector_t blocknr)
-+{
-+	return nilfs_dat_move(nilfs_bmap_get_dat(bmap), vblocknr, blocknr);
-+}
-+
-+int nilfs_bmap_mark_dirty(const struct nilfs_bmap *bmap, __u64 vblocknr)
-+{
-+	return nilfs_dat_mark_dirty(nilfs_bmap_get_dat(bmap), vblocknr);
-+}
-+
-+int nilfs_bmap_prepare_update(struct nilfs_bmap *bmap,
-+			      union nilfs_bmap_ptr_req *oldreq,
-+			      union nilfs_bmap_ptr_req *newreq)
-+{
-+	int ret;
-+
-+	ret = (*bmap->b_pops->bpop_prepare_end_ptr)(bmap, oldreq);
-+	if (ret < 0)
-+		return ret;
-+	ret = (*bmap->b_pops->bpop_prepare_alloc_ptr)(bmap, newreq);
-+	if (ret < 0)
-+		(*bmap->b_pops->bpop_abort_end_ptr)(bmap, oldreq);
-+
-+	return ret;
-+}
-+
-+void nilfs_bmap_commit_update(struct nilfs_bmap *bmap,
-+			      union nilfs_bmap_ptr_req *oldreq,
-+			      union nilfs_bmap_ptr_req *newreq)
-+{
-+	(*bmap->b_pops->bpop_commit_end_ptr)(bmap, oldreq);
-+	(*bmap->b_pops->bpop_commit_alloc_ptr)(bmap, newreq);
-+}
-+
-+void nilfs_bmap_abort_update(struct nilfs_bmap *bmap,
-+			     union nilfs_bmap_ptr_req *oldreq,
-+			     union nilfs_bmap_ptr_req *newreq)
-+{
-+	(*bmap->b_pops->bpop_abort_end_ptr)(bmap, oldreq);
-+	(*bmap->b_pops->bpop_abort_alloc_ptr)(bmap, newreq);
-+}
-+
-+static int nilfs_bmap_translate_v(const struct nilfs_bmap *bmap, __u64 ptr,
-+				  __u64 *ptrp)
-+{
-+	sector_t blocknr;
-+	int ret;
-+
-+	ret = nilfs_dat_translate(nilfs_bmap_get_dat(bmap), ptr, &blocknr);
-+	if (ret < 0)
-+		return ret;
-+	if (ptrp != NULL)
-+		*ptrp = blocknr;
-+	return 0;
-+}
-+
-+static int nilfs_bmap_prepare_alloc_p(struct nilfs_bmap *bmap,
-+				      union nilfs_bmap_ptr_req *req)
-+{
-+	/* ignore target ptr */
-+	req->bpr_ptr = bmap->b_last_allocated_ptr++;
-+	return 0;
-+}
-+
-+static void nilfs_bmap_commit_alloc_p(struct nilfs_bmap *bmap,
-+				      union nilfs_bmap_ptr_req *req)
-+{
-+	/* do nothing */
-+}
-+
-+static void nilfs_bmap_abort_alloc_p(struct nilfs_bmap *bmap,
-+				     union nilfs_bmap_ptr_req *req)
-+{
-+	bmap->b_last_allocated_ptr--;
-+}
-+
-+static const struct nilfs_bmap_ptr_operations nilfs_bmap_ptr_ops_v = {
-+	.bpop_prepare_alloc_ptr	=	nilfs_bmap_prepare_alloc_v,
-+	.bpop_commit_alloc_ptr	=	nilfs_bmap_commit_alloc_v,
-+	.bpop_abort_alloc_ptr	=	nilfs_bmap_abort_alloc_v,
-+	.bpop_prepare_start_ptr	=	nilfs_bmap_prepare_start_v,
-+	.bpop_commit_start_ptr	=	nilfs_bmap_commit_start_v,
-+	.bpop_abort_start_ptr	=	nilfs_bmap_abort_start_v,
-+	.bpop_prepare_end_ptr	=	nilfs_bmap_prepare_end_v,
-+	.bpop_commit_end_ptr	=	nilfs_bmap_commit_end_v,
-+	.bpop_abort_end_ptr	=	nilfs_bmap_abort_end_v,
-+
-+	.bpop_translate		=	nilfs_bmap_translate_v,
-+};
-+
-+static const struct nilfs_bmap_ptr_operations nilfs_bmap_ptr_ops_vmdt = {
-+	.bpop_prepare_alloc_ptr	=	nilfs_bmap_prepare_alloc_v,
-+	.bpop_commit_alloc_ptr	=	nilfs_bmap_commit_alloc_v,
-+	.bpop_abort_alloc_ptr	=	nilfs_bmap_abort_alloc_v,
-+	.bpop_prepare_start_ptr	=	nilfs_bmap_prepare_start_v,
-+	.bpop_commit_start_ptr	=	nilfs_bmap_commit_start_v,
-+	.bpop_abort_start_ptr	=	nilfs_bmap_abort_start_v,
-+	.bpop_prepare_end_ptr	=	nilfs_bmap_prepare_end_v,
-+	.bpop_commit_end_ptr	=	nilfs_bmap_commit_end_vmdt,
-+	.bpop_abort_end_ptr	=	nilfs_bmap_abort_end_v,
-+
-+	.bpop_translate		=	nilfs_bmap_translate_v,
-+};
-+
-+static const struct nilfs_bmap_ptr_operations nilfs_bmap_ptr_ops_p = {
-+	.bpop_prepare_alloc_ptr	=	nilfs_bmap_prepare_alloc_p,
-+	.bpop_commit_alloc_ptr	=	nilfs_bmap_commit_alloc_p,
-+	.bpop_abort_alloc_ptr	=	nilfs_bmap_abort_alloc_p,
-+	.bpop_prepare_start_ptr	=	NULL,
-+	.bpop_commit_start_ptr	=	NULL,
-+	.bpop_abort_start_ptr	=	NULL,
-+	.bpop_prepare_end_ptr	=	NULL,
-+	.bpop_commit_end_ptr	=	NULL,
-+	.bpop_abort_end_ptr	=	NULL,
-+
-+	.bpop_translate		=	NULL,
-+};
-+
-+static const struct nilfs_bmap_ptr_operations nilfs_bmap_ptr_ops_gc = {
-+	.bpop_prepare_alloc_ptr	=	NULL,
-+	.bpop_commit_alloc_ptr	=	NULL,
-+	.bpop_abort_alloc_ptr	=	NULL,
-+	.bpop_prepare_start_ptr	=	NULL,
-+	.bpop_commit_start_ptr	=	NULL,
-+	.bpop_abort_start_ptr	=	NULL,
-+	.bpop_prepare_end_ptr	=	NULL,
-+	.bpop_commit_end_ptr	=	NULL,
-+	.bpop_abort_end_ptr	=	NULL,
-+
-+	.bpop_translate		=	NULL,
-+};
-+
-+/**
-+ * nilfs_bmap_read - read a bmap from an inode
-+ * @bmap: bmap
-+ * @raw_inode: on-disk inode
-+ *
-+ * Description: nilfs_bmap_read() initializes the bmap @bmap.
-+ *
-+ * Return Value: On success, 0 is returned. On error, the following negative
-+ * error code is returned.
-+ *
-+ * %-ENOMEM - Insufficient amount of memory available.
-+ */
-+int nilfs_bmap_read(struct nilfs_bmap *bmap, struct nilfs_inode *raw_inode)
-+{
-+	if (raw_inode == NULL)
-+		memset(bmap->b_u.u_data, 0, NILFS_BMAP_SIZE);
-+	else
-+		memcpy(bmap->b_u.u_data, raw_inode->i_bmap, NILFS_BMAP_SIZE);
-+
-+	init_rwsem(&bmap->b_sem);
-+	bmap->b_state = 0;
-+	bmap->b_inode = &NILFS_BMAP_I(bmap)->vfs_inode;
-+	switch (bmap->b_inode->i_ino) {
-+	case NILFS_DAT_INO:
-+		bmap->b_pops = &nilfs_bmap_ptr_ops_p;
-+		bmap->b_last_allocated_key = 0;	/* XXX: use macro */
-+		bmap->b_last_allocated_ptr = NILFS_BMAP_NEW_PTR_INIT;
-+		break;
-+	case NILFS_CPFILE_INO:
-+	case NILFS_SUFILE_INO:
-+		bmap->b_pops = &nilfs_bmap_ptr_ops_vmdt;
-+		bmap->b_last_allocated_key = 0;	/* XXX: use macro */
-+		bmap->b_last_allocated_ptr = NILFS_BMAP_INVALID_PTR;
-+		break;
-+	default:
-+		bmap->b_pops = &nilfs_bmap_ptr_ops_v;
-+		bmap->b_last_allocated_key = 0;	/* XXX: use macro */
-+		bmap->b_last_allocated_ptr = NILFS_BMAP_INVALID_PTR;
-+		break;
++	BUG_ON(wi->nr_vecs <= 0);
++ repeat:
++	if (!wi->bio) {
++		wi->bio = nilfs_alloc_seg_bio(wi->sb, wi->blocknr + wi->end,
++					      wi->nr_vecs);
++		if (unlikely(!wi->bio))
++			return -ENOMEM;
 +	}
 +
-+	return (bmap->b_u.u_flags & NILFS_BMAP_LARGE) ?
-+		nilfs_bmap_large_init(bmap,
-+				      NILFS_BMAP_LARGE_LOW,
-+				      NILFS_BMAP_LARGE_HIGH) :
-+		nilfs_bmap_small_init(bmap,
-+				      NILFS_BMAP_SMALL_LOW,
-+				      NILFS_BMAP_SMALL_HIGH);
++	len = bio_add_page(wi->bio, bh->b_page, bh->b_size, bh_offset(bh));
++	if (len == bh->b_size) {
++		wi->end++;
++		return 0;
++	}
++	/* bio is FULL */
++	err = nilfs_submit_seg_bio(wi, mode);
++	/* never submit current bh */
++	if (likely(!err))
++		goto repeat;
++	return err;
++}
++
++int nilfs_segbuf_write(struct nilfs_segment_buffer *segbuf,
++		       struct nilfs_write_info *wi)
++{
++	struct buffer_head *bh;
++	int res, rw = WRITE;
++
++	list_for_each_entry(bh, &segbuf->sb_segsum_buffers, b_assoc_buffers) {
++		res = nilfs_submit_bh(wi, bh, rw);
++		if (unlikely(res))
++			goto failed_bio;
++	}
++
++	list_for_each_entry(bh, &segbuf->sb_payload_buffers, b_assoc_buffers) {
++		res = nilfs_submit_bh(wi, bh, rw);
++		if (unlikely(res))
++			goto failed_bio;
++	}
++
++	if (wi->bio) {
++		/*
++		 * Last BIO is always sent through the following
++		 * submission.
++		 */
++		rw |= (1 << BIO_RW_SYNC);
++		res = nilfs_submit_seg_bio(wi, rw);
++		if (unlikely(res))
++			goto failed_bio;
++	}
++
++	res = 0;
++ out:
++	return res;
++
++ failed_bio:
++	atomic_inc(&wi->err);
++	goto out;
 +}
 +
 +/**
-+ * nilfs_bmap_write - write back a bmap to an inode
-+ * @bmap: bmap
-+ * @raw_inode: on-disk inode
++ * nilfs_segbuf_wait - wait for completion of requested BIOs
++ * @wi: nilfs_write_info
 + *
-+ * Description: nilfs_bmap_write() stores @bmap in @raw_inode.
++ * Return Value: On Success, 0 is returned. On Error, one of the following
++ * negative error code is returned.
++ *
++ * %-EIO - I/O error
 + */
-+void nilfs_bmap_write(struct nilfs_bmap *bmap, struct nilfs_inode *raw_inode)
++int nilfs_segbuf_wait(struct nilfs_segment_buffer *segbuf,
++		      struct nilfs_write_info *wi)
 +{
-+	down_write(&bmap->b_sem);
-+	memcpy(raw_inode->i_bmap, bmap->b_u.u_data,
-+	       NILFS_INODE_BMAP_SIZE * sizeof(__le64));
-+	if (bmap->b_inode->i_ino == NILFS_DAT_INO)
-+		bmap->b_last_allocated_ptr = NILFS_BMAP_NEW_PTR_INIT;
++	int err = 0;
 +
-+	up_write(&bmap->b_sem);
-+}
++	if (!wi->nbio)
++		return 0;
 +
-+void nilfs_bmap_init_gc(struct nilfs_bmap *bmap)
-+{
-+	memset(&bmap->b_u, 0, NILFS_BMAP_SIZE);
-+	init_rwsem(&bmap->b_sem);
-+	bmap->b_inode = &NILFS_BMAP_I(bmap)->vfs_inode;
-+	bmap->b_pops = &nilfs_bmap_ptr_ops_gc;
-+	bmap->b_last_allocated_key = 0;
-+	bmap->b_last_allocated_ptr = NILFS_BMAP_INVALID_PTR;
-+	bmap->b_state = 0;
-+	nilfs_btree_init_gc(bmap);
-+}
++	do {
++		wait_for_completion(&wi->bio_event);
++	} while (--wi->nbio > 0);
 +
-+void nilfs_bmap_init_gcdat(struct nilfs_bmap *gcbmap, struct nilfs_bmap *bmap)
-+{
-+	memcpy(gcbmap, bmap, sizeof(union nilfs_bmap_union));
-+	init_rwsem(&gcbmap->b_sem);
-+	gcbmap->b_inode = &NILFS_BMAP_I(gcbmap)->vfs_inode;
++	if (unlikely(atomic_read(&wi->err) > 0)) {
++		printk(KERN_ERR "NILFS: IO error writing segment\n");
++		err = -EIO;
++		segbuf->sb_io_error = 1;
++	}
++	return err;
 +}
-+
-+void nilfs_bmap_commit_gcdat(struct nilfs_bmap *gcbmap, struct nilfs_bmap *bmap)
-+{
-+	memcpy(bmap, gcbmap, sizeof(union nilfs_bmap_union));
-+	init_rwsem(&bmap->b_sem);
-+	bmap->b_inode = &NILFS_BMAP_I(bmap)->vfs_inode;
-+}
-diff --git a/fs/nilfs2/bmap.h b/fs/nilfs2/bmap.h
+diff --git a/fs/nilfs2/segbuf.h b/fs/nilfs2/segbuf.h
 new file mode 100644
-index 0000000..702e4e7
+index 0000000..25f2a5f
 --- /dev/null
-+++ b/fs/nilfs2/bmap.h
-@@ -0,0 +1,251 @@
++++ b/fs/nilfs2/segbuf.h
+@@ -0,0 +1,203 @@
 +/*
-+ * bmap.h - NILFS block mapping.
++ * segbuf.h - NILFS Segment buffer prototypes and definitions
 + *
-+ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
++ * Copyright (C) 2005-2008 Nippon Telegraph and Telephone Corporation.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -862,286 +545,190 @@ index 0000000..702e4e7
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + *
-+ * Written by Koji Sato <koji@osrg.net>.
++ * Written by Ryusuke Konishi <ryusuke@osrg.net>
++ *
 + */
++#ifndef _NILFS_SEGBUF_H
++#define _NILFS_SEGBUF_H
 +
-+#ifndef _NILFS_BMAP_H
-+#define _NILFS_BMAP_H
-+
-+#include <linux/types.h>
 +#include <linux/fs.h>
 +#include <linux/buffer_head.h>
-+#include <linux/nilfs2_fs.h>
-+#include "alloc.h"
-+
-+#define NILFS_BMAP_INVALID_PTR	0
-+
-+#define nilfs_bmap_dkey_to_key(dkey)	le64_to_cpu(dkey)
-+#define nilfs_bmap_key_to_dkey(key)	cpu_to_le64(key)
-+#define nilfs_bmap_dptr_to_ptr(dptr)	le64_to_cpu(dptr)
-+#define nilfs_bmap_ptr_to_dptr(ptr)	cpu_to_le64(ptr)
-+
-+#define nilfs_bmap_keydiff_abs(diff)	((diff) < 0 ? -(diff) : (diff))
-+
-+
-+struct nilfs_bmap;
++#include <linux/bio.h>
++#include <linux/completion.h>
++#include <linux/backing-dev.h>
 +
 +/**
-+ * union nilfs_bmap_ptr_req - request for bmap ptr
-+ * @bpr_ptr: bmap pointer
-+ * @bpr_req: request for persistent allocator
++ * struct nilfs_segsum_info - On-memory segment summary
++ * @flags: Flags
++ * @nfinfo: Number of file information structures
++ * @nblocks: Number of blocks included in the partial segment
++ * @nsumblk: Number of summary blocks
++ * @sumbytes: Byte count of segment summary
++ * @nfileblk: Total number of file blocks
++ * @seg_seq: Segment sequence number
++ * @ctime: Creation time
++ * @next: Block number of the next full segment
 + */
-+union nilfs_bmap_ptr_req {
-+	__u64 bpr_ptr;
-+	struct nilfs_palloc_req bpr_req;
++struct nilfs_segsum_info {
++	unsigned int		flags;
++	unsigned long		nfinfo;
++	unsigned long		nblocks;
++	unsigned long		nsumblk;
++	unsigned long		sumbytes;
++	unsigned long		nfileblk;
++	u64			seg_seq;
++	time_t			ctime;
++	sector_t		next;
 +};
++
++/* macro for the flags */
++#define NILFS_SEG_HAS_SR(sum)    ((sum)->flags & NILFS_SS_SR)
++#define NILFS_SEG_LOGBGN(sum)    ((sum)->flags & NILFS_SS_LOGBGN)
++#define NILFS_SEG_LOGEND(sum)    ((sum)->flags & NILFS_SS_LOGEND)
++#define NILFS_SEG_DSYNC(sum)     ((sum)->flags & NILFS_SS_SYNDT)
++#define NILFS_SEG_SIMPLEX(sum) \
++	(((sum)->flags & (NILFS_SS_LOGBGN | NILFS_SS_LOGEND)) == \
++	 (NILFS_SS_LOGBGN | NILFS_SS_LOGEND))
++
++#define NILFS_SEG_EMPTY(sum)	((sum)->nblocks == (sum)->nsumblk)
 +
 +/**
-+ * struct nilfs_bmap_stats - bmap statistics
-+ * @bs_nblocks: number of blocks created or deleted
++ * struct nilfs_segment_buffer - Segment buffer
++ * @sb_super: back pointer to a superblock struct
++ * @sb_list: List head to chain this structure
++ * @sb_segent: Pointer for attaching a segment entry
++ * @sb_sum: On-memory segment summary
++ * @sb_segnum: Index number of the full segment
++ * @sb_nextnum: Index number of the next full segment
++ * @sb_fseg_start: Start block number of the full segment
++ * @sb_fseg_end: End block number of the full segment
++ * @sb_pseg_start: Disk block number of partial segment
++ * @sb_rest_blocks: Number of residual blocks in the current segment
++ * @sb_segsum_buffers: List of buffers for segment summaries
++ * @sb_payload_buffers: List of buffers for segment payload
++ * @sb_io_error: I/O error status
 + */
-+struct nilfs_bmap_stats {
-+	unsigned int bs_nblocks;
++struct nilfs_segment_buffer {
++	struct super_block     *sb_super;
++	struct list_head	sb_list;
++	struct nilfs_segment_entry *sb_segent;
++
++	/* Segment information */
++	struct nilfs_segsum_info sb_sum;
++	__u64			sb_segnum;
++	__u64			sb_nextnum;
++	sector_t		sb_fseg_start, sb_fseg_end;
++	sector_t		sb_pseg_start;
++	unsigned		sb_rest_blocks;
++
++	/* Buffers */
++	struct list_head	sb_segsum_buffers;
++	struct list_head	sb_payload_buffers; /* including super root */
++
++	/* io status */
++	int			sb_io_error;
 +};
 +
-+/**
-+ * struct nilfs_bmap_operations - bmap operation table
-+ */
-+struct nilfs_bmap_operations {
-+	int (*bop_lookup)(const struct nilfs_bmap *, __u64, int, __u64 *);
-+	int (*bop_insert)(struct nilfs_bmap *, __u64, __u64);
-+	int (*bop_delete)(struct nilfs_bmap *, __u64);
-+	void (*bop_clear)(struct nilfs_bmap *);
++#define NILFS_LIST_SEGBUF(head)  \
++	list_entry((head), struct nilfs_segment_buffer, sb_list)
++#define NILFS_NEXT_SEGBUF(segbuf)  NILFS_LIST_SEGBUF((segbuf)->sb_list.next)
++#define NILFS_PREV_SEGBUF(segbuf)  NILFS_LIST_SEGBUF((segbuf)->sb_list.prev)
++#define NILFS_LAST_SEGBUF(head)    NILFS_LIST_SEGBUF((head)->prev)
++#define NILFS_FIRST_SEGBUF(head)   NILFS_LIST_SEGBUF((head)->next)
++#define NILFS_SEGBUF_IS_LAST(segbuf, head)  ((segbuf)->sb_list.next == (head))
 +
-+	int (*bop_propagate)(const struct nilfs_bmap *, struct buffer_head *);
-+	void (*bop_lookup_dirty_buffers)(struct nilfs_bmap *,
-+					 struct list_head *);
++#define nilfs_for_each_segbuf_before(s, t, h) \
++	for ((s) = NILFS_FIRST_SEGBUF(h); (s) != (t); \
++	     (s) = NILFS_NEXT_SEGBUF(s))
 +
-+	int (*bop_assign)(struct nilfs_bmap *,
-+			  struct buffer_head **,
-+			  sector_t,
-+			  union nilfs_binfo *);
-+	int (*bop_mark)(struct nilfs_bmap *, __u64, int);
-+
-+	/* The following functions are internal use only. */
-+	int (*bop_last_key)(const struct nilfs_bmap *, __u64 *);
-+	int (*bop_check_insert)(const struct nilfs_bmap *, __u64);
-+	int (*bop_check_delete)(struct nilfs_bmap *, __u64);
-+	int (*bop_gather_data)(struct nilfs_bmap *, __u64 *, __u64 *, int);
-+};
++#define NILFS_SEGBUF_FIRST_BH(head)  \
++	(list_entry((head)->next, struct buffer_head, b_assoc_buffers))
++#define NILFS_SEGBUF_NEXT_BH(bh)  \
++	(list_entry((bh)->b_assoc_buffers.next, struct buffer_head, \
++		    b_assoc_buffers))
++#define NILFS_SEGBUF_BH_IS_LAST(bh, head)  ((bh)->b_assoc_buffers.next == head)
 +
 +
-+/**
-+ * struct nilfs_bmap_ptr_operations - bmap ptr operation table
-+ */
-+struct nilfs_bmap_ptr_operations {
-+	int (*bpop_prepare_alloc_ptr)(struct nilfs_bmap *,
-+				      union nilfs_bmap_ptr_req *);
-+	void (*bpop_commit_alloc_ptr)(struct nilfs_bmap *,
-+				      union nilfs_bmap_ptr_req *);
-+	void (*bpop_abort_alloc_ptr)(struct nilfs_bmap *,
-+				     union nilfs_bmap_ptr_req *);
-+	int (*bpop_prepare_start_ptr)(struct nilfs_bmap *,
-+				      union nilfs_bmap_ptr_req *);
-+	void (*bpop_commit_start_ptr)(struct nilfs_bmap *,
-+				      union nilfs_bmap_ptr_req *,
-+				      sector_t);
-+	void (*bpop_abort_start_ptr)(struct nilfs_bmap *,
-+				     union nilfs_bmap_ptr_req *);
-+	int (*bpop_prepare_end_ptr)(struct nilfs_bmap *,
-+				    union nilfs_bmap_ptr_req *);
-+	void (*bpop_commit_end_ptr)(struct nilfs_bmap *,
-+				    union nilfs_bmap_ptr_req *);
-+	void (*bpop_abort_end_ptr)(struct nilfs_bmap *,
-+				   union nilfs_bmap_ptr_req *);
++int __init nilfs_init_segbuf_cache(void);
++void nilfs_destroy_segbuf_cache(void);
++struct nilfs_segment_buffer *nilfs_segbuf_new(struct super_block *);
++void nilfs_segbuf_free(struct nilfs_segment_buffer *);
++int nilfs_segbuf_map(struct nilfs_segment_buffer *, __u64, unsigned long,
++		     struct the_nilfs *);
++void nilfs_segbuf_set_next_segnum(struct nilfs_segment_buffer *, __u64,
++				  struct the_nilfs *);
++int nilfs_segbuf_reset(struct nilfs_segment_buffer *, unsigned, time_t);
++int nilfs_segbuf_extend_segsum(struct nilfs_segment_buffer *);
++int nilfs_segbuf_extend_payload(struct nilfs_segment_buffer *,
++				struct buffer_head **);
++void nilfs_segbuf_fill_in_segsum(struct nilfs_segment_buffer *);
++void nilfs_segbuf_fill_in_segsum_crc(struct nilfs_segment_buffer *, u32);
++void nilfs_segbuf_fill_in_data_crc(struct nilfs_segment_buffer *, u32);
 +
-+	int (*bpop_translate)(const struct nilfs_bmap *, __u64, __u64 *);
-+};
-+
-+
-+#define NILFS_BMAP_SIZE		(NILFS_INODE_BMAP_SIZE * sizeof(__le64))
-+#define NILFS_BMAP_KEY_BIT	(sizeof(unsigned long) * 8 /* CHAR_BIT */)
-+#define NILFS_BMAP_NEW_PTR_INIT	\
-+	(1UL << (sizeof(unsigned long) * 8 /* CHAR_BIT */ - 1))
-+
-+static inline int nilfs_bmap_is_new_ptr(unsigned long ptr)
++static inline void
++nilfs_segbuf_add_segsum_buffer(struct nilfs_segment_buffer *segbuf,
++			       struct buffer_head *bh)
 +{
-+	return !!(ptr & NILFS_BMAP_NEW_PTR_INIT);
++	list_add_tail(&bh->b_assoc_buffers, &segbuf->sb_segsum_buffers);
++	segbuf->sb_sum.nblocks++;
++	segbuf->sb_sum.nsumblk++;
 +}
 +
++static inline void
++nilfs_segbuf_add_payload_buffer(struct nilfs_segment_buffer *segbuf,
++				struct buffer_head *bh)
++{
++	list_add_tail(&bh->b_assoc_buffers, &segbuf->sb_payload_buffers);
++	segbuf->sb_sum.nblocks++;
++}
 +
-+/**
-+ * struct nilfs_bmap - bmap structure
-+ * @b_u: raw data
-+ * @b_sem: semaphore
-+ * @b_inode: owner of bmap
-+ * @b_ops: bmap operation table
-+ * @b_pops: bmap ptr operation table
-+ * @b_low: low watermark of conversion
-+ * @b_high: high watermark of conversion
-+ * @b_last_allocated_key: last allocated key for data block
-+ * @b_last_allocated_ptr: last allocated ptr for data block
-+ * @b_state: state
-+ */
-+struct nilfs_bmap {
-+	union {
-+		__u8 u_flags;
-+		__le64 u_data[NILFS_BMAP_SIZE / sizeof(__le64)];
-+	} b_u;
-+	struct rw_semaphore b_sem;
-+	struct inode *b_inode;
-+	const struct nilfs_bmap_operations *b_ops;
-+	const struct nilfs_bmap_ptr_operations *b_pops;
-+	__u64 b_low;
-+	__u64 b_high;
-+	__u64 b_last_allocated_key;
-+	__u64 b_last_allocated_ptr;
-+	int b_state;
++static inline void
++nilfs_segbuf_add_file_buffer(struct nilfs_segment_buffer *segbuf,
++			     struct buffer_head *bh)
++{
++	get_bh(bh);
++	nilfs_segbuf_add_payload_buffer(segbuf, bh);
++	segbuf->sb_sum.nfileblk++;
++}
++
++void nilfs_release_buffers(struct list_head *);
++
++static inline void nilfs_segbuf_clear(struct nilfs_segment_buffer *segbuf)
++{
++	nilfs_release_buffers(&segbuf->sb_segsum_buffers);
++	nilfs_release_buffers(&segbuf->sb_payload_buffers);
++}
++
++struct nilfs_write_info {
++	struct bio	       *bio;
++	int 			start, end; /* The region to be submitted */
++	int			rest_blocks;
++	int			max_pages;
++	int			nr_vecs;
++	sector_t		blocknr;
++
++	int			nbio;
++	atomic_t		err;
++	struct completion	bio_event;
++				/* completion event of segment write */
++
++	/*
++	 * The following fields must be set explicitly
++	 */
++	struct super_block     *sb;
++	struct backing_dev_info *bdi; /* backing dev info */
++	struct buffer_head     *bh_sr;
 +};
 +
-+/* state */
-+#define NILFS_BMAP_DIRTY	0x00000001
 +
++void nilfs_segbuf_prepare_write(struct nilfs_segment_buffer *,
++				struct nilfs_write_info *);
++int nilfs_segbuf_write(struct nilfs_segment_buffer *,
++		       struct nilfs_write_info *);
++int nilfs_segbuf_wait(struct nilfs_segment_buffer *,
++		      struct nilfs_write_info *);
 +
-+int nilfs_bmap_test_and_clear_dirty(struct nilfs_bmap *);
-+int nilfs_bmap_read(struct nilfs_bmap *, struct nilfs_inode *);
-+void nilfs_bmap_write(struct nilfs_bmap *, struct nilfs_inode *);
-+int nilfs_bmap_lookup(struct nilfs_bmap *, unsigned long, unsigned long *);
-+int nilfs_bmap_insert(struct nilfs_bmap *, unsigned long, unsigned long);
-+int nilfs_bmap_delete(struct nilfs_bmap *, unsigned long);
-+int nilfs_bmap_last_key(struct nilfs_bmap *, unsigned long *);
-+int nilfs_bmap_truncate(struct nilfs_bmap *, unsigned long);
-+void nilfs_bmap_clear(struct nilfs_bmap *);
-+int nilfs_bmap_propagate(struct nilfs_bmap *, struct buffer_head *);
-+void nilfs_bmap_lookup_dirty_buffers(struct nilfs_bmap *, struct list_head *);
-+int nilfs_bmap_assign(struct nilfs_bmap *, struct buffer_head **,
-+		      unsigned long, union nilfs_binfo *);
-+int nilfs_bmap_lookup_at_level(struct nilfs_bmap *, __u64, int, __u64 *);
-+int nilfs_bmap_mark(struct nilfs_bmap *, __u64, int);
-+
-+void nilfs_bmap_init_gc(struct nilfs_bmap *);
-+void nilfs_bmap_init_gcdat(struct nilfs_bmap *, struct nilfs_bmap *);
-+void nilfs_bmap_commit_gcdat(struct nilfs_bmap *, struct nilfs_bmap *);
-+
-+
-+/*
-+ * Internal use only
-+ */
-+
-+int nilfs_bmap_move_v(const struct nilfs_bmap *, __u64, sector_t);
-+int nilfs_bmap_mark_dirty(const struct nilfs_bmap *, __u64);
-+
-+
-+__u64 nilfs_bmap_data_get_key(const struct nilfs_bmap *,
-+			      const struct buffer_head *);
-+
-+__u64 nilfs_bmap_find_target_seq(const struct nilfs_bmap *, __u64);
-+__u64 nilfs_bmap_find_target_in_group(const struct nilfs_bmap *);
-+
-+int nilfs_bmap_prepare_update(struct nilfs_bmap *,
-+			      union nilfs_bmap_ptr_req *,
-+			      union nilfs_bmap_ptr_req *);
-+void nilfs_bmap_commit_update(struct nilfs_bmap *,
-+			      union nilfs_bmap_ptr_req *,
-+			      union nilfs_bmap_ptr_req *);
-+void nilfs_bmap_abort_update(struct nilfs_bmap *,
-+			     union nilfs_bmap_ptr_req *,
-+			     union nilfs_bmap_ptr_req *);
-+
-+void nilfs_bmap_add_blocks(const struct nilfs_bmap *, int);
-+void nilfs_bmap_sub_blocks(const struct nilfs_bmap *, int);
-+
-+
-+int nilfs_bmap_get_block(const struct nilfs_bmap *, __u64,
-+			 struct buffer_head **);
-+void nilfs_bmap_put_block(const struct nilfs_bmap *, struct buffer_head *);
-+int nilfs_bmap_get_new_block(const struct nilfs_bmap *, __u64,
-+			     struct buffer_head **);
-+void nilfs_bmap_delete_block(const struct nilfs_bmap *, struct buffer_head *);
-+
-+
-+/* Assume that bmap semaphore is locked. */
-+static inline int nilfs_bmap_dirty(const struct nilfs_bmap *bmap)
-+{
-+	return !!(bmap->b_state & NILFS_BMAP_DIRTY);
-+}
-+
-+/* Assume that bmap semaphore is locked. */
-+static inline void nilfs_bmap_set_dirty(struct nilfs_bmap *bmap)
-+{
-+	bmap->b_state |= NILFS_BMAP_DIRTY;
-+}
-+
-+/* Assume that bmap semaphore is locked. */
-+static inline void nilfs_bmap_clear_dirty(struct nilfs_bmap *bmap)
-+{
-+	bmap->b_state &= ~NILFS_BMAP_DIRTY;
-+}
-+
-+
-+#define NILFS_BMAP_LARGE	0x1
-+
-+#define NILFS_BMAP_SMALL_LOW	NILFS_DIRECT_KEY_MIN
-+#define NILFS_BMAP_SMALL_HIGH	NILFS_DIRECT_KEY_MAX
-+#define NILFS_BMAP_LARGE_LOW	NILFS_BTREE_ROOT_NCHILDREN_MAX
-+#define NILFS_BMAP_LARGE_HIGH	NILFS_BTREE_KEY_MAX
-+
-+#define nilfs_bmap_small_init			nilfs_direct_init
-+#define nilfs_bmap_small_convert_and_insert	NULL
-+#define nilfs_bmap_small_delete_and_convert	nilfs_direct_delete_and_convert
-+#define nilfs_bmap_large_init			nilfs_btree_init
-+#define nilfs_bmap_large_convert_and_insert	nilfs_btree_convert_and_insert
-+#define nilfs_bmap_large_delete_and_convert	NULL
-+
-+#endif	/* _NILFS_BMAP_H */
-diff --git a/fs/nilfs2/bmap_union.h b/fs/nilfs2/bmap_union.h
-new file mode 100644
-index 0000000..d41509b
---- /dev/null
-+++ b/fs/nilfs2/bmap_union.h
-@@ -0,0 +1,42 @@
-+/*
-+ * bmap_union.h - NILFS block mapping.
-+ *
-+ * Copyright (C) 2006-2008 Nippon Telegraph and Telephone Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ * Written by Koji Sato <koji@osrg.net>.
-+ */
-+
-+#ifndef _NILFS_BMAP_UNION_H
-+#define _NILFS_BMAP_UNION_H
-+
-+#include "bmap.h"
-+#include "direct.h"
-+#include "btree.h"
-+
-+/**
-+ * nilfs_bmap_union -
-+ * @bi_bmap: bmap structure
-+ * @bi_btree: direct map structure
-+ * @bi_direct: B-tree structure
-+ */
-+union nilfs_bmap_union {
-+	struct nilfs_bmap bi_bmap;
-+	struct nilfs_direct bi_direct;
-+	struct nilfs_btree bi_btree;
-+};
-+
-+#endif	/* _NILFS_BMAP_UNION_H */
++#endif /* _NILFS_SEGBUF_H */
 -- 
 1.5.6.3
 
