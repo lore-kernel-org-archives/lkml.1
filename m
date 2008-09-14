@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYINVQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYINVSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbYINVQw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 17:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYINVQo
+	id S1755757AbYINVSX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 17:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYINVSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 17:16:44 -0400
-Received: from mail1.radix.net ([207.192.128.31]:39009 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754266AbYINVQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 17:16:44 -0400
-X-Greylist: delayed 1782 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Sep 2008 17:16:43 EDT
-Subject: Re: [linux-dvb] Multiproto API/Driver Update
-From: Andy Walls <awalls@radix.net>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Steven Toth <stoth@linuxtv.org>, linux-dvb@linuxtv.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <48CD5D19.1070700@gmail.com>
-References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
-	 <48C66829.1010902@grumpydevil.homelinux.org>
-	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
-	 <48CC42D8.8080806@gmail.com>
-	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
-	 <48CC4D35.3000003@gmail.com>
-	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>
-	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com>
-Content-Type: text/plain
-Date: Sun, 14 Sep 2008 16:45:46 -0400
-Message-Id: <1221425146.4278.30.camel@morgan.walls.org>
+	Sun, 14 Sep 2008 17:18:12 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:41952 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754084AbYINVSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 17:18:11 -0400
+Date: Sun, 14 Sep 2008 14:17:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: linux-next: Tree for September 13 (3c509)
+Message-Id: <20080914141757.899f71eb.randy.dunlap@oracle.com>
+In-Reply-To: <20080913162344.ab395285.sfr@canb.auug.org.au>
+References: <20080913162344.ab395285.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-09-14 at 22:51 +0400, Manu Abraham wrote:
-> Steven Toth wrote:
-> > Markus Rechberger wrote:
-> >> On Sun, Sep 14, 2008 at 1:31 AM, Manu Abraham <abraham.manu@gmail.com>
-> >> wrote:
-> >>> Markus Rechberger wrote:
-> >>>> On Sun, Sep 14, 2008 at 12:46 AM, Manu Abraham
-> >>>> <abraham.manu@gmail.com> wrote:
-> >>>>> Markus Rechberger wrote:
+drivers/net/3c509.c fails (CONFIG_PM=y) with:
 
- 
-> > Me. I'll port the 3200 cards and their derivatives, including the 6100
-> > and the 0899. I've already said I'd do that.... but it's manu's code and
-> > he retains all rights. He gets to decide first.
-> 
-> 
-> The STB0899 based devices are much different from the crappy handicapped
-> Hauppauge S2 cards and hence the API that you work upon is quite limited
-> to what you see with regards to the Hauppauge (CX24116 based) cards.
-> 
-> Even the bare specifications from Conexant point to a handicapped DVB-S2
-> demodulator.
-> 
-> Attempts to do so, will break those devices at least for most of the
-> features and more yet to come. The DVB-S2 transport is a bit more
-> advanced delivery system than what your API based on the CX24116
-> demodulator.
-> 
-> At least it will be great for Hauppauge as you can point to people that
-> Hauppauge hardware is much better, for the marketing aspects as you have
-> done in the past on IRC lists.
-> 
-> Very good marketing strategy, Steven keep it up, you have earned more
-> sales for the Hauppauge cards ...
-> <claps hands>
+drivers/built-in.o:(.data+0x7dcc): undefined reference to `el3_resume'
+drivers/built-in.o:(.data+0x7e08): undefined reference to `el3_resume'
 
+It seems that this function does not exist in the source file.
 
-Manu,
-
-Though I can't read much German, after looking at the jusst.de website I
-can't help but think that you as well have financial interests driving
-your actions.  If so, then your statements display quite a bit of
-hypocrisy.
-
-Manipulating (i.e. stalling) the timing of Multiproto being merged into
-the v4l-dvb tree or kernel, for you or your employer's gain, would be
-little different from the motivations you allege Steve of having.
-
-Since the major gripe I'm reading on the list "is that multiproto has
-taken too long" and since it seems to me the only thing that shook it
-loose was a competing proposal, please save the venom for when you
-actually have some clear moral high-ground to stand on.  I don't see it
-from here.
- 
-
-
-As for the technical superiority of either API proposal; that probably
-just doesn't matter.  I've seen policy/political decisions force
-suboptimal technical solutions at work time and time again.  If you
-really believe you have a superior product technically; then perhaps you
-should work to make it superior politically as well.  Mud-slinging can't
-be a good long term strategy toward that end.
-
-
-
-Regards,
-Andy
-
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
