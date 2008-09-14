@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbYINPVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbYINPV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbYINPVg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 11:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYINPV2
+	id S1755271AbYINPV7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 11:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbYINPVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 11:21:28 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:55571 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbYINPV1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 11:21:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sfDrJxyhygDte5Wxbl9NQocq+XNkr1QuwE4ZWaIbMaWUNMVM5rBmxmKsgPcKOA8Tcf
-         KMBANDt5/FkXm8kFIbsvjGHwOa1Me1r/MbeexE8w62lX946Y+/sD1/J1WNwXIrT1+LxT
-         NC0UZdQhAgRwLhq06IFoPmgKQ1bCti2E+N/Q8=
-Message-ID: <a36005b50809140821w2caeb810p431cf5625b0297f5@mail.gmail.com>
-Date: Sun, 14 Sep 2008 08:21:26 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: [PATCH 12/13] hrtimer: create a "timer_slack" field in the task struct
-Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, dwmw2@infradead.org, drepper@redhat.com,
-       mingo@elte.hu, tglx@tglx.de
-In-Reply-To: <20080908141555.GB31784@elf.ucw.cz>
+	Sun, 14 Sep 2008 11:21:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47773 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753623AbYINPVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 11:21:48 -0400
+Date: Sun, 14 Sep 2008 17:21:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kmemcheck: lazy checking for MOVS instructions
+Message-ID: <20080914152136.GF29290@elte.hu>
+References: <20080911154616.GA16042@localhost.localdomain> <20080912090607.GA6632@elte.hu> <19f34abd0809121009o81f2705ve083209a4af23b5d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080901160343.75a89ec9@infradead.org>
-	 <20080901161423.59ebf2fc@infradead.org>
-	 <20080902100439.GA11383@elf.ucw.cz>
-	 <20080902060323.70245b83@infradead.org>
-	 <20080908132713.GA18486@elf.ucw.cz>
-	 <20080908064002.7abc2a22@infradead.org>
-	 <20080908141555.GB31784@elf.ucw.cz>
+In-Reply-To: <19f34abd0809121009o81f2705ve083209a4af23b5d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 8, 2008 at 7:15 AM, Pavel Machek <pavel@suse.cz> wrote:
-> Ok, so select()/poll() may default to non-zero slack for legacy apps.
 
-That's the goal.
+* Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-> Yes, it is a great advantage, but it feels like a hack. Maybe it is
-> better done with LD_PRELOAD or something?
->
-> I'd certianly want the applications to specify slack themselves in
-> like 10 years.
+> On Fri, Sep 12, 2008 at 11:06 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> From: Vegard Nossum <vegard.nossum@gmail.com>
+> >> Date: Thu, 11 Sep 2008 17:31:07 +0200
+> >> Subject: [PATCH] kmemcheck: lazy checking for MOVS instructions
+> >>
+> >> This patch adds the support for lazy (as opposed to eager) checking
+> >> for [REP] MOVS instructions (mostly used in memcpy()). This means that
+> >> if both the source and destination addresses are tracked by kmemcheck,
+> >> we copy the shadow memory instead of checking that it is initialized.
+> >>
+> >> In this way, we get rid of a few more false positives.
+> >
+> > looks good to me. I've applied it to tip/kmemcheck - but can zap it and
+> > pull your for-tip branch as well.
+> 
+> Please zap, I believe it contains an error :-)
+> 
+> In short, when reading/writing the shadow memory of the second page in 
+> a page-boundary-crossing memory access, the offsets into the second 
+> shadow page will be wrong (off by up to 8 bytes). It's a pretty 
+> obscure case, but it would be nice to have it fixed. Will send a pull 
+> request later.
 
-LD_PRELOAD is not a solution.  LD_PRELOAD always has been and always
-will be a hack.  You use it to work around problems or to test
-something.  Nothing else.
+ok, zapped it.
 
-LD_PRELOAD and other variables are ignored in security-relevant
-contexts and environments are cleared in many situations.  Sure, you
-could use /etc/ld.so.preload but that works around only one problem.
-Furthermore, there is a significant cost associated with preloading.
-There are additional files to be loaded and it disables prelinking.
-
-The prctl() way plus a default non-zero value is the best way for
-legacy apps.  And you'll hopefully get your wish that apps will take
-fate into their own hand by specifying the slack themselves.  Arjan's
-proposal also introduces new poll/select-like interface which take the
-additional slack value (at least that's what we discussed before).
-
-I'm strongly opposed to using LD_PRELOAD.  And I think requiring the
-libc implementation of select/ poll, ... etc to wrap around the new
-interfaces which take the slack and determine the slack at userlevel
-(by reading some file) is too expensive.  It's one little value per
-process (group) to be kept by the kernel.  That's not much.
+	Ingo
