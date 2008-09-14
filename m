@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYINJQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbYINJS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbYINJQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 05:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYINJQs
+	id S1754148AbYINJS0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 05:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbYINJSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 05:16:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:36566 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751914AbYINJQr (ORCPT
+	Sun, 14 Sep 2008 05:18:18 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:61032 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbYINJSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 05:16:47 -0400
+	Sun, 14 Sep 2008 05:18:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=D+l597tkN1DKaFfkqQBSRBU8ko52aiHYKTuPR7rZmB9nr5uKmCR7iu212ennXhlHY9
-         6fZ6FadE5cr3GlORyHcaSxz0UXffx7hz4P9Noph+WkE+6s3esU7KozJ5y1gjWxXK65yO
-         ezS2PkgL1Ji+4/8nltmQ3dwHKajxuRFZIEdvg=
-Message-ID: <86802c440809140216n49f672e7x886d0d69c382f217@mail.gmail.com>
-Date: Sun, 14 Sep 2008 02:16:47 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Krzysztof Helt" <krzysztof.h1@wp.pl>
-Subject: Re: [PATCH] x86: better CPU identification without the CPUID
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       mingo@redhat.com
-In-Reply-To: <86802c440809140201q566fba43t49ec25331b774643@mail.gmail.com>
+        b=MP0pXa1tEWnqrUaJD7grwyxemUOhpIQaAz+VkoGW8ASQCwQNL/gMOuNOzM09NyvjF/
+         uERj6cxrdMg+fTFJzN+iHaHqf4xm0L+YWupA2CHp5AZZtFwOFaV1AqiIH5pavOlKFaRl
+         LMq4TrB8myJli6afru3RcH5EPeuhsUBtx4vLQ=
+Message-ID: <b647ffbd0809140218v567843d8kb455499c9be34225@mail.gmail.com>
+Date: Sun, 14 Sep 2008 11:18:16 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [x86-tip, patch] rework of the microcode splitup
+Cc: "Peter Oruba" <peter.oruba@amd.com>,
+       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1221383648.6184.28.camel@earth>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080913125606.d655bdcf.krzysztof.h1@wp.pl>
-	 <86802c440809132143p287edb82i6a73efbc53e6e93f@mail.gmail.com>
-	 <86802c440809132255sa518aa8g51136ae21a880e2d@mail.gmail.com>
-	 <20080914103018.f1d684a8.krzysztof.h1@wp.pl>
-	 <86802c440809140201q566fba43t49ec25331b774643@mail.gmail.com>
+References: <1221383648.6184.28.camel@earth>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 14, 2008 at 2:01 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Sun, Sep 14, 2008 at 1:30 AM, Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
->> On Sat, 13 Sep 2008 22:55:10 -0700
->> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
->>
->> One wants to call c_early_init() here for Cyrix cpus- otherwise
->> the mtrr caps are not set. The correct patch here is only:
+[ forgot to add my SOB line ]
 
-please check v2 in another mail.
+>
+> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> Subject: x86-microcode, rework of the microcode splitup
+>
+> x86, microcode rework, v2
+>
+> this is a rework of the microcode splitup in tip/x86/microcode
+>
+> This new interface is supposed to be cleaner and better maintainability-wise;
+>
+> 4 files changed, 304 insertions(+), 362 deletions(-)
 
-YH
+Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+
+
+>
+>
+> --- a/arch/x86/kernel/microcode.c
+> +++ b/arch/x86/kernel/microcode.c
+> @@ -70,8 +70,9 @@
+>  *             Fix sigmatch() macro to handle old CPUs with pf == 0.
+>  *             Thanks to Stuart Swales for pointing out this bug.
+>  */
+> -
+
+[ ... ]
+
+
+-- 
+Best regards,
+Dmitry Adamushko
