@@ -1,77 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYINElw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbYINEoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbYINElw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 00:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbYINElm
+	id S1753414AbYINEoQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 00:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbYINEoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 00:41:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:37628 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbYINElj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 00:41:39 -0400
-Message-ID: <48CC95FD.3090407@goop.org>
-Date: Sat, 13 Sep 2008 21:41:33 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 14 Sep 2008 00:44:01 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:12908 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbYINEoA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 00:44:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=nZdFVwDK9lwysvkK8JTifL0mrUR//qr/2cwF+BNiiPQHKTHdmY1sbemKGGXPSgjGOy
+         2epxUJ+1sxnbfxXlrzNwC0ZkLKuiDmc6wynh0JMXfFGLYK0T0HzLr9VW9faiw4eswRpK
+         7AaBbkoVJ3fC2VMJIWJeWjyAks8fUzRLlLpew=
+Message-ID: <86802c440809132143p287edb82i6a73efbc53e6e93f@mail.gmail.com>
+Date: Sat, 13 Sep 2008 21:43:59 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Krzysztof Helt" <krzysztof.h1@wp.pl>
+Subject: Re: [PATCH] x86: better CPU identification without the CPUID
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       mingo@redhat.com
+In-Reply-To: <20080913125606.d655bdcf.krzysztof.h1@wp.pl>
 MIME-Version: 1.0
-To: Shem Multinymous <multinymous@gmail.com>
-CC: Tejun Heo <tj@kernel.org>, Elias Oltmanns <eo@nebensachen.de>,
-       Thomas Renninger <trenn@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-References: <48C7FCEE.8060404@kernel.org>	 <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>	 <48C948A6.3080404@kernel.org> <41840b750809111325t30f8ffe2sa4572d401d43dc5a@mail.gmail.com>
-In-Reply-To: <41840b750809111325t30f8ffe2sa4572d401d43dc5a@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080913125606.d655bdcf.krzysztof.h1@wp.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shem Multinymous wrote:
-> Hi Tejun,
+On Sat, Sep 13, 2008 at 3:56 AM, Krzysztof Helt <krzysztof.h1@wp.pl> wrote:
+> From: Krzysztof Helt <krzysztof.h1@wp.pl>
 >
-> On Thu, Sep 11, 2008 at 12:34 PM, Tejun Heo <tj@kernel.org> wrote:
->   
->> Hello, Shem Multinymous.
->>     
->>> Using the input device interface for the accelerometer (as done by
->>> tp_smapi's hdaps + latest hdapsd) greatly reduces the number of
->>> accelerometer-related timer interrupts on tickless kernels, as
->>> measured by powertop. With syscall polling you have the kernal polling
->>> the hardware at ~50Hz and then the userspace hdapsd polling the kernel
->>> at ~50Hz. When they're out of phase so you can get up to 100
->>> interrupts/sec. With an input device you're always at 50Hz. The phase
->>> difference also induces a small extra delay in the shock handling
->>> response.
->>>       
->> That reduction comes because input device supports poll and
->> sysfs_notify_event() does about the same thing.  The uesrland daemon
->> can just poll on a node and read data nodes when poll event on the
->> node triggeres.
->>     
+> cpus without the CPUID instruction are identified
+> as general 386 or 486 while some cpus (mostly made
+> by Cyrix) provide c_identify function which identify
+> correctly older cpus using cpu specific registers).
 >
-> Agreed.
-> There's another issue with the current sysfs interface, though: hdapsd
-> needs to read (x,y,timestamp) tuples, whereas sysfs provides just x
-> and y in separate attributes which cannot be read atomically together.
-> We can add a sysfs file with "x y timestamp" readouts, though this is
-> unusual for sysfs (and certainly incompatible with hwmon).
->   
+> Cyrix cpus are even worse as 5x86 and 6x68 have
+> the CPUID instruction disabled. The CPUID is
+> enabled by the c_identify() but the c_identify
+> is only called when the CPUID is available.
+>
+> Fix this by calling the c_identify() for all known
+> cpu families if there is no the CPUID instruction
+>
+> Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
+>
+> I have tested it on Cyrix Cx486DX2 cpu.
+>
+> I suspect that coma_bug field and mtrr support is not
+> set correctly for the Cyrix 6x86 family. I have not a cpu from
+> the Cyrix 6x68 family to test.
+>
+> The code path is (+ where the patch code is added)
+>
+> if (have_cpuid_p()) {
+>
+> }
+> + } else {
+> ...
+> + }
+>
+> so it does not affect cpus with the CPUID instruction.
+>
+> Regards,
+> Krzysztof
+>
+> diff -urp linux-mm/arch/x86/kernel/cpu/common.c linux-486/arch/x86/kernel/cpu/common.c
+> --- linux-mm/arch/x86/kernel/cpu/common.c       2008-09-05 23:38:20.295563396 +0200
+> +++ linux-486/arch/x86/kernel/cpu/common.c      2008-09-12 22:53:27.062265329 +0200
+> @@ -444,6 +444,17 @@ static void __cpuinit generic_identify(s
+>
+>                init_scattered_cpuid_features(c);
+>                detect_nopl(c);
+> +       } else {
+> +               int i;
+> +               for (i = 0; i < X86_VENDOR_NUM; i++)
+> +                       if (cpu_devs[i] && cpu_devs[i]->c_identify) {
+> +                               c->x86_vendor_id[0] = 0;
+> +                               cpu_devs[i]->c_identify(c);
+> +                               if (c->x86_vendor_id[0]) {
+> +                                       get_cpu_vendor(c, 0);
+> +                                       break;
+> +                               }
+> +                       }
+>        }
+>  }
+>
+> --
 
-Assuming timestamp is always updated when the x,y values change, you can do:
+1. can you check tip/master?
+2. please check if you can add code in early_identify_cpu
+3. need to move c_identify_cpu calling to identify_cpu
 
-	do {
-		ts = read_timestamp();
-		x = read_x();
-		y = read_y();
-		ts2 = read_timestamp();
-	} while(ts != ts2);
-
-
-
-
-
-
-    J
+YH
