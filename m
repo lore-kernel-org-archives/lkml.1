@@ -1,42 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYIOJxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYIOJ5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbYIOJxR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 05:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYIOJw7
+	id S1754453AbYIOJ5Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 05:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbYIOJ5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 05:52:59 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58479 "EHLO
+	Mon, 15 Sep 2008 05:57:16 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39188 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbYIOJw7 (ORCPT
+	with ESMTP id S1751523AbYIOJ5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 05:52:59 -0400
-Date: Mon, 15 Sep 2008 11:54:27 +0200
+	Mon, 15 Sep 2008 05:57:16 -0400
+Date: Mon, 15 Sep 2008 11:58:38 +0200
 From: Pavel Machek <pavel@suse.cz>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/27] nilfs2: add document
-Message-ID: <20080915095427.GA1861@elf.ucw.cz>
-References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp> <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] introduce boot_printk()
+Message-ID: <20080915095838.GB1861@elf.ucw.cz>
+References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon 2008-09-15 01:05:16, Yinghai Lu wrote:
+> could be enabled via "boot=verbose" to get more debug info
+> 
+> will use it to convert some printk(KERN_DEBUG ...)
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-> +NILFS2 is a log-structured file system (LFS) supporting continuous
-> +snapshotting.  In addition to versioning capability of the entire file
-> +system, users can even restore files mistakenly overwritten or
-
-Hmm, undelete done right. Just one question... how slow/fast is it
-compared to conventional filesystems (ext3?)?
+boot= is a bit too generic name, I guess...
 								Pavel
+
+> ---
+>  include/linux/kernel.h |   19 +++++++++++++++++++
+>  kernel/printk.c        |   21 +++++++++++++++++++++
+>  2 files changed, 40 insertions(+)
+> 
+> Index: linux-2.6/include/linux/kernel.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/kernel.h
+> +++ linux-2.6/include/linux/kernel.h
+> @@ -344,6 +344,25 @@ static inline char *pack_hex_byte(char *
+>  #endif
+>  
+>  /*
+> + * Debugging macros
+> + */
+> +#define BOOT_QUIET   0
+> +#define BOOT_VERBOSE 1
+> +#define BOOT_SPEW    2
+> +
+> +extern int boot_verbosity;
+> +/*
+> + * Define the default level of output to be very little
+> + * This can be turned up by using boot=verbose for more
+> + * information and boot=spew for _lots_ of information.
+> + * boot_verbosity is defined in printk.c
+> + */
+> +#define boot_printk(v, s, a...) do {        \
+> +		if ((v) <= boot_verbosity)  \
+> +			printk(s, ##a);    \
+> +	} while (0)
+> +
+> +/*
+>   *      Display an IP address in readable format.
+>   */
+>  
+> Index: linux-2.6/kernel/printk.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/printk.c
+> +++ linux-2.6/kernel/printk.c
+> @@ -604,6 +604,27 @@ asmlinkage int printk(const char *fmt, .
+>  	return r;
+>  }
+>  
+> +int boot_verbosity;
+> +
+> +static int __init boot_set_verbosity(char *arg)
+> +{
+> +	if (!arg)
+> +		return -EINVAL;
+> +
+> +	if (strcmp("spew", arg) == 0)
+> +		boot_verbosity = BOOT_SPEW;
+> +	else if (strcmp("verbose", arg) == 0)
+> +		boot_verbosity = BOOT_VERBOSE;
+> +	else {
+> +		printk(KERN_WARNING "boot Verbosity level %s not recognised"
+> +			" use boot=verbose or boot=spew\n", arg);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +early_param("boot", boot_set_verbosity);
+> +
+>  /* cpu currently holding logbuf_lock */
+>  static volatile unsigned int printk_cpu = UINT_MAX;
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
