@@ -1,104 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYIOIGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbYIOIG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbYIOIGH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 04:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYIOIFw
+	id S1754035AbYIOIG0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 04:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbYIOIGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 04:05:52 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:41684 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbYIOIFv (ORCPT
+	Mon, 15 Sep 2008 04:06:00 -0400
+Received: from mailrelay012.isp.belgacom.be ([195.238.6.179]:33774 "EHLO
+	mailrelay012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753916AbYIOIF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 04:05:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=B18hr78TPk2KFxp+PdRnqdoXgcPEB/4y4L8FZp/cNxIsi/EDkM5aexv5+bLr+p7XRw
-         EdF9ohxnMzrpfsTXzgiChWQPM4zVxkVDMkI+SS7Wa70VxxWTVcit5y26OdwV0G0/90Y6
-         A3m4HIDg3VU5QxbkOD9pt1jknvQgXVIVzoDXw=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH] introduce boot_printk()
-Date: Mon, 15 Sep 2008 01:05:16 -0700
-Message-Id: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
+	Mon, 15 Sep 2008 04:05:58 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArQFAN+yzUhR9cv+/2dsb2JhbACBYrILgWQ
+Date: Mon, 15 Sep 2008 10:05:56 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: wdt285: fix sparse warnings
+Message-ID: <20080915080556.GB2654@infomag.infomag.iguana.be>
+References: <20080914213409.767536728@fluff.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080914213409.767536728@fluff.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-could be enabled via "boot=verbose" to get more debug info
+Ben,
 
-will use it to convert some printk(KERN_DEBUG ...)
+...
+> @@ -141,13 +141,13 @@ static long watchdog_ioctl(struct file *
+>  	switch (cmd) {
+>  	case WDIOC_GETSUPPORT:
+>  		ret = 0;
+> -		if (copy_to_user((void *)arg, &ident, sizeof(ident)))
+> +		if (copy_to_user((void __user *)arg, &ident, sizeof(ident)))
+>  			ret = -EFAULT;
+>  		break;
+>  
+...
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Isn't it better to fix this like we did with the other watchdog drivers:
+        void __user *argp = (void __user *)arg;
+        int __user *p = argp;
+	...
+		if (copy_to_user(argp, &ident, sizeof(ident)))
+	...
 
----
- include/linux/kernel.h |   19 +++++++++++++++++++
- kernel/printk.c        |   21 +++++++++++++++++++++
- 2 files changed, 40 insertions(+)
+Regards,
+Wim.
 
-Index: linux-2.6/include/linux/kernel.h
-===================================================================
---- linux-2.6.orig/include/linux/kernel.h
-+++ linux-2.6/include/linux/kernel.h
-@@ -344,6 +344,25 @@ static inline char *pack_hex_byte(char *
- #endif
- 
- /*
-+ * Debugging macros
-+ */
-+#define BOOT_QUIET   0
-+#define BOOT_VERBOSE 1
-+#define BOOT_SPEW    2
-+
-+extern int boot_verbosity;
-+/*
-+ * Define the default level of output to be very little
-+ * This can be turned up by using boot=verbose for more
-+ * information and boot=spew for _lots_ of information.
-+ * boot_verbosity is defined in printk.c
-+ */
-+#define boot_printk(v, s, a...) do {        \
-+		if ((v) <= boot_verbosity)  \
-+			printk(s, ##a);    \
-+	} while (0)
-+
-+/*
-  *      Display an IP address in readable format.
-  */
- 
-Index: linux-2.6/kernel/printk.c
-===================================================================
---- linux-2.6.orig/kernel/printk.c
-+++ linux-2.6/kernel/printk.c
-@@ -604,6 +604,27 @@ asmlinkage int printk(const char *fmt, .
- 	return r;
- }
- 
-+int boot_verbosity;
-+
-+static int __init boot_set_verbosity(char *arg)
-+{
-+	if (!arg)
-+		return -EINVAL;
-+
-+	if (strcmp("spew", arg) == 0)
-+		boot_verbosity = BOOT_SPEW;
-+	else if (strcmp("verbose", arg) == 0)
-+		boot_verbosity = BOOT_VERBOSE;
-+	else {
-+		printk(KERN_WARNING "boot Verbosity level %s not recognised"
-+			" use boot=verbose or boot=spew\n", arg);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+early_param("boot", boot_set_verbosity);
-+
- /* cpu currently holding logbuf_lock */
- static volatile unsigned int printk_cpu = UINT_MAX;
- 
