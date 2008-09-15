@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYIOEjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYIOFbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073AbYIOEjx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 00:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYIOEjp
+	id S1753952AbYIOFbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 01:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750915AbYIOFbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 00:39:45 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:19008 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbYIOEjo (ORCPT
+	Mon, 15 Sep 2008 01:31:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43941 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbYIOFbM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 00:39:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=LN4okbvBD747MsAmL1RxBgKdiaw1yccEMh2s2rQ3utcvumrBV4r6WpD0eUuLIg7muO
-         +/SW7n2oVUrTfbssrRL88HnnfxFx6L/dnS8xeuMxPnA8YhFKibYxyIH6UUb/XrBvV97h
-         vTeObhywMrL7WyCJqGYkwuaU5Z4SLAEI2rdeE=
-Message-ID: <aff5deaf0809142139v42ff0025ub1c3bb5cdda83c84@mail.gmail.com>
-Date: Sun, 14 Sep 2008 21:39:42 -0700
-From: "S K" <nospamnoham@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: Unable to find files in include/asm-arm in the Linus's tree
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080914205538.27e7b1d4.randy.dunlap@oracle.com>
+	Mon, 15 Sep 2008 01:31:12 -0400
+Date: Mon, 15 Sep 2008 06:30:48 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Osterlund <petero2@telia.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Cox <alan@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: 2.6.27-rc4-git1: Reported regressions from 2.6.26
+Message-ID: <20080915053048.GE28946@ZenIV.linux.org.uk>
+References: <mzBsPw3QUOF.A.87F.wZGsIB@albercik> <alpine.LFD.1.10.0808241120460.3363@nehalem.linux-foundation.org> <m3k5e2qkk2.fsf@telia.com> <alpine.LFD.1.10.0808271335260.3363@nehalem.linux-foundation.org> <20080828135245.GA12410@infradead.org> <20080902072642.GX20055@kernel.dk> <20080903020629.GS28946@ZenIV.linux.org.uk> <20080904101326.GD20055@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <514e099a0809141825u34015891pa3f11267373ae818@mail.gmail.com>
-	 <20080914205538.27e7b1d4.randy.dunlap@oracle.com>
-X-Google-Sender-Auth: 30bd60636b01ab9a
+In-Reply-To: <20080904101326.GD20055@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
+On Thu, Sep 04, 2008 at 12:13:27PM +0200, Jens Axboe wrote:
+> On Wed, Sep 03 2008, Al Viro wrote:
+> > On Tue, Sep 02, 2008 at 09:26:43AM +0200, Jens Axboe wrote:
+> > > > Actually both interfaces are a fscking disaster.  The right things to
+> > > > pass is neither and inode nor a file but a struct block_device.  Al had
+> > > > all this work done a while and it just needs rebasing to a current tree:
+> > > > 
+> > > > 	http://git.kernel.org/?p=linux/kernel/git/viro/bdev.git;a=summary
+> > > 
+> > > Completely agreed. Al, I remember talking to you about this at the
+> > > storage summit back in february. What are your current plans wrt moving
+> > > this forward?
+> > 
+> > Rebased, with nfs parts of fmode_t patch taken out (irrelevant for
+> > bdev anyway and really better off in intent-killing queue).  Other
+> > than that, it's a straight port...  Same place, same branch.
+> 
+> So what's your plan with this - 2.6.28?
 
--SK
+Yes.  The only nastiness is around drivers/ide - there it gets a bunch of
+annoying conflicts from the ide-{disk,floppy}_ioctl.c splitoff.  Other than
+that, it's trivially ported on top of current linux-next.  Merge order is
+going to be interesting - depending on whether block merge happens before
+or after ide one.
 
-On Sun, Sep 14, 2008 at 8:55 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Sun, 14 Sep 2008 18:25:55 -0700 S K wrote:
->
->> Hi,
->>
->>   I think the copy paste of the terminal will explain it better:
->>
->> $ git status
->> # On branch master
->> nothing to commit (working directory clean)
->>
->> $ cat .git/config
->> [core]
->>         repositoryformatversion = 0
->>         filemode = true
->>         bare = false
->>         logallrefupdates = true
->> [remote "origin"]
->>         url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->>         fetch = +refs/heads/*:refs/remotes/origin/*
->> [branch "master"]
->>         remote = origin
->>         merge = refs/heads/master
->>
->> $ ls include/asm-arm/
->> plat-s3c  plat-s3c24xx
->>
->> Where are the other files? I'm totally confused. Doesn't Linus's tree
->> have the code for all archs?
->>
->> It obvious from the status I didn't delete them, but even a
->> $ git reset --hard HEAD
->> didn't help.
->
-> Hi,
->
-> Lots of arch-specific include/ directories were moved to arch/$ARCH/.
-> E.g., arch/arm/include/asm/ contains lots of files and a few sub-directories.
->
-> ---
-> ~Randy
-> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> http://linuxplumbersconf.org/
->
+I'm going to put linux-next-based series on kernel.org tonight, before
+going to Portland...
