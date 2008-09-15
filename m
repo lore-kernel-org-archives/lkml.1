@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYIOQPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYIOQRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbYIOQPP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 12:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbYIOQPC
+	id S1755575AbYIOQRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 12:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYIOQQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 12:15:02 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:52857 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753396AbYIOQPA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 12:15:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=UR/7EhHuOMItb4Ls62IYVgxzKWec/rbwvL8V1wN6Bny++q22fUMklft5BffQ8GFl3s
-         f0PyZL2zTTj4zCyY6PFfHuIkNlMWeWUVk0HBQg20nnHRkiAzl8O8AXFXeC6UNbMr6ltB
-         qNC+rVLy6aCJaNKmDaXVIpC0kjGnCued4447M=
-Message-ID: <86802c440809150914w67891a0bwac8db1f6748827e8@mail.gmail.com>
-Date: Mon, 15 Sep 2008 09:14:59 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: [PATCH] introduce boot_printk()
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
+	Mon, 15 Sep 2008 12:16:50 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:57529 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753767AbYIOQQu (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 12:16:50 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080915095838.GB1861@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: 2.6.27-rc6-mmotm0913 build error - fs-sysfs-dirc-remove-unused-__sysfs_get_dentry.patch
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221495403_46396P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
-	 <20080915095838.GB1861@elf.ucw.cz>
+Date: Mon, 15 Sep 2008 12:16:43 -0400
+Message-ID: <48256.1221495403@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 2:58 AM, Pavel Machek <pavel@suse.cz> wrote:
-> On Mon 2008-09-15 01:05:16, Yinghai Lu wrote:
->> could be enabled via "boot=verbose" to get more debug info
->>
->> will use it to convert some printk(KERN_DEBUG ...)
->>
->> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
->
-> boot= is a bit too generic name, I guess...
+--==_Exmh_1221495403_46396P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ingo suggest to use x86=verbose
+Trying to build 2.6.27-rc6-mmotm0913 dies a horrid death:
 
-but some users are in driver/acpi etc
+  CC      fs/sysfs/dir.o
+fs/sysfs/dir.c: In function =E2=80=98sysfs_mv_dir=E2=80=99:
+fs/sysfs/dir.c:993: error: implicit declaration of function =E2=80=98__sy=
+sfs_get_dentry=E2=80=99
+fs/sysfs/dir.c:993: warning: assignment makes pointer from integer withou=
+t a cast
+make=5B2=5D: *** =5Bfs/sysfs/dir.o=5D Error 1
+make=5B1=5D: *** =5Bfs/sysfs=5D Error 2
+make: *** =5Bfs=5D Error 2
 
-YH
+
+Diagnosis: Andrew added fs-sysfs-dirc-remove-unused-__sysfs_get_dentry.pa=
+tch,
+but somebody (Eric? was touching a lot of sysfs) in linux-next.patch adde=
+d a
+new user in sysfs_mv_dir.
+
+Looks like people need to get on the same page about that patch?
+
+
+
+--==_Exmh_1221495403_46396P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIzoprcC3lWbTT17ARAhe1AJ9aMBYb6GJzdq3jGf3BDlXyoST+vQCbBbgq
+s1Que5WrYf4O9DxI9UJGVWM=
+=7uQ0
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221495403_46396P--
