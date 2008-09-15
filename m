@@ -1,162 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYIOP3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbYIOP3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbYIOP3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 11:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754078AbYIOP3J
+	id S1755613AbYIOP3d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 11:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbYIOP3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 11:29:09 -0400
-Received: from host254-130-static.190-82-b.business.telecomitalia.it ([82.190.130.254]:53982
-	"EHLO nausicaa2.coritel.it" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754085AbYIOP3I (ORCPT
+	Mon, 15 Sep 2008 11:29:17 -0400
+Received: from smtp2.smiths.com ([192.208.34.51]:33756 "EHLO smtp2.smiths.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754959AbYIOP3Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 11:29:08 -0400
-Message-ID: <48CE7FA8.2020409@coritel.it>
-Date: Mon, 15 Sep 2008 17:30:48 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
-Organization: CoRiTeL
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Mon, 15 Sep 2008 11:29:16 -0400
+X-Greylist: delayed 1124 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Sep 2008 11:29:16 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Linux AVR32 <kernel@avr32linux.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] avr32: added mem kernel command line option support
-References: <48CE33D7.1040203@coritel.it>	<20080915074042.f5059467.randy.dunlap@oracle.com>	<48CE77C6.90307@coritel.it> <20080915080517.5d75721e.randy.dunlap@oracle.com>
-In-Reply-To: <20080915080517.5d75721e.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Server process stalled during massive thread creation : scheduler problem ?
+Date: Mon, 15 Sep 2008 09:10:30 -0600
+Message-ID: <531F9EE7AD1E874595D59997FD3EAEED043D7666@COSSMGMBX05.EMAIL.CORP.TLD>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Server process stalled during massive thread creation : scheduler problem ?
+Thread-Index: AckXRTFAtHq+8ZixTFCYQy8go1dkFQ==
+From: "Cornelius, Martin (DWBI)" <Martin.Cornelius@smiths-heimann.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 15 Sep 2008 15:10:31.0526 (UTC) FILETIME=[31F79060:01C91745]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marco Stornelli <marco.stornelli@gmail.com>
 
-Fixed the type of size and start, now they are resource_size_t.
-Fixed the double pointer parameter, now it's only a single pointer.
-Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
----
---- linux-2.6.26.5/arch/avr32/kernel/setup.c.orig    2008-09-15 11:30:00.000000000 +0200
+Hello scheduler hackers,
 
-+++ linux-2.6.26.5/arch/avr32/kernel/setup.c 2008-09-15
-11:30:17.000000000 +0200
-@@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
-}
-early_param("fbmem", early_parse_fbmem);
+i just realized a behaviour of the scheduler that gets me thinking...
 
-+/*
-+ * Pick out the memory size. We look for mem=size@start,
-+ * where start and size are "size[KkMmGg]"
-+ */
-+static int __init early_mem(char *p)
-+{
-+ resource_size_t size, start;
-+
-+ start = system_ram->start;
-+ size = memparse(p, &p);
-+ if (**p == '@')
-+ start = memparse(p + 1, &p);
-+
-+ system_ram->start = start;
-+ system_ram->end = system_ram->start + size - 1;
-+ return 0;
-+}
-+early_param("mem", early_mem);
-+
-static int __init parse_tag_core(struct tag *tag)
-{
-if (tag->hdr.size > 2) {
+This is my test scenario:
+On an otherwise unloaded machine, i run a server process that accepts
+TCP connections, and after a client has connected, just echoes all the
+packets that the client sends. A single client (sitting on another
+machine) connects to the server, and then continuously sends packets (of
+about 1000 bytes), and reads the echo. For each packet, the client
+measures the round-trip-time time it takes to send the packet and
+receive the echo. If nothing else happens on the server, this times are
+always very short, a few millseconds or less.
 
-Randy Dunlap ha scritto:
-> On Mon, 15 Sep 2008 16:57:10 +0200 Marco Stornelli wrote:
->
->   
->> If you see the above function early_parse_fbmem:
->>
->> static int __init early_parse_fbmem(char *p)
->> {
->> int ret;
->> unsigned long align;
->>
->> fbmem_size = memparse(p, &p);
->> .........
->>
->> where fbmem_size is a resource_size_t (u32 because avr32 is a 32-bit
->> architecture), so I used the same philosophy. Maybe I can remove
->> unsigned long and replace it with resource_size_t to be more uniform.
->>     
->
-> Yes, I think that would be better.
->
-> Thanks.
->
->   
->> Randy Dunlap ha scritto:
->>     
->>> On Mon, 15 Sep 2008 12:07:19 +0200 Marco Stornelli wrote:
->>>
->>>   
->>>       
->>>> From: Marco Stornelli <marco.stornelli@gmail.com>
->>>>
->>>> Added support for the mem kernel command line option
->>>> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
->>>> ---
->>>> --- setup.c.orig    2008-09-15 11:30:00.000000000 +0200
->>>> +++ setup.c    2008-09-15 11:30:17.000000000 +0200
->>>> @@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
->>>>  }
->>>>  early_param("fbmem", early_parse_fbmem);
->>>>  
->>>> +/*
->>>> + * Pick out the memory size.  We look for mem=size@start,
->>>> + * where start and size are "size[KkMm]"
->>>>     
->>>>         
->>>                                     [KkMmGg]
->>>
->>>   
->>>       
->>>> + */
->>>> +static int __init early_mem(char **p)
->>>> +{
->>>> +    unsigned long size, start;
->>>> +
->>>> +    start = system_ram->start;
->>>> +    size  = memparse(*p, p);
->>>>     
->>>>         
->>> memparse() returns an unsigned long long.  Is the truncation OK for avr32?
->>>
->>>   
->>>       
->>>> +    if (**p == '@')
->>>> +        start = memparse(*p + 1, p);
->>>> +
->>>> +    system_ram->start = start;
->>>> +    system_ram->end = system_ram->start + size - 1;
->>>> +    return 0;
->>>> +}
->>>> +early_param("mem", early_mem);
->>>> +
->>>>  static int __init parse_tag_core(struct tag *tag)
->>>>  {
->>>>      if (tag->hdr.size > 2) {
->>>> --
->>>>         
->
->
-> ---
-> ~Randy
-> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> http://linuxplumbersconf.org/
->
->   
+While this echoing test is running, i set the server machine under
+massive CPU load by starting a load-generating process that starts a
+couple of threads. All threads run an endless loop without any I/O or
+other blocking.
 
--- 
-Marco Stornelli
-Embedded Software Engineer
-CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
-http://www.coritel.it
+Behavior with 2.6.27rc6: If the number of threads started in the
+load-generating process is sufficiently large (> 100), the server
+process seems to be stalled during the startup of the load-generator.
+With 100 threads in the load generator, the client observes one or two
+round-trip-times of more than 1 second during load-generator startup.
+When the load generator starts 1000 threads simultanously, the client is
+stalled several times, one of them lasting more than 30 seconds. 
+However, this stalling only appears during the startup of the
+load-generator. After some time, the round trip times observed by the
+client settle down, and from that point on are all reasonably short
+again.
 
-marco.stornelli@coritel.it
-+39 06 72582838
+I also conducted this test with older kernels:
 
+2.4.36: With this kernel, behaviour was really weird: When the server
+was loaded with >100 threads, the client was stalled again and again for
+several seconds, than ran smoothly for some time, until another period
+of stalling began. It looked like the scheduler screwed up periodically,
+until the bubble birsted and the stalling disappeared for a few seconds.
+
+2.6.25.16: The client is only stalled during the startup of the load
+generating process. However, for really long times. With 200 threads in
+the load generator, i observered stalling for more than a minute.
+
+Thus, the current kernel seems to pass this test best, but not
+perfectly. Of course one might argue (like my colleagues do) that this
+test presents a completely unrealistic scenario: hundreds of threads
+started at the sime time, all not blocking. However, if i think of a
+'BIG' java application server, i can imagine that a similar situation
+could arise. From this perspective, one might say the behaviour of the
+scheduler is not optimal and should be improved. If a server does not
+respond for one minute, it's clients might (reasonably but erronously in
+this case) conclude that the server is severely broken.
+
+What do you think ?
+
+BTW, the server was equipped with a dual-core Pentium CPU 3.40GHz.
+
+
+ 
+************************************************
+The information contained in, or attached to, this e-mail, may contain confidential information and is intended solely for the use of the individual or entity to whom they are addressed and may be subject to legal privilege.  If you have received this e-mail in error you should notify the sender immediately by reply e-mail, delete the message from your system and notify your system manager.  Please do not copy it for any purpose, or disclose its contents to any other person.  The views or opinions presented in this e-mail are solely those of the author and do not necessarily represent those of the company.  The recipient should check this e-mail and any attachments for the presence of viruses.  The company accepts no liability for any damage caused, directly or indirectly, by any virus transmitted in this email.
+************************************************
