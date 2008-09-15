@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbYIOWIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbYIOWKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756733AbYIOWIG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 18:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982AbYIOWHw
+	id S1756809AbYIOWKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 18:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbYIOWJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 18:07:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54211
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752671AbYIOWHw (ORCPT
+	Mon, 15 Sep 2008 18:09:54 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51399 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754511AbYIOWJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 18:07:52 -0400
-Date: Mon, 15 Sep 2008 15:07:46 -0700 (PDT)
-Message-Id: <20080915.150746.24873255.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080915212459.GE3994@havoc.gtf.org>
-References: <20080915.132716.267218808.davem@davemloft.net>
-	<20080915.141159.181213705.davem@davemloft.net>
-	<20080915212459.GE3994@havoc.gtf.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 15 Sep 2008 18:09:53 -0400
+Subject: Updated: Linux Foundation Technical Advisory Board Election
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: ksummit-2008-discuss@lists.linux-foundation.org
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>
+In-Reply-To: <1219264622.3258.73.camel@localhost.localdomain>
+References: <1219264622.3258.73.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 15 Sep 2008 15:09:15 -0700
+Message-Id: <1221516555.3209.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Mon, 15 Sep 2008 17:24:59 -0400
+Update: The BOF will now be at the Aura Lounge at 20:30 (i.e. after
+dinner but before people have too much to drink ...).  We also have
+Chris Mason as the 11th nominee.
 
-> So, my takeaway from this is...
-> 
-> 1) Creating a bugzilla entry magically makes a bug fix acceptable?
+The elections for five of the ten members of the Linux Foundation
+Technical Advisory Board[TAB] are held every year, currently the
+election will be at the 2008 Kernel Summit in a BOF session.  This year,
+in order to allow for wider participation, we thought we'd try holding
+the BOF during the Plumbers Conf Aura Lounge event at 20:30 and allow
+not only KS attendees but also Plumbers Conf attendees to vote.
 
-It adds more credence to the bug.  Because it's usually reported
-by a user.
+Update: The TAB has had one recent resignation, so the person coming
+sixth in the vote will be appointed to serve out the remainder of that
+term (one year).
 
-> 2) We no longer want "this kills the driver" fixes?
+Anyone is eligible to stand for election, simply send your nomination
+to:
 
-I don't take that away from what I said.
+Tech-board-discuss@lists.linux-foundation.org
 
-Why is it so important to fix something "RIGHT NOW" that
-has existed forever?  Where were these fixes during the
-merge window?
+We currently have 11 nominees for the 5+1 places:
 
-> I disagree with that logic, and I seriously doubt Linus wants to turn
-> away serious fixes to serious problems.
+Matt Mackall <mpm@selenic.com>
+James Bottomley <James.Bottomley@HansenPartnership.com>
+Theodore Tso <tytso@mit.edu>
+Chris Wright <chrisw@sous-sol.org>
+Randy Dunlap <rdunlap@xenotime.net>
+Kyle McMartin <kyle@mcmartin.ca>
+Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Matthew Wilcox <matthew@wil.cx>
+Christoph Hellwig <hch@lst.de>
+Dave Jones <davej@redhat.com>
+Chris Mason <chris.mason@oracle.com>
 
-He wants the time outside of the merge window to work on fixing
-regressions and exploitable problems.  This is so that the process
-actually ends at some point.
+The deadline for receiving nominations is up until the BOF where the
+election is held (on the Evening of 16 September. Although, please
+remember if you're not going to be present that things go wrong with
+both networks and mailing lists, so get your nomination in
+early).
 
-> You just rejected patches that (a) fixed dead ethernet [de2104x],
+James Bottomley (TAB Chair)
 
-And it's getting submitted now, because?!?
 
- (b) fixed an
-> oops [WAN], and
-
-It's WAN, it's been there forever, who cares and why now?
-
-> (c) fixed memory corruption [ehea].
-
-Again, it's been there for quite some time, why is it "now"
-all of sudden now important to integrate this fix?
