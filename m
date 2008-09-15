@@ -1,128 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYIONHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbYIONN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbYIONHQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 09:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYIONHB
+	id S1754887AbYIONN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 09:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYIONNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 09:07:01 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:65472 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753396AbYIONHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 09:07:00 -0400
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Morris <jmorris@namei.org>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <20080913123722.e238ae2a.akpm@linux-foundation.org>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	 <SpS7rta8n4.A.i9G.ZcsyIB@albercik>
-	 <alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
-	 <20080912152443.c4e59f42.akpm@linux-foundation.org>
-	 <alpine.LRH.1.10.0809131012310.13073@tundra.namei.org>
-	 <20080913123722.e238ae2a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 15 Sep 2008 09:05:26 -0400
-Message-Id: <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
+	Mon, 15 Sep 2008 09:13:46 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34229 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbYIONNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 09:13:45 -0400
+Date: Mon, 15 Sep 2008 15:13:32 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Thomas Klein <osstklei@de.ibm.com>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux-rt <linux-rt-users@vger.kernel.org>, netdev@vger.kernel.org,
+       themann@de.ibm.com, tklein@de.ibm.com, raisch@de.ibm.com,
+       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+ hardirq preemption
+Message-ID: <20080915151332.6a3a7c80@bull.net>
+In-Reply-To: <48CE5684.4000506@de.ibm.com>
+References: <20080915100406.342e027a@bull.net>
+	<48CE5684.4000506@de.ibm.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 2008-09-13 at 12:37 -0700, Andrew Morton wrote:
-> On Sat, 13 Sep 2008 10:15:43 +1000 (EST) James Morris <jmorris@namei.org> wrote:
+  Hi Thomas, Jan-Bernd, Christoph,
+
+On Mon, 15 Sep 2008 14:35:16 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
+
+> Hi,
 > 
-> > On Fri, 12 Sep 2008, Andrew Morton wrote:
+> we are a bit worried about putting this into the mainstream part of non real
+> time linux.
+
+  Heck, I sure do not want this to be applied mainstream nor into any tree.
+The sole purpose of this patch was to trigger some reaction from the people who
+know the hardware and try to understand where the problem lies.
+
+> There interrupts work perfectly fine, and it was a bit of a
+> challenge to get there for all cases / configurations / machines.
+
+  Agreed, but the fact that it fails with hardirq preemption leads me to
+believe (without any more knowledge about the harware) that there might be
+something amiss with this driver (or the code concerning the XICS)
+nevertheless.
+
+> 
+> Could you try to enable these changes only for RT-Linux via a real-time
+> kconfig switch?
+
+  Nope, this is just a quick hack that allows me to have a functional eHEA under
+the rt kernel. I want to understand what the problem is:
+
+  - Is the eHEA really delivering level interrupts to the XICS?
+
+  - Is the XICS loosing interrupts when they are masked?
+
+  - ...?
+
+> This way we make sure we don't break the scheme for
+> eHEA / eHCA.
+
+  Sure, I do not want to break anything, quite the opposite in fact ;-)
+
+
+  Thanks,
+
+  Sebastien.
+
+> 
+> Regards,
+> Jan-Bernd, Christoph
+> 
+> 
+> Sebastien Dugue wrote:
+> > WARNING: HACK - HACK - HACK
 > > 
-> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
-> > > > > Subject		: /proc/net bug related to selinux
-> > > > > Submitter	: Andrew Morton <akpm@linux-foundation.org>
-> > > > > Date		: 2008-09-04 17:45 (9 days old)
-> > > > > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
-> > > > 
-> > > > I think this might be a regression caused by namespace changes which we 
+> >   Under the RT kernel (with hardirq preemption) the eHEA driver hangs right
+> > after booting. Fiddling with the hardirqs and softirqs priorities allows to
+> > run a bit longer but as soon as the network gets under load, the hang
+> > returns. After investigating, it appears that the driver is loosing interrupts.
 > > 
-> > By which I mean, this was caused by a non-SELinux change to the upstream 
-> > kernel many, many eons ago.
-> 
-> hm, seems that 2.6.24 is OK but 2.6.25 is not.  I must have missed the
-> bug when testing 2.6.25-based kernels.
-> 
-> I started a git bisection search but after half an hour I hit bad
-> bisection breakage: a complete machine hang in fib_rules_init().
-> 
-> > > > addressed in SELinux policy.  Which distro version & policy version is 
-> > > > this seen with?
-> > > > 
-> > > 
-> > > FC5 on x86_32 and FC6 on x86_64.
+> >   To make a long story short, looking at the code, it appears that the XICS
+> > maps all its interrupts to level sensitive interrupts (I don't know if it's the
+> > reality or if it's due to an incomplete implementation - no datasheets
+> > available to check) and use the fasteoi processing flow.
 > > 
-> > As mentioned in the bugzilla, any related avc messages would be useful.
+> >   When entering the low level handler, level sensitive interrupts are masked,
+> > then eio'd in interrupt context and then unmasked at the end of hardirq
+> > processing.
+> > That's fine as any interrupt comming in-between will still be processed since
+> > the kernel replays those pending interrupts.
+> > 
+> >   However, it appears that the eHEA interrupts are behaving as edge sensitive
+> > interrupts and are routed through the XICS which process those as level
+> > sensitive using the fasteoi handler __OR__ the XICS loses interrupts when they
+> > are masked.
+> > 
+> >   Therefore the masking done in the handler causes any interrupt happening while
+> > in the handler to be lost.
+> > 
+> >   So this patch maps the interrupts being requested through
+> > ibmebus_request_irq() as edge sensitive interrupts (this concerns both the eHEA
+> > and the eHCA - only users of ibmebus_request_irq()) and changes the way edge
+> > interrupts are processed by the fasteoi handler.
+> > 
+> >   It works for the eHEA, dunno for the eHCA.
+> > 
+> >   So, unless all the designers of the XICS & eHEA have been shot to keep it
+> > a secret, could someone knowledgeable shed some light on this issue.
+> > 
+> >   Thanks,
+> > 
+> >   Sebastien.
+> > 
+> > Not-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> > ---
+> >  arch/powerpc/kernel/ibmebus.c |   11 ++++++++++-
+> >  kernel/irq/chip.c             |    5 +++--
+> >  kernel/irq/manage.c           |    9 ++++++---
+> >  3 files changed, 19 insertions(+), 6 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+> > index 9971159..5200323 100644
+> > --- a/arch/powerpc/kernel/ibmebus.c
+> > +++ b/arch/powerpc/kernel/ibmebus.c
+> > @@ -41,6 +41,7 @@
+> >  #include <linux/kobject.h>
+> >  #include <linux/dma-mapping.h>
+> >  #include <linux/interrupt.h>
+> > +#include <linux/irq.h>
+> >  #include <linux/of.h>
+> >  #include <linux/of_platform.h>
+> >  #include <asm/ibmebus.h>
+> > @@ -213,11 +214,19 @@ int ibmebus_request_irq(u32 ist, irq_handler_t handler,
+> >  			void *dev_id)
+> >  {
+> >  	unsigned int irq = irq_create_mapping(NULL, ist);
+> > +	struct irq_desc *desc;
+> > +	int ret;
+> >  
+> >  	if (irq == NO_IRQ)
+> >  		return -EINVAL;
+> >  
+> > -	return request_irq(irq, handler, irq_flags, devname, dev_id);
+> > +	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
+> > +
+> > +	desc = irq_desc + irq;
+> > +	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
+> > +	desc->status |= IRQ_TYPE_EDGE_RISING;
+> > +
+> > +	return ret;
+> >  }
+> >  EXPORT_SYMBOL(ibmebus_request_irq);
+> >  
+> > diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+> > index b7b397a..6d366ca 100644
+> > --- a/kernel/irq/chip.c
+> > +++ b/kernel/irq/chip.c
+> > @@ -430,7 +430,7 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+> >  	action = desc->action;
+> >  	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
+> >  						 IRQ_DISABLED)))) {
+> > -		desc->status |= IRQ_PENDING;
+> > +		desc->status |= IRQ_PENDING | IRQ_MASKED;
+> >  		if (desc->chip->mask)
+> >  			desc->chip->mask(irq);
+> >  		goto out;
+> > @@ -439,9 +439,10 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+> >  	desc->status |= IRQ_INPROGRESS;
+> >  	/*
+> >  	 * In the threaded case we fall back to a mask+eoi sequence:
+> > +	 * excepted for edge interrupts which are not masked.
+> >  	 */
+> >  	if (redirect_hardirq(desc)) {
+> > -		if (desc->chip->mask)
+> > +		if (desc->chip->mask && !(desc->status & IRQ_TYPE_EDGE_BOTH))
+> >  			desc->chip->mask(irq);
+> >  		goto out;
+> >  	}
+> > diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> > index 3bffa20..3e39c71 100644
+> > --- a/kernel/irq/manage.c
+> > +++ b/kernel/irq/manage.c
+> > @@ -788,9 +788,12 @@ static void do_hardirq(struct irq_desc *desc)
+> >  		thread_simple_irq(desc);
+> >  	else if (desc->handle_irq == handle_level_irq)
+> >  		thread_level_irq(desc);
+> > -	else if (desc->handle_irq == handle_fasteoi_irq)
+> > -		thread_fasteoi_irq(desc);
+> > -	else if (desc->handle_irq == handle_edge_irq)
+> > +	else if (desc->handle_irq == handle_fasteoi_irq) {
+> > +		if (desc->status & IRQ_TYPE_EDGE_BOTH)
+> > +			thread_edge_irq(desc);
+> > +		else
+> > +			thread_fasteoi_irq(desc);
+> > +	} else if (desc->handle_irq == handle_edge_irq)
+> >  		thread_edge_irq(desc);
+> >  	else
+> >  		thread_do_irq(desc);
 > 
-> 2.6.25 dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
-> /var/log/messages: http://userweb.kernel.org/~akpm/messages-sony.txt
 > 
-> The latter includes this:
-> 
-> Sep 13 12:32:43 sony kernel: SELinux:  class key not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  class dccp_socket not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  class memprotect not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  class peer not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  class capability2 not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class dir not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class file not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class chr_file not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class blk_file not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class fifo_file not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class node not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class node not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission recvfrom in class node not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission sendto in class node not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class netif not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class netif not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission ingress in class netif not defined in policy
-> Sep 13 12:32:43 sony kernel: SELinux:  permission egress in class netif not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission setkeycreate in class process not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission setsockcreate in class process not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission setfcap in class capability not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission polmatch in class association not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission flow_in in class packet not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission flow_out in class packet not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission forward_in in class packet not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux:  permission forward_out in class packet not defined in policy
-> Sep 13 12:32:44 sony kernel: SELinux: the above unknown classes and permissions will be denied
-> Sep 13 12:32:44 sony kernel: type=1403 audit(1221309118.644:3): policy loaded auid=4294967295 ses=4294967295
-> Sep 13 12:32:44 sony kernel: type=1400 audit(1221334321.726:4): avc:  denied  { audit_write } for  pid=400 comm="hwclock" capability=29 scontext=system_u:system_r:hwclock_t:s0 tcontext=system_u:system_r:hwclock_t:s0 tclass=capability
-> 
-> 
-> Why am I seeing this on two machines and two vanilla-installed distros
-> but nobody else is reporting it?
-
-What we actually need to see is the output of:
-/sbin/ausearch -i -m AVC -sv no
-
-However, the most likely explanation is simply that when /proc/net was
-changed from being a directory to being a symlink to /proc/self/net,
-that introduced an additional permission check on accesses
-of /proc/net/<whatever>, namely the read check on the symlink itself.
-And since that check wasn't happening on /proc/net accesses with older
-kernels, older policies didn't allow it.
-
-As to why others haven't reported it, I expect that they have updated
-their policies to newer ones that allow the necessary access.  The fact
-that legacy distros wouldn't have such updated policies isn't surprising
-- they don't push updates to those distros for new kernels.  FC5 and FC6
-are both EOL'd, right?
-
-In any event, we didn't change anything in SELinux - the change was
-elsewhere (in the proc/net implementation).  Don't blame the messenger
-please.
-
--- 
-Stephen Smalley
-National Security Agency
-
