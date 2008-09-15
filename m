@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbYIOQZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYIOQ3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbYIOQZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 12:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYIOQZR
+	id S1755559AbYIOQ3g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 12:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYIOQ32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 12:25:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:64187 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754666AbYIOQZP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 12:25:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=gmqMxUVNVRCzFWTAe51thD+mczZFnPCeGf7Mj0F62SrmZlLISKhFSWLSLzyfYa2ZEg
-         QQvWFxwDhphiSglhkNINmBv+Jj2aXnvmMLlFmoH/EhU9ZgVCkvIWKm6jdi7Nqt9/BoBs
-         GCuganbUAAcAKKgJbP7AgtPkYpjK0AUjydb4Y=
-Message-ID: <86802c440809150925y583916b9sf97d73cb630469bc@mail.gmail.com>
-Date: Mon, 15 Sep 2008 09:25:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [PATCH] x86: do_boot_cpu - check for ESR apic register presence before touching
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080915162240.GB23798@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 15 Sep 2008 12:29:28 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35306 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbYIOQ31 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 12:29:27 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Frank Mayhar <fmayhar@google.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.27-rc6-mmotm0913 build error - suspect itimers-fix-itimer-many-thread-hang.patch
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221496161_46396P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080915150518.GA23798@lenovo>
-	 <86802c440809150912r222b399eg552208646decd9d4@mail.gmail.com>
-	 <20080915162240.GB23798@lenovo>
+Date: Mon, 15 Sep 2008 12:29:21 -0400
+Message-ID: <48922.1221496161@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 9:22 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> [Yinghai Lu - Mon, Sep 15, 2008 at 09:12:37AM -0700]
-> | On Mon, Sep 15, 2008 at 8:05 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | > We should check first if there is ESR register before read/write it.
-> | >
-> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> | > ---
-> | >
-> | > Please review and test if possible. Thanks.
-> | >
-> | > Index: linux-2.6.git/arch/x86/kernel/smpboot.c
-> | > ===================================================================
-> | > --- linux-2.6.git.orig/arch/x86/kernel/smpboot.c        2008-09-14 21:49:36.000000000 +0400
-> | > +++ linux-2.6.git/arch/x86/kernel/smpboot.c     2008-09-15 18:30:37.000000000 +0400
-> | > @@ -893,8 +893,10 @@ do_rest:
-> | >                /*
-> | >                 * Be paranoid about clearing APIC errors.
-> | >                */
-> | > -               apic_write(APIC_ESR, 0);
-> | > -               apic_read(APIC_ESR);
-> | > +               if (APIC_INTEGRATED(apic_version[phys_apicid])) {
-> | > +                       apic_write(APIC_ESR, 0);
-> | > +                       apic_read(APIC_ESR);
-> | > +               }
-> | >        }
-> | >
-> | >        /*
-> | >
-> |
-> | maybe unrelated. Do we need to keep apic_version array?
-> |
-> | YH
-> |
->
-> as I see ACPI/MP parsing code use it - actually I think we could
-> bring another variable - but don't think it worth it. Anyway
-> we have to get APIC info from these tables and save it somwhere
-> maybe in this array or maybe in another variable. Or you mean
-> anything else that I missed?
+--==_Exmh_1221496161_46396P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-one apic_version or boot_cpu_apic_version could be enough.
+Trying to build rc6-mmotm0913 dies:
 
-YH
+  CC      security/selinux/hooks.o
+security/selinux/hooks.c: In function =E2=80=98selinux_bprm_committing_cr=
+eds=E2=80=99:
+security/selinux/hooks.c:2325: error: =E2=80=98struct task_struct=E2=80=
+=99 has no member named =E2=80=98it_prof_expires=E2=80=99
+make=5B2=5D: *** =5Bsecurity/selinux/hooks.o=5D Error 1
+make=5B1=5D: *** =5Bsecurity/selinux=5D Error 2
+make: *** =5Bsecurity=5D Error 2
+
+I suspect that itimers-fix-itimer-many-thread-hang.patch has a merge issu=
+e
+against linux-next.patch, causing selinux_bprm_commiting_creds to be miss=
+ing
+an update.  The code as it appears in my tree (end of that function
+in security/selinux/hooks.c):
+
+       if (rc) =7B
+                for (i =3D 0; i < RLIM_NLIMITS; i++) =7B
+                        rlim =3D current->signal->rlim + i;
+                        initrlim =3D init_task.signal->rlim+i;
+                        rlim->rlim_cur =3D min(rlim->rlim_max, initrlim->=
+rlim_cur);
+                =7D
+
+                if (current->signal->rlim=5BRLIMIT_CPU=5D.rlim_cur =21=3D=
+ RLIM_INFINITY) =7B
+                        /*
+                         * This will cause RLIMIT_CPU calculations to be
+                         * refigured.
+                         */
+                        current->it_prof_expires =3D jiffies_to_cputime(1=
+);
+                =7D
+        =7D
+=7D
+
+Looks like that current->it_prof_expires should be something else, but th=
+e
+linux-next.patch update for hooks.c is such a train wreck that I can't
+figure out what's going on or what *should* be going on?
+
+(After the 2 build errors I reported, plus hitting the CONFIG_DEBUG_MUTEX=
+ES
+glitch that Kosaki Motohiro reported, I gave up - if the fix for this one=
+
+is obvious, I'll see what *else* I can break before the next -mmotm drops=
+.. ;)
+
+
+
+
+--==_Exmh_1221496161_46396P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIzo1hcC3lWbTT17ARAjn7AKCID0kumoaJk316WFrRGXxmJ1ccJACeOr8e
+4Wce7UwwtKTIyWkURYkW2Dw=
+=waHq
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221496161_46396P--
