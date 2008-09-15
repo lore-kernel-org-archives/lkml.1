@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbYIOWeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbYIOWet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756881AbYIOWeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 18:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYIOWeJ
+	id S1757188AbYIOWet (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 18:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbYIOWek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 18:34:09 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:56538 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753273AbYIOWeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 18:34:08 -0400
-Date: Mon, 15 Sep 2008 18:34:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080915223407.GB15421@havoc.gtf.org>
-References: <20080915.132716.267218808.davem@davemloft.net> <20080915.141159.181213705.davem@davemloft.net> <20080915212459.GE3994@havoc.gtf.org> <20080915.150746.24873255.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080915.150746.24873255.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 15 Sep 2008 18:34:40 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56598 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756387AbYIOWej (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 18:34:39 -0400
+Subject: Re: [Tech-board-discuss] Updated: Linux Foundation Technical
+	Advisory Board Election
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Greg KH <greg@kroah.com>
+Cc: ksummit-2008-discuss@lists.linux-foundation.org,
+       Tech Board Discuss 
+	<Tech-board-discuss@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080915222536.GA2075@kroah.com>
+References: <1219264622.3258.73.camel@localhost.localdomain>
+	 <1221516555.3209.10.camel@localhost.localdomain>
+	 <20080915222536.GA2075@kroah.com>
+Content-Type: text/plain
+Date: Mon, 15 Sep 2008 15:34:33 -0700
+Message-Id: <1221518073.3209.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 03:07:46PM -0700, David Miller wrote:
-> > You just rejected patches that (a) fixed dead ethernet [de2104x],
+On Mon, 2008-09-15 at 15:25 -0700, Greg KH wrote:
+> On Mon, Sep 15, 2008 at 03:09:15PM -0700, James Bottomley wrote:
+> > Update: The BOF will now be at the Aura Lounge at 20:30 (i.e. after
+> > dinner but before people have too much to drink ...).  We also have
+> > Chris Mason as the 11th nominee.
 > 
-> And it's getting submitted now, because?!?
-> 
->  (b) fixed an
-> > oops [WAN], and
-> 
-> It's WAN, it's been there forever, who cares and why now?
-> 
-> > (c) fixed memory corruption [ehea].
-> 
-> Again, it's been there for quite some time, why is it "now"
-> all of sudden now important to integrate this fix?
+> Is voting only by those present?  Or can people cast votes remotely?
 
-Because users should not be forced to wait 3 months for fixes, for
-admittedly serious bugs, which are ready for them right now.  Small,
-self-contained, tested, obvious fixes.
+As with previous elections, only those present.
 
-There is just something horribly wrong if you are not taking two-line
-fixes for memory corruption, even if the problem existed since
-kernel 1.2.13.
-
-	July 13:	2.6.26 released, merge window opens
-	July 29:	2.6.27-rc1 released, merge window closes
-	Sept 20?	2.6.27 release (wild guess)
-	Dec 25?		2.6.28 release (wild guess)
-
-So if a small, easily-mergable fix for a major bug like an oops
-appears on July 30, being strict to your plan has this fix waiting
-until almost 2009 (2.6.28 release), a wait of over five months.
-
-That is not serving Linux users, our primary customers.
-
-Complaining about the 8139too change, I can see that (even though
-Linus takes that stuff via libata all the time).  But about memory
-corruption and oopses?  Come on.
-
-	Jeff
-
+James
 
 
