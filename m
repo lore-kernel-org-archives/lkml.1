@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbYIOLPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYIOLdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbYIOLPq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 07:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYIOLPh
+	id S1754025AbYIOLdQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 07:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIOLdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 07:15:37 -0400
-Received: from bokovka.donpac.ru ([80.254.111.46]:35080 "EHLO
-	bokovka.donpac.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752793AbYIOLPg (ORCPT
+	Mon, 15 Sep 2008 07:33:05 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:40061 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752802AbYIOLdC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 07:15:36 -0400
-Date: Mon, 15 Sep 2008 15:12:31 +0400
-From: Andrey Panin <pazke@pazke.donpac.ru>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [PATCH] ibmasr: remove unnecessary spin_unlock()
-Message-ID: <20080915111231.GB28801@pazke.donpac.ru>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>
-References: <20080913094717.GA3571@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
-Content-Disposition: inline
-In-Reply-To: <20080913094717.GA3571@localhost.localdomain>
-X-Uname: Linux 2.6.23-rc3 x86_64
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 15 Sep 2008 07:33:02 -0400
+Date: Mon, 15 Sep 2008 13:32:26 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, greg@kroah.com
+Subject: Re: [PATCH] device model: Do a quickcheck for driver binding before
+ doing an expensive check
+Message-ID: <20080915133226.7e433379@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080914083206.0f42b2a7@infradead.org>
+References: <20080914083206.0f42b2a7@infradead.org>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 14 Sep 2008 08:32:06 -0700,
+Arjan van de Ven <arjan@infradead.org> wrote:
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> This patch adds a quick check for the driver<->device match before taking
+> the locks and doin gthe expensive checks. Taking the lock hurts in asynchronous
+> boot context where the device lock gets hit; one of the init functions takes
+> the lock and goes to do an expensive hardware init; the other init functions
+> walk the same PCI list and get stuck on the lock as a result.
 
-On 257, 09 13, 2008 at 06:47:19 +0900, Akinobu Mita wrote:
-> __asr_toggle() is always called with asr_lock held.
-> But there is unnecessary spin_unlock() call in __asr_toggle().
->=20
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Cc: Wim Van Sebroeck <wim@iguana.be>
-> Cc: Andrey Panin <pazke@donpac.ru>
+Hm, you call bus->match twice now; once without dev->sem held and once
+with it. For the busses I'm familiar with that shouldn't be a problem,
+but are you sure there aren't busses which want dev->sem held?
+(Although I think not relying on dev->sem would be the sane thing...)
+> 
+> For the common case, we can know there's no chance whatsoever of a match
+> if the device isn't in the drivers ID table... so this patch does that check
+> as a best-effort-avoid-the-lock approach.
 
-Acked-by: Andrey Panin <pazke@donpac.ru>
-
-> ---
->  drivers/watchdog/ibmasr.c |    1 -
->  1 file changed, 1 deletion(-)
->=20
-> Index: 2.6-git/drivers/watchdog/ibmasr.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- 2.6-git.orig/drivers/watchdog/ibmasr.c
-> +++ 2.6-git/drivers/watchdog/ibmasr.c
-> @@ -85,7 +85,6 @@ static void __asr_toggle(void)
-> =20
->  	outb(reg & ~asr_toggle_mask, asr_write_addr);
->  	reg =3D inb(asr_read_addr);
-> -	spin_unlock(&asr_lock);
->  }
-> =20
->  static void asr_toggle(void)
->=20
-
---=20
-Andrey Panin		| Linux and UNIX system administrator
-pazke@donpac.ru		| PGP key: wwwkeys.pgp.net
-
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQFIzkMfIWZCBzwS8mkRArzQAJi0d+oO8W83H25/G+PKWBQmiCquAJ9KmGSg
-5cE78mFtzuGe6jhdmds/Tg==
-=4lL5
------END PGP SIGNATURE-----
-
---dDRMvlgZJXvWKvBx--
+I've always thought of ->match being a quick check which just looks at
+the IDs with ->probe doing the heavier stuff, so this should be
+reasonable (if all busses play nicely). But driver_probe_device() still
+calls ->match a second time, and device_attach() will thus always call
+->match under the lock. Should it be moved out of the lock there as
+well?
