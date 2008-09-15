@@ -1,65 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbYIOXCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbYIOXLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbYIOXCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 19:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYIOXC3
+	id S1757128AbYIOXLK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 19:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbYIOXK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 19:02:29 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:2545 "EHLO MMS3.broadcom.com"
+	Mon, 15 Sep 2008 19:10:57 -0400
+Received: from mail1.radix.net ([207.192.128.31]:50845 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753308AbYIOXC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 19:02:28 -0400
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Subject: Re: 2.6.27-rc5-mm1
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Rik van Riel" <riel@redhat.com>
-cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080915180130.10995b90@cuia.bos.redhat.com>
-References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
- <20080915180130.10995b90@cuia.bos.redhat.com>
-Date: Mon, 15 Sep 2008 16:00:58 -0700
-Message-ID: <1221519658.11021.13.camel@HP1>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
-X-WSS-ID: 64D036F24YK35428196-01-01
+	id S1754803AbYIOXK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 19:10:56 -0400
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+From: Andy Walls <awalls@radix.net>
+To: Julian Scheel <julian@jusst.de>
+Cc: Manu Abraham <abraham.manu@gmail.com>, linux-dvb@linuxtv.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CDF7A1.2020905@jusst.de>
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
+	 <48C66829.1010902@grumpydevil.homelinux.org>
+	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
+	 <48CC42D8.8080806@gmail.com>
+	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+	 <48CC4D35.3000003@gmail.com>
+	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>
+	 <48CD43C1.2090902@linuxtv.org>  <48CD5D19.1070700@gmail.com>
+	 <1221425146.4278.30.camel@morgan.walls.org>  <48CDF7A1.2020905@jusst.de>
 Content-Type: text/plain
+Date: Mon, 15 Sep 2008 19:10:26 -0400
+Message-Id: <1221520226.2773.31.camel@morgan.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-09-15 at 07:50 +0200, Julian Scheel wrote:
+> Andy,
+> 
+> just to clarify things a bit I'll give a short statement now.
+> 
+> Andy Walls schrieb:
+> > Though I can't read much German, after looking at the jusst.de website I
+> > can't help but think that you as well have financial interests driving
+> > your actions.  If so, then your statements display quite a bit of
+> > hypocrisy.
+> >   
+> The role of jusst technologies in the whole multiproto story is as 
+> following:
+> The time when DVB-S2 came up this was of course of major interest for 
+> jusst technologies, so we searched for people working on drivers. At 
+> that not many people did seem to care about this stuff - but Manu did. 
+> So we got in contact and tried to help him as much as we can, which 
+> included making up connections to KNC1 for technical questions and 
+> datasheets, provide a KNC1 testing board and later then give free 
+> web/codespace to Manu.
 
-On Mon, 2008-09-15 at 15:01 -0700, Rik van Riel wrote:
-> On Thu, 4 Sep 2008 22:40:04 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.27-rc5/2.6.27-rc5-mm1/
-> 
-> The bnx2 driver has stopped working on 2.6.27-rc5-mm1.
-> 
-> Plain 2.6.27-rc5 works.  Reversing the bnx2 changes in -mm1 does not
-> fix the issue, so something less obvious is going on.
-> 
-> # ifup eth0
-> Determining IP information for eth0...SIOCSIFFLAGS: Invalid argument
-> SIOCSIFFLAGS: Invalid argument
-> SIOCSIFFLAGS: Invalid argument
-> # ifconfig eth0 up
-> SIOCSIFFLAGS: Invalid argument
-> 
-> Bringing up the interface fails with -EINVAL.  Specifically, the
-> SIOCSIFFLAGS ioctl is returning -EINVAL:
-> 
-> ioctl(4, SIOCSIFFLAGS, 0x7fffc841cc40)  = -1 EINVAL (Invalid argument)
-> 
-> I am running an x86-64 kernel on a Dell pe1950 with these network chips
-> on the mainboard:
-> 
-> 05:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
-> 09:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
-> 
+Julian
 
-Does dmesg show anything when you run ifup?
+First let me acknowledge jusst technologies contribution.  It seems
+generous.  Thank you for clarifying.
 
+
+> Furthermore we of course did lots of testing of multiproto. But never we 
+> did pay Manu for any of this work.
+> Reading that you should recognize that there can't be much financial 
+> interests for Manu.
+
+Manu clarified this.
+
+
+
+> Seeing that you impute hyprocrisy to Manu due to "facts" you don't have 
+> proven in any way makes me a bit contemplative.
+
+This is where you misrepresent my words: "I can't help but think..." is
+phrase that doesn't not imply certainty but indicates my *perception*.
+I did not assert this as fact, as the following statement started "If
+so, ..." which is a conditional clause.
+
+Maybe this subtlety is lost in translation.  
+
+
+
+
+>  I don't like being 
+> political when talking about technical terms (which linuxtv in first 
+> place should be about imho) - anyway this one time I will give a 
+> somewhat political statement, too.
+> All you guys who are blaming Manu to do some wrong or bad stuff,
+
+No.  It was my ill researched, emotive response to Manu attacking
+someone.
+
+
+>  what is 
+> your point?
+
+
+My point was to suggest to Manu that there were more productive ways to
+further his cause than to throw stones at people.
+
+Manu, who you support, BTW, was the one who initially introduced
+allegations of a developer introducing corporate politics. 
+
+
+>  - I see you searching quote where Manu did talk in a 
+> somewhat unpolite manner
+
+There was no searching involved.  That quote was text I cut out in my
+initial response.  I reinserted it to refute Manu's denial.
+
+
+
+>  just to blame him of being the wrong person 
+> introducing a new API? 
+
+
+> - I have no interest in doing the same quoting 
+> with your postings or the so called competitors postings, but I'd bed I 
+> could quote almost any of you in a not less distracting manner than you 
+> like to do with Manu.
+> > Manipulating (i.e. stalling) the timing of Multiproto being merged into
+> > the v4l-dvb tree or kernel, for you or your employer's gain, would be
+> > little different from the motivations you allege Steve of having.
+> >
+> > Since the major gripe I'm reading on the list "is that multiproto has
+> > taken too long" and since it seems to me the only thing that shook it
+> > loose was a competing proposal, please save the venom for when you
+> > actually have some clear moral high-ground to stand on.  I don't see it
+> > from here.
+> >   
+> Using "taking too long" as an argument against an API proposal is really 
+> interesting. What did you expect? - A quick shot which is not well 
+> thought about wouldn't have be a good thing for anyone.
+> I'm absolutely fine if anyone would came up with real technical 
+> arguments, but reading many postings so far I couldn't find much of such 
+> statements.
+
+Let me help you.  Please read these postings of mine and give me your
+honest feedback:
+
+http://linuxtv.org/pipermail/linux-dvb/2008-September/028651.html
+http://linuxtv.org/pipermail/linux-dvb/2008-September/028727.html
+
+
+Are these the emails of someone who doesn't care about the technical
+aspects?
+
+I didn't post them to the LKML because I didn't think the issue needed
+expand to there.
+
+
+
+> > As for the technical superiority of either API proposal; that probably
+> > just doesn't matter.  I've seen policy/political decisions force
+> > suboptimal technical solutions at work time and time again.  If you
+> > really believe you have a superior product technically; then perhaps you
+> > should work to make it superior politically as well.  Mud-slinging can't
+> > be a good long term strategy toward that end.
+> >   
+> To be political again: Thank you for blaming jusst being not interested 
+> in proper technical solutions. What makes you thinking of this?
+
+I said no such thing.  The implication was that politics often
+(tragically IMO) often weigh heavier than technical merit in making
+decision.   This was my recommendation to Manu not to neglect that
+aspect, lest he get shortchanged.  I was trying to help/advise.  Maybe
+that was not clear.
+
+
+
+>  - Just 
+> the fact that you recognize jusst as a commercial company? Very interesting.
+
+
+> I really have a feeling that many people here are mostly interested in 
+> making politics instead of thinking about technical solutions which 
+> makes all this a horrible topic
+
+Then tell Manu not to initiate with unkind allegations, and he won't
+evoke the same in return.  Again, the horror of the whole mess is what
+moved me to respond. 
+
+I couldn't give $0.02 about the new API.  I don't think I'll ever need
+it myself.  That's a selfish US user's perspective, but it also
+validates my motivation for responding: to try and stop the animosity.
+
+
+>  for all that people who are interested 
+> in a working solution (which Manu has proven to deliver) - mainly the users.
+> 
+> So far this is my statement (in representation for jusst technologies) 
+> for the moment.
+
+I'm sorry if you feel I've somehow injured the name of jusst
+technologies.  That certainly wasn't any intention of mine.
+
+Regards,
+Andy
+
+> Best regards,
+> Julian
+> 
 
