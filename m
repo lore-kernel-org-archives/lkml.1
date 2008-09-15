@@ -1,110 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYIOXWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755012AbYIOXZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756348AbYIOXWi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 19:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbYIOXW2
+	id S1755012AbYIOXZT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 19:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYIOXZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 19:22:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:31158 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753352AbYIOXW1 (ORCPT
+	Mon, 15 Sep 2008 19:25:04 -0400
+Received: from smtp106.prem.mail.sp1.yahoo.com ([98.136.44.61]:36792 "HELO
+	smtp106.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752890AbYIOXZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 19:22:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=YzRB12VtWxegx/qQIlxLG11sp49Zw3y6ZtPhP9rGs6WFKe35jX///s96U7ag1fvZgU
-         h0HyA18iQdw6lkicwuqi7uVwuzYz4Ms7nVmfxnc9C0KVfZ5yylwaCkp/jjgOkg0J4IfL
-         fAtKCfzyxKEcl9/JMKq4ergEQam4ppZ+Jg+W4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Elias Oltmanns <eo@nebensachen.de>
-Subject: Re: [PATCH 3/4] ide: Implement disk shock protection support
-Date: Mon, 15 Sep 2008 16:22:04 -0700
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <87wshzplvk.fsf@denkblock.local> <87vdx1y9gv.fsf@denkblock.local> <87k5ddxltd.fsf@denkblock.local>
-In-Reply-To: <87k5ddxltd.fsf@denkblock.local>
+	Mon, 15 Sep 2008 19:25:03 -0400
+X-YMail-OSG: 0n8y_JgVM1nGX42SzaxuZpYNb45wawEh02Ax0875NPvkwbJXiVHd0WinR9XUz8Anqv.5znkfi3HH7Uui6A9mjWf1_ukCusK5JrwnoPUXbYms4AqV0mTFbzXxSfL3gGao0UsRqXnB8EjWyWMX2W55fuz.
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <48CEEEC7.5020108@schaufler-ca.com>
+Date: Mon, 15 Sep 2008 16:24:55 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200809151622.04724.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+CC: hch@infradead.org, viro@zeniv.linux.org.uk, sds@tycho.nsa.gov,
+       matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
+       bfields@fieldses.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 04/14] Security: Add Hook to test if the particular xattr
+ is part of a MAC model.
+References: <1221511278-28051-1-git-send-email-dpquigl@tycho.nsa.gov> <1221511278-28051-5-git-send-email-dpquigl@tycho.nsa.gov>
+In-Reply-To: <1221511278-28051-5-git-send-email-dpquigl@tycho.nsa.gov>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 September 2008 12:15:26 Elias Oltmanns wrote:
-> Elias Oltmanns <eo@nebensachen.de> wrote:
-> > From: Elias Oltmanns <eo@nebensachen.de>
-> > Subject: [PATCH] ide: Implement disk shock protection support
-> >
-> > On user request (through sysfs), the IDLE IMMEDIATE command with UNLOAD
-> > FEATURE as specified in ATA-7 is issued to the device and processing of
-> > the request queue is stopped thereafter until the specified timeout
-> > expires or user space asks to resume normal operation. This is supposed
-> > to prevent the heads of a hard drive from accidentally crashing onto the
-> > platter when a heavy shock is anticipated (like a falling laptop expected
-> > to hit the floor). Port resets are deferred whenever a device on that
-> > port is in the parked state.
-> >
-> > Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
-> [...]
-> > diff --git a/drivers/ide/ide-park.c b/drivers/ide/ide-park.c
-> > new file mode 100644
-> > index 0000000..8cd43f6
-> > --- /dev/null
-> > +++ b/drivers/ide/ide-park.c
-> > @@ -0,0 +1,119 @@
-> > +#include <linux/kernel.h>
-> > +#include <linux/ide.h>
-> > +#include <linux/jiffies.h>
-> > +#include <linux/blkdev.h>
-> > +
-> > +DECLARE_WAIT_QUEUE_HEAD(ide_park_wq);
-> > +
-> > +static int issue_park_cmd(ide_drive_t *drive, unsigned long timeout)
-> > +{
-> > +	struct request_queue *q = drive->queue;
-> > +	struct request *rq;
-> > +	int rc;
-> > +
-> > +	timeout += jiffies;
-> > +	spin_lock_irq(&ide_lock);
-> > +	if (drive->dev_flags & IDE_DFLAG_PARKED) {
-> > +		ide_hwgroup_t *hwgroup = drive->hwif->hwgroup;
-> > +		int reset_timer;
-> > +
-> > +		reset_timer = time_before(timeout, drive->sleep);
-> > +		drive->sleep = timeout;
-> > +		if (reset_timer) {
-> > +			wake_up_all(&ide_park_wq);
-> > +			if (hwgroup->sleeping && del_timer(&hwgroup->timer)) {
-> > +				hwgroup->sleeping = 0;
-> > +				hwgroup->busy = 0;
-> > +				__blk_run_queue(q);
-> > +			}
-> > +		}
-> > +		spin_unlock_irq(&ide_lock);
-> > +		return 0;
-> > +	}
-> 
-> This wake_up_all() has to go outside the if clause. I'll change this the
-> next time round to be called right after drive->sleep has been set. The
-> two nested if clauses will be unified and the conditions &&'ed.
+David P. Quigley wrote:
+> There are areas in the Labeled NFS code where where we need to test if the
+> attribute being requested exhibits the semantics of a MAC model. This allows us
+> to make sure that we get the desired semantics from the attribute instead of
+> something else such as capabilities or a time based LSM.
+>
+> Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
+> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+> ---
+>  include/linux/security.h   |   11 +++++++++++
+>  security/security.c        |    6 ++++++
+>  security/selinux/hooks.c   |    6 ++++++
+>  security/smack/smack_lsm.c |   11 +++++++++++
+>  4 files changed, 34 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index 42b9128..3031e6c 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -1244,6 +1244,10 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+>   *	@pages contains the number of pages.
+>   *	Return 0 if permission is granted.
+>   *
+> + * @ismaclabel:
+> + * 	Check if the extended attribute specified by @name represents a MAC label.
+> + * 	@name full extended attribute name to check against LSM as a MAC label.
+> + *
+>   * @secid_to_secctx:
+>   *	Convert secid to security context.
+>   *	@secid contains the security ID.
+> @@ -1508,6 +1512,7 @@ struct security_operations {
+>  
+>  	int (*getprocattr) (struct task_struct *p, char *name, char **value);
+>  	int (*setprocattr) (struct task_struct *p, char *name, void *value, size_t size);
+> +	int (*ismaclabel) (const char * name);
+>  	int (*secid_to_secctx) (u32 secid, char **secdata, u32 *seclen);
+>  	int (*secctx_to_secid) (const char *secdata, u32 seclen, u32 *secid);
+>  	void (*release_secctx) (char *secdata, u32 seclen);
+> @@ -1762,6 +1767,7 @@ int security_getprocattr(struct task_struct *p, char *name, char **value);
+>  int security_setprocattr(struct task_struct *p, char *name, void *value, size_t size);
+>  int security_netlink_send(struct sock *sk, struct sk_buff *skb);
+>  int security_netlink_recv(struct sk_buff *skb, int cap);
+> +int security_ismaclabel(const char *name);
+>  int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
+>  int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
+>  void security_release_secctx(char *secdata, u32 seclen);
+> @@ -2494,6 +2500,11 @@ static inline void securityfs_remove(struct dentry *dentry)
+>  {
+>  }
+>  
+> +static inline int security_ismaclabel(const char *name)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+>  {
+>  	return -EOPNOTSUPP;
+> diff --git a/security/security.c b/security/security.c
+> index b22a110..1955094 100644
+> --- a/security/security.c
+> +++ b/security/security.c
+> @@ -858,6 +858,12 @@ int security_netlink_recv(struct sk_buff *skb, int cap)
+>  }
+>  EXPORT_SYMBOL(security_netlink_recv);
+>  
+> +int security_ismaclabel(const char *name)
+> +{
+> +	return security_ops->ismaclabel(name);
+> +}
+> +EXPORT_SYMBOL(security_ismaclabel);
+> +
+>  int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+>  {
+>  	return security_ops->secid_to_secctx(secid, secdata, seclen);
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index 680db1d..248fa5c 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -5305,6 +5305,11 @@ static int selinux_setprocattr(struct task_struct *p,
+>  	return size;
+>  }
+>  
+> +static int selinux_ismaclabel(const char *name)
+> +{
+> +	return (strcmp(name,XATTR_NAME_SELINUX) == 0);
+> +}
+> +
+>  static int selinux_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+>  {
+>  	return security_sid_to_context(secid, secdata, seclen);
+> @@ -5546,6 +5551,7 @@ static struct security_operations selinux_ops = {
+>  	.getprocattr =			selinux_getprocattr,
+>  	.setprocattr =			selinux_setprocattr,
+>  
+> +	.ismaclabel =			selinux_ismaclabel,
+>  	.secid_to_secctx =		selinux_secid_to_secctx,
+>  	.secctx_to_secid =		selinux_secctx_to_secid,
+>  	.release_secctx =		selinux_release_secctx,
+> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+> index 87d7541..6b03a18 100644
+> --- a/security/smack/smack_lsm.c
+> +++ b/security/smack/smack_lsm.c
+> @@ -2526,6 +2526,16 @@ static void smack_audit_rule_free(void *vrule)
+>  #endif /* CONFIG_AUDIT */
+>  
+>  /*
+> + * smack_ismaclabel - check if xattr @name references a smack MAC label
+> + * @name: Full xattr name to check.
+> + *
+>   
+Lose the blank line in the comment.
 
-OK.
 
-I've just audited your latest patch and it all seems good (the assumptions
-taken are valid and all concerns were addressed) so you may add my ACK to
-the next-time-round patch.  Big thanks for patiently improving this patch,
-the final version looks so much better than the initial/draft one. :)
+> + */
+> +static int smack_ismaclabel(const char *name)
+> +{
+> +	return (strcmp(name,XATTR_NAME_SMACK) == 0);
+>   
+Space after the comma.
 
-Thanks,
-Bart
+
+> +}
+> +
+> +/*
+>   * smack_secid_to_secctx - return the smack label for a secid
+>   * @secid: incoming integer
+>   * @secdata: destination
+> @@ -2703,6 +2713,7 @@ struct security_operations smack_ops = {
+>  	.audit_rule_free =		smack_audit_rule_free,
+>  #endif /* CONFIG_AUDIT */
+>  
+> +	.ismaclabel =			smack_ismaclabel,
+>  	.secid_to_secctx = 		smack_secid_to_secctx,
+>  	.secctx_to_secid = 		smack_secctx_to_secid,
+>  	.release_secctx = 		smack_release_secctx,
+>   
+
