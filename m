@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbYIODzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYIOD6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbYIODzw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 23:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbYIODzo
+	id S1754694AbYIOD6G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 23:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753908AbYIOD54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 23:55:44 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:17200 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbYIODzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 23:55:43 -0400
-Date: Sun, 14 Sep 2008 20:55:38 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "S K" <nospamnoham@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Unable to find files in include/asm-arm in the Linus's tree
-Message-Id: <20080914205538.27e7b1d4.randy.dunlap@oracle.com>
-In-Reply-To: <514e099a0809141825u34015891pa3f11267373ae818@mail.gmail.com>
-References: <514e099a0809141825u34015891pa3f11267373ae818@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 14 Sep 2008 23:57:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58367 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753841AbYIOD5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 23:57:55 -0400
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+To: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
+Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
+Date: Sun, 14 Sep 2008 23:55:38 -0400
+User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
+Cc: Janne Grunau <j@jannau.net>, linux-kernel@vger.kernel.org,
+       Christoph Bartelmus <lirc@bartelmus.de>
+References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809130226.35998.j@jannau.net> <200809131041.33717.stefan.bauer@cs.tu-chemnitz.de>
+In-Reply-To: <200809131041.33717.stefan.bauer@cs.tu-chemnitz.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200809142355.38387.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008 18:25:55 -0700 S K wrote:
+On Saturday 13 September 2008 04:41:33 Stefan Bauer wrote:
+> On Saturday 13 September 2008 02:26, Janne Grunau wrote:
+> > On Friday 12 September 2008 18:24:33 Jarod Wilson wrote:
+> > > > I just want to thank you very much for your work and give you my
+> > > > Tested-By. Todays git (b2e9c18a32423310a309f94ea5a659c4bb264378)
+> > > > works well here with lirc-0.8.3 userspace on a Pentium
+> > > > 3/i815-system.
+> > >
+> > > Oh good! I haven't broken anything further w/my changes up to
+> > > b2e9c18... ;) I've got another slew of updates to lirc_serial still
+> > > pending though
+> >
+> > I hope I haven't broken anything with my lirc_dev changes. I doubt I'll
+> > have a change to test it before monday.
+>
+> Unfortunately, you did. Commit ea74897 (port lirc to dynamic device
+> numbers) broke things.
+> This is what ea74897 and further (latest tested was dd13cc7) are telling
+> me:
+>
+> $ insmod drivers/input/lirc/lirc_dev.ko
+> $ insmod drivers/input/lirc/lirc_serial.ko
+> insmod: error inserting 'drivers/input/lirc/lirc_serial.ko': -1
+> Input/output error
+> $ dmesg | tail
+> lirc_dev: IR Remote Control driver registered, major 253
+> lirc_serial: auto-detected active low receiver
+> lirc_dev: lirc_register_driver: sample_rate: 0
+> lirc_serial: register_chrdev failed!
+>
+>
+> There has also been a compile issue in the meanwhile, introduced with
+> 95efa30 (inb/outb and readb/writeb deal in u8 types), but this is gone with
+> todays git pull :)
+>
+>
+> I'll keep on testing (unfortunately only at weekends),
+> regards, Stefan
 
-> Hi,
-> 
->   I think the copy paste of the terminal will explain it better:
-> 
-> $ git status
-> # On branch master
-> nothing to commit (working directory clean)
-> 
-> $ cat .git/config
-> [core]
->         repositoryformatversion = 0
->         filemode = true
->         bare = false
->         logallrefupdates = true
-> [remote "origin"]
->         url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->         fetch = +refs/heads/*:refs/remotes/origin/*
-> [branch "master"]
->         remote = origin
->         merge = refs/heads/master
-> 
-> $ ls include/asm-arm/
-> plat-s3c  plat-s3c24xx
-> 
-> Where are the other files? I'm totally confused. Doesn't Linus's tree
-> have the code for all archs?
-> 
-> It obvious from the status I didn't delete them, but even a
-> $ git reset --hard HEAD
-> didn't help.
+I'd hope to get around to some testing myself much earlier in the weekend, but 
+alas... Did just mix in a quick peed at lirc_i2c though:
 
-Hi,
+...
+lirc_dev: IR Remote Control driver registered, major 247 
+bttv: driver version 0.9.17 loaded
+bttv: using 8 buffers with 2080k (520 pages) each for capture
+cx88/0: cx2388x v4l2 driver version 0.0.6 loaded
+lirc_i2c: chip 0x10020 found @ 0x18 (Hauppauge IR)
+lirc_dev: lirc_register_driver: sample_rate: 10
 
-Lots of arch-specific include/ directories were moved to arch/$ARCH/.
-E.g., arch/arm/include/asm/ contains lots of files and a few sub-directories.
+No register_chrdev failure reported, everything looks the same as prior to the 
+dynamic dev num change (save the dev num, of course), and I've got a 
+/dev/lirc0, but I'm unable to see any IR signals (start up lircd, run irw, 
+press buttons on remote).
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+...and I just took a quick look at lirc_i2c... The result from 
+lirc_register_driver() is never checked, whereas it is in the lirc_serial case 
+(which is where the register_chrdev error msg came from). Narf. So its likely 
+the same failure, just not noticed (will fix lirc_i2c in a sec).
+
+-- 
+Jarod Wilson
+jarod@redhat.com
+
