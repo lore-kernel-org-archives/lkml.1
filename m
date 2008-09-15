@@ -1,55 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYIOAVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIOA0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbYIOAVU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 20:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYIOAVH
+	id S1755401AbYIOA0E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 20:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYIOAZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 20:21:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51024 "EHLO ogre.sisk.pl"
+	Sun, 14 Sep 2008 20:25:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51046 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753375AbYIOAVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 20:21:05 -0400
+	id S1753375AbYIOAZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 20:25:53 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-Subject: Re: [Bug #11554] Partition check considered as error is breaking mounting in 2.6.27
-Date: Mon, 15 Sep 2008 02:25:48 +0200
+To: Frederik Himpe <fhimpe@telenet.be>
+Subject: Re: XFS does not recognise mount options in 2.6.27-rc6
+Date: Mon, 15 Sep 2008 02:31:00 +0200
 User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Abdel Benamrouche" <draconux@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <SpS7rta8n4.A.oyF.sbsyIB@albercik> <200809132037.55922.herton@mandriva.com.br>
-In-Reply-To: <200809132037.55922.herton@mandriva.com.br>
+Cc: linux-kernel@vger.kernel.org, linux-xfs@oss.sgi.com
+References: <pan.2008.09.14.18.53.20@telenet.be>
+In-Reply-To: <pan.2008.09.14.18.53.20@telenet.be>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809150225.50173.rjw@sisk.pl>
+Message-Id: <200809150231.01220.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 14 of September 2008, Herton Ronaldo Krzesinski wrote:
-> On Friday 12 September 2008 16:06:31 Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.26.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11554
-> > Subject		: Partition check considered as error is breaking mounting in 2.6.27
-> > Submitter	: Herton Ronaldo Krzesinski <herton@mandriva.com.br>
-> > Date		: 2008-09-12 16:56 (1 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=122123862519434&w=4
-> > 
-> 
-> Fixed now with commit 8d99f83b9478768d3a8d7d1bcd9bd182c75a0447
+On Sunday, 14 of September 2008, Frederik Himpe wrote:
+> In 2.6.27-rc6, XFS still does not recognise mount options like logbufs and 
+> others. Because of this, at boot time it fails to mount the partitions rw, 
+> making the system unusable.
 
-Thanks, closed.
+Was 2.6.26 OK?
 
 Rafael
