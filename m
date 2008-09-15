@@ -1,43 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754513AbYIOM3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbYIOMgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754513AbYIOM3Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 08:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYIOM3B
+	id S1754604AbYIOMgY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 08:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYIOMgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 08:29:01 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:37864 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753310AbYIOM3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 08:29:00 -0400
-Date: Mon, 15 Sep 2008 16:34:32 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       fmayhar@google.com, adobriyan@gmail.com, roland@redhat.com,
-       tglx@linutronix.de
-Subject: Re: + itimers-fix-itimer-many-thread-hang.patch added to -mm tree
-Message-ID: <20080915123432.GA199@tv-sign.ru>
-References: <200809122353.m8CNrCmR011310@imap1.linux-foundation.org> <20080914175040.GA819@tv-sign.ru> <20080914183932.GC28010@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080914183932.GC28010@elte.hu>
-User-Agent: Mutt/1.5.11
+	Mon, 15 Sep 2008 08:36:12 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:33688 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753342AbYIOMgK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 08:36:10 -0400
+Message-ID: <48CE5684.4000506@de.ibm.com>
+Date: Mon, 15 Sep 2008 14:35:16 +0200
+From: Thomas Klein <osstklei@de.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Sebastien Dugue <sebastien.dugue@bull.net>
+CC: linux-ppc <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux-rt <linux-rt-users@vger.kernel.org>, netdev@vger.kernel.org,
+       themann@de.ibm.com, tklein@de.ibm.com, raisch@de.ibm.com,
+       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+ hardirq preemption
+References: <20080915100406.342e027a@bull.net>
+In-Reply-To: <20080915100406.342e027a@bull.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/14, Ingo Molnar wrote:
->
-> Oleg, the changes (with a few fixups from me) are in tip/master now
+Hi,
 
-Great! This patch needs testing.
+we are a bit worried about putting this into the mainstream part of non real
+time linux. There interrupts work perfectly fine, and it was a bit of a
+challenge to get there for all cases / configurations / machines.
 
-> (with a rough v2.6.28 target) - should i back them out for now, or do
-> you think we can fix the items you noticed gradually?
+Could you try to enable these changes only for RT-Linux via a real-time
+kconfig switch? This way we make sure we don't break the scheme for
+eHEA / eHCA.
 
-Up to Frank and Roland, but I think we can make the cleanups incrementally,
-on top of this patch.
+Regards,
+Jan-Bernd, Christoph
 
-Oleg.
+
+Sebastien Dugue wrote:
+> WARNING: HACK - HACK - HACK
+> 
+>   Under the RT kernel (with hardirq preemption) the eHEA driver hangs right
+> after booting. Fiddling with the hardirqs and softirqs priorities allows to
+> run a bit longer but as soon as the network gets under load, the hang
+> returns. After investigating, it appears that the driver is loosing interrupts.
+> 
+>   To make a long story short, looking at the code, it appears that the XICS
+> maps all its interrupts to level sensitive interrupts (I don't know if it's the
+> reality or if it's due to an incomplete implementation - no datasheets
+> available to check) and use the fasteoi processing flow.
+> 
+>   When entering the low level handler, level sensitive interrupts are masked,
+> then eio'd in interrupt context and then unmasked at the end of hardirq
+> processing.
+> That's fine as any interrupt comming in-between will still be processed since
+> the kernel replays those pending interrupts.
+> 
+>   However, it appears that the eHEA interrupts are behaving as edge sensitive
+> interrupts and are routed through the XICS which process those as level
+> sensitive using the fasteoi handler __OR__ the XICS loses interrupts when they
+> are masked.
+> 
+>   Therefore the masking done in the handler causes any interrupt happening while
+> in the handler to be lost.
+> 
+>   So this patch maps the interrupts being requested through
+> ibmebus_request_irq() as edge sensitive interrupts (this concerns both the eHEA
+> and the eHCA - only users of ibmebus_request_irq()) and changes the way edge
+> interrupts are processed by the fasteoi handler.
+> 
+>   It works for the eHEA, dunno for the eHCA.
+> 
+>   So, unless all the designers of the XICS & eHEA have been shot to keep it
+> a secret, could someone knowledgeable shed some light on this issue.
+> 
+>   Thanks,
+> 
+>   Sebastien.
+> 
+> Not-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> ---
+>  arch/powerpc/kernel/ibmebus.c |   11 ++++++++++-
+>  kernel/irq/chip.c             |    5 +++--
+>  kernel/irq/manage.c           |    9 ++++++---
+>  3 files changed, 19 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+> index 9971159..5200323 100644
+> --- a/arch/powerpc/kernel/ibmebus.c
+> +++ b/arch/powerpc/kernel/ibmebus.c
+> @@ -41,6 +41,7 @@
+>  #include <linux/kobject.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/interrupt.h>
+> +#include <linux/irq.h>
+>  #include <linux/of.h>
+>  #include <linux/of_platform.h>
+>  #include <asm/ibmebus.h>
+> @@ -213,11 +214,19 @@ int ibmebus_request_irq(u32 ist, irq_handler_t handler,
+>  			void *dev_id)
+>  {
+>  	unsigned int irq = irq_create_mapping(NULL, ist);
+> +	struct irq_desc *desc;
+> +	int ret;
+>  
+>  	if (irq == NO_IRQ)
+>  		return -EINVAL;
+>  
+> -	return request_irq(irq, handler, irq_flags, devname, dev_id);
+> +	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
+> +
+> +	desc = irq_desc + irq;
+> +	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
+> +	desc->status |= IRQ_TYPE_EDGE_RISING;
+> +
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL(ibmebus_request_irq);
+>  
+> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+> index b7b397a..6d366ca 100644
+> --- a/kernel/irq/chip.c
+> +++ b/kernel/irq/chip.c
+> @@ -430,7 +430,7 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+>  	action = desc->action;
+>  	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
+>  						 IRQ_DISABLED)))) {
+> -		desc->status |= IRQ_PENDING;
+> +		desc->status |= IRQ_PENDING | IRQ_MASKED;
+>  		if (desc->chip->mask)
+>  			desc->chip->mask(irq);
+>  		goto out;
+> @@ -439,9 +439,10 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+>  	desc->status |= IRQ_INPROGRESS;
+>  	/*
+>  	 * In the threaded case we fall back to a mask+eoi sequence:
+> +	 * excepted for edge interrupts which are not masked.
+>  	 */
+>  	if (redirect_hardirq(desc)) {
+> -		if (desc->chip->mask)
+> +		if (desc->chip->mask && !(desc->status & IRQ_TYPE_EDGE_BOTH))
+>  			desc->chip->mask(irq);
+>  		goto out;
+>  	}
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 3bffa20..3e39c71 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -788,9 +788,12 @@ static void do_hardirq(struct irq_desc *desc)
+>  		thread_simple_irq(desc);
+>  	else if (desc->handle_irq == handle_level_irq)
+>  		thread_level_irq(desc);
+> -	else if (desc->handle_irq == handle_fasteoi_irq)
+> -		thread_fasteoi_irq(desc);
+> -	else if (desc->handle_irq == handle_edge_irq)
+> +	else if (desc->handle_irq == handle_fasteoi_irq) {
+> +		if (desc->status & IRQ_TYPE_EDGE_BOTH)
+> +			thread_edge_irq(desc);
+> +		else
+> +			thread_fasteoi_irq(desc);
+> +	} else if (desc->handle_irq == handle_edge_irq)
+>  		thread_edge_irq(desc);
+>  	else
+>  		thread_do_irq(desc);
 
