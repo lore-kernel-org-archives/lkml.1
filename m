@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYIOMwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYIOM4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754735AbYIOMwS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 08:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYIOMwJ
+	id S1754842AbYIOM4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 08:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYIOM4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 08:52:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35456 "EHLO mx2.mail.elte.hu"
+	Mon, 15 Sep 2008 08:56:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45160 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753342AbYIOMwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 08:52:08 -0400
-Date: Mon, 15 Sep 2008 14:51:50 +0200
+	id S1753290AbYIOM4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 08:56:33 -0400
+Date: Mon, 15 Sep 2008 14:56:00 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [PATCH] x86-64: fix combining of regions in
-	init_memory_mapping()
-Message-ID: <20080915125150.GC304@elte.hu>
-References: <48CA9C18.76E4.0078.0@novell.com> <86802c440809141120v5f468775n81de6a29bbb89019@mail.gmail.com> <48CE3633.76E4.0078.0@novell.com> <86802c440809150134w3cd3f5baq2e99d2bb61b31a16@mail.gmail.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       fmayhar@google.com, adobriyan@gmail.com, roland@redhat.com,
+       tglx@linutronix.de
+Subject: Re: + itimers-fix-itimer-many-thread-hang.patch added to -mm tree
+Message-ID: <20080915125600.GE304@elte.hu>
+References: <200809122353.m8CNrCmR011310@imap1.linux-foundation.org> <20080914175040.GA819@tv-sign.ru> <20080914183932.GC28010@elte.hu> <20080915123432.GA199@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440809150134w3cd3f5baq2e99d2bb61b31a16@mail.gmail.com>
+In-Reply-To: <20080915123432.GA199@tv-sign.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,19 +36,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+* Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> > The issue is apparently pretty benign to native code, but surfaces 
-> > as a boot time crash in our forward ported Xen tree (where the page 
-> > table setup overall works differently than in native). Since the 
-> > underlying issue was present in native (and since I assume if there 
-> > is an attempt to merge subsequent regions, then it should work 
-> > right), I nevertheless submitted the patch for native inclusion.
+> On 09/14, Ingo Molnar wrote:
+> >
+> > Oleg, the changes (with a few fixups from me) are in tip/master now
 > 
-> yes. your patch fixed the skip...
-> 
-> Acked-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> Great! This patch needs testing.
 
-applied to tip/x86/core, thanks!
+it has not caused any test failures so far.
+
+> > (with a rough v2.6.28 target) - should i back them out for now, or 
+> > do you think we can fix the items you noticed gradually?
+> 
+> Up to Frank and Roland, but I think we can make the cleanups 
+> incrementally, on top of this patch.
+
+ok. I'd prefer incremental, as the current stuff seems stable in 
+practice.
 
 	Ingo
