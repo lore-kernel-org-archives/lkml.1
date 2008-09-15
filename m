@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYIOKUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbYIOKXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754568AbYIOKUB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 06:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbYIOKTw
+	id S1752975AbYIOKXL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 06:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbYIOKW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 06:19:52 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:37877 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbYIOKTv (ORCPT
+	Mon, 15 Sep 2008 06:22:57 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53696 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbYIOKW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 06:19:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tQUljdfkQsJr+yHjgGJOIjRT5fpW32DgXVOxowH4rRGvGmGuo5gpcXkj/RUya4WN18
-         FBso2htiDgMUMqSngSiBZwQG1ZWM7dZ3Ogn4Xx+EbFIKO71fxJwbhLbk9VAFJU8Cxuvt
-         9twfFg39sPIXYihOOpt58EUbSHTJOTFi3nM0A=
-Date: Mon, 15 Sep 2008 14:20:07 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86: smpboot - check if we have ESR register in
-	wakeup_secondary_cpu
-Message-ID: <20080915102007.GB7131@lenovo>
-References: <20080914175849.GC3907@lenovo> <20080915075655.GC29585@elte.hu> <20080915100119.GA7131@lenovo>
-MIME-Version: 1.0
+	Mon, 15 Sep 2008 06:22:56 -0400
+Date: Mon, 15 Sep 2008 13:22:54 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: sfrench@samba.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cifs: don't use GFP_KERNEL with GFP_NOFS
+Message-ID: <Pine.LNX.4.64.0809151322240.17322@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080915100119.GA7131@lenovo>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Mon, Sep 15, 2008 at 02:01:19PM +0400]
-| [Ingo Molnar - Mon, Sep 15, 2008 at 09:56:55AM +0200]
-| | 
-| | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| | 
-| | > We should check if we have ESR register before writting to it.
-| | > 
-| | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| | > ---
-| | > 
-| | > Please review!
-| | > it seems the same nit in do_boot_cpu - checking now.
-| | > 
-| | > Index: linux-2.6.git/arch/x86/kernel/smpboot.c
-| | > ===================================================================
-| | > --- linux-2.6.git.orig/arch/x86/kernel/smpboot.c	2008-09-14 19:43:03.000000000 +0400
-| | > +++ linux-2.6.git/arch/x86/kernel/smpboot.c	2008-09-14 21:49:36.000000000 +0400
-| | > @@ -598,10 +598,12 @@ wakeup_secondary_cpu(int logical_apicid,
-| | >  	 * Give the other CPU some time to accept the IPI.
-| | >  	 */
-| | >  	udelay(200);
-| | > -	maxlvt = lapic_get_maxlvt();
-| | > -	if (maxlvt > 3)			/* Due to the Pentium erratum 3AP.  */
-| | > -		apic_write(APIC_ESR, 0);
-| | > -	accept_status = (apic_read(APIC_ESR) & 0xEF);
-| | > +	if (APIC_INTEGRATED(apic_version[phys_apicid])) {
-| | > +		maxlvt = lapic_get_maxlvt();
-| | > +		if (maxlvt > 3)			/* Due to the Pentium erratum 3AP.  */
-| | > +			apic_write(APIC_ESR, 0);
-| | > +		accept_status = (apic_read(APIC_ESR) & 0xEF);
-| | > +	}
-| | >  	pr_debug("NMI sent.\n");
-| | 
-| | hm, is there any non-integrated lapic that has more than 3 lvts? iirc 
-| | lvts were introduced with the integrated lapic.
-| | 
-| | 	Ingo
-| | 
-| 
-| Yes Ingo, but don't forget the next line in former
-| 
-| 	accept_status = (apic_read(APIC_ESR) & 0xEF);
-| 
-| so we're protected in writting but _not_ in reading - which
-| is buggy a bit :-)
-|
-| 		- Cyrill -
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Ingo - could you replace in this patch message and subject -
-writting to reading - it will be more correct.
+GFP_KERNEL and GFP_NOFS are mutually exclusive. If you combine them, you end up
+with plain GFP_KERNEL which can deadlock in cases where you really want
+GFP_NOFS.
 
-		- Cyrill -
+Cc: Steve French <sfrench@samba.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/cifs/misc.c      |    6 ++----
+ fs/cifs/transport.c |    3 +--
+ 2 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/fs/cifs/misc.c b/fs/cifs/misc.c
+index 4b17f8f..654d972 100644
+--- a/fs/cifs/misc.c
++++ b/fs/cifs/misc.c
+@@ -150,8 +150,7 @@ cifs_buf_get(void)
+    but it may be more efficient to always alloc same size
+    albeit slightly larger than necessary and maxbuffersize
+    defaults to this and can not be bigger */
+-	ret_buf = (struct smb_hdr *) mempool_alloc(cifs_req_poolp,
+-						   GFP_KERNEL | GFP_NOFS);
++	ret_buf = mempool_alloc(cifs_req_poolp, GFP_NOFS);
+ 
+ 	/* clear the first few header bytes */
+ 	/* for most paths, more is cleared in header_assemble */
+@@ -188,8 +187,7 @@ cifs_small_buf_get(void)
+    but it may be more efficient to always alloc same size
+    albeit slightly larger than necessary and maxbuffersize
+    defaults to this and can not be bigger */
+-	ret_buf = (struct smb_hdr *) mempool_alloc(cifs_sm_req_poolp,
+-						   GFP_KERNEL | GFP_NOFS);
++	ret_buf = mempool_alloc(cifs_sm_req_poolp, GFP_NOFS);
+ 	if (ret_buf) {
+ 	/* No need to clear memory here, cleared in header assemble */
+ 	/*	memset(ret_buf, 0, sizeof(struct smb_hdr) + 27);*/
+diff --git a/fs/cifs/transport.c b/fs/cifs/transport.c
+index 000ac50..80ab4c8 100644
+--- a/fs/cifs/transport.c
++++ b/fs/cifs/transport.c
+@@ -50,8 +50,7 @@ AllocMidQEntry(const struct smb_hdr *smb_buffer, struct cifsSesInfo *ses)
+ 		return NULL;
+ 	}
+ 
+-	temp = (struct mid_q_entry *) mempool_alloc(cifs_mid_poolp,
+-						    GFP_KERNEL | GFP_NOFS);
++	temp = mempool_alloc(cifs_mid_poolp, GFP_NOFS);
+ 	if (temp == NULL)
+ 		return temp;
+ 	else {
+-- 
+1.5.4.3
+
