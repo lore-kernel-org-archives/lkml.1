@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755064AbYIOOIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbYIOOMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064AbYIOOIn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 10:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYIOOIf
+	id S1754139AbYIOOMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 10:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbYIOOME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 10:08:35 -0400
-Received: from www.tglx.de ([62.245.132.106]:55754 "EHLO www.tglx.de"
+	Mon, 15 Sep 2008 10:12:04 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48264 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334AbYIOOIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 10:08:34 -0400
-Date: Mon, 15 Sep 2008 07:08:01 -0700 (PDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Pavel Machek <pavel@suse.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-In-Reply-To: <20080915091925.GB1787@elf.ucw.cz>
-Message-ID: <alpine.LFD.1.10.0809150704420.5283@apollo.tec.linutronix.de>
-References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de>
- <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de> <20080915091925.GB1787@elf.ucw.cz>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1752634AbYIOOMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 10:12:03 -0400
+Date: Mon, 15 Sep 2008 17:11:49 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>, Hannes Reinecke <hare@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
+Subject: Re: linux-next: Tree for September 13 (3c509)
+Message-ID: <20080915141149.GA10002@cs181140183.pp.htv.fi>
+References: <20080913162344.ab395285.sfr@canb.auug.org.au> <20080914141757.899f71eb.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080914141757.899f71eb.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Sep 2008, Pavel Machek wrote:
-> > 
-> > Hmm. Can you please provide the output of /proc/timer_list when the
-> > system is in that "sleepy" state.
+On Sun, Sep 14, 2008 at 02:17:57PM -0700, Randy Dunlap wrote:
+> drivers/net/3c509.c fails (CONFIG_PM=y) with:
+> 
+> drivers/built-in.o:(.data+0x7dcc): undefined reference to `el3_resume'
+> drivers/built-in.o:(.data+0x7e08): undefined reference to `el3_resume'
+> 
+> It seems that this function does not exist in the source file.
 
-Any chance to get that output ?
- 
-> -rc5 seems to work ok... is there some patch I should try to revert
-> first?
 
-The relevant 9 changes are from:
+It got removed by:
 
-7c1e76897492d92b6a1c2d6892494d39ded9680c
 
-to
+commit 107aeb9753159da848f066b26557f0aaab900a90
+Author: Hannes Reinecke <hare@suse.de>
+Date:   Wed Sep 10 14:16:04 2008 +0200
 
-72d43d9bc9210d24d09202eaf219eac09e17b339
+    Driver core: Use dev_get_drvdata() accessors
+    
+    Deprecated direct access to the ->driver_data field and
+    use accessors throughout.
+    
+    Signed-off-by: Hannes Reinecke <hare@suse.de>
+    Cc: Kay Sievers <kay.sievers@vrfy.org>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Thanks,
 
-	tglx
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
