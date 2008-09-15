@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYIOADY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYIOAIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbYIOADY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 20:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYIOADK
+	id S1754966AbYIOAIu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 20:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYIOAIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 20:03:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35177
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753625AbYIOADI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 20:03:08 -0400
-Date: Sun, 14 Sep 2008 17:03:02 -0700 (PDT)
-Message-Id: <20080914.170302.132520341.davem@davemloft.net>
-To: bosko.radivojevic@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: GRE keepalives, again
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <d6c8ef150809141549m52289f1cr7b4da508b311af1f@mail.gmail.com>
-References: <d6c8ef150809141549m52289f1cr7b4da508b311af1f@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 14 Sep 2008 20:08:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50946 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750924AbYIOAIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 20:08:40 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [Bug #11398] hda_intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
+Date: Mon, 15 Sep 2008 02:13:31 +0200
+User-Agent: KMail/1.9.9
+Cc: Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <200809130937.52685.elendil@planet.nl> <s5habecm03s.wl%tiwai@suse.de>
+In-Reply-To: <s5habecm03s.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809150213.32780.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
-Date: Mon, 15 Sep 2008 00:49:15 +0200
+On Saturday, 13 of September 2008, Takashi Iwai wrote:
+> At Sat, 13 Sep 2008 09:37:51 +0200,
+> Frans Pop wrote:
+> > 
+> > On Friday 12 September 2008, Rafael J. Wysocki wrote:
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.26.  Please verify if it still should be listed and let me
+> > > know (either way).
+> > >
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11398
+> > > Subject	: hda_intel: IRQ timing workaround is activated for card #0.
+> > > 		  Suggest a bigger bdl_pos_adj.
+> > 
+> > Still there.
+> 
+> Yeah, the driver wasn't changed about this.
+> 
+> Basically it's a warning message that CPU usage got higher due to
+> somehow wrongly behaving hardware.  The driver behavior itself didn't
+> do anything wrong.  That is, if the driver didn't show it, you
+> wouldn't have noticed any change (or noticed improvements in some apps
+> :)
+> 
+> Of course, it would be ideal if we can add a perfect workaround for
+> it, but right now, I have no idea what to do better.  So, I don't
+> think it's worth to keeping this open as a regression.
 
-netdev@vger.kernel.org is where networking developers are, added
-to the CC:
+I've closed the bug.
 
-Also, most of us are at the kernel summit and the plumbers
-conference over the next few days, so don't expect any response
-of substance for at least a week.  Likely it will take longer,
-as after returning most of us will have a huge backlog to process.
-
-> Hi all
-> 
-> Ten days ago I asked if anyone has some info regarding Cisco's GRE
-> keepalive support. Later I've realized that idea behing that feature
-> is quite simple and nice. As it says on Cisco site:
-> 
-> > Router constructs the inner IP header and GRE header with a Protocol
-> > Type (PT) of 0. It then sends that packet out its tunnel interface, which
-> > results in the encapsulation of the packet with the outer IP header and a
-> > GRE header with PT = IP
-> 
-> Using the same idea, I've written small userspace app that do almost
-> the same - instead of constructing "inner" packet with GRE header, I'm
-> constructing UDP packet (it is easier to receive it in user space).
-> After all, that "keepalive" packet looks like - IP|GRE|IP|UDP. When
-> other end decapsulate it, inner IP|UDP packet should be sent back to
-> the originating end. So, my primary task to support GRE keepalives on
-> Linux side in Cisco-to-Linux "network" is accomplished. It's working
-> fine.
-> 
-> Problem is the other situation, when Cisco is sending keepalives, or
-> if a GRE tunnel is created between two Linux boxes and my app started
-> on any of them. Linux is not sending back the "inner" packet (when
-> "keepalive" packet is decapsulated on the other end, inner IP|UDP or
-> IP|GRE packet should be sent back to the originating end). Nor Cisco's
-> generated, nor generated by my app.
-> 
-> At the beginning I taught it has something with rp_filters or
-> something "adjustable" in /proc/sys/net/... But I was wrong. What
-> could be a reason for this behavior? I spent some time trying to debug
-> this, and it looks like inner packet never leave ip_gre code. It looks
-> like the journey of the packet ends in  ipgre_ecn_decapsulate() at the
-> very beginning:  if (INET_ECN_is_ce(iph->tos)) {
-> 
-> Does anyone have some hint for me? :)
-> 
-> Thanks!
-> 
-> PS. More info about GRE keepalive -
-> http://www.cisco.com/en/US/tech/tk827/tk369/technologies_tech_note09186a008048cffc.shtml#t6
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+Rafael
