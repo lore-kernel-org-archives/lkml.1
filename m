@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYIOUDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbYIOUDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbYIOUDE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 16:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbYIOUCw
+	id S1754262AbYIOUDZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 16:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYIOUCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 16:02:52 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:39904 "EHLO
+	Mon, 15 Sep 2008 16:02:53 -0400
+Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:39908 "EHLO
 	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753653AbYIOUCv (ORCPT
+	by vger.kernel.org with ESMTP id S1754010AbYIOUCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Sep 2008 16:02:51 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<ukleinek@informatik.uni-freiburg.de>
 To: linux-kernel@vger.kernel.org
-Cc: David Brownell <david-b@pacbell.net>,
+Cc: David Brownell <david-b@pacbell.net>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-mips@linux-mips.org,
        Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
        Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH] gpio_free might sleep, generic part
-Date: Mon, 15 Sep 2008 22:02:39 +0200
-Message-Id: <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de>
+Subject: [PATCH] gpio_free might sleep, mips architecture
+Date: Mon, 15 Sep 2008 22:02:41 +0200
+Message-Id: <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+In-Reply-To: <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de>
 References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+ <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de>
+ <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -36,74 +39,85 @@ According to the documentation gpio_free should only be called from task
 context only.  To make this more explicit add a might sleep to all
 implementations.
 
-This is the generic part which changes gpiolib and the fallback
-implementation only.
+This patch changes the gpio_free implementations for the mips
+architecture.
 
 Signed-off-by: Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de>
 Cc: David Brownell <david-b@pacbell.net>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org
 Cc: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
 Cc: Greg KH <greg@kroah.com>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
-Hello,
+ include/asm-mips/mach-au1x00/gpio.h  |    2 ++
+ include/asm-mips/mach-bcm47xx/gpio.h |    3 +++
+ include/asm-mips/mach-rc32434/gpio.h |    2 ++
+ 3 files changed, 7 insertions(+), 0 deletions(-)
 
-this is a new version of the patch I sent on 2008-07-24 07:28:35 GMT
-(http://thread.gmane.org/gmane.linux.kernel/711078)
-
-David Brownell suggested (via private mail) to split the patch along
-arch lines.  I did that, added Blackfin (which I missed last time) and
-left out DaVinci (in ARCH=arm) on Dave's request.
-
-Something that really made me happy is that git managed to use the old
-patch although many includes for arm changed location with only three
-conflicts.
-
-Note the series is not compile tested because I only have an x86
-compiler handy at the moment.
-
-Best regards
-Uwe
-
- drivers/gpio/gpiolib.c |    2 ++
- include/linux/gpio.h   |    3 +++
- 2 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 8d29405..317004f 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -792,6 +792,8 @@ void gpio_free(unsigned gpio)
- 	unsigned long		flags;
- 	struct gpio_desc	*desc;
- 
-+	might_sleep();
-+
- 	if (!gpio_is_valid(gpio)) {
- 		WARN_ON(extra_checks);
- 		return;
-diff --git a/include/linux/gpio.h b/include/linux/gpio.h
-index 730a20b..e10c49a 100644
---- a/include/linux/gpio.h
-+++ b/include/linux/gpio.h
-@@ -8,6 +8,7 @@
- 
- #else
+diff --git a/include/asm-mips/mach-au1x00/gpio.h b/include/asm-mips/mach-au1x00/gpio.h
+index 2dc61e0..31eddba 100644
+--- a/include/asm-mips/mach-au1x00/gpio.h
++++ b/include/asm-mips/mach-au1x00/gpio.h
+@@ -1,6 +1,7 @@
+ #ifndef _AU1XXX_GPIO_H_
+ #define _AU1XXX_GPIO_H_
  
 +#include <linux/kernel.h>
  #include <linux/types.h>
- #include <linux/errno.h>
  
-@@ -32,6 +33,8 @@ static inline int gpio_request(unsigned gpio, const char *label)
+ #define AU1XXX_GPIO_BASE	200
+@@ -31,6 +32,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
+ static inline void gpio_free(unsigned gpio)
+ {
+ 	/* Not yet implemented */
++	might_sleep();
+ }
+ 
+ static inline int gpio_direction_input(unsigned gpio)
+diff --git a/include/asm-mips/mach-bcm47xx/gpio.h b/include/asm-mips/mach-bcm47xx/gpio.h
+index cfc8f4d..af17ccd 100644
+--- a/include/asm-mips/mach-bcm47xx/gpio.h
++++ b/include/asm-mips/mach-bcm47xx/gpio.h
+@@ -9,6 +9,8 @@
+ #ifndef __BCM47XX_GPIO_H
+ #define __BCM47XX_GPIO_H
+ 
++#include <linux/kernel.h>
++
+ #define BCM47XX_EXTIF_GPIO_LINES	5
+ #define BCM47XX_CHIPCO_GPIO_LINES	16
+ 
+@@ -25,6 +27,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
  
  static inline void gpio_free(unsigned gpio)
  {
 +	might_sleep();
-+
- 	/* GPIO can never have been requested */
- 	WARN_ON(1);
  }
+ 
+ static inline int gpio_to_irq(unsigned gpio)
+diff --git a/include/asm-mips/mach-rc32434/gpio.h b/include/asm-mips/mach-rc32434/gpio.h
+index f946f5f..9b4722e 100644
+--- a/include/asm-mips/mach-rc32434/gpio.h
++++ b/include/asm-mips/mach-rc32434/gpio.h
+@@ -13,6 +13,7 @@
+ #ifndef _RC32434_GPIO_H_
+ #define _RC32434_GPIO_H_
+ 
++#include <linux/kernel.h>
+ #include <linux/types.h>
+ 
+ struct rb532_gpio_reg {
+@@ -88,6 +89,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
+ static inline void gpio_free(unsigned gpio)
+ {
+ 	/* Not yet implemented */
++	might_sleep();
+ }
+ 
+ static inline int gpio_direction_input(unsigned gpio)
 -- 
 1.5.6.5
 
