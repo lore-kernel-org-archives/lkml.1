@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbYIOVJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYIOVJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbYIOVJe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 17:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbYIOVGr
+	id S1757390AbYIOVJw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 17:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbYIOVGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 17:06:47 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:64418 "EHLO mummy.ncsc.mil"
+	Mon, 15 Sep 2008 17:06:48 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:64420 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754941AbYIOVG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755140AbYIOVG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 15 Sep 2008 17:06:28 -0400
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
@@ -17,9 +17,9 @@ Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        linux-security-module@vger.kernel.org,
        "David P. Quigley" <dpquigl@tycho.nsa.gov>,
        "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
-Subject: [PATCH 07/14] NFSv4: Add label recommended attribute and NFSv4 flags
-Date: Mon, 15 Sep 2008 16:41:11 -0400
-Message-Id: <1221511278-28051-8-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 04/14] Security: Add Hook to test if the particular xattr is part of a MAC model.
+Date: Mon, 15 Sep 2008 16:41:08 -0400
+Message-Id: <1221511278-28051-5-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1221511278-28051-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1221511278-28051-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -27,115 +27,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a new recommended attribute named label into the NFSv4 file
-attribute structure. It also adds several new flags to allow the NFS client and
-server to determine if this attribute is supported and if it is being sent over
-the wire.
+There are areas in the Labeled NFS code where where we need to test if the
+attribute being requested exhibits the semantics of a MAC model. This allows us
+to make sure that we get the desired semantics from the attribute instead of
+something else such as capabilities or a time based LSM.
 
 Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- include/linux/nfs4.h        |    2 ++
- include/linux/nfs_fs_sb.h   |    2 +-
- include/linux/nfs_xdr.h     |    4 ++++
- include/linux/nfsd/export.h |    5 +++--
- include/linux/nfsd/nfsd.h   |    7 ++++---
- 5 files changed, 14 insertions(+), 6 deletions(-)
+ include/linux/security.h   |   11 +++++++++++
+ security/security.c        |    6 ++++++
+ security/selinux/hooks.c   |    6 ++++++
+ security/smack/smack_lsm.c |   11 +++++++++++
+ 4 files changed, 34 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
-index ea03667..144eacf 100644
---- a/include/linux/nfs4.h
-+++ b/include/linux/nfs4.h
-@@ -21,6 +21,7 @@
- #define NFS4_FHSIZE		128
- #define NFS4_MAXPATHLEN		PATH_MAX
- #define NFS4_MAXNAMLEN		NAME_MAX
-+#define NFS4_MAXLABELLEN	4096
+diff --git a/include/linux/security.h b/include/linux/security.h
+index 42b9128..3031e6c 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1244,6 +1244,10 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
+  *	@pages contains the number of pages.
+  *	Return 0 if permission is granted.
+  *
++ * @ismaclabel:
++ * 	Check if the extended attribute specified by @name represents a MAC label.
++ * 	@name full extended attribute name to check against LSM as a MAC label.
++ *
+  * @secid_to_secctx:
+  *	Convert secid to security context.
+  *	@secid contains the security ID.
+@@ -1508,6 +1512,7 @@ struct security_operations {
  
- #define NFS4_ACCESS_READ        0x0001
- #define NFS4_ACCESS_LOOKUP      0x0002
-@@ -345,6 +346,7 @@ enum lock_type4 {
- #define FATTR4_WORD1_TIME_MODIFY        (1UL << 21)
- #define FATTR4_WORD1_TIME_MODIFY_SET    (1UL << 22)
- #define FATTR4_WORD1_MOUNTED_ON_FILEID  (1UL << 23)
-+#define FATTR4_WORD1_SECURITY_LABEL     (1UL << 31)
+ 	int (*getprocattr) (struct task_struct *p, char *name, char **value);
+ 	int (*setprocattr) (struct task_struct *p, char *name, void *value, size_t size);
++	int (*ismaclabel) (const char * name);
+ 	int (*secid_to_secctx) (u32 secid, char **secdata, u32 *seclen);
+ 	int (*secctx_to_secid) (const char *secdata, u32 seclen, u32 *secid);
+ 	void (*release_secctx) (char *secdata, u32 seclen);
+@@ -1762,6 +1767,7 @@ int security_getprocattr(struct task_struct *p, char *name, char **value);
+ int security_setprocattr(struct task_struct *p, char *name, void *value, size_t size);
+ int security_netlink_send(struct sock *sk, struct sk_buff *skb);
+ int security_netlink_recv(struct sk_buff *skb, int cap);
++int security_ismaclabel(const char *name);
+ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
+ int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
+ void security_release_secctx(char *secdata, u32 seclen);
+@@ -2494,6 +2500,11 @@ static inline void securityfs_remove(struct dentry *dentry)
+ {
+ }
  
- #define NFSPROC4_NULL 0
- #define NFSPROC4_COMPOUND 1
-diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
-index c9beacd..9475bb0 100644
---- a/include/linux/nfs_fs_sb.h
-+++ b/include/linux/nfs_fs_sb.h
-@@ -135,5 +135,5 @@ struct nfs_server {
- #define NFS_CAP_SYMLINKS	(1U << 2)
- #define NFS_CAP_ACLS		(1U << 3)
- #define NFS_CAP_ATOMIC_OPEN	(1U << 4)
--
-+#define NFS_CAP_SECURITY_LABEL (1U << 5)
- #endif
-diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
-index 8c77c11..0d77568 100644
---- a/include/linux/nfs_xdr.h
-+++ b/include/linux/nfs_xdr.h
-@@ -56,6 +56,10 @@ struct nfs_fattr {
- 	__u64			change_attr;	/* NFSv4 change attribute */
- 	__u64			pre_change_attr;/* pre-op NFSv4 change attribute */
- 	unsigned long		time_start;
-+#ifdef CONFIG_SECURITY
-+	void			*label;
-+	__u32			 label_len;
-+#endif
- };
++static inline int security_ismaclabel(const char *name)
++{
++	return 0;
++}
++
+ static inline int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ {
+ 	return -EOPNOTSUPP;
+diff --git a/security/security.c b/security/security.c
+index b22a110..1955094 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -858,6 +858,12 @@ int security_netlink_recv(struct sk_buff *skb, int cap)
+ }
+ EXPORT_SYMBOL(security_netlink_recv);
  
- #define NFS_ATTR_WCC		0x0001		/* pre-op WCC data    */
-diff --git a/include/linux/nfsd/export.h b/include/linux/nfsd/export.h
-index 5431512..bb831fc 100644
---- a/include/linux/nfsd/export.h
-+++ b/include/linux/nfsd/export.h
-@@ -32,7 +32,8 @@
- #define NFSEXP_ALLSQUASH	0x0008
- #define NFSEXP_ASYNC		0x0010
- #define NFSEXP_GATHERED_WRITES	0x0020
--/* 40 80 100 currently unused */
-+#define NFSEXP_SECURITY_LABEL	0x0040  /* Support security label fattr4 */
-+/* 80 100 currently unused */
- #define NFSEXP_NOHIDE		0x0200
- #define NFSEXP_NOSUBTREECHECK	0x0400
- #define	NFSEXP_NOAUTHNLM	0x0800		/* Don't authenticate NLM requests - just trust */
-@@ -40,7 +41,7 @@
- #define NFSEXP_FSID		0x2000
- #define	NFSEXP_CROSSMOUNT	0x4000
- #define	NFSEXP_NOACL		0x8000	/* reserved for possible ACL related use */
--#define NFSEXP_ALLFLAGS		0xFE3F
-+#define NFSEXP_ALLFLAGS		0xFE7F
++int security_ismaclabel(const char *name)
++{
++	return security_ops->ismaclabel(name);
++}
++EXPORT_SYMBOL(security_ismaclabel);
++
+ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ {
+ 	return security_ops->secid_to_secctx(secid, secdata, seclen);
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 680db1d..248fa5c 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -5305,6 +5305,11 @@ static int selinux_setprocattr(struct task_struct *p,
+ 	return size;
+ }
  
- /* The flags that may vary depending on security flavor: */
- #define NFSEXP_SECINFO_FLAGS	(NFSEXP_READONLY | NFSEXP_ROOTSQUASH \
-diff --git a/include/linux/nfsd/nfsd.h b/include/linux/nfsd/nfsd.h
-index 108f47e..f329b96 100644
---- a/include/linux/nfsd/nfsd.h
-+++ b/include/linux/nfsd/nfsd.h
-@@ -317,8 +317,8 @@ extern struct timeval	nfssvc_boot;
-  | FATTR4_WORD1_OWNER	        | FATTR4_WORD1_OWNER_GROUP  | FATTR4_WORD1_RAWDEV           \
-  | FATTR4_WORD1_SPACE_AVAIL     | FATTR4_WORD1_SPACE_FREE   | FATTR4_WORD1_SPACE_TOTAL      \
-  | FATTR4_WORD1_SPACE_USED      | FATTR4_WORD1_TIME_ACCESS  | FATTR4_WORD1_TIME_ACCESS_SET  \
-- | FATTR4_WORD1_TIME_DELTA   | FATTR4_WORD1_TIME_METADATA    \
-- | FATTR4_WORD1_TIME_MODIFY     | FATTR4_WORD1_TIME_MODIFY_SET | FATTR4_WORD1_MOUNTED_ON_FILEID)
-+ | FATTR4_WORD1_TIME_DELTA   	| FATTR4_WORD1_TIME_METADATA | FATTR4_WORD1_TIME_MODIFY     \
-+ | FATTR4_WORD1_TIME_MODIFY_SET | FATTR4_WORD1_MOUNTED_ON_FILEID | FATTR4_WORD1_SECURITY_LABEL)
++static int selinux_ismaclabel(const char *name)
++{
++	return (strcmp(name,XATTR_NAME_SELINUX) == 0);
++}
++
+ static int selinux_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+ {
+ 	return security_sid_to_context(secid, secdata, seclen);
+@@ -5546,6 +5551,7 @@ static struct security_operations selinux_ops = {
+ 	.getprocattr =			selinux_getprocattr,
+ 	.setprocattr =			selinux_setprocattr,
  
- /* These will return ERR_INVAL if specified in GETATTR or READDIR. */
- #define NFSD_WRITEONLY_ATTRS_WORD1							    \
-@@ -329,7 +329,8 @@ extern struct timeval	nfssvc_boot;
- (FATTR4_WORD0_SIZE              | FATTR4_WORD0_ACL                                         )
- #define NFSD_WRITEABLE_ATTRS_WORD1                                                          \
- (FATTR4_WORD1_MODE              | FATTR4_WORD1_OWNER         | FATTR4_WORD1_OWNER_GROUP     \
-- | FATTR4_WORD1_TIME_ACCESS_SET | FATTR4_WORD1_TIME_MODIFY_SET)
-+ | FATTR4_WORD1_TIME_ACCESS_SET | FATTR4_WORD1_TIME_METADATA | FATTR4_WORD1_TIME_MODIFY_SET \
-+ | FATTR4_WORD1_SECURITY_LABEL)
++	.ismaclabel =			selinux_ismaclabel,
+ 	.secid_to_secctx =		selinux_secid_to_secctx,
+ 	.secctx_to_secid =		selinux_secctx_to_secid,
+ 	.release_secctx =		selinux_release_secctx,
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 87d7541..6b03a18 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -2526,6 +2526,16 @@ static void smack_audit_rule_free(void *vrule)
+ #endif /* CONFIG_AUDIT */
  
- #endif /* CONFIG_NFSD_V4 */
+ /*
++ * smack_ismaclabel - check if xattr @name references a smack MAC label
++ * @name: Full xattr name to check.
++ *
++ */
++static int smack_ismaclabel(const char *name)
++{
++	return (strcmp(name,XATTR_NAME_SMACK) == 0);
++}
++
++/*
+  * smack_secid_to_secctx - return the smack label for a secid
+  * @secid: incoming integer
+  * @secdata: destination
+@@ -2703,6 +2713,7 @@ struct security_operations smack_ops = {
+ 	.audit_rule_free =		smack_audit_rule_free,
+ #endif /* CONFIG_AUDIT */
  
++	.ismaclabel =			smack_ismaclabel,
+ 	.secid_to_secctx = 		smack_secid_to_secctx,
+ 	.secctx_to_secid = 		smack_secctx_to_secid,
+ 	.release_secctx = 		smack_release_secctx,
 -- 
 1.5.5.1
 
