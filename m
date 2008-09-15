@@ -1,161 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYIOIEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbYIOIGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYIOIEj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 04:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYIOIEV
+	id S1755603AbYIOIGH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 04:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYIOIFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 04:04:21 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60404 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752151AbYIOIEQ (ORCPT
+	Mon, 15 Sep 2008 04:05:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:41684 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752605AbYIOIFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 04:04:16 -0400
-Date: Mon, 15 Sep 2008 10:04:06 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-rt <linux-rt-users@vger.kernel.org>, netdev@vger.kernel.org,
-       themann@de.ibm.com, tklein@de.ibm.com, raisch@de.ibm.com,
-       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
-       tinytim@us.ibm.com
-Subject: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
- hardirq preemption
-Message-ID: <20080915100406.342e027a@bull.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+	Mon, 15 Sep 2008 04:05:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=B18hr78TPk2KFxp+PdRnqdoXgcPEB/4y4L8FZp/cNxIsi/EDkM5aexv5+bLr+p7XRw
+         EdF9ohxnMzrpfsTXzgiChWQPM4zVxkVDMkI+SS7Wa70VxxWTVcit5y26OdwV0G0/90Y6
+         A3m4HIDg3VU5QxbkOD9pt1jknvQgXVIVzoDXw=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH] introduce boot_printk()
+Date: Mon, 15 Sep 2008 01:05:16 -0700
+Message-Id: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+could be enabled via "boot=verbose" to get more debug info
 
-WARNING: HACK - HACK - HACK
+will use it to convert some printk(KERN_DEBUG ...)
 
-  Under the RT kernel (with hardirq preemption) the eHEA driver hangs right
-after booting. Fiddling with the hardirqs and softirqs priorities allows to
-run a bit longer but as soon as the network gets under load, the hang
-returns. After investigating, it appears that the driver is loosing interrupts.
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
-  To make a long story short, looking at the code, it appears that the XICS
-maps all its interrupts to level sensitive interrupts (I don't know if it's the
-reality or if it's due to an incomplete implementation - no datasheets
-available to check) and use the fasteoi processing flow.
-
-  When entering the low level handler, level sensitive interrupts are masked,
-then eio'd in interrupt context and then unmasked at the end of hardirq
-processing.
-That's fine as any interrupt comming in-between will still be processed since
-the kernel replays those pending interrupts.
-
-  However, it appears that the eHEA interrupts are behaving as edge sensitive
-interrupts and are routed through the XICS which process those as level
-sensitive using the fasteoi handler __OR__ the XICS loses interrupts when they
-are masked.
-
-  Therefore the masking done in the handler causes any interrupt happening while
-in the handler to be lost.
-
-  So this patch maps the interrupts being requested through
-ibmebus_request_irq() as edge sensitive interrupts (this concerns both the eHEA
-and the eHCA - only users of ibmebus_request_irq()) and changes the way edge
-interrupts are processed by the fasteoi handler.
-
-  It works for the eHEA, dunno for the eHCA.
-
-  So, unless all the designers of the XICS & eHEA have been shot to keep it
-a secret, could someone knowledgeable shed some light on this issue.
-
-  Thanks,
-
-  Sebastien.
-
-Not-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
 ---
- arch/powerpc/kernel/ibmebus.c |   11 ++++++++++-
- kernel/irq/chip.c             |    5 +++--
- kernel/irq/manage.c           |    9 ++++++---
- 3 files changed, 19 insertions(+), 6 deletions(-)
+ include/linux/kernel.h |   19 +++++++++++++++++++
+ kernel/printk.c        |   21 +++++++++++++++++++++
+ 2 files changed, 40 insertions(+)
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 9971159..5200323 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -41,6 +41,7 @@
- #include <linux/kobject.h>
- #include <linux/dma-mapping.h>
- #include <linux/interrupt.h>
-+#include <linux/irq.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <asm/ibmebus.h>
-@@ -213,11 +214,19 @@ int ibmebus_request_irq(u32 ist, irq_handler_t handler,
- 			void *dev_id)
- {
- 	unsigned int irq = irq_create_mapping(NULL, ist);
-+	struct irq_desc *desc;
-+	int ret;
+Index: linux-2.6/include/linux/kernel.h
+===================================================================
+--- linux-2.6.orig/include/linux/kernel.h
++++ linux-2.6/include/linux/kernel.h
+@@ -344,6 +344,25 @@ static inline char *pack_hex_byte(char *
+ #endif
  
- 	if (irq == NO_IRQ)
- 		return -EINVAL;
+ /*
++ * Debugging macros
++ */
++#define BOOT_QUIET   0
++#define BOOT_VERBOSE 1
++#define BOOT_SPEW    2
++
++extern int boot_verbosity;
++/*
++ * Define the default level of output to be very little
++ * This can be turned up by using boot=verbose for more
++ * information and boot=spew for _lots_ of information.
++ * boot_verbosity is defined in printk.c
++ */
++#define boot_printk(v, s, a...) do {        \
++		if ((v) <= boot_verbosity)  \
++			printk(s, ##a);    \
++	} while (0)
++
++/*
+  *      Display an IP address in readable format.
+  */
  
--	return request_irq(irq, handler, irq_flags, devname, dev_id);
-+	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
-+
-+	desc = irq_desc + irq;
-+	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-+	desc->status |= IRQ_TYPE_EDGE_RISING;
-+
-+	return ret;
+Index: linux-2.6/kernel/printk.c
+===================================================================
+--- linux-2.6.orig/kernel/printk.c
++++ linux-2.6/kernel/printk.c
+@@ -604,6 +604,27 @@ asmlinkage int printk(const char *fmt, .
+ 	return r;
  }
- EXPORT_SYMBOL(ibmebus_request_irq);
  
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index b7b397a..6d366ca 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -430,7 +430,7 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
- 	action = desc->action;
- 	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
- 						 IRQ_DISABLED)))) {
--		desc->status |= IRQ_PENDING;
-+		desc->status |= IRQ_PENDING | IRQ_MASKED;
- 		if (desc->chip->mask)
- 			desc->chip->mask(irq);
- 		goto out;
-@@ -439,9 +439,10 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
- 	desc->status |= IRQ_INPROGRESS;
- 	/*
- 	 * In the threaded case we fall back to a mask+eoi sequence:
-+	 * excepted for edge interrupts which are not masked.
- 	 */
- 	if (redirect_hardirq(desc)) {
--		if (desc->chip->mask)
-+		if (desc->chip->mask && !(desc->status & IRQ_TYPE_EDGE_BOTH))
- 			desc->chip->mask(irq);
- 		goto out;
- 	}
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 3bffa20..3e39c71 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -788,9 +788,12 @@ static void do_hardirq(struct irq_desc *desc)
- 		thread_simple_irq(desc);
- 	else if (desc->handle_irq == handle_level_irq)
- 		thread_level_irq(desc);
--	else if (desc->handle_irq == handle_fasteoi_irq)
--		thread_fasteoi_irq(desc);
--	else if (desc->handle_irq == handle_edge_irq)
-+	else if (desc->handle_irq == handle_fasteoi_irq) {
-+		if (desc->status & IRQ_TYPE_EDGE_BOTH)
-+			thread_edge_irq(desc);
-+		else
-+			thread_fasteoi_irq(desc);
-+	} else if (desc->handle_irq == handle_edge_irq)
- 		thread_edge_irq(desc);
- 	else
- 		thread_do_irq(desc);
--- 
-1.6.0.1.308.gede4c
-
++int boot_verbosity;
++
++static int __init boot_set_verbosity(char *arg)
++{
++	if (!arg)
++		return -EINVAL;
++
++	if (strcmp("spew", arg) == 0)
++		boot_verbosity = BOOT_SPEW;
++	else if (strcmp("verbose", arg) == 0)
++		boot_verbosity = BOOT_VERBOSE;
++	else {
++		printk(KERN_WARNING "boot Verbosity level %s not recognised"
++			" use boot=verbose or boot=spew\n", arg);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++early_param("boot", boot_set_verbosity);
++
+ /* cpu currently holding logbuf_lock */
+ static volatile unsigned int printk_cpu = UINT_MAX;
+ 
