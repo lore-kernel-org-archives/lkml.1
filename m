@@ -1,92 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYIOIRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513AbYIOIVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYIOIRD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 04:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbYIOIQx
+	id S1753513AbYIOIVv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 04:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYIOIVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 04:16:53 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:16122 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750981AbYIOIQv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 04:16:51 -0400
-Message-Id: <48CE3633.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Mon, 15 Sep 2008 09:17:23 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>,
-       <hpa@zytor.com>
-Subject: Re: [PATCH] x86-64: fix combining of regions in
-	 init_memory_mapping()
-References: <48CA9C18.76E4.0078.0@novell.com>
- <86802c440809141120v5f468775n81de6a29bbb89019@mail.gmail.com>
-In-Reply-To: <86802c440809141120v5f468775n81de6a29bbb89019@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 15 Sep 2008 04:21:42 -0400
+Received: from phunq.net ([64.81.85.152]:39479 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750874AbYIOIVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 04:21:41 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: tux3@tux3.org
+Subject: Tux3 Report: What next?
+Date: Mon, 15 Sep 2008 01:21:39 -0700
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200809150121.39672.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> "Yinghai Lu" <yhlu.kernel@gmail.com> 14.09.08 20:20 >>>
->On Fri, Sep 12, 2008 at 7:43 AM, Jan Beulich <jbeulich@novell.com> wrote:
->> When nr_range gets decremented, the same slot must be considered for
->> coalescing with its new successor again.
->>
->> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->>
->> ---
->>  arch/x86/mm/init_64.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> --- linux-2.6.27-rc6/arch/x86/mm/init_64.c      2008-08-29 10:53:00.000000000 +0200
->> +++ 2.6.27-rc6-x86_64-mr-coalesce/arch/x86/mm/init_64.c 2008-09-12 11:58:45.000000000 +0200
->> @@ -636,7 +636,7 @@ unsigned long __init_refok init_memory_m
->>                old_start = mr[i].start;
->>                memmove(&mr[i], &mr[i+1],
->>                         (nr_range - 1 - i) * sizeof (struct map_range));
->> -               mr[i].start = old_start;
->> +               mr[i--].start = old_start;
->>                nr_range--;
->>        }
->>
->
->this patch seems not right.
->Ingo, please don't apply it.
->
->original code:
->        /* try to merge same page size and continuous */
->        for (i = 0; nr_range > 1 && i < nr_range - 1; i++) {
->                unsigned long old_start;
->                if (mr[i].end != mr[i+1].start ||
->                    mr[i].page_size_mask != mr[i+1].page_size_mask)
->                        continue;
->                /* move it */
->                old_start = mr[i].start;
->                memmove(&mr[i], &mr[i+1],
->                         (nr_range - 1 - i) * sizeof (struct map_range));
->                mr[i].start = old_start;
->                nr_range--;
->        }
->
->so it save old_start and first, and move entries forward (so old one
->is overwriten), and put back old_start ...
+Hi all,
 
-Old and new code are not different in any way in this respect - both
-overwrite the old entry at index i with the entry at index i+1 and then
-set the start of the i-th entry back to what it was before the overwrite,
-effectively combining them. The patch just makes sure that the index
-isn't being updated at the same time as nr_range (because if you update
-both you effectively skip one).
+It's been a busy week with all the checkins.  Not all of them from me!
+And Tux3 university, which seems to be going quite well.  For the next
+session (Tuesday, 8 p.m. pacific time on irc.oftc.net #tux3) the theme
+will be: VFS read and write.  Yes, that's all, and it's a lot.
 
-The issue is apparently pretty benign to native code, but surfaces as a
-boot time crash in our forward ported Xen tree (where the page table
-setup overall works differently than in native). Since the underlying
-issue was present in native (and since I assume if there is an attempt
-to merge subsequent regions, then it should work right), I nevertheless
-submitted the patch for native inclusion.
+So getting xattrs working took a week, and it was quite a week with all
+the design introspection about atoms and such.  In the end, the design
+came out really nice and I guess we are going to be able to go with our
+hoped for no-compromise solution: we translate xattr names into atoms
+and refcount the atoms persistently, and do it all at close to the
+speed we would get from just storing the xattr names as ascii strings,
+per inode.  According to my calculations anyway.  We will have to wait
+for something closer to production code before we can really measure
+it, and I am presuming that there will be a little more work done to
+put a simple cache, like a hash table, in front of the atom machinery.
 
-Jan
+An unexpected spinoff benefit of the atom work is, we now have a really
+nice generic mechanism for implementing de-duplication, which work will
+be attempted by an enthusiastic team of volunteers, as a university
+project.  I expect we will hear more on that soon.
 
+Now that question again: what next?  Big items still outstanding to
+get to proof of concept:
+
+ 1) Atomic commit
+ 2) Versioning
+ 3) Extents
+ 4) Kernel port
+
+The kernel port is underway, it started yesterday when Maciej decided
+to barge in and implement his "junkfs", which as I understand it, is
+fearlessly attempting to load a superblock at the moment.  Not one to
+be left behind, I checked in a stub Tux3 filesystem to a new Git repo,
+which I hope is going to become a real Tux3 filesystem in the not too
+distant future:
+
+   http://phunq.net/tux3fs/
+
+And our fuse porters have been busy, with xattr support checked in by
+Tero, mere hours after my first shaky prototype landed.  Well, I am so
+happy with the way things are going in userspace that I plan to stay
+there a while longer.  It is pretty much a coin toss which of the three
+non-kernel projects to jump into, so I choose versioning.  Versioning
+is, after all, the main reason this project exists.
+
+In other news, it is getting close to Halloween, and that means getting
+close to Tux3 Cabal party time.  More on that later.  As always,
+everyone is welcome to jump in and join the development party, it's
+fun:
+
+   http://tux3.org/
+
+Regards,
+
+Daniel
