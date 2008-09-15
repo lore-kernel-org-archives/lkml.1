@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYIOJWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793AbYIOJYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbYIOJWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 05:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYIOJW0
+	id S1754793AbYIOJYd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 05:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYIOJYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 05:22:26 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57029 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbYIOJWZ (ORCPT
+	Mon, 15 Sep 2008 05:24:25 -0400
+Received: from rn-out-0910.google.com ([64.233.170.190]:48913 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYIOJYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 05:22:25 -0400
-Date: Mon, 15 Sep 2008 14:51:35 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: drepper@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
-       mingo <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>, Darren Hart <dvhltc@us.ibm.com>,
-       Sripathi Kodi <sripathi@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG -rt] Priority inversion deadlock caused by condvars
-Message-ID: <20080915092135.GA7725@in.ibm.com>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
-References: <1221256895.6695.55.camel@localhost.localdomain> <1221257094.6695.56.camel@localhost.localdomain>
+	Mon, 15 Sep 2008 05:24:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=HxgS3LqQaAb+ckRziUgafCX+Mr2/LbdE/mOLkFEEUnA9pucIbkNTXH9fbeOAL0e3nB
+         VsTFwQ1siMvyZMf5o0hGd/dzWsvtYhCjiYdi0dYXj8UvRDHoVg7slJ1tYXqIQkpCDY0e
+         15t4Nvlytz/T0rvs1y8rho+gWgIyEXbTmsVes=
+Message-ID: <5ff4a1e50809150224o600fd9fhb29e986bdb618464@mail.gmail.com>
+Date: Mon, 15 Sep 2008 10:24:22 +0100
+From: "Matt Fleming" <mattjfleming@googlemail.com>
+To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>
+Subject: Re: [RFC][PATCH] MMC: Use write timeout value as read from CSR
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080915103821.2b618bba@mjolnir.drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1221257094.6695.56.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <5ff4a1e50809010812i32168136qea538ba177b81446@mail.gmail.com>
+	 <5ff4a1e50809090034y3156427bpfac8a07674c3c844@mail.gmail.com>
+	 <20080909094438.6423b8ef@mjolnir.drzeus.cx>
+	 <5ff4a1e50809090059i2bcdb7ber8cae07128eea5a77@mail.gmail.com>
+	 <20080909105513.5b8ceaaf@mjolnir.drzeus.cx>
+	 <5ff4a1e50809090207o5846f5udf709eeda81653eb@mail.gmail.com>
+	 <5ff4a1e50809090242ha576dcdmf82d1e9ec2204178@mail.gmail.com>
+	 <20080914154817.3d618e67@mjolnir.drzeus.cx>
+	 <5ff4a1e50809150103v1e250e0x4192e2fe901750a6@mail.gmail.com>
+	 <20080915103821.2b618bba@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+2008/9/15 Pierre Ossman <drzeus-mmc@drzeus.cx>:
+> On Mon, 15 Sep 2008 09:03:41 +0100
+> "Matt Fleming" <mattjfleming@googlemail.com> wrote:
+>
+>> Yeah it does, but the card pointer isn't copied to host->card. That
+>> was the point I was trying to make above.
+>
+> I understood that, but you shouldn't be using host->card to begin with.
+> Host drivers shouldn't be concerned with card specifics at all as the
+> logic can sometimes be quite complex. All information the host drivers
+> need should be in the request structure. If it isn't, then we need to
+> fix the request structure, not change the drivers to start poking
+> deeper into the MMC stack.
+>
 
-> On Fri, 2008-09-12 at 15:01 -0700, john stultz wrote:
-> > 	So we've been seeing application hangs with a very threaded (~8k
-> > threads) realtime java test. After a fair amount of debugging we found
-> > most of the SCHED_FIFO threads are blocked in futex_wait(). This raised
-> > some alarm, since futex_wait isn't priority-inheritance aware.
-> > 
-> > After seeing what was going on, Dino came up with a possible deadlock
-> > case in the pthread_cond_wait() code.
-> > 
-> > The problem, as I understand it, assuming there is only one cpu, is if a
-> > low priority thread is going to call pthread_cond_wait(), it takes the
-> > associated PI mutex, and calls the function. The glibc implementation
-> > acquires the condvar's internal non-PI lock, releases the PI mutex and
-> > tries to block on futex_wait().
-> > 
-> > However if a medium priority cpu hog, and a high priority start up while
-> > the low priority thread holds the mutex, the low priority thread will be
-> > boosted until it releases that mutex, but not long enough for it to
-> > release the condvar's internal lock (since the internal lock is not
-> > priority inherited). 
-> > 
-> > Then the high priority thread will aquire the mutex, and try to acquire
-> > the condvar's internal lock (which is still held). However, since we
-> > also have a medium prio cpu hog, it will block the low priority thread
-> > from running, and thus block it from releasing the lock.
-> > 
-> > And then we're deadlocked.
-> > 
-> > Thomas mentioned this is a known problem, but I wanted to send this
-> > example out so maybe others might become aware.
+OK, I can see your point here. However, this is a completely different
+change to my original patch. Would it not make more sense to queue my
+original patch and then for me to write some patches to move all the
+timeout info into the request structure?
 
-Looks like a similar issue was raised sometime back.
+> Looking further at the specs, this needs to be handled int the caller
+> (i.e. mmc_send_cid() and mmc_send_csd()). The specs specify the
+> timeouts used for those commands and they are actually different from
+> the timeouts used elsewhere. IOW this could not be properly handled in
+> some generic helper.
+>
 
-http://sourceware.org/bugzilla/show_bug.cgi?id=5192
+Again, this is a good idea but a different change to the patch I wrote
+originally.
 
-> > 
-> > The attached test illustrates this hang as described above when bound to
-> > a single cpu. I believe its correct, but these sorts of tests often have
-> > their own bugs that create false positives, so please forgive me and let
-> > me know if you see any problems. :)
-> > 
-> > Many thanks to Dino, Ankita and Sripathi for helping to sort out this
-> > issue.
-> > 
-> > To run:
-> > 	./pthread_cond_hang               => will PASS (on SMP)
-> > 	taskset -c 0 ./pthread_cond_hang  => will HANG
-
--- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+So, what I propose is this. Could you please queue my bug fix (I can
+send the two patches again) and then I will begin working on the
+generic patches to fix the issues that you've raised in this thread?
+How does that sound?
