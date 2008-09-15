@@ -1,143 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbYIOVI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbYIOVJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbYIOVI6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 17:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYIOVGp
+	id S1757306AbYIOVJe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 17:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbYIOVGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 17:06:45 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:64412 "EHLO mummy.ncsc.mil"
+	Mon, 15 Sep 2008 17:06:47 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:64418 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754933AbYIOVG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 17:06:27 -0400
+	id S1754941AbYIOVG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 17:06:28 -0400
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: hch@infradead.org, viro@zeniv.linux.org.uk, casey@schaufler-ca.com,
        sds@tycho.nsa.gov, matthew.dodd@sparta.com, trond.myklebust@fys.uio.no,
        bfields@fieldses.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: [RFC] Labeled NFS Take 2
-Date: Mon, 15 Sep 2008 16:41:04 -0400
-Message-Id: <1221511278-28051-1-git-send-email-dpquigl@tycho.nsa.gov>
+       linux-security-module@vger.kernel.org,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       "Matthew N. Dodd" <Matthew.Dodd@sparta.com>
+Subject: [PATCH 07/14] NFSv4: Add label recommended attribute and NFSv4 flags
+Date: Mon, 15 Sep 2008 16:41:11 -0400
+Message-Id: <1221511278-28051-8-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <1221511278-28051-1-git-send-email-dpquigl@tycho.nsa.gov>
+References: <1221511278-28051-1-git-send-email-dpquigl@tycho.nsa.gov>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It has been six months since the last time we submitted a patch set to the
-mailing list for review. In this time we have fixed almost all of the issues
-that people have had with the last patch set and have added a new feature to
-allow for process labels to be transported with the RPC request. Below I
-review each of the issues raised with the last patch set and what was done to
-fix them. I also list the features present in this patch set and known issues.
+This patch adds a new recommended attribute named label into the NFSv4 file
+attribute structure. It also adds several new flags to allow the NFS client and
+server to determine if this attribute is supported and if it is being sent over
+the wire.
 
-When reviewing the code please be critical of it. We have reached the point
-where we think we have the proper set of initial features implemented so we
-would like to address all of the major and minor concerns with the code so it
-can be cleaned up and submitted for inclusion. If you want a tree with the
-patches already applied we have posted a public git tree that is ready for
-cloning and use. This tree can be found at http://git.selinuxproject.org/git
-and can be cloned with the command below. You can also find information on how
-to setup a labeled nfs mount at http://www.selinuxproject.org/page/Labeled_NFS
-however the putclientlabel mount option specified in the setup document is no
-longer supported.
-
-git-clone git://git.selinuxproject.org/~dpquigl/lnfs.git
-
-Features:
-
-* Client
-	* Obtains labels from server for NFS files while still allowing for
-	SELinux context mounts to override untrusted labeled servers.
-	* Allows setting labels on files over NFS via xattr interface.
-	* New security flavor (auth_seclabel) to transport process label to
-	  server. This is a derivative of auth_unix so it does not support
-	  kerberos which has its own issues that need to be dealt with.
-* Server
-	* Exports labels to clients. As of the moment there is no ability to
-	restrict this based on label components such as MLS levels.
-	* Persistent storage of labels assuming exported file system supports
-	it.
-	* If present uses process label for permission checks on server. Only
-	effective if both client and server are running the same MAC model and
-	policy. This will be addressed later by the label translation work.
-
-Known Limitations/Bugs
-
-If you want to utilize process label transport and file labels properly each
-side must implement the same MAC model and be running the same policy. It is
-possible for two SELinux systems to talk to each other if they have different
-policies however from a policy perspective you can't be guaranteed that a type
-on the client means the same thing on the server. Work is being done on
-providing a DOI translation framework but is currently on the back burner so
-work can be done to polish up this prototype and work on the IETF documents.
-
-Concerns from last submission:
-
-The patch to add maclabel_getname has been removed and replaced with the
-{get,set,notify}secctx hooks that were discussed on the mailing list.
-
-The use of the iattr structure to pass label data up and down the call stack
-has been replace with a method that mimics the NFSv4 ACL implementation. A new
-structure nfs4_label has been added and is added to the necessary functions to
-pass the data around. 
-
-Andrew's request to make the name and value pointers to the vfs helper for
-setxattr const has been addressed.
-
-The lifecycle management patch for the fattr structure has not been addressed
-because it will probably be replaced with a method similar to what we did to
-fix the iattr problem. Also the maximum label size has been set at 4096. I
-know there are some concerns with hard limits on label size but Trond and
-Bruce have brought up issues with doing memory reallocation inside of the XDR
-handlers. Since it isn't appropriate to realloc memory there and there is no
-effective retry capability if the buffer isn't large enough this doesn't seem
-like an option.
-
-The mount code has been changed to use Eric Paris's new security parameter
-and now it uses the new text based mount system.
-
+Signed-off-by: Matthew N. Dodd <Matthew.Dodd@sparta.com>
+Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
+ include/linux/nfs4.h        |    2 ++
+ include/linux/nfs_fs_sb.h   |    2 +-
+ include/linux/nfs_xdr.h     |    4 ++++
+ include/linux/nfsd/export.h |    5 +++--
+ include/linux/nfsd/nfsd.h   |    7 ++++---
+ 5 files changed, 14 insertions(+), 6 deletions(-)
 
- fs/Kconfig                          |   17 ++
- fs/nfs/client.c                     |   18 ++-
- fs/nfs/dir.c                        |   24 ++
- fs/nfs/getroot.c                    |   34 +++
- fs/nfs/inode.c                      |   61 +++++-
- fs/nfs/namespace.c                  |    3 +
- fs/nfs/nfs3proc.c                   |   10 +
- fs/nfs/nfs4proc.c                   |  447 +++++++++++++++++++++++++++++++---
- fs/nfs/nfs4xdr.c                    |   56 ++++-
- fs/nfs/proc.c                       |   12 +-
- fs/nfs/super.c                      |   29 +++-
- fs/nfsd/auth.c                      |   21 ++
- fs/nfsd/export.c                    |    3 +
- fs/nfsd/nfs4proc.c                  |   25 ++-
- fs/nfsd/nfs4xdr.c                   |  101 ++++++++-
- fs/nfsd/vfs.c                       |   22 ++
- fs/xattr.c                          |   55 ++++-
- include/linux/nfs4.h                |    8 +
- include/linux/nfs4_mount.h          |    8 +-
- include/linux/nfs_fs.h              |   48 ++++
- include/linux/nfs_fs_sb.h           |    2 +-
- include/linux/nfs_xdr.h             |    7 +
- include/linux/nfsd/export.h         |    5 +-
- include/linux/nfsd/nfsd.h           |    9 +-
- include/linux/nfsd/xdr4.h           |    3 +
- include/linux/security.h            |   75 ++++++
- include/linux/sunrpc/auth.h         |    4 +
- include/linux/sunrpc/msg_prot.h     |    1 +
- include/linux/sunrpc/svcauth.h      |    4 +
- include/linux/xattr.h               |    1 +
- net/sunrpc/Makefile                 |    1 +
- net/sunrpc/auth.c                   |   16 ++
- net/sunrpc/auth_seclabel.c          |  291 +++++++++++++++++++++++
- net/sunrpc/svc.c                    |    1 +
- net/sunrpc/svcauth.c                |    6 +
- net/sunrpc/svcauth_unix.c           |   97 ++++++++-
- security/security.c                 |   34 +++
- security/selinux/hooks.c            |  148 ++++++++++--
- security/selinux/include/security.h |    4 +
- security/selinux/ss/policydb.c      |    5 +-
- security/smack/smack_lsm.c          |   11 +
- 41 files changed, 1627 insertions(+), 100 deletions(-)
+diff --git a/include/linux/nfs4.h b/include/linux/nfs4.h
+index ea03667..144eacf 100644
+--- a/include/linux/nfs4.h
++++ b/include/linux/nfs4.h
+@@ -21,6 +21,7 @@
+ #define NFS4_FHSIZE		128
+ #define NFS4_MAXPATHLEN		PATH_MAX
+ #define NFS4_MAXNAMLEN		NAME_MAX
++#define NFS4_MAXLABELLEN	4096
+ 
+ #define NFS4_ACCESS_READ        0x0001
+ #define NFS4_ACCESS_LOOKUP      0x0002
+@@ -345,6 +346,7 @@ enum lock_type4 {
+ #define FATTR4_WORD1_TIME_MODIFY        (1UL << 21)
+ #define FATTR4_WORD1_TIME_MODIFY_SET    (1UL << 22)
+ #define FATTR4_WORD1_MOUNTED_ON_FILEID  (1UL << 23)
++#define FATTR4_WORD1_SECURITY_LABEL     (1UL << 31)
+ 
+ #define NFSPROC4_NULL 0
+ #define NFSPROC4_COMPOUND 1
+diff --git a/include/linux/nfs_fs_sb.h b/include/linux/nfs_fs_sb.h
+index c9beacd..9475bb0 100644
+--- a/include/linux/nfs_fs_sb.h
++++ b/include/linux/nfs_fs_sb.h
+@@ -135,5 +135,5 @@ struct nfs_server {
+ #define NFS_CAP_SYMLINKS	(1U << 2)
+ #define NFS_CAP_ACLS		(1U << 3)
+ #define NFS_CAP_ATOMIC_OPEN	(1U << 4)
+-
++#define NFS_CAP_SECURITY_LABEL (1U << 5)
+ #endif
+diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+index 8c77c11..0d77568 100644
+--- a/include/linux/nfs_xdr.h
++++ b/include/linux/nfs_xdr.h
+@@ -56,6 +56,10 @@ struct nfs_fattr {
+ 	__u64			change_attr;	/* NFSv4 change attribute */
+ 	__u64			pre_change_attr;/* pre-op NFSv4 change attribute */
+ 	unsigned long		time_start;
++#ifdef CONFIG_SECURITY
++	void			*label;
++	__u32			 label_len;
++#endif
+ };
+ 
+ #define NFS_ATTR_WCC		0x0001		/* pre-op WCC data    */
+diff --git a/include/linux/nfsd/export.h b/include/linux/nfsd/export.h
+index 5431512..bb831fc 100644
+--- a/include/linux/nfsd/export.h
++++ b/include/linux/nfsd/export.h
+@@ -32,7 +32,8 @@
+ #define NFSEXP_ALLSQUASH	0x0008
+ #define NFSEXP_ASYNC		0x0010
+ #define NFSEXP_GATHERED_WRITES	0x0020
+-/* 40 80 100 currently unused */
++#define NFSEXP_SECURITY_LABEL	0x0040  /* Support security label fattr4 */
++/* 80 100 currently unused */
+ #define NFSEXP_NOHIDE		0x0200
+ #define NFSEXP_NOSUBTREECHECK	0x0400
+ #define	NFSEXP_NOAUTHNLM	0x0800		/* Don't authenticate NLM requests - just trust */
+@@ -40,7 +41,7 @@
+ #define NFSEXP_FSID		0x2000
+ #define	NFSEXP_CROSSMOUNT	0x4000
+ #define	NFSEXP_NOACL		0x8000	/* reserved for possible ACL related use */
+-#define NFSEXP_ALLFLAGS		0xFE3F
++#define NFSEXP_ALLFLAGS		0xFE7F
+ 
+ /* The flags that may vary depending on security flavor: */
+ #define NFSEXP_SECINFO_FLAGS	(NFSEXP_READONLY | NFSEXP_ROOTSQUASH \
+diff --git a/include/linux/nfsd/nfsd.h b/include/linux/nfsd/nfsd.h
+index 108f47e..f329b96 100644
+--- a/include/linux/nfsd/nfsd.h
++++ b/include/linux/nfsd/nfsd.h
+@@ -317,8 +317,8 @@ extern struct timeval	nfssvc_boot;
+  | FATTR4_WORD1_OWNER	        | FATTR4_WORD1_OWNER_GROUP  | FATTR4_WORD1_RAWDEV           \
+  | FATTR4_WORD1_SPACE_AVAIL     | FATTR4_WORD1_SPACE_FREE   | FATTR4_WORD1_SPACE_TOTAL      \
+  | FATTR4_WORD1_SPACE_USED      | FATTR4_WORD1_TIME_ACCESS  | FATTR4_WORD1_TIME_ACCESS_SET  \
+- | FATTR4_WORD1_TIME_DELTA   | FATTR4_WORD1_TIME_METADATA    \
+- | FATTR4_WORD1_TIME_MODIFY     | FATTR4_WORD1_TIME_MODIFY_SET | FATTR4_WORD1_MOUNTED_ON_FILEID)
++ | FATTR4_WORD1_TIME_DELTA   	| FATTR4_WORD1_TIME_METADATA | FATTR4_WORD1_TIME_MODIFY     \
++ | FATTR4_WORD1_TIME_MODIFY_SET | FATTR4_WORD1_MOUNTED_ON_FILEID | FATTR4_WORD1_SECURITY_LABEL)
+ 
+ /* These will return ERR_INVAL if specified in GETATTR or READDIR. */
+ #define NFSD_WRITEONLY_ATTRS_WORD1							    \
+@@ -329,7 +329,8 @@ extern struct timeval	nfssvc_boot;
+ (FATTR4_WORD0_SIZE              | FATTR4_WORD0_ACL                                         )
+ #define NFSD_WRITEABLE_ATTRS_WORD1                                                          \
+ (FATTR4_WORD1_MODE              | FATTR4_WORD1_OWNER         | FATTR4_WORD1_OWNER_GROUP     \
+- | FATTR4_WORD1_TIME_ACCESS_SET | FATTR4_WORD1_TIME_MODIFY_SET)
++ | FATTR4_WORD1_TIME_ACCESS_SET | FATTR4_WORD1_TIME_METADATA | FATTR4_WORD1_TIME_MODIFY_SET \
++ | FATTR4_WORD1_SECURITY_LABEL)
+ 
+ #endif /* CONFIG_NFSD_V4 */
+ 
+-- 
+1.5.5.1
 
