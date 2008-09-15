@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYIOO1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYIOO2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbYIOO1j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 10:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYIOO12
+	id S1755341AbYIOO2Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 10:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbYIOO2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 10:27:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53606 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbYIOO11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 10:27:27 -0400
-Message-ID: <48CE70CC.7020901@suse.de>
-Date: Mon, 15 Sep 2008 16:27:24 +0200
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 15 Sep 2008 10:28:17 -0400
+Received: from mail150.ix.emailantidote.com ([89.167.219.150]:3796 "EHLO
+	mail1.mxsweep.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752757AbYIOO2Q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 10:28:16 -0400
+Message-ID: <48CE70E2.4020009@draigBrady.com>
+Date: Mon, 15 Sep 2008 15:27:46 +0100
+From: =?UTF-8?B?UMOhZHJhaWcgQnJhZHk=?= <P@draigBrady.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: Re: linux-next: Tree for September 13 (3c509)
-References: <20080913162344.ab395285.sfr@canb.auug.org.au> <20080914141757.899f71eb.randy.dunlap@oracle.com> <20080915141149.GA10002@cs181140183.pp.htv.fi>
-In-Reply-To: <20080915141149.GA10002@cs181140183.pp.htv.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------070005040208050009000409"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH] fastboot: Add a script to visualize the kernel boot process
+ / time
+References: <20080913094219.5d314e5e@infradead.org>	<48CE5C45.2080001@draigBrady.com> <20080915063701.3344e7b7@infradead.org>
+In-Reply-To: <20080915063701.3344e7b7@infradead.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 15 Sep 2008 14:27:47.0513 (UTC) FILETIME=[39B23A90:01C9173F]
+x-MXSweep-CtasdSpam: Unknown
+x-MXSweep-CtasdVirus: Unknown
+x-MXSweep-KeywordsCount: 0
+x-MXPurifier-SpamScore: 0
+x-MXPurifier-VirusScore: 0
+X-MXSweep-Threat: Clean
+X-MXUniqueID: b9c2c898-481f-4265-b88f-3b140bd53f57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070005040208050009000409
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Hi Adrian,
-
-Adrian Bunk wrote:
-> On Sun, Sep 14, 2008 at 02:17:57PM -0700, Randy Dunlap wrote:
->> drivers/net/3c509.c fails (CONFIG_PM=y) with:
->>
->> drivers/built-in.o:(.data+0x7dcc): undefined reference to `el3_resume'
->> drivers/built-in.o:(.data+0x7e08): undefined reference to `el3_resume'
->>
->> It seems that this function does not exist in the source file.
+Arjan van de Ven wrote:
+> On Mon, 15 Sep 2008 13:59:49 +0100
+> Pádraig Brady <P@draigBrady.com> wrote:
 > 
+>> Arjan van de Ven wrote:
+>>> From: Arjan van de Ven <arjan@linux.intel.com>
+>>> Subject: [PATCH] fastboot: Add a script to visualize the kernel
+>>> boot process / time
+>> Have you example output anywhere?
 > 
-> It got removed by:
+> eh sure
 > 
+> http://www.fenrus.org/before.svg
+> http://www.fenrus.org/after.svg
 > 
-> commit 107aeb9753159da848f066b26557f0aaab900a90
-> Author: Hannes Reinecke <hare@suse.de>
-> Date:   Wed Sep 10 14:16:04 2008 +0200
-> 
->     Driver core: Use dev_get_drvdata() accessors
->     
->     Deprecated direct access to the ->driver_data field and
->     use accessors throughout.
->     
->     Signed-off-by: Hannes Reinecke <hare@suse.de>
->     Cc: Kay Sievers <kay.sievers@vrfy.org>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-Sorry. Here it is again.
+> (before and after another patch ;-)
 
-Cheers,
+Nice times :)
+I guess we'll hear more about this on Thursday morning:
+http://linuxplumbersconf.org/program/speakers/getspeaker.php?speaker=avandeven.txt
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
-
---------------070005040208050009000409
-Content-Type: text/plain;
- name="3c509-readd-el3_resume"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="3c509-readd-el3_resume"
-
-UmUtYWRkIGVsM19yZXN1bWUgdG8gM2M1MDkKCkluIGNvbW1pdCAxMDdhZWI5NzUzMTU5ZGE4
-NDhmMDY2YjI2NTU3ZjBhYWFiOTAwYTkwCmVsM19yZXN1bWUoKSBmcm9tIGRyaXZlcnMvbmV0
-LzNjNTA5LmMgYWNjaWRlbnRhbGx5IGdvdApyZW1vdmVkLiBSZS1hZGQgaXQuCgpTaWduZWQt
-b2ZmLWJ5OiBIYW5uZXMgUmVpbmVja2UgPGhhcmVAc3VzZS5kZT4KCmRpZmYgLS1naXQgYS9k
-cml2ZXJzL25ldC8zYzUwOS5jIGIvZHJpdmVycy9uZXQvM2M1MDkuYwppbmRleCBiMzNmN2Q5
-Li42YWNlMjIwIDEwMDY0NAotLS0gYS9kcml2ZXJzL25ldC8zYzUwOS5jCisrKyBiL2RyaXZl
-cnMvbmV0LzNjNTA5LmMKQEAgLTE0OTMsNiArMTQ5MywxNSBAQCBlbDNfY29tbW9uX3Jlc3Vt
-ZShzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQogCXJldHVybiAwOwogfQogCitzdGF0aWMgaW50
-CitlbDNfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKnBkZXYpCit7CisJc3RydWN0IG5ldF9kZXZp
-Y2UgKmRldjsKKworCWRldiA9IGRldl9nZXRfZHJ2ZGF0YShwZGV2KTsKKwlyZXR1cm4gZWwz
-X2NvbW1vbl9yZXN1bWUoZGV2KTsKK30KKwogI2VuZGlmIC8qIENPTkZJR19QTSAqLwogCiBt
-b2R1bGVfcGFyYW0oZGVidWcsaW50LCAwKTsK
---------------070005040208050009000409--
+Pádraig.
