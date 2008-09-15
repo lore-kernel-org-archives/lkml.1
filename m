@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYION5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYIOOBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbYION5u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 09:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYION5k
+	id S1754183AbYIOOBY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 10:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYIOOBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 09:57:40 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57724 "EHLO smtp.mba.ocn.ne.jp"
+	Mon, 15 Sep 2008 10:01:09 -0400
+Received: from the.earth.li ([217.147.81.2]:40294 "EHLO the.earth.li"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbYION5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 09:57:40 -0400
-Date: Mon, 15 Sep 2008 22:57:48 +0900 (JST)
-Message-Id: <20080915.225748.93019490.anemo@mba.ocn.ne.jp>
-To: dmitry.torokhov@gmail.com
-Cc: Henk.Vergonet@gmail.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH resend] input: Move map_to_7segment.h to include/linux
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080914151639.GA5391@amd.corenet.prb>
-References: <20080914.223032.48797005.anemo@mba.ocn.ne.jp>
-	<20080914151639.GA5391@amd.corenet.prb>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1752757AbYIOOBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 10:01:07 -0400
+Date: Mon, 15 Sep 2008 14:30:26 +0100
+From: Jonathan McDowell <noodles@earth.li>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Fixup deb-pkg target to generate separate firmware deb.
+Message-ID: <20080915133026.GB18246@earth.li>
+References: <20080912112042.GX30927@earth.li> <200809131035.18477.elendil@planet.nl> <20080913160831.GE30927@earth.li> <200809131828.54286.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200809131828.54286.elendil@planet.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Sep 2008 11:16:41 -0400, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> Hi Atsushi,
+On Sat, Sep 13, 2008 at 06:28:53PM +0200, Frans Pop wrote:
+> On Saturday 13 September 2008, Jonathan McDowell wrote:
+> > Ta, I've fixed both the indents. I've also changed the firmware package
+> > to be arch: all.
 > 
-> On Sun, Sep 14, 2008 at 10:30:32PM +0900, Atsushi Nemoto wrote:
-> > The map_to_7segment.h provides generic 7segment LED mappings and is
-> > designed to be used by other drivers.  Moving it to common area will
-> > make it more usable.
-> > 
-> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> > Signed-off-by: Henk Vergonet <henk.vergonet@gmail.com>
+> Although I agree that arch all is technically not incorrect, I wonder if 
+> it is the smart thing to do it here.
 > 
-> Should we also export this header to userspace and install it with other
-> kernel headers?
+> The pkg-deb target is probably mostly, or even exclusively - used to build 
+> custom kernels, and people might be crossbuilding kernels with different 
+> configs and thus resulting in different firmware files from the same 
+> source (thus same version) on the same system.
+> I build amd64, i386 and armel that way on my main desktop system, all with 
+> different configs (tuned mainly to keep the build time down).
+> 
+> Keeping the firmware package arch-specific would ensure that a firmware 
+> package built with the config for one arch does not get overwritten by 
+> one built for another arch with a different config.
 
-Well, yes.  I think so.  It helps writing userspace programs which use
-sysfs files.  But for now I have no such plan, so I'm OK either
-with/without the export.
+There's nothing stopping you having several different configs for the
+same arch that don't produce all the required firmware either. I think
+the right answer if you're building lots of different kernels for
+different machines in testing is probably to build a
+linux-firmware-image that has everything in it, so that you don't have
+to worry about upgrading it most of the time.
 
----
-Atsushi Nemoto
+(Technically you could make the firmware image indicate which firmware
+it provides, but I think that gets overly granular for not huge gain.)
+
+J.
+
+-- 
+Web [                        Make friends.                         ]
+site: http:// [                                          ]       Made by
+www.earth.li/~noodles/  [                      ]         HuggieTag 0.0.23
