@@ -1,147 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbYIONnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbYION5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbYIONnQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 09:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbYIONnA
+	id S1753885AbYION5u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 09:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYION5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 09:43:00 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:43151 "EHLO mummy.ncsc.mil"
+	Mon, 15 Sep 2008 09:57:40 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:57724 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752620AbYIONm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 09:42:59 -0400
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: James Morris <jmorris@namei.org>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-In-Reply-To: <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	 <SpS7rta8n4.A.i9G.ZcsyIB@albercik>
-	 <alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
-	 <20080912152443.c4e59f42.akpm@linux-foundation.org>
-	 <alpine.LRH.1.10.0809131012310.13073@tundra.namei.org>
-	 <20080913123722.e238ae2a.akpm@linux-foundation.org>
-	 <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Mon, 15 Sep 2008 09:42:14 -0400
-Message-Id: <1221486134.30816.31.camel@moss-spartans.epoch.ncsc.mil>
+	id S1752064AbYION5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 09:57:40 -0400
+Date: Mon, 15 Sep 2008 22:57:48 +0900 (JST)
+Message-Id: <20080915.225748.93019490.anemo@mba.ocn.ne.jp>
+To: dmitry.torokhov@gmail.com
+Cc: Henk.Vergonet@gmail.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH resend] input: Move map_to_7segment.h to include/linux
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080914151639.GA5391@amd.corenet.prb>
+References: <20080914.223032.48797005.anemo@mba.ocn.ne.jp>
+	<20080914151639.GA5391@amd.corenet.prb>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Mon, 2008-09-15 at 09:05 -0400, Stephen Smalley wrote:
-> On Sat, 2008-09-13 at 12:37 -0700, Andrew Morton wrote:
-> > On Sat, 13 Sep 2008 10:15:43 +1000 (EST) James Morris <jmorris@namei.org> wrote:
-> > 
-> > > On Fri, 12 Sep 2008, Andrew Morton wrote:
-> > > 
-> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
-> > > > > > Subject		: /proc/net bug related to selinux
-> > > > > > Submitter	: Andrew Morton <akpm@linux-foundation.org>
-> > > > > > Date		: 2008-09-04 17:45 (9 days old)
-> > > > > > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
-> > > > > 
-> > > > > I think this might be a regression caused by namespace changes which we 
-> > > 
-> > > By which I mean, this was caused by a non-SELinux change to the upstream 
-> > > kernel many, many eons ago.
-> > 
-> > hm, seems that 2.6.24 is OK but 2.6.25 is not.  I must have missed the
-> > bug when testing 2.6.25-based kernels.
-> > 
-> > I started a git bisection search but after half an hour I hit bad
-> > bisection breakage: a complete machine hang in fib_rules_init().
-> > 
-> > > > > addressed in SELinux policy.  Which distro version & policy version is 
-> > > > > this seen with?
-> > > > > 
-> > > > 
-> > > > FC5 on x86_32 and FC6 on x86_64.
-> > > 
-> > > As mentioned in the bugzilla, any related avc messages would be useful.
-> > 
-> > 2.6.25 dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
-> > /var/log/messages: http://userweb.kernel.org/~akpm/messages-sony.txt
-> > 
-> > The latter includes this:
-> > 
-> > Sep 13 12:32:43 sony kernel: SELinux:  class key not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class dccp_socket not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class memprotect not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class peer not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class capability2 not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class dir not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class chr_file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class blk_file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class fifo_file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission recvfrom in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission sendto in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class netif not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class netif not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission ingress in class netif not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission egress in class netif not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission setkeycreate in class process not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission setsockcreate in class process not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission setfcap in class capability not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission polmatch in class association not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission flow_in in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission flow_out in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission forward_in in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission forward_out in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux: the above unknown classes and permissions will be denied
-> > Sep 13 12:32:44 sony kernel: type=1403 audit(1221309118.644:3): policy loaded auid=4294967295 ses=4294967295
-> > Sep 13 12:32:44 sony kernel: type=1400 audit(1221334321.726:4): avc:  denied  { audit_write } for  pid=400 comm="hwclock" capability=29 scontext=system_u:system_r:hwclock_t:s0 tcontext=system_u:system_r:hwclock_t:s0 tclass=capability
-> > 
-> > 
-> > Why am I seeing this on two machines and two vanilla-installed distros
-> > but nobody else is reporting it?
+On Sun, 14 Sep 2008 11:16:41 -0400, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> Hi Atsushi,
 > 
-> What we actually need to see is the output of:
-> /sbin/ausearch -i -m AVC -sv no
+> On Sun, Sep 14, 2008 at 10:30:32PM +0900, Atsushi Nemoto wrote:
+> > The map_to_7segment.h provides generic 7segment LED mappings and is
+> > designed to be used by other drivers.  Moving it to common area will
+> > make it more usable.
+> > 
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> > Signed-off-by: Henk Vergonet <henk.vergonet@gmail.com>
 > 
-> However, the most likely explanation is simply that when /proc/net was
-> changed from being a directory to being a symlink to /proc/self/net,
-> that introduced an additional permission check on accesses
-> of /proc/net/<whatever>, namely the read check on the symlink itself.
-> And since that check wasn't happening on /proc/net accesses with older
-> kernels, older policies didn't allow it.
-> 
-> As to why others haven't reported it, I expect that they have updated
-> their policies to newer ones that allow the necessary access.  The fact
-> that legacy distros wouldn't have such updated policies isn't surprising
-> - they don't push updates to those distros for new kernels.  FC5 and FC6
-> are both EOL'd, right?
-> 
-> In any event, we didn't change anything in SELinux - the change was
-> elsewhere (in the proc/net implementation).  Don't blame the messenger
-> please.
+> Should we also export this header to userspace and install it with other
+> kernel headers?
 
-BTW, if the explanation above is correct, then a user can allow this
-permission in their own policy by creating a local policy module and
-inserting it, ala:
-$ cat fixprocnet.te
-policy_module(fixprocnet, 1.0)
-require {
-        attribute domain;
-        type proc_net_t;
-}
-# Allow all domains to read the /proc/net symlink.
-allow domain proc_net_t:lnk_file read;
+Well, yes.  I think so.  It helps writing userspace programs which use
+sysfs files.  But for now I have no such plan, so I'm OK either
+with/without the export.
 
-$ make -f /usr/share/selinux/devel/Makefile fixprocnet.pp
-$ /usr/sbin/semodule -i fixprocnet.pp
-
-Requires selinux-policy-devel to be installed.
-
--- 
-Stephen Smalley
-National Security Agency
-
+---
+Atsushi Nemoto
