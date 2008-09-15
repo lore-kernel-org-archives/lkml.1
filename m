@@ -1,87 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756062AbYIOQae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYIOQeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756062AbYIOQae (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 12:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbYIOQaF
+	id S1755908AbYIOQeo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 12:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYIOQed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 12:30:05 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:58387 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755934AbYIOQaD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 12:30:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fNkOp5lhYMwapq/urHtrRSoxfwYEXOf+FNOuR0Jet9eXO8AYoE+n9U5l/lDwrzwiDK
-         Rss8h0u7ituDbavu9GIFJCgWsnEqBjwcGHDLr9HTFBrQafY2h6TKwmW0XPmbTysyn2xp
-         rU5mrQV0EVSXani+KVONf5zL9MQXctLzEs2FA=
-Date: Mon, 15 Sep 2008 20:30:16 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: do_boot_cpu - check for ESR apic register
-	presence before touching
-Message-ID: <20080915163016.GC23798@lenovo>
-References: <20080915150518.GA23798@lenovo> <86802c440809150912r222b399eg552208646decd9d4@mail.gmail.com> <20080915162240.GB23798@lenovo> <86802c440809150925y583916b9sf97d73cb630469bc@mail.gmail.com>
+	Mon, 15 Sep 2008 12:34:33 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:45142 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754456AbYIOQec (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 12:34:32 -0400
+Date: Mon, 15 Sep 2008 17:34:21 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Jared Hulbert <jaredeh@gmail.com>
+Cc: Greg Ungerer <gerg@snapgear.com>, Linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>, tim.bird@am.sony.com,
+       cotte@de.ibm.com, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Message-ID: <20080915163421.GA13631@shareable.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440809150925y583916b9sf97d73cb630469bc@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <6934efce0809121452kd20deb6m268715f6ed83a71e@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Yinghai Lu - Mon, Sep 15, 2008 at 09:25:14AM -0700]
-| On Mon, Sep 15, 2008 at 9:22 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > [Yinghai Lu - Mon, Sep 15, 2008 at 09:12:37AM -0700]
-| > | On Mon, Sep 15, 2008 at 8:05 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | > We should check first if there is ESR register before read/write it.
-| > | >
-| > | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-| > | > ---
-| > | >
-| > | > Please review and test if possible. Thanks.
-| > | >
-| > | > Index: linux-2.6.git/arch/x86/kernel/smpboot.c
-| > | > ===================================================================
-| > | > --- linux-2.6.git.orig/arch/x86/kernel/smpboot.c        2008-09-14 21:49:36.000000000 +0400
-| > | > +++ linux-2.6.git/arch/x86/kernel/smpboot.c     2008-09-15 18:30:37.000000000 +0400
-| > | > @@ -893,8 +893,10 @@ do_rest:
-| > | >                /*
-| > | >                 * Be paranoid about clearing APIC errors.
-| > | >                */
-| > | > -               apic_write(APIC_ESR, 0);
-| > | > -               apic_read(APIC_ESR);
-| > | > +               if (APIC_INTEGRATED(apic_version[phys_apicid])) {
-| > | > +                       apic_write(APIC_ESR, 0);
-| > | > +                       apic_read(APIC_ESR);
-| > | > +               }
-| > | >        }
-| > | >
-| > | >        /*
-| > | >
-| > |
-| > | maybe unrelated. Do we need to keep apic_version array?
-| > |
-| > | YH
-| > |
-| >
-| > as I see ACPI/MP parsing code use it - actually I think we could
-| > bring another variable - but don't think it worth it. Anyway
-| > we have to get APIC info from these tables and save it somwhere
-| > maybe in this array or maybe in another variable. Or you mean
-| > anything else that I missed?
-| 
-| one apic_version or boot_cpu_apic_version could be enough.
-| 
-| YH
-|
+Jared Hulbert wrote:
+> >> > What kind of NOR you using?  That is not what I measure with fast
+> >> > synchronous burst NOR's.
+> >>
+> >> I think the "fast" in "fast synchronous" gives it away :-)
+> >>
+> >> I'm using Spansion MirrorBit S29GL128N, which reads at about 0.6 MByte/s.
+> >
+> > By the way, what speeds do you get on fast synchronous burst NORs - and
+> > which chips are those?
+> 
+> I am only familiar with the Numonyx product line up.
+> 
+> If you are using a GL, you'll probably find our P33 a good fit and at
+> competitive prices to GL as I understand it.  That's I think 50Mhz.
 
-Yinghai I didn't check it - if you find it convenient -
-I'll not object against... Maciej?
+What's a GL?  Never heard of it - all I can think of is OpenGL :-)
 
-		- Cyrill -
+I'm using a Sigma Designs 862x media processor.  It clocks at 166MHz
+to main RAM, has an ARM internally to run Linux, and the intensive
+work happens in coprocessors.  The NOR is not on the RAM bus, it's on
+a "peripheral bus".  About the only thing I know about the bus is it's
+16 bits wide - I have the schematic, but only the board supplier has
+access to Sigma chip documentation.
+
+> A rule of thumb is to say that copying to RAM will reduce this value
+> less than 50% because RAM should be at least a little faster than NOR.
+
+In our case, RAM is at least 100x faster :-)
+
+> Nevertheless, If you can't use a simple calculation like this to
+> explain the numbers then you have a poorly configured bus timings or
+> have your cache off.
+
+I'm not sure if cache is an option with this device - but would it
+make a difference anyway?  Launching executables like Busybox - those
+are much larger than the cache anyway, so launch time is dominated by
+bulk streaming copy speed.  Thanks for the idea, I'll look into
+whether it's possible to access this 'peripheral bus' through the
+ARM's cache and see if that speeds up streaming read time.
+
+> So, If you are only getting 0.6MB/s out of your NOR..... You're
+> using it wrong.
+
+Interesting, thanks.  I'm not sure it's possible to change the way NOR
+is being used with this chip, and it'll be a while before it's
+economical to replace the board with a new design.
+
+This is all very interesting - I had no prior experience with NOR, so
+didn't know that 0.6MB/s was slow.  It's fast compared with older
+EEPROMs after all, and had imagined that people wanting fast flash
+would use NAND.
+
+On looking at the datasheet, I see it's quite a lot faster.  I'm
+suspecting the Sigma Designs perpheral bus and the way it's wired up
+not doing it any favours.  We already have the weirdness that we have
+to patch the Linux CFI-0002 MTD code: the CPU locks up when polling
+the erase status byte, until erase is finished.  Unfortunately this is
+difficult to change now - I'm programming hardware which is already
+out in the field and cannot be redesigned.
+
+Thanks for your thoughts.
+
+-- Jamie
