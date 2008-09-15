@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYIOAto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbYIOA4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754988AbYIOAto (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 20:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYIOAt3
+	id S1755070AbYIOA4i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 20:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYIOA4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 20:49:29 -0400
-Received: from fmailhost01.isp.att.net ([204.127.217.101]:39123 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYIOAtV (ORCPT
+	Sun, 14 Sep 2008 20:56:23 -0400
+Received: from fmailhost02.isp.att.net ([204.127.217.102]:40121 "EHLO
+	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753389AbYIOA4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 20:49:21 -0400
+	Sun, 14 Sep 2008 20:56:18 -0400
 X-Originating-IP: [70.157.0.38]
-Date: Sun, 14 Sep 2008 19:49:12 -0500
+Date: Sun, 14 Sep 2008 19:56:10 -0500
 From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org,
+To: jeff@garzik.org, Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] atl2: add atl2 driver
-Message-ID: <20080914194912.286c30b8@osprey.hogchain.net>
+Subject: [PATCH][CORRECTED] atl2: add atl2 driver
+Message-ID: <20080914195610.1fd9dab8@osprey.hogchain.net>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
 Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
  gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
@@ -44,9 +43,11 @@ From: Chris Snook <csnook@redhat.com>
 Driver for Atheros L2 10/100 network device. Includes necessary
 changes for Kconfig, Makefile, and pci_ids.h.
 
-Sighed-off-by: Chris Snook <csnook@redhat.com>
+Signed-off-by: Chris Snook <csnook@redhat.com>
 Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 ---
+
+Changed "Sighed-off-by" to "Signed-off-by" for Chris' entry.
 
 If this file is too large for vger, the full patch may be obtained from
 ftp://ftp.hogchain.net/pub/linux/attansic/atlx/0001-atl2-add-atl2-driver.patch
