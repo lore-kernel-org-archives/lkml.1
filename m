@@ -1,175 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbYIOMgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYIOMqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbYIOMgY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 08:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYIOMgM
+	id S1754639AbYIOMqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 08:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYIOMqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 08:36:12 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:33688 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753342AbYIOMgK (ORCPT
+	Mon, 15 Sep 2008 08:46:44 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:8257 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbYIOMqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 08:36:10 -0400
-Message-ID: <48CE5684.4000506@de.ibm.com>
-Date: Mon, 15 Sep 2008 14:35:16 +0200
-From: Thomas Klein <osstklei@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 15 Sep 2008 08:46:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=yDjWCVfE+wseloUSp1GSdiwcM7M3TJwYnhMiNzsoHPoTai4lcS52Njxr9UYQME1ntF
+         XNFJQIDIEXFT19JjYRpSpSh+CqnCudxMPcLU4Zf9U+IDLLqk3WPtF5AIG5sf5Xw6E9tC
+         yP2mMCvjLpfbJSU/wZhDc6BAYQ6JJV8sTLlkI=
+Message-ID: <ac9c93b10809150546w7644316bk53122b0ce5021ff4@mail.gmail.com>
+Date: Mon, 15 Sep 2008 14:46:41 +0200
+From: "Frans Meulenbroeks" <fransmeulenbroeks@gmail.com>
+To: "Rob Landley" <rob@landley.net>
+Subject: Re: [PATCH] init: bzip2 or lzma -compressed kernels and initrds
+Cc: "Willy Tarreau" <w@1wt.eu>, "Alain Knaff" <alain@knaff.lu>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200809142037.48204.rob@landley.net>
 MIME-Version: 1.0
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-CC: linux-ppc <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-rt <linux-rt-users@vger.kernel.org>, netdev@vger.kernel.org,
-       themann@de.ibm.com, tklein@de.ibm.com, raisch@de.ibm.com,
-       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
-       tinytim@us.ibm.com
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
- hardirq preemption
-References: <20080915100406.342e027a@bull.net>
-In-Reply-To: <20080915100406.342e027a@bull.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200809062119.m86LJ5Of026101@hitchhiker.org.lu>
+	 <20080907054831.GA2244@1wt.eu> <200809142037.48204.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+2008/9/15 Rob Landley <rob@landley.net>:
+> On Sunday 07 September 2008 00:48:31 Willy Tarreau wrote:
+>> Hi Alain,
+>> > +config KERNEL_LZMA
+>> > +       bool "LZMA"
+>> > +       help
+>> > +         The most recent compression algorithm.
+>> > +    Its ratio is best, decompression speed is between the other
+>> > +    2. Compression is slowest.
+>> > +    The kernel size is about 33 per cent smaller with lzma,
+>> > +    in comparison to gzip.
+>>
+>> isn't memory usage in the same range as bzip2 ?
+>
+> Last I checked it was more.  (I very vaguely recall somebody saying 16 megs
+> working space back when this was first submitted to busybox, but that was a
+> few years ago...)
+>
+> A quick Google found a page that benchmarks them.  Apparently it depends
+> heavily on which compression option you use:
+>
+> http://tukaani.org/lzma/benchmarks
+>
 
-we are a bit worried about putting this into the mainstream part of non real
-time linux. There interrupts work perfectly fine, and it was a bit of a
-challenge to get there for all cases / configurations / machines.
+[...]
 
-Could you try to enable these changes only for RT-Linux via a real-time
-kconfig switch? This way we make sure we don't break the scheme for
-eHEA / eHCA.
+Apologies if I'm sidetracking the discussion, but I'd like to coin a remark.
 
-Regards,
-Jan-Bernd, Christoph
+For kernel/ramfsimage etc the best choice is the one that has the
+fastest decompression (info on tukaani.org says gzip).
+Rationale: as it uncompresses faster the system will boot faster.
 
+Of course this only holds if the background memory can hold that
+image. For disk based systems, I assume this is not a problem at all,
+but for embedded systems with all software in flash a higher
+compression ration (e.g. lzma) can just make the difference between
+fit and not fit (so in those cases lzma could just make your day).
 
-Sebastien Dugue wrote:
-> WARNING: HACK - HACK - HACK
-> 
->   Under the RT kernel (with hardirq preemption) the eHEA driver hangs right
-> after booting. Fiddling with the hardirqs and softirqs priorities allows to
-> run a bit longer but as soon as the network gets under load, the hang
-> returns. After investigating, it appears that the driver is loosing interrupts.
-> 
->   To make a long story short, looking at the code, it appears that the XICS
-> maps all its interrupts to level sensitive interrupts (I don't know if it's the
-> reality or if it's due to an incomplete implementation - no datasheets
-> available to check) and use the fasteoi processing flow.
-> 
->   When entering the low level handler, level sensitive interrupts are masked,
-> then eio'd in interrupt context and then unmasked at the end of hardirq
-> processing.
-> That's fine as any interrupt comming in-between will still be processed since
-> the kernel replays those pending interrupts.
-> 
->   However, it appears that the eHEA interrupts are behaving as edge sensitive
-> interrupts and are routed through the XICS which process those as level
-> sensitive using the fasteoi handler __OR__ the XICS loses interrupts when they
-> are masked.
-> 
->   Therefore the masking done in the handler causes any interrupt happening while
-> in the handler to be lost.
-> 
->   So this patch maps the interrupts being requested through
-> ibmebus_request_irq() as edge sensitive interrupts (this concerns both the eHEA
-> and the eHCA - only users of ibmebus_request_irq()) and changes the way edge
-> interrupts are processed by the fasteoi handler.
-> 
->   It works for the eHEA, dunno for the eHCA.
-> 
->   So, unless all the designers of the XICS & eHEA have been shot to keep it
-> a secret, could someone knowledgeable shed some light on this issue.
-> 
->   Thanks,
-> 
->   Sebastien.
-> 
-> Not-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-> ---
->  arch/powerpc/kernel/ibmebus.c |   11 ++++++++++-
->  kernel/irq/chip.c             |    5 +++--
->  kernel/irq/manage.c           |    9 ++++++---
->  3 files changed, 19 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-> index 9971159..5200323 100644
-> --- a/arch/powerpc/kernel/ibmebus.c
-> +++ b/arch/powerpc/kernel/ibmebus.c
-> @@ -41,6 +41,7 @@
->  #include <linux/kobject.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/interrupt.h>
-> +#include <linux/irq.h>
->  #include <linux/of.h>
->  #include <linux/of_platform.h>
->  #include <asm/ibmebus.h>
-> @@ -213,11 +214,19 @@ int ibmebus_request_irq(u32 ist, irq_handler_t handler,
->  			void *dev_id)
->  {
->  	unsigned int irq = irq_create_mapping(NULL, ist);
-> +	struct irq_desc *desc;
-> +	int ret;
->  
->  	if (irq == NO_IRQ)
->  		return -EINVAL;
->  
-> -	return request_irq(irq, handler, irq_flags, devname, dev_id);
-> +	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
-> +
-> +	desc = irq_desc + irq;
-> +	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-> +	desc->status |= IRQ_TYPE_EDGE_RISING;
-> +
-> +	return ret;
->  }
->  EXPORT_SYMBOL(ibmebus_request_irq);
->  
-> diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-> index b7b397a..6d366ca 100644
-> --- a/kernel/irq/chip.c
-> +++ b/kernel/irq/chip.c
-> @@ -430,7 +430,7 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
->  	action = desc->action;
->  	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
->  						 IRQ_DISABLED)))) {
-> -		desc->status |= IRQ_PENDING;
-> +		desc->status |= IRQ_PENDING | IRQ_MASKED;
->  		if (desc->chip->mask)
->  			desc->chip->mask(irq);
->  		goto out;
-> @@ -439,9 +439,10 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
->  	desc->status |= IRQ_INPROGRESS;
->  	/*
->  	 * In the threaded case we fall back to a mask+eoi sequence:
-> +	 * excepted for edge interrupts which are not masked.
->  	 */
->  	if (redirect_hardirq(desc)) {
-> -		if (desc->chip->mask)
-> +		if (desc->chip->mask && !(desc->status & IRQ_TYPE_EDGE_BOTH))
->  			desc->chip->mask(irq);
->  		goto out;
->  	}
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 3bffa20..3e39c71 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -788,9 +788,12 @@ static void do_hardirq(struct irq_desc *desc)
->  		thread_simple_irq(desc);
->  	else if (desc->handle_irq == handle_level_irq)
->  		thread_level_irq(desc);
-> -	else if (desc->handle_irq == handle_fasteoi_irq)
-> -		thread_fasteoi_irq(desc);
-> -	else if (desc->handle_irq == handle_edge_irq)
-> +	else if (desc->handle_irq == handle_fasteoi_irq) {
-> +		if (desc->status & IRQ_TYPE_EDGE_BOTH)
-> +			thread_edge_irq(desc);
-> +		else
-> +			thread_fasteoi_irq(desc);
-> +	} else if (desc->handle_irq == handle_edge_irq)
->  		thread_edge_irq(desc);
->  	else
->  		thread_do_irq(desc);
+Side note: although I think the conclusion at the tukaani website
+holds, the data themselves are questionable.
+I guess this is done on the internal hard disk of the laptop (this is
+not specified). It would be better to do this on a ramfs to avoid
+effects from data still being in the buffer cache (or not yet it).
 
+Also the actual time in the tests is spent on three things: read from
+disk, decompress, write to disk. (i'll only talk about decompress
+here, guess an additional second or so to compress is not that
+important).
+You can argue that the latter is a constant as the same amount of data
+is written, but the first one (the read time) depends on the actual
+amount of data and the transfer rate of the device.
+In case of slower devices it could well be that higher compression
+yields a smaller image. If the reduction in read time is bigger than
+the additional cost for the slower decompress, the net effect still
+would be a win when it comes to boot time.
+
+and finally: I've seen substantial timing differences when comparing
+algorithms on different architectures (arm/mips/x86), so processor
+might also make a difference on what is best. (and so will the
+compiler).
+
+FM
