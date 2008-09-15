@@ -1,202 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757107AbYIOVd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYIOVlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757107AbYIOVd6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 17:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756153AbYIOVdD
+	id S1756805AbYIOVlS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 17:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbYIOVlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 17:33:03 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38087 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756920AbYIOVc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 17:32:59 -0400
-Date: Mon, 15 Sep 2008 15:28:43 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
-       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: [RFC v5][PATCH 1/8] Create syscalls: sys_checkpoint,
-	sys_restart
-Message-ID: <20080915202843.GB28683@us.ibm.com>
-References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu> <1221347167-9956-2-git-send-email-orenl@cs.columbia.edu>
+	Mon, 15 Sep 2008 17:41:08 -0400
+Received: from ptb-relay02.plus.net ([212.159.14.146]:58200 "EHLO
+	ptb-relay02.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754132AbYIOVlH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 17:41:07 -0400
+Message-ID: <48CED670.40105@yahoo.com>
+Date: Mon, 15 Sep 2008 22:41:04 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1221347167-9956-2-git-send-email-orenl@cs.columbia.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Corentin Chary <corentincj@iksaif.net>,
+       acpi4asus-user@lists.sourceforge.net
+Subject: Re: Turning off camera also kills card reader on EeePC 900
+References: <fa.ynuVPnbW9HmrQpG9wbWk/u+hqkw@ifi.uio.no> <fa.HT4htA0oryTT1h7ADNggfgkJnyY@ifi.uio.no> <fa.5D0cM9TkJ80O2GfXhZm3n4hc+GI@ifi.uio.no> <fa.1xyAj/9KUcq9nDwCEVhSHc5KBBs@ifi.uio.no> <fa.jr7R0e2XSjOS0yWom34xSWH95yM@ifi.uio.no>
+In-Reply-To: <fa.jr7R0e2XSjOS0yWom34xSWH95yM@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 3dd8bdff1ab1b6b0194d06b9e3989080
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> Create trivial sys_checkpoint and sys_restore system calls. They will
-> enable to checkpoint and restart an entire container, to and from a
-> checkpoint image file descriptor.
+Alan Jenkins wrote:
+> Sitsofe Wheeler wrote:
+>>
+>> Alan Jenkins wrote:
+>>
+>>> The "HC died" message is interesting.  Sounds like the controller for
+>>> these two USB devices stops working.  Maybe try unloading and reloading
+>>> the ehci module?  I don't think I can help any more though.
+>>
+>> I compiled the kernel without module support so unless there's some 
+>> sysfs trick that can be done...
+>>
+> Well, since you ask :-P.  Here's an equivalent incantation.  I hope it's 
+> not too brittle.  Don't forget to unmount the SD card first.
 > 
-> The syscalls take a file descriptor (for the image file) and flags as
-> arguments. For sys_checkpoint the first argument identifies the target
-> container; for sys_restart it will identify the checkpoint image.
+> cd /sys/module/ehci_hcd/drivers/pci:ehci_hcd
+> echo -n 0000:00:1d.7 | sudo tee unbind; echo -n 0000:00:1d.7 | sudo tee 
+> bind
 > 
-> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+> The magic number is the PCI ID for the USB Host Controller, taken from 
+> your error message.
+> 
+> If the manual "bind" works you should then see a symlink, "0000:00:1d.7" 
+> in that directory.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Unfortunately when the SD card disappears so do the typical shell 
+commands (as that's the device I'm booting off). I was left having to 
+use source to look at the contents of things in /sys when the SD card died.
 
-thanks,
--serge
+>>> - It might be necessary to compare with the pre-installed OS
+>>>  - Is the pre-installed kernel any better (files might be under
+>>> /proc/acpi/asus instead)?  I guess you might not have the time or
+>>> resources to test that though.
+>>
+>> The Xandros 2.6.21.4-eeepc install has the following files in 
+>> /proc/acpi/asus/
+>> brn camera cardr cpufv disp hdps init type wlan
+>>
+>> I have no idea what cpufv, disp, hdps, init or type are. Doing echo 1 
+>> > camera && echo 0 > camera under this setup does NOT disappear the SD 
+>> card.
+> Rats.  So there is some secret the mainline driver is missing :-(.
 
-> ---
->  arch/x86/kernel/syscall_table_32.S |    2 +
->  checkpoint/Kconfig                 |   11 +++++++++
->  checkpoint/Makefile                |    5 ++++
->  checkpoint/sys.c                   |   41 ++++++++++++++++++++++++++++++++++++
->  include/asm-x86/unistd_32.h        |    2 +
->  include/linux/syscalls.h           |    2 +
->  init/Kconfig                       |    2 +
->  kernel/sys_ni.c                    |    4 +++
->  8 files changed, 69 insertions(+), 0 deletions(-)
->  create mode 100644 checkpoint/Kconfig
->  create mode 100644 checkpoint/Makefile
->  create mode 100644 checkpoint/sys.c
+Looks it.
+
+>> Additionally brn seems to really represent the current LCD brightness 
+>> (whereas it does not on a stock kernel and seems to always be set to -19)
+> It might have bitrotted on stock kernels?  The newer interface is under 
+> /sys/class/backlight.
+
+Ah I see - the stuff in there is correct. Does that mean that brn should 
+quietly disappear now this alternative interface is present?
+
+>> and the hotkeys (e.g. for brightness) seem to respond far more quickly 
+>> than the stock kernel too.
+> Heh heh.  I know all too much about that.  It's a problem with the ACPI 
+> Embedded Controller driver, a hardware bug which triggered a regression 
+> in 2.6.25.
 > 
-> diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-> index d44395f..5543136 100644
-> --- a/arch/x86/kernel/syscall_table_32.S
-> +++ b/arch/x86/kernel/syscall_table_32.S
-> @@ -332,3 +332,5 @@ ENTRY(sys_call_table)
->  	.long sys_dup3			/* 330 */
->  	.long sys_pipe2
->  	.long sys_inotify_init1
-> +	.long sys_checkpoint
-> +	.long sys_restart
-> diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
-> new file mode 100644
-> index 0000000..ffaa635
-> --- /dev/null
-> +++ b/checkpoint/Kconfig
-> @@ -0,0 +1,11 @@
-> +config CHECKPOINT_RESTART
-> +	prompt "Enable checkpoint/restart (EXPERIMENTAL)"
-> +	def_bool n
-> +	depends on X86_32 && EXPERIMENTAL
-> +	help
-> +	  Application checkpoint/restart is the ability to save the
-> +	  state of a running application so that it can later resume
-> +	  its execution from the time at which it was checkpointed.
-> +
-> +	  Turning this option on will enable checkpoint and restart
-> +	  functionality in the kernel.
-> diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-> new file mode 100644
-> index 0000000..07d018b
-> --- /dev/null
-> +++ b/checkpoint/Makefile
-> @@ -0,0 +1,5 @@
-> +#
-> +# Makefile for linux checkpoint/restart.
-> +#
-> +
-> +obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o
-> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-> new file mode 100644
-> index 0000000..375129c
-> --- /dev/null
-> +++ b/checkpoint/sys.c
-> @@ -0,0 +1,41 @@
-> +/*
-> + *  Generic container checkpoint-restart
-> + *
-> + *  Copyright (C) 2008 Oren Laadan
-> + *
-> + *  This file is subject to the terms and conditions of the GNU General Public
-> + *  License.  See the file COPYING in the main directory of the Linux
-> + *  distribution for more details.
-> + */
-> +
-> +#include <linux/sched.h>
-> +#include <linux/kernel.h>
-> +
-> +/**
-> + * sys_checkpoint - checkpoint a container
-> + * @pid: pid of the container init(1) process
-> + * @fd: file to which dump the checkpoint image
-> + * @flags: checkpoint operation flags
-> + *
-> + * Returns positive identifier on success, 0 when returning from restart
-> + * or negative value on error
-> + */
-> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
-> +{
-> +	pr_debug("sys_checkpoint not implemented yet\n");
-> +	return -ENOSYS;
-> +}
-> +/**
-> + * sys_restart - restart a container
-> + * @crid: checkpoint image identifier
-> + * @fd: file from which read the checkpoint image
-> + * @flags: restart operation flags
-> + *
-> + * Returns negative value on error, or otherwise returns in the realm
-> + * of the original checkpoint
-> + */
-> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
-> +{
-> +	pr_debug("sys_restart not implemented yet\n");
-> +	return -ENOSYS;
-> +}
-> diff --git a/include/asm-x86/unistd_32.h b/include/asm-x86/unistd_32.h
-> index d739467..88bdec4 100644
-> --- a/include/asm-x86/unistd_32.h
-> +++ b/include/asm-x86/unistd_32.h
-> @@ -338,6 +338,8 @@
->  #define __NR_dup3		330
->  #define __NR_pipe2		331
->  #define __NR_inotify_init1	332
-> +#define __NR_checkpoint		333
-> +#define __NR_restart		334
-> 
->  #ifdef __KERNEL__
-> 
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index d6ff145..edc218b 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -622,6 +622,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
->  asmlinkage long sys_eventfd(unsigned int count);
->  asmlinkage long sys_eventfd2(unsigned int count, int flags);
->  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
-> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
-> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
-> 
->  int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
-> 
-> diff --git a/init/Kconfig b/init/Kconfig
-> index c11da38..fd5f7bf 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -779,6 +779,8 @@ config MARKERS
-> 
->  source "arch/Kconfig"
-> 
-> +source "checkpoint/Kconfig"
-> +
->  config PROC_PAGE_MONITOR
->   	default y
->  	depends on PROC_FS && MMU
-> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-> index 08d6e1b..ca95c25 100644
-> --- a/kernel/sys_ni.c
-> +++ b/kernel/sys_ni.c
-> @@ -168,3 +168,7 @@ cond_syscall(compat_sys_timerfd_settime);
->  cond_syscall(compat_sys_timerfd_gettime);
->  cond_syscall(sys_eventfd);
->  cond_syscall(sys_eventfd2);
-> +
-> +/* checkpoint/restart */
-> +cond_syscall(sys_checkpoint);
-> +cond_syscall(sys_restart);
-> -- 
-> 1.5.4.3
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+> I'm currently running... it claims to be 2.6.27-rc4 but it might be 
+> 2.6.27-rc5 or something in between... which includes a fix.  I'm not 
+> confident that they haven't broken it again since then.  The problem is 
+> there are just so many different types of buggy EC's.  "Fixes" for some 
+> buggy hardware break other buggy hardware.  Very nasty.
+
+Sigh. I think I've seen those posts ( 
+http://thread.gmane.org/gmane.linux.acpi.devel/32779/focus=33442 ? ) and 
+hadn't fully comprehended what you were fighting against. Doesn't this 
+just lead to DMI based quirks?
+
+>>>  - The source code is... a 2Gb+ rar file someone would have to download
+>>> and pick apart.
+>>
+>> Does anyone know if the archives on
+>> http://support.asus.com/download/download_item_4.aspx?product=20&model=Eee%20PC%20900/Linux&SLanguage=en-us&os=5 
+>> (release dates appear to be 5th September 2008) are actually any 
+>> different?
+>>
+> Why do you say that?  Are the filesizes suspiciously identical?
+
+I wish I could say - for some reason every option to download the source 
+code in the dropdown on http://eeepc.asus.com/global/download.htm goes 
+to a 404 page. I can't say I'm looking forward to downloading 2.6Gbytes 
+on this network connection regardless.
+
+--
+Sitsofe
