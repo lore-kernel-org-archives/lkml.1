@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYIOJPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbYIOJSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753949AbYIOJPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 05:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYIOJPk
+	id S1754199AbYIOJSQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 05:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbYIOJSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 05:15:40 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47316 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbYIOJPj (ORCPT
+	Mon, 15 Sep 2008 05:18:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41170 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYIOJSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 05:15:39 -0400
-Subject: Re: [PATCH] sysfs: fix deadlock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20080914220208.GF27080@wotan.suse.de>
-References: <20080910113717.GB16811@wotan.suse.de>
-	 <1221046892.30429.85.camel@twins.programming.kicks-ass.net>
-	 <20080910114755.GA9696@elte.hu> <20080910121217.GA16013@elte.hu>
-	 <20080910144812.GB18644@wotan.suse.de>
-	 <1221058864.30429.291.camel@twins.programming.kicks-ass.net>
-	 <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu>
-	 <20080911104323.GB23775@wotan.suse.de> <20080912092411.GB10305@elte.hu>
-	 <20080914220208.GF27080@wotan.suse.de>
-Content-Type: text/plain
-Date: Mon, 15 Sep 2008 11:15:08 +0200
-Message-Id: <1221470108.7351.0.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Sep 2008 05:18:01 -0400
+Date: Mon, 15 Sep 2008 11:19:25 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+Message-ID: <20080915091925.GB1787@elf.ucw.cz>
+References: <20080912083113.GA1625@elf.ucw.cz> <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de> <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-09-15 at 00:02 +0200, Nick Piggin wrote:
+On Sun 2008-09-14 12:15:04, Thomas Gleixner wrote:
+> On Sun, 14 Sep 2008, Pavel Machek wrote:
+> > On Sun 2008-09-14 10:51:04, Thomas Gleixner wrote:
+> > > On Sun, 14 Sep 2008, Pavel Machek wrote:
+> > > > > It _does_ happen with mainline 2.6.27-rc6.
+> > > > 
+> > > > s2ram hs problem in mainline 2.6.26, too. (Different problem: no
+> > > > ammount pressing shift helps there.) nohz=off cures it, too.
+> > > 
+> > > Ok, so it's not a regression.
+> > > 
+> > > Is the problem in the suspend path or in the resume ?
+> > 
+> > During resume, on both 2.6.26 and 2.6.27-rc6. (27-rc6 actually resumes
+> > if I keep hitting shift, and I get "sleepy" system after that --
+> > cursor does not blink, but machine can be used -- as long as I keep
+> > hitting keys).
+> 
+> Hmm. Can you please provide the output of /proc/timer_list when the
+> system is in that "sleepy" state.
 
-> Well thanks to Peter as well. Actually I don't suppose this will throw
-> off the lockstat statistics a bit? (although I guess serious lockstat
-> profiling might not have prove locking turned on?).
+-rc5 seems to work ok... is there some patch I should try to revert
+first?
 
-It will actually - /me cribs it on his todo-when-getting-back-home list.
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
