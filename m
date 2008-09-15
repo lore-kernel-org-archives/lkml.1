@@ -1,75 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbYIOM5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYIONHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbYIOM5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 08:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYIOM5H
+	id S1754822AbYIONHQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 09:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYIONHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 08:57:07 -0400
-Received: from pih-relay04.plus.net ([212.159.14.17]:55166 "EHLO
-	pih-relay04.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbYIOM5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 08:57:06 -0400
-X-Greylist: delayed 2204 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Sep 2008 08:57:06 EDT
-Message-ID: <48CE52EC.9060505@yahoo.com>
-Date: Mon, 15 Sep 2008 13:19:56 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
-MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Turning off camera also kills card reader on EeePC 900
-References: <48CE217A.1080409@tuffmail.co.uk>
-In-Reply-To: <48CE217A.1080409@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 15 Sep 2008 09:07:01 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:65472 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753396AbYIONHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 09:07:00 -0400
+Subject: Re: [Bug #11500] /proc/net bug related to selinux
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: James Morris <jmorris@namei.org>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+In-Reply-To: <20080913123722.e238ae2a.akpm@linux-foundation.org>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	 <SpS7rta8n4.A.i9G.ZcsyIB@albercik>
+	 <alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
+	 <20080912152443.c4e59f42.akpm@linux-foundation.org>
+	 <alpine.LRH.1.10.0809131012310.13073@tundra.namei.org>
+	 <20080913123722.e238ae2a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 15 Sep 2008 09:05:26 -0400
+Message-Id: <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 6cf9085fe8957900c6af018ee3d4893e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Firstly, I understand these kill-switches are supposed to be persistent
-> over reboots.  You should check that the SD card stays disabled when you
-> reboot.
 
-The settings are persistent (so changing a camera value that is 0 to 1 
-will show the camera as being enabled if you go to the BIOS). However 
-the SD card will be present at reboot.
+On Sat, 2008-09-13 at 12:37 -0700, Andrew Morton wrote:
+> On Sat, 13 Sep 2008 10:15:43 +1000 (EST) James Morris <jmorris@namei.org> wrote:
+> 
+> > On Fri, 12 Sep 2008, Andrew Morton wrote:
+> > 
+> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
+> > > > > Subject		: /proc/net bug related to selinux
+> > > > > Submitter	: Andrew Morton <akpm@linux-foundation.org>
+> > > > > Date		: 2008-09-04 17:45 (9 days old)
+> > > > > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
+> > > > 
+> > > > I think this might be a regression caused by namespace changes which we 
+> > 
+> > By which I mean, this was caused by a non-SELinux change to the upstream 
+> > kernel many, many eons ago.
+> 
+> hm, seems that 2.6.24 is OK but 2.6.25 is not.  I must have missed the
+> bug when testing 2.6.25-based kernels.
+> 
+> I started a git bisection search but after half an hour I hit bad
+> bisection breakage: a complete machine hang in fib_rules_init().
+> 
+> > > > addressed in SELinux policy.  Which distro version & policy version is 
+> > > > this seen with?
+> > > > 
+> > > 
+> > > FC5 on x86_32 and FC6 on x86_64.
+> > 
+> > As mentioned in the bugzilla, any related avc messages would be useful.
+> 
+> 2.6.25 dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
+> /var/log/messages: http://userweb.kernel.org/~akpm/messages-sony.txt
+> 
+> The latter includes this:
+> 
+> Sep 13 12:32:43 sony kernel: SELinux:  class key not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  class dccp_socket not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  class memprotect not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  class peer not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  class capability2 not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class dir not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class file not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class chr_file not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class blk_file not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission open in class fifo_file not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class node not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class node not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission recvfrom in class node not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission sendto in class node not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class netif not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class netif not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission ingress in class netif not defined in policy
+> Sep 13 12:32:43 sony kernel: SELinux:  permission egress in class netif not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission setkeycreate in class process not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission setsockcreate in class process not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission setfcap in class capability not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission polmatch in class association not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission flow_in in class packet not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission flow_out in class packet not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission forward_in in class packet not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux:  permission forward_out in class packet not defined in policy
+> Sep 13 12:32:44 sony kernel: SELinux: the above unknown classes and permissions will be denied
+> Sep 13 12:32:44 sony kernel: type=1403 audit(1221309118.644:3): policy loaded auid=4294967295 ses=4294967295
+> Sep 13 12:32:44 sony kernel: type=1400 audit(1221334321.726:4): avc:  denied  { audit_write } for  pid=400 comm="hwclock" capability=29 scontext=system_u:system_r:hwclock_t:s0 tcontext=system_u:system_r:hwclock_t:s0 tclass=capability
+> 
+> 
+> Why am I seeing this on two machines and two vanilla-installed distros
+> but nobody else is reporting it?
 
-> Next, these settings are also exposed in the BIOS configuration screen,
-> right?  If it's the same as my 701 then the BIOS will have a separate
-> option for disabling the cardreader.  So you could see if the platform
-> driver "camera" switch is simply disabling and enabling the two switches
-> together.
+What we actually need to see is the output of:
+/sbin/ausearch -i -m AVC -sv no
 
-The option for disabling the cardreader is indeed separate from the one 
-to disable the camera. There is, however a switch for disabling USB in 
-the BIOS too...
+However, the most likely explanation is simply that when /proc/net was
+changed from being a directory to being a symlink to /proc/self/net,
+that introduced an additional permission check on accesses
+of /proc/net/<whatever>, namely the read check on the symlink itself.
+And since that check wasn't happening on /proc/net accesses with older
+kernels, older policies didn't allow it.
 
-> Or if there's only a BIOS option for the camera, and not the SD card,
-> then you should test whether it disables the SD card.
+As to why others haven't reported it, I expect that they have updated
+their policies to newer ones that allow the necessary access.  The fact
+that legacy distros wouldn't have such updated policies isn't surprising
+- they don't push updates to those distros for new kernels.  FC5 and FC6
+are both EOL'd, right?
 
-OK there are separate switches in the BIOS for disabling (among other 
-things) the Camera, CardReader, and USB Ports.
-
-Doing echo 0 > camera when camera is already 0 does nothing. The value 
-in cardr remains 1.
-Doing echo 0 > camera when camera is 1 seemingly results in the SD card 
-disappearing too (ehci_hcd 0000:00:1d.7: HC died; cleaning up). cardr 
-value remains 1. The CardReader and USB Ports options will be in the 
-enabled state when looking in the BIOS after rebooting. The Camera 
-option will be in the disabled state in the BIOS.
-Doing echo 1 > camera after the SD card  has disappeared (but before 
-rebooting) in the above step will result in the SD card seemingly coming 
-back at a different address and the kernel reporting 'irq 23: nobody 
-cared (try booting with the "irqpoll" option)' and a usb_hcd_irq backtrace.
-Doing echo 0 > cardr when cardr is 1 results in the SD card disappearing 
-and an ext3 error being printed on the console. The CardReader option 
-will be in the disabled state in the BIOS after rebooting.
-Doing echo 0 > camera after the SD card  has disappeared (but before 
-rebooting) in the above step will result in 'ehci_hcd 0000:00:1d.7: HC 
-died; cleaning up' being printed.
+In any event, we didn't change anything in SELinux - the change was
+elsewhere (in the proc/net implementation).  Don't blame the messenger
+please.
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+Stephen Smalley
+National Security Agency
+
