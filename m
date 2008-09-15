@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbYIOSwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbYIOSwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbYIOSwB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 14:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYIOSvu
+	id S1756168AbYIOSwc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 14:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYIOSwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 14:51:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45074
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753484AbYIOSvt (ORCPT
+	Mon, 15 Sep 2008 14:52:21 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:53888 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753761AbYIOSwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 14:51:49 -0400
-Date: Mon, 15 Sep 2008 11:51:43 -0700 (PDT)
-Message-Id: <20080915.115143.62965548.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: mark@mtfhpc.demon.co.uk, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       joy@entuzijast.net
-Subject: Re: Allow 8250 to work on sparc.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080915172211.6751bb17@the-village.bc.nu>
-References: <20080912.211854.102505246.davem@davemloft.net>
-	<Pine.LNX.4.61.0809151507250.23201@mtfhpc.demon.co.uk>
-	<20080915172211.6751bb17@the-village.bc.nu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 15 Sep 2008 14:52:20 -0400
+Message-ID: <48CEAEBA.10208@linux.vnet.ibm.com>
+Date: Mon, 15 Sep 2008 11:51:38 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linuxfoundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix declaration of cgroup_mm_owner_callbacks()
+References: <B21AC749-D9D3-4B6C-B490-091F06F78E41@google.com>
+In-Reply-To: <B21AC749-D9D3-4B6C-B490-091F06F78E41@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Mon, 15 Sep 2008 17:22:11 +0100
+Paul Menage wrote:
+> +static inline void cgroup_mm_owner_callbacks(struct task_struct *old,
+> +                         struct task_struct *new) {}
 
-> > At the user level, there is no difference between a sun zilog serial port, 
-> > an 8250 serial port or a USB serial port so these should be allocated 
-> > using the same allocation system.
-> 
-> That isn't strictly true.
-> 
-> > For me, it would also simplify the issue of trying to work what devive to 
-> > look for when I plug in a new USB serial port device. It would be the new 
-> > /dev/ttyS<x> to appear in /dev.
-> 
-> Naming is a private matter for udev anyway, independant of numbering for
-> major/minor
+This is confusing coding style, I'd prefer to see the implementation after the
+function declaration
 
-True.  But I think there is some merit in having such a generic
-allocator for the current users of the ttySX minor space.
+Looks good to me otherwise.
+
+-- 
+	Balbir
