@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbYIOSeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYIOSmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756485AbYIOSeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 14:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbYIOScU
+	id S1754842AbYIOSmb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 14:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYIOSmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 14:32:20 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:10054 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbYIOScR (ORCPT
+	Mon, 15 Sep 2008 14:42:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:1166 "EHLO
+	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752687AbYIOSmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 14:32:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=vIRI67bRuu8A2TodVtkCX4dtKw96RLCp2bopSy2Oh4tECFjyIg7fl7A4u8MWb7nqfE
-         86r29wRwHZzQukTZhQKFgQgG/ChoC6v7ONA15ZZ35lgRnSAzkXssxwrNj174DsPGZ/8P
-         7lPYZKyzxhKhZvAal3PixxPy+7W8/j+TPcsLU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 00/10] ide-cd: use generic ide_issue_pc
-Date: Mon, 15 Sep 2008 20:30:50 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <1221392158-3848-1-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1221392158-3848-1-git-send-email-petkovbb@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Mon, 15 Sep 2008 14:42:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:from:to:content-type:
+	content-transfer-encoding:mime-version:subject:date:cc:x-mailer;
+	b=HjoQlmZEWU4ZlG7XpEa9n8vrePHx6AlJhAUxz2l8fJYq4XdfkhgC/kZpDxVrl6wh1
+	F6818wtKsakVAwHLQ/ktw==
+Message-Id: <B21AC749-D9D3-4B6C-B490-091F06F78E41@google.com>
+From: Paul Menage <menage@google.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linuxfoundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809152030.51074.bzolnier@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: [PATCH] Fix declaration of cgroup_mm_owner_callbacks()
+Date: Mon, 15 Sep 2008 11:41:47 -0700
+Cc: linux-kernel@vger.kernel.org
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix declaration of cgroup_mm_owner_callbacks()
 
-Hi,
+The choice of real/dummy declaration for cgroup_mm_owner_callbacks()
+shouldn't be based on CONFIG_MM_OWNER, but on
+CONFIG_CGROUPS. Otherwise kernel/exit.c fails to compile when
+something other than a cgroups controller selects CONFIG_MM_OWNER
 
-On Sunday 14 September 2008 13:35:48 Borislav Petkov wrote:
-> Hi Bart,
-> 
-> here are some patches converting ide-cd to using ide_issue_pc. Next is
-> replacing cdrom_transfer_packet_command with ide_transfer_pc.
-> 
->  drivers/ide/ide-atapi.c  |   71 ++++++++++++++++++++++---------
->  drivers/ide/ide-cd.c     |  104 ++++++---------------------------------------
->  drivers/ide/ide-cd.h     |   30 +++++++++++++-
->  drivers/ide/ide-floppy.c |    2 +-
->  drivers/ide/ide-tape.c   |    2 +-
->  drivers/scsi/ide-scsi.c  |    3 +-
->  include/linux/ide.h      |    5 ++-
->  7 files changed, 102 insertions(+), 115 deletions(-)
+Signed-off-by: Paul Menage <menage@google.com>
 
-Thanks for finding time to work on this.  Overall it looks good
-and I applied some patches already (#1/2/4) but the rest would
-need some final recasting/polishing before they can go in (please
-see the individual replies for details).
+---
+include/linux/cgroup.h |   15 ++++++---------
+1 file changed, 6 insertions(+), 9 deletions(-)
 
-Bart
+Index: mmowner-mmotm-2008-09-10/include/linux/cgroup.h
+===================================================================
+--- mmowner-mmotm-2008-09-10.orig/include/linux/cgroup.h
++++ mmowner-mmotm-2008-09-10/include/linux/cgroup.h
+@@ -403,6 +403,9 @@ void cgroup_iter_end(struct cgroup *cgrp
+int cgroup_scan_tasks(struct cgroup_scanner *scan);
+int cgroup_attach_task(struct cgroup *, struct task_struct *);
+
++void cgroup_mm_owner_callbacks(struct task_struct *old,
++			       struct task_struct *new);
++
+#else /* !CONFIG_CGROUPS */
+
+static inline int cgroup_init_early(void) { return 0; }
+@@ -421,15 +424,9 @@ static inline int cgroupstats_build(stru
+	return -EINVAL;
+}
+
++static inline void cgroup_mm_owner_callbacks(struct task_struct *old,
++					     struct task_struct *new) {}
++
+#endif /* !CONFIG_CGROUPS */
+
+-#ifdef CONFIG_MM_OWNER
+-extern void
+-cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct  
+*new);
+-#else /* !CONFIG_MM_OWNER */
+-static inline void
+-cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct  
+*new)
+-{
+-}
+-#endif /* CONFIG_MM_OWNER */
+#endif /* _LINUX_CGROUP_H */
+
