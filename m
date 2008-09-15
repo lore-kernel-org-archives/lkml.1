@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbYIOR7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbYIOR7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbYIOR7e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 13:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYIOR70
+	id S1755850AbYIOR7t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 13:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYIOR7c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 13:59:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55601 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753670AbYIOR7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 13:59:25 -0400
-Message-ID: <48CEA1B1.50401@cs.helsinki.fi>
-Date: Mon, 15 Sep 2008 20:56:01 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] cgroups: don't depend on CONFIG_MM_OWNER
-References: <Pine.LNX.4.64.0809142037070.30252@melkki.cs.Helsinki.FI> <6599ad830809151055v10191becl2f528fa006902b40@mail.gmail.com>
-In-Reply-To: <6599ad830809151055v10191becl2f528fa006902b40@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 15 Sep 2008 13:59:32 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:53572 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754379AbYIOR7c (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 13:59:32 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Frank Mayhar <fmayhar@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27-rc6-mmotm0913 build error - suspect itimers-fix-itimer-many-thread-hang.patch
+In-Reply-To: Your message of "Mon, 15 Sep 2008 10:13:24 PDT."
+             <1221498804.19012.13.camel@bobble.smo.corp.google.com>
+From: Valdis.Kletnieks@vt.edu
+References: <48922.1221496161@turing-police.cc.vt.edu>
+            <1221498804.19012.13.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221501535_46396P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 15 Sep 2008 13:58:55 -0400
+Message-ID: <80040.1221501535@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+--==_Exmh_1221501535_46396P
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Paul Menage wrote:
-> On Sun, Sep 14, 2008 at 10:37 AM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
->> From: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> The revoke patches, for example, select CONFIG_MM_OWNER independently of
->> cgroups. Therefore, don't depend on CONFIG_MM_OWNER in cgroup specific code.
-> 
-> Yes, the existing code doesn't seem quite right - if !CONFIG_MM_OWNER
-> then we don't need to even define a trivial version of
-> cgroup_mm_owner_callbacks()
-> 
-> But your patch is too specific - tying the existance of
-> cgroup_mm_owner_callbacks() to the memory controller would break other
-> controllers (e.g. the memrlimit or swap controllers, which also want
-> to use it)
-> 
-> How about:
-> 
-> - any cgroup that needs mm-owner callbacks selects an option
-> CGROUP_MM_OWNER_CALLBACK
-> 
-> - CGROUP_MM_OWNER_CALLBACK selects MM_OWNER and triggers the
-> definition of a non-trivial cgroup_mm_owner_callbacks() function
+On Mon, 15 Sep 2008 10:13:24 PDT, Frank Mayhar said:
 
-Yeah, sounds good to me. I just want to be able to select 
-CONFIG_MM_OWNER separately for my revoke patches.
+> As it happens, my top-of-tree snapshot is missing this routine.  I'm
+> re-snapping it now but I think you're right that it's a merge issue wit=
+h
+> linux-next.  The fix, however, is trivial:  Replace the entire if block=
 
-		Pekka
+> with the line:
+> 	update_rlimit_cpu(rlim->rlim_cur);
+>=20
+> The above snippet becomes:
+>=20
+>        if (rc) =7B
+>                 for (i =3D 0; i < RLIM_NLIMITS; i++) =7B
+>                         rlim =3D current->signal->rlim + i;
+>                         initrlim =3D init_task.signal->rlim+i;
+>                         rlim->rlim_cur =3D min(rlim->rlim_max, initrlim=
+->rlim_cur);
+>                 =7D
+>                 update_rlimit_cpu(rlim->rlim_cur);
+>         =7D
+>=20
+> And double-check that linux/posix-timers.h is being =23included around
+> line 80.
+
+Yeah, it had the =23include already, and with the above fix, I actually g=
+ot a
+clean build of the kernel.  Boot testing will have to wait till tonight..=
+.
+
+Thanks for the help. :)
+
+--==_Exmh_1221501535_46396P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFIzqJfcC3lWbTT17ARAlKZAKCpwcBGYm4PDNF5xALyoKxQ80aLyACgpmbW
+/mXs1rR/0QpyaYEa0wPqprs=
+=KFS9
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221501535_46396P--
