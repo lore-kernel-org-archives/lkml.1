@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbYIOGUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYIOGli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbYIOGUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 02:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbYIOGUI
+	id S1754632AbYIOGli (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 02:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYIOGl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 02:20:08 -0400
-Received: from nocturne.unbit.it ([81.174.68.18]:35610 "EHLO smtp.unbit.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751683AbYIOGUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 02:20:07 -0400
-Subject: Re: [PATCH] xen: Fix for xen guest with mem > 3.7G
-From: Roberto De Ioris <roberto@unbit.it>
-Reply-To: roberto@unbit.it
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, jeremy@xensource.com,
-       linux-kernel@vger.kernel.org, Mirko Iannella <mirko@unbit.it>,
-       Alex Nixon <alex.nixon@citrix.com>
-In-Reply-To: <48CDFC10.8060906@goop.org>
-References: <1221333418.6036.9.camel@sirius> <48CC2C12.4080302@goop.org>
-	 <20080914132104.GB32106@elte.hu>  <48CD22CF.9030900@goop.org>
-	 <1221428593.6036.15.camel@sirius>  <48CDFC10.8060906@goop.org>
-Content-Type: text/plain
-Organization: Unbit
-Date: Mon, 15 Sep 2008 08:20:01 +0200
-Message-Id: <1221459601.6036.18.camel@sirius>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.23.91 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Sep 2008 02:41:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40908 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751257AbYIOGl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 02:41:28 -0400
+Date: Mon, 15 Sep 2008 08:41:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Frank Mayhar <fmayhar@google.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2.6.27-rc5 resubmit] Fix itimer/many thread hang.
+Message-ID: <20080915064106.GB15680@elte.hu>
+References: <1221238479.30136.2.camel@bobble.smo.corp.google.com> <20080914151404.GA28850@elte.hu> <20080914193140.728F56409D@pipsqueak.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080914193140.728F56409D@pipsqueak.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-09-14 at 23:09 -0700, Jeremy Fitzhardinge wrote:
-> Roberto De Ioris wrote:
-> > In this way you pass a 64bit integer to the function, but max_pfn in
-> > origin is still 32bit.
-> >
-> > max_pfn need to be 64bit to supporto more than 4GB
-> >   
+
+* Roland McGrath <roland@redhat.com> wrote:
+
+> > please uninline these functions.
 > 
-> No, a 32-bit pfn (page frame number) is sufficient for 2^44 bytes of
-> memory.  Does this patch work for you?
-> 
->     J
+> They are short and have only one caller.
 
+then they should be defined in the .c file which uses them.
 
-Ops, you are right, pfn is not in bytes ;)
+really, sched.h is large enough already and has lots of unnecessary 
+stuff in it.
 
-The patch works.
-
--- 
-Roberto De Ioris
-http://unbit.it
-JID: roberto@jabber.unbit.it
-
+	Ingo
