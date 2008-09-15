@@ -1,118 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbYIOSXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbYIOSZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbYIOSXF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 14:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIOSWy
+	id S1753769AbYIOSZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 14:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYIOSZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 14:22:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51271 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbYIOSWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 14:22:54 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Mon, 15 Sep 2008 14:20:31 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: Janne Grunau <j@jannau.net>, linux-kernel@vger.kernel.org,
-       Christoph Bartelmus <lirc@bartelmus.de>
-References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809131041.33717.stefan.bauer@cs.tu-chemnitz.de> <200809142355.38387.jwilson@redhat.com>
-In-Reply-To: <200809142355.38387.jwilson@redhat.com>
+	Mon, 15 Sep 2008 14:25:11 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:54964 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752104AbYIOSZK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 14:25:10 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+References: <48256.1221495403@turing-police.cc.vt.edu>
+Date: Mon, 15 Sep 2008 11:15:08 -0700
+In-Reply-To: <48256.1221495403@turing-police.cc.vt.edu> (Valdis Kletnieks's
+	message of "Mon, 15 Sep 2008 12:16:43 -0400")
+Message-ID: <m17i9dgtsj.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809151420.32130.jwilson@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Valdis.Kletnieks@vt.edu
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: 2.6.27-rc6-mmotm0913 build error - fs-sysfs-dirc-remove-unused-__sysfs_get_dentry.patch
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 September 2008 23:55:38 Jarod Wilson wrote:
-> On Saturday 13 September 2008 04:41:33 Stefan Bauer wrote:
-> > On Saturday 13 September 2008 02:26, Janne Grunau wrote:
-> > > On Friday 12 September 2008 18:24:33 Jarod Wilson wrote:
-> > > > > I just want to thank you very much for your work and give you my
-> > > > > Tested-By. Todays git (b2e9c18a32423310a309f94ea5a659c4bb264378)
-> > > > > works well here with lirc-0.8.3 userspace on a Pentium
-> > > > > 3/i815-system.
-> > > >
-> > > > Oh good! I haven't broken anything further w/my changes up to
-> > > > b2e9c18... ;) I've got another slew of updates to lirc_serial still
-> > > > pending though
-> > >
-> > > I hope I haven't broken anything with my lirc_dev changes. I doubt I'll
-> > > have a change to test it before monday.
-> >
-> > Unfortunately, you did. Commit ea74897 (port lirc to dynamic device
-> > numbers) broke things.
-> > This is what ea74897 and further (latest tested was dd13cc7) are telling
-> > me:
-> >
-> > $ insmod drivers/input/lirc/lirc_dev.ko
-> > $ insmod drivers/input/lirc/lirc_serial.ko
-> > insmod: error inserting 'drivers/input/lirc/lirc_serial.ko': -1
-> > Input/output error
-> > $ dmesg | tail
-> > lirc_dev: IR Remote Control driver registered, major 253
-> > lirc_serial: auto-detected active low receiver
-> > lirc_dev: lirc_register_driver: sample_rate: 0
-> > lirc_serial: register_chrdev failed!
-> >
-> >
-> > There has also been a compile issue in the meanwhile, introduced with
-> > 95efa30 (inb/outb and readb/writeb deal in u8 types), but this is gone
-> > with todays git pull :)
-> >
-> >
-> > I'll keep on testing (unfortunately only at weekends),
-> > regards, Stefan
+Valdis.Kletnieks@vt.edu writes:
+
+> Trying to build 2.6.27-rc6-mmotm0913 dies a horrid death:
 >
-> I'd hope to get around to some testing myself much earlier in the weekend,
-> but alas... Did just mix in a quick peed at lirc_i2c though:
+>   CC      fs/sysfs/dir.o
+> fs/sysfs/dir.c: In function sysfs_mv_dir:
+> fs/sysfs/dir.c:993: error: implicit declaration of function
+> __sysfs_get_dentry
+> fs/sysfs/dir.c:993: warning: assignment makes pointer from integer without a
+> cast
+> make[2]: *** [fs/sysfs/dir.o] Error 1
+> make[1]: *** [fs/sysfs] Error 2
+> make: *** [fs] Error 2
 >
-> ...
-> lirc_dev: IR Remote Control driver registered, major 247
-> bttv: driver version 0.9.17 loaded
-> bttv: using 8 buffers with 2080k (520 pages) each for capture
-> cx88/0: cx2388x v4l2 driver version 0.0.6 loaded
-> lirc_i2c: chip 0x10020 found @ 0x18 (Hauppauge IR)
-> lirc_dev: lirc_register_driver: sample_rate: 10
 >
-> No register_chrdev failure reported, everything looks the same as prior to
-> the dynamic dev num change (save the dev num, of course), and I've got a
-> /dev/lirc0, but I'm unable to see any IR signals (start up lircd, run irw,
-> press buttons on remote).
->
-> ...and I just took a quick look at lirc_i2c... The result from
-> lirc_register_driver() is never checked, whereas it is in the lirc_serial
-> case (which is where the register_chrdev error msg came from). Narf. So its
-> likely the same failure, just not noticed (will fix lirc_i2c in a sec).
+> Diagnosis: Andrew added fs-sysfs-dirc-remove-unused-__sysfs_get_dentry.patch,
+> but somebody (Eric? was touching a lot of sysfs) in linux-next.patch added a
+> new user in sysfs_mv_dir.
 
-So I've done a bit of work to fix up a few drivers so they properly check to 
-see that lirc_register_driver() actually succeeded, and then accidentally 
-stumbled onto the fix for the failure when merging some coverity-inspired 
-patches from Erik Hovland. lirc_dev.c's lirc_cdev_add() function had an 
-inverted kmalloc failure check. With that fixed, lirc_i2c appears to be 
-behaving for me now, although I can't actually check to be 100% certain until 
-I get home tonight.
+Thanks that is a very helpful diagnosis.
 
-...
-lirc_dev: IR Remote Control driver registered, major 240 
-lirc_i2c: probe 0x1a @ ivtv i2c driver #0: no
-lirc_i2c: probe 0x18 @ ivtv i2c driver #0: yes
-lirc_i2c: chip 0x10020 found @ 0x18 (Hauppauge IR)
-lirc_dev: lirc_register_driver: sample_rate: 10
-lirc_dev: driver lirc_i2c registered at minor number = 0
-lirc_dev (lirc_i2c[0]): poll thread started
-lirc_i2c: ir_attach: success (minor 0)
-...
+> Looks like people need to get on the same page about that patch?
 
-Fixes are in the git tree now for anyone else who wants to or is willing to 
-test. Will verify myself tonight w/lirc_i2c and lirc_mceusb2 at a minimum.
+Greg stopped halfway through merging my patchset earlier, so I'm
+guessing that is why __sysfs_get_dentry looked unused.  
 
--- 
-Jarod Wilson
-jarod@redhat.com
+As seen above I really did use that function ;) So a patch
+to remove it is the wrong thing.
 
+Eric
