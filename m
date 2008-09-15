@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbYIOXPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYIOXVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbYIOXPm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 19:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbYIOXPe
+	id S1756960AbYIOXVS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 19:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbYIOXVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 19:15:34 -0400
-Received: from elvis.franken.de ([193.175.24.41]:50934 "EHLO elvis.franken.de"
+	Mon, 15 Sep 2008 19:21:04 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:44188 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755142AbYIOXPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 19:15:34 -0400
-X-Greylist: delayed 4935 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Sep 2008 19:15:33 EDT
-Date: Mon, 15 Sep 2008 23:53:08 +0200
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080915215307.GA10340@alpha.franken.de>
-References: <20080915201749.GB3994@havoc.gtf.org> <20080915.132716.267218808.davem@davemloft.net> <20080915204543.GD3994@havoc.gtf.org> <20080915.141442.139271313.davem@davemloft.net>
+	id S1751945AbYIOXVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 19:21:03 -0400
+Date: Tue, 16 Sep 2008 00:20:57 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, apw@shadowen.org
+Subject: Re: [PATCH] Mark the correct zone as full when scanning zonelists
+Message-ID: <20080915232056.GA23031@csn.ul.ie>
+References: <20080911212550.GA18087@csn.ul.ie> <20080911144155.c70ef145.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20080915.141442.139271313.davem@davemloft.net>
+In-Reply-To: <20080911144155.c70ef145.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 02:14:42PM -0700, David Miller wrote:
-> Most of those changes were complete and utter CRAP.
+On (11/09/08 14:41), Andrew Morton didst pronounce:
+> On Thu, 11 Sep 2008 22:25:51 +0100
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > The for_each_zone_zonelist() uses a struct zoneref *z cursor when scanning
+> > zonelists to keep track of where in the zonelist it is. The zoneref that
+> > is returned corresponds to the the next zone that is to be scanned, not
+> > the current one as it originally thought of as an opaque list.
+> > 
+> > When the page allocator is scanning a zonelist, it marks zones that it
+> > temporarily full zones to eliminate near-future scanning attempts.
+> 
+> That sentence needs help.
+> 
+> > It uses
+> > the zoneref for the marking and consequently the incorrect zone gets marked
+> > full. This leads to a suitable zone being skipped in the mistaken belief
+> > it is full. This patch corrects the problem by changing zoneref to be the
+> > current zone being scanned instead of the next one.
+> 
+> Applicable to 2.6.26 as well, yes?
+> 
+> 
+> Someone reported a bug a few weeks ago which I think this patch will fix,
+> yes?  I don't remember who that was, nor do I recall the precise details
+> of what the userspace-visible (mis)behaviour was.
+> 
+> Are you able to fill in the gaps here? 
 
-thank you, but the fix I've sent (de2104x) isn't crap. The bug breaks the 
-current debian-installer for Cobalt Qube1, when it tries to get an
-IP address via dhcp. 
+I searched through the archives and couldn't find a bug report that this
+patch may be the fix to. However, I understand that the initial leader
+could have been a lot better.
 
-In my eyes it's a clean and good fix, but I don't care whether it appears
-in 2.6.27 or 2.6.28, because debian needs to backport it to 2.6.26
-anyway. But declaring bugfixes, which just fixes an very old bug, as
-utter crap isn't really nice.
-
-Thomas.
+> Put yourself in the position of
+> a poor little -stable maintainer scratching his head wondering ytf he
+> was sent this patch.
+> 
+> Thanks.
+> 
 
 -- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
