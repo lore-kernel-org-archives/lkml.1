@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbYIOU1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbYIOU1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbYIOU1F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 16:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbYIOU0x
+	id S1756453AbYIOU1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 16:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbYIOU1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 16:26:53 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:59222 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbYIOU0x (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 16:26:53 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: roel kluin <roel.kluin@gmail.com>
-Cc: ak@linux.intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH ?] ACPI: pr->id is unsigned
-In-Reply-To: Your message of "Mon, 15 Sep 2008 21:32:20 EDT."
-             <48CF0CA4.3090701@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <48CF0CA4.3090701@gmail.com>
+	Mon, 15 Sep 2008 16:27:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48686
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754453AbYIOU1W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 16:27:22 -0400
+Date: Mon, 15 Sep 2008 13:27:16 -0700 (PDT)
+Message-Id: <20080915.132716.267218808.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080915201749.GB3994@havoc.gtf.org>
+References: <20080913203548.GA2989@havoc.gtf.org>
+	<20080915.120917.36004302.davem@davemloft.net>
+	<20080915201749.GB3994@havoc.gtf.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1221510405_46396P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Mon, 15 Sep 2008 16:26:45 -0400
-Message-ID: <128370.1221510405@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1221510405_46396P
-Content-Type: text/plain; charset=us-ascii
+From: Jeff Garzik <jeff@garzik.org>
+Date: Mon, 15 Sep 2008 16:17:50 -0400
 
-On Mon, 15 Sep 2008 21:32:20 EDT, roel kluin said:
-> since pr->id is unsigned, shouldn't something like
-> the patch below be applied?
+> On Mon, Sep 15, 2008 at 12:09:17PM -0700, David Miller wrote:
+> > From: Jeff Garzik <jeff@garzik.org>
+> > Date: Sat, 13 Sep 2008 16:35:48 -0400
+> > 
+> > > Includes several fixes from my slice of the akpm patch pie.
+> > 
+> > Which of these have regression and/or bugzilla entries?
+> > 
+> > This is too much and I want to see it trimmed down.
+> 
+> What do you not want?  The two warning fixes (mlx4, cs89x0) akpm seemed
+> to want in 2.6.27, the 8139too change is cosmetic.  The other stuff is
+> critical AFAICS.
 
-> +	BUG_ON((pr->id >= nr_cpu_ids) || ((unsigned long)pr->id < 0));
+I'll take another look at the queue and try to give you some
+more specific feedback.
 
-Under what conditions will the clause "(unsigned long)pr->id < 0)" be true,
-and when will it be false?  What will any sane optimizing compiler do?
-
-And *sometimes*, the *real* bug is that pr->id should be a signed quantity,
-not an unsigned one, and the cast is just papering over the issue.
-
-In other words, the original line is almost certainly buggy.  However, this
-isn't the right fix.  Somebody who actually understands the code will have to
-decide what *should* be happening here (that's beyond my understanding of that
-code)...
-
-
---==_Exmh_1221510405_46396P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIzsUFcC3lWbTT17ARArJPAKCEnFhDVOCMxtQ86V2Q8qigQM3prwCfRGC8
-hoXD8gfILFmJ7egOBV7RcCg=
-=pL/0
------END PGP SIGNATURE-----
-
---==_Exmh_1221510405_46396P--
+I can think of about 3 or 4 entries on the posted regression
+list that might be appropriate, so I essentially expected to
+see that many commits, give or take one or two.
