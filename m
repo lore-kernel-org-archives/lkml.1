@@ -1,65 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYIOIAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYIOIEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYIOIAJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 04:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYIOH74
+	id S1755385AbYIOIEj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 04:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbYIOIEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 03:59:56 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:47115 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752486AbYIOH7z (ORCPT
+	Mon, 15 Sep 2008 04:04:21 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60404 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbYIOIEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 03:59:55 -0400
-X-Greylist: delayed 1648 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Sep 2008 03:59:55 EDT
-Date: Thu, 11 Sep 2008 13:50:09 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux/MIPS Development <linux-mips@linux-mips.org>,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: Re: [PATCH 0/3] Globally defining phys_addr_t
-Message-ID: <20080911115009.GA6715@linux-mips.org>
-References: <48C8D76B.10901@goop.org> <Pine.LNX.4.64.0809111202560.1545@anakin>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0809111202560.1545@anakin>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 15 Sep 2008 04:04:16 -0400
+Date: Mon, 15 Sep 2008 10:04:06 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+Cc: linux-ppc <linuxppc-dev@ozlabs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux-rt <linux-rt-users@vger.kernel.org>, netdev@vger.kernel.org,
+       themann@de.ibm.com, tklein@de.ibm.com, raisch@de.ibm.com,
+       jean-pierre.dion@bull.net, gilles.carry@ext.bull.net,
+       tinytim@us.ibm.com
+Subject: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+ hardirq preemption
+Message-ID: <20080915100406.342e027a@bull.net>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 11, 2008 at 12:03:36PM +0200, Geert Uytterhoeven wrote:
 
-> On Thu, 11 Sep 2008, Jeremy Fitzhardinge wrote:
-> > This is a repost of a little 3-patch series which Andrew has been
-> > carrying in -mm.  It cleans up the definition of phys_addr_t to make it
-> > kernel-wide rather than x86-specific, and fixes up PFN_PHYS() to use it
-> > to avoid address truncation.
-> > 
-> > We currently have a few workarounds for this problem in the tree, but
-> > Alex found another bug caused by PFN_PHYS(), so it's probably better if
-> > you bring these patches into tip.git for now.
-> > 
-> > PowerPC also defines a phys_addr_t with the same meaning as x86; the
-> > powerpc arch maintainers are happy with these patches.
-> 
-> If I'm not mistaking, this is also true for some MIPS machines.
+WARNING: HACK - HACK - HACK
 
-Jeremy probably missed it because it's called phys_t on MIPS.  It's usually
-the same size as unsigned long but a few of the 32-bit Alchemy SOCs have
-peripherals placed outside of the 32-bit physical address space so for
-those CONFIG_64BIT_PHYS_ADDR will be defined and phys_t be unsigned long
-long and used for some pagetable stuff to map those devices into the 32-bit
-virtual address space.
+  Under the RT kernel (with hardirq preemption) the eHEA driver hangs right
+after booting. Fiddling with the hardirqs and softirqs priorities allows to
+run a bit longer but as soon as the network gets under load, the hang
+returns. After investigating, it appears that the driver is loosing interrupts.
 
-UM uses a phys_t for its pagetables.
+  To make a long story short, looking at the code, it appears that the XICS
+maps all its interrupts to level sensitive interrupts (I don't know if it's the
+reality or if it's due to an incomplete implementation - no datasheets
+available to check) and use the fasteoi processing flow.
 
-A single data type for everybody is enough.  phys_addr_t or phys_t I don't
-care; I went for phys_t because it's shorter, less to type.
+  When entering the low level handler, level sensitive interrupts are masked,
+then eio'd in interrupt context and then unmasked at the end of hardirq
+processing.
+That's fine as any interrupt comming in-between will still be processed since
+the kernel replays those pending interrupts.
 
-  Ralf
+  However, it appears that the eHEA interrupts are behaving as edge sensitive
+interrupts and are routed through the XICS which process those as level
+sensitive using the fasteoi handler __OR__ the XICS loses interrupts when they
+are masked.
+
+  Therefore the masking done in the handler causes any interrupt happening while
+in the handler to be lost.
+
+  So this patch maps the interrupts being requested through
+ibmebus_request_irq() as edge sensitive interrupts (this concerns both the eHEA
+and the eHCA - only users of ibmebus_request_irq()) and changes the way edge
+interrupts are processed by the fasteoi handler.
+
+  It works for the eHEA, dunno for the eHCA.
+
+  So, unless all the designers of the XICS & eHEA have been shot to keep it
+a secret, could someone knowledgeable shed some light on this issue.
+
+  Thanks,
+
+  Sebastien.
+
+Not-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+---
+ arch/powerpc/kernel/ibmebus.c |   11 ++++++++++-
+ kernel/irq/chip.c             |    5 +++--
+ kernel/irq/manage.c           |    9 ++++++---
+ 3 files changed, 19 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+index 9971159..5200323 100644
+--- a/arch/powerpc/kernel/ibmebus.c
++++ b/arch/powerpc/kernel/ibmebus.c
+@@ -41,6 +41,7 @@
+ #include <linux/kobject.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/interrupt.h>
++#include <linux/irq.h>
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #include <asm/ibmebus.h>
+@@ -213,11 +214,19 @@ int ibmebus_request_irq(u32 ist, irq_handler_t handler,
+ 			void *dev_id)
+ {
+ 	unsigned int irq = irq_create_mapping(NULL, ist);
++	struct irq_desc *desc;
++	int ret;
+ 
+ 	if (irq == NO_IRQ)
+ 		return -EINVAL;
+ 
+-	return request_irq(irq, handler, irq_flags, devname, dev_id);
++	ret = request_irq(irq, handler, irq_flags, devname, dev_id);
++
++	desc = irq_desc + irq;
++	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
++	desc->status |= IRQ_TYPE_EDGE_RISING;
++
++	return ret;
+ }
+ EXPORT_SYMBOL(ibmebus_request_irq);
+ 
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index b7b397a..6d366ca 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -430,7 +430,7 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+ 	action = desc->action;
+ 	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
+ 						 IRQ_DISABLED)))) {
+-		desc->status |= IRQ_PENDING;
++		desc->status |= IRQ_PENDING | IRQ_MASKED;
+ 		if (desc->chip->mask)
+ 			desc->chip->mask(irq);
+ 		goto out;
+@@ -439,9 +439,10 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
+ 	desc->status |= IRQ_INPROGRESS;
+ 	/*
+ 	 * In the threaded case we fall back to a mask+eoi sequence:
++	 * excepted for edge interrupts which are not masked.
+ 	 */
+ 	if (redirect_hardirq(desc)) {
+-		if (desc->chip->mask)
++		if (desc->chip->mask && !(desc->status & IRQ_TYPE_EDGE_BOTH))
+ 			desc->chip->mask(irq);
+ 		goto out;
+ 	}
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 3bffa20..3e39c71 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -788,9 +788,12 @@ static void do_hardirq(struct irq_desc *desc)
+ 		thread_simple_irq(desc);
+ 	else if (desc->handle_irq == handle_level_irq)
+ 		thread_level_irq(desc);
+-	else if (desc->handle_irq == handle_fasteoi_irq)
+-		thread_fasteoi_irq(desc);
+-	else if (desc->handle_irq == handle_edge_irq)
++	else if (desc->handle_irq == handle_fasteoi_irq) {
++		if (desc->status & IRQ_TYPE_EDGE_BOTH)
++			thread_edge_irq(desc);
++		else
++			thread_fasteoi_irq(desc);
++	} else if (desc->handle_irq == handle_edge_irq)
+ 		thread_edge_irq(desc);
+ 	else
+ 		thread_do_irq(desc);
+-- 
+1.6.0.1.308.gede4c
+
