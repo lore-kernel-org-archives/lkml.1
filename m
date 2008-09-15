@@ -1,163 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbYIOPir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYIOPmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbYIOPir (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 11:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbYIOPij
+	id S1755527AbYIOPmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 11:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbYIOPmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 11:38:39 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:62474 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753417AbYIOPij (ORCPT
+	Mon, 15 Sep 2008 11:42:10 -0400
+Received: from rn-out-0910.google.com ([64.233.170.188]:2768 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754078AbYIOPmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 11:38:39 -0400
-Date: Mon, 15 Sep 2008 08:36:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Marco Stornelli <marco.stornelli@coritel.it>
-Cc: Linux AVR32 <kernel@avr32linux.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] avr32: added mem kernel command line option support
-Message-Id: <20080915083622.062c4b5b.randy.dunlap@oracle.com>
-In-Reply-To: <48CE7FA8.2020409@coritel.it>
-References: <48CE33D7.1040203@coritel.it>
-	<20080915074042.f5059467.randy.dunlap@oracle.com>
-	<48CE77C6.90307@coritel.it>
-	<20080915080517.5d75721e.randy.dunlap@oracle.com>
-	<48CE7FA8.2020409@coritel.it>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Sep 2008 11:42:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=KHaa0gSkj7/soCHKAHSeN+5SJPwNw0wSSYwNeolWhRhA+Pl2M6DgorKIZM36xDg33W
+         unwcplrda7BG730zncy4mPuua4/KwEvXnZ/LyjqhAfS9wEq8xYhi/9QBoWV+qF9JcTTx
+         BF2fjGaw5G6SuBtccmeYxmevwTILOF898GSR4=
+Message-ID: <37219a840809150842l3a6260j4b57f14026e5c40a@mail.gmail.com>
+Date: Mon, 15 Sep 2008 11:42:06 -0400
+From: "Michael Krufky" <mkrufky@linuxtv.org>
+To: "Julian Scheel" <julian@jusst.de>
+Subject: Re: [linux-dvb] Multiproto API/Driver Update
+Cc: "Andy Walls" <awalls@radix.net>, linux-dvb@linuxtv.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Manu Abraham" <abraham.manu@gmail.com>
+In-Reply-To: <48CDF7A1.2020905@jusst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <466109.26020.qm@web46101.mail.sp1.yahoo.com>
+	 <d9def9db0809090833v16d433a1u5ac95ca1b0478c10@mail.gmail.com>
+	 <48CC42D8.8080806@gmail.com>
+	 <d9def9db0809131556i6f0d07aci49ab288df38a8d5e@mail.gmail.com>
+	 <48CC4D35.3000003@gmail.com>
+	 <d9def9db0809140838k2ced5211gc2690e76f53a98be@mail.gmail.com>
+	 <48CD43C1.2090902@linuxtv.org> <48CD5D19.1070700@gmail.com>
+	 <1221425146.4278.30.camel@morgan.walls.org>
+	 <48CDF7A1.2020905@jusst.de>
+X-Google-Sender-Auth: 96758adbc77c792b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Sep 2008 17:30:48 +0200 Marco Stornelli wrote:
-
-> From: Marco Stornelli <marco.stornelli@gmail.com>
-> 
-> Fixed the type of size and start, now they are resource_size_t.
-> Fixed the double pointer parameter, now it's only a single pointer.
-> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
-> ---
-> --- linux-2.6.26.5/arch/avr32/kernel/setup.c.orig    2008-09-15 11:30:00.000000000 +0200
-> 
-> +++ linux-2.6.26.5/arch/avr32/kernel/setup.c 2008-09-15
-> 11:30:17.000000000 +0200
-> @@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
-> }
-> early_param("fbmem", early_parse_fbmem);
-> 
-> +/*
-> + * Pick out the memory size. We look for mem=size@start,
-> + * where start and size are "size[KkMmGg]"
-> + */
-> +static int __init early_mem(char *p)
-> +{
-> + resource_size_t size, start;
-> +
-> + start = system_ram->start;
-> + size = memparse(p, &p);
-> + if (**p == '@')
-> + start = memparse(p + 1, &p);
-
-Lots of whitespace damage here.  Your first patch looked OK
-for whitespace, so something changed....
-
-
-> +
-> + system_ram->start = start;
-> + system_ram->end = system_ram->start + size - 1;
-> + return 0;
-> +}
-> +early_param("mem", early_mem);
-> +
-> static int __init parse_tag_core(struct tag *tag)
-> {
-> if (tag->hdr.size > 2) {
-> 
-> Randy Dunlap ha scritto:
-> > On Mon, 15 Sep 2008 16:57:10 +0200 Marco Stornelli wrote:
-> >
-> >   
-> >> If you see the above function early_parse_fbmem:
-> >>
-> >> static int __init early_parse_fbmem(char *p)
-> >> {
-> >> int ret;
-> >> unsigned long align;
-> >>
-> >> fbmem_size = memparse(p, &p);
-> >> .........
-> >>
-> >> where fbmem_size is a resource_size_t (u32 because avr32 is a 32-bit
-> >> architecture), so I used the same philosophy. Maybe I can remove
-> >> unsigned long and replace it with resource_size_t to be more uniform.
-> >>     
-> >
-> > Yes, I think that would be better.
-> >
-> > Thanks.
-> >
-> >   
-> >> Randy Dunlap ha scritto:
-> >>     
-> >>> On Mon, 15 Sep 2008 12:07:19 +0200 Marco Stornelli wrote:
-> >>>
-> >>>   
-> >>>       
-> >>>> From: Marco Stornelli <marco.stornelli@gmail.com>
-> >>>>
-> >>>> Added support for the mem kernel command line option
-> >>>> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
-> >>>> ---
-> >>>> --- setup.c.orig    2008-09-15 11:30:00.000000000 +0200
-> >>>> +++ setup.c    2008-09-15 11:30:17.000000000 +0200
-> >>>> @@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
-> >>>>  }
-> >>>>  early_param("fbmem", early_parse_fbmem);
-> >>>>  
-> >>>> +/*
-> >>>> + * Pick out the memory size.  We look for mem=size@start,
-> >>>> + * where start and size are "size[KkMm]"
-> >>>>     
-> >>>>         
-> >>>                                     [KkMmGg]
-> >>>
-> >>>   
-> >>>       
-> >>>> + */
-> >>>> +static int __init early_mem(char **p)
-> >>>> +{
-> >>>> +    unsigned long size, start;
-> >>>> +
-> >>>> +    start = system_ram->start;
-> >>>> +    size  = memparse(*p, p);
-> >>>>     
-> >>>>         
-> >>> memparse() returns an unsigned long long.  Is the truncation OK for avr32?
-> >>>
-> >>>   
-> >>>       
-> >>>> +    if (**p == '@')
-> >>>> +        start = memparse(*p + 1, p);
-> >>>> +
-> >>>> +    system_ram->start = start;
-> >>>> +    system_ram->end = system_ram->start + size - 1;
-> >>>> +    return 0;
-> >>>> +}
-> >>>> +early_param("mem", early_mem);
-> >>>> +
-> >>>>  static int __init parse_tag_core(struct tag *tag)
-> >>>>  {
-> >>>>      if (tag->hdr.size > 2) {
-> >>>> --
+On Mon, Sep 15, 2008 at 1:50 AM, Julian Scheel <julian@jusst.de> wrote:
+> Andy,
+>
+> just to clarify things a bit I'll give a short statement now.
+>
+> Andy Walls schrieb:
+>> Though I can't read much German, after looking at the jusst.de website I
+>> can't help but think that you as well have financial interests driving
+>> your actions.  If so, then your statements display quite a bit of
+>> hypocrisy.
+>>
+> The role of jusst technologies in the whole multiproto story is as
+> following:
+> The time when DVB-S2 came up this was of course of major interest for
+> jusst technologies, so we searched for people working on drivers. At
+> that not many people did seem to care about this stuff - but Manu did.
+> So we got in contact and tried to help him as much as we can, which
+> included making up connections to KNC1 for technical questions and
+> datasheets, provide a KNC1 testing board and later then give free
+> web/codespace to Manu.
+> Furthermore we of course did lots of testing of multiproto. But never we
+> did pay Manu for any of this work.
+> Reading that you should recognize that there can't be much financial
+> interests for Manu.
+>
+> Seeing that you impute hyprocrisy to Manu due to "facts" you don't have
+> proven in any way makes me a bit contemplative. I don't like being
+> political when talking about technical terms (which linuxtv in first
+> place should be about imho) - anyway this one time I will give a
+> somewhat political statement, too.
+> All you guys who are blaming Manu to do some wrong or bad stuff, what is
+> your point? - I see you searching quote where Manu did talk in a
+> somewhat unpolite manner just to blame him of being the wrong person
+> introducing a new API? - I have no interest in doing the same quoting
+> with your postings or the so called competitors postings, but I'd bed I
+> could quote almost any of you in a not less distracting manner than you
+> like to do with Manu.
+>> Manipulating (i.e. stalling) the timing of Multiproto being merged into
+>> the v4l-dvb tree or kernel, for you or your employer's gain, would be
+>> little different from the motivations you allege Steve of having.
+>>
+>> Since the major gripe I'm reading on the list "is that multiproto has
+>> taken too long" and since it seems to me the only thing that shook it
+>> loose was a competing proposal, please save the venom for when you
+>> actually have some clear moral high-ground to stand on.  I don't see it
+>> from here.
+>>
+> Using "taking too long" as an argument against an API proposal is really
+> interesting. What did you expect? - A quick shot which is not well
+> thought about wouldn't have be a good thing for anyone.
+> I'm absolutely fine if anyone would came up with real technical
+> arguments, but reading many postings so far I couldn't find much of such
+> statements.
+>> As for the technical superiority of either API proposal; that probably
+>> just doesn't matter.  I've seen policy/political decisions force
+>> suboptimal technical solutions at work time and time again.  If you
+>> really believe you have a superior product technically; then perhaps you
+>> should work to make it superior politically as well.  Mud-slinging can't
+>> be a good long term strategy toward that end.
+>>
+> To be political again: Thank you for blaming jusst being not interested
+> in proper technical solutions. What makes you thinking of this? - Just
+> the fact that you recognize jusst as a commercial company? Very interesting.
+>
+> I really have a feeling that many people here are mostly interested in
+> making politics instead of thinking about technical solutions which
+> makes all this a horrible topic for all that people who are interested
+> in a working solution (which Manu has proven to deliver) - mainly the users.
+>
+> So far this is my statement (in representation for jusst technologies)
+> for the moment.
 
 
----
-~Randy
-Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-http://linuxplumbersconf.org/
+Julien,
+
+In summary, the bottom line is this:
+
+Manu did a great job with the multiproto API, people were happy using
+it, and all of the LinuxDVB developer community was happy with the
+work that was done, and we all wanted to merge it ~ two years ago.
+
+Back then, Manu said that it wasnt ready, so for some time we waited
+for him in hopes that he would agree that it was ready for merge.
+
+As more months went by, Manu was asked if he would be merging his
+changes, and he kept answering to the effect of "it's not ready yet,
+but should be in a few weeks"
+
+Months and months and months went by since then, with an occasional
+ping to Manu, with the reply "not ready yet" ...
+
+Two years is a very long time to wait for a new API, especially
+considering that it was functional from the start.  It was looking
+like Manu may not have had any intention at all to merge his work into
+the master v4l/dvb development repository --  It should be not be
+surprising at all that Steven Toth felt the need to come up with his
+own solution.
+
+Steven posted a proposal for his API expansion solution, and he
+received positive feedback.  Immediately, Manu broke out of his
+silence and sent in a pull request.
+
+
+Is there malice here??  No.  There is development, and developers
+looking to move forward.  Nobody is at fault.
+
+
+I have posted the above just to clarify what the "politics" actually
+are, here.  The only real politics going around are those that are
+accusing others of politics themselves.
+
+Had Manu been willing to merge his work earlier, this would have all
+been a non-issue.  However, now there is an alternative proposal on
+the table, which appears to be more robust and may have more potential
+that the multiproto proposal.
+
+Does that mean multiproto is disqualified?   Absolutely not.
+
+Does the fact that multiproto was there first mean that it will be
+merged without question now that it is suddenly available?  No, not
+necessarily.
+
+What does it mean?  It means that now there are two proposals on the
+table.  Two ways to solve a problem using different ideas and methods.
+
+The end users that have piped into the discussion are mostly concerned
+with which API demonstration repository already contains support for
+their device.  This should have no bearing whatsoever on the decision
+of the linuxDVB API extension.  All drivers will be ported to
+whichever solution is decided upon.
+
+Now is the time to examine these solutions from a developer point of
+view, in terms of how this affects kernel developers and application
+developers alike.  There is no reason to rush into things just because
+a pull request has been made -- the outcome of this decision is highly
+important, and we will have to live with the decision for a good long
+time.
+
+Regards,
+
+Michael Krufky
