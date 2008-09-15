@@ -1,37 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIOA0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYIOAee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYIOA0E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Sep 2008 20:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYIOAZy
+	id S1754936AbYIOAee (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Sep 2008 20:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbYIOAeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 20:25:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51046 "EHLO ogre.sisk.pl"
+	Sun, 14 Sep 2008 20:34:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51075 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753375AbYIOAZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 20:25:53 -0400
+	id S1751777AbYIOAeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Sep 2008 20:34:24 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frederik Himpe <fhimpe@telenet.be>
-Subject: Re: XFS does not recognise mount options in 2.6.27-rc6
-Date: Mon, 15 Sep 2008 02:31:00 +0200
+To: "Steven Noonan" <steven@uplinklabs.net>
+Subject: Re: frustrating ath9k issues in 2.6.27-rc6-00036-ga551b98 (Linus pristine tree)
+Date: Mon, 15 Sep 2008 02:39:05 +0200
 User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-xfs@oss.sgi.com
-References: <pan.2008.09.14.18.53.20@telenet.be>
-In-Reply-To: <pan.2008.09.14.18.53.20@telenet.be>
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <f488382f0809121837n69cf4bc5i3dfa04cbf671957b@mail.gmail.com> <f488382f0809121917vaabfcre710c9e6d4f39a12@mail.gmail.com>
+In-Reply-To: <f488382f0809121917vaabfcre710c9e6d4f39a12@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809150231.01220.rjw@sisk.pl>
+Message-Id: <200809150239.05729.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 14 of September 2008, Frederik Himpe wrote:
-> In 2.6.27-rc6, XFS still does not recognise mount options like logbufs and 
-> others. Because of this, at boot time it fails to mount the partitions rw, 
-> making the system unusable.
+On Saturday, 13 of September 2008, Steven Noonan wrote:
+> I just had another incident where it disassociated and refused to
+> reassociate. I got about 100 of these in my dmesg (fixed by unloading
+> and reloading ath9k):
 
-Was 2.6.26 OK?
+Is this a regression from 2.6.26?
 
 Rafael
