@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbYIOEdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754073AbYIOEjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332AbYIOEdY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 00:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbYIOEdS
+	id S1754073AbYIOEjx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 00:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYIOEjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 00:33:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51538 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYIOEdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 00:33:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Steven Noonan <steven@uplinklabs.net>
-Subject: Re: frustrating ath9k issues in 2.6.27-rc6-00036-ga551b98 (Linus pristine tree)
-Date: Mon, 15 Sep 2008 06:38:10 +0200
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <f488382f0809121837n69cf4bc5i3dfa04cbf671957b@mail.gmail.com> <200809150239.05729.rjw@sisk.pl> <alpine.LNX.2.00.0809141800360.7280@alcarin.uplinklabs.net>
-In-Reply-To: <alpine.LNX.2.00.0809141800360.7280@alcarin.uplinklabs.net>
+	Mon, 15 Sep 2008 00:39:45 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:19008 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbYIOEjo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 00:39:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=LN4okbvBD747MsAmL1RxBgKdiaw1yccEMh2s2rQ3utcvumrBV4r6WpD0eUuLIg7muO
+         +/SW7n2oVUrTfbssrRL88HnnfxFx6L/dnS8xeuMxPnA8YhFKibYxyIH6UUb/XrBvV97h
+         vTeObhywMrL7WyCJqGYkwuaU5Z4SLAEI2rdeE=
+Message-ID: <aff5deaf0809142139v42ff0025ub1c3bb5cdda83c84@mail.gmail.com>
+Date: Sun, 14 Sep 2008 21:39:42 -0700
+From: "S K" <nospamnoham@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: Unable to find files in include/asm-arm in the Linus's tree
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080914205538.27e7b1d4.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809150638.10771.rjw@sisk.pl>
+References: <514e099a0809141825u34015891pa3f11267373ae818@mail.gmail.com>
+	 <20080914205538.27e7b1d4.randy.dunlap@oracle.com>
+X-Google-Sender-Auth: 30bd60636b01ab9a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 15 of September 2008, Steven Noonan wrote:
-> 
-> On Mon, 15 Sep 2008, Rafael J. Wysocki wrote:
-> 
-> > On Saturday, 13 of September 2008, Steven Noonan wrote:
-> > > I just had another incident where it disassociated and refused to
-> > > reassociate. I got about 100 of these in my dmesg (fixed by unloading
-> > > and reloading ath9k):
-> > 
-> > Is this a regression from 2.6.26?
-> > 
-> 
-> ath9k has been recently introduced (i.e. it's new to 2.6.27). So I'm not 
-> certain how to answer. Correct me if I'm wrong but a regression is a new  
-> bug for a specific component that did not surface in the previous release, 
-> correct?
+Thanks.
 
-Yes.
+-SK
 
-> But if the component didn't exist in the previous version, is it still a
-> regression? 
-
-No, it isn't considered as a regression.
-
-Thanks,
-Rafael
+On Sun, Sep 14, 2008 at 8:55 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Sun, 14 Sep 2008 18:25:55 -0700 S K wrote:
+>
+>> Hi,
+>>
+>>   I think the copy paste of the terminal will explain it better:
+>>
+>> $ git status
+>> # On branch master
+>> nothing to commit (working directory clean)
+>>
+>> $ cat .git/config
+>> [core]
+>>         repositoryformatversion = 0
+>>         filemode = true
+>>         bare = false
+>>         logallrefupdates = true
+>> [remote "origin"]
+>>         url = git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+>>         fetch = +refs/heads/*:refs/remotes/origin/*
+>> [branch "master"]
+>>         remote = origin
+>>         merge = refs/heads/master
+>>
+>> $ ls include/asm-arm/
+>> plat-s3c  plat-s3c24xx
+>>
+>> Where are the other files? I'm totally confused. Doesn't Linus's tree
+>> have the code for all archs?
+>>
+>> It obvious from the status I didn't delete them, but even a
+>> $ git reset --hard HEAD
+>> didn't help.
+>
+> Hi,
+>
+> Lots of arch-specific include/ directories were moved to arch/$ARCH/.
+> E.g., arch/arm/include/asm/ contains lots of files and a few sub-directories.
+>
+> ---
+> ~Randy
+> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> http://linuxplumbersconf.org/
+>
