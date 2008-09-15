@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbYIOOfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYIOOnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbYIOOfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 10:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYIOOfl
+	id S1754757AbYIOOnR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 10:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbYIOOnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 10:35:41 -0400
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:2307 "EHLO
-	anchor-post-34.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753425AbYIOOfk (ORCPT
+	Mon, 15 Sep 2008 10:43:03 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31767 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbYIOOnB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 10:35:40 -0400
-X-Greylist: delayed 567 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Sep 2008 10:35:39 EDT
-Date: Mon, 15 Sep 2008 15:26:06 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: David Miller <davem@davemloft.net>
-cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org, joy@entuzijast.net
-Subject: Re: Allow 8250 to work on sparc.
-In-Reply-To: <20080912.211854.102505246.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.61.0809151507250.23201@mtfhpc.demon.co.uk>
-References: <20080912.211854.102505246.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 15 Sep 2008 10:43:01 -0400
+Date: Mon, 15 Sep 2008 07:40:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Marco Stornelli <marco.stornelli@coritel.it>
+Cc: Linux AVR32 <kernel@avr32linux.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] avr32: added mem kernel command line option support
+Message-Id: <20080915074042.f5059467.randy.dunlap@oracle.com>
+In-Reply-To: <48CE33D7.1040203@coritel.it>
+References: <48CE33D7.1040203@coritel.it>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Sep 2008, David Miller wrote:
-> Working on this and testing it also uncovered another portability bug.
-> The uart_port structure uses an "unsigned int" for the "ioport" member,
-> but even I/O ports in PCI devices are 64-bit on sparc64, so the high
-> bits were being chopped off when 8250 PCI cards were tested.  The fix
-> is to use "unsigned long" for this type and that's what the first patch
-> does.
->
+On Mon, 15 Sep 2008 12:07:19 +0200 Marco Stornelli wrote:
 
-In the long term, should a generic serial port minor number allocater be 
-used by all serial ports?
+> From: Marco Stornelli <marco.stornelli@gmail.com>
+> 
+> Added support for the mem kernel command line option
+> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+> ---
+> --- setup.c.orig    2008-09-15 11:30:00.000000000 +0200
+> +++ setup.c    2008-09-15 11:30:17.000000000 +0200
+> @@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
+>  }
+>  early_param("fbmem", early_parse_fbmem);
+>  
+> +/*
+> + * Pick out the memory size.  We look for mem=size@start,
+> + * where start and size are "size[KkMm]"
 
-At the user level, there is no difference between a sun zilog serial port, 
-an 8250 serial port or a USB serial port so these should be allocated 
-using the same allocation system.
+                                    [KkMmGg]
 
-Would this not remove many of the issues of portability that the current 
-structure apears to have built into it?
+> + */
+> +static int __init early_mem(char **p)
+> +{
+> +    unsigned long size, start;
+> +
+> +    start = system_ram->start;
+> +    size  = memparse(*p, p);
 
-For me, it would also simplify the issue of trying to work what devive to 
-look for when I plug in a new USB serial port device. It would be the new 
-/dev/ttyS<x> to appear in /dev.
+memparse() returns an unsigned long long.  Is the truncation OK for avr32?
 
-For serial ports with additional functionality (SDLC, HDLC etc.) a 
-seperate IOCTL could be provided to indicate the presense of this 
-extra functionality to programs that require it or a separate device 
-major/minor could be allocated for this extra functionality (this may 
-have some comatibility/maintanence benifits over an IOCTL).
+> +    if (**p == '@')
+> +        start = memparse(*p + 1, p);
+> +
+> +    system_ram->start = start;
+> +    system_ram->end = system_ram->start + size - 1;
+> +    return 0;
+> +}
+> +early_param("mem", early_mem);
+> +
+>  static int __init parse_tag_core(struct tag *tag)
+>  {
+>      if (tag->hdr.size > 2) {
+> --
 
-Regards
- 	Mark Fortescue.
+
+
+---
+~Randy
+Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+http://linuxplumbersconf.org/
