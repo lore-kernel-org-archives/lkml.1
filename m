@@ -1,98 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbYIOQ3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754988AbYIOQaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbYIOQ3g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 12:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYIOQ32
+	id S1754988AbYIOQaJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 12:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYIOQ34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 12:29:28 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35306 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbYIOQ31 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 12:29:27 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Frank Mayhar <fmayhar@google.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.27-rc6-mmotm0913 build error - suspect itimers-fix-itimer-many-thread-hang.patch
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1221496161_46396P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 15 Sep 2008 12:29:21 -0400
-Message-ID: <48922.1221496161@turing-police.cc.vt.edu>
+	Mon, 15 Sep 2008 12:29:56 -0400
+Received: from smtp.extricom.com ([192.114.46.18]:48600 "HELO
+	smtp.extricom.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752966AbYIOQ3z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 12:29:55 -0400
+Message-ID: <48CE8D8D.1070407@extricom.com>
+Date: Mon, 15 Sep 2008 19:30:05 +0300
+From: Eran Liberty <liberty@extricom.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+MIME-Version: 1.0
+CC: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: [PATCH 2.6.26] SERIAL DRIVER: Handle Multiple consecutive sysrq from
+ the serial
+References: <48591941.4070408@extricom.com>	<48A92E15.2080709@extricom.com>	<48A9901B.1080900@redhat.com>	<20080818154746.GA26835@Krystal>	<48A9AFA7.8080508@freescale.com>	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>	<1219110814.8062.2.camel@pasglop>	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>	<1219113549.8062.13.camel@pasglop>	<1219114600.8062.15.camel@pasglop>	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>	<1219119431.8062.35.camel@pasglop>	<1219216705.21386.46.camel@pasglop>	<alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>	<1219241819.26429.24.camel@jdub.homelinux.org>	<alpine.DEB.1.10.0808201022080.23571@gandalf.stny.rr.com> <20080820105035.49f29509@zod.rchland.ibm.com>
+In-Reply-To: <20080820105035.49f29509@zod.rchland.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------090102090004080506090501"
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1221496161_46396P
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
+--------------090102090004080506090501
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Trying to build rc6-mmotm0913 dies:
+Dear Penguins,
 
-  CC      security/selinux/hooks.o
-security/selinux/hooks.c: In function =E2=80=98selinux_bprm_committing_cr=
-eds=E2=80=99:
-security/selinux/hooks.c:2325: error: =E2=80=98struct task_struct=E2=80=
-=99 has no member named =E2=80=98it_prof_expires=E2=80=99
-make=5B2=5D: *** =5Bsecurity/selinux/hooks.o=5D Error 1
-make=5B1=5D: *** =5Bsecurity/selinux=5D Error 2
-make: *** =5Bsecurity=5D Error 2
+Let me start of by saying my particular hardware must be buggy in some 
+way. When I issue a sysrq (Ctrl A+ F from minicom) I get a lot of sysrq 
+triggers.
 
-I suspect that itimers-fix-itimer-many-thread-hang.patch has a merge issu=
-e
-against linux-next.patch, causing selinux_bprm_commiting_creds to be miss=
-ing
-an update.  The code as it appears in my tree (end of that function
-in security/selinux/hooks.c):
+I have worked around the problem and I think this workaround is a viable 
+patch even for platforms which do not exhibit this peculiar behavior.
 
-       if (rc) =7B
-                for (i =3D 0; i < RLIM_NLIMITS; i++) =7B
-                        rlim =3D current->signal->rlim + i;
-                        initrlim =3D init_task.signal->rlim+i;
-                        rlim->rlim_cur =3D min(rlim->rlim_max, initrlim->=
-rlim_cur);
-                =7D
+upon getting numerous interrupts which request sysrq the function 
+uart_handle_break in include/linux/serial_core.h is hit multiple times.
+The current code which looks like this:
 
-                if (current->signal->rlim=5BRLIMIT_CPU=5D.rlim_cur =21=3D=
- RLIM_INFINITY) =7B
-                        /*
-                         * This will cause RLIMIT_CPU calculations to be
-                         * refigured.
-                         */
-                        current->it_prof_expires =3D jiffies_to_cputime(1=
-);
-                =7D
-        =7D
-=7D
+static inline int uart_handle_break(struct uart_port *port)
+ {
+        struct uart_info *info = port->info;
+ #ifdef SUPPORT_SYSRQ
+        if (port->cons && port->cons->index == port->line) {
+               if (!port->sysrq) {
+                       port->sysrq = jiffies + HZ*5;
+                       return 1;
+               }
+               port->sysrq = 0;
+        }
+ #endif
+        if (port->flags & UPF_SAK)
+                do_SAK(info->tty);
+       return 0;
+}
 
-Looks like that current->it_prof_expires should be something else, but th=
-e
-linux-next.patch update for hooks.c is such a train wreck that I can't
-figure out what's going on or what *should* be going on?
+Will basicly toggle port->sysrq between a timeout value and zero. If you 
+are lucky this penguin rullet will stop on timeout and the next 
+character hit will trigger the sysrq in the function 
+"uart_handle_sysrq_char". But if you are not so lucky the last sysrq 
+interupt will toggle port->sysrq to zero and the next char hit will be 
+ignored (not trigger sysrq).
 
-(After the 2 build errors I reported, plus hitting the CONFIG_DEBUG_MUTEX=
-ES
-glitch that Kosaki Motohiro reported, I gave up - if the fix for this one=
+The suggested patch will do the next few things:
 
-is obvious, I'll see what *else* I can break before the next -mmotm drops=
-.. ;)
+1. "port->sysrq" is now the time when the last sysrq was triggered and 
+not the timeout for the the next char
+2. Stamped "port->sysrq" every time there is a sysrq rather then toggled 
+it up and down.
+3. Always continue to consider UPF_SAK.
+4. "port->sysrq" is toggled back to zero only in uart_handle_break() and 
+only if the a char has been accepted after the sysrq timeout (5 sec)
+5. uart_handle_break() will ignore extra chars received in super human 
+speed after the last sysrq (0.01 sec)
+
+Liberty
+
+Signed-off-by: Eran Liberty <liberty@extricom.org>
+---
 
 
 
+--------------090102090004080506090501
+Content-Type: text/x-patch;
+ name="sysrq.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="sysrq.patch"
 
---==_Exmh_1221496161_46396P
-Content-Type: application/pgp-signature
+Index: include/linux/serial_core.h
+===================================================================
+--- include/linux/serial_core.h	(revision 119)
++++ include/linux/serial_core.h	(revision 120)
+@@ -447,8 +447,8 @@
+ uart_handle_sysrq_char(struct uart_port *port, unsigned int ch)
+ {
+ #ifdef SUPPORT_SYSRQ
+-	if (port->sysrq) {
+-		if (ch && time_before(jiffies, port->sysrq)) {
++	if (port->sysrq && time_after(jiffies, port->sysrq + (unsigned long)(HZ*0.01))) {
++		if (ch && time_before(jiffies, port->sysrq + HZ*5)) {
+ 			handle_sysrq(ch, port->info ? port->info->tty : NULL);
+ 			port->sysrq = 0;
+ 			return 1;
+@@ -467,19 +467,17 @@
+  */
+ static inline int uart_handle_break(struct uart_port *port)
+ {
++	int ret = 0;
+ 	struct uart_info *info = port->info;
+ #ifdef SUPPORT_SYSRQ
+ 	if (port->cons && port->cons->index == port->line) {
+-		if (!port->sysrq) {
+-			port->sysrq = jiffies + HZ*5;
+-			return 1;
+-		}
+-		port->sysrq = 0;
++		port->sysrq = jiffies;
++		ret = 1;
+ 	}
+ #endif
+ 	if (port->flags & UPF_SAK)
+ 		do_SAK(info->tty);
+-	return 0;
++	return ret;
+ }
+ 
+ /**
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFIzo1hcC3lWbTT17ARAjn7AKCID0kumoaJk316WFrRGXxmJ1ccJACeOr8e
-4Wce7UwwtKTIyWkURYkW2Dw=
-=waHq
------END PGP SIGNATURE-----
-
---==_Exmh_1221496161_46396P--
+--------------090102090004080506090501--
