@@ -1,118 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbYIOVlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbYIOVvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbYIOVlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 17:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbYIOVlI
+	id S1756582AbYIOVvI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 17:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbYIOVu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 17:41:08 -0400
-Received: from ptb-relay02.plus.net ([212.159.14.146]:58200 "EHLO
-	ptb-relay02.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754132AbYIOVlH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 17:41:07 -0400
-Message-ID: <48CED670.40105@yahoo.com>
-Date: Mon, 15 Sep 2008 22:41:04 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Mon, 15 Sep 2008 17:50:56 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:56883 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752855AbYIOVuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 17:50:55 -0400
+Date: Mon, 15 Sep 2008 16:50:53 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+Message-ID: <20080915215053.GA11657@sgi.com>
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu>
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Corentin Chary <corentincj@iksaif.net>,
-       acpi4asus-user@lists.sourceforge.net
-Subject: Re: Turning off camera also kills card reader on EeePC 900
-References: <fa.ynuVPnbW9HmrQpG9wbWk/u+hqkw@ifi.uio.no> <fa.HT4htA0oryTT1h7ADNggfgkJnyY@ifi.uio.no> <fa.5D0cM9TkJ80O2GfXhZm3n4hc+GI@ifi.uio.no> <fa.1xyAj/9KUcq9nDwCEVhSHc5KBBs@ifi.uio.no> <fa.jr7R0e2XSjOS0yWom34xSWH95yM@ifi.uio.no>
-In-Reply-To: <fa.jr7R0e2XSjOS0yWom34xSWH95yM@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 3dd8bdff1ab1b6b0194d06b9e3989080
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080914153522.GJ29290@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Sitsofe Wheeler wrote:
->>
->> Alan Jenkins wrote:
->>
->>> The "HC died" message is interesting.  Sounds like the controller for
->>> these two USB devices stops working.  Maybe try unloading and reloading
->>> the ehci module?  I don't think I can help any more though.
->>
->> I compiled the kernel without module support so unless there's some 
->> sysfs trick that can be done...
->>
-> Well, since you ask :-P.  Here's an equivalent incantation.  I hope it's 
-> not too brittle.  Don't forget to unmount the SD card first.
+On Sun, Sep 14, 2008 at 05:35:22PM +0200, Ingo Molnar wrote:
 > 
-> cd /sys/module/ehci_hcd/drivers/pci:ehci_hcd
-> echo -n 0000:00:1d.7 | sudo tee unbind; echo -n 0000:00:1d.7 | sudo tee 
-> bind
+> * Dean Nelson <dcn@sgi.com> wrote:
 > 
-> The magic number is the PCI ID for the USB Host Controller, taken from 
-> your error message.
+> > On Mon, Aug 11, 2008 at 12:39:22PM -0700, Eric W. Biederman wrote:
+> > >
+> > > Although I am not at all convinced that dynamic allocation of
+> > > the vector number (instead of statically reserving it makes sense).
+> > 
+> > We (SGI) need somewhere around eight vectors.
+> > 
+> > There are two kernel modules, sgi-gru and sgi-xp (in drivers/misc), 
+> > that each need two vectors. And there's the broadcast assist unit 
+> > (BAU) that is involved in tlb shootdown on uv, which currently uses 
+> > statically reserved vector 0xf8 (UV_BAU_MESSAGE -- see uv_bau_init()). 
 > 
-> If the manual "bind" works you should then see a symlink, "0000:00:1d.7" 
-> in that directory.
+> while i understand the UV_BAU_MESSAGE case (TLB flushes are special), 
+> why does sgi-gru and sgi-xp need to go that deep? They are drivers, they 
+> should be able to make use of an ordinary irq just like the other 2000 
+> drivers we have do.
 
-Unfortunately when the SD card disappears so do the typical shell 
-commands (as that's the device I'm booting off). I was left having to 
-use source to look at the contents of things in /sys when the SD card died.
+The sgi-gru driver needs to be able to allocate a single irq/vector pair for
+all CPUs even those that are not currently online. The sgi-xp driver has
+similar but not as stringent needs.
 
->>> - It might be necessary to compare with the pre-installed OS
->>>  - Is the pre-installed kernel any better (files might be under
->>> /proc/acpi/asus instead)?  I guess you might not have the time or
->>> resources to test that though.
->>
->> The Xandros 2.6.21.4-eeepc install has the following files in 
->> /proc/acpi/asus/
->> brn camera cardr cpufv disp hdps init type wlan
->>
->> I have no idea what cpufv, disp, hdps, init or type are. Doing echo 1 
->> > camera && echo 0 > camera under this setup does NOT disappear the SD 
->> card.
-> Rats.  So there is some secret the mainline driver is missing :-(.
+The current __assign_irq_vector() restricts the allocation of the irq/vector
+pair to a single CPU and its vector_allocation_domain().
 
-Looks it.
 
->> Additionally brn seems to really represent the current LCD brightness 
->> (whereas it does not on a stock kernel and seems to always be set to -19)
-> It might have bitrotted on stock kernels?  The newer interface is under 
-> /sys/class/backlight.
-
-Ah I see - the stuff in there is correct. Does that mean that brn should 
-quietly disappear now this alternative interface is present?
-
->> and the hotkeys (e.g. for brightness) seem to respond far more quickly 
->> than the stock kernel too.
-> Heh heh.  I know all too much about that.  It's a problem with the ACPI 
-> Embedded Controller driver, a hardware bug which triggered a regression 
-> in 2.6.25.
+> > I know of a debugger that also uses 0xf8 because it was previously 
+> > available until UV_BAU_MESSAGE came along. The BAU would be happy with 
+> > a dynamically allocated system vector. We have a couple of other 
+> > things in the works that also need vectors.
 > 
-> I'm currently running... it claims to be 2.6.27-rc4 but it might be 
-> 2.6.27-rc5 or something in between... which includes a fix.  I'm not 
-> confident that they haven't broken it again since then.  The problem is 
-> there are just so many different types of buggy EC's.  "Fixes" for some 
-> buggy hardware break other buggy hardware.  Very nasty.
+> which debugger is this?
 
-Sigh. I think I've seen those posts ( 
-http://thread.gmane.org/gmane.linux.acpi.devel/32779/focus=33442 ? ) and 
-hadn't fully comprehended what you were fighting against. Doesn't this 
-just lead to DMI based quirks?
-
->>>  - The source code is... a 2Gb+ rar file someone would have to download
->>> and pick apart.
->>
->> Does anyone know if the archives on
->> http://support.asus.com/download/download_item_4.aspx?product=20&model=Eee%20PC%20900/Linux&SLanguage=en-us&os=5 
->> (release dates appear to be 5th September 2008) are actually any 
->> different?
->>
-> Why do you say that?  Are the filesizes suspiciously identical?
-
-I wish I could say - for some reason every option to download the source 
-code in the dropdown on http://eeepc.asus.com/global/download.htm goes 
-to a 404 page. I can't say I'm looking forward to downloading 2.6Gbytes 
-on this network connection regardless.
-
---
-Sitsofe
+KDB.
