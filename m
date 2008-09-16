@@ -1,49 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYIPLSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYIPLbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbYIPLSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 07:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYIPLSm
+	id S1753869AbYIPLbV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 07:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYIPLbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 07:18:42 -0400
-Received: from web26202.mail.ukl.yahoo.com ([217.12.10.239]:40673 "HELO
-	web26202.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751884AbYIPLSl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 07:18:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=rwX7cGCzjIBMl65qP0hj8kfXrDyV0XYjwM1HgmBVpLc473hM9MASw4jCKnHVYnlfUd88teEXquDu3ZVhiPvgh0bwZxkPtJLZWIV2hO5fMCLLla6UeYdgKdSthAlyUPU9owRvrRHbHHIOISwQ8Nt7J/QILX/ymH3FzPrm0BDGafs=;
-X-YMail-OSG: 16iKNRwVM1lYKBoaAp1OyIqjSsI2PYlef3cXhCSMJ05reyE.rzn6SFZUor8_.4ZDZayjLsOu32RTMaX3Wow7sP9xgZ4vsRVvRMH7AINctHpjBF995cB3zjtOJE54fjChRCni82gxb.Vgu1FmrjU-
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Tue, 16 Sep 2008 11:11:59 +0000 (GMT)
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+	Tue, 16 Sep 2008 07:31:08 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:26710 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752634AbYIPLbH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 07:31:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xE9aeh/F+0LGKsuXmFsQ4thyXUCrKhyfnxvQ/6O0Ypf7EY3y4GkUlUEXgB2G/AxdMA
+         WhD3oQWAy/Q2NLrW3FKY/gDARC+d+XLxs4rC2xUZJU1utRm9XQETw5QApfSI8FEvzhM1
+         fNYktxVZGjze1ErCYp/sDWzrzBAME3pPp8eN0=
+Message-ID: <ea11fea30809160431v50f4d48i22a9dddf496aea34@mail.gmail.com>
+Date: Tue, 16 Sep 2008 17:01:04 +0530
+From: "Manish Katiyar" <mkatiyar@gmail.com>
+To: "Marco Stornelli" <marco.stornelli@coritel.it>
+Subject: Re: [PATCH] vfs: added better file aio_read aio_write operations presence check
+Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48CF94DE.7020209@coritel.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Message-ID: <58603.86657.qm@web26202.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48CF7C85.1070309@coritel.it>
+	 <ea11fea30809160403x69df37cbn34135c40026f75e3@mail.gmail.com>
+	 <48CF94DE.7020209@coritel.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Sep 16, 2008 at 4:43 PM, Marco Stornelli
+<marco.stornelli@coritel.it> wrote:
+> BUG_ON it was a way to say: "hey you've used the do_sync_read/write as
+> read/write operation but you don't specified an aio_read/write", but
+> your solutions it's good too.
+
+Looks like I made some copy paste error while sending the patch. Below
+is the updated one.
+
+Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
+
+---
+ fs/read_write.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 9ba495d..b89b707 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -225,7 +225,10 @@ ssize_t do_sync_read(struct file *filp, char
+__user *buf, size_t len, loff_t *pp
+ 	kiocb.ki_left = len;
+
+ 	for (;;) {
+-		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
++		if (filp->f_op->aio_read)
++			ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
++		else
++			ret = generic_file_aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+ 		if (ret != -EIOCBRETRY)
+ 			break;
+ 		wait_on_retry_sync_kiocb(&kiocb);
+@@ -280,7 +283,10 @@ ssize_t do_sync_write(struct file *filp, const
+char __user *buf, size_t len, lof
+ 	kiocb.ki_left = len;
+
+ 	for (;;) {
+-		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
++		if (filp->f_op->aio_write)
++			ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
++		else
++			ret = generic_file_aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
+ 		if (ret != -EIOCBRETRY)
+ 			break;
+ 		wait_on_retry_sync_kiocb(&kiocb);
+-- 
+1.5.4.3
+
+Thanks -
+Manish
 
 
-
-
-> +        if (offset != file_pos_read(file))
-> +            file_pos_write(file, offset);
->         retval = offset;
->     }
-
-Is not more efficient here a compare xchg operation?
-
-Regards Michael
-
-__________________________________________________
-Do You Yahoo!?
-Poco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e ti da tanto spazio gratuito per i tuoi file e i messaggi 
-http://mail.yahoo.it 
+>
+> Manish Katiyar ha scritto:
+>> On Tue, Sep 16, 2008 at 2:59 PM, Marco Stornelli
+>> <marco.stornelli@coritel.it> wrote:
+>>> From: Marco Stornelli <marco.stornelli@gmail.com>
+>>>
+>>> If a filesystem in the file operations specifies for read and write operations only do_sync_read and do_sync_write without
+>>> init aio_read and aio_write, there will be a kernel oops, because the vfs code check the presence of (to read for example)
+>>> read OR aio_read method, then it calls read if it's pointer is not null. It's not sufficient because if the read function is
+>>> actually a do_sync_read, it calls aio_read but without checking the presence. I think a BUG_ON check can be more useful.
+>>
+>> Instead of doing a BUG_ON() why can't we simply fall back to the
+>> generic_aio functions since most of the fs tend to do so as below.
+>>
+>>
+>> Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
+>>
+>> ---
+>>  fs/read_write.c |   10 ++++++++--
+>>  1 files changed, 8 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/fs/read_write.c b/fs/read_write.c
+>> index 9ba495d..5439bc4 100644
+>> --- a/fs/read_write.c
+>> +++ b/fs/read_write.c
+>> @@ -225,7 +225,11 @@ ssize_t do_sync_read(struct file *filp, char
+>> __user *buf, size_t len, loff_t *pp
+>>       kiocb.ki_left = len;
+>>
+>>       for (;;) {
+>> -             ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+>> +             if (filp->f_op->aio_read)
+>> +                     ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+>> +             else
+>> +                     ret = generic_file_aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
+>>               if (ret != -EIOCBRETRY)
+>>                       break;
+>>               wait_on_retry_sync_kiocb(&kiocb);
+>> @@ -280,7 +284,10 @@ ssize_t do_sync_write(struct file *filp, const
+>> char __user *buf, size_t len, lof
+>>       kiocb.ki_left = len;
+>>
+>>       for (;;) {
+>> -             ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
+>> +             if (filp->f_op->aio_write)
+>> +                     ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
+>> +             else
+>> +                     ret = generic_file_aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
+>>               if (ret != -EIOCBRETRY)
+>>                       break;
+>>               wait_on_retry_sync_kiocb(&kiocb);
+>
+>
