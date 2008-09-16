@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYIPPmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYIPPm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbYIPPmJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYIPPly
+	id S1756152AbYIPPm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYIPPmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:41:54 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:54105 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752163AbYIPPlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:41:53 -0400
-Date: Tue, 16 Sep 2008 09:41:37 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Manish Katiyar <mkatiyar@gmail.com>,
-       Marco Stornelli <marco.stornelli@coritel.it>, viro@zeniv.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfs: added better file aio_read aio_write operations presence check
-Message-ID: <20080916154137.GB2119@parisc-linux.org>
-References: <bcF2N-29W-1@gated-at.bofh.it> <bcGBv-4eJ-1@gated-at.bofh.it> <E1Kfcb3-0003ra-Q7@be1.7eggert.dyndns.org>
+	Tue, 16 Sep 2008 11:42:47 -0400
+Received: from bu3sch.de ([62.75.166.246]:46859 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752213AbYIPPmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:42:46 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: bcm43xx-dev@lists.berlios.de
+Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
+Date: Tue, 16 Sep 2008 17:42:15 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       John Linville <linville@tuxdriver.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adel Gadllah <adel.gadllah@gmail.com>,
+       wireless <linux-wireless@vger.kernel.org>
+References: <48CFC03A.8020708@lwfinger.net>
+In-Reply-To: <48CFC03A.8020708@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1Kfcb3-0003ra-Q7@be1.7eggert.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200809161742.15527.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 05:36:09PM +0200, Bodo Eggert wrote:
-> Why can't the file system registration code set filp->f_op->aio_read to
-> generic_file_aio_read?
+On Tuesday 16 September 2008 16:18:34 Larry Finger wrote:
+> Since commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f entitled
+> "b43/b43legacy: add RFKILL_STATE_HARD_BLOCKED support", the radio LED
+> no longer responds to rfkill switch events.
+> 
+> ATM, I do not have a fix, other than reversion of this commit.
 
-        const struct file_operations    *f_op;
+It's kind of bogus that it pokes with the software rfkill state
+from within the hardware rfkill handler.
 
-Having said that, BUILD_BUG_ON(!f_op->aio_read) is fine by me ... make
-the filesystem writer put it in without slowing down anyone at runtime.
+Please revert this patch. The commit log says nothing about
+why this is needed and I don't see a point in overriding the state
+in the rfkill-private data structure from within the driver.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Greetings Michael.
