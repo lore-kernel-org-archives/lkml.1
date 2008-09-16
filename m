@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbYIPQIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYIPQJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbYIPQIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 12:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbYIPQIO
+	id S1756547AbYIPQJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 12:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYIPQJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 12:08:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51927 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbYIPQIN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 12:08:13 -0400
-Message-ID: <48CFD97C.6080002@zytor.com>
-Date: Tue, 16 Sep 2008 09:06:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 16 Sep 2008 12:09:21 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47221 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752677AbYIPQJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 12:09:20 -0400
+Date: Tue, 16 Sep 2008 19:09:02 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: "Kirill A. Shutemov" <kirill@shutemov.name>, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in
+	userspace
+Message-ID: <20080916160902.GF1400@cs181140183.pp.htv.fi>
+References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi> <20080916130234.GA17082@localhost.localdomain> <48CFBE51.1060200@redhat.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       jbaron <jbaron@redhat.com>
-Subject: Re: [PATCH] introduce boot_printk()
-References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>	 <48CE983C.8040709@zytor.com>	 <86802c440809151018k2c7874dfjc8e9791bee9365f9@mail.gmail.com>	 <48CE9A5C.1030603@zytor.com>	 <86802c440809151034ycd6442me679792880b03320@mail.gmail.com> <1221575196.6943.24.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1221575196.6943.24.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <48CFBE51.1060200@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
->>
->> every subsystem will have
->> x86_printk
->> acpi_printk
->> pci_printk
+On Tue, Sep 16, 2008 at 07:10:25AM -0700, Ulrich Drepper wrote:
+> Kirill A. Shutemov wrote:
+> >> What is the error message?
+> > 
+> > /usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
+> > flock'
 > 
-> doesn't sound like an easily extensible interface, better would be
-> extending printk with a KERN_subsys tag like proposed.
-> 
+> And?  None of these programs should use <linux/inotify.h>.  There has
+> for the longest time been a <sys/inotify.h> header which doesn't need
+> any kernel headers.  In fact, <linux/inotify.h> should not be exported.
 
-That would be my thinking too.
+Even if userspace applications shouldn't use it directly this doesn't 
+sound right:
 
-	-hpa
+We shouldn't force all libc implementations to copy the contents into a 
+private header.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
