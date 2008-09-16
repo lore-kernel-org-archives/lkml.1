@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbYIPPNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIPPWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbYIPPNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYIPPNr
+	id S1755401AbYIPPWV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYIPPWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:13:47 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:60042 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752916AbYIPPNr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:13:47 -0400
-X-Greylist: delayed 1085 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Sep 2008 11:13:46 EDT
+	Tue, 16 Sep 2008 11:22:06 -0400
+Received: from elvis.franken.de ([193.175.24.41]:35186 "EHLO elvis.franken.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751844AbYIPPWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:22:04 -0400
+Date: Tue, 16 Sep 2008 17:21:48 +0200
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Theodore Tso <tytso@mit.edu>,
+       Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916152148.GA7617@alpha.franken.de>
+References: <20080916104811.GC7397@cs181140183.pp.htv.fi> <20080916114305.GB10965@ff.dom.local> <20080916121528.GD7397@cs181140183.pp.htv.fi> <20080916135408.GB13388@mit.edu> <20080916070241.3e8d5202@infradead.org> <20080916143408.GA1400@cs181140183.pp.htv.fi> <20080916074802.200c8a43@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18639.51433.628856.335547@stoffel.org>
-Date: Tue, 16 Sep 2008 10:55:37 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: "Jacek Poplawski" <jacekpoplawski@gmail.com>
-Cc: "John Stoffel" <john@stoffel.org>, linux-kernel@vger.kernel.org
-Subject: Re: motherboard recommendations?
-In-Reply-To: <1f276abf0809160739r6e2f42b3j8941730136365fb9@mail.gmail.com>
-References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
-	<18639.49959.895003.593644@stoffel.org>
-	<1f276abf0809160739r6e2f42b3j8941730136365fb9@mail.gmail.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20080916074802.200c8a43@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 16, 2008 at 07:48:02AM -0700, Arjan van de Ven wrote:
+> not sure; just we need to catch doing pci_disable_device on a
+> non-enabled device as a WARN_ON.
 
-Jacek> On Tue, Sep 16, 2008 at 4:31 PM, John Stoffel <john@stoffel.org> wrote:
->> Which ASUS board, the K8V?  If so, just look for a board with
->> components that are known to work well with Linux.  Honestly, these
->> days Linux supports alot more stuff right out of the box.
+the pci_disable_device() is done on an enabled device, so your
+new WARN_ON wouldn't trigger.
 
-Jacek> I was thinking the same few years ago, but on two Asus boards
-Jacek> two had problems.  K8V-X SE is the board I have now, it's very
-Jacek> bad choice for Linux, it crashes very often when starting X
-Jacek> (with DRI) - it's related to buggy BIOS and AGP.
+> and the patch looks quite wrong, the real answer should be to do the
+> enable in open() :-)
 
-Sure, I can understand your frustration here.  I'd be pissed too.  :]
-I spent a bunch of time looking at motherboards and finally settled on
-the one I got because of good reports.  Don't get a recent board, get
-something that's been out for six months to a year with good reviews
-on newegg.com to make sure you don't get bitten by stuff like this.
+I thought about the solution, but the pci device is completely setup
+and enabled in the init function so disabling it at that point and
+enabling it in open() again sounds silly to me. pci_enable_enable/disable
+is already done in .init/.remove and .suspend/.resume, so it looked
+more obviuos to not let close() do the pci_disable_device().
 
-Jacek> On another board SATA was supported after few months and there
-Jacek> was constant problem with network (there was long discussion
-Jacek> about it on LKML) - networking was working after boot but stops
-Jacek> working after a while. It was never fixed, so I don't use this
-Jacek> board anymore.
+Thomas.
 
-Gotta say my M2N32-SLI Deluxe has been working just fine from day
-one.  Can't complain at all.  So much so that I'm thinking of getting
-another to be my new file server system, but money is tight right
-now.  :]
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessary a
+good idea.                                                [ RFC1925, 2.3 ]
