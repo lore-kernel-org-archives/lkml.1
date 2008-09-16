@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIPPWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYIPPXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYIPPWV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYIPPWG
+	id S1755865AbYIPPXh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbYIPPX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:22:06 -0400
-Received: from elvis.franken.de ([193.175.24.41]:35186 "EHLO elvis.franken.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751844AbYIPPWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:22:04 -0400
-Date: Tue, 16 Sep 2008 17:21:48 +0200
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Theodore Tso <tytso@mit.edu>,
-       Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080916152148.GA7617@alpha.franken.de>
-References: <20080916104811.GC7397@cs181140183.pp.htv.fi> <20080916114305.GB10965@ff.dom.local> <20080916121528.GD7397@cs181140183.pp.htv.fi> <20080916135408.GB13388@mit.edu> <20080916070241.3e8d5202@infradead.org> <20080916143408.GA1400@cs181140183.pp.htv.fi> <20080916074802.200c8a43@infradead.org>
+	Tue, 16 Sep 2008 11:23:28 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:43584 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752049AbYIPPX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:23:27 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Tue, 16 Sep 2008 17:32:08 +0200
+References: <bcGib-3Fp-7@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080916074802.200c8a43@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1KfcXB-0003rP-6B@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Subject: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 07:48:02AM -0700, Arjan van de Ven wrote:
-> not sure; just we need to catch doing pci_disable_device on a
-> non-enabled device as a WARN_ON.
+Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-the pci_disable_device() is done on an enabled device, so your
-new WARN_ON wouldn't trigger.
+> Protecting file->f_pos with a lock adds some overhead but I think we should
+> fix this.
+> I used seqlock to serialize the access to file->f_pos. This approach is
+> similar to inode->i_size synchronization.
+> 
+> Comments?
 
-> and the patch looks quite wrong, the real answer should be to do the
-> enable in open() :-)
+> +             if (offset != file_pos_read(file))
+> +                     file_pos_write(file, offset);
 
-I thought about the solution, but the pci device is completely setup
-and enabled in the init function so disabling it at that point and
-enabling it in open() again sounds silly to me. pci_enable_enable/disable
-is already done in .init/.remove and .suspend/.resume, so it looked
-more obviuos to not let close() do the pci_disable_device().
+Maybe file_pos_write should do this check?
 
-Thomas.
-
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
