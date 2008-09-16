@@ -1,157 +1,444 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYIPUsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbYIPUz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434AbYIPUsq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 16:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYIPUsh
+	id S1753016AbYIPUz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 16:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYIPUzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 16:48:37 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54573 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671AbYIPUsg (ORCPT
+	Tue, 16 Sep 2008 16:55:16 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:39365 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbYIPUzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 16:48:36 -0400
-Message-ID: <48D01B99.3040908@zytor.com>
-Date: Tue, 16 Sep 2008 13:48:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 16 Sep 2008 16:55:14 -0400
+Date: Tue, 16 Sep 2008 15:54:59 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: dave@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       jeremy@goop.org, linux-kernel@vger.kernel.org, arnd@arndb.de
+Subject: Re: [RFC v5][PATCH 7/8] Infrastructure for shared objects
+Message-ID: <20080916205459.GA7644@us.ibm.com>
+References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu> <1221347167-9956-8-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
-To: "Randy.Dunlap" <rdunlap@xenotime.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
-Subject: Re: linux-next: Tree for September 16 (cpustr.h)
-References: <20080916173415.14012569.sfr@canb.auug.org.au> <Pine.LNX.4.64.0809161147320.32267@shark.he.net>
-In-Reply-To: <Pine.LNX.4.64.0809161147320.32267@shark.he.net>
-Content-Type: multipart/mixed;
- boundary="------------080403040706010902000800"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221347167-9956-8-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080403040706010902000800
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Randy.Dunlap wrote:
-> I'm seeing lots of gcc warnings from the generated cpustr.h file, like so:
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> Infrastructure to handle objects that may be shared and referenced by
+> multiple tasks or other objects, e..g open files, memory address space
+> etc.
 > 
->   arch/x86/boot/mkcpustr > arch/x86/boot/cpustr.h
->   gcc -Wp,-MD,arch/x86/boot/.cpu.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.1.1/include -D__KERNEL__ -Iinclude -Iinclude2 -I/home/rdunlap/linsrc/linux-next-20080916/include -I/home/rdunlap/linsrc/linux-next-20080916/arch/x86/include -include include/linux/autoconf.h -I/home/rdunlap/linsrc/linux-next-20080916/arch/x86/boot -Iarch/x86/boot -I/home/rdunlap/linsrc/linux-next-20080916/include -Iinclude -I/home/rdunlap/linsrc/linux-next-20080916/include2 -Iinclude2  -I/home/rdunlap/linsrc/linux-next-20080916/include  -I/home/rdunlap/linsrc/linux-next-20080916/arch/x86/include -include include/linux/autoconf.h -g -Os -D_SETUP -D__KERNEL__ -Wall -Wstrict-prototypes -march=i386 -mregparm=3 -include /home/rdunlap/linsrc/linux-next-20080916/arch/x86/boot/code16gcc.h -fno-strict-aliasing -fomit-frame-pointer -ffreestanding -fno-unit-at-a-time -fno-stack-protector -mpreferred-stack-boundary=2 -m32 -D__BIG_KERNEL__  -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(cpu)"
-  -D"KBUILD_MODNAME=KBUILD_STR(cpu)" -D"DEBUG_HASH=3" -D"DEBUG_HASH2=23" -c -o arch/x86/boot/cpu.o /home/rdunlap/linsrc/linux-next-20080916/arch/x86/boot/cpu.c
-> cc1: warning: hex escape sequence out of range
+> The state of shared objects is saved once. On the first encounter, the
+> state is dumped and the object is assigned a unique identifier (objref)
+> and also stored in a hash table (indexed by its physical kenrel address).
+> >From then on the object will be found in the hash and only its identifier
+> is saved.
+> 
+> On restart the identifier is looked up in the hash table; if not found
+> then the state is read, the object is created, and added to the hash
+> table (this time indexed by its identifier). Otherwise, the object in
+> the hash table is used.
+> 
+> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+Thanks, Oren, I actually think this is quite nice and readable.
+
+Though three questions below.  First one is, since you've mentioned
+having multiple threads doing checkpoint, won't you need some locking?
+I assume that's coming in later patches if/when needed?
+
+> ---
+>  Documentation/checkpoint.txt |   38 +++++++
+>  checkpoint/Makefile          |    2 +-
+>  checkpoint/objhash.c         |  237 ++++++++++++++++++++++++++++++++++++++++++
+>  checkpoint/sys.c             |    4 +
+>  include/linux/checkpoint.h   |   20 ++++
+>  5 files changed, 300 insertions(+), 1 deletions(-)
+>  create mode 100644 checkpoint/objhash.c
+> 
+> diff --git a/Documentation/checkpoint.txt b/Documentation/checkpoint.txt
+> index 6bf75ce..2929512 100644
+> --- a/Documentation/checkpoint.txt
+> +++ b/Documentation/checkpoint.txt
+> @@ -169,6 +169,44 @@ cr_hdr + cr_hdr_task
+>  cr_hdr + cr_hdr_tail
 > 
 > 
-> The ending lines of cpustr.h include hex strings like "\x111".
-> gcc complains about these.  If I change them to "\x011" (e.g.), there
-> is no warning.
+> +=== Shared resources (objects)
+> +
+> +Many resources used by tasks may be shared by more than one task (e.g.
+> +file descriptors, memory address space, etc), or even have multiple
+> +references from other resources (e.g. a single inode that represents
+> +two ends of a pipe).
+> +
+> +Clearly, the state of shared objects need only be saved once, even if
+> +they occur multiple times. We use a hash table (ctx->objhash) to keep
+> +track of shared objects in the following manner.
+> +
+> +On the first encounter, the state is dumped and the object is assigned
+> +a unique identifier and also stored in the hash table (indexed by its
+> +physical kenrel address). From then on the object will be found in the
+> +hash and only its identifier is saved.
+> +
+> +On restart the identifier is looked up in the hash table; if not found
+> +then the state is read, the object is created, and added to the hash
+> +table (this time indexed by its identifier). Otherwise, the object in
+> +the hash table is used.
+> +
+> +The interface for the hash table is the following:
+> +
+> +cr_obj_get_by_ptr - find the unique identifier - object reference (objref)
+> +  of the object that is pointer to by ptr (or 0 if not found) [checkpoint]
+> +
+> +cr_obj_add_ptr - add the object pointed to by ptr to the hash table if
+> +  it isn't already there, and fill its unique identifier (objref); will
+> +  return 0 if already found in the has, or 1 otherwise [checkpoint]
+> +
+> +cr_obj_get_by_ref - return the pointer to the object whose unique identifier
+> +  is equal to objref [restart]
+> +
+> +cr_obj_add_ref - add the object with unique identifier objref, pointed to by
+> +  ptr to the hash table if it isn't already there; will return 0 if already
+> +  found in the has, or 1 otherwise [restart]
+> +
+> +
+>  === Changelog
 > 
+>  [2008-Sep-11] v5:
+> diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+> index ac35033..9843fb9 100644
+> --- a/checkpoint/Makefile
+> +++ b/checkpoint/Makefile
+> @@ -2,5 +2,5 @@
+>  # Makefile for linux checkpoint/restart.
+>  #
+> 
+> -obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o \
+> +obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
+>  		ckpt_mem.o rstr_mem.o
+> diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+> new file mode 100644
+> index 0000000..0862086
+> --- /dev/null
+> +++ b/checkpoint/objhash.c
+> @@ -0,0 +1,237 @@
+> +/*
+> + *  Checkpoint-restart - object hash infrastructure to manage shared objects
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/file.h>
+> +#include <linux/hash.h>
+> +#include <linux/checkpoint.h>
+> +
+> +struct cr_objref {
+> +	int objref;
+> +	void *ptr;
+> +	unsigned short type;
 
-Yes, there is a patch that adds a 9th cpuflags word, which this code 
-doesn't handle.  The warning is real, there is an #error in mkcpustr.c 
-which is supposed to trigger, but doesn't because of a typo:
+What is the point of the 'type'?
 
-#if NCAPFLAGS > 8
-# error "Need to adjust the boot code handling of CPUID strings"
-#endif
+By that I mean: is it meant to catch bugs in the implementation, or bad
+checkpoint images?
 
-(The actual variable is called NCAPINTS.)
+> +	unsigned short flags;
+> +	struct hlist_node hash;
+> +};
+> +
+> +struct cr_objhash {
+> +	struct hlist_head *head;
+> +	int objref_index;
 
-Attached is a completely untested patch for this problem.
+What exactly will objref_index be used for?  I don't see any real
+usage here or in your later patches.
 
-	-hpa
-
---------------080403040706010902000800
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
-
-diff --git a/arch/x86/boot/cpu.c b/arch/x86/boot/cpu.c
-index 75298fe..6ec6bb6 100644
---- a/arch/x86/boot/cpu.c
-+++ b/arch/x86/boot/cpu.c
-@@ -59,17 +59,18 @@ int validate_cpu(void)
- 			u32 e = err_flags[i];
- 
- 			for (j = 0; j < 32; j++) {
--				int n = (i << 5)+j;
--				if (*msg_strs < n) {
-+				if (msg_strs[0] < i ||
-+				    (msg_strs[0] == i && msg_strs[1] < j)) {
- 					/* Skip to the next string */
--					do {
--						msg_strs++;
--					} while (*msg_strs);
--					msg_strs++;
-+					msg_strs += 2;
-+					while (*msg_strs++)
-+						;
- 				}
- 				if (e & 1) {
--					if (*msg_strs == n && msg_strs[1])
--						printf("%s ", msg_strs+1);
-+					if (msg_strs[0] == i &&
-+					    msg_strs[1] == j &&
-+					    msg_strs[2])
-+						printf("%s ", msg_strs+2);
- 					else
- 						printf("%d:%d ", i, j);
- 				}
-diff --git a/arch/x86/boot/mkcpustr.c b/arch/x86/boot/mkcpustr.c
-index 4589caa..8ef60f2 100644
---- a/arch/x86/boot/mkcpustr.c
-+++ b/arch/x86/boot/mkcpustr.c
-@@ -17,31 +17,31 @@
- 
- #include "../kernel/cpu/capflags.c"
- 
--#if NCAPFLAGS > 8
--# error "Need to adjust the boot code handling of CPUID strings"
--#endif
--
- int main(void)
- {
--	int i;
-+	int i, j;
- 	const char *str;
- 
- 	printf("static const char x86_cap_strs[] = \n");
- 
--	for (i = 0; i < NCAPINTS*32; i++) {
--		str = x86_cap_flags[i];
--
--		if (i == NCAPINTS*32-1) {
--			/* The last entry must be unconditional; this
--			   also consumes the compiler-added null character */
--			if (!str)
--				str = "";
--			printf("\t\"\\x%02x\"\"%s\"\n", i, str);
--		} else if (str) {
--			printf("#if REQUIRED_MASK%d & (1 << %d)\n"
--			       "\t\"\\x%02x\"\"%s\\0\"\n"
--			       "#endif\n",
--			       i >> 5, i & 31, i, str);
-+	for (i = 0; i < NCAPINTS; i++) {
-+		for (j = 0; j < 32; j++) {
-+			str = x86_cap_flags[i*32+j];
-+
-+			if (i == NCAPINTS-1 && j == 31) {
-+				/* The last entry must be unconditional; this
-+				   also consumes the compiler-added null
-+				   character */
-+				if (!str)
-+					str = "";
-+				printf("\t\"\\x%02x\\x%02x\"\"%s\"\n",
-+				       i, j, str);
-+			} else if (str) {
-+				printf("#if REQUIRED_MASK%d & (1 << %d)\n"
-+				       "\t\"\\x%02x\\x%02x\"\"%s\\0\"\n"
-+				       "#endif\n",
-+				       i, j, i, j, str);
-+			}
- 		}
- 	}
- 	printf("\t;\n");
-
---------------080403040706010902000800--
+> +};
+> +
+> +#define CR_OBJHASH_NBITS  10
+> +#define CR_OBJHASH_TOTAL  (1UL << CR_OBJHASH_NBITS)
+> +
+> +static void cr_obj_ref_drop(struct cr_objref *obj)
+> +{
+> +	switch (obj->type) {
+> +	case CR_OBJ_FILE:
+> +		fput((struct file *) obj->ptr);
+> +		break;
+> +	default:
+> +		BUG();
+> +	}
+> +}
+> +
+> +static void cr_obj_ref_grab(struct cr_objref *obj)
+> +{
+> +	switch (obj->type) {
+> +	case CR_OBJ_FILE:
+> +		get_file((struct file *) obj->ptr);
+> +		break;
+> +	default:
+> +		BUG();
+> +	}
+> +}
+> +
+> +static void cr_objhash_clear(struct cr_objhash *objhash)
+> +{
+> +	struct hlist_head *h = objhash->head;
+> +	struct hlist_node *n, *t;
+> +	struct cr_objref *obj;
+> +	int i;
+> +
+> +	for (i = 0; i < CR_OBJHASH_TOTAL; i++) {
+> +		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
+> +			cr_obj_ref_drop(obj);
+> +			kfree(obj);
+> +		}
+> +	}
+> +}
+> +
+> +void cr_objhash_free(struct cr_ctx *ctx)
+> +{
+> +	struct cr_objhash *objhash = ctx->objhash;
+> +
+> +	if (objhash) {
+> +		cr_objhash_clear(objhash);
+> +		kfree(objhash->head);
+> +		kfree(ctx->objhash);
+> +		ctx->objhash = NULL;
+> +	}
+> +}
+> +
+> +int cr_objhash_alloc(struct cr_ctx *ctx)
+> +{
+> +	struct cr_objhash *objhash;
+> +	struct hlist_head *head;
+> +
+> +	objhash = kzalloc(sizeof(*objhash), GFP_KERNEL);
+> +	if (!objhash)
+> +		return -ENOMEM;
+> +	head = kzalloc(CR_OBJHASH_TOTAL * sizeof(*head), GFP_KERNEL);
+> +	if (!head) {
+> +		kfree(objhash);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	objhash->head = head;
+> +	objhash->objref_index = 1;
+> +
+> +	ctx->objhash = objhash;
+> +	return 0;
+> +}
+> +
+> +static struct cr_objref *cr_obj_find_by_ptr(struct cr_ctx *ctx, void *ptr)
+> +{
+> +	struct hlist_head *h;
+> +	struct hlist_node *n;
+> +	struct cr_objref *obj;
+> +
+> +	h = &ctx->objhash->head[hash_ptr(ptr, CR_OBJHASH_NBITS)];
+> +	hlist_for_each_entry(obj, n, h, hash)
+> +		if (obj->ptr == ptr)
+> +			return obj;
+> +	return NULL;
+> +}
+> +
+> +static struct cr_objref *cr_obj_find_by_objref(struct cr_ctx *ctx, int objref)
+> +{
+> +	struct hlist_head *h;
+> +	struct hlist_node *n;
+> +	struct cr_objref *obj;
+> +
+> +	h = &ctx->objhash->head[hash_ptr((void *) objref, CR_OBJHASH_NBITS)];
+> +	hlist_for_each_entry(obj, n, h, hash)
+> +		if (obj->objref == objref)
+> +			return obj;
+> +	return NULL;
+> +}
+> +
+> +static struct cr_objref *cr_obj_new(struct cr_ctx *ctx, void *ptr, int objref,
+> +				    unsigned short type, unsigned short flags)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = kmalloc(sizeof(*obj), GFP_KERNEL);
+> +	if (obj) {
+> +		int i;
+> +
+> +		obj->ptr = ptr;
+> +		obj->type = type;
+> +		obj->flags = flags;
+> +
+> +		if (objref) {
+> +			/* use 'objref' to index (restart) */
+> +			obj->objref = objref;
+> +			i = hash_ptr((void *) objref, CR_OBJHASH_NBITS);
+> +		} else {
+> +			/* use 'ptr' to index, assign objref (checkpoint) */
+> +			obj->objref = ctx->objhash->objref_index++;;
+> +			i = hash_ptr(ptr, CR_OBJHASH_NBITS);
+> +		}
+> +
+> +		hlist_add_head(&obj->hash, &ctx->objhash->head[i]);
+> +		cr_obj_ref_grab(obj);
+> +	}
+> +	return obj;
+> +}
+> +
+> +/**
+> + * cr_obj_add_ptr - add an object to the hash table if not already there
+> + * @ctx: checkpoint context
+> + * @ptr: pointer to object
+> + * @objref: unique identifier - object reference [output]
+> + * @type: object type
+> + * @flags: object flags
+> + *
+> + * Fills the unique identifier of the object into @objref
+> + *
+> + * returns 0 if found, 1 if added, < 0 on error
+> + */
+> +int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
+> +		   unsigned short type, unsigned short flags)
+> +{
+> +	struct cr_objref *obj;
+> +	int ret = 0;
+> +
+> +	obj = cr_obj_find_by_ptr(ctx, ptr);
+> +	if (!obj) {
+> +		obj = cr_obj_new(ctx, ptr, 0, type, flags);
+> +		if (!obj)
+> +			return -ENOMEM;
+> +		else
+> +			ret = 1;
+> +	} else if (obj->type != type)	/* sanity check */
+> +		return -EINVAL;
+> +	*objref = obj->objref;
+> +	return ret;
+> +}
+> +
+> +/**
+> + * cr_obj_add_ref - add an object with unique identifer to the hash table
+> + * @ctx: checkpoint context
+> + * @ptr: pointer to object
+> + * @objref: unique identifier - object reference
+> + * @type: object type
+> + * @flags: object flags
+> + */
+> +int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
+> +		   unsigned short type, unsigned short flags)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = cr_obj_new(ctx, ptr, objref, type, flags);
+> +	return obj ? 0 : -ENOMEM;
+> +}
+> +
+> +/**
+> + * cr_obj_get_by_ptr - find the unique identifier (objref) of an object
+> + * @ctx: checkpoint context
+> + * @ptr: pointer to object
+> + * @type: object type
+> + */
+> +int cr_obj_get_by_ptr(struct cr_ctx *ctx, void *ptr, unsigned short type)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = cr_obj_find_by_ptr(ctx, ptr);
+> +	if (obj)
+> +		return obj->type == type ? obj->objref : -EINVAL;
+> +	else
+> +		return -ESRCH;
+> +}
+> +
+> +/**
+> + * cr_obj_get_by_ref - find an object given its unique identifier (objref)
+> + * @ctx: checkpoint context
+> + * @objref: unique identifier - object reference
+> + * @type: object type
+> + */
+> +void *cr_obj_get_by_ref(struct cr_ctx *ctx, int objref, unsigned short type)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = cr_obj_find_by_objref(ctx, objref);
+> +	if (obj)
+> +		return obj->type == type ? obj->ptr : ERR_PTR(-EINVAL);
+> +	else
+> +		return NULL;
+> +}
+> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+> index c4ac157..3b17ecc 100644
+> --- a/checkpoint/sys.c
+> +++ b/checkpoint/sys.c
+> @@ -132,6 +132,7 @@ void cr_ctx_free(struct cr_ctx *ctx)
+>  		path_put(ctx->vfsroot);
+> 
+>  	cr_pgarr_free(ctx);
+> +	cr_objhash_free(ctx);
+> 
+>  	kfree(ctx);
+>  }
+> @@ -154,6 +155,9 @@ struct cr_ctx *cr_ctx_alloc(pid_t pid, int fd, unsigned long flags)
+>  	if (!ctx->hbuf)
+>  		goto nomem;
+> 
+> +	if (cr_objhash_alloc(ctx) < 0)
+> +		goto nomem;
+> +
+>  	/*
+>  	 * assume checkpointer is in container's root vfs
+>  	 * FIXME: this works for now, but will change with real containers
+> diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+> index a9eafac..9990bb1 100644
+> --- a/include/linux/checkpoint.h
+> +++ b/include/linux/checkpoint.h
+> @@ -28,6 +28,8 @@ struct cr_ctx {
+>  	void *hbuf;		/* temporary buffer for headers */
+>  	int hpos;		/* position in headers buffer */
+> 
+> +	struct cr_objhash *objhash;	/* hash for shared objects */
+> +
+>  	struct list_head pgarr_list;	/* page array to dump VMA contents */
+> 
+>  	struct path *vfsroot;	/* container root (FIXME) */
+> @@ -49,6 +51,24 @@ extern int cr_kread(struct cr_ctx *ctx, void *buf, int count);
+>  extern void *cr_hbuf_get(struct cr_ctx *ctx, int n);
+>  extern void cr_hbuf_put(struct cr_ctx *ctx, int n);
+> 
+> +/* shared objects handling */
+> +
+> +enum {
+> +	CR_OBJ_FILE = 1,
+> +	CR_OBJ_MAX
+> +};
+> +
+> +extern void cr_objhash_free(struct cr_ctx *ctx);
+> +extern int cr_objhash_alloc(struct cr_ctx *ctx);
+> +extern void *cr_obj_get_by_ref(struct cr_ctx *ctx,
+> +			       int objref, unsigned short type);
+> +extern int cr_obj_get_by_ptr(struct cr_ctx *ctx,
+> +			     void *ptr, unsigned short type);
+> +extern int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
+> +			  unsigned short type, unsigned short flags);
+> +extern int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
+> +			  unsigned short type, unsigned short flags);
+> +
+>  struct cr_hdr;
+> 
+>  extern int cr_write_obj(struct cr_ctx *ctx, struct cr_hdr *h, void *buf);
+> -- 
+> 1.5.4.3
+> 
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
