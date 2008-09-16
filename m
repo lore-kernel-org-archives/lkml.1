@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbYIPIpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbYIPIug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbYIPIpr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 04:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYIPIpj
+	id S1753761AbYIPIug (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 04:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYIPIu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 04:45:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39199 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbYIPIpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 04:45:38 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Linux - Novell
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH ?] ACPI: pr->id is unsigned
-Date: Tue, 16 Sep 2008 10:45:31 +0200
-User-Agent: KMail/1.9.9
-Cc: roel kluin <roel.kluin@gmail.com>, ak@linux.intel.com, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <48CF0CA4.3090701@gmail.com> <128370.1221510405@turing-police.cc.vt.edu>
-In-Reply-To: <128370.1221510405@turing-police.cc.vt.edu>
+	Tue, 16 Sep 2008 04:50:28 -0400
+Received: from qb-out-0506.google.com ([72.14.204.234]:57479 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbYIPIu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 04:50:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=AlzGkVYM4VqcsCPnAdCW5NPGU/Slxu6NDMHVWhJAYA/gl4ucG1BYw2+v0vmBrAHF6p
+         zFEnmDwFFrAlEb9wuard2slrT/0IC1T+uVG9iHq1mcqODgGJXfQiZaKu+v1CMZ/gFnGh
+         wClCDKOI7uthPd6wy+zAc4IJP5D8lL/MIp6B8=
+Message-ID: <3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
+Date: Tue, 16 Sep 2008 16:50:24 +0800
+From: "Luming Yu" <luming.yu@gmail.com>
+To: "Roland McGrath" <roland@redhat.com>
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20080910055504.9A2A41541FE@magilla.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809161045.35078.trenn@suse.de>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	 <48450864.6080707@suse.cz> <48455619.6040608@suse.cz>
+	 <3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
+	 <48465D5C.8000804@suse.cz>
+	 <3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
+	 <1212664605.15747.16.camel@elijah.suse.cz>
+	 <20080627204954.34F8B154231@magilla.localdomain>
+	 <3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
+	 <20080910055504.9A2A41541FE@magilla.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 September 2008 22:26:45 Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 15 Sep 2008 21:32:20 EDT, roel kluin said:
-> > since pr->id is unsigned, shouldn't something like
-> > the patch below be applied?
-> >
-> > +	BUG_ON((pr->id >= nr_cpu_ids) || ((unsigned long)pr->id < 0));
+On Wed, Sep 10, 2008 at 1:55 PM, Roland McGrath <roland@redhat.com> wrote:
+> This subject line is quite far from what you're now addressing, btw.
 >
-> Under what conditions will the clause "(unsigned long)pr->id < 0)" be true,
-> and when will it be false?  What will any sane optimizing compiler do?
+> I certainly wouldn't recommend that patch.  The interference between ptrace
+> uses of SIGTRAP and a program that blocks SIGTRAP is just a fact of life
+> with ptrace.  If you wanted to change the exec SIGTRAP to be more
+> consistent with other signals induced by debuggers (such as breakpoints and
+> single-step), you could just change send_sig to force_sig.  That unblocks
+> SIGTRAP and resets its handler when it's blocked.  Conversely, a tracer
+> program could use PTRACE_O_TRACEEXEC if it cared to deal with tracing a
+> process that blocks SIGTRAP.  (That uses ptrace_notify rather than any
+> actual signal that can be blocked.)
 >
-> And *sometimes*, the *real* bug is that pr->id should be a signed quantity,
-> not an unsigned one, and the cast is just papering over the issue.
+> But, none of this goes to your actual problem at all AFAICT.  You've said
+> your actual problem with strace only arises on ia64.  The behavior of
+> ptrace'd exec, and the effect of a program blocking SIGTRAP, is exactly the
+> same across all machines.  Changing it does not explain your situation.
+> I'm in favor of understanding what is actually going on before changing
+> things.
 >
-> In other words, the original line is almost certainly buggy.  However, this
-> isn't the right fix.  Somebody who actually understands the code will have
-> to decide what *should* be happening here (that's beyond my understanding
-> of that code)...
+> If the SIGTRAP from exec is actually seen by strace on a different machine
+> like it's not on ia64, that suggests that something different happened
+> between the two.  In the case that doesn't exhibit the problem, either
+> SIGTRAP got unblocked by something before the exec, or userland (strace)
+> behaves differently so that it doesn't care about not seeing that SIGTRAP.
 
-Just removing "pr->id < 0" condition should be the right fix.
+The reason is not as complicated as I thought. It is because x86
+strace don't test TCB_WAITEXECVE. please take a look at defs.h
+(strace-4.5.16), the flag is defined as follows:
 
-For such an easy patch in the ACPI subsystem it's enough to only post to
-the linux-acpi mailing list, no need to bother the whole world.
+#ifdef LINUX
+# if defined(ALPHA) || defined(SPARC) || defined(SPARC64) ||
+defined(POWERPC) || defined(IA64) || defined(HPPA) || defined(SH) ||
+defined(SH64) || defined(S390) || defined(S390X) || defined(ARM)
+#  define TCB_WAITEXECVE 02000  /* ignore SIGTRAP after exceve */
+# endif
 
-Thanks for finding this, do you mind to repost a new version?
-
-    Thomas
+I'm not an strace expert, so I have no idea what the TCB_WAITEXECVE means.
+And why x86 strace can handle SIGTRAP after execve but ALL other Arch can not..
+Could anybody shield some lights on the flag?
