@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYIPNdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbYIPNiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbYIPNdB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 09:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYIPNcx
+	id S1754616AbYIPNiz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 09:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYIPNip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 09:32:53 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:42626 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYIPNcw (ORCPT
+	Tue, 16 Sep 2008 09:38:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:41578 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYIPNio (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 09:32:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=DnFZkhPU0/Xbai5B4EF80TQJqELy5ZPB8vh9W2f4troCwCX6fg+3kk6JZHshdHGVtD
-         VmGACpkybM4gV2SXPGVEa2fVIPK2tVtf28tXo+qgiASvYiZ53hxt5a4Z4VgCxnXpn2aK
-         evVjj8pn/Q4f40bJ1MhgBV8C3jOdmdoTRUfNU=
-Date: Tue, 16 Sep 2008 21:32:40 +0800
-From: Yan Li <elliot.li.tech@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yan Li <elliot.li.tech@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-Message-ID: <20080916133239.GA17456@yantp.cn.ibm.com>
-References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <20080909002055.GA8573@yantp.cn.ibm.com> <48C5C47F.5040004@zytor.com>
+	Tue, 16 Sep 2008 09:38:44 -0400
+Date: Tue, 16 Sep 2008 09:38:18 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: konishi.ryusuke@lab.ntt.co.jp
+Cc: pavel@suse.cz, akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/27] nilfs2: add document
+Message-ID: <20080916133818.GA7472@think.oraclecorp.com>
+References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp> <1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp> <20080915095427.GA1861@elf.ucw.cz> <20080916.051041.110880811.ryusuke@osrg.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48C5C47F.5040004@zytor.com>
+In-Reply-To: <20080916.051041.110880811.ryusuke@osrg.net>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 05:34:07PM -0700, H. Peter Anvin wrote:
->> VMware may change the PCI ID at their will so I prefer checking the
->> DMI since it's easier.
->>
->> So if we ditched the official method we run the risk of some false
->> negatives.  But checking the DMI manufacturer would be good enough.
->>
->
-> If we get false negatives that is quite frankly their problem, not ours.  
->  If nothing else, we should be able to look for a host bridge with the  
-> VMWare vendor ID -- that should arguably be safer than DMI.
+On Tue, Sep 16, 2008 at 05:10:41AM +0900, konishi.ryusuke@lab.ntt.co.jp wrote:
+> Hi!
+> 
+> On Mon, 15 Sep 2008 11:54:27 +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > +NILFS2 is a log-structured file system (LFS) supporting continuous
+> > > +snapshotting.  In addition to versioning capability of the entire file
+> > > +system, users can even restore files mistakenly overwritten or
+> > 
+> > Hmm, undelete done right. Just one question... how slow/fast is it
+> > compared to conventional filesystems (ext3?)?
+> > 								Pavel
+> 
+> After my first submission, Szabolcs Szakacsits showed benchmark
+> results using compilebench.
+> 
+> On Thu, 21 Aug 2008 00:25:55 +0300 (MET DST)
+> Szabolcs Szakacsits <szaka@ntfs-3g.org> wrote:
+> > I ran compilebench on kernel 2.6.26 with freshly formatted volumes.
+> > The behavior of NILFS2 was interesting.
+> >
+> > Its peformance rapidly degrades to the lowest ever measured level
+> > (< 1 MB/s) but after a while it recovers and gives consistent numbers.
+> > However it's still very far from the current unstable btrfs performance.
+> > The results are reproducible.
+> >
+> >                     MB/s    Runtime (s)
+> >                    -----    -----------
+> >   btrfs unstable   17.09        572
+> >   ext3             13.24        877
+> >   btrfs 0.16       12.33        793
+> >   nilfs2 2nd+ runs 11.29        674
+> >   ntfs-3g           8.55        865
+> >   reiserfs          8.38        966
+> >   nilfs2 1st run    4.95       3800
+> >   xfs               1.88       3901
+> 
+> Accordint to his measurement, NILFS2 showed a very low performance
+> on the first measument, and it recovered after a while.
+> 
+> I still don't know the reason why NILFS2 shows such behaviour, and
+> I'm thinking to follow the benchmark.
 
-I found that in this situation we can't use PCI info.  My intention to
-do this is to fix the false warning from
-arch/x86/kernel/cpu/mtrr/main.c (around L695). When booting a VMware
-guest we got:
-"WARNING: strange, CPU MTRRs all blank?"
+Normally, compilebench has read phases that time how quickly the FS can
+read the files after a bunch of operations.  The runs above didn't
+include the read phase, but in order to be fair to all the filesystems,
+compilebench figures out the native readdir order of the FS so it can
+create files in the optimal order for each fs.
 
-For VMware guest this warning is false, just as that for a KVM guest.
+It does this by creating all the files in its datasets and using readdir
+to find out what order the FS returns.  The files are all deleted
+and the real runs start.
 
-This code is from mtrr_trim_uncached_memory(), and used by
-setup_arch(), which is used far before PCI is ready.
+It is possible that bad perf in the first compilebench run is from
+cleanup or transaction commits being done after the deletions.
 
-Therefore I think we can only use DMI here. Any idea?
-
-Thanks!
-
--- 
-Li, Yan
-
-"Everything that is really great and inspiring is created by the
-individual who can labor in freedom."
-              - Albert Einstein, in Out of My Later Years (1950)
+-chris
