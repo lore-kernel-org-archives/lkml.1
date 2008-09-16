@@ -1,106 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYIPQsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYIPQts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbYIPQsm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 12:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbYIPQsV
+	id S1756712AbYIPQts (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 12:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYIPQtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 12:48:21 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42330 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755129AbYIPQsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 12:48:20 -0400
-Message-ID: <48CFE322.8050506@linux.vnet.ibm.com>
-Date: Tue, 16 Sep 2008 22:17:30 +0530
-From: Arun Bharadwaj <arun@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org,
-       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
-References: <20080916091219.GA1068@linux.vnet.ibm.com> <1221566730.6943.16.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1221566730.6943.16.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Sep 2008 12:49:40 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59404 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754782AbYIPQtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 12:49:39 -0400
+Subject: Re: [RFC v5][PATCH 7/8] Infrastructure for shared objects
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: arnd@arndb.de, jeremy@goop.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+In-Reply-To: <1221347167-9956-8-git-send-email-orenl@cs.columbia.edu>
+References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu>
+	 <1221347167-9956-8-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain
+Date: Tue, 16 Sep 2008 09:48:19 -0700
+Message-Id: <1221583699.20360.10.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2008-09-16 at 14:42 +0530, Arun R Bharadwaj wrote:
->   
->> Hi,
->>     
->
-> 80 char lines please.
->
->   
->> An idle cpu on which device drivers have initialized timers, has to be
->> frequently woken up to service the timers. So, consolidation of timers
->> onto a fewer number of cpus is important. Migration of
->> timers from idle cpus onto lesser idle cpus is necessary. Currently,
->> timers are migrated during the cpu offline operation. However
->> cpu-hotplug for the sake of idle system power management is too
->> heavy. So, this patch implements a lightweight timer migration
->> framework.
->>
->> Also, in a multi-core, multi-package system, it is always desirable to
->> have all the timers firing on the cpus present in the same package.
->> This would enable us to place the idle package in deep sleep
->> state. So, migration of timers is required for this.
->>
->> A per_cpu sysfs hook is created
->> at /sys/devices/system/cpu/cpuX/timer_migration. By echo-ing 1 to
->> cpuX/timer_migration, all regular and hrtimers from cpuX are migrated
->> to cpu0. The fact that all
->> timers are migrated from cpuX to cpu0 is demonstrated by making a note
->> of /proc/interrupts.
->>     
->
-> This seems like an exceedingly dumb idea - cpu 0 might be a long long
-> way from x and by pushing all timers to cpu0 you might actually overload
-> cpu 0.
->
-> Initially you talked about packages an moving timers to busy cpus -
-> which is something else altogether.
->
->   
+On Sat, 2008-09-13 at 19:06 -0400, Oren Laadan wrote:
+> +=== Shared resources (objects)
+> +
+> +Many resources used by tasks may be shared by more than one task (e.g.
+> +file descriptors, memory address space, etc), or even have multiple
+> +references from other resources (e.g. a single inode that represents
+> +two ends of a pipe).
+> +
+> +Clearly, the state of shared objects need only be saved once, even if
+> +they occur multiple times. We use a hash table (ctx->objhash) to keep
+> +track of shared objects in the following manner.
+> +
+> +On the first encounter, the state is dumped and the object is assigned
+> +a unique identifier and also stored in the hash table (indexed by its
+> +physical kenrel address). From then on the object will be found in the
+> +hash and only its identifier is saved.
 
-Here, I've chosen cpu0 just to demonstrate migration of timers. I'm
-working on the algorithm to choose the best cpu or the best set of cpus
-to migrate the timers to. This is just the first iteration on which i
-intend to build upon. What could be a possible way is that, a package
-can be chosen as the destination for the migrated timers and any one or
-many cpus in that package can be the target(s). So, this  will prevent
-the possible overloading of any particular cpu.
+kernel?     ^^^^^^
 
->> $:echo 1 > /sys/devices/system/cpu/cpu3/timer_migration
->> $:cat /proc/interrupts > file1; sleep 30 ; cat /proc/interrupts >
->> file2
->> $:diff file1 file2 | grep LOC
->> < LOC:       5276       2100       2676       1647       2415
->> 1803       2275       2977   Local timer interrupts
->>     
->>> LOC:       6991       2195       2774       1647       2562
->>>       
->> 1900       2497       3075   Local timer interrupts
->>
->> As we can observe, first we are enabling timer migration in cpu3. As a
->> result, the number of local timer interrupts on cpu3 over the next 30
->> seconds are zero. cpu3  has been totally rid of all regular
->> and hrtimers.
->>
->> Please refer to the following paper for details:
->>
->> http://ols.fedoraproject.org/OLS/Reprints-2008/srinivasan1-reprint.pdf
->>     
->
-> If there's anything worth reading in there it should have been mentioned
-> in this email and preferably in some comment in the code and Kconfig
-> help as well.
->
->   
-Thanks for the hint. I'll do that next time.
+> +On restart the identifier is looked up in the hash table; if not found
+> +then the state is read, the object is created, and added to the hash
+> +table (this time indexed by its identifier). Otherwise, the object in
+> +the hash table is used.
+> +
+> +The interface for the hash table is the following:
+> +
+> +cr_obj_get_by_ptr - find the unique identifier - object reference (objref)
+> +  of the object that is pointer to by ptr (or 0 if not found) [checkpoint]
+> +
+> +cr_obj_add_ptr - add the object pointed to by ptr to the hash table if
+> +  it isn't already there, and fill its unique identifier (objref); will
+> +  return 0 if already found in the has, or 1 otherwise [checkpoint]
+> +
+> +cr_obj_get_by_ref - return the pointer to the object whose unique identifier
+> +  is equal to objref [restart]
+> +
+> +cr_obj_add_ref - add the object with unique identifier objref, pointed to by
+> +  ptr to the hash table if it isn't already there; will return 0 if already
+> +  found in the has, or 1 otherwise [restart]
+
+I'd much rather see all this documentation put properly inline with the
+source code.  I doubt anyone will actually find this stuff.
+
+> +
+>  === Changelog
+> 
+>  [2008-Sep-11] v5:
+> diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+> index ac35033..9843fb9 100644
+> --- a/checkpoint/Makefile
+> +++ b/checkpoint/Makefile
+> @@ -2,5 +2,5 @@
+>  # Makefile for linux checkpoint/restart.
+>  #
+> 
+> -obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o \
+> +obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
+>  		ckpt_mem.o rstr_mem.o
+> diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+> new file mode 100644
+> index 0000000..0862086
+> --- /dev/null
+> +++ b/checkpoint/objhash.c
+> @@ -0,0 +1,237 @@
+> +/*
+> + *  Checkpoint-restart - object hash infrastructure to manage shared objects
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/file.h>
+> +#include <linux/hash.h>
+> +#include <linux/checkpoint.h>
+> +
+> +struct cr_objref {
+> +	int objref;
+> +	void *ptr;
+> +	unsigned short type;
+> +	unsigned short flags;
+> +	struct hlist_node hash;
+> +};
+> +
+> +struct cr_objhash {
+> +	struct hlist_head *head;
+> +	int objref_index;
+> +};
+> +
+> +#define CR_OBJHASH_NBITS  10
+> +#define CR_OBJHASH_TOTAL  (1UL << CR_OBJHASH_NBITS)
+> +
+> +static void cr_obj_ref_drop(struct cr_objref *obj)
+> +{
+> +	switch (obj->type) {
+> +	case CR_OBJ_FILE:
+> +		fput((struct file *) obj->ptr);
+> +		break;
+> +	default:
+> +		BUG();
+> +	}
+> +}
+> +
+> +static void cr_obj_ref_grab(struct cr_objref *obj)
+> +{
+> +	switch (obj->type) {
+> +	case CR_OBJ_FILE:
+> +		get_file((struct file *) obj->ptr);
+> +		break;
+> +	default:
+> +		BUG();
+> +	}
+> +}
+> +
+> +static void cr_objhash_clear(struct cr_objhash *objhash)
+> +{
+> +	struct hlist_head *h = objhash->head;
+> +	struct hlist_node *n, *t;
+> +	struct cr_objref *obj;
+> +	int i;
+> +
+> +	for (i = 0; i < CR_OBJHASH_TOTAL; i++) {
+> +		hlist_for_each_entry_safe(obj, n, t, &h[i], hash) {
+> +			cr_obj_ref_drop(obj);
+> +			kfree(obj);
+> +		}
+> +	}
+> +}
+> +
+> +void cr_objhash_free(struct cr_ctx *ctx)
+> +{
+> +	struct cr_objhash *objhash = ctx->objhash;
+> +
+> +	if (objhash) {
+> +		cr_objhash_clear(objhash);
+> +		kfree(objhash->head);
+> +		kfree(ctx->objhash);
+> +		ctx->objhash = NULL;
+> +	}
+> +}
+> +int cr_objhash_alloc(struct cr_ctx *ctx)
+> +{
+> +	struct cr_objhash *objhash;
+> +	struct hlist_head *head;
+> +
+> +	objhash = kzalloc(sizeof(*objhash), GFP_KERNEL);
+> +	if (!objhash)
+> +		return -ENOMEM;
+> +	head = kzalloc(CR_OBJHASH_TOTAL * sizeof(*head), GFP_KERNEL);
+> +	if (!head) {
+> +		kfree(objhash);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	objhash->head = head;
+> +	objhash->objref_index = 1;
+> +
+> +	ctx->objhash = objhash;
+> +	return 0;
+> +}
+> +
+> +static struct cr_objref *cr_obj_find_by_ptr(struct cr_ctx *ctx, void *ptr)
+> +{
+> +	struct hlist_head *h;
+> +	struct hlist_node *n;
+> +	struct cr_objref *obj;
+> +
+> +	h = &ctx->objhash->head[hash_ptr(ptr, CR_OBJHASH_NBITS)];
+> +	hlist_for_each_entry(obj, n, h, hash)
+> +		if (obj->ptr == ptr)
+> +			return obj;
+> +	return NULL;
+> +}
+> +
+> +static struct cr_objref *cr_obj_find_by_objref(struct cr_ctx *ctx, int objref)
+> +{
+> +	struct hlist_head *h;
+> +	struct hlist_node *n;
+> +	struct cr_objref *obj;
+> +
+> +	h = &ctx->objhash->head[hash_ptr((void *) objref, CR_OBJHASH_NBITS)];
+> +	hlist_for_each_entry(obj, n, h, hash)
+> +		if (obj->objref == objref)
+> +			return obj;
+> +	return NULL;
+> +}
+> +
+> +static struct cr_objref *cr_obj_new(struct cr_ctx *ctx, void *ptr, int objref,
+> +				    unsigned short type, unsigned short flags)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = kmalloc(sizeof(*obj), GFP_KERNEL);
+> +	if (obj) {
+> +		int i;
+> +
+> +		obj->ptr = ptr;
+> +		obj->type = type;
+> +		obj->flags = flags;
+> +
+> +		if (objref) {
+> +			/* use 'objref' to index (restart) */
+> +			obj->objref = objref;
+> +			i = hash_ptr((void *) objref, CR_OBJHASH_NBITS);
+> +		} else {
+> +			/* use 'ptr' to index, assign objref (checkpoint) */
+> +			obj->objref = ctx->objhash->objref_index++;;
+> +			i = hash_ptr(ptr, CR_OBJHASH_NBITS);
+> +		}
+> +
+> +		hlist_add_head(&obj->hash, &ctx->objhash->head[i]);
+> +		cr_obj_ref_grab(obj);
+> +	}
+> +	return obj;
+> +}
+> +
+> +/**
+> + * cr_obj_add_ptr - add an object to the hash table if not already there
+> + * @ctx: checkpoint context
+> + * @ptr: pointer to object
+> + * @objref: unique identifier - object reference [output]
+> + * @type: object type
+> + * @flags: object flags
+> + *
+> + * Fills the unique identifier of the object into @objref
+> + *
+> + * returns 0 if found, 1 if added, < 0 on error
+> + */
+> +int cr_obj_add_ptr(struct cr_ctx *ctx, void *ptr, int *objref,
+> +		   unsigned short type, unsigned short flags)
+> +{
+> +	struct cr_objref *obj;
+> +	int ret = 0;
+> +
+> +	obj = cr_obj_find_by_ptr(ctx, ptr);
+> +	if (!obj) {
+> +		obj = cr_obj_new(ctx, ptr, 0, type, flags);
+> +		if (!obj)
+> +			return -ENOMEM;
+> +		else
+> +			ret = 1;
+> +	} else if (obj->type != type)	/* sanity check */
+> +		return -EINVAL;
+> +	*objref = obj->objref;
+> +	return ret;
+> +}
+> +
+> +/**
+> + * cr_obj_add_ref - add an object with unique identifer to the hash table
+> + * @ctx: checkpoint context
+> + * @ptr: pointer to object
+> + * @objref: unique identifier - object reference
+> + * @type: object type
+> + * @flags: object flags
+> + */
+> +int cr_obj_add_ref(struct cr_ctx *ctx, void *ptr, int objref,
+> +		   unsigned short type, unsigned short flags)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = cr_obj_new(ctx, ptr, objref, type, flags);
+> +	return obj ? 0 : -ENOMEM;
+> +}
+> +
+> +/**
+> + * cr_obj_get_by_ptr - find the unique identifier (objref) of an object
+> + * @ctx: checkpoint context
+> + * @ptr: pointer to object
+> + * @type: object type
+> + */
+> +int cr_obj_get_by_ptr(struct cr_ctx *ctx, void *ptr, unsigned short type)
+> +{
+> +	struct cr_objref *obj;
+> +
+> +	obj = cr_obj_find_by_ptr(ctx, ptr);
+> +	if (obj)
+> +		return obj->type == type ? obj->objref : -EINVAL;
+> +	else
+> +		return -ESRCH;
+> +}
+
+I have some nits about some of that.  I'd prefer to see the main code
+flow of the functions get taken out of the if(){} blocks and put at the
+first indenting level (cr_obj_new() could use this).
+
+One other nit would be to try and get rid of some of the '?:' use.  I
+personally find those hard to read and we don't use them that heavily in
+the core kernel.  For instance, the above can be written:
+
+	obj = cr_obj_find_by_ptr(ctx, ptr);
+	if (!obj)
+		return -ESRCH;
+	if (obj->type != type)
+		return -EINVAL;
+	return obj->objref;
+
+Which make the error conditions and their results just pop out much
+easier at the cost of a single added line of code.
+
+-- Dave
 
