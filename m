@@ -1,215 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYIPJPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYIPJRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYIPJPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 05:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYIPJPV
+	id S1753352AbYIPJRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 05:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYIPJRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 05:15:21 -0400
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:43867 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbYIPJPS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 05:15:18 -0400
-Date: Tue, 16 Sep 2008 14:43:34 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-Cc: ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-       vatsa@linux.vnet.ibm.com
-Subject: [RFC PATCH 1/1]: timers: Enabling timer migration to cpu0
-Message-ID: <20080916091320.GA945@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	linux-pm@lists.linux-foundation.org, ego@in.ibm.com,
-	tglx@linutronix.de, mingo@elte.hu, a.p.zijlstra@chello.nl,
-	andi@firstfloor.org, venkatesh.pallipadi@intel.com,
-	vatsa@linux.vnet.ibm.com
+	Tue, 16 Sep 2008 05:17:02 -0400
+Received: from h155.mvista.com ([63.81.120.155]:14044 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751203AbYIPJRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 05:17:00 -0400
+Message-ID: <48CF7986.2020302@ru.mvista.com>
+Date: Tue, 16 Sep 2008 13:16:54 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeremy@sgi.com
+Subject: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq() -> ->clear_irq()
+References: <200808192031.40288.bzolnier@gmail.com> <48AB478B.5040209@ru.mvista.com> <48CEDD89.5060107@ru.mvista.com> <200809151529.50424.bzolnier@gmail.com>
+In-Reply-To: <200809151529.50424.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The implentation details of this as follows:
-A sysfs entry is created at /sys/devices/system/cpu/cpuX/timer_migration. By setting this to 1, timer migration is enabled for that cpu.
-An important thing to note here is cpu-pinned timers. Timers can be pinned to a particular cpu using the function add_timer_on(). So, such timers should not be migrated.
-Since the last 3 bits of the tvec_base is guaranteed to be 0, and since the last bit is being used to indicate deferrable timers, I'm using the second last bit to indicate cpu-pinned timers.
-The implementation of functions to manage the TBASE_PINNED_FLAG is similar to those which manage the TBASE_DEFERRABLE_FLAG.
+Hello.
 
-Signed-off-by: Arun Bharadwaj <arun@linux.vnet.ibm.com>
----
-Index: linux-2.6.26/drivers/base/cpu.c
-===================================================================
---- linux-2.6.26.orig/drivers/base/cpu.c	2008-09-15 08:14:40.000000000 +0000
-+++ linux-2.6.26/drivers/base/cpu.c	2008-09-15 09:34:52.000000000 +0000
-@@ -13,6 +13,7 @@
- 
- #include "base.h"
- 
-+DEFINE_PER_CPU(int, enable_timer_migration);
- struct sysdev_class cpu_sysdev_class = {
- 	.name = "cpu",
- };
-@@ -20,6 +21,21 @@
- 
- static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
- 
-+#ifdef CONFIG_TIMER_MIGRATION
-+static ssize_t timer_migration_show(struct sys_device *dev, char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	return sprintf(buf, "%u\n", per_cpu(enable_timer_migration, cpu->sysdev.id));
-+}
-+static ssize_t timer_migration_store(struct sys_device *dev, const char *buf, size_t count)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	per_cpu(enable_timer_migration, cpu->sysdev.id) = buf[0] - 48;
-+	return count;
-+}
-+static SYSDEV_ATTR(timer_migration, 0666, timer_migration_show, timer_migration_store);
-+#endif
-+
- #ifdef CONFIG_HOTPLUG_CPU
- static ssize_t show_online(struct sys_device *dev, char *buf)
- {
-@@ -175,6 +191,11 @@
- 	if (!error)
- 		error = sysdev_create_file(&cpu->sysdev, &attr_crash_notes);
- #endif
-+
-+#ifdef CONFIG_TIMER_MIGRATION
-+	if (!error)
-+		error = sysdev_create_file(&cpu->sysdev, &attr_timer_migration);
-+#endif
- 	return error;
- }
- 
-Index: linux-2.6.26/init/Kconfig
-===================================================================
---- linux-2.6.26.orig/init/Kconfig	2008-09-15 08:14:40.000000000 +0000
-+++ linux-2.6.26/init/Kconfig	2008-09-15 08:14:48.000000000 +0000
-@@ -923,3 +923,9 @@
- 	  designed for best read-side performance on non-realtime
- 	  systems.  Classic RCU is the default.  Note that the
- 	  PREEMPT_RCU symbol is used to select/deselect this option.
-+
-+config TIMER_MIGRATION
-+	bool
-+	default y
-+	help
-+	  This option enables migration of non cpu-affine timers to cpu0.
-Index: linux-2.6.26/include/linux/timer.h
-===================================================================
---- linux-2.6.26.orig/include/linux/timer.h	2008-09-15 08:14:40.000000000 +0000
-+++ linux-2.6.26/include/linux/timer.h	2008-09-15 08:31:27.000000000 +0000
-@@ -5,6 +5,7 @@
- #include <linux/ktime.h>
- #include <linux/stddef.h>
- #include <linux/debugobjects.h>
-+#include <linux/percpu.h>
- 
- struct tvec_base;
- 
-@@ -187,3 +188,7 @@
- unsigned long round_jiffies_relative(unsigned long j);
- 
- #endif
-+
-+#ifdef CONFIG_TIMER_MIGRATION
-+DECLARE_PER_CPU(int, enable_timer_migration);
-+#endif
-Index: linux-2.6.26/kernel/timer.c
-===================================================================
---- linux-2.6.26.orig/kernel/timer.c	2008-09-15 08:14:40.000000000 +0000
-+++ linux-2.6.26/kernel/timer.c	2008-09-15 11:22:06.000000000 +0000
-@@ -37,6 +37,7 @@
- #include <linux/delay.h>
- #include <linux/tick.h>
- #include <linux/kallsyms.h>
-+#include <linux/timer.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -87,8 +88,9 @@
-  * the new flag to indicate whether the timer is deferrable
-  */
- #define TBASE_DEFERRABLE_FLAG		(0x1)
-+#define TBASE_PINNED_FLAG               (0x2)
- 
--/* Functions below help us manage 'deferrable' flag */
-+/* Functions below help us manage 'deferrable' flag and 'cpu-pinned-timer' flag */
- static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
- {
- 	return ((unsigned int)(unsigned long)base & TBASE_DEFERRABLE_FLAG);
-@@ -96,7 +98,7 @@
- 
- static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
- {
--	return ((struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG));
-+	return (struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG & ~TBASE_PINNED_FLAG);
- }
- 
- static inline void timer_set_deferrable(struct timer_list *timer)
-@@ -105,11 +107,21 @@
- 				       TBASE_DEFERRABLE_FLAG));
- }
- 
-+static inline unsigned int tbase_get_pinned(struct tvec_base *base)
-+{
-+	return ((unsigned int)(unsigned long)base & TBASE_PINNED_FLAG);
-+}
-+
- static inline void
- timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
- {
- 	timer->base = (struct tvec_base *)((unsigned long)(new_base) |
--				      tbase_get_deferrable(timer->base));
-+		   tbase_get_deferrable(timer->base) | tbase_get_pinned(timer->base));
-+}
-+
-+static inline void timer_set_pinned(struct timer_list *timer)
-+{
-+	timer->base = ((struct tvec_base *)((unsigned long)(timer->base) | TBASE_PINNED_FLAG));
- }
- 
- /**
-@@ -540,6 +552,12 @@
- 
- 	new_base = __get_cpu_var(tvec_bases);
- 
-+	#ifdef CONFIG_TIMER_MIGRATION
-+	if (__get_cpu_var(enable_timer_migration) && !tbase_get_pinned(timer->base)) {
-+		new_base = per_cpu(tvec_bases, 0);
-+	}
-+	#endif
-+
- 	if (base != new_base) {
- 		/*
- 		 * We are trying to schedule the timer on the local CPU.
-@@ -579,6 +597,7 @@
- 	struct tvec_base *base = per_cpu(tvec_bases, cpu);
- 	unsigned long flags;
- 
-+	timer_set_pinned(timer);
- 	timer_stats_timer_set_start_info(timer);
- 	BUG_ON(timer_pending(timer) || !timer->function);
- 	spin_lock_irqsave(&base->lock, flags);
-Index: linux-2.6.26/kernel/hrtimer.c
-===================================================================
---- linux-2.6.26.orig/kernel/hrtimer.c	2008-09-15 08:14:40.000000000 +0000
-+++ linux-2.6.26/kernel/hrtimer.c	2008-09-15 11:17:19.000000000 +0000
-@@ -200,6 +200,12 @@
- 	struct hrtimer_cpu_base *new_cpu_base;
- 
- 	new_cpu_base = &__get_cpu_var(hrtimer_bases);
-+
-+	#ifdef CONFIG_TIMER_MIGRATION
-+	if (__get_cpu_var(enable_timer_migration))
-+		new_cpu_base = &per_cpu(hrtimer_bases, 0);
-+	#endif
-+
- 	new_base = &new_cpu_base->clock_base[base->index];
- 
- 	if (base != new_base) {
+Bartlomiej Zolnierkiewicz wrote:
+
+>>>> * Rename ->ide_dma_clear_irq method to ->clear_irq
+>>>>   and move it from ide_hwif_t to struct ide_port_ops.
+>>>>
+>>>> * Move ->waiting_for_dma check inside ->clear_irq method.
+>>>>
+>>>> * Move ->dma_base check inside ->clear_irq method.
+>>>>
+>>>> piix.c:
+>>>> * Add ich_port_ops and remove init_hwif_ich() wrapper.
+>>>>
+>>>> There should be no functional changes caused by this patch.
+>>>>   
+>>>>         
+>>>   Good. I think it's worth implementing this method in at least 
+>>> cmd64x.c which actually reads the IDE interrupt latch bits 
+>>> (independent from the DMA interrupt status) in the dma_test_irq() 
+>>> methods but never clears them, so the latches may reflect a 
+>>> non-current state of the IDE interrupt...
+>>>       
+>>    I forgot that it does clear them in its dma_end() methods (which I 
+>> myself have reworked :-).
+>>    It seems however that at least for SFF-8038 compatibles, it makes 
+>> sense to leave it that way since INTRQ might be asserted while BMIDE 
+>> interrupt bit is not, so the interrupt latch would need clearing even on 
+>> DMA timeout...
+>>     
+>>>   It may also be worth considering turning this method into 
+>>> test-and-clear, so that we can get the actual IDE interrupt state on 
+>>> the chips that implement this...
+>>>       
+>>    Probably might add the test_irq() method to be called on 
+>> !hwif->waiting_for_dma. Cleraing the status at once seems impractical...
+>>     
+>
+> Or we can test for ->waiting_for_dma inside ->test_irq.
+>   
+
+   That also will do...
+
+>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>>>         
+>>> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>>>       
+>>    Not feeling sure about this patch -- ->waiting_for_dma probably 
+>> should've been left where it was...
+>>     
+>
+> Well, it doesn't change behavior and I think having ->clear_irq method
+> independent from the transfer mode is a preffered approach.
+>   
+
+   But its implementations will have to depend on it anyway. And 
+clearing the IDE interrupt in general already depends on the transfer 
+mode -- the BMIDE interrupt which is a (delayed) reflection of INTRQ is 
+cleared implicitly by the dma_end() method -- except in at least sgiioc4 
+driver.
+   BTW, sgiioc4 seems another candidate for clear_irq() implementation 
+-- currently clearing is done implicitly by the read_status() method (I 
+don't quite understand why it clears DMA error interrupt there). 
+However, since there's no documentation, I'm not sure how the IDE 
+interrupt is latched by IOC4.
+
+> Thanks,
+> Bart
+>   
+
+MBR, Sergei
+
+
