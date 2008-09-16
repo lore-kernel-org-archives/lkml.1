@@ -1,72 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYIPHGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYIPHMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbYIPHGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 03:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYIPHF7
+	id S1753152AbYIPHMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 03:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYIPHMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 03:05:59 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:33253 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbYIPHF6 (ORCPT
+	Tue, 16 Sep 2008 03:12:24 -0400
+Received: from host254-130-static.190-82-b.business.telecomitalia.it ([82.190.130.254]:35203
+	"EHLO nausicaa2.coritel.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751945AbYIPHMY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 03:05:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=D1mtHbnxEMDLzZnq3Shw86awKpjn/FoQXvb7X0Dfari5t3xqJJx9N7fGRoKEC8XhbK
-         gESzxkMAVXdV8OeZwbMxIwLniLQO64OwupGmOf2+XGn7jXVdoRhw1I9Cz//HHY5k6Gci
-         mVKKKieA1mOYmCvW9jnw0lIVLo7q5h8rLfERA=
-Message-ID: <71cd59b00809160005t62bbeb7ek984a47e61b452049@mail.gmail.com>
-Date: Tue, 16 Sep 2008 09:05:56 +0200
-From: "Corentin Chary" <corentin.chary@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH -mm] eeepc: depends on RFKILL
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       acpi4asus-user@lists.sourceforge.net
-In-Reply-To: <20080915125258.77b14e2b.randy.dunlap@oracle.com>
+	Tue, 16 Sep 2008 03:12:24 -0400
+Message-ID: <48CF5CBB.1050708@coritel.it>
+Date: Tue, 16 Sep 2008 09:14:03 +0200
+From: Marco Stornelli <marco.stornelli@coritel.it>
+Organization: CoRiTeL
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linux AVR32 <kernel@avr32linux.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] avr32: added mem kernel command line option support
+References: <48CE33D7.1040203@coritel.it>	<20080915074042.f5059467.randy.dunlap@oracle.com>	<48CE77C6.90307@coritel.it>	<20080915080517.5d75721e.randy.dunlap@oracle.com>	<48CE7FA8.2020409@coritel.it> <20080915083622.062c4b5b.randy.dunlap@oracle.com>
+In-Reply-To: <20080915083622.062c4b5b.randy.dunlap@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080915125258.77b14e2b.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yep, it should depends on RFKILL, and I should start porting
-asus-laptop to rfkill.
-Thanks for this patch.
+From: Marco Stornelli <marco.stornelli@gmail.com>
 
-On Mon, Sep 15, 2008 at 9:52 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> EEEPC_LAPTOP uses RFKILL, so the former should depend on RFKILL.
-> Build errors happen when EEEPC_LAPTOP=y and RFKILL=m.
->
-> eeepc-laptop.c:(.text+0xd5a7b): undefined reference to `rfkill_allocate'
-> eeepc-laptop.c:(.text+0xd5b04): undefined reference to `rfkill_register'
-> eeepc-laptop.c:(.text+0xd5b48): undefined reference to `rfkill_allocate'
-> eeepc-laptop.c:(.text+0xd5bd4): undefined reference to `rfkill_register'
-> eeepc-laptop.c:(.text+0xd5ece): undefined reference to `rfkill_unregister'
-> eeepc-laptop.c:(.text+0xd5ef6): undefined reference to `rfkill_unregister'
-> make[1]: *** [.tmp_vmlinux1] Error 1
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Corentin Chary <corentincj@iksaif.net>
+Now is it ok? Sorry but it's the first time I submit a patch for the kernel.
+Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+---
+--- linux-2.6.26.3/arch/avr32/kernel/setup.c.orig	2008-09-15
+11:30:00.000000000 +0200
++++ linux-2.6.26.3/arch/avr32/kernel/setup.c	2008-09-16
+09:06:31.000000000 +0200
+@@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
+ }
+ early_param("fbmem", early_parse_fbmem);
+
++/*
++ * Pick out the memory size.  We look for mem=size@start,
++ * where start and size are "size[KkMmGg]"
++ */
++static int __init early_mem(char *p)
++{
++	resource_size_t size, start;
++
++	start = system_ram->start;
++	size  = memparse(p, &p);
++	if (*p == '@')
++		start = memparse(p + 1, &p);
++
++	system_ram->start = start;
++	system_ram->end = system_ram->start + size - 1;
++	return 0;
++}
++early_param("mem", early_mem);
++
+ static int __init parse_tag_core(struct tag *tag)
+ {
+ 	if (tag->hdr.size > 2) {
+
+
+Randy Dunlap ha scritto:
+> On Mon, 15 Sep 2008 17:30:48 +0200 Marco Stornelli wrote:
+> 
+>> From: Marco Stornelli <marco.stornelli@gmail.com>
+>>
+>> Fixed the type of size and start, now they are resource_size_t.
+>> Fixed the double pointer parameter, now it's only a single pointer.
+>> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+>> ---
+>> --- linux-2.6.26.5/arch/avr32/kernel/setup.c.orig    2008-09-15 11:30:00.000000000 +0200
+>>
+>> +++ linux-2.6.26.5/arch/avr32/kernel/setup.c 2008-09-15
+>> 11:30:17.000000000 +0200
+>> @@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
+>> }
+>> early_param("fbmem", early_parse_fbmem);
+>>
+>> +/*
+>> + * Pick out the memory size. We look for mem=size@start,
+>> + * where start and size are "size[KkMmGg]"
+>> + */
+>> +static int __init early_mem(char *p)
+>> +{
+>> + resource_size_t size, start;
+>> +
+>> + start = system_ram->start;
+>> + size = memparse(p, &p);
+>> + if (**p == '@')
+>> + start = memparse(p + 1, &p);
+> 
+> Lots of whitespace damage here.  Your first patch looked OK
+> for whitespace, so something changed....
+> 
+> 
+>> +
+>> + system_ram->start = start;
+>> + system_ram->end = system_ram->start + size - 1;
+>> + return 0;
+>> +}
+>> +early_param("mem", early_mem);
+>> +
+>> static int __init parse_tag_core(struct tag *tag)
+>> {
+>> if (tag->hdr.size > 2) {
+>>
+>> Randy Dunlap ha scritto:
+>>> On Mon, 15 Sep 2008 16:57:10 +0200 Marco Stornelli wrote:
+>>>
+>>>   
+>>>> If you see the above function early_parse_fbmem:
+>>>>
+>>>> static int __init early_parse_fbmem(char *p)
+>>>> {
+>>>> int ret;
+>>>> unsigned long align;
+>>>>
+>>>> fbmem_size = memparse(p, &p);
+>>>> .........
+>>>>
+>>>> where fbmem_size is a resource_size_t (u32 because avr32 is a 32-bit
+>>>> architecture), so I used the same philosophy. Maybe I can remove
+>>>> unsigned long and replace it with resource_size_t to be more uniform.
+>>>>     
+>>> Yes, I think that would be better.
+>>>
+>>> Thanks.
+>>>
+>>>   
+>>>> Randy Dunlap ha scritto:
+>>>>     
+>>>>> On Mon, 15 Sep 2008 12:07:19 +0200 Marco Stornelli wrote:
+>>>>>
+>>>>>   
+>>>>>       
+>>>>>> From: Marco Stornelli <marco.stornelli@gmail.com>
+>>>>>>
+>>>>>> Added support for the mem kernel command line option
+>>>>>> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+>>>>>> ---
+>>>>>> --- setup.c.orig    2008-09-15 11:30:00.000000000 +0200
+>>>>>> +++ setup.c    2008-09-15 11:30:17.000000000 +0200
+>>>>>> @@ -283,6 +283,25 @@ static int __init early_parse_fbmem(char
+>>>>>>  }
+>>>>>>  early_param("fbmem", early_parse_fbmem);
+>>>>>>  
+>>>>>> +/*
+>>>>>> + * Pick out the memory size.  We look for mem=size@start,
+>>>>>> + * where start and size are "size[KkMm]"
+>>>>>>     
+>>>>>>         
+>>>>>                                     [KkMmGg]
+>>>>>
+>>>>>   
+>>>>>       
+>>>>>> + */
+>>>>>> +static int __init early_mem(char **p)
+>>>>>> +{
+>>>>>> +    unsigned long size, start;
+>>>>>> +
+>>>>>> +    start = system_ram->start;
+>>>>>> +    size  = memparse(*p, p);
+>>>>>>     
+>>>>>>         
+>>>>> memparse() returns an unsigned long long.  Is the truncation OK for avr32?
+>>>>>
+>>>>>   
+>>>>>       
+>>>>>> +    if (**p == '@')
+>>>>>> +        start = memparse(*p + 1, p);
+>>>>>> +
+>>>>>> +    system_ram->start = start;
+>>>>>> +    system_ram->end = system_ram->start + size - 1;
+>>>>>> +    return 0;
+>>>>>> +}
+>>>>>> +early_param("mem", early_mem);
+>>>>>> +
+>>>>>>  static int __init parse_tag_core(struct tag *tag)
+>>>>>>  {
+>>>>>>      if (tag->hdr.size > 2) {
+>>>>>> --
+> 
+> 
 > ---
->  drivers/misc/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
->
-> --- linux-2.6.27-rc5-mm1.orig/drivers/misc/Kconfig
-> +++ linux-2.6.27-rc5-mm1/drivers/misc/Kconfig
-> @@ -410,6 +410,7 @@ config EEEPC_LAPTOP
->        depends on BACKLIGHT_CLASS_DEVICE
->        depends on HWMON
->        depends on EXPERIMENTAL
-> +       depends on RFKILL
->        ---help---
->          This driver supports the Fn-Fx keys on Eee PC laptops.
->          It also adds the ability to switch camera/wlan on/off.
->
+> ~Randy
+> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> http://linuxplumbersconf.org/
+> 
+
+-- 
+Marco Stornelli
+Embedded Software Engineer
+CoRiTeL - Consorzio di Ricerca sulle Telecomunicazioni
+http://www.coritel.it
+
+marco.stornelli@coritel.it
++39 06 72582838
