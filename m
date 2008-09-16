@@ -1,90 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYIPLiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbYIPLn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbYIPLiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 07:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYIPLip
+	id S1754102AbYIPLn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 07:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbYIPLnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 07:38:45 -0400
-Received: from mail.es335.com ([67.65.19.105]:20114 "EHLO mail.es335.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752476AbYIPLio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 07:38:44 -0400
-Message-ID: <48CF9AC3.6060801@opengridcomputing.com>
-Date: Tue, 16 Sep 2008 06:38:43 -0500
-From: Tom Tucker <tom@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Tue, 16 Sep 2008 07:43:15 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:13867 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbYIPLnO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 07:43:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=EW+kPXa0LmrXJb6SmJYUq/2Pqsc8x/JljCFrEwxIlg9hfI6MuFoG5uC1X9zQsqJCrN
+         vVrhazElBxrINpR5j9K7SVDRiWRmwGtPXC70deBPEyeDpDfSSim3IoiONzHyuxzdeSUK
+         ju1lwOK+PlwYt/n9mRMbXwHvBweH5HAWoCREs=
+Date: Tue, 16 Sep 2008 11:43:05 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916114305.GB10965@ff.dom.local>
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-References: <48B2D7F8.5020206@opengridcomputing.com>	 <20080826192711.GJ4380@fieldses.org>	 <48B567F5.2090605@opengridcomputing.com>	 <1220111261.31172.14.camel@localhost.localdomain>	 <20080831193037.GB14876@fieldses.org>	 <1220211842.31172.18.camel@localhost.localdomain>	 <48BAF643.4070808@opengridcomputing.com>	 <1220217505.31172.26.camel@localhost.localdomain>	 <48BC2466.2070806@opengridcomputing.com>	 <1221036015.24993.27.camel@zakaz.uk.xensource.com>	 <20080912224323.GN22126@fieldses.org>	 <48CAF80A.4010109@opengridcomputing.com>	 <1221296243.2534.7.camel@localhost.localdomain> <1221544139.2534.18.camel@localhost.localdomain>
-In-Reply-To: <1221544139.2534.18.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080916104811.GC7397@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> (dropping the e1000 guys, it seems unnecessary to keep spamming them
-> with this issue when it's unlikely to be anything to do with them. I've
-> left their list on for now so they know. I'd suggest dropping it from
-> any replies.)
->
-> On Sat, 2008-09-13 at 09:57 +0100, Ian Campbell wrote:
->   
->> On Fri, 2008-09-12 at 18:15 -0500, Tom Tucker wrote:
->>     
->>> Iain sadly yes. There's a thread stuck holding the BUSY bit or a thread 
->>> failed to clear the bit properly
->>> (maybe an error path). Data continues to arrives, but the transport 
->>> never gets put back on the queue
->>> because it's BUSY bit is set.  In other words, this is a different error 
->>> than the one we've been chasing.
->>>
->>> If I sent you a patch, could you rebuild the kernel and give it a whirl? 
->>> Also, can you give me a
->>> kernel.org relative commit-id or tag for the kernel that you're using?
->>>       
->> I sure could. I'm using the Debian kernel which is currently at 2.6.26.3
->> (pkg version 2.6.26-4) although I have an update to 2.6.26.4 (via pkg
->> 2.6.26-5) pending.
+On 16-09-2008 12:48, Adrian Bunk wrote:
+> On Tue, Sep 16, 2008 at 12:40:14PM +0300, Adrian Bunk wrote:
+>> On Tue, Sep 16, 2008 at 11:18:08AM +0200, Thomas Bogendoerfer wrote:
+>>> On Tue, Sep 16, 2008 at 11:39:34AM +0300, Adrian Bunk wrote:
+>>>> On Mon, Sep 15, 2008 at 03:11:25PM -0700, David Miller wrote:
+>>>>> From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+>>>>> Date: Mon, 15 Sep 2008 23:53:08 +0200
+>>>>>
+>>>>>> On Mon, Sep 15, 2008 at 02:14:42PM -0700, David Miller wrote:
+>>>>>>> Most of those changes were complete and utter CRAP.
+>>>>>> thank you, but the fix I've sent (de2104x) isn't crap. The bug breaks the 
+>>>>>> current debian-installer for Cobalt Qube1, when it tries to get an
+>>>>>> IP address via dhcp. 
+>>>>> And why is this bug that has been there for YEARS is appropriate
+>>>>> to fix outside of the merge window?
+>>>>> ...
+>>>> Such a fix is even suitable for -stable.
+>>> that was my feeling as well, but if David wants to see it in the next
+>>> merge window, it's his decision. It's not a important fix as the user
+>>> base is obviuosly pretty small. And I didn't know about that bug, when
+>>> the merge windows was open, so I couldn't fix it "in time".
+>> And if it goes in during the next merge window it can immediately go 
+>> into 2.6.27.1 (and even 2.6.26.y if it's still maintained), since the 
+>> fix fulfills Documentation/stable_kernel_rules.txt .
 >>
->> If I'm going to build my own I'll start with current git
->> (a551b98d5f6fce5897d497abd8bfb262efb33d2a) and repro there before trying
->> your patch.
->>     
->
-> FYI I've repro'd with 
->         commit a551b98d5f6fce5897d497abd8bfb262efb33d2a
->         Merge: d1c6d2e... 50bed2e...
->         Author: Linus Torvalds <torvalds@linux-foundation.org>
->         Date:   Thu Sep 11 11:50:15 2008 -0700
->         
->             Merge branch 'for-linus' of git://git.kernel.dk/linux-2.6-block
->             
->             * 'for-linus' of git://git.kernel.dk/linux-2.6-block:
->               sg: disable interrupts inside sg_copy_buffer
-> which was the latest git a few days back.
->
-> I'm going to start bisecting between v2.6.25 and v2.6.26. There's 173
-> commits in fs/nfs* net/sunrpc in that interval so with a day per test I
-> should have something next week...
->
->   
-Iain:
+>> That doesn't make sense.
+> 
+> Note that my emails are not meant against David personally - he just 
+> seems to have gotten from pushing too much to pushing too few, with
+> such illogical results.
+> 
+> cu
+> Adrian
 
-I'm assuming you'll do this in advance of any patch from me? I was 
-simply going to add printk to the various shutdown paths and see if we 
-could get some finer grained debug output since the generic transport 
-debug output was too verbose.
+Probably he can read.
 
-Let me know and I'll help if I can,
-Tom
+Jarek P.
 
-> Ian.
->   
+PS:
 
+On 04-09-2008 01:24, Linus Torvalds wrote:
+> 
+> On Wed, 3 Sep 2008, Linus Torvalds wrote:
+>> What's so hard to understand about this?
+> 
+> Here's a simple rule of thumb:
+>  - if it's not on the regression list
+>  - if it's not a reported security hole
+>  - if it's not on the reported oopses list
+> then why are people sending it to me?
+> 
+> IOW, if it's just another random improvement, and you send it to me 
+> outside of the merge window, then what is the point of the merge window? 
+> 
+> 		Linus
