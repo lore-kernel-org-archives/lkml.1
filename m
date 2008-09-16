@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYIPPaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYIPPmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbYIPPaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbYIPPaU
+	id S1755457AbYIPPmJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYIPPly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:30:20 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:36997 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283AbYIPPaR (ORCPT
-	<rfc822;Linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:30:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZL6v9nDDK4wYT/F9Izq2qgHA3py9toi0b4Svjv7PwI9VGEoeehzt3OayWs6DwUNy3g
-         30MpkC7Iweiw45EwtqHD1BwaSpBQP/+HWHiv4YBtGcubUe57quX6x3XPmvp15almRb65
-         eNVgpLhY0lumWQ2AWBmtLtOhyG7+tjoMLbYgI=
-Message-ID: <6934efce0809160830v461a115ch305aeaadaf5d9883@mail.gmail.com>
-Date: Tue, 16 Sep 2008 08:30:16 -0700
-From: "Jared Hulbert" <jaredeh@gmail.com>
-To: "Ricard Wanderlof" <ricard.wanderlof@axis.com>
-Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
-Cc: "Jamie Lokier" <jamie@shareable.org>,
-       "cotte@de.ibm.com" <cotte@de.ibm.com>,
-       "Greg Ungerer" <gerg@snapgear.com>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>,
-       "Linux-kernel@vger.kernel.org" <Linux-kernel@vger.kernel.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       "tim.bird@am.sony.com" <tim.bird@am.sony.com>
-In-Reply-To: <Pine.LNX.4.64.0809160856190.5966@lnxricardw.se.axis.com>
+	Tue, 16 Sep 2008 11:41:54 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54105 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbYIPPlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:41:53 -0400
+Date: Tue, 16 Sep 2008 09:41:37 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Manish Katiyar <mkatiyar@gmail.com>,
+       Marco Stornelli <marco.stornelli@coritel.it>, viro@zeniv.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfs: added better file aio_read aio_write operations presence check
+Message-ID: <20080916154137.GB2119@parisc-linux.org>
+References: <bcF2N-29W-1@gated-at.bofh.it> <bcGBv-4eJ-1@gated-at.bofh.it> <E1Kfcb3-0003ra-Q7@be1.7eggert.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080915163421.GA13631@shareable.org>
-	 <Pine.LNX.4.64.0809160856190.5966@lnxricardw.se.axis.com>
+In-Reply-To: <E1Kfcb3-0003ra-Q7@be1.7eggert.dyndns.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> NAND is significantly faster when writing than NOR, read speed is of the
-> same magnitude, possibly slower in many cases.
+On Tue, Sep 16, 2008 at 05:36:09PM +0200, Bodo Eggert wrote:
+> Why can't the file system registration code set filp->f_op->aio_read to
+> generic_file_aio_read?
 
-Right.
+        const struct file_operations    *f_op;
 
-Specifically, read bandwidth is on the same order of magnitude.
-However the read latency of NAND is a couple orders of magnitude
-higher (100ns vs 20,000ns) so it depends on what you are doing.
+Having said that, BUILD_BUG_ON(!f_op->aio_read) is fine by me ... make
+the filesystem writer put it in without slowing down anyone at runtime.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
