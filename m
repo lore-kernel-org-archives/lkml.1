@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYIPSD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbYIPSKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757956AbYIPSD7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 14:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbYIPSDq
+	id S1756927AbYIPSKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 14:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYIPSKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 14:03:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49612 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755476AbYIPSDp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 14:03:45 -0400
-Message-ID: <48CFF4EB.1050401@zytor.com>
-Date: Tue, 16 Sep 2008 11:03:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: linux@sandersweb.net
-CC: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Don't use NOPL on 32-bit cpu's because not all systems
- support it.
-References: <200809161159.15870.linux@sandersweb.net> <48CFDF82.3000704@zytor.com> <200809161348.24130.linux@sandersweb.net>
-In-Reply-To: <200809161348.24130.linux@sandersweb.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 16 Sep 2008 14:10:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38313 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754620AbYIPSKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 14:10:22 -0400
+Date: Tue, 16 Sep 2008 14:09:17 -0400
+From: Rik van Riel <riel@redhat.com>
+To: "Michael Chan" <mchan@broadcom.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.27-rc5-mm1
+Message-ID: <20080916140917.105adc2a@bree.surriel.com>
+In-Reply-To: <1221519658.11021.13.camel@HP1>
+References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
+	<20080915180130.10995b90@cuia.bos.redhat.com>
+	<1221519658.11021.13.camel@HP1>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 15 Sep 2008 16:00:58 -0700
+"Michael Chan" <mchan@broadcom.com> wrote:
+
+> > 05:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+> > 09:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
 > 
-> I think you still want the nopl enabled for 64-bits.
-> 
+> Does dmesg show anything when you run ifup?
+ 
+The linux-next tree fails in the same way.  Here is the dmesg output
+from the broadcom driver:
 
-Yes.  Accordingly, I didn't change 64 bits.
+Broadcom NetXtreme II Gigabit Ethernet Driver bnx2 v1.8.0 (Aug 14, 2008)
+vendor=8086 device=2690
+bnx2 0000:05:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
 
-> int main()
-> {
-> 	signal(SIGILL, except);
-> 	asm("\n"
-> 		"mov $0x01, %eax\n" /* function number */
-> 		".byte 0x0f, 0x3f, 0x07, 0x0b\n" /* call VPC */
-> 	   );
-> 	printf("Inside Virtual PC\n");
-> 	return 0;
-> }
+eth0: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X 64-bit 133MHz found at
+ mem f8000000, IRQ 16, node addr 00:19:b9:ee:6c:4a
+vendor=8086 device=3510
+vendor=8086 device=3500
+vendor=8086 device=25e2
+bnx2 0000:09:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+eth1: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X 64-bit 133MHz found at mem f4000000, IRQ 17, node addr 00:19:b9:ee:6c:4c
+vendor=8086 device=350c
+vendor=8086 device=25e2
 
-Well, isn't that "interesting".  0F 3F is in the range expected 
-(although not documented) to be used for 3-byte opcode prefixes in the 
-future.  It's also the Centaur ALTINST instruction (which I believe have 
-to be enabled via an MSR, so in that way it's not a bad choice.)
+Here is the dmesg from around ifup time:
 
-It's definitely less broken than the official way to detect VMWare, but 
-still pretty daft.  (CPUID, MSR or PCI IDs make a lot more sense.)
+lo: Disabled Privacy Extensions
+ip used greatest stack depth: 4296 bytes left
+try to get more irq_cfg 32
+irq_irq ==> [0x434f14800 - 0x434f14e00]
+found new irq_cfg for irq 5243136
+try to get more irq_desc 32
+irq_desc ==> [0x42f426000 - 0x42f428000]
+kstat_irqs ==> [0x43c1d4c00 - 0x43c1d5000]
+found new irq_desc for irq 5243136
 
-The "official" way to detect Virtual PC is apparently to look for 
-"Microsoft Corportation" as the DMI motherboard manufacturer.  This is 
-downright dangerously stupid, since Microsoft likes to make false starts 
-in the hardware business on a regular basis, and doesn't work with old 
-Connectix VPC anyway.  However, there is supposedly "Virtual Machine" as 
-the model, which can be used to disambiguate.
+This one might be related, not sure:
 
-	-hpa
+pan0: Dropping NETIF_F_UFO since no NETIF_F_HW_CSUM feature.
+
+-- 
+All rights reversed.
