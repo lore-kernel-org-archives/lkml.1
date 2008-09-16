@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYIPOBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbYIPODD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbYIPOBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYIPOBD
+	id S1755018AbYIPODD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:03:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYIPOCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:01:03 -0400
-Received: from ns.firmix.at ([62.141.48.66]:2048 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbYIPOBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:01:01 -0400
-Subject: Re: looking for a function
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Xu Yang <risingsunxy@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <ab40e9c0809160550q411507aeledae30a9f835d09d@mail.gmail.com>
-References: <ab40e9c0809160550q411507aeledae30a9f835d09d@mail.gmail.com>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Tue, 16 Sep 2008 16:00:32 +0200
-Message-Id: <1221573632.6103.83.camel@spike.firmix.at>
+	Tue, 16 Sep 2008 10:02:51 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37959 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbYIPOCt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:02:49 -0400
+Date: Tue, 16 Sep 2008 07:02:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Adrian Bunk <bunk@kernel.org>, Jarek Poplawski <jarkao2@gmail.com>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916070241.3e8d5202@infradead.org>
+In-Reply-To: <20080916135408.GB13388@mit.edu>
+References: <20080916104811.GC7397@cs181140183.pp.htv.fi>
+	<20080916114305.GB10965@ff.dom.local>
+	<20080916121528.GD7397@cs181140183.pp.htv.fi>
+	<20080916135408.GB13388@mit.edu>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.347 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.347 required=5
-X-Spam-Score: -2.347 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, 16 Sep 2008 09:54:08 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-On Tue, 2008-09-16 at 14:50 +0200, Xu Yang wrote:
-> Hi guys,
+> If it's a really important bug, and it affects a huge number of users,
+> or it's really bad security bug, the reality is that exceptions will
+> be made to the rules.  But exceptions need to remain exceptions for
+> extraordinary situations, not everyday occurrences.  And of course, if
+> the bug does affect a huge number of users, someone should be asking
+> the question why it wasn't detected sooner, say before the last merge
+> window --- and to ask the question how many users is this bug really
+> going to affect anyway?
 > 
-> I am looking for a function that can show me the current thread is
-> running on which cpu.
+> At least, that's my take on things,
+> 
 
-> e.g I am using pthread to write a multithreaded program, in each
-> thread I would like to insert such kind of function so that I can know
-> on which cpu this thread is running on.
+also note that Linus said "regression or on the kerneloops list";
+if it has any kind of backtrace, it'll be there if it's a common
+problem that hits many users.
 
-That doesn't make much sense as the same thread can run on a different
-CPU after each scheduling decision. And - as it is in userspace -
-scheduling can happen before any assembler op.
 
-	Bernd
 -- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
