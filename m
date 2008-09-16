@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbYIPWZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbYIPW1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbYIPWZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 18:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYIPWZQ
+	id S1753268AbYIPW1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 18:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYIPW1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 18:25:16 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:33655 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbYIPWZO (ORCPT
+	Tue, 16 Sep 2008 18:27:11 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:11304
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751370AbYIPW1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 18:25:14 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Jonathan Steel <jon.steel@esentire.com>
-References: <48D0067F.3020007@esentire.com>
-Date: Tue, 16 Sep 2008 15:21:53 -0700
-In-Reply-To: <48D0067F.3020007@esentire.com> (Jonathan Steel's message of
-	"Tue, 16 Sep 2008 15:18:23 -0400")
-Message-ID: <m1d4j3g29q.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds
-	<torvalds@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0303]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH] kexec: segmentation fault in kimage_add_entry
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Tue, 16 Sep 2008 18:27:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AocBAGPPz0h8qNU+/2dsb2JhbAAIuhuBZw
+X-IronPort-AV: E=Sophos;i="4.32,410,1217779200"; 
+   d="scan'208";a="321698625"
+Subject: Re: Driver for tightly coupled memory
+From: Ben Nizette <bn@niasdigital.com>
+To: Alessio Sangalli <alesan@manoweb.com>
+Cc: Ben Dooks <ben-linux@fluff.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <48CFEF3F.5040901@manoweb.com>
+References: <48CEC71F.3000006@manoweb.com>
+	 <20080916093513.GF1916@fluff.org.uk>  <48CFEF3F.5040901@manoweb.com>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Wed, 17 Sep 2008 08:27:02 +1000
+Message-Id: <1221604022.3598.4.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jonathan Steel <jon.steel@esentire.com>
 
-A segmentation fault can occur in kimage_add_entry in kexec.c when
-loading a kernel image into memory. The fault occurs because a page is
-requested by calling kimage_alloc_page with gfp_mask GFP_KERNEL and the
-function may actually return a page with gfp_mask GFP_HIGHUSER. The high
-mem page is returned because it was swapped with the kernel page due to
-the kernel page being a page that will shortly be copied to.
+On Tue, 2008-09-16 at 10:39 -0700, Alessio Sangalli wrote:
+> Ben Dooks wrote:
+> > IIRC, there's no current support for using TCMs.
+> 
+> I think I will write a module that implements a software FIFO. One
+> function to allocate a FIFO n words deep, a "push" and a "pop" and
+> similar. The calling module will have to setup the FIFO and use it
+> probably in ISRs or similar (the policy will totally remain in the
+> caller module). Any comments on such approach?
 
-This patch ensures that kimage_alloc_page returns a page that was
-created with the correct gfp flags.
+I'd feel uncomfortable about picking an arbitrary function for the TCM
+to accomplish.  Why don't you just set up a genalloc on that RAM and let
+the user use it for what they will?
 
+If a driver needs a quick FIFO it can attempt to get the RAM for said
+FIFO from the genalloc and fall back to main memory otherwise.  Simple,
+flexible, easy :-)
 
-I have verified the change and fixed the whitespace damage of the
-original patch.  Jonathan did a great job of tracking this down
-after he hit the problem. -- Eric
-
-Signed-off-by: Jonathan Steel <jon.steel@esentire.com>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- kernel/kexec.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 59f3f0d..aef2653 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -753,8 +753,14 @@ static struct page *kimage_alloc_page(struct kimage *image,
- 			*old = addr | (*old & ~PAGE_MASK);
- 
- 			/* The old page I have found cannot be a
--			 * destination page, so return it.
-+			 * destination page, so return it if it's
-+			 * gfp_flags honor the ones passed in.
- 			 */
-+			if (!(gfp_mask & __GFP_HIGHMEM) &&
-+			    PageHighMem(old_page)) {
-+				kimage_free_pages(old_page);
-+				continue;
-+			}
- 			addr = old_addr;
- 			page = old_page;
- 			break;
--- 
-1.5.3.rc6.17.g1911
-
+	--Ben.
