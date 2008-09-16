@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYIPRDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYIPRJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbYIPRDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbYIPRDJ
+	id S1754176AbYIPRJA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIPRIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:03:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:59523 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754406AbYIPRDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:03:08 -0400
-Date: Tue, 16 Sep 2008 10:02:51 -0700 (PDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Pavel Machek <pavel@suse.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
-In-Reply-To: <alpine.LFD.1.10.0809160715120.3606@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.10.0809161000410.3875@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de>
- <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de> <20080915091925.GB1787@elf.ucw.cz> <alpine.LFD.1.10.0809150704420.5283@apollo.tec.linutronix.de> <20080915192600.GA1627@elf.ucw.cz> <20080915195951.GA1651@elf.ucw.cz>
- <alpine.LFD.1.10.0809160715120.3606@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 16 Sep 2008 13:08:51 -0400
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:51755 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751574AbYIPRIu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 13:08:50 -0400
+Message-ID: <48CFE820.7010305@lwfinger.net>
+Date: Tue, 16 Sep 2008 12:08:48 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Buesch <mb@bu3sch.de>
+CC: bcm43xx-dev@lists.berlios.de, John Linville <linville@tuxdriver.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adel Gadllah <adel.gadllah@gmail.com>,
+       wireless <linux-wireless@vger.kernel.org>
+Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
+References: <48CFC03A.8020708@lwfinger.net> <200809161742.15527.mb@bu3sch.de>
+In-Reply-To: <200809161742.15527.mb@bu3sch.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Sep 2008, Thomas Gleixner wrote:
-> On Mon, 15 Sep 2008, Pavel Machek wrote:
-> > > cg-seek here, and problem is back. Good. I can get the
+Michael Buesch wrote:
+> On Tuesday 16 September 2008 16:18:34 Larry Finger wrote:
+>> Since commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f entitled
+>> "b43/b43legacy: add RFKILL_STATE_HARD_BLOCKED support", the radio LED
+>> no longer responds to rfkill switch events.
+>>
+>> ATM, I do not have a fix, other than reversion of this commit.
+> 
+> It's kind of bogus that it pokes with the software rfkill state
+> from within the hardware rfkill handler.
+> 
+> Please revert this patch. The commit log says nothing about
+> why this is needed and I don't see a point in overriding the state
+> in the rfkill-private data structure from within the driver.
 
-Does the patch below fix it ?
+I agree with Michael. From what I know, the only possible reason for
+having this state would be if user space could somehow affect the
+state of the hardware switch. As the user's finger is the only such
+thing, then there is no use for the RFKILL_STATE_HARD_BLOCKED state,
+particularly when it breaks LED operations.
 
-Thanks,
+Please revert the patch.
 
-	tglx
-----
-diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-index 1876b52..eb8736f 100644
---- a/kernel/time/clockevents.c
-+++ b/kernel/time/clockevents.c
-@@ -69,6 +69,9 @@ void clockevents_set_mode(struct clock_event_device *dev,
- 		dev->set_mode(mode, dev);
- 		dev->mode = mode;
- 	}
-+
-+	if (mode == CLOCK_EVT_MODE_SHUTDOWN)
-+		dev->next_event.tv64 = KTIME_MAX;
- }
- 
- /**
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 2f5a382..6b0b230 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -434,6 +434,19 @@ again:
- }
- 
- /*
-+ * We shutdown the device which will stop anyway, but we keep the
-+ * next_event untouched as it carries the information when we
-+ * broadcast.
-+ */
-+static void tick_broadcast_shutdown_device(struct clock_event_device *dev)
-+{
-+	if (dev->mode != CLOCK_EVT_MODE_SHUTDOWN) {
-+		dev->set_mode(CLOCK_EVT_MODE_SHUTDOWN, dev);
-+		dev->mode = CLOCK_EVT_MODE_SHUTDOWN;
-+	}
-+}
-+
-+/*
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-  */
-@@ -464,7 +477,7 @@ void tick_broadcast_oneshot_control(unsigned long reason)
- 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
- 		if (!cpu_isset(cpu, tick_broadcast_oneshot_mask)) {
- 			cpu_set(cpu, tick_broadcast_oneshot_mask);
--			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+			tick_broadcast_shutdown_device(dev);
- 			if (dev->next_event.tv64 < bc->next_event.tv64)
- 				tick_broadcast_set_event(dev->next_event, 1);
- 		}
+Larry
