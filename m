@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYIPOQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYIPORj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbYIPOQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYIPOQj
+	id S1755953AbYIPORj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYIPORa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:16:39 -0400
-Received: from zulu.prosoftsystems.ru ([195.58.8.33]:62791 "EHLO
-	zulu.prosoftsystems.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbYIPOQi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:16:38 -0400
-From: Alexander Pazdnikov <pazdnikov@prosoftsystems.ru>
-Organization: PROSOFT SYSTEMS
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26.5-rt9
-Date: Tue, 16 Sep 2008 20:16:55 +0600
-User-Agent: KMail/1.9.6 (enterprise 0.20071012.724442)
+	Tue, 16 Sep 2008 10:17:30 -0400
+Received: from www.tglx.de ([62.245.132.106]:36211 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbYIPOR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:17:29 -0400
+Date: Tue, 16 Sep 2008 07:16:24 -0700 (PDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Pavel Machek <pavel@suse.cz>
+cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.27-rc6: nohz + s2ram = need to press keys to get progress
+In-Reply-To: <20080915195951.GA1651@elf.ucw.cz>
+Message-ID: <alpine.LFD.1.10.0809160715120.3606@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.10.0809140455470.5283@apollo.tec.linutronix.de> <20080914100913.GB7909@elf.ucw.cz> <20080914101406.GA1625@elf.ucw.cz> <20080914173536.GA1687@elf.ucw.cz> <alpine.LFD.1.10.0809141049570.5283@apollo.tec.linutronix.de>
+ <20080914181228.GA18934@elf.ucw.cz> <alpine.LFD.1.10.0809141214110.5283@apollo.tec.linutronix.de> <20080915091925.GB1787@elf.ucw.cz> <alpine.LFD.1.10.0809150704420.5283@apollo.tec.linutronix.de> <20080915192600.GA1627@elf.ucw.cz>
+ <20080915195951.GA1651@elf.ucw.cz>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809162016.56330.pazdnikov@prosoftsystems.ru>
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0278], KAS30/Release
-X-SpamTest-Info: Not protected
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Mon, 15 Sep 2008, Pavel Machek wrote:
+> > cg-seek here, and problem is back. Good. I can get the
+> > /proc/timer_list ;-)... attached.
+> 
+> (Actually, timer_list was from more recent kernel, sorry about that, I
+> was confused. But I verified, and 72d... is still broken).
 
-static inline ftrace_event_irq was removed from include/linux/ftrace.h that was in 2.6.26-rt1 patch
+Is the timer_list output is from that "sleepy" state ? If not please
+provide one.
 
-/arch/arm/kernel/irq.c:118: error: implicit declaration off function 'ftrace_event_irq'
-
-It forced to delete this call, but is it possible to fix it correctly?
-Otherwise kernel failed to compile.
-
--- 
-Best regards,
-Alexander Pazdnikov
-
+Thanks,
+	tglx
