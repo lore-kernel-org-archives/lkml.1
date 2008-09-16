@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbYIPRnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbYIPRoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbYIPRnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYIPRnR
+	id S1756237AbYIPRoj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYIPRob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:43:17 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:57568 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbYIPRnQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:43:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AHlx02l/xChui1u86K22GcVGZcNvCCtTpBYu9BnAgY2eQHsjRmZ+8yPU7g4vWF2Egj
-         TA+QllT9c1gS0FiyBr2D+NCdYHyKoltj0HPWFdr9+SDtRY4LP3sV78EZpygA9I2F1HLo
-         0FbRvTI5qDTcqyW2patIRXfob9ktmhTjSaN/I=
-Date: Tue, 16 Sep 2008 19:42:17 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: RFC: [patch] log fatal signals like SIGSEGV
-Message-ID: <20080916174202.GA5703@joi>
-References: <200809121502.15264.thomas.jarosch@intra2net.com> <20080912171055.GA5532@joi> <200809161459.17750.thomas.jarosch@intra2net.com>
+	Tue, 16 Sep 2008 13:44:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:44892 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751913AbYIPRoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 13:44:30 -0400
+Message-ID: <48CFF076.8070500@goop.org>
+Date: Tue, 16 Sep 2008 10:44:22 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809161459.17750.thomas.jarosch@intra2net.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jbaron <jbaron@redhat.com>
+Subject: Re: [PATCH] introduce boot_printk()
+References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>	 <48CE983C.8040709@zytor.com>	 <86802c440809151018k2c7874dfjc8e9791bee9365f9@mail.gmail.com>	 <48CE9A5C.1030603@zytor.com>	 <86802c440809151034ycd6442me679792880b03320@mail.gmail.com>	 <1221575196.6943.24.camel@lappy.programming.kicks-ass.net>	 <48CFD97C.6080002@zytor.com> <86802c440809160942w601691fbnb70a989acc5d98d3@mail.gmail.com>
+In-Reply-To: <86802c440809160942w601691fbnb70a989acc5d98d3@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 02:59:16PM +0200, Thomas Jarosch wrote:
-> Here's the new version:
-> -----------------------------------------------------------------
-> From: Thomas Jarosch <thomas.jarosch@intra2net.com>
-> 
-> Log the signals SIGSEGV, SIGILL, SIGABRT, SIGBUS, SIGKILL and SIGFPE
-> to aid debugging of obscure problems. Also logs the sender of the signal.
-> 
-> The log message looks like this:
-> "kernel: signal 9 sent to freezed[2634] uid:100,
->  parent init[1] uid:0 by bash[3168] uid:0, parent sshd[3164] uid:0"
-> 
-> The printing code is based on grsecurity's signal logger.
-> 
-> Signed-off-by: Thomas Jarosch <thomas.jarosch@intra2net.com>
-> Signed-off-by: Gerd v. Egidy <gve@intra2net.com>
-> 
-> diff -u -r -p linux-2.6.26.vanilla/kernel/signal.c linux-2.6.26/kernel/signal.c
-> --- linux-2.6.26.vanilla/kernel/signal.c	Tue Sep 16 13:45:34 2008
-> +++ linux-2.6.26/kernel/signal.c	Tue Sep 16 14:02:54 2008
-> @@ -801,6 +801,24 @@ static inline int legacy_queue(struct si
->  	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
->  }
->  
-> +static void log_signal_and_sender(const int sig, const struct task_struct *t)
-> +{
-> +	if (!((sig == SIGSEGV) || (sig == SIGILL) || (sig == SIGABRT)
-> +		|| (sig == SIGBUS) || (sig == SIGKILL) || (sig == SIGFPE)))
-> +			return;
-> +
-> +	if (printk_ratelimit()) {
-> +		/* Note: tasklist_lock is already locked by siglock */
-> +		printk(KERN_WARNING "signal %d sent to %.30s[%d] uid:%u, "
-> +				"parent %.30s[%d] uid:%u by %.30s[%d] uid:%u, "
-> +				"parent %.30s[%d] uid:%u\n", sig, t->comm,
-> +				t->pid, t->uid, t->parent->comm, t->parent->pid,
-> +				t->parent->uid, current->comm, current->pid,
-> +				current->uid, current->parent->comm,
-> +				current->parent->pid, current->parent->uid);
-> +	}
-> +}
-> +
->  static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
->  			int group)
->  {
-> @@ -810,6 +828,8 @@ static int send_signal(int sig, struct s
->  	assert_spin_locked(&t->sighand->siglock);
->  	if (!prepare_signal(sig, t))
->  		return 0;
-> +
-> +	log_signal_and_sender(sig, t);
->  
->  	pending = group ? &t->signal->shared_pending : &t->pending;
->  	/*
-> 
+Yinghai Lu wrote:
+> On Tue, Sep 16, 2008 at 9:06 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+>   
+>> Peter Zijlstra wrote:
+>>     
+>>>> every subsystem will have
+>>>> x86_printk
+>>>> acpi_printk
+>>>> pci_printk
+>>>>         
+>>> doesn't sound like an easily extensible interface, better would be
+>>> extending printk with a KERN_subsys tag like proposed.
+>>>
+>>>       
+>> That would be my thinking too.
+>>     
+>
+> will be printk(KERN_PCI, KERN_DEBUG ".....") ?
+> and it will be ...KERN_PCI will be int?
+>   
 
-It looks much better now. But I don't think it will go in as is.
-Maybe you can disable it by default and create a sysctl switch?
+#define X86_DEBUG    KERN_DEBUG SUBSYS_X86
+...
+    printk(X86_DEBUG "woozle failed the wibble\n);
 
-Marcin
+
+    J
