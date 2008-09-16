@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbYIPTES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbYIPTHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423AbYIPTES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 15:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbYIPTEG
+	id S1757096AbYIPTHA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 15:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbYIPTGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 15:04:06 -0400
-Received: from gv-out-0910.google.com ([216.239.58.188]:55662 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752135AbYIPTEC convert rfc822-to-8bit (ORCPT
+	Tue, 16 Sep 2008 15:06:50 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:47024 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752976AbYIPTGs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 15:04:02 -0400
+	Tue, 16 Sep 2008 15:06:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
          :mime-version:content-type:content-transfer-encoding:sender;
-        b=YMjYHDizyhtJozcNLIS9dr5aMytr4aF1blzCEotu57M7l1rIYAZh/gFno3kA/nn4g3
-         HmXa4TexI6Uqvm4aRIsfPlhrCQEAlIeT0FGNSqgbso4jXumv8mkINjPeOvNYru99Rs83
-         hUS/GEb79Xug6MdMmVQvC8BbMgxLsQBKvgHG4=
-Date: Tue, 16 Sep 2008 22:03:56 +0300
+        b=YA3TdK/73aflYjeZYr38D/o+CqcvTLy4B4j0dcjRf4hByfGwmIOSNLpFPMBaSRDYAL
+         MOPwEhO5dRXhB04277CIYEYXyC7oKqejcrK4s5rZnnpgh0UUDjFpXmypZgH5icDoG99j
+         cbWFXzqb0seVTsoZaFQ/jMwEA0dReIF0npNmY=
+Date: Tue, 16 Sep 2008 22:06:42 +0300
 From: Pekka Paalanen <pq@iki.fi>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
@@ -25,8 +25,8 @@ Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
        Pavel Roskin <proski@gnu.org>
-Subject: [PATCH 6/7] mmiotrace: remove left-over marker cruft.
-Message-ID: <20080916220356.2dd140b7@daedalus.pq.iki.fi>
+Subject: [PATCH 7/7] ftrace: inject markers via trace_marker file.
+Message-ID: <20080916220642.52ba5bdb@daedalus.pq.iki.fi>
 In-Reply-To: <20080916215416.16aee2dd@daedalus.pq.iki.fi>
 References: <48B1D5CA.8000607@gmail.com>
 	<c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
@@ -41,139 +41,178 @@ References: <48B1D5CA.8000607@gmail.com>
 	<20080916215416.16aee2dd@daedalus.pq.iki.fi>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From abd3cadc69143804cf4b0cf1d6fcadda5daad903 Mon Sep 17 00:00:00 2001
+>From 9be308e4ea3af69cebb29930757d6457f762866d Mon Sep 17 00:00:00 2001
 From: Pekka Paalanen <pq@iki.fi>
-Date: Sun, 14 Sep 2008 20:50:55 +0300
-Subject: [PATCH] mmiotrace: remove left-over marker cruft.
+Date: Sun, 14 Sep 2008 22:34:35 +0300
+Subject: [PATCH] ftrace: inject markers via trace_marker file.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Allow a user to inject a marker (TRACE_PRINT entry) into the trace ring
+buffer. The related file operations are derived from code by Frédéric
+Weisbecker <fweisbec@gmail.com>.
 
 Signed-off-by: Pekka Paalanen <pq@iki.fi>
 ---
- arch/x86/mm/mmio-mod.c    |   64 ---------------------------------------------
- include/linux/mmiotrace.h |    3 +-
- 2 files changed, 1 insertions(+), 66 deletions(-)
+ Documentation/tracers/mmiotrace.txt |    5 +-
+ kernel/trace/trace.c                |   76 ++++++++++++++++++++++++++++++++--
+ kernel/trace/trace.h                |    4 ++
+ 3 files changed, 77 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/mm/mmio-mod.c b/arch/x86/mm/mmio-mod.c
-index 5e2e2e7..2c4baa8 100644
---- a/arch/x86/mm/mmio-mod.c
-+++ b/arch/x86/mm/mmio-mod.c
-@@ -56,13 +56,6 @@ struct remap_trace {
- static DEFINE_PER_CPU(struct trap_reason, pf_reason);
- static DEFINE_PER_CPU(struct mmiotrace_rw, cpu_trace);
+diff --git a/Documentation/tracers/mmiotrace.txt b/Documentation/tracers/mmiotrace.txt
+index a4afb56..5bbbe20 100644
+--- a/Documentation/tracers/mmiotrace.txt
++++ b/Documentation/tracers/mmiotrace.txt
+@@ -36,7 +36,7 @@ $ mount -t debugfs debugfs /debug
+ $ echo mmiotrace > /debug/tracing/current_tracer
+ $ cat /debug/tracing/trace_pipe > mydump.txt &
+ Start X or whatever.
+-$ echo "X is up" > /debug/tracing/marker
++$ echo "X is up" > /debug/tracing/trace_marker
+ $ echo none > /debug/tracing/current_tracer
+ Check for lost events.
  
--#if 0 /* XXX: no way gather this info anymore */
--/* Access to this is not per-cpu. */
--static DEFINE_PER_CPU(atomic_t, dropped);
--#endif
--
--static struct dentry *marker_file;
--
- static DEFINE_MUTEX(mmiotrace_mutex);
- static DEFINE_SPINLOCK(trace_lock);
- static atomic_t mmiotrace_enabled;
-@@ -97,44 +90,6 @@ static bool is_enabled(void)
- 	return atomic_read(&mmiotrace_enabled);
+@@ -59,9 +59,8 @@ The 'cat' process should stay running (sleeping) in the background.
+ Load the driver you want to trace and use it. Mmiotrace will only catch MMIO
+ accesses to areas that are ioremapped while mmiotrace is active.
+ 
+-[Unimplemented feature:]
+ During tracing you can place comments (markers) into the trace by
+-$ echo "X is up" > /debug/tracing/marker
++$ echo "X is up" > /debug/tracing/trace_marker
+ This makes it easier to see which part of the (huge) trace corresponds to
+ which action. It is recommended to place descriptive markers about what you
+ do.
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 7e7154f..eee1fd9 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2879,6 +2879,66 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 	return cnt;
  }
  
--#if 0 /* XXX: needs rewrite */
--/*
-- * Write callback for the debugfs entry:
-- * Read a marker and write it to the mmio trace log
-- */
--static ssize_t write_marker(struct file *file, const char __user *buffer,
--						size_t count, loff_t *ppos)
--{
--	char *event = NULL;
--	struct mm_io_header *headp;
--	ssize_t len = (count > 65535) ? 65535 : count;
--
--	event = kzalloc(sizeof(*headp) + len, GFP_KERNEL);
--	if (!event)
--		return -ENOMEM;
--
--	headp = (struct mm_io_header *)event;
--	headp->type = MMIO_MAGIC | (MMIO_MARKER << MMIO_OPCODE_SHIFT);
--	headp->data_len = len;
--
--	if (copy_from_user(event + sizeof(*headp), buffer, len)) {
--		kfree(event);
--		return -EFAULT;
--	}
--
--	spin_lock_irq(&trace_lock);
--#if 0 /* XXX: convert this to use tracing */
--	if (is_enabled())
--		relay_write(chan, event, sizeof(*headp) + len);
--	else
--#endif
--		len = -EINVAL;
--	spin_unlock_irq(&trace_lock);
--	kfree(event);
--	return len;
--}
--#endif
--
- static void print_pte(unsigned long address)
- {
- 	unsigned int level;
-@@ -481,26 +436,12 @@ static void leave_uniprocessor(void)
- }
- #endif
- 
--#if 0 /* XXX: out of order */
--static struct file_operations fops_marker = {
--	.owner =	THIS_MODULE,
--	.write =	write_marker
--};
--#endif
--
- void enable_mmiotrace(void)
- {
- 	mutex_lock(&mmiotrace_mutex);
- 	if (is_enabled())
- 		goto out;
- 
--#if 0 /* XXX: tracing does not support text entries */
--	marker_file = debugfs_create_file("marker", 0660, dir, NULL,
--								&fops_marker);
--	if (!marker_file)
--		pr_err(NAME "marker file creation failed.\n");
--#endif
--
- 	if (nommiotrace)
- 		pr_info(NAME "MMIO tracing disabled.\n");
- 	enter_uniprocessor();
-@@ -525,11 +466,6 @@ void disable_mmiotrace(void)
- 
- 	clear_trace_list(); /* guarantees: no more kmmio callbacks */
- 	leave_uniprocessor();
--	if (marker_file) {
--		debugfs_remove(marker_file);
--		marker_file = NULL;
--	}
--
- 	pr_info(NAME "disabled.\n");
- out:
- 	mutex_unlock(&mmiotrace_mutex);
-diff --git a/include/linux/mmiotrace.h b/include/linux/mmiotrace.h
-index 60cc3bf..139d7c8 100644
---- a/include/linux/mmiotrace.h
-+++ b/include/linux/mmiotrace.h
-@@ -67,8 +67,7 @@ enum mm_io_opcode {
- 	MMIO_WRITE = 0x2,    /* struct mmiotrace_rw */
- 	MMIO_PROBE = 0x3,    /* struct mmiotrace_map */
- 	MMIO_UNPROBE = 0x4,  /* struct mmiotrace_map */
--	MMIO_MARKER = 0x5,   /* raw char data */
--	MMIO_UNKNOWN_OP = 0x6, /* struct mmiotrace_rw */
-+	MMIO_UNKNOWN_OP = 0x5, /* struct mmiotrace_rw */
++static int tracing_open_mark(struct inode *inode, struct file *filp)
++{
++	int ret;
++
++	ret = tracing_open_generic(inode, filp);
++	if (ret)
++		return ret;
++
++	if (current_trace == &no_tracer)
++		return -ENODEV;
++
++	return 0;
++}
++
++static int mark_printk(const char *fmt, ...)
++{
++	int ret;
++	va_list args;
++	va_start(args, fmt);
++	ret = trace_vprintk(0, fmt, args);
++	va_end(args);
++	return ret;
++}
++
++static ssize_t
++tracing_mark_write(struct file *filp, const char __user *ubuf,
++					size_t cnt, loff_t *fpos)
++{
++	char *buf;
++	char *end;
++	struct trace_array *tr = &global_trace;
++
++	if (current_trace == &no_tracer || !tr->ctrl || tracing_disabled)
++		return -EINVAL;
++
++	if (cnt > TRACE_BUF_SIZE)
++		cnt = TRACE_BUF_SIZE;
++
++	buf = kmalloc(cnt + 1, GFP_KERNEL);
++	if (buf == NULL)
++		return -ENOMEM;
++
++	if (copy_from_user(buf, ubuf, cnt)) {
++		kfree(buf);
++		return -EFAULT;
++	}
++
++	/* Cut from the first nil or newline. */
++	buf[cnt] = '\0';
++	end = strchr(buf, '\n');
++	if (end)
++		*end = '\0';
++
++	cnt = mark_printk("%s\n", buf);
++	kfree(buf);
++	*fpos += cnt;
++
++	return cnt;
++}
++
+ static struct file_operations tracing_max_lat_fops = {
+ 	.open		= tracing_open_generic,
+ 	.read		= tracing_max_lat_read,
+@@ -2910,6 +2970,11 @@ static struct file_operations tracing_entries_fops = {
+ 	.write		= tracing_entries_write,
  };
  
- struct mmiotrace_rw {
++static struct file_operations tracing_mark_fops = {
++	.open		= tracing_open_mark,
++	.write		= tracing_mark_write,
++};
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+ static ssize_t
+@@ -3027,6 +3092,12 @@ static __init void tracer_init_debugfs(void)
+ 		pr_warning("Could not create debugfs "
+ 			   "'trace_entries' entry\n");
+ 
++	entry = debugfs_create_file("trace_marker", 0220, d_tracer,
++				    NULL, &tracing_mark_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs "
++			   "'trace_marker' entry\n");
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 	entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
+ 				    &ftrace_update_tot_cnt,
+@@ -3040,11 +3111,6 @@ static __init void tracer_init_debugfs(void)
+ #endif
+ }
+ 
+-#define TRACE_BUF_SIZE 1024
+-#define TRACE_PRINT_BUF_SIZE \
+-	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
+-#define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
+-
+ int trace_vprintk(unsigned long ip, const char *fmt, va_list args)
+ {
+ 	static DEFINE_SPINLOCK(trace_buf_lock);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 648433d..42f65d0 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -124,6 +124,10 @@ struct trace_entry {
+ };
+ 
+ #define TRACE_ENTRY_SIZE	sizeof(struct trace_entry)
++#define TRACE_BUF_SIZE		1024
++#define TRACE_PRINT_BUF_SIZE \
++	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
++#define TRACE_CONT_BUF_SIZE	sizeof(struct trace_field)
+ 
+ /*
+  * The CPU trace array - it consists of thousands of trace entries
 -- 
 1.5.6.4
 
