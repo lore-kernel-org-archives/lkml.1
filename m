@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbYIPS44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbYIPS6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbYIPS44 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 14:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbYIPS4s
+	id S1757306AbYIPS6i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 14:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbYIPS6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 14:56:48 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:24538 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbYIPS4r convert rfc822-to-8bit (ORCPT
+	Tue, 16 Sep 2008 14:58:30 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:50279 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754882AbYIPS63 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 14:56:47 -0400
+	Tue, 16 Sep 2008 14:58:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
          :mime-version:content-type:content-transfer-encoding:sender;
-        b=opHQjSg5/u1fhfPWJuXfzIexIYWhkGNwNSxQRum7lcO9/3vOG9YlEpGJweuifsOYkq
-         rGMBhHANUFsrhmte1pgvzVDlS+MPNp3GyUQsTIRdxXnYvKnck3/1GqQmcoAQ/Mbk282I
-         +i7pLJLCLSGbh8JGnN6SOgv1iQ35gaNWkmsSY=
-Date: Tue, 16 Sep 2008 21:56:41 +0300
+        b=u2dZSi2p+3vPVZ2k1Yf9leEl3dCXmwvKguCXA2OzqFcmA3xzylIuk6HdH2duO2IaUw
+         pTWi2Zfh0u8zp2T2hiHyhmPdxpmFxsVRyGTe7E3X4xRASYbZhw5GPRBH56iINHq3O8xU
+         uItIMr7By03MfMuhNxFMq+6NBXLwVi8xVAX2U=
+Date: Tue, 16 Sep 2008 21:58:24 +0300
 From: Pekka Paalanen <pq@iki.fi>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
@@ -25,8 +25,8 @@ Cc: Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
        "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
        Pavel Roskin <proski@gnu.org>
-Subject: [PATCH 2/7] ftrace: move mmiotrace functions out of trace.c.
-Message-ID: <20080916215641.767840d7@daedalus.pq.iki.fi>
+Subject: [PATCH 3/7] ftrace: add trace_vprintk()
+Message-ID: <20080916215824.7b0b69e5@daedalus.pq.iki.fi>
 In-Reply-To: <20080916215416.16aee2dd@daedalus.pq.iki.fi>
 References: <48B1D5CA.8000607@gmail.com>
 	<c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com>
@@ -47,192 +47,91 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 743cab2763d3e8d9f4d3b82a02fcdc5ad8a13c04 Mon Sep 17 00:00:00 2001
+>From 5579d3e6471201524697d1cc32fb37f1a4f70f95 Mon Sep 17 00:00:00 2001
 From: Pekka Paalanen <pq@iki.fi>
-Date: Sun, 14 Sep 2008 16:53:05 +0300
-Subject: [PATCH] ftrace: move mmiotrace functions out of trace.c.
+Date: Sun, 14 Sep 2008 17:27:05 +0300
+Subject: [PATCH] ftrace: add trace_vprintk()
 
-Moves the mmiotrace specific functions from trace.c to
-trace_mmiotrace.c. Functions trace_wake_up(), tracing_get_trace_entry(),
-and tracing_generic_entry_update() are therefore made available outside
-trace.c.
+trace_vprintk() for easier implementation of tracer specific *_printk
+functions. Add check check for no_tracer, and implement
+__ftrace_printk() as a wrapper.
 
 Signed-off-by: Pekka Paalanen <pq@iki.fi>
 ---
- kernel/trace/trace.c           |   46 +--------------------------------------
- kernel/trace/trace.h           |   15 +++++-------
- kernel/trace/trace_mmiotrace.c |   42 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 50 insertions(+), 53 deletions(-)
+ kernel/trace/trace.c |   24 ++++++++++++++++++------
+ kernel/trace/trace.h |    1 +
+ 2 files changed, 19 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 7e6cb4f..d372bc5 100644
+index d372bc5..406de9c 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -785,7 +785,7 @@ trace_next_page(struct trace_array_cpu *data, void *addr)
- 	return page_address(page);
- }
+@@ -3054,7 +3054,7 @@ static __init void tracer_init_debugfs(void)
+ 	(sizeof(struct trace_field) - offsetof(struct trace_field, print.buf))
+ #define TRACE_CONT_BUF_SIZE sizeof(struct trace_field)
  
--static inline struct trace_entry *
-+struct trace_entry *
- tracing_get_trace_entry(struct trace_array *tr, struct trace_array_cpu *data)
+-int __ftrace_printk(unsigned long ip, const char *fmt, ...)
++int trace_vprintk(unsigned long ip, const char *fmt, va_list args)
  {
- 	unsigned long idx, idx_next;
-@@ -821,7 +821,7 @@ tracing_get_trace_entry(struct trace_array *tr, struct trace_array_cpu *data)
- 	return entry;
- }
+ 	static DEFINE_SPINLOCK(trace_buf_lock);
+ 	static char trace_buf[TRACE_BUF_SIZE];
+@@ -3064,10 +3064,9 @@ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ 	struct trace_entry *entry;
+ 	unsigned long flags;
+ 	long disabled;
+-	va_list ap;
+ 	int cpu, len = 0, write, written = 0;
  
--static inline void
-+void
- tracing_generic_entry_update(struct trace_entry *entry, unsigned long flags)
- {
- 	struct task_struct *tsk = current;
-@@ -865,48 +865,6 @@ ftrace(struct trace_array *tr, struct trace_array_cpu *data,
- 		trace_function(tr, data, ip, parent_ip, flags);
- }
+-	if (!(trace_flags & TRACE_ITER_PRINTK) || !tr->ctrl || tracing_disabled)
++	if (current_trace == &no_tracer || !tr->ctrl || tracing_disabled)
+ 		return 0;
  
--#ifdef CONFIG_MMIOTRACE
--void __trace_mmiotrace_rw(struct trace_array *tr, struct trace_array_cpu *data,
--						struct mmiotrace_rw *rw)
--{
--	struct trace_entry *entry;
--	unsigned long irq_flags;
--
--	raw_local_irq_save(irq_flags);
--	__raw_spin_lock(&data->lock);
--
--	entry				= tracing_get_trace_entry(tr, data);
--	tracing_generic_entry_update(entry, 0);
--	entry->type			= TRACE_MMIO_RW;
--	entry->field.mmiorw		= *rw;
--
--	__raw_spin_unlock(&data->lock);
--	raw_local_irq_restore(irq_flags);
--
--	trace_wake_up();
--}
--
--void __trace_mmiotrace_map(struct trace_array *tr, struct trace_array_cpu *data,
--						struct mmiotrace_map *map)
--{
--	struct trace_entry *entry;
--	unsigned long irq_flags;
--
--	raw_local_irq_save(irq_flags);
--	__raw_spin_lock(&data->lock);
--
--	entry				= tracing_get_trace_entry(tr, data);
--	tracing_generic_entry_update(entry, 0);
--	entry->type			= TRACE_MMIO_MAP;
--	entry->field.mmiomap		= *map;
--
--	__raw_spin_unlock(&data->lock);
--	raw_local_irq_restore(irq_flags);
--
--	trace_wake_up();
--}
--#endif
--
- void __trace_stack(struct trace_array *tr,
- 		   struct trace_array_cpu *data,
- 		   unsigned long flags,
+ 	local_irq_save(flags);
+@@ -3079,9 +3078,7 @@ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ 		goto out;
+ 
+ 	spin_lock(&trace_buf_lock);
+-	va_start(ap, fmt);
+-	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, ap);
+-	va_end(ap);
++	len = vsnprintf(trace_buf, TRACE_BUF_SIZE, fmt, args);
+ 
+ 	len = min(len, TRACE_BUF_SIZE-1);
+ 	trace_buf[len] = 0;
+@@ -3120,6 +3117,21 @@ int __ftrace_printk(unsigned long ip, const char *fmt, ...)
+ 
+ 	return len;
+ }
++EXPORT_SYMBOL_GPL(trace_vprintk);
++
++int __ftrace_printk(unsigned long ip, const char *fmt, ...)
++{
++	int ret;
++	va_list ap;
++
++	if (!(trace_flags & TRACE_ITER_PRINTK))
++		return 0;
++
++	va_start(ap, fmt);
++	ret = trace_vprintk(ip, fmt, ap);
++	va_end(ap);
++	return ret;
++}
+ EXPORT_SYMBOL_GPL(__ftrace_printk);
+ 
+ static int trace_panic_handler(struct notifier_block *this,
 diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 77c265f..9d39aa0 100644
+index 9d39aa0..be3b3cf 100644
 --- a/kernel/trace/trace.h
 +++ b/kernel/trace/trace.h
-@@ -213,11 +213,17 @@ struct trace_iterator {
- 	long			idx;
- };
+@@ -333,6 +333,7 @@ extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...);
+ extern ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
+ 				 size_t cnt);
+ extern long ns2usecs(cycle_t nsec);
++extern int trace_vprintk(unsigned long ip, const char *fmt, va_list args);
  
-+void trace_wake_up(void);
- void tracing_reset(struct trace_array_cpu *data);
- int tracing_open_generic(struct inode *inode, struct file *filp);
- struct dentry *tracing_init_dentry(void);
- void init_tracer_sysprof_debugfs(struct dentry *d_tracer);
+ extern unsigned long trace_flags;
  
-+struct trace_entry *tracing_get_trace_entry(struct trace_array *tr,
-+						struct trace_array_cpu *data);
-+void tracing_generic_entry_update(struct trace_entry *entry,
-+						unsigned long flags);
-+
- void ftrace(struct trace_array *tr,
- 			    struct trace_array_cpu *data,
- 			    unsigned long ip,
-@@ -291,15 +297,6 @@ extern unsigned long ftrace_update_tot_cnt;
- extern int DYN_FTRACE_TEST_NAME(void);
- #endif
- 
--#ifdef CONFIG_MMIOTRACE
--extern void __trace_mmiotrace_rw(struct trace_array *tr,
--				struct trace_array_cpu *data,
--				struct mmiotrace_rw *rw);
--extern void __trace_mmiotrace_map(struct trace_array *tr,
--				struct trace_array_cpu *data,
--				struct mmiotrace_map *map);
--#endif
--
- #ifdef CONFIG_FTRACE_STARTUP_TEST
- #ifdef CONFIG_FTRACE
- extern int trace_selftest_startup_function(struct tracer *trace,
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index 9b7a936..ef02747 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -276,6 +276,27 @@ __init static int init_mmio_trace(void)
- }
- device_initcall(init_mmio_trace);
- 
-+static void __trace_mmiotrace_rw(struct trace_array *tr,
-+				struct trace_array_cpu *data,
-+				struct mmiotrace_rw *rw)
-+{
-+	struct trace_entry *entry;
-+	unsigned long irq_flags;
-+
-+	raw_local_irq_save(irq_flags);
-+	__raw_spin_lock(&data->lock);
-+
-+	entry				= tracing_get_trace_entry(tr, data);
-+	tracing_generic_entry_update(entry, 0);
-+	entry->type			= TRACE_MMIO_RW;
-+	entry->field.mmiorw		= *rw;
-+
-+	__raw_spin_unlock(&data->lock);
-+	raw_local_irq_restore(irq_flags);
-+
-+	trace_wake_up();
-+}
-+
- void mmio_trace_rw(struct mmiotrace_rw *rw)
- {
- 	struct trace_array *tr = mmio_trace_array;
-@@ -283,6 +304,27 @@ void mmio_trace_rw(struct mmiotrace_rw *rw)
- 	__trace_mmiotrace_rw(tr, data, rw);
- }
- 
-+static void __trace_mmiotrace_map(struct trace_array *tr,
-+				struct trace_array_cpu *data,
-+				struct mmiotrace_map *map)
-+{
-+	struct trace_entry *entry;
-+	unsigned long irq_flags;
-+
-+	raw_local_irq_save(irq_flags);
-+	__raw_spin_lock(&data->lock);
-+
-+	entry				= tracing_get_trace_entry(tr, data);
-+	tracing_generic_entry_update(entry, 0);
-+	entry->type			= TRACE_MMIO_MAP;
-+	entry->field.mmiomap		= *map;
-+
-+	__raw_spin_unlock(&data->lock);
-+	raw_local_irq_restore(irq_flags);
-+
-+	trace_wake_up();
-+}
-+
- void mmio_trace_mapping(struct mmiotrace_map *map)
- {
- 	struct trace_array *tr = mmio_trace_array;
 -- 
 1.5.6.4
 
