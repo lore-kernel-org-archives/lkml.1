@@ -1,98 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYIPOsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYIPO53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755841AbYIPOsh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYIPOs0
+	id S1755318AbYIPO53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYIPO5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:48:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37059 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbYIPOs0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:48:26 -0400
-Date: Tue, 16 Sep 2008 07:48:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Theodore Tso <tytso@mit.edu>, Jarek Poplawski <jarkao2@gmail.com>,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-       David Miller <davem@davemloft.net>, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080916074802.200c8a43@infradead.org>
-In-Reply-To: <20080916143408.GA1400@cs181140183.pp.htv.fi>
-References: <20080916104811.GC7397@cs181140183.pp.htv.fi>
-	<20080916114305.GB10965@ff.dom.local>
-	<20080916121528.GD7397@cs181140183.pp.htv.fi>
-	<20080916135408.GB13388@mit.edu>
-	<20080916070241.3e8d5202@infradead.org>
-	<20080916143408.GA1400@cs181140183.pp.htv.fi>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 16 Sep 2008 10:57:19 -0400
+Received: from web26206.mail.ukl.yahoo.com ([217.12.10.243]:23376 "HELO
+	web26206.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753826AbYIPO5R convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:57:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=mbajPEGC83ecqyKq+4lYNOSXuwsCTlUy+Fpzlee0Lb+IKKMHcoerUl+OzQzQXct55/c4L0z8jp+0toifWsp8ONm0S08abkkcV2M43gfVYSzSfjMFTPjlEkmR0N1oLSNN8kGU/QM6yR+RNnDI7eioUleig5+c3bDrK5QxQtDdZVg=;
+X-YMail-OSG: bGzXV70VM1kEQpJppOe33FISeexChmBfq6laER3bd_ByHAVlVXInGwdJkiZjkzQSgg--
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Tue, 16 Sep 2008 14:57:16 +0000 (GMT)
+From: Michael Trimarchi <trimarchimichael@yahoo.it>
+Subject: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <84867.22024.qm@web26206.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Sep 2008 17:34:10 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+Hi,
 
-> On Tue, Sep 16, 2008 at 07:02:41AM -0700, Arjan van de Ven wrote:
-> > On Tue, 16 Sep 2008 09:54:08 -0400
-> > Theodore Tso <tytso@mit.edu> wrote:
-> > 
-> > > If it's a really important bug, and it affects a huge number of
-> > > users, or it's really bad security bug, the reality is that
-> > > exceptions will be made to the rules.  But exceptions need to
-> > > remain exceptions for extraordinary situations, not everyday
-> > > occurrences.  And of course, if the bug does affect a huge number
-> > > of users, someone should be asking the question why it wasn't
-> > > detected sooner, say before the last merge window --- and to ask
-> > > the question how many users is this bug really going to affect
-> > > anyway?
-> > > 
-> > > At least, that's my take on things,
-> > > 
-> > 
-> > also note that Linus said "regression or on the kerneloops list";
-> > if it has any kind of backtrace, it'll be there if it's a common
-> > problem that hits many users.
+----- Messaggio originale -----
+> Da: Nick Piggin <nickpiggin@yahoo.com.au>
+> A: Michael Trimarchi <trimarchimichael@yahoo.it>
+>
+Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>;
+akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
+linux-fsdevel@vger.kernel.org
+> Inviato: Martedì 16 settembre 2008, 16:11:21
+> Oggetto: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
 > 
-> Thomas' patch [1] will fixes a bug of a kind that will likely never 
-> make it to your list.
-
-not sure; just we need to catch doing pci_disable_device on a
-non-enabled device as a WARN_ON.
-
-and the patch looks quite wrong, the real answer should be to do the
-enable in open() :-)
-
+...
+> >  i was thinking about introducing a file_pos_update() not implemented using
+> > file_pos_read()/file_pos_write() and taking the seq_lock or
+> > disabling preemption only one time
 > 
-> And the same also e.g. goes for bugs where your machine is completely 
-> dead (no SysRq possible) with nothing in the logs.
+> AFAIK, the only way to do an atomic 64 bit store on 32-bit x86 is
+> "cmpxchg8b" (with lock prefix on SMP). That would be far slower
+> I'm sure.
 
-that's being worked on, by storing the crash data in some non-volatile
-piece of memory
+Maybe it is clear with an example:
+ 
++/*
++ * file_pos_read/write is atomic by using sequence lock on 32bit arch.
++ */
++static inline loff_t file_pos_read(struct file *file)
++{
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	loff_t pos;
++	unsigned int seq;
++
++	do {
++		seq = read_seqbegin(&file->f_pos_seqlock);
++		pos = file->f_pos;
++	} while (read_seqretry(&file->f_pos_seqlock, seq));
++	return pos;
++#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
++	loff_t pos;
++
++	preempt_disable();
++	pos = file->f_pos;
++	preempt_enable();
++	return pos;
++#else
++	return file->f_pos;
++#endif
++}
++
++static inline void file_pos_write(struct file *file, loff_t pos)
++{
++#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
++	write_seqlock(&file->f_pos_seqlock);
++	file->f_pos = pos;
++	write_sequnlock(&file->f_pos_seqlock);
++#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
++	preempt_disable();
++	file->f_pos = pos;
++	preempt_enable();
++#else
++	file->f_pos = pos;
++#endif
++}
++
+if (offset != file_pos_read(file))
+                 file_pos_write(file, offset);
 
-> 
-> The kerneloops lists are quite valuable, but they can never cover all 
-> classes of fatal bugs.
+Compile with:
+BITS_PER_LONG=32
+CONFIG_PREEMPT
 
-if you want perfection, you're not going to get it.
+The code does:
 
-"Perfect is the enemy of good"
+file_pos_read(...)
+preempt_disable
+....
+preempt_enable
 
-If you want to help make things better (as opposed to perfect), you're
-very welcome to help out, be it with suggestions on how to improve
-or with actual code. 
+file_pos_write(...)
+preempt_disable
+....
+preempt_enable
 
+with the file_pos_update() the code does:
 
+preempt_disable
+...
+...
+preempt_enable
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Regards Michael
+
+__________________________________________________
+Do You Yahoo!?
+Poco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e ti da tanto spazio gratuito per i tuoi file e i messaggi 
+http://mail.yahoo.it 
