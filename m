@@ -1,99 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbYIPWQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYIPWRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbYIPWQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 18:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYIPWQ0
+	id S1753577AbYIPWRL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 18:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYIPWQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 18:16:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48252 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbYIPWQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 18:16:25 -0400
-Date: Wed, 17 Sep 2008 08:16:08 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Jens Axboe <jens.axboe@oracle.com>, "Randy.Dunlap" <rdunlap@xenotime.net>,
-       linux-next@vger.kernel.org, akpm@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] blkdev.h: fix warnings when CONFIG_BLOCK=n
-Message-Id: <20080917081608.46744774.sfr@canb.auug.org.au>
-In-Reply-To: <20080916215039.GZ20055@kernel.dk>
-References: <20080916173415.14012569.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0809161226230.32267@shark.he.net>
-	<20080916215039.GZ20055@kernel.dk>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__17_Sep_2008_08_16_08_+1000_Fp2qHQHVdRVggxYy"
+	Tue, 16 Sep 2008 18:16:56 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:44268 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbYIPWQz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 18:16:55 -0400
+X-BigFish: VPS-33(zz1432R98dR1805M936fQzz10d3izzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <48D0310E.1040409@am.sony.com>
+Date: Tue, 16 Sep 2008 15:19:58 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Simon Arlott <simon@fire.lp0.eu>, Alan Stern <stern@rowland.harvard.edu>,
+       Rene Herman <rene.herman@keyaccess.nl>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, Daniel Walker <dwalker@mvista.com>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [patch 5/3] fastboot: sync the async execution before	late_initcall
+ and move level 6s (sync) first
+References: <Pine.LNX.4.44L0.0807311110300.4409-100000@iolanthe.rowland.org> <48920481.7010702@simon.arlott.org.uk> <20080731215601.GC4817@kroah.com>
+In-Reply-To: <20080731215601.GC4817@kroah.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 16 Sep 2008 22:16:41.0728 (UTC) FILETIME=[E5688000:01C91849]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__17_Sep_2008_08_16_08_+1000_Fp2qHQHVdRVggxYy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Greg KH wrote:
+> On Thu, Jul 31, 2008 at 07:29:21PM +0100, Simon Arlott wrote:
+>>>> There is nothing else to run between 1-2 and 3, so there is no 
+>>>> opportunity
+>>>> to initialise devices in the background and usblp_init blocks for a 
+>>>> while.
+>>> If it were a module then it would block in a separate thread and wouldn't 
+>>> hold up the main init process.
+>> Right, but I want to compile all of this into the kernel.
+> 
+> Why?  It sounds like a trivial solution for you is to actually use
+> modules.  Why go through a lot of extra work to solve something in a
+> different way that is already solved for you?
+> 
+> Who is imposing the "no modules allowed" rule on you, and why was it
+> made?
 
-Hi Al,
+Sorry for the massively late response.
 
-On Tue, 16 Sep 2008 23:50:40 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> On Tue, Sep 16 2008, Randy.Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> >=20
-> > Fix lots of build warnings when CONFIG_BLOCK=3Dn:
-> >=20
-> > linux-next-20080916/include/linux/blkdev.h:1093: warning: 'struct block=
-_device' declared inside parameter list
-> > linux-next-20080916/include/linux/blkdev.h:1093: warning: its scope is =
-only this definition or declaration, which is probably not what you want
-> > linux-next-20080916/include/linux/blkdev.h:1097: warning: 'struct gendi=
-sk' declared inside parameter list
-> > linux-next-20080916/include/linux/blkdev.h:1105: warning: 'struct hd_ge=
-ometry' declared inside parameter list
-> >=20
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > ---
-> >  include/linux/blkdev.h |    4 ++++
-> >  1 file changed, 4 insertions(+)
-> >=20
-> > --- linux-next-20080916.orig/include/linux/blkdev.h
-> > +++ linux-next-20080916/include/linux/blkdev.h
-> > @@ -1089,6 +1089,10 @@ static inline long nr_blockdev_pages(voi
-> > =20
-> >  #endif /* CONFIG_BLOCK */
-> > =20
-> > +struct block_device;
-> > +struct gendisk;
-> > +struct hd_geometry;
-> > +
-> >  extern int __blkdev_driver_ioctl(struct block_device *, fmode_t, unsig=
-ned int,
-> >  				 unsigned long);
-> > =20
->=20
-> Not sure which tree that build problem came from, it isn't from the
-> block git tree.
+Don't know how I missed this thread earlier, but I can answer that
+from my standpoint.
 
-I suspect this is caused by commit
-44e95e9e8be95ec9ac6b0678e491883d99c0cfd8 ("beginning of methods
-conversion") from your bdev tree. (the commit id is from next-20090816)
+At Sony we have a "no modules if possible" policy to reduce kernel
+footprint.  The size difference for a kernel compiled with modules
+vs one with external modules is about 10% IRRC.
+ -- Tim
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
---Signature=_Wed__17_Sep_2008_08_16_08_+1000_Fp2qHQHVdRVggxYy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjQMCgACgkQjjKRsyhoI8zVegCbBlbRRddmzZhDihDsfym5m+Px
-MkgAn3NHiaqKbAAOQTcPX+Ex/vZNJ0Au
-=Qv0/
------END PGP SIGNATURE-----
-
---Signature=_Wed__17_Sep_2008_08_16_08_+1000_Fp2qHQHVdRVggxYy--
