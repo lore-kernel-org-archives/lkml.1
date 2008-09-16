@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYIPPEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYIPPHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbYIPPEB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:04:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbYIPPDw
+	id S1755431AbYIPPHY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIPPHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:03:52 -0400
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:61158 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751222AbYIPPDv (ORCPT
+	Tue, 16 Sep 2008 11:07:10 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:62425 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbYIPPHJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:03:51 -0400
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Tom Tucker <tom@opengridcomputing.com>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org,
-       neilb@suse.de, linux-nfs@vger.kernel.org
-In-Reply-To: <48CF9AC3.6060801@opengridcomputing.com>
-References: <48B2D7F8.5020206@opengridcomputing.com>
-	 <20080826192711.GJ4380@fieldses.org>
-	 <48B567F5.2090605@opengridcomputing.com>
-	 <1220111261.31172.14.camel@localhost.localdomain>
-	 <20080831193037.GB14876@fieldses.org>
-	 <1220211842.31172.18.camel@localhost.localdomain>
-	 <48BAF643.4070808@opengridcomputing.com>
-	 <1220217505.31172.26.camel@localhost.localdomain>
-	 <48BC2466.2070806@opengridcomputing.com>
-	 <1221036015.24993.27.camel@zakaz.uk.xensource.com>
-	 <20080912224323.GN22126@fieldses.org>
-	 <48CAF80A.4010109@opengridcomputing.com>
-	 <1221296243.2534.7.camel@localhost.localdomain>
-	 <1221544139.2534.18.camel@localhost.localdomain>
-	 <48CF9AC3.6060801@opengridcomputing.com>
-Content-Type: text/plain
-Date: Tue, 16 Sep 2008 16:03:32 +0100
-Message-Id: <1221577412.28572.60.camel@zakaz.uk.xensource.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 16 Sep 2008 11:07:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=hGFxHiSw0t4zpofL7x9A4QnLNb+zJ6GLByNVNq4FRz7A4gOC6/UtKoUIg06EUjP3U
+	NlcguLp5NV7vL3bWjYMmg==
+Message-ID: <da824cf30809160807y721a6952ub1cd6966d960b7bd@mail.gmail.com>
+Date: Tue, 16 Sep 2008 08:07:03 -0700
+From: "Grant Grundler" <grundler@google.com>
+To: "Tejun Heo" <tj@kernel.org>
+Subject: Re: XFS shutting down due to IO timeout on SATA disk (pata_via for CX700)
+Cc: "=?UTF-8?Q?Bruno_Pr=C3=A9mont?=" <bonbons@linux-vserver.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>
+In-Reply-To: <48CEC8F2.4040904@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 62.200.22.2
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: NFS regression? Odd delays and lockups accessing an NFS export.
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=unbeb6qN2T0A:10 a=497XeZ5pv4kA:10 a=UeMmSX8jBsfFxwOWa9MA:9 a=YV4O1bRQIY3w_igofqOZCZTEmlYA:4 a=LY0hPdMaydYA:10
+Content-Disposition: inline
+References: <20080911193511.7960bc82@neptune.home>
+	 <48CE22E5.9090403@kernel.org> <20080915190242.58d21a8f@neptune.home>
+	 <48CEC8F2.4040904@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-16 at 06:38 -0500, Tom Tucker wrote:
-> Iain:
+On Mon, Sep 15, 2008 at 1:43 PM, Tejun Heo <tj@kernel.org> wrote:
+...
+>>   5 Reallocated_Sector_Ct   0x0033   100   100   024    Pre-fail  Always       -       8589934592000
+>
+> Whee... That's unusally high realloc count but I'm not sure whether it
+> indicates actual problem or it's just the drive's way of saying I'm
+> okay.  But this does look quite suspicious.
 
-I'm actually Ian. (I don't actually mind that much, the other way round
-is probably much more annoying for people called Iain).
+The "raw" values are "vendor defined".
+Often the 6 bytes of raw data are split up into  1 or 2 byte wide fields.
 
-> I'm assuming you'll do this in advance of any patch from me?
+Any volunteers to submit a patch to smartmontools to dump
+"raw values" as hexidecimal by default?
 
-I was going to grind through it unless/until you sent a patch.
+(8589934592000 == 0x7D000000000)
 
-> I was simply going to add printk to the various shutdown paths and see if we 
-> could get some finer grained debug output since the generic transport 
-> debug output was too verbose.
-> 
-> Let me know and I'll help if I can,
+>> 196 Reallocated_Event_Count 0x0032   100   100   000    Old_age   Always       -       441778176
+>
+> Hmmm.. Do you happen to have drives of the same model?  If so, can you
+> please check what other drives are reporting?
 
-You mean logging on the client or server side? I'm currently bisecting
-client. I'm happy to add some extra prints there if you point me in the
-direction of the code paths of interest.
+441778176 == 0x1a550000
 
-Ian.
--- 
-Ian Campbell
-Current Noise: Anathema - Leave No Trace
+Need to see if the vendor will provide documentation to decode these values.
 
-I haven't lost my mind; I know exactly where I left it.
+AFAICT, it's not safe to directly compare raw values between vendors since
+the raw values don't mean exactly the same thing (e.g. more aggressive retries
+might result in few reallocations.)
 
+hth,
+grant
+
+>
+> Thanks.
+>
+> --
+> tejun
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
