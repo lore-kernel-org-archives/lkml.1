@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbYIPJ2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbYIPJ2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbYIPJ2V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 05:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbYIPJ2D
+	id S1754090AbYIPJ2q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 05:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYIPJ2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 05:28:03 -0400
-Received: from host254-130-static.190-82-b.business.telecomitalia.it ([82.190.130.254]:36703
-	"EHLO nausicaa2.coritel.it" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753170AbYIPJ2B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 05:28:01 -0400
-Message-ID: <48CF7C85.1070309@coritel.it>
-Date: Tue, 16 Sep 2008 11:29:41 +0200
-From: Marco Stornelli <marco.stornelli@coritel.it>
-Organization: CoRiTeL
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] vfs: added better file aio_read aio_write operations presence
- check
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Sep 2008 05:28:37 -0400
+Received: from 1wt.eu ([62.212.114.60]:4084 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751186AbYIPJ2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 05:28:36 -0400
+Date: Tue, 16 Sep 2008 11:28:30 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: karthikeyan S <karthispeaks@gmail.com>
+Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: A bug (probably) in stop_all_threads
+Message-ID: <20080916092830.GB30026@1wt.eu>
+References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com> <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com> <20080916051751.GA28475@1wt.eu> <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com> <20080916062226.GA29225@1wt.eu> <3bedf6ab0809160128l101d44feh671dbeb4a8401360@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3bedf6ab0809160128l101d44feh671dbeb4a8401360@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marco Stornelli <marco.stornelli@gmail.com>
+On Tue, Sep 16, 2008 at 01:58:21PM +0530, karthikeyan S wrote:
+> On Tue, Sep 16, 2008 at 11:52 AM, Willy Tarreau <w@1wt.eu> wrote:
+> > On Tue, Sep 16, 2008 at 11:19:58AM +0530, karthikeyan S wrote:
+> >> Hi Willy,
+> >>
+> >> Thanks for getting back. Yes, I tried to set the state to
+> >> TASK_INTERRUPTIBLE. It solves the issue. The other processes now get a
+> >> chance to handle the SIGSTOP sent to them.
+> >
+> > OK, that will help me review the current code and compare it with 2.6.
+> > If you could send me your patch, it will even save me more time. Based
+> > on your report, it's very likely that it will get merged.
+> 
+> Sure, I can definitely send the patch. I haven't sent a patch before,
+> and I am not fully aware of the process to follow. It might take a
+> little bit if time, but I will try to send it very soon.
 
-If a filesystem in the file operations specifies for read and write operations only do_sync_read and do_sync_write without 
-init aio_read and aio_write, there will be a kernel oops, because the vfs code check the presence of (to read for example)
-read OR aio_read method, then it calls read if it's pointer is not null. It's not sufficient because if the read function is 
-actually a do_sync_read, it calls aio_read but without checking the presence. I think a BUG_ON check can be more useful.
-Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
----
+in order not to waste your time, here is how to proceed :
 
---- linux-2.6.26.5/fs/read_write.c.orig	2008-08-20 20:11:37.000000000 +0200
-+++ linux-2.6.26.5/fs/read_write.c	2008-09-16 11:01:13.000000000 +0200
-@@ -240,6 +240,7 @@ ssize_t do_sync_read(struct file *filp,
- 	kiocb.ki_pos = *ppos;
- 	kiocb.ki_left = len;
- 
-+	BUG_ON(!filp->f_op->aio_read);
- 	for (;;) {
- 		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
- 		if (ret != -EIOCBRETRY)
-@@ -295,6 +296,7 @@ ssize_t do_sync_write(struct file *filp,
- 	kiocb.ki_pos = *ppos;
- 	kiocb.ki_left = len;
- 
-+	BUG_ON(!filp->f_op->aio_write);
- 	for (;;) {
- 		ret = filp->f_op->aio_write(&kiocb, &iov, 1, kiocb.ki_pos);
- 		if (ret != -EIOCBRETRY)
+go to the directory where both your new kernel and old kernel are.
+Here is how you do then :
+
+  $ diff -urN linux-2.4.36-bad linux-2.4.36-goot  > my-patch.diff
+
+(ensure that you don't have lots of old or temporary files in it).
+You might have to run a "make distclean" in each dir first.
+
+Then integrate the result as inline text into your mail, and as an added
+bonus, other people will be able to comment on your work.
+
+Regards,
+Willy
 
