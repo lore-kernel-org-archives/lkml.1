@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYIPNx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbYIPNyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYIPNx6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 09:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYIPNxt
+	id S1755176AbYIPNyf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 09:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbYIPNyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 09:53:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50383 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751633AbYIPNxt (ORCPT
+	Tue, 16 Sep 2008 09:54:24 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:60476 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751633AbYIPNyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 09:53:49 -0400
-Date: Tue, 16 Sep 2008 06:53:45 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: arun@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, andi@firstfloor.org,
-       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
-Message-ID: <20080916065345.76d052e1@infradead.org>
-In-Reply-To: <20080916091219.GA1068@linux.vnet.ibm.com>
-References: <20080916091219.GA1068@linux.vnet.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 16 Sep 2008 09:54:23 -0400
+Date: Tue, 16 Sep 2008 09:54:08 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916135408.GB13388@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Adrian Bunk <bunk@kernel.org>, Jarek Poplawski <jarkao2@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	David Miller <davem@davemloft.net>, jeff@garzik.org,
+	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <20080916104811.GC7397@cs181140183.pp.htv.fi> <20080916114305.GB10965@ff.dom.local> <20080916121528.GD7397@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080916121528.GD7397@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Sep 2008 14:42:31 +0530
-Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
-
-> Hi,
+On Tue, Sep 16, 2008 at 03:15:28PM +0300, Adrian Bunk wrote:
 > 
-> An idle cpu on which device drivers have initialized timers, has to
-> be frequently woken up to service the timers. So, consolidation of
-> timers onto a fewer number of cpus is important. Migration of timers
-> from idle cpus onto lesser idle cpus is necessary. Currently, timers
-> are migrated during the cpu offline operation. However cpu-hotplug
-> for the sake of idle system power management is too heavy. So, this
-> patch implements a lightweight timer migration framework.
+> More seriously, there's a difference between Linus' "another random 
+> improvement" and an "is even suitable for -stable".
+> 
+> I'm not reading Linus' (Cc'ed) statement the way that a patch that is 
+> appropriate for 2.6.27.1 is not appropriate for -rc now.
 
-while I absolutely like reducing power consumption... I'm not sure this
-helps or is the right approach.
+Well, remember that patches that get published for -stable do have to
+go through an extra review process.  It's not true that any "obviously
+correct" bug fix gets automatically published in -stable.  Sometimes
+bug fixes do get rejected for -stable because they are too risky, or
+require more time for testing in the -rc series before they are deemed
+suitable for -stable.
 
-First of all, it's of course absolutely better to fix timers and apps
-that cause them (and with PowerTOP we fixed basically all the bad
-stuff).
+Looking at 2.6.26, there is currently about 195 patches queued up,
+which is certainly not all of the bugs fixed during the 2.6.27
+development cycle.  Some of it is that some developers aren't as
+aggressive about nominating patches for backporting to 2.6.26, and
+some of it is that only the really *important* bugs get this treatment.
 
-Second, in terms of power; a wake up is a wake up, it doesn't really
-matter where it happens. 
+But, I bet that if there was a major embarassing problem where someone
+abused the process by submitting an "obviously correct" patch that
+ended up breaking things for a others, the end result would be that
+the -stable team would start cracking down and start using more strict
+criteria about what would be considered allowable for publishing in
+-stable.
 
-Now we could do some consolidation (which realistically needs the range
-timer feature that's aimed for 2.6.28), but I would much rather do that
-in a different way: rather than actively moving stuff, I would instead
-suggest sharing the timer queues between logical cpus that share the
-same cache. (Now its an admin choice if he wants this on a "shared L1",
-"shared L2" or "shared L3" basis). 
+I'll remind people that the original rule was that new features were
+only allowed in -rc1, and bug fixes in -rc1 and -rc2.  But because
+that got abused, Linus is now saying that only regression bug fixes
+are allowed post -rc1.  My belief is that part of the reason for this
+is that Linus is a self-described soft touch, and by stating a
+draconian rule, he's hoping that subsystem maintainers like David will
+lay done the law, and prevent the really serious abuses (where people
+starting submitting "obvious bug fixes" in -rc5 and -rc6 that caused
+regressions which in turn ends up extending the release cycle).
 
-Or if you want to forcefully migrate timers, don't move existing ones,
-just on queue/requeue put the on not-the-local-cpu. Sure they'll fire
-once on the "wrong" cpu, but that's a very short term problem!
+If it's a really important bug, and it affects a huge number of users,
+or it's really bad security bug, the reality is that exceptions will
+be made to the rules.  But exceptions need to remain exceptions for
+extraordinary situations, not everyday occurrences.  And of course, if
+the bug does affect a huge number of users, someone should be asking
+the question why it wasn't detected sooner, say before the last merge
+window --- and to ask the question how many users is this bug really
+going to affect anyway?
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+At least, that's my take on things,
+
+						- Ted
