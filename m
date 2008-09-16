@@ -1,85 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbYIPIug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYIPIxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbYIPIug (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 04:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbYIPIu2
+	id S1753982AbYIPIxi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 04:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbYIPIxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 04:50:28 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:57479 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbYIPIu0 (ORCPT
+	Tue, 16 Sep 2008 04:53:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:22158 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbYIPIxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 04:50:26 -0400
+	Tue, 16 Sep 2008 04:53:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=AlzGkVYM4VqcsCPnAdCW5NPGU/Slxu6NDMHVWhJAYA/gl4ucG1BYw2+v0vmBrAHF6p
-         zFEnmDwFFrAlEb9wuard2slrT/0IC1T+uVG9iHq1mcqODgGJXfQiZaKu+v1CMZ/gFnGh
-         wClCDKOI7uthPd6wy+zAc4IJP5D8lL/MIp6B8=
-Message-ID: <3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
-Date: Tue, 16 Sep 2008 16:50:24 +0800
-From: "Luming Yu" <luming.yu@gmail.com>
-To: "Roland McGrath" <roland@redhat.com>
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20080910055504.9A2A41541FE@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	 <48450864.6080707@suse.cz> <48455619.6040608@suse.cz>
-	 <3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
-	 <48465D5C.8000804@suse.cz>
-	 <3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
-	 <1212664605.15747.16.camel@elijah.suse.cz>
-	 <20080627204954.34F8B154231@magilla.localdomain>
-	 <3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
-	 <20080910055504.9A2A41541FE@magilla.localdomain>
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=lOwvLPYnfereR1D38CFK96mKcYDk80LhixHyKeXBoJgQQvtUvxQhNY+igD9FNQpfJT
+         +gJ8LXjOzeUORzL8V+0YKjhLZMHC9zqWikdKQJR/xZJ3OHjNY/XlemR5lfWudHi/+CJ6
+         Il251AMySBmnE8RnDBBIdl0btIMJRHx/70//8=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 1/5] add DEFINE_LOGLEVEL_SETUP v2
+Date: Tue, 16 Sep 2008 01:52:50 -0700
+Message-Id: <1221555174-30060-1-git-send-email-yhlu.kernel@gmail.com>
+X-Mailer: git-send-email 1.5.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 10, 2008 at 1:55 PM, Roland McGrath <roland@redhat.com> wrote:
-> This subject line is quite far from what you're now addressing, btw.
->
-> I certainly wouldn't recommend that patch.  The interference between ptrace
-> uses of SIGTRAP and a program that blocks SIGTRAP is just a fact of life
-> with ptrace.  If you wanted to change the exec SIGTRAP to be more
-> consistent with other signals induced by debuggers (such as breakpoints and
-> single-step), you could just change send_sig to force_sig.  That unblocks
-> SIGTRAP and resets its handler when it's blocked.  Conversely, a tracer
-> program could use PTRACE_O_TRACEEXEC if it cared to deal with tracing a
-> process that blocks SIGTRAP.  (That uses ptrace_notify rather than any
-> actual signal that can be blocked.)
->
-> But, none of this goes to your actual problem at all AFAICT.  You've said
-> your actual problem with strace only arises on ia64.  The behavior of
-> ptrace'd exec, and the effect of a program blocking SIGTRAP, is exactly the
-> same across all machines.  Changing it does not explain your situation.
-> I'm in favor of understanding what is actually going on before changing
-> things.
->
-> If the SIGTRAP from exec is actually seen by strace on a different machine
-> like it's not on ia64, that suggests that something different happened
-> between the two.  In the case that doesn't exhibit the problem, either
-> SIGTRAP got unblocked by something before the exec, or userland (strace)
-> behaves differently so that it doesn't care about not seeing that SIGTRAP.
+so could make subsys easy to add loglevel and xxx_printk
+v2: make it more genric, so subsys user only need to two line macro
 
-The reason is not as complicated as I thought. It is because x86
-strace don't test TCB_WAITEXECVE. please take a look at defs.h
-(strace-4.5.16), the flag is defined as follows:
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+---
+ arch/x86/kernel/vmlinux_32.lds.S  |    1 +
+ arch/x86/kernel/vmlinux_64.lds.S  |    2 ++
+ include/asm-generic/vmlinux.lds.h |    8 ++++++++
+ include/linux/init.h              |   36 ++++++++++++++++++++++++++++++++++++
+ include/linux/kernel.h            |    9 +++++++++
+ init/main.c                       |   28 +++++++++++++++++++++++++++-
+ 6 files changed, 83 insertions(+), 1 deletion(-)
 
-#ifdef LINUX
-# if defined(ALPHA) || defined(SPARC) || defined(SPARC64) ||
-defined(POWERPC) || defined(IA64) || defined(HPPA) || defined(SH) ||
-defined(SH64) || defined(S390) || defined(S390X) || defined(ARM)
-#  define TCB_WAITEXECVE 02000  /* ignore SIGTRAP after exceve */
-# endif
-
-I'm not an strace expert, so I have no idea what the TCB_WAITEXECVE means.
-And why x86 strace can handle SIGTRAP after execve but ALL other Arch can not..
-Could anybody shield some lights on the flag?
+Index: linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmlinux_32.lds.S
++++ linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+@@ -145,6 +145,7 @@ SECTIONS
+ 	*(.x86_cpu_dev.init)
+ 	__x86_cpu_dev_end = .;
+   }
++  LOGLEVEL_SETUP_INIT(8)
+   DYN_ARRAY_INIT(8)
+   SECURITY_INIT
+   . = ALIGN(4);
+Index: linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
++++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+@@ -174,6 +174,8 @@ SECTIONS
+   }
+   __x86_cpu_dev_end = .;
+ 
++  LOGLEVEL_SETUP_INIT(8)
++
+   DYN_ARRAY_INIT(8)
+ 
+   SECURITY_INIT
+Index: linux-2.6/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/vmlinux.lds.h
++++ linux-2.6/include/asm-generic/vmlinux.lds.h
+@@ -222,6 +222,14 @@
+  * All archs are supposed to use RO_DATA() */
+ #define RODATA RO_DATA(4096)
+ 
++#define LOGLEVEL_SETUP_INIT(align)					\
++	. = ALIGN((align));						\
++	.loglevel_setup.init : AT(ADDR(.loglevel_setup.init) - LOAD_OFFSET) {	\
++		VMLINUX_SYMBOL(__loglevel_setup_start) = .;		\
++		*(.loglevel_setup.init)					\
++		VMLINUX_SYMBOL(__loglevel_setup_end) = .;		\
++	}
++
+ #define DYN_ARRAY_INIT(align)							\
+ 	. = ALIGN((align));						\
+ 	.dyn_array.init : AT(ADDR(.dyn_array.init) - LOAD_OFFSET) {	\
+Index: linux-2.6/include/linux/init.h
+===================================================================
+--- linux-2.6.orig/include/linux/init.h
++++ linux-2.6/include/linux/init.h
+@@ -251,6 +251,42 @@ struct obs_kernel_param {
+ /* Relies on boot_command_line being set */
+ void __init parse_early_param(void);
+ 
++#define DECLARE_LOGLEVEL(nameX)					\
++	extern int loglevel_##nameX;				\
++	extern int nameX##_printk(int v, const char *fmt, ...)
++
++struct loglevel_setup {
++	char *name;
++	void (*setup)(char *);
++};
++
++extern struct loglevel_setup *__loglevel_setup_start[], *__loglevel_setup_end[];
++
++#define DEFINE_LOGLEVEL_SETUP(nameX)				\
++	int loglevel_##nameX;					\
++	int nameX##_printk(int v, const char *fmt, ...)		\
++	{							\
++		va_list args;					\
++		int r;						\
++		if (v > loglevel_##nameX)			\
++			return 0;				\
++		va_start(args, fmt);				\
++		r = vprintk(fmt, args);				\
++		va_end(args);					\
++		return r;					\
++	}							\
++	static void __init setup_loglevel_##nameX(char *str)	\
++	{							\
++		get_option(&str, &loglevel_##nameX);		\
++	}							\
++	static struct loglevel_setup __loglevel_setup_##nameX __initdata = \
++	{	.name = #nameX,					\
++		.setup = setup_loglevel_##nameX,		\
++	};							\
++	static struct loglevel_setup *__loglevel_setup_ptr_##nameX __used \
++	__attribute__((__section__(".loglevel_setup.init"))) =	\
++		&__loglevel_setup_##nameX
++
+ struct dyn_array {
+ 	void **name;
+ 	unsigned long size;
+Index: linux-2.6/include/linux/kernel.h
+===================================================================
+--- linux-2.6.orig/include/linux/kernel.h
++++ linux-2.6/include/linux/kernel.h
+@@ -104,6 +104,15 @@ extern int console_printk[];
+ #define minimum_console_loglevel (console_printk[2])
+ #define default_console_loglevel (console_printk[3])
+ 
++#define	KERN_LOG_EMERG	0	/* system is unusable			*/
++#define	KERN_LOG_ALERT	1	/* action must be taken immediately	*/
++#define	KERN_LOG_CRIT	2	/* critical conditions			*/
++#define	KERN_LOG_ERR	3	/* error conditions			*/
++#define	KERN_LOG_WARNING	4	/* warning conditions			*/
++#define	KERN_LOG_NOTICE	5	/* normal but significant condition	*/
++#define	KERN_LOG_INFO	6	/* informational			*/
++#define	KERN_LOG_DEBUG	7	/* debug-level messages			*/
++
+ struct completion;
+ struct pt_regs;
+ struct user;
+Index: linux-2.6/init/main.c
+===================================================================
+--- linux-2.6.orig/init/main.c
++++ linux-2.6/init/main.c
+@@ -248,9 +248,35 @@ static int __init quiet_kernel(char *str
+ early_param("debug", debug_kernel);
+ early_param("quiet", quiet_kernel);
+ 
++static char __init *real_loglevel_setup(char *str)
++{
++	struct loglevel_setup **la;
++
++	for (la = __loglevel_setup_start ; la < __loglevel_setup_end; la++) {
++		struct loglevel_setup *l = *la;
++		int len = strlen(l->name);
++
++		if (!strncmp(str, l->name, len)) {
++			/* skip one : */
++			l->setup(str + len + 1);
++			str = NULL;
++			break;
++		}
++	}
++
++	return str;
++}
+ static int __init loglevel(char *str)
+ {
+-	get_option(&str, &console_loglevel);
++	while (str) {
++		char *k = strchr(str, ',');
++		if (k)
++			*k++ = 0;
++		if (*str && (str = real_loglevel_setup(str)) && *str) {
++			get_option(&str, &console_loglevel);
++		}
++		str = k;
++	}
+ 	return 0;
+ }
+ 
