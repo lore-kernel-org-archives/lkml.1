@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYIPXxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYIPXyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbYIPXxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 19:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIPXw7
+	id S1754088AbYIPXyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 19:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYIPXyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 19:52:59 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60141 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbYIPXw6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 19:52:58 -0400
-Date: Tue, 16 Sep 2008 16:52:54 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org
-Subject: [PATCH] fs: add a sanity check in d_free
-Message-ID: <20080916165254.52d73a38@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+	Tue, 16 Sep 2008 19:54:06 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:44328 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751671AbYIPXyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 19:54:05 -0400
+Date: Wed, 17 Sep 2008 08:53:42 +0900
+To: andi@firstfloor.org
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about
+ virtual mappings
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080916175824.GF25711@one.firstfloor.org>
+References: <20080916134335.GC25711@one.firstfloor.org>
+	<20080917021319O.fujita.tomonori@lab.ntt.co.jp>
+	<20080916175824.GF25711@one.firstfloor.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080917085335F.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 16 Sep 2008 19:58:24 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
->From 4ab03e637c357ea70c737cd401732a4d80375173 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Tue, 16 Sep 2008 16:51:17 -0700
-Subject: [PATCH] fs: add a sanity check in d_free
+> > > Those always are handled elsewhere in the block layer (using the bounce_pfn
+> > > mechanism)
+> > 
+> > I don't think that the bounce guarantees that dma_alloc_coherent()
+> > returns an address that a device can access to.
+> 
+> dma_alloc_coherent() is not used for block IO data. And dma_alloc_coherent()
+> does handle masks > 24bit < 32bits just fine.
 
-we're seeing some corruption in the dentry->d_alias list that
-appears like a free of an entry still on the list; this patch
-adds a WARN_ON() to catch this scenario, as suggested by Al Viro
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- fs/dcache.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 80e9395..4c39a59 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -69,6 +69,7 @@ struct dentry_stat_t dentry_stat = {
- 
- static void __d_free(struct dentry *dentry)
- {
-+	WARN_ON(!list_empty(&dentry->d_alias));
- 	if (dname_external(dentry))
- 		kfree(dentry->d_name.name);
- 	kmem_cache_free(dentry_cache, dentry); 
--- 
-1.5.5.1
+What do you mean? For example, some aacraid cards have 31bit dma
+mask. What guarantees that IOMMUs's dma_alloc_coherent don't return a
+virtual address > 31bit < 32bit?
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> > I'm not familiar with what the networking does, for example, seems
+> > that b44 sets dev->dma_mask to DMA_30BIT_MASK and b44_start_xmit()
+> > does:
+> > 
+> 
+> b44 (and related designs like the bcm wireless chipset) 
+> has its own bouncing scheme. IT doesn't need any hacks in map_sg
+>  
+> > IOMMUs can try to return an address that the NIC can access to.
+> 
+> It's not worth to handle this strange case. The drivers do anyways.
+> These are very cheap devices which are only rarely used in systems
+> with >2GB and for those cases the existing bouncing setup works fine.
+
+I think that the patch is a pretty straightforward, it just the same
+thing that IOMMUs with > 32bits virtual address space do. We can do
+better with the simple patch. But I'm ok with dropping the patch for
+GART since we can live without the patch, as you said.
