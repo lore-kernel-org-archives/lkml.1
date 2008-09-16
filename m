@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbYIPMG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYIPMHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754372AbYIPMG5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 08:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYIPMGt
+	id S1753214AbYIPMHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 08:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbYIPMHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 08:06:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44090 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbYIPMGs (ORCPT
+	Tue, 16 Sep 2008 08:07:01 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56246 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754386AbYIPMG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 08:06:48 -0400
-Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
+	Tue, 16 Sep 2008 08:06:59 -0400
+Subject: Re: [RFC PATCH 1/1]: timers: Enabling timer migration to cpu0
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: arun@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
        ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org,
        venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com
-In-Reply-To: <20080916091219.GA1068@linux.vnet.ibm.com>
-References: <20080916091219.GA1068@linux.vnet.ibm.com>
+In-Reply-To: <20080916091320.GA945@linux.vnet.ibm.com>
+References: <20080916091320.GA945@linux.vnet.ibm.com>
 Content-Type: text/plain
-Date: Tue, 16 Sep 2008 14:05:30 +0200
-Message-Id: <1221566730.6943.16.camel@lappy.programming.kicks-ass.net>
+Date: Tue, 16 Sep 2008 14:05:31 +0200
+Message-Id: <1221566731.6943.17.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -28,58 +28,223 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-16 at 14:42 +0530, Arun R Bharadwaj wrote:
-> Hi,
+On Tue, 2008-09-16 at 14:43 +0530, Arun R Bharadwaj wrote:
+> The implentation details of this as follows:
 
-80 char lines please.
+80 char lines please
 
-> An idle cpu on which device drivers have initialized timers, has to be
-> frequently woken up to service the timers. So, consolidation of timers
-> onto a fewer number of cpus is important. Migration of
-> timers from idle cpus onto lesser idle cpus is necessary. Currently,
-> timers are migrated during the cpu offline operation. However
-> cpu-hotplug for the sake of idle system power management is too
-> heavy. So, this patch implements a lightweight timer migration
-> framework.
+> A sysfs entry is created
+> at /sys/devices/system/cpu/cpuX/timer_migration. By setting this to 1,
+> timer migration is enabled for that cpu.
+> An important thing to note here is cpu-pinned timers. Timers can be
+> pinned to a particular cpu using the function add_timer_on(). So, such
+> timers should not be migrated.
+
+You utterly fail to mention hrtimers even though you do touch those as
+well, what's more - there are hrtimers that need to be run on the cpu
+that queues them - you don't seem to provide anything like that.
+
+> Since the last 3 bits of the tvec_base is guaranteed to be 0, and
+> since the last bit is being used to indicate deferrable timers, I'm
+> using the second last bit to indicate cpu-pinned timers.
+> The implementation of functions to manage the TBASE_PINNED_FLAG is
+> similar to those which manage the TBASE_DEFERRABLE_FLAG.
 > 
-> Also, in a multi-core, multi-package system, it is always desirable to
-> have all the timers firing on the cpus present in the same package.
-> This would enable us to place the idle package in deep sleep
-> state. So, migration of timers is required for this.
-> 
-> A per_cpu sysfs hook is created
-> at /sys/devices/system/cpu/cpuX/timer_migration. By echo-ing 1 to
-> cpuX/timer_migration, all regular and hrtimers from cpuX are migrated
-> to cpu0. The fact that all
-> timers are migrated from cpuX to cpu0 is demonstrated by making a note
-> of /proc/interrupts.
+> Signed-off-by: Arun Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
 
-This seems like an exceedingly dumb idea - cpu 0 might be a long long
-way from x and by pushing all timers to cpu0 you might actually overload
-cpu 0.
+please add --show-c-function to your diff
 
-Initially you talked about packages an moving timers to busy cpus -
-which is something else altogether.
+> Index: linux-2.6.26/drivers/base/cpu.c
+> ===================================================================
+> --- linux-2.6.26.orig/drivers/base/cpu.c	2008-09-15 08:14:40.000000000 +0000
+> +++ linux-2.6.26/drivers/base/cpu.c	2008-09-15 09:34:52.000000000 +0000
+> @@ -13,6 +13,7 @@
+>  
+>  #include "base.h"
+>  
+> +DEFINE_PER_CPU(int, enable_timer_migration);
+>  struct sysdev_class cpu_sysdev_class = {
+>  	.name = "cpu",
+>  };
+> @@ -20,6 +21,21 @@
+>  
+>  static DEFINE_PER_CPU(struct sys_device *, cpu_sys_devices);
+>  
+> +#ifdef CONFIG_TIMER_MIGRATION
+> +static ssize_t timer_migration_show(struct sys_device *dev, char *buf)
+> +{
+> +	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+> +	return sprintf(buf, "%u\n", per_cpu(enable_timer_migration, cpu->sysdev.id));
+> +}
+> +static ssize_t timer_migration_store(struct sys_device *dev, const char *buf, size_t count)
+> +{
+> +	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
+> +	per_cpu(enable_timer_migration, cpu->sysdev.id) = buf[0] - 48;
+> +	return count;
+> +}
+> +static SYSDEV_ATTR(timer_migration, 0666, timer_migration_show, timer_migration_store);
+> +#endif
 
-> $:echo 1 > /sys/devices/system/cpu/cpu3/timer_migration
-> $:cat /proc/interrupts > file1; sleep 30 ; cat /proc/interrupts >
-> file2
-> $:diff file1 file2 | grep LOC
-> < LOC:       5276       2100       2676       1647       2415
-> 1803       2275       2977   Local timer interrupts
-> > LOC:       6991       2195       2774       1647       2562
-> 1900       2497       3075   Local timer interrupts
-> 
-> As we can observe, first we are enabling timer migration in cpu3. As a
-> result, the number of local timer interrupts on cpu3 over the next 30
-> seconds are zero. cpu3  has been totally rid of all regular
-> and hrtimers.
-> 
-> Please refer to the following paper for details:
-> 
-> http://ols.fedoraproject.org/OLS/Reprints-2008/srinivasan1-reprint.pdf
+Why bother with the CONFIG_ variable - its so little code and it adds to
+the Kconfig space.
 
-If there's anything worth reading in there it should have been mentioned
-in this email and preferably in some comment in the code and Kconfig
-help as well.
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  static ssize_t show_online(struct sys_device *dev, char *buf)
+>  {
+> @@ -175,6 +191,11 @@
+>  	if (!error)
+>  		error = sysdev_create_file(&cpu->sysdev, &attr_crash_notes);
+>  #endif
+> +
+> +#ifdef CONFIG_TIMER_MIGRATION
+> +	if (!error)
+> +		error = sysdev_create_file(&cpu->sysdev, &attr_timer_migration);
+> +#endif
+>  	return error;
+>  }
+>  
+> Index: linux-2.6.26/init/Kconfig
+> ===================================================================
+> --- linux-2.6.26.orig/init/Kconfig	2008-09-15 08:14:40.000000000 +0000
+> +++ linux-2.6.26/init/Kconfig	2008-09-15 08:14:48.000000000 +0000
+> @@ -923,3 +923,9 @@
+>  	  designed for best read-side performance on non-realtime
+>  	  systems.  Classic RCU is the default.  Note that the
+>  	  PREEMPT_RCU symbol is used to select/deselect this option.
+> +
+> +config TIMER_MIGRATION
+> +	bool
+> +	default y
+> +	help
+> +	  This option enables migration of non cpu-affine timers to cpu0.
+
+this will earn you a place in the hall of kconfig-help-text of shame.
+
+> Index: linux-2.6.26/include/linux/timer.h
+> ===================================================================
+> --- linux-2.6.26.orig/include/linux/timer.h	2008-09-15 08:14:40.000000000 +0000
+> +++ linux-2.6.26/include/linux/timer.h	2008-09-15 08:31:27.000000000 +0000
+> @@ -5,6 +5,7 @@
+>  #include <linux/ktime.h>
+>  #include <linux/stddef.h>
+>  #include <linux/debugobjects.h>
+> +#include <linux/percpu.h>
+>  
+>  struct tvec_base;
+>  
+> @@ -187,3 +188,7 @@
+>  unsigned long round_jiffies_relative(unsigned long j);
+>  
+>  #endif
+> +
+> +#ifdef CONFIG_TIMER_MIGRATION
+> +DECLARE_PER_CPU(int, enable_timer_migration);
+> +#endif
+> Index: linux-2.6.26/kernel/timer.c
+> ===================================================================
+> --- linux-2.6.26.orig/kernel/timer.c	2008-09-15 08:14:40.000000000 +0000
+> +++ linux-2.6.26/kernel/timer.c	2008-09-15 11:22:06.000000000 +0000
+> @@ -37,6 +37,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/tick.h>
+>  #include <linux/kallsyms.h>
+> +#include <linux/timer.h>
+>  
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+> @@ -87,8 +88,9 @@
+>   * the new flag to indicate whether the timer is deferrable
+>   */
+>  #define TBASE_DEFERRABLE_FLAG		(0x1)
+> +#define TBASE_PINNED_FLAG               (0x2)
+>  
+> -/* Functions below help us manage 'deferrable' flag */
+> +/* Functions below help us manage 'deferrable' flag and 'cpu-pinned-timer' flag */
+>  static inline unsigned int tbase_get_deferrable(struct tvec_base *base)
+>  {
+>  	return ((unsigned int)(unsigned long)base & TBASE_DEFERRABLE_FLAG);
+> @@ -96,7 +98,7 @@
+>  
+>  static inline struct tvec_base *tbase_get_base(struct tvec_base *base)
+>  {
+> -	return ((struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG));
+> +	return (struct tvec_base *)((unsigned long)base & ~TBASE_DEFERRABLE_FLAG & ~TBASE_PINNED_FLAG);
+>  }
+
+I'm pretty sure this line is too long.
+
+>  static inline void timer_set_deferrable(struct timer_list *timer)
+> @@ -105,11 +107,21 @@
+>  				       TBASE_DEFERRABLE_FLAG));
+>  }
+>  
+> +static inline unsigned int tbase_get_pinned(struct tvec_base *base)
+> +{
+> +	return ((unsigned int)(unsigned long)base & TBASE_PINNED_FLAG);
+> +}
+
+Why explicitly cast to unsigned int?
+
+>  static inline void
+>  timer_set_base(struct timer_list *timer, struct tvec_base *new_base)
+>  {
+>  	timer->base = (struct tvec_base *)((unsigned long)(new_base) |
+> -				      tbase_get_deferrable(timer->base));
+> +		   tbase_get_deferrable(timer->base) | tbase_get_pinned(timer->base));
+> +}
+> +
+> +static inline void timer_set_pinned(struct timer_list *timer)
+> +{
+> +	timer->base = ((struct tvec_base *)((unsigned long)(timer->base) | TBASE_PINNED_FLAG));
+>  }
+
+<80 ?
+
+>  /**
+> @@ -540,6 +552,12 @@
+>  
+>  	new_base = __get_cpu_var(tvec_bases);
+>  
+> +	#ifdef CONFIG_TIMER_MIGRATION
+> +	if (__get_cpu_var(enable_timer_migration) && !tbase_get_pinned(timer->base)) {
+> +		new_base = per_cpu(tvec_bases, 0);
+> +	}
+> +	#endif
+
+We don't indent preprocessor directives like that, also we don't use
+braces on single statement blocks.
+
+>  	if (base != new_base) {
+>  		/*
+>  		 * We are trying to schedule the timer on the local CPU.
+> @@ -579,6 +597,7 @@
+>  	struct tvec_base *base = per_cpu(tvec_bases, cpu);
+>  	unsigned long flags;
+>  
+> +	timer_set_pinned(timer);
+>  	timer_stats_timer_set_start_info(timer);
+>  	BUG_ON(timer_pending(timer) || !timer->function);
+>  	spin_lock_irqsave(&base->lock, flags);
+> Index: linux-2.6.26/kernel/hrtimer.c
+> ===================================================================
+> --- linux-2.6.26.orig/kernel/hrtimer.c	2008-09-15 08:14:40.000000000 +0000
+> +++ linux-2.6.26/kernel/hrtimer.c	2008-09-15 11:17:19.000000000 +0000
+> @@ -200,6 +200,12 @@
+>  	struct hrtimer_cpu_base *new_cpu_base;
+>  
+>  	new_cpu_base = &__get_cpu_var(hrtimer_bases);
+> +
+> +	#ifdef CONFIG_TIMER_MIGRATION
+> +	if (__get_cpu_var(enable_timer_migration))
+> +		new_cpu_base = &per_cpu(hrtimer_bases, 0);
+> +	#endif
+
+idem
+
+and NAK - this will actually break stuff.
+
+>  	new_base = &new_cpu_base->clock_base[base->index];
+>  
+>  	if (base != new_base) {
 
