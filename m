@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbYIPOOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYIPOQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755145AbYIPOOl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYIPOOd
+	id S1755494AbYIPOQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYIPOQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:14:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38551 "EHLO mx2.redhat.com"
+	Tue, 16 Sep 2008 10:16:21 -0400
+Received: from www.tglx.de ([62.245.132.106]:36156 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751078AbYIPOOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:14:32 -0400
-Message-ID: <48CFBE51.1060200@redhat.com>
-Date: Tue, 16 Sep 2008 07:10:25 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753684AbYIPOQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:16:20 -0400
+Date: Tue, 16 Sep 2008 07:14:40 -0700 (PDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Joshua Hoblitt <josh@hoblitt.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       j_kernel@hoblitt.com
+Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
+ tick_periodic() ???
+In-Reply-To: <20080916025431.GB16764@hoblitt.com>
+Message-ID: <alpine.LFD.1.10.0809160711360.3606@apollo.tec.linutronix.de>
+References: <bug-11543-10286@http.bugzilla.kernel.org/> <20080911170258.aa0bea0d.akpm@linux-foundation.org> <20080912091308.GA10305@elte.hu> <20080913001306.GA9610@hoblitt.com> <20080915210635.GA16764@hoblitt.com> <20080916025431.GB16764@hoblitt.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       Davide Libenzi <davidel@xmailserver.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in	userspace
-References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi> <20080916130234.GA17082@localhost.localdomain>
-In-Reply-To: <20080916130234.GA17082@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 15 Sep 2008, Joshua Hoblitt wrote:
 
-Kirill A. Shutemov wrote:
->> What is the error message?
+> In addition to the deadlocks, we still have the watchdog warning:
 > 
-> /usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
-> flock'
+> [    0.460034] Testing NMI watchdog ... 
+> [    0.532557] WARNING: CPU#0: NMI appears to be stuck (0->0)!
+> [    0.533301] Please report this to bugzilla.kernel.org,
+> [    0.536635] and attach the output of the 'dmesg' command.
+> 
+> Perhaps an HPET problem:
+> 
+> [    0.993800] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+> [    0.999969] hpet0: 3 32-bit timers, 25000000 Hz
+> [    1.004396] ACPI: RTC can wake from S4
+> [    1.006637] Clockevents: could not switch to one-shot
+> mode:<6>Clockevents: could not switch to one-shot mode: lapic is not functional.
+> [    1.009844] Could not switch to high resolution mode on CPU 3
+> [    1.009848] Clockevents: could not switch to one-shot mode: lapic is not functional.
+> [    1.009852] Could not switch to high resolution mode on CPU 2
+> [    1.009855] Clockevents: could not switch to one-shot mode: lapic is not functional.
+> [    1.009858] Could not switch to high resolution mode on CPU 1
+> [    1.009969]  lapic is not functional.
+> [    1.056944] Could not switch to high resolution mode on CPU 0
 
-And?  None of these programs should use <linux/inotify.h>.  There has
-for the longest time been a <sys/inotify.h> header which doesn't need
-any kernel headers.  In fact, <linux/inotify.h> should not be exported.
+No, that's documented behaviour:
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> > > [    0.126660] APIC timer registered as dummy, due to nmi_watchdog=1!
 
-iEYEARECAAYFAkjPvlEACgkQ2ijCOnn/RHTO0ACfR2NrTZ97pK34xZKM5pzlRbL6
-Nb4AoJ27y9MU+Udr50GZVfZZXjg3ENWg
-=7Pol
------END PGP SIGNATURE-----
+Can you try nmi_watchdog=2 ?
+
+Thanks,
+
+	tglx
