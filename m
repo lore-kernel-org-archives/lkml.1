@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbYIPPHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbYIPPNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbYIPPHY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYIPPHK
+	id S1755644AbYIPPNz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYIPPNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:07:10 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:62425 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432AbYIPPHJ (ORCPT
+	Tue, 16 Sep 2008 11:13:47 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:60042 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752916AbYIPPNr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:07:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=hGFxHiSw0t4zpofL7x9A4QnLNb+zJ6GLByNVNq4FRz7A4gOC6/UtKoUIg06EUjP3U
-	NlcguLp5NV7vL3bWjYMmg==
-Message-ID: <da824cf30809160807y721a6952ub1cd6966d960b7bd@mail.gmail.com>
-Date: Tue, 16 Sep 2008 08:07:03 -0700
-From: "Grant Grundler" <grundler@google.com>
-To: "Tejun Heo" <tj@kernel.org>
-Subject: Re: XFS shutting down due to IO timeout on SATA disk (pata_via for CX700)
-Cc: "=?UTF-8?Q?Bruno_Pr=C3=A9mont?=" <bonbons@linux-vserver.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, "Jeff Garzik" <jgarzik@pobox.com>
-In-Reply-To: <48CEC8F2.4040904@kernel.org>
+	Tue, 16 Sep 2008 11:13:47 -0400
+X-Greylist: delayed 1085 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Sep 2008 11:13:46 EDT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080911193511.7960bc82@neptune.home>
-	 <48CE22E5.9090403@kernel.org> <20080915190242.58d21a8f@neptune.home>
-	 <48CEC8F2.4040904@kernel.org>
+Message-ID: <18639.51433.628856.335547@stoffel.org>
+Date: Tue, 16 Sep 2008 10:55:37 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: "Jacek Poplawski" <jacekpoplawski@gmail.com>
+Cc: "John Stoffel" <john@stoffel.org>, linux-kernel@vger.kernel.org
+Subject: Re: motherboard recommendations?
+In-Reply-To: <1f276abf0809160739r6e2f42b3j8941730136365fb9@mail.gmail.com>
+References: <1f276abf0809160657x4264ad5dm74fd2689d804a7ad@mail.gmail.com>
+	<18639.49959.895003.593644@stoffel.org>
+	<1f276abf0809160739r6e2f42b3j8941730136365fb9@mail.gmail.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 1:43 PM, Tejun Heo <tj@kernel.org> wrote:
-...
->>   5 Reallocated_Sector_Ct   0x0033   100   100   024    Pre-fail  Always       -       8589934592000
->
-> Whee... That's unusally high realloc count but I'm not sure whether it
-> indicates actual problem or it's just the drive's way of saying I'm
-> okay.  But this does look quite suspicious.
 
-The "raw" values are "vendor defined".
-Often the 6 bytes of raw data are split up into  1 or 2 byte wide fields.
+Jacek> On Tue, Sep 16, 2008 at 4:31 PM, John Stoffel <john@stoffel.org> wrote:
+>> Which ASUS board, the K8V?  If so, just look for a board with
+>> components that are known to work well with Linux.  Honestly, these
+>> days Linux supports alot more stuff right out of the box.
 
-Any volunteers to submit a patch to smartmontools to dump
-"raw values" as hexidecimal by default?
+Jacek> I was thinking the same few years ago, but on two Asus boards
+Jacek> two had problems.  K8V-X SE is the board I have now, it's very
+Jacek> bad choice for Linux, it crashes very often when starting X
+Jacek> (with DRI) - it's related to buggy BIOS and AGP.
 
-(8589934592000 == 0x7D000000000)
+Sure, I can understand your frustration here.  I'd be pissed too.  :]
+I spent a bunch of time looking at motherboards and finally settled on
+the one I got because of good reports.  Don't get a recent board, get
+something that's been out for six months to a year with good reviews
+on newegg.com to make sure you don't get bitten by stuff like this.
 
->> 196 Reallocated_Event_Count 0x0032   100   100   000    Old_age   Always       -       441778176
->
-> Hmmm.. Do you happen to have drives of the same model?  If so, can you
-> please check what other drives are reporting?
+Jacek> On another board SATA was supported after few months and there
+Jacek> was constant problem with network (there was long discussion
+Jacek> about it on LKML) - networking was working after boot but stops
+Jacek> working after a while. It was never fixed, so I don't use this
+Jacek> board anymore.
 
-441778176 == 0x1a550000
-
-Need to see if the vendor will provide documentation to decode these values.
-
-AFAICT, it's not safe to directly compare raw values between vendors since
-the raw values don't mean exactly the same thing (e.g. more aggressive retries
-might result in few reallocations.)
-
-hth,
-grant
-
->
-> Thanks.
->
-> --
-> tejun
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Gotta say my M2N32-SLI Deluxe has been working just fine from day
+one.  Can't complain at all.  So much so that I'm thinking of getting
+another to be my new file server system, but money is tight right
+now.  :]
