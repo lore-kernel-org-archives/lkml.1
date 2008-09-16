@@ -1,114 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbYIPMGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbYIPMG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630AbYIPMGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 08:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYIPMF7
+	id S1754372AbYIPMG5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 08:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYIPMGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 08:05:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:38013 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbYIPMF6 (ORCPT
+	Tue, 16 Sep 2008 08:06:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44090 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbYIPMGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 08:05:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
-         :content-transfer-encoding:from;
-        b=lwzp3g/s56dXDTEd3c+1bGFCBxGzMpqE3g4gnikdAzMX0sbpx9AyiCeppa3pLfd2Nh
-         rr4S9/Aigf4eBcVb5tXGcABkYZOE1tdYGyUMymBY5Gfb+DXkek9g+5QzTVqQIoT8LHY1
-         pbzIiOgwBGRoW/dwFoAcHAQa+sjrVUi5JQoLo=
-Message-ID: <48CFA10D.2010106@gmail.com>
-Date: Tue, 16 Sep 2008 14:05:33 +0200
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>, Alan Cox <alan@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       netdev <netdev@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@lst.de>
-Subject: sys_paccept: disable paccept() until API design is resolved
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 16 Sep 2008 08:06:48 -0400
+Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com
+In-Reply-To: <20080916091219.GA1068@linux.vnet.ibm.com>
+References: <20080916091219.GA1068@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Tue, 16 Sep 2008 14:05:30 +0200
+Message-Id: <1221566730.6943.16.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Tue, 2008-09-16 at 14:42 +0530, Arun R Bharadwaj wrote:
+> Hi,
 
-The patch below disables the new sys_paccept() for now.  Please
-apply for 2.6.27-rc, so that we do not release this API into
-the wild before a conclusion has been reached about its design.
+80 char lines please.
 
-The reasons for disabling paccept() are as follows:
+> An idle cpu on which device drivers have initialized timers, has to be
+> frequently woken up to service the timers. So, consolidation of timers
+> onto a fewer number of cpus is important. Migration of
+> timers from idle cpus onto lesser idle cpus is necessary. Currently,
+> timers are migrated during the cpu offline operation. However
+> cpu-hotplug for the sake of idle system power management is too
+> heavy. So, this patch implements a lightweight timer migration
+> framework.
+> 
+> Also, in a multi-core, multi-package system, it is always desirable to
+> have all the timers firing on the cpus present in the same package.
+> This would enable us to place the idle package in deep sleep
+> state. So, migration of timers is required for this.
+> 
+> A per_cpu sysfs hook is created
+> at /sys/devices/system/cpu/cpuX/timer_migration. By echo-ing 1 to
+> cpuX/timer_migration, all regular and hrtimers from cpuX are migrated
+> to cpu0. The fact that all
+> timers are migrated from cpuX to cpu0 is demonstrated by making a note
+> of /proc/interrupts.
 
-* The API is more complex than needed.  There is AFAICS no demonstrated
-   use case that the sigset argument of this syscall serves that
-   couldn't equally be served by the use of pselect/ppoll/epoll_pwait +
-   traditional accept().  Roland seems to concur with this opinion
-   (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).
-   I have (more than once) asked Ulrich to explain otherwise
-   (http://thread.gmane.org/gmane.linux.kernel/723952/focus=731018),
-   but he does not respond, so one is left to assume that he doesn't
-   know of such a case.
+This seems like an exceedingly dumb idea - cpu 0 might be a long long
+way from x and by pushing all timers to cpu0 you might actually overload
+cpu 0.
 
-* The use of a sigset argument is not consistent with other I/O APIs
-   that can block on a single file descriptor (e.g., read(), recv(),
-   connect()).
+Initially you talked about packages an moving timers to busy cpus -
+which is something else altogether.
 
-* The behavior of paccept() when interrupted by a signal is IMO
-   strange: the kernel restarts the system call if SA_RESTART was set
-   for the handler.  I think that it should not do this -- that it
-   should behave consistently with paccept()/ppoll()/epoll_pwait(),
-   which never restart, regardless of SA_RESTART.  The reasoning here
-   is that the very purpose of paccept() is to wait for a connection
-   or a signal, and that restarting in the latter case is probably
-   never useful.  (Note: Roland disagrees on this point, believing
-   that rather paccept() should be consistent with accept() in its
-   behavior wrt EINTR
-   (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).)
+> $:echo 1 > /sys/devices/system/cpu/cpu3/timer_migration
+> $:cat /proc/interrupts > file1; sleep 30 ; cat /proc/interrupts >
+> file2
+> $:diff file1 file2 | grep LOC
+> < LOC:       5276       2100       2676       1647       2415
+> 1803       2275       2977   Local timer interrupts
+> > LOC:       6991       2195       2774       1647       2562
+> 1900       2497       3075   Local timer interrupts
+> 
+> As we can observe, first we are enabling timer migration in cpu3. As a
+> result, the number of local timer interrupts on cpu3 over the next 30
+> seconds are zero. cpu3  has been totally rid of all regular
+> and hrtimers.
+> 
+> Please refer to the following paper for details:
+> 
+> http://ols.fedoraproject.org/OLS/Reprints-2008/srinivasan1-reprint.pdf
 
-I believe that instead, a simpler API, consistent with Ulrich's
-other recent additions, is preferable:
+If there's anything worth reading in there it should have been mentioned
+in this email and preferably in some comment in the code and Kconfig
+help as well.
 
-accept4(int fd, struct sockaddr *sa, socklen_t *salen, ind flags);
-
-(This simpler API was originally proposed by Ulrich:
-http://thread.gmane.org/gmane.linux.network/92072)
-
-If this simpler API is added, then if we later decide that the sigset
-argument really is required, then a suitable bit in 'flags' could
-be added to indicate the presence of the sigset argument.
-
-At this point, I am hoping we either will get a counter-argument
-from Ulrich about why we really do need paccept()'s sigset argument,
-or that he will resubmit the original accept4() patch.
-
-Cheers,
-
-Michael
-
-Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
-
-
---- linux-2.6.27-rc6/net/socket.c.orig	2008-09-16 12:38:15.000000000 +0200
-+++ linux-2.6.27-rc6/net/socket.c	2008-09-16 13:07:51.000000000 +0200
-@@ -1511,6 +1511,7 @@
-  	goto out_put;
-  }
-
-+#if 0
-  #ifdef HAVE_SET_RESTORE_SIGMASK
-  asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
-  			    int __user *upeer_addrlen,
-@@ -1564,6 +1565,7 @@
-  	return do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
-  }
-  #endif
-+#endif
-
-  asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
-  			   int __user *upeer_addrlen)
