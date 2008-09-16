@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbYIPP7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbYIPQBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbYIPP7u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbYIPP7Z
+	id S1756496AbYIPQBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 12:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbYIPQBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:59:25 -0400
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:4517 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756275AbYIPP7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:59:23 -0400
-Date: Tue, 16 Sep 2008 17:59:20 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: PPS (pulse per second) patch inclusion?
-Message-ID: <20080916155920.GA27042@vanheusden.com>
+	Tue, 16 Sep 2008 12:01:41 -0400
+Received: from web26204.mail.ukl.yahoo.com ([217.12.10.241]:46279 "HELO
+	web26204.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754339AbYIPQBl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 12:01:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=EY4c9/taxNc1KMFMn9xPBdHROVDJ0egjmF8PlwVQVPDXRRJ1UPifwvsYnt77qTWykfgGB54EqSN8R4u+grvMDxvIKV8LtnhA7IUR5oUloYpbAWdQ21bkhTlUx6b//yQhzT0dDiY5shZ1WIgiPe3UO3/opvdNc41MC2kqBnVlFUg=;
+X-YMail-OSG: rky.nnMVM1ndiTo9U88aNmbkJQnWumWsJTnkxtsRyAL.kIVG2e2mKwl..gWV0rknduGbhbEfSiTijPjO9I21NrXfo_nxrosP_A2.aOvrWrlIPwohMPH9_XOS6Qoug0owGsg.HjuHUNojv06rDRA-
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Tue, 16 Sep 2008 16:01:39 +0000 (GMT)
+From: Michael Trimarchi <trimarchimichael@yahoo.it>
+Subject: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+To: 7eggert@gmx.de, Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Wed Sep 17 16:18:24 CEST 2008
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+Message-ID: <377425.67419.qm@web26204.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Any chance that the PPS patch will be included in 2.6.28? As currently
-people have to fall back to things like freebsd for accurate timekeeping
-using a GPS.
+hi,
 
 
-Folkert van Heusden
 
--- 
-MultiTail è uno flexible tool per seguire di logfiles e effettuazione
-di commissioni. Feltrare, provedere da colore, merge, 'diff-view',
-etc. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+----- Messaggio originale -----
+> Da: Bodo Eggert <7eggert@gmx.de>
+> A: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>; akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
+> Inviato: Martedì 16 settembre 2008, 17:32:08
+> Oggetto: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+> 
+> Hisashi Hifumi wrote:
+> 
+> > Protecting file->f_pos with a lock adds some overhead but I think we should
+> > fix this.
+> > I used seqlock to serialize the access to file->f_pos. This approach is
+> > similar to inode->i_size synchronization.
+> > 
+> > Comments?
+> 
+> > +             if (offset != file_pos_read(file))
+> > +                     file_pos_write(file, offset);
+> 
+> Maybe file_pos_write should do this check?
+> 
+I agree :)
+
+Regards Michael
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+__________________________________________________
+Do You Yahoo!?
+Poco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e ti da tanto spazio gratuito per i tuoi file e i messaggi 
+http://mail.yahoo.it 
