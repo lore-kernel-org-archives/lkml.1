@@ -1,49 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYIPKTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYIPKbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbYIPKTB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 06:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYIPKSw
+	id S1753198AbYIPKbS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 06:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYIPKbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 06:18:52 -0400
-Received: from gv-out-0910.google.com ([216.239.58.184]:24511 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbYIPKSw (ORCPT
+	Tue, 16 Sep 2008 06:31:05 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:58055 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751745AbYIPKbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 06:18:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KDB6eD++FA5iNjd5oc32+r49pabz5p6jrT+qYAJhNy8Bh75IgBbJ1XIOt5Qfj6bk0x
-         gfcb9X6TDuWnBJnXXiXTtyG4W5FhERecuhFqmaVQ3Ebwz60jC8PJlszI4QLZDmfM2PPv
-         GKHrShwslyqQWwmU7kDHWY0cuF13FaRVrcUGs=
-Date: Tue, 16 Sep 2008 14:20:52 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/5] pci: using pci_printk
-Message-ID: <20080916102052.GD21012@x200.localdomain>
-References: <1221555174-30060-1-git-send-email-yhlu.kernel@gmail.com> <1221555174-30060-3-git-send-email-yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1221555174-30060-3-git-send-email-yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 16 Sep 2008 06:31:03 -0400
+Subject: wdt285: fix sparse warnings
+Message-Id: <20080916103101.092074533@fluff.org.uk>
+User-Agent: quilt/0.46-1
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org, wim@iguana.be
+Cc: Ben Dooks <ben-linux@fluff.org>
+Content-Disposition: inline; filename=simtec/simtec-cats-sparse-wdt285.patch
+Date: Tue, 16 Sep 2008 11:31:01 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 01:52:52AM -0700, Yinghai Lu wrote:
-> --- linux-2.6.orig/drivers/pci/probe.c
-> +++ linux-2.6/drivers/pci/probe.c
-> @@ -304,7 +304,7 @@ static int __pci_read_base(struct pci_de
+The wdt285.c watchdog driver is producing a number of
+sparse errors due to missing __user attributes to calls
+to put_user and copy_to_user, as well as in the prototype
+of watchdog_write.
 
-> -			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-> +			pci_printk(KERN_LOG_DEBUG, KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-				   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+wdt285.c:144:21: warning: incorrect type in argument 1 (different address spaces)
+wdt285.c:144:21:    expected void [noderef] <asn:1>*to
+wdt285.c:144:21:    got void *<noident>
+wdt285.c:150:9: warning: incorrect type in initializer (different address spaces)
+wdt285.c:150:9:    expected int const [noderef] <asn:1>*register __p
+wdt285.c:150:9:    got int *<noident>
+wdt285.c:159:9: warning: incorrect type in initializer (different address spaces)
+wdt285.c:159:9:    expected int const [noderef] <asn:1>*register __p
+wdt285.c:159:9:    got int *<noident>
+wdt285.c:174:9: warning: incorrect type in initializer (different address spaces)
+wdt285.c:174:9:    expected int const [noderef] <asn:1>*register __p
+wdt285.c:174:9:    got int *<noident>
+wdt285.c:183:12: warning: incorrect type in initializer (incompatible argument 2 (different address spaces))
+wdt285.c:183:12:    expected int ( *write )( ... )
+wdt285.c:183:12:    got int ( static [toplevel] *<noident> )( ... )
 
-Brilliant, simply brilliant!
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 
-Printk haters club is definitely creative, no questions.
+Index: linux-2.6.27-rc6-quilt3/drivers/watchdog/wdt285.c
+===================================================================
+--- linux-2.6.27-rc6-quilt3.orig/drivers/watchdog/wdt285.c	2008-09-15 00:00:51.000000000 +0100
++++ linux-2.6.27-rc6-quilt3/drivers/watchdog/wdt285.c	2008-09-16 10:37:38.000000000 +0100
+@@ -115,8 +115,8 @@ static int watchdog_release(struct inode
+ 	return 0;
+ }
+ 
+-static ssize_t watchdog_write(struct file *file, const char *data,
+-						size_t len, loff_t *ppos)
++static ssize_t watchdog_write(struct file *file, const char __user *data,
++			      size_t len, loff_t *ppos)
+ {
+ 	/*
+ 	 *	Refresh the timer.
+@@ -133,21 +133,22 @@ static const struct watchdog_info ident 
+ };
+ 
+ static long watchdog_ioctl(struct file *file, unsigned int cmd,
+-							unsigned long arg)
++			   unsigned long arg)
+ {
+ 	unsigned int new_margin;
++	int __user *int_arg = (int __user *)arg;
+ 	int ret = -ENOTTY;
+ 
+ 	switch (cmd) {
+ 	case WDIOC_GETSUPPORT:
+ 		ret = 0;
+-		if (copy_to_user((void *)arg, &ident, sizeof(ident)))
++		if (copy_to_user((void __user *)arg, &ident, sizeof(ident)))
+ 			ret = -EFAULT;
+ 		break;
+ 
+ 	case WDIOC_GETSTATUS:
+ 	case WDIOC_GETBOOTSTATUS:
+-		ret = put_user(0, (int *)arg);
++		ret = put_user(0, int_arg);
+ 		break;
+ 
+ 	case WDIOC_KEEPALIVE:
+@@ -156,7 +157,7 @@ static long watchdog_ioctl(struct file *
+ 		break;
+ 
+ 	case WDIOC_SETTIMEOUT:
+-		ret = get_user(new_margin, (int *)arg);
++		ret = get_user(new_margin, int_arg);
+ 		if (ret)
+ 			break;
+ 
+@@ -171,7 +172,7 @@ static long watchdog_ioctl(struct file *
+ 		watchdog_ping();
+ 		/* Fall */
+ 	case WDIOC_GETTIMEOUT:
+-		ret = put_user(soft_margin, (int *)arg);
++		ret = put_user(soft_margin, int_arg);
+ 		break;
+ 	}
+ 	return ret;
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
