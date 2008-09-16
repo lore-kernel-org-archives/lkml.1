@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYIPRp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYIPRr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYIPRp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbYIPRpU
+	id S1756297AbYIPRr1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbYIPRrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:45:20 -0400
-Received: from rn-out-0910.google.com ([64.233.170.190]:47861 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbYIPRpS (ORCPT
+	Tue, 16 Sep 2008 13:47:19 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:63043 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752172AbYIPRrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:45:18 -0400
+	Tue, 16 Sep 2008 13:47:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=IGfcPlkDWQSQOr5CJPA/VZ31rZeP06w3m3PCXi7aS85tqRyabmAf5UJqcYEsMT1d60
-         7i93iXlljPI4OPtm4+NLJHk6+RmbNY6dZb6cA1jqe9Txa8tUldQ+3VMgv8Z1v3FjJnbu
-         jPCC5OIXiN7awqUVqEjpu4pybiw39xKtPxv5g=
-Message-ID: <86802c440809161045q2f6d80f1yb6e79f32c6e0c303@mail.gmail.com>
-Date: Tue, 16 Sep 2008 10:45:17 -0700
+        b=IvEDKokAn3JWuRn5/I6ZtK+nqDuOFQbIBJ8xWXO9xMhCOnJFqlVAPyXGoSM/XUWm0S
+         6uMZ+KAePbvszHgo+9my7XTYD/LQMrdhJCyHxTcV3QXvQfKTADOD6necrM3cpEEaWz11
+         LW+CGsflLuYDUjpplaNIBWXob5dOk50ZHrmhY=
+Message-ID: <86802c440809161047r14f928fcud1a88b25a0969b17@mail.gmail.com>
+Date: Tue, 16 Sep 2008 10:47:17 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH] introduce boot_printk()
@@ -27,7 +27,7 @@ Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
        "Thomas Gleixner" <tglx@linutronix.de>,
        "Andrew Morton" <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org, jbaron <jbaron@redhat.com>
-In-Reply-To: <48CFD97C.6080002@zytor.com>
+In-Reply-To: <86802c440809161045q2f6d80f1yb6e79f32c6e0c303@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -39,31 +39,35 @@ References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
 	 <86802c440809151034ycd6442me679792880b03320@mail.gmail.com>
 	 <1221575196.6943.24.camel@lappy.programming.kicks-ass.net>
 	 <48CFD97C.6080002@zytor.com>
+	 <86802c440809161045q2f6d80f1yb6e79f32c6e0c303@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 9:06 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Peter Zijlstra wrote:
+On Tue, Sep 16, 2008 at 10:45 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Tue, Sep 16, 2008 at 9:06 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+>> Peter Zijlstra wrote:
+>>>>
+>>>> every subsystem will have
+>>>> x86_printk
+>>>> acpi_printk
+>>>> pci_printk
 >>>
->>> every subsystem will have
->>> x86_printk
->>> acpi_printk
->>> pci_printk
+>>> doesn't sound like an easily extensible interface, better would be
+>>> extending printk with a KERN_subsys tag like proposed.
+>>>
 >>
->> doesn't sound like an easily extensible interface, better would be
->> extending printk with a KERN_subsys tag like proposed.
->>
+>> That would be my thinking too.
 >
-> That would be my thinking too.
-
-it seem using pci_printk or acpi_printk.. could be more flexible.
-
-otherwise will need to keep update linux/kernel.h to add so call subsys tags...
-
-use only need to
-have DEFINE_LOGLEVEL_SETUP(xxx) in c
-and have DECLARE_LOGLEVEL(xxx) in .h
-then just use xxx_printk
+> it seem using pci_printk or acpi_printk.. could be more flexible.
+>
+> otherwise will need to keep update linux/kernel.h to add so call subsys tags...
+>
+> use only need to
+> have DEFINE_LOGLEVEL_SETUP(xxx) in c
+> and have DECLARE_LOGLEVEL(xxx) in .h
+> then just use xxx_printk
+>
+and in real subsys could have as many the xxx_printk that user want...
 
 YH
