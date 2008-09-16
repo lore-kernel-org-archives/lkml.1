@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757878AbYIPSDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbYIPSD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757878AbYIPSDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 14:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbYIPSCQ
+	id S1757956AbYIPSD7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 14:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbYIPSDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 14:02:16 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:21960 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757246AbYIPSCN (ORCPT
+	Tue, 16 Sep 2008 14:03:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49612 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755476AbYIPSDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 14:02:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=n6pCt1iWnNoRyAHLNJYR7ZTe1bGz3G9ZgpeBm6rpUx8Ksthk9mfbhm/d4VudQsHXov
-         JL2kyFun/fRky4kW68Av0XPzwk9ZL5Hra/I+xnFpV7a94YUlJXtP8zznJqTgXiehmY0s
-         RtqRtg6kv7F86alcEcykTWjWvHiqWO2ymtEiY=
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 5/5] apci: dump slit v3
-Date: Tue, 16 Sep 2008 11:01:25 -0700
-Message-Id: <1221588085-30578-6-git-send-email-yhlu.kernel@gmail.com>
-X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1221588085-30578-1-git-send-email-yhlu.kernel@gmail.com>
-References: <1221588085-30578-1-git-send-email-yhlu.kernel@gmail.com>
+	Tue, 16 Sep 2008 14:03:45 -0400
+Message-ID: <48CFF4EB.1050401@zytor.com>
+Date: Tue, 16 Sep 2008 11:03:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: linux@sandersweb.net
+CC: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Don't use NOPL on 32-bit cpu's because not all systems
+ support it.
+References: <200809161159.15870.linux@sandersweb.net> <48CFDF82.3000704@zytor.com> <200809161348.24130.linux@sandersweb.net>
+In-Reply-To: <200809161348.24130.linux@sandersweb.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: using boot_printk
-v3: using acpi_printk
+> 
+> I think you still want the nopl enabled for 64-bits.
+> 
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Yes.  Accordingly, I didn't change 64 bits.
 
----
- drivers/acpi/numa.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+> int main()
+> {
+> 	signal(SIGILL, except);
+> 	asm("\n"
+> 		"mov $0x01, %eax\n" /* function number */
+> 		".byte 0x0f, 0x3f, 0x07, 0x0b\n" /* call VPC */
+> 	   );
+> 	printf("Inside Virtual PC\n");
+> 	return 0;
+> }
 
-Index: linux-2.6/drivers/acpi/numa.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/numa.c
-+++ linux-2.6/drivers/acpi/numa.c
-@@ -150,6 +150,14 @@ static __init int slit_valid(struct acpi
- {
- 	int i, j;
- 	int d = slit->locality_count;
-+	acpi_printk(KERN_LOG_DEBUG, KERN_DEBUG "ACPI: SLIT: nodes = %d\n", d);
-+	for (i = 0; i < d; i++) {
-+		for (j = 0; j < d; j++)  {
-+			u8 val = slit->entry[d*i + j];
-+			acpi_printk(KERN_LOG_DEBUG, " %d", val);
-+		}
-+		acpi_printk(KERN_LOG_DEBUG, "\n");
-+	}
- 	for (i = 0; i < d; i++) {
- 		for (j = 0; j < d; j++)  {
- 			u8 val = slit->entry[d*i + j];
+Well, isn't that "interesting".  0F 3F is in the range expected 
+(although not documented) to be used for 3-byte opcode prefixes in the 
+future.  It's also the Centaur ALTINST instruction (which I believe have 
+to be enabled via an MSR, so in that way it's not a bad choice.)
+
+It's definitely less broken than the official way to detect VMWare, but 
+still pretty daft.  (CPUID, MSR or PCI IDs make a lot more sense.)
+
+The "official" way to detect Virtual PC is apparently to look for 
+"Microsoft Corportation" as the DMI motherboard manufacturer.  This is 
+downright dangerously stupid, since Microsoft likes to make false starts 
+in the hardware business on a regular basis, and doesn't work with old 
+Connectix VPC anyway.  However, there is supposedly "Virtual Machine" as 
+the model, which can be used to disambiguate.
+
+	-hpa
