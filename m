@@ -1,59 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYIPMWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYIPMXC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbYIPMWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 08:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbYIPMWF
+	id S1753482AbYIPMXC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 08:23:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbYIPMWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 08:22:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:13112 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752767AbYIPMWD (ORCPT
+	Tue, 16 Sep 2008 08:22:50 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54227 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751335AbYIPMWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 08:22:03 -0400
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: linux-kernel@vger.kernel.org
-Cc: "Kirill A. Shutemov" <kirill@shutemov.name>,
-       Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in userspace
-Date: Tue, 16 Sep 2008 15:22:43 +0300
-Message-Id: <1221567763-17060-1-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.5.6.5.GIT
+	Tue, 16 Sep 2008 08:22:49 -0400
+Date: Tue, 16 Sep 2008 14:22:37 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: avorontsov@ru.mvista.com
+Cc: Thomas Klein <osstklei@de.ibm.com>, tklein@de.ibm.com, tinytim@us.ibm.com,
+       Linux-rt <linux-rt-users@vger.kernel.org>, themann@de.ibm.com,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       jean-pierre.dion@bull.net, linux-ppc <linuxppc-dev@ozlabs.org>,
+       raisch@de.ibm.com, gilles.carry@ext.bull.net
+Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
+ hardirq preemption
+Message-ID: <20080916142237.0dc5d024@bull.net>
+In-Reply-To: <20080916115947.GA6995@oksana.dev.rtsoft.ru>
+References: <20080915100406.342e027a@bull.net>
+	<48CE5684.4000506@de.ibm.com>
+	<20080915151332.6a3a7c80@bull.net>
+	<20080916115947.GA6995@oksana.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<linux/fcntl.h> conflicts with glibc's <fcntl.h>.
 
-It breaks building kdelibs, kdepim and pinot. It's regression itroduced
-by commit 4006553.
+  Hi Anton,
 
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-Cc: Ulrich Drepper <drepper@redhat.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- include/linux/inotify.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Tue, 16 Sep 2008 15:59:47 +0400 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-diff --git a/include/linux/inotify.h b/include/linux/inotify.h
-index bd57857..792b6f0 100644
---- a/include/linux/inotify.h
-+++ b/include/linux/inotify.h
-@@ -7,8 +7,10 @@
- #ifndef _LINUX_INOTIFY_H
- #define _LINUX_INOTIFY_H
- 
-+#ifdef __KERNEL__
- /* For O_CLOEXEC and O_NONBLOCK */
- #include <linux/fcntl.h>
-+#endif
- #include <linux/types.h>
- 
- /*
--- 
-1.5.6.5.GIT
+> On Mon, Sep 15, 2008 at 03:13:32PM +0200, Sebastien Dugue wrote:
+> [...]
+> > > we are a bit worried about putting this into the mainstream part of non real
+> > > time linux.
+> > 
+> >   Heck, I sure do not want this to be applied mainstream nor into any tree.
+> > The sole purpose of this patch was to trigger some reaction from the people who
+> > know the hardware and try to understand where the problem lies.
+> > 
+> > > There interrupts work perfectly fine, and it was a bit of a
+> > > challenge to get there for all cases / configurations / machines.
+> > 
+> >   Agreed, but the fact that it fails with hardirq preemption leads me to
+> > believe (without any more knowledge about the harware) that there might be
+> > something amiss with this driver (or the code concerning the XICS)
+> > nevertheless.
+> > 
+> > > 
+> > > Could you try to enable these changes only for RT-Linux via a real-time
+> > > kconfig switch?
+> > 
+> >   Nope, this is just a quick hack that allows me to have a functional eHEA under
+> > the rt kernel. I want to understand what the problem is:
+> > 
+> >   - Is the eHEA really delivering level interrupts to the XICS?
+> > 
+> >   - Is the XICS loosing interrupts when they are masked?
+> 
+> There is a known bug in the -rt kernels, the bug causes handlers
+> to lose edge interrupts.
+> 
+> See this patch:
+> 
+> http://lkml.org/lkml/2008/6/30/372
 
+  Yes, I've been following that thread back then and my hack is based on your
+patch. So yes, it seems to be the same problem and it lies in the way -rt handles
+the fasteoi flow.
+
+  But looking at the comments from the XICS code, it seems that its wired for
+level only interrupts. Therefore without any more specs, it's still not clear to
+me that there's not a bug with the way the xics handles eHEA interrupts.
+
+  Are the eHEA interrupts really level interrupts? If so why do they get lost
+when masked?
+
+  I just found that not masking that particular interrupt in the fasteoi path
+makes the thing work!
+
+  Thanks,
+
+  Sebastien.
+
+> 
+> >   - ...?
+> 
+> -- 
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
