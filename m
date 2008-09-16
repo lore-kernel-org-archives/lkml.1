@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbYIPPYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbYIPPZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbYIPPYj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYIPPY3
+	id S1756155AbYIPPZe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYIPPZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:24:29 -0400
-Received: from mail.mellanox.co.il ([194.90.237.43]:35148 "EHLO mellanox.co.il"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752369AbYIPPY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:24:28 -0400
-Date: Tue, 16 Sep 2008 18:25:34 +0300
-From: Eli Cohen <eli@dev.mellanox.co.il>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: netdev@vger.kernel.org, themann@de.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: LRO num of frags limit
-Message-ID: <20080916152534.GA28609@mtls03>
-References: <20080916073632.GA25226@mtls03> <1221561617.3244.78.camel@achroite>
+	Tue, 16 Sep 2008 11:25:25 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:37767 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752233AbYIPPZY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:25:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Dklp22dgLvq77vLRh6ttrjy0TA4b25RxsLpx8HvzhArNirlfNhvIlOY2apSOvBhrGg
+         dNbSWl7/hQtfQGOQ86ELvbE4qZ8kEv/41EqCcv36girRgm5yX2fY2KxjSanyFuy3cvQ0
+         IATsxQADwDajs8u3EQz3GMXoaNokZwlxs5aI8=
+Message-ID: <3f9a31f40809160825s4bd0f950td2b29107113e79e0@mail.gmail.com>
+Date: Tue, 16 Sep 2008 20:55:22 +0530
+From: "Jaswinder Singh" <jaswinderlinux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11272] BUG: parport_serial in 2.6.27-rc1 for NetMos Technology PCI 9835
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       linux-serial@vger.kernel.org
+In-Reply-To: <SpS7rta8n4.A.17.FfsyIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1221561617.3244.78.camel@achroite>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 16 Sep 2008 15:24:24.0328 (UTC) FILETIME=[4CC4D080:01C91810]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1027-16160.007
-X-TM-AS-Result: No--21.378400-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	 <SpS7rta8n4.A.17.FfsyIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 11:40:17AM +0100, Ben Hutchings wrote:
-> On Tue, 2008-09-16 at 10:36 +0300, Eli Cohen wrote:
-> > Hi,
-> > 
-> > looking at the LRO code, at __lro_proc_segment(), it seems that the
-> > network driver can configure lro_mgr->max_aggr to any value it wants
-> > while the number of fragments aggregated must not exceed MAX_SKB_FRAGS
-> 
-> Correct.
-> 
-> > (since we only use a single SKB to aggregate fragments, allocated by
-> > lro_gen_skb()). Moreover, even if the driver does limit
-> > lro_mgr->max_aggr to MAX_SKB_FRAGS, it might still cause overflow
-> > since subsequent aggregations are done at lro_add_frags() which is
-> > called before checking whether we overflow.
-> 
-> So you must set max_aggr to
-> MAX_SKB_FRAGS - max number of frags added at once + 1.
-> 
-> > If the above observation is correct, I can send a patch.
-> 
-> I would be interested to see that, anyway.
-> 
-By the way, we need to introduce two kinds of "max_aggr" fields to
-struct net_lro_mgr. The reason is that when LRO is used in the mode in
-which SKBs are linked, the above limitation does not exist. One will
-be used for drivers which use lro_receive_skb() (which does not have a
-limit) and one for drivers which use lro_receive_frags(). This will
-require changing all the drivers that use LRO.
+Hello all,
+
+I am sorry for delay.
+
+On Sat, Sep 13, 2008 at 12:36 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11272
+> Subject         : BUG: parport_serial in 2.6.27-rc1 for NetMos Technology PCI 9835
+> Submitter       : Jaswinder Singh <jaswinderlinux@gmail.com>
+> Date            : 2008-08-05 15:12 (39 days old)
+> References      : http://marc.info/?l=linux-kernel&m=121794900319776&w=4
+>
+
+I have tested parport_pc and also tried with pcmcia_cs, only thing I
+get is disappointment. So I give up :-(
+
+Now I switched to usbserial.
+usbserial drivers are working great !!
+
+Now I do not want to use parport_pc and pcmcia_cs atleast for 2 years,
+I hope in 2 years this will be solved ;)
+
+In the mean time, If you think my problem is solved just ping to me I
+will test and let you know the results.
+
+Thank you for all your support and help.
+
+Jaswinder Singh.
