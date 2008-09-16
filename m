@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbYIPRh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbYIPRit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127AbYIPRh2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbYIPRhR
+	id S1756277AbYIPRit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbYIPRil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:37:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40312 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbYIPRhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:37:16 -0400
-Message-ID: <48CFEE51.2070200@kernel.org>
-Date: Tue, 16 Sep 2008 10:35:13 -0700
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 16 Sep 2008 13:38:41 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:51583 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbYIPRik (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 13:38:40 -0400
+Message-ID: <48CFEF3F.5040901@manoweb.com>
+Date: Tue, 16 Sep 2008 10:39:11 -0700
+From: Alessio Sangalli <alesan@manoweb.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, Mark Lord <liml@rtr.ca>
-Subject: Re: XFS shutting down due to IO timeout on SATA disk (pata_via for
- CX700)
-References: <20080911193511.7960bc82@neptune.home>	<48CE22E5.9090403@kernel.org>	<20080915190242.58d21a8f@neptune.home>	<48CEC8F2.4040904@kernel.org> <20080916102152.3f35439f@pluto.restena.lu>
-In-Reply-To: <20080916102152.3f35439f@pluto.restena.lu>
-X-Enigmail-Version: 0.95.6
+To: Ben Dooks <ben-linux@fluff.org>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver for tightly coupled memory
+References: <48CEC71F.3000006@manoweb.com> <20080916093513.GF1916@fluff.org.uk>
+In-Reply-To: <20080916093513.GF1916@fluff.org.uk>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 16 Sep 2008 17:36:46 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18c0vbR2G6ksUUTFUaKLoLtOh42DlHOVGu8pz9
+ m9+zYySxx+quJveLWHtj9sQIBE0wpgR1QccA59+Rtvlrnax+aq
+ E6lqiSXO52XjlYTp6PJaA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Ben Dooks wrote:
 
-Bruno Prémont wrote:
-> I don't have other drives of the same model, but 3 ones slightly smaller
-> in size and previous generation, those are just a few months older (but
-> also have way more uptime), see below for the smartctl output. I've never
-> seen ATA errors on them.
-> These other drives are running on AMD based platform, SB600 SATA with AHCI.
+> This isn't the right list to be discussing this on, try looking for
+> linux-arm-kernel instead. It will get your question to the attention
+> of more people knowledgable about the ARM specifics.
 
-So, smartctl output seems fine.
+I disagree, something like a TCM can very well be present in any
+architecture, after all it's some kind of fast memory mapped to an
+address, nothing special from a software point of view. I will ask on
+the ARM mailing list however.
 
-> Just for the record, on the VIA there were no errors yet with
-> 2.6.27-rc6-git3 though I ran some compiling on it. As such it *could* be
-> that one of the patches pushed by Jeff helped:
->   [libata] LBA28/LBA48 off-by-one bug in ata.h
->   sata_inic162x: enable LED blinking
->   ata: duplicate variable sparse warning
 
-The only patch which could have affected the result is the off-by-one
-one; however, FLUSH timeout is a bit unexpected failure mode for the
-problem.  Can you please keep the system running for a whlie and see
-whether the problem occurs?
+> IIRC, there's no current support for using TCMs.
 
-Thanks.
+I think I will write a module that implements a software FIFO. One
+function to allocate a FIFO n words deep, a "push" and a "pop" and
+similar. The calling module will have to setup the FIFO and use it
+probably in ISRs or similar (the policy will totally remain in the
+caller module). Any comments on such approach?
 
--- 
-tejun
+bye
+Alessio
