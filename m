@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYIPNbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbYIPNdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbYIPNbh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 09:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbYIPNba
+	id S1755149AbYIPNdB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 09:33:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYIPNcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 09:31:30 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40058 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751913AbYIPNb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 09:31:29 -0400
-Date: Tue, 16 Sep 2008 16:31:12 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in
-	userspace
-Message-ID: <20080916133112.GB15951@cs181140183.pp.htv.fi>
-References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi> <20080916130234.GA17082@localhost.localdomain>
+	Tue, 16 Sep 2008 09:32:53 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:42626 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYIPNcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 09:32:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DnFZkhPU0/Xbai5B4EF80TQJqELy5ZPB8vh9W2f4troCwCX6fg+3kk6JZHshdHGVtD
+         VmGACpkybM4gV2SXPGVEa2fVIPK2tVtf28tXo+qgiASvYiZ53hxt5a4Z4VgCxnXpn2aK
+         evVjj8pn/Q4f40bJ1MhgBV8C3jOdmdoTRUfNU=
+Date: Tue, 16 Sep 2008 21:32:40 +0800
+From: Yan Li <elliot.li.tech@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yan Li <elliot.li.tech@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, joerg.roedel@amd.com, rjmaomao@gmail.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+Message-ID: <20080916133239.GA17456@yantp.cn.ibm.com>
+References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <20080909002055.GA8573@yantp.cn.ibm.com> <48C5C47F.5040004@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080916130234.GA17082@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <48C5C47F.5040004@zytor.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 04:02:36PM +0300, Kirill A. Shutemov wrote:
-> On Tue, Sep 16, 2008 at 03:58:02PM +0300, Adrian Bunk wrote:
-> > On Tue, Sep 16, 2008 at 03:22:43PM +0300, Kirill A. Shutemov wrote:
-> > > <linux/fcntl.h> conflicts with glibc's <fcntl.h>.
-> > > 
-> > > It breaks building kdelibs, kdepim and pinot.
-> > 
-> > We should rather fix the actual bug.
-> > 
-> > What is the error message?
-> 
-> /usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
-> flock'
-> /usr/include/bits/fcntl.h:142: error: previous definition of 'struct
-> flock'
-> /usr/include/asm-generic/fcntl.h:140: error: redefinition of 'struct
-> flock64'
-> /usr/include/bits/fcntl.h:157: error: previous definition of 'struct
-> flock64'
->...
+On Mon, Sep 08, 2008 at 05:34:07PM -0700, H. Peter Anvin wrote:
+>> VMware may change the PCI ID at their will so I prefer checking the
+>> DMI since it's easier.
+>>
+>> So if we ditched the official method we run the risk of some false
+>> negatives.  But checking the DMI manufacturer would be good enough.
+>>
+>
+> If we get false negatives that is quite frankly their problem, not ours.  
+>  If nothing else, we should be able to look for a host bridge with the  
+> VMWare vendor ID -- that should arguably be safer than DMI.
 
-Kernel headers and glibc headers are an own story, Ulrich might know 
-best about that.
+I found that in this situation we can't use PCI info.  My intention to
+do this is to fix the false warning from
+arch/x86/kernel/cpu/mtrr/main.c (around L695). When booting a VMware
+guest we got:
+"WARNING: strange, CPU MTRRs all blank?"
 
+For VMware guest this warning is false, just as that for a KVM guest.
 
-But I'm wondering, why is kdelibs doing
+This code is from mtrr_trim_uncached_memory(), and used by
+setup_arch(), which is used far before PCI is ready.
 
-<--  snip  -->
+Therefore I think we can only use DMI here. Any idea?
 
-...
-#include <fcntl.h>
-#include <sys/syscall.h>
-#include <linux/types.h>
-// Linux kernel headers are documented to not compile
-#define _S390_BITOPS_H
-#include <linux/inotify.h>
-
-static inline int inotify_init (void)
-{
-  return syscall (__NR_inotify_init);
-}
-...
-
-<--  snip  -->
-
-
-pinot even contains a file with the inotify syscall numbers for all 
-architectures.
-
-
-inotify_init(2) already documents the following usage:
-
-<--   snip  -->
-
-...
-#include <sys/inotify.h>
-
-int inotify_init(void);
-...
-
-<--  snip  -->
-
-
-Unless someone knows a good reason against that (and no matter how the 
-kernel situation will change) I'll send patches to get KDE fixed in this 
-respect.
-
-
-cu
-Adrian
+Thanks!
 
 -- 
+Li, Yan
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+"Everything that is really great and inspiring is created by the
+individual who can labor in freedom."
+              - Albert Einstein, in Out of My Later Years (1950)
