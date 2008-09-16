@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbYIPHEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbYIPHGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbYIPHEc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 03:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYIPHEX
+	id S1753245AbYIPHGP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 03:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYIPHF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 03:04:23 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:48586 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751400AbYIPHEV (ORCPT
+	Tue, 16 Sep 2008 03:05:59 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:33253 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbYIPHF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 03:04:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvgCAED3zkh5LD0igGdsb2JhbACTBwEBEKVcgWU
-X-IronPort-AV: E=Sophos;i="4.32,406,1217773800"; 
-   d="scan'208";a="207366660"
-Date: Tue, 16 Sep 2008 17:03:17 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Grant Coady <gcoady.lk@gmail.com>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: 2.6.27-rc6: lockdep warning: iprune_mutex at
-	shrink_icache_memory+0x38/0x1a8
-Message-ID: <20080916070317.GB5811@disturbed>
-Mail-Followup-To: Grant Coady <gcoady.lk@gmail.com>,
-	Alexander Beregalov <a.beregalov@gmail.com>, rjw@sisk.pl,
-	linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com
-References: <20080913233138.GA19576@orion> <20080916025204.GL5811@disturbed> <7iduc45t9dvo0396fm78d8uat84uurh131@4ax.com>
+	Tue, 16 Sep 2008 03:05:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=D1mtHbnxEMDLzZnq3Shw86awKpjn/FoQXvb7X0Dfari5t3xqJJx9N7fGRoKEC8XhbK
+         gESzxkMAVXdV8OeZwbMxIwLniLQO64OwupGmOf2+XGn7jXVdoRhw1I9Cz//HHY5k6Gci
+         mVKKKieA1mOYmCvW9jnw0lIVLo7q5h8rLfERA=
+Message-ID: <71cd59b00809160005t62bbeb7ek984a47e61b452049@mail.gmail.com>
+Date: Tue, 16 Sep 2008 09:05:56 +0200
+From: "Corentin Chary" <corentin.chary@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH -mm] eeepc: depends on RFKILL
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       acpi4asus-user@lists.sourceforge.net
+In-Reply-To: <20080915125258.77b14e2b.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7iduc45t9dvo0396fm78d8uat84uurh131@4ax.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20080915125258.77b14e2b.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 02:31:05PM +1000, Grant Coady wrote:
-> On Tue, 16 Sep 2008 12:52:04 +1000, Dave Chinner <david@fromorbit.com> wrote:
-> 
-> >On Sun, Sep 14, 2008 at 03:31:38AM +0400, Alexander Beregalov wrote:
-> >> Hi
-> >> 
-> >> [ INFO: possible circular locking dependency detected ]
-> >> 2.6.27-rc6-00034-gd1c6d2e #3
-> >> -------------------------------------------------------
-> >> nfsd/1766 is trying to acquire lock:
-> >>  (iprune_mutex){--..}, at: [<c01743fb>] shrink_icache_memory+0x38/0x1a8
-> >> 
-> >>  but task is already holding lock:
-> >>   (&(&ip->i_iolock)->mr_lock){----}, at: [<c021134f>]
-> >>   xfs_ilock+0xa2/0xd6
-> >> 
-> >> 
-> >> I read files through nfs and saw delay for few seconds.
-> >> System is x86_32, nfs, xfs.
-> >> The last working kernel is 2.6.27-rc5,
-> >> I do not know yet is it reproducible or not.
-> >
-> ><sigh>
-> >
-> >We need a FAQ for this one. It's a false positive.  Google for an
-> >explanation - I've explained it 4 or 5 times in the past year and
-> >asked that the lockdep folk invent a special annotation for the
-> >iprune_mutex (or memory reclaim) because of the way it can cause
-> >recursion into the filesystem and hence invert lock orders without
-> >causing deadlocks.....
-> 
-> Yeah, but a 30 second dreadlock?  It's a long wait wondering what's 
-> gone down or not ;)
+Yep, it should depends on RFKILL, and I should start porting
+asus-laptop to rfkill.
+Thanks for this patch.
 
-The delay will be probably due to how slow the system can be when it
-runs out of memory, not from the lockdep report.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+On Mon, Sep 15, 2008 at 9:52 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> EEEPC_LAPTOP uses RFKILL, so the former should depend on RFKILL.
+> Build errors happen when EEEPC_LAPTOP=y and RFKILL=m.
+>
+> eeepc-laptop.c:(.text+0xd5a7b): undefined reference to `rfkill_allocate'
+> eeepc-laptop.c:(.text+0xd5b04): undefined reference to `rfkill_register'
+> eeepc-laptop.c:(.text+0xd5b48): undefined reference to `rfkill_allocate'
+> eeepc-laptop.c:(.text+0xd5bd4): undefined reference to `rfkill_register'
+> eeepc-laptop.c:(.text+0xd5ece): undefined reference to `rfkill_unregister'
+> eeepc-laptop.c:(.text+0xd5ef6): undefined reference to `rfkill_unregister'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc: Corentin Chary <corentincj@iksaif.net>
+> ---
+>  drivers/misc/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> --- linux-2.6.27-rc5-mm1.orig/drivers/misc/Kconfig
+> +++ linux-2.6.27-rc5-mm1/drivers/misc/Kconfig
+> @@ -410,6 +410,7 @@ config EEEPC_LAPTOP
+>        depends on BACKLIGHT_CLASS_DEVICE
+>        depends on HWMON
+>        depends on EXPERIMENTAL
+> +       depends on RFKILL
+>        ---help---
+>          This driver supports the Fn-Fx keys on Eee PC laptops.
+>          It also adds the ability to switch camera/wlan on/off.
+>
