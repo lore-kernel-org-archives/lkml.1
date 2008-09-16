@@ -1,110 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbYIPD1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbYIPDcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbYIPD1H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 23:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYIPD0y
+	id S1756340AbYIPDcy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 23:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYIPDcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 23:26:54 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:14602 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753883AbYIPD0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 23:26:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=PG6/7vGf2k532Ao/G64KMeBC6WDXtq9Ecj9cw2Hw5uIgRMaT1bGiHWAdww1y80yqKl
-         3nJPX2cOIsZpEB9AsTlTYgei2Gky3IbxNSwHctOjcgp/m0pif4U35w7nhX2Pu2iK5Hdx
-         Yv0BpCTfLVfENdOcEf9jt8FIrKbVJ5S7pjxAk=
-Date: Tue, 16 Sep 2008 06:26:20 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Uwe.Kleine-Koenig@digi.com, daniel@danielguilak.com, den@openvz.org,
-       efault@gmx.de, etienne_lorrain@yahoo.fr, sam@ravnborg.org,
-       tglx@linutronix.de, willy@linux.intel.com,
-       torvalds@linux-foundation.org, adobriyan@gmail.com,
-       kai.extern@googlemail.com, eduard.munteanu@linux360.ro
-Subject: Re: [RFC PATCH] Script for generating Documentation/dontdiff from
-	.gitignore files. (was Re: [RFC/PATCH] dontdiff: generate from
-	gitignore)
-Message-ID: <20080916032620.GA5188@localhost>
-References: <7af24c80809121332s5747b4favdfd7adb187d4e73a@mail.gmail.com> <20080915083407.3fd8e9b7.randy.dunlap@oracle.com>
+	Mon, 15 Sep 2008 23:32:46 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57194 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751836AbYIPDcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 23:32:46 -0400
+Message-ID: <48CF2863.1010502@cn.fujitsu.com>
+Date: Tue, 16 Sep 2008 11:30:43 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080915083407.3fd8e9b7.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm 2/2] cgroup: use multibuf for tasks file
+References: <48CA58A9.4010508@cn.fujitsu.com> <6599ad830809151328n98dcffdxee0977e781b138cd@mail.gmail.com> <48CF0DC4.8030402@cn.fujitsu.com> <48CF1710.20907@cn.fujitsu.com>
+In-Reply-To: <48CF1710.20907@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 08:34:07AM -0700, Randy Dunlap wrote:
-> On Sun, 14 Sep 2008 21:23:57 +0300 Eduard - Gabriel Munteanu wrote:
+Li Zefan wrote:
+> Lai Jiangshan wrote:
+>> Paul Menage wrote:
+>>> On Fri, Sep 12, 2008 at 4:55 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>>>> when we open a really large cgroup for read, we may failed
+>>>> for kmalloc() is not reliable for allocate a big buffer.
+>>> This still depends on an answer to whether using plain vmalloc is too
+>>> much overhead.
+>>>
+>>> Balbir pointed out to me that most cgroups are likely to be pretty
+>>> small - so the solution of just doing a kmalloc() for 8K or less, and
+>>> a vmalloc() for more than 8K (which is >2000 threads) will avoid the
+>>> vmalloc overhead in almost all cases; the question is whether
+>>> eliminating the remaining overhead is worth the extra complexity.
+>>>
+>> I think open cgroup.tasks to read is not a critical path.
+>> so using plain vmalloc(even more overhead functions) is worth.
+>>
 > 
-> > .gitignore files get more testing than Documentation/dontdiff, since most
-> > developers follow Git workflow when sending patches. The latter tends to
-> > stay outdated and needs to be synchronized every now and then. This patch
-> > provides a script that scans all .gitignore files and generates a
-> > Documentation/dontdiff to stdout.
-> > 
-> > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> This patch does not only add runtime overhead, but also make code much more
+> complex, so the code is harder to read and harder to maintain, and object size
+> is increased, which means increased memory footprint.
 > 
-> Hi,
-> You probably missed (& should read) this thread:
->   http://lkml.org/lkml/2008/9/12/154
+> And is there any reason not using plain vmalloc? Don't bloat the kernel without
+> good reasons IMO...
 > 
->
 
-Thanks, it makes sense.
+I said that vmalloc is worth.
+vmalloc was the fist choice of my opinion. ^_^
 
-It seems like diff can't handle such scenarios at all. I suppose Linux should
-supply its own diff tool (which uses regular diff, but implements proper file
-matching).
-
-Maybe git-diff alone could be included in the tarballs, I'll look into
-it.
-
-
-	Cheers,
-	Eduard
-
-> > ---
-> >  scripts/gen_dontdiff.sh |   21 +++++++++++++++++++++
-> >  1 files changed, 21 insertions(+), 0 deletions(-)
-> >  create mode 100755 scripts/gen_dontdiff.sh
-> > 
-> > diff --git a/scripts/gen_dontdiff.sh b/scripts/gen_dontdiff.sh
-> > new file mode 100755
-> > index 0000000..cd94747
-> > --- /dev/null
-> > +++ b/scripts/gen_dontdiff.sh
-> > @@ -0,0 +1,21 @@
-> > +#!/bin/bash
-> > +
-> > +# Copyright (C) 2008 Eduard - Gabriel Munteanu
-> > +#
-> > +# This file is released under GPL version 2.
-> > +
-> > +echo "### Generated by gen_dontdiff.sh ###"
-> > +
-> > +grep -Ev "^([[:space:]]*[[#]]*|$)" .gitignore
-> > +
-> > +find . -mindepth 2 -name .gitignore | sed -e "s/^\.\///g" | while read FILE
-> > +do
-> > +	CURR_DIR=`echo "$FILE" | sed -e "s/\.gitignore$//g"`
-> > +	echo "# $FILE"
-> > +	grep -Ev "^([[:space:]]*[[#]]*|$)" $FILE | while read LINE
-> > +	do
-> > +		echo $CURR_DIR$LINE
-> > +	done
-> > +	echo ""
-> > +done
-> > +
-> > -- 
 > 
-> ---
-> ~Randy
-> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
-> http://linuxplumbersconf.org/
+> 
+
+
