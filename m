@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYIPHmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYIPIIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbYIPHmW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 03:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbYIPHmK
+	id S1753198AbYIPIIQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 04:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIPIIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 03:42:10 -0400
-Received: from mail.mellanox.co.il ([194.90.237.43]:48778 "EHLO mellanox.co.il"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752373AbYIPHmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 03:42:09 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Sep 2008 03:42:09 EDT
-Date: Tue, 16 Sep 2008 10:36:32 +0300
-From: Eli Cohen <eli@dev.mellanox.co.il>
-To: netdev@vger.kernel.org, themann@de.ibm.com, linux-kernel@vger.kernel.org
-Subject: LRO num of frags limit
-Message-ID: <20080916073632.GA25226@mtls03>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-OriginalArrivalTime: 16 Sep 2008 07:35:24.0240 (UTC) FILETIME=[C7F82500:01C917CE]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1027-16160.005
-X-TM-AS-Result: No--8.956600-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+	Tue, 16 Sep 2008 04:08:04 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:48983 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751884AbYIPIIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 04:08:01 -0400
+Date: Tue, 16 Sep 2008 10:06:22 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Marco Stornelli <marco.stornelli@coritel.it>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux AVR32 <kernel@avr32linux.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] avr32: added mem kernel command line option support
+Message-ID: <20080916100622.36556a57@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <48CF5CBB.1050708@coritel.it>
+References: <48CE33D7.1040203@coritel.it>
+	<20080915074042.f5059467.randy.dunlap@oracle.com>
+	<48CE77C6.90307@coritel.it>
+	<20080915080517.5d75721e.randy.dunlap@oracle.com>
+	<48CE7FA8.2020409@coritel.it>
+	<20080915083622.062c4b5b.randy.dunlap@oracle.com>
+	<48CF5CBB.1050708@coritel.it>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Sep 2008 08:06:13.0456 (UTC) FILETIME=[16301D00:01C917D3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Marco Stornelli <marco.stornelli@coritel.it> wrote:
+> User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 
-looking at the LRO code, at __lro_proc_segment(), it seems that the
-network driver can configure lro_mgr->max_aggr to any value it wants
-while the number of fragments aggregated must not exceed MAX_SKB_FRAGS
-(since we only use a single SKB to aggregate fragments, allocated by
-lro_gen_skb()). Moreover, even if the driver does limit
-lro_mgr->max_aggr to MAX_SKB_FRAGS, it might still cause overflow
-since subsequent aggregations are done at lro_add_frags() which is
-called before checking whether we overflow.
-If the above observation is correct, I can send a patch.
+Please see Documentation/email-clients.txt. Thunderbird apparently has
+pretty braindead defaults, but can be taught to behave.
 
-Thanks,
-Eli
+> From: Marco Stornelli <marco.stornelli@gmail.com>
+> 
+> Now is it ok? Sorry but it's the first time I submit a patch for the kernel.
+
+Not really, sorry. This part is line-wrapped:
+
+> --- linux-2.6.26.3/arch/avr32/kernel/setup.c.orig	2008-09-15
+> 11:30:00.000000000 +0200
+> +++ linux-2.6.26.3/arch/avr32/kernel/setup.c	2008-09-16
+> 09:06:31.000000000 +0200
+
+I've fixed it up, but I recommend that you send a few patches to
+yourself and try to fix your setup. It's not much of a problem for a
+small patch like this, but longer, more complicated ones may take quite
+some time to unmangle.
+
+The rest of the patch looks good. Although avr32 only supports 32-bit
+physical addresses, I believe resource_size_t is more correct than
+unsigned long.
+
+Applied, thanks.
+
+Haavard
