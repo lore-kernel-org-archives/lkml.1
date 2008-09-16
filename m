@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbYIPJko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbYIPJmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbYIPJko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 05:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYIPJkb
+	id S1753716AbYIPJmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 05:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYIPJmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 05:40:31 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:48526 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbYIPJkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 05:40:31 -0400
-Date: Tue, 16 Sep 2008 12:40:14 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080916094011.GB7397@cs181140183.pp.htv.fi>
-References: <20080915204543.GD3994@havoc.gtf.org> <20080915.141442.139271313.davem@davemloft.net> <20080915215307.GA10340@alpha.franken.de> <20080915.151125.93659986.davem@davemloft.net> <20080916083934.GA7397@cs181140183.pp.htv.fi> <20080916091808.GA5938@alpha.franken.de>
+	Tue, 16 Sep 2008 05:42:05 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50509 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751203AbYIPJmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 05:42:04 -0400
+Date: Tue, 16 Sep 2008 10:42:02 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@openedhand.com>, Liam Girdwood <lrg@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] WM8400 support v2
+Message-ID: <20080916094201.GA15271@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080916091808.GA5938@alpha.franken.de>
+X-Cookie: Adapt.  Enjoy.  Survive.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 11:18:08AM +0200, Thomas Bogendoerfer wrote:
-> On Tue, Sep 16, 2008 at 11:39:34AM +0300, Adrian Bunk wrote:
-> > On Mon, Sep 15, 2008 at 03:11:25PM -0700, David Miller wrote:
-> > > From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
-> > > Date: Mon, 15 Sep 2008 23:53:08 +0200
-> > > 
-> > > > On Mon, Sep 15, 2008 at 02:14:42PM -0700, David Miller wrote:
-> > > > > Most of those changes were complete and utter CRAP.
-> > > > 
-> > > > thank you, but the fix I've sent (de2104x) isn't crap. The bug breaks the 
-> > > > current debian-installer for Cobalt Qube1, when it tries to get an
-> > > > IP address via dhcp. 
-> > > 
-> > > And why is this bug that has been there for YEARS is appropriate
-> > > to fix outside of the merge window?
-> > >...
-> > 
-> > Such a fix is even suitable for -stable.
-> 
-> that was my feeling as well, but if David wants to see it in the next
-> merge window, it's his decision. It's not a important fix as the user
-> base is obviuosly pretty small. And I didn't know about that bug, when
-> the merge windows was open, so I couldn't fix it "in time".
+These patches against the regulator development tree add basic support
+for the WM8400, an audio CODEC and PMU targeted at multimedia systems,
+covering basic PMIC functionality only.  Since the functionality of the
+device covers multiple subsystems with arbitration required a core
+driver is provided in drivers/mfd.
 
-And if it goes in during the next merge window it can immediately go 
-into 2.6.27.1 (and even 2.6.26.y if it's still maintained), since the 
-fix fulfills Documentation/stable_kernel_rules.txt .
+I think I've covered all the issues raised last time, erring on the side
+of split headers rather than unifying them, details in the individual
+patches.
 
-That doesn't make sense.
+The following changes since commit fa83aec82558c7d5822c47e52db3f1f6b104a930:
+  Liam Girdwood (1):
+        maintainers: update email address for Liam Girdwood
 
-> Thomas.
+are available in the git repository at:
 
-cu
-Adrian
+  git://opensource.wolfsonmicro.com/linux-2.6-audioplus for-lrg
 
--- 
+Mark Brown (2):
+      mfd: Core support for the WM8400 AudioPlus HiFi CODEC and PMU
+      regulator: Add WM8400 regulator support
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+ drivers/mfd/Kconfig                  |    8 +
+ drivers/mfd/Makefile                 |    2 +
+ drivers/mfd/wm8400-core.c            |  457 +++++++++++++
+ drivers/regulator/Kconfig            |    8 +-
+ drivers/regulator/Makefile           |    1 +
+ drivers/regulator/wm8400-regulator.c |  367 +++++++++++
+ include/linux/mfd/wm8400-audio.h     | 1186 ++++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm8400-private.h   |  936 +++++++++++++++++++++++++++
+ include/linux/mfd/wm8400.h           |   40 ++
+ 9 files changed, 3004 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/mfd/wm8400-core.c
+ create mode 100644 drivers/regulator/wm8400-regulator.c
+ create mode 100644 include/linux/mfd/wm8400-audio.h
+ create mode 100644 include/linux/mfd/wm8400-private.h
+ create mode 100644 include/linux/mfd/wm8400.h
