@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYIPNj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYIPNx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbYIPNj2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 09:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYIPNjT
+	id S1754602AbYIPNx6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 09:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYIPNxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 09:39:19 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51118 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbYIPNjS (ORCPT
+	Tue, 16 Sep 2008 09:53:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50383 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbYIPNxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 09:39:18 -0400
-Date: Tue, 16 Sep 2008 15:43:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: andi@firstfloor.org, mingo@elte.hu, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
-Message-ID: <20080916134335.GC25711@one.firstfloor.org>
-References: <1221216155-17640-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <87hc8grjuf.fsf@basil.nowhere.org> <20080916222032O.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 16 Sep 2008 09:53:49 -0400
+Date: Tue, 16 Sep 2008 06:53:45 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: arun@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
+Message-ID: <20080916065345.76d052e1@infradead.org>
+In-Reply-To: <20080916091219.GA1068@linux.vnet.ibm.com>
+References: <20080916091219.GA1068@linux.vnet.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080916222032O.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What the need_iommu() does is seeing if GART needs to do virtual
-> mappings or not.
+On Tue, 16 Sep 2008 14:42:31 +0530
+Arun R Bharadwaj <arun@linux.vnet.ibm.com> wrote:
+
+> Hi,
 > 
-> (After need_iommu() checking) What this patchset does is to guarantee
-> that GART provides a virtual address that a device can access to.
+> An idle cpu on which device drivers have initialized timers, has to
+> be frequently woken up to service the timers. So, consolidation of
+> timers onto a fewer number of cpus is important. Migration of timers
+> from idle cpus onto lesser idle cpus is necessary. Currently, timers
+> are migrated during the cpu offline operation. However cpu-hotplug
+> for the sake of idle system power management is too heavy. So, this
+> patch implements a lightweight timer migration framework.
 
-Ah you care about masks < 32bit?
+while I absolutely like reducing power consumption... I'm not sure this
+helps or is the right approach.
 
-Those always are handled elsewhere in the block layer (using the bounce_pfn
-mechanism) or in various other ways in other subsystems. e.g. on networking
-the rule is that you just don't announce direct SG when you have 
-less than 32bit mask. And the others like sound generally don't use 
-map_sg()/map_single(), but instead pre allocate something with 
-dma_alloc_coherent() or similar.
+First of all, it's of course absolutely better to fix timers and apps
+that cause them (and with PowerTOP we fixed basically all the bad
+stuff).
 
-Also what would you do if it this check fails? There is no suitable
-fallback path.
+Second, in terms of power; a wake up is a wake up, it doesn't really
+matter where it happens. 
 
-Can you describe a concrete use case your patch fixes? 
+Now we could do some consolidation (which realistically needs the range
+timer feature that's aimed for 2.6.28), but I would much rather do that
+in a different way: rather than actively moving stuff, I would instead
+suggest sharing the timer queues between logical cpus that share the
+same cache. (Now its an admin choice if he wants this on a "shared L1",
+"shared L2" or "shared L3" basis). 
 
-Anyways I'm aware the semantics are a little non untuitive (I didn't
-invent them, but inherited them from other 64bit IOMMU implementations),
-but fully general handling of < 32bit masks would be extremly complicated
-because you would always need to have a full arbitary fallback
-swiotlb implemention that is able to allocate arbitary low memory.
+Or if you want to forcefully migrate timers, don't move existing ones,
+just on queue/requeue put the on not-the-local-cpu. Sure they'll fire
+once on the "wrong" cpu, but that's a very short term problem!
 
--Andi
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
