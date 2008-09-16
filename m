@@ -1,119 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbYIPULa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYIPUVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbYIPULa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 16:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYIPULW
+	id S1752721AbYIPUVT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 16:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYIPUVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 16:11:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46560 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbYIPULV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 16:11:21 -0400
-Date: Tue, 16 Sep 2008 16:11:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Pekka Paalanen <pq@iki.fi>
-cc: Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Roskin <proski@gnu.org>
-Subject: Re: [PATCH 5/7] mmiotrace: handle TRACE_PRINT entries.
-In-Reply-To: <20080916220227.4db173f5@daedalus.pq.iki.fi>
-Message-ID: <alpine.DEB.1.10.0809161609520.7650@gandalf.stny.rr.com>
-References: <48B1D5CA.8000607@gmail.com> <c62985530808270259i491e32e2r40adf719e32e4086@mail.gmail.com> <20080827212130.4b8365a8@daedalus.pq.iki.fi> <c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com> <20080828214256.296e34ec@daedalus.pq.iki.fi>
- <c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com> <20080904203058.7e57729e@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809041407140.2431@gandalf.stny.rr.com> <20080915224707.76b2cca0@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809151556260.22620@gandalf.stny.rr.com>
- <20080916215416.16aee2dd@daedalus.pq.iki.fi> <20080916220227.4db173f5@daedalus.pq.iki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Sep 2008 16:21:10 -0400
+Received: from 1wt.eu ([62.212.114.60]:4137 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751095AbYIPUVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 16:21:09 -0400
+Date: Tue, 16 Sep 2008 22:21:02 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: karthikeyan S <karthispeaks@gmail.com>
+Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: A bug (probably) in stop_all_threads
+Message-ID: <20080916202102.GA5509@1wt.eu>
+References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com> <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com> <20080916051751.GA28475@1wt.eu> <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com> <20080916062226.GA29225@1wt.eu> <3bedf6ab0809160128l101d44feh671dbeb4a8401360@mail.gmail.com> <20080916092830.GB30026@1wt.eu> <3bedf6ab0809161230u1cc346f5xb05957309426505f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3bedf6ab0809161230u1cc346f5xb05957309426505f@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 16 Sep 2008, Pekka Paalanen wrote:
-
-> From 6a458e250857907e16cb16799392fccbfd5f0f4a Mon Sep 17 00:00:00 2001
-> From: Pekka Paalanen <pq@iki.fi>
-> Date: Sun, 17 Aug 2008 18:15:13 +0300
-> Subject: [PATCH] mmiotrace: handle TRACE_PRINT entries.
+On Wed, Sep 17, 2008 at 01:00:19AM +0530, karthikeyan S wrote:
+> On Tue, Sep 16, 2008 at 2:58 PM, Willy Tarreau <w@1wt.eu> wrote:
+> > On Tue, Sep 16, 2008 at 01:58:21PM +0530, karthikeyan S wrote:
+> >> On Tue, Sep 16, 2008 at 11:52 AM, Willy Tarreau <w@1wt.eu> wrote:
+> >> > On Tue, Sep 16, 2008 at 11:19:58AM +0530, karthikeyan S wrote:
+> >> >> Hi Willy,
+> >> >>
+> >> >> Thanks for getting back. Yes, I tried to set the state to
+> >> >> TASK_INTERRUPTIBLE. It solves the issue. The other processes now get a
+> >> >> chance to handle the SIGSTOP sent to them.
+> >> >
+> >> > OK, that will help me review the current code and compare it with 2.6.
+> >> > If you could send me your patch, it will even save me more time. Based
+> >> > on your report, it's very likely that it will get merged.
+> >>
+> >> Sure, I can definitely send the patch. I haven't sent a patch before,
+> >> and I am not fully aware of the process to follow. It might take a
+> >> little bit if time, but I will try to send it very soon.
+> >
+> > in order not to waste your time, here is how to proceed :
+> >
+> > go to the directory where both your new kernel and old kernel are.
+> > Here is how you do then :
+> >
+> >  $ diff -urN linux-2.4.36-bad linux-2.4.36-goot  > my-patch.diff
+> >
+> > (ensure that you don't have lots of old or temporary files in it).
+> > You might have to run a "make distclean" in each dir first.
+> >
+> > Then integrate the result as inline text into your mail, and as an added
+> > bonus, other people will be able to comment on your work.
 > 
-> Also make trace_seq_print_cont() non-static, and add a newline if the
-> seq buffer can't hold all data.
+> Willy, Thank you for the info.
 > 
-> Signed-off-by: Pekka Paalanen <pq@iki.fi>
-> ---
->  kernel/trace/trace.c           |   31 +++++++++++--------------------
->  kernel/trace/trace.h           |   19 +++++++++++++++++++
->  kernel/trace/trace_mmiotrace.c |   23 +++++++++++++++++++++++
->  3 files changed, 53 insertions(+), 20 deletions(-)
+> I downloaded a 2.4.36 version from kernel.org, there is no
+> stop_all_threads() at all in that version.
+> do_coredump() mechanism seems to have been changed. It does not call
+> stop_all_threads().
 > 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 406de9c..7e7154f 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -200,23 +200,6 @@ unsigned long nsecs_to_usecs(unsigned long nsecs)
->  }
->  
->  /*
-> - * trace_flag_type is an enumeration that holds different
-> - * states when a trace occurs. These are:
-> - *  IRQS_OFF	- interrupts were disabled
-> - *  NEED_RESCED - reschedule is requested
-> - *  HARDIRQ	- inside an interrupt handler
-> - *  SOFTIRQ	- inside a softirq handler
-> - *  CONT	- multiple entries hold the trace item
-> - */
-> -enum trace_flag_type {
-> -	TRACE_FLAG_IRQS_OFF		= 0x01,
-> -	TRACE_FLAG_NEED_RESCHED		= 0x02,
-> -	TRACE_FLAG_HARDIRQ		= 0x04,
-> -	TRACE_FLAG_SOFTIRQ		= 0x08,
-> -	TRACE_FLAG_CONT			= 0x10,
-> -};
-> -
-> -/*
->   * TRACE_ITER_SYM_MASK masks the options in trace_flags that
->   * control the output of kernel symbols.
->   */
-> @@ -1517,12 +1500,16 @@ lat_print_timestamp(struct trace_seq *s, unsigned long long abs_usecs,
->  
->  static const char state_to_char[] = TASK_STATE_TO_CHAR_STR;
->  
-> -static void
-> -trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
-> +/*
-> + * The message is supposed to contain an ending newline.
-> + * If the printing stops prematurely, try to add a newline of our own.
-> + */
-> +void trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
->  {
->  	struct trace_array *tr = iter->tr;
->  	struct trace_array_cpu *data = tr->data[iter->cpu];
->  	struct trace_entry *ent;
-> +	bool ok = true;
+> I am not sure which 2.4 version we are using for our device that have
+> stop_all_threads().
 
-hmm, since when did the kernel have type bool?
+OK, that does not matter for mainline then.
 
->  
->  	ent = trace_entry_idx(tr, data, iter, iter->cpu);
->  	if (!ent || ent->type != TRACE_CONT) {
-> @@ -1531,10 +1518,14 @@ trace_seq_print_cont(struct trace_seq *s, struct trace_iterator *iter)
->  	}
->  
->  	do {
-> -		trace_seq_printf(s, "%s", ent->cont.buf);
-> +		if (ok)
-> +			ok = (trace_seq_printf(s, "%s", ent->cont.buf) > 0);
->  		__trace_iterator_increment(iter, iter->cpu);
->  		ent = trace_entry_idx(tr, data, iter, iter->cpu);
->  	} while (ent && ent->type == TRACE_CONT);
-> +
-> +	if (!ok)
-> +		trace_seq_putc(s, '\n');
->  }
->  
+> And also I am not sure from where our guys had picked up the "dump
+> core for all threads" patch which includes the stop_all_threads
+> function. Had this function been there ever in official 2.4? Thanks a
+> lot.
 
--- Steve
+No, I don't think so. But you should check Redhat and SuSE kernels,
+they were heavily patched to support an early version of the 2.6 O(1)
+scheduler, NPTL threads and things like this. As a result, there were
+a large number of changes in this area and your patches might come
+from there. Also check for Andrea Arcangelli's patches (2.4-aa), they
+were approximately the ones that constituted the SuSE kernels by that
+time. I'm pretty sure that you'll find what you're looking for from
+at least one of these 3 sources.
+
+> So, looks like the need to send the patch is not there anymore? :-(
+
+No, but that does not matter. I prefer one false alarm once in while
+than no alarm with a big open hole ;-)
+
+Good luck,
+Willy
+
