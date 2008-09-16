@@ -1,56 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbYIPXZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbYIPXc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbYIPXZl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 19:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbYIPXZe
+	id S1753753AbYIPXc5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 19:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbYIPXcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 19:25:34 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44845 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbYIPXZd (ORCPT
+	Tue, 16 Sep 2008 19:32:48 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:55077 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752272AbYIPXcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 19:25:33 -0400
-Subject: [PATCH] Fix autoloading of MacBook Pro backlight driver.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Lennart Poettering <mzxreary@0pointer.de>, Julien Blache <jb@jblache.org>,
-       Matthew Garrett <mjg@redhat.com>, Richard Purdie <rpurdie@rpsys.net>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1221607406.20234.82.camel@macbook.infradead.org>
-References: <1221607406.20234.82.camel@macbook.infradead.org>
-Content-Type: text/plain
-Date: Tue, 16 Sep 2008 16:25:22 -0700
-Message-Id: <1221607522.20234.84.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 16 Sep 2008 19:32:47 -0400
+Date: Wed, 17 Sep 2008 00:32:40 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Adel Gadllah <adel.gadllah@gmail.com>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       Michael Buesch <mb@bu3sch.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
+Message-ID: <20080916233240.GA18574@srcf.ucam.org>
+References: <48CFC03A.8020708@lwfinger.net> <200809161742.15527.mb@bu3sch.de> <48CFE820.7010305@lwfinger.net> <200809162018.28548.carlos@strangeworlds.co.uk> <48D0095B.40403@lwfinger.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D0095B.40403@lwfinger.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use new MODULE_DEVICE_TABLE(dmi, ...) facility. There's no need for
-every driver to screw it up for themselves, when the alias can be
-generated automatically.
+On Tue, Sep 16, 2008 at 02:30:35PM -0500, Larry Finger wrote:
 
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+> I didn't say it was not possible. What I said is that _ONLY_ the
+> operator's finger could change the state, just like in your laptop.
+> Thus it makes absolutely no difference what state RFKILL thinks it is
+> in.
 
-diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
-index 385cba4..06964af 100644
---- a/drivers/video/backlight/mbp_nvidia_bl.c
-+++ b/drivers/video/backlight/mbp_nvidia_bl.c
-@@ -111,6 +111,4 @@ module_exit(mbp_exit);
- MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
- MODULE_DESCRIPTION("Nvidia-based Macbook Pro Backlight Driver");
- MODULE_LICENSE("GPL");
--MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,1");
--MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,2");
--MODULE_ALIAS("svnAppleInc.:pnMacBookPro4,1");
-+MODULE_DEVICE_TABLE(dmi, mbp_device_table);
+Of course it makes a difference. The reason why two states are provided 
+is to allow userspace to distinguish whether it can unblock the device 
+or not. It's clear that b43's rfkill code is astonishingly broken (and 
+that's not a criticism of anyone involved - the documentation's 
+confusing and there weren't any good examples of how it should be 
+implemented).
+
+The real question is how the LED state is supposed to be being toggled, 
+and what that's got to do with rfkill. I /think/ that the current state 
+of events is:
+
+1) User toggles state
+2) State toggle is used by b43 to generate KEY_WLAN (this is broken)
+3) rfkill-input toggles the rfkill state, changing the LED state in the 
+process
+
+What *should* be happening is:
+
+1) User toggles state
+2) b43 changes rfkill state (by using rfkill_force_state). The LED state 
+should also be changed in the process.
+
+It looks like the commit in question gets part of the way to 
+implementing the second of these situations, but will now change the 
+rfkill state at the same time that rfkill-input tries to. I agree that 
+it should be reverted for now, but because it's (a) broken (changing the 
+state member directly is wrong) and (b) potentially open to strange 
+states being generated by rfkill-input trying to change the state after 
+it's already been changed. The general intent is correct.
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Matthew Garrett | mjg59@srcf.ucam.org
