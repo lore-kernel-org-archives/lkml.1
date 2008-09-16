@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbYIPRNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYIPRTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754814AbYIPRNz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYIPRNr
+	id S1754346AbYIPRTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYIPRTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:13:47 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:42668 "EHLO mo10.iij4u.or.jp"
+	Tue, 16 Sep 2008 13:19:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:58521 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752976AbYIPRNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:13:46 -0400
-Date: Wed, 17 Sep 2008 02:13:25 +0900
-To: andi@firstfloor.org
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about
- virtual mappings
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080916134335.GC25711@one.firstfloor.org>
-References: <87hc8grjuf.fsf@basil.nowhere.org>
-	<20080916222032O.fujita.tomonori@lab.ntt.co.jp>
-	<20080916134335.GC25711@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751186AbYIPRTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 13:19:09 -0400
+Message-ID: <48CFEA8C.3020703@goop.org>
+Date: Tue, 16 Sep 2008 10:19:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PARAVIRT_GUEST bug? [was: Stable regression: usb-storage is stuck
+ in 2.6.26.5]
+References: <20080913122143.4B13B908E@gandalf.tls.msk.ru> <48CBB626.4050300@msgid.tls.msk.ru> <48CF6A45.3010204@msgid.tls.msk.ru>
+In-Reply-To: <48CF6A45.3010204@msgid.tls.msk.ru>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080917021319O.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Sep 2008 15:43:35 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+Michael Tokarev wrote:
+> Michael Tokarev wrote:
+>
+> [usb-storage hangs on asus M2NPV-VM (nVidia GeForce 6150/nForce 430)
+>  motherboard with latest bios]
+>
+>> Ok, it turned out to be pretty.. interesting.
+>>
+>> It's not a regression within -stable kernel series.  The problem
+>> happens when BOTH are true:
+>>
+>>   - using latest BIOS for this mobo (1401), AND
+>>   - enabling KVM_GUEST in kernel.
+>>
+>> The only difference in my kernel config between .1 and .5 was
+>> to enable KVM_GUEST and KVM_CLOCK, and also I2C_HELPER_AUTO
+>> which was added by kernel update.
+>>
+>> Going with previous BIOS (1201) OR disabling PARAVIRT_GUEST
+>> fixes the problem.  I'll try to figure out which config
+>> option is at problem here.
+>
+> After seeing similar situation on another motherboard, I
+> become curious.
+>
+> Here's the result:  M3A78-EM motherboard (also from Asus),
+> AMD780G/SB700 etc.  Updating to one of the latest bios
+> makes the system unbootable.  Kernel hangs on boot right
+> after displaying
+>
+>  SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
+>
+> Reverting to the older BIOS or disabling PARAVIRT_GUEST in kernel
+> fixes this (turning off KVM_GUEST isn't enough), and kernel happily
+> boots further, with next line being
+>
+>  hpet clockevent registered
+>  ...
+>
+> Reportedly, another Asus motherboard (M2N-SLI DELUXE) also hangs
+> with new BIOS and KVM_GUEST optimizations turned on, but not on
+> older BIOS.
+>
+> So it's quite.. funny.  At least SOME latest BIOSes from Asustec,
+> together with PARAVIRT_GUEST, -- a problem.  Don't do either of
+> those, and it's all ok.
+>
+> The question is if Asus introduced the same bug in quite.. some
+> of their recent BIOSes, or PARAVIRT_GUEST code is somehow buggy
+> and the bug is exposed by new BIOS code.
+>
+> Any hints on this? ;)
 
-> > What the need_iommu() does is seeing if GART needs to do virtual
-> > mappings or not.
-> > 
-> > (After need_iommu() checking) What this patchset does is to guarantee
-> > that GART provides a virtual address that a device can access to.
-> 
-> Ah you care about masks < 32bit?
+PARAVIRT_GUEST doesn't enable anything by itself; it just makes other
+config options appear.  What other config options are you enabling?
 
-Yes,
+That is, what's the diff between a working and a non-working .config?
 
-
-> Those always are handled elsewhere in the block layer (using the bounce_pfn
-> mechanism)
-
-I don't think that the bounce guarantees that dma_alloc_coherent()
-returns an address that a device can access to.
-
-
-> or in various other ways in other subsystems. e.g. on networking
-> the rule is that you just don't announce direct SG when you have 
-> less than 32bit mask.
-
-I'm not familiar with what the networking does, for example, seems
-that b44 sets dev->dma_mask to DMA_30BIT_MASK and b44_start_xmit()
-does:
-
-mapping = ssb_dma_map_single(bp->sdev, skb->data, len, DMA_TO_DEVICE);
-if (ssb_dma_mapping_error(bp->sdev, mapping) || mapping + len > DMA_30BIT_MASK) {
-	struct sk_buff *bounce_skb;
-
-	/* Chip can't handle DMA to/from >1GB, use bounce buffer */
-	if (!ssb_dma_mapping_error(bp->sdev, mapping))
-		ssb_dma_unmap_single(bp->sdev, mapping, len,
-				     DMA_TO_DEVICE);
-
-IOMMUs can try to return an address that the NIC can access to.
+    J
