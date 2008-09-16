@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYIPOMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbYIPOOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbYIPOMU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbYIPOMI
+	id S1755145AbYIPOOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYIPOOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:12:08 -0400
-Received: from smtp118.mail.mud.yahoo.com ([209.191.84.167]:27154 "HELO
-	smtp118.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751761AbYIPOMH convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:12:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gwYUsvyvQrb2+X/hcP0YiQ2PePPmPIA/sSxU5oOiPlM8YUce+9rn0DZucyKCmWB5MjwXM+BtF5TdCH2ijHK0wPeJBIz8Uyga2UWrNikTX/x0PGFTqr4JVOX24yCwpWLorNHYLaAmlJWKVA+GFBitEfv2ZzvA1lqSTWeWVqPZKG8=  ;
-X-YMail-OSG: me6WWvEVM1n.g0dlDUvGa_5AgBp1utrojqniYiAkuwmz9mP2ZRI4CiOjwjD69jEeGhCs27jxN1mHTP1kO0dCuww_yKjTh_t04MYjnvwlGfvKr72rj6PX3I9teWcL4kQK8u_unQ0qlNAFXm77rLOUpMtM
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
-Date: Wed, 17 Sep 2008 00:11:21 +1000
-User-Agent: KMail/1.9.5
-Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <476002.75149.qm@web26206.mail.ukl.yahoo.com>
-In-Reply-To: <476002.75149.qm@web26206.mail.ukl.yahoo.com>
+	Tue, 16 Sep 2008 10:14:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38551 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbYIPOOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:14:32 -0400
+Message-ID: <48CFBE51.1060200@redhat.com>
+Date: Tue, 16 Sep 2008 07:10:25 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200809170011.22062.nickpiggin@yahoo.com.au>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+CC: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in	userspace
+References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi> <20080916130234.GA17082@localhost.localdomain>
+In-Reply-To: <20080916130234.GA17082@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 September 2008 23:57, Michael Trimarchi wrote:
-> Hi,
->
->
->
-> ----- Messaggio originale -----
->
-> > Da: Nick Piggin <nickpiggin@yahoo.com.au>
-> > A: Michael Trimarchi <trimarchimichael@yahoo.it>
-> > Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>;
-> > akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
-> > linux-fsdevel@vger.kernel.org Inviato: Marted� 16 settembre 2008,
-> > 14:54:21
-> > Oggetto: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
-> >
-> > On Tuesday 16 September 2008 21:11, Michael Trimarchi wrote:
-> > > Hi,
-> > >
-> > > > +        if (offset != file_pos_read(file))
-> > > > +            file_pos_write(file, offset);
-> > > >         retval = offset;
-> > > >     }
-> > >
-> > > Is not more efficient here a compare xchg operation?
-> >
-> > The compiler should do it if it was.
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> > in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
->
->  i was thinking about introducing a file_pos_update() not implemented using
-> file_pos_read()/file_pos_write() and taking the seq_lock or
-> disabling preemption only one time
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-AFAIK, the only way to do an atomic 64 bit store on 32-bit x86 is
-"cmpxchg8b" (with lock prefix on SMP). That would be far slower
-I'm sure.
+Kirill A. Shutemov wrote:
+>> What is the error message?
+> 
+> /usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
+> flock'
+
+And?  None of these programs should use <linux/inotify.h>.  There has
+for the longest time been a <sys/inotify.h> header which doesn't need
+any kernel headers.  In fact, <linux/inotify.h> should not be exported.
+
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjPvlEACgkQ2ijCOnn/RHTO0ACfR2NrTZ97pK34xZKM5pzlRbL6
+Nb4AoJ27y9MU+Udr50GZVfZZXjg3ENWg
+=7Pol
+-----END PGP SIGNATURE-----
