@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbYIPOda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbYIPOek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbYIPOda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbYIPOdW
+	id S1755760AbYIPOek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbYIPOe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:33:22 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:47076 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbYIPOdW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:33:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=i8iLovrYryGHcm7gckqPTmbJc55c8CGNimvf2byY5E6bMVov2kmEyh8uUS6HFTmw2w
-         XuVMN/aXcFkxio+jK0KZmS9gfDHhCHlYJw2Aage03UjMBd6tVWRmYpxx8GJGCXGsmV+x
-         4/Q3EPncER6bEuYBu9UwrNLe96eE9TJgv2A5w=
-Message-ID: <ab40e9c0809160733k5ba2e009h9ff2bca3e530d48@mail.gmail.com>
-Date: Tue, 16 Sep 2008 16:33:20 +0200
-From: "Xu Yang" <risingsunxy@googlemail.com>
-To: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-Subject: Re: looking for a function
-Cc: "Bernd Petrovitsch" <bernd@firmix.at>, linux-kernel@vger.kernel.org
-In-Reply-To: <c62985530809160729m261207ben15b6c05440703451@mail.gmail.com>
+	Tue, 16 Sep 2008 10:34:29 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:40139 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbYIPOe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:34:29 -0400
+Date: Tue, 16 Sep 2008 17:34:10 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Theodore Tso <tytso@mit.edu>, Jarek Poplawski <jarkao2@gmail.com>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916143408.GA1400@cs181140183.pp.htv.fi>
+References: <20080916104811.GC7397@cs181140183.pp.htv.fi> <20080916114305.GB10965@ff.dom.local> <20080916121528.GD7397@cs181140183.pp.htv.fi> <20080916135408.GB13388@mit.edu> <20080916070241.3e8d5202@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <ab40e9c0809160550q411507aeledae30a9f835d09d@mail.gmail.com>
-	 <1221573632.6103.83.camel@spike.firmix.at>
-	 <ab40e9c0809160711p4182d9e7n9b3ce965b3ce9f1f@mail.gmail.com>
-	 <c62985530809160729m261207ben15b6c05440703451@mail.gmail.com>
+In-Reply-To: <20080916070241.3e8d5202@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frederic,
+On Tue, Sep 16, 2008 at 07:02:41AM -0700, Arjan van de Ven wrote:
+> On Tue, 16 Sep 2008 09:54:08 -0400
+> Theodore Tso <tytso@mit.edu> wrote:
+> 
+> > If it's a really important bug, and it affects a huge number of users,
+> > or it's really bad security bug, the reality is that exceptions will
+> > be made to the rules.  But exceptions need to remain exceptions for
+> > extraordinary situations, not everyday occurrences.  And of course, if
+> > the bug does affect a huge number of users, someone should be asking
+> > the question why it wasn't detected sooner, say before the last merge
+> > window --- and to ask the question how many users is this bug really
+> > going to affect anyway?
+> > 
+> > At least, that's my take on things,
+> > 
+> 
+> also note that Linus said "regression or on the kerneloops list";
+> if it has any kind of backtrace, it'll be there if it's a common
+> problem that hits many users.
 
-thank you very much!
-this is very useful for me. :-)
+Thomas' patch [1] will fixes a bug of a kind that will likely never 
+make it to your list.
 
-Best regards,
+And the same also e.g. goes for bugs where your machine is completely 
+dead (no SysRq possible) with nothing in the logs.
 
-Yang
+The kerneloops lists are quite valuable, but they can never cover all 
+classes of fatal bugs.
 
-2008/9/16, Frédéric Weisbecker <fweisbec@gmail.com>:
-> 2008/9/16 Xu Yang <risingsunxy@googlemail.com>:
-> > Hi Bernd,
-> >
-> > thanks for you reply.
-> >
-> > yes, I know the thread migrates all the time, this is exactly what I
-> > would like to observe. I would like to learn about the thread
-> > migration of some specific scheduling algorithm. so ....
-> >
-> > any idea about the function?
-> >
->
-> And perhaps you should have a look at the sched_switch tracer which
-> will log for you the different context switches.
->
-> Regards,
->
-> Frederic.
->
+cu
+Adrian
+
+[1] http://article.gmane.org/gmane.linux.network/105810
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
