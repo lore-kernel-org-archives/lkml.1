@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbYIPIIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYIPIMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753198AbYIPIIQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 04:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbYIPIIE
+	id S1753353AbYIPIMH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 04:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbYIPILw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 04:08:04 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:48983 "EHLO bagnes.atmel.com"
+	Tue, 16 Sep 2008 04:11:52 -0400
+Received: from hobbit.corpit.ru ([81.13.33.150]:21026 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbYIPIIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 04:08:01 -0400
-Date: Tue, 16 Sep 2008 10:06:22 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Marco Stornelli <marco.stornelli@coritel.it>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux AVR32 <kernel@avr32linux.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] avr32: added mem kernel command line option support
-Message-ID: <20080916100622.36556a57@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <48CF5CBB.1050708@coritel.it>
-References: <48CE33D7.1040203@coritel.it>
-	<20080915074042.f5059467.randy.dunlap@oracle.com>
-	<48CE77C6.90307@coritel.it>
-	<20080915080517.5d75721e.randy.dunlap@oracle.com>
-	<48CE7FA8.2020409@coritel.it>
-	<20080915083622.062c4b5b.randy.dunlap@oracle.com>
-	<48CF5CBB.1050708@coritel.it>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 16 Sep 2008 08:06:13.0456 (UTC) FILETIME=[16301D00:01C917D3]
+	id S1752257AbYIPILv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 04:11:51 -0400
+Message-ID: <48CF6A45.3010204@msgid.tls.msk.ru>
+Date: Tue, 16 Sep 2008 12:11:49 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: PARAVIRT_GUEST bug? [was: Stable regression: usb-storage is stuck
+ in 2.6.26.5]
+References: <20080913122143.4B13B908E@gandalf.tls.msk.ru> <48CBB626.4050300@msgid.tls.msk.ru>
+In-Reply-To: <48CBB626.4050300@msgid.tls.msk.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marco Stornelli <marco.stornelli@coritel.it> wrote:
-> User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+Michael Tokarev wrote:
 
-Please see Documentation/email-clients.txt. Thunderbird apparently has
-pretty braindead defaults, but can be taught to behave.
+[usb-storage hangs on asus M2NPV-VM (nVidia GeForce 6150/nForce 430)
+  motherboard with latest bios]
 
-> From: Marco Stornelli <marco.stornelli@gmail.com>
+> Ok, it turned out to be pretty.. interesting.
 > 
-> Now is it ok? Sorry but it's the first time I submit a patch for the kernel.
+> It's not a regression within -stable kernel series.  The problem
+> happens when BOTH are true:
+> 
+>   - using latest BIOS for this mobo (1401), AND
+>   - enabling KVM_GUEST in kernel.
+> 
+> The only difference in my kernel config between .1 and .5 was
+> to enable KVM_GUEST and KVM_CLOCK, and also I2C_HELPER_AUTO
+> which was added by kernel update.
+> 
+> Going with previous BIOS (1201) OR disabling PARAVIRT_GUEST
+> fixes the problem.  I'll try to figure out which config
+> option is at problem here.
 
-Not really, sorry. This part is line-wrapped:
+After seeing similar situation on another motherboard, I
+become curious.
 
-> --- linux-2.6.26.3/arch/avr32/kernel/setup.c.orig	2008-09-15
-> 11:30:00.000000000 +0200
-> +++ linux-2.6.26.3/arch/avr32/kernel/setup.c	2008-09-16
-> 09:06:31.000000000 +0200
+Here's the result:  M3A78-EM motherboard (also from Asus),
+AMD780G/SB700 etc.  Updating to one of the latest bios
+makes the system unbootable.  Kernel hangs on boot right
+after displaying
 
-I've fixed it up, but I recommend that you send a few patches to
-yourself and try to fix your setup. It's not much of a problem for a
-small patch like this, but longer, more complicated ones may take quite
-some time to unmangle.
+  SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
 
-The rest of the patch looks good. Although avr32 only supports 32-bit
-physical addresses, I believe resource_size_t is more correct than
-unsigned long.
+Reverting to the older BIOS or disabling PARAVIRT_GUEST in kernel
+fixes this (turning off KVM_GUEST isn't enough), and kernel happily
+boots further, with next line being
 
-Applied, thanks.
+  hpet clockevent registered
+  ...
 
-Haavard
+Reportedly, another Asus motherboard (M2N-SLI DELUXE) also hangs
+with new BIOS and KVM_GUEST optimizations turned on, but not on
+older BIOS.
+
+So it's quite.. funny.  At least SOME latest BIOSes from Asustec,
+together with PARAVIRT_GUEST, -- a problem.  Don't do either of
+those, and it's all ok.
+
+The question is if Asus introduced the same bug in quite.. some
+of their recent BIOSes, or PARAVIRT_GUEST code is somehow buggy
+and the bug is exposed by new BIOS code.
+
+Any hints on this? ;)
+
+Thanks!
+
+/mjt
