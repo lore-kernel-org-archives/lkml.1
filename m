@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYIPPwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbYIPPz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYIPPwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbYIPPwc
+	id S1756094AbYIPPz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYIPPzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:52:32 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:20645 "EHLO
-	VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbYIPPwb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:52:31 -0400
-X-BigFish: VPS-24(zz1432R98dR1805M936fQ873fnzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7APEW-03-SJ9-01
-Date: Tue, 16 Sep 2008 17:52:11 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: andi@firstfloor.org, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
-Message-ID: <20080916155211.GW24392@amd.com>
-References: <1221216155-17640-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <87hc8grjuf.fsf@basil.nowhere.org> <20080916222032O.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080916222032O.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 16 Sep 2008 15:52:11.0585 (UTC) FILETIME=[2E880B10:01C91814]
+	Tue, 16 Sep 2008 11:55:20 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:56597 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752064AbYIPPzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:55:19 -0400
+Subject: Re: [RFC v5][PATCH 8/8] Dump open file descriptors
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: containers@lists.linux-foundation.org, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, arnd@arndb.de
+In-Reply-To: <1221347167-9956-9-git-send-email-orenl@cs.columbia.edu>
+References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu>
+	 <1221347167-9956-9-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain
+Date: Tue, 16 Sep 2008 08:54:46 -0700
+Message-Id: <1221580486.20360.1.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 10:20:40PM +0900, FUJITA Tomonori wrote:
-> On Tue, 16 Sep 2008 02:54:32 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+On Sat, 2008-09-13 at 19:06 -0400, Oren Laadan wrote:
 > 
-> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> writes:
-> > 
-> > > Currently, gart IOMMU ignores device's dma_mask when it does virtual
-> > > mappings. So it could give a device a virtual address that the device
-> > > can't access to.
-> > 
-> > Huh? That is what the need_iommu() logic in gart_map_sg()
-> > does. An I'm not aware of any bugs in this area.
-> 
-> What the need_iommu() does is seeing if GART needs to do virtual
-> mappings or not.
-> 
-> (After need_iommu() checking) What this patchset does is to guarantee
-> that GART provides a virtual address that a device can access to.
-> 
-> 
-> > Did you actually see that failure in practice? I don't see
-> > how it could happen.
-> 
-> No, I did not. This patchset does the right thing theoretically, I
-> think, but if such problem never happens for GART, I'll drop the patch
-> for GART. Joerg?
+> +static int
+> +cr_write_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int
+> fd)
+> +{
+> +       struct cr_hdr h;
+> +       struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
+> +       struct file *file = NULL;
+> +       struct fdtable *fdt;
+> +       int coe, objref, new, ret;
+> +
+> +       rcu_read_lock();
+> +       fdt = files_fdtable(files);
+> +       file = fcheck_files(files, fd);
+> +       if (file) {
+> +               coe = FD_ISSET(fd, fdt->close_on_exec);
+> +               get_file(file);
+> +       }
+> +       rcu_read_unlock();
+> +
+> +       /* sanity check (although this shouldn't happen) */
+> +       if (!file)
+> +               return -EBADF;
+> +
+> +       new = cr_obj_add_ptr(ctx, (void *) file, &objref, CR_OBJ_FILE, 0);
 
-I am not aware of any failures which are fixed by these patches. But in
-theory there could be failures.
+Dude, you don't need to cast to void*.  
 
-Joerg
-
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+-- Dave
 
