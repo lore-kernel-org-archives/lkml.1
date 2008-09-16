@@ -1,47 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbYIPQTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYIPQWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756304AbYIPQTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 12:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYIPQTM
+	id S1756257AbYIPQWX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 12:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754614AbYIPQWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 12:19:12 -0400
-Received: from outbound-mail-06.bluehost.com ([69.89.17.206]:58146 "HELO
-	outbound-mail-06.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754208AbYIPQTL (ORCPT
+	Tue, 16 Sep 2008 12:22:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39802 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbYIPQWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 12:19:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=I702AD8Tr5w6EjpSMgD9TIFP/kz22uaEvJ/jZqjAkVYp0QFqJNWZdxR36sKVNaykNSte+/RAbn0jr0vLWSJXVkysYDQgR0Tk4dIAvspr5nvjqe0DuA838YLmclw4gCL2;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [PATCH 2.6.27-rc6] PCI: Fix pcie_aspm=force
-Date: Tue, 16 Sep 2008 09:19:07 -0700
-User-Agent: KMail/1.9.9
-Cc: "Li, Shaohua" <shaohua.li@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1221571633.4060.19.camel@galvatron>
-In-Reply-To: <1221571633.4060.19.camel@galvatron>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 16 Sep 2008 12:22:05 -0400
+Date: Tue, 16 Sep 2008 09:22:06 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, netdev@vger.kernel.org, tglx@tglx.de,
+       mingo@elte.hu, linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Warning/Oops report of the week of September 16th, 2008
+Message-ID: <20080916092206.6342c498@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809160919.07958.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 131.252.246.160 authed with jbarnes@virtuousgeek.org}
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, September 16, 2008 6:27 am Sitsofe Wheeler wrote:
-> From: Sitsofe Wheeler <sitsofe@yahoo.com>
->
-> pcie_aspm=force did not work because aspm_force was being double negated
-> leading to the sanity check failing. Moving a bracket should fix this.
->
-> Signed-off-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+This is the first report where I've dropped oopses that happened to 2.6.25 or earlier kernels.
+I've also changed the format of the report to split it in "fixed" and "not yet fixed" sections;
+I hope that makes the report more useful for developers.
 
-Thanks, I applied this to my for-linus branch so we can try to get this fixed 
-for 2.6.27.
 
-Jesse
+
+This week, a total of 1730 oopses and warnings have been reported,
+compared to 626 reports in the previous week.
+
+
+Per file statistics
+266	net/sched/sch_generic.c
+260	kernel/timer/tglx.c
+167	drivers/ata/libata-sff.c
+154	external/utrace
+80	net/core/dev.c
+62	drivers/parport/procfs.c
+54	external/fireglx/binary (P)
+45	fs/jbd/journal.c
+38	kernel/timer.c
+34	drivers/base/power/main.c
+27	lib/scatterlist.c
+25	kernel/sched.c
+23	include/asm-x86/irqflags.h
+
+
+Not yet fixed issues
+====================
+
+Rank 1: dev_watchdog (warning)
+	Reported 263 times (495 total reports)
+	Network card timeout; this error is currently not specific enough, a patch
+	is pending to get this reported per driver, with some luck this gets merged soon.
+	This warning was last seen in version 2.6.27-rc6, and first seen in 2.6.26-rc3.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog
+
+Rank 4: utrace_control (oops)
+	Reported 149 times (152 total reports)
+	[fedora] Fedora merged a broken utrace patch
+	This oops was last seen in version 2.6.26.3, and first seen in 2.6.26.1.
+	More info: http://www.kerneloops.org/searchweek.php?search=utrace_control
+
+Rank 6: parport_device_proc_register (warning)
+	Reported 62 times (3942 total reports)
+	Duplicate /proc registration in the parport driver
+	This warning was last seen in version 2.6.26.3, and first seen in 2.6.24-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=parport_device_proc_register
+
+Rank 7: firegl_ioctl (warning)
+	Reported 50 times (2479 total reports)
+	[external] Bug in the proprietary fireglx driver
+	warning only shows up in tainted kernels
+	This warning was last seen in version 2.6.26.5, and first seen in 2.6.25.
+	More info: http://www.kerneloops.org/searchweek.php?search=firegl_ioctl
+
+Rank 8: journal_update_superblock (warning)
+	Reported 44 times (3767 total reports)
+	Likely caused by the user removing a USB stick while mounted
+	This warning was last seen in version 2.6.27-rc6, and first seen in 2.6.24-rc6-git1.
+	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
+
+Rank 9: run_timer_softirq (oops)
+	Reported 36 times (76 total reports)
+	softlockup; might be fixed by Thomas' HPET fixes
+	This oops was last seen in version 2.6.27-rc1-git4, and first seen in 2.6.25.
+	More info: http://www.kerneloops.org/searchweek.php?search=run_timer_softirq
+
+Rank 10: device_pm_add (warning)
+	Reported 29 times (122 total reports)
+	This warning was last seen in version 2.6.27-rc4, and first seen in 2.6.26-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=device_pm_add
+
+Rank 12: native_safe_halt (oops)
+	Reported 23 times (122 total reports)
+	This oops was last seen in version 2.6.27-rc5, and first seen in 2.6.24.
+	More info: http://www.kerneloops.org/searchweek.php?search=native_safe_halt
+
+Rank 13: account (warning)
+	Reported 13 times (16 total reports)
+	This warning was last seen in version 2.6.26.3, and first seen in 2.6.26.
+	More info: http://www.kerneloops.org/searchweek.php?search=account
+
+Rank 14: lock_page (warning)
+	Reported 12 times (31 total reports)
+	This warning was last seen in version 2.6.27-rc6, and first seen in 2.6.27-rc1-git2.
+	More info: http://www.kerneloops.org/searchweek.php?search=lock_page
+
+Fixed issues
+============
+
+
+Rank 2: tick_dev_program_event (warning)
+	Reported 260 times (282 total reports)
+	[debug] temporary WARN_ON() inserted in -rc5 for diagnostics purposes, removed for -rc6
+	This warning was last seen in version 2.6.27-rc5-git10, and first seen in 2.6.27-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=tick_dev_program_event
+
+Rank 3: ata_sff_hsm_move (warning)
+	Reported 167 times (300 total reports)
+	[fixed] redundant WARN_ON; fixed in 9c2676b61a5a4b6d99e65fb2f438fb3914302eda
+	This warning was last seen in version 2.6.27-rc2-git1, and first seen in 2.6.25.4.
+	More info: http://www.kerneloops.org/searchweek.php?search=ata_sff_hsm_move
+
+Rank 5: __netif_schedule (warning)
+	Reported 74 times (559 total reports)
+	[fixed] issue as a result of the multiqueue feature, fixed for 2.6.27-rc1
+	This warning was last seen in version 2.6.27-rc0-git11, and first seen in 2.6.26-rc8-git.
+	More info: http://www.kerneloops.org/searchweek.php?search=__netif_schedule
+
+Rank 11: sg_copy_buffer (warning)
+	Reported 27 times (29 total reports)
+	[fixed] by making the locks _irqsave (and backported to -stable)
+	This warning was last seen in version 2.6.26.5, and first seen in 2.6.26-rc6.
+	More info: http://www.kerneloops.org/searchweek.php?search=sg_copy_buffer
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
