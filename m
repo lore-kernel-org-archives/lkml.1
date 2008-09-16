@@ -1,101 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYIPADv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755970AbYIPAVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbYIPADv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 20:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbYIPADo
+	id S1755970AbYIPAVR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 20:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYIPAU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 20:03:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:51189 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbYIPADn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 20:03:43 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jason Baron <jbaron@redhat.com>
-Subject: Re: [PATCH 1/7] dynamic debug v2 - infrastructure
-Date: Tue, 16 Sep 2008 10:03:34 +1000
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, joe@perches.com,
-       greg@kroah.com, nick@nick-andrew.net, randy.dunlap@oracle.com
-References: <20080715213108.GB23331@redhat.com>
-In-Reply-To: <20080715213108.GB23331@redhat.com>
+	Mon, 15 Sep 2008 20:20:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:38814 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754183AbYIPAUz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 20:20:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JVZy2RWkp4kSjxq6liRuZAoYM0p5zq+9MBMDBSLjiUBKfMRrZHMKQ+bXQCwd+V8Ran
+         c/JOHJvW8S4QLm0hVgt/mD5rswnJ71QlvCy+NW+4Ar5jUM9Fc5D0bUuSeoUzqYQvXRAH
+         SFrriB3WP7QFSWQwLEMyRHchDPfUuJ9PxhiQI=
+Message-ID: <d6c8ef150809151720o73528dcfqcc7358c244005fa6@mail.gmail.com>
+Date: Tue, 16 Sep 2008 02:20:53 +0200
+From: "Bosko Radivojevic" <bosko.radivojevic@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: GRE keepalives, again
+Cc: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <d6c8ef150809150445qbd16c5ap7923468008477705@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809161003.35983.rusty@rustcorp.com.au>
+References: <d6c8ef150809141549m52289f1cr7b4da508b311af1f@mail.gmail.com>
+	 <20080914.170302.132520341.davem@davemloft.net>
+	 <d6c8ef150809150445qbd16c5ap7923468008477705@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 16 July 2008 07:31:08 Jason Baron wrote:
-> --- a/include/linux/module.h
-> +++ b/include/linux/module.h
-> @@ -359,6 +359,10 @@ struct module
->  	struct marker *markers;
->  	unsigned int num_markers;
->  #endif
-> +#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
-> +	struct mod_debug *start_verbose;
-> +	unsigned int num_verbose;
-> +#endif
+Hi again.
 
-Hi Jason,
+Problem is - fib_validate_source() explicitly doesn't allow any local
+address to be specified as source address. I figured out I'm not the
+first in need for different behavior. One of the solutions I've found
+is forward_shared patch
+[http://www.ssi.bg/~ja/forward_shared-2.6.25-2.diff] which exists for
+centuries. Actually, it is not working for me but it is addressing the
+same thing - forwarding packets with local addresses.
 
-   Couple of nit-picks about the module part of this patch.  First, this could 
-just be called "verbose" rather than "start_verbose"...
+I've solved my problem (Cisco's GRE keepalive and Linux) with this small change:
 
-> @@ -1717,6 +1718,9 @@ static struct module *load_module(void __user *umod,
->  	unsigned int unusedgplcrcindex;
->  	unsigned int markersindex;
->  	unsigned int markersstringsindex;
-> +	unsigned int verboseindex;
-> +	struct mod_debug *iter;
-> +	unsigned long value;
->  	struct module *mod;
->  	long err = 0;
->  	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-> @@ -1993,6 +1997,7 @@ static struct module *load_module(void __user *umod,
->  	markersindex = find_sec(hdr, sechdrs, secstrings, "__markers");
->   	markersstringsindex = find_sec(hdr, sechdrs, secstrings,
->  					"__markers_strings");
-> +	verboseindex = find_sec(hdr, sechdrs, secstrings, "__verbose");
->
->  	/* Now do relocations. */
->  	for (i = 1; i < hdr->e_shnum; i++) {
-> @@ -2020,6 +2025,11 @@ static struct module *load_module(void __user *umod,
->  	mod->num_markers =
->  		sechdrs[markersindex].sh_size / sizeof(*mod->markers);
->  #endif
-> +#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
-> +	mod->start_verbose = (void *)sechdrs[verboseindex].sh_addr;
-> +	mod->num_verbose = sechdrs[verboseindex].sh_size /
-> +				sizeof(*mod->start_verbose);
-> +#endif
->
->          /* Find duplicate symbols */
->  	err = verify_export_symbols(mod);
-> @@ -2043,6 +2053,19 @@ static struct module *load_module(void __user *umod,
->  		marker_update_probe_range(mod->markers,
->  			mod->markers + mod->num_markers);
->  #endif
-> +#ifdef CONFIG_DYNAMIC_PRINTK_DEBUG
-> +	for (value = (unsigned long)mod->start_verbose;
-> +		value < (unsigned long)mod->start_verbose +
-> +		(unsigned long)(mod->num_verbose * sizeof(struct mod_debug));
-> +		value += sizeof(struct mod_debug)) {
-> +			iter = (struct mod_debug *)value;
-> +			register_debug_module(iter->modname,
-> +				simple_strtoul(iter->type, NULL, 10),
-> +				iter->logical_modname,
-> +				simple_strtoul(iter->num_flags, NULL, 10),
-> +				iter->flag_names);
-> +	}
-> +#endif
+--- linux-2.6.26.3/net/ipv4/fib_frontend.c-orig	2008-09-16
+01:50:07.000000000 +0200
++++ linux-2.6.26.3/net/ipv4/fib_frontend.c	2008-09-16 01:50:27.000000000 +0200
+@@ -260,7 +260,7 @@ int fib_validate_source(__be32 src, __be
+ 	net = dev_net(dev);
+ 	if (fib_lookup(net, &fl, &res))
+ 		goto last_resort;
+-	if (res.type != RTN_UNICAST)
++	if ((res.type != RTN_UNICAST) && !((res.type == RTN_LOCAL) &&
+(dev->type == ARPHRD_IPGRE))) {
+ 		goto e_inval_res;
+ 	*spec_dst = FIB_RES_PREFSRC(res);
+ 	fib_combine_itag(itag, &res);
+----------------------------------------------------------------------
 
-This loop seems way more complex than it needs to be.  Perhaps pull these two 
-out into a setup_verbose_debug() func which is a noop 
-for !CONFIG_DYNAMIC_PRINTK_DEBUG, and drop all the casts?
+I'm pretty sure this is not the right solution, if there is a need for
+'solution' at all. Maybe this behavior is what we need and there is no
+real need to ever forward packets coming with local source address. I
+failed to find a way to test if destination address is remote end of
+GRE tunnel.
 
-Thanks,
-Rusty.
+I found another strange (for me, at least) thing -
+ip_route_input_slow() is discarding packets if "IP is not enabled" on
+the device. The only way to "enable IP" on IP_GRE interface is to
+assign it an IP. Is there another way of "enabling IP" on IP_GRE
+interface? I think there is no much need for assigning an IP address
+to GRE interface. Am I wrong here? IP should be 'enabled' by default
+for IP_GRE interfaces.
+
+PS. Of course, I order this forwarding of encapsulated packets with
+local source address to work, GRE tunnel must be created, GRE
+interface have to be UP with IP address assigned and with forwarding
+enabled.
+
+Sincerely,
+Bosko
