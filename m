@@ -1,83 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYIPOrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755841AbYIPOsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbYIPOrL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 10:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYIPOq5
+	id S1755841AbYIPOsh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYIPOs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 10:46:57 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:41992 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752624AbYIPOq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 10:46:57 -0400
-Date: Tue, 16 Sep 2008 17:46:38 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Theodore Tso <tytso@mit.edu>, Jarek Poplawski <jarkao2@gmail.com>,
+	Tue, 16 Sep 2008 10:48:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37059 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbYIPOs0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:48:26 -0400
+Date: Tue, 16 Sep 2008 07:48:02 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Theodore Tso <tytso@mit.edu>, Jarek Poplawski <jarkao2@gmail.com>,
        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
        David Miller <davem@davemloft.net>, jeff@garzik.org,
        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [git patches] net driver fixes
-Message-ID: <20080916144638.GB1400@cs181140183.pp.htv.fi>
-References: <20080916104811.GC7397@cs181140183.pp.htv.fi> <20080916114305.GB10965@ff.dom.local> <20080916121528.GD7397@cs181140183.pp.htv.fi> <20080916135408.GB13388@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080916135408.GB13388@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-ID: <20080916074802.200c8a43@infradead.org>
+In-Reply-To: <20080916143408.GA1400@cs181140183.pp.htv.fi>
+References: <20080916104811.GC7397@cs181140183.pp.htv.fi>
+	<20080916114305.GB10965@ff.dom.local>
+	<20080916121528.GD7397@cs181140183.pp.htv.fi>
+	<20080916135408.GB13388@mit.edu>
+	<20080916070241.3e8d5202@infradead.org>
+	<20080916143408.GA1400@cs181140183.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 09:54:08AM -0400, Theodore Tso wrote:
-> On Tue, Sep 16, 2008 at 03:15:28PM +0300, Adrian Bunk wrote:
+On Tue, 16 Sep 2008 17:34:10 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
+
+> On Tue, Sep 16, 2008 at 07:02:41AM -0700, Arjan van de Ven wrote:
+> > On Tue, 16 Sep 2008 09:54:08 -0400
+> > Theodore Tso <tytso@mit.edu> wrote:
 > > 
-> > More seriously, there's a difference between Linus' "another random 
-> > improvement" and an "is even suitable for -stable".
+> > > If it's a really important bug, and it affects a huge number of
+> > > users, or it's really bad security bug, the reality is that
+> > > exceptions will be made to the rules.  But exceptions need to
+> > > remain exceptions for extraordinary situations, not everyday
+> > > occurrences.  And of course, if the bug does affect a huge number
+> > > of users, someone should be asking the question why it wasn't
+> > > detected sooner, say before the last merge window --- and to ask
+> > > the question how many users is this bug really going to affect
+> > > anyway?
+> > > 
+> > > At least, that's my take on things,
+> > > 
 > > 
-> > I'm not reading Linus' (Cc'ed) statement the way that a patch that is 
-> > appropriate for 2.6.27.1 is not appropriate for -rc now.
+> > also note that Linus said "regression or on the kerneloops list";
+> > if it has any kind of backtrace, it'll be there if it's a common
+> > problem that hits many users.
 > 
-> Well, remember that patches that get published for -stable do have to
-> go through an extra review process.  It's not true that any "obviously
-> correct" bug fix gets automatically published in -stable.  Sometimes
-> bug fixes do get rejected for -stable because they are too risky, or
-> require more time for testing in the -rc series before they are deemed
-> suitable for -stable.
->...
-> If it's a really important bug, and it affects a huge number of users,
-> or it's really bad security bug, the reality is that exceptions will
-> be made to the rules.  But exceptions need to remain exceptions for
-> extraordinary situations, not everyday occurrences.  And of course, if
-> the bug does affect a huge number of users, someone should be asking
-> the question why it wasn't detected sooner, say before the last merge
-> window --- and to ask the question how many users is this bug really
-> going to affect anyway?
+> Thomas' patch [1] will fixes a bug of a kind that will likely never 
+> make it to your list.
 
-Among the patches David rejected based on what Linus said was
-Thomas' patch [1].
+not sure; just we need to catch doing pci_disable_device on a
+non-enabled device as a WARN_ON.
 
-It is not a "really important bug" and does not affect "huge number
-of users".
+and the patch looks quite wrong, the real answer should be to do the
+enable in open() :-)
 
-But it passes Documentation/stable_kernel_rules.txt, and can we agree 
-that if it gets submitted for 2.6.27.1 it will likely pass review and 
-get applied?
-
-That's the kind of patches I'm talking about.
-
-> At least, that's my take on things,
 > 
-> 						- Ted
+> And the same also e.g. goes for bugs where your machine is completely 
+> dead (no SysRq possible) with nothing in the logs.
 
-cu
-Adrian
+that's being worked on, by storing the crash data in some non-volatile
+piece of memory
 
-[1] http://article.gmane.org/gmane.linux.network/105810
+> 
+> The kerneloops lists are quite valuable, but they can never cover all 
+> classes of fatal bugs.
+
+if you want perfection, you're not going to get it.
+
+"Perfect is the enemy of good"
+
+If you want to help make things better (as opposed to perfect), you're
+very welcome to help out, be it with suggestions on how to improve
+or with actual code. 
+
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
