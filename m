@@ -1,79 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYIPM72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbYIPNCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbYIPM72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 08:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbYIPM7N
+	id S1755020AbYIPNCO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 09:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYIPNB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 08:59:13 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:34009 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753074AbYIPM7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 08:59:10 -0400
-Date: Tue, 16 Sep 2008 17:04:38 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Davide Libenzi <davidel@xmailserver.org>, Alan Cox <alan@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       netdev <netdev@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: sys_paccept: disable paccept() until API design is resolved
-Message-ID: <20080916130438.GA261@tv-sign.ru>
-References: <48CFA10D.2010106@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 16 Sep 2008 09:01:58 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:20578 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752705AbYIPNB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 09:01:57 -0400
+Date: Tue, 16 Sep 2008 16:02:36 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in
+	userspace
+Message-ID: <20080916130234.GA17082@localhost.localdomain>
+References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="opJtzjQTFsWo+cga"
 Content-Disposition: inline
-In-Reply-To: <48CFA10D.2010106@gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080916125802.GA15951@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-29)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/16, Michael Kerrisk wrote:
->
-> * The behavior of paccept() when interrupted by a signal is IMO
->   strange: the kernel restarts the system call if SA_RESTART was set
->   for the handler.  I think that it should not do this -- that it
->   should behave consistently with paccept()/ppoll()/epoll_pwait(),
->   which never restart, regardless of SA_RESTART.  The reasoning here
->   is that the very purpose of paccept() is to wait for a connection
->   or a signal, and that restarting in the latter case is probably
->   never useful.  (Note: Roland disagrees on this point, believing
->   that rather paccept() should be consistent with accept() in its
->   behavior wrt EINTR
->   (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).)
 
-Also, the implementation of sys_paccept() is not "perfect", imho.
+--opJtzjQTFsWo+cga
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	sys_paccept:
+On Tue, Sep 16, 2008 at 03:58:02PM +0300, Adrian Bunk wrote:
+> On Tue, Sep 16, 2008 at 03:22:43PM +0300, Kirill A. Shutemov wrote:
+> > <linux/fcntl.h> conflicts with glibc's <fcntl.h>.
+> >=20
+> > It breaks building kdelibs, kdepim and pinot.
+>=20
+> We should rather fix the actual bug.
+>=20
+> What is the error message?
 
-		ret = do_accept(...);
+/usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
+flock'
+/usr/include/bits/fcntl.h:142: error: previous definition of 'struct
+flock'
+/usr/include/asm-generic/fcntl.h:140: error: redefinition of 'struct
+flock64'
+/usr/include/bits/fcntl.h:157: error: previous definition of 'struct
+flock64'
 
-		if (ret < 0 && signal_pending()) {
-			set_restore_sigmask();
-			return ret;
-		}
+>=20
+> >...
+> > --- a/include/linux/inotify.h
+> > +++ b/include/linux/inotify.h
+> > @@ -7,8 +7,10 @@
+> >  #ifndef _LINUX_INOTIFY_H
+> >  #define _LINUX_INOTIFY_H
+> > =20
+> > +#ifdef __KERNEL__
+> >  /* For O_CLOEXEC and O_NONBLOCK */
+> >  #include <linux/fcntl.h>
+> > +#endif
+> >... =20
+>=20
+> This breaks the header for users of IN_CLOEXEC/IN_NONBLOCK.
+>=20
+> cu
+> Adrian
+>=20
+> --=20
+>=20
+>        "Is there not promise of rain?" Ling Tan asked suddenly out
+>         of the darkness. There had been need of rain for many days.
+>        "Only a promise," Lao Er said.
+>                                        Pearl S. Buck - Dragon Seed
+>=20
 
-It doesn't check that ret == ERESTARTSYS/EINTR. I can't say this
-is bug, but let's suppose that do_accept() returns (say) -EINVAL,
-and then the task is interrupted by the signal.
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.com/
 
-Now, if the signal comes after sys_paccept() checks signal_pending(),
-we return -EINVAL, and the signal handler runs with the original
-current->blocked mask, as expected.
+--opJtzjQTFsWo+cga
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-However, if the signal happens in the window before signal_pending(),
-we still return -EINVAL, but the signal handler runs with
-->blocked == sigmask. A bit odd, but probably harmless.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkjPrmoACgkQbWYnhzC5v6o5SwCfZUjiM2Zs+ZP33Dz8c2UYES4y
+Q2sAn12wEHdrCtli41HbTyeAoEbQ9DZ5
+=TTOZ
+-----END PGP SIGNATURE-----
 
-Note also that unless I misread the code, do_paccept() returns
-ERESTARTSYS or EINTR depending on ->sk_rcvtimeo. Yes, it is very
-clear why sock_intr_errno() does this, but this doesn't make the
-behaviour of paccept() more understandable.
-
-Oleg.
-
+--opJtzjQTFsWo+cga--
