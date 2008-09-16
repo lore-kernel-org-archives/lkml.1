@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbYIPELS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbYIPEbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbYIPELS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 00:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758AbYIPELE
+	id S1752640AbYIPEbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 00:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYIPEb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 00:11:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47016 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750713AbYIPELD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 00:11:03 -0400
-From: Jarod Wilson <jwilson@redhat.com>
-Organization: Red Hat, Inc.
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/18] lirc serial port receiver/transmitter device driver
-Date: Tue, 16 Sep 2008 00:08:43 -0400
-User-Agent: KMail/1.10.1 (Linux/2.6.25.16-1.fc10.x86_64; KDE/4.1.1; x86_64; ; )
-Cc: Janne Grunau <j@jannau.net>, Stefan Bauer <stefan.bauer@cs.tu-chemnitz.de>,
-       Christoph Bartelmus <lirc@bartelmus.de>
-References: <200809112149.25762.stefan.bauer@cs.tu-chemnitz.de> <200809142355.38387.jwilson@redhat.com> <200809151420.32130.jwilson@redhat.com>
-In-Reply-To: <200809151420.32130.jwilson@redhat.com>
+	Tue, 16 Sep 2008 00:31:29 -0400
+Received: from relay04.mail-hub.dodo.com.au ([123.2.6.239]:35845 "EHLO
+	relay04.mail-hub.dodo.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750993AbYIPEb2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 00:31:28 -0400
+From: Grant Coady <grant_lkml@dodo.com.au>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: 2.6.27-rc6: lockdep warning: iprune_mutex at shrink_icache_memory+0x38/0x1a8
+Date: Tue, 16 Sep 2008 14:31:05 +1000
+Organization: http://bugsplatter.id.au/
+Reply-To: Grant Coady <gcoady.lk@gmail.com>
+Message-ID: <7iduc45t9dvo0396fm78d8uat84uurh131@4ax.com>
+References: <20080913233138.GA19576@orion> <20080916025204.GL5811@disturbed>
+In-Reply-To: <20080916025204.GL5811@disturbed>
+X-Mailer: Forte Agent 2.0/32.652
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809160008.43218.jwilson@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 September 2008 14:20:31 Jarod Wilson wrote:
-> On Sunday 14 September 2008 23:55:38 Jarod Wilson wrote:
-> > On Saturday 13 September 2008 04:41:33 Stefan Bauer wrote:
-> > > On Saturday 13 September 2008 02:26, Janne Grunau wrote:
-> > > > I hope I haven't broken anything with my lirc_dev changes. I doubt
-> > > > I'll have a change to test it before monday.
-> > >
-> > > Unfortunately, you did. Commit ea74897 (port lirc to dynamic device
-> > > numbers) broke things.
-[...]
-> So I've done a bit of work to fix up a few drivers so they properly check
-> to see that lirc_register_driver() actually succeeded, and then
-> accidentally stumbled onto the fix for the failure when merging some
-> coverity-inspired patches from Erik Hovland. lirc_dev.c's lirc_cdev_add()
-> function had an inverted kmalloc failure check. With that fixed, lirc_i2c
-> appears to be behaving for me now, although I can't actually check to be
-> 100% certain until I get home tonight.
-[...]
-> Fixes are in the git tree now for anyone else who wants to or is willing to
-> test. Will verify myself tonight w/lirc_i2c and lirc_mceusb2 at a minimum.
+On Tue, 16 Sep 2008 12:52:04 +1000, Dave Chinner <david@fromorbit.com> wrote:
 
-Current git tree works for receiving IR signals via lirc_serial (tested by 
-Janne) and via lirc_mceusb2 (tested by me). Something is still slightly 
-haywire with lirc_i2c though. It registers fine, but IR signals simply aren't 
-making it to lircd. Probably unrelated to the dynamic device num changes, 
-looking into it.
+>On Sun, Sep 14, 2008 at 03:31:38AM +0400, Alexander Beregalov wrote:
+>> Hi
+>> 
+>> [ INFO: possible circular locking dependency detected ]
+>> 2.6.27-rc6-00034-gd1c6d2e #3
+>> -------------------------------------------------------
+>> nfsd/1766 is trying to acquire lock:
+>>  (iprune_mutex){--..}, at: [<c01743fb>] shrink_icache_memory+0x38/0x1a8
+>> 
+>>  but task is already holding lock:
+>>   (&(&ip->i_iolock)->mr_lock){----}, at: [<c021134f>]
+>>   xfs_ilock+0xa2/0xd6
+>> 
+>> 
+>> I read files through nfs and saw delay for few seconds.
+>> System is x86_32, nfs, xfs.
+>> The last working kernel is 2.6.27-rc5,
+>> I do not know yet is it reproducible or not.
+>
+><sigh>
+>
+>We need a FAQ for this one. It's a false positive.  Google for an
+>explanation - I've explained it 4 or 5 times in the past year and
+>asked that the lockdep folk invent a special annotation for the
+>iprune_mutex (or memory reclaim) because of the way it can cause
+>recursion into the filesystem and hence invert lock orders without
+>causing deadlocks.....
 
--- 
-Jarod Wilson
-jarod@redhat.com
+Yeah, but a 30 second dreadlock?  It's a long wait wondering what's 
+gone down or not ;)
 
+Grant.
