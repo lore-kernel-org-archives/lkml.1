@@ -1,76 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYIPVoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbYIPVom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753337AbYIPVoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 17:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYIPVnw
+	id S1753913AbYIPVom (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 17:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYIPVof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 17:43:52 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:60662 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671AbYIPVnv (ORCPT
+	Tue, 16 Sep 2008 17:44:35 -0400
+Received: from white.servertr.net ([65.98.57.242]:56201 "EHLO
+	white.servertr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbYIPVoe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 17:43:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Z1Fq7Amdipelm5TN6LC4APWgE3GFnrT5CTHgbPRJWzHo9W7T/4jyxxJr5hspBz+QJX
-         VXiuegJ7otEPSWWQ5fJxvPfDB3Ercxj8izdl5narXKLVfF7fRMGRMDm5fqJhJ6v3Y/JY
-         y1/RoOT46IcwkKCReiLGDZonxm0yeCfYmyN9A=
-Message-ID: <b647ffbd0809161443o5b7bf71aw59853d8d6086ee2d@mail.gmail.com>
-Date: Tue, 16 Sep 2008 23:43:50 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [x86-tip, patch] rework of the microcode splitup
-Cc: "Peter Oruba" <peter.oruba@amd.com>,
-       "Tigran Aivazian" <tigran@aivazian.fsnet.co.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080914125513.GA22281@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221383648.6184.28.camel@earth> <20080914125513.GA22281@elte.hu>
+	Tue, 16 Sep 2008 17:44:34 -0400
+X-Greylist: delayed 5978 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Sep 2008 17:44:34 EDT
+Subject: Kernel compile warning message (2.6.26.5)
+From: Ozgur Karatas <ozgur@ozgurkaratas.com>
+Reply-To: ozgur@ozgurkaratas.com
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-BigBurUm8M/wofn0PsA1"
+Organization: OZGUR KARATAS
+Date: Wed, 17 Sep 2008 02:06:39 +0300
+Message-Id: <1221606399.12739.40.camel@okaratas-desktop.karatas.tr>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - white.servertr.net
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - ozgurkaratas.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/9/14 Ingo Molnar <mingo@elte.hu>:
->
-> * Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
->
->> Ingo, Peter,
->>
->>
->> this version is slightly different from the current one in -tip (added
->> missing vfree()).
->
-> i've added the delta patch below. I removed the #if 0's as they are
-> ugly. (and editing the file to enable debug printouts is easy anyway)
 
-ok, thanks.
+--=-BigBurUm8M/wofn0PsA1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
->
-> regarding this FIXME:
->
-> +       /* FIXME! dimm: Why not by means of get_totalsize(hdr)? */
->        total_size = (unsigned long) (hdr[4] + (hdr[5] << 8));
->
-> please just use get_totalsize(hdr) and get rid of the fixme that way :)
+Warning message list kernel (2.6.26.5)
 
-The thing is that it looks like there are 2 headers that contain the size.
-'hdr' taken by get_totalsize() is not the same as 'hdr' from which
-total_size is calculated here. :^)
+cpu: Intel Celeron D
 
-A quick search didn't reveal any docs describing the AMD microcode
-file format, so I'd rather leave it up to Peter.
+1.  CC [M]  drivers/pcmcia/i82365.o
+drivers/pcmcia/i82365.c: In function =E2=80=98init_i82365=E2=80=99:
+drivers/pcmcia/i82365.c:1296: warning: ignoring return value of
+=E2=80=98request_irq=E2=80=99, declared with attribute warn_unused_result
 
 
->
->        Ingo
->
+2. CC      drivers/pci/search.o
+drivers/pci/search.c:145: warning: =E2=80=98pci_find_slot=E2=80=99 is depre=
+cated
+(declared at drivers/pci/search.c:134)
+drivers/pci/search.c:145: warning: =E2=80=98pci_find_slot=E2=80=99 is depre=
+cated
+(declared at drivers/pci/search.c:134)
+drivers/pci/search.c:173: warning: =E2=80=98pci_find_device=E2=80=99 is dep=
+recated
+(declared at drivers/pci/search.c:166)
+drivers/pci/search.c:173: warning: =E2=80=98pci_find_device=E2=80=99 is dep=
+recated
+(declared at drivers/pci/search.c:166)
+drivers/pci/search.c: In function =E2=80=98pci_get_dev_by_id=E2=80=99:
+drivers/pci/search.c:284: warning: passing argument 1 of =E2=80=98pci_dev_p=
+ut=E2=80=99
+discards qualifiers from pointer target type
 
--- 
-Best regards,
-Dmitry Adamushko
+
+  CC      drivers/pci/pci-sysfs.o
+  CC      drivers/pci/rom.o
+  CC      drivers/pci/setup-res.o
+  CC      drivers/pci/proc.o
+  LD      drivers/pci/hotplug/built-in.o
+  CC [M]  drivers/pci/hotplug/acpiphp_core.o
+  CC [M]  drivers/pci/hotplug/acpiphp_glue.o
+  CC [M]  drivers/pci/hotplug/cpqphp_core.o
+  CC [M]  drivers/pci/hotplug/cpqphp_ctrl.o
+  CC [M]  drivers/pci/hotplug/cpqphp_sysfs.o
+3.  CC [M]  drivers/pci/hotplug/cpqphp_pci.o
+drivers/pci/hotplug/cpqphp_pci.c: In function =E2=80=98cpqhp_configure_devi=
+ce=E2=80=99:
+drivers/pci/hotplug/cpqphp_pci.c:92: warning: =E2=80=98pci_find_slot=E2=80=
+=99 is
+deprecated (declared at include/linux/pci.h:515)
+drivers/pci/hotplug/cpqphp_pci.c:102: warning: =E2=80=98pci_find_slot=E2=80=
+=99 is
+deprecated (declared at include/linux/pci.h:515)
+drivers/pci/hotplug/cpqphp_pci.c: In function
+=E2=80=98cpqhp_unconfigure_device=E2=80=99:
+drivers/pci/hotplug/cpqphp_pci.c:126: warning: =E2=80=98pci_find_slot=E2=80=
+=99 is
+deprecated (declared at include/linux/pci.h:515)
+drivers/pci/hotplug/cpqphp_pci.c: In function =E2=80=98cpqhp_save_config=E2=
+=80=99:
+drivers/pci/hotplug/cpqphp_pci.c:420: warning: =E2=80=98pci_find_slot=E2=80=
+=99 is
+deprecated (declared at include/linux/pci.h:515)
+
+
+--=-BigBurUm8M/wofn0PsA1
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkjQO/wACgkQqWyYzdXfEg+auwCdHwycH1FMoDAtqByiOng2zuU4
+ewUAoIv5lcgKdDs8lyNk/3A1WyPleh1p
+=tiXG
+-----END PGP SIGNATURE-----
+
+--=-BigBurUm8M/wofn0PsA1--
+
