@@ -1,73 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbYIPSKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbYIPSKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbYIPSKb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 14:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbYIPSKX
+	id S1757349AbYIPSKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 14:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757132AbYIPSKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 14:10:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38313 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620AbYIPSKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 14:10:22 -0400
-Date: Tue, 16 Sep 2008 14:09:17 -0400
-From: Rik van Riel <riel@redhat.com>
-To: "Michael Chan" <mchan@broadcom.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.27-rc5-mm1
-Message-ID: <20080916140917.105adc2a@bree.surriel.com>
-In-Reply-To: <1221519658.11021.13.camel@HP1>
-References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
-	<20080915180130.10995b90@cuia.bos.redhat.com>
-	<1221519658.11021.13.camel@HP1>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 16 Sep 2008 14:10:34 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:42830 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757010AbYIPSKd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 14:10:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Nedht4vH6fMqUk9n72op43G47fXlfJbOcuW5HipSuOmy2u0Mr4lPCbkbRtIj6iOs3O
+         zZ/iAh7kyKcW1KxFjQK9w2ldK0oekLB8de+mhtpFww0lynV8HE2xZpqEb0RwfRzkZ/3D
+         4Nr9ByxntXKA6Icg6eRr7ml5Ty8B8OP069QWM=
+Message-ID: <86802c440809161110q1fc3d66vedcaa32dea2b2233@mail.gmail.com>
+Date: Tue, 16 Sep 2008 11:10:31 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] introduce boot_printk()
+Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, jbaron <jbaron@redhat.com>
+In-Reply-To: <48CFF281.7010101@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
+	 <48CE983C.8040709@zytor.com>
+	 <86802c440809151018k2c7874dfjc8e9791bee9365f9@mail.gmail.com>
+	 <48CE9A5C.1030603@zytor.com>
+	 <86802c440809151034ycd6442me679792880b03320@mail.gmail.com>
+	 <1221575196.6943.24.camel@lappy.programming.kicks-ass.net>
+	 <48CFD97C.6080002@zytor.com>
+	 <86802c440809161045q2f6d80f1yb6e79f32c6e0c303@mail.gmail.com>
+	 <48CFF281.7010101@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Sep 2008 16:00:58 -0700
-"Michael Chan" <mchan@broadcom.com> wrote:
+On Tue, Sep 16, 2008 at 10:53 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>
+>> it seem using pci_printk or acpi_printk.. could be more flexible.
+>>
+>> otherwise will need to keep update linux/kernel.h to add so call subsys
+>> tags...
+>>
+>> use only need to
+>> have DEFINE_LOGLEVEL_SETUP(xxx) in c
+>> and have DECLARE_LOGLEVEL(xxx) in .h
+>> then just use xxx_printk
+>>
+>
+> Uh?  You can add the subsys tags elsewhere if you prefer too.
+>
+> However, there are a few important differences to keep in mind.  Tags get
+> logged in the dmesg buffer even if not printed to the kernel, whereas a
+> jump-based architecture will not just suppress the output, but even the
+> formatting of the output.  Either is a good thing for certain things, and a
+> bad thing for other things.
+>
+> I personally think the kind of things discussed belong in the category of
+> "always put in the dmesg buffer", and like the idea of subsystem-tagging
+> them.
+>
 
-> > 05:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
-> > 09:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
-> 
-> Does dmesg show anything when you run ifup?
- 
-The linux-next tree fails in the same way.  Here is the dmesg output
-from the broadcom driver:
+you still can use
+pci_printk(v, KERN_PCI KERN_DEBUG "...\n");
 
-Broadcom NetXtreme II Gigabit Ethernet Driver bnx2 v1.8.0 (Aug 14, 2008)
-vendor=8086 device=2690
-bnx2 0000:05:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+if vprintk is expanded to handle KERN_PCI and other tags...
+or even you could use
+pci_printk(v, KERN_ACPI KERN_DEBUG "...\n");
 
-eth0: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X 64-bit 133MHz found at
- mem f8000000, IRQ 16, node addr 00:19:b9:ee:6c:4a
-vendor=8086 device=3510
-vendor=8086 device=3500
-vendor=8086 device=25e2
-bnx2 0000:09:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-eth1: Broadcom NetXtreme II BCM5708 1000Base-T (B2) PCI-X 64-bit 133MHz found at mem f4000000, IRQ 17, node addr 00:19:b9:ee:6c:4c
-vendor=8086 device=350c
-vendor=8086 device=25e2
-
-Here is the dmesg from around ifup time:
-
-lo: Disabled Privacy Extensions
-ip used greatest stack depth: 4296 bytes left
-try to get more irq_cfg 32
-irq_irq ==> [0x434f14800 - 0x434f14e00]
-found new irq_cfg for irq 5243136
-try to get more irq_desc 32
-irq_desc ==> [0x42f426000 - 0x42f428000]
-kstat_irqs ==> [0x43c1d4c00 - 0x43c1d5000]
-found new irq_desc for irq 5243136
-
-This one might be related, not sure:
-
-pan0: Dropping NETIF_F_UFO since no NETIF_F_HW_CSUM feature.
-
--- 
-All rights reversed.
+YH
