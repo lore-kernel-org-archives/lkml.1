@@ -1,97 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYIPTaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbYIPTa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbYIPTaj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 15:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbYIPTaW
+	id S1757657AbYIPTa7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 15:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbYIPTas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 15:30:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:48238 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757261AbYIPTaV (ORCPT
+	Tue, 16 Sep 2008 15:30:48 -0400
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:51833 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755201AbYIPTar (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 15:30:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=JYuBWqahE2+e9Pv+qO1X2gwoMsomXjD/0CTbyJjX3ItVMu65RG2ccnUSILWfiIkkWs
-         h5w6mmaq8ExJUgDxjHTFkltnr5TEYNRjq9785ds24MApVTUetz85GyROIExSLipWwSpl
-         sd+8F/buPJkC17ER6MsX1k7L6yKPZ+aWOKPI8=
-Message-ID: <3bedf6ab0809161230u1cc346f5xb05957309426505f@mail.gmail.com>
-Date: Wed, 17 Sep 2008 01:00:19 +0530
-From: "karthikeyan S" <karthispeaks@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: A bug (probably) in stop_all_threads
-Cc: "Grant Coady" <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080916092830.GB30026@1wt.eu>
+	Tue, 16 Sep 2008 15:30:47 -0400
+Message-ID: <48D0095B.40403@lwfinger.net>
+Date: Tue, 16 Sep 2008 14:30:35 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+CC: bcm43xx-dev@lists.berlios.de, Michael Buesch <mb@bu3sch.de>,
+       Adel Gadllah <adel.gadllah@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       wireless <linux-wireless@vger.kernel.org>
+Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
+References: <48CFC03A.8020708@lwfinger.net> <200809161742.15527.mb@bu3sch.de> <48CFE820.7010305@lwfinger.net> <200809162018.28548.carlos@strangeworlds.co.uk>
+In-Reply-To: <200809162018.28548.carlos@strangeworlds.co.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com>
-	 <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com>
-	 <20080916051751.GA28475@1wt.eu>
-	 <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com>
-	 <20080916062226.GA29225@1wt.eu>
-	 <3bedf6ab0809160128l101d44feh671dbeb4a8401360@mail.gmail.com>
-	 <20080916092830.GB30026@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 2:58 PM, Willy Tarreau <w@1wt.eu> wrote:
-> On Tue, Sep 16, 2008 at 01:58:21PM +0530, karthikeyan S wrote:
->> On Tue, Sep 16, 2008 at 11:52 AM, Willy Tarreau <w@1wt.eu> wrote:
->> > On Tue, Sep 16, 2008 at 11:19:58AM +0530, karthikeyan S wrote:
->> >> Hi Willy,
->> >>
->> >> Thanks for getting back. Yes, I tried to set the state to
->> >> TASK_INTERRUPTIBLE. It solves the issue. The other processes now get a
->> >> chance to handle the SIGSTOP sent to them.
->> >
->> > OK, that will help me review the current code and compare it with 2.6.
->> > If you could send me your patch, it will even save me more time. Based
->> > on your report, it's very likely that it will get merged.
->>
->> Sure, I can definitely send the patch. I haven't sent a patch before,
->> and I am not fully aware of the process to follow. It might take a
->> little bit if time, but I will try to send it very soon.
->
-> in order not to waste your time, here is how to proceed :
->
-> go to the directory where both your new kernel and old kernel are.
-> Here is how you do then :
->
->  $ diff -urN linux-2.4.36-bad linux-2.4.36-goot  > my-patch.diff
->
-> (ensure that you don't have lots of old or temporary files in it).
-> You might have to run a "make distclean" in each dir first.
->
-> Then integrate the result as inline text into your mail, and as an added
-> bonus, other people will be able to comment on your work.
+Carlos Corbacho wrote:
+> On Tuesday 16 September 2008 18:08:48 Larry Finger wrote:
+>> I agree with Michael. From what I know, the only possible reason for
+>> having [RFKILL_STATE_HARD_BLOCKED] would be if user space could
+>> somehow affect the state of the hardware switch.
+> 
+> When I disable the b43 device in my laptop via acer-wmi (which in turn, calls 
+> into the laptops firmware), b43 physically cannot re-enable it (a not 
+> uncommon case on a lot of laptops). In which case, as far as b43 is 
+> concerned, the wireless radio is then in RFKILL_STATE_HARD_BLOCKED, since b43 
+> is unable to re-enable the radio on the hardware.
+> 
+> So yes, it is quite possible for b43 to be in RFKILL_STATE_HARD_BLOCKED.
 
-Willy, Thank you for the info.
+I didn't say it was not possible. What I said is that _ONLY_ the
+operator's finger could change the state, just like in your laptop.
+Thus it makes absolutely no difference what state RFKILL thinks it is
+in. The driver knows what state the software wants, and can read but
+not write the hardware state. There has to be a bug in RFKILL that got
+exposed when this commit was included. This regression needs to be
+fixed ASAP, otherwise 2.6.27 will be released with it. If the RFKILL
+guys want to fix their bug, I'll be happy to test code, but not now.
 
-I downloaded a 2.4.36 version from kernel.org, there is no
-stop_all_threads() at all in that version.
-do_coredump() mechanism seems to have been changed. It does not call
-stop_all_threads().
-
-I am not sure which 2.4 version we are using for our device that have
-stop_all_threads().
-And also I am not sure from where our guys had picked up the "dump
-core for all threads" patch which includes the stop_all_threads
-function. Had this function been there ever in official 2.4? Thanks a
-lot.
-
-So, looks like the need to send the patch is not there anymore? :-(
-
--karthik
-
-
->
-> Regards,
-> Willy
->
->
+Larry
