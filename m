@@ -1,68 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbYIPDI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756574AbYIPD1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756574AbYIPDI5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 23:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYIPDIt
+	id S1756574AbYIPD1H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 23:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbYIPD0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 23:08:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:22576 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbYIPDIs (ORCPT
+	Mon, 15 Sep 2008 23:26:54 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:14602 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753883AbYIPD0x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 23:08:48 -0400
+	Mon, 15 Sep 2008 23:26:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=O+zu9/KMqrMySCA2LL37nc4MkntBKdOPor3SaEboQdQk30fqwnLzZo75OVfQZyj9g8
-         B6Lh+VRdqEdG9SzbpThquPAHTJtoaZ6tfDLHPNfBYrGYwq7PKNqy0wdiEQU+NOwhGJBM
-         6uALSUhHz6E0nOqZyUg3uPxAAs17WnGTu4AFM=
-Message-ID: <dd18b0c30809152008p17cd7753l68ab2e562f08039c@mail.gmail.com>
-Date: Mon, 15 Sep 2008 20:08:47 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: Buffer I/O error on device sr0, logical block 793066
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <48CF0D84.7060804@shaw.ca>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=PG6/7vGf2k532Ao/G64KMeBC6WDXtq9Ecj9cw2Hw5uIgRMaT1bGiHWAdww1y80yqKl
+         3nJPX2cOIsZpEB9AsTlTYgei2Gky3IbxNSwHctOjcgp/m0pif4U35w7nhX2Pu2iK5Hdx
+         Yv0BpCTfLVfENdOcEf9jt8FIrKbVJ5S7pjxAk=
+Date: Tue, 16 Sep 2008 06:26:20 +0300
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Uwe.Kleine-Koenig@digi.com, daniel@danielguilak.com, den@openvz.org,
+       efault@gmx.de, etienne_lorrain@yahoo.fr, sam@ravnborg.org,
+       tglx@linutronix.de, willy@linux.intel.com,
+       torvalds@linux-foundation.org, adobriyan@gmail.com,
+       kai.extern@googlemail.com, eduard.munteanu@linux360.ro
+Subject: Re: [RFC PATCH] Script for generating Documentation/dontdiff from
+	.gitignore files. (was Re: [RFC/PATCH] dontdiff: generate from
+	gitignore)
+Message-ID: <20080916032620.GA5188@localhost>
+References: <7af24c80809121332s5747b4favdfd7adb187d4e73a@mail.gmail.com> <20080915083407.3fd8e9b7.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fa.RthRteIKyDr2XSXrOGnYRXbkLXg@ifi.uio.no>
-	 <48CF0D84.7060804@shaw.ca>
+In-Reply-To: <20080915083407.3fd8e9b7.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 6:36 PM, Robert Hancock <hancockr@shaw.ca> wrote:
-> Justin Mattock wrote:
->>
->> I guess russell crow doesnt have a problem with me(Gladiator), but
->> as soon as jodie foster is the main character(Panic Room);
->>  I receieve this:
->>
->>
->> [14417.951134] sr 0:0:0:0: [sr0] Result: hostbyte=DID_OK
->> driverbyte=DRIVER_SENSE,SUGGEST_OK
->> [14417.951150] sr 0:0:0:0: [sr0] Sense Key : Hardware Error [current]
->> [14417.951160] Info fld=0xc1a00
->> [14417.951163] sr 0:0:0:0: [sr0] Add. Sense: Track following error
->> [14417.951172] end_request: I/O error, dev sr0, sector 3172264
->
-> "Track following error" comes right from the drive, it can't read the disc
-> properly. Scratched perhaps?
+On Mon, Sep 15, 2008 at 08:34:07AM -0700, Randy Dunlap wrote:
+> On Sun, 14 Sep 2008 21:23:57 +0300 Eduard - Gabriel Munteanu wrote:
+> 
+> > .gitignore files get more testing than Documentation/dontdiff, since most
+> > developers follow Git workflow when sending patches. The latter tends to
+> > stay outdated and needs to be synchronized every now and then. This patch
+> > provides a script that scans all .gitignore files and generates a
+> > Documentation/dontdiff to stdout.
+> > 
+> > Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> 
+> Hi,
+> You probably missed (& should read) this thread:
+>   http://lkml.org/lkml/2008/9/12/154
+> 
 >
 
-That was weired, the dvd played probably
-25% then all of a sudden freeze(only mplayer everything was fine);
-then a reboot, then the dvd played all the way through without any issues.
-I did a few days prior clean the lens on the disk drive, so maybe this
-had something
-todo with(can't see how), Maybe the lens is so clean, it can pickup on
-scratches on the disk,
-Anyways better to post when something like this occurs than not at all.
-regards;
+Thanks, it makes sense.
 
--- 
-Justin P. Mattock
+It seems like diff can't handle such scenarios at all. I suppose Linux should
+supply its own diff tool (which uses regular diff, but implements proper file
+matching).
+
+Maybe git-diff alone could be included in the tarballs, I'll look into
+it.
+
+
+	Cheers,
+	Eduard
+
+> > ---
+> >  scripts/gen_dontdiff.sh |   21 +++++++++++++++++++++
+> >  1 files changed, 21 insertions(+), 0 deletions(-)
+> >  create mode 100755 scripts/gen_dontdiff.sh
+> > 
+> > diff --git a/scripts/gen_dontdiff.sh b/scripts/gen_dontdiff.sh
+> > new file mode 100755
+> > index 0000000..cd94747
+> > --- /dev/null
+> > +++ b/scripts/gen_dontdiff.sh
+> > @@ -0,0 +1,21 @@
+> > +#!/bin/bash
+> > +
+> > +# Copyright (C) 2008 Eduard - Gabriel Munteanu
+> > +#
+> > +# This file is released under GPL version 2.
+> > +
+> > +echo "### Generated by gen_dontdiff.sh ###"
+> > +
+> > +grep -Ev "^([[:space:]]*[[#]]*|$)" .gitignore
+> > +
+> > +find . -mindepth 2 -name .gitignore | sed -e "s/^\.\///g" | while read FILE
+> > +do
+> > +	CURR_DIR=`echo "$FILE" | sed -e "s/\.gitignore$//g"`
+> > +	echo "# $FILE"
+> > +	grep -Ev "^([[:space:]]*[[#]]*|$)" $FILE | while read LINE
+> > +	do
+> > +		echo $CURR_DIR$LINE
+> > +	done
+> > +	echo ""
+> > +done
+> > +
+> > -- 
+> 
+> ---
+> ~Randy
+> Linux Plumbers Conference, 17-19 September 2008, Portland, Oregon USA
+> http://linuxplumbersconf.org/
