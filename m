@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYIPWo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYIPWu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYIPWo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 18:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbYIPWou
+	id S1753277AbYIPWu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 18:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYIPWuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 18:44:50 -0400
-Received: from white.servertr.net ([65.98.57.242]:57689 "EHLO
-	white.servertr.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbYIPWot (ORCPT
+	Tue, 16 Sep 2008 18:50:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:54313 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbYIPWuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 18:44:49 -0400
-Subject: PHYSMAP compat code and warning messages lists (2.6.26.5)
-From: Ozgur Karatas <ozgur@ozgurkaratas.com>
-Reply-To: ozgur@ozgurkaratas.com
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7CRifnPAy+xHOZQgvQG5"
-Organization: OZGUR KARATAS
-Date: Wed, 17 Sep 2008 02:04:16 +0300
-Message-Id: <1221606256.12739.37.camel@okaratas-desktop.karatas.tr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - white.servertr.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - ozgurkaratas.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 16 Sep 2008 18:50:19 -0400
+Message-ID: <48D03811.9070805@manoweb.com>
+Date: Tue, 16 Sep 2008 15:49:53 -0700
+From: Alessio Sangalli <alesan@manoweb.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Ben Nizette <bn@niasdigital.com>
+CC: Ben Dooks <ben-linux@fluff.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver for tightly coupled memory
+References: <48CEC71F.3000006@manoweb.com>	 <20080916093513.GF1916@fluff.org.uk>  <48CFEF3F.5040901@manoweb.com> <1221604022.3598.4.camel@moss.renham>
+In-Reply-To: <1221604022.3598.4.camel@moss.renham>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18R4y2bqd9PqRPDJZPeo86Xkcy/CkhxAw1n6fB
+ Mcf2P/dUPDsTuWDQpleSAbDtKBfQU4drQbcydtcc3F6Z+2u1sx
+ TRmCJUi4FYSi3wEUuMV4Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ben Nizette wrote:
 
---=-7CRifnPAy+xHOZQgvQG5
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> If a driver needs a quick FIFO it can attempt to get the RAM for said
+> FIFO from the genalloc and fall back to main memory otherwise.  Simple,
+> flexible, easy :-)
 
-Hello,
+Well, interesting, that is why I asked here before writing code.
 
-My operating system Debian GNU/Linux "lenny"=20
-I am compile new kernel version "2.6.26.5"
+In this case however, do you imply that a device driver will just do all
+the genalloc stuff? In this case it has to know about the TCM details,
+and problems may arise if more than one driver wants to use this
+feature. Or, are you suggesting to write a small TCM driver that will do
+the gen_pool_create() and gen_pool_add() and then export the struct
+gen_pool for use by other drivers that may require it?
 
-warning PHYSMAP compat code.. what is PHYSMAP compat code?
+I mentioned implementing a FIFO because I already have a couple of
+examples where this FIFO thing would be used.
 
-->
-CC [M]  drivers/mtd/maps/physmap.o
-drivers/mtd/maps/physmap.c:252:2: warning: #warning using PHYSMAP compat
-code
+Bye bye, thank you
+Alessio
 
-and warning message:
-
-1.  CC [M]  drivers/net/skfp/ess.o
-drivers/net/skfp/ess.c: In function =E2=80=98ess_send_response=E2=80=99:
-drivers/net/skfp/ess.c:513: warning: cast from pointer to integer of
-different size
-drivers/net/skfp/ess.c: In function =E2=80=98ess_send_alc_req=E2=80=99:
-drivers/net/skfp/ess.c:609: warning: cast from pointer to integer of
-different size
-drivers/net/skfp/ess.c:639: warning: cast from pointer to integer of
-different size
-
-2.  CC [M]  drivers/net/wan/z85230.o
-drivers/net/wan/z85230.c: In function =E2=80=98z8530_interrupt=E2=80=99:
-drivers/net/wan/z85230.c:722: warning: =E2=80=98intr=E2=80=99 may be used u=
-ninitialized
-in this function
-
-3.  CC [M]  drivers/net/wireless/ipw2200.o
-drivers/net/wireless/ipw2200.c: In function =E2=80=98ipw_ethtool_set_eeprom=
-=E2=80=99:
-drivers/net/wireless/ipw2200.c:10597: warning: array subscript is above
-array bounds
-drivers/net/wireless/ipw2200.c: In function =E2=80=98ipw_load=E2=80=99:
-drivers/net/wireless/ipw2200.c:2663: warning: array subscript is above
-array bounds
-
-4.  CC [M]  drivers/net/wireless/libertas/cmd.o
-drivers/net/wireless/libertas/cmd.c: In function =E2=80=98lbs_set_channel=
-=E2=80=99:
-drivers/net/wireless/libertas/cmd.c:860: warning: unused variable
-=E2=80=98old_channel=E2=80=99
-
-5.  CC [M]  drivers/net/via-velocity.o
-drivers/net/via-velocity.c: In function =E2=80=98velocity_resume=E2=80=99:
-include/asm/io_32.h:183: warning: array subscript is above array bounds
-include/asm/io_32.h:183: warning: array subscript is above array bounds
-include/asm/io_32.h:183: warning: array subscript is above array bounds
-
-Best Regards
-
---
-Ozgur Karatas
-
-ozgur at ozgurkaratas dot com
-http://www.ozgurkaratas.com=20
-
---=-7CRifnPAy+xHOZQgvQG5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkjQO2wACgkQqWyYzdXfEg8FfgCeITRgMh0VDQa/0cIpH2fcHz9S
-2HwAoIBUFIiyBYChfHX5J2a4SyEH34r6
-=YeoA
------END PGP SIGNATURE-----
-
---=-7CRifnPAy+xHOZQgvQG5--
 
