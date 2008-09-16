@@ -1,121 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbYIPQs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbYIPQsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756640AbYIPQs3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 12:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbYIPQsS
+	id S1756847AbYIPQsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 12:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbYIPQsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 12:48:18 -0400
-Received: from mout.perfora.net ([74.208.4.194]:58149 "EHLO mout.perfora.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753480AbYIPQsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 12:48:17 -0400
-X-Greylist: delayed 335 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Sep 2008 12:48:17 EDT
-Message-ID: <48CFE1FF.50505@rajgad.com>
-Date: Tue, 16 Sep 2008 09:42:39 -0700
-From: "Amit D. Chaudhary" <amitch@rajgad.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Tue, 16 Sep 2008 12:48:21 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:42330 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755129AbYIPQsU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 12:48:20 -0400
+Message-ID: <48CFE322.8050506@linux.vnet.ibm.com>
+Date: Tue, 16 Sep 2008 22:17:30 +0530
+From: Arun Bharadwaj <arun@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: ext3 mount infinite loop over orphan list issue, please	release
- 2.6.27
-References: <48CEDD12.4060901@rajgad.com> <20080916125345.GA13388@mit.edu>
-In-Reply-To: <20080916125345.GA13388@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       ego@in.ibm.com, tglx@linutronix.de, mingo@elte.hu, andi@firstfloor.org,
+       venkatesh.pallipadi@intel.com, vatsa@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH 0/1]: timers: Timer Migration
+References: <20080916091219.GA1068@linux.vnet.ibm.com> <1221566730.6943.16.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1221566730.6943.16.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/KzHkcEmLZXyxg0BlRsmI6zUfNtdqQIoimopW
- ua0hIVKb14T9I3zEboRI1IS/1By2Klt0KaDQOarVlG6fBpoznc
- 1anFaMxmVQVUVks6oGt4g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ted,
-
-Thanks for noting that the problem does happen in the real world, though 
-rarely or users do not narrow it down. Yes, it makes sense for all 
-regressions to be fixed before releasing 2.6.27.
-
-I have put your suggestion about the Rescue CD & patch to kernel to the 
-Ubuntu forums & bug. The latter would solve it only for one 
-distribution, it is a start. Good point about the Rescue CD, I will get 
-one from other distributions next time, if needed. There is no way of 
-skipping mount\scan of filesysytems on the disk for the Ubuntu live CD 
-that I found.
-
-I am aware of the Open Source implications & off the fact that 
-unrecoverable crashes happen to all OSes\Kernel sometime or other.
-
-Regards
-Amit
-
-PS: Resent as text
-
-Theodore Tso wrote:
-> On Mon, Sep 15, 2008 at 03:09:22PM -0700, Amit Chaudhary wrote:
+Peter Zijlstra wrote:
+> On Tue, 2008-09-16 at 14:42 +0530, Arun R Bharadwaj wrote:
 >   
->> Over the weekend, due to a crash, I ran into the ext3 mount infinite  
->> loop over orphan list issue. This was on Ubuntu 8.04. I tried many  
->> things, including using 18 month old distributions, nothing works. Only  
->> solution is to boot off a alpha version of next Ubunuty which has the  
->> 2.6.27 kernel (rc1 has the fix), more details are below:
->>
->> Can you please release 2.6.27 so that it can make it to stable  
->> distributions.
+>> Hi,
 >>     
 >
-> As you point out, this problem has been fixed in 2.6.27-rc1.
-> Unfortunately, it is a problem which has been around for a very long
-> time --- perhaps since ext3 was first written.  No one had noticed the
-> problem for a very long time; in fact the first time someone reported
-> it as far I know was June 6, 2008, when Sami Liedes found it via a
-> synthetic testing program, fsfuzzer, which creates filesystems, then
-> corrupts them randomly and then sees whether or not they cause the
-> kernel to panic or hang when they are mounted.
+> 80 char lines please.
 >
-> You seem to have had the bad luck of running into the problem in a
-> real world situation relatively recently, but this has been a
-> long-standing problem.
->
-> As far as releasing 2.6.27, there still is a fairly large set of
-> regressions (i.e., bugs introduced in 2.6.27-rc1 or later) which need
-> to be fixed before we can release it; otherwise more users will have
-> bad experiences when older kernels that had worked fine for them will
-> break for them.  So while it might have helped you to have released
-> 2.6.27, it could make things worse for many other users.  So that's
-> not a realistic option.  If I had to guess, given currently the
-> projected regression bug fix rates, there still is at least 2 or so of
-> bug fixing that still needs to be done before 2.6.27 is ready for
-> release.
->
-> We could take this bug fix and nominate it for release in the next
-> 2.6.26-stable series, which distributions could then pick up --- maybe
-> we should have, but when the patch went in, it was seen was a fix for
-> largely theoretical problems, and not something that needed
-> accelerated handling.  This is still something we could do, but
-> realistically I'm not sure it's going to help the Ubuntu Intrepid
-> release, since it's pretty late in their schedule.  You might be
-> better off asking the Ubuntu kernel team if they are willing to cherry
-> pick the commit in question (ae76dd9a) and include it in their
-> release; they do have the ability to do that without waiting for an
-> upstream release, you know.
->
-> You also should have been able to work around the problem if you had
-> booted a rescue CD and checked your filesystem from the rescue CD.
-> That is the normal way these sorts of problems are fixed, and I'm a
-> bit surprised you didn't try this first.  It could be that Ubuntu
-> Rescue CD's could be made better by automating the ability of (upon
-> request) detecting the root filesystem on Ubuntu systems and then
-> running e2fsck on the filesystem before trying to mount them.
->
-> If you are willing to help out, we can always use more testers to test
-> the development kernels.  We can't do this alone, you know.  We've
-> wanted to shorten the release window, but in order to do that we need
-> more people helping to find and fix bugs during the development cycle.
-> Remember, this is open source.  If you see a problem you don't like,
-> you can help fix it.  And in fact, that's the most likely way that it
-> will get fixed.
->
-> Best regards,
->
-> 						- Ted
 >   
+>> An idle cpu on which device drivers have initialized timers, has to be
+>> frequently woken up to service the timers. So, consolidation of timers
+>> onto a fewer number of cpus is important. Migration of
+>> timers from idle cpus onto lesser idle cpus is necessary. Currently,
+>> timers are migrated during the cpu offline operation. However
+>> cpu-hotplug for the sake of idle system power management is too
+>> heavy. So, this patch implements a lightweight timer migration
+>> framework.
+>>
+>> Also, in a multi-core, multi-package system, it is always desirable to
+>> have all the timers firing on the cpus present in the same package.
+>> This would enable us to place the idle package in deep sleep
+>> state. So, migration of timers is required for this.
+>>
+>> A per_cpu sysfs hook is created
+>> at /sys/devices/system/cpu/cpuX/timer_migration. By echo-ing 1 to
+>> cpuX/timer_migration, all regular and hrtimers from cpuX are migrated
+>> to cpu0. The fact that all
+>> timers are migrated from cpuX to cpu0 is demonstrated by making a note
+>> of /proc/interrupts.
+>>     
+>
+> This seems like an exceedingly dumb idea - cpu 0 might be a long long
+> way from x and by pushing all timers to cpu0 you might actually overload
+> cpu 0.
+>
+> Initially you talked about packages an moving timers to busy cpus -
+> which is something else altogether.
+>
+>   
+
+Here, I've chosen cpu0 just to demonstrate migration of timers. I'm
+working on the algorithm to choose the best cpu or the best set of cpus
+to migrate the timers to. This is just the first iteration on which i
+intend to build upon. What could be a possible way is that, a package
+can be chosen as the destination for the migrated timers and any one or
+many cpus in that package can be the target(s). So, this  will prevent
+the possible overloading of any particular cpu.
+
+>> $:echo 1 > /sys/devices/system/cpu/cpu3/timer_migration
+>> $:cat /proc/interrupts > file1; sleep 30 ; cat /proc/interrupts >
+>> file2
+>> $:diff file1 file2 | grep LOC
+>> < LOC:       5276       2100       2676       1647       2415
+>> 1803       2275       2977   Local timer interrupts
+>>     
+>>> LOC:       6991       2195       2774       1647       2562
+>>>       
+>> 1900       2497       3075   Local timer interrupts
+>>
+>> As we can observe, first we are enabling timer migration in cpu3. As a
+>> result, the number of local timer interrupts on cpu3 over the next 30
+>> seconds are zero. cpu3  has been totally rid of all regular
+>> and hrtimers.
+>>
+>> Please refer to the following paper for details:
+>>
+>> http://ols.fedoraproject.org/OLS/Reprints-2008/srinivasan1-reprint.pdf
+>>     
+>
+> If there's anything worth reading in there it should have been mentioned
+> in this email and preferably in some comment in the code and Kconfig
+> help as well.
+>
+>   
+Thanks for the hint. I'll do that next time.
+
