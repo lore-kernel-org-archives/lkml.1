@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYIPRJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbYIPRNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbYIPRJA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIPRIv
+	id S1754814AbYIPRNz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbYIPRNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:08:51 -0400
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:51755 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751574AbYIPRIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:08:50 -0400
-Message-ID: <48CFE820.7010305@lwfinger.net>
-Date: Tue, 16 Sep 2008 12:08:48 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
-MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: bcm43xx-dev@lists.berlios.de, John Linville <linville@tuxdriver.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adel Gadllah <adel.gadllah@gmail.com>,
-       wireless <linux-wireless@vger.kernel.org>
-Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
-References: <48CFC03A.8020708@lwfinger.net> <200809161742.15527.mb@bu3sch.de>
-In-Reply-To: <200809161742.15527.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Sep 2008 13:13:47 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:42668 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752976AbYIPRNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 13:13:46 -0400
+Date: Wed, 17 Sep 2008 02:13:25 +0900
+To: andi@firstfloor.org
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, joerg.roedel@amd.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about
+ virtual mappings
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080916134335.GC25711@one.firstfloor.org>
+References: <87hc8grjuf.fsf@basil.nowhere.org>
+	<20080916222032O.fujita.tomonori@lab.ntt.co.jp>
+	<20080916134335.GC25711@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080917021319O.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Buesch wrote:
-> On Tuesday 16 September 2008 16:18:34 Larry Finger wrote:
->> Since commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f entitled
->> "b43/b43legacy: add RFKILL_STATE_HARD_BLOCKED support", the radio LED
->> no longer responds to rfkill switch events.
->>
->> ATM, I do not have a fix, other than reversion of this commit.
+On Tue, 16 Sep 2008 15:43:35 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> > What the need_iommu() does is seeing if GART needs to do virtual
+> > mappings or not.
+> > 
+> > (After need_iommu() checking) What this patchset does is to guarantee
+> > that GART provides a virtual address that a device can access to.
 > 
-> It's kind of bogus that it pokes with the software rfkill state
-> from within the hardware rfkill handler.
-> 
-> Please revert this patch. The commit log says nothing about
-> why this is needed and I don't see a point in overriding the state
-> in the rfkill-private data structure from within the driver.
+> Ah you care about masks < 32bit?
 
-I agree with Michael. From what I know, the only possible reason for
-having this state would be if user space could somehow affect the
-state of the hardware switch. As the user's finger is the only such
-thing, then there is no use for the RFKILL_STATE_HARD_BLOCKED state,
-particularly when it breaks LED operations.
+Yes,
 
-Please revert the patch.
 
-Larry
+> Those always are handled elsewhere in the block layer (using the bounce_pfn
+> mechanism)
+
+I don't think that the bounce guarantees that dma_alloc_coherent()
+returns an address that a device can access to.
+
+
+> or in various other ways in other subsystems. e.g. on networking
+> the rule is that you just don't announce direct SG when you have 
+> less than 32bit mask.
+
+I'm not familiar with what the networking does, for example, seems
+that b44 sets dev->dma_mask to DMA_30BIT_MASK and b44_start_xmit()
+does:
+
+mapping = ssb_dma_map_single(bp->sdev, skb->data, len, DMA_TO_DEVICE);
+if (ssb_dma_mapping_error(bp->sdev, mapping) || mapping + len > DMA_30BIT_MASK) {
+	struct sk_buff *bounce_skb;
+
+	/* Chip can't handle DMA to/from >1GB, use bounce buffer */
+	if (!ssb_dma_mapping_error(bp->sdev, mapping))
+		ssb_dma_unmap_single(bp->sdev, mapping, len,
+				     DMA_TO_DEVICE);
+
+IOMMUs can try to return an address that the NIC can access to.
