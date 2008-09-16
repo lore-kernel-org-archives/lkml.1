@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYIPV2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYIPVaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434AbYIPV2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 17:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYIPV2J
+	id S1753551AbYIPVaW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 17:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIPVaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 17:28:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:19044 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbYIPV2I (ORCPT
+	Tue, 16 Sep 2008 17:30:07 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:10035 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751378AbYIPVaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 17:28:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=r+n+ZOHUwMcq8wdaaK2l5B4r6B/5SLEkb1d7yUp3egGDXbVjfCrxK3WJvtgrNy/r5p
-         PEttmO3attZbIxP2I0a9jSSXn4ur4losAWi/1JmfOcdw7RU8MRmisQfwq5f9b2lXkifN
-         d3TO7yYo9AQ3do+b12L0n6ogBjYDtlL/WMrI8=
-Message-ID: <86802c440809161428j2dfc9669g229a5bf23da63f34@mail.gmail.com>
-Date: Tue, 16 Sep 2008 14:28:06 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/5] add DEFINE_LOGLEVEL_SETUP v3
-Cc: "Marcin Slusarz" <marcin.slusarz@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
+	Tue, 16 Sep 2008 17:30:06 -0400
+Subject: aacraid down_interruptible check
+From: Daniel Walker <dwalker@mvista.com>
+To: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <48D022B0.5080402@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
+Date: Tue, 16 Sep 2008 14:30:02 -0700
+Message-Id: <1221600602.1343.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221588085-30578-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1221588085-30578-2-git-send-email-yhlu.kernel@gmail.com>
-	 <20080916190224.GA6115@joi>
-	 <86802c440809161404v4b59f1c8se1ac61f982a15dd@mail.gmail.com>
-	 <48D022B0.5080402@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 2:18 PM, H. Peter Anvin <hpa@zytor.com> wrote:
-> Yinghai Lu wrote:
->>
->> will come out one new version that hpa likes
->>
->> printk(KERN_PCI KERN_DEBUG "sadfasf\n");
->>
->
-> Come to think about it, it might help migration pains if we put the prefixes
-> in the opposite order (KERN_DEBUG KERN_PCI).
->
-according to the code flow, these two is the same... will double check it.
 
-YH
+I was reviewing the patch below, and I'm a little confused about the
+added up() call. This semaphore is used to signal an interrupt arriving,
+where the code below is waiting for the interrupt. The added up()
+effectively signals that the interrupt arrived even tho it hasn't..
+Which means the next down() call won't sleep at all it just falls
+through .. I don't think that is what's desired, but I though I would
+ask..
+
+The other question is that it's called conditional on a potentially
+random signal getting delivered to this process. Which really make it
+seem non-conforming..
+
+Daniel
+
+commit e6990c6448ca9359b6d4ad027c0a6efbf4379e64
+Author: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
+Date:   Mon Apr 14 14:20:16 2008 -0400
+
+    [SCSI] aacraid: Fix down_interruptible() to check the return value
+    
+    Instead of ignoring the return value in aac_fib_send() return 2 to
+    indicate to the layers above that fib transmission was aborted due to
+    timeout.
+    
+    Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
+    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+
+diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
+index 5156e05..23a8e9f 100644
+--- a/drivers/scsi/aacraid/commsup.c
++++ b/drivers/scsi/aacraid/commsup.c
+@@ -515,10 +515,12 @@ int aac_fib_send(u16 command, struct fib *fibptr, unsigned long size,
+                                }
+                                udelay(5);
+                        }
+-               } else
+-                       (void)down_interruptible(&fibptr->event_wait);
++               } else if (down_interruptible(&fibptr->event_wait) == 0) {
++                       fibptr->done = 2;
++                       up(&fibptr->event_wait);
++               }
+                spin_lock_irqsave(&fibptr->event_lock, flags);
+-               if (fibptr->done == 0) {
++               if ((fibptr->done == 0) || (fibptr->done == 2)) {
+                        fibptr->done = 2; /* Tell interrupt we aborted */
+                        spin_unlock_irqrestore(&fibptr->event_lock, flags);
+                        return -EINTR;
+
+
