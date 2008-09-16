@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbYIPKog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYIPKsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbYIPKog (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 06:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbYIPKo2
+	id S1753482AbYIPKsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 06:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbYIPKs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 06:44:28 -0400
-Received: from h155.mvista.com ([63.81.120.155]:16190 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752228AbYIPKo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 06:44:28 -0400
-Message-ID: <48CF8E05.6050000@ru.mvista.com>
-Date: Tue, 16 Sep 2008 14:44:21 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Tue, 16 Sep 2008 06:48:29 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:56738 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752228AbYIPKs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 06:48:28 -0400
+Date: Tue, 16 Sep 2008 13:48:11 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916104811.GC7397@cs181140183.pp.htv.fi>
+References: <20080915204543.GD3994@havoc.gtf.org> <20080915.141442.139271313.davem@davemloft.net> <20080915215307.GA10340@alpha.franken.de> <20080915.151125.93659986.davem@davemloft.net> <20080916083934.GA7397@cs181140183.pp.htv.fi> <20080916091808.GA5938@alpha.franken.de> <20080916094011.GB7397@cs181140183.pp.htv.fi>
 MIME-Version: 1.0
-To: roel kluin <roel.kluin@gmail.com>
-Cc: ralf@linux-mips.org, yoichi_yuasa@tripeaks.co.jp,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [MIPS] vr41xx: unsigned irq cannot be negative
-References: <48CF02EE.8050406@gmail.com>
-In-Reply-To: <48CF02EE.8050406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080916094011.GB7397@cs181140183.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, Sep 16, 2008 at 12:40:14PM +0300, Adrian Bunk wrote:
+> On Tue, Sep 16, 2008 at 11:18:08AM +0200, Thomas Bogendoerfer wrote:
+> > On Tue, Sep 16, 2008 at 11:39:34AM +0300, Adrian Bunk wrote:
+> > > On Mon, Sep 15, 2008 at 03:11:25PM -0700, David Miller wrote:
+> > > > From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
+> > > > Date: Mon, 15 Sep 2008 23:53:08 +0200
+> > > > 
+> > > > > On Mon, Sep 15, 2008 at 02:14:42PM -0700, David Miller wrote:
+> > > > > > Most of those changes were complete and utter CRAP.
+> > > > > 
+> > > > > thank you, but the fix I've sent (de2104x) isn't crap. The bug breaks the 
+> > > > > current debian-installer for Cobalt Qube1, when it tries to get an
+> > > > > IP address via dhcp. 
+> > > > 
+> > > > And why is this bug that has been there for YEARS is appropriate
+> > > > to fix outside of the merge window?
+> > > >...
+> > > 
+> > > Such a fix is even suitable for -stable.
+> > 
+> > that was my feeling as well, but if David wants to see it in the next
+> > merge window, it's his decision. It's not a important fix as the user
+> > base is obviuosly pretty small. And I didn't know about that bug, when
+> > the merge windows was open, so I couldn't fix it "in time".
+> 
+> And if it goes in during the next merge window it can immediately go 
+> into 2.6.27.1 (and even 2.6.26.y if it's still maintained), since the 
+> fix fulfills Documentation/stable_kernel_rules.txt .
+> 
+> That doesn't make sense.
 
-roel kluin wrote:
+Note that my emails are not meant against David personally - he just 
+seems to have gotten from pushing too much to pushing too few, with
+such illogical results.
 
-> unsigned irq cannot be negative
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/arch/mips/vr41xx/common/irq.c b/arch/mips/vr41xx/common/irq.c
-> index cba36a2..92dd1a0 100644
-> --- a/arch/mips/vr41xx/common/irq.c
-> +++ b/arch/mips/vr41xx/common/irq.c
-> @@ -72,6 +72,7 @@ static void irq_dispatch(unsigned int irq)
->  	cascade = irq_cascade + irq;
->  	if (cascade->get_irq != NULL) {
->  		unsigned int source_irq = irq;
-> +		int ret;
->   
+cu
+Adrian
 
-   Keep an empty line after the declaration block please.
+-- 
 
-> @@ -79,8 +80,9 @@ static void irq_dispatch(unsigned int irq)
->  			desc->chip->mask(source_irq);
->  			desc->chip->ack(source_irq);
->  		}
-> -		irq = cascade->get_irq(irq);
-> -		if (irq < 0)
-> +		ret = cascade->get_irq(irq);
-> +		irq = ret;
-> +		if (ret < 0)
->  			atomic_inc(&irq_err_count);
->  		else
->  			irq_dispatch(irq);
->   
-
-  How about this:
-
-		ret = cascade->get_irq(irq);
-		if (ret < 0)
- 			atomic_inc(&irq_err_count);
- 		else
- 			irq_dispatch(ret);
-
-
-WBR, Sergei
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
