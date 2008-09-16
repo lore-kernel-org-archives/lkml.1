@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbYIPPm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbYIPPoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756152AbYIPPm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYIPPmr
+	id S1756247AbYIPPoS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbYIPPoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:42:47 -0400
-Received: from bu3sch.de ([62.75.166.246]:46859 "EHLO vs166246.vserver.de"
+	Tue, 16 Sep 2008 11:44:01 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:48398 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbYIPPmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:42:46 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: bcm43xx-dev@lists.berlios.de
-Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
-Date: Tue, 16 Sep 2008 17:42:15 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       John Linville <linville@tuxdriver.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adel Gadllah <adel.gadllah@gmail.com>,
-       wireless <linux-wireless@vger.kernel.org>
-References: <48CFC03A.8020708@lwfinger.net>
-In-Reply-To: <48CFC03A.8020708@lwfinger.net>
+	id S1752064AbYIPPoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:44:00 -0400
+Date: Tue, 16 Sep 2008 18:43:42 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Theodore Tso <tytso@mit.edu>, Jarek Poplawski <jarkao2@gmail.com>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080916154342.GD1400@cs181140183.pp.htv.fi>
+References: <20080916104811.GC7397@cs181140183.pp.htv.fi> <20080916114305.GB10965@ff.dom.local> <20080916121528.GD7397@cs181140183.pp.htv.fi> <20080916135408.GB13388@mit.edu> <20080916070241.3e8d5202@infradead.org> <20080916143408.GA1400@cs181140183.pp.htv.fi> <20080916074802.200c8a43@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200809161742.15527.mb@bu3sch.de>
+In-Reply-To: <20080916074802.200c8a43@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 September 2008 16:18:34 Larry Finger wrote:
-> Since commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f entitled
-> "b43/b43legacy: add RFKILL_STATE_HARD_BLOCKED support", the radio LED
-> no longer responds to rfkill switch events.
+On Tue, Sep 16, 2008 at 07:48:02AM -0700, Arjan van de Ven wrote:
+> On Tue, 16 Sep 2008 17:34:10 +0300
+> Adrian Bunk <bunk@kernel.org> wrote:
+>...
+> > And the same also e.g. goes for bugs where your machine is completely 
+> > dead (no SysRq possible) with nothing in the logs.
 > 
-> ATM, I do not have a fix, other than reversion of this commit.
+> that's being worked on, by storing the crash data in some non-volatile
+> piece of memory
 
-It's kind of bogus that it pokes with the software rfkill state
-from within the hardware rfkill handler.
+The kerneloops list is helpful, and improving it is great, but it will 
+never be able to cover 100% of all problems on 100% of all computers.
 
-Please revert this patch. The commit log says nothing about
-why this is needed and I don't see a point in overriding the state
-in the rfkill-private data structure from within the driver.
+> > The kerneloops lists are quite valuable, but they can never cover all 
+> > classes of fatal bugs.
+> 
+> if you want perfection, you're not going to get it.
+> 
+> "Perfect is the enemy of good"
+> 
+> If you want to help make things better (as opposed to perfect), you're
+> very welcome to help out, be it with suggestions on how to improve
+> or with actual code. 
+
+You miss my point:
+
+We agree that the kerneloops list is not perfect.
+
+And usually the bugs with a trace that go into the list are the
+ones that are easier to debug and fix, while the others might be
+much harder to debug.
+
+If one takes Linus' "simple rule of thumb" literally then a hard to 
+debug bug without any messages anywhere mustn't be fixed outside of
+a merge window. This literal reading is what doesn't make sense.
+
+cu
+Adrian
 
 -- 
-Greetings Michael.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
