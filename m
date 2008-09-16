@@ -1,78 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYIPVaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbYIPVbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbYIPVaW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 17:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIPVaH
+	id S1753815AbYIPVbL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 17:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbYIPVa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 17:30:07 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:10035 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbYIPVaG (ORCPT
+	Tue, 16 Sep 2008 17:30:58 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:39095 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751417AbYIPVa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 17:30:06 -0400
-Subject: aacraid down_interruptible check
-From: Daniel Walker <dwalker@mvista.com>
-To: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 16 Sep 2008 14:30:02 -0700
-Message-Id: <1221600602.1343.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Tue, 16 Sep 2008 17:30:57 -0400
+Message-ID: <48D02589.8070601@freescale.com>
+Date: Tue, 16 Sep 2008 16:30:49 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: dmaengine.c: question about device_alloc_chan_resources
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dan, Haavard, et al,
 
-I was reviewing the patch below, and I'm a little confused about the
-added up() call. This semaphore is used to signal an interrupt arriving,
-where the code below is waiting for the interrupt. The added up()
-effectively signals that the interrupt arrived even tho it hasn't..
-Which means the next down() call won't sleep at all it just falls
-through .. I don't think that is what's desired, but I though I would
-ask..
+I am making some fixes to the Freescale DMA driver (drivers/dma/fsldma.c), and
+I've come across a situation I don't understand.  Specifically, I have an issue
+with the return values from fsl_dma_alloc_chan_resources(), which is fsldma's
+device_alloc_chan_resources() function.
 
-The other question is that it's called conditional on a potentially
-random signal getting delivered to this process. Which really make it
-seem non-conforming..
+fsldma calls dma_async_device_register() for each DMA controller it finds.  The
+problem is that when I use the dmatest driver, this results in
+device_alloc_chan_resources() being called multiple times for the same DMA
+channel.  When this happens, fsl_dma_alloc_chan_resources() must return -1
+otherwise fsldma will hang during unload if the dmatest driver is also loaded.
+The hang occurs in dma_async_device_unregister(), when it calls
+wait_for_completion().
 
-Daniel
+Here's what happens:
 
-commit e6990c6448ca9359b6d4ad027c0a6efbf4379e64
-Author: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
-Date:   Mon Apr 14 14:20:16 2008 -0400
+1) fsldma finds one DMA controller with four DMA channels.  It creates all the
+channel objects and then calls dma_async_device_register().
 
-    [SCSI] aacraid: Fix down_interruptible() to check the return value
-    
-    Instead of ignoring the return value in aac_fib_send() return 2 to
-    indicate to the layers above that fib transmission was aborted due to
-    timeout.
-    
-    Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
-    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+2) Via dma_clients_notify_available(), dmatest is notified that there's a new
+DMA resource.  It stores those four channels in its dmatest_channels object.
 
-diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
-index 5156e05..23a8e9f 100644
---- a/drivers/scsi/aacraid/commsup.c
-+++ b/drivers/scsi/aacraid/commsup.c
-@@ -515,10 +515,12 @@ int aac_fib_send(u16 command, struct fib *fibptr, unsigned long size,
-                                }
-                                udelay(5);
-                        }
--               } else
--                       (void)down_interruptible(&fibptr->event_wait);
-+               } else if (down_interruptible(&fibptr->event_wait) == 0) {
-+                       fibptr->done = 2;
-+                       up(&fibptr->event_wait);
-+               }
-                spin_lock_irqsave(&fibptr->event_lock, flags);
--               if (fibptr->done == 0) {
-+               if ((fibptr->done == 0) || (fibptr->done == 2)) {
-                        fibptr->done = 2; /* Tell interrupt we aborted */
-                        spin_unlock_irqrestore(&fibptr->event_lock, flags);
-                        return -EINTR;
+3) fsldma fins another DMA controller with four DMA channels.  Again, it creates
+all the channel objects and then calls dma_async_device_register().
 
+4) dma_clients_notify_available() is called again.  This time, however, it tells
+dmatest about *eight* channels, not just the four additional ones.  It does this
+because fsl_dma_alloc_chan_resources() returns 1 every time it's called.
 
+The result is that the some DMA channel will appear twice in dmatest's channel
+list.  For example, I added a bunch of printks to dma_test_add_channnel:
+
+dmatest: Started 1 threads using dma2chan1
+dmatest_add_channel:372 chan=df1f2a50
+dmatest_add_channel:382 dtc->chan=df1f2898
+dmatest_add_channel:382 dtc->chan=df1f2a50
+dmatest_add_channel:382 dtc->chan=df1f2898
+dmatest_add_channel:382 dtc->chan=df1f2a50
+
+As you can see, df1f2898 appears twice, as does df1f2a50.
+
+So my fix was to add this code to fsl_dma_alloc_chan_resources():
+
+	/* Has this channel already been allocated? */
+	if (fsl_chan->desc_pool)
+		return -ENOMEM;
+
+This fixes the hang, but I have a suspicion that it's still wrong.  When I look
+at the other DMA device drivers, they don't do this.  For instance,
+ioat_dma_alloc_chan_resources() does this:
+
+	/* have we already been set up? */
+	if (!list_empty(&ioat_chan->free_desc))
+		return ioat_chan->desccount;
+
+In other words, it returns the resources that have been allocated already.  But
+if I do that, my driver hangs during an unload (if dmatest is loaded).
+
+I think what's happening is that fsldma is the only DMA driver that calls
+dma_async_device_register() more than once, and so it's exposing a bug in
+dmaengine.c.  Can anyone confirm that?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
