@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbYIPN6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbYIPOBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbYIPN6O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 09:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIPN55
+	id S1755079AbYIPOBQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 10:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751634AbYIPOBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 09:57:57 -0400
-Received: from web26206.mail.ukl.yahoo.com ([217.12.10.243]:22970 "HELO
-	web26206.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753603AbYIPN54 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 09:57:56 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=Rg2Irs8kF92sbpK7vW47+6sG189gHhoGKHXjkB5jJVzuXmkEk/IyGzaV0JBWW93ANa2oSrk56Fc1kLL5LdDX3BCq1bImozCaQswnFc9cgcTUY4kK9hJOzbnM35Voho3IhhNvwjHjCkfT8WDvsye8dTNF0pnGzSJ8ukwt4DYeEjQ=;
-X-YMail-OSG: OFEONQ4VM1lvkhA05UOlG5qFMtyArymWrZnYi67ktgjLWoZBfHaU6XTitb8iNDLCGtfoI8AQbgRX__5jeomi8uWxuhv_7PWdXEDGgyLrPwWRNLbffunKCfqP5jXszZYyvdXPcCv.eifNmI.b3cI-
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Tue, 16 Sep 2008 13:57:54 +0000 (GMT)
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-ID: <476002.75149.qm@web26206.mail.ukl.yahoo.com>
+	Tue, 16 Sep 2008 10:01:03 -0400
+Received: from ns.firmix.at ([62.141.48.66]:2048 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751428AbYIPOBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 10:01:01 -0400
+Subject: Re: looking for a function
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: Xu Yang <risingsunxy@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <ab40e9c0809160550q411507aeledae30a9f835d09d@mail.gmail.com>
+References: <ab40e9c0809160550q411507aeledae30a9f835d09d@mail.gmail.com>
+Content-Type: text/plain
+Organization: Firmix Software GmbH
+Date: Tue, 16 Sep 2008 16:00:32 +0200
+Message-Id: <1221573632.6103.83.camel@spike.firmix.at>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.347 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.347 required=5
+X-Spam-Score: -2.347 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-
-
------ Messaggio originale -----
-> Da: Nick Piggin <nickpiggin@yahoo.com.au>
-> A: Michael Trimarchi <trimarchimichael@yahoo.it>
-> Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>; akpm@linux-foundation.org; linux-kernel@vger.kernel.org; linux-fsdevel@vger.kernel.org
-> Inviato: Martedì 16 settembre 2008, 14:54:21
-> Oggetto: Re: [PATCH] VFS: make file->f_pos access atomic on 32bit arch
+On Tue, 2008-09-16 at 14:50 +0200, Xu Yang wrote:
+> Hi guys,
 > 
-> On Tuesday 16 September 2008 21:11, Michael Trimarchi wrote:
-> > Hi,
-> >
-> > > +        if (offset != file_pos_read(file))
-> > > +            file_pos_write(file, offset);
-> > >         retval = offset;
-> > >     }
-> >
-> > Is not more efficient here a compare xchg operation?
-> 
-> The compiler should do it if it was.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> I am looking for a function that can show me the current thread is
+> running on which cpu.
 
- i was thinking about introducing a file_pos_update() not implemented using 
-file_pos_read()/file_pos_write() and taking the seq_lock or 
-disabling preemption only one time
+> e.g I am using pthread to write a multithreaded program, in each
+> thread I would like to insert such kind of function so that I can know
+> on which cpu this thread is running on.
 
-__________________________________________________
-Do You Yahoo!?
-Poco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e ti da tanto spazio gratuito per i tuoi file e i messaggi 
-http://mail.yahoo.it 
+That doesn't make much sense as the same thread can run on a different
+CPU after each scheduling decision. And - as it is in userspace -
+scheduling can happen before any assembler op.
+
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
+
