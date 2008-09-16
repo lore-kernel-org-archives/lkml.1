@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYIPP1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbYIPPaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbYIPP1k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 11:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYIPP1a
+	id S1755939AbYIPPaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 11:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbYIPPaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 11:27:30 -0400
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:45078 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752155AbYIPP13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 11:27:29 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] vfs: added better file aio_read aio_write operations presence check
-To: Manish Katiyar <mkatiyar@gmail.com>,
-       Marco Stornelli <marco.stornelli@coritel.it>, viro@zeniv.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Tue, 16 Sep 2008 17:36:09 +0200
-References: <bcF2N-29W-1@gated-at.bofh.it> <bcGBv-4eJ-1@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Tue, 16 Sep 2008 11:30:20 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:36997 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752283AbYIPPaR (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 11:30:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=ZL6v9nDDK4wYT/F9Izq2qgHA3py9toi0b4Svjv7PwI9VGEoeehzt3OayWs6DwUNy3g
+         30MpkC7Iweiw45EwtqHD1BwaSpBQP/+HWHiv4YBtGcubUe57quX6x3XPmvp15almRb65
+         eNVgpLhY0lumWQ2AWBmtLtOhyG7+tjoMLbYgI=
+Message-ID: <6934efce0809160830v461a115ch305aeaadaf5d9883@mail.gmail.com>
+Date: Tue, 16 Sep 2008 08:30:16 -0700
+From: "Jared Hulbert" <jaredeh@gmail.com>
+To: "Ricard Wanderlof" <ricard.wanderlof@axis.com>
+Subject: Re: [PATCH 00/10] AXFS: Advanced XIP filesystem
+Cc: "Jamie Lokier" <jamie@shareable.org>,
+       "cotte@de.ibm.com" <cotte@de.ibm.com>,
+       "Greg Ungerer" <gerg@snapgear.com>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       "=?UTF-8?Q?J=C3=B6rn_Engel?=" <joern@logfs.org>,
+       "Linux-kernel@vger.kernel.org" <Linux-kernel@vger.kernel.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       "tim.bird@am.sony.com" <tim.bird@am.sony.com>
+In-Reply-To: <Pine.LNX.4.64.0809160856190.5966@lnxricardw.se.axis.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Kfcb3-0003ra-Q7@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080915163421.GA13631@shareable.org>
+	 <Pine.LNX.4.64.0809160856190.5966@lnxricardw.se.axis.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manish Katiyar <mkatiyar@gmail.com> wrote:
-> On Tue, Sep 16, 2008 at 2:59 PM, Marco Stornelli
->> From: Marco Stornelli <marco.stornelli@gmail.com>
+> NAND is significantly faster when writing than NOR, read speed is of the
+> same magnitude, possibly slower in many cases.
 
->> If a filesystem in the file operations specifies for read and write
->> operations only do_sync_read and do_sync_write without init aio_read and
->> aio_write, there will be a kernel oops, because the vfs code check the
->> presence of (to read for example) read OR aio_read method, then it calls read
->> if it's pointer is not null. It's not sufficient because if the read function
->> is actually a do_sync_read, it calls aio_read but without checking the
->> presence. I think a BUG_ON check can be more useful.
-> 
-> Instead of doing a BUG_ON() why can't we simply fall back to the
-> generic_aio functions since most of the fs tend to do so as below.
+Right.
 
-> --- a/fs/read_write.c
-
-> -             ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
-> +             if (filp->f_op->aio_read)
-> +                     ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
-> +             else
-> +                     ret = generic_file_aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
-
-Why can't the file system registration code set filp->f_op->aio_read to
-generic_file_aio_read?
-
+Specifically, read bandwidth is on the same order of magnitude.
+However the read latency of NAND is a couple orders of magnitude
+higher (100ns vs 20,000ns) so it depends on what you are doing.
