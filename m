@@ -1,41 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYIPGWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbYIPG6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbYIPGWk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 02:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYIPGWc
+	id S1752815AbYIPG6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 02:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYIPG57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 02:22:32 -0400
-Received: from 1wt.eu ([62.212.114.60]:4066 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbYIPGWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 02:22:31 -0400
-Date: Tue, 16 Sep 2008 08:22:26 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: karthikeyan S <karthispeaks@gmail.com>
-Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: A bug (probably) in stop_all_threads
-Message-ID: <20080916062226.GA29225@1wt.eu>
-References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com> <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com> <20080916051751.GA28475@1wt.eu> <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com>
+	Tue, 16 Sep 2008 02:57:59 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43000 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbYIPG56 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 02:57:58 -0400
+Date: Tue, 16 Sep 2008 08:57:46 +0200
+From: Sebastien Dugue <sebastien.dugue@bull.net>
+To: Thomas Klein <osstklei@de.ibm.com>
+Cc: jeff@garzik.org, tklein@de.ibm.com, tinytim@us.ibm.com, themann@de.ibm.com,
+       netdev@vger.kernel.org, hering2@de.ibm.com,
+       linux-kernel@vger.kernel.org, jean-pierre.dion@bull.net,
+       linuxppc-dev@ozlabs.org, raisch@de.ibm.com, gilles.carry@ext.bull.net
+Subject: Re: [PATCH 2/2] ehea: fix mutex and spinlock use
+Message-ID: <20080916085746.194c1510@bull.net>
+In-Reply-To: <48CE7CC3.8040902@de.ibm.com>
+References: <1221140080-9853-1-git-send-email-sebastien.dugue@bull.net>
+	<1221140080-9853-3-git-send-email-sebastien.dugue@bull.net>
+	<48CE7CC3.8040902@de.ibm.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 11:19:58AM +0530, karthikeyan S wrote:
-> Hi Willy,
+On Mon, 15 Sep 2008 17:18:27 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
+
+> NACK!
 > 
-> Thanks for getting back. Yes, I tried to set the state to
-> TASK_INTERRUPTIBLE. It solves the issue. The other processes now get a
-> chance to handle the SIGSTOP sent to them.
+> I regret but this patch is wrong. It is not sufficient to only lock
+> the replacement of an old list with a new list. Building up those
+> lists is a 3-step process:
+> 
+> 1. Count the number of entries a list will contain and allocate mem
+> 2. Fill the list
+> 3. Replace old list with updated list
+> 
+> It's obvious that the contents of the list may not change during this
+> procedure. That means that not only the list build-up procedure must
+> be locked. It must be assured that no function that modifies the list's
+> content can be called while another list update is in progress.
+> 
+> Jeff, please revert this patch.
 
-OK, that will help me review the current code and compare it with 2.6.
-If you could send me your patch, it will even save me more time. Based
-on your report, it's very likely that it will get merged.
+  OK, your call, you know the code better than I do.
 
-Thanks,
-Willy
+  But the locking could at least be pushed into ehea_update_firmware_handles()
+and ehea_update_bcmc_registrations() instead of being at each call site.
 
+  Thanks,
+
+  Sebastien.
+
+> 
+> Thanks
+> Thomas
+> 
+> 
+> 
+> Sebastien Dugue wrote:
+> >   Looks like to me that the ehea_fw_handles.lock mutex and the
+> > ehea_bcmc_regs.lock spinlock are taken much longer than necessary and could
+> > as well be pushed inside the functions that need them
+> > (ehea_update_firmware_handles() and ehea_update_bcmc_registrations())
+> > rather than at each callsite.
+> > 
+> > Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
+> > ---
+> >  drivers/net/ehea/ehea_main.c |   26 ++++----------------------
+> >  1 files changed, 4 insertions(+), 22 deletions(-)
+> > 
+> > diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> > index b70c531..c765ec6 100644
+> > --- a/drivers/net/ehea/ehea_main.c
+> > +++ b/drivers/net/ehea/ehea_main.c
+> > @@ -219,9 +219,11 @@ static void ehea_update_firmware_handles(void)
+> >  	}
+> >  
+> >  out_update:
+> > +	mutex_lock(&ehea_fw_handles.lock);
+> >  	kfree(ehea_fw_handles.arr);
+> >  	ehea_fw_handles.arr = arr;
+> >  	ehea_fw_handles.num_entries = i;
+> > +	mutex_unlock(&ehea_fw_handles.lock);
+> >  }
+> >  
+> >  static void ehea_update_bcmc_registrations(void)
+> > @@ -293,9 +295,11 @@ static void ehea_update_bcmc_registrations(void)
+> >  	}
+> >  
+> >  out_update:
+> > +	spin_lock(&ehea_bcmc_regs.lock);
+> >  	kfree(ehea_bcmc_regs.arr);
+> >  	ehea_bcmc_regs.arr = arr;
+> >  	ehea_bcmc_regs.num_entries = i;
+> > +	spin_unlock(&ehea_bcmc_regs.lock);
+> >  }
+> >  
+> >  static struct net_device_stats *ehea_get_stats(struct net_device *dev)
+> > @@ -1770,8 +1774,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
+> >  
+> >  	memcpy(dev->dev_addr, mac_addr->sa_data, dev->addr_len);
+> >  
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> > -
+> >  	/* Deregister old MAC in pHYP */
+> >  	if (port->state == EHEA_PORT_UP) {
+> >  		ret = ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+> > @@ -1792,7 +1794,6 @@ static int ehea_set_mac_addr(struct net_device *dev, void *sa)
+> >  
+> >  out_upregs:
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  out_free:
+> >  	kfree(cb0);
+> >  out:
+> > @@ -1954,8 +1955,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+> >  	}
+> >  	ehea_promiscuous(dev, 0);
+> >  
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> > -
+> >  	if (dev->flags & IFF_ALLMULTI) {
+> >  		ehea_allmulti(dev, 1);
+> >  		goto out;
+> > @@ -1985,7 +1984,6 @@ static void ehea_set_multicast_list(struct net_device *dev)
+> >  	}
+> >  out:
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  	return;
+> >  }
+> >  
+> > @@ -2466,8 +2464,6 @@ static int ehea_up(struct net_device *dev)
+> >  	if (port->state == EHEA_PORT_UP)
+> >  		return 0;
+> >  
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> > -
+> >  	ret = ehea_port_res_setup(port, port->num_def_qps,
+> >  				  port->num_add_tx_qps);
+> >  	if (ret) {
+> > @@ -2504,8 +2500,6 @@ static int ehea_up(struct net_device *dev)
+> >  		}
+> >  	}
+> >  
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> > -
+> >  	ret = ehea_broadcast_reg_helper(port, H_REG_BCMC);
+> >  	if (ret) {
+> >  		ret = -EIO;
+> > @@ -2527,10 +2521,8 @@ out:
+> >  		ehea_info("Failed starting %s. ret=%i", dev->name, ret);
+> >  
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  
+> >  	return ret;
+> >  }
+> > @@ -2580,9 +2572,6 @@ static int ehea_down(struct net_device *dev)
+> >  	if (port->state == EHEA_PORT_DOWN)
+> >  		return 0;
+> >  
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> > -
+> > -	spin_lock(&ehea_bcmc_regs.lock);
+> >  	ehea_drop_multicast_list(dev);
+> >  	ehea_broadcast_reg_helper(port, H_DEREG_BCMC);
+> >  
+> > @@ -2591,7 +2580,6 @@ static int ehea_down(struct net_device *dev)
+> >  	port->state = EHEA_PORT_DOWN;
+> >  
+> >  	ehea_update_bcmc_registrations();
+> > -	spin_unlock(&ehea_bcmc_regs.lock);
+> >  
+> >  	ret = ehea_clean_all_portres(port);
+> >  	if (ret)
+> > @@ -2599,7 +2587,6 @@ static int ehea_down(struct net_device *dev)
+> >  			  dev->name, ret);
+> >  
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  
+> >  	return ret;
+> >  }
+> > @@ -3378,7 +3365,6 @@ static int __devinit ehea_probe_adapter(struct of_device *dev,
+> >  		ehea_error("Invalid ibmebus device probed");
+> >  		return -EINVAL;
+> >  	}
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> >  
+> >  	adapter = kzalloc(sizeof(*adapter), GFP_KERNEL);
+> >  	if (!adapter) {
+> > @@ -3462,7 +3448,6 @@ out_free_ad:
+> >  
+> >  out:
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  	return ret;
+> >  }
+> >  
+> > @@ -3481,8 +3466,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+> >  
+> >  	flush_scheduled_work();
+> >  
+> > -	mutex_lock(&ehea_fw_handles.lock);
+> > -
+> >  	ibmebus_free_irq(adapter->neq->attr.ist1, adapter);
+> >  	tasklet_kill(&adapter->neq_tasklet);
+> >  
+> > @@ -3492,7 +3475,6 @@ static int __devexit ehea_remove(struct of_device *dev)
+> >  	kfree(adapter);
+> >  
+> >  	ehea_update_firmware_handles();
+> > -	mutex_unlock(&ehea_fw_handles.lock);
+> >  
+> >  	return 0;
+> >  }
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
