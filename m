@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbYIOSmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYIOSvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbYIOSmb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 14:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbYIOSmX
+	id S1754643AbYIOSvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 14:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbYIOSvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 14:42:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1166 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752687AbYIOSmW (ORCPT
+	Mon, 15 Sep 2008 14:51:05 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:46766 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbYIOSvE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 14:42:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:from:to:content-type:
-	content-transfer-encoding:mime-version:subject:date:cc:x-mailer;
-	b=HjoQlmZEWU4ZlG7XpEa9n8vrePHx6AlJhAUxz2l8fJYq4XdfkhgC/kZpDxVrl6wh1
-	F6818wtKsakVAwHLQ/ktw==
-Message-Id: <B21AC749-D9D3-4B6C-B490-091F06F78E41@google.com>
-From: Paul Menage <menage@google.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linuxfoundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Mon, 15 Sep 2008 14:51:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=dR5hjdimv55hbMBiOug4D0t8yM9sV//90N+6nOG7t0tuQxN0ISr9bDTC3wE2eaH86l
+         3nlUNX6+sTrOiaPM6AuEiHnXAqPYYFmf4Gk2Zth9AWo/KoMAzZsYSy/L9oRijE0uyqAo
+         +hrhYz8DYtRNGPJKS3SegV5eiIkx6SAu+kDD8=
+Message-ID: <48CF02EE.8050406@gmail.com>
+Date: Mon, 15 Sep 2008 20:50:54 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: ralf@linux-mips.org, yoichi_yuasa@tripeaks.co.jp,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [MIPS] vr41xx: unsigned irq cannot be negative
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: [PATCH] Fix declaration of cgroup_mm_owner_callbacks()
-Date: Mon, 15 Sep 2008 11:41:47 -0700
-Cc: linux-kernel@vger.kernel.org
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix declaration of cgroup_mm_owner_callbacks()
+unsigned irq cannot be negative
 
-The choice of real/dummy declaration for cgroup_mm_owner_callbacks()
-shouldn't be based on CONFIG_MM_OWNER, but on
-CONFIG_CGROUPS. Otherwise kernel/exit.c fails to compile when
-something other than a cgroups controller selects CONFIG_MM_OWNER
-
-Signed-off-by: Paul Menage <menage@google.com>
-
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
-include/linux/cgroup.h |   15 ++++++---------
-1 file changed, 6 insertions(+), 9 deletions(-)
-
-Index: mmowner-mmotm-2008-09-10/include/linux/cgroup.h
-===================================================================
---- mmowner-mmotm-2008-09-10.orig/include/linux/cgroup.h
-+++ mmowner-mmotm-2008-09-10/include/linux/cgroup.h
-@@ -403,6 +403,9 @@ void cgroup_iter_end(struct cgroup *cgrp
-int cgroup_scan_tasks(struct cgroup_scanner *scan);
-int cgroup_attach_task(struct cgroup *, struct task_struct *);
-
-+void cgroup_mm_owner_callbacks(struct task_struct *old,
-+			       struct task_struct *new);
-+
-#else /* !CONFIG_CGROUPS */
-
-static inline int cgroup_init_early(void) { return 0; }
-@@ -421,15 +424,9 @@ static inline int cgroupstats_build(stru
-	return -EINVAL;
-}
-
-+static inline void cgroup_mm_owner_callbacks(struct task_struct *old,
-+					     struct task_struct *new) {}
-+
-#endif /* !CONFIG_CGROUPS */
-
--#ifdef CONFIG_MM_OWNER
--extern void
--cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct  
-*new);
--#else /* !CONFIG_MM_OWNER */
--static inline void
--cgroup_mm_owner_callbacks(struct task_struct *old, struct task_struct  
-*new)
--{
--}
--#endif /* CONFIG_MM_OWNER */
-#endif /* _LINUX_CGROUP_H */
-
+diff --git a/arch/mips/vr41xx/common/irq.c b/arch/mips/vr41xx/common/irq.c
+index cba36a2..92dd1a0 100644
+--- a/arch/mips/vr41xx/common/irq.c
++++ b/arch/mips/vr41xx/common/irq.c
+@@ -72,6 +72,7 @@ static void irq_dispatch(unsigned int irq)
+ 	cascade = irq_cascade + irq;
+ 	if (cascade->get_irq != NULL) {
+ 		unsigned int source_irq = irq;
++		int ret;
+ 		desc = irq_desc + source_irq;
+ 		if (desc->chip->mask_ack)
+ 			desc->chip->mask_ack(source_irq);
+@@ -79,8 +80,9 @@ static void irq_dispatch(unsigned int irq)
+ 			desc->chip->mask(source_irq);
+ 			desc->chip->ack(source_irq);
+ 		}
+-		irq = cascade->get_irq(irq);
+-		if (irq < 0)
++		ret = cascade->get_irq(irq);
++		irq = ret;
++		if (ret < 0)
+ 			atomic_inc(&irq_err_count);
+ 		else
+ 			irq_dispatch(irq);
