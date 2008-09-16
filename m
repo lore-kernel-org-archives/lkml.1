@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYIPMS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbYIPMU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbYIPMS6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 08:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbYIPMSu
+	id S1754574AbYIPMU5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 08:20:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbYIPMUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 08:18:50 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55592 "EHLO
+	Tue, 16 Sep 2008 08:20:50 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55658 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbYIPMSt (ORCPT
+	with ESMTP id S1750900AbYIPMUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 08:18:49 -0400
-Date: Tue, 16 Sep 2008 21:21:03 +0900
+	Tue, 16 Sep 2008 08:20:48 -0400
+Date: Tue, 16 Sep 2008 21:17:46 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: balbir@linux.vnet.ibm.com, "xemul@openvz.org" <xemul@openvz.org>,
@@ -18,8 +18,8 @@ Cc: balbir@linux.vnet.ibm.com, "xemul@openvz.org" <xemul@openvz.org>,
        linux-kernel@vger.kernel.org, menage@google.com,
        Dave Hansen <haveblue@us.ibm.com>,
        "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>
-Subject: [RFC] [PATCH 12/9] lazy lru add vie per cpu vector for memcg.
-Message-Id: <20080916212103.200934bb.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [RFC][PATCH 10/9] get/put page at charge/uncharge
+Message-Id: <20080916211746.f1cf643f.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20080916211355.277b625d.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20080911200855.94d33d3b.kamezawa.hiroyu@jp.fujitsu.com>
 	<20080911202249.df6026ae.kamezawa.hiroyu@jp.fujitsu.com>
@@ -34,224 +34,407 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Delaying add_to_lru() and do it by batch.
+While page_cgroup() has reference to the page, it doesn't increment
+page->count.
 
-For delaying, PCG_LRU flag is added. If PCG_LRU is set, page is on
-LRU and unchage() have to call remove from lru. If not, the page is
-not added to LRU.
+Now, the page and its page_cgroup has one-to-one relationship and there is no
+dynamic allocation. But the behavior of global LRU and memory resource
+controller is not synchronized. What this means is
+  - LRU handling cost is not high. (because there is no synchronization)
+  - We have to be afraid of "reuse" of the page.
 
-For avoid race, all flags are modified under lock_page_cgroup().
+Synchronizing global LRU and memcg's LRU means to make the cost of LRU
+handling twice. Instead of that, this patch add get_page()/put_page() to
+charge/uncharge(). By this, at least, alloc/free/reuse of page and page_cgroup
+is synchronized.
+This makes memcg robust and helps optimization of memcg in future.
 
-Lazy-add logic reuses Lazy-free's one.
+What this patch does is.
+ - Ignore Compound pages.
+ - get_page()/put_page() at charge/uncharge
+ - handle special method of "freeze" page_count() in page migration and
+   speculative page cache. To do this, callee of mem_cgroup_uncharge_cache_page()
+   is moved. It's called after all speculative-page-cache ops are finished.
+ - remove charge/uncharge() from insert_page()...for irregular handlers.
+   which doesn't uses radix-tree.
+ - move charge() in do_swap_page() under lock_page().
+ 
+Needs careful and enough review.
 
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
----
- include/linux/page_cgroup.h |    4 +
- mm/memcontrol.c             |   91 ++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 84 insertions(+), 11 deletions(-)
 
-Index: mmtom-2.6.27-rc5+/include/linux/page_cgroup.h
-===================================================================
---- mmtom-2.6.27-rc5+.orig/include/linux/page_cgroup.h
-+++ mmtom-2.6.27-rc5+/include/linux/page_cgroup.h
-@@ -23,6 +23,7 @@ enum {
- 	PCG_LOCK,  /* page cgroup is locked */
- 	PCG_CACHE, /* charged as cache */
- 	PCG_USED, /* this object is in use. */
-+	PCG_LRU, /* this is on LRU */
- 	/* flags for LRU placement */
- 	PCG_ACTIVE, /* page is active in this cgroup */
- 	PCG_FILE, /* page is file system backed */
-@@ -57,6 +58,9 @@ TESTPCGFLAG(Used, USED)
- __SETPCGFLAG(Used, USED)
- __CLEARPCGFLAG(Used, USED)
- 
-+TESTPCGFLAG(LRU, LRU)
-+SETPCGFLAG(LRU, LRU)
-+
- /* LRU management flags (from global-lru definition) */
- TESTPCGFLAG(File, FILE)
- SETPCGFLAG(File, FILE)
+---
+ include/linux/memcontrol.h |   20 ++++++++++++++++++++
+ mm/filemap.c               |    2 +-
+ mm/memcontrol.c            |   24 ++++++++++++------------
+ mm/memory.c                |   18 +++++-------------
+ mm/migrate.c               |   10 +++++++++-
+ mm/swapfile.c              |   18 ++++++++++++++++--
+ mm/vmscan.c                |   42 ++++++++++++++++++++++++++++--------------
+ 7 files changed, 91 insertions(+), 43 deletions(-)
+
 Index: mmtom-2.6.27-rc5+/mm/memcontrol.c
 ===================================================================
 --- mmtom-2.6.27-rc5+.orig/mm/memcontrol.c
 +++ mmtom-2.6.27-rc5+/mm/memcontrol.c
-@@ -348,7 +348,7 @@ void mem_cgroup_move_lists(struct page *
- 	if (!trylock_page_cgroup(pc))
+@@ -332,7 +332,7 @@ void mem_cgroup_move_lists(struct page *
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
+ 
+-	if (mem_cgroup_subsys.disabled)
++	if (!under_mem_cgroup(page))
  		return;
  
--	if (PageCgroupUsed(pc)) {
-+	if (PageCgroupUsed(pc) && PageCgroupLRU(pc)) {
- 		mem = pc->mem_cgroup;
- 		mz = page_cgroup_zoneinfo(pc);
- 		spin_lock_irqsave(&mz->lru_lock, flags);
-@@ -508,6 +508,9 @@ int mem_cgroup_move_account(struct page 
- 	from_mz =  mem_cgroup_zoneinfo(from, nid, zid);
- 	to_mz =  mem_cgroup_zoneinfo(to, nid, zid);
- 
-+	if (!PageCgroupLRU(pc))
-+		return ret;
-+
- 	if (res_counter_charge(&to->res, PAGE_SIZE)) {
- 		/* Now, we assume no_limit...no failure here. */
- 		return ret;
-@@ -550,6 +553,7 @@ struct memcg_percpu_vec {
- 	struct page_cgroup *vec[MEMCG_PCPVEC_SIZE];
- };
- DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_free_vec);
-+DEFINE_PER_CPU(struct memcg_percpu_vec, memcg_add_vec);
- 
- static void
- __release_page_cgroup(struct memcg_percpu_vec *mpv)
-@@ -580,6 +584,40 @@ __release_page_cgroup(struct memcg_percp
- }
- 
- static void
-+__use_page_cgroup(struct memcg_percpu_vec *mpv)
-+{
-+	unsigned long flags;
-+	struct mem_cgroup_per_zone *mz;
-+	struct mem_cgroup *owner;
-+	struct page_cgroup *pc;
-+	struct page *freed[MEMCG_PCPVEC_SIZE];
-+	int i, nr, freed_num;
-+
-+	mz = mpv->hot_mz;
-+	owner = mpv->hot_memcg;
-+	spin_lock_irqsave(&mz->lru_lock, flags);
-+	nr = mpv->nr;
-+	mpv->nr = 0;
-+	freed_num = 0;
-+	for (i = nr - 1; i >= 0; i--) {
-+		pc = mpv->vec[i];
-+		lock_page_cgroup(pc);
-+		if (likely(PageCgroupUsed(pc))) {
-+			__mem_cgroup_add_list(mz, pc);
-+			SetPageCgroupLRU(pc);
-+		} else {
-+			css_put(&owner->css);
-+			freed[freed_num++] = pc->page;
-+			pc->mem_cgroup = NULL;
-+		}
-+		unlock_page_cgroup(pc);
-+	}
-+	spin_unlock_irqrestore(&mz->lru_lock, flags);
-+	while (freed_num--)
-+		put_page(freed[freed_num]);
-+}
-+
-+static void
- release_page_cgroup(struct mem_cgroup_per_zone *mz,struct page_cgroup *pc)
- {
- 	struct memcg_percpu_vec *mpv;
-@@ -597,11 +635,30 @@ release_page_cgroup(struct mem_cgroup_pe
- 	put_cpu_var(memcg_free_vec);
- }
- 
-+static void
-+use_page_cgroup(struct mem_cgroup_per_zone *mz, struct page_cgroup *pc)
-+{
-+	struct memcg_percpu_vec *mpv;
-+	mpv = &get_cpu_var(memcg_add_vec);
-+	if (mpv->hot_mz != mz) {
-+		if (mpv->nr > 0)
-+			__use_page_cgroup(mpv);
-+		mpv->hot_mz = mz;
-+		mpv->hot_memcg = pc->mem_cgroup;
-+	}
-+	mpv->vec[mpv->nr++] = pc;
-+	if (mpv->nr >= mpv->limit)
-+		__use_page_cgroup(mpv);
-+	put_cpu_var(memcg_add_vec);
-+}
-+
- static void page_cgroup_start_cache_cpu(int cpu)
- {
- 	struct memcg_percpu_vec *mpv;
- 	mpv = &per_cpu(memcg_free_vec, cpu);
- 	mpv->limit = MEMCG_PCPVEC_SIZE;
-+	mpv = &per_cpu(memcg_add_vec, cpu);
-+	mpv->limit = MEMCG_PCPVEC_SIZE;
- }
- 
- #ifdef CONFIG_HOTPLUG_CPU
-@@ -610,6 +667,8 @@ static void page_cgroup_stop_cache_cpu(i
- 	struct memcg_percpu_vec *mpv;
- 	mpv = &per_cpu(memcg_free_vec, cpu);
- 	mpv->limit = 0;
-+	mpv = &per_cpu(memcg_add_vec, cpu);
-+	mpv->limit = 0;
- }
- #endif
- 
-@@ -623,6 +682,9 @@ static DEFINE_MUTEX(memcg_force_drain_mu
- static void drain_page_cgroup_local(struct work_struct *work)
- {
- 	struct memcg_percpu_vec *mpv;
-+	mpv = &get_cpu_var(memcg_add_vec);
-+	__use_page_cgroup(mpv);
-+	put_cpu_var(mpv);
- 	mpv = &get_cpu_var(memcg_free_vec);
- 	__release_page_cgroup(mpv);
- 	put_cpu_var(mpv);
-@@ -668,7 +730,6 @@ static int mem_cgroup_charge_common(stru
- 	struct page_cgroup *pc;
- 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 	/*
+@@ -555,6 +555,10 @@ static int mem_cgroup_charge_common(stru
  	struct mem_cgroup_per_zone *mz;
--	unsigned long flags;
+ 	unsigned long flags;
  
- 	/* avoid case in boot sequence */
- 	if (unlikely(PageReserved(page)))
-@@ -753,9 +814,7 @@ static int mem_cgroup_charge_common(stru
++	/* avoid case in boot sequence */
++	if (unlikely(PageReserved(page)))
++		return 0;
++
+ 	pc = lookup_page_cgroup(page_to_pfn(page));
+ 	/* can happen at boot */
+ 	if (unlikely(!pc))
+@@ -630,6 +634,7 @@ static int mem_cgroup_charge_common(stru
+ 	default:
+ 		BUG();
+ 	}
++	get_page(pc->page);
  	unlock_page_cgroup(pc);
  
  	mz = page_cgroup_zoneinfo(pc);
--	spin_lock_irqsave(&mz->lru_lock, flags);
--	__mem_cgroup_add_list(mz, pc);
--	spin_unlock_irqrestore(&mz->lru_lock, flags);
-+	use_page_cgroup(mz, pc);
- 	preempt_enable();
+@@ -647,9 +652,7 @@ out:
  
- done:
-@@ -830,23 +889,33 @@ __mem_cgroup_uncharge_common(struct page
- 	struct mem_cgroup *mem;
- 	struct mem_cgroup_per_zone *mz;
+ int mem_cgroup_charge(struct page *page, struct mm_struct *mm, gfp_t gfp_mask)
+ {
+-	if (mem_cgroup_subsys.disabled)
+-		return 0;
+-	if (PageCompound(page))
++	if (!under_mem_cgroup(page))
+ 		return 0;
+ 	/*
+ 	 * If already mapped, we don't have to account.
+@@ -669,9 +672,7 @@ int mem_cgroup_charge(struct page *page,
+ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask)
+ {
+-	if (mem_cgroup_subsys.disabled)
+-		return 0;
+-	if (PageCompound(page))
++	if (!under_mem_cgroup(page))
+ 		return 0;
+ 	/*
+ 	 * Corner case handling. This is called from add_to_page_cache()
+@@ -716,10 +717,8 @@ __mem_cgroup_uncharge_common(struct page
  	unsigned long pfn = page_to_pfn(page);
-+	int need_to_release;
+ 	unsigned long flags;
  
- 	if (!under_mem_cgroup(page))
+-	if (mem_cgroup_subsys.disabled)
++	if (!under_mem_cgroup(page))
  		return;
+-	/* check the condition we can know from page */
+-
  	pc = lookup_page_cgroup(pfn);
--	if (unlikely(!pc || !PageCgroupUsed(pc)))
-+	if (unlikely(!pc))
+ 	if (unlikely(!pc || !PageCgroupUsed(pc)))
  		return;
--
- 	preempt_disable();
-+
- 	lock_page_cgroup(pc);
-+
-+	if (unlikely(!PageCgroupUsed(pc))) {
-+		unlock_page_cgroup(pc);
-+		preempt_enable();
-+		return;
-+	}
-+
-+	need_to_release = PageCgroupLRU(pc);
-+	mem = pc->mem_cgroup;
- 	__ClearPageCgroupUsed(pc);
- 	unlock_page_cgroup(pc);
+@@ -735,6 +734,7 @@ __mem_cgroup_uncharge_common(struct page
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	__mem_cgroup_remove_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
++	put_page(pc->page);
+ 	pc->mem_cgroup = NULL;
+ 	css_put(&mem->css);
  	preempt_enable();
+@@ -769,7 +769,7 @@ int mem_cgroup_prepare_migration(struct 
+ 	enum charge_type ctype = MEM_CGROUP_CHARGE_TYPE_MAPPED;
+ 	int ret = 0;
  
--	mem = pc->mem_cgroup;
--	mz = page_cgroup_zoneinfo(pc);
+-	if (mem_cgroup_subsys.disabled)
++	if (!under_mem_cgroup(page))
+ 		return 0;
+ 
+ 
+@@ -822,7 +822,7 @@ int mem_cgroup_shrink_usage(struct mm_st
+ 	int progress = 0;
+ 	int retry = MEM_CGROUP_RECLAIM_RETRIES;
+ 
+-	if (mem_cgroup_subsys.disabled)
++	if (!under_mem_cgroup(NULL))
+ 		return 0;
+ 	if (!mm)
+ 		return 0;
+Index: mmtom-2.6.27-rc5+/mm/swapfile.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/mm/swapfile.c
++++ mmtom-2.6.27-rc5+/mm/swapfile.c
+@@ -390,20 +390,34 @@ static int remove_exclusive_swap_page_co
+ /*
+  * Most of the time the page should have two references: one for the
+  * process and one for the swap cache.
++ * If memory resource controller is used, the page has extra reference from it.
+  */
+ int remove_exclusive_swap_page(struct page *page)
+ {
+-	return remove_exclusive_swap_page_count(page, 2);
++	int count;
++	/* page is accounted only when it's mapped. (if swapcache) */
++	if (under_mem_cgroup(page) && page_mapped(page))
++		count = 3;
++	else
++		count = 2;
++	return remove_exclusive_swap_page_count(page, count);
+ }
+ 
+ /*
+  * The pageout code holds an extra reference to the page.  That raises
+  * the reference count to test for to 2 for a page that is only in the
+  * swap cache plus 1 for each process that maps the page.
++ * If memory resource controller is used, the page has extra reference from it.
+  */
+ int remove_exclusive_swap_page_ref(struct page *page)
+ {
+-	return remove_exclusive_swap_page_count(page, 2 + page_mapcount(page));
++	int count;
++
++	count = page_mapcount(page);
++	/* page is accounted only when it's mapped. (if swapcache) */
++	if (under_mem_cgroup(page) && count)
++		count += 1;
++	return remove_exclusive_swap_page_count(page, 2 + count);
+ }
+ 
+ /*
+Index: mmtom-2.6.27-rc5+/include/linux/memcontrol.h
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/include/linux/memcontrol.h
++++ mmtom-2.6.27-rc5+/include/linux/memcontrol.h
+@@ -20,6 +20,8 @@
+ #ifndef _LINUX_MEMCONTROL_H
+ #define _LINUX_MEMCONTROL_H
+ 
++#include <linux/page-flags.h>
++#include <linux/cgroup.h>
+ struct mem_cgroup;
+ struct page_cgroup;
+ struct page;
+@@ -72,6 +74,19 @@ extern void mem_cgroup_record_reclaim_pr
+ extern long mem_cgroup_calc_reclaim(struct mem_cgroup *mem, struct zone *zone,
+ 					int priority, enum lru_list lru);
+ 
++extern struct cgroup_subsys mem_cgroup_subsys;
++static inline int under_mem_cgroup(struct page *page)
++{
++	if (mem_cgroup_subsys.disabled)
++		return 0;
++	if (!page)
++		return 1;
++	if (PageCompound(page))
++		return 0;
++	return 1;
++}
++
++
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ static inline void page_reset_bad_cgroup(struct page *page)
+ {
+@@ -163,6 +178,11 @@ static inline long mem_cgroup_calc_recla
+ {
+ 	return 0;
+ }
++
++static inline int under_mem_cgroup(void)
++{
++	return 0;
++}
+ #endif /* CONFIG_CGROUP_MEM_CONT */
+ 
+ #endif /* _LINUX_MEMCONTROL_H */
+Index: mmtom-2.6.27-rc5+/mm/migrate.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/mm/migrate.c
++++ mmtom-2.6.27-rc5+/mm/migrate.c
+@@ -283,8 +283,16 @@ static int migrate_page_move_mapping(str
+ 
+ 	pslot = radix_tree_lookup_slot(&mapping->page_tree,
+  					page_index(page));
++	/*
++	 * Here, the page is unmapped and memcg's refcnt should be 0
++	 * if it's anon or SwapCache.
++	 */
++	if (PageAnon(page))
++		expected_count = 2 + !!PagePrivate(page);
++	else
++		expected_count = 2 + !!PagePrivate(page)
++				   + under_mem_cgroup(page);
+ 
+-	expected_count = 2 + !!PagePrivate(page);
+ 	if (page_count(page) != expected_count ||
+ 			(struct page *)radix_tree_deref_slot(pslot) != page) {
+ 		spin_unlock_irq(&mapping->tree_lock);
+Index: mmtom-2.6.27-rc5+/mm/vmscan.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/mm/vmscan.c
++++ mmtom-2.6.27-rc5+/mm/vmscan.c
+@@ -310,7 +310,10 @@ static inline int page_mapping_inuse(str
+ 
+ static inline int is_page_cache_freeable(struct page *page)
+ {
+-	return page_count(page) - !!PagePrivate(page) == 2;
++	if (under_mem_cgroup(page))
++		return page_count(page) - !!PagePrivate(page) == 3;
++	else
++		return page_count(page) - !!PagePrivate(page) == 2;
+ }
+ 
+ static int may_write_to_queue(struct backing_dev_info *bdi)
+@@ -453,6 +456,7 @@ static pageout_t pageout(struct page *pa
+  */
+ static int __remove_mapping(struct address_space *mapping, struct page *page)
+ {
++	int freeze_ref;
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(mapping != page_mapping(page));
+ 
+@@ -481,12 +485,19 @@ static int __remove_mapping(struct addre
+ 	 *
+ 	 * Note that if SetPageDirty is always performed via set_page_dirty,
+ 	 * and thus under tree_lock, then this ordering is not required.
++ 	 *
++	 * If memory resource controller is enabled, it has extra ref.
+ 	 */
+-	if (!page_freeze_refs(page, 2))
++	if (!PageSwapCache(page))
++		freeze_ref = 2 + under_mem_cgroup(page);
++	else
++		freeze_ref = 2;
++
++	if (!page_freeze_refs(page, freeze_ref))
+ 		goto cannot_free;
+ 	/* note: atomic_cmpxchg in page_freeze_refs provides the smp_rmb */
+ 	if (unlikely(PageDirty(page))) {
+-		page_unfreeze_refs(page, 2);
++		page_unfreeze_refs(page, freeze_ref);
+ 		goto cannot_free;
+ 	}
+ 
+@@ -500,7 +511,7 @@ static int __remove_mapping(struct addre
+ 		spin_unlock_irq(&mapping->tree_lock);
+ 	}
+ 
+-	return 1;
++	return freeze_ref - 1;
+ 
+ cannot_free:
+ 	spin_unlock_irq(&mapping->tree_lock);
+@@ -515,16 +526,19 @@ cannot_free:
+  */
+ int remove_mapping(struct address_space *mapping, struct page *page)
+ {
+-	if (__remove_mapping(mapping, page)) {
+-		/*
+-		 * Unfreezing the refcount with 1 rather than 2 effectively
+-		 * drops the pagecache ref for us without requiring another
+-		 * atomic operation.
+-		 */
+-		page_unfreeze_refs(page, 1);
+-		return 1;
+-	}
+-	return 0;
++	int ret;
++	ret = __remove_mapping(mapping, page);
++	if (!ret)
++		return 0;
++	/*
++	 * Unfreezing the refcount with 1 or 2 rather than 2 effectively
++	 * drops the pagecache ref for us without requiring another
++	 * atomic operation.
++	 */
++	page_unfreeze_refs(page, ret);
++	if (ret == 2)
++		mem_cgroup_uncharge_cache_page(page);
++	return 1;
+ }
+ 
+ /**
+Index: mmtom-2.6.27-rc5+/mm/memory.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/mm/memory.c
++++ mmtom-2.6.27-rc5+/mm/memory.c
+@@ -1319,22 +1319,17 @@ static int insert_page(struct vm_area_st
+ 			struct page *page, pgprot_t prot)
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
+-	int retval;
+ 	pte_t *pte;
+ 	spinlock_t *ptl;
++	int retval = -EINVAL;
+ 
+-	retval = mem_cgroup_charge(page, mm, GFP_KERNEL);
+-	if (retval)
+-		goto out;
 -
--	release_page_cgroup(mz, pc);
-+	if (likely(need_to_release)) {
-+		mz = page_cgroup_zoneinfo(pc);
-+		release_page_cgroup(mz, pc);
-+	}
- 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+-	retval = -EINVAL;
+ 	if (PageAnon(page))
+-		goto out_uncharge;
++		goto out;
+ 	retval = -ENOMEM;
+ 	flush_dcache_page(page);
+ 	pte = get_locked_pte(mm, addr, &ptl);
+ 	if (!pte)
+-		goto out_uncharge;
++		goto out;
+ 	retval = -EBUSY;
+ 	if (!pte_none(*pte))
+ 		goto out_unlock;
+@@ -1350,8 +1345,6 @@ static int insert_page(struct vm_area_st
+ 	return retval;
+ out_unlock:
+ 	pte_unmap_unlock(pte, ptl);
+-out_uncharge:
+-	mem_cgroup_uncharge_page(page);
+ out:
+ 	return retval;
+ }
+@@ -2325,16 +2318,15 @@ static int do_swap_page(struct mm_struct
+ 		ret = VM_FAULT_MAJOR;
+ 		count_vm_event(PGMAJFAULT);
+ 	}
++	lock_page(page);
  
- 	return;
++	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+ 	if (mem_cgroup_charge(page, mm, GFP_KERNEL)) {
+-		delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+ 		ret = VM_FAULT_OOM;
+ 		goto out;
+ 	}
+ 
+ 	mark_page_accessed(page);
+-	lock_page(page);
+-	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+ 
+ 	/*
+ 	 * Back out if somebody else already faulted in this pte.
+Index: mmtom-2.6.27-rc5+/mm/filemap.c
+===================================================================
+--- mmtom-2.6.27-rc5+.orig/mm/filemap.c
++++ mmtom-2.6.27-rc5+/mm/filemap.c
+@@ -121,7 +121,6 @@ void __remove_from_page_cache(struct pag
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	BUG_ON(page_mapped(page));
+-	mem_cgroup_uncharge_cache_page(page);
+ 
+ 	/*
+ 	 * Some filesystems seem to re-dirty the page even after
+@@ -144,6 +143,7 @@ void remove_from_page_cache(struct page 
+ 
+ 	spin_lock_irq(&mapping->tree_lock);
+ 	__remove_from_page_cache(page);
++	mem_cgroup_uncharge_cache_page(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
+ }
+ 
 
