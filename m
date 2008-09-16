@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbYIPV4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277AbYIPWA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753087AbYIPV4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 17:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYIPV4d
+	id S1753277AbYIPWA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 18:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYIPWAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 17:56:33 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58800 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbYIPV4d (ORCPT
+	Tue, 16 Sep 2008 18:00:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44079
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751971AbYIPWAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 17:56:33 -0400
-Message-ID: <48D02B5B.9090204@zytor.com>
-Date: Tue, 16 Sep 2008 14:55:39 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Marcin Slusarz <marcin.slusarz@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] add DEFINE_LOGLEVEL_SETUP v3
-References: <1221588085-30578-1-git-send-email-yhlu.kernel@gmail.com>	 <1221588085-30578-2-git-send-email-yhlu.kernel@gmail.com>	 <20080916190224.GA6115@joi>	 <86802c440809161404v4b59f1c8se1ac61f982a15dd@mail.gmail.com>	 <48D022B0.5080402@zytor.com> <86802c440809161428j2dfc9669g229a5bf23da63f34@mail.gmail.com>
-In-Reply-To: <86802c440809161428j2dfc9669g229a5bf23da63f34@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 16 Sep 2008 18:00:17 -0400
+Date: Tue, 16 Sep 2008 15:00:11 -0700 (PDT)
+Message-Id: <20080916.150011.92089793.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH]: Fix PNP build failure, bugzilla #11276
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> On Tue, Sep 16, 2008 at 2:18 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->> Yinghai Lu wrote:
->>> will come out one new version that hpa likes
->>>
->>> printk(KERN_PCI KERN_DEBUG "sadfasf\n");
->>>
->> Come to think about it, it might help migration pains if we put the prefixes
->> in the opposite order (KERN_DEBUG KERN_PCI).
->>
-> according to the code flow, these two is the same... will double check it.
-> 
 
-The difference is that things that read the kernel log in userspace will 
-be able to make partial sense of the latter, but not the former.  It 
-will thus make the transition smoother.
+This fill fix the following regression list entry:
 
-	-hpa
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11276
+Subject		: build error: CONFIG_OPTIMIZE_INLINING=y causes gcc 4.2 to do stupid things
+Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+Date		: 2008-08-06 17:18 (38 days old)
+References	: http://marc.info/?l=linux-kernel&m=121804329014332&w=4
+		  http://lkml.org/lkml/2008/7/22/353
+Handled-By	: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Patch		: http://lkml.org/lkml/2008/7/22/364
+
+with what I believe is a better fix than the one referenced
+in the regression entry above.
+
+These PNP header interfaces try to work in such a way that
+you can reference some of them even if PNP is not enabled,
+and the compiler was expected to optimize everything away.
+
+Which is mostly fine, except that there was one interface
+for which there was not provided an inline "NOP" implementation.
+
+Once we add that, all of these compile failures cannot handle
+any more.
+
+pnp: Provide NOP inline implementation of pnp_get_resource() when !PNP
+
+Fixes kernel bugzilla #11276.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/include/linux/pnp.h b/include/linux/pnp.h
+index 1ce54b6..be764e5 100644
+--- a/include/linux/pnp.h
++++ b/include/linux/pnp.h
+@@ -21,7 +21,14 @@ struct pnp_dev;
+ /*
+  * Resource Management
+  */
++#ifdef CONFIG_PNP
+ struct resource *pnp_get_resource(struct pnp_dev *, unsigned int, unsigned int);
++#else
++static inline struct resource *pnp_get_resource(struct pnp_dev *dev, unsigned int type, unsigned int num)
++{
++	return NULL;
++}
++#endif
+ 
+ static inline int pnp_resource_valid(struct resource *res)
+ {
