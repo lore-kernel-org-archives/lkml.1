@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbYIPFv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbYIPGWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753439AbYIPFv2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 01:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYIPFvU
+	id S1753037AbYIPGWk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 02:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYIPGWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 01:51:20 -0400
-Received: from mga14.intel.com ([143.182.124.37]:52186 "EHLO mga14.intel.com"
+	Tue, 16 Sep 2008 02:22:32 -0400
+Received: from 1wt.eu ([62.212.114.60]:4066 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbYIPFvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 01:51:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.32,406,1217833200"; 
-   d="scan'208";a="46965526"
-Subject: Re: [Bug #11471] GPE storm detected, kernel freezes
-From: Zhang Rui <rui.zhang@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       George Gibbs <Vash63@gmail.com>
-In-Reply-To: <SpS7rta8n4.A.KMH.lcsyIB@albercik>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	 <SpS7rta8n4.A.KMH.lcsyIB@albercik>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 16 Sep 2008 13:50:48 +0800
-Message-Id: <1221544248.3441.133.camel@rzhang-dt>
+	id S1751825AbYIPGWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 02:22:31 -0400
+Date: Tue, 16 Sep 2008 08:22:26 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: karthikeyan S <karthispeaks@gmail.com>
+Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: A bug (probably) in stop_all_threads
+Message-ID: <20080916062226.GA29225@1wt.eu>
+References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com> <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com> <20080916051751.GA28475@1wt.eu> <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3bedf6ab0809152249r524cce0v1c14bfdff46aa12d@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-09-13 at 03:06 +0800, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-
-> The following bug entry is on the current list of known regressions
-> from 2.6.26.  Please verify if it still should be listed and let me
-> know
-> (either way).
-
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=11471
-> Subject         : GPE storm detected, kernel freezes
-> Submitter       : George Gibbs <Vash63@gmail.com>
-> Date            : 2008-08-31 22:00 (13 days old)
-> Handled-By      : Zhang Rui <rui.zhang@intel.com>
+On Tue, Sep 16, 2008 at 11:19:58AM +0530, karthikeyan S wrote:
+> Hi Willy,
 > 
-﻿this has already been fixed in -rc6.
-please refer to http://bugzilla.kernel.org/show_bug.cgi?id=11471#c22
+> Thanks for getting back. Yes, I tried to set the state to
+> TASK_INTERRUPTIBLE. It solves the issue. The other processes now get a
+> chance to handle the SIGSTOP sent to them.
 
-so I think this should be removed from the list.
+OK, that will help me review the current code and compare it with 2.6.
+If you could send me your patch, it will even save me more time. Based
+on your report, it's very likely that it will get merged.
 
-thanks,
-rui
+Thanks,
+Willy
 
