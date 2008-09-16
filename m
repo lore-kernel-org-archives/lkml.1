@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbYIPEtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752719AbYIPFSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbYIPEtS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 00:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbYIPEtH
+	id S1752719AbYIPFSN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 01:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYIPFR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 00:49:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60135 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059AbYIPEtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 00:49:06 -0400
-Subject: Re: max_clock of the patch "sched_clock: fix cpu_clock()"
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1221534097.30750.20.camel@minggr>
-References: <1221534097.30750.20.camel@minggr>
-Content-Type: text/plain
-Date: Tue, 16 Sep 2008 06:48:30 +0200
-Message-Id: <1221540510.6943.1.camel@lappy.programming.kicks-ass.net>
+	Tue, 16 Sep 2008 01:17:58 -0400
+Received: from 1wt.eu ([62.212.114.60]:4059 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbYIPFR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 01:17:57 -0400
+Date: Tue, 16 Sep 2008 07:17:51 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: karthikeyan S <karthispeaks@gmail.com>
+Cc: Grant Coady <gcoady.lk@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: A bug (probably) in stop_all_threads
+Message-ID: <20080916051751.GA28475@1wt.eu>
+References: <3bedf6ab0809130127j7ed9d372pcb15e1b001178600@mail.gmail.com> <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <o44nc4dd8tpl94vf9bv81oklq8lt29112t@4ax.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-09-16 at 11:01 +0800, Lin Ming wrote:
-> Hi, Peter,
-> 
-> I have a question of the max_clock in below patch,
-> commit 354879bb977e06695993435745f06a0f6d39ce2b
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Mon Aug 25 17:15:34 2008 +0200
-> 
->     sched_clock: fix cpu_clock()
-> 
-> The original code to calculate min_clock and max_clock is,
-> min_clock = scd->tick_gtod + delta_jiffies * TICK_NSEC;
-> max_clock = min_clock + TICK_NSEC;
-> 
-> Now it's changed to,
-> min_clock = wrap_max(scd->tick_gtod, scd->clock);
-> max_clock = scd->tick_gtod + TICK_NSEC;
-> 
-> Is this max_clock still correct if, in a rare case, irq is disabled for
-> many ticks?
+Hi karthik,
 
-Nope, it wont (nor would the old), but having irqs disabled for that
-long would be something worth fixing.
+Just a quick note to tell you that I have not missed your mail, I
+just need some time to analyse your report and the code related
+to it. Have you tried setting TASK_INTERRUPTIBLE as you suggest ?
+At first sight, it seems to make sense.
 
+Regards,
+Willy
+
+On Sat, Sep 13, 2008 at 08:07:04PM +1000, Grant Coady wrote:
+> On Sat, 13 Sep 2008 13:57:28 +0530, "karthikeyan S" <karthispeaks@gmail.com> wrote:
+> 
+> CC added.
+> 
+> >Hi,
+> >
+> >Apologies if I am posting this message in an incorrect mailing list
+> >and for bringing up an issue with older kernel version (2.4), and if
+> >the issue had been brought up earlier and I missed it.
+> >
+> >There seems to be a bug with stop_all_threads function in 2.4. The
+> >function sends SIGSTOP to all the threads in the thread group and
+> >waits until all the threads get their state changed accordingly.
+> >
+> >While waiting, if it finds that the event has not occurred, it tires
+> >to yield the processor to other processes by calling
+> >schedule_timeout().
+> >
+> >Bur before calling schedule_timeout() it does not set the task state
+> >to either TASK_INTERRUPTIBLE or TASK_UNINTERRUPTIBLE.
+> >So schedule_timeout() does not do anything effectively.
+> >
+> >This causes a problem in our device which uses kernel 2.4. When we
+> >have a sigsegv from the task which runs at highest priority, the
+> >control is stuck waiting for all the threads in the thread group to
+> >change their task state. But the other threads never get a chance to
+> >run and the SIGSTOP sent to them is of no effect.
+> >
+> >When  I changed the stop_all_threads function to set the task state to
+> >TASK_INTERRUPTIBLE, the problem disappears.
+> >
+> >So is this a real issue that stop_all_threads() does not set the
+> >current task to TASK_INTERRUPTIBLE before calling schedule_timeout()?
+> >
+> >Please provide your feedback. Thanks a lot.
+> >
+> >-karthik
