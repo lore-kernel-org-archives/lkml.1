@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbYIPXgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbYIPXwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbYIPXgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 19:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYIPXgp
+	id S1753651AbYIPXwx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 19:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIPXwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 19:36:45 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:49661 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752500AbYIPXgo (ORCPT
+	Tue, 16 Sep 2008 19:52:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:53491 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751376AbYIPXwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 19:36:44 -0400
-Date: Wed, 17 Sep 2008 00:36:27 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Lennart Poettering <mzxreary@0pointer.de>,
-       Julien Blache <jb@jblache.org>, Richard Purdie <rpurdie@rpsys.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix autoloading of MacBook Pro backlight driver.
-Message-ID: <20080916233627.GB18574@srcf.ucam.org>
-References: <1221607406.20234.82.camel@macbook.infradead.org> <1221607522.20234.84.camel@macbook.infradead.org>
+	Tue, 16 Sep 2008 19:52:45 -0400
+Message-ID: <48D046C0.6050607@manoweb.com>
+Date: Tue, 16 Sep 2008 16:52:32 -0700
+From: Alessio Sangalli <alesan@manoweb.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1221607522.20234.84.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Ben Nizette <bn@niasdigital.com>
+CC: Ben Dooks <ben-linux@fluff.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver for tightly coupled memory
+References: <48CEC71F.3000006@manoweb.com>	 <20080916093513.GF1916@fluff.org.uk>  <48CFEF3F.5040901@manoweb.com>	 <1221604022.3598.4.camel@moss.renham>  <48D03811.9070805@manoweb.com> <1221606290.3598.41.camel@moss.renham>
+In-Reply-To: <1221606290.3598.41.camel@moss.renham>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18p/NTeulrF66s8B06KEjt/DK/XQoB4Z4OY61l
+ 2HJ0DT4Q1CQOjmJ6o6ayouZHriYsZSyomi0C0X4PthVg0Tu8eh
+ fMo2m6xvbKeM6YsjoXEPA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 04:25:22PM -0700, David Woodhouse wrote:
-> Use new MODULE_DEVICE_TABLE(dmi, ...) facility. There's no need for
-> every driver to screw it up for themselves, when the alias can be
-> generated automatically.
-> 
-> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Ben Nizette wrote:
 
-Acked-by: Matthew Garrett <mjg@redhat.com>
+> Generally the genalloc pool will be set up exactly once, at boot, by the
+> platform code.  Then yes indeed the pool can be exported for driver use.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+Oh thanks now it's clear.
+
+bye
+as
+
