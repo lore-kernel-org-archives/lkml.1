@@ -1,75 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYIPMAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630AbYIPMGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbYIPMAG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 08:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYIPL7u
+	id S1753630AbYIPMGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 08:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYIPMF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 07:59:50 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:1940 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752641AbYIPL7t (ORCPT
+	Tue, 16 Sep 2008 08:05:59 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:38013 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752476AbYIPMF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 07:59:49 -0400
-Date: Tue, 16 Sep 2008 15:59:47 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sebastien Dugue <sebastien.dugue@bull.net>
-Cc: Thomas Klein <osstklei@de.ibm.com>, tklein@de.ibm.com, tinytim@us.ibm.com,
-       Linux-rt <linux-rt-users@vger.kernel.org>, themann@de.ibm.com,
-       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       jean-pierre.dion@bull.net, linux-ppc <linuxppc-dev@ozlabs.org>,
-       raisch@de.ibm.com, gilles.carry@ext.bull.net
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-	hardirq preemption
-Message-ID: <20080916115947.GA6995@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080915100406.342e027a@bull.net> <48CE5684.4000506@de.ibm.com> <20080915151332.6a3a7c80@bull.net>
+	Tue, 16 Sep 2008 08:05:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:cc:subject:content-type
+         :content-transfer-encoding:from;
+        b=lwzp3g/s56dXDTEd3c+1bGFCBxGzMpqE3g4gnikdAzMX0sbpx9AyiCeppa3pLfd2Nh
+         rr4S9/Aigf4eBcVb5tXGcABkYZOE1tdYGyUMymBY5Gfb+DXkek9g+5QzTVqQIoT8LHY1
+         pbzIiOgwBGRoW/dwFoAcHAQa+sjrVUi5JQoLo=
+Message-ID: <48CFA10D.2010106@gmail.com>
+Date: Tue, 16 Sep 2008 14:05:33 +0200
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
-Content-Disposition: inline
-In-Reply-To: <20080915151332.6a3a7c80@bull.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>,
+       Davide Libenzi <davidel@xmailserver.org>, Alan Cox <alan@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       netdev <netdev@vger.kernel.org>, Roland McGrath <roland@redhat.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@lst.de>
+Subject: sys_paccept: disable paccept() until API design is resolved
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 03:13:32PM +0200, Sebastien Dugue wrote:
-[...]
-> > we are a bit worried about putting this into the mainstream part of non real
-> > time linux.
-> 
->   Heck, I sure do not want this to be applied mainstream nor into any tree.
-> The sole purpose of this patch was to trigger some reaction from the people who
-> know the hardware and try to understand where the problem lies.
-> 
-> > There interrupts work perfectly fine, and it was a bit of a
-> > challenge to get there for all cases / configurations / machines.
-> 
->   Agreed, but the fact that it fails with hardirq preemption leads me to
-> believe (without any more knowledge about the harware) that there might be
-> something amiss with this driver (or the code concerning the XICS)
-> nevertheless.
-> 
-> > 
-> > Could you try to enable these changes only for RT-Linux via a real-time
-> > kconfig switch?
-> 
->   Nope, this is just a quick hack that allows me to have a functional eHEA under
-> the rt kernel. I want to understand what the problem is:
-> 
->   - Is the eHEA really delivering level interrupts to the XICS?
-> 
->   - Is the XICS loosing interrupts when they are masked?
+Andrew,
 
-There is a known bug in the -rt kernels, the bug causes handlers
-to lose edge interrupts.
+The patch below disables the new sys_paccept() for now.  Please
+apply for 2.6.27-rc, so that we do not release this API into
+the wild before a conclusion has been reached about its design.
 
-See this patch:
+The reasons for disabling paccept() are as follows:
 
-http://lkml.org/lkml/2008/6/30/372
+* The API is more complex than needed.  There is AFAICS no demonstrated
+   use case that the sigset argument of this syscall serves that
+   couldn't equally be served by the use of pselect/ppoll/epoll_pwait +
+   traditional accept().  Roland seems to concur with this opinion
+   (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).
+   I have (more than once) asked Ulrich to explain otherwise
+   (http://thread.gmane.org/gmane.linux.kernel/723952/focus=731018),
+   but he does not respond, so one is left to assume that he doesn't
+   know of such a case.
 
->   - ...?
+* The use of a sigset argument is not consistent with other I/O APIs
+   that can block on a single file descriptor (e.g., read(), recv(),
+   connect()).
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+* The behavior of paccept() when interrupted by a signal is IMO
+   strange: the kernel restarts the system call if SA_RESTART was set
+   for the handler.  I think that it should not do this -- that it
+   should behave consistently with paccept()/ppoll()/epoll_pwait(),
+   which never restart, regardless of SA_RESTART.  The reasoning here
+   is that the very purpose of paccept() is to wait for a connection
+   or a signal, and that restarting in the latter case is probably
+   never useful.  (Note: Roland disagrees on this point, believing
+   that rather paccept() should be consistent with accept() in its
+   behavior wrt EINTR
+   (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).)
+
+I believe that instead, a simpler API, consistent with Ulrich's
+other recent additions, is preferable:
+
+accept4(int fd, struct sockaddr *sa, socklen_t *salen, ind flags);
+
+(This simpler API was originally proposed by Ulrich:
+http://thread.gmane.org/gmane.linux.network/92072)
+
+If this simpler API is added, then if we later decide that the sigset
+argument really is required, then a suitable bit in 'flags' could
+be added to indicate the presence of the sigset argument.
+
+At this point, I am hoping we either will get a counter-argument
+from Ulrich about why we really do need paccept()'s sigset argument,
+or that he will resubmit the original accept4() patch.
+
+Cheers,
+
+Michael
+
+Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
+
+
+--- linux-2.6.27-rc6/net/socket.c.orig	2008-09-16 12:38:15.000000000 +0200
++++ linux-2.6.27-rc6/net/socket.c	2008-09-16 13:07:51.000000000 +0200
+@@ -1511,6 +1511,7 @@
+  	goto out_put;
+  }
+
++#if 0
+  #ifdef HAVE_SET_RESTORE_SIGMASK
+  asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
+  			    int __user *upeer_addrlen,
+@@ -1564,6 +1565,7 @@
+  	return do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
+  }
+  #endif
++#endif
+
+  asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
+  			   int __user *upeer_addrlen)
