@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbYIPIkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYIPIkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbYIPIkH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 04:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYIPIjw
+	id S1753966AbYIPIkf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 04:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbYIPIkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 04:39:52 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:44399 "EHLO smtp5.pp.htv.fi"
+	Tue, 16 Sep 2008 04:40:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46322 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbYIPIjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 04:39:51 -0400
-Date: Tue, 16 Sep 2008 11:39:34 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: David Miller <davem@davemloft.net>
-Cc: tsbogend@alpha.franken.de, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080916083934.GA7397@cs181140183.pp.htv.fi>
-References: <20080915204543.GD3994@havoc.gtf.org> <20080915.141442.139271313.davem@davemloft.net> <20080915215307.GA10340@alpha.franken.de> <20080915.151125.93659986.davem@davemloft.net>
+	id S1752419AbYIPIkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Sep 2008 04:40:19 -0400
+Date: Tue, 16 Sep 2008 10:39:15 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frank Mayhar <fmayhar@google.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH 2.6.27-rc5 resubmit] Fix itimer/many thread hang.
+Message-ID: <20080916083915.GB17287@elte.hu>
+References: <1221238479.30136.2.camel@bobble.smo.corp.google.com> <20080914151404.GA28850@elte.hu> <20080914193140.728F56409D@pipsqueak.localdomain> <20080915064106.GB15680@elte.hu> <1221501582.19012.30.camel@bobble.smo.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080915.151125.93659986.davem@davemloft.net>
+In-Reply-To: <1221501582.19012.30.camel@bobble.smo.corp.google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 15, 2008 at 03:11:25PM -0700, David Miller wrote:
-> From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
-> Date: Mon, 15 Sep 2008 23:53:08 +0200
-> 
-> > On Mon, Sep 15, 2008 at 02:14:42PM -0700, David Miller wrote:
-> > > Most of those changes were complete and utter CRAP.
+
+* Frank Mayhar <fmayhar@google.com> wrote:
+
+> On Mon, 2008-09-15 at 08:41 +0200, Ingo Molnar wrote:
+> > * Roland McGrath <roland@redhat.com> wrote:
 > > 
-> > thank you, but the fix I've sent (de2104x) isn't crap. The bug breaks the 
-> > current debian-installer for Cobalt Qube1, when it tries to get an
-> > IP address via dhcp. 
+> > > > please uninline these functions.
+> > > 
+> > > They are short and have only one caller.
+> > 
+> > then they should be defined in the .c file which uses them.
 > 
-> And why is this bug that has been there for YEARS is appropriate
-> to fix outside of the merge window?
->...
+> Well, they are actually used in sched.h, in the inline routines 
+> account_group_user_time() and friends, which are in turn used by 
+> routines in sched.c.  The point here is that the 
+> thread_group_cputime_account_xxx() routines are defined differently 
+> depending upon whether we're building for UP or SMP and the 
+> account_group_xxx() routines use the appropriate version accordingly.
+> 
+> > really, sched.h is large enough already and has lots of unnecessary 
+> > stuff in it.
+> 
+> Agreed, but Roland and I were trying to make life easier for folks who 
+> have to maintain SMP and UP versions of this stuff, keeping it all in 
+> one place rather than scattering it about.
+> 
+> If you insist, I'll un-inline the routines but this will mean moving 
+> all of this (thread_group_cputime_account_xxx() and 
+> account_group_xxx() routines) to sched.c.  Maybe that makes sense.  
+> It's your call; I'll hold off on the changes (and resubmitting the 
+> patch) while I wait for you to let me know what you prefer.  Thanks.
 
-Such a fix is even suitable for -stable.
+it's already in tip/sched/posix-cpu-timers, so please send a delta patch 
+against tip/master:
 
-If something is considered suitable for -stable, but not for -rc with 
-one month to go before the release of the kernel, then there's something 
-wrong in the process.
+  http://people.redhat.com/mingo/tip.git/README
 
-cu
-Adrian
+i'd suggest to move all the scheduler-internal accounting functions into 
+kernel/sched_stats.h. AFAICS there's no scheduler-external user of these 
+APIs. The most widely used external APIs is thread_group_cputime_smp(), 
+and that is out of line already. (except on UP where it's trivial)
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Ingo
