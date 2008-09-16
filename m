@@ -1,313 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYIPBj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYIPBy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbYIPBj2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Sep 2008 21:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYIPBjU
+	id S1756040AbYIPBy6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Sep 2008 21:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYIPByu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 15 Sep 2008 21:39:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53131 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751870AbYIPBjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Sep 2008 21:39:18 -0400
-Message-ID: <48CF0DC4.8030402@cn.fujitsu.com>
-Date: Tue, 16 Sep 2008 09:37:08 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm 2/2] cgroup: use multibuf for tasks file
-References: <48CA58A9.4010508@cn.fujitsu.com> <6599ad830809151328n98dcffdxee0977e781b138cd@mail.gmail.com>
-In-Reply-To: <6599ad830809151328n98dcffdxee0977e781b138cd@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 15 Sep 2008 21:54:50 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:61085 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbYIPByt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Sep 2008 21:54:49 -0400
+X-IronPort-AV: E=Sophos;i="4.32,404,1217822400"; 
+   d="scan'208";a="59566752"
+Subject: [PATCH][kgdb][v3] Make mem access function weak in kgdb.c and
+	kgdb.h
+From: sonic zhang <sonic.adi@gmail.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       kgdb mailing list <kgdb-bugreport@lists.sourceforge.net>
+Content-Type: text/plain
+Date: Tue, 16 Sep 2008 09:49:29 +0800
+Message-Id: <1221529769.15380.10.camel@eight.analog.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Fri, Sep 12, 2008 at 4:55 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
->> when we open a really large cgroup for read, we may failed
->> for kmalloc() is not reliable for allocate a big buffer.
-> 
-> This still depends on an answer to whether using plain vmalloc is too
-> much overhead.
-> 
-> Balbir pointed out to me that most cgroups are likely to be pretty
-> small - so the solution of just doing a kmalloc() for 8K or less, and
-> a vmalloc() for more than 8K (which is >2000 threads) will avoid the
-> vmalloc overhead in almost all cases; the question is whether
-> eliminating the remaining overhead is worth the extra complexity.
-> 
+L1 instruction memory and MMR memory on blackfin can not be accessed by
+common functions probe_kernel_read() and probe_kernel_write().
+Blackfin asks for 2/4 byte align access to MMR memory and DMA access to
+L1 instruction memory. These functions need to be reimplemented in
+architecture specific kgdb.c. Update documentation and prototypes as
+well.
 
-I think open cgroup.tasks to read is not a critical path.
-so using plain vmalloc(even more overhead functions) is worth.
+Signed-off-by: Sonic Zhang <sonic.adi@gmail.com>
+---
+ include/linux/kgdb.h |   42 ++++++++++++++++++++++++++++++++++++++++--
+ kernel/kgdb.c        |    6 +++---
+ 2 files changed, 43 insertions(+), 5 deletions(-)
 
-> 
->> the patch use multibuf for tasks file, every buf is a page
->> apart from we need only a small buffer.
->>
->> we use obj_sort() to sort this pids, so we don't need to map this
->> pages to an continuous memory region.
->>
->> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
->> ---
->> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
->> index bb298de..3d3c3bb 100644
->> --- a/include/linux/cgroup.h
->> +++ b/include/linux/cgroup.h
->> @@ -141,8 +141,8 @@ struct cgroup {
->>
->>        /* pids_mutex protects the fields below */
->>        struct rw_semaphore pids_mutex;
->> -       /* Array of process ids in the cgroup */
->> -       pid_t *tasks_pids;
->> +       /* Multi-array of process ids in the cgroup */
->> +       const pid_t *const *tasks_pids;
->>        /* How many files are using the current tasks_pids array */
->>        int pids_use_count;
->>        /* Length of the current tasks_pids array */
->> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->> index 996865a..f61b152 100644
->> --- a/kernel/cgroup.c
->> +++ b/kernel/cgroup.c
->> @@ -2004,6 +2004,8 @@ int cgroup_scan_tasks(struct cgroup_scanner *scan)
->>  *
->>  */
->>
->> +const static int pid_per_page = PAGE_SIZE / sizeof(pid_t);
->> +
->>  /*
->>  * Load into 'pidarray' up to 'npids' of the tasks using cgroup
->>  * 'cgrp'.  Return actual number of pids loaded.  No need to
->> @@ -2011,16 +2013,22 @@ int cgroup_scan_tasks(struct cgroup_scanner *scan)
->>  * read section, so the css_set can't go away, and is
->>  * immutable after creation.
->>  */
->> -static int pid_array_load(pid_t *pidarray, int npids, struct cgroup *cgrp)
->> +static int pid_array_load(pid_t **pidarray, int npids, struct cgroup *cgrp)
->>  {
->> -       int n = 0;
->> +       int n = 0, i = 0, j = 0;
->>        struct cgroup_iter it;
->>        struct task_struct *tsk;
->>        cgroup_iter_start(cgrp, &it);
->>        while ((tsk = cgroup_iter_next(cgrp, &it))) {
->>                if (unlikely(n == npids))
->>                        break;
->> -               pidarray[n++] = task_pid_vnr(tsk);
->> +               pidarray[i][j] = task_pid_vnr(tsk);
->> +               n++;
->> +               j++;
->> +               if (j == pid_per_page) {
->> +                       i++;
->> +                       j = 0;
->> +               }
->>        }
->>        cgroup_iter_end(cgrp, &it);
->>        return n;
->> @@ -2079,11 +2087,27 @@ err:
->>        return ret;
->>  }
->>
->> -static int cmppid(const void *a, const void *b)
->> +static inline pid_t getpidofmbuf(const pid_t *const *multibuf, int index)
->> +{
->> +       return multibuf[index / pid_per_page][index % pid_per_page];
->> +}
->> +
->> +static int cmppid(const void *c, size_t left, size_t right)
->>  {
->> -       return *(pid_t *)a - *(pid_t *)b;
->> +       return getpidofmbuf(c, left) - getpidofmbuf(c, right);
->>  }
->>
->> +static inline pid_t *getpidptr(pid_t *const *multibuf, int index)
->> +{
->> +       return &multibuf[index / pid_per_page][index % pid_per_page];
->> +}
->> +
->> +static void swappid(void *c, size_t left, size_t right)
->> +{
->> +       pid_t rpid = getpidofmbuf(c, right);
->> +       *getpidptr(c, right) = getpidofmbuf(c, left);
->> +       *getpidptr(c, left) = rpid;
->> +}
->>
->>  /*
->>  * seq_file methods for the "tasks" file. The seq_file position is the
->> @@ -2100,19 +2124,19 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
->>         * next pid to display, if any
->>         */
->>        struct cgroup *cgrp = s->private;
->> -       int index = 0, pid = *pos;
->> -       int *iter;
->> +       int index = 0;
->> +       pid_t pid = *pos;
->>
->>        down_read(&cgrp->pids_mutex);
->>        if (pid) {
->>                int end = cgrp->pids_length;
->> -               int i;
->>                while (index < end) {
->>                        int mid = (index + end) / 2;
->> -                       if (cgrp->tasks_pids[mid] == pid) {
->> +                       pid_t mpid = getpidofmbuf(cgrp->tasks_pids, mid);
->> +                       if (mpid == pid) {
->>                                index = mid;
->>                                break;
->> -                       } else if (cgrp->tasks_pids[mid] <= pid)
->> +                       } else if (mpid <= pid)
->>                                index = mid + 1;
->>                        else
->>                                end = mid;
->> @@ -2122,9 +2146,8 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
->>        if (index >= cgrp->pids_length)
->>                return NULL;
->>        /* Update the abstract position to be the actual pid that we found */
->> -       iter = cgrp->tasks_pids + index;
->> -       *pos = *iter;
->> -       return iter;
->> +       *pos = getpidofmbuf(cgrp->tasks_pids, index);
->> +       return (void *)(index ^ -0x10000); /* we cannot return 0 */
->>  }
->>
->>  static void cgroup_tasks_stop(struct seq_file *s, void *v)
->> @@ -2136,25 +2159,26 @@ static void cgroup_tasks_stop(struct seq_file *s, void *v)
->>  static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
->>  {
->>        struct cgroup *cgrp = s->private;
->> -       int *p = v;
->> -       int *end = cgrp->tasks_pids + cgrp->pids_length;
->> +       int index = (int)v ^ -0x10000;
->>
->>        /*
->>         * Advance to the next pid in the array. If this goes off the
->>         * end, we're done
->>         */
->> -       p++;
->> -       if (p >= end) {
->> +       index++;
->> +       if (index >= cgrp->pids_length) {
->>                return NULL;
->>        } else {
->> -               *pos = *p;
->> -               return p;
->> +               *pos = getpidofmbuf(cgrp->tasks_pids, index);
->> +               return (void *)(index ^ -0x10000); /* we cannot return 0 */
->>        }
->>  }
->>
->>  static int cgroup_tasks_show(struct seq_file *s, void *v)
->>  {
->> -       return seq_printf(s, "%d\n", *(int *)v);
->> +       struct cgroup *cgrp = s->private;
->> +       int index = (int)v ^ -0x10000;
->> +       return seq_printf(s, "%d\n", getpidofmbuf(cgrp->tasks_pids, index));
->>  }
->>
->>  static struct seq_operations cgroup_tasks_seq_operations = {
->> @@ -2164,12 +2188,60 @@ static struct seq_operations cgroup_tasks_seq_operations = {
->>        .show = cgroup_tasks_show,
->>  };
->>
->> +static void *alloc_mutibufs(size_t npids)
->> +{
->> +       int i, j, npages = (npids + pid_per_page - 1) / pid_per_page;
->> +       unsigned long *pages;
->> +
->> +       if (npids <= pid_per_page - sizeof(pid_t *) / sizeof(pid_t)) {
->> +               void *pids = kmalloc(sizeof(pid_t *) + sizeof(pid_t) * npids,
->> +                               GFP_KERNEL);
->> +               if (!pids)
->> +                       return NULL;
->> +               /* make single buf fake multi-buf */
->> +               *(void **)pids = pids + sizeof(pid_t *);
->> +               return pids;
->> +       }
->> +
->> +       pages = kmalloc(sizeof(*pages) * npages, GFP_KERNEL);
->> +       if (!pages)
->> +               return NULL;
->> +
->> +       for (i = 0; i < npages; i++) {
->> +               pages[i] = __get_free_page(GFP_KERNEL);
->> +               if (unlikely(!pages[i]))
->> +                       goto depopulate;
->> +       }
->> +       return pages;
->> +
->> +depopulate:
->> +       for (j = 0; j < i; j++)
->> +               free_page(pages[j]);
->> +       kfree(pages);
->> +       return NULL;
->> +}
->> +
->> +static void free_multibufs(void *ptr, size_t npids)
->> +{
->> +       if (!ptr)
->> +               return;
->> +
->> +       if (npids > pid_per_page - sizeof(pid_t *) / sizeof(pid_t)) {
->> +               int i, npages = (npids + pid_per_page - 1) / pid_per_page;
->> +               unsigned long *pages = ptr;
->> +               for (i = 0; i < npages; i++)
->> +                       free_page(pages[i]);
->> +       }
->> +
->> +       kfree(ptr);
->> +}
->> +
->>  static void release_cgroup_pid_array(struct cgroup *cgrp)
->>  {
->>        down_write(&cgrp->pids_mutex);
->>        BUG_ON(!cgrp->pids_use_count);
->>        if (!--cgrp->pids_use_count) {
->> -               kfree(cgrp->tasks_pids);
->> +               free_multibufs((void *)cgrp->tasks_pids, cgrp->pids_length);
->>                cgrp->tasks_pids = NULL;
->>                cgrp->pids_length = 0;
->>        }
->> @@ -2202,7 +2274,7 @@ static struct file_operations cgroup_tasks_operations = {
->>  static int cgroup_tasks_open(struct inode *unused, struct file *file)
->>  {
->>        struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
->> -       pid_t *pidarray;
->> +       pid_t **pidarray;
->>        int npids;
->>        int retval;
->>
->> @@ -2217,19 +2289,19 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
->>         * show up until sometime later on.
->>         */
->>        npids = cgroup_task_count(cgrp);
->> -       pidarray = kmalloc(npids * sizeof(pid_t), GFP_KERNEL);
->> +       pidarray = alloc_mutibufs(npids);
->>        if (!pidarray)
->>                return -ENOMEM;
->>        npids = pid_array_load(pidarray, npids, cgrp);
->> -       sort(pidarray, npids, sizeof(pid_t), cmppid, NULL);
->> +       obj_sort(pidarray, 0, npids, cmppid, swappid);
->>
->>        /*
->>         * Store the array in the cgroup, freeing the old
->>         * array if necessary
->>         */
->>        down_write(&cgrp->pids_mutex);
->> -       kfree(cgrp->tasks_pids);
->> -       cgrp->tasks_pids = pidarray;
->> +       free_multibufs((void *)cgrp->tasks_pids, cgrp->pids_length);
->> +       cgrp->tasks_pids = (const pid_t *const *)pidarray;
->>        cgrp->pids_length = npids;
->>        cgrp->pids_use_count++;
->>        up_write(&cgrp->pids_mutex);
->>
->>
->>
-> 
-> 
-> 
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 8fdd3cb..cb8a3d6 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -267,8 +267,46 @@ extern int kgdb_register_io_module(struct kgdb_io
+*local_kgdb_io_ops);
+ extern void kgdb_unregister_io_module(struct kgdb_io
+*local_kgdb_io_ops);
+ 
+ extern int kgdb_hex2long(char **ptr, unsigned long *long_val);
+-extern int kgdb_mem2hex(char *mem, char *buf, int count);
+-extern int kgdb_hex2mem(char *buf, char *mem, int count);
++
++/**
++ *      kgdb_mem2hex - (optional arch override) translate bin to hex
+chars
++ *      @mem: source buffer
++ *      @buf: target buffer
++ *      @count: number of bytes in mem
++ *
++ *      Architectures which do not support probe_kernel_(read|write),
++ *      can make an alternate implementation of this function.
++ *      This function safely reads memory into hex
++ *      characters for use with the kgdb protocol.
++ */
++extern int __weak kgdb_mem2hex(char *mem, char *buf, int count);
++
++/**
++ *      kgdb_hex2mem - (optional arch override) translate hex chars to
+bin
++ *      @buf: source buffer
++ *      @mem: target buffer
++ *      @count: number of bytes in mem
++ *
++ *      Architectures which do not support probe_kernel_(read|write),
++ *      can make an alternate implementation of this function.
++ *      This function safely writes hex characters into memory
++ *      for use with the kgdb protocol.
++ */
++extern int __weak kgdb_hex2mem(char *buf, char *mem, int count);
++
++/**
++ *      kgdb_ebin2mem - (optional arch override) Copy the binary array
++ *     pointed to by buf into mem.
++ *      @buf: source buffer
++ *      @mem: target buffer
++ *      @count: number of bytes in mem
++ *
++ *      Architectures which do not support probe_kernel_(read|write),
++ *      can make an alternate implementation of this function.
++ *      This function safely copies binary array into memory
++ *      for use with the kgdb protocol.
++ */
++extern int __weak kgdb_ebin2mem(char *buf, char *mem, int count);
+ 
+ extern int kgdb_isremovedbreak(unsigned long addr);
+ 
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index c803730..aae578e 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -364,7 +364,7 @@ static void put_packet(char *buffer)
+  * Convert the memory pointed to by mem into hex, placing result in
+buf.
+  * Return a pointer to the last char put in buf (null). May return an
+error.
+  */
+-int kgdb_mem2hex(char *mem, char *buf, int count)
++int __weak kgdb_mem2hex(char *mem, char *buf, int count)
+ {
+        char *tmp;
+        int err;
+@@ -394,7 +394,7 @@ int kgdb_mem2hex(char *mem, char *buf, int count)
+  * 0x7d escaped with 0x7d.  Return a pointer to the character after
+  * the last byte written.
+  */
+-static int kgdb_ebin2mem(char *buf, char *mem, int count)
++int __weak kgdb_ebin2mem(char *buf, char *mem, int count)
+ {
+        int err = 0;
+        char c;
+@@ -419,7 +419,7 @@ static int kgdb_ebin2mem(char *buf, char *mem, int
+count)
+  * Return a pointer to the character AFTER the last byte written.
+  * May return an error.
+  */
+-int kgdb_hex2mem(char *buf, char *mem, int count)
++int __weak kgdb_hex2mem(char *buf, char *mem, int count)
+ {
+        char *tmp_raw;
+        char *tmp_hex;
+-- 
+1.6.0
+
 
 
