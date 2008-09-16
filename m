@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYIPRr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbYIPRrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756297AbYIPRr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 13:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbYIPRrT
+	id S1756851AbYIPRrw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 13:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYIPRrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 13:47:19 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:63043 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752172AbYIPRrT (ORCPT
+	Tue, 16 Sep 2008 13:47:42 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:60514 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbYIPRrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 13:47:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=IvEDKokAn3JWuRn5/I6ZtK+nqDuOFQbIBJ8xWXO9xMhCOnJFqlVAPyXGoSM/XUWm0S
-         6uMZ+KAePbvszHgo+9my7XTYD/LQMrdhJCyHxTcV3QXvQfKTADOD6necrM3cpEEaWz11
-         LW+CGsflLuYDUjpplaNIBWXob5dOk50ZHrmhY=
-Message-ID: <86802c440809161047r14f928fcud1a88b25a0969b17@mail.gmail.com>
-Date: Tue, 16 Sep 2008 10:47:17 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] introduce boot_printk()
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, jbaron <jbaron@redhat.com>
-In-Reply-To: <86802c440809161045q2f6d80f1yb6e79f32c6e0c303@mail.gmail.com>
+	Tue, 16 Sep 2008 13:47:41 -0400
+Message-ID: <48CFF150.8070400@colorfullife.com>
+Date: Tue, 16 Sep 2008 19:48:00 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org
+Subject: Re: [PATCH, RFC] v4 scalable classic RCU implementation
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <48CFE466.8010200@colorfullife.com> <20080916173012.GC6717@linux.vnet.ibm.com>
+In-Reply-To: <20080916173012.GC6717@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221465916-30889-1-git-send-email-yhlu.kernel@gmail.com>
-	 <48CE983C.8040709@zytor.com>
-	 <86802c440809151018k2c7874dfjc8e9791bee9365f9@mail.gmail.com>
-	 <48CE9A5C.1030603@zytor.com>
-	 <86802c440809151034ycd6442me679792880b03320@mail.gmail.com>
-	 <1221575196.6943.24.camel@lappy.programming.kicks-ass.net>
-	 <48CFD97C.6080002@zytor.com>
-	 <86802c440809161045q2f6d80f1yb6e79f32c6e0c303@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 10:45 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Tue, Sep 16, 2008 at 9:06 AM, H. Peter Anvin <hpa@zytor.com> wrote:
->> Peter Zijlstra wrote:
->>>>
->>>> every subsystem will have
->>>> x86_printk
->>>> acpi_printk
->>>> pci_printk
->>>
->>> doesn't sound like an easily extensible interface, better would be
->>> extending printk with a KERN_subsys tag like proposed.
->>>
->>
->> That would be my thinking too.
+Paul E. McKenney wrote:
+>   
+>> That means an O(NR_CPUS) loop with disabled local interrupts :-(
+>> Is that correct?
+>>     
 >
-> it seem using pci_printk or acpi_printk.. could be more flexible.
->
-> otherwise will need to keep update linux/kernel.h to add so call subsys tags...
->
-> use only need to
-> have DEFINE_LOGLEVEL_SETUP(xxx) in c
-> and have DECLARE_LOGLEVEL(xxx) in .h
-> then just use xxx_printk
->
-and in real subsys could have as many the xxx_printk that user want...
+> With the definition of "O()" being the worst-case execution time, yes.
+> But this worst case could only happen when the system was mostly idle,
+> in which case the added overhead should not be too horribly bad.
+No: "was mostly running cpu_idle()". A cpu_idle() cpu could execute lots 
+of irqs and softirqs.
+So the worst case would be a system with 1 cpu/node for reserved for irq 
+handling.
+The "idle" cpu would be always in no_hz mode, even though it might be 
+100% busy handling irqs.
+The remaning cpus might be 100% busy handling user space.
 
-YH
+And every quiescent state will end up in that O(NR_CPUS) loop.
+
+--
+    Manfred
