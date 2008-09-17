@@ -1,74 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYIQSws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYIQS5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbYIQSws (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 14:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbYIQSwk
+	id S1755714AbYIQS5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 14:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbYIQS5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 14:52:40 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:2735 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755138AbYIQSwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 14:52:40 -0400
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-Subject: [PATCH] bnx2: Promote vector field in bnx2_irq structure from
- u16 to unsigned int
-From: "Benjamin Li" <benli@broadcom.com>
-Reply-to: 20080916190144.46f534b4@bree.surriel.com
-To: "Rik van Riel" <riel@redhat.com>, "Michael Chan" <mchan@broadcom.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>
-cc: "inux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 17 Sep 2008 11:52:10 -0700
-Message-ID: <1221677530.4028.17.camel@localhost>
+	Wed, 17 Sep 2008 14:57:17 -0400
+Received: from gv-out-0910.google.com ([216.239.58.188]:35872 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755178AbYIQS5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 14:57:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=W33Dt/NChV7dbZkWZpG+OowPmZQuL0p2p/QU/I9schCVgnQxwMSJ6emA4vYZLATHkF
+         3Z5mVWyAfoGSDvc8gMI2t4OI5tHScykraTvM6UwedBFs8TEbEiJHT8ohtXV1k2m/JEcE
+         wrXOim/5FUAo6RgnTCvyOZGj1JRO0ZOlFa3rg=
+Date: Wed, 17 Sep 2008 20:56:38 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] apci: dump slit with printk(KERN_ACPI...)
+Message-ID: <20080917185632.GC5524@joi>
+References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <1221640067-24389-6-git-send-email-yhlu.kernel@gmail.com> <20080917181856.GA5524@joi> <86802c440809171128y17cbb6b6mca9c5beae0b2dcd4@mail.gmail.com>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.3.1
-X-WSS-ID: 64CF8E6E4YK37282082-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440809171128y17cbb6b6mca9c5beae0b2dcd4@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c455b36005a9b1b6a2b0036b7947d3f4bebb9f2d Mon Sep 17 00:00:00 2001
-From: Benjamin Li <benli@broadcom.com>
-Date: Tue, 16 Sep 2008 17:20:11 -0700
-Subject: [PATCH] bnx2: Promote vector field in bnx2_irq structure from u16 to unsigned int
+On Wed, Sep 17, 2008 at 11:28:48AM -0700, Yinghai Lu wrote:
+> On Wed, Sep 17, 2008 at 11:19 AM, Marcin Slusarz
+> <marcin.slusarz@gmail.com> wrote:
+> > On Wed, Sep 17, 2008 at 01:27:46AM -0700, Yinghai Lu wrote:
+> >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> >>
+> >> ---
+> >>  drivers/acpi/numa.c |    9 +++++++++
+> >>  1 file changed, 9 insertions(+)
+> >>
+> >> Index: linux-2.6/drivers/acpi/numa.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/drivers/acpi/numa.c
+> >> +++ linux-2.6/drivers/acpi/numa.c
+> >> @@ -150,6 +150,15 @@ static __init int slit_valid(struct acpi
+> >>  {
+> >>       int i, j;
+> >>       int d = slit->locality_count;
+> >> +     printk(KERN_DEBUG KERN_ACPI "ACPI: SLIT: nodes = %d\n", d);
+> >> +     for (i = 0; i < d; i++) {
+> >> +             printk(KERN_DEBUG KERN_ACPI "  ");
+> >> +             for (j = 0; j < d; j++)  {
+> >> +                     u8 val = slit->entry[d*i + j];
+> >> +                     printk(KERN_CONT KERN_ACPI " %d", val);
+> >> +             }
+> >> +             printk(KERN_CONT KERN_ACPI "\n");
+> >> +     }
+> >
+> > It will produce something like this:
+> > <7><acpi>ACPI: SLIT: nodes = %d\n
+> > <7><acpi>  <acpi> %d<acpi> %d<acpi> %d<acpi> %d<acpi>\n
+> >
+> > bit wrong... ;)
+> 
+> did you check v6...?
 
-The bnx2 driver stores/uses the irq value from the pci_dev internally.
-But when it stores the irq value, it has been performing an
-integer demotion.  Because of the recent changes made to
-arch/x86/kernel/io_apic.c, the new method in creating the irq value
-(using build_irq_for_pci_dev()) has exposed this bug on x86 systems.
+No, I didn't test it.
+Sorry for the noise.
 
-Because of this demotion when calling request_irq() from
-bnx2_request_irq(), the driver would get a return code of -EINVAL.
-This is because the kernel could not find the requested irq descriptor.
-By storing the irq value properly, the kernel can find the correct
-irq descriptor and the bnx2 driver can operate normally.
-
-Signed-off-by: Benjamin Li <benli@broadcom.com>
-Signed-off-by: Michael Chan <mchan@broadcom.com>
-
----
- drivers/net/bnx2.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/bnx2.h b/drivers/net/bnx2.h
-index c3c579f..dfacd31 100644
---- a/drivers/net/bnx2.h
-+++ b/drivers/net/bnx2.h
-@@ -6597,7 +6597,7 @@ struct flash_spec {
- 
- struct bnx2_irq {
- 	irq_handler_t	handler;
--	u16		vector;
-+	unsigned int	vector;
- 	u8		requested;
- 	char		name[16];
- };
--- 
-1.5.5.1
-
-
-
-
+Marcin
