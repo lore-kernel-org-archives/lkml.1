@@ -1,90 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbYIQATy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbYIQAYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbYIQATy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 20:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYIQATq
+	id S1753728AbYIQAYp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 20:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYIQAYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 20:19:46 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45963 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbYIQATq (ORCPT
+	Tue, 16 Sep 2008 20:24:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:34881 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbYIQAYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 20:19:46 -0400
-Date: Wed, 17 Sep 2008 02:24:04 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: andi@firstfloor.org, mingo@elte.hu, joerg.roedel@amd.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
-Message-ID: <20080917002404.GG25711@one.firstfloor.org>
-References: <20080916134335.GC25711@one.firstfloor.org> <20080917021319O.fujita.tomonori@lab.ntt.co.jp> <20080916175824.GF25711@one.firstfloor.org> <20080917085335F.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 16 Sep 2008 20:24:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=bsem0uolv3KbedPBVxCYRFremDbOMjH4qbCaRIeg8OkqhE8Mxz9Xd4SdcBfv6GMbcG
+         mgXQugzFpA+A3Gy8m2PxeKvn1EAZHvUOf9I/CBbursVDNtnu5QyyD52EGGEZODy+hZLh
+         WF3MrrGcEC/38n5dS9YnqmAqiE9jvE+10Dj2k=
+Message-ID: <cfd18e0f0809161724w646b1e21s466afe74579f12e0@mail.gmail.com>
+Date: Wed, 17 Sep 2008 02:24:32 +0200
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Ulrich Drepper" <drepper@redhat.com>
+Subject: Re: sys_paccept: disable paccept() until API design is resolved
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Alan Cox" <alan@redhat.com>, "Jakub Jelinek" <jakub@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       netdev <netdev@vger.kernel.org>, "Roland McGrath" <roland@redhat.com>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>, "Christoph Hellwig" <hch@lst.de>,
+       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+In-Reply-To: <48D03E85.9030808@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080917085335F.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.4.2.1i
+References: <48CFA10D.2010106@gmail.com> <48D03E85.9030808@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 08:53:42AM +0900, FUJITA Tomonori wrote:
-> On Tue, 16 Sep 2008 19:58:24 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > > Those always are handled elsewhere in the block layer (using the bounce_pfn
-> > > > mechanism)
-> > > 
-> > > I don't think that the bounce guarantees that dma_alloc_coherent()
-> > > returns an address that a device can access to.
-> > 
-> > dma_alloc_coherent() is not used for block IO data. And dma_alloc_coherent()
-> > does handle masks > 24bit < 32bits just fine.
-> 
-> What do you mean? For example, some aacraid cards have 31bit dma
-> mask. What guarantees that IOMMUs's dma_alloc_coherent don't return a
-> virtual address > 31bit < 32bit?
+On Wed, Sep 17, 2008 at 1:17 AM, Ulrich Drepper <drepper@redhat.com> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Michael Kerrisk wrote:
+>> The patch below disables the new sys_paccept() for now.  Please
+>> apply for 2.6.27-rc, so that we do not release this API into
+>> the wild before a conclusion has been reached about its design.
+>
+> There is no reason for that.
+>
+>
+>> The reasons for disabling paccept() are as follows:
+>>
+>> * The API is more complex than needed.  There is AFAICS no demonstrated
+>>   use case that the sigset argument of this syscall serves that
+>>   couldn't equally be served by the use of pselect/ppoll/epoll_pwait +
+>
+> It would unnecessarily require programs to be changed.
 
-At least the old IOMMU implementations (GART, non GART) handled this
-by falling back to GFP_DMA. I haven't checked if that didn't get broken
-in the recent reorganization, but if it got it should be fixed of course.
-But hopefully it still works.
+What is "it"?  What "would unnecessarily require programs to be changed"?
 
-But that has nothing to do with _map_sg() anyways. The semantics here
-are quite different, matching traditional i386 semantics. On i386
-_alloc_coherent always did this logic, and map_sg/map_single didn't
-do anything.
+> I've explained
+> that programs cannot efficiently use accept() and poll() when multiple
+> threads are involved.  This means in these situations you'll find a
+> single thread handling only the accept() calls.
 
+I'm assuming that you mean this text from another thread:
 
-> 
-> 
-> > > I'm not familiar with what the networking does, for example, seems
-> > > that b44 sets dev->dma_mask to DMA_30BIT_MASK and b44_start_xmit()
-> > > does:
-> > > 
-> > 
-> > b44 (and related designs like the bcm wireless chipset) 
-> > has its own bouncing scheme. IT doesn't need any hacks in map_sg
-> >  
-> > > IOMMUs can try to return an address that the NIC can access to.
-> > 
-> > It's not worth to handle this strange case. The drivers do anyways.
-> > These are very cheap devices which are only rarely used in systems
-> > with >2GB and for those cases the existing bouncing setup works fine.
-> 
-> I think that the patch is a pretty straightforward, it just the same
-> thing that IOMMUs with > 32bits virtual address space do. We can do
-> better with the simple patch. But I'm ok with dropping the patch for
-> GART since we can live without the patch, as you said.
+[[
+> accept, like select/poll, is used often as a function to dealy
+> operation.  Unlike read, recv, etc, which are handled using O_NONBLOCK
+> and select/poll.  pselect/ppoll do not really have a sigset parameter
+> to handle signals in general.  You use it to enable special handling
+> in case of blocking.  Example: if you want to implement userlevel
+> context switching, you dedicate a signal to wake up any blocked
+> thread.  Since accept falls more into the same category than poll,
+> this means the sigset parameter is justified.  In theory we could add
+> it to all functions but there is no reason to do this without any
+> other reason to change the interface.
+]]
 
-The semantics are a little weird and non intuitive I agree. Perhaps it would 
-make sense to document them properly? 
+I find this very difficult to understand -- what makes it difficult is
+the wording of the explanation.  Could you please take some time to
+(much) more clearly explain the above, and especially to very clearly
+explain why paccept() serves needs that can't be dealt with by
+pseelect/ppoll/epoll_pwait + accept().
 
-With the DMA allocator rework I did some time ago it would be actually
-relatively straight forward to do. But to do it properly would
-require doing it for 32bit x86 too, and frankly I don't think it's
-worth doing there. Devices with such weird masks are on their way out
-and after we survived this plague for years and finally things are 
-getting better I don't think it's worth complicating basic infrastructure
-for this.
+>> * The use of a sigset argument is not consistent with other I/O APIs
+>>   that can block on a single file descriptor (e.g., read(), recv(),
+>>   connect()).
+>
+> This is because none of the other interfaces had (so far) be revised.
+> With this flawed argumentation you'd prevent any program ever to be made.
+>
+>
+>> * The behavior of paccept() when interrupted by a signal is IMO
+>>   strange:
+>
+> You use your own opinion as the deciding factor?
 
--Andi
+I already clearly stated it was my opinion, and pointed out that
+Roland had a diffferent opinion.  Really, what is your point?
+
+> The behavior differs
+> from other uses but is consistent with the accept() behavior.
+>
+>> I believe that instead, a simpler API, consistent with Ulrich's
+>> other recent additions, is preferable:
+>>
+>> accept4(int fd, struct sockaddr *sa, socklen_t *salen, ind flags);
+>
+> The signal set wasn't actually my idea.  See:
+>
+> http://marc.info/?l=linux-kernel&m=120909788728078&w=2
+
+[CC=+ Evgeniy Polyakov <johnpol@2ka.mipt.ru>]
+
+But, what are you trying to say in pointing out that this wasn't your idea?
+
+>> At this point, I am hoping we either will get a counter-argument
+>> from Ulrich about why we really do need paccept()'s sigset argument,
+>> or that he will resubmit the original accept4() patch.
+>
+> I have explained the need already. you just chose to ignore it.
+
+No.  You still have given no clear explanation.  Please give one.
+
+Cheers,
+
+Michael
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
