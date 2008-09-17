@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYIQKlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbYIQKny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbYIQKlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 06:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIQKlH
+	id S1753766AbYIQKny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 06:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbYIQKnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 06:41:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57664 "EHLO mx3.mail.elte.hu"
+	Wed, 17 Sep 2008 06:43:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53430 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752172AbYIQKlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 06:41:04 -0400
-Date: Wed, 17 Sep 2008 12:40:44 +0200
+	id S1752354AbYIQKnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 06:43:46 -0400
+Date: Wed, 17 Sep 2008 12:43:27 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
-	2.6.22 -&gt; 2.6.28
-Message-ID: <20080917104044.GC18764@elte.hu>
-References: <SpS7rta8n4.A.mr.ZesyIB@albercik> <48CAE7A0.8000004@linux-foundation.org> <1221306287.5213.111.camel@marge.simson.net> <48CD1D25.9080301@linux-foundation.org> <1221421907.4597.24.camel@marge.simson.net> <1221475440.4784.39.camel@marge.simson.net> <1221568105.5020.17.camel@marge.simson.net> <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi> <1221626391.5043.13.camel@marge.simson.net> <1221627676.5125.3.camel@marge.simson.net>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: andi@firstfloor.org, joerg.roedel@amd.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about
+	virtual mappings
+Message-ID: <20080917104327.GD18764@elte.hu>
+References: <20080916134335.GC25711@one.firstfloor.org> <20080917021319O.fujita.tomonori@lab.ntt.co.jp> <20080916175824.GF25711@one.firstfloor.org> <20080917085335F.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1221627676.5125.3.camel@marge.simson.net>
+In-Reply-To: <20080917085335F.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,46 +35,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-> On Wed, 2008-09-17 at 06:40 +0200, Mike Galbraith wrote:
-> > On Tue, 2008-09-16 at 17:07 +0300, Ilpo Järvinen wrote:
+> On Tue, 16 Sep 2008 19:58:24 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> > > One additional sanity check could be to rebase security 6f0f0fd4963 on top 
-> > > of the c142bda458a and then see if bisection among those security commits 
-> > > on top yields to the the same result... Though I doubt it can change much 
-> > > because there was not that much relevant non-security things in the merge 
-> > > in question.
+> > > > Those always are handled elsewhere in the block layer (using the bounce_pfn
+> > > > mechanism)
+> > > 
+> > > I don't think that the bounce guarantees that dma_alloc_coherent()
+> > > returns an address that a device can access to.
 > > 
-> > I'm not a master of git-foo, so that is not an option.  However, a dinky
-> > bisection c142bda4..847106f very clearly says...
-> > 
-> > marge:..kernel/linux-2.6.27.git # git bisect bad
-> > 6f0f0fd496333777d53daff21a4e3b28c4d03a6d is first bad commit
-> > commit 6f0f0fd496333777d53daff21a4e3b28c4d03a6d
-> > Author: James Morris <jmorris@namei.org>
-> > Date:   Thu Jul 10 17:02:07 2008 +0900
-> > 
-> >     security: remove register_security hook
-> > 
-> >     The register security hook is no longer required, as the capability
-> >     module is always registered.  LSMs wishing to stack capability as
-> >     a secondary module should do so explicitly.
-> > 
-> >     Signed-off-by: James Morris <jmorris@namei.org>
-> >     Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
-> >     Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > :040000 040000 0177ef46d305e51e27bfcc4350a40577f8ba8d3d 64b64c10a424df4539653a8ee34f1a2329300931 M      include
-> > :040000 040000 e318891e514de674fd064f6bfad70d5633b1aff1 0dbb38d5aa7fc3e4b2e09dc65796ce7cd5faeb26 M      security
+> > dma_alloc_coherent() is not used for block IO data. And dma_alloc_coherent()
+> > does handle masks > 24bit < 32bits just fine.
 > 
-> Which is high grade horse-pookey.
+> What do you mean? For example, some aacraid cards have 31bit dma
+> mask. What guarantees that IOMMUs's dma_alloc_coherent don't return a
+> virtual address > 31bit < 32bit?
+> 
+> 
+> > > I'm not familiar with what the networking does, for example, seems
+> > > that b44 sets dev->dma_mask to DMA_30BIT_MASK and b44_start_xmit()
+> > > does:
+> > > 
+> > 
+> > b44 (and related designs like the bcm wireless chipset) 
+> > has its own bouncing scheme. IT doesn't need any hacks in map_sg
+> >  
+> > > IOMMUs can try to return an address that the NIC can access to.
+> > 
+> > It's not worth to handle this strange case. The drivers do anyways. 
+> > These are very cheap devices which are only rarely used in systems 
+> > with >2GB and for those cases the existing bouncing setup works 
+> > fine.
+> 
+> I think that the patch is a pretty straightforward, it just the same 
+> thing that IOMMUs with > 32bits virtual address space do. We can do 
+> better with the simple patch. But I'm ok with dropping the patch for 
+> GART since we can live without the patch, as you said.
 
-perhaps re-test commit 6f0f0fd49 and its parent commit, 93cbace7a0.
-
-It looks like a potentially bogus bisection result, but _maybe_ it has 
-relevance: changes the size of "struct security_operations", which could 
-have alignment and layout effects on all sorts of kernel variables, 
-kmalloc sizes, etc.
+no - any extra layer of robustness is good in such a critical piece of 
+code. Perhaps also emit a one-time printk if you really consider the use 
+as a potential sign of bugs, but dont remove robustness.
 
 	Ingo
