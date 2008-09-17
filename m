@@ -1,91 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYIQVY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYIQV0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbYIQVY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYIQVYr
+	id S1755342AbYIQV0E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYIQVZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:24:47 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:39860 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbYIQVYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:24:46 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-Date: Wed, 17 Sep 2008 17:24:36 -0400
-User-Agent: KMail/1.9.9
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, jmorris@namei.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, netdev@vger.kernel.org
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil> <20080917125053.1f9ecf37.akpm@linux-foundation.org>
-In-Reply-To: <20080917125053.1f9ecf37.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 17 Sep 2008 17:25:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37134 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753721AbYIQVZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 17:25:54 -0400
+Subject: [PATCH] Audit: Log TIOCSTI
+From: Miloslav =?UTF-8?Q?Trma=C4=8D?= <mitr@redhat.com>
+To: Eric Paris <eparis@redhat.com>, viro <viro@zeniv.linux.org.uk>
+Cc: linux-audit <linux-audit@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 17 Sep 2008 23:24:48 +0200
+Message-Id: <1221686688.3674.7.camel@amilo>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809171724.36269.paul.moore@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 September 2008 3:50:53 pm Andrew Morton wrote:
-> On Mon, 15 Sep 2008 09:05:26 -0400
-> Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > However, the most likely explanation is simply that when /proc/net
-> > was changed from being a directory to being a symlink to
-> > /proc/self/net, that introduced an additional permission check on
-> > accesses of /proc/net/<whatever>, namely the read check on the
-> > symlink itself. And since that check wasn't happening on /proc/net
-> > accesses with older kernels, older policies didn't allow it.
-> >
-> > As to why others haven't reported it, I expect that they have
-> > updated their policies to newer ones that allow the necessary
-> > access.  The fact that legacy distros wouldn't have such updated
-> > policies isn't surprising - they don't push updates to those
-> > distros for new kernels.  FC5 and FC6 are both EOL'd, right?
-> >
-> > In any event, we didn't change anything in SELinux - the change was
-> > elsewhere (in the proc/net implementation).  Don't blame the
-> > messenger please.
->
-> Vanilla FC5 broke and vanilla FC6 broke.  Did vanilla FC7, 8 or 9
-> break?
->
-> http://smolt.fedoraproject.org/static/stats/stats.html shows
-> 11,000-odd people running FC5 and FC6.  It would be incautious to
-> assume that all those people have updated their selinux rules.
->
-> And _requiring_ people to update their selinux rules to fix a
-> kernel-caused regression is a pretty big deal for some people, I
-> expect.
+From: Miloslav Trmac <mitr@redhat.com>
 
-Just so I'm clear on the context of the problem, it sounds like if a FC5 
-(I'm limiting myself to FC5 for the moment) user upgraded to a recent 
-(2.6.25+) kernel (non-distro supplied in the case of FC5) then they 
-will run into problems unless they also upgrade their SELinux policy, 
-yes?
+AUDIT_TTY records currently log all data read by processes marked for
+TTY input auditing, even if the data was "pushed back" using the TIOCSTI
+ioctl, not typed by the user.
 
-If that is the case I'm not sure it is really that big of a deal.  Maybe 
-I'm in the minority here, but in my mind once you step away from the 
-distro supplied kernel (also applies to other packages, although those 
-are arguably less critical) you should also bear the responsibility to 
-make sure you upgrade/tweak/install whatever other bits need to be 
-fixed.
+This patch records all TIOCSTI calls to disambiguate the input.  It
+generates one audit message per character pushed back; considering
+TIOCSTI is used very rarely, this simple solution is probably good
+enough.  (The only program I could find that uses TIOCSTI is mailx/nail
+in "header editing" mode, e.g. using the ~h escape.  mailx is used very
+rarely, and the escapes are used even rarer.)
 
-> Then again, given that this regression has been out there since
-> 2.6.25, I guess not too many people are hurting from it.  But we
-> suck.
+Signed-Off-By: Miloslav Trmac <mitr@redhat.com>
+---
+ drivers/char/tty_audit.c |   75 +++++++++++++++++++++++++++++--------
+ drivers/char/tty_io.c    |    1 
+ include/linux/tty.h      |    4 +
+ 3 files changed, 65 insertions(+), 15 deletions(-)
+diff --git a/drivers/char/tty_audit.c b/drivers/char/tty_audit.c
+index 3582f43..d927616 100644
+--- a/drivers/char/tty_audit.c
++++ b/drivers/char/tty_audit.c
+@@ -67,6 +67,28 @@ static void tty_audit_buf_put(struct tty_audit_buf *buf)
+ 		tty_audit_buf_free(buf);
+ }
+ 
++static void tty_audit_log(const char *description, struct task_struct *tsk,
++			  uid_t loginuid, unsigned sessionid, int major,
++			  int minor, unsigned char *data, size_t size)
++{
++	struct audit_buffer *ab;
++
++	ab = audit_log_start(NULL, GFP_KERNEL, AUDIT_TTY);
++	if (ab) {
++		char name[sizeof(tsk->comm)];
++
++		audit_log_format(ab, "%s pid=%u uid=%u auid=%u ses=%u "
++				 "major=%d minor=%d comm=", description,
++				 tsk->pid, tsk->uid, loginuid, sessionid,
++				 major, minor);
++		get_task_comm(name, tsk);
++		audit_log_untrustedstring(ab, name);
++		audit_log_format(ab, " data=");
++		audit_log_n_untrustedstring(ab, data, size);
++		audit_log_end(ab);
++	}
++}
++
+ /**
+  *	tty_audit_buf_push	-	Push buffered data out
+  *
+@@ -77,25 +99,12 @@ static void tty_audit_buf_push(struct task_struct *tsk, uid_t loginuid,
+ 			       unsigned int sessionid,
+ 			       struct tty_audit_buf *buf)
+ {
+-	struct audit_buffer *ab;
+-
+ 	if (buf->valid == 0)
+ 		return;
+ 	if (audit_enabled == 0)
+ 		return;
+-	ab = audit_log_start(NULL, GFP_KERNEL, AUDIT_TTY);
+-	if (ab) {
+-		char name[sizeof(tsk->comm)];
+-
+-		audit_log_format(ab, "tty pid=%u uid=%u auid=%u ses=%u "
+-				 "major=%d minor=%d comm=", tsk->pid, tsk->uid,
+-				 loginuid, sessionid, buf->major, buf->minor);
+-		get_task_comm(name, tsk);
+-		audit_log_untrustedstring(ab, name);
+-		audit_log_format(ab, " data=");
+-		audit_log_n_untrustedstring(ab, buf->data, buf->valid);
+-		audit_log_end(ab);
+-	}
++	tty_audit_log("tty", tsk, loginuid, sessionid, buf->major, buf->minor,
++		      buf->data, buf->valid);
+ 	buf->valid = 0;
+ }
+ 
+@@ -150,6 +159,42 @@ void tty_audit_fork(struct signal_struct *sig)
+ }
+ 
+ /**
++ *	tty_audit_tiocsti	-	Log TIOCSTI
++ */
++void tty_audit_tiocsti(struct tty_struct *tty, char ch)
++{
++	struct tty_audit_buf *buf;
++	int major, minor, should_audit;
++
++	spin_lock_irq(&current->sighand->siglock);
++	should_audit = current->signal->audit_tty;
++	buf = current->signal->tty_audit_buf;
++	if (buf)
++		atomic_inc(&buf->count);
++	spin_unlock_irq(&current->sighand->siglock);
++
++	major = tty->driver->major;
++	minor = tty->driver->minor_start + tty->index;
++	if (buf) {
++		mutex_lock(&buf->mutex);
++		if (buf->major == major && buf->minor == minor)
++			tty_audit_buf_push_current(buf);
++		mutex_unlock(&buf->mutex);
++		tty_audit_buf_put(buf);
++	}
++
++	if (should_audit && audit_enabled) {
++		uid_t auid;
++		unsigned int sessionid;
++
++		auid = audit_get_loginuid(current);
++		sessionid = audit_get_sessionid(current);
++		tty_audit_log("ioctl=TIOCSTI", current, auid, sessionid, major,
++			      minor, &ch, 1);
++	}
++}
++
++/**
+  *	tty_audit_push_task	-	Flush task's pending audit data
+  */
+ void tty_audit_push_task(struct task_struct *tsk, uid_t loginuid, u32 sessionid)
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index daeb8f7..53cc0d6 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -2467,6 +2467,7 @@ static int tiocsti(struct tty_struct *tty, char __user *p)
+ 		return -EPERM;
+ 	if (get_user(ch, p))
+ 		return -EFAULT;
++	tty_audit_tiocsti(tty, ch);
+ 	ld = tty_ldisc_ref_wait(tty);
+ 	ld->ops->receive_buf(tty, &ch, &mbz, 1);
+ 	tty_ldisc_deref(ld);
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 0cbec74..3995211 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -403,6 +403,7 @@ extern void tty_audit_add_data(struct tty_struct *tty, unsigned char *data,
+ 			       size_t size);
+ extern void tty_audit_exit(void);
+ extern void tty_audit_fork(struct signal_struct *sig);
++extern void tty_audit_tiocsti(struct tty_struct *tty, char ch);
+ extern void tty_audit_push(struct tty_struct *tty);
+ extern void tty_audit_push_task(struct task_struct *tsk,
+ 					uid_t loginuid, u32 sessionid);
+@@ -411,6 +412,9 @@ static inline void tty_audit_add_data(struct tty_struct *tty,
+ 				      unsigned char *data, size_t size)
+ {
+ }
++static inline void tty_audit_tiocsti(struct tty_struct *tty, char ch)
++{
++}
+ static inline void tty_audit_exit(void)
+ {
+ }
 
-We suck?  Maybe, but some explanation about why we suck in this 
-particular case would be helpful as far as I'm concerned.  I don't 
-really care about identifying the guilty suckees, I'm more interested 
-in finding out what happened to cause us to suck because of this.
 
--- 
-paul moore
-linux @ hp
