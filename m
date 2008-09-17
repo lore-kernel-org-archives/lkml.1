@@ -1,80 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYIQOUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYIQOUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYIQOUO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 10:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYIQOUA
+	id S1752912AbYIQOUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 10:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYIQOU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 10:20:00 -0400
-Received: from bu3sch.de ([62.75.166.246]:43057 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752325AbYIQOT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 10:19:59 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
-Date: Wed, 17 Sep 2008 16:19:33 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       Adel Gadllah <adel.gadllah@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de
-References: <48CFC03A.8020708@lwfinger.net> <48D0183E.9010301@lwfinger.net> <20080916210920.GC16470@srcf.ucam.org>
-In-Reply-To: <20080916210920.GC16470@srcf.ucam.org>
+	Wed, 17 Sep 2008 10:20:26 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:42109 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752423AbYIQOUY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 10:20:24 -0400
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: jeff@garzik.org
+Subject: [PATCH] [2.6.27] ehea: Fix memory hotplug support
+Date: Wed, 17 Sep 2008 16:19:46 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
+       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       osstklei@de.ibm.com
+Organization: IBM
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200809171619.33377.mb@bu3sch.de>
+Message-Id: <200809171619.46741.hannes.hering@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 September 2008 23:09:20 Matthew Garrett wrote:
-> Oh, hey, I suck. This one might stand a better chance of not falling 
-> over.
-> 
-> diff --git a/drivers/net/wireless/b43/rfkill.c b/drivers/net/wireless/b43/rfkill.c
-> index fec5645..991e318 100644
-> --- a/drivers/net/wireless/b43/rfkill.c
-> +++ b/drivers/net/wireless/b43/rfkill.c
-> @@ -49,21 +49,18 @@ static void b43_rfkill_update_state(struct b43_wldev *dev)
->  	struct b43_rfkill *rfk = &(dev->wl->rfkill);
->  
->  	if (!dev->radio_hw_enable) {
-> -		rfk->rfkill->state = RFKILL_STATE_HARD_BLOCKED;
-> +		rfkill_force_state(rfk->rfkill, RFKILL_STATE_HARD_BLOCKED);
->  		return;
->  	}
->  
->  	if (!dev->phy.radio_on)
-> -		rfk->rfkill->state = RFKILL_STATE_SOFT_BLOCKED;
-> +		rfkill_force_state(rfk->rfkill, RFKILL_STATE_SOFT_BLOCKED);
->  	else
-> -		rfk->rfkill->state = RFKILL_STATE_UNBLOCKED;
-> -
-> +		rfkill_force_state(rfk->rfkill, RFKILL_STATE_UNBLOCKED);
->  }
+This patch implements the memory notifier to update the busmap instantly
+instead of rebuilding the whole map. This is necessary because
+walk_memory_resource provides different information than required during memory
+hotplug.
 
-I still thing that it is really wrong to check and change the software
-rfkill state from within the _hardware_ rfkill state handler.
-So let's say this handler sets the state to SOFT_BLOCKED. Who is going
-to set it back to unblocked, if the user unblocks the radio?
+Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+---
+This patch is based on upstream-fixes in the netdev-2.6.git.
 
-We can turn the radio on/off from the mac80211 config callback. Possibly
-we must tell rfkill about it (I'm not sure. I don't understand the API).
-I think this is pretty hard to get right, actually. HW-block and SW-block
-are two completely independent states in b43. You can HW-block and SW-block
-the device at the same time. So one must make sure that at any time the rfkill
-is in a sane state if _either_ HW-block or SW-block changes. Currently I think
-we only change rfkill state if HW-block state changes. Which is wrong.
-
-
-In the end, I do not care about this crap anymore.
-Feel free to remove my copyright notice from that file and put yours in
-there. So feel free to send any patch to the rfkill code to john, but please
-handle any regressions resulting from it. If not, I will handle them by reverting
-patches until it starts to work again. ;)
-
--- 
-Greetings Michael.
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-netdev-2.6/drivers/net/ehea/ehea.h	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea.h	2008-09-17 16:11:26.481026217 +0200
+@@ -40,13 +40,13 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0092"
++#define DRV_VERSION	"EHEA_0094"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+ #define DLPAR_MEM_ADD      2
+ #define DLPAR_MEM_REM      4
+-#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD)
++#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD | DLPAR_MEM_REM)
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
+--- linux-netdev-2.6/drivers/net/ehea/ehea_main.c	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-09-17 16:11:26.481026217 +0200
+@@ -2863,7 +2863,7 @@ static void ehea_rereg_mrs(struct work_s
+ 	struct ehea_adapter *adapter;
+ 
+ 	mutex_lock(&dlpar_mem_lock);
+-	ehea_info("LPAR memory enlarged - re-initializing driver");
++	ehea_info("LPAR memory changed - re-initializing driver");
+ 
+ 	list_for_each_entry(adapter, &adapter_list, list)
+ 		if (adapter->active_ports) {
+@@ -2900,13 +2900,6 @@ static void ehea_rereg_mrs(struct work_s
+ 			}
+ 		}
+ 
+-	ehea_destroy_busmap();
+-	ret = ehea_create_busmap();
+-	if (ret) {
+-		ehea_error("creating ehea busmap failed");
+-		goto out;
+-	}
+-
+ 	clear_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
+ 
+ 	list_for_each_entry(adapter, &adapter_list, list)
+@@ -3519,9 +3512,20 @@ void ehea_crash_handler(void)
+ static int ehea_mem_notifier(struct notifier_block *nb,
+                              unsigned long action, void *data)
+ {
++	struct memory_notify *arg = data;
+ 	switch (action) {
+-	case MEM_OFFLINE:
+-		ehea_info("memory has been removed");
++	case MEM_CANCEL_OFFLINE:
++		ehea_info("memory offlining canceled");
++	case MEM_ONLINE:
++		ehea_info("memory is going online");
++		if (ehea_add_sect_bmap(arg->start_pfn, arg->nr_pages))
++			return NOTIFY_BAD;
++		ehea_rereg_mrs(NULL);
++		break;
++	case MEM_GOING_OFFLINE:
++		ehea_info("memory is going offline");
++		if (ehea_rem_sect_bmap(arg->start_pfn, arg->nr_pages))
++			return NOTIFY_BAD;
+ 		ehea_rereg_mrs(NULL);
+ 		break;
+ 	default:
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
+--- linux-netdev-2.6/drivers/net/ehea/ehea_qmr.c	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-09-17 16:11:26.481026217 +0200
+@@ -587,53 +587,81 @@ static inline int ehea_init_bmap(struct 
+ 	return ehea_init_top_bmap(ehea_bmap->top[top], dir);
+ }
+ 
+-static int ehea_create_busmap_callback(unsigned long pfn,
+-				       unsigned long nr_pages, void *arg)
++static DEFINE_MUTEX(ehea_busmap_mutex);
++static unsigned long ehea_mr_len;
++
++#define EHEA_BUSMAP_ADD_SECT 1
++#define EHEA_BUSMAP_REM_SECT 0
++
++static int ehea_update_busmap(unsigned long pfn, unsigned long pgnum, int add)
+ {
+-	unsigned long i, mr_len, start_section, end_section;
+-	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
+-	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
+-	mr_len = *(unsigned long *)arg;
++	unsigned long i, start_section, end_section;
+ 
+ 	if (!ehea_bmap)
+ 		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
+ 	if (!ehea_bmap)
+ 		return -ENOMEM;
+ 
++	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
++	end_section = start_section + ((pgnum * PAGE_SIZE) / EHEA_SECTSIZE);
++
+ 	for (i = start_section; i < end_section; i++) {
+-		int ret;
+-		int top, dir, idx;
+ 		u64 vaddr;
++		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
++		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
++		int idx = i & EHEA_INDEX_MASK;
++
++		int ret = ehea_init_bmap(ehea_bmap, top, dir);
++		if (ret) {
++			if(add) {
++				return ret;
++			} else {
++				continue;
++			}
++		}
+ 
+-		top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
+-		dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
+-
+-		ret = ehea_init_bmap(ehea_bmap, top, dir);
+-		if(ret)
+-			return ret;
+-
+-		idx = i & EHEA_INDEX_MASK;
+-		vaddr = EHEA_BUSMAP_START + mr_len + i * EHEA_SECTSIZE;
+-
++		if (add) {
++			vaddr = EHEA_BUSMAP_START + ehea_mr_len;
++			ehea_mr_len += EHEA_SECTSIZE;
++		} else { /* remove */
++			vaddr = 0;
++			ehea_mr_len -= EHEA_SECTSIZE;
++		}
+ 		ehea_bmap->top[top]->dir[dir]->ent[idx] = vaddr;
+ 	}
+-
+-	mr_len += nr_pages * PAGE_SIZE;
+-	*(unsigned long *)arg = mr_len;
+-
+ 	return 0;
+ }
+ 
+-static unsigned long ehea_mr_len;
++int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages)
++{
++	int ret;
++	mutex_lock(&ehea_busmap_mutex);
++	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
++	mutex_unlock(&ehea_busmap_mutex);
++	return ret;
++}
+ 
+-static DEFINE_MUTEX(ehea_busmap_mutex);
++int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages)
++{
++	int ret;
++	mutex_lock(&ehea_busmap_mutex);
++	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_REM_SECT);
++	mutex_unlock(&ehea_busmap_mutex);
++	return ret;
++}
++
++static int ehea_create_busmap_callback(unsigned long pfn,
++				       unsigned long nr_pages, void *arg)
++{
++	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
++}
+ 
+ int ehea_create_busmap(void)
+ {
+ 	int ret;
+ 	mutex_lock(&ehea_busmap_mutex);
+ 	ehea_mr_len = 0;
+-	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, &ehea_mr_len,
++	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
+ 				   ehea_create_busmap_callback);
+ 	mutex_unlock(&ehea_busmap_mutex);
+ 	return ret;
+diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
+--- linux-netdev-2.6/drivers/net/ehea/ehea_qmr.h	2008-09-17 16:09:25.729017931 +0200
++++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-09-17 16:11:26.481026217 +0200
+@@ -378,6 +378,8 @@ int ehea_rem_mr(struct ehea_mr *mr);
+ 
+ void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle);
+ 
++int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages);
++int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages);
+ int ehea_create_busmap(void);
+ void ehea_destroy_busmap(void);
+ u64 ehea_map_vaddr(void *caddr);
