@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbYIQV2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbYIQVan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822AbYIQV2p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYIQV2f
+	id S1755344AbYIQVan (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbYIQVag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:28:35 -0400
-Received: from pih-relay04.plus.net ([212.159.14.17]:46102 "EHLO
-	pih-relay04.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754506AbYIQV2f (ORCPT
+	Wed, 17 Sep 2008 17:30:36 -0400
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:50926 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753094AbYIQVaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:28:35 -0400
-Message-ID: <48D17681.4040109@yahoo.com>
-Date: Wed, 17 Sep 2008 22:28:33 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Wed, 17 Sep 2008 17:30:35 -0400
+Message-ID: <48D176EA.9040304@linux.vnet.ibm.com>
+Date: Wed, 17 Sep 2008 14:30:18 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: How how latent should non-preemptive scheduling be?
-References: <48D1741A.7010508@yahoo.com>
-In-Reply-To: <48D1741A.7010508@yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix declaration of cgroup_mm_owner_callbacks
+References: <20080915190638.99E613D6952@localhost> <20080917142714.a822ac1a.akpm@linux-foundation.org>
+In-Reply-To: <20080917142714.a822ac1a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 4f6f1b7f8127fe7b37a2a604cfde47fa
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sitsofe Wheeler wrote:
-> I have an EeePC 900 (Intel Celeron 900Mhz) and it seems to be skipping 
-> while playing sound through various desktop apps with a 2.6.27rc6 
-> kernel. It is running off an SD card which really shows up slow writes 
-> but the sound is seemingly skipping even when ext3 is not being used. 
-> When look at latencytop I often see results similar to this:
+Andrew Morton wrote:
+> On Mon, 15 Sep 2008 12:06:38 -0700 (PDT)
+> menage@google.com (Paul Menage) wrote:
+> 
+>> Fix declaration of cgroup_mm_owner_callbacks()
+>>
+>> The choice of real/dummy declaration for cgroup_mm_owner_callbacks()
+>> shouldn't be based on CONFIG_MM_OWNER, but on
+>> CONFIG_CGROUPS. Otherwise kernel/exit.c fails to compile when
+>> something other than a cgroups controller selects CONFIG_MM_OWNER
+>>
+> 
+> Being too lazy to go back and find out what "something" is, I assumed
+> that this isn't needed in 2.6.27.
 
-One other small datapoint. When the skipping starts to occur regularly 
-it seems to be exactly 30 seconds apart. ALSA doesn't report any xruns 
-either...
+We don't have anything using CONFIG_MM_OWNER in 2.6.27, so we should be OK
+pushing this to 2.6.28 (Pekka plans to use it for revoke* calls).
+
+Pekka, Paul do you agree?
+
+
+-- 
+	Balbir
