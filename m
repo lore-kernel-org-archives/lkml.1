@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbYIQFkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbYIQFkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbYIQFkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 01:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYIQFjt
+	id S1754351AbYIQFkc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 01:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYIQFjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 01:39:49 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:19433 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbYIQFjr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 01:39:47 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Martin Doucha <next_ghost@quick.cz>
-Subject: Re: ACPI PnP on Intel MU440EX
-Date: Tue, 16 Sep 2008 23:39:39 -0600
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       matthieu castet <castet.matthieu@free.fr>
-References: <48BA9B2C.7060007@quick.cz> <200809091034.46729.bjorn.helgaas@hp.com> <48CD65D0.9090202@quick.cz>
-In-Reply-To: <48CD65D0.9090202@quick.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 17 Sep 2008 01:39:52 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50415 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754020AbYIQFjv (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 01:39:51 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Alessio Sangalli <alesan@manoweb.com>
+Cc: Ben Nizette <bn@niasdigital.com>, Ben Dooks <ben-linux@fluff.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver for tightly coupled memory
+In-Reply-To: Your message of "Tue, 16 Sep 2008 22:27:41 PDT."
+             <48D0954D.4070302@manoweb.com>
+From: Valdis.Kletnieks@vt.edu
+References: <48CEC71F.3000006@manoweb.com> <20080916093513.GF1916@fluff.org.uk> <48CFEF3F.5040901@manoweb.com> <1221604022.3598.4.camel@moss.renham> <48D03811.9070805@manoweb.com> <24229.1221619342@turing-police.cc.vt.edu>
+            <48D0954D.4070302@manoweb.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221629978_32017P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809162339.40330.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+Date: Wed, 17 Sep 2008 01:39:38 -0400
+Message-ID: <32819.1221629978@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 September 2008 01:28:16 pm Martin Doucha wrote:
-> Bjorn Helgaas wrote:
-> > Thanks very much for the report.  This sounds like it could be a
-> > PNPACPI issue, which I am very interested in fixing.
-> >
-> > Can you please turn on CONFIG_PNP_DEBUG in your .config and collect
-> > the complete dmesg log with and without "pnpacpi=off"?
-> >
-> > I do have an "lspnp" that works with PNPACPI here:
-> >   http://kernel.org/pub/linux/kernel/people/helgaas/pnputils-0.1.tar.bz2
-> > but it's not widely used.  The debug information from the config
-> > option above is usually more useful.
-> >
-> > Bjorn
-> 
-> I'm sorry it took me so long, here's the output of lspnp -vvv from both 
-> PNPBIOS and ACPI PnP (same kernel, the only difference is pnpacpi=off 
-> boot argument). I can't find any mention of my parallel port in ACPI PnP 
-> output but it's the last listed device (00:15 PNP0400) in PNPBIOS output.
+--==_Exmh_1221629978_32017P
+Content-Type: text/plain; charset=us-ascii
 
-I don't see the parallel port either.  Can you please open a
-bugzilla for this and attach the complete dmesg log and the
-ACPI table dump using the instructions here:
+On Tue, 16 Sep 2008 22:27:41 PDT, Alessio Sangalli said:
 
-  http://kernel.org/pub/linux/kernel/people/helgaas/debug
+> Well I should ask the details to the hardware engineers but it's like a
+> separate channel than the one used for main memory. It is not cacheable
+> either. To the CPU, it just appears to be mapped at some location on the
+> addressable space. Accessing this TCM will not have any impact on main
+> memory access, so bursts etc won't be interrupted; other than that, TCM
+> has double the bandwidth than standard memory - but it's tiny in size,
+> something like 8 to 32kB as I mentioned earlier.
 
-You can put it in the Drivers/PNP category and add me to the cc:
-list.
+Ah.  So it's basically just super-fast memory that can be accessed without
+going through the usual memory bus.  Sounds like the cycle of reincarnation
+strikes again - 30ish years ago, the DEC PDP10/20 processors implemented the
+first few locations of memory in fast (for the time) chips, and then mapped
+the general purpose registers onto it.  A favorite trick would be to copy a
+small loop into locations 0-7 and then branch to it - basically executing
+from the general registers.  The *real* fun started when people started doing
+self-modifying code by doing arithmetic/logical operations on registers. ;)
 
-I assume the parallel port has *never* worked with ACPI enabled,
-right?
+Would it be more of a performance win to use the 8-32K to store speed-critical
+code rather than a FIFO?  Just another idea for what to use it for, but that
+would likely require a different API...
 
-Bjorn
+--==_Exmh_1221629978_32017P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI0JgacC3lWbTT17ARAhgQAKDd8Xt4X7g/QCoKYlev+AvTBFiCBwCeJEi0
+xpQH1wGOOEYXOdhy3dMwLiQ=
+=KjLG
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221629978_32017P--
