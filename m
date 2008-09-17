@@ -1,114 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYIQRc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbYIQRg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbYIQRc1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYIQRcU
+	id S1755101AbYIQRg1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 13:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbYIQRgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 13:32:20 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:40546 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328AbYIQRcT (ORCPT
+	Wed, 17 Sep 2008 13:36:19 -0400
+Received: from qb-out-0506.google.com ([72.14.204.232]:26471 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753963AbYIQRgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 13:32:19 -0400
+	Wed, 17 Sep 2008 13:36:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=f3R7l6PVLn8bqGl3/xqfSJO9pxrc+p7YXejb/P49vcjT2t+31U6rj80hpTvG8OWrSO
-         0xvqDdZjeOhiuLm/2DALzDFeeg4CFtrwF1IzD1A3eyjmDn8lcRtBsApeJXLa4FZYtMcL
-         5KO7dW5U/SjjebYDLv0qmYfMT0uf3lSIQeCR4=
-Message-ID: <5767b9100809171032g197771dfv5374b7358b9b7210@mail.gmail.com>
-Date: Thu, 18 Sep 2008 01:32:16 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-arm@vger.kernel.org, ben@simtec.co.uk
-Subject: [PATCH] s3c24xx nand: add command line partition table parsing support
-Cc: "Russell King" <rmk+kernel@arm.linux.org.uk>
-MIME-Version: 1.0
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=XaXgD8DQvNrbfew6PngIPdj81tHSNMqwiCxyh7fv+vvVdG9z0c5qtVxJGs/0UoXhVB
+         Q7viwiVo2+RLS0EPKJkzJUlz24riGle6/M2+GXc7FTAVV4IWzG/G2zn5Y7yieE6t4yF3
+         EqfcX/x4nJ0eGOC9m0dxDOcaiZpFbdYx4fxkk=
+Date: Wed, 17 Sep 2008 20:36:09 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Cc: "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: Tracing/ftrace: trouble with trace_entries and trace_pipe
+Message-ID: <20080917203609.71470e4b@daedalus.pq.iki.fi>
+In-Reply-To: <c62985530809170541p5bdcbfb4xf21232842e7b8b9@mail.gmail.com>
+References: <48B1D5CA.8000607@gmail.com>
+	<20080827212130.4b8365a8@daedalus.pq.iki.fi>
+	<c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com>
+	<20080828214256.296e34ec@daedalus.pq.iki.fi>
+	<c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com>
+	<20080904203058.7e57729e@daedalus.pq.iki.fi>
+	<alpine.DEB.1.10.0809041407140.2431@gandalf.stny.rr.com>
+	<20080915224707.76b2cca0@daedalus.pq.iki.fi>
+	<alpine.DEB.1.10.0809151556260.22620@gandalf.stny.rr.com>
+	<20080916210114.7679a0dc@daedalus.pq.iki.fi>
+	<c62985530809170541p5bdcbfb4xf21232842e7b8b9@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add mtd id and  command line partition table parsing support for
-s3c24xx nand driver.
+On Wed, 17 Sep 2008 14:41:29 +0200
+"Frédéric Weisbecker" <fweisbec@gmail.com> wrote:
 
-Signed-off-by: Conke Hu <conke.hu@gmail.com>
-Signed-off-by: Linke Wang <linke.wang@gmail.com>
-------------------
-diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
-index 556139e..bab7216 100644
---- a/drivers/mtd/nand/s3c2410.c
-+++ b/drivers/mtd/nand/s3c2410.c
-@@ -48,6 +48,8 @@
- #include <asm/plat-s3c/regs-nand.h>
- #include <asm/plat-s3c/nand.h>
+> 2008/9/16 Pekka Paalanen <pq@iki.fi>:
+> > Ok, so the problem is probably the commit I mentioned. It makes the
+> > no_tracer tracer to set tracer_enabled to 0, and I can't find where
+> > it would be set to 1 for mmiotrace. And this interferes with
+> > tracing_read_pipe(), making it quit when iter->pos is non-zero.
+> > See no_trace_init() in trace.c. According to this, the cat-quit
+> > occurs when the buffer gets empty after first data, but this isn't
+> > totally in agreement with what I recall from my experiments. And it
+> > does happen also on other times than injecting markers.
+> >
+> > So either it is wrong to check tracer_enabled in tracing_read_pipe(),
+> > or no_trace_init() should not touch it.
+> 
+> Indeed that could be the problem.
+> None_tracer is chosen as the default tracer when the tracer engine
+> loads. But actually no_trace_init is not called at this time.
+> 
+> But if you set another tracer and reset current_tracer to none, you
+> will call no_trace_init. Since tracer_enabled is not reset to 1 with
+> other tracer's init functions, the problem occurs when you choose one
+> more time another tracer.
 
-+#define S3C_NAND_NAME_LEN 16
-+
- #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
- static int hardware_ecc = 1;
- #else
-@@ -60,6 +62,9 @@ static int clock_stop = 1;
- static const int clock_stop = 0;
- #endif
+Ah, this would explain the "non-deterministic" behaviour I saw.
 
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
-+#endif
+> I think that mmiotrace receives a smaller flow of entries (depends on
+> the debugged module) whereas sched_switch or function's tracer, as an
+> example, are continuously fed and never enter the "while
+> (trace_empty(iter))" block. That's why I only see this bug in
+> mmiotrace.
 
- /* new oob placement block for use with hardware ecc generation
-  */
-@@ -649,6 +654,15 @@ static int s3c2410_nand_add_partition(struct
-s3c2410_nand_info *info,
- 				      struct s3c2410_nand_mtd *mtd,
- 				      struct s3c2410_nand_set *set)
- {
-+#ifdef CONFIG_MTD_CMDLINE_PARTS
-+	int nr_parts;
-+	struct mtd_partition *partitions;
-+
-+	nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes, &partitions, 0);
-+	if (nr_parts > 0 && partitions != NULL)
-+		return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
-+#endif
-+
- 	if (set == NULL)
- 		return add_mtd_device(&mtd->mtd);
+Mmiotrace does see times, when there are a small number of events
+coming, even when tracing a graphics driver. Sounds plausible.
 
-@@ -808,6 +822,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
- 	int size;
- 	int nr_sets;
- 	int setno;
-+	char *name;
+> Perhaps it would be a good idea to reenable tracer_enabled on
+> tracing_set_trace_write() just before calling the init callback of the
+> tracer chosen.
 
- 	pr_debug("s3c2410_nand_probe(%p)\n", pdev);
+That's a third option, yes.
 
-@@ -875,7 +890,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+Steven, what is the correct fix?
 
- 	/* allocate our information */
+Frederic, thank you very much for testing this!
 
--	size = nr_sets * sizeof(*info->mtds);
-+	size = nr_sets * (sizeof(*info->mtds) + S3C_NAND_NAME_LEN);
- 	info->mtds = kmalloc(size, GFP_KERNEL);
- 	if (info->mtds == NULL) {
- 		dev_err(&pdev->dev, "failed to allocate mtd storage\n");
-@@ -888,10 +903,15 @@ static int s3c24xx_nand_probe(struct
-platform_device *pdev,
- 	/* initialise all possible chips */
-
- 	nmtd = info->mtds;
-+	name = (char *)(info->mtds + nr_sets);
-
- 	for (setno = 0; setno < nr_sets; setno++, nmtd++) {
- 		pr_debug("initialising set %d (%p, info %p)\n", setno, nmtd, info);
-
-+		sprintf(name, "s3c_nand%d", setno);
-+		nmtd->mtd.name = name;
-+		name += S3C_NAND_NAME_LEN;
-+
- 		s3c2410_nand_init_chip(info, nmtd, sets);
-
- 		nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
