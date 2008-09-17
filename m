@@ -1,46 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbYIQFzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYIQGXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753377AbYIQFzk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 01:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYIQFzd
+	id S1752821AbYIQGXh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 02:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbYIQGXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 01:55:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:59779 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbYIQFzd (ORCPT
+	Wed, 17 Sep 2008 02:23:30 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:63406 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbYIQGX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 01:55:33 -0400
-Message-ID: <48D09BC2.1040704@manoweb.com>
-Date: Tue, 16 Sep 2008 22:55:14 -0700
-From: Alessio Sangalli <alesan@manoweb.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 17 Sep 2008 02:23:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TPAV5IsMeI+5GQQwmJtq/DubemUEX1X23TdvL7lr2Q0mpv3dbnYJ3gAYjDCHZzpsyT
+         ZfFQ/8DyaEpfEYOcqwH9Gus+PG9YiQv2Ul3ae+mayC5PO9WpDWEf9DYd2uyNieOyEV7K
+         5ln63eG/TU0XBWOhgUhYmpANb1DsSDSgxpA4E=
+Message-ID: <28c262360809162323g3015be39o34f450ed4942a151@mail.gmail.com>
+Date: Wed, 17 Sep 2008 15:23:27 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Oren Laadan" <orenl@cs.columbia.edu>
+Subject: Re: [RFC v5][PATCH 6/8] Checkpoint/restart: initial documentation
+Cc: dave@linux.vnet.ibm.com, arnd@arndb.de, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+In-Reply-To: <1221347167-9956-7-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Ben Nizette <bn@niasdigital.com>, Ben Dooks <ben-linux@fluff.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver for tightly coupled memory
-References: <48CEC71F.3000006@manoweb.com> <20080916093513.GF1916@fluff.org.uk> <48CFEF3F.5040901@manoweb.com> <1221604022.3598.4.camel@moss.renham> <48D03811.9070805@manoweb.com> <24229.1221619342@turing-police.cc.vt.edu>            <48D0954D.4070302@manoweb.com> <32819.1221629978@turing-police.cc.vt.edu>
-In-Reply-To: <32819.1221629978@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/BGM91PW1FgxTLdKsIqp6kUWEYs59/YfbWuuz
- QG+gKjFcKxQtO0/YYh998ff5YARfffpeLDXjdLjW5kTH0WBS7U
- otFA5zipZx9OI81yDo2fg==
+Content-Disposition: inline
+References: <1221347167-9956-1-git-send-email-orenl@cs.columbia.edu>
+	 <1221347167-9956-7-git-send-email-orenl@cs.columbia.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
+On Sun, Sep 14, 2008 at 8:06 AM, Oren Laadan <orenl@cs.columbia.edu> wrote:
+> Covers application checkpoint/restart, overall design, interfaces
+> and checkpoint image format.
+>
+> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+> ---
+>  Documentation/checkpoint.txt |  207 ++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 207 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/checkpoint.txt
+>
+> diff --git a/Documentation/checkpoint.txt b/Documentation/checkpoint.txt
+> new file mode 100644
+> index 0000000..6bf75ce
+> --- /dev/null
+> +++ b/Documentation/checkpoint.txt
+> @@ -0,0 +1,207 @@
+> +
+> +       === Checkpoint-Restart support in the Linux kernel ===
+> +
+> +Copyright (C) 2008 Oren Laadan
+> +
+> +Author:                Oren Laadan <orenl@cs.columbia.edu>
+> +
+> +License:       The GNU Free Documentation License, Version 1.2
+> +               (dual licensed under the GPL v2)
+> +Reviewers:
+> +
+> +Application checkpoint/restart [CR] is the ability to save the state
+> +of a running application so that it can later resume its execution
+> +from the time at which it was checkpointed. An application can be
+> +migrated by checkpointing it on one machine and restarting it on
+> +another. CR can provide many potential benefits:
+> +
+> +* Failure recovery: by rolling back an to a previous checkpoint
+> +
+> +* Improved response time: by restarting applications from checkpoints
+> +  instead of from scratch.
+> +
+> +* Improved system utilization: by suspending long running CPU
+> +  intensive jobs and resuming them when load decreases.
+> +
+> +* Fault resilience: by migrating applications off of faulty hosts.
+> +
+> +* Dynamic load balancing: by migrating applications to less loaded
+> +  hosts.
+> +
+> +* Improved service availability and administration: by migrating
+> +  applications before host maintenance so that they continue to run
+> +  with minimal downtime
+> +
+> +* Time-travel: by taking periodic checkpoints and restarting from
+> +  any previous checkpoint.
+> +
+> +
+> +=== Overall design
+> +
+> +Checkpoint and restart is done in the kernel as much as possible. The
+> +kernel exports a relative opaque 'blob' of data to userspace which can
+> +then be handed to the new kernel at restore time.  The 'blob' contains
+> +data and state of select portions of kernel structures such as VMAs
+> +and mm_structs, as well as copies of the actual memory that the tasks
+> +use. Any changes in this blob's format between kernel revisions can be
+> +handled by an in-userspace conversion program. The approach is similar
+> +to virtually all of the commercial CR products out there, as well as
+> +the research project Zap.
+> +
+> +Two new system calls are introduced to provide CR: sys_checkpoint and
+> +sys_restart.  The checkpoint code basically serializes internal kernel
+> +state and writes it out to a file descriptor, and the resulting image
+> +is stream-able. More specifically, it consists of 5 steps:
+> +  1. Pre-dump
+> +  2. Freeze the container
+> +  3. Dump
+> +  4. Thaw (or kill) the container
+> +  5. Post-dump
+> +Steps 1 and 5 are an optimization to reduce application downtime:
+> +"pre-dump" works before freezing the container, e.g. the pre-copy for
+> +live migration, and "post-dump" works after the container resumes
+> +execution, e.g. write-back the data to secondary storage.
+> +
+> +The restart code basically reads the saved kernel state and from a
+> +file descriptor, and re-creates the tasks and the resources they need
+> +to resume execution. The restart code is executed by each task that
+> +is restored in a new container to reconstruct its own state.
+> +
+> +
+> +=== Interfaces
+> +
+> +int sys_checkpoint(pid_t pid, int fd, unsigned long flag);
+> +  Checkpoint a container whose init task is identified by pid, to the
+> +  file designated by fd. Flags will have future meaning (should be 0
+> +  for now).
+> +  Returns: a positive integer that identifies the checkpoint image
+> +  (for future reference in case it is kept in memory) upon success,
+> +  0 if it returns from a restart, and -1 if an error occurs.
+> +
+> +int sys_restart(int crid, int fd, unsigned long flags);
+> +  Restart a container from a checkpoint image identified by crid, or
+> +  from the blob stored in the file designated by fd. Flags will have
+> +  future meaning (should be 0 for now).
+> +  Returns: 0 on success and -1 if an error occurs.
+> +
+> +Thus, if checkpoint is initiated by a process in the container, one
+> +can use logic similar to fork():
+> +       ...
+> +       crid = checkpoint(...);
+> +       switch (crid) {
+> +       case -1:
+> +               perror("checkpoint failed");
+> +               break;
+> +       default:
+> +               fprintf(stderr, "checkpoint succeeded, CRID=%d\n", ret);
+> +               /* proceed with execution after checkpoint */
+> +               ...
+> +               break;
+> +       case 0:
+> +               fprintf(stderr, "returned after restart\n");
+> +               /* proceed with action required following a restart */
+> +               ...
+> +               break;
+> +       }
+> +       ...
+> +And to initiate a restart, the process in an empty container can use
+> +logic similar to execve():
+> +       ...
+> +       if (restart(crid, ...) < 0)
+> +               perror("restart failed");
+> +       /* only get here if restart failed */
+> +       ...
+> +
+> +
+> +=== Checkpoint image format
+> +
+> +The checkpoint image format is composed of records consistings of a
+> +pre-header that identifies its contents, followed by a payload. (The
+> +idea here is to enable parallel checkpointing in the future in which
+> +multiple threads interleave data from multiple processes into a single
+> +stream).
+> +
+> +The pre-header is defined by "struct cr_hdr" as follows:
+> +
+> +struct cr_hdr {
+> +       __s16 type;
+> +       __s16 len;
+> +       __u32 id;
+> +};
+> +
+> +Here, 'type' field identifies the type of the payload, 'len' tells its
+> +length in bytes. The 'id' identifies the owner object instance. The
 
-> Would it be more of a performance win to use the 8-32K to store speed-critical
-> code rather than a FIFO?  Just another idea for what to use it for, but that
-> would likely require a different API...
+which is right between id and parent?
+It is confusing me :)
 
-Well... I have to check but I think the cache memory is anyway faster
-than this, and this memory is not cacheable. But, you definitely have a
-point. I'll check with some hardware guy tomorrow morning.
+> +meaning of the 'id' field varies depending on the type. For example,
+> +for type CR_HDR_MM, the 'id' identifies the task to which this MM
+> +belongs. The payload also varies depending on the type, for instance,
+> +the data describing a task_struct is given by a 'struct cr_hdr_task'
+> +(type CR_HDR_TASK) and so on.
+> +
+> +The format of the memory dump is as follows: for each VMA, there is a
+> +'struct cr_vma'; if the VMA is file-mapped, it is followed by the file
+> +name. Following comes the actual contents, in one or more chunk: each
+> +chunk begins with a header that specifies how many pages it holds,
+> +then a the virtual addresses of all the dumped pages in that chunk,
+> +followed by the actual contents of all the dumped pages. A header with
+> +zero number of pages marks the end of the contents for a particular
+> +VMA. Then comes the next VMA and so on.
+> +
+> +To illustrate this, consider a single simple task with two VMAs: one
+> +is file mapped with two dumped pages, and the other is anonymous with
+> +three dumped pages. The checkpoint image will look like this:
+> +
+> +cr_hdr + cr_hdr_head
+> +cr_hdr + cr_hdr_task
+> +       cr_hdr + cr_hdr_mm
+> +               cr_hdr + cr_hdr_vma + cr_hdr + string
+> +                       cr_hdr_pgarr (nr_pages = 2)
+> +                       addr1, addr2
+> +                       page1, page2
+> +                       cr_hdr_pgarr (nr_pages = 0)
+> +               cr_hdr + cr_hdr_vma
+> +                       cr_hdr_pgarr (nr_pages = 3)
+> +                       addr3, addr4, addr5
+> +                       page3, page4, page5
+> +                       cr_hdr_pgarr (nr_pages = 0)
+> +               cr_hdr + cr_mm_context
+> +       cr_hdr + cr_hdr_thread
+> +       cr_hdr + cr_hdr_cpu
+> +cr_hdr + cr_hdr_tail
+> +
+> +
+> +=== Changelog
+> +
+> +[2008-Sep-11] v5:
+> +  - Config is 'def_bool n' by default
+> +  - Improve memory dump/restore code (following Dave Hansen's comments)
+> +  - Change dump format (and code) to allow chunks of <vaddrs, pages>
+> +    instead of one long list of each
+> +  - Fix use of follow_page() to avoid faulting in non-present pages
+> +  - Memory restore now maps user pages explicitly to copy data into them,
+> +    instead of reading directly to user space; got rid of mprotect_fixup()
+> +  - Remove preempt_disable() when restoring debug registers
+> +  - Rename headers files s/ckpt/checkpoint/
+> +  - Fix misc bugs in files dump/restore
+> +  - Fix cleanup on some error paths
+> +  - Fix misc coding style
+> +
+> +[2008-Sep-04] v4:
+> +  - Fix calculation of hash table size
+> +  - Fix header structure alignment
+> +  - Use stand list_... for cr_pgarr
+> +
+> +[2008-Aug-20] v3:
+> +  - Various fixes and clean-ups
+> +  - Use standard hlist_... for hash table
+> +  - Better use of standard kmalloc/kfree
+> +
+> +[2008-Aug-09] v2:
+> +  - Added utsname->{release,version,machine} to checkpoint header
+> +  - Pad header structures to 64 bits to ensure compatibility
+> +  - Address comments from LKML and linux-containers mailing list
+> +
+> +[2008-Jul-29] v1:
+> +In this incarnation, CR only works on single task. The address space
+> +may consist of only private, simple VMAs - anonymous or file-mapped.
+> +Both checkpoint and restart will ignore the first argument (pid/crid)
+> +and instead act on themselves.
+> --
+> 1.5.4.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-bye!
-as
 
+
+-- 
+Kinds regards,
+MinChan Kim
