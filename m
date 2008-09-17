@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbYIQSWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYIQSWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756688AbYIQSWk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 14:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbYIQSWS
+	id S1754647AbYIQSWz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 14:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYIQSWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 14:22:18 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:48765 "EHLO
+	Wed, 17 Sep 2008 14:22:19 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:61441 "EHLO
 	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328AbYIQSWR (ORCPT
+	with ESMTP id S1754614AbYIQSWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 14:22:17 -0400
+	Wed, 17 Sep 2008 14:22:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=HtuHz7bTgkByaIQ5WA5cJBX5L9yNRLPELWbOv3aRjo9I/rMBtk8LVCSAEwmB+WwmAP
-         Mc54SoINCFnpNaefWN0CsoFf2xmBuasuA+sIKAqQJKk30hB8fq19LnmFvLaZsglA+oPl
-         FO27uWIvUzuoed3fCGCTkRdfd875r+bN8P58M=
-Subject: [PATCH 2/3] lib: trivial whitespace tidy
+        b=rPRDFHj3T3Mv4TK+5ZSBb+iKeERgSYavslnmBb5211Jr8UcehrVf8Jh/CmBwI2ZVPt
+         O9ZaD+gsHkz5m0i4G7rRyXyTEesgyhekYdfuvNwPZPvyu3jmivtBK3k8XX1CkTBdlQ2f
+         tNF6OBLwOAwlDkrpxc3U6XHsvCDqTCKSHWhaY=
+Subject: [PATCH 3/3] lib: remove defining macros for strict_strto??
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 17 Sep 2008 11:22:11 -0700
-Message-Id: <1221675731.7298.5.camel@brick>
+Date: Wed, 17 Sep 2008 11:22:12 -0700
+Message-Id: <1221675732.7298.6.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.23.91 
 Content-Transfer-Encoding: 7bit
@@ -31,123 +31,186 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove extra lines before the EXPORT_SYMBOL()s
+Open-code them rather than using defining macros.  Add casts to the
+signed cases as they call into the unsigned versions.
+
+Avoids the sparse warnings:
+lib/vsprintf.c:249:1: warning: incorrect type in argument 3 (different signedness)
+lib/vsprintf.c:249:1:    expected unsigned long *res
+lib/vsprintf.c:249:1:    got long *res
+lib/vsprintf.c:249:1: warning: incorrect type in argument 3 (different signedness)
+lib/vsprintf.c:249:1:    expected unsigned long *res
+lib/vsprintf.c:249:1:    got long *res
+lib/vsprintf.c:251:1: warning: incorrect type in argument 3 (different signedness)
+lib/vsprintf.c:251:1:    expected unsigned long long *res
+lib/vsprintf.c:251:1:    got long long *res
+lib/vsprintf.c:251:1: warning: incorrect type in argument 3 (different signedness)
+lib/vsprintf.c:251:1:    expected unsigned long long *res
+lib/vsprintf.c:251:1:    got long long *res
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- lib/vsprintf.c |   26 +++++++++-----------------
- 1 files changed, 9 insertions(+), 17 deletions(-)
+ lib/vsprintf.c |  117 ++++++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 68 insertions(+), 49 deletions(-)
 
 diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 3f8c428..4d62235 100644
+index 4d62235..96125ba 100644
 --- a/lib/vsprintf.c
 +++ b/lib/vsprintf.c
-@@ -50,7 +50,7 @@ static unsigned int simple_guess_base(const char *cp)
-  * @endp: A pointer to the end of the parsed string will be placed here
-  * @base: The number base to use
+@@ -135,7 +135,6 @@ long long simple_strtoll(const char *cp, char **endp, unsigned int base)
+ 	return simple_strtoull(cp, endp, base);
+ }
+ 
+-
+ /**
+  * strict_strtoul - convert a string to an unsigned long strictly
+  * @cp: The string to be converted
+@@ -158,7 +157,27 @@ long long simple_strtoll(const char *cp, char **endp, unsigned int base)
+  * simple_strtoul just ignores the successive invalid characters and
+  * return the converted value of prefix part of the string.
   */
--unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
-+unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
- {
- 	unsigned long result = 0;
+-int strict_strtoul(const char *cp, unsigned int base, unsigned long *res);
++int strict_strtoul(const char *cp, unsigned int base, unsigned long *res)
++{
++	char *tail;
++	unsigned long val;
++	size_t len;
++
++	*res = 0;
++	len = strlen(cp);
++	if (len == 0)
++		return -EINVAL;
++
++	val = simple_strtoul(cp, &tail, base);
++	if ((*tail == '\0') ||
++		((len == (size_t)(tail - cp) + 1) && (*tail == '\n'))) {
++		*res = val;
++		return 0;
++	}
++
++	return -EINVAL;
++}
++EXPORT_SYMBOL(strict_strtoul);
  
-@@ -82,13 +82,12 @@ EXPORT_SYMBOL(simple_strtoul);
-  * @endp: A pointer to the end of the parsed string will be placed here
-  * @base: The number base to use
+ /**
+  * strict_strtol - convert a string to a long strictly
+@@ -172,7 +191,20 @@ int strict_strtoul(const char *cp, unsigned int base, unsigned long *res);
+  * It returns 0 if conversion is successful and *res is set to the converted
+  * value, otherwise it returns -EINVAL and *res is set to 0.
   */
--long simple_strtol(const char *cp,char **endp,unsigned int base)
-+long simple_strtol(const char *cp, char **endp, unsigned int base)
- {
--	if(*cp=='-')
--		return -simple_strtoul(cp+1,endp,base);
--	return simple_strtoul(cp,endp,base);
-+	if(*cp == '-')
-+		return -simple_strtoul(cp + 1, endp, base);
-+	return simple_strtoul(cp, endp, base);
- }
--
- EXPORT_SYMBOL(simple_strtol);
+-int strict_strtol(const char *cp, unsigned int base, long *res);
++int strict_strtol(const char *cp, unsigned int base, long *res)
++{
++	int ret;
++	if (*cp == '-') {
++		ret = strict_strtoul(cp + 1, base, (unsigned long *)res);
++		if (!ret)
++			*res = -(*res);
++	} else {
++		ret = strict_strtoul(cp, base, (unsigned long *)res);
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL(strict_strtol);
  
  /**
-@@ -97,7 +96,7 @@ EXPORT_SYMBOL(simple_strtol);
-  * @endp: A pointer to the end of the parsed string will be placed here
-  * @base: The number base to use
+  * strict_strtoull - convert a string to an unsigned long long strictly
+@@ -196,7 +228,27 @@ int strict_strtol(const char *cp, unsigned int base, long *res);
+  * simple_strtoull just ignores the successive invalid characters and
+  * return the converted value of prefix part of the string.
   */
--unsigned long long simple_strtoull(const char *cp,char **endp,unsigned int base)
-+unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
- {
- 	unsigned long long result = 0;
+-int strict_strtoull(const char *cp, unsigned int base, unsigned long long *res);
++int strict_strtoull(const char *cp, unsigned int base, unsigned long long *res)
++{
++	char *tail;
++	unsigned long long val;
++	size_t len;
++
++	*res = 0;
++	len = strlen(cp);
++	if (len == 0)
++		return -EINVAL;
++
++	val = simple_strtoull(cp, &tail, base);
++	if ((*tail == '\0') ||
++		((len == (size_t)(tail - cp) + 1) && (*tail == '\n'))) {
++		*res = val;
++		return 0;
++	}
++
++	return -EINVAL;
++}
++EXPORT_SYMBOL(strict_strtoull);
  
-@@ -129,11 +128,11 @@ EXPORT_SYMBOL(simple_strtoull);
-  * @endp: A pointer to the end of the parsed string will be placed here
-  * @base: The number base to use
+ /**
+  * strict_strtoll - convert a string to a long long strictly
+@@ -210,53 +262,20 @@ int strict_strtoull(const char *cp, unsigned int base, unsigned long long *res);
+  * It returns 0 if conversion is successful and *res is set to the converted
+  * value, otherwise it returns -EINVAL and *res is set to 0.
   */
--long long simple_strtoll(const char *cp,char **endp,unsigned int base)
-+long long simple_strtoll(const char *cp, char **endp, unsigned int base)
+-int strict_strtoll(const char *cp, unsigned int base, long long *res);
+-
+-#define define_strict_strtoux(type, valtype)				\
+-int strict_strtou##type(const char *cp, unsigned int base, valtype *res)\
+-{									\
+-	char *tail;							\
+-	valtype val;							\
+-	size_t len;							\
+-									\
+-	*res = 0;							\
+-	len = strlen(cp);						\
+-	if (len == 0)							\
+-		return -EINVAL;						\
+-									\
+-	val = simple_strtou##type(cp, &tail, base);			\
+-	if ((*tail == '\0') ||						\
+-		((len == (size_t)(tail - cp) + 1) && (*tail == '\n'))) {\
+-		*res = val;						\
+-		return 0;						\
+-	}								\
+-									\
+-	return -EINVAL;							\
+-}									\
+-
+-#define define_strict_strtox(type, valtype)				\
+-int strict_strto##type(const char *cp, unsigned int base, valtype *res)	\
+-{									\
+-	int ret;							\
+-	if (*cp == '-') {						\
+-		ret = strict_strtou##type(cp+1, base, res);		\
+-		if (!ret)						\
+-			*res = -(*res);					\
+-	} else								\
+-		ret = strict_strtou##type(cp, base, res);		\
+-									\
+-	return ret;							\
+-}									\
+-
+-define_strict_strtoux(l, unsigned long)
+-define_strict_strtox(l, long)
+-define_strict_strtoux(ll, unsigned long long)
+-define_strict_strtox(ll, long long)
++int strict_strtoll(const char *cp, unsigned int base, long long *res)
++{
++	int ret;
++	if (*cp == '-') {
++		ret = strict_strtoull(cp + 1, base, (unsigned long long *)res);
++		if (!ret)
++			*res = -(*res);
++	} else {
++		ret = strict_strtoull(cp, base, (unsigned long long *)res);
++	}
+ 
+-EXPORT_SYMBOL(strict_strtoul);
+-EXPORT_SYMBOL(strict_strtol);
++	return ret;
++}
+ EXPORT_SYMBOL(strict_strtoll);
+-EXPORT_SYMBOL(strict_strtoull);
+ 
+ static int skip_atoi(const char **s)
  {
- 	if(*cp=='-')
--		return -simple_strtoull(cp+1,endp,base);
--	return simple_strtoull(cp,endp,base);
-+		return -simple_strtoull(cp + 1, endp, base);
-+	return simple_strtoull(cp, endp, base);
- }
- 
-
-@@ -794,7 +793,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 	/* the trailing null byte doesn't count towards the total */
- 	return str-buf;
- }
--
- EXPORT_SYMBOL(vsnprintf);
- 
- /**
-@@ -818,7 +816,6 @@ int vscnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 	i=vsnprintf(buf,size,fmt,args);
- 	return (i >= size) ? (size - 1) : i;
- }
--
- EXPORT_SYMBOL(vscnprintf);
- 
- /**
-@@ -843,7 +840,6 @@ int snprintf(char * buf, size_t size, const char *fmt, ...)
- 	va_end(args);
- 	return i;
- }
--
- EXPORT_SYMBOL(snprintf);
- 
- /**
-@@ -886,7 +882,6 @@ int vsprintf(char *buf, const char *fmt, va_list args)
- {
- 	return vsnprintf(buf, INT_MAX, fmt, args);
- }
--
- EXPORT_SYMBOL(vsprintf);
- 
- /**
-@@ -909,7 +904,6 @@ int sprintf(char * buf, const char *fmt, ...)
- 	va_end(args);
- 	return i;
- }
--
- EXPORT_SYMBOL(sprintf);
- 
- /**
-@@ -1138,7 +1132,6 @@ int vsscanf(const char * buf, const char * fmt, va_list args)
- 
- 	return num;
- }
--
- EXPORT_SYMBOL(vsscanf);
- 
- /**
-@@ -1157,5 +1150,4 @@ int sscanf(const char * buf, const char * fmt, ...)
- 	va_end(args);
- 	return i;
- }
--
- EXPORT_SYMBOL(sscanf);
 -- 
 1.6.0.2.405.g3cc38
-
 
