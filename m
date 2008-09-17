@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYIQJcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753718AbYIQJiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbYIQJcR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 05:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYIQJcD
+	id S1753718AbYIQJiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 05:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYIQJiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 05:32:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:57680 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbYIQJcB (ORCPT
+	Wed, 17 Sep 2008 05:38:14 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:56057 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbYIQJiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 05:32:01 -0400
-Date: Wed, 17 Sep 2008 12:32:41 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       Davide Libenzi <davidel@xmailserver.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in
-	userspace
-Message-ID: <20080917093240.GB4984@localhost.localdomain>
-References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi> <20080916130234.GA17082@localhost.localdomain> <48CFBE51.1060200@redhat.com> <20080916160902.GF1400@cs181140183.pp.htv.fi>
+	Wed, 17 Sep 2008 05:38:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lTMbJzH7w4r3Tan3zCBrwavdz5HjH3W869GfLj7gtEZd487hNFOd8kS0co/oi7rtOS
+         97jhzOEECYyj2uymN40kHnM2kEg/0/d6mNAlJCFp/Eerxd+FetiMzPOiNbLrKWOB7ywr
+         GPlX7HcyIr8OD/dqllNonAACNPAJE9mTysJd0=
+Date: Wed, 17 Sep 2008 13:38:13 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: j_kernel@hoblitt.com
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
+	tick_periodic() ???
+Message-ID: <20080917093813.GB7455@lenovo>
+References: <20080917024312.GA23209@hoblitt.com> <20080917071357.GA7455@lenovo> <20080917092058.GB23209@hoblitt.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ADZbWkCsHQ7r3kzd"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080916160902.GF1400@cs181140183.pp.htv.fi>
-User-Agent: Mutt/1.5.18 (2008-05-29)
+In-Reply-To: <20080917092058.GB23209@hoblitt.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[j_kernel@hoblitt.com - Tue, Sep 16, 2008 at 11:20:58PM -1000]
+| On Wed, Sep 17, 2008 at 11:13:57AM +0400, Cyrill Gorcunov wrote:
+| > Joshua, could you please attach ACPI tables dump to the bugzilla entry (~300K)?
+| 
+| Done but I was unable to extract the DSDT table as described in the
+| instructions.
+| 
+| #  acpixtract DSDT < acpidump.asc           
+| Could not open DSDT
+| 
+| Cheers,
+| 
+| -J
+| 
 
---ADZbWkCsHQ7r3kzd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ it's enough, thanks!
 
-On Tue, Sep 16, 2008 at 07:09:02PM +0300, Adrian Bunk wrote:
-> On Tue, Sep 16, 2008 at 07:10:25AM -0700, Ulrich Drepper wrote:
-> > Kirill A. Shutemov wrote:
-> > >> What is the error message?
-> > >=20
-> > > /usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
-> > > flock'
-> >=20
-> > And?  None of these programs should use <linux/inotify.h>.  There has
-> > for the longest time been a <sys/inotify.h> header which doesn't need
-> > any kernel headers.  In fact, <linux/inotify.h> should not be exported.
->=20
-> Even if userspace applications shouldn't use it directly this doesn't=20
-> sound right:
->=20
-> We shouldn't force all libc implementations to copy the contents into a=
-=20
-> private header.
-
-glibc and dietlibc provide <sys/inotify.h>. newlib and uclibc don't. klibc
-provides <sys/inotify.h> but it depends on <linux/inotify.h>
-
---=20
-Regards,  Kirill A. Shutemov
- + Belarus, Minsk
- + ALT Linux Team, http://www.altlinux.com/
-
---ADZbWkCsHQ7r3kzd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkjQzrgACgkQbWYnhzC5v6rexgCeOX71hr0PMBVcyHR6q5Ull6/F
-BM8An3hqbUS7BymlyCO+MHaIzKIrL3xf
-=4dw1
------END PGP SIGNATURE-----
-
---ADZbWkCsHQ7r3kzd--
+		- Cyrill -
