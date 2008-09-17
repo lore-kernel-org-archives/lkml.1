@@ -1,88 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYIQPbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbYIQPgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbYIQPbV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 11:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbYIQPbL
+	id S1754473AbYIQPgy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 11:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYIQPgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 11:31:11 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55830 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbYIQPbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 11:31:09 -0400
-To: Sergey Spiridonov <sena@hurd.homeunix.org>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: GA-MA790FX-DS5 SATA ahci NCQ erros on Jmicron 20360/20363  (JMB363) kernel 2.6.25-2 Debian/Lenny
-References: <g8p6po$nm$1@ger.gmane.org> <48B0916C.4080805@garzik.org>
-	<g8q9mg$v2p$1@ger.gmane.org> <48B0E608.4050205@garzik.org>
-	<g8sqp1$jn4$1@ger.gmane.org> <ug87q5-llh.ln1@legba.gamic.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 17 Sep 2008 17:31:07 +0200
-In-Reply-To: <ug87q5-llh.ln1@legba.gamic.com> (Sergey Spiridonov's message of "Wed\, 17 Sep 2008 14\:07\:26 +0200")
-Message-ID: <m33ajyx004.fsf@maximus.localdomain>
+	Wed, 17 Sep 2008 11:36:44 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41591 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752610AbYIQPgn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 11:36:43 -0400
+X-Sasl-enc: Kkpck2E1xooBB7+SnaQvDnzRhqqj73QdIsDRsPc4NLG7 1221665802
+Date: Wed, 17 Sep 2008 12:36:37 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Michael Buesch <mb@bu3sch.de>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Adel Gadllah <adel.gadllah@gmail.com>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in 2.6.27-rcX caused by commit
+	bc19d6e0b74ef03a3baf035412c95192b54dfc6f
+Message-ID: <20080917153637.GD5186@khazad-dum.debian.net>
+References: <48CFC03A.8020708@lwfinger.net> <48D0095B.40403@lwfinger.net> <20080916233240.GA18574@srcf.ucam.org> <200809171622.55882.mb@bu3sch.de> <20080917145007.GA5186@khazad-dum.debian.net> <48D1221B.1000601@lwfinger.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D1221B.1000601@lwfinger.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergey Spiridonov <sena@hurd.homeunix.org> writes:
+On Wed, 17 Sep 2008, Larry Finger wrote:
+> Henrique de Moraes Holschuh wrote:
+> > He means rfkill_force_state() should change the LED state in the process,
+> > which it isn't doing.
+> > 
+> > It is an one-line patch, I am testing it now.
+> 
+> If your one-line patch fixes my regression, then I'll ACK it for 2.6.27.
 
-> I got a replacement motherboard. And I got absolutely same errors and
-> problems.
+Sorry, it can't fix that regression by itself, since b43 is not using
+rfkill_force_state() in mainline.
 
-FWIW I have an MSI (P45 Neo2) mobo with JMB363 (only PATA connected)
-and its second AHCI port (ata8, not connected) gives me the following.
+It will fix the same issue you are experiencing on b43 in anything that uses
+rfkill_force_state(), which means (for mainline): iwlwifi, rt2x00,
+thinkpad-acpi and hp-wmi.
 
-The 2.6.26.2 kernel doesn't see any problem:
+It is a regression only on b43 and thinkpad-acpi, as the other drivers above
+didn't use rfkill_force_state() in 2.6.26.
 
-Linux version 2.6.26.2 (gcc version 4.3.0 20080428 (Red Hat 4.3.0-8) SMP
-ata7: SATA max UDMA/133 abar m8192@0xfeafe000 port 0xfeafe100 irq 16
-ata8: SATA max UDMA/133 abar m8192@0xfeafe000 port 0xfeafe180 irq 16
-ata7: SATA link down (SStatus 0 SControl 300)
-ata8: SATA link down (SStatus 0 SControl 300)
-ata9: PATA max UDMA/100 cmd 0xdc00 ctl 0xd880 bmdma 0xd400 irq 17
-ata10: PATA max UDMA/100 cmd 0xd800 ctl 0xd480 bmdma 0xd408 irq 17
-ata9.00: ATAPI: _NEC DVD_RW ND-4550A, 1.09, max UDMA/33
-ata9.00: configured for UDMA/33
+To fix the regression in b43, you'd be faced with the need of both my simple
+patch AND Matthew's more complex one.
 
-Now with 2.6.26.3:
-ata7: SATA max UDMA/133 abar m8192@0xfeafe000 port 0xfeafe100 irq 16
-ata8: SATA max UDMA/133 abar m8192@0xfeafe000 port 0xfeafe180 irq 16
-ata7: SATA link down (SStatus 0 SControl 300)
-ata8: SATA link down (SStatus 0 SControl 300)
-ata9: PATA max UDMA/100 cmd 0xdc00 ctl 0xd880 bmdma 0xd400 irq 17
-ata10: PATA max UDMA/100 cmd 0xd800 ctl 0xd480 bmdma 0xd408 irq 17
-ata9.00: ATAPI: _NEC DVD_RW ND-4550A, 1.09, max UDMA/33
-ata9.00: configured for UDMA/33
-ata8: exception Emask 0x10 SAct 0x0 SErr 0x4000000 action 0xe frozen
-ata8: irq_stat 0x00000040, connection status changed
-ata8: SError: { DevExch }
-ata8: hard resetting link
-ata8: SATA link down (SStatus 0 SControl 300)
-ata8: EH complete
-ata8: exception Emask 0x10 SAct 0x0 SErr 0x4000000 action 0xe frozen
-ata8: irq_stat 0x00000040, connection status changed
-ata8: SError: { DevExch }
-ata8: hard resetting link
-ata8: SATA link down (SStatus 0 SControl 300)
-ata8: EH complete
-ata8: exception Emask 0x10 SAct 0x0 SErr 0x4000000 action 0xe frozen
-ata8: irq_stat 0x00000040, connection status changed
-ata8: SError: { DevExch }
-ata8: hard resetting link
-...
-
-.config differences which could somehow be relevant(?):
-
--CONFIG_GART_IOMMU=y
--CONFIG_K8_NB=y
--CONFIG_AGP_AMD64=y
-
-(I'm using SWIOTLB in both cases, it's P45/Core2 duo based machine).
-
-Can't see anything between 2.6.26.2 and 2.6.26.3 which could cause
-that. Perhaps I should bisect it anyway?
-For now I have just disabled these AHCI devices, didn't know that it
-was ok with 2.6.26.2 (just noticed it in the logs). Will look at it.
 -- 
-Krzysztof Halasa
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
