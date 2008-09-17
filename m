@@ -1,73 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbYIQRxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYIQR7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbYIQRxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbYIQRxZ
+	id S1755356AbYIQR7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 13:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbYIQR7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 13:53:25 -0400
-Received: from sh.osrg.net ([192.16.179.4]:36530 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754358AbYIQRxY convert rfc822-to-8bit (ORCPT
+	Wed, 17 Sep 2008 13:59:07 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36174 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753694AbYIQR7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 13:53:24 -0400
-Date: Thu, 18 Sep 2008 02:52:41 +0900 (JST)
-Message-Id: <20080918.025241.88481333.ryusuke@osrg.net>
-To: joern@logfs.org
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/27] nilfs2: add document
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20080917145437.GE8750@logfs.org>
-References: <1221419304-18572-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	<1221419304-18572-2-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	<20080917145437.GE8750@logfs.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 17 Sep 2008 13:59:06 -0400
+Date: Wed, 17 Sep 2008 18:58:38 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Conke Hu <conke.hu@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arm@vger.kernel.org, ben@simtec.co.uk
+Subject: Re: [PATCH] s3c24xx nand: add command line partition table parsing support
+Message-ID: <20080917175838.GA5475@flint.arm.linux.org.uk>
+References: <5767b9100809171032g197771dfv5374b7358b9b7210@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5767b9100809171032g197771dfv5374b7358b9b7210@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 16:54:38 +0200, Jörn Engel wrote:
-> On Mon, 15 September 2008 04:07:58 +0900, Ryusuke Konishi wrote:
-> > +
-> > +The logs include regular files, directory files, symbolic link files
-> > +and several meta data files.  The mata data files are the files used
-> > +to maintain file system meta data.  The current version of NILFS2 uses
-> > +the following meta data files:
-> > +
-> > + 1) Inode file (ifile)             -- Stores on-disk inodes
-> > + 2) Checkpoint file (cpfile)       -- Stores checkpoints
-> > + 3) Segment usage file (sufile)    -- Stores allocation state of segments
-> > + 4) Data address translation file  -- Maps virtual block numbers to usual
-> > +    (DAT)                             block numbers.  This file serves to
-> > +                                      make on-disk blocks relocatable.
-> > + 5) Sketch file (sketch)           -- Keeps read-only data which can be
-> > +                                      associated with checkpoints (optional)
+By sending this to the linux-arm list at vger, you're missing out the
+majority of the ARM community.  Please use the proper (listed) mailing
+list in MAINTAINERS.
+
+On Thu, Sep 18, 2008 at 01:32:16AM +0800, Conke Hu wrote:
+> Add mtd id and  command line partition table parsing support for
+> s3c24xx nand driver.
 > 
-> How are the sufile and the DAT written?  If you naively stick to the
-> log-structured approach, their contents will reflect a filesystem state
-> prior to writing them and be outdated by the time they hit the medium.
-> So either you bend the rules here and update those files in-place or you
-> do something tricky.  Can you explain your solution?
+> Signed-off-by: Conke Hu <conke.hu@gmail.com>
+> Signed-off-by: Linke Wang <linke.wang@gmail.com>
+> ------------------
+> diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
+> index 556139e..bab7216 100644
+> --- a/drivers/mtd/nand/s3c2410.c
+> +++ b/drivers/mtd/nand/s3c2410.c
+> @@ -48,6 +48,8 @@
+>  #include <asm/plat-s3c/regs-nand.h>
+>  #include <asm/plat-s3c/nand.h>
+> 
+> +#define S3C_NAND_NAME_LEN 16
+> +
+>  #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
+>  static int hardware_ecc = 1;
+>  #else
+> @@ -60,6 +62,9 @@ static int clock_stop = 1;
+>  static const int clock_stop = 0;
+>  #endif
+> 
+> +#ifdef CONFIG_MTD_PARTITIONS
+> +static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
+> +#endif
+> 
+>  /* new oob placement block for use with hardware ecc generation
+>   */
+> @@ -649,6 +654,15 @@ static int s3c2410_nand_add_partition(struct
+> s3c2410_nand_info *info,
+>  				      struct s3c2410_nand_mtd *mtd,
+>  				      struct s3c2410_nand_set *set)
+>  {
+> +#ifdef CONFIG_MTD_CMDLINE_PARTS
+> +	int nr_parts;
+> +	struct mtd_partition *partitions;
+> +
+> +	nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes, &partitions, 0);
+> +	if (nr_parts > 0 && partitions != NULL)
+> +		return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
+> +#endif
+> +
+>  	if (set == NULL)
+>  		return add_mtd_device(&mtd->mtd);
+> 
+> @@ -808,6 +822,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+>  	int size;
+>  	int nr_sets;
+>  	int setno;
+> +	char *name;
+> 
+>  	pr_debug("s3c2410_nand_probe(%p)\n", pdev);
+> 
+> @@ -875,7 +890,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+> 
+>  	/* allocate our information */
+> 
+> -	size = nr_sets * sizeof(*info->mtds);
+> +	size = nr_sets * (sizeof(*info->mtds) + S3C_NAND_NAME_LEN);
+>  	info->mtds = kmalloc(size, GFP_KERNEL);
+>  	if (info->mtds == NULL) {
+>  		dev_err(&pdev->dev, "failed to allocate mtd storage\n");
+> @@ -888,10 +903,15 @@ static int s3c24xx_nand_probe(struct
+> platform_device *pdev,
+>  	/* initialise all possible chips */
+> 
+>  	nmtd = info->mtds;
+> +	name = (char *)(info->mtds + nr_sets);
+> 
+>  	for (setno = 0; setno < nr_sets; setno++, nmtd++) {
+>  		pr_debug("initialising set %d (%p, info %p)\n", setno, nmtd, info);
+> 
+> +		sprintf(name, "s3c_nand%d", setno);
+> +		nmtd->mtd.name = name;
+> +		name += S3C_NAND_NAME_LEN;
+> +
+>  		s3c2410_nand_init_chip(info, nmtd, sets);
+> 
+>  		nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
 
-That's right.  The DAT, sufile, and cpfile are written at a time so
-that they will become consistent and self contained.
-
-Checkpoint creations are predictable, so the cpfile is OK.  But the
-sufile depends on the length of logs, therefore it depends on
-construction of other files including DAT and the super root block.
-Since the virtual block numbers are assigned also to the sufile, there
-is a circulation problem.
-
-So, nilfs2 makes the sufile in a speculative way; it will retry
-collection of dirty blocks for these three files if it turned out that
-more segments are required than expected.  It is not a problem for the
-case that expected segments are too many because allocation of
-oversupplied segments can be cancelled without breaking consistency.
-nilfs2 does this retry on memory and writes the three files at a time
-to avoid I/O penalty.
-
-Regards,
-Ryusuke
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
