@@ -1,112 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbYIQKk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYIQKlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbYIQKk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 06:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIQKkV
+	id S1754066AbYIQKlU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 06:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIQKlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 06:40:21 -0400
-Received: from www.tglx.de ([62.245.132.106]:40040 "EHLO www.tglx.de"
+	Wed, 17 Sep 2008 06:41:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57664 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751025AbYIQKkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 06:40:20 -0400
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHv2 1/1] uio: add automata sercos3 pci card support
-From: John Ogness <john.ogness@linutronix.de>
-References: <86d4j4z9xi.fsf@johno-ibook.fn.ogness.net>
-	<86d4j3f9vs.fsf@johno-ibook.fn.ogness.net>
-	<20080917094802.GA3034@local>
-Date: Wed, 17 Sep 2008 12:40:10 +0200
-In-Reply-To: <20080917094802.GA3034@local> (Hans J. Koch's message of "Wed\, 17 Sep 2008 11\:48\:04 +0200")
-Message-ID: <8663ovf439.fsf@johno-ibook.fn.ogness.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1752172AbYIQKlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 06:41:04 -0400
+Date: Wed, 17 Sep 2008 12:40:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20080917104044.GC18764@elte.hu>
+References: <SpS7rta8n4.A.mr.ZesyIB@albercik> <48CAE7A0.8000004@linux-foundation.org> <1221306287.5213.111.camel@marge.simson.net> <48CD1D25.9080301@linux-foundation.org> <1221421907.4597.24.camel@marge.simson.net> <1221475440.4784.39.camel@marge.simson.net> <1221568105.5020.17.camel@marge.simson.net> <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi> <1221626391.5043.13.camel@marge.simson.net> <1221627676.5125.3.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1221627676.5125.3.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-09-17, Hans J. Koch <hjk@linutronix.de> wrote:
->> +/* this function assumes ier0_cache_lock is locked! */
->> +static void sercos3_disable_interrupts(struct uio_info *info,
->> +				       struct sercos3_priv *priv)
->> +{
->> +	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
->> +	u32 tmp = ioread32(ier0);
->> +
->> +	if (tmp) {
->
-> Is that needed?
 
-I check the value here for 2 reasons:
+* Mike Galbraith <efault@gmx.de> wrote:
 
-1. If the interrupts are already disabled, there is no need to perform
-   an iowrite32().
+> On Wed, 2008-09-17 at 06:40 +0200, Mike Galbraith wrote:
+> > On Tue, 2008-09-16 at 17:07 +0300, Ilpo Järvinen wrote:
+> 
+> > > One additional sanity check could be to rebase security 6f0f0fd4963 on top 
+> > > of the c142bda458a and then see if bisection among those security commits 
+> > > on top yields to the the same result... Though I doubt it can change much 
+> > > because there was not that much relevant non-security things in the merge 
+> > > in question.
+> > 
+> > I'm not a master of git-foo, so that is not an option.  However, a dinky
+> > bisection c142bda4..847106f very clearly says...
+> > 
+> > marge:..kernel/linux-2.6.27.git # git bisect bad
+> > 6f0f0fd496333777d53daff21a4e3b28c4d03a6d is first bad commit
+> > commit 6f0f0fd496333777d53daff21a4e3b28c4d03a6d
+> > Author: James Morris <jmorris@namei.org>
+> > Date:   Thu Jul 10 17:02:07 2008 +0900
+> > 
+> >     security: remove register_security hook
+> > 
+> >     The register security hook is no longer required, as the capability
+> >     module is always registered.  LSMs wishing to stack capability as
+> >     a secondary module should do so explicitly.
+> > 
+> >     Signed-off-by: James Morris <jmorris@namei.org>
+> >     Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
+> >     Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > :040000 040000 0177ef46d305e51e27bfcc4350a40577f8ba8d3d 64b64c10a424df4539653a8ee34f1a2329300931 M      include
+> > :040000 040000 e318891e514de674fd064f6bfad70d5633b1aff1 0dbb38d5aa7fc3e4b2e09dc65796ce7cd5faeb26 M      security
+> 
+> Which is high grade horse-pookey.
 
-2. If the interrupts are already disabled, we do not want to overwrite
-   the ier0_cache with a 0.
+perhaps re-test commit 6f0f0fd49 and its parent commit, 93cbace7a0.
 
-Be aware that sercos3_disable_interrupts() can also be called via
-sercos3_irqcontrol(). The official driver would never do this, but
-maybe someone else would? (Your review of PATCHv1 insisted that
-sercos3_irqcontrol() supports disabling the interrupt.) I don't want
-to risk enabled interrupts getting lost (i.e. not being re-enabled
-later).
+It looks like a potentially bogus bisection result, but _maybe_ it has 
+relevance: changes the size of "struct security_operations", which could 
+have alignment and layout effects on all sorts of kernel variables, 
+kmalloc sizes, etc.
 
->> +		/* store previously enabled interrupts */
->> +		priv->ier0_cache |= tmp;
->
-> This doesn't match the comment. Why |= and not a simple assignment?
-
-Here I was concerned that interrupts are being disabled but the
-ier0_cache isn't empty. This situation would occur if the
-userspace-driver manually enabled some interrupts before handling
-pending interrupts.
-
-Normally this would not happen, but since UIO-drivers deal with
-context switches to userspace, I decided that it could be possible. So
-I decided to |= the bitmask instead of overwriting it to prevent
-enabled interrupts from getting lost.
-
-I can change the comment to read:
-        /* add enabled interrupts to cache */
-
->> +
->> +		/* disable interrupts */
->> +		iowrite32(0, ier0);
->> +	}
->> +}
-
-[...]
-
->> +static irqreturn_t sercos3_handler(int irq, struct uio_info *info)
->> +{
->> +	struct sercos3_priv *priv = info->priv;
->> +	void __iomem *isr0 = info->mem[3].internal_addr + ISR0_OFFSET;
->> +
->> +	if (!ioread32(isr0))
->> +		return IRQ_NONE;
->
-> If that card has an irq status and an irq enable register, you have
-> to check both. The status bit could be set, but the irq is not
-> enabled, in which case you have to return IRQ_NONE. Should look
-> something like this:
->
-> 	if (!(ier & isr))
-> 		return IRQ_NONE;
->
-> This assumes the enable and corresponding status bits are in the
-> same bit position in the registers.
-
-They are in the same bit position. For PATCHv3 I will change to code
-to be:
-
-        if (!(ioread32(isr0) & ioread32(ier0)))
-                return IRQ_NONE;
-
->> +	spin_lock(&priv->ier0_cache_lock);
->> +	sercos3_disable_interrupts(info, priv);
->> +	spin_unlock(&priv->ier0_cache_lock);
->> +
->> +	return IRQ_HANDLED;
->> +}
+	Ingo
