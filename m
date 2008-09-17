@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYIQTVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYIQTWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbYIQTVa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:21:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbYIQTUy
+	id S1755451AbYIQTWx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYIQTWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:20:54 -0400
-Received: from mo10.iij4u.or.jp ([210.138.174.78]:37911 "EHLO mo10.iij4u.or.jp"
+	Wed, 17 Sep 2008 15:22:42 -0400
+Received: from hostap.isc.org ([149.20.54.63]:54300 "EHLO hostap.isc.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755327AbYIQTUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:20:53 -0400
-Date: Thu, 18 Sep 2008 04:20:18 +0900
-To: joerg.roedel@amd.com
-Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com>
-References: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
-	<1221670377-19295-4-git-send-email-joerg.roedel@amd.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080918041104K.fujita.tomonori@lab.ntt.co.jp>
+	id S1752648AbYIQTWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:22:41 -0400
+Date: Wed, 17 Sep 2008 12:11:28 -0700
+From: Jouni Malinen <j@w1.fi>
+To: Jouni Malinen <j@w1.fi>
+Cc: David Miller <davem@davemloft.net>, jouni.malinen@atheros.com,
+       alex.williamson@hp.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking (WEXT events and 64/32 compat)
+Message-ID: <20080917191128.GA23239@hostap.isc.org>
+References: <48C5E2FC.4090304@atheros.com> <20080908.194627.169864643.davem@davemloft.net> <20080909025525.GB25148@hostap.isc.org> <20080908.204323.04156464.davem@davemloft.net> <20080909040525.GA26151@hostap.isc.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080909040525.GA26151@hostap.isc.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 18:52:37 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Mon, Sep 08, 2008 at 09:05:25PM -0700, Jouni Malinen wrote:
+> OK. Interesting point here is that the old code was using IWEVCUSTOM
+> which is defined as having header_type IW_HEADER_TYPE_POINT and so are
+> the new IWEVASSOCREQIE and IWEVASSOCRESPIE. The only difference is in
+> max_tokens specifying different maximum length for the data. Maybe the
+> old code was also broken, but wpa_supplicant handled the bogus data
+> without causing problems (text parsing failing instead of some
+> parameters being set based on bogus binary data).
 
-> The IO/TLB flushing on every unmaping operation is the most expensive
-> part there and not strictly necessary. It is sufficient to do the flush
-> before any entries are reused. This is patch implements lazy IO/TLB
-> flushing which does exactly this.
-> 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  Documentation/kernel-parameters.txt |    5 +++++
->  arch/x86/kernel/amd_iommu.c         |   26 ++++++++++++++++++++++----
->  arch/x86/kernel/amd_iommu_init.c    |   10 +++++++++-
->  include/asm-x86/amd_iommu_types.h   |    9 +++++++++
->  4 files changed, 45 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index c2e00ee..5f0aefe 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -284,6 +284,11 @@ and is between 256 and 4096 characters. It is defined in the file
->  			isolate - enable device isolation (each device, as far
->  			          as possible, will get its own protection
->  			          domain)
-> +			unmap_flush - enable flushing of IO/TLB entries when
-> +			              they are unmapped. Otherwise they are
-> +				      flushed before they will be reused, which
-> +				      is a lot of faster
-> +
+I was able to test this with a 64/32-bit setup and confirmed that both
+IWEVCUSTOM and the new IWEVASSOCREQIE/IWEVASSOCRESPIE are indeed failing
+when using 32-bit binary in userspace (and work with 64-bit). The length
+field is parsed incorrectly for all these events.
 
-Would it be nice to have consistency of IOMMU parameters?
+wpa_supplicant has code for rejecting IWEVCUSTOM events that have too
+large a value in the length field. However, same validation is not done
+for IWEVASSOCREQIE/IWEVASSOCRESPIE (i.e., wpa_supplicant relies on
+kernel providing the correct value for the length field). As the end
+result, the new IWEVASSOCREQIE/IWEVASSOCRESPIE events will trigger a
+segmentation fault in wpa_supplicant when the buffer is being read way
+beyond its end.
 
-VT-d also has the kernel-boot option for this lazy flushing trick
-though VT-d 'strict' option is more vague than 'unmap_flush'
+I'll make wpa_supplicant validate the length field for all WEXT events
+to avoid the crash. This was enough to make association work with the
+reverted mac80211 patch since the values from these association info
+events are not critical for many use cases.
 
-It would be also nice to have consistency of IOMMU behavior.
+Since we cannot fix the kernel code to handle the WEXT events for all
+cases (e.g., 64-bit kernel and mix of 32-bit and 64-bit userspace
+apps), I could consider adding a workaround in wpa_supplicant to handle
+the 64-bit data being received in 32-bit app.. However, that would not
+fix problems for anyone using older versions of wpa_supplicant.
 
-VT-d enables the lazy flushing trick by default and has the boot
-option to disable it.
+Would it be acceptable to ever enable use of IWEVASSOCREQIE /
+IWEVSSOCRESPIE in kernel if the workaround were available in new
+wpa_supplicant versions? Or should we try to add a new WEXT event
+type that uses fixed size for the length field and then replace the old
+IWEVCUSTOM with the new type since IWEVCUSTOM does not work with
+64/32-bit case (wpa_supplicant just knows how to avoid processing that
+bogus event data)?
+
+-- 
+Jouni Malinen                                            PGP id EFC895FA
