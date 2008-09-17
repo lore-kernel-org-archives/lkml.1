@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbYIQPjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYIQPjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbYIQPjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 11:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYIQPjF
+	id S1754981AbYIQPjm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 11:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYIQPjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 11:39:05 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:33478 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753460AbYIQPjE (ORCPT
+	Wed, 17 Sep 2008 11:39:32 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43713 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754239AbYIQPjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 11:39:04 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH] dm-snapshot: poor copy-on-write performance due to I/O reordering
-To: Kazuo Ito <ito.kazuo@oss.ntt.co.jp>, dm-devel@redhat.com, jblunck@suse.de,
-       kjamieson@bycast.com, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Wed, 17 Sep 2008 17:47:50 +0200
-References: <bd0gX-4ma-13@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Wed, 17 Sep 2008 11:39:32 -0400
+Message-ID: <48D12490.5010003@zytor.com>
+Date: Wed, 17 Sep 2008 08:38:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KfzFv-00041e-8A@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+To: Ingo Molnar <mingo@elte.hu>
+CC: Yan Li <elliot.li.tech@gmail.com>, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, rjmaomao@gmail.com,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
+Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
+References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <20080909002055.GA8573@yantp.cn.ibm.com> <48C5C47F.5040004@zytor.com> <20080916133239.GA17456@yantp.cn.ibm.com> <20080917105238.GF18764@elte.hu> <20080917140357.GA23523@yantp.cn.ibm.com> <20080917141030.GC20510@elte.hu>
+In-Reply-To: <20080917141030.GC20510@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kazuo Ito <ito.kazuo@oss.ntt.co.jp> wrote:
-
-> Write throughput to LVM snapshot origin volume is an order
-> of magnitude slower than those to LV without snapshots or
-> snapshot target volumes, especially in the case of sequential
-> writes with O_SYNC on.
+Ingo Molnar wrote:
 > 
-> The following patch originally written by Kevin Jamieson and
-> Jan Blunck and slightly modified for the current RCs by myself
-> tries to improve the performance by modifying the behaviour
-> of kcopyd, so that it pushes back an I/O job to the head of
-> the job queue instead of the tail as process_jobs() currently
-> does when it has to wait for free pages. This way, write
-> requests aren't shuffled to cause extra seeks.
+> that still leaves the CPUID/MSR method for the virtualizer to announce 
+> itself.
+> 
 
-Did you check for starvation problems, too?
+FWIW, it's getting pretty clear with the recent bout of Virtual PC bugs 
+that we need virtualizer detection, and that a lot of VMs are doing 
+various idiotic things.
+
+Again, with Virtual PC, it seems that DMI is the preferred detection 
+method, as disgusting as it is, simply because the alternatives are the 
+moral equivalent of ad hoc probing for ISA cards (a random I/O port for 
+VMWare, a random "hopefully unused" opcode for VPC.)
+
+>> I feel It's also unfit to touch the whole PCI or DMI thing before CPU 
+>> registers and memory are settled.  A simple solution here is to only 
+>> issue a KERN_INFO when we detected mtrr is empty and later, when we 
+>> can be sure that the OS is not running as a VM, issue a warning. The 
+>> later part can be done in early_quirks().
+> 
+> ok, we can move the MTRR message further back, to after the early quirks 
+> phase.
+
+Makes sense to me.
+
+	-hpa
 
