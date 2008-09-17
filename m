@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYIQHMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbYIQHMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbYIQHMQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 03:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYIQHK7
+	id S1754211AbYIQHMb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 03:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbYIQHLC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 03:10:59 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:23335 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752789AbYIQHK6 (ORCPT
+	Wed, 17 Sep 2008 03:11:02 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:16329 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753172AbYIQHLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 03:10:58 -0400
+	Wed, 17 Sep 2008 03:11:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=toaFMsjISnaSrwKdJnXY4sDwfClLknKvQwSlhwRrTpraEfmtPp/JU2pHt+TjBduZji
-         YpvgCZecNFkgV9m6PvsrdpK4+T0ko6z56KC7q9ItwBm4IqWbpcB4vqb5x8gKOi75iAjw
-         a+EfXq0lZ+39+3FgFws0dn3pkSZPSXYFC1d1c=
+        b=csc44Rw84S/5DWY1/fJDqkREPSLuL8sDBFPNr7nTK5x7uS5Kv48+NHgUgxSBg5Hcw3
+         6UjPQkR+MFyVGRwNY50GN66pJR7QX7Wkg/Si51m13/eQWSJpuGzE9Yli9gGst8bFZdtZ
+         IRhaWHJnE0D+iXiunPxmQKYHB4m/BKDcEje1M=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 4/6] acpi: add KERN_ACPI v3
-Date: Wed, 17 Sep 2008 00:10:13 -0700
-Message-Id: <1221635415-14859-5-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 5/6] apci: dump slit with printk(KERN_ACPI...)
+Date: Wed, 17 Sep 2008 00:10:14 -0700
+Message-Id: <1221635415-14859-6-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
 References: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
@@ -31,39 +31,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use DEFINE_LOGLEVEL_SETUP to set loglevel for acpi
-v2: use <acpi, "acpi:"> instead
-v3: use KERN_ACPI
-
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- drivers/acpi/osl.c   |    2 ++
- include/linux/acpi.h |    1 +
- 2 files changed, 3 insertions(+)
+ drivers/acpi/numa.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-Index: linux-2.6/drivers/acpi/osl.c
+Index: linux-2.6/drivers/acpi/numa.c
 ===================================================================
---- linux-2.6.orig/drivers/acpi/osl.c
-+++ linux-2.6/drivers/acpi/osl.c
-@@ -75,6 +75,8 @@ EXPORT_SYMBOL(acpi_in_debugger);
- extern char line_buf[80];
- #endif				/*ENABLE_DEBUGGER */
- 
-+DEFINE_LOGLEVEL_SETUP(acpi, KERN_ACPI, "acpi:");
-+
- static unsigned int acpi_irq_irq;
- static acpi_osd_handler acpi_irq_handler;
- static void *acpi_irq_context;
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -43,6 +43,7 @@
- #include <asm/acpi.h>
- #include <linux/dmi.h>
- 
-+#define KERN_ACPI "<acpi>"
- 
- enum acpi_irq_model_id {
- 	ACPI_IRQ_MODEL_PIC = 0,
+--- linux-2.6.orig/drivers/acpi/numa.c
++++ linux-2.6/drivers/acpi/numa.c
+@@ -150,6 +150,15 @@ static __init int slit_valid(struct acpi
+ {
+ 	int i, j;
+ 	int d = slit->locality_count;
++	printk(KERN_DEBUG KERN_ACPI "ACPI: SLIT: nodes = %d\n", d);
++	for (i = 0; i < d; i++) {
++		printk(KERN_DEBUG KERN_ACPI "  ");
++		for (j = 0; j < d; j++)  {
++			u8 val = slit->entry[d*i + j];
++			printk(KERN_CONT KERN_ACPI " %d", val);
++		}
++		printk(KERN_CONT KERN_ACPI "\n");
++	}
+ 	for (i = 0; i < d; i++) {
+ 		for (j = 0; j < d; j++)  {
+ 			u8 val = slit->entry[d*i + j];
