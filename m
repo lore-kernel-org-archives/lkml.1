@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYIQVeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYIQVjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755068AbYIQVeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbYIQVeg
+	id S1755045AbYIQVjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYIQVjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:34:36 -0400
-Received: from casper.infradead.org ([85.118.1.10]:32809 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753193AbYIQVef (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:34:35 -0400
-Date: Wed, 17 Sep 2008 14:34:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: How how latent should non-preemptive scheduling be?
-Message-ID: <20080917143439.5ce79534@infradead.org>
-In-Reply-To: <48D1741A.7010508@yahoo.com>
-References: <48D1741A.7010508@yahoo.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Sep 2008 17:39:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55716 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752380AbYIQVjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 17:39:14 -0400
+Message-ID: <48D178FB.80902@garzik.org>
+Date: Wed, 17 Sep 2008 17:39:07 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@linux.intel.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org, davem@davemloft.net
+Subject: Re: warn: Turn the netdev timeout WARN_ON() into a WARN()
+References: <200809170259.m8H2xClI020907@hera.kernel.org>	<20080917032708.GA8431@havoc.gtf.org> <20080917064128.2b2f8616@linux.intel.com>
+In-Reply-To: <20080917064128.2b2f8616@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 22:18:18 +0100
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-
-> Hi,
+Arjan van de Ven wrote:
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Subject: [PATCH] net: WARN_ONCE -> WARN as requested by Jeff Garzik
 > 
-> I have an EeePC 900 (Intel Celeron 900Mhz) and it seems to be
-> skipping while playing sound through various desktop apps with a
-> 2.6.27rc6 kernel. It is running off an SD card which really shows up
-> slow writes but the sound is seemingly skipping even when ext3 is not
-> being used. When look at latencytop I often see results similar to
-> this:
+> Jeff points out that you want to see each and every
+> timeout message
 > 
-> > Cause                                                Maximum
-> > Percentage Scheduler: waiting for cpu                        247.2
-> > msec         64.6 % futex_wait do_futex sys_futex
-> > sysenter_do_call      5.0 msec         24.8 % do_select
-> > core_sys_select sys_select sysenter_do_c  4.7 msec          0.7 %
-> > do_sys_poll sys_poll sysenter_do_call               4.5
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  net/sched/sch_generic.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+> index ec0a083..8772642 100644
+> --- a/net/sched/sch_generic.c
+> +++ b/net/sched/sch_generic.c
+> @@ -215,7 +215,7 @@ static void dev_watchdog(unsigned long arg)
+>  			    time_after(jiffies, (dev->trans_start +
+>  						 dev->watchdog_timeo))) {
+>  				char drivername[64];
+> -				WARN_ONCE(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit timed out\n",
+> +				WARN(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit timed out\n",
+>  				       dev->name, netdev_drivername(dev, drivername, 64));
+>  				dev->tx_timeout(dev);
 
 
-this says you haven't done "make install" on the latencytop directory
-so it's not translating things for you.. can you do that please?
+ACK, this fixes my objection, thanks
+
+It still seems a bit burdensome to print out a huge, redundant backtrace 
+and kernel info each time, though.
+
+The most important information is (a) a timeout occurred and (b) 
+hopefully some hardware register dump or similar driver-specific output.
+
+> If all the networking guys agree that the report
+> has no value for developers because they're all unfixable hardware bugs,
+
+You misunderstand; reporting and tracking these issues have value, but 
+the information you are dumping (specifically the backtrace) does not.
+
+You say your goal here mainly to standardize reporting to permit 
+automated collection -- I support that goal too.  But is there a better 
+way -- say perhaps just printing the header you need, and _not_ the 
+useless backtrace?
+
+I think it would benefit Linux if our bugs announce themselves in a 
+standard way, but the backtrace is not a key part of that, and IMO 
+should be optional.
+
+	Jeff
+
+
