@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYIQNTx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYIQNU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYIQNTx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 09:19:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633AbYIQNTo
+	id S1754635AbYIQNU3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 09:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbYIQNUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 09:19:44 -0400
-Received: from esentire.com ([64.7.150.32]:57340 "EHLO eSentire.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266AbYIQNTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 09:19:42 -0400
-Message-ID: <48D103AB.6050004@esentire.com>
-Date: Wed, 17 Sep 2008 09:18:35 -0400
-From: Jonathan Steel <jon.steel@esentire.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080609)
+	Wed, 17 Sep 2008 09:20:08 -0400
+Received: from web15006.mail.cnb.yahoo.com ([202.165.103.63]:23529 "HELO
+	web15006.mail.cnb.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752736AbYIQNUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 09:20:07 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Sep 2008 09:20:06 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.cn;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=qJe1G/FmYmsHENW/joVW3fzIE1H2r2tusYFJdiok95EgOjSz9WwsLdouFI5cPyMQRp/xDF/Lq2GNe4mgL60rpakv8BQ8xUOLzv5nvMOF1vTa9VsZr6D67dNGsj6abrdjxCvEyYRrfgVZftdKf2WbqbLDR/BgNSMaNMGo8pAdxWM=;
+X-YMail-OSG: 8n6m0ekVM1nzHRGWzTMUuPMbaZkE4D7KvU97VySHbVmVJ3t.icLpKCrgRz_GChaFKg--
+Date: Wed, 17 Sep 2008 21:13:25 +0800 (CST)
+From: zheng yong <zy_ball@yahoo.com.cn>
+Subject: 2.6.26:in NF_BR_FORWARD hook why packet dissapeared? 
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Simon Horman <horms@verge.net.au>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kexec, kernel 2.6.26.5, segmentation fault in	kimage_add_entry
-References: <48D0067F.3020007@esentire.com> <20080917005542.GD15750@verge.net.au>
-In-Reply-To: <20080917005542.GD15750@verge.net.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
+Message-ID: <898750.95293.qm@web15006.mail.cnb.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Horman wrote:
-> On Tue, Sep 16, 2008 at 03:18:23PM -0400, Jonathan Steel wrote:
->   
->> A segmentation fault can occur in kimage_add_entry in kexec.c when 
->> loading a kernel image into memory. The fault occurs because a page is 
->> requested by calling kimage_alloc_page with gfp_mask GFP_KERNEL and the 
->> function may actually return a page with gfp_mask GFP_HIGHUSER. The high 
->> mem page is returned because it was swapped with the kernel page due to 
->> the kernel page being a page that will shortly be copied to.
->>
->> This patch ensures that kimage_alloc_page returns a page that was 
->> created with the correct gfp flags.
->>     
->
-> I wonder if this problem might also affect other users of
-> kimage_alloc_pages(), and if so, perhaps it should guard
-> against this?
->   
-kimage_alloc_page is used on only two separate occasions. The first is 
-when a page is allocated with the GFP_HIGHUSER to get a new source page 
-for the kernel image. That case will not be affected by this change 
-because the if will always evaluate to false. The second case is the 
-case that this patch is intended to fix, when allocating a kernel page 
-for the page list. If anybody else ever uses the function they just want 
-it to return a new alloced page, so there can't be any harm in making 
-sure they get back a page of the type they asked for. If anything, not 
-doing so could cause more problems in the future.
->   
->> --- linux-2.6.26.5.orig/kernel/kexec.c    2008-09-16 13:17:56.000000000 
->> -0400
->> +++ linux-2.6.26.5/kernel/kexec.c    2008-09-16 13:26:35.000000000 -0400
->> @@ -743,8 +743,15 @@ static struct page *kimage_alloc_page(st
->>              *old = addr | (*old & ~PAGE_MASK);
->>  
->>              /* The old page I have found cannot be a
->> -             * destination page, so return it.
->> -             */
->> +             * destination page, so return it if its
->> +             * gfp_flags honor the ones passed in.
->> +            */
->> +            if (!(gfp_mask & __GFP_HIGHMEM) &&
->> +                    PageHighMem(old_page)) {
->> +                kimage_free_pages(old_page);
->> +                continue;
->> +            }
->> +
->>              addr = old_addr;
->>              page = old_page;
->>              break;
->>
->> Signed-off-by: Jonathan Steel <jon.steel@esentire.com>
->>
->> Jonathan Steel
->>     
->
->   
+in NF_BR_FORWARD hook function, 
+I get a sk_buff * parameter called skb.
+I use the skb and skb_copy_expand to create a new
+sk_buff * called new_skb, 
+the new_skb has the same ip header and tcp header with
+skb, except recompute ip/tcp checksum,
+then send it out using dev_queue_xmit, 
+dev_queue_xmit returnes successful(returnes 0), 
+and in NF_BR_FORWARD hook function I return NF_DROP.
+but at the peer, can not receive the packet sent.
+I use ethereal, sometimes, I will receive some
+"Ethernet II" packets, but their ethernet addresses
+are wrong, It seems they were filled using the first
+12 bytes of ip header.
+why?
 
+
+      ___________________________________________________________ 
+ —≈ª¢” œ‰£¨ƒ˙µƒ÷’…˙” œ‰£° 
+http://cn.mail.yahoo.com/
