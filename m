@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbYIQQ1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYIQQ3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbYIQQ1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYIQQ1E
+	id S1754955AbYIQQ3Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYIQQ3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:27:04 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:21017 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752916AbYIQQ1D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:27:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Tedhg1pOXZN3AFFZLbPnYvC0enXt4R2QGfGEj0m2qzcPtKD/LkuQ8VsAWH0vOprtev
-         /26Cb5Y/Eaxx3H1GIu/SVG2AYCRkSllPNzp8Whqnqtra2SwfXcfEsqNc0EKyurawmIhC
-         V8eD8+2Zx8NHDXo2n3P1OrOtJSFkd2ipridL4=
-Date: Wed, 17 Sep 2008 20:27:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: j_kernel@hoblitt.com
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
-	tick_periodic() ???
-Message-ID: <20080917162704.GE7309@lenovo>
-References: <20080917024312.GA23209@hoblitt.com> <20080917071357.GA7455@lenovo> <20080917092058.GB23209@hoblitt.com>
+	Wed, 17 Sep 2008 12:29:00 -0400
+Received: from nebensachen.de ([195.34.83.29]:58887 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752610AbYIQQ27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 12:28:59 -0400
+X-Hashcash: 1:20:080917:bzolnier@gmail.com::+Kj1nETp3qOGrFab:00000000000000000000000000000000000000000007bOm
+X-Hashcash: 1:20:080917:jeff@garzik.org::XMe9r+Z/S8UmR/HI:003d0H
+X-Hashcash: 1:20:080917:randy.dunlap@oracle.com::gvpEIDNnu5jsYRO4:000000000000000000000000000000000000008t/5
+X-Hashcash: 1:20:080917:htejun@gmail.com::fApBIwiXXFliNHWq:0AQzS
+X-Hashcash: 1:20:080917:linux-ide@vger.kernel.org::uizMruKGEJBHohxE:0000000000000000000000000000000000004gw2
+X-Hashcash: 1:20:080917:linux-kernel@vger.kernel.org::4Dj6ftATl85NY1dh:0000000000000000000000000000000001D/T
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Tejun Heo <htejun@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Disk shock protection in GNU/Linux
+Date: Wed, 17 Sep 2008 18:28:20 +0200
+Message-ID: <87d4j2n3dn.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080917092058.GB23209@hoblitt.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[j_kernel@hoblitt.com - Tue, Sep 16, 2008 at 11:20:58PM -1000]
-| On Wed, Sep 17, 2008 at 11:13:57AM +0400, Cyrill Gorcunov wrote:
-| > Joshua, could you please attach ACPI tables dump to the bugzilla entry (~300K)?
-| 
-| Done but I was unable to extract the DSDT table as described in the
-| instructions.
-| 
-| #  acpixtract DSDT < acpidump.asc           
-| Could not open DSDT
-| 
-| Cheers,
-| 
-| -J
-| 
-| --
-| 
+Hi all,
 
-Joshua, could you please do one more thing - boot the kernel
-with "debug apic=debug nmi_watchdog=1" (among others) and
-publish dmsg?
+thanks to a lot of help from Bart and Tejun, who kept reviewing my
+patches suggested various improvements / fixes, I am now about to post
+the updated patch series. As far as I'm aware, all issues raised have
+been addressed and I'm hoping that this series is now fit to be merged.
+I gather that Bart is prepared queue the ide part of the series (patch
+#3) once the first two patches have been merged. Jeff, assuming that
+Tejun will ACK patch #2, can you accept those patches (#1 and #2) and
+queue them up for 2.6.28?
 
-		- Cyrill -
+Perhaps, Bart can take care of patch #4 along with the one that actually
+touches the ide subsystem.
+
+The short summary of the patch series is the same as before (all patches
+apply to next-20080916):
+
+1. This is a small patch to ata.h in order to provide a simple check for
+   support of the unload feature as indicated in a device's ID.
+2. Here disk head unloading is implemented in the libata subsystem.
+3. The same for ide.
+4. A little bit of documentation.
+
+Thank you very much for your cooperation.
+
+Elias
