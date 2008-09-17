@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYIQTKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYIQTKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbYIQTKL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYIQTJ5
+	id S1755013AbYIQTKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIQTKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:09:57 -0400
-Received: from sh.osrg.net ([192.16.179.4]:51688 "EHLO sh.osrg.net"
+	Wed, 17 Sep 2008 15:10:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60175 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752465AbYIQTJ5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:09:57 -0400
-Date: Thu, 18 Sep 2008 04:09:45 +0900 (JST)
-Message-Id: <20080918.040945.32654226.ryusuke@osrg.net>
-To: joern@logfs.org
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kihara.seiji@lab.ntt.co.jp,
-       amagai.yoshiji@lab.ntt.co.jp
-Subject: Re: [PATCH 25/27] nilfs2: block cache for garbage collection
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <20080917144146.GD8750@logfs.org>
-References: <1221419304-18572-25-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	<1221419304-18572-26-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-	<20080917144146.GD8750@logfs.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1752411AbYIQTKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:10:38 -0400
+Date: Wed, 17 Sep 2008 21:10:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Howells <dhowells@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched_clock: fix jiffie fallback clock
+Message-ID: <20080917191023.GA23724@elte.hu>
+References: <1221503179.7154.2.camel@lappy.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221503179.7154.2.camel@lappy.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 16:41:47 +0200, Jörn Engel wrote:
-> On Mon, 15 September 2008 04:08:22 +0900, Ryusuke Konishi wrote:
-> > 
-> > This adds the cache of on-disk blocks to be moved in garbage
-> > collection.  The disk blocks are held with dummy inodes (called
-> > gcinodes), and this file provides lookup function of the dummy inodes,
-> > and their buffer read function.
+
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> David pointed out that the default sched_clock() fallback is broken in 
+> that it wraps too soon. Fix this by using the 64 bit jiffie value so 
+> that we're large enough to overflow properly.
 > 
-> Nice explanation.  Can you add it to the comment header at the top of
-> the file?  Unlike the GPL preample, it actually helps non-lawyers. ;)
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: David Howells <dhowells@redhat.com>
 
-Well, I see. ;)
+FYI, -tip testing found bootup hard-lockups today on 32-bit 
+testsystems.
 
-> Using dummy inodes is... unusual.  Why can you not use the actual inodes
-> those blocks belong to?
+I've bisected it down to this change. After some head-scratching and an 
+hour of debugging, it turns out that this aspect:
 
-Because we have to treat blocks that belong to a same file but have
-different checkpoint numbers.  (NILFS2 keeps up multiple
-checkpoints/snapshots across GC)
+> @@ -46,10 +46,8 @@ u64 native_sched_clock(void)
+>        *   very important for it to be as fast as the platform
+>        *   can achive it. )
+>        */
+> -     if (unlikely(tsc_disabled)) {
+> -             /* No locking but a rare wrong value is not a big deal: */
+> -             return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
+> -     }
+> +     if (unlikely(tsc_disabled))
+> +             return (get_jiffies_64() - INITIAL_JIFFIES) * (NSEC_PER_SEC/HZ);
 
-Of course, if the standard inode hash is applicable, I prefer it.
-ilookup5 or its variant may be applicable for this.
+is the buggy one: it calls get_jiffies_64() which does:
 
-If so, the remaining problem would be the lock dependencies as you
-mentioned before.
+                seq = read_seqbegin(&xtime_lock);
 
-> Or alternatively a single inode that simply
-> covers the complete physical device?
-> 
-> Jörn
+that's not a very wise thing to do within xtime-locked sections - and we 
+do call cpu_clock()/sched_clock() in a number of xtime-locked sections.
 
-NILFS2 writes GC blocks per file like other files, so the per file
-caches (even separate inodes) are convienient for this end.
+So i've zapped this commit for the time being, this needs to be solved 
+differently.
 
-Ryusuke
+	Ingo
