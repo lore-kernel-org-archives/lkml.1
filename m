@@ -1,73 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYIQTWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbYIQTXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYIQTWx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYIQTWm
+	id S1755790AbYIQTXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYIQTXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:22:42 -0400
-Received: from hostap.isc.org ([149.20.54.63]:54300 "EHLO hostap.isc.org"
+	Wed, 17 Sep 2008 15:23:21 -0400
+Received: from mms1.broadcom.com ([216.31.210.17]:1984 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbYIQTWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:22:41 -0400
-Date: Wed, 17 Sep 2008 12:11:28 -0700
-From: Jouni Malinen <j@w1.fi>
-To: Jouni Malinen <j@w1.fi>
-Cc: David Miller <davem@davemloft.net>, jouni.malinen@atheros.com,
-       alex.williamson@hp.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking (WEXT events and 64/32 compat)
-Message-ID: <20080917191128.GA23239@hostap.isc.org>
-References: <48C5E2FC.4090304@atheros.com> <20080908.194627.169864643.davem@davemloft.net> <20080909025525.GB25148@hostap.isc.org> <20080908.204323.04156464.davem@davemloft.net> <20080909040525.GA26151@hostap.isc.org>
+	id S1753592AbYIQTXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:23:20 -0400
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: 2.6.27-rc5-mm1
+From: "Benjamin Li" <benli@broadcom.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080916190144.46f534b4@bree.surriel.com>
+References: <20080904224004.d3dd3076.akpm@linux-foundation.org>
+ <20080915180130.10995b90@cuia.bos.redhat.com>
+ <1221519658.11021.13.camel@HP1>
+ <20080916140917.105adc2a@bree.surriel.com>
+ <20080916190144.46f534b4@bree.surriel.com>
+Date: Wed, 17 Sep 2008 12:23:11 -0700
+Message-ID: <1221679391.4028.22.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080909040525.GA26151@hostap.isc.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Mailer: Evolution 2.22.3.1
+X-WSS-ID: 64CF86AA4E0151085277-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 08, 2008 at 09:05:25PM -0700, Jouni Malinen wrote:
-> OK. Interesting point here is that the old code was using IWEVCUSTOM
-> which is defined as having header_type IW_HEADER_TYPE_POINT and so are
-> the new IWEVASSOCREQIE and IWEVASSOCRESPIE. The only difference is in
-> max_tokens specifying different maximum length for the data. Maybe the
-> old code was also broken, but wpa_supplicant handled the bogus data
-> without causing problems (text parsing failing instead of some
-> parameters being set based on bogus binary data).
+Sorry for the repost... attaching the patch to the proper thread.
 
-I was able to test this with a 64/32-bit setup and confirmed that both
-IWEVCUSTOM and the new IWEVASSOCREQIE/IWEVASSOCRESPIE are indeed failing
-when using 32-bit binary in userspace (and work with 64-bit). The length
-field is parsed incorrectly for all these events.
+Hi Rik van Riel,
 
-wpa_supplicant has code for rejecting IWEVCUSTOM events that have too
-large a value in the length field. However, same validation is not done
-for IWEVASSOCREQIE/IWEVASSOCRESPIE (i.e., wpa_supplicant relies on
-kernel providing the correct value for the length field). As the end
-result, the new IWEVASSOCREQIE/IWEVASSOCRESPIE events will trigger a
-segmentation fault in wpa_supplicant when the buffer is being read way
-beyond its end.
+Please try the enclosed patch to see if it will solve your problem.
 
-I'll make wpa_supplicant validate the length field for all WEXT events
-to avoid the crash. This was enough to make association work with the
-reverted mac80211 patch since the values from these association info
-events are not critical for many use cases.
+I have tested on my Dell 2900, and the 5708 LOM is operational again on
+my test machine.
 
-Since we cannot fix the kernel code to handle the WEXT events for all
-cases (e.g., 64-bit kernel and mix of 32-bit and 64-bit userspace
-apps), I could consider adding a workaround in wpa_supplicant to handle
-the 64-bit data being received in 32-bit app.. However, that would not
-fix problems for anyone using older versions of wpa_supplicant.
+Thanks again.
 
-Would it be acceptable to ever enable use of IWEVASSOCREQIE /
-IWEVSSOCRESPIE in kernel if the workaround were available in new
-wpa_supplicant versions? Or should we try to add a new WEXT event
-type that uses fixed size for the length field and then replace the old
-IWEVCUSTOM with the new type since IWEVCUSTOM does not work with
-64/32-bit case (wpa_supplicant just knows how to avoid processing that
-bogus event data)?
+-Ben
 
+>From c455b36005a9b1b6a2b0036b7947d3f4bebb9f2d Mon Sep 17 00:00:00 2001
+From: Benjamin Li <benli@broadcom.com>
+Date: Tue, 16 Sep 2008 17:20:11 -0700
+Subject: [PATCH] bnx2: Promote vector field in bnx2_irq structure from u16 to unsigned int
+
+The bnx2 driver stores/uses the irq value from the pci_dev internally.
+But when it stores the irq value, it has been performing an
+integer demotion.  Because of the recent changes made to
+arch/x86/kernel/io_apic.c, the new method in creating the irq value
+(using build_irq_for_pci_dev()) has exposed this bug on x86 systems.
+
+Because of this demotion when calling request_irq() from
+bnx2_request_irq(), the driver would get a return code of -EINVAL.
+This is because the kernel could not find the requested irq descriptor.
+By storing the irq value properly, the kernel can find the correct
+irq descriptor and the bnx2 driver can operate normally.
+
+Signed-off-by: Benjamin Li <benli@broadcom.com>
+Signed-off-by: Michael Chan <mchan@broadcom.com>
+
+---
+ drivers/net/bnx2.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/bnx2.h b/drivers/net/bnx2.h
+index c3c579f..dfacd31 100644
+--- a/drivers/net/bnx2.h
++++ b/drivers/net/bnx2.h
+@@ -6597,7 +6597,7 @@ struct flash_spec {
+ 
+ struct bnx2_irq {
+ 	irq_handler_t	handler;
+-	u16		vector;
++	unsigned int	vector;
+ 	u8		requested;
+ 	char		name[16];
+ };
 -- 
-Jouni Malinen                                            PGP id EFC895FA
+1.5.5.1
+
+
+
+On Tue, 2008-09-16 at 16:01 -0700, Rik van Riel wrote:
+> On Tue, 16 Sep 2008 14:09:17 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+> > On Mon, 15 Sep 2008 16:00:58 -0700
+> > "Michael Chan" <mchan@broadcom.com> wrote:
+> >
+> > > > 05:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+> > > > 09:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+> > >
+> > > Does dmesg show anything when you run ifup?
+> >
+> > The linux-next tree fails in the same way.  Here is the dmesg output
+> > from the broadcom driver:
+> 
+> OK, with pci=nomsi the system boots up fine and the bnx2 driver
+> works.
+> 
+> Looks like the MSI code in linux-next is broken on the Dell PE 1950.
+> 
+> --
+> All rights reversed.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+> 
+
+
