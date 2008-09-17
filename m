@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYIQEm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbYIQEuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYIQEm2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 00:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYIQEmU
+	id S1753143AbYIQEuU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 00:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYIQEuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 00:42:20 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:50780 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbYIQEmT (ORCPT
+	Wed, 17 Sep 2008 00:50:07 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:48864 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931AbYIQEuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 00:42:19 -0400
-Date: Wed, 17 Sep 2008 13:31:49 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: akpm@linux-foundation.org, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, xemul@openvz.org,
-       nishimura@mxp.nes.nec.co.jp
-Subject: [PATCH -mm] memcg: fix handling of shmem migration
-Message-Id: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Sep 2008 00:50:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=EM46794BlRBLYhK0y/isGNPFcDK7y55yN1X7zRjOlsXItkKSOJe6D3vv39spHzKASi
+         JAfjS4cEzfzz2gqC7SRzJaP1FKNdQpmKtxXCUnnbum4Gz8ZoQVzbKhAs3HpuifSks3Kd
+         agqCe2PmnedZKUFvrVAm0hCVWii0wFVEsMUwk=
+Message-ID: <76366b180809162150o51701a1fk209af4e84ffc5674@mail.gmail.com>
+Date: Wed, 17 Sep 2008 00:50:03 -0400
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: ACPI "Soft-off" power button only rebooting system, not powering off
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: c4186d0547644979
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PG_swapbacked flag of newpage should be set(if needed) before
-mem_cgroup_prepare_migration, because mem_cgroup_charge_common
-checks the flag and determines whether it sets PAGE_CGROUP_FLAG_FILE or not.
+I have an AMD / Award BIOS based system which does not properly shut
+off when I hold down the power button for 4 seconds. The BIOS is
+configured to have "Soft-off" set to "Delay for 4 seconds" which is
+supposed to power the machine off if the button is held that long.
 
-Before this patch, if migrating shmem/tmpfs pages, newpage would be
-charged with PAGE_CGROUP_FLAG_FILE set, while oldpage has been charged
-without the flag.
+I first thought this could be a BIOS bug, but this *only* appears to
+happen while Linux is running. If the computer is running WinXP, it
+works fine. Also, if I hold down the button for 4 seconds while the
+BIOS is in POST, it also works fine. If the kernel has booted, even if
+the kernel is not running anymore due to a `halt`, holding the button
+down merely reboots the PC after 4 seconds.
 
-The problem here is mem_cgroup_move_lists doesn't clear(or set)
-the PAGE_CGROUP_FLAG_FILE flag, so pc->flags of the newpage
-remains PAGE_CGROUP_FLAG_FILE set even when the pc is moved to
-another lru(anon) by mem_cgroup_move_lists. And this leads to
-incorrect MEM_CGROUP_ZSTAT.
-(In my test, I see an underflow of MEM_CGROUP_ZSTAT(active_file).
-As a result, mem_cgroup_calc_reclaim returns very huge number and
-causes soft lockup on page reclaim.)
+Can anyone offer a place to start poking around to see why this only
+happens when Linux is running? Would this have to do with the ACPI
+code itself? The kernel version does not seem to matter. I first
+noticed this on stock Debian 2.6.18-4, and I just reproduced it right
+now using 2.6.26.5.
 
-I'm not sure if mem_cgroup_move_lists should handle PAGE_CGROUP_FLAG_FILE
-or not(I suppose it should be used to move between active <-> inactive,
-not anon <-> file), I moved SetPageSwapBacked(newpage) before
-mem_cgroup_prepare_migration.
-
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- mm/migrate.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 577d481..7343463 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -586,8 +586,6 @@ static int move_to_new_page(struct page *newpage, struct page *page)
- 	/* Prepare mapping for the new page.*/
- 	newpage->index = page->index;
- 	newpage->mapping = page->mapping;
--	if (PageSwapBacked(page))
--		SetPageSwapBacked(newpage);
- 
- 	mapping = page_mapping(page);
- 	if (!mapping)
-@@ -636,6 +634,8 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 		goto move_newpage;
- 	}
- 
-+	if (PageSwapBacked(page))
-+		SetPageSwapBacked(newpage);
- 	charge = mem_cgroup_prepare_migration(page, newpage);
- 	if (charge == -ENOMEM) {
- 		rc = -ENOMEM;
+Thanks,
+-Andrew
