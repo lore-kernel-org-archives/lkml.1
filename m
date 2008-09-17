@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbYIQOK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYIQOLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbYIQOK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 10:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYIQOKu
+	id S1754712AbYIQOLm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 10:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYIQOLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 10:10:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54066 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbYIQOKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 10:10:49 -0400
-Date: Wed, 17 Sep 2008 16:10:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yan Li <elliot.li.tech@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-Message-ID: <20080917141030.GC20510@elte.hu>
-References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <20080909002055.GA8573@yantp.cn.ibm.com> <48C5C47F.5040004@zytor.com> <20080916133239.GA17456@yantp.cn.ibm.com> <20080917105238.GF18764@elte.hu> <20080917140357.GA23523@yantp.cn.ibm.com>
+	Wed, 17 Sep 2008 10:11:33 -0400
+Received: from qb-out-0506.google.com ([72.14.204.232]:57808 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411AbYIQOLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 10:11:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=X3EbAmxkBdR0tEbCHljIkAzTHvcYy48NJRPiVTSAZI2/feauBufwinr5F4MScU7tPy
+         WRjos9tzwTb9bOZLsUSjB0WAEsjTtrSddqfNfftOw6JJsOmYzjbegj8puAiENt/43ZVE
+         rzT8/3YFhe4y+SipVVxXDpzeJ2z+SM6mhrnPE=
+Message-ID: <43c7dbff0809170711h3a48ff4ia3e6d89838868103@mail.gmail.com>
+Date: Wed, 17 Sep 2008 22:11:31 +0800
+From: "yun lin" <liny.linux@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Virtual Memory problem in kernel 2.4.18xsmp
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080917140357.GA23523@yantp.cn.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yan Li <elliot.li.tech@gmail.com> wrote:
-
-> On Wed, Sep 17, 2008 at 12:52:38PM +0200, Ingo Molnar wrote:
-> > > This code is from mtrr_trim_uncached_memory(), and used by
-> > > setup_arch(), which is used far before PCI is ready.
-> > > 
-> > > Therefore I think we can only use DMI here. Any idea?
-> > 
-> > PCI quirks can be used almost arbitrarily early stage, see:
-> > arch/x86/kernel/early-quirks.c.
-> > 
-> > Adding a VM identification callback to early-quirks.c would be fine. But 
-> > if there's a reliable and specific enough DMI string that's fine as 
-> > well. (but PCI is better, since it's a generally more stable enumeration 
-> > interface)
-> 
-> The problem here is that mtrr_trim_uncached_memory() is called 108 
-> lines before the invocation of early_quirks(), and 48 lines before 
-> that of dmi_scan_machine(). That's quite early.  The only thing ran 
-> before that is the initialization of CPU, so we have nearly nothing to 
-> use to check the fingerprint of the underlying machine.
-
-that still leaves the CPUID/MSR method for the virtualizer to announce 
-itself.
-
-> I feel It's also unfit to touch the whole PCI or DMI thing before CPU 
-> registers and memory are settled.  A simple solution here is to only 
-> issue a KERN_INFO when we detected mtrr is empty and later, when we 
-> can be sure that the OS is not running as a VM, issue a warning. The 
-> later part can be done in early_quirks().
-
-ok, we can move the MTRR message further back, to after the early quirks 
-phase.
-
-	Ingo
+Hi all,
+   I am using redhat 8 (kernel 2.4.18 xsmp) on an old cluster (2CPU
+each nodes, 2GB RAM, 4GB swap and NFS). Recently I had encountered a
+problem about virtual memory. A parallel program terminated with
+Segmentation fault (Signal 11). While using gdb to debug, it turns out
+that the exact error message is "virtual memory exhausted". The
+program was compiled using Intel compiler 8.1. I had compiled it on a
+CentOS 5.2(2GB RAM, 4GB swap) with Intel compiler 10.1, and the
+program runs well. It requires about 200 MB RAM, as watching by 'top'
+command. And during its running, 'kswapd' demon would be awakened.
+   While running this program in the cluster, it always dies when the
+RSS reach about 150MB with a signal 11 (or using gdb with 'virtual
+memory exhaust'). During its running, the system has more than 1.2GB
+free RAM, 4GB free swap and the 'kswapd' keeps in 'SW' status. I had
+checked the /etc/security/limits.conf file, which sets no limit. And I
+had tried bash and csh with the stack size, virtual memory, max memory
+size, file size unlimited. I had also doubled the max_map_count in
+/proc/sys/vm/. But all of the above actions had no effect on the
+program, it still died when it occupies about 150MB RAM and reports
+Sig 11 (in gdb 'VM exhauxted'). I had manually set some limits on the
+virtual memory (such as 'virtual memory' limit in the shell or
+max_map_count), the program dies with some different message like
+'forrtl: not enough virtual memory ...."
+   Are there any other limits that restrain a process from getting
+more virtual memory? I had tried to speed up the fresh frequency of
+'kswapd', but I can't find 'freepages' file in my /proc/sys/vm
+directory. It is said that this key had been removed since kernel 2.4,
+so how can I increase the fresh frequency of 'kswapd'? Besides, are
+there any special rules in virtual memory control of SMP kernel?
+   Thanks for reading my letters. I hope to get some helps.
