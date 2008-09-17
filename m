@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYIQS5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYIQS6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbYIQS5Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 14:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbYIQS5R
+	id S1753592AbYIQS6G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 14:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYIQS5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 14:57:17 -0400
-Received: from gv-out-0910.google.com ([216.239.58.188]:35872 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755178AbYIQS5Q (ORCPT
+	Wed, 17 Sep 2008 14:57:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38168 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752266AbYIQS5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 14:57:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=W33Dt/NChV7dbZkWZpG+OowPmZQuL0p2p/QU/I9schCVgnQxwMSJ6emA4vYZLATHkF
-         3Z5mVWyAfoGSDvc8gMI2t4OI5tHScykraTvM6UwedBFs8TEbEiJHT8ohtXV1k2m/JEcE
-         wrXOim/5FUAo6RgnTCvyOZGj1JRO0ZOlFa3rg=
-Date: Wed, 17 Sep 2008 20:56:38 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] apci: dump slit with printk(KERN_ACPI...)
-Message-ID: <20080917185632.GC5524@joi>
-References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <1221640067-24389-6-git-send-email-yhlu.kernel@gmail.com> <20080917181856.GA5524@joi> <86802c440809171128y17cbb6b6mca9c5beae0b2dcd4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440809171128y17cbb6b6mca9c5beae0b2dcd4@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 17 Sep 2008 14:57:54 -0400
+Date: Wed, 17 Sep 2008 11:57:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zev Weiss <zevweiss@gmail.com>
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] [MTD] physmap.c: Check return of
+ platform_device_register()
+Message-Id: <20080917115746.e36cacc6.akpm@linux-foundation.org>
+In-Reply-To: <48CB5E9A.4010000@gmail.com>
+References: <48CB5E9A.4010000@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 11:28:48AM -0700, Yinghai Lu wrote:
-> On Wed, Sep 17, 2008 at 11:19 AM, Marcin Slusarz
-> <marcin.slusarz@gmail.com> wrote:
-> > On Wed, Sep 17, 2008 at 01:27:46AM -0700, Yinghai Lu wrote:
-> >> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-> >>
-> >> ---
-> >>  drivers/acpi/numa.c |    9 +++++++++
-> >>  1 file changed, 9 insertions(+)
-> >>
-> >> Index: linux-2.6/drivers/acpi/numa.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/drivers/acpi/numa.c
-> >> +++ linux-2.6/drivers/acpi/numa.c
-> >> @@ -150,6 +150,15 @@ static __init int slit_valid(struct acpi
-> >>  {
-> >>       int i, j;
-> >>       int d = slit->locality_count;
-> >> +     printk(KERN_DEBUG KERN_ACPI "ACPI: SLIT: nodes = %d\n", d);
-> >> +     for (i = 0; i < d; i++) {
-> >> +             printk(KERN_DEBUG KERN_ACPI "  ");
-> >> +             for (j = 0; j < d; j++)  {
-> >> +                     u8 val = slit->entry[d*i + j];
-> >> +                     printk(KERN_CONT KERN_ACPI " %d", val);
-> >> +             }
-> >> +             printk(KERN_CONT KERN_ACPI "\n");
-> >> +     }
-> >
-> > It will produce something like this:
-> > <7><acpi>ACPI: SLIT: nodes = %d\n
-> > <7><acpi>  <acpi> %d<acpi> %d<acpi> %d<acpi> %d<acpi>\n
-> >
-> > bit wrong... ;)
+On Fri, 12 Sep 2008 23:32:58 -0700
+Zev Weiss <zevweiss@gmail.com> wrote:
+
+> The PHYSMAP_COMPAT code had been ignoring the return value of
+> platform_device_register() in the physmap_init() function.
 > 
-> did you check v6...?
+> Signed-off-by: Zev Weiss <zevweiss@gmail.com>
+> ---
+>   drivers/mtd/maps/physmap.c |    2 +-
+>   1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
+> index 42d844f..6fba0d4 100644
+> --- a/drivers/mtd/maps/physmap.c
+> +++ b/drivers/mtd/maps/physmap.c
+> @@ -312,7 +312,7 @@ static int __init physmap_init(void)
+>   	err = platform_driver_register(&physmap_flash_driver);
+>   #ifdef PHYSMAP_COMPAT
+>   	if (err == 0)
+> -		platform_device_register(&physmap_flash);
+> +		err = platform_device_register(&physmap_flash);
+>   #endif
+> 
+>   	return err;
 
-No, I didn't test it.
-Sorry for the noise.
+Your email client is performing space-stuffing, thus making the patches
+unapplyable.
 
-Marcin
+Presumably we should run platform_driver_unregister() if the
+platform_device_register() failed.
+
