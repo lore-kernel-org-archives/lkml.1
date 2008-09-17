@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbYIQVnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbYIQVnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbYIQVnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYIQVnE
+	id S1755994AbYIQVnd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYIQVnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:43:04 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51338 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753963AbYIQVnC (ORCPT
+	Wed, 17 Sep 2008 17:43:09 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:49002 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754387AbYIQVnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:43:02 -0400
-Message-ID: <48D17917.5080700@cs.helsinki.fi>
-Date: Thu, 18 Sep 2008 00:39:35 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Wed, 17 Sep 2008 17:43:08 -0400
+Date: Wed, 17 Sep 2008 15:43:06 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bjorn.helgaas@hp.com
+Subject: Re: [PATCH 3/5] pci: using pci_printk
+Message-ID: <20080917214305.GA2222@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, bjorn.helgaas@hp.com
+References: <1221555174-30060-1-git-send-email-yhlu.kernel@gmail.com> <1221555174-30060-3-git-send-email-yhlu.kernel@gmail.com> <20080916102052.GD21012@x200.localdomain>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix declaration of cgroup_mm_owner_callbacks
-References: <20080915190638.99E613D6952@localhost> <20080917142714.a822ac1a.akpm@linux-foundation.org> <48D176EA.9040304@linux.vnet.ibm.com>
-In-Reply-To: <48D176EA.9040304@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080916102052.GD21012@x200.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Andrew Morton wrote:
->> On Mon, 15 Sep 2008 12:06:38 -0700 (PDT)
->> menage@google.com (Paul Menage) wrote:
->>
->>> Fix declaration of cgroup_mm_owner_callbacks()
->>>
->>> The choice of real/dummy declaration for cgroup_mm_owner_callbacks()
->>> shouldn't be based on CONFIG_MM_OWNER, but on
->>> CONFIG_CGROUPS. Otherwise kernel/exit.c fails to compile when
->>> something other than a cgroups controller selects CONFIG_MM_OWNER
->>>
->> Being too lazy to go back and find out what "something" is, I assumed
->> that this isn't needed in 2.6.27.
+* Alexey Dobriyan <adobriyan@gmail.com>:
+> On Tue, Sep 16, 2008 at 01:52:52AM -0700, Yinghai Lu wrote:
+> > --- linux-2.6.orig/drivers/pci/probe.c
+> > +++ linux-2.6/drivers/pci/probe.c
+> > @@ -304,7 +304,7 @@ static int __pci_read_base(struct pci_de
 > 
-> We don't have anything using CONFIG_MM_OWNER in 2.6.27, so we should be OK
-> pushing this to 2.6.28 (Pekka plans to use it for revoke* calls).
+> > -			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+> > +			pci_printk(KERN_LOG_DEBUG, KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+> 				   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> Brilliant, simply brilliant!
 
-Oh, I am already using it:
+Yeah, that's ugly.
 
-http://git.kernel.org/?p=linux/kernel/git/penberg/linux-2.6.git;a=commitdiff;h=3201a05704afafd7c61b204b7f0c2a9ddcf935d0
+> Printk haters club is definitely creative, no questions.
 
-Still debugging some ext3 corruption problems, though :-)
+Bjorn might have some useful advice here.
 
-> Pekka, Paul do you agree?
+Also, didn't we recently get all the PCI printk output to
+resemble what lspci shows us?
 
-Yes, agreed.
+/ac
+
