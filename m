@@ -1,119 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbYIQR7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbYIQSEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755356AbYIQR7S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbYIQR7H
+	id S1755407AbYIQSEV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 14:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbYIQSEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 13:59:07 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36174 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753694AbYIQR7G (ORCPT
+	Wed, 17 Sep 2008 14:04:14 -0400
+Received: from pih-relay04.plus.net ([212.159.14.17]:56583 "EHLO
+	pih-relay04.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753694AbYIQSEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 13:59:06 -0400
-Date: Wed, 17 Sep 2008 18:58:38 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Conke Hu <conke.hu@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arm@vger.kernel.org, ben@simtec.co.uk
-Subject: Re: [PATCH] s3c24xx nand: add command line partition table parsing support
-Message-ID: <20080917175838.GA5475@flint.arm.linux.org.uk>
-References: <5767b9100809171032g197771dfv5374b7358b9b7210@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5767b9100809171032g197771dfv5374b7358b9b7210@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 17 Sep 2008 14:04:13 -0400
+Message-ID: <48D14698.60601@yahoo.com>
+Date: Wed, 17 Sep 2008 19:04:08 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+MIME-Version: 1.0
+Newsgroups: fa.linux.kernel
+CC: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Corentin Chary <corentincj@iksaif.net>,
+       acpi4asus-user@lists.sourceforge.net
+Subject: Re: Turning off camera also kills card reader on EeePC 900
+References: <fa.DzjC5FQ8ty+cqmv5KG/NRpAWgdE@ifi.uio.no> <fa.+Dv7n0Sa7hzDrReJcnf4HgYqsoA@ifi.uio.no> <fa.+GChIGFRZ5au1CMIOZvlKhwFPrU@ifi.uio.no> <fa.jNQrULYfenJPvj20234NL8Nt+cM@ifi.uio.no> <fa.QFFph3ZzzmbGalzypmWpsSRfEPY@ifi.uio.no> <fa.Pwdn/v9TPDX5WUUVn7K6FAfABEg@ifi.uio.no>
+In-Reply-To: <fa.Pwdn/v9TPDX5WUUVn7K6FAfABEg@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Plusnet-Relay: 83ff89bf07bea32cd0db9ed2b4aae6f6
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By sending this to the linux-arm list at vger, you're missing out the
-majority of the ARM community.  Please use the proper (listed) mailing
-list in MAINTAINERS.
+> Alan Jenkins wrote:
+>> Sitsofe Wheeler wrote:
+>>>
+>>> Alan Jenkins wrote:
+>>>
+>>>> - It might be necessary to compare with the pre-installed OS
+>>>>  - Is the pre-installed kernel any better (files might be under
+>>>> /proc/acpi/asus instead)?  I guess you might not have the time or
+>>>> resources to test that though.
+>>>
+>>> The Xandros 2.6.21.4-eeepc install has the following files in 
+>>> /proc/acpi/asus/
+>>> brn camera cardr cpufv disp hdps init type wlan
+>>>
+>>> I have no idea what cpufv, disp, hdps, init or type are. Doing echo 1 
+>>> > camera && echo 0 > camera under this setup does NOT disappear the 
+>>> SD card.
+>> Rats.  So there is some secret the mainline driver is missing :-(.
 
-On Thu, Sep 18, 2008 at 01:32:16AM +0800, Conke Hu wrote:
-> Add mtd id and  command line partition table parsing support for
-> s3c24xx nand driver.
-> 
-> Signed-off-by: Conke Hu <conke.hu@gmail.com>
-> Signed-off-by: Linke Wang <linke.wang@gmail.com>
-> ------------------
-> diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
-> index 556139e..bab7216 100644
-> --- a/drivers/mtd/nand/s3c2410.c
-> +++ b/drivers/mtd/nand/s3c2410.c
-> @@ -48,6 +48,8 @@
->  #include <asm/plat-s3c/regs-nand.h>
->  #include <asm/plat-s3c/nand.h>
-> 
-> +#define S3C_NAND_NAME_LEN 16
-> +
->  #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
->  static int hardware_ecc = 1;
->  #else
-> @@ -60,6 +62,9 @@ static int clock_stop = 1;
->  static const int clock_stop = 0;
->  #endif
-> 
-> +#ifdef CONFIG_MTD_PARTITIONS
-> +static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
-> +#endif
-> 
->  /* new oob placement block for use with hardware ecc generation
->   */
-> @@ -649,6 +654,15 @@ static int s3c2410_nand_add_partition(struct
-> s3c2410_nand_info *info,
->  				      struct s3c2410_nand_mtd *mtd,
->  				      struct s3c2410_nand_set *set)
->  {
-> +#ifdef CONFIG_MTD_CMDLINE_PARTS
-> +	int nr_parts;
-> +	struct mtd_partition *partitions;
-> +
-> +	nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes, &partitions, 0);
-> +	if (nr_parts > 0 && partitions != NULL)
-> +		return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
-> +#endif
-> +
->  	if (set == NULL)
->  		return add_mtd_device(&mtd->mtd);
-> 
-> @@ -808,6 +822,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
->  	int size;
->  	int nr_sets;
->  	int setno;
-> +	char *name;
-> 
->  	pr_debug("s3c2410_nand_probe(%p)\n", pdev);
-> 
-> @@ -875,7 +890,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
-> 
->  	/* allocate our information */
-> 
-> -	size = nr_sets * sizeof(*info->mtds);
-> +	size = nr_sets * (sizeof(*info->mtds) + S3C_NAND_NAME_LEN);
->  	info->mtds = kmalloc(size, GFP_KERNEL);
->  	if (info->mtds == NULL) {
->  		dev_err(&pdev->dev, "failed to allocate mtd storage\n");
-> @@ -888,10 +903,15 @@ static int s3c24xx_nand_probe(struct
-> platform_device *pdev,
->  	/* initialise all possible chips */
-> 
->  	nmtd = info->mtds;
-> +	name = (char *)(info->mtds + nr_sets);
-> 
->  	for (setno = 0; setno < nr_sets; setno++, nmtd++) {
->  		pr_debug("initialising set %d (%p, info %p)\n", setno, nmtd, info);
-> 
-> +		sprintf(name, "s3c_nand%d", setno);
-> +		nmtd->mtd.name = name;
-> +		name += S3C_NAND_NAME_LEN;
-> +
->  		s3c2410_nand_init_chip(info, nmtd, sets);
-> 
->  		nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
+So I got around to downloading those my 4 pieces of rar and poking about 
+the source. For those who are curious inside the rars is a tar.bz2 file 
+of a tree of .debs. A few hints:
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+DON'T download the source from China if you aren't in China it's very slow.
+The global mirrors are hidden behind javascript for some reason whereas 
+the Chinese ones are not. Still don't be tempted if you aren't in Japan 
+- the downloads were frequently crawling along at less than 
+10Kbyte/second and would periodically disconnect themselves.
+
+The bad news for me is that part4 of the .rar archive was always corrupt 
+(I redownloaded it and it was still corrupt). The good news is that I 
+was able to extract some of the archive.
+
+Here are the much faster links that worked for me:
+http://dlcdnet.asus.com/pub/ASUS/EeePC/EeePC900/Eee_PC_900_source_code_part1.rar
+http://dlcdnet.asus.com/pub/ASUS/EeePC/EeePC900/Eee_PC_900_source_code_part2.rar
+http://dlcdnet.asus.com/pub/ASUS/EeePC/EeePC900/Eee_PC_900_source_code_part3.rar
+http://dlcdnet.asus.com/pub/ASUS/EeePC/EeePC900/Eee_PC_900_source_code_part4.rar
+
+MD5SUMs of the good pieces of the above:
+48bf55be427b279abfc641c10fe4b0ef  Eee_PC_900_source_code_part1.rar
+56f8f02cf601c6d82fe4ef824e0b5625  Eee_PC_900_source_code_part2.rar
+560d151a90b70b5edabdd9f70cfe7567  Eee_PC_900_source_code_part3.rar
+
+SHA1SUMs of the good pieces of the above:
+e6983951b556456677b4d5a77608bc117f3ffe91  Eee_PC_900_source_code_part1.rar
+04ec1d1af1014f87ad54476882428ed5090f1742  Eee_PC_900_source_code_part2.rar
+09d3b4c1f5356b068d4bfdf4c51dc481b53c5661  Eee_PC_900_source_code_part3.rar
+
+In the linux-source deb there is a folder which contains patches against 
+2.6.21.4. For short term convenience I have temporarily repackaged the 
+patches here: 
+http://sucs.org/~sits/test/eeepc-900/eeepc-kernel-patches.tar.gz 
+(contains ALSA patches for the realtek intel_hda, the elantech touchpad 
+driver, a pci message patch(?), huawei_usb_storage storage patch (?), 
+unionfs patches and aufs patches and a kernel config file).
+
+There is also a separate asus-acpi deb which I have temporarily repacked 
+on http://sucs.org/~sits/test/eeepc-900/asus-acpi-p9xx_1.2-1_i386.tar.gz 
+. Sadly it seems to contain a prebuilt asus_acpi.ko in /lib/modules 
+(along with various scripts to respond to hotkeys etc).
