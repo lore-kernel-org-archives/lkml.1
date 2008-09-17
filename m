@@ -1,84 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbYIQVSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYIQVY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbYIQVSi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYIQVSa
+	id S1755099AbYIQVY7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbYIQVYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:18:30 -0400
-Received: from main.gmane.org ([80.91.229.2]:34395 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbYIQVS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:18:29 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: How how latent should non-preemptive scheduling be?
-Date: Wed, 17 Sep 2008 22:18:18 +0100
-Message-ID: <48D1741A.7010508@yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 17 Sep 2008 17:24:47 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:39860 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbYIQVYq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 17:24:46 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #11500] /proc/net bug related to selinux
+Date: Wed, 17 Sep 2008 17:24:36 -0400
+User-Agent: KMail/1.9.9
+Cc: Stephen Smalley <sds@tycho.nsa.gov>, jmorris@namei.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, netdev@vger.kernel.org
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil> <20080917125053.1f9ecf37.akpm@linux-foundation.org>
+In-Reply-To: <20080917125053.1f9ecf37.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: Ingo Molnar <mingo@elte.hu>
-X-Gmane-NNTP-Posting-Host: 87.112.19.134.plusnet.ptn-ag1.dyn.plus.net
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+Content-Disposition: inline
+Message-Id: <200809171724.36269.paul.moore@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wednesday 17 September 2008 3:50:53 pm Andrew Morton wrote:
+> On Mon, 15 Sep 2008 09:05:26 -0400
+> Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> > However, the most likely explanation is simply that when /proc/net
+> > was changed from being a directory to being a symlink to
+> > /proc/self/net, that introduced an additional permission check on
+> > accesses of /proc/net/<whatever>, namely the read check on the
+> > symlink itself. And since that check wasn't happening on /proc/net
+> > accesses with older kernels, older policies didn't allow it.
+> >
+> > As to why others haven't reported it, I expect that they have
+> > updated their policies to newer ones that allow the necessary
+> > access.  The fact that legacy distros wouldn't have such updated
+> > policies isn't surprising - they don't push updates to those
+> > distros for new kernels.  FC5 and FC6 are both EOL'd, right?
+> >
+> > In any event, we didn't change anything in SELinux - the change was
+> > elsewhere (in the proc/net implementation).  Don't blame the
+> > messenger please.
+>
+> Vanilla FC5 broke and vanilla FC6 broke.  Did vanilla FC7, 8 or 9
+> break?
+>
+> http://smolt.fedoraproject.org/static/stats/stats.html shows
+> 11,000-odd people running FC5 and FC6.  It would be incautious to
+> assume that all those people have updated their selinux rules.
+>
+> And _requiring_ people to update their selinux rules to fix a
+> kernel-caused regression is a pretty big deal for some people, I
+> expect.
 
-I have an EeePC 900 (Intel Celeron 900Mhz) and it seems to be skipping 
-while playing sound through various desktop apps with a 2.6.27rc6 
-kernel. It is running off an SD card which really shows up slow writes 
-but the sound is seemingly skipping even when ext3 is not being used. 
-When look at latencytop I often see results similar to this:
+Just so I'm clear on the context of the problem, it sounds like if a FC5 
+(I'm limiting myself to FC5 for the moment) user upgraded to a recent 
+(2.6.25+) kernel (non-distro supplied in the case of FC5) then they 
+will run into problems unless they also upgrade their SELinux policy, 
+yes?
 
-> Cause                                                Maximum     Percentage
-> Scheduler: waiting for cpu                        247.2 msec         64.6 %
-> futex_wait do_futex sys_futex sysenter_do_call      5.0 msec         24.8 %
-> do_select core_sys_select sys_select sysenter_do_c  4.7 msec          0.7 %
-> do_sys_poll sys_poll sysenter_do_call               4.5 msec          5.6 %
-> do_sys_poll sys_ppoll sysenter_do_call              4.2 msec          1.7 %
-> rt_mutex_timed_lock futex_lock_pi do_futex sys_fut  3.5 msec          0.5 %
-> msleep acpi_ec_wait acpi_ec_transaction acpi_ec_re  1.9 msec          1.3 %
-> msleep acpi_ec_wait acpi_ec_transaction acpi_ec_bu  1.9 msec          0.4 %
-> msleep acpi_ec_wait acpi_ec_transaction acpi_ec_bu  1.9 msec          0.5 %
-> on acpi_ex_field_datum_io acpi_ex_extract_from_field acpi_ex_read_data_from_field acpi_ex_resolve_node_to_value acpi_ex_resolve_to_va
-> lue
-> 
-> 
-> 
-> Process rhythmbox (5694)                   Total: 358.4 msec                                                                         
-> Scheduler: waiting for cpu                        221.8 msec         69.9 %
-> futex_wait do_futex sys_futex sysenter_do_call      4.5 msec         26.3 %
-> do_sys_poll sys_poll sysenter_do_call               3.8 msec          3.2 %
-> do_select core_sys_select sys_select sysenter_do_c  1.0 msec          0.4 %
-> rt_mutex_timed_lock futex_lock_pi do_futex sys_fut  0.2 msec          0.1 %
+If that is the case I'm not sure it is really that big of a deal.  Maybe 
+I'm in the minority here, but in my mind once you step away from the 
+distro supplied kernel (also applies to other packages, although those 
+are arguably less critical) you should also bear the responsibility to 
+make sure you upgrade/tweak/install whatever other bits need to be 
+fixed.
 
+> Then again, given that this regression has been out there since
+> 2.6.25, I guess not too many people are hurting from it.  But we
+> suck.
 
-> Cause                                                Maximum     Percentage
-> Scheduler: waiting for cpu                        234.8 msec         31.1 %
-> futex_wait do_futex sys_futex sysenter_do_call      5.0 msec         34.4 %
-> do_select core_sys_select sys_select sysenter_do_c  5.0 msec         10.3 %
-> do_sys_poll sys_ppoll sysenter_do_call              5.0 msec          6.2 %
-> do_sys_poll sys_poll sysenter_do_call               5.0 msec         16.4 %
-> msleep acpi_ec_wait acpi_ec_transaction acpi_ec_re  1.9 msec          0.9 %
-> msleep acpi_ec_wait acpi_ec_transaction acpi_ec_bu  1.9 msec          0.3 %
-> msleep acpi_ec_wait acpi_ec_transaction acpi_ec_bu  1.9 msec          0.3 %
-> blk_execute_rq scsi_execute scsi_execute_req scsi_  1.0 msec          0.0 %
-> 
-> 
-> Process firefox-bin (5756)                 Total: 482.2 msec                                                                         
-> Scheduler: waiting for cpu                        234.8 msec         95.5 %
-> do_sys_poll sys_poll sysenter_do_call               4.1 msec          3.5 %
-> futex_wait do_futex sys_futex sysenter_do_call      3.9 msec          1.0 %
-> do_select core_sys_select sys_select sysenter_do_c  0.2 msec          0.0 %
+We suck?  Maybe, but some explanation about why we suck in this 
+particular case would be helpful as far as I'm concerned.  I don't 
+really care about identifying the guilty suckees, I'm more interested 
+in finding out what happened to cause us to suck because of this.
 
-top seems to show that there is CPU time still available. The kernel is 
-compiled with voluntary preemption, dynticks and a HZ of 1000.
-
-Is the scheduler waiting for CPU anything to do with the skips? If so 
-what sort of maximum should I be expecting? If you are listing to music 
-is it expected that you have preemption on? Would preemption even help?
-
+-- 
+paul moore
+linux @ hp
