@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYIQNgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbYIQNlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbYIQNgp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 09:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYIQNgf
+	id S1753518AbYIQNlQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 09:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYIQNlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 09:36:35 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:40420 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbYIQNge (ORCPT
+	Wed, 17 Sep 2008 09:41:04 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:48940 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbYIQNlC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 09:36:34 -0400
-Date: Wed, 17 Sep 2008 16:36:31 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Mike Galbraith <efault@gmx.de>
-cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org
-Subject: Re: [Bug #11308] tbench regression on each kernel release from	2.6.22
- -&gt; 2.6.28
-In-Reply-To: <1221657111.5511.14.camel@marge.simson.net>
-Message-ID: <Pine.LNX.4.64.0809171629550.1034@wrl-59.cs.helsinki.fi>
-References: <1221306287.5213.111.camel@marge.simson.net> 
- <48CD1D25.9080301@linux-foundation.org>  <1221421907.4597.24.camel@marge.simson.net>
-  <1221475440.4784.39.camel@marge.simson.net>  <1221568105.5020.17.camel@marge.simson.net>
-  <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi> 
- <1221626391.5043.13.camel@marge.simson.net>  <1221627676.5125.3.camel@marge.simson.net>
- <20080917104044.GC18764@elte.hu>  <1221651701.5102.17.camel@marge.simson.net>
- <20080917124943.GA7738@elte.hu> <1221657111.5511.14.camel@marge.simson.net>
+	Wed, 17 Sep 2008 09:41:02 -0400
+Date: Wed, 17 Sep 2008 13:08:05 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg K-H <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH]sysfs: Don't emit a warning when sysfs_rename_link() fails.
+Message-ID: <20080917130805.6260ba9c@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008, Mike Galbraith wrote:
+Hi Greg, hi Eric,
 
-> On Wed, 2008-09-17 at 14:49 +0200, Ingo Molnar wrote:
-> 
-> > git log --pretty=format:"%h: %s" 2069f45..847106f | grep -viE \
-> > 'block|alsa|pcmcia|sound|Merge|iosched|blk|DAC960|scsi|s390|paride|pktcdvd|filter|cdrom|drm'
-> > 
-> > gives us:
-> > 
-> >  7daf705: Start using the new '%pS' infrastructure to print symbols
-> >  6f0f0fd: security: remove register_security hook
-> >  93cbace: security: remove dummy module fix
-> >  5915eb5: security: remove dummy module
-> >  b478a9f: security: remove unused sb_get_mnt_opts hook
-> >  32502b8: splice: fix generic_file_splice_read() race with page invalidation
-> >  8b3d356: ramfs: enable splice write
-> >  a144ff0: xen: Avoid allocations causing swap activity on the resume path
-> > 
-> > which really only leaves that security commit your bisection fingered. 
-> > Which _slightly_ raises its likelyhood of being implicated. Structure 
-> > size changes can move two formerly far-apart netperf-relevant symbols on 
-> > the same cacheline, which can start cache ping-pong-ing badly.
-> 
-> I sure hope it's something like ping-pong, it's driving me NUTS.
+the recent sysfs tagged directory changes switched device_rename() to
+sysfs_rename_link() - which is a good thing but AFAICS re-introduces
+the scary warnings when a netdevice is renamed to something that
+already exists (which I tried to fix with
+36ce6dad6e3cb3f050ed41e0beac0070d2062b25).
 
-How about dividing the problem to smaller blocks then by restoring 
-parts of the change...
+The following patch switches sysfs_rename_link() to non-warning symlink
+creation again. It is on top of the current driver core series.
 
+sysfs: Don't emit a warning when sysfs_rename_link() fails.
 
--- 
- i.
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+sysfs_rename_link() will be printing a scary looking warning
+if a link of the same name already exists. Callers of
+device_rename() don't want to see this warning since they
+already handle the failure themselves, so let's use the not
+warning variant of sysfs_do_create_link().
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ fs/sysfs/symlink.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/fs/sysfs/symlink.c
+===================================================================
+--- linux-2.6.orig/fs/sysfs/symlink.c
++++ linux-2.6/fs/sysfs/symlink.c
+@@ -135,7 +135,7 @@ int sysfs_rename_link(struct kobject *ko
+ 			const char *old, const char *new)
+ {
+ 	sysfs_delete_link(kobj, targ, old);
+-	return sysfs_create_link(kobj, targ, new);
++	return sysfs_do_create_link(kobj, targ, new, 0);
+ }
+ 
+ static int sysfs_get_target_path(struct sysfs_dirent *parent_sd,
