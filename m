@@ -1,168 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbYIQXqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbYIQXuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbYIQXqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 19:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYIQXqX
+	id S1754741AbYIQXuW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 19:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbYIQXuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 19:46:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43025 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752093AbYIQXqW (ORCPT
+	Wed, 17 Sep 2008 19:50:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:7843 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbYIQXuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 19:46:22 -0400
-Date: Wed, 17 Sep 2008 16:46:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eran Liberty <liberty@extricom.com>
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH 2.6.26] SERIAL DRIVER: Handle Multiple consecutive sysrq
- from the serial
-Message-Id: <20080917164615.945ff068.akpm@linux-foundation.org>
-In-Reply-To: <48CE8D8D.1070407@extricom.com>
-References: <48591941.4070408@extricom.com>
-	<48A92E15.2080709@extricom.com>
-	<48A9901B.1080900@redhat.com>
-	<20080818154746.GA26835@Krystal>
-	<48A9AFA7.8080508@freescale.com>
-	<alpine.DEB.1.10.0808181425090.796@gandalf.stny.rr.com>
-	<1219110814.8062.2.camel@pasglop>
-	<alpine.DEB.1.10.0808182208110.13401@gandalf.stny.rr.com>
-	<1219113549.8062.13.camel@pasglop>
-	<1219114600.8062.15.camel@pasglop>
-	<alpine.DEB.1.10.0808182304300.13401@gandalf.stny.rr.com>
-	<1219119431.8062.35.camel@pasglop>
-	<1219216705.21386.46.camel@pasglop>
-	<alpine.DEB.1.10.0808200913070.13132@gandalf.stny.rr.com>
-	<1219241819.26429.24.camel@jdub.homelinux.org>
-	<alpine.DEB.1.10.0808201022080.23571@gandalf.stny.rr.com>
-	<20080820105035.49f29509@zod.rchland.ibm.com>
-	<48CE8D8D.1070407@extricom.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Sep 2008 19:50:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=SlLkljGMs1CdHn8pTkI6ntc/T/wLYwcSm1VdVRBz/jJACu4V6CuyWFMAjs6Clqz3kL
+         CEdv91Se53Oy/KAjXOsINs7IGqHquudJNzLSWEojwmcbXSzSuvJbKixcUqHD7+RQNfAm
+         Cg+luhRX7iJFHMe3o/m9QCAefA9T8PitiJxz8=
+Message-ID: <28c262360809171650g1395bbe2ya4e560851d37760d@mail.gmail.com>
+Date: Thu, 18 Sep 2008 08:50:05 +0900
+From: "MinChan Kim" <minchan.kim@gmail.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>, "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Populating multiple ptes at fault time
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Hugh Dickens" <hugh@veritas.com>,
+       "Linux Memory Management List" <linux-mm@kvack.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Avi Kivity" <avi@qumranet.com>
+In-Reply-To: <48D142B2.3040607@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48D142B2.3040607@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Sep 2008 19:30:05 +0300
-Eran Liberty <liberty@extricom.com> wrote:
+Hi, all
 
-> Dear Penguins,
-> 
-> Let me start of by saying my particular hardware must be buggy in some 
-> way. When I issue a sysrq (Ctrl A+ F from minicom) I get a lot of sysrq 
-> triggers.
-> 
-> I have worked around the problem and I think this workaround is a viable 
-> patch even for platforms which do not exhibit this peculiar behavior.
-> 
-> upon getting numerous interrupts which request sysrq the function 
-> uart_handle_break in include/linux/serial_core.h is hit multiple times.
-> The current code which looks like this:
-> 
-> static inline int uart_handle_break(struct uart_port *port)
->  {
->         struct uart_info *info = port->info;
->  #ifdef SUPPORT_SYSRQ
->         if (port->cons && port->cons->index == port->line) {
->                if (!port->sysrq) {
->                        port->sysrq = jiffies + HZ*5;
->                        return 1;
->                }
->                port->sysrq = 0;
->         }
->  #endif
->         if (port->flags & UPF_SAK)
->                 do_SAK(info->tty);
->        return 0;
-> }
-> 
-> Will basicly toggle port->sysrq between a timeout value and zero. If you 
-> are lucky this penguin rullet will stop on timeout and the next 
-> character hit will trigger the sysrq in the function 
-> "uart_handle_sysrq_char". But if you are not so lucky the last sysrq 
-> interupt will toggle port->sysrq to zero and the next char hit will be 
-> ignored (not trigger sysrq).
-> 
-> The suggested patch will do the next few things:
-> 
-> 1. "port->sysrq" is now the time when the last sysrq was triggered and 
-> not the timeout for the the next char
-> 2. Stamped "port->sysrq" every time there is a sysrq rather then toggled 
-> it up and down.
-> 3. Always continue to consider UPF_SAK.
-> 4. "port->sysrq" is toggled back to zero only in uart_handle_break() and 
-> only if the a char has been accepted after the sysrq timeout (5 sec)
-> 5. uart_handle_break() will ignore extra chars received in super human 
-> speed after the last sysrq (0.01 sec)
-> 
+I have been thinking about this idea in native.
+I didn't consider it in minor page fault.
+As you know, it costs more cheap than major fault.
+However, the page fault is one of big bottleneck on demand-paging system.
+I think major fault might be a rather big overhead in many core system.
 
-yes, that could be irritating.
+What do you think about this idea in native ?
+Do you really think that this idea don't help much in native ?
 
-> Index: include/linux/serial_core.h
-> ===================================================================
-> --- include/linux/serial_core.h	(revision 119)
-> +++ include/linux/serial_core.h	(revision 120)
-
-We prefer patches in `patch -p1' form, please.
-
-Even after fixing that, none of it applied, so I typed it in again.
-
-> @@ -447,8 +447,8 @@
->  uart_handle_sysrq_char(struct uart_port *port, unsigned int ch)
->  {
->  #ifdef SUPPORT_SYSRQ
-> -	if (port->sysrq) {
-> -		if (ch && time_before(jiffies, port->sysrq)) {
-> +	if (port->sysrq && time_after(jiffies, port->sysrq + (unsigned long)(HZ*0.01))) {
-> +		if (ch && time_before(jiffies, port->sysrq + HZ*5)) {
->  			handle_sysrq(ch, port->info ? port->info->tty : NULL);
->  			port->sysrq = 0;
->  			return 1;
-> @@ -467,19 +467,17 @@
->   */
->  static inline int uart_handle_break(struct uart_port *port)
->  {
-> +	int ret = 0;
->  	struct uart_info *info = port->info;
->  #ifdef SUPPORT_SYSRQ
->  	if (port->cons && port->cons->index == port->line) {
-> -		if (!port->sysrq) {
-> -			port->sysrq = jiffies + HZ*5;
-> -			return 1;
-> -		}
-> -		port->sysrq = 0;
-> +		port->sysrq = jiffies;
-> +		ret = 1;
->  	}
->  #endif
->  	if (port->flags & UPF_SAK)
->  		do_SAK(info->tty);
-> -	return 0;
-> +	return ret;
->  }
-
-The 0.01 is a big no-no.  Sometimes gcc like to go into stupid mode and
-starts doing floating point stuff.
-
-A suitable fix would be to use HZ/100.  But that assumes that HZ is
-always >= 100.  That's a pretty good assumption, and various parts of
-the kernel will explode if HZ is set too small.  However it's always
-good to ensure that someone else's stuff will explode before yours
-does, so how about we make it HZ/50?  Will that still work OK for you?
-
---- a/include/linux/serial_core.h~serial-driver-handle-multiple-consecutive-sysrq-from-the-serial-fix
-+++ a/include/linux/serial_core.h
-@@ -444,8 +444,7 @@ static inline int
- uart_handle_sysrq_char(struct uart_port *port, unsigned int ch)
- {
- #ifdef SUPPORT_SYSRQ
--	if (port->sysrq && time_after(jiffies, port->sysrq +
--					(unsigned long)(HZ*0.01))) {
-+	if (port->sysrq && time_after(jiffies, port->sysrq + HZ / 50)) {
- 		if (ch && time_before(jiffies, port->sysrq + HZ*5)) {
- 			handle_sysrq(ch, port->info ? port->info->port.tty : NULL);
- 			port->sysrq = 0;
-_
+If I implement it in native, What kinds of benchmark do I need?
+Could you recommend any benchmark ?
 
 
+On Thu, Sep 18, 2008 at 2:47 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Avi and I were discussing whether we should populate multiple ptes at
+> pagefault time, rather than one at at time as we do now.
+>
+> When Linux is operating as a virtual guest, pte population will
+> generally involve some kind of trap to the hypervisor, either to
+> validate the pte contents (in Xen's case) or to update the shadow
+> pagetable (kvm).  This is relatively expensive, and it would be good to
+> amortise the cost by populating multiple ptes at once.
+>
+> Xen and kvm already batch pte updates where multiple ptes are explicitly
+> updated at once (mprotect and unmap, mostly), but in practise that's
+> relatively rare.  Most pages are demand faulted into a process one at a
+> time.
+>
+> It seems to me there are two cases: major faults, and minor faults:
+>
+> Major faults: the page in question is physically missing, and so the
+> fault invokes IO.  If we blindly pull in a lot of extra pages that are
+> never used, then we'll end up wasting a lot of memory.  However, page at
+> a time IO is pretty bad performance-wise too, so I guess we do clustered
+> fault-time IO?  If we can distinguish between random and linear fault
+> patterns, then we can use that as a basis for deciding how much
+> speculative mapping to do.  Certainly, we should create mappings for any
+> nearby page which does become physically present.
+>
+> Minor faults are easier; if the page already exists in memory, we should
+> just create mappings to it.  If neighbouring pages are also already
+> present, then we can can cheaply create mappings for them too.
+>
+>
+> This seems like an obvious idea, so I'm wondering if someone has
+> prototyped it already to see what effects there are.  In the native
+> case, pte updates are much cheaper, so perhaps it doesn't help much
+> there, though it would potentially reduce the number of faults needed.
+> But I think there's scope for measurable benefits in the virtual case.
+>
+> Thanks,
+>    J
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+-- 
+Kinds regards,
+MinChan Kim
