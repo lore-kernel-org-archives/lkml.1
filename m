@@ -1,85 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbYIQQxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbYIQQxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321AbYIQQxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbYIQQxJ
+	id S1755520AbYIQQxl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbYIQQxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:53:09 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:64129 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736AbYIQQxI (ORCPT
+	Wed, 17 Sep 2008 12:53:10 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:64254 "EHLO
+	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754093AbYIQQxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:53:08 -0400
-X-BigFish: VPS-34(z21eW5edJz14ffO936eQ4015Mzz10d3izzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
+	Wed, 17 Sep 2008 12:53:09 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
 X-FB-SS: 5,
-X-WSS-ID: 0K7CMW5-03-U8R-01
+X-WSS-ID: 0K7CMW6-04-URM-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
-CC: iommu@lists.linux-foundation.org
-Subject: [PATCH 0/23] AMD IOMMU 2.6.28 updates for review
-Date: Wed, 17 Sep 2008 18:52:34 +0200
-Message-ID: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
+CC: iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 02/23] AMD IOMMU: move TLB flushing to the map/unmap helper functions
+Date: Wed, 17 Sep 2008 18:52:36 +0200
+Message-ID: <1221670377-19295-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
-X-OriginalArrivalTime: 17 Sep 2008 16:52:57.0885 (UTC) FILETIME=[D64F04D0:01C918E5]
+In-Reply-To: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
+References: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 17 Sep 2008 16:52:57.0901 (UTC) FILETIME=[D65175D0:01C918E5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+This patch moves the invocation of the flushing functions to the
+map/unmap helper functions because its common code in all dma_ops
+relevant mapping/unmapping functions.
 
-this is the patch series with all 2.6.28 updates I currently have for
-the AMD IOMMU driver. The highlights in this series are the
-implementation of lazy IOTLB flushing which increases performance and
-code for AMD IOMMU event handling. Any events the hardware will send are
-now visible. There are also a lot of minor fixes and cleanups which came
-up during code review and LKML discussions from various persons. The
-patches are relative to current tip/master branch.
-Please review.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu.c |   19 +++++--------------
+ 1 files changed, 5 insertions(+), 14 deletions(-)
 
-Here is the shortlog and the diffstat:
-
-FUJITA Tomonori (1):
-      AMD IOMMU: avoid unnecessary low zone allocation in alloc_coherent
-
-Joerg Roedel (22):
-      AMD IOMMU: check for invalid device pointers
-      AMD IOMMU: move TLB flushing to the map/unmap helper functions
-      AMD IOMMU: implement lazy IO/TLB flushing
-      AMD IOMMU: add branch hints to completion wait checks
-      AMD IOMMU: align alloc_coherent addresses properly
-      AMD IOMMU: add event buffer allocation
-      AMD IOMMU: save pci segment from ACPI tables
-      AMD IOMMU: save pci_dev instead of devid
-      AMD IOMMU: add MSI interrupt support
-      AMD IOMMU: add event handling code
-      AMD IOMMU: enable event logging
-      AMD IOMMU: allow IO page faults from devices
-      AMD IOMMU: add dma_supported callback
-      AMD IOMMU: don't assing preallocated protection domains to devices
-      AMD IOMMU: some set_device_domain cleanups
-      AMD IOMMU: replace memset with __GFP_ZERO in alloc_coherent
-      AMD IOMMU: simplify dma_mask_to_pages
-      AMD IOMMU: free domain bitmap with its allocation order
-      AMD IOMMU: remove unnecessary cast to u64 in the init code
-      AMD IOMMU: calculate IVHD size with a function
-      AMD IOMMU: use cmd_buf_size when freeing the command buffer
-      add AMD IOMMU tree to MAINTAINERS file
-
- Documentation/kernel-parameters.txt |    5 +
- MAINTAINERS                         |    1 +
- arch/x86/Kconfig                    |    1 +
- arch/x86/kernel/amd_iommu.c         |  301 +++++++++++++++++++++++++++++------
- arch/x86/kernel/amd_iommu_init.c    |  194 ++++++++++++++++++++--
- include/asm-x86/amd_iommu.h         |    3 +
- include/asm-x86/amd_iommu_types.h   |   64 +++++++-
- 7 files changed, 497 insertions(+), 72 deletions(-)
-
-Thanks,
-
-Joerg
-
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 695e0fc..691e023 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -795,6 +795,9 @@ static dma_addr_t __map_single(struct device *dev,
+ 	}
+ 	address += offset;
+ 
++	if (unlikely(iommu_has_npcache(iommu)))
++		iommu_flush_pages(iommu, dma_dom->domain.id, address, size);
++
+ out:
+ 	return address;
+ }
+@@ -825,6 +828,8 @@ static void __unmap_single(struct amd_iommu *iommu,
+ 	}
+ 
+ 	dma_ops_free_addresses(dma_dom, dma_addr, pages);
++
++	iommu_flush_pages(iommu, dma_dom->domain.id, dma_addr, size);
+ }
+ 
+ /*
+@@ -853,9 +858,6 @@ static dma_addr_t map_single(struct device *dev, phys_addr_t paddr,
+ 	if (addr == bad_dma_address)
+ 		goto out;
+ 
+-	if (iommu_has_npcache(iommu))
+-		iommu_flush_pages(iommu, domain->id, addr, size);
+-
+ 	if (iommu->need_sync)
+ 		iommu_completion_wait(iommu);
+ 
+@@ -885,8 +887,6 @@ static void unmap_single(struct device *dev, dma_addr_t dma_addr,
+ 
+ 	__unmap_single(iommu, domain->priv, dma_addr, size, dir);
+ 
+-	iommu_flush_pages(iommu, domain->id, dma_addr, size);
+-
+ 	if (iommu->need_sync)
+ 		iommu_completion_wait(iommu);
+ 
+@@ -948,9 +948,6 @@ static int map_sg(struct device *dev, struct scatterlist *sglist,
+ 			mapped_elems++;
+ 		} else
+ 			goto unmap;
+-		if (iommu_has_npcache(iommu))
+-			iommu_flush_pages(iommu, domain->id, s->dma_address,
+-					  s->dma_length);
+ 	}
+ 
+ 	if (iommu->need_sync)
+@@ -996,8 +993,6 @@ static void unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 	for_each_sg(sglist, s, nelems, i) {
+ 		__unmap_single(iommu, domain->priv, s->dma_address,
+ 			       s->dma_length, dir);
+-		iommu_flush_pages(iommu, domain->id, s->dma_address,
+-				  s->dma_length);
+ 		s->dma_address = s->dma_length = 0;
+ 	}
+ 
+@@ -1048,9 +1043,6 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 		goto out;
+ 	}
+ 
+-	if (iommu_has_npcache(iommu))
+-		iommu_flush_pages(iommu, domain->id, *dma_addr, size);
+-
+ 	if (iommu->need_sync)
+ 		iommu_completion_wait(iommu);
+ 
+@@ -1082,7 +1074,6 @@ static void free_coherent(struct device *dev, size_t size,
+ 	spin_lock_irqsave(&domain->lock, flags);
+ 
+ 	__unmap_single(iommu, domain->priv, dma_addr, size, DMA_BIDIRECTIONAL);
+-	iommu_flush_pages(iommu, domain->id, dma_addr, size);
+ 
+ 	if (iommu->need_sync)
+ 		iommu_completion_wait(iommu);
+-- 
+1.5.6.4
 
 
