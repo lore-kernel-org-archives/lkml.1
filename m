@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbYIQI2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbYIQI3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512AbYIQI2r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 04:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYIQI2Z
+	id S1752989AbYIQI3I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 04:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbYIQI21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 04:28:25 -0400
+	Wed, 17 Sep 2008 04:28:27 -0400
 Received: from wa-out-1112.google.com ([209.85.146.181]:29713 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbYIQI2Y (ORCPT
+	with ESMTP id S1752631AbYIQI20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 04:28:24 -0400
+	Wed, 17 Sep 2008 04:28:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=K6us7Q6yg5ucP5N1RFRmd1c32FUiv2iNqQo/2Q8I5tAW85PuAcpYbsz0PMHfHrm+h2
-         jPOROzxUgctceXUuwgRtaeWda3XRe+o6d3gwcrJFYTOrZXgsNrxSZ30J7r3L/v2WIZ4q
-         /6+MTKMOlkaIsvqmMGw/uxYPxR5pectVNBDoE=
+        b=Lg43JL4iUmGj1IuIvs7Jtx1Ua4T0/fH3fCTRgriTKwIiCcuhBhNXPsRDE4zbTx7aHz
+         Ogu4pEsAaeRCW9i6Pmn6ndjSV3bWVhZyKKyx26eLNV167reORuJpHnV0TZLePgGTFVL7
+         qmWClfHBb7byeGYk6UwLtYMWYNKAA51oLsi5A=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 1/6] add DEFINE_LOGLEVEL_SETUP v7
-Date: Wed, 17 Sep 2008 01:27:42 -0700
-Message-Id: <1221640067-24389-2-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 2/6] pci: add KERN_PCI
+Date: Wed, 17 Sep 2008 01:27:43 -0700
+Message-Id: <1221640067-24389-3-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com>
 References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com>
@@ -31,301 +31,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could make subsys easy to add loglevel and xxx_printk
-v2: make it more genric, so subsys user only need to two line macro
-v3: add back nameStr, so could find out iommu: and iommu_gart: and etc
-v4: use printk intead of pci_printk
-v5: fix checkpatch error and warning
-v6: add DEFINE_LOGLEVEL_SETUP_DEF to take default
-v7: call tag_loglevel_setup only one time, so could take several loglevel like
-   loglevel=4 loglevel=acpi:8 loglevel=pci:8 loglevel=apic:8 is the same as
-   loglevel=4,acpi:8,pci:8,apic:8
-
-usage:
-	in .h to have
-		#define KERN_PCI "<pci>"
-	in .c to have
-		DEFINE_LOGLEVEL_SETUP(pci, KERN_PCI, "pci:");
-	then could use
-		printk(KERN_DEBUG KERN_PCI fmt, ...);
-	and command line
-		loglevel=pci:8
-
-you can add different printk to different files of one subsys if you like
+use DEFINE_LOGLEVEL_SETUP to set loglevel for pci
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 ---
- arch/x86/kernel/vmlinux_32.lds.S  |    1 
- arch/x86/kernel/vmlinux_64.lds.S  |    2 
- include/asm-generic/vmlinux.lds.h |    8 +++
- include/linux/init.h              |   22 ++++++++++
- include/linux/kernel.h            |    9 ++++
- init/main.c                       |   77 +++++++++++++++++++++++++++++++++++++-
- kernel/printk.c                   |   28 +++++++++++--
- 7 files changed, 142 insertions(+), 5 deletions(-)
+ drivers/pci/pci.c   |    2 ++
+ include/linux/pci.h |    2 ++
+ 2 files changed, 4 insertions(+)
 
-Index: linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/arch/x86/kernel/vmlinux_32.lds.S
-+++ linux-2.6/arch/x86/kernel/vmlinux_32.lds.S
-@@ -145,6 +145,7 @@ SECTIONS
- 	*(.x86_cpu_dev.init)
- 	__x86_cpu_dev_end = .;
-   }
-+  LOGLEVEL_SETUP_INIT(8)
-   DYN_ARRAY_INIT(8)
-   SECURITY_INIT
-   . = ALIGN(4);
-Index: linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
-+++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
-@@ -174,6 +174,8 @@ SECTIONS
-   }
-   __x86_cpu_dev_end = .;
- 
-+  LOGLEVEL_SETUP_INIT(8)
-+
-   DYN_ARRAY_INIT(8)
- 
-   SECURITY_INIT
-Index: linux-2.6/include/asm-generic/vmlinux.lds.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/vmlinux.lds.h
-+++ linux-2.6/include/asm-generic/vmlinux.lds.h
-@@ -222,6 +222,14 @@
-  * All archs are supposed to use RO_DATA() */
- #define RODATA RO_DATA(4096)
- 
-+#define LOGLEVEL_SETUP_INIT(align)					\
-+	. = ALIGN((align));						\
-+	.loglevel_setup.init : AT(ADDR(.loglevel_setup.init) - LOAD_OFFSET) { \
-+		VMLINUX_SYMBOL(__loglevel_setup_start) = .;		\
-+		*(.loglevel_setup.init)					\
-+		VMLINUX_SYMBOL(__loglevel_setup_end) = .;		\
-+	}
-+
- #define DYN_ARRAY_INIT(align)							\
- 	. = ALIGN((align));						\
- 	.dyn_array.init : AT(ADDR(.dyn_array.init) - LOAD_OFFSET) {	\
-Index: linux-2.6/include/linux/init.h
-===================================================================
---- linux-2.6.orig/include/linux/init.h
-+++ linux-2.6/include/linux/init.h
-@@ -251,6 +251,28 @@ struct obs_kernel_param {
- /* Relies on boot_command_line being set */
- void __init parse_early_param(void);
- 
-+struct loglevel_setup {
-+	char *name;
-+	char *tag;
-+	int level;
-+};
-+
-+extern struct loglevel_setup *__loglevel_setup_start[], *__loglevel_setup_end[];
-+
-+#define DEFINE_LOGLEVEL_SETUP_DEF(nameX, tagX, nameStr, levelX)		\
-+	static struct loglevel_setup __loglevel_setup_##nameX __initdata = \
-+	{							\
-+		.tag = tagX,					\
-+		.name = nameStr,				\
-+		.level = levelX,				\
-+	};							\
-+	static struct loglevel_setup *__loglevel_setup_ptr_##nameX __used \
-+	__attribute__((__section__(".loglevel_setup.init"))) =	\
-+		&__loglevel_setup_##nameX
-+
-+#define DEFINE_LOGLEVEL_SETUP(nameX, tagX, nameStr)		\
-+	DEFINE_LOGLEVEL_SETUP_DEF(nameX, tagX, nameStr, 0)		\
-+
- struct dyn_array {
- 	void **name;
- 	unsigned long size;
-Index: linux-2.6/include/linux/kernel.h
-===================================================================
---- linux-2.6.orig/include/linux/kernel.h
-+++ linux-2.6/include/linux/kernel.h
-@@ -104,6 +104,15 @@ extern int console_printk[];
- #define minimum_console_loglevel (console_printk[2])
- #define default_console_loglevel (console_printk[3])
- 
-+struct tag_console_loglevel {
-+	char tag[32];
-+	char name[32];
-+	int level;
-+};
-+
-+extern struct tag_console_loglevel tag_level[];
-+extern int tag_level_nr;
-+
- struct completion;
- struct pt_regs;
- struct user;
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -248,9 +248,79 @@ static int __init quiet_kernel(char *str
- early_param("debug", debug_kernel);
- early_param("quiet", quiet_kernel);
- 
-+struct tag_console_loglevel tag_level[32];
-+int tag_level_nr;
-+
-+static int __init save_tag_name_level(const char *tag, const char *name,
-+					int level)
-+{
-+	int len;
-+
-+	if (tag_level_nr > 32)
-+		return -1;
-+
-+	len = sizeof(tag_level[tag_level_nr].tag);
-+	strncpy(tag_level[tag_level_nr].tag, tag, len - 1);
-+	len = sizeof(tag_level[tag_level_nr].name);
-+	strncpy(tag_level[tag_level_nr].name, name, len - 1);
-+	tag_level[tag_level_nr].level = level;
-+
-+	tag_level_nr++;
-+
-+	return 0;
-+}
-+
-+static void __init tag_loglevel_setup(void)
-+{
-+	struct loglevel_setup **la;
-+	int level = default_console_loglevel;
-+
-+	for (la = __loglevel_setup_start ; la < __loglevel_setup_end; la++) {
-+		struct loglevel_setup *l = *la;
-+
-+		save_tag_name_level(l->tag, l->name, l->level ? : level);
-+	}
-+}
-+
-+static char __init *real_loglevel_setup(char *str)
-+{
-+	int i;
-+
-+	for (i = 0; i < tag_level_nr; i++) {
-+		struct tag_console_loglevel *tl;
-+		int len;
-+
-+		tl = &tag_level[i];
-+		len = strlen(tl->name);
-+		if (!strncmp(str, tl->name, len)) {
-+			int level;
-+
-+			str += len;
-+			get_option(&str, &level);
-+			tl->level = level;
-+			str = NULL;
-+			break;
-+		}
-+	}
-+
-+	return str;
-+}
-+
- static int __init loglevel(char *str)
- {
--	get_option(&str, &console_loglevel);
-+	while (str) {
-+		char *k = strchr(str, ',');
-+
-+		if (k)
-+			*k++ = 0;
-+		if (*str) {
-+			str = real_loglevel_setup(str);
-+			if (str && *str)
-+				get_option(&str, &console_loglevel);
-+		}
-+		str = k;
-+	}
-+
- 	return 0;
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1953,6 +1953,8 @@ static int __devinit pci_setup(char *str
  }
+ early_param("pci", pci_setup);
  
-@@ -581,6 +651,7 @@ asmlinkage void __init start_kernel(void
- 	page_address_init();
- 	printk(KERN_NOTICE);
- 	printk(linux_banner);
-+	tag_loglevel_setup();
- 	setup_arch(&command_line);
- 	pre_alloc_dyn_array();
- 	mm_init_owner(&init_mm, &init_task);
-Index: linux-2.6/kernel/printk.c
++DEFINE_LOGLEVEL_SETUP(pci, KERN_PCI, "pci:");
++
+ device_initcall_sync(pci_init);
+ 
+ EXPORT_SYMBOL(pci_reenable_device);
+Index: linux-2.6/include/linux/pci.h
 ===================================================================
---- linux-2.6.orig/kernel/printk.c
-+++ linux-2.6/kernel/printk.c
-@@ -457,9 +457,9 @@ early_param("ignore_loglevel", ignore_lo
-  * Write out chars from start to end - 1 inclusive
-  */
- static void _call_console_drivers(unsigned start,
--				unsigned end, int msg_log_level)
-+				unsigned end, int msg_log_level, int level)
- {
--	if ((msg_log_level < console_loglevel || ignore_loglevel) &&
-+	if ((msg_log_level < level || ignore_loglevel) &&
- 			console_drivers && start != end) {
- 		if ((start & LOG_BUF_MASK) > (end & LOG_BUF_MASK)) {
- 			/* wrapped write */
-@@ -481,21 +481,40 @@ static void call_console_drivers(unsigne
- {
- 	unsigned cur_index, start_print;
- 	static int msg_level = -1;
-+	int level = console_loglevel;
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -55,6 +55,8 @@
+ /* Include the ID list */
+ #include <linux/pci_ids.h>
  
- 	BUG_ON(((int)(start - end)) > 0);
- 
- 	cur_index = start;
- 	start_print = start;
- 	while (cur_index != end) {
-+		int i;
++#define KERN_PCI "<pci>"
 +
- 		if (msg_level < 0 && ((end - cur_index) > 2) &&
- 				LOG_BUF(cur_index + 0) == '<' &&
- 				LOG_BUF(cur_index + 1) >= '0' &&
- 				LOG_BUF(cur_index + 1) <= '7' &&
- 				LOG_BUF(cur_index + 2) == '>') {
- 			msg_level = LOG_BUF(cur_index + 1) - '0';
-+			level = console_loglevel;
- 			cur_index += 3;
- 			start_print = cur_index;
- 		}
-+		/* handle tag here */
-+		for (i = 0; i < tag_level_nr; i++) {
-+			struct tag_console_loglevel *tl;
-+			int len;
-+
-+			tl = &tag_level[i];
-+			len = strlen(tl->tag);
-+			if ((end - cur_index) > (len - 1) &&
-+			    !strncmp(&LOG_BUF(cur_index), tl->tag, len)) {
-+				level = tl->level;
-+				cur_index += len;
-+				start_print = cur_index;
-+				break;
-+			}
-+		}
- 		while (cur_index != end) {
- 			char c = LOG_BUF(cur_index);
- 
-@@ -510,14 +529,15 @@ static void call_console_drivers(unsigne
- 					 */
- 					msg_level = default_message_loglevel;
- 				}
--				_call_console_drivers(start_print, cur_index, msg_level);
-+				_call_console_drivers(start_print, cur_index,
-+							msg_level, level);
- 				msg_level = -1;
- 				start_print = cur_index;
- 				break;
- 			}
- 		}
- 	}
--	_call_console_drivers(start_print, end, msg_level);
-+	_call_console_drivers(start_print, end, msg_level, level);
- }
- 
- static void emit_log_char(char c)
+ /* pci_slot represents a physical slot */
+ struct pci_slot {
+ 	struct pci_bus *bus;		/* The bus this slot is on */
