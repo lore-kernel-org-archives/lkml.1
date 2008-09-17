@@ -1,151 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYIQTvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbYIQUCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754713AbYIQTvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYIQTvf
+	id S1754439AbYIQUCB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 16:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbYIQUBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:51:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58713 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752926AbYIQTve (ORCPT
+	Wed, 17 Sep 2008 16:01:52 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:53987 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYIQUBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:51:34 -0400
-Date: Wed, 17 Sep 2008 12:50:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: jmorris@namei.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, netdev@vger.kernel.org
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-Message-Id: <20080917125053.1f9ecf37.akpm@linux-foundation.org>
-In-Reply-To: <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	<SpS7rta8n4.A.i9G.ZcsyIB@albercik>
-	<alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
-	<20080912152443.c4e59f42.akpm@linux-foundation.org>
-	<alpine.LRH.1.10.0809131012310.13073@tundra.namei.org>
-	<20080913123722.e238ae2a.akpm@linux-foundation.org>
-	<1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Sep 2008 16:01:52 -0400
+Date: Wed, 17 Sep 2008 13:01:29 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       torvalds@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [2.6.27-rc6 regression] Intermittent boot problem with
+	2.6.27-rc6
+Message-ID: <20080917200129.GD3436@localdomain>
+References: <20080916200414.GB16993@localdomain> <1221639786.25574.27.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221639786.25574.27.camel@ymzhang>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Sep 2008 09:05:26 -0400
-Stephen Smalley <sds@tycho.nsa.gov> wrote:
+On Wed, Sep 17, 2008 at 04:23:06PM +0800, Zhang, Yanmin wrote:
+>
+>On Tue, 2008-09-16 at 13:04 -0700, Ravikiran G Thirumalai wrote:
+>> I am trying a few things -- commandline options to eliminate popular
+>> suspects (such as unsynced tsc clocksources)  as well as git bisect, but
+>> wanted to report the regression in the meanwhile.
+>> Here's the dmesg of a 24 core 6 node wedged system.
+>Because the git doesn't include my patch. Pls. try it.
+>
+>http://marc.info/?l=linux-kernel&m=122093094701219&w=2
+>
 
-> 
-> On Sat, 2008-09-13 at 12:37 -0700, Andrew Morton wrote:
-> > On Sat, 13 Sep 2008 10:15:43 +1000 (EST) James Morris <jmorris@namei.org> wrote:
-> > 
-> > > On Fri, 12 Sep 2008, Andrew Morton wrote:
-> > > 
-> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
-> > > > > > Subject		: /proc/net bug related to selinux
-> > > > > > Submitter	: Andrew Morton <akpm@linux-foundation.org>
-> > > > > > Date		: 2008-09-04 17:45 (9 days old)
-> > > > > > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
-> > > > > 
-> > > > > I think this might be a regression caused by namespace changes which we 
-> > > 
-> > > By which I mean, this was caused by a non-SELinux change to the upstream 
-> > > kernel many, many eons ago.
-> > 
-> > hm, seems that 2.6.24 is OK but 2.6.25 is not.  I must have missed the
-> > bug when testing 2.6.25-based kernels.
-> > 
-> > I started a git bisection search but after half an hour I hit bad
-> > bisection breakage: a complete machine hang in fib_rules_init().
-> > 
-> > > > > addressed in SELinux policy.  Which distro version & policy version is 
-> > > > > this seen with?
-> > > > > 
-> > > > 
-> > > > FC5 on x86_32 and FC6 on x86_64.
-> > > 
-> > > As mentioned in the bugzilla, any related avc messages would be useful.
-> > 
-> > 2.6.25 dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
-> > /var/log/messages: http://userweb.kernel.org/~akpm/messages-sony.txt
-> > 
-> > The latter includes this:
-> > 
-> > Sep 13 12:32:43 sony kernel: SELinux:  class key not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class dccp_socket not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class memprotect not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class peer not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  class capability2 not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class dir not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class chr_file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class blk_file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class fifo_file not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission recvfrom in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission sendto in class node not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class netif not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class netif not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission ingress in class netif not defined in policy
-> > Sep 13 12:32:43 sony kernel: SELinux:  permission egress in class netif not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission setkeycreate in class process not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission setsockcreate in class process not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission setfcap in class capability not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission polmatch in class association not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission flow_in in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission flow_out in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission forward_in in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux:  permission forward_out in class packet not defined in policy
-> > Sep 13 12:32:44 sony kernel: SELinux: the above unknown classes and permissions will be denied
-> > Sep 13 12:32:44 sony kernel: type=1403 audit(1221309118.644:3): policy loaded auid=4294967295 ses=4294967295
-> > Sep 13 12:32:44 sony kernel: type=1400 audit(1221334321.726:4): avc:  denied  { audit_write } for  pid=400 comm="hwclock" capability=29 scontext=system_u:system_r:hwclock_t:s0 tcontext=system_u:system_r:hwclock_t:s0 tclass=capability
-> > 
-> > 
-> > Why am I seeing this on two machines and two vanilla-installed distros
-> > but nobody else is reporting it?
+Thanks Yanmin,  Your patch fixes the problem indeed.
+The test machine passed  over 10  boots without hanging up.
 
-Running `ls -l /proc/net' on the FC6 machine produces:
-
-[  132.591215] type=1400 audit(1221679672.590:10): avc:  denied  { getattr } for  pid=4389 comm="ls" path="/proc/net" dev=proc ino=4026531867 scontext=user_u:system_r:unconfined_t:s0 tcontext=system_u:object_r:proc_net_t:s0 tclass=lnk_file
-
-
-> What we actually need to see is the output of:
-> /sbin/ausearch -i -m AVC -sv no
-
-akpm2:/home/akpm# /sbin/ausearch -i -m AVC -sv no 
-<no matches>
-
-> However, the most likely explanation is simply that when /proc/net was
-> changed from being a directory to being a symlink to /proc/self/net,
-> that introduced an additional permission check on accesses
-> of /proc/net/<whatever>, namely the read check on the symlink itself.
-> And since that check wasn't happening on /proc/net accesses with older
-> kernels, older policies didn't allow it.
-> 
-> As to why others haven't reported it, I expect that they have updated
-> their policies to newer ones that allow the necessary access.  The fact
-> that legacy distros wouldn't have such updated policies isn't surprising
-> - they don't push updates to those distros for new kernels.  FC5 and FC6
-> are both EOL'd, right?
-> 
-> In any event, we didn't change anything in SELinux - the change was
-> elsewhere (in the proc/net implementation).  Don't blame the messenger
-> please.
-> 
-
-Vanilla FC5 broke and vanilla FC6 broke.  Did vanilla FC7, 8 or 9 break?
-
-http://smolt.fedoraproject.org/static/stats/stats.html shows 11,000-odd
-people running FC5 and FC6.  It would be incautious to assume that all
-those people have updated their selinux rules.
-
-And _requiring_ people to update their selinux rules to fix a
-kernel-caused regression is a pretty big deal for some people, I
-expect.
-
-Then again, given that this regression has been out there since 2.6.25,
-I guess not too many people are hurting from it.  But we suck.
-
+Kiran
