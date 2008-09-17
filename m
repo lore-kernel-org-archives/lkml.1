@@ -1,55 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbYIPTwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYIPTzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbYIPTwN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 15:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbYIPTv4
+	id S1754209AbYIPTzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 15:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYIPTzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 15:51:56 -0400
-Received: from mail02d.mail.t-online.hu ([84.2.42.7]:60679 "EHLO
-	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753919AbYIPTvz (ORCPT
+	Tue, 16 Sep 2008 15:55:07 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:13014 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYIPTzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 15:51:55 -0400
-Message-ID: <48D00E50.7080901@freemail.hu>
-Date: Tue, 16 Sep 2008 21:51:44 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Tue, 16 Sep 2008 15:55:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QIdo4Bj5Bd7r58WaoYejtO3lyFYTfwfZgjynudEmt3ck63p9Gz+B1SzBwzWNhCgah6
+         xNN7DA4YUYxRamBzlh/pM7Vr4TlxrlTSW5twA+5J9XHz/tPfWXxCLWl1OeTp7KbMFul0
+         ZW0cZKbCrzM7E3XwelilTL9Sxueafp8m2UwnQ=
+Message-ID: <48D06372.3050809@gmail.com>
+Date: Tue, 16 Sep 2008 21:54:58 -0400
+From: roel kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Jens Axboe <axboe@kernel.dk>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Subject: [PATCH] cdrom: update ioctl documentation
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail02d.mail.t-online.hu 32720; Body=3 Fuz1=3
-	Fuz2=3
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+CC: ralf@linux-mips.org, yoichi_yuasa@tripeaks.co.jp,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [MIPS] vr41xx: unsigned irq cannot be negative
+References: <48CF02EE.8050406@gmail.com> <48CF8E05.6050000@ru.mvista.com>
+In-Reply-To: <48CF8E05.6050000@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+Sergei Shtylyov wrote:
+> Hello.
 
-Correct copy-paste problem: CDROMCLOSETRAY is about closing the tray,
-not opening it.
+>> @@ -79,8 +80,9 @@ static void irq_dispatch(unsigned int irq)
+>>              desc->chip->mask(source_irq);
+>>              desc->chip->ack(source_irq);
+>>          }
+>> -        irq = cascade->get_irq(irq);
+>> -        if (irq < 0)
+>> +        ret = cascade->get_irq(irq);
+>> +        irq = ret;
+>> +        if (ret < 0)
+>>              atomic_inc(&irq_err_count);
+>>          else
+>>              irq_dispatch(irq);
+>>   
+> 
+>  How about this:
+> 
+>         ret = cascade->get_irq(irq);
+>         if (ret < 0)
+>             atomic_inc(&irq_err_count);
+>         else
+>             irq_dispatch(ret);
+> 
+> 
+> WBR, Sergei
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
+good suggestion, but shouldn't we then remove source_irq
+as well?
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
---- linux-2.6.27-rc6/Documentation/ioctl/cdrom.txt.orig	2008-07-13 23:51:29.000000000 +0200
-+++ linux-2.6.27-rc6/Documentation/ioctl/cdrom.txt	2008-09-16 20:29:16.000000000 +0200
-@@ -271,14 +271,14 @@ CDROMCLOSETRAY			pendant of CDROMEJECT
+diff --git a/arch/mips/vr41xx/common/irq.c b/arch/mips/vr41xx/common/irq.c
+index cba36a2..ab4e327 100644
+--- a/arch/mips/vr41xx/common/irq.c
++++ b/arch/mips/vr41xx/common/irq.c
+@@ -63,6 +63,7 @@ static void irq_dispatch(unsigned int irq)
+ {
+ 	irq_cascade_t *cascade;
+ 	struct irq_desc *desc;
++	int ret;
+ 
+ 	if (irq >= NR_IRQS) {
+ 		atomic_inc(&irq_err_count);
+@@ -71,21 +72,22 @@ static void irq_dispatch(unsigned int irq)
+ 
+ 	cascade = irq_cascade + irq;
+ 	if (cascade->get_irq != NULL) {
+-		unsigned int source_irq = irq;
+-		desc = irq_desc + source_irq;
++		desc = irq_desc + irq;
+ 		if (desc->chip->mask_ack)
+-			desc->chip->mask_ack(source_irq);
++			desc->chip->mask_ack(irq);
+ 		else {
+-			desc->chip->mask(source_irq);
+-			desc->chip->ack(source_irq);
++			desc->chip->mask(irq);
++			desc->chip->ack(irq);
+ 		}
+-		irq = cascade->get_irq(irq);
+-		if (irq < 0)
++
++		ret = cascade->get_irq(irq);
++		if (ret < 0)
+ 			atomic_inc(&irq_err_count);
+ 		else
+-			irq_dispatch(irq);
++			irq_dispatch(ret);
++
+ 		if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
+-			desc->chip->unmask(source_irq);
++			desc->chip->unmask(irq);
+ 	} else
+ 		do_IRQ(irq);
+ }
 
- 	usage:
-
--	  ioctl(fd, CDROMEJECT, 0);
-+	  ioctl(fd, CDROMCLOSETRAY, 0);
-
- 	inputs:		none
-
- 	outputs:	none
-
- 	error returns:
--	  ENOSYS	cd drive not capable of ejecting
-+	  ENOSYS	cd drive not capable of closing the tray
- 	  EBUSY		other processes are accessing drive, or door is locked
-
- 	notes:
