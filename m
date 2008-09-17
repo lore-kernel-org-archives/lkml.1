@@ -1,121 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYIQQA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbYIQQD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbYIQQA3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884AbYIQQAV
+	id S1754740AbYIQQD0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbYIQQDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:00:21 -0400
-Received: from bu3sch.de ([62.75.166.246]:55678 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbYIQQAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:00:20 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
-Date: Wed, 17 Sep 2008 17:59:32 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Adel Gadllah <adel.gadllah@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de
-References: <48CFC03A.8020708@lwfinger.net> <200809171619.33377.mb@bu3sch.de> <20080917151822.GB5186@khazad-dum.debian.net>
-In-Reply-To: <20080917151822.GB5186@khazad-dum.debian.net>
+	Wed, 17 Sep 2008 12:03:19 -0400
+Received: from web32606.mail.mud.yahoo.com ([68.142.207.233]:22895 "HELO
+	web32606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753721AbYIQQDS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 12:03:18 -0400
+X-YMail-OSG: rRmI8DsVM1lsxGon81UkMgflNm3e7neQMjGaEREoi8OmEsl_z5eJ2NKbX__aIo7d_1XZ0YWUCQ1o8O67ct9s76XekmSFDcUxzYfWvYafOnIWzHinTHYee8CmFRuJwUw-
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Wed, 17 Sep 2008 09:03:17 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+To: Peter Staubach <staubach@redhat.com>
+Cc: linux-nfs list <linux-nfs@vger.kernel.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809171759.32645.mb@bu3sch.de>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <270934.3119.qm@web32606.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 September 2008 17:18:22 Henrique de Moraes Holschuh wrote:
-> On Wed, 17 Sep 2008, Michael Buesch wrote:
-> > On Tuesday 16 September 2008 23:09:20 Matthew Garrett wrote:
-> > > Oh, hey, I suck. This one might stand a better chance of not falling 
-> > > over.
-> > > 
-> > > diff --git a/drivers/net/wireless/b43/rfkill.c b/drivers/net/wireless/b43/rfkill.c
-> > > index fec5645..991e318 100644
-> > > --- a/drivers/net/wireless/b43/rfkill.c
-> > > +++ b/drivers/net/wireless/b43/rfkill.c
-> > > @@ -49,21 +49,18 @@ static void b43_rfkill_update_state(struct b43_wldev *dev)
-> > >  	struct b43_rfkill *rfk = &(dev->wl->rfkill);
-> > >  
-> > >  	if (!dev->radio_hw_enable) {
-> > > -		rfk->rfkill->state = RFKILL_STATE_HARD_BLOCKED;
-> > > +		rfkill_force_state(rfk->rfkill, RFKILL_STATE_HARD_BLOCKED);
-> > >  		return;
-> > >  	}
-> > >  
-> > >  	if (!dev->phy.radio_on)
-> > > -		rfk->rfkill->state = RFKILL_STATE_SOFT_BLOCKED;
-> > > +		rfkill_force_state(rfk->rfkill, RFKILL_STATE_SOFT_BLOCKED);
-> > >  	else
-> > > -		rfk->rfkill->state = RFKILL_STATE_UNBLOCKED;
-> > > -
-> > > +		rfkill_force_state(rfk->rfkill, RFKILL_STATE_UNBLOCKED);
-> > >  }
-> > 
-> > I still thing that it is really wrong to check and change the software
-> > rfkill state from within the _hardware_ rfkill state handler.
-> > So let's say this handler sets the state to SOFT_BLOCKED. Who is going
-> > to set it back to unblocked, if the user unblocks the radio?
-> 
-> I would suggest reading the updated docs, but I know you'd rather just stay
-> away from rfkill.
-> 
-> For reference:
-> 
-> Basically, your wireless device driver has to monitor any hardware rfkill
-> lines and call rfkill_force_state() accordingly (you don't even need to
-> track if the state changed, rfkill core will do that).
-> 
-> The call to rfkill_force_state() should set state to HARD_BLOCKED (any of
-> the hardware rfkill lines are active), SOFT_BLOCKED (no hardware rfkill
-> lines are active, but one of the software rfkill lines are active), or
-> UNBLOCKED (no rfkill lines of any type are active).
-> 
-> Whether this is to be done through interrupts or pooling is something that
-> depends on your driver and the hardware.
-> 
-> User and userspace interaction is taken care of by the rfkill core.  You do
-> nothing of the sort in the wireless device driver.
-> 
-> There are *very few* exceptions for the above as far as wireless device
-> drivers go.  They are explained in the docs, and I know of no wireless
-> device driver that would require any them.
-> 
-> > We can turn the radio on/off from the mac80211 config callback. Possibly
-> > we must tell rfkill about it (I'm not sure. I don't understand the API).
-> > I think this is pretty hard to get right, actually. HW-block and SW-block
-> > are two completely independent states in b43. You can HW-block and SW-block
-> > the device at the same time. So one must make sure that at any time the rfkill
-> > is in a sane state if _either_ HW-block or SW-block changes. Currently I think
-> > we only change rfkill state if HW-block state changes. Which is wrong.
-> 
-> Again, for reference:
-> 
-> You need to synthesize a single state (unblock/soft-block/hard-block) for a
-> transmitter from every rfkill line that affects that transmitter.  This
-> happens because the interface is a SINGLE ONE rfkill class per independent
-> wireless interface ("transmitter").
+----- Original Message ----
 
-Right. But that's not what I was talking about. The hw and sw rfkill is something
-_completely_ different in b43 and it's handled by _completely_ different codepaths.
-I just said that currently the sw-rfkill path does _not_ announce the state
-correctly to the rfkill subsystem. Additionally we must _not_ check the sw rfkill
-state from within the hw rfkill handlers, as it will get out of sync this way.
-(that's what we're currently doing. If you revert the commit from the subject
-this will go away, afaics).
-Telling rfkill about the state isn't the hard part, but the
-"You need to synthesize a single state" part, which currently is not done correctly.
-We currently have _two_ states. (Don't get me wrong, the fix is _not_ to remove
-either of these. The fix is to introduce a common rfkill notifier that constructs
-a common rfkill state from these two states. This notifier is called from hw-rfkill
-and sw-rfkill.)
+> From: Peter Staubach <staubach@redhat.com>
+> To: Martin Knoblauch <knobi@knobisoft.de>
+> Cc: linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org
+> Sent: Wednesday, September 17, 2008 4:06:44 PM
+> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+> 
+> Martin Knoblauch wrote:
+> > Hi,
+> >
+> > the following/attached patch works around a [obscure] problem when an 2.6 (not 
+> sure/caring about 2.4) NFS client accesses an "offline" file on a Sun/Solaris-10 
+> NFS server when the underlying filesystem is of type SAM-FS. Happens with 
+> RHEL4/5 and mainline kernels. Frankly, it is not a Linux problem, but the chance 
+> for a short-/mid-term solution from Sun are very slim. So, being lazy, I would 
+> love to get this patch into Linux. If not, I just will have to maintain it for 
+> eternity out of tree.
+> >
+> > The problem: SAM-FS is Suns proprietary HSM filesystem. It stores meta-data 
+> and a relatively small amount of data "online" on disk and pushes old or 
+> infrequently used data to "offline" media like e.g. tape. This is completely 
+> transparent to the users. If the date for an "offline" file is needed, the so 
+> called "stager daemon" copies it back from the offline medium. All of this works 
+> great most of the time. Now, if an Linux NFS client tries to read such an 
+> offline file, performance drops to "extremely slow". After lengthly 
+> investigation of tcp-dumps, mount options and procedures involving black cats at 
+> midnight, we found out that the readahead behaviour of the Linux NFS client 
+> causes the problem. Basically it seems to issue read requests up to 15*rsize to 
+> the server. In the case of the "offline" files, this behaviour causes heavy 
+> competition for the inode lock between the NFSD process and the stager daemon on 
+> the Solaris server.
+> >
+> > - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks the 
+> problem, but a solution will need time. Lots of it.
+> > - The working solution: disable the client side readahead, or make it tunable. 
+> The patch does that by introducing a NFS module parameter "ra_factor" which can 
+> take values between 1 and 15 (default 15) and a tunable 
+> "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
+> 
+> Hi.
+> 
+> I was curious if a design to limit or eliminate read-ahead
+> activity when the server returns EJUKEBOX was considered?
 
--- 
-Greetings Michael.
+ not seriously, because that would need a lot more knowledge about the internal workings of the NFS-Client than I have. The Solaris client seems to be working along that lines, but the code to modify the readahead window looks complicated. The Solaris client also seems to be a lot less agressive when doing readahead. Maximum seems to be 4x8k. As far as I see, the Linux client doesn't really care about the readahead handling at all. It just fills "server->backing_dev_info.ra_pages" and leaves the handling to the MM system.
+
+ Then, there is no guarantee that EJUKEBOX is ever sent by the server. If the offline archive resides on disk (e.g. a cheap SATA array), delivery will start almost immediatelly and the server will not send that error. Tracked that :-( Same for already positioned tapes.
+
+> Unless one can know that the server and client can get into
+> this situation ahead of time, how would the tunable be used?
+> 
+
+ Basically one has to know that the problem exists (that is easily detected) and that the readahead factor is involved.
+
+ My patch has of course some pitfalls. at least:
+
+a) as implemented, the nfs_ra_factor will be used for all NFS mounts. It should/could be per filesystem, but that needs a new mount option and I did not want to touch that code due to lack of understanding (and no time to aquire said understanding). But frankly, so far we have not observed any serious performance drawbacks with ra_factor=1.
+b) changing the factor needs a remount, as the NFS client only cares about it at that time.
+
+ Not a problem in my situation of course.
+
+Cheers
+Martin
+
