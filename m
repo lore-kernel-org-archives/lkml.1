@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYIQLmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbYIQLmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457AbYIQLmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 07:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYIQLly
+	id S1753177AbYIQLmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 07:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYIQLml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 07:41:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37249 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752513AbYIQLlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 07:41:53 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19cnSlzghZcxQrdMWlay3k3jsG9pTP8FRhFDs6fb0
-	2Dy1zVNBt+kzwt
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
-	2.6.22 -&gt; 2.6.28
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org
-In-Reply-To: <20080917104044.GC18764@elte.hu>
-References: <SpS7rta8n4.A.mr.ZesyIB@albercik>
-	 <48CAE7A0.8000004@linux-foundation.org>
-	 <1221306287.5213.111.camel@marge.simson.net>
-	 <48CD1D25.9080301@linux-foundation.org>
-	 <1221421907.4597.24.camel@marge.simson.net>
-	 <1221475440.4784.39.camel@marge.simson.net>
-	 <1221568105.5020.17.camel@marge.simson.net>
-	 <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi>
-	 <1221626391.5043.13.camel@marge.simson.net>
-	 <1221627676.5125.3.camel@marge.simson.net> <20080917104044.GC18764@elte.hu>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 17 Sep 2008 13:41:41 +0200
-Message-Id: <1221651701.5102.17.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+	Wed, 17 Sep 2008 07:42:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49072 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752530AbYIQLml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 07:42:41 -0400
+Date: Wed, 17 Sep 2008 13:42:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Pekka Paalanen <pq@iki.fi>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Pavel Roskin <proski@gnu.org>
+Subject: Re: [PATCH 3/7] ftrace: add trace_vprintk()
+Message-ID: <20080917114216.GG18764@elte.hu>
+References: <c62985530808280304x389cb958vff24b5d11f22d35c@mail.gmail.com> <20080828214256.296e34ec@daedalus.pq.iki.fi> <c62985530809040920v3c47b57ds40dfd400168bd501@mail.gmail.com> <20080904203058.7e57729e@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809041407140.2431@gandalf.stny.rr.com> <20080915224707.76b2cca0@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809151556260.22620@gandalf.stny.rr.com> <20080916215416.16aee2dd@daedalus.pq.iki.fi> <20080916215824.7b0b69e5@daedalus.pq.iki.fi> <alpine.DEB.1.10.0809161606340.7650@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0809161606340.7650@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-09-17 at 12:40 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> > On Wed, 2008-09-17 at 06:40 +0200, Mike Galbraith wrote:
-> > > On Tue, 2008-09-16 at 17:07 +0300, Ilpo Järvinen wrote:
-> > 
-> > > > One additional sanity check could be to rebase security 6f0f0fd4963 on top 
-> > > > of the c142bda458a and then see if bisection among those security commits 
-> > > > on top yields to the the same result... Though I doubt it can change much 
-> > > > because there was not that much relevant non-security things in the merge 
-> > > > in question.
-> > > 
-> > > I'm not a master of git-foo, so that is not an option.  However, a dinky
-> > > bisection c142bda4..847106f very clearly says...
-> > > 
-> > > marge:..kernel/linux-2.6.27.git # git bisect bad
-> > > 6f0f0fd496333777d53daff21a4e3b28c4d03a6d is first bad commit
-> > > commit 6f0f0fd496333777d53daff21a4e3b28c4d03a6d
-> > > Author: James Morris <jmorris@namei.org>
-> > > Date:   Thu Jul 10 17:02:07 2008 +0900
-> > > 
-> > >     security: remove register_security hook
-> > > 
-> > >     The register security hook is no longer required, as the capability
-> > >     module is always registered.  LSMs wishing to stack capability as
-> > >     a secondary module should do so explicitly.
-> > > 
-> > >     Signed-off-by: James Morris <jmorris@namei.org>
-> > >     Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
-> > >     Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > 
-> > > :040000 040000 0177ef46d305e51e27bfcc4350a40577f8ba8d3d 64b64c10a424df4539653a8ee34f1a2329300931 M      include
-> > > :040000 040000 e318891e514de674fd064f6bfad70d5633b1aff1 0dbb38d5aa7fc3e4b2e09dc65796ce7cd5faeb26 M      security
-> > 
-> > Which is high grade horse-pookey.
 > 
-> perhaps re-test commit 6f0f0fd49 and its parent commit, 93cbace7a0.
+> On Tue, 16 Sep 2008, Pekka Paalanen wrote:
+> 
+> > From 5579d3e6471201524697d1cc32fb37f1a4f70f95 Mon Sep 17 00:00:00 2001
+> > From: Pekka Paalanen <pq@iki.fi>
+> > Date: Sun, 14 Sep 2008 17:27:05 +0300
+> > Subject: [PATCH] ftrace: add trace_vprintk()
+> > 
+> > trace_vprintk() for easier implementation of tracer specific *_printk
+> > functions. Add check check for no_tracer, and implement
+> > __ftrace_printk() as a wrapper.
+> > 
+> > Signed-off-by: Pekka Paalanen <pq@iki.fi>
+> 
+> Nice!
+> 
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Will do.
+nice - i've picked up Pekka's patches into tip/tracing/ftrace:
 
-> It looks like a potentially bogus bisection result, but _maybe_ it has 
-> relevance: changes the size of "struct security_operations", which could 
-> have alignment and layout effects on all sorts of kernel variables, 
-> kmalloc sizes, etc.
+ f2e1ec3: ftrace: inject markers via trace_marker file
+ 574a7a7: mmiotrace: remove left-over marker cruft
+ fb87810: mmiotrace: handle TRACE_PRINT entries
+ eaa4f4e: x86 mmiotrace: implement mmiotrace_printk()
+ d77a3b8: ftrace: add trace_vprintk()
+ 809fff6: ftrace: move mmiotrace functions out of trace.c
+ bc94fff: x86 mmiotrace: fix a rare memory leak
 
-This may well be a mythical creature infestation for all I know ;-), but
-it's address is somewhere in the 2069f45..847106f block, 316 commits,
-none of which look like they should be the least bit interesting to
-netperf.  I reverted this particular commit in 27.git, got the expected
-result.  Looks like I'll keep poking at it, can't seem to resist.  Grr.
+and added your ack to all of them. Thanks,
 
-	-Mike
-
+	Ingo
