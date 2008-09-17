@@ -1,51 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYIQRCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbYIQRCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbYIQRCc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYIQRBh
+	id S1758096AbYIQRCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 13:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbYIQRBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 13:01:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59374 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757162AbYIQRBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 13:01:34 -0400
+	Wed, 17 Sep 2008 13:01:36 -0400
+Received: from web32607.mail.mud.yahoo.com ([68.142.207.234]:38714 "HELO
+	web32607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757988AbYIQRBd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 13:01:33 -0400
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Wed, 17 Sep 2008 10:01:32 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+To: Chuck Lever <chucklever@gmail.com>
+Cc: Peter Staubach <staubach@redhat.com>,
+       linux-nfs list <linux-nfs@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Luming Yu" <luming.yu@gmail.com>
-X-Fcc: ~/Mail/linus
-Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ia64@vger.kernel.org
-Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
-In-Reply-To: Luming Yu's message of  Tuesday, 16 September 2008 16:50:24 +0800 <3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
-References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
-	<48450864.6080707@suse.cz>
-	<48455619.6040608@suse.cz>
-	<3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
-	<48465D5C.8000804@suse.cz>
-	<3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
-	<1212664605.15747.16.camel@elijah.suse.cz>
-	<20080627204954.34F8B154231@magilla.localdomain>
-	<3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
-	<20080910055504.9A2A41541FE@magilla.localdomain>
-	<3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
-X-Shopping-List: (1) Instant flossbag oblivion
-   (2) Linty metronome ashes
-   (3) Self-propelled witches
-   (4) Infamous thunder
-   (5) Precious opinions
-Message-Id: <20080917170122.7797E640A5@pipsqueak.localdomain>
-Date: Wed, 17 Sep 2008 10:01:22 -0700 (PDT)
+Message-ID: <2236.70458.qm@web32607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So is there or is there not any regression (change) in the kernel's behavior?
+----- Original Message ----
 
-If you are now just talking about strace's own code, then the place for
-that is strace-devel@lists.sourceforge.net, not any kernel lists.
+> From: Chuck Lever <chucklever@gmail.com>
+> To: Martin Knoblauch <knobi@knobisoft.de>
+> Cc: Peter Staubach <staubach@redhat.com>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org
+> Sent: Wednesday, September 17, 2008 6:43:48 PM
+> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+> 
+> On Wed, Sep 17, 2008 at 11:23 AM, Martin Knoblauch wrote:
+> > ----- Original Message ----
+> >
+> >> From: Chuck Lever 
+> >> To: Peter Staubach 
+> >> Cc: Martin Knoblauch ; linux-nfs list 
+> ; linux-kernel@vger.kernel.org
+> >> Sent: Wednesday, September 17, 2008 5:41:15 PM
+> >> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+> >>
+> >> On Wed, Sep 17, 2008 at 9:06 AM, Peter Staubach wrote:
+> >> > Martin Knoblauch wrote:
+> >> >>
+> >> >> Hi,
+> >> >>
+> >> >> the following/attached patch works around a [obscure] problem when an 2.6
+> >> >> (not sure/caring about 2.4) NFS client accesses an "offline" file on a
+> >> >> Sun/Solaris-10 NFS server when the underlying filesystem is of type 
+> SAM-FS.
+> >> >> Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux
+> >> >> problem, but the chance for a short-/mid-term solution from Sun are very
+> >> >> slim. So, being lazy, I would love to get this patch into Linux. If not, I
+> >> >> just will have to maintain it for eternity out of tree.
+> >> >>
+> >> >> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores
+> >> >> meta-data and a relatively small amount of data "online" on disk and 
+> pushes
+> >> >> old or infrequently used data to "offline" media like e.g. tape. This is
+> >> >> completely transparent to the users. If the date for an "offline" file is
+> >> >> needed, the so called "stager daemon" copies it back from the offline
+> >> >> medium. All of this works great most of the time. Now, if an Linux NFS
+> >> >> client tries to read such an offline file, performance drops to "extremely
+> >> >> slow". After lengthly investigation of tcp-dumps, mount options and
+> >> >> procedures involving black cats at midnight, we found out that the 
+> readahead
+> >> >> behaviour of the Linux NFS client causes the problem. Basically it seems 
+> to
+> >> >> issue read requests up to 15*rsize to the server. In the case of the
+> >> >> "offline" files, this behaviour causes heavy competition for the inode 
+> lock
+> >> >> between the NFSD process and the stager daemon on the Solaris server.
+> >> >>
+> >> >> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks
+> >> >> the problem, but a solution will need time. Lots of it.
+> >> >> - The working solution: disable the client side readahead, or make it
+> >> >> tunable. The patch does that by introducing a NFS module parameter
+> >> >> "ra_factor" which can take values between 1 and 15 (default 15) and a
+> >> >> tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
+> >> >
+> >> > Hi.
+> >> >
+> >> > I was curious if a design to limit or eliminate read-ahead
+> >> > activity when the server returns EJUKEBOX was considered?
+> >> > Unless one can know that the server and client can get into
+> >> > this situation ahead of time, how would the tunable be used?
+> >>
+> >> I tend to agree.  A tunable is probably not a good solution in this case.
+> >>
+> >> I would bet that this lock contention issue is a problem in other more
+> >> common cases, and would merit some careful analysis.
+> >>
+> >
+> >  Are you talking wrt. a Solaris NFS-Server with SAM-FS/QFS as backend 
+> filesystem?
+> 
+> I misread your mail, and thought the inode lock contention issue was
+> on the client.
+> 
 
+ No problem, maybe I was not articulating myself clearly.  Just to restate - the lock contention happens on the server.
 
-Thanks,
-Roland
+Cheers
+Martin
+
