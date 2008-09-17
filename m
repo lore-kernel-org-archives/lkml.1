@@ -1,71 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbYIQFkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbYIQFlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbYIQFkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 01:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYIQFjw
+	id S1754165AbYIQFlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 01:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYIQFlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 01:39:52 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:50415 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754020AbYIQFjv (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 01:39:51 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Alessio Sangalli <alesan@manoweb.com>
-Cc: Ben Nizette <bn@niasdigital.com>, Ben Dooks <ben-linux@fluff.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver for tightly coupled memory
-In-Reply-To: Your message of "Tue, 16 Sep 2008 22:27:41 PDT."
-             <48D0954D.4070302@manoweb.com>
-From: Valdis.Kletnieks@vt.edu
-References: <48CEC71F.3000006@manoweb.com> <20080916093513.GF1916@fluff.org.uk> <48CFEF3F.5040901@manoweb.com> <1221604022.3598.4.camel@moss.renham> <48D03811.9070805@manoweb.com> <24229.1221619342@turing-police.cc.vt.edu>
-            <48D0954D.4070302@manoweb.com>
+	Wed, 17 Sep 2008 01:41:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44386 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbYIQFlD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 01:41:03 -0400
+Date: Wed, 17 Sep 2008 14:46:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, balbir@linux.vnet.ibm.com, xemul@openvz.org
+Subject: Re: [PATCH -mm] memcg: fix handling of shmem migration
+Message-Id: <20080917144659.2e363edc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp>
+References: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1221629978_32017P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Wed, 17 Sep 2008 01:39:38 -0400
-Message-ID: <32819.1221629978@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1221629978_32017P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 17 Sep 2008 13:31:49 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-On Tue, 16 Sep 2008 22:27:41 PDT, Alessio Sangalli said:
+> PG_swapbacked flag of newpage should be set(if needed) before
+> mem_cgroup_prepare_migration, because mem_cgroup_charge_common
+> checks the flag and determines whether it sets PAGE_CGROUP_FLAG_FILE or not.
+> 
+> Before this patch, if migrating shmem/tmpfs pages, newpage would be
+> charged with PAGE_CGROUP_FLAG_FILE set, while oldpage has been charged
+> without the flag.
+> 
+Nice catch !
+Thank you. 
 
-> Well I should ask the details to the hardware engineers but it's like a
-> separate channel than the one used for main memory. It is not cacheable
-> either. To the CPU, it just appears to be mapped at some location on the
-> addressable space. Accessing this TCM will not have any impact on main
-> memory access, so bursts etc won't be interrupted; other than that, TCM
-> has double the bandwidth than standard memory - but it's tiny in size,
-> something like 8 to 32kB as I mentioned earlier.
+Hmm, should I add MEM_CGROUP_CHARGE_TYPE_SHMEM rather than
+setting flag to newpage ?
 
-Ah.  So it's basically just super-fast memory that can be accessed without
-going through the usual memory bus.  Sounds like the cycle of reincarnation
-strikes again - 30ish years ago, the DEC PDP10/20 processors implemented the
-first few locations of memory in fast (for the time) chips, and then mapped
-the general purpose registers onto it.  A favorite trick would be to copy a
-small loop into locations 0-7 and then branch to it - basically executing
-from the general registers.  The *real* fun started when people started doing
-self-modifying code by doing arithmetic/logical operations on registers. ;)
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Would it be more of a performance win to use the 8-32K to store speed-critical
-code rather than a FIFO?  Just another idea for what to use it for, but that
-would likely require a different API...
 
---==_Exmh_1221629978_32017P
-Content-Type: application/pgp-signature
+> The problem here is mem_cgroup_move_lists doesn't clear(or set)
+> the PAGE_CGROUP_FLAG_FILE flag, so pc->flags of the newpage
+> remains PAGE_CGROUP_FLAG_FILE set even when the pc is moved to
+> another lru(anon) by mem_cgroup_move_lists. And this leads to
+> incorrect MEM_CGROUP_ZSTAT.
+> (In my test, I see an underflow of MEM_CGROUP_ZSTAT(active_file).
+> As a result, mem_cgroup_calc_reclaim returns very huge number and
+> causes soft lockup on page reclaim.)
+> 
+> I'm not sure if mem_cgroup_move_lists should handle PAGE_CGROUP_FLAG_FILE
+> or not(I suppose it should be used to move between active <-> inactive,
+> not anon <-> file), I moved SetPageSwapBacked(newpage) before
+> mem_cgroup_prepare_migration.
+> 
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> ---
+>  mm/migrate.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/migrate.c b/mm/migrate.c
+> index 577d481..7343463 100644
+> --- a/mm/migrate.c
+> +++ b/mm/migrate.c
+> @@ -586,8 +586,6 @@ static int move_to_new_page(struct page *newpage, struct page *page)
+>  	/* Prepare mapping for the new page.*/
+>  	newpage->index = page->index;
+>  	newpage->mapping = page->mapping;
+> -	if (PageSwapBacked(page))
+> -		SetPageSwapBacked(newpage);
+>  
+>  	mapping = page_mapping(page);
+>  	if (!mapping)
+> @@ -636,6 +634,8 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+>  		goto move_newpage;
+>  	}
+>  
+> +	if (PageSwapBacked(page))
+> +		SetPageSwapBacked(newpage);
+>  	charge = mem_cgroup_prepare_migration(page, newpage);
+>  	if (charge == -ENOMEM) {
+>  		rc = -ENOMEM;
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFI0JgacC3lWbTT17ARAhgQAKDd8Xt4X7g/QCoKYlev+AvTBFiCBwCeJEi0
-xpQH1wGOOEYXOdhy3dMwLiQ=
-=KjLG
------END PGP SIGNATURE-----
-
---==_Exmh_1221629978_32017P--
