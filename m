@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbYIQTaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYIQTdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbYIQTaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbYIQTaW
+	id S1755277AbYIQTdf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYIQTd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:30:22 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:57853 "EHLO
-	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752845AbYIQTaV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:30:21 -0400
-Date: Wed, 17 Sep 2008 21:30:13 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH] gpio_free might sleep, blackfin architecture
-Message-ID: <20080917193012.GA27410@informatik.uni-freiburg.de>
-Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@informatik.uni-freiburg.de>,
-	Bryan Wu <cooloney@kernel.org>, linux-kernel@vger.kernel.org,
-	David Brownell <david-b@pacbell.net>,
-	uclinux-dist-devel@blackfin.uclinux.org,
-	Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-	Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Russell King <rmk+kernel@arm.linux.org.uk>
-References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-4-git-send-email-ukleinek@informatik.uni-freiburg.de> <386072610809151916j7ed1ad54i330a7ee0be692828@mail.gmail.com>
+	Wed, 17 Sep 2008 15:33:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41675 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752879AbYIQTd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:33:26 -0400
+Message-ID: <48D15AC6.3060608@redhat.com>
+Date: Wed, 17 Sep 2008 12:30:14 -0700
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <386072610809151916j7ed1ad54i330a7ee0be692828@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-Organization: Universitaet Freiburg, Institut f. Informatik
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, eugeneteo@kernel.sg
+Subject: Re: [PATCH 3/4] ext2: Avoid printk floods in the face of directory
+ corruption
+References: <1221319971-29879-1-git-send-email-tytso@mit.edu>	<1221319971-29879-2-git-send-email-tytso@mit.edu>	<1221319971-29879-3-git-send-email-tytso@mit.edu> <20080917122556.bfe2ec7d.akpm@linux-foundation.org>
+In-Reply-To: <20080917122556.bfe2ec7d.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Bryan,
-
-Bryan Wu wrote:
-> On Tue, Sep 16, 2008 at 4:02 AM, Uwe Kleine-König
-> <ukleinek@informatik.uni-freiburg.de> wrote:
-> > According to the documentation gpio_free should only be called from task
-> > context only.  To make this more explicit add a might sleep to all
-> > implementations.
-> >
-> > This patch changes the gpio_free implementations for the blackfin
-> > architecture.
-> >
+Andrew Morton wrote:
+> On Sat, 13 Sep 2008 11:32:50 -0400
+> "Theodore Ts'o" <tytso@MIT.EDU> wrote:
 > 
-> It looks fine for me, thanks a lot.
+>> From: "Theodore Ts'o" <tytso@MIT.EDU>
+>> To: akpm@linux-foundation.org
+>> Cc: linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@MIT.EDU>, Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org, Eugene Teo <eugeneteo@kernel.sg>
+>> Subject: [PATCH 3/4] ext2: Avoid printk floods in the face of directory corruption
+>> Date: Sat, 13 Sep 2008 11:32:50 -0400
+>> X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
+>>
+>> Note: some people thinks this represents a security bug, since it
+>> might make the system go away while it is printing a large number of
+>> console messages, especially if a serial console is involved.  Hence,
+>> it has been assigned CVE-2008-3528, but it requires that the attacker
+>> either has physical access to your machine to insert a USB disk with a
+>> corrupted filesystem image (at which point why not just hit the power
+>> button), or is otherwise able to convince the system administrator to
+>> mount an arbitrary filesystem image (at which point why not just
+>> include a setuid shell or world-writable hard disk device file or some
+>> such).  Me, I think they're just being silly.
+>>
+>> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+>> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+>> Cc: linux-ext4@vger.kernel.org
+>> Cc: Eugene Teo <eugeneteo@kernel.sg>
 > 
-> Acked-by: Bryan Wu <cooloney@kernel.org>
-I suspect David suggested to split my initial patch at arch lines
-because then the patches can go via the arch trees into vanilla.
+> This patch was purportedly authored by yourself, but I'm going to
+> assume that it was authored by Eric.
 
-Best regards and thanks,
-Uwe
+It was, after some discussion w/ Ted & Andreas.
 
--- 
-Uwe Kleine-König
+Also just FWIW I'm also in the "as a security issue this is a bit silly"
+camp ;)
 
-http://www.google.com/search?q=0+degree+Celsius+in+kelvin
+Thanks,
+-Eric
