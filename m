@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbYIQW3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYIQWbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbYIQW3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 18:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbYIQW3e
+	id S1756161AbYIQWbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 18:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYIQWav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 18:29:34 -0400
-Received: from pih-relay08.plus.net ([212.159.14.20]:57206 "EHLO
-	pih-relay08.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753892AbYIQW3e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 18:29:34 -0400
-Message-ID: <48D184CC.2040204@yahoo.com>
-Date: Wed, 17 Sep 2008 23:29:32 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Wed, 17 Sep 2008 18:30:51 -0400
+Received: from gw.goop.org ([64.81.55.164]:53713 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753082AbYIQWau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 18:30:50 -0400
+Message-ID: <48D1851B.70703@goop.org>
+Date: Wed, 17 Sep 2008 15:30:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       peterz@infradead.org
-Subject: Re: How how latent should non-preemptive scheduling be?
-References: <fa.vMKgvqjqmYnI2J40GHoTENeYm8U@ifi.uio.no>	<fa.808p0ZtU9DCpeky4KfNS8Drdw9w@ifi.uio.no>	<48D17B47.7080704@yahoo.com> <20080917145400.29d1809c@infradead.org>
-In-Reply-To: <20080917145400.29d1809c@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Avi Kivity <avi@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Populating multiple ptes at fault time
+References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com>
+In-Reply-To: <48D17E75.80807@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 06898238ff689d37dae1556e44f11224
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Wed, 17 Sep 2008 22:48:55 +0100
-> Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> 
->> Arjan van de Ven wrote:
->>> this says you haven't done "make install" on the latencytop
->>> directory so it's not translating things for you.. can you do that
->>> please?
->>> Cause                                                Maximum
->>>
-> Percentage 
-> 
-> Scheduler: waiting for cpu                        208 msec         59.4 %
-> 
-> 
-> you're rather CPU bound, and your process was woken up but didn't run for over 200 milliseconds..
-> that sounds like a scheduler fairness issue!
+Avi Kivity wrote:
+> Jeremy Fitzhardinge wrote:
+>> Minor faults are easier; if the page already exists in memory, we should
+>> just create mappings to it.  If neighbouring pages are also already
+>> present, then we can can cheaply create mappings for them too.
+>>
 
-I'm at a bit of a loss to explain this. I'm not using the group 
-scheduler and the load average is less than 0.4. CPU usage does seem to 
-spike a fair bit (I'm not sure why rhythmbox needs 50%+ for decoding 
-oggs from time to time) but there always seems to be 20% CPU free...
+(Just to clarify an ambiguity here: by "present" I mean "exists in
+memory" not "a present pte".)
 
-I don't know where to start debugging this one and I'm suspicious of the 
-way the problem would happen every 30 seconds too... (this laptop is 
-using ath5k for its wifi)
+> One problem is the accessed bit.  If it's unset, the shadow code
+> cannot make the pte present (since it has to trap in order to set the
+> accessed bit); if it's set, we're lying to the vm.
+
+So even if the guest pte were present but non-accessed, the shadow pte
+would have to be non-present and you'd end up taking the fault anyway?
+
+Hm, that does undermine the benefits.  Does that mean that when the vm
+clears the access bit, you always have to make the shadow non-present? 
+I guess so.  And similarly with dirty and writable shadow.
+
+The counter-argument is that something has gone wrong if we start
+populating ptes that aren't going to be used in the near future anyway -
+if they're never used then any effort taken to populate them is wasted. 
+Therefore, setting accessed on them from the outset isn't terribly bad.
+
+(I'm not very convinced by that argument either, and it makes the
+potential for bad side-effects much worse if the apparent RSS of a
+process is multiplied by some factor.)
+
+    J
