@@ -1,29 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYIQMuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbYIQM7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbYIQMuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 08:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbYIQMuF
+	id S1753466AbYIQM7o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 08:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIQM7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 08:50:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38809 "EHLO mx2.mail.elte.hu"
+	Wed, 17 Sep 2008 08:59:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59618 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbYIQMuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 08:50:03 -0400
-Date: Wed, 17 Sep 2008 14:49:43 +0200
+	id S1752248AbYIQM7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 08:59:35 -0400
+Date: Wed, 17 Sep 2008 14:59:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       kernel-testers@vger.kernel.org
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
-	2.6.22 -&gt; 2.6.28
-Message-ID: <20080917124943.GA7738@elte.hu>
-References: <1221306287.5213.111.camel@marge.simson.net> <48CD1D25.9080301@linux-foundation.org> <1221421907.4597.24.camel@marge.simson.net> <1221475440.4784.39.camel@marge.simson.net> <1221568105.5020.17.camel@marge.simson.net> <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi> <1221626391.5043.13.camel@marge.simson.net> <1221627676.5125.3.camel@marge.simson.net> <20080917104044.GC18764@elte.hu> <1221651701.5102.17.camel@marge.simson.net>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<ukleinek@informatik.uni-freiburg.de>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
+       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH] gpio_free might sleep, x86 architecture
+Message-ID: <20080917125900.GB18192@elte.hu>
+References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-4-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1221651701.5102.17.camel@marge.simson.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1221508963-27259-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,46 +42,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Galbraith <efault@gmx.de> wrote:
+* Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de> wrote:
 
-> > It looks like a potentially bogus bisection result, but _maybe_ it 
-> > has relevance: changes the size of "struct security_operations", 
-> > which could have alignment and layout effects on all sorts of kernel 
-> > variables, kmalloc sizes, etc.
+> According to the documentation gpio_free should only be called from task
+> context only.  To make this more explicit add a might sleep to all
+> implementations.
 > 
-> This may well be a mythical creature infestation for all I know ;-), 
-> but it's address is somewhere in the 2069f45..847106f block, 316 
-> commits, none of which look like they should be the least bit 
-> interesting to netperf.  I reverted this particular commit in 27.git, 
-> got the expected result.  Looks like I'll keep poking at it, can't 
-> seem to resist.  Grr.
+> This patch changes the gpio_free implementations for the x86
+> architecture.
 
-are you sure it's 2069f45..847106f? Filtering out the 
-likely-uninteresting commits:
-
-git log --pretty=format:"%h: %s" 2069f45..847106f | grep -viE \
-'block|alsa|pcmcia|sound|Merge|iosched|blk|DAC960|scsi|s390|paride|pktcdvd|filter|cdrom|drm'
-
-gives us:
-
- 7daf705: Start using the new '%pS' infrastructure to print symbols
- 6f0f0fd: security: remove register_security hook
- 93cbace: security: remove dummy module fix
- 5915eb5: security: remove dummy module
- b478a9f: security: remove unused sb_get_mnt_opts hook
- 32502b8: splice: fix generic_file_splice_read() race with page invalidation
- 8b3d356: ramfs: enable splice write
- a144ff0: xen: Avoid allocations causing swap activity on the resume path
-
-which really only leaves that security commit your bisection fingered. 
-Which _slightly_ raises its likelyhood of being implicated. Structure 
-size changes can move two formerly far-apart netperf-relevant symbols on 
-the same cacheline, which can start cache ping-pong-ing badly.
-
-It wouldnt be the first such incident - alignment changes impacting 
-macro benchmarks. (and it's hard to find it as the thing that changes 
-alignment/size/sharedness might be something totally unrelated)
-
-It's still a bit too early to say this for sure though ...
+applied to tip/x86/debug, thanks Uwe,
 
 	Ingo
