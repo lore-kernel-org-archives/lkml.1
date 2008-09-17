@@ -1,44 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbYIQWXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbYIQWYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbYIQWXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 18:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755355AbYIQWX1
+	id S1756472AbYIQWYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 18:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbYIQWYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 18:23:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59992
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752987AbYIQWX0 (ORCPT
+	Wed, 17 Sep 2008 18:24:13 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:60578 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753592AbYIQWYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 18:23:26 -0400
-Date: Wed, 17 Sep 2008 15:23:13 -0700 (PDT)
-Message-Id: <20080917.152313.173231111.davem@davemloft.net>
-To: paul.moore@hp.com
-Cc: akpm@linux-foundation.org, sds@tycho.nsa.gov, jmorris@namei.org,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, ebiederm@xmission.com,
-       netdev@vger.kernel.org
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200809171724.36269.paul.moore@hp.com>
-References: <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-	<20080917125053.1f9ecf37.akpm@linux-foundation.org>
-	<200809171724.36269.paul.moore@hp.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 17 Sep 2008 18:24:12 -0400
+Message-ID: <48D18388.601@euromail.se>
+Date: Thu, 18 Sep 2008 00:24:08 +0200
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Nicolas Boichat <nicolas@boichat.ch>, lm-sensors@lm-sensors.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/5] hwmon: applesmc: Allow for variable ALV0 and ALV1 package
+ length
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.33.63
+X-Scan-Result: No virus found in message 1Kg5RS-0004gp-6L.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1Kg5RS-0004gp-6L e536bbd6daef4994e207ac6e11ce054e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Moore <paul.moore@hp.com>
-Date: Wed, 17 Sep 2008 17:24:36 -0400
+On some recent Macbooks, the package length for the light sensors ALV0
+and ALV1 has changed from 6 to 10. This patch allows for a variable
+package length encompassing both variants.
 
-> If that is the case I'm not sure it is really that big of a deal.  Maybe 
-> I'm in the minority here, but in my mind once you step away from the 
-> distro supplied kernel (also applies to other packages, although those 
-> are arguably less critical) you should also bear the responsibility to 
-> make sure you upgrade/tweak/install whatever other bits need to be 
-> fixed.
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/hwmon/applesmc.c |   20 +++++++++++++++-----
+ 1 files changed, 15 insertions(+), 5 deletions(-)
 
-No, we tend to call this breaking things instead.
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index 9a43c4b..de696b6 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -57,8 +57,8 @@
+
+ #define KEY_COUNT_KEY		"#KEY" /* r-o ui32 */
+
+-#define LIGHT_SENSOR_LEFT_KEY	"ALV0" /* r-o {alv (6 bytes) */
+-#define LIGHT_SENSOR_RIGHT_KEY	"ALV1" /* r-o {alv (6 bytes) */
++#define LIGHT_SENSOR_LEFT_KEY	"ALV0" /* r-o {alv (6-10 bytes) */
++#define LIGHT_SENSOR_RIGHT_KEY	"ALV1" /* r-o {alv (6-10 bytes) */
+ #define BACKLIGHT_KEY		"LKSB" /* w-o {lkb (2 bytes) */
+
+ #define CLAMSHELL_KEY		"MSLD" /* r-o ui8 (unused) */
+@@ -543,17 +543,27 @@ out:
+ static ssize_t applesmc_light_show(struct device *dev,
+ 				struct device_attribute *attr, char *sysfsbuf)
+ {
++	static int data_length;
+ 	int ret;
+ 	u8 left = 0, right = 0;
+-	u8 buffer[6];
++	u8 buffer[10], query[6];
+
+ 	mutex_lock(&applesmc_lock);
+
+-	ret = applesmc_read_key(LIGHT_SENSOR_LEFT_KEY, buffer, 6);
++	if (!data_length) {
++		ret = applesmc_get_key_type(LIGHT_SENSOR_LEFT_KEY, query);
++		if (ret)
++			goto out;
++		data_length = clamp_val(query[0], 0, 10);
++		printk(KERN_INFO "applesmc: light sensor data length set to "
++			"%d\n", data_length);
++	}
++
++	ret = applesmc_read_key(LIGHT_SENSOR_LEFT_KEY, buffer, data_length);
+ 	left = buffer[2];
+ 	if (ret)
+ 		goto out;
+-	ret = applesmc_read_key(LIGHT_SENSOR_RIGHT_KEY, buffer, 6);
++	ret = applesmc_read_key(LIGHT_SENSOR_RIGHT_KEY, buffer, data_length);
+ 	right = buffer[2];
+
+ out:
+-- 
+1.5.4.3
+
