@@ -1,63 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYIQTqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754713AbYIQTvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbYIQTqS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYIQTqI
+	id S1754713AbYIQTvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYIQTvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:46:08 -0400
-Received: from h155.mvista.com ([63.81.120.155]:50379 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752460AbYIQTqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:46:05 -0400
-Message-ID: <48D15EAD.1030804@ru.mvista.com>
-Date: Wed, 17 Sep 2008 23:46:53 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Zev Weiss <zevweiss@gmail.com>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] [MTD] physmap.c: Check return of	platform_device_register()
-References: <48CB5E9A.4010000@gmail.com> <20080917115746.e36cacc6.akpm@linux-foundation.org> <48D15DC8.60307@ru.mvista.com>
-In-Reply-To: <48D15DC8.60307@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 17 Sep 2008 15:51:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58713 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752926AbYIQTve (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:51:34 -0400
+Date: Wed, 17 Sep 2008 12:50:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: jmorris@namei.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>, netdev@vger.kernel.org
+Subject: Re: [Bug #11500] /proc/net bug related to selinux
+Message-Id: <20080917125053.1f9ecf37.akpm@linux-foundation.org>
+In-Reply-To: <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
+References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
+	<SpS7rta8n4.A.i9G.ZcsyIB@albercik>
+	<alpine.LRH.1.10.0809130812460.12313@tundra.namei.org>
+	<20080912152443.c4e59f42.akpm@linux-foundation.org>
+	<alpine.LRH.1.10.0809131012310.13073@tundra.namei.org>
+	<20080913123722.e238ae2a.akpm@linux-foundation.org>
+	<1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just wrote:
+On Mon, 15 Sep 2008 09:05:26 -0400
+Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
->>> The PHYSMAP_COMPAT code had been ignoring the return value of
->>> platform_device_register() in the physmap_init() function.
+> 
+> On Sat, 2008-09-13 at 12:37 -0700, Andrew Morton wrote:
+> > On Sat, 13 Sep 2008 10:15:43 +1000 (EST) James Morris <jmorris@namei.org> wrote:
+> > 
+> > > On Fri, 12 Sep 2008, Andrew Morton wrote:
+> > > 
+> > > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11500
+> > > > > > Subject		: /proc/net bug related to selinux
+> > > > > > Submitter	: Andrew Morton <akpm@linux-foundation.org>
+> > > > > > Date		: 2008-09-04 17:45 (9 days old)
+> > > > > > References	: http://marc.info/?l=linux-kernel&m=122055041313270&w=4
+> > > > > 
+> > > > > I think this might be a regression caused by namespace changes which we 
+> > > 
+> > > By which I mean, this was caused by a non-SELinux change to the upstream 
+> > > kernel many, many eons ago.
+> > 
+> > hm, seems that 2.6.24 is OK but 2.6.25 is not.  I must have missed the
+> > bug when testing 2.6.25-based kernels.
+> > 
+> > I started a git bisection search but after half an hour I hit bad
+> > bisection breakage: a complete machine hang in fib_rules_init().
+> > 
+> > > > > addressed in SELinux policy.  Which distro version & policy version is 
+> > > > > this seen with?
+> > > > > 
+> > > > 
+> > > > FC5 on x86_32 and FC6 on x86_64.
+> > > 
+> > > As mentioned in the bugzilla, any related avc messages would be useful.
+> > 
+> > 2.6.25 dmesg: http://userweb.kernel.org/~akpm/dmesg-sony.txt
+> > /var/log/messages: http://userweb.kernel.org/~akpm/messages-sony.txt
+> > 
+> > The latter includes this:
+> > 
+> > Sep 13 12:32:43 sony kernel: SELinux:  class key not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  class dccp_socket not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  class memprotect not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  class peer not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  class capability2 not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class dir not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class file not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class chr_file not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class blk_file not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission open in class fifo_file not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class node not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class node not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission recvfrom in class node not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission sendto in class node not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_recv in class netif not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission dccp_send in class netif not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission ingress in class netif not defined in policy
+> > Sep 13 12:32:43 sony kernel: SELinux:  permission egress in class netif not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission setkeycreate in class process not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission setsockcreate in class process not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission setfcap in class capability not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission polmatch in class association not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission flow_in in class packet not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission flow_out in class packet not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission forward_in in class packet not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux:  permission forward_out in class packet not defined in policy
+> > Sep 13 12:32:44 sony kernel: SELinux: the above unknown classes and permissions will be denied
+> > Sep 13 12:32:44 sony kernel: type=1403 audit(1221309118.644:3): policy loaded auid=4294967295 ses=4294967295
+> > Sep 13 12:32:44 sony kernel: type=1400 audit(1221334321.726:4): avc:  denied  { audit_write } for  pid=400 comm="hwclock" capability=29 scontext=system_u:system_r:hwclock_t:s0 tcontext=system_u:system_r:hwclock_t:s0 tclass=capability
+> > 
+> > 
+> > Why am I seeing this on two machines and two vanilla-installed distros
+> > but nobody else is reporting it?
 
->>> Signed-off-by: Zev Weiss <zevweiss@gmail.com>
+Running `ls -l /proc/net' on the FC6 machine produces:
 
-> [...]
+[  132.591215] type=1400 audit(1221679672.590:10): avc:  denied  { getattr } for  pid=4389 comm="ls" path="/proc/net" dev=proc ino=4026531867 scontext=user_u:system_r:unconfined_t:s0 tcontext=system_u:object_r:proc_net_t:s0 tclass=lnk_file
 
->>> diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
->>> index 42d844f..6fba0d4 100644
->>> --- a/drivers/mtd/maps/physmap.c
->>> +++ b/drivers/mtd/maps/physmap.c
->>> @@ -312,7 +312,7 @@ static int __init physmap_init(void)
->>>      err = platform_driver_register(&physmap_flash_driver);
->>>  #ifdef PHYSMAP_COMPAT
->>>      if (err == 0)
->>> -        platform_device_register(&physmap_flash);
->>> +        err = platform_device_register(&physmap_flash);
->>>  #endif
->>>
->>>      return err;
 
-[...]
+> What we actually need to see is the output of:
+> /sbin/ausearch -i -m AVC -sv no
 
->> Presumably we should run platform_driver_unregister() if the
->> platform_device_register() failed.
+akpm2:/home/akpm# /sbin/ausearch -i -m AVC -sv no 
+<no matches>
 
->    Why is that? There could be "normal" platform devices out there...
+> However, the most likely explanation is simply that when /proc/net was
+> changed from being a directory to being a symlink to /proc/self/net,
+> that introduced an additional permission check on accesses
+> of /proc/net/<whatever>, namely the read check on the symlink itself.
+> And since that check wasn't happening on /proc/net accesses with older
+> kernels, older policies didn't allow it.
+> 
+> As to why others haven't reported it, I expect that they have updated
+> their policies to newer ones that allow the necessary access.  The fact
+> that legacy distros wouldn't have such updated policies isn't surprising
+> - they don't push updates to those distros for new kernels.  FC5 and FC6
+> are both EOL'd, right?
+> 
+> In any event, we didn't change anything in SELinux - the change was
+> elsewhere (in the proc/net implementation).  Don't blame the messenger
+> please.
+> 
 
-   With that said, the patch is pointless (as already noted by Lennert).
+Vanilla FC5 broke and vanilla FC6 broke.  Did vanilla FC7, 8 or 9 break?
 
-WBR, Sergei
+http://smolt.fedoraproject.org/static/stats/stats.html shows 11,000-odd
+people running FC5 and FC6.  It would be incautious to assume that all
+those people have updated their selinux rules.
+
+And _requiring_ people to update their selinux rules to fix a
+kernel-caused regression is a pretty big deal for some people, I
+expect.
+
+Then again, given that this regression has been out there since 2.6.25,
+I guess not too many people are hurting from it.  But we suck.
+
