@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbYIQHLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbYIQHMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbYIQHLv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 03:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYIQHK5
+	id S1754647AbYIQHMQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 03:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbYIQHK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 03:10:57 -0400
+	Wed, 17 Sep 2008 03:10:59 -0400
 Received: from wa-out-1112.google.com ([209.85.146.180]:23335 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752454AbYIQHK4 (ORCPT
+	with ESMTP id S1752789AbYIQHK6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 03:10:56 -0400
+	Wed, 17 Sep 2008 03:10:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ZqJ8sWYvWONHfsjzm+0Y4UJm9lzkj3HcMCB7Odu3ldeNyROuIWZMSEIAgLZEWMtA/6
-         iXG/6W74MXxCRvBSQCHBp8Slje8DFv87hvrVdc8dEPnDww6sBGDt5SlWbYo1CkKWUMJz
-         oAY5b1afb7xzp62V6no3m098u/c0It8gtxzlE=
+        b=toaFMsjISnaSrwKdJnXY4sDwfClLknKvQwSlhwRrTpraEfmtPp/JU2pHt+TjBduZji
+         YpvgCZecNFkgV9m6PvsrdpK4+T0ko6z56KC7q9ItwBm4IqWbpcB4vqb5x8gKOi75iAjw
+         a+EfXq0lZ+39+3FgFws0dn3pkSZPSXYFC1d1c=
 From: Yinghai Lu <yhlu.kernel@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: [PATCH 3/6] pci: using printk(KERN_PCI v3
-Date: Wed, 17 Sep 2008 00:10:12 -0700
-Message-Id: <1221635415-14859-4-git-send-email-yhlu.kernel@gmail.com>
+Subject: [PATCH 4/6] acpi: add KERN_ACPI v3
+Date: Wed, 17 Sep 2008 00:10:13 -0700
+Message-Id: <1221635415-14859-5-git-send-email-yhlu.kernel@gmail.com>
 X-Mailer: git-send-email 1.5.6
 In-Reply-To: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
 References: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
@@ -31,79 +31,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v2: use printk(KERN_DEBUG KERN_PCI ...
-v3: fix checkpatch error and warning
+use DEFINE_LOGLEVEL_SETUP to set loglevel for acpi
+v2: use <acpi, "acpi:"> instead
+v3: use KERN_ACPI
 
 Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
 
 ---
- drivers/pci/probe.c |   28 +++++++++++++++++-----------
- 1 file changed, 17 insertions(+), 11 deletions(-)
+ drivers/acpi/osl.c   |    2 ++
+ include/linux/acpi.h |    1 +
+ 2 files changed, 3 insertions(+)
 
-Index: linux-2.6/drivers/pci/probe.c
+Index: linux-2.6/drivers/acpi/osl.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/probe.c
-+++ linux-2.6/drivers/pci/probe.c
-@@ -304,7 +304,8 @@ static int __pci_read_base(struct pci_de
- 		} else {
- 			res->start = l64;
- 			res->end = l64 + sz64;
--			printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-+			printk(KERN_DEBUG KERN_PCI
-+				 "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
- 				 pci_name(dev), pos, res->start, res->end);
- 		}
- 	} else {
-@@ -315,9 +316,10 @@ static int __pci_read_base(struct pci_de
+--- linux-2.6.orig/drivers/acpi/osl.c
++++ linux-2.6/drivers/acpi/osl.c
+@@ -75,6 +75,8 @@ EXPORT_SYMBOL(acpi_in_debugger);
+ extern char line_buf[80];
+ #endif				/*ENABLE_DEBUGGER */
  
- 		res->start = l;
- 		res->end = l + sz;
--		printk(KERN_DEBUG "PCI: %s reg %x %s: [%llx, %llx]\n", pci_name(dev),
--			 pos, (res->flags & IORESOURCE_IO) ? "io port":"32bit mmio",
--			 res->start, res->end);
-+		printk(KERN_DEBUG KERN_PCI "PCI: %s reg %x %s: [%llx, %llx]\n",
-+			pci_name(dev), pos,
-+			(res->flags & IORESOURCE_IO) ? "io port" : "32bit mmio",
-+			res->start, res->end);
- 	}
++DEFINE_LOGLEVEL_SETUP(acpi, KERN_ACPI, "acpi:");
++
+ static unsigned int acpi_irq_irq;
+ static acpi_osd_handler acpi_irq_handler;
+ static void *acpi_irq_context;
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -43,6 +43,7 @@
+ #include <asm/acpi.h>
+ #include <linux/dmi.h>
  
-  out:
-@@ -388,8 +390,9 @@ void __devinit pci_read_bridge_bases(str
- 			res->start = base;
- 		if (!res->end)
- 			res->end = limit + 0xfff;
--		printk(KERN_DEBUG "PCI: bridge %s io port: [%llx, %llx]\n",
--				 pci_name(dev), res->start, res->end);
-+		printk(KERN_DEBUG KERN_PCI
-+			 "PCI: bridge %s io port: [%llx, %llx]\n",
-+			 pci_name(dev), res->start, res->end);
- 	}
++#define KERN_ACPI "<acpi>"
  
- 	res = child->resource[1];
-@@ -401,8 +404,9 @@ void __devinit pci_read_bridge_bases(str
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_DEBUG "PCI: bridge %s 32bit mmio: [%llx, %llx]\n",
--				 pci_name(dev), res->start, res->end);
-+		printk(KERN_DEBUG KERN_PCI
-+			 "PCI: bridge %s 32bit mmio: [%llx, %llx]\n",
-+			 pci_name(dev), res->start, res->end);
- 	}
- 
- 	res = child->resource[2];
-@@ -438,9 +442,11 @@ void __devinit pci_read_bridge_bases(str
- 		res->flags = (mem_base_lo & PCI_MEMORY_RANGE_TYPE_MASK) | IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		res->start = base;
- 		res->end = limit + 0xfffff;
--		printk(KERN_DEBUG "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
--				 pci_name(dev), (res->flags & PCI_PREF_RANGE_TYPE_64)?"64":"32",
--				 res->start, res->end);
-+		printk(KERN_DEBUG KERN_PCI
-+			 "PCI: bridge %s %sbit mmio pref: [%llx, %llx]\n",
-+			 pci_name(dev),
-+			 (res->flags & PCI_PREF_RANGE_TYPE_64) ? "64" : "32",
-+			 res->start, res->end);
- 	}
- }
- 
+ enum acpi_irq_model_id {
+ 	ACPI_IRQ_MODEL_PIC = 0,
