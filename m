@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYIQTOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYIQTUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754954AbYIQTOy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYIQTOq
+	id S1754326AbYIQTUR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYIQTUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:14:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51920 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752489AbYIQTOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:14:46 -0400
+	Wed, 17 Sep 2008 15:20:04 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46540 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751823AbYIQTUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:20:03 -0400
+Message-ID: <48D1575E.1050306@zytor.com>
+Date: Wed, 17 Sep 2008 12:15:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dean Nelson <dcn@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
+       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com>
+In-Reply-To: <20080916204654.GA3532@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Frank Mayhar <fmayhar@google.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 2.6.27-rc5 resubmit] Fix itimer/many thread hang.
-In-Reply-To: Frank Mayhar's message of  Wednesday, 17 September 2008 12:03:07 -0700 <1221678187.13420.17.camel@bobble.smo.corp.google.com>
-References: <1221238479.30136.2.camel@bobble.smo.corp.google.com>
-	<20080914150651.GK12522@elte.hu>
-	<20080914150923.GB26984@elte.hu>
-	<1221502142.19012.35.camel@bobble.smo.corp.google.com>
-	<20080916084143.GC17287@elte.hu>
-	<1221678187.13420.17.camel@bobble.smo.corp.google.com>
-X-Zippy-Says: I will invent "TIDY BOWL"...
-Message-Id: <20080917191333.6FA7E640A5@pipsqueak.localdomain>
-Date: Wed, 17 Sep 2008 12:13:33 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had been thinking not so much about code size, but about the unnecessary
-indirection and allocation for the UP case.  I'm happy to defer to Ingo on
-whether to worry about that.
+Dean Nelson wrote:
+> 
+>     sgi-gru driver
+> 
+> The GRU is not an actual external device that is connected to an IOAPIC.
+> The gru is a hardware mechanism that is embedded in the node controller
+> (UV hub) that directly connects to the cpu socket. Any cpu (with permission)
+> can do direct loads and stores to the gru. Some of these stores will result
+> in an interrupt being sent back to the cpu that did the store.
+> 
+> The interrupt vector used for this interrupt is not in an IOAPIC. Instead
+> it must be loaded into the GRU at boot or driver initialization time.
+> 
 
+Could you clarify there: is this one vector number per CPU, or are you 
+issuing a specific vector number and just varying the CPU number?
 
-Thanks,
-Roland
+	-hpa
