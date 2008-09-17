@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbYIQOu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbYIQOvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbYIQOu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 10:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752736AbYIQOuQ
+	id S1754616AbYIQOvW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 10:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbYIQOvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 10:50:16 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:42863 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752640AbYIQOuP (ORCPT
+	Wed, 17 Sep 2008 10:51:14 -0400
+Received: from smtp2a.orange.fr ([80.12.242.140]:31258 "EHLO smtp2a.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752848AbYIQOvN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 10:50:15 -0400
-X-Sasl-enc: 2T/lR2ZchlTIrnIirXWuqbMObUw+jscTH2xtT8VaQkr1 1221663013
-Date: Wed, 17 Sep 2008 11:50:08 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Adel Gadllah <adel.gadllah@gmail.com>,
-       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Regression in 2.6.27-rcX caused by commit
-	bc19d6e0b74ef03a3baf035412c95192b54dfc6f
-Message-ID: <20080917145007.GA5186@khazad-dum.debian.net>
-References: <48CFC03A.8020708@lwfinger.net> <48D0095B.40403@lwfinger.net> <20080916233240.GA18574@srcf.ucam.org> <200809171622.55882.mb@bu3sch.de>
+	Wed, 17 Sep 2008 10:51:13 -0400
+X-ME-UUID: 20080917145110903.160B5700008E@mwinf2a18.orange.fr
+Message-ID: <48D1194D.3060003@cosmosbay.com>
+Date: Wed, 17 Sep 2008 16:50:53 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200809171622.55882.mb@bu3sch.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org
+Subject: Re: [Bug #11308] tbench regression on each kernel release from	2.6.22
+ -&gt; 2.6.28
+References: <1221306287.5213.111.camel@marge.simson.net>	 <48CD1D25.9080301@linux-foundation.org>	 <1221421907.4597.24.camel@marge.simson.net>	 <1221475440.4784.39.camel@marge.simson.net>	 <1221568105.5020.17.camel@marge.simson.net>	 <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi>	 <1221626391.5043.13.camel@marge.simson.net>	 <1221627676.5125.3.camel@marge.simson.net> <20080917104044.GC18764@elte.hu>	 <1221651701.5102.17.camel@marge.simson.net> <20080917124943.GA7738@elte.hu> <1221657111.5511.14.camel@marge.simson.net> <48D11871.4090805@cosmosbay.com>
+In-Reply-To: <48D11871.4090805@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008, Michael Buesch wrote:
-> On Wednesday 17 September 2008 01:32:40 Matthew Garrett wrote:
-> > On Tue, Sep 16, 2008 at 02:30:35PM -0500, Larry Finger wrote:
-> > 
-> > > I didn't say it was not possible. What I said is that _ONLY_ the
-> > > operator's finger could change the state, just like in your laptop.
-> > > Thus it makes absolutely no difference what state RFKILL thinks it is
-> > > in.
-> > 
-> > Of course it makes a difference. The reason why two states are provided 
-> > is to allow userspace to distinguish whether it can unblock the device 
-> > or not. It's clear that b43's rfkill code is astonishingly broken (and 
-> > that's not a criticism of anyone involved - the documentation's 
-> > confusing and there weren't any good examples of how it should be 
-> > implemented).
-> > 
-> > The real question is how the LED state is supposed to be being toggled, 
-> > and what that's got to do with rfkill. I /think/ that the current state 
-> > of events is:
-> 
-> Read the rfkill code. It toggles a LED trigger if the state changes from
-> UNBLOCKED to BLOCKED. b43 uses that trigger to run the radio LED.
-> 
-> > 1) User toggles state
-> > 2) b43 changes rfkill state (by using rfkill_force_state). The LED state 
-> > should also be changed in the process.
-> 
-> No it shouldn't. LEDs are entirely handled by triggers. We must _never_ toggle
-> the LED state from within b43 directly via hardcoded stuff.
-> rfkill is responsible for handling the radio LEDs in the machine.
+Eric Dumazet a écrit :
+> Mike Galbraith a écrit :
 
-He means rfkill_force_state() should change the LED state in the process,
-which it isn't doing.
+>> I sure hope it's something like ping-pong, it's driving me NUTS.
+> 
+> Could you please try following patch ?
+> 
+> [PATCH] security_ops moved to read_mostly section
+> 
+> "struct security_operations *security_ops" should be moved to 
+> read_mostly section in order to NOT let it share a cache line with higly 
+> modified variables.
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+> diff --git a/security/security.c b/security/security.c
+> index 3a4b4f5..0b13d65 100644
+> --- a/security/security.c
+> +++ b/security/security.c
+> @@ -24,7 +24,7 @@ static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1];
+> extern struct security_operations default_security_ops;
+> extern void security_fixup_ops(struct security_operations *ops);
+> 
+> -struct security_operations *security_ops;    /* Initialized to NULL */
+> +struct security_operations *security_ops __read_mostly;e
 
-It is an one-line patch, I am testing it now.
+Sorry for the extra 'e' at the end of this line, please remove it :)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> 
+> /* amount of vm to protect from userspace access */
+> unsigned long mmap_min_addr = CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR;
+> 
+
+
+
