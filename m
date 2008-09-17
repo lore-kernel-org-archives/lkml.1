@@ -1,142 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbYIQAYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbYIQAlC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbYIQAYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Sep 2008 20:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYIQAYe
+	id S1753337AbYIQAlC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Sep 2008 20:41:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbYIQAkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 16 Sep 2008 20:24:34 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:34881 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671AbYIQAYd (ORCPT
+	Tue, 16 Sep 2008 20:40:52 -0400
+Received: from fmailhost05.isp.att.net ([204.127.217.105]:56061 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbYIQAkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Sep 2008 20:24:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=bsem0uolv3KbedPBVxCYRFremDbOMjH4qbCaRIeg8OkqhE8Mxz9Xd4SdcBfv6GMbcG
-         mgXQugzFpA+A3Gy8m2PxeKvn1EAZHvUOf9I/CBbursVDNtnu5QyyD52EGGEZODy+hZLh
-         WF3MrrGcEC/38n5dS9YnqmAqiE9jvE+10Dj2k=
-Message-ID: <cfd18e0f0809161724w646b1e21s466afe74579f12e0@mail.gmail.com>
-Date: Wed, 17 Sep 2008 02:24:32 +0200
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Ulrich Drepper" <drepper@redhat.com>
-Subject: Re: sys_paccept: disable paccept() until API design is resolved
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "David Miller" <davem@davemloft.net>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Alan Cox" <alan@redhat.com>, "Jakub Jelinek" <jakub@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       netdev <netdev@vger.kernel.org>, "Roland McGrath" <roland@redhat.com>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Christoph Hellwig" <hch@lst.de>,
-       "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-In-Reply-To: <48D03E85.9030808@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Sep 2008 20:40:51 -0400
+X-Originating-IP: [70.157.0.38]
+Date: Tue, 16 Sep 2008 19:40:47 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       netdev@vger.kernel.org, tglx@tglx.de, mingo@elte.hu,
+       linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Warning/Oops report of the week of September 16th, 2008
+Message-ID: <20080916194047.0d23eb92@osprey.hogchain.net>
+In-Reply-To: <20080916092206.6342c498@infradead.org>
+References: <20080916092206.6342c498@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-redhat-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEV2dXOAgYNxSD+aemaal42A
+ gIBqYV2UU07Ik5GXfoFMRTdbKiVwAAACbUlEQVQ4jXXTzWvbMBQAcG3EZsmt0Owc3pgNPo1oxNFt
+ pQnEN3Wrs3UnkdXq5tOwIdq9Pci3gUqJexo55KC/cs9O/dHBRIiMfpb03rNE4v800jxIQRzsXPEP
+ jDwndhNelo9/ngE/SFdKmZQnfOT0YSSlQBKLiJBDH6w9SPwlp5evpduDr9biQqkV8Rh7p4NRNSO1
+ 4BHhpjLpIK2gWksIgl0LPLCHoBIcX6dp2kGKMYnfGJnjIFungZeuHA6dhSvqLXrA1zJmVKayCu1w
+ DKuGAU+WZRRCsLdBFXgLl2Sw3N2ZEJDAn3VwEV9FK12YUGW+yqlIWiD30U5rbSi2efGuhRfxEXRB
+ 8e+uJE/AL5z78xrqVg6aBHlMTj9V7x/RJOMGHHI11ItVUW+B0JakkGPcUsJNHuY7/ZA04X4xwQ/D
+ 3I0FGgaT8iFponoJ26F+sNbu51O7l7QHHtNTbxMc5o/W+kw0S31Ub5i+pQBq/hjYPVPbJ/ic/aoC
+ pbTQtxlAvvnZgNod89Y4D2sFXpMHZWU1yHb6Ft+g2aTJY84iY2iY4ySGmWdvmxlDprHkCgd1yDRV
+ bXVfFQiZjyuyaU5p1pZkTbXBbxRagAyU2rZfcH2tTQ7+FpNQ4Ofb7lxdFzTHDGqAvHdEv0cIezi2
+ be+0vzdUqawaDSATHfB7itGiIfrQu2p8UQOOooHTh5lUPn6lva/qQrWwQpCUTv08hGe3dkU9KWmJ
+ Z2EGpAeDFc3kN8oMNbNJ/AzMFERUhjmehB7ws6XBTTnfeOXT9T/C9dn4HEshpPWIjDvgi5Px2U0G
+ Hl7dzaQHg8U4Xn6oa4g3vVnqLz3ribDLdyFmAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48CFA10D.2010106@gmail.com> <48D03E85.9030808@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 1:17 AM, Ulrich Drepper <drepper@redhat.com> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Michael Kerrisk wrote:
->> The patch below disables the new sys_paccept() for now.  Please
->> apply for 2.6.27-rc, so that we do not release this API into
->> the wild before a conclusion has been reached about its design.
->
-> There is no reason for that.
->
->
->> The reasons for disabling paccept() are as follows:
->>
->> * The API is more complex than needed.  There is AFAICS no demonstrated
->>   use case that the sigset argument of this syscall serves that
->>   couldn't equally be served by the use of pselect/ppoll/epoll_pwait +
->
-> It would unnecessarily require programs to be changed.
+On Tue, 16 Sep 2008 09:22:06 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-What is "it"?  What "would unnecessarily require programs to be changed"?
 
-> I've explained
-> that programs cannot efficiently use accept() and poll() when multiple
-> threads are involved.  This means in these situations you'll find a
-> single thread handling only the accept() calls.
+> Not yet fixed issues
+> ====================
+> 
+> Rank 1: dev_watchdog (warning)
+> 	Reported 263 times (495 total reports)
+> 	Network card timeout; this error is currently not specific
+> enough, a patch is pending to get this reported per driver, with some
+> luck this gets merged soon. This warning was last seen in version
+> 2.6.27-rc6, and first seen in 2.6.26-rc3. More info:
+> http://www.kerneloops.org/searchweek.php?search=dev_watchdog
 
-I'm assuming that you mean this text from another thread:
+Some of these are undoubtedly from the atl1 driver, and many of those
+from that driver are probably from me personally as I've poked around
+trying to isolate the cause.  I sent a patch yesterday to Alexey
+Dobriyan (who's also been experiencing it) that seems to quash the
+warnings, so hopefully we're near resolution.  On my own development
+system I recently turned off kerneloops, so at least *my* contribution
+to the list will diminish.  :)
 
-[[
-> accept, like select/poll, is used often as a function to dealy
-> operation.  Unlike read, recv, etc, which are handled using O_NONBLOCK
-> and select/poll.  pselect/ppoll do not really have a sigset parameter
-> to handle signals in general.  You use it to enable special handling
-> in case of blocking.  Example: if you want to implement userlevel
-> context switching, you dedicate a signal to wake up any blocked
-> thread.  Since accept falls more into the same category than poll,
-> this means the sigset parameter is justified.  In theory we could add
-> it to all functions but there is no reason to do this without any
-> other reason to change the interface.
-]]
-
-I find this very difficult to understand -- what makes it difficult is
-the wording of the explanation.  Could you please take some time to
-(much) more clearly explain the above, and especially to very clearly
-explain why paccept() serves needs that can't be dealt with by
-pseelect/ppoll/epoll_pwait + accept().
-
->> * The use of a sigset argument is not consistent with other I/O APIs
->>   that can block on a single file descriptor (e.g., read(), recv(),
->>   connect()).
->
-> This is because none of the other interfaces had (so far) be revised.
-> With this flawed argumentation you'd prevent any program ever to be made.
->
->
->> * The behavior of paccept() when interrupted by a signal is IMO
->>   strange:
->
-> You use your own opinion as the deciding factor?
-
-I already clearly stated it was my opinion, and pointed out that
-Roland had a diffferent opinion.  Really, what is your point?
-
-> The behavior differs
-> from other uses but is consistent with the accept() behavior.
->
->> I believe that instead, a simpler API, consistent with Ulrich's
->> other recent additions, is preferable:
->>
->> accept4(int fd, struct sockaddr *sa, socklen_t *salen, ind flags);
->
-> The signal set wasn't actually my idea.  See:
->
-> http://marc.info/?l=linux-kernel&m=120909788728078&w=2
-
-[CC=+ Evgeniy Polyakov <johnpol@2ka.mipt.ru>]
-
-But, what are you trying to say in pointing out that this wasn't your idea?
-
->> At this point, I am hoping we either will get a counter-argument
->> from Ulrich about why we really do need paccept()'s sigset argument,
->> or that he will resubmit the original accept4() patch.
->
-> I have explained the need already. you just chose to ignore it.
-
-No.  You still have given no clear explanation.  Please give one.
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Jay
