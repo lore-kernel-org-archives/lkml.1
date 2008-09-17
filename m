@@ -1,111 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbYIQVti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbYIQVvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbYIQVti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYIQVt0
+	id S1755952AbYIQVvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbYIQVvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:49:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40550 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755538AbYIQVtX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:49:23 -0400
-Date: Wed, 17 Sep 2008 14:48:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Moore <paul.moore@hp.com>
-Cc: sds@tycho.nsa.gov, jmorris@namei.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       ebiederm@xmission.com, netdev@vger.kernel.org
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-Message-Id: <20080917144842.7df59f9e.akpm@linux-foundation.org>
-In-Reply-To: <200809171724.36269.paul.moore@hp.com>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	<1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-	<20080917125053.1f9ecf37.akpm@linux-foundation.org>
-	<200809171724.36269.paul.moore@hp.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Sep 2008 17:51:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43940 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753193AbYIQVvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 17:51:02 -0400
+Message-ID: <48D17BBE.5020807@garzik.org>
+Date: Wed, 17 Sep 2008 17:50:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Tejun Heo <htejun@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       linux-ide@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
+       Robert Hancock <hancockr@shaw.ca>, LKML <linux-kernel@vger.kernel.org>,
+       Frans Pop <elendil@planet.nl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] SATA: Blacklist systems that spin off disks during ACPI
+ power off
+References: <200808290002.55026.rjw@sisk.pl> <48C50EA4.2020700@gmail.com> <48CC7542.3010603@garzik.org> <200809150200.57055.rjw@sisk.pl>
+In-Reply-To: <200809150200.57055.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 17:24:36 -0400
-Paul Moore <paul.moore@hp.com> wrote:
-
-> On Wednesday 17 September 2008 3:50:53 pm Andrew Morton wrote:
-> > On Mon, 15 Sep 2008 09:05:26 -0400
-> > Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > > However, the most likely explanation is simply that when /proc/net
-> > > was changed from being a directory to being a symlink to
-> > > /proc/self/net, that introduced an additional permission check on
-> > > accesses of /proc/net/<whatever>, namely the read check on the
-> > > symlink itself. And since that check wasn't happening on /proc/net
-> > > accesses with older kernels, older policies didn't allow it.
-> > >
-> > > As to why others haven't reported it, I expect that they have
-> > > updated their policies to newer ones that allow the necessary
-> > > access.  The fact that legacy distros wouldn't have such updated
-> > > policies isn't surprising - they don't push updates to those
-> > > distros for new kernels.  FC5 and FC6 are both EOL'd, right?
-> > >
-> > > In any event, we didn't change anything in SELinux - the change was
-> > > elsewhere (in the proc/net implementation).  Don't blame the
-> > > messenger please.
-> >
-> > Vanilla FC5 broke and vanilla FC6 broke.  Did vanilla FC7, 8 or 9
-> > break?
-> >
-> > http://smolt.fedoraproject.org/static/stats/stats.html shows
-> > 11,000-odd people running FC5 and FC6.  It would be incautious to
-> > assume that all those people have updated their selinux rules.
-> >
-> > And _requiring_ people to update their selinux rules to fix a
-> > kernel-caused regression is a pretty big deal for some people, I
-> > expect.
+Rafael J. Wysocki wrote:
+> On Sunday, 14 of September 2008, Jeff Garzik wrote:
+>> Tejun Heo wrote:
+>>> Rafael J. Wysocki wrote:
+>>>> SATA: Blacklist systems that spin off disks during ACPI power off
+>>>>
+>>>> Some notebooks from HP have the problem that their BIOSes attempt to
+>>>> spin down hard drives before entering ACPI system states S4 and S5.
+>>>> This leads to a yo-yo effect during system power-off shutdown and the
+>>>> last phase of hibernation when the disk is first spun down by the
+>>>> kernel and then almost immediately turned on and off by the BIOS.
+>>>> This, in turn, may result in shortening the disk's life times.
+>>>>
+>>>> To prevent this from happening we can blacklist the affected systems
+>>>> using DMI information.  However, only the on-board controlles should
+>>>> be blacklisted and their PCI slot numbers can be used for this
+>>>> purpose.  Unfortunately the existing interface for checking DMI
+>>>> information of the system is not very convenient for this purpose,
+>>>> because to use it, we would have to define special callback functions
+>>>> or create a separate struct dmi_system_id table for each blacklisted
+>>>> system.
+>>>>
+>>>> To overcome this difficulty introduce a new function
+>>>> dmi_first_match() returning a pointer to the first entry in an array
+>>>> of struct dmi_system_id elements that matches the system DMI
+>>>> information.  Then, we can use this pointer to access the entry's
+>>>> .driver_data field containing the additional information, such as
+>>>> the PCI slot number, allowing us to do the desired blacklisting.
+>>>>
+>>>> Introduce a new libata flag ATA_FLAG_NO_POWEROFF_SPINDOWN that, if
+>>>> set, will prevent disks from being spun off during system power off
+>>>> and hibernation (to handle the hibernation case we need a new system
+>>>> state SYSTEM_HIBERNATE_ENTER that can be checked against by libata,
+>>>> in analogy with SYSTEM_POWER_OFF).  Use dmi_first_match() to set this
+>>>> flag for some systems affected by the problem described above (HP nx6325,
+>>>> HP nx6310, HP 2510p).
+>>>>
+>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>> libata part looks good to me but I think it would be better to
+>>> separate out DMI changes into a separate patch.
+>> Did these changes ever get separated out?
 > 
-> Just so I'm clear on the context of the problem, it sounds like if a FC5 
-> (I'm limiting myself to FC5 for the moment) user upgraded to a recent 
-> (2.6.25+) kernel (non-distro supplied in the case of FC5) then they 
-> will run into problems unless they also upgrade their SELinux policy, 
-> yes?
-
-That only true if the 2.6.25+ kernel.org kernel is
-backward-incompatible with the distro kernel.
-
-> If that is the case I'm not sure it is really that big of a deal.  Maybe 
-> I'm in the minority here, but in my mind once you step away from the 
-> distro supplied kernel (also applies to other packages, although those 
-> are arguably less critical) you should also bear the responsibility to 
-> make sure you upgrade/tweak/install whatever other bits need to be 
-> fixed.
-
-Nope.  Releasing a non-backward-compatible kernel.org kernel is a big
-deal.
-
-We'll do it sometimes, with long notice, much care and much deliberation.
-
-We did it this time by sheer accident.  That's known in the trade as a
-"bug".
-
-> > Then again, given that this regression has been out there since
-> > 2.6.25, I guess not too many people are hurting from it.  But we
-> > suck.
+> I only have the 'combo' patch if that's what you're asking about.  [The latest
+> version is at http://bugzilla.kernel.org/attachment.cgi?id=17702&action=view]
 > 
-> We suck?  Maybe, but some explanation about why we suck in this 
-> particular case would be helpful as far as I'm concerned.  I don't 
-> really care about identifying the guilty suckees, I'm more interested 
-> in finding out what happened to cause us to suck because of this.
+> Still, I can easily split the patch, although in that case the reason for the
+> DMI changes won't be very clear without a reference to the SATA changes IMO.
 
-Because we unintentionally and unknowingly released a kernel which is
-not compatible with previous kernels without notifying any of our users
-and without any consideration or planning.
+That's the nature of every single API change -- you have the change, and 
+then you have the users.
 
-Yes, often the consequences of the screwup are fairly small, but it's a
-screwup nonetheless.
+Respectfully, please split up the patch as requested, into DMI subsystem 
+and ata subsystem pieces.
+
+Re-reviewing the patch, I would even think that you should split out the 
+kernel/power/disk and linux/kernel.h changes as well.
+
+	Jeff
 
 
 
-We don't even know the extent of the damage yet.  Which distros were
-affected? With which versions of which userspace packages?
+
