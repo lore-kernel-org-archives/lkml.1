@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYIQUMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYIQUNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYIQUMv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 16:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYIQUMn
+	id S1755487AbYIQUNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 16:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYIQUN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 16:12:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39991 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753094AbYIQUMm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 16:12:42 -0400
-Message-ID: <48D1625C.7000309@redhat.com>
-Date: Wed, 17 Sep 2008 16:02:36 -0400
-From: Chris Snook <csnook@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>,
+	Wed, 17 Sep 2008 16:13:27 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44715 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752845AbYIQUN0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 16:13:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:from:to:cc:in-reply-to:references:content-type:
+	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=YOOy7kD226DBvrZsZ4AjL4k1Xnksj0Xk+F7W0+e/yAD3Lqd16QiKKgjRKa5cQb5XP
+	7WffwUsIK5vzd2+os9wXQ==
+Subject: Re: [PATCH 2.6.27-rc5 resubmit] Fix itimer/many thread hang.
+From: Frank Mayhar <fmayhar@google.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org>
-In-Reply-To: <48D142B2.3040607@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Oleg Nesterov <oleg@tv-sign.ru>
+In-Reply-To: <20080917191333.6FA7E640A5@pipsqueak.localdomain>
+References: <1221238479.30136.2.camel@bobble.smo.corp.google.com>
+	 <20080914150651.GK12522@elte.hu> <20080914150923.GB26984@elte.hu>
+	 <1221502142.19012.35.camel@bobble.smo.corp.google.com>
+	 <20080916084143.GC17287@elte.hu>
+	 <1221678187.13420.17.camel@bobble.smo.corp.google.com>
+	 <20080917191333.6FA7E640A5@pipsqueak.localdomain>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Wed, 17 Sep 2008 13:12:31 -0700
+Message-Id: <1221682351.13420.19.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Avi and I were discussing whether we should populate multiple ptes at
-> pagefault time, rather than one at at time as we do now.
-> 
-> When Linux is operating as a virtual guest, pte population will
-> generally involve some kind of trap to the hypervisor, either to
-> validate the pte contents (in Xen's case) or to update the shadow
-> pagetable (kvm).  This is relatively expensive, and it would be good to
-> amortise the cost by populating multiple ptes at once.
+On Wed, 2008-09-17 at 12:13 -0700, Roland McGrath wrote:
+> I had been thinking not so much about code size, but about the unnecessary
+> indirection and allocation for the UP case.  I'm happy to defer to Ingo on
+> whether to worry about that.
 
-Is it still expensive when you're using nested page tables?
+Yeah, I was just responding to his request for a code-size check.  I'm
+okay either way, although making the data structures consistent between
+the two cases does simplify the code a bit.
 
-> Xen and kvm already batch pte updates where multiple ptes are explicitly
-> updated at once (mprotect and unmap, mostly), but in practise that's
-> relatively rare.  Most pages are demand faulted into a process one at a
-> time.
-> 
-> It seems to me there are two cases: major faults, and minor faults:
-> 
-> Major faults: the page in question is physically missing, and so the
-> fault invokes IO.  If we blindly pull in a lot of extra pages that are
-> never used, then we'll end up wasting a lot of memory.  However, page at
-> a time IO is pretty bad performance-wise too, so I guess we do clustered
-> fault-time IO?  If we can distinguish between random and linear fault
-> patterns, then we can use that as a basis for deciding how much
-> speculative mapping to do.  Certainly, we should create mappings for any
-> nearby page which does become physically present.
+The next patch is waiting on Ingo's verdict. :-)
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
-We already have rather well-tested code in the VM to detect fault patterns, 
-complete with userspace hints to set readahead policy.  It seems to me that if 
-we're going to read nearby pages into pagecache, we might as well actually map 
-them at the same time.  Duplicating the readahead code is probably a bad idea.
-
-> Minor faults are easier; if the page already exists in memory, we should
-> just create mappings to it.  If neighbouring pages are also already
-> present, then we can can cheaply create mappings for them too.
-
-If we're mapping pagecache, then sure, this is really cheap, but speculatively 
-allocating anonymous pages will hurt, badly, on many workloads.
-
-> This seems like an obvious idea, so I'm wondering if someone has
-> prototyped it already to see what effects there are.  In the native
-> case, pte updates are much cheaper, so perhaps it doesn't help much
-> there, though it would potentially reduce the number of faults needed. 
-> But I think there's scope for measurable benefits in the virtual case.
-
-Sounds like something we might want to enable conditionally on the use of pv_ops 
-features.
-
--- Chris
