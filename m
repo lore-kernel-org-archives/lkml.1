@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbYIQIpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbYIQIsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbYIQIpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 04:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYIQIpH
+	id S1754456AbYIQIsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 04:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYIQIsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 04:45:07 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:13776 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752248AbYIQIpG (ORCPT
+	Wed, 17 Sep 2008 04:48:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:58935 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752135AbYIQIsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 04:45:06 -0400
+	Wed, 17 Sep 2008 04:48:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=bDH9/ybu+0wWTyTvwU0zsVVYGBRNI6+kK7s/PxxRPowm5JGcJCLSf01PDqjODzp0/e
-         oaNNfJonIYFciamkWKiw0vdpBWsM92wv/nHu6YEqhCHjjQEwmhIBxY/2knvhzD18BGtn
-         vzLJXTN9OLLMet9Ka1uyK058I8pRZPlZzt1lg=
-Message-ID: <86802c440809170145s317e6ef8xad352e3a306abe45@mail.gmail.com>
-Date: Wed, 17 Sep 2008 01:45:05 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 6/6] x86: add KERN_APIC
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080917083809.GB24035@elte.hu>
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=PiEuxvV4lMy+odlIsqisy3C4r45fyCmE26fFpL3SSBvGF9QutR9+iPO5YRDt4eghMf
+         wqPT3j8D/qQQwxXIbUXipMHQbn939Qr96hwJ2iOUXT7rEB6BF0mQfud7v4v2QieuARJI
+         BU8y9bb3gdkl/bvi2A7lXeUbmahiJR89PF838=
+Message-ID: <48D0C43A.2010102@gmail.com>
+Date: Wed, 17 Sep 2008 10:47:54 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+CC: balbir@linux.vnet.ibm.com, menage@google.com, agk@sourceware.org,
+       akpm@linux-foundation.org, axboe@kernel.dk, baramsori72@gmail.com,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, lizf@cn.fujitsu.com,
+       m.innocenti@cineca.it, matt@bluehost.com, ngupta@google.com,
+       randy.dunlap@oracle.com, roberto@unbit.it, ryov@valinux.co.jp,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm 0/5] cgroup: block device i/o controller (v9)
+References: <1219853257-11052-1-git-send-email-righi.andrea@gmail.com> <20080917.161811.27257227.taka@valinux.co.jp>
+In-Reply-To: <20080917.161811.27257227.taka@valinux.co.jp>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com>
-	 <1221640067-24389-7-git-send-email-yhlu.kernel@gmail.com>
-	 <20080917083809.GB24035@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 1:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->> and kill apic_printk
->> using loglevel=apic:8 instead
->
-> yes, that aspect is very nice.
->
->> +DEFINE_LOGLEVEL_SETUP_DEF(apic, KERN_APIC, "apic:", 6);
->
->> -             printk(KERN_WARNING "APIC calibration not consistent "
->> +             printk(KERN_WARNING KERN_APIC "APIC calibration not consistent "
->
-> here too the question arises: what should the semantics of the 'mixing'
-> of such subsystem printk tags with the classic priority tags be. I think
-> in this particular case we dont want the KERN_APIC tag, as that would
-> prevent this failure message to be printed by default. I.e. this line
-> should remain:
->
->> -             printk(KERN_WARNING "APIC calibration not consistent "
->
-> to make sure this warning always shows up in the logs. Agreed?
+Hirokazu Takahashi wrote:
+> Hi,
+> 
+>> TODO:
+>>
+>> * Try to push down the throttling and implement it directly in the I/O
+>>   schedulers, using bio-cgroup (http://people.valinux.co.jp/~ryov/bio-cgroup/)
+>>   to keep track of the right cgroup context. This approach could lead to more
+>>   memory consumption and increases the number of dirty pages (hard/slow to
+>>   reclaim pages) in the system, since dirty-page ratio in memory is not
+>>   limited. This could even lead to potential OOM conditions, but these problems
+>>   can be resolved directly into the memory cgroup subsystem
+>>
+>> * Handle I/O generated by kswapd: at the moment there's no control on the I/O
+>>   generated by kswapd; try to use the page_cgroup functionality of the memory
+>>   cgroup controller to track this kind of I/O and charge the right cgroup when
+>>   pages are swapped in/out
+> 
+> FYI, this also can be done with bio-cgroup, which determine the owner cgroup
+> of a given anonymous page.
+> 
+> Thanks,
+> Hirokazu Takahashi
 
-with
+That would be great! FYI here is how I would like to proceed:
 
-DEFINE_LOGLEVEL_SETUP_DEF(apic, KERN_APIC, "apic:", 6);
+- today I'll post a new version of my cgroup-io-throttle patch rebased
+  to 2.6.27-rc5-mm1 (it's well tested and seems to be stable enough).
+  To keep the things light and simpler I've implemented custom
+  get_cgroup_from_page() / put_cgroup_from_page() in the memory
+  controller to retrieve the owner of a page, holding a reference to the
+  corresponding memcg, during async writes in submit_bio(); this is not
+  probably the best way to proceed, and a more generic framework like
+  bio-cgroup sounds better, but it seems to work quite well. The only
+  problem I've found is that during swap_writepage() the page is not
+  assigned to any page_cgroup (page_get_page_cgroup() returns NULL), and
+  so I'm not able to charge the cost of this I/O operation to the right
+  cgroup. Does bio-cgroup address or even resolve this issue?
+- begin to implement a new branch of cgroup-io-throttle on top of
+  bio-cgroup
+- also start to implement an additional request queue to provide first a
+  control at the cgroup level and a dispatcher to pass the request to
+  the elevator (as suggested by Vivek)
 
-the KERN_WARNING <5> will be showing up that warning, even without
-loglevl=apic:8
-
-or change that  to
-DEFINE_LOGLEVEL_SETUP_DEF(apic, KERN_APIC, "apic:", 7);
-?
-
-YH
+Thanks,
+-Andrea
