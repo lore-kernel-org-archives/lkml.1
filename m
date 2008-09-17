@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbYIQTFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbYIQTGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520AbYIQTFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYIQTFW
+	id S1753253AbYIQTGD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:06:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbYIQTFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:05:22 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:54410 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbYIQTFV (ORCPT
+	Wed, 17 Sep 2008 15:05:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:7687 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754594AbYIQTFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:05:21 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080917130805.6260ba9c@gondolin.boeblingen.de.ibm.com>
-Date: Wed, 17 Sep 2008 11:55:14 -0700
-In-Reply-To: <20080917130805.6260ba9c@gondolin.boeblingen.de.ibm.com>
-	(Cornelia Huck's message of "Wed, 17 Sep 2008 13:08:05 +0200")
-Message-ID: <m1r67i61rh.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Sep 2008 15:05:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QF6s69IRfr+l8dBHhbP5PiGlYGkk8R44cj0ZWEEKdgTMBygLBSaGX+tKMkEMZho7NJ
+         qcMlivPykQ1oCVv8wWcP2aywWEBNqkBcCnkvc8JpuWxcc5Dja2XwCOPFTfsKuS87nt8d
+         pXO0dZeHSmvPV2bnD3Q+ZgHtHXf2MYjLVv/cU=
+Message-ID: <86802c440809171205u67181abfi3e0043e0b5eaef6@mail.gmail.com>
+Date: Wed, 17 Sep 2008 12:05:35 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 0/6] loglevel=pci:8,acpi:8,apic=8 support v5
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <48D149CA.1000000@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, greg@kroah.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Cornelia Huck <cornelia.huck@de.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1912]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH]sysfs: Don't emit a warning when sysfs_rename_link() fails.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
+	 <20080917073058.GA3770@x200.localdomain>
+	 <20080917084754.GC24035@elte.hu> <48D13960.2020902@zytor.com>
+	 <86802c440809171110y3b91e27q382c6ee7bcd58c28@mail.gmail.com>
+	 <48D149CA.1000000@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck <cornelia.huck@de.ibm.com> writes:
-
-> Hi Greg, hi Eric,
+On Wed, Sep 17, 2008 at 11:17 AM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>>>
+>>> It's probably worth pointing out that we had similar transition pains
+>>> when
+>>> we introduced the loglevel tags.  If you used an old dmesg/klogd you got
+>>> the
+>>> loglevel tags; we cleaned them up.
+>>
+>> want to expand loglevel tags to two digi bits, hope the dmesg/klogd
+>> could handle it.
+>>
 >
-> the recent sysfs tagged directory changes switched device_rename() to
-> sysfs_rename_link() - which is a good thing but AFAICS re-introduces
-> the scary warnings when a netdevice is renamed to something that
-> already exists (which I tried to fix with
-> 36ce6dad6e3cb3f050ed41e0beac0070d2062b25).
+> I doubt they'd be written to handle that already.
+>
 
-A netdevice can not be renamed to something that already exists, correctly
-and still emit warnings.  Either it is a noop rename in which case
-the fact that we delete the link before creating it will avoid warnings.
-Or we are actually using a conflicting name.  In which case it is a
-real and valid problem.  The netdev layer especially since the
-networking layer already has validated that the rename is valid
-before calling device_rename.
+dmesg util in opensuse 10.3 does support two digi bits loglevel tags.
 
-> The following patch switches sysfs_rename_link() to non-warning symlink
-> creation again. It is on top of the current driver core series.
-
-We don't need this.  Using the non-warning symlink creation is unnecessary.
-Using non-warning symlink creation hides real errors.
-
-In practice any errors that show up will be errors in sysfs, because
-the network subsystem validates everything before calling us.
-
-Eric
+YH
