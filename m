@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYIQLGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYIQLGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbYIQLGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 07:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYIQLGG
+	id S1754712AbYIQLGh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 07:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbYIQLFz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 07:06:06 -0400
+	Wed, 17 Sep 2008 07:05:55 -0400
 Received: from qb-out-0506.google.com ([72.14.204.228]:29149 "EHLO
 	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754039AbYIQLGA (ORCPT
+	with ESMTP id S1753449AbYIQLFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 07:06:00 -0400
+	Wed, 17 Sep 2008 07:05:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=dXBa6rx+CW1w6VBu/wo4kRvdInYKDhak04qUG8r5gjbFfKgRPyoSq6hHlHDhB0KW1k
-         QtXPukcLJvqn3m4MJb3mebvu9Bf3XoZAvdupPC3Xzum36RDl+Uxx4JrMjnXXQRqFFMhF
-         fRqMMuGj0Z3ALXhWG5w6agNKoon9Qt0o/9hu4=
+        b=uYxQzEoC88Q/i3JsmUSVJxyzKXEoM0Zdq+5GsprX864j+4zDtLPgkiwvdkRx7QDW6i
+         VEs6YTsbIm5Z7H7wS3tvfTz6uua6a9L1rWxnwShPvo4R5BlWOBUqcSbeIQqoNUUpIREv
+         iAHAERuXH8j4S4hAT57tZFd9vF0271VT2WqHA=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
 Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
@@ -29,9 +29,9 @@ Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
        Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
        yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 3/6] i/o controller infrastructure
-Date: Wed, 17 Sep 2008 13:05:25 +0200
-Message-Id: <1221649528-8519-4-git-send-email-righi.andrea@gmail.com>
+Subject: [PATCH -mm 2/6] introduce struct res_counter_ratelimit
+Date: Wed, 17 Sep 2008 13:05:24 +0200
+Message-Id: <1221649528-8519-3-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -39,821 +39,310 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the core of the cgroup-io-throttle kernel infrastructure. It creates
-the basic interfaces to cgroups and implements the I/O measurement and
-throttling functionality.
+Introduce res_counter_ratelimit as a generic structure to implement
+throttling-based cgroup subsystems.
+
+[ Only the interfaces needed by the IO controller are implemented right now ]
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- block/Makefile                  |    2 +
- block/blk-io-throttle.c         |  663 +++++++++++++++++++++++++++++++++++++++
- include/linux/blk-io-throttle.h |   74 +++++
- include/linux/cgroup_subsys.h   |    6 +
- init/Kconfig                    |   10 +
- 5 files changed, 755 insertions(+), 0 deletions(-)
- create mode 100644 block/blk-io-throttle.c
- create mode 100644 include/linux/blk-io-throttle.h
+ include/linux/res_counter.h |   70 +++++++++++++++++++++++++
+ kernel/res_counter.c        |  118 ++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 187 insertions(+), 1 deletions(-)
 
-diff --git a/block/Makefile b/block/Makefile
-index bfe7304..6049d09 100644
---- a/block/Makefile
-+++ b/block/Makefile
-@@ -13,6 +13,8 @@ obj-$(CONFIG_IOSCHED_AS)	+= as-iosched.o
- obj-$(CONFIG_IOSCHED_DEADLINE)	+= deadline-iosched.o
- obj-$(CONFIG_IOSCHED_CFQ)	+= cfq-iosched.o
+diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
+index 0ab55c4..ff677d9 100644
+--- a/include/linux/res_counter.h
++++ b/include/linux/res_counter.h
+@@ -14,6 +14,7 @@
+  */
  
-+obj-$(CONFIG_CGROUP_IO_THROTTLE)	+= blk-io-throttle.o
+ #include <linux/cgroup.h>
++#include <linux/jiffies.h>
+ 
+ /*
+  * The core object. the cgroup that wishes to account for some
+@@ -45,6 +46,38 @@ struct res_counter {
+ 	spinlock_t lock;
+ };
+ 
++/* The various policies that can be used for throttling */
++#define	RATELIMIT_LEAKY_BUCKET	0
++#define	RATELIMIT_TOKEN_BUCKET	1
 +
- obj-$(CONFIG_BLK_DEV_IO_TRACE)	+= blktrace.o
- obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
- obj-$(CONFIG_BLK_DEV_INTEGRITY)	+= blk-integrity.o
-diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
-new file mode 100644
-index 0000000..ba7a174
---- /dev/null
-+++ b/block/blk-io-throttle.c
-@@ -0,0 +1,663 @@
-+/*
-+ * blk-io-throttle.c
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public
-+ * License as published by the Free Software Foundation; either
-+ * version 2 of the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public
-+ * License along with this program; if not, write to the
-+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-+ * Boston, MA 021110-1307, USA.
-+ *
-+ * Copyright (C) 2008 Andrea Righi <righi.andrea@gmail.com>
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/res_counter.h>
-+#include <linux/memcontrol.h>
-+#include <linux/slab.h>
-+#include <linux/gfp.h>
-+#include <linux/err.h>
-+#include <linux/genhd.h>
-+#include <linux/hardirq.h>
-+#include <linux/list.h>
-+#include <linux/seq_file.h>
-+#include <linux/spinlock.h>
-+#include <linux/blk-io-throttle.h>
-+
-+#define IOTHROTTLE_BANDWIDTH	0
-+#define IOTHROTTLE_IOPS		1
-+#define IOTHROTTLE_FAILCNT	2
-+
-+/*
-+ * Statistics for I/O bandwidth controller.
-+ */
-+enum iothrottle_stat_index {
-+	/* # of times the cgroup has been throttled */
-+	IOTHROTTLE_STAT_COUNT,
-+	/* # of jiffies spent to sleep for throttling */
-+	IOTHROTTLE_STAT_SLEEP,
-+
-+	IOTHROTTLE_STAT_NSTATS,
++struct res_counter_ratelimit {
++	/*
++	 * the current resource consumption level
++	 */
++	unsigned long long usage;
++	/*
++	 * the maximal value of the usage from the counter creation
++	 */
++	unsigned long long max_usage;
++	/*
++	 * the rate limit that cannot be exceeded
++	 */
++	unsigned long long limit;
++	/*
++	 * the limiting policy / algorithm
++	 */
++	unsigned long long policy;
++	/*
++	 * timestamp of the last accounted resource request
++	 */
++	unsigned long long timestamp;
++	/*
++	 * the lock to protect all of the above.
++	 * the routines below consider this to be IRQ-safe
++	 */
++	spinlock_t lock;
 +};
 +
-+struct iothrottle_stat_cpu {
-+	unsigned long long count[IOTHROTTLE_STAT_NSTATS];
-+} ____cacheline_aligned_in_smp;
+ /**
+  * Helpers to interact with userspace
+  * res_counter_read_u64() - returns the value of the specified member.
+@@ -60,10 +93,17 @@ struct res_counter {
+ 
+ u64 res_counter_read_u64(struct res_counter *counter, int member);
+ 
++u64 res_counter_ratelimit_read_u64(struct res_counter_ratelimit *counter,
++				int member);
 +
-+struct iothrottle_stat {
-+	struct iothrottle_stat_cpu cpustat[NR_CPUS];
-+};
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 		const char __user *buf, size_t nbytes, loff_t *pos,
+ 		int (*read_strategy)(unsigned long long val, char *s));
+ 
++ssize_t res_counter_ratelimit_read(struct res_counter_ratelimit *counter,
++		int member, const char __user *buf, size_t nbytes, loff_t *pos,
++		int (*read_strategy)(unsigned long long val, char *s));
 +
-+static void __iothrottle_stat_add_safe(struct iothrottle_stat *stat,
-+			enum iothrottle_stat_index idx,
-+			unsigned long long val)
+ typedef int (*write_strategy_fn)(const char *buf, unsigned long long *val);
+ 
+ int res_counter_memparse_write_strategy(const char *buf,
+@@ -80,6 +120,8 @@ enum {
+ 	RES_USAGE,
+ 	RES_MAX_USAGE,
+ 	RES_LIMIT,
++	RES_POLICY,
++	RES_TIMESTAMP,
+ 	RES_FAILCNT,
+ };
+ 
+@@ -89,6 +131,8 @@ enum {
+ 
+ void res_counter_init(struct res_counter *counter);
+ 
++void res_counter_ratelimit_init(struct res_counter_ratelimit *counter);
++
+ /*
+  * charge - try to consume more resource.
+  *
+@@ -126,6 +170,15 @@ static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
+ 	return false;
+ }
+ 
++static inline unsigned long long
++res_counter_ratelimit_delta_t(struct res_counter_ratelimit *res)
 +{
-+	const int cpu = smp_processor_id();
-+
-+	stat->cpustat[cpu].count[idx] += val;
++	return (long long)get_jiffies_64() - (long long)res->timestamp;
 +}
 +
-+static void iothrottle_stat_add_sleep(struct iothrottle_stat *stat,
-+			unsigned long long sleep)
++unsigned long long
++res_counter_ratelimit_sleep(struct res_counter_ratelimit *res, ssize_t val);
++
+ /*
+  * Helper function to detect if the cgroup is within it's limit or
+  * not. It's currently called from cgroup_rss_prepare()
+@@ -159,6 +212,23 @@ static inline void res_counter_reset_failcnt(struct res_counter *cnt)
+ 	spin_unlock_irqrestore(&cnt->lock, flags);
+ }
+ 
++static inline int
++res_counter_ratelimit_set_limit(struct res_counter_ratelimit *cnt,
++			unsigned long long policy,
++			unsigned long long limit, unsigned long long max)
 +{
 +	unsigned long flags;
 +
-+	/* with irq disabled, there's no need for increment preempt count */
-+	local_irq_save(flags);
-+	__iothrottle_stat_add_safe(stat, IOTHROTTLE_STAT_COUNT, 1);
-+	__iothrottle_stat_add_safe(stat, IOTHROTTLE_STAT_SLEEP, sleep);
-+	local_irq_restore(flags);
++	spin_lock_irqsave(&cnt->lock, flags);
++	cnt->limit = limit;
++	cnt->max_usage = max;
++	cnt->policy = policy;
++	cnt->timestamp = get_jiffies_64();
++	cnt->usage = 0;
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return 0;
 +}
 +
-+static unsigned long long iothrottle_read_stat(struct iothrottle_stat *stat,
-+				enum iothrottle_stat_index idx)
+ static inline int res_counter_set_limit(struct res_counter *cnt,
+ 		unsigned long long limit)
+ {
+diff --git a/kernel/res_counter.c b/kernel/res_counter.c
+index f275c8e..cf23205 100644
+--- a/kernel/res_counter.c
++++ b/kernel/res_counter.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/types.h>
+ #include <linux/parser.h>
++#include <linux/jiffies.h>
+ #include <linux/fs.h>
+ #include <linux/slab.h>
+ #include <linux/res_counter.h>
+@@ -21,6 +22,15 @@ void res_counter_init(struct res_counter *counter)
+ 	counter->limit = (unsigned long long)LLONG_MAX;
+ }
+ 
++void res_counter_ratelimit_init(struct res_counter_ratelimit *counter)
 +{
-+	int cpu;
-+	unsigned long long ret = 0;
-+
-+	for_each_possible_cpu(cpu)
-+		ret += stat->cpustat[cpu].count[idx];
-+	return ret;
++	spin_lock_init(&counter->lock);
++	counter->limit = (unsigned long long)LLONG_MAX;
++	counter->max_usage = (unsigned long long)LLONG_MAX;
++	counter->usage = 0;
++	counter->timestamp = get_jiffies_64();
 +}
 +
-+/*
-+ * struct iothrottle_node - throttling rule of a single block device
-+ * @node: list of per block device throttling rules
-+ * @dev: block device number, used as key in the list
-+ * @bw: max i/o bandwidth (in bytes/s)
-+ * @iops: max i/o operations per second
-+ * @stat: throttling statistics
-+ *
-+ * Define a i/o throttling rule for a single block device.
-+ *
-+ * NOTE: limiting rules always refer to dev_t; if a block device is unplugged
-+ * the limiting rules defined for that device persist and they are still valid
-+ * if a new device is plugged and it uses the same dev_t number.
-+ */
-+struct iothrottle_node {
-+	struct list_head node;
-+	dev_t dev;
-+	struct res_counter_ratelimit bw;
-+	struct res_counter_ratelimit iops;
-+	struct iothrottle_stat stat;
-+};
-+
-+/**
-+ * struct iothrottle - throttling rules for a cgroup
-+ * @css: pointer to the cgroup state
-+ * @list: list of iothrottle_node elements
-+ *
-+ * Define multiple per-block device i/o throttling rules.
-+ * Note: the list of the throttling rules is protected by RCU locking:
-+ *	 - hold cgroup_lock() for update.
-+ *	 - hold rcu_read_lock() for read.
-+ */
-+struct iothrottle {
-+	struct cgroup_subsys_state css;
-+	struct list_head list;
-+};
-+static struct iothrottle init_iothrottle;
-+
-+static inline struct iothrottle *cgroup_to_iothrottle(struct cgroup *cgrp)
+ int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
+ {
+ 	if (counter->usage + val > counter->limit) {
+@@ -62,7 +72,6 @@ void res_counter_uncharge(struct res_counter *counter, unsigned long val)
+ 	spin_unlock_irqrestore(&counter->lock, flags);
+ }
+ 
+-
+ static inline unsigned long long *
+ res_counter_member(struct res_counter *counter, int member)
+ {
+@@ -81,6 +90,26 @@ res_counter_member(struct res_counter *counter, int member)
+ 	return NULL;
+ }
+ 
++static inline unsigned long long *
++res_counter_ratelimit_member(struct res_counter_ratelimit *counter, int member)
 +{
-+	return container_of(cgroup_subsys_state(cgrp, iothrottle_subsys_id),
-+			    struct iothrottle, css);
-+}
++	switch (member) {
++	case RES_USAGE:
++		return &counter->usage;
++	case RES_MAX_USAGE:
++		return &counter->max_usage;
++	case RES_LIMIT:
++		return &counter->limit;
++	case RES_POLICY:
++		return &counter->policy;
++	case RES_TIMESTAMP:
++		return &counter->timestamp;
++	};
 +
-+/*
-+ * Note: called with rcu_read_lock() held.
-+ */
-+static inline struct iothrottle *task_to_iothrottle(struct task_struct *task)
-+{
-+	return container_of(task_subsys_state(task, iothrottle_subsys_id),
-+			    struct iothrottle, css);
-+}
-+
-+/*
-+ * Note: called with rcu_read_lock() or iot->lock held.
-+ */
-+static struct iothrottle_node *
-+iothrottle_search_node(const struct iothrottle *iot, dev_t dev)
-+{
-+	struct iothrottle_node *n;
-+
-+	if (list_empty(&iot->list))
-+		return NULL;
-+	list_for_each_entry_rcu(n, &iot->list, node)
-+		if (n->dev == dev)
-+			return n;
++	BUG();
 +	return NULL;
 +}
 +
-+/*
-+ * Note: called with iot->lock held.
-+ */
-+static inline void iothrottle_insert_node(struct iothrottle *iot,
-+						struct iothrottle_node *n)
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 		const char __user *userbuf, size_t nbytes, loff_t *pos,
+ 		int (*read_strategy)(unsigned long long val, char *st_buf))
+@@ -98,11 +127,35 @@ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 			pos, buf, s - buf);
+ }
+ 
++ssize_t res_counter_ratelimit_read(struct res_counter_ratelimit *counter,
++		int member, const char __user *userbuf, size_t nbytes,
++		loff_t *pos,
++		int (*read_strategy)(unsigned long long val, char *st_buf))
 +{
-+	list_add_rcu(&n->node, &iot->list);
++	unsigned long long *val;
++	char buf[64], *s;
++
++	s = buf;
++	val = res_counter_ratelimit_member(counter, member);
++	if (read_strategy)
++		s += read_strategy(*val, s);
++	else
++		s += sprintf(s, "%llu\n", *val);
++	return simple_read_from_buffer((void __user *)userbuf, nbytes,
++			pos, buf, s - buf);
 +}
 +
-+/*
-+ * Note: called with iot->lock held.
-+ */
-+static inline void
-+iothrottle_replace_node(struct iothrottle *iot, struct iothrottle_node *old,
-+			struct iothrottle_node *new)
+ u64 res_counter_read_u64(struct res_counter *counter, int member)
+ {
+ 	return *res_counter_member(counter, member);
+ }
+ 
++u64 res_counter_ratelimit_read_u64(struct res_counter_ratelimit *counter,
++				int member)
 +{
-+	list_replace_rcu(&old->node, &new->node);
++	return *res_counter_ratelimit_member(counter, member);
 +}
 +
-+/*
-+ * Note: called with iot->lock held.
-+ */
-+static inline void
-+iothrottle_delete_node(struct iothrottle *iot, struct iothrottle_node *n)
+ int res_counter_memparse_write_strategy(const char *buf,
+ 					unsigned long long *res)
+ {
+@@ -137,3 +190,66 @@ int res_counter_write(struct res_counter *counter, int member,
+ 	spin_unlock_irqrestore(&counter->lock, flags);
+ 	return 0;
+ }
++
++static unsigned long long
++ratelimit_leaky_bucket(struct res_counter_ratelimit *res, ssize_t val)
 +{
-+	list_del_rcu(&n->node);
-+}
++	unsigned long long delta, t;
 +
-+/*
-+ * Note: called from kernel/cgroup.c with cgroup_lock() held.
-+ */
-+static struct cgroup_subsys_state *
-+iothrottle_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
-+{
-+	struct iothrottle *iot;
-+
-+	if (unlikely((cgrp->parent) == NULL))
-+		iot = &init_iothrottle;
-+	else {
-+		iot = kmalloc(sizeof(*iot), GFP_KERNEL);
-+		if (unlikely(!iot))
-+			return ERR_PTR(-ENOMEM);
-+	}
-+	INIT_LIST_HEAD(&iot->list);
-+
-+	return &iot->css;
-+}
-+
-+/*
-+ * Note: called from kernel/cgroup.c with cgroup_lock() held.
-+ */
-+static void iothrottle_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
-+{
-+	struct iothrottle_node *n, *p;
-+	struct iothrottle *iot = cgroup_to_iothrottle(cgrp);
-+
-+	/*
-+	 * don't worry about locking here, at this point there must be not any
-+	 * reference to the list.
-+	 */
-+	if (!list_empty(&iot->list))
-+		list_for_each_entry_safe(n, p, &iot->list, node)
-+			kfree(n);
-+	kfree(iot);
-+}
-+
-+/*
-+ * NOTE: called with rcu_read_lock() held.
-+ *
-+ * do not care too much about locking for single res_counter_ratelimit values
-+ * here.
-+ */
-+static void iothrottle_show_stats(struct seq_file *m, dev_t dev,
-+			struct res_counter_ratelimit *res)
-+{
-+	if (!res->limit)
-+		return;
-+	seq_printf(m, "%u %u %llu %llu %lli %llu %li\n",
-+		MAJOR(dev), MINOR(dev),
-+		res->limit, res->policy,
-+		(long long)res->usage, res->max_usage,
-+		jiffies_to_clock_t(res_counter_ratelimit_delta_t(res)));
-+}
-+
-+static int iothrottle_read(struct cgroup *cgrp, struct cftype *cft,
-+				struct seq_file *m)
-+{
-+	struct iothrottle *iot = cgroup_to_iothrottle(cgrp);
-+	struct iothrottle_node *n;
-+
-+	rcu_read_lock();
-+	if (list_empty(&iot->list))
-+		goto unlock_and_return;
-+
-+	list_for_each_entry_rcu(n, &iot->list, node) {
-+		unsigned long long count, sleep;
-+
-+		BUG_ON(!n->dev);
-+		switch (cft->private) {
-+		case IOTHROTTLE_BANDWIDTH:
-+			iothrottle_show_stats(m, n->dev, &n->bw);
-+			break;
-+		case IOTHROTTLE_IOPS:
-+			iothrottle_show_stats(m, n->dev, &n->iops);
-+			break;
-+		case IOTHROTTLE_FAILCNT:
-+			count = iothrottle_read_stat(&n->stat,
-+					IOTHROTTLE_STAT_COUNT);
-+			sleep = iothrottle_read_stat(&n->stat,
-+					IOTHROTTLE_STAT_SLEEP);
-+			seq_printf(m, "%u %u %llu %li\n",
-+				MAJOR(n->dev), MINOR(n->dev),
-+				count, jiffies_to_clock_t(sleep));
-+			break;
-+		}
-+	}
-+unlock_and_return:
-+	rcu_read_unlock();
++	res->usage += val;
++	delta = res_counter_ratelimit_delta_t(res);
++	if (!delta)
++		return 0;
++	t = res->usage * USEC_PER_SEC;
++	t = usecs_to_jiffies(div_u64(t, res->limit));
++	if (t > delta)
++		return t - delta;
++	/* Reset i/o statistics */
++	res->usage = 0;
++	res->timestamp = get_jiffies_64();
 +	return 0;
 +}
 +
-+static dev_t devname2dev_t(const char *buf)
++static unsigned long long
++ratelimit_token_bucket(struct res_counter_ratelimit *res, ssize_t val)
 +{
-+	struct block_device *bdev;
-+	dev_t dev = 0;
-+	struct gendisk *disk;
-+	int part;
++	unsigned long long delta;
++	long long tok;
 +
-+	/* use a lookup to validate the block device */
-+	bdev = lookup_bdev(buf);
-+	if (IS_ERR(bdev))
-+		return 0;
-+	/* only entire devices are allowed, not single partitions */
-+	disk = get_gendisk(bdev->bd_dev, &part);
-+	if (disk && !part) {
-+		BUG_ON(!bdev->bd_inode);
-+		dev = bdev->bd_inode->i_rdev;
++	res->usage -= val;
++	delta = jiffies_to_msecs(res_counter_ratelimit_delta_t(res));
++	res->timestamp = get_jiffies_64();
++	tok = (long long)res->usage * MSEC_PER_SEC;
++	if (delta) {
++		long long max = (long long)res->max_usage * MSEC_PER_SEC;
++
++		tok += delta * res->limit;
++		if (tok > max)
++			tok = max;
++		res->usage = (unsigned long long)div_s64(tok, MSEC_PER_SEC);
 +	}
-+	bdput(bdev);
-+
-+	return dev;
++	return (tok < 0) ? msecs_to_jiffies(div_u64(-tok, res->limit)) : 0;
 +}
 +
-+/*
-+ * The userspace input string must use one of the following syntaxes:
-+ *
-+ * dev:0			<- delete an i/o limiting rule
-+ * dev:io-limit:0		<- set a leaky bucket throttling rule
-+ * dev:io-limit:1:bucket-size	<- set a token bucket throttling rule
-+ * dev:io-limit:1		<- set a token bucket throttling rule using
-+ *				   bucket-size == io-limit
-+ */
-+static int iothrottle_parse_args(char *buf, size_t nbytes, int filetype,
-+			dev_t *dev, unsigned long long *iolimit,
-+			unsigned long long *strategy,
-+			unsigned long long *bucket_size)
-+{
-+	char *p;
-+	int count = 0;
-+	char *s[4];
-+	int ret;
-+
-+	memset(s, 0, sizeof(s));
-+	*dev = 0;
-+	*iolimit = 0;
-+	*strategy = 0;
-+	*bucket_size = 0;
-+
-+	/* split the colon-delimited input string into its elements */
-+	while (count < ARRAY_SIZE(s)) {
-+		p = strsep(&buf, ":");
-+		if (!p)
-+			break;
-+		if (!*p)
-+			continue;
-+		s[count++] = p;
-+	}
-+
-+	/* i/o limit */
-+	if (!s[1])
-+		return -EINVAL;
-+	ret = strict_strtoull(s[1], 10, iolimit);
-+	if (ret < 0)
-+		return ret;
-+	if (!*iolimit)
-+		goto out;
-+	/* throttling strategy (leaky bucket / token bucket) */
-+	if (!s[2])
-+		return -EINVAL;
-+	ret = strict_strtoull(s[2], 10, strategy);
-+	if (ret < 0)
-+		return ret;
-+	switch (*strategy) {
-+	case RATELIMIT_LEAKY_BUCKET:
-+		goto out;
-+	case RATELIMIT_TOKEN_BUCKET:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	/* bucket size */
-+	if (!s[3])
-+		*bucket_size = *iolimit;
-+	else {
-+		ret = strict_strtoll(s[3], 10, bucket_size);
-+		if (ret < 0)
-+			return ret;
-+	}
-+	if (*bucket_size <= 0)
-+		return -EINVAL;
-+out:
-+	/* block device number */
-+	*dev = devname2dev_t(s[0]);
-+	return *dev ? 0 : -EINVAL;
-+}
-+
-+static int iothrottle_write(struct cgroup *cgrp, struct cftype *cft,
-+				const char *buffer)
-+{
-+	struct iothrottle *iot;
-+	struct iothrottle_node *n, *newn = NULL;
-+	dev_t dev;
-+	unsigned long long iolimit, strategy, bucket_size;
-+	char *buf;
-+	size_t nbytes = strlen(buffer);
-+	int ret = 0;
-+
-+	/*
-+	 * We need to allocate a new buffer here, because
-+	 * iothrottle_parse_args() can modify it and the buffer provided by
-+	 * write_string is supposed to be const.
-+	 */
-+	buf = kmalloc(nbytes + 1, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+	memcpy(buf, buffer, nbytes + 1);
-+
-+	ret = iothrottle_parse_args(buf, nbytes, cft->private, &dev, &iolimit,
-+				&strategy, &bucket_size);
-+	if (ret)
-+		goto out1;
-+	newn = kzalloc(sizeof(*newn), GFP_KERNEL);
-+	if (!newn) {
-+		ret = -ENOMEM;
-+		goto out1;
-+	}
-+	newn->dev = dev;
-+	res_counter_ratelimit_init(&newn->bw);
-+	res_counter_ratelimit_init(&newn->iops);
-+
-+	switch (cft->private) {
-+	case IOTHROTTLE_BANDWIDTH:
-+		res_counter_ratelimit_set_limit(&newn->iops, 0, 0, 0);
-+		res_counter_ratelimit_set_limit(&newn->bw, strategy,
-+				ALIGN(iolimit, 1024), ALIGN(bucket_size, 1024));
-+		break;
-+	case IOTHROTTLE_IOPS:
-+		res_counter_ratelimit_set_limit(&newn->bw, 0, 0, 0);
-+		/*
-+		 * scale up iops cost by a factor of 1000, this allows to apply
-+		 * a more fine grained sleeps, and throttling results more
-+		 * precise this way.
-+		 */
-+		res_counter_ratelimit_set_limit(&newn->iops, strategy,
-+				iolimit * 1000, bucket_size * 1000);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		break;
-+	}
-+
-+	if (!cgroup_lock_live_group(cgrp)) {
-+		ret = -ENODEV;
-+		goto out1;
-+	}
-+	iot = cgroup_to_iothrottle(cgrp);
-+
-+	n = iothrottle_search_node(iot, dev);
-+	if (!n) {
-+		if (iolimit) {
-+			/* Add a new block device limiting rule */
-+			iothrottle_insert_node(iot, newn);
-+			newn = NULL;
-+		}
-+		goto out2;
-+	}
-+	switch (cft->private) {
-+	case IOTHROTTLE_BANDWIDTH:
-+		if (!iolimit && !n->iops.limit) {
-+			/* Delete a block device limiting rule */
-+			iothrottle_delete_node(iot, n);
-+			goto out2;
-+		}
-+		if (!n->iops.limit)
-+			break;
-+		/* Update a block device limiting rule */
-+		newn->iops = n->iops;
-+		break;
-+	case IOTHROTTLE_IOPS:
-+		if (!iolimit && !n->bw.limit) {
-+			/* Delete a block device limiting rule */
-+			iothrottle_delete_node(iot, n);
-+			goto out2;
-+		}
-+		if (!n->bw.limit)
-+			break;
-+		/* Update a block device limiting rule */
-+		newn->bw = n->bw;
-+		break;
-+	}
-+	iothrottle_replace_node(iot, n, newn);
-+	newn = NULL;
-+out2:
-+	cgroup_unlock();
-+	if (n) {
-+		synchronize_rcu();
-+		kfree(n);
-+	}
-+out1:
-+	kfree(newn);
-+	kfree(buf);
-+	return ret;
-+}
-+
-+static struct cftype files[] = {
-+	{
-+		.name = "bandwidth-max",
-+		.read_seq_string = iothrottle_read,
-+		.write_string = iothrottle_write,
-+		.max_write_len = 256,
-+		.private = IOTHROTTLE_BANDWIDTH,
-+	},
-+	{
-+		.name = "iops-max",
-+		.read_seq_string = iothrottle_read,
-+		.write_string = iothrottle_write,
-+		.max_write_len = 256,
-+		.private = IOTHROTTLE_IOPS,
-+	},
-+	{
-+		.name = "throttlecnt",
-+		.read_seq_string = iothrottle_read,
-+		.private = IOTHROTTLE_FAILCNT,
-+	},
-+};
-+
-+static int iothrottle_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
-+{
-+	return cgroup_add_files(cgrp, ss, files, ARRAY_SIZE(files));
-+}
-+
-+struct cgroup_subsys iothrottle_subsys = {
-+	.name = "blockio",
-+	.create = iothrottle_create,
-+	.destroy = iothrottle_destroy,
-+	.populate = iothrottle_populate,
-+	.subsys_id = iothrottle_subsys_id,
-+	.early_init = 1,
-+};
-+
-+/*
-+ * NOTE: called with rcu_read_lock() held.
-+ */
-+static unsigned long long iothrottle_evaluate_sleep(struct iothrottle *iot,
-+				struct block_device *bdev, ssize_t bytes)
-+{
-+	struct iothrottle_node *n;
-+	dev_t dev;
-+	unsigned long long bw_sleep, iops_sleep;
-+
-+	if (unlikely(!iot))
-+		return 0;
-+
-+	/* accounting and throttling is done only on entire block devices */
-+	dev = MKDEV(MAJOR(bdev->bd_inode->i_rdev), bdev->bd_disk->first_minor);
-+	n = iothrottle_search_node(iot, dev);
-+	if (!n)
-+		return 0;
-+	bw_sleep = res_counter_ratelimit_sleep(&n->bw, bytes);
-+
-+	/*
-+	 * scale up iops cost by a factor of 1000, this allows to apply
-+	 * a more fine grained sleeps, and throttling works better in
-+	 * this way.
-+	 *
-+	 * Note: do not account any i/o operation if bytes is negative or zero.
-+	 */
-+	iops_sleep = res_counter_ratelimit_sleep(&n->iops, bytes ? 1000 : 0);
-+	return max(bw_sleep, iops_sleep);
-+}
-+
-+/*
-+ * NOTE: called with rcu_read_lock() held.
-+ */
-+static void iothrottle_acct_stat(struct iothrottle *iot,
-+			struct block_device *bdev, unsigned long long sleep)
-+{
-+	struct iothrottle_node *n;
-+	dev_t dev = MKDEV(MAJOR(bdev->bd_inode->i_rdev),
-+			bdev->bd_disk->first_minor);
-+
-+	n = iothrottle_search_node(iot, dev);
-+	if (!n)
-+		return;
-+	iothrottle_stat_add_sleep(&n->stat, sleep);
-+}
-+
-+static struct iothrottle *get_iothrottle_from_page(struct page *page)
-+{
-+	struct cgroup *cgrp;
-+	struct iothrottle *iot;
-+
-+	if (!page)
-+		return NULL;
-+	cgrp = get_cgroup_from_page(page);
-+	if (!cgrp)
-+		return NULL;
-+	iot = cgroup_to_iothrottle(cgrp);
-+	css_get(&iot->css);
-+	put_cgroup_from_page(page);
-+
-+	return iot;
-+}
-+
-+static inline int is_kthread_io(void)
-+{
-+	return current->flags & (PF_KTHREAD | PF_FLUSHER | PF_KSWAPD);
-+}
-+
-+/**
-+ * cgroup_io_throttle() - account and throttle i/o activity
-+ * @page:	a page used to retrieve the owner of the i/o operation.
-+ * @bdev:	block device involved for the i/o.
-+ * @bytes:	size in bytes of the i/o operation.
-+ * @can_sleep:	used to set to 1 if we're in a sleep()able context, 0
-+ *		otherwise; into a non-sleep()able context we only account the
-+ *		i/o activity without applying any throttling sleep.
-+ *
-+ * This is the core of the block device i/o bandwidth controller. This function
-+ * must be called by any function that generates i/o activity (directly or
-+ * indirectly). It provides both i/o accounting and throttling functionalities;
-+ * throttling is disabled if @can_sleep is set to 0.
-+ *
-+ * Returns the value of sleep in jiffies if it was not possible to schedule the
-+ * timeout.
-+ **/
 +unsigned long long
-+cgroup_io_throttle(struct page *page, struct block_device *bdev,
-+		ssize_t bytes, int can_sleep)
++res_counter_ratelimit_sleep(struct res_counter_ratelimit *res, ssize_t val)
 +{
-+	struct iothrottle *iot;
-+	unsigned long long sleep;
++	unsigned long long sleep = 0;
++	unsigned long flags;
 +
-+	if (unlikely(!bdev))
-+		return 0;
-+	BUG_ON(!bdev->bd_inode || !bdev->bd_disk);
-+	/*
-+	 * Never throttle kernel threads, since they may completely block other
-+	 * cgroups, the i/o on other block devices or even the whole system.
-+	 *
-+	 * And never sleep also if we're inside an AIO context; just account
-+	 * the i/o activity. Throttling is performed in io_submit_one()
-+	 * returning * -EAGAIN when the limits are exceeded.
-+	 */
-+	if (is_kthread_io() || is_in_aio())
-+		can_sleep = 0;
-+	/*
-+	 * WARNING: in_atomic() do not know about held spinlocks in
-+	 * non-preemptible kernels, but we want to check it here to raise
-+	 * potential bugs by preemptible kernels.
-+	 */
-+	WARN_ON_ONCE(can_sleep &&
-+		(irqs_disabled() || in_interrupt() || in_atomic()));
-+
-+	/* check if we need to throttle */
-+	iot = get_iothrottle_from_page(page);
-+	rcu_read_lock();
-+	if (!iot) {
-+		iot = task_to_iothrottle(current);
-+		css_get(&iot->css);
-+	}
-+	sleep = iothrottle_evaluate_sleep(iot, bdev, bytes);
-+	if (unlikely(sleep && can_sleep)) {
-+		iothrottle_acct_stat(iot, bdev, sleep);
-+		css_put(&iot->css);
-+		rcu_read_unlock();
-+
-+		pr_debug("io-throttle: task %p (%s) must sleep %llu jiffies\n",
-+			 current, current->comm, sleep);
-+		/*
-+		 * XXX: per-task statistics may be inaccurate (this is not a
-+		 * critical issue, anyway, respect to introduce locking
-+		 * overhead or increase the size of task_struct).
-+		 */
-+		current->io_throttle_cnt++;
-+		current->io_throttle_sleep += sleep;
-+		schedule_timeout_killable(sleep);
-+		return 0;
-+	}
-+	css_put(&iot->css);
-+	rcu_read_unlock();
++	spin_lock_irqsave(&res->lock, flags);
++	if (res->limit)
++		switch (res->policy) {
++		case RATELIMIT_LEAKY_BUCKET:
++			sleep = ratelimit_leaky_bucket(res, val);
++			break;
++		case RATELIMIT_TOKEN_BUCKET:
++			sleep = ratelimit_token_bucket(res, val);
++			break;
++		default:
++			WARN_ON(1);
++			break;
++		}
++	spin_unlock_irqrestore(&res->lock, flags);
 +	return sleep;
 +}
-diff --git a/include/linux/blk-io-throttle.h b/include/linux/blk-io-throttle.h
-new file mode 100644
-index 0000000..c2437d7
---- /dev/null
-+++ b/include/linux/blk-io-throttle.h
-@@ -0,0 +1,74 @@
-+#ifndef BLK_IO_THROTTLE_H
-+#define BLK_IO_THROTTLE_H
-+
-+#include <linux/fs.h>
-+#include <linux/jiffies.h>
-+#include <linux/sched.h>
-+#include <linux/cgroup.h>
-+#include <asm/atomic.h>
-+#include <asm/current.h>
-+
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+extern unsigned long long
-+cgroup_io_throttle(struct page *page, struct block_device *bdev,
-+		ssize_t bytes, int can_sleep);
-+
-+static inline void set_in_aio(void)
-+{
-+	atomic_set(&current->in_aio, 1);
-+}
-+
-+static inline void unset_in_aio(void)
-+{
-+	atomic_set(&current->in_aio, 0);
-+}
-+
-+static inline int is_in_aio(void)
-+{
-+	return atomic_read(&current->in_aio);
-+}
-+
-+static inline unsigned long long get_io_throttle_cnt(struct task_struct *t)
-+{
-+	return t->io_throttle_cnt;
-+}
-+
-+static inline unsigned long long get_io_throttle_sleep(struct task_struct *t)
-+{
-+	return jiffies_to_clock_t(t->io_throttle_sleep);
-+}
-+#else
-+static inline unsigned long long
-+cgroup_io_throttle(struct page *page, struct block_device *bdev,
-+		ssize_t bytes, int can_sleep)
-+{
-+	return 0;
-+}
-+
-+static inline void set_in_aio(void) { }
-+
-+static inline void unset_in_aio(void) { }
-+
-+static inline int is_in_aio(void)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned long long get_io_throttle_cnt(struct task_struct *t)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned long long get_io_throttle_sleep(struct task_struct *t)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_CGROUP_IO_THROTTLE */
-+
-+static inline struct block_device *as_to_bdev(struct address_space *mapping)
-+{
-+	return (mapping->host && mapping->host->i_sb->s_bdev) ?
-+		mapping->host->i_sb->s_bdev : NULL;
-+}
-+
-+#endif /* BLK_IO_THROTTLE_H */
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index a5b0fa4..76dc04d 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -49,6 +49,12 @@ SUBSYS(devices)
- 
- /* */
- 
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+SUBSYS(iothrottle)
-+#endif
-+
-+/* */
-+
- #ifdef CONFIG_CGROUP_FREEZER
- SUBSYS(freezer)
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index a32de66..1eb83e1 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -313,6 +313,16 @@ config CGROUP_DEVICE
- 	  Provides a cgroup implementing whitelists for devices which
- 	  a process in the cgroup can mknod or open.
- 
-+config CGROUP_IO_THROTTLE
-+	bool "Enable cgroup I/O throttling (EXPERIMENTAL)"
-+	depends on CGROUPS && CGROUP_MEM_RES_CTLR && RESOURCE_COUNTERS && EXPERIMENTAL
-+	help
-+	  This allows to limit the maximum I/O bandwidth for specific
-+	  cgroup(s).
-+	  See Documentation/controllers/io-throttle.txt for more information.
-+
-+	  If unsure, say N.
-+
- config CPUSETS
- 	bool "Cpuset support"
- 	depends on SMP && CGROUPS
 -- 
 1.5.4.3
 
