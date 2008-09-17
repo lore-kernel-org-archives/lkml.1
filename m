@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYIQWuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbYIQWv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbYIQWuT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 18:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYIQWuF
+	id S1754695AbYIQWv5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 18:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIQWvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 18:50:05 -0400
-Received: from lazybastard.de ([212.112.238.170]:59163 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbYIQWuE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 18:50:04 -0400
-Date: Thu, 18 Sep 2008 00:49:53 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kihara.seiji@lab.ntt.co.jp,
-       amagai.yoshiji@lab.ntt.co.jp
-Subject: Re: [PATCH 25/27] nilfs2: block cache for garbage collection
-Message-ID: <20080917224953.GB14644@logfs.org>
-References: <1221419304-18572-25-git-send-email-konishi.ryusuke@lab.ntt.co.jp> <1221419304-18572-26-git-send-email-konishi.ryusuke@lab.ntt.co.jp> <20080917144146.GD8750@logfs.org> <20080918.040945.32654226.ryusuke@osrg.net>
+	Wed, 17 Sep 2008 18:51:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48118 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752352AbYIQWvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 18:51:48 -0400
+Message-ID: <48D18919.9060808@redhat.com>
+Date: Wed, 17 Sep 2008 15:47:53 -0700
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080918.040945.32654226.ryusuke@osrg.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: Populating multiple ptes at fault time
+References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com> <48D1851B.70703@goop.org>
+In-Reply-To: <48D1851B.70703@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 September 2008 04:09:45 +0900, Ryusuke Konishi wrote:
-> 
-> > Using dummy inodes is... unusual.  Why can you not use the actual inodes
-> > those blocks belong to?
-> 
-> Because we have to treat blocks that belong to a same file but have
-> different checkpoint numbers.  (NILFS2 keeps up multiple
-> checkpoints/snapshots across GC)
-> 
-> Of course, if the standard inode hash is applicable, I prefer it.
-> ilookup5 or its variant may be applicable for this.
+Jeremy Fitzhardinge wrote:
+>> One problem is the accessed bit.  If it's unset, the shadow code
+>> cannot make the pte present (since it has to trap in order to set the
+>> accessed bit); if it's set, we're lying to the vm.
+>>     
+>
+> So even if the guest pte were present but non-accessed, the shadow pte
+> would have to be non-present and you'd end up taking the fault anyway?
+>
+>   
 
-If that is possible I would definitely prefer it.
+Yes.
 
-> If so, the remaining problem would be the lock dependencies as you
-> mentioned before.
+> Hm, that does undermine the benefits.  Does that mean that when the vm
+> clears the access bit, you always have to make the shadow non-present? 
+> I guess so.  And similarly with dirty and writable shadow.
+>
+>   
 
-You should have the same problem already - in some shape or another.  If
-you can have two data structures for the same content, a real inode and
-a dummy inode, you have a race condition.  Quite possibly one involving
-data corruption.
+Yes.
 
-Well, one way to avoid both the race and the locking complexity is by
-stopping all writes during GC and destroying all dummy inodes before
-writes resume.  But that would be inefficient in several cases.  When
-GC'ing data that is dirty in the caches, you move the old stale data
-during GC and write the new data soon after.  And you always flush the
-caches after GC, even if your machine has no better use for the memory.
+> The counter-argument is that something has gone wrong if we start
+> populating ptes that aren't going to be used in the near future anyway -
+> if they're never used then any effort taken to populate them is wasted. 
+> Therefore, setting accessed on them from the outset isn't terribly bad.
+>
+>   
 
-So unless I missed something important, I believe the locking is well
-worth the effort.
+We don't know whether the page will be used or not.  Keeping the 
+accessed bit clear allows the vm to reclaim it early, and in preference 
+to the pages it actually used.
 
-BTW: Some of the explanation you just gave me would do well as
-documentation in the source file as well.  That's the sort of background
-information new developers can spend month of mistakes and reverse
-engineering on. :)
+We could work around it by having a hypercall to read and clear accessed 
+bits.  If we know the guest will only do that via the hypercall, we can 
+keep the accessed (and dirty) bits in the host, and not update them in 
+the guest at all.  Given good batching, there's potential for a large 
+win there.
 
-Jörn
+(If the host throws away a shadow page, it could sync the bits back into 
+the guest pte for safekeeping)
 
 -- 
-Those who come seeking peace without a treaty are plotting.
--- Sun Tzu
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
