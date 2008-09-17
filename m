@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYIQWfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbYIQWhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490AbYIQWfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 18:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbYIQWfT
+	id S1755887AbYIQWhF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 18:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYIQWgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 18:35:19 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:35480 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbYIQWfR (ORCPT
+	Wed, 17 Sep 2008 18:36:55 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:42983 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbYIQWgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 18:35:17 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Moore <paul.moore@hp.com>, sds@tycho.nsa.gov, jmorris@namei.org,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, netdev@vger.kernel.org
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	<1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-	<20080917125053.1f9ecf37.akpm@linux-foundation.org>
-	<200809171724.36269.paul.moore@hp.com>
-	<20080917144842.7df59f9e.akpm@linux-foundation.org>
-Date: Wed, 17 Sep 2008 15:32:49 -0700
-In-Reply-To: <20080917144842.7df59f9e.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 17 Sep 2008 14:48:42 -0700")
-Message-ID: <m17i9axv1q.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 17 Sep 2008 18:36:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=u2GM5NakhqdKdedHyeJyAX+lz/reXhi3HDqEuFclSbdMxxAQMfqJJ2of1WoDyaH9WH
+         mksxkDz6zL5F3U44rJ3oYcg+QXADpZFEhXMqDaEFD+9b8IBO1NoR2u4FMn21yOj6rL4A
+         n1JnbfwcI9T9MdPicOkqux1OsvRpJdgQCqCkQ=
+Message-ID: <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
+Date: Wed, 17 Sep 2008 15:36:53 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: dmaengine.c: question about device_alloc_chan_resources
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
+In-Reply-To: <48D02589.8070601@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0144]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48D02589.8070601@freescale.com>
+X-Google-Sender-Auth: 0b5c24c3c519243f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Tue, Sep 16, 2008 at 2:30 PM, Timur Tabi <timur@freescale.com> wrote:
+> Dan, Haavard, et al,
+>
+> I am making some fixes to the Freescale DMA driver (drivers/dma/fsldma.c), and
+> I've come across a situation I don't understand.  Specifically, I have an issue
+> with the return values from fsl_dma_alloc_chan_resources(), which is fsldma's
+> device_alloc_chan_resources() function.
+>
+> fsldma calls dma_async_device_register() for each DMA controller it finds.  The
+> problem is that when I use the dmatest driver, this results in
+> device_alloc_chan_resources() being called multiple times for the same DMA
+> channel.  When this happens, fsl_dma_alloc_chan_resources() must return -1
+> otherwise fsldma will hang during unload if the dmatest driver is also loaded.
+> The hang occurs in dma_async_device_unregister(), when it calls
+> wait_for_completion().
+>
+> Here's what happens:
+>
+> 1) fsldma finds one DMA controller with four DMA channels.  It creates all the
+> channel objects and then calls dma_async_device_register().
+>
+> 2) Via dma_clients_notify_available(), dmatest is notified that there's a new
+> DMA resource.  It stores those four channels in its dmatest_channels object.
+>
+> 3) fsldma fins another DMA controller with four DMA channels.  Again, it creates
+> all the channel objects and then calls dma_async_device_register().
+>
+> 4) dma_clients_notify_available() is called again.  This time, however, it tells
+> dmatest about *eight* channels, not just the four additional ones.  It does this
+> because fsl_dma_alloc_chan_resources() returns 1 every time it's called.
+>
+> The result is that the some DMA channel will appear twice in dmatest's channel
+> list.  For example, I added a bunch of printks to dma_test_add_channnel:
+>
 
-> We don't even know the extent of the damage yet.  Which distros were
-> affected? With which versions of which userspace packages?
+I believe the problem is that dmatest is telling the core to take
+multiple references on a channel.  Take a look at
+net/core/dev.c:netdev_dma_event and
+crypto:asynx_tx/async_tx.c:dma_channel_add_remove both of those check
+to see if they already have a refence to the channel.
 
-This seems to me to be an extremely fragile selinux user space policy.
-In their code that derives security labels from path names.
-Why don't we have AppArmor in the kernel again?
+> dmatest: Started 1 threads using dma2chan1
+> dmatest_add_channel:372 chan=df1f2a50
+> dmatest_add_channel:382 dtc->chan=df1f2898
+> dmatest_add_channel:382 dtc->chan=df1f2a50
 
-Further I don't see how we could have possibly have supported that user space
-policy.  How can we apply a user space defined label required by the selinux
-policy to a symlink that did not exist?
+^...right here we should be returning DMA_DUP rather than DMA_ACK.
 
-I expect cd /proc/self/net would work.  In your situation and you can
-see /proc/self/net/dev.
+> dmatest_add_channel:382 dtc->chan=df1f2898
 
-Everything here sounds to me like that selinux policy is impossibly brittle.
-And anything that is that brittle I have no intention in claiming is a bug
-in proc.
-
-Eric
+--
+Dan
