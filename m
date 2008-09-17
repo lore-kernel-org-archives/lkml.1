@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbYIQOVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbYIQOX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbYIQOVM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 10:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYIQOU4
+	id S1754489AbYIQOX3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 10:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYIQOXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 10:20:56 -0400
-Received: from mailer1.option.com ([81.246.70.162]:57746 "EHLO
-	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752945AbYIQOU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 10:20:56 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AocBAGSv0EgKAAAZ/2dsb2JhbAAIuGqBZw
-Message-ID: <48D1122F.6080101@option.com>
-Date: Wed, 17 Sep 2008 16:20:31 +0200
-From: Denis Joseph Barrow <D.Barow@option.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 17 Sep 2008 10:23:20 -0400
+Received: from bu3sch.de ([62.75.166.246]:44614 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751875AbYIQOXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 10:23:19 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: Regression in 2.6.27-rcX caused by commit bc19d6e0b74ef03a3baf035412c95192b54dfc6f
+Date: Wed, 17 Sep 2008 16:22:55 +0200
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       Adel Gadllah <adel.gadllah@gmail.com>,
+       wireless <linux-wireless@vger.kernel.org>, bcm43xx-dev@lists.berlios.de,
+       LKML <linux-kernel@vger.kernel.org>
+References: <48CFC03A.8020708@lwfinger.net> <48D0095B.40403@lwfinger.net> <20080916233240.GA18574@srcf.ucam.org>
+In-Reply-To: <20080916233240.GA18574@srcf.ucam.org>
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: "Amit S. Kale" <amitkale@linsyssoft.com>,
-       Tom Rini <trini@kernel.crashing.org>, David Grothe <dave@gcom.com>,
-       Tigran Aivazian <tigran@sco.com>, linux-kernel@vger.kernel.org
-Subject: Re: getting false SIGTRAP breakpoints in kernel i.e. kernel hung
- unless gdb remotely attached on x86 & cont is issued
-References: <48D10A70.8050202@option.com> <48D10C43.90605@windriver.com>
-In-Reply-To: <48D10C43.90605@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Sep 2008 14:20:31.0137 (UTC) FILETIME=[8A6C0910:01C918D0]
+Content-Disposition: inline
+Message-Id: <200809171622.55882.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jason,
-The problem I believe is very reproducable.
-I'm doing nothing special with kgdb just using it to help me with 
-3g modem driver development & my driver wasn't loaded when the problem occured.
-I have the following command in my /boot/grub/menu.lst kernel parameter to enable gdb.
-kgdboc=/dev/ttyS0,115200 maxcpus=1
+On Wednesday 17 September 2008 01:32:40 Matthew Garrett wrote:
+> On Tue, Sep 16, 2008 at 02:30:35PM -0500, Larry Finger wrote:
+> 
+> > I didn't say it was not possible. What I said is that _ONLY_ the
+> > operator's finger could change the state, just like in your laptop.
+> > Thus it makes absolutely no difference what state RFKILL thinks it is
+> > in.
+> 
+> Of course it makes a difference. The reason why two states are provided 
+> is to allow userspace to distinguish whether it can unblock the device 
+> or not. It's clear that b43's rfkill code is astonishingly broken (and 
+> that's not a criticism of anyone involved - the documentation's 
+> confusing and there weren't any good examples of how it should be 
+> implemented).
+> 
+> The real question is how the LED state is supposed to be being toggled, 
+> and what that's got to do with rfkill. I /think/ that the current state 
+> of events is:
 
-And when I do the steps mentioned when in a console I get a message waiting for gdb to attach
-I'm familiar with kgdb, have been using it for years & know enough to be sure this is undesired behaviour.
+Read the rfkill code. It toggles a LED trigger if the state changes from
+UNBLOCKED to BLOCKED. b43 uses that trigger to run the radio LED.
 
-Jason Wessel wrote:
-> Denis Joseph Barrow wrote:
->> Hi ladies/gentlemen,
->> The kernel I'm running gdb with is 2.6.27-rc4
->> The false sigtrap is occuring in ia32_sysenter_target in arch/x86/kernel/entry_32.S:303
->> when gdb is stepped from the user process as described below
->>
->>   
-> 
-> Your example does not indicate how or why you setup kgdb.  kgdb can be
-> compiled into the kernel, but it should not have any effect what so ever
-> unless it is configured for use because it will not register to receive
-> any of the breakpoint or single stepping traps.
-> 
-> Perhaps there is more to the description of your problem?
-> 
-> Jason.
-> 
->> To reproduce
->> compile kernel with kgdb support 
->> compile my randsleep program attached using the .mk script
->> as root
->> attach randsleep to an idle serial port e.g. /dev/ttyS0 by typing
->> randsleep /dev/ttyS0
->> from another bash shell type
->> ps -aux | grep randsleep
->>
->> gdb ./randsleep
->> attach <pid of randsleep>
->>
->> You should get messages from gdb like
->> Attaching to program: /home/djbarrow/devel2/randsleep/randsleep, process 6397
->> Reading symbols from /lib/tls/i686/cmov/libc.so.6...done.
->> Loaded symbols for /lib/tls/i686/cmov/libc.so.6
->> Reading symbols from /lib/ld-linux.so.2...done.
->> Loaded symbols for /lib/ld-linux.so.2
->> 0xb7fda430 in __kernel_vsyscall ()
->>
->> Now type step.
->>
->> The machine is now hung until gdb attaches remotely.
->>
->>
->>   
+> 1) User toggles state
+> 2) b43 changes rfkill state (by using rfkill_force_state). The LED state 
+> should also be changed in the process.
 
+No it shouldn't. LEDs are entirely handled by triggers. We must _never_ toggle
+the LED state from within b43 directly via hardcoded stuff.
+rfkill is responsible for handling the radio LEDs in the machine.
 
 -- 
-best regards,
-D.J. Barrow
+Greetings Michael.
