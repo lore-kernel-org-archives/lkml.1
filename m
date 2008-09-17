@@ -1,207 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYIWNic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbYIWNkF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYIWNic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Sep 2008 09:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYIWNgf
+	id S1753139AbYIWNkF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Sep 2008 09:40:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbYIWNjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Sep 2008 09:36:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50028 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445AbYIWNge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Sep 2008 09:36:34 -0400
-Message-Id: <20080923133501.046482664@programming.kicks-ass.net>
-References: <20080923133340.929758093@programming.kicks-ass.net>
-User-Agent: quilt/0.46-1
-Date: Tue, 23 Sep 2008 15:33:46 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 6/6] sched: rework wakeup preemption
-Content-Disposition: inline; filename=sched-wakeup-preempt.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Tue, 23 Sep 2008 09:39:54 -0400
+Received: from [165.204.77.10] ([165.204.77.10]:48982 "EHLO elemente.amd.com"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751141AbYIWNjy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Sep 2008 09:39:54 -0400
+Message-Id: <200809231436.m8NEaNlM030319@elemente.amd.com>
+In-Reply-To: <b647ffbd0809230212s41d2ef90u2915e40128b254e3@mail.gmail.com>
+References: <b647ffbd0809230212s41d2ef90u2915e40128b254e3@mail.gmail.com>
+From: Peter Oruba <peter.oruba@amd.com>
+Date: Wed, 17 Sep 2008 15:39:18 +0200
+Subject: [RESEND] [PATCH] x86, microcode rework, v2, renaming cont.
+To: Ingo Molnar <mingo@elte.hu>, Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rework the wakeup preemption to work on real runtime instead of
-the virtual runtime. This greatly simplifies the code.
+Renaming based on patch from Dmitry Adamushko.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Further clarification by renaming define and variable related to
+microcode container file.
+
+Signed-off-by: Peter Oruba <peter.oruba@amd.com>
+
+
 ---
- kernel/sched_fair.c |  133 +---------------------------------------------------
- 1 file changed, 4 insertions(+), 129 deletions(-)
+ arch/x86/kernel/microcode_amd.c |   17 ++++++++---------
+ 1 files changed, 8 insertions(+), 9 deletions(-)
 
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -409,64 +409,6 @@ static u64 sched_vslice_add(struct cfs_r
- }
+diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+index 8d97840..113be63 100644
+--- a/arch/x86/kernel/microcode_amd.c
++++ b/arch/x86/kernel/microcode_amd.c
+@@ -233,21 +233,20 @@ static void * get_next_ucode(u8 *buf, unsigned int size,
+ 			unsigned int *mc_size)
+ {
+ 	unsigned int total_size;
+-#define UCODE_UNKNOWN_HDR	8
+-	u8 hdr[UCODE_UNKNOWN_HDR];
++#define UCODE_CONTAINER_SECTION_HDR	8
++	u8 section_hdr[UCODE_CONTAINER_SECTION_HDR];
+ 	void *mc;
  
- /*
-- * The goal of calc_delta_asym() is to be asymmetrically around NICE_0_LOAD, in
-- * that it favours >=0 over <0.
-- *
-- *   -20         |
-- *               |
-- *     0 --------+-------
-- *             .'
-- *    19     .'
-- *
-- */
--static unsigned long
--calc_delta_asym(unsigned long delta, struct sched_entity *se)
--{
--	struct load_weight lw = {
--		.weight = NICE_0_LOAD,
--		.inv_weight = 1UL << (WMULT_SHIFT-NICE_0_SHIFT)
--	};
--
--	for_each_sched_entity(se) {
--		struct load_weight *se_lw = &se->load;
--		unsigned long rw = cfs_rq_of(se)->load.weight;
--
--#ifdef CONFIG_FAIR_SCHED_GROUP
--		struct cfs_rq *cfs_rq = se->my_q;
--		struct task_group *tg = NULL
--
--		if (cfs_rq)
--			tg = cfs_rq->tg;
--
--		if (tg && tg->shares < NICE_0_LOAD) {
--			/*
--			 * scale shares to what it would have been had
--			 * tg->weight been NICE_0_LOAD:
--			 *
--			 *   weight = 1024 * shares / tg->weight
--			 */
--			lw.weight *= se->load.weight;
--			lw.weight /= tg->shares;
--
--			lw.inv_weight = 0;
--
--			se_lw = &lw;
--			rw += lw.weight - se->load.weight;
--		} else
--#endif
--
--		if (se->load.weight < NICE_0_LOAD) {
--			se_lw = &lw;
--			rw += NICE_0_LOAD - se->load.weight;
--		}
--
--		delta = calc_delta_mine(delta, rw, se_lw);
--	}
--
--	return delta;
--}
--
--/*
-  * Update the current task's runtime statistics. Skip current tasks that
-  * are not in our scheduling class.
-  */
-@@ -1283,54 +1225,12 @@ static unsigned long wakeup_gran(struct 
- 	 * + nice tasks.
- 	 */
- 	if (sched_feat(ASYM_GRAN))
--		gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
--	else
--		gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
-+		gran = calc_delta_mine(gran, NICE_0_LOAD, &se->load);
+-	if (get_ucode_data(hdr, buf, UCODE_UNKNOWN_HDR))
++	if (get_ucode_data(section_hdr, buf, UCODE_CONTAINER_SECTION_HDR))
+ 		return NULL;
  
- 	return gran;
- }
- 
- /*
-- * Should 'se' preempt 'curr'.
-- *
-- *             |s1
-- *        |s2
-- *   |s3
-- *         g
-- *      |<--->|c
-- *
-- *  w(c, s1) = -1
-- *  w(c, s2) =  0
-- *  w(c, s3) =  1
-- *
-- */
--static int
--wakeup_preempt_entity(struct sched_entity *curr, struct sched_entity *se)
--{
--	s64 gran, vdiff = curr->vruntime - se->vruntime;
--
--	if (vdiff < 0)
--		return -1;
--
--	gran = wakeup_gran(curr);
--	if (vdiff > gran)
--		return 1;
--
--	return 0;
--}
--
--/* return depth at which a sched entity is present in the hierarchy */
--static inline int depth_se(struct sched_entity *se)
--{
--	int depth = 0;
--
--	for_each_sched_entity(se)
--		depth++;
--
--	return depth;
--}
--
--/*
-  * Preempt the current task with a newly woken task if needed:
-  */
- static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
-@@ -1338,7 +1238,7 @@ static void check_preempt_wakeup(struct 
- 	struct task_struct *curr = rq->curr;
- 	struct cfs_rq *cfs_rq = task_cfs_rq(curr);
- 	struct sched_entity *se = &curr->se, *pse = &p->se;
--	int se_depth, pse_depth;
-+	s64 delta_exec;
- 
- 	if (unlikely(rt_prio(p->prio))) {
- 		update_rq_clock(rq);
-@@ -1376,33 +1276,8 @@ static void check_preempt_wakeup(struct 
- 		return;
+-	if (hdr[0] != UCODE_UCODE_TYPE) {
++	if (section_hdr[0] != UCODE_UCODE_TYPE) {
+ 		printk(KERN_ERR "microcode: error! "
+ 		       "Wrong microcode payload type field\n");
+ 		return NULL;
  	}
  
--	/*
--	 * preemption test can be made between sibling entities who are in the
--	 * same cfs_rq i.e who have a common parent. Walk up the hierarchy of
--	 * both tasks until we find their ancestors who are siblings of common
--	 * parent.
--	 */
--
--	/* First walk up until both entities are at same depth */
--	se_depth = depth_se(se);
--	pse_depth = depth_se(pse);
--
--	while (se_depth > pse_depth) {
--		se_depth--;
--		se = parent_entity(se);
--	}
--
--	while (pse_depth > se_depth) {
--		pse_depth--;
--		pse = parent_entity(pse);
--	}
--
--	while (!is_same_group(se, pse)) {
--		se = parent_entity(se);
--		pse = parent_entity(pse);
--	}
--
--	if (wakeup_preempt_entity(se, pse) == 1)
-+	delta_exec = se->sum_exec_runtime - se->prev_sum_exec_runtime;
-+	if (delta_exec > wakeup_gran(pse))
- 		resched_task(curr);
+-	/* FIXME! dimm: Why not by means of get_totalsize(hdr)? */
+-	total_size = (unsigned long) (hdr[4] + (hdr[5] << 8));
++	total_size = (unsigned long) (section_hdr[4] + (section_hdr[5] << 8));
+ 
+ 	printk(KERN_INFO "microcode: size %u, total_size %u\n",
+ 		size, total_size);
+@@ -260,13 +259,13 @@ static void * get_next_ucode(u8 *buf, unsigned int size,
+ 	mc = vmalloc(UCODE_MAX_SIZE);
+ 	if (mc) {
+ 		memset(mc, 0, UCODE_MAX_SIZE);
+-		if (get_ucode_data(mc, buf + UCODE_UNKNOWN_HDR, total_size)) {
++		if (get_ucode_data(mc, buf + UCODE_CONTAINER_SECTION_HDR, total_size)) {
+ 			vfree(mc);
+ 			mc = NULL;
+ 		} else
+-			*mc_size = total_size + UCODE_UNKNOWN_HDR;
++			*mc_size = total_size + UCODE_CONTAINER_SECTION_HDR;
+ 	}
+-#undef UCODE_UNKNOWN_HDR
++#undef UCODE_CONTAINER_SECTION_HDR
+ 	return mc;
  }
  
-
 -- 
+1.5.4.1
 
