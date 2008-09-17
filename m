@@ -1,282 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYIQQ5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757373AbYIQQ6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756250AbYIQQ5z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbYIQQxX
+	id S1757373AbYIQQ6c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbYIQQx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:53:23 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:11713 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755226AbYIQQxT (ORCPT
+	Wed, 17 Sep 2008 12:53:26 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:53420 "EHLO
+	SG2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755226AbYIQQxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:53:19 -0400
-X-BigFish: VPS4(zzzz10d3izzz32i43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0K7CMW8-04-URS-01
+	Wed, 17 Sep 2008 12:53:24 -0400
+X-BigFish: VPS4(zzzz10d3izzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0K7CMW5-03-U8S-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: linux-kernel@vger.kernel.org
 CC: iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 09/23] AMD IOMMU: add MSI interrupt support
-Date: Wed, 17 Sep 2008 18:52:43 +0200
-Message-ID: <1221670377-19295-10-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
+Date: Wed, 17 Sep 2008 18:52:37 +0200
+Message-ID: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.5.6.4
 In-Reply-To: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
 References: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 17 Sep 2008 16:52:58.0017 (UTC) FILETIME=[D6632910:01C918E5]
+X-OriginalArrivalTime: 17 Sep 2008 16:52:57.0917 (UTC) FILETIME=[D653E6D0:01C918E5]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The AMD IOMMU can generate interrupts for various reasons. This patch
-adds the basic interrupt enabling infrastructure to the driver.
+The IO/TLB flushing on every unmaping operation is the most expensive
+part there and not strictly necessary. It is sufficient to do the flush
+before any entries are reused. This is patch implements lazy IO/TLB
+flushing which does exactly this.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/Kconfig                  |    1 +
- arch/x86/kernel/amd_iommu.c       |   11 ++++
- arch/x86/kernel/amd_iommu_init.c  |   99 ++++++++++++++++++++++++++++++++++++-
- include/asm-x86/amd_iommu.h       |    3 +
- include/asm-x86/amd_iommu_types.h |    7 +++
- 5 files changed, 120 insertions(+), 1 deletions(-)
+ Documentation/kernel-parameters.txt |    5 +++++
+ arch/x86/kernel/amd_iommu.c         |   26 ++++++++++++++++++++++----
+ arch/x86/kernel/amd_iommu_init.c    |   10 +++++++++-
+ include/asm-x86/amd_iommu_types.h   |    9 +++++++++
+ 4 files changed, 45 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 5258240..9c2898c 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -567,6 +567,7 @@ config CALGARY_IOMMU_ENABLED_BY_DEFAULT
- config AMD_IOMMU
- 	bool "AMD IOMMU support"
- 	select SWIOTLB
-+	select PCI_MSI
- 	depends on X86_64 && PCI && ACPI
- 	help
- 	  With this option you can enable support for AMD IOMMU hardware in
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index c2e00ee..5f0aefe 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -284,6 +284,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			isolate - enable device isolation (each device, as far
+ 			          as possible, will get its own protection
+ 			          domain)
++			unmap_flush - enable flushing of IO/TLB entries when
++			              they are unmapped. Otherwise they are
++				      flushed before they will be reused, which
++				      is a lot of faster
++
+ 	amd_iommu_size= [HW,X86-64]
+ 			Define the size of the aperture for the AMD IOMMU
+ 			driver. Possible values are:
 diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index fdec963..3caef6b 100644
+index 691e023..0569098 100644
 --- a/arch/x86/kernel/amd_iommu.c
 +++ b/arch/x86/kernel/amd_iommu.c
-@@ -51,6 +51,17 @@ static int iommu_has_npcache(struct amd_iommu *iommu)
+@@ -203,6 +203,14 @@ static int iommu_flush_pages(struct amd_iommu *iommu, u16 domid,
+ 	return 0;
+ }
  
- /****************************************************************************
-  *
-+ * Interrupt handling functions
-+ *
-+ ****************************************************************************/
-+
-+irqreturn_t amd_iommu_int_handler(int irq, void *data)
++/* Flush the whole IO/TLB for a given protection domain */
++static void iommu_flush_tlb(struct amd_iommu *iommu, u16 domid)
 +{
-+	return IRQ_NONE;
++	u64 address = CMD_INV_IOMMU_ALL_PAGES_ADDRESS;
++
++	iommu_queue_inv_iommu_pages(iommu, address, domid, 0, 1);
 +}
 +
-+/****************************************************************************
-+ *
-  * IOMMU command queuing functions
+ /****************************************************************************
   *
-  ****************************************************************************/
-diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index da619fc..ce3130d 100644
---- a/arch/x86/kernel/amd_iommu_init.c
-+++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -22,6 +22,8 @@
- #include <linux/gfp.h>
- #include <linux/list.h>
- #include <linux/sysdev.h>
-+#include <linux/interrupt.h>
-+#include <linux/msi.h>
- #include <asm/pci-direct.h>
- #include <asm/amd_iommu_types.h>
- #include <asm/amd_iommu.h>
-@@ -516,17 +518,20 @@ static void __init set_device_exclusion_range(u16 devid, struct ivmd_header *m)
- static void __init init_iommu_from_pci(struct amd_iommu *iommu)
- {
- 	int cap_ptr = iommu->cap_ptr;
--	u32 range;
-+	u32 range, misc;
+  * The functions below are used the create the page table mappings for
+@@ -386,14 +394,18 @@ static unsigned long dma_ops_alloc_addresses(struct device *dev,
+ 			PAGE_SIZE) >> PAGE_SHIFT;
+ 	limit = limit < size ? limit : size;
  
- 	pci_read_config_dword(iommu->dev, cap_ptr + MMIO_CAP_HDR_OFFSET,
- 			      &iommu->cap);
- 	pci_read_config_dword(iommu->dev, cap_ptr + MMIO_RANGE_OFFSET,
- 			      &range);
-+	pci_read_config_dword(iommu->dev, cap_ptr + MMIO_MISC_OFFSET,
-+			      &misc);
+-	if (dom->next_bit >= limit)
++	if (dom->next_bit >= limit) {
+ 		dom->next_bit = 0;
++		dom->need_flush = true;
++	}
  
- 	iommu->first_device = calc_devid(MMIO_GET_BUS(range),
- 					 MMIO_GET_FD(range));
- 	iommu->last_device = calc_devid(MMIO_GET_BUS(range),
- 					MMIO_GET_LD(range));
-+	iommu->evt_msi_num = MMIO_MSI_NUM(misc);
+ 	address = iommu_area_alloc(dom->bitmap, limit, dom->next_bit, pages,
+ 			0 , boundary_size, 0);
+-	if (address == -1)
++	if (address == -1) {
+ 		address = iommu_area_alloc(dom->bitmap, limit, 0, pages,
+ 				0, boundary_size, 0);
++		dom->need_flush = true;
++	}
+ 
+ 	if (likely(address != -1)) {
+ 		dom->next_bit = address + pages;
+@@ -553,6 +565,8 @@ static struct dma_ops_domain *dma_ops_domain_alloc(struct amd_iommu *iommu,
+ 	dma_dom->bitmap[0] = 1;
+ 	dma_dom->next_bit = 0;
+ 
++	dma_dom->need_flush = false;
++
+ 	/* Intialize the exclusion range if necessary */
+ 	if (iommu->exclusion_start &&
+ 	    iommu->exclusion_start < dma_dom->aperture_size) {
+@@ -795,7 +809,10 @@ static dma_addr_t __map_single(struct device *dev,
+ 	}
+ 	address += offset;
+ 
+-	if (unlikely(iommu_has_npcache(iommu)))
++	if (unlikely(dma_dom->need_flush && !amd_iommu_unmap_flush)) {
++		iommu_flush_tlb(iommu, dma_dom->domain.id);
++		dma_dom->need_flush = false;
++	} else if (unlikely(iommu_has_npcache(iommu)))
+ 		iommu_flush_pages(iommu, dma_dom->domain.id, address, size);
+ 
+ out:
+@@ -829,7 +846,8 @@ static void __unmap_single(struct amd_iommu *iommu,
+ 
+ 	dma_ops_free_addresses(dma_dom, dma_addr, pages);
+ 
+-	iommu_flush_pages(iommu, dma_dom->domain.id, dma_addr, size);
++	if (amd_iommu_unmap_flush)
++		iommu_flush_pages(iommu, dma_dom->domain.id, dma_addr, size);
  }
  
  /*
-@@ -697,6 +702,8 @@ static int __init init_iommu_one(struct amd_iommu *iommu, struct ivhd_header *h)
- 	if (!iommu->evt_buf)
- 		return -ENOMEM;
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index a69cc0f..da631ab 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -121,6 +121,7 @@ LIST_HEAD(amd_iommu_unity_map);		/* a list of required unity mappings
+ 					   we find in ACPI */
+ unsigned amd_iommu_aperture_order = 26; /* size of aperture in power of 2 */
+ int amd_iommu_isolate;			/* if 1, device isolation is enabled */
++bool amd_iommu_unmap_flush;		/* if true, flush on every unmap */
  
-+	iommu->int_enabled = false;
-+
- 	init_iommu_from_pci(iommu);
- 	init_iommu_from_acpi(iommu, h);
- 	init_iommu_devices(iommu);
-@@ -744,6 +751,95 @@ static int __init init_iommu_all(struct acpi_table_header *table)
+ LIST_HEAD(amd_iommu_list);		/* list of all AMD IOMMUs in the
+ 					   system */
+@@ -995,6 +996,11 @@ int __init amd_iommu_init(void)
+ 	else
+ 		printk("disabled\n");
  
- /****************************************************************************
-  *
-+ * The following functions initialize the MSI interrupts for all IOMMUs
-+ * in the system. Its a bit challenging because there could be multiple
-+ * IOMMUs per PCI BDF but we can call pci_enable_msi(x) only once per
-+ * pci_dev.
-+ *
-+ ****************************************************************************/
++	if (amd_iommu_unmap_flush)
++		printk(KERN_INFO "AMD IOMMU: IO/TLB flush on unmap enabled\n");
++	else
++		printk(KERN_INFO "AMD IOMMU: Lazy IO/TLB flushing enabled\n");
 +
-+static int __init iommu_setup_msix(struct amd_iommu *iommu)
-+{
-+	struct amd_iommu *curr;
-+	struct msix_entry entries[32]; /* only 32 supported by AMD IOMMU */
-+	int nvec = 0, i;
-+
-+	list_for_each_entry(curr, &amd_iommu_list, list) {
-+		if (curr->dev == iommu->dev) {
-+			entries[nvec].entry = curr->evt_msi_num;
-+			entries[nvec].vector = 0;
-+			curr->int_enabled = true;
-+			nvec++;
-+		}
-+	}
-+
-+	if (pci_enable_msix(iommu->dev, entries, nvec)) {
-+		pci_disable_msix(iommu->dev);
-+		return 1;
-+	}
-+
-+	for (i = 0; i < nvec; ++i) {
-+		int r = request_irq(entries->vector, amd_iommu_int_handler,
-+				    IRQF_SAMPLE_RANDOM,
-+				    "AMD IOMMU",
-+				    NULL);
-+		if (r)
-+			goto out_free;
-+	}
-+
-+	return 0;
-+
-+out_free:
-+	for (i -= 1; i >= 0; --i)
-+		free_irq(entries->vector, NULL);
-+
-+	pci_disable_msix(iommu->dev);
-+
-+	return 1;
-+}
-+
-+static int __init iommu_setup_msi(struct amd_iommu *iommu)
-+{
-+	int r;
-+	struct amd_iommu *curr;
-+
-+	list_for_each_entry(curr, &amd_iommu_list, list) {
-+		if (curr->dev == iommu->dev)
-+			curr->int_enabled = true;
-+	}
-+
-+
-+	if (pci_enable_msi(iommu->dev))
-+		return 1;
-+
-+	r = request_irq(iommu->dev->irq, amd_iommu_int_handler,
-+			IRQF_SAMPLE_RANDOM,
-+			"AMD IOMMU",
-+			NULL);
-+
-+	if (r) {
-+		pci_disable_msi(iommu->dev);
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init iommu_init_msi(struct amd_iommu *iommu)
-+{
-+	if (iommu->int_enabled)
-+		return 0;
-+
-+	if (pci_find_capability(iommu->dev, PCI_CAP_ID_MSIX))
-+		return iommu_setup_msix(iommu);
-+	else if (pci_find_capability(iommu->dev, PCI_CAP_ID_MSI))
-+		return iommu_setup_msi(iommu);
-+
-+	return 1;
-+}
-+
-+/****************************************************************************
-+ *
-  * The next functions belong to the third pass of parsing the ACPI
-  * table. In this last pass the memory mapping requirements are
-  * gathered (like exclusion and unity mapping reanges).
-@@ -863,6 +959,7 @@ static void __init enable_iommus(void)
+ out:
+ 	return ret;
  
- 	list_for_each_entry(iommu, &amd_iommu_list, list) {
- 		iommu_set_exclusion_range(iommu);
-+		iommu_init_msi(iommu);
- 		iommu_enable(iommu);
+@@ -1057,8 +1063,10 @@ void __init amd_iommu_detect(void)
+ static int __init parse_amd_iommu_options(char *str)
+ {
+ 	for (; *str; ++str) {
+-		if (strcmp(str, "isolate") == 0)
++		if (strncmp(str, "isolate", 7) == 0)
+ 			amd_iommu_isolate = 1;
++		if (strncmp(str, "unmap_flush", 11) == 0)
++			amd_iommu_unmap_flush = true;
  	}
- }
-diff --git a/include/asm-x86/amd_iommu.h b/include/asm-x86/amd_iommu.h
-index 783f43e..041d0db 100644
---- a/include/asm-x86/amd_iommu.h
-+++ b/include/asm-x86/amd_iommu.h
-@@ -20,10 +20,13 @@
- #ifndef ASM_X86__AMD_IOMMU_H
- #define ASM_X86__AMD_IOMMU_H
  
-+#include <linux/irqreturn.h>
-+
- #ifdef CONFIG_AMD_IOMMU
- extern int amd_iommu_init(void);
- extern int amd_iommu_init_dma_ops(void);
- extern void amd_iommu_detect(void);
-+extern irqreturn_t amd_iommu_int_handler(int irq, void *data);
- #else
- static inline int amd_iommu_init(void) { return -ENODEV; }
- static inline void amd_iommu_detect(void) { }
+ 	return 1;
 diff --git a/include/asm-x86/amd_iommu_types.h b/include/asm-x86/amd_iommu_types.h
-index 58c80f0..6ed8ffa 100644
+index 1ffa4e5..82a26fb 100644
 --- a/include/asm-x86/amd_iommu_types.h
 +++ b/include/asm-x86/amd_iommu_types.h
-@@ -37,6 +37,7 @@
- /* Capability offsets used by the driver */
- #define MMIO_CAP_HDR_OFFSET	0x00
- #define MMIO_RANGE_OFFSET	0x0c
-+#define MMIO_MISC_OFFSET	0x10
- 
- /* Masks, shifts and macros to parse the device range capability */
- #define MMIO_RANGE_LD_MASK	0xff000000
-@@ -48,6 +49,7 @@
- #define MMIO_GET_LD(x)  (((x) & MMIO_RANGE_LD_MASK) >> MMIO_RANGE_LD_SHIFT)
- #define MMIO_GET_FD(x)  (((x) & MMIO_RANGE_FD_MASK) >> MMIO_RANGE_FD_SHIFT)
- #define MMIO_GET_BUS(x) (((x) & MMIO_RANGE_BUS_MASK) >> MMIO_RANGE_BUS_SHIFT)
-+#define MMIO_MSI_NUM(x)	((x) & 0x1f)
- 
- /* Flag masks for the AMD IOMMU exclusion range */
- #define MMIO_EXCL_ENABLE_MASK 0x01ULL
-@@ -255,10 +257,15 @@ struct amd_iommu {
- 	u8 *evt_buf;
- 	/* size of event buffer */
- 	u32 evt_buf_size;
-+	/* MSI number for event interrupt */
-+	u16 evt_msi_num;
- 
- 	/* if one, we need to send a completion wait command */
- 	int need_sync;
- 
-+	/* true if interrupts for this IOMMU are already enabled */
-+	bool int_enabled;
+@@ -196,6 +196,9 @@ struct dma_ops_domain {
+ 	 * just calculate its address in constant time.
+ 	 */
+ 	u64 **pte_pages;
 +
- 	/* default dma_ops domain for that IOMMU */
- 	struct dma_ops_domain *default_dom;
++	/* This will be set to true when TLB needs to be flushed */
++	bool need_flush;
  };
+ 
+ /*
+@@ -322,6 +325,12 @@ extern unsigned long *amd_iommu_pd_alloc_bitmap;
+ /* will be 1 if device isolation is enabled */
+ extern int amd_iommu_isolate;
+ 
++/*
++ * If true, the addresses will be flushed on unmap time, not when
++ * they are reused
++ */
++extern bool amd_iommu_unmap_flush;
++
+ /* takes a PCI device id and prints it out in a readable form */
+ static inline void print_devid(u16 devid, int nl)
+ {
 -- 
 1.5.6.4
 
