@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbYIQLHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbYIQLHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbYIQLHV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 07:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYIQLGH
+	id S1755164AbYIQLHs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 07:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYIQLGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 07:06:07 -0400
+	Wed, 17 Sep 2008 07:06:14 -0400
 Received: from qb-out-0506.google.com ([72.14.204.228]:29149 "EHLO
 	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbYIQLGG (ORCPT
+	with ESMTP id S1752465AbYIQLGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 07:06:06 -0400
+	Wed, 17 Sep 2008 07:06:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=opMixdxOIULh0qbr5PPQd02HENLuvbeEc7wADSfZGBsBauSROl65jS/AYCpiWuLbmA
-         D6EMgQdb1pPD6s8U3Kc8mTIq1WI1ER6XlwlGxkJSATri5KM0+EyZCVlUfKoNi7xgT4Dm
-         vTd2jrEslhlJWGkJJcNiT3nAWrb1SagB3uxZQ=
+        b=po3rYC6m6v7FMOFmEgCTMAqTzsUgtFPw5RN7G+k0Gd2JYJrImAeD60l+64X8GCtZEn
+         QrwEO2EzvFG3UeyCTqMhL8JPhvjzbNtHrR4QUdUl96bTCyeNk777ReXD+CVVrjRHCIoZ
+         dIhd1hZu+RU2SM0YxYXgN0EOQKbfw8IBU7vio=
 From: Andrea Righi <righi.andrea@gmail.com>
 To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
 Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
@@ -29,9 +29,9 @@ Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
        Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
        yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 4/6] memcg: interface to charge the right cgroup of asynchronous i/o activity
-Date: Wed, 17 Sep 2008 13:05:26 +0200
-Message-Id: <1221649528-8519-5-git-send-email-righi.andrea@gmail.com>
+Subject: [PATCH -mm 5/6] i/o controller instrumentation: accounting and throttling
+Date: Wed, 17 Sep 2008 13:05:27 +0200
+Message-Id: <1221649528-8519-6-git-send-email-righi.andrea@gmail.com>
 X-Mailer: git-send-email 1.5.4.3
 In-Reply-To: <>
 References: <>
@@ -39,67 +39,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement get_cgroup_from_page() / put_cgroup_from_page() in the cgroup memory
-controller used to retrieve the owner of a page during writes in submit_bio()
-processed asynchronously by kernel threads (i.e. pdflush).
+Apply the cgroup-io-throttle controller to the opportune kernel functions.
+Both accounting and throttling functionalities are performed by
+cgroup_io_throttle().
 
 Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- include/linux/memcontrol.h |    3 +++
- mm/memcontrol.c            |   26 ++++++++++++++++++++++++++
- 2 files changed, 29 insertions(+), 0 deletions(-)
+ block/blk-core.c      |    4 ++++
+ fs/aio.c              |   12 ++++++++++++
+ fs/direct-io.c        |    3 +++
+ include/linux/sched.h |    5 +++++
+ kernel/fork.c         |    6 +++++-
+ mm/page-writeback.c   |    4 ++++
+ mm/readahead.c        |    3 +++
+ 7 files changed, 36 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index ee1b2fc..92dfd40 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -50,6 +50,9 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 6cb3c6d..cc8a493 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -26,6 +26,7 @@
+ #include <linux/swap.h>
+ #include <linux/writeback.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/fault-inject.h>
  
- extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
+@@ -1504,9 +1505,12 @@ void submit_bio(int rw, struct bio *bio)
+ 	if (bio_has_data(bio)) {
+ 		if (rw & WRITE) {
+ 			count_vm_events(PGPGOUT, count);
++			cgroup_io_throttle(bio_iovec_idx(bio, 0)->bv_page,
++					bio->bi_bdev, bio->bi_size, 0);
+ 		} else {
+ 			task_io_account_read(bio->bi_size);
+ 			count_vm_events(PGPGIN, count);
++			cgroup_io_throttle(NULL, bio->bi_bdev, bio->bi_size, 1);
+ 		}
  
-+extern struct cgroup *get_cgroup_from_page(struct page *page);
-+extern void put_cgroup_from_page(struct page *page);
-+
- #define mm_match_cgroup(mm, cgroup)	\
- 	((cgroup) == mem_cgroup_from_task((mm)->owner))
- 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 2979d22..5321b8b 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -279,6 +279,32 @@ static void unlock_page_cgroup(struct page *page)
- 	bit_spin_unlock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
- }
- 
-+struct cgroup *get_cgroup_from_page(struct page *page)
-+{
-+	struct page_cgroup *pc;
-+	struct cgroup *cgrp = NULL;
-+
-+	lock_page_cgroup(page);
-+	pc = page_get_page_cgroup(page);
-+	if (pc) {
-+		css_get(&pc->mem_cgroup->css);
-+		cgrp = pc->mem_cgroup->css.cgroup;
-+	}
-+	unlock_page_cgroup(page);
-+	return cgrp;
-+}
-+
-+void put_cgroup_from_page(struct page *page)
-+{
-+	struct page_cgroup *pc;
-+
-+	lock_page_cgroup(page);
-+	pc = page_get_page_cgroup(page);
-+	if (pc)
-+		css_put(&pc->mem_cgroup->css);
-+	unlock_page_cgroup(page);
-+}
-+
- static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
- 			struct page_cgroup *pc)
+ 		if (unlikely(block_dump)) {
+diff --git a/fs/aio.c b/fs/aio.c
+index f658441..ee8d452 100644
+--- a/fs/aio.c
++++ b/fs/aio.c
+@@ -22,6 +22,7 @@
+ #include <linux/sched.h>
+ #include <linux/fs.h>
+ #include <linux/file.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/mm.h>
+ #include <linux/mman.h>
+ #include <linux/slab.h>
+@@ -1558,6 +1559,7 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
  {
+ 	struct kiocb *req;
+ 	struct file *file;
++	struct block_device *bdev;
+ 	ssize_t ret;
+ 
+ 	/* enforce forwards compatibility on users */
+@@ -1580,6 +1582,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+ 	if (unlikely(!file))
+ 		return -EBADF;
+ 
++	/* check if we're exceeding the IO throttling limits */
++	bdev = as_to_bdev(file->f_mapping);
++	ret = cgroup_io_throttle(NULL, bdev, 0, 0);
++	if (unlikely(ret)) {
++		fput(file);
++		return -EAGAIN;
++	}
++
+ 	req = aio_get_req(ctx);		/* returns with 2 references to req */
+ 	if (unlikely(!req)) {
+ 		fput(file);
+@@ -1622,12 +1632,14 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
+ 		goto out_put_req;
+ 
+ 	spin_lock_irq(&ctx->ctx_lock);
++	set_in_aio();
+ 	aio_run_iocb(req);
+ 	if (!list_empty(&ctx->run_list)) {
+ 		/* drain the run list */
+ 		while (__aio_run_iocbs(ctx))
+ 			;
+ 	}
++	unset_in_aio();
+ 	spin_unlock_irq(&ctx->ctx_lock);
+ 	aio_put_req(req);	/* drop extra ref to req */
+ 	return 0;
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 9606ee8..66f011a 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -28,6 +28,7 @@
+ #include <linux/highmem.h>
+ #include <linux/pagemap.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/bio.h>
+ #include <linux/wait.h>
+ #include <linux/err.h>
+@@ -657,10 +658,12 @@ submit_page_section(struct dio *dio, struct page *page,
+ 	int ret = 0;
+ 
+ 	if (dio->rw & WRITE) {
++		struct block_device *bdev = dio->inode->i_sb->s_bdev;
+ 		/*
+ 		 * Read accounting is performed in submit_bio()
+ 		 */
+ 		task_io_account_write(len);
++		cgroup_io_throttle(NULL, bdev, 0, 1);
+ 	}
+ 
+ 	/*
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index cd67fac..7b44306 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1210,6 +1210,11 @@ struct task_struct {
+ 	unsigned long ptrace_message;
+ 	siginfo_t *last_siginfo; /* For ptrace use.  */
+ 	struct task_io_accounting ioac;
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++	atomic_t in_aio;
++	unsigned long long io_throttle_cnt;
++	unsigned long long io_throttle_sleep;
++#endif
+ #if defined(CONFIG_TASK_XACCT)
+ 	u64 acct_rss_mem1;	/* accumulated rss usage */
+ 	u64 acct_vm_mem1;	/* accumulated virtual memory usage */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 7b34bc5..bf78d0b 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1004,7 +1004,11 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 
+ 	task_io_accounting_init(&p->ioac);
+ 	acct_clear_integrals(p);
+-
++#ifdef CONFIG_CGROUP_IO_THROTTLE
++	atomic_set(&p->in_aio, 0);
++	p->io_throttle_cnt = 0;
++	p->io_throttle_sleep = 0;
++#endif
+ 	p->it_virt_expires = cputime_zero;
+ 	p->it_prof_expires = cputime_zero;
+ 	p->it_sched_expires = 0;
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index c6d6088..7096b26 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/blkdev.h>
+ #include <linux/mpage.h>
+ #include <linux/rmap.h>
+@@ -556,6 +557,9 @@ void balance_dirty_pages_ratelimited_nr(struct address_space *mapping,
+ 	static DEFINE_PER_CPU(unsigned long, ratelimits) = 0;
+ 	unsigned long ratelimit;
+ 	unsigned long *p;
++	struct block_device *bdev = as_to_bdev(mapping);
++
++	cgroup_io_throttle(NULL, bdev, 0, 1);
+ 
+ 	ratelimit = ratelimit_pages;
+ 	if (mapping->backing_dev_info->dirty_exceeded)
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 137bc56..176ad00 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -14,6 +14,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/blk-io-throttle.h>
+ #include <linux/pagevec.h>
+ #include <linux/pagemap.h>
+ 
+@@ -58,6 +59,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			int (*filler)(void *, struct page *), void *data)
+ {
+ 	struct page *page;
++	struct block_device *bdev = as_to_bdev(mapping);
+ 	int ret = 0;
+ 
+ 	while (!list_empty(pages)) {
+@@ -76,6 +78,7 @@ int read_cache_pages(struct address_space *mapping, struct list_head *pages,
+ 			break;
+ 		}
+ 		task_io_account_read(PAGE_CACHE_SIZE);
++		cgroup_io_throttle(NULL, bdev, PAGE_CACHE_SIZE, 1);
+ 	}
+ 	return ret;
+ }
 -- 
 1.5.4.3
 
