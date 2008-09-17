@@ -1,138 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYIQWNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYIQWTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbYIQWNV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 18:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754318AbYIQWNI
+	id S1755232AbYIQWTO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 18:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbYIQWS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 18:13:08 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:10270 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753450AbYIQWNF (ORCPT
+	Wed, 17 Sep 2008 18:18:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:27726 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753340AbYIQWS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 18:13:05 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-Date: Wed, 17 Sep 2008 18:12:59 -0400
-User-Agent: KMail/1.9.9
-Cc: sds@tycho.nsa.gov, jmorris@namei.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       ebiederm@xmission.com, netdev@vger.kernel.org
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik> <200809171724.36269.paul.moore@hp.com> <20080917144842.7df59f9e.akpm@linux-foundation.org>
-In-Reply-To: <20080917144842.7df59f9e.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Wed, 17 Sep 2008 18:18:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
+        b=wXToPFQsWl8J2/GLApgO3EQqb0jAGv5ietk7T524Eh562X1VrSoDmWJ2yhnz0/nNT0
+         VrjOiNmctd5Ut1kHeNrZ8Pi2mFRWVJ836e786yUYslo3okD7D8kHL3u5DSFAorlaAJR3
+         iz/FTRV7yduYb881EoVZ3OZIW6Z1LMECQA3cQ=
+References: <dd18b0c30809101206j3892e3dbpac9c48cfcaf2982f@mail.gmail.com> <200809170904.20535.bjorn.helgaas@hp.com> <dd18b0c30809171013w3afea64bw9c49e94afe72306a@mail.gmail.com> <200809171548.04857.bjorn.helgaas@hp.com>
+Message-Id: <6FACEDE1-72B7-45DE-ADDF-5FCD4F6E90B8@gmail.com>
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+In-Reply-To: <200809171548.04857.bjorn.helgaas@hp.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809171812.59693.paul.moore@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+X-Mailer: iPhone Mail (5F136)
+Mime-Version: 1.0 (iPhone Mail 5F136)
+Subject: Re: [19.666764] Disabling IRQ #23
+Date: Wed, 17 Sep 2008 15:18:45 -0700
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Chris Snook <csnook@redhat.com>,
+       April Tsui <aprilla@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Linux-usb <linux-usb@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 September 2008 5:48:42 pm Andrew Morton wrote:
-> On Wed, 17 Sep 2008 17:24:36 -0400
+ From what I remember this started around 2.6.27-rc1(I.g. Seeing this  
+message during bootup), with having issues With ift-load probably  
+around 2.6.26-rc1(should of done an upgrade then,but never got around  
+to it), as for this being a regression? I guess; if this was happening  
+with 2.6.26 and other previous kernels.
+  As for my situation I've rebooted again a few times with
+Not receiving this message. As for the issue being fixed? Not sure,  
+one side of me says yes it is due to not having the kernel report any  
+problems, but then there's the side that agrees with what you had  
+said. maybe the problem doesn't happen with different user-space  
+tools, doesn't mean the kernels problem is fixed.
+
+justin P. Mattock
+
+
+
+On Sep 17, 2008, at 2:48 PM, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> On Wednesday 17 September 2008 11:13:55 am Justin Mattock wrote:
+>> I've seeing something interesting at the moment
+>> with this. I've upgraded isight-firmware-tools to the latest,
+>> and instead of using udev I'm using hal. I've done numerous
+>> reboots, and am not receiving this message. I think it might have  
+>> been
+>> something to do with ift-load. If I don't see this message after a  
+>> few more days
+>> of rebooting, and cold starts I think we can close this.
 >
-> Paul Moore <paul.moore@hp.com> wrote:
-> > On Wednesday 17 September 2008 3:50:53 pm Andrew Morton wrote:
-> > > On Mon, 15 Sep 2008 09:05:26 -0400
-> > >
-> > > Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > > > However, the most likely explanation is simply that when
-> > > > /proc/net was changed from being a directory to being a symlink
-> > > > to /proc/self/net, that introduced an additional permission
-> > > > check on accesses of /proc/net/<whatever>, namely the read
-> > > > check on the symlink itself. And since that check wasn't
-> > > > happening on /proc/net accesses with older kernels, older
-> > > > policies didn't allow it.
-> > > >
-> > > > As to why others haven't reported it, I expect that they have
-> > > > updated their policies to newer ones that allow the necessary
-> > > > access.  The fact that legacy distros wouldn't have such
-> > > > updated policies isn't surprising - they don't push updates to
-> > > > those distros for new kernels.  FC5 and FC6 are both EOL'd,
-> > > > right?
-> > > >
-> > > > In any event, we didn't change anything in SELinux - the change
-> > > > was elsewhere (in the proc/net implementation).  Don't blame
-> > > > the messenger please.
-> > >
-> > > Vanilla FC5 broke and vanilla FC6 broke.  Did vanilla FC7, 8 or 9
-> > > break?
-> > >
-> > > http://smolt.fedoraproject.org/static/stats/stats.html shows
-> > > 11,000-odd people running FC5 and FC6.  It would be incautious to
-> > > assume that all those people have updated their selinux rules.
-> > >
-> > > And _requiring_ people to update their selinux rules to fix a
-> > > kernel-caused regression is a pretty big deal for some people, I
-> > > expect.
-> >
-> > Just so I'm clear on the context of the problem, it sounds like if
-> > a FC5 (I'm limiting myself to FC5 for the moment) user upgraded to
-> > a recent (2.6.25+) kernel (non-distro supplied in the case of FC5)
-> > then they will run into problems unless they also upgrade their
-> > SELinux policy, yes?
+> Maybe the problem doesn't happen with different user-space
+> tools, but that doesn't mean the kernel problem is fixed.
 >
-> That only true if the 2.6.25+ kernel.org kernel is
-> backward-incompatible with the distro kernel.
-
-Yep, just wanted to make sure I was understanding the problem correctly.
-
-> > If that is the case I'm not sure it is really that big of a deal. 
-> > Maybe I'm in the minority here, but in my mind once you step away
-> > from the distro supplied kernel (also applies to other packages,
-> > although those are arguably less critical) you should also bear the
-> > responsibility to make sure you upgrade/tweak/install whatever
-> > other bits need to be fixed.
+> And we still don't know whether this is really a regression
+> or not.
 >
-> Nope.  Releasing a non-backward-compatible kernel.org kernel is a big
-> deal.
-
-Well, there is also the issue of distro specific "special sauce" patches 
-which might cause different behavior from the kernel.org kernel, but 
-now we are starting to do down a rat hole ...
-
-> We'll do it sometimes, with long notice, much care and much
-> deliberation.
->
-> We did it this time by sheer accident.  That's known in the trade as
-> a "bug".
-
-It is somewhat comforting to know that we can call what we do a "trade", 
-further commentary on my part is best left to the imagination :)
-
-> > > Then again, given that this regression has been out there since
-> > > 2.6.25, I guess not too many people are hurting from it.  But we
-> > > suck.
-> >
-> > We suck?  Maybe, but some explanation about why we suck in this
-> > particular case would be helpful as far as I'm concerned.  I don't
-> > really care about identifying the guilty suckees, I'm more
-> > interested in finding out what happened to cause us to suck because
-> > of this.
->
-> Because we unintentionally and unknowingly released a kernel which is
-> not compatible with previous kernels without notifying any of our
-> users and without any consideration or planning.
->
-> Yes, often the consequences of the screwup are fairly small, but it's
-> a screwup nonetheless.
-
-Okay, so we suck because broke something in 2.6.25 that went undetected 
-because current SELinux policies happen to be compatible with the 
-breakage.  Gotcha.
-
-> We don't even know the extent of the damage yet.  Which distros were
-> affected? With which versions of which userspace packages?
-
-Can I assume that the "right" thing to do would be to find the problem 
-and revert whatever change caused the issue, yes?  Or are we happy to 
-wait and see since the fallout so far has been minimal?
-
--- 
-paul moore
-linux @ hp
+> Bjorn
