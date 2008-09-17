@@ -1,231 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYIQOUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbYIQOVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbYIQOUl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 10:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYIQOU0
+	id S1754952AbYIQOVM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 10:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbYIQOU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 10:20:26 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:42109 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbYIQOUY (ORCPT
+	Wed, 17 Sep 2008 10:20:56 -0400
+Received: from mailer1.option.com ([81.246.70.162]:57746 "EHLO
+	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752945AbYIQOU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 10:20:24 -0400
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: jeff@garzik.org
-Subject: [PATCH] [2.6.27] ehea: Fix memory hotplug support
-Date: Wed, 17 Sep 2008 16:19:46 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
-       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
-       osstklei@de.ibm.com
-Organization: IBM
+	Wed, 17 Sep 2008 10:20:56 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AocBAGSv0EgKAAAZ/2dsb2JhbAAIuGqBZw
+Message-ID: <48D1122F.6080101@option.com>
+Date: Wed, 17 Sep 2008 16:20:31 +0200
+From: Denis Joseph Barrow <D.Barow@option.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: "Amit S. Kale" <amitkale@linsyssoft.com>,
+       Tom Rini <trini@kernel.crashing.org>, David Grothe <dave@gcom.com>,
+       Tigran Aivazian <tigran@sco.com>, linux-kernel@vger.kernel.org
+Subject: Re: getting false SIGTRAP breakpoints in kernel i.e. kernel hung
+ unless gdb remotely attached on x86 & cont is issued
+References: <48D10A70.8050202@option.com> <48D10C43.90605@windriver.com>
+In-Reply-To: <48D10C43.90605@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809171619.46741.hannes.hering@linux.vnet.ibm.com>
+X-OriginalArrivalTime: 17 Sep 2008 14:20:31.0137 (UTC) FILETIME=[8A6C0910:01C918D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements the memory notifier to update the busmap instantly
-instead of rebuilding the whole map. This is necessary because
-walk_memory_resource provides different information than required during memory
-hotplug.
+Hi Jason,
+The problem I believe is very reproducable.
+I'm doing nothing special with kgdb just using it to help me with 
+3g modem driver development & my driver wasn't loaded when the problem occured.
+I have the following command in my /boot/grub/menu.lst kernel parameter to enable gdb.
+kgdboc=/dev/ttyS0,115200 maxcpus=1
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
----
-This patch is based on upstream-fixes in the netdev-2.6.git.
+And when I do the steps mentioned when in a console I get a message waiting for gdb to attach
+I'm familiar with kgdb, have been using it for years & know enough to be sure this is undesired behaviour.
 
-diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-netdev-2.6/drivers/net/ehea/ehea.h	2008-09-17 16:09:25.729017931 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2008-09-17 16:11:26.481026217 +0200
-@@ -40,13 +40,13 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0092"
-+#define DRV_VERSION	"EHEA_0094"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
- #define DLPAR_MEM_ADD      2
- #define DLPAR_MEM_REM      4
--#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD)
-+#define EHEA_CAPABILITIES  (DLPAR_PORT_ADD_REM | DLPAR_MEM_ADD | DLPAR_MEM_REM)
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
-diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-netdev-2.6/drivers/net/ehea/ehea_main.c	2008-09-17 16:09:25.729017931 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2008-09-17 16:11:26.481026217 +0200
-@@ -2863,7 +2863,7 @@ static void ehea_rereg_mrs(struct work_s
- 	struct ehea_adapter *adapter;
- 
- 	mutex_lock(&dlpar_mem_lock);
--	ehea_info("LPAR memory enlarged - re-initializing driver");
-+	ehea_info("LPAR memory changed - re-initializing driver");
- 
- 	list_for_each_entry(adapter, &adapter_list, list)
- 		if (adapter->active_ports) {
-@@ -2900,13 +2900,6 @@ static void ehea_rereg_mrs(struct work_s
- 			}
- 		}
- 
--	ehea_destroy_busmap();
--	ret = ehea_create_busmap();
--	if (ret) {
--		ehea_error("creating ehea busmap failed");
--		goto out;
--	}
--
- 	clear_bit(__EHEA_STOP_XFER, &ehea_driver_flags);
- 
- 	list_for_each_entry(adapter, &adapter_list, list)
-@@ -3519,9 +3512,20 @@ void ehea_crash_handler(void)
- static int ehea_mem_notifier(struct notifier_block *nb,
-                              unsigned long action, void *data)
- {
-+	struct memory_notify *arg = data;
- 	switch (action) {
--	case MEM_OFFLINE:
--		ehea_info("memory has been removed");
-+	case MEM_CANCEL_OFFLINE:
-+		ehea_info("memory offlining canceled");
-+	case MEM_ONLINE:
-+		ehea_info("memory is going online");
-+		if (ehea_add_sect_bmap(arg->start_pfn, arg->nr_pages))
-+			return NOTIFY_BAD;
-+		ehea_rereg_mrs(NULL);
-+		break;
-+	case MEM_GOING_OFFLINE:
-+		ehea_info("memory is going offline");
-+		if (ehea_rem_sect_bmap(arg->start_pfn, arg->nr_pages))
-+			return NOTIFY_BAD;
- 		ehea_rereg_mrs(NULL);
- 		break;
- 	default:
-diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
---- linux-netdev-2.6/drivers/net/ehea/ehea_qmr.c	2008-09-17 16:09:25.729017931 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-09-17 16:11:26.481026217 +0200
-@@ -587,53 +587,81 @@ static inline int ehea_init_bmap(struct 
- 	return ehea_init_top_bmap(ehea_bmap->top[top], dir);
- }
- 
--static int ehea_create_busmap_callback(unsigned long pfn,
--				       unsigned long nr_pages, void *arg)
-+static DEFINE_MUTEX(ehea_busmap_mutex);
-+static unsigned long ehea_mr_len;
-+
-+#define EHEA_BUSMAP_ADD_SECT 1
-+#define EHEA_BUSMAP_REM_SECT 0
-+
-+static int ehea_update_busmap(unsigned long pfn, unsigned long pgnum, int add)
- {
--	unsigned long i, mr_len, start_section, end_section;
--	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
--	end_section = start_section + ((nr_pages * PAGE_SIZE) / EHEA_SECTSIZE);
--	mr_len = *(unsigned long *)arg;
-+	unsigned long i, start_section, end_section;
- 
- 	if (!ehea_bmap)
- 		ehea_bmap = kzalloc(sizeof(struct ehea_bmap), GFP_KERNEL);
- 	if (!ehea_bmap)
- 		return -ENOMEM;
- 
-+	start_section = (pfn * PAGE_SIZE) / EHEA_SECTSIZE;
-+	end_section = start_section + ((pgnum * PAGE_SIZE) / EHEA_SECTSIZE);
-+
- 	for (i = start_section; i < end_section; i++) {
--		int ret;
--		int top, dir, idx;
- 		u64 vaddr;
-+		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
-+		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
-+		int idx = i & EHEA_INDEX_MASK;
-+
-+		int ret = ehea_init_bmap(ehea_bmap, top, dir);
-+		if (ret) {
-+			if(add) {
-+				return ret;
-+			} else {
-+				continue;
-+			}
-+		}
- 
--		top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
--		dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
--
--		ret = ehea_init_bmap(ehea_bmap, top, dir);
--		if(ret)
--			return ret;
--
--		idx = i & EHEA_INDEX_MASK;
--		vaddr = EHEA_BUSMAP_START + mr_len + i * EHEA_SECTSIZE;
--
-+		if (add) {
-+			vaddr = EHEA_BUSMAP_START + ehea_mr_len;
-+			ehea_mr_len += EHEA_SECTSIZE;
-+		} else { /* remove */
-+			vaddr = 0;
-+			ehea_mr_len -= EHEA_SECTSIZE;
-+		}
- 		ehea_bmap->top[top]->dir[dir]->ent[idx] = vaddr;
- 	}
--
--	mr_len += nr_pages * PAGE_SIZE;
--	*(unsigned long *)arg = mr_len;
--
- 	return 0;
- }
- 
--static unsigned long ehea_mr_len;
-+int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages)
-+{
-+	int ret;
-+	mutex_lock(&ehea_busmap_mutex);
-+	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-+	mutex_unlock(&ehea_busmap_mutex);
-+	return ret;
-+}
- 
--static DEFINE_MUTEX(ehea_busmap_mutex);
-+int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages)
-+{
-+	int ret;
-+	mutex_lock(&ehea_busmap_mutex);
-+	ret = ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_REM_SECT);
-+	mutex_unlock(&ehea_busmap_mutex);
-+	return ret;
-+}
-+
-+static int ehea_create_busmap_callback(unsigned long pfn,
-+				       unsigned long nr_pages, void *arg)
-+{
-+	return ehea_update_busmap(pfn, nr_pages, EHEA_BUSMAP_ADD_SECT);
-+}
- 
- int ehea_create_busmap(void)
- {
- 	int ret;
- 	mutex_lock(&ehea_busmap_mutex);
- 	ehea_mr_len = 0;
--	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, &ehea_mr_len,
-+	ret = walk_memory_resource(0, 1ULL << MAX_PHYSMEM_BITS, NULL,
- 				   ehea_create_busmap_callback);
- 	mutex_unlock(&ehea_busmap_mutex);
- 	return ret;
-diff -Nurp -X dontdiff linux-netdev-2.6/drivers/net/ehea/ehea_qmr.h patched_kernel/drivers/net/ehea/ehea_qmr.h
---- linux-netdev-2.6/drivers/net/ehea/ehea_qmr.h	2008-09-17 16:09:25.729017931 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_qmr.h	2008-09-17 16:11:26.481026217 +0200
-@@ -378,6 +378,8 @@ int ehea_rem_mr(struct ehea_mr *mr);
- 
- void ehea_error_data(struct ehea_adapter *adapter, u64 res_handle);
- 
-+int ehea_add_sect_bmap(unsigned long pfn, unsigned long nr_pages);
-+int ehea_rem_sect_bmap(unsigned long pfn, unsigned long nr_pages);
- int ehea_create_busmap(void);
- void ehea_destroy_busmap(void);
- u64 ehea_map_vaddr(void *caddr);
+Jason Wessel wrote:
+> Denis Joseph Barrow wrote:
+>> Hi ladies/gentlemen,
+>> The kernel I'm running gdb with is 2.6.27-rc4
+>> The false sigtrap is occuring in ia32_sysenter_target in arch/x86/kernel/entry_32.S:303
+>> when gdb is stepped from the user process as described below
+>>
+>>   
+> 
+> Your example does not indicate how or why you setup kgdb.  kgdb can be
+> compiled into the kernel, but it should not have any effect what so ever
+> unless it is configured for use because it will not register to receive
+> any of the breakpoint or single stepping traps.
+> 
+> Perhaps there is more to the description of your problem?
+> 
+> Jason.
+> 
+>> To reproduce
+>> compile kernel with kgdb support 
+>> compile my randsleep program attached using the .mk script
+>> as root
+>> attach randsleep to an idle serial port e.g. /dev/ttyS0 by typing
+>> randsleep /dev/ttyS0
+>> from another bash shell type
+>> ps -aux | grep randsleep
+>>
+>> gdb ./randsleep
+>> attach <pid of randsleep>
+>>
+>> You should get messages from gdb like
+>> Attaching to program: /home/djbarrow/devel2/randsleep/randsleep, process 6397
+>> Reading symbols from /lib/tls/i686/cmov/libc.so.6...done.
+>> Loaded symbols for /lib/tls/i686/cmov/libc.so.6
+>> Reading symbols from /lib/ld-linux.so.2...done.
+>> Loaded symbols for /lib/ld-linux.so.2
+>> 0xb7fda430 in __kernel_vsyscall ()
+>>
+>> Now type step.
+>>
+>> The machine is now hung until gdb attaches remotely.
+>>
+>>
+>>   
+
+
+-- 
+best regards,
+D.J. Barrow
