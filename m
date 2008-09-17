@@ -1,110 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758096AbYIQRCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbYIQRDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758096AbYIQRCQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbYIQRBg
+	id S1757421AbYIQRDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 13:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbYIQRDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 13:01:36 -0400
-Received: from web32607.mail.mud.yahoo.com ([68.142.207.234]:38714 "HELO
-	web32607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757988AbYIQRBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 13:01:33 -0400
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Wed, 17 Sep 2008 10:01:32 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-To: Chuck Lever <chucklever@gmail.com>
-Cc: Peter Staubach <staubach@redhat.com>,
-       linux-nfs list <linux-nfs@vger.kernel.org>,
+	Wed, 17 Sep 2008 13:03:00 -0400
+Received: from styx.suse.cz ([82.119.242.94]:52034 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754329AbYIQRC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 13:02:59 -0400
+Date: Wed, 17 Sep 2008 19:03:09 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: linux-input@vger.kernel.org, Anssi Hannula <anssi.hannula@gmail.com>,
        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] HID: move pantherlord FF processing
+In-Reply-To: <1220533187-21848-1-git-send-email-jirislaby@gmail.com>
+Message-ID: <alpine.LNX.1.10.0809171900030.19221@pegasus.suse.cz>
+References: <1220533187-21848-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <2236.70458.qm@web32607.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
+On Thu, 4 Sep 2008, Jiri Slaby wrote:
 
-> From: Chuck Lever <chucklever@gmail.com>
-> To: Martin Knoblauch <knobi@knobisoft.de>
-> Cc: Peter Staubach <staubach@redhat.com>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org
-> Sent: Wednesday, September 17, 2008 6:43:48 PM
-> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+> Move the force feedback precessing into a separate module.
 > 
-> On Wed, Sep 17, 2008 at 11:23 AM, Martin Knoblauch wrote:
-> > ----- Original Message ----
-> >
-> >> From: Chuck Lever 
-> >> To: Peter Staubach 
-> >> Cc: Martin Knoblauch ; linux-nfs list 
-> ; linux-kernel@vger.kernel.org
-> >> Sent: Wednesday, September 17, 2008 5:41:15 PM
-> >> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-> >>
-> >> On Wed, Sep 17, 2008 at 9:06 AM, Peter Staubach wrote:
-> >> > Martin Knoblauch wrote:
-> >> >>
-> >> >> Hi,
-> >> >>
-> >> >> the following/attached patch works around a [obscure] problem when an 2.6
-> >> >> (not sure/caring about 2.4) NFS client accesses an "offline" file on a
-> >> >> Sun/Solaris-10 NFS server when the underlying filesystem is of type 
-> SAM-FS.
-> >> >> Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux
-> >> >> problem, but the chance for a short-/mid-term solution from Sun are very
-> >> >> slim. So, being lazy, I would love to get this patch into Linux. If not, I
-> >> >> just will have to maintain it for eternity out of tree.
-> >> >>
-> >> >> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores
-> >> >> meta-data and a relatively small amount of data "online" on disk and 
-> pushes
-> >> >> old or infrequently used data to "offline" media like e.g. tape. This is
-> >> >> completely transparent to the users. If the date for an "offline" file is
-> >> >> needed, the so called "stager daemon" copies it back from the offline
-> >> >> medium. All of this works great most of the time. Now, if an Linux NFS
-> >> >> client tries to read such an offline file, performance drops to "extremely
-> >> >> slow". After lengthly investigation of tcp-dumps, mount options and
-> >> >> procedures involving black cats at midnight, we found out that the 
-> readahead
-> >> >> behaviour of the Linux NFS client causes the problem. Basically it seems 
-> to
-> >> >> issue read requests up to 15*rsize to the server. In the case of the
-> >> >> "offline" files, this behaviour causes heavy competition for the inode 
-> lock
-> >> >> between the NFSD process and the stager daemon on the Solaris server.
-> >> >>
-> >> >> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks
-> >> >> the problem, but a solution will need time. Lots of it.
-> >> >> - The working solution: disable the client side readahead, or make it
-> >> >> tunable. The patch does that by introducing a NFS module parameter
-> >> >> "ra_factor" which can take values between 1 and 15 (default 15) and a
-> >> >> tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
-> >> >
-> >> > Hi.
-> >> >
-> >> > I was curious if a design to limit or eliminate read-ahead
-> >> > activity when the server returns EJUKEBOX was considered?
-> >> > Unless one can know that the server and client can get into
-> >> > this situation ahead of time, how would the tunable be used?
-> >>
-> >> I tend to agree.  A tunable is probably not a good solution in this case.
-> >>
-> >> I would bet that this lock contention issue is a problem in other more
-> >> common cases, and would merit some careful analysis.
-> >>
-> >
-> >  Are you talking wrt. a Solaris NFS-Server with SAM-FS/QFS as backend 
-> filesystem?
-> 
-> I misread your mail, and thought the inode lock contention issue was
-> on the client.
-> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
- No problem, maybe I was not articulating myself clearly.  Just to restate - the lock contention happens on the server.
+> diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+> index 0784a09..a4d9695 100644
+> --- a/drivers/hid/hid-ids.h
+> +++ b/drivers/hid/hid-ids.h
+> @@ -373,6 +373,8 @@
+>  #define USB_DEVICE_ID_QUAD_USB_JOYPAD	0x8800
+>  #define USB_DEVICE_ID_DUAL_USB_JOYPAD	0x8866
+>  
+> +#define USB_VENDOR_ID_GREENASIA		0x0e8f
+> +
+>  #define USB_VENDOR_ID_WISEGROUP_LTD	0x6666
+>  #define USB_VENDOR_ID_WISEGROUP_LTD2	0x6677
+>  #define USB_DEVICE_ID_SMARTJOY_DUAL_PLUS 0x8802
 
-Cheers
-Martin
+Could we please preserve alphabetical ordering in hid-ids.h file?
 
+Otherwise the series looks good to me, and Anssi didn't complain as well. 
+Could you please rebase it on top of the current HID tree, fix the 
+ordering, and send it to me again, I will apply it?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
