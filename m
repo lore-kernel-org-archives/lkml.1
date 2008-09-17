@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYIQTdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYIQTgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755277AbYIQTdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYIQTd1
+	id S1754833AbYIQTgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYIQTgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:33:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41675 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbYIQTd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:33:26 -0400
-Message-ID: <48D15AC6.3060608@redhat.com>
-Date: Wed, 17 Sep 2008 12:30:14 -0700
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Wed, 17 Sep 2008 15:36:39 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:10077 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbYIQTgh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:36:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=T9o/uRYuFRxNriq4xI5mqfPtFtQAxqfELxmtMDDSrFZEG7LZFDGrA7CKz1Bx6BwLN6
+         uHHtYXhiC0lYYiLT08xvxhAQNvvsDwq64rO0yrKsWYmhi5b9nkEQgzXUm/UB3TEx/7Mz
+         ku0TtPxO/kDUUhtOq9IDxyyavhRO0SLY5yvtc=
+Message-ID: <41840b750809171236s524f1a70i3e1624a2facd9d44@mail.gmail.com>
+Date: Wed, 17 Sep 2008 15:36:36 -0400
+From: "Shem Multinymous" <multinymous@gmail.com>
+To: "Elias Oltmanns" <eo@nebensachen.de>
+Subject: Re: Laptop shock detection and harddisk protection
+Cc: "Pavel Machek" <pavel@suse.cz>, "Tejun Heo" <tj@kernel.org>,
+       "Thomas Renninger" <trenn@suse.de>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>
+In-Reply-To: <87d4j2ol2a.fsf@denkblock.local>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, eugeneteo@kernel.sg
-Subject: Re: [PATCH 3/4] ext2: Avoid printk floods in the face of directory
- corruption
-References: <1221319971-29879-1-git-send-email-tytso@mit.edu>	<1221319971-29879-2-git-send-email-tytso@mit.edu>	<1221319971-29879-3-git-send-email-tytso@mit.edu> <20080917122556.bfe2ec7d.akpm@linux-foundation.org>
-In-Reply-To: <20080917122556.bfe2ec7d.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48C7FCEE.8060404@kernel.org>
+	 <41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
+	 <48C948A6.3080404@kernel.org> <877i9ipi56.fsf@denkblock.local>
+	 <20080817195103.GD4043@ucw.cz> <87d4j2ol2a.fsf@denkblock.local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 13 Sep 2008 11:32:50 -0400
-> "Theodore Ts'o" <tytso@MIT.EDU> wrote:
-> 
->> From: "Theodore Ts'o" <tytso@MIT.EDU>
->> To: akpm@linux-foundation.org
->> Cc: linux-kernel@vger.kernel.org, "Theodore Ts'o" <tytso@MIT.EDU>, Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org, Eugene Teo <eugeneteo@kernel.sg>
->> Subject: [PATCH 3/4] ext2: Avoid printk floods in the face of directory corruption
->> Date: Sat, 13 Sep 2008 11:32:50 -0400
->> X-Mailer: git-send-email 1.5.6.1.205.ge2c7.dirty
+On Wed, Sep 17, 2008 at 11:21 AM, Elias Oltmanns <eo@nebensachen.de> wrote:
+>>> 2. Make shock protection interact nicely with suspend operations:
+>>>    currently, we are out of luck if anything should happen after
+>>>    processes have been frozen. This is particularly unfortunatel in the
+>>>    case of s2disk.
 >>
->> Note: some people thinks this represents a security bug, since it
->> might make the system go away while it is printing a large number of
->> console messages, especially if a serial console is involved.  Hence,
->> it has been assigned CVE-2008-3528, but it requires that the attacker
->> either has physical access to your machine to insert a USB disk with a
->> corrupted filesystem image (at which point why not just hit the power
->> button), or is otherwise able to convince the system administrator to
->> mount an arbitrary filesystem image (at which point why not just
->> include a setuid shell or world-writable hard disk device file or some
->> such).  Me, I think they're just being silly.
->>
->> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
->> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
->> Cc: linux-ext4@vger.kernel.org
->> Cc: Eugene Teo <eugeneteo@kernel.sg>
-> 
-> This patch was purportedly authored by yourself, but I'm going to
-> assume that it was authored by Eric.
+>> I'd say that s2disk is similar to early boot... no protection there.
+>
+> Well, this is true for resume. However, I can't help thinking that we
+> may do better than that until the disk spins down, particularly while
+> writing the image to disk.
 
-It was, after some discussion w/ Ted & Andreas.
+Agreed.
+Practically, disk protection during suspend-to-disk sounds very
+useful, given the typical usage scenario: you press button to
+hibernate and start shuffling around your chair/desk in preparation
+for leaving the room. Dropping the laptop is more likely than ever at
+this point. Resume-from-disk tends to be done after settling down into
+your chair/desk, so the drop risk is lower.
 
-Also just FWIW I'm also in the "as a security issue this is a bit silly"
-camp ;)
-
-Thanks,
--Eric
+  Shem
