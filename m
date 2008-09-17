@@ -1,169 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbYIQIFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYIQILg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144AbYIQIFF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 04:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYIQIEt
+	id S1753266AbYIQILg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 04:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbYIQILV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 04:04:49 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:34533 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751296AbYIQIEr (ORCPT
+	Wed, 17 Sep 2008 04:11:21 -0400
+Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:24154 "HELO
+	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751432AbYIQILT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 04:04:47 -0400
-Message-ID: <48D0B9C7.6010206@oss.ntt.co.jp>
-Date: Wed, 17 Sep 2008 17:03:19 +0900
-From: Kazuo Ito <ito.kazuo@oss.ntt.co.jp>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 17 Sep 2008 04:11:19 -0400
+X-YMail-OSG: Q8de91AVM1kKdw.YIq2T.ZzQEUbCF_VIipsgFj.l_0cRZd0M7XsHXhMvl4yE9Ox1aQk8sA2p8xTJnNEXlXVMw41KxJ8xgeFdD404TKY1w6iEt3_q30p6SgE.VE0uaKw-
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Wed, 17 Sep 2008 01:11:17 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: How to find out, what "pdflush" is working on
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>,
+       Fengguang Wu <wfg@mail.ustc.edu.cn>
 MIME-Version: 1.0
-To: dm-devel@redhat.com
-CC: jblunck@suse.de, kjamieson@bycast.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] dm-snapshot: poor copy-on-write performance due to I/O reordering
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <33099.10057.qm@web32603.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+----- Original Message ----
 
-Write throughput to LVM snapshot origin volume is an order
-of magnitude slower than those to LV without snapshots or
-snapshot target volumes, especially in the case of sequential
-writes with O_SYNC on.
+> From: Chris Snook <csnook@redhat.com>
+> To: Martin Knoblauch <knobi@knobisoft.de>
+> Cc: linux-kernel@vger.kernel.org; Peter zijlstra <a.p.zijlstra@chello.nl>; Fengguang Wu <wfg@mail.ustc.edu.cn>
+> Sent: Tuesday, September 16, 2008 9:07:29 PM
+> Subject: Re: How to find out, what "pdflush" is working on
+> 
+> Martin Knoblauch wrote:
+> > Hi,
+> > 
+> > I find the following comment in mm/pdflush.c
+> > 
+> > /* * The pdflush threads are worker threads for writing back dirty data. *
+> > Ideally, we'd like one thread per active disk spindle.  But the disk *
+> > topology is very hard to divine at this level.   Instead, we take * care in
+> > various places to prevent more than one pdflush thread from * performing
+> > writeback against a single filesystem.  pdflush threads * have the PF_FLUSHER
+> > flag set in current->flags to aid in this. */
+> > 
+> > Is there a way to find out what a certain instance of "pdflush" is working
+> > on? Like which block-device or which fliesystem it is writing to? I am still
+> > (2.6.27) trying to track down why writing a single file can make linux very
+> > sluggish and unresponsive. If that happens I usually see all possible 8
+> > "pdflush" threads being in "D"-state. According to above comment only one of
+> > them should be really busy.
+> 
+> The key word is "ideally".  We'd like it to work that way, but it doesn't. 
+> Patches to fix this are welcome.
+> 
 
-The following patch originally written by Kevin Jamieson and
-Jan Blunck and slightly modified for the current RCs by myself
-tries to improve the performance by modifying the behaviour
-of kcopyd, so that it pushes back an I/O job to the head of
-the job queue instead of the tail as process_jobs() currently
-does when it has to wait for free pages. This way, write
-requests aren't shuffled to cause extra seeks.
+ Now, I am pretty much aware that apparently things are not "ideal". Therefore my question. Because before doing patches, one has to analyze.
 
-I tested the patch against 2.6.27-rc5 and got the following results.
-The test is a dd command writing to snapshot origin followed by fsync
-to the file just created/updated.  A couple of filesystem benchmarks
-gave me similar results in case of sequential writes, while random
-writes didn't suffer much.
-
-dd if=/dev/zero of=<somewhere on snapshot origin> bs=4096 count=...
-   [conv=notrunc when updating]
-
-1) linux 2.6.27-rc5 without the patch, write to snapshot origin,
-average throughput (MB/s)
-                     10M     100M    1000M
-create,dd         511.46   610.72    11.81
-create,dd+fsync     7.10     6.77     8.13
-update,dd         431.63   917.41    12.75
-update,dd+fsync     7.79     7.43     8.12
-
-compared with write throughput to LV without any snapshots,
-all dd+fsync and 1000 MiB writes perform very poorly.
-
-                     10M     100M    1000M
-create,dd         555.03   608.98   123.29
-create,dd+fsync   114.27    72.78    76.65
-update,dd         152.34  1267.27   124.04
-update,dd+fsync   130.56    77.81    77.84
-
-
-2) linux 2.6.27-rc5 with the patch, write to snapshot origin,
-average throughput (MB/s)
-
-                     10M     100M    1000M
-create,dd         537.06   589.44    46.21
-create,dd+fsync    31.63    29.19    29.23
-update,dd         487.59   897.65    37.76
-update,dd+fsync    34.12    30.07    26.85
-
-Although still not on par with plain LV performance -
-cannot be avoided because it's copy on write anyway -
-this simple patch successfully improves throughtput
-of dd+fsync while not affecting the rest.
-
-Here's the original message:
-> Date: Wed, 30 May 2007 15:56:42 -0700
-> From: Kevin Jamieson <kjamieson@bycast.com>
-> Subject: snapshot: kcopyd performance
->
-> Hi,
->
-> I've been investigating some performance issues with writes to a LVM2
-> snapshot origin volume being much slower than one would expect (i.e.,
-> 10-50x slower for a logical volume with a single snapshot volume).
->
-> Using a simple dd test (I get similar numbers with other tools like
-> bonnie) on a P4 3GHz w/SATA disks (no RAID):
->
-> dd if=/dev/zero of=/vol/file bs=1M count=1000
->
-> Logical volume w/o snapshot: 45.4 MB/s
-> LV w/snapshot on same disk, chunksize=8K: 1.1 MB/s
-> LV w/snapshot on same disk, chunksize=512K: 4.0 MB/s
-> LV w/snapshot on separate disk, chunksize=8K: 1.2 MB/s
-> LV w/snapshot on separate disk, chunksize=512K: 5.6 MB/s
->
-> I tracked the main cause of the poor performance to the behaviour of
-> process_jobs() in kcopyd. If kcopyd's page pool has no free pages, it
-> moves the next job in the _pages_jobs list to the tail of the list.
-> New jobs are also added to the tail of the _pages_jobs list (in
-> dispatch_job()). This re-ordering of the I/Os results in a lot of extra
-> seek activity for workloads consisting of sequential writes.
->
-> The below patch modifies process_jobs() to push the job back to the head
-> of the list instead of the tail when there are no free pages. I see
-> significantly improved performance with this change:
->
-> LV w/snapshot on same disk, chunksize=8K: 9.6 MB/s
-> LV w/snapshot on same disk, chunksize=512K: 8.4 MB/s
-> LV w/snapshot on separate disk, chunksize=8K: 17.2 MB/s
-> LV w/snapshot on separate disk, chunksize=512K: 14.5 MB/s
->
-> Thanks,
-> Kevin
->
-> Signed-off-by: Jan Blunck <jblunck@suse.de>
-
-Regards,
-
-Kazuo Ito, NTT Open Source Software Center
-Phone: +81-3-5860-5125 / FAX: +81-3-5463-5690 / E-mail: ito.kazuo@oss.ntt.co.jp
-
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Kazuo Ito <ito.kazuo@oss.ntt.co.jp>
----
- drivers/md/dm-kcopyd.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/md/dm-kcopyd.c b/drivers/md/dm-kcopyd.c
-index 996802b..8f15353 100644
---- a/drivers/md/dm-kcopyd.c
-+++ b/drivers/md/dm-kcopyd.c
-@@ -268,6 +268,17 @@ static void push(struct list_head *jobs, struct kcopyd_job *job)
- 	spin_unlock_irqrestore(&kc->job_lock, flags);
- }
-
-+
-+static void push_head(struct list_head *jobs, struct kcopyd_job *job)
-+{
-+	unsigned long flags;
-+	struct dm_kcopyd_client *kc = job->kc;
-+
-+	spin_lock_irqsave(&kc->job_lock, flags);
-+	list_add(&job->list, jobs);
-+	spin_unlock_irqrestore(&kc->job_lock, flags);
-+}
-+
- /*
-  * These three functions process 1 item from the corresponding
-  * job list.
-@@ -398,7 +409,7 @@ static int process_jobs(struct list_head *jobs, struct dm_kcopyd_client *kc,
- 			 * We couldn't service this job ATM, so
- 			 * push this job back onto the list.
- 			 */
--			push(jobs, job);
-+			push_head(jobs, job);
- 			break;
- 		}
-
-
+Cheers
+Martin
 
