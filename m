@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbYIQVjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYIQVk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbYIQVjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 17:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYIQVjP
+	id S1755413AbYIQVk6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 17:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYIQVku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 17:39:15 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55716 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380AbYIQVjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 17:39:14 -0400
-Message-ID: <48D178FB.80902@garzik.org>
-Date: Wed, 17 Sep 2008 17:39:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@linux.intel.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org, davem@davemloft.net
-Subject: Re: warn: Turn the netdev timeout WARN_ON() into a WARN()
-References: <200809170259.m8H2xClI020907@hera.kernel.org>	<20080917032708.GA8431@havoc.gtf.org> <20080917064128.2b2f8616@linux.intel.com>
-In-Reply-To: <20080917064128.2b2f8616@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 17 Sep 2008 17:40:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34880 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753553AbYIQVkt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 17:40:49 -0400
+Date: Wed, 17 Sep 2008 14:39:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
+	<ukleinek@informatik.uni-freiburg.de>
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, g.liakhovetski@pengutronix.de,
+       greg@kroah.com, kay.sievers@vrfy.org, rmk+kernel@arm.linux.org.uk
+Subject: Re: [PATCH] gpio_free might sleep, mips architecture
+Message-Id: <20080917143955.2d3727e5.akpm@linux-foundation.org>
+In-Reply-To: <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
+References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	<1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de>
+	<1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de>
+	<1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH] net: WARN_ONCE -> WARN as requested by Jeff Garzik
+On Mon, 15 Sep 2008 22:02:41 +0200
+Uwe Kleine-K__nig <ukleinek@informatik.uni-freiburg.de> wrote:
+
+> According to the documentation gpio_free should only be called from task
+> context only.  To make this more explicit add a might sleep to all
+> implementations.
 > 
-> Jeff points out that you want to see each and every
-> timeout message
+> This patch changes the gpio_free implementations for the mips
+> architecture.
 > 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> Signed-off-by: Uwe Kleine-K__nig <ukleinek@informatik.uni-freiburg.de>
+> Cc: David Brownell <david-b@pacbell.net>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 > ---
->  net/sched/sch_generic.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  include/asm-mips/mach-au1x00/gpio.h  |    2 ++
+>  include/asm-mips/mach-bcm47xx/gpio.h |    3 +++
+>  include/asm-mips/mach-rc32434/gpio.h |    2 ++
+>  3 files changed, 7 insertions(+), 0 deletions(-)
 > 
-> diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
-> index ec0a083..8772642 100644
-> --- a/net/sched/sch_generic.c
-> +++ b/net/sched/sch_generic.c
-> @@ -215,7 +215,7 @@ static void dev_watchdog(unsigned long arg)
->  			    time_after(jiffies, (dev->trans_start +
->  						 dev->watchdog_timeo))) {
->  				char drivername[64];
-> -				WARN_ONCE(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit timed out\n",
-> +				WARN(1, KERN_INFO "NETDEV WATCHDOG: %s (%s): transmit timed out\n",
->  				       dev->name, netdev_drivername(dev, drivername, 64));
->  				dev->tx_timeout(dev);
+> diff --git a/include/asm-mips/mach-au1x00/gpio.h b/include/asm-mips/mach-au1x00/gpio.h
+> index 2dc61e0..31eddba 100644
+> --- a/include/asm-mips/mach-au1x00/gpio.h
+> +++ b/include/asm-mips/mach-au1x00/gpio.h
+> @@ -1,6 +1,7 @@
+>  #ifndef _AU1XXX_GPIO_H_
+>  #define _AU1XXX_GPIO_H_
+>  
+> +#include <linux/kernel.h>
+>  #include <linux/types.h>
+>  
+>  #define AU1XXX_GPIO_BASE	200
+> @@ -31,6 +32,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
+>  static inline void gpio_free(unsigned gpio)
+>  {
+>  	/* Not yet implemented */
+> +	might_sleep();
+>  }
+>  
+>  static inline int gpio_direction_input(unsigned gpio)
+> diff --git a/include/asm-mips/mach-bcm47xx/gpio.h b/include/asm-mips/mach-bcm47xx/gpio.h
+> index cfc8f4d..af17ccd 100644
+> --- a/include/asm-mips/mach-bcm47xx/gpio.h
+> +++ b/include/asm-mips/mach-bcm47xx/gpio.h
+> @@ -9,6 +9,8 @@
+>  #ifndef __BCM47XX_GPIO_H
+>  #define __BCM47XX_GPIO_H
+>  
+> +#include <linux/kernel.h>
+> +
+>  #define BCM47XX_EXTIF_GPIO_LINES	5
+>  #define BCM47XX_CHIPCO_GPIO_LINES	16
+>  
+> @@ -25,6 +27,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
+>  
+>  static inline void gpio_free(unsigned gpio)
+>  {
+> +	might_sleep();
+>  }
+>  
+>  static inline int gpio_to_irq(unsigned gpio)
+> diff --git a/include/asm-mips/mach-rc32434/gpio.h b/include/asm-mips/mach-rc32434/gpio.h
+> index f946f5f..9b4722e 100644
+> --- a/include/asm-mips/mach-rc32434/gpio.h
+> +++ b/include/asm-mips/mach-rc32434/gpio.h
+> @@ -13,6 +13,7 @@
+>  #ifndef _RC32434_GPIO_H_
+>  #define _RC32434_GPIO_H_
+>  
+> +#include <linux/kernel.h>
+>  #include <linux/types.h>
+>  
+>  struct rb532_gpio_reg {
+> @@ -88,6 +89,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
+>  static inline void gpio_free(unsigned gpio)
+>  {
+>  	/* Not yet implemented */
+> +	might_sleep();
+>  }
+>  
 
-
-ACK, this fixes my objection, thanks
-
-It still seems a bit burdensome to print out a huge, redundant backtrace 
-and kernel info each time, though.
-
-The most important information is (a) a timeout occurred and (b) 
-hopefully some hardware register dump or similar driver-specific output.
-
-> If all the networking guys agree that the report
-> has no value for developers because they're all unfixable hardware bugs,
-
-You misunderstand; reporting and tracking these issues have value, but 
-the information you are dumping (specifically the backtrace) does not.
-
-You say your goal here mainly to standardize reporting to permit 
-automated collection -- I support that goal too.  But is there a better 
-way -- say perhaps just printing the header you need, and _not_ the 
-useless backtrace?
-
-I think it would benefit Linux if our bugs announce themselves in a 
-standard way, but the backtrace is not a key part of that, and IMO 
-should be optional.
-
-	Jeff
-
-
+There is no gpio_free() in linux-next's include/asm-mips/mach-rc32434/gpio.h
