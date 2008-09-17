@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYIQIgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbYIQIik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbYIQIgF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 04:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYIQIfm
+	id S1754593AbYIQIik (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 04:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbYIQIic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 04:35:42 -0400
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:55701 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754718AbYIQIfj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 04:35:39 -0400
-Message-ID: <48D0C157.7050406@nttdata.co.jp>
-Date: Wed, 17 Sep 2008 17:35:35 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.16) Gecko/20080708 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
+	Wed, 17 Sep 2008 04:38:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43023 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751644AbYIQIic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 04:38:32 -0400
+Date: Wed, 17 Sep 2008 10:38:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] x86: add KERN_APIC
+Message-ID: <20080917083809.GB24035@elte.hu>
+References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <1221640067-24389-7-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-To: Casey Schaufler <casey@schaufler-ca.com>
-CC: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Toshiharu Harada <haradats@nttdata.co.jp>
-Subject: Re: [PATCH] Introduce new LSM hooks where vfsmount is available.
-References: <48C65E9D.3070106@nttdata.co.jp>	<5fb14edc0809090902m32431bf6yf518a457e410764d@mail.gmail.com> <20080910134540.45ec1272.akpm@linux-foundation.org> <48C877DE.4040402@nttdata.co.jp> <48D06865.8070602@nttdata.co.jp> <48D080D1.5060405@schaufler-ca.com>
-In-Reply-To: <48D080D1.5060405@schaufler-ca.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Sep 2008 08:35:35.0471 (UTC) FILETIME=[5AD803F0:01C918A0]
+Content-Disposition: inline
+In-Reply-To: <1221640067-24389-7-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler wrote:
-> As always, the community will be eager to see the code that makes
-> use of these hooks.
-We are ready for submitting body of TOMOYO Linux as always. :-)
-However, the largest stumbling block of merging TOMOYO Linux is the
-method for calculating pathname in LSM module. This patch contains
-all modifications to the existing kernel code by TOMOYO Linux (the
-rest modification is within security/tomoyo).
 
-We'd like to ask the community's approval of this approach before
-review of TOMOYO Linux main module.
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-Regards,
+> and kill apic_printk
+> using loglevel=apic:8 instead
 
+yes, that aspect is very nice.
+
+> +DEFINE_LOGLEVEL_SETUP_DEF(apic, KERN_APIC, "apic:", 6);
+
+> -		printk(KERN_WARNING "APIC calibration not consistent "
+> +		printk(KERN_WARNING KERN_APIC "APIC calibration not consistent "
+
+here too the question arises: what should the semantics of the 'mixing' 
+of such subsystem printk tags with the classic priority tags be. I think 
+in this particular case we dont want the KERN_APIC tag, as that would 
+prevent this failure message to be printed by default. I.e. this line 
+should remain:
+
+> -		printk(KERN_WARNING "APIC calibration not consistent "
+
+to make sure this warning always shows up in the logs. Agreed?
+
+	Ingo
