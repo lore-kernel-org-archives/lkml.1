@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbYIQJ40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbYIQJ61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbYIQJ40 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 05:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYIQJ4R
+	id S1754315AbYIQJ61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 05:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYIQJ6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 05:56:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54228 "EHLO mx3.mail.elte.hu"
+	Wed, 17 Sep 2008 05:58:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33393 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbYIQJ4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 05:56:17 -0400
-Date: Wed, 17 Sep 2008 11:55:58 +0200
+	id S1751214AbYIQJ6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 05:58:18 -0400
+Date: Wed, 17 Sep 2008 11:58:00 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Ravikiran G Thirumalai <kiran@scalex86.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, torvalds@linux-foundation.org
-Subject: Re: [2.6.27-rc6 regression] Intermittent boot problem with
-	2.6.27-rc6
-Message-ID: <20080917095558.GB7040@elte.hu>
-References: <20080916200414.GB16993@localdomain> <1221639786.25574.27.camel@ymzhang>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [git pull] x86 fixes
+Message-ID: <20080917095800.GA9359@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1221639786.25574.27.camel@ymzhang>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,26 +32,139 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-* Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+Please pull the latest x86-fixes-for-linus git tree from:
 
-> 
-> On Tue, 2008-09-16 at 13:04 -0700, Ravikiran G Thirumalai wrote:
-> > Hi,
-> > Booting 2.6.27-rc6, or the current Linus' git on large x86_64 NUMA wedges
-> > intermittently.  This happens on machines with more than 4 NUMA nodes.  The
-> > same kernel boots on similar hardware with fewer NUMA nodes (or boards).
-> > 2.6.27-rc3 seemed to boot well on similar configurations, so looks like a
-> > regression crept in between 2.6.27-rc3 and rc6.
-> > 
-> > I am trying a few things -- commandline options to eliminate popular
-> > suspects (such as unsynced tsc clocksources)  as well as git bisect, but
-> > wanted to report the regression in the meanwhile.
-> > Here's the dmesg of a 24 core 6 node wedged system.
-> Because the git doesn't include my patch. Pls. try it.
-> 
-> http://marc.info/?l=linux-kernel&m=122093094701219&w=2
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-it's queued up already, will send a pull request later today.
+ Thanks,
 
 	Ingo
+
+------------------>
+Alex Nixon (1):
+      x86/paravirt: Remove duplicate paravirt_pagetable_setup_{start, done}()
+
+H. Peter Anvin (1):
+      x86: completely disable NOPL on 32 bits
+
+Jeremy Fitzhardinge (2):
+      x86: fix possible x86_64 and EFI regression
+      xen: fix for xen guest with mem > 3.7G
+
+Julia Lawall (1):
+      arch/x86/kernel/kdebugfs.c: introduce missing kfree
+
+
+ arch/x86/kernel/cpu/common.c |   24 ++++--------------------
+ arch/x86/kernel/kdebugfs.c   |    1 +
+ arch/x86/kernel/setup.c      |    5 ++++-
+ arch/x86/mm/init_32.c        |    4 ----
+ arch/x86/xen/setup.c         |    2 +-
+ 5 files changed, 10 insertions(+), 26 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 8aab851..4e456bd 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -344,31 +344,15 @@ static void __init early_cpu_detect(void)
+ 
+ /*
+  * The NOPL instruction is supposed to exist on all CPUs with
+- * family >= 6, unfortunately, that's not true in practice because
++ * family >= 6; unfortunately, that's not true in practice because
+  * of early VIA chips and (more importantly) broken virtualizers that
+- * are not easy to detect.  Hence, probe for it based on first
+- * principles.
++ * are not easy to detect.  In the latter case it doesn't even *fail*
++ * reliably, so probing for it doesn't even work.  Disable it completely
++ * unless we can find a reliable way to detect all the broken cases.
+  */
+ static void __cpuinit detect_nopl(struct cpuinfo_x86 *c)
+ {
+-	const u32 nopl_signature = 0x888c53b1; /* Random number */
+-	u32 has_nopl = nopl_signature;
+-
+ 	clear_cpu_cap(c, X86_FEATURE_NOPL);
+-	if (c->x86 >= 6) {
+-		asm volatile("\n"
+-			     "1:      .byte 0x0f,0x1f,0xc0\n" /* nopl %eax */
+-			     "2:\n"
+-			     "        .section .fixup,\"ax\"\n"
+-			     "3:      xor %0,%0\n"
+-			     "        jmp 2b\n"
+-			     "        .previous\n"
+-			     _ASM_EXTABLE(1b,3b)
+-			     : "+a" (has_nopl));
+-
+-		if (has_nopl == nopl_signature)
+-			set_cpu_cap(c, X86_FEATURE_NOPL);
+-	}
+ }
+ 
+ static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
+diff --git a/arch/x86/kernel/kdebugfs.c b/arch/x86/kernel/kdebugfs.c
+index f2d43bc..ff7d3b0 100644
+--- a/arch/x86/kernel/kdebugfs.c
++++ b/arch/x86/kernel/kdebugfs.c
+@@ -139,6 +139,7 @@ static int __init create_setup_data_nodes(struct dentry *parent)
+ 		if (PageHighMem(pg)) {
+ 			data = ioremap_cache(pa_data, sizeof(*data));
+ 			if (!data) {
++				kfree(node);
+ 				error = -ENXIO;
+ 				goto err_dir;
+ 			}
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 362d4e7..9838f25 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -670,6 +670,10 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	parse_early_param();
+ 
++#ifdef CONFIG_X86_64
++	check_efer();
++#endif
++
+ #if defined(CONFIG_VMI) && defined(CONFIG_X86_32)
+ 	/*
+ 	 * Must be before kernel pagetables are setup
+@@ -738,7 +742,6 @@ void __init setup_arch(char **cmdline_p)
+ #else
+ 	num_physpages = max_pfn;
+ 
+-	check_efer();
+ 
+ 	/* How many end-of-memory variables you have, grandma! */
+ 	/* need this before calling reserve_initrd */
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index d37f293..60ec1d0 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -458,11 +458,7 @@ static void __init pagetable_init(void)
+ {
+ 	pgd_t *pgd_base = swapper_pg_dir;
+ 
+-	paravirt_pagetable_setup_start(pgd_base);
+-
+ 	permanent_kmaps_init(pgd_base);
+-
+-	paravirt_pagetable_setup_done(pgd_base);
+ }
+ 
+ #ifdef CONFIG_ACPI_SLEEP
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index b6acc3a..d679010 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -42,7 +42,7 @@ char * __init xen_memory_setup(void)
+ 
+ 	e820.nr_map = 0;
+ 
+-	e820_add_region(0, PFN_PHYS(max_pfn), E820_RAM);
++	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
+ 
+ 	/*
+ 	 * Even though this is normal, usable memory under Xen, reserve
