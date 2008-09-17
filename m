@@ -1,75 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbYIQKxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbYIQLFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbYIQKxM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 06:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbYIQKw6
+	id S1753450AbYIQLFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 07:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYIQLFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 06:52:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49349 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159AbYIQKw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 06:52:57 -0400
-Date: Wed, 17 Sep 2008 12:52:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yan Li <elliot.li.tech@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com, rjmaomao@gmail.com,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, nancydreaming@gmail.com
-Subject: Re: [PATCH 1/2] VMware detection support for x86 and x86-64
-Message-ID: <20080917105238.GF18764@elte.hu>
-References: <20080221115452.GB13948@elte.hu> <20080907234510.GA24133@yantp.cn.ibm.com> <20080908140423.GG11993@elte.hu> <20080909002055.GA8573@yantp.cn.ibm.com> <48C5C47F.5040004@zytor.com> <20080916133239.GA17456@yantp.cn.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080916133239.GA17456@yantp.cn.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 17 Sep 2008 07:05:41 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:29149 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbYIQLFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 07:05:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=TCtZQB7faCKXMX4vOttebK4Fzmgfprq4TA303TWOvG+CehOWVE0fpYqPsRP7ef+zl0
+         MQDSiydB5sc/Yhn31cdr8w7FaJzbcFNCw7eN6X/BlX7qKt3EYgrIrLwx76oZObHCyldi
+         ill6sCu+0WWvTfSyqroWyIRE16wAv0614gR5o=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
+Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
+       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       Ryo Tsuruta <ryov@valinux.co.jp>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm 0/6] cgroup: block device i/o controller (v10)
+Date: Wed, 17 Sep 2008 13:05:22 +0200
+Message-Id: <1221649528-8519-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yan Li <elliot.li.tech@gmail.com> wrote:
+The objective of the i/o controller is to improve i/o performance
+predictability of different cgroups sharing the same block devices.
 
-> On Mon, Sep 08, 2008 at 05:34:07PM -0700, H. Peter Anvin wrote:
-> >> VMware may change the PCI ID at their will so I prefer checking the
-> >> DMI since it's easier.
-> >>
-> >> So if we ditched the official method we run the risk of some false
-> >> negatives.  But checking the DMI manufacturer would be good enough.
-> >>
-> >
-> > If we get false negatives that is quite frankly their problem, not ours.  
-> >  If nothing else, we should be able to look for a host bridge with the  
-> > VMWare vendor ID -- that should arguably be safer than DMI.
-> 
-> I found that in this situation we can't use PCI info.  My intention to
-> do this is to fix the false warning from
-> arch/x86/kernel/cpu/mtrr/main.c (around L695). When booting a VMware
-> guest we got:
-> "WARNING: strange, CPU MTRRs all blank?"
-> 
-> For VMware guest this warning is false, just as that for a KVM guest.
-> 
-> This code is from mtrr_trim_uncached_memory(), and used by
-> setup_arch(), which is used far before PCI is ready.
-> 
-> Therefore I think we can only use DMI here. Any idea?
+Respect to other priority/weight-based solutions the approach used by this
+controller is to explicitly choke applications' requests that directly (or
+indirectly) generate i/o activity in the system.
 
-PCI quirks can be used almost arbitrarily early stage, see:
-arch/x86/kernel/early-quirks.c.
+The direct bandwidth and/or iops limiting method has the advantage of improving
+the performance predictability at the cost of reducing, in general, the overall
+performance of the system (in terms of throughput).
 
-Adding a VM identification callback to early-quirks.c would be fine. But 
-if there's a reliable and specific enough DMI string that's fine as 
-well. (but PCI is better, since it's a generally more stable enumeration 
-interface)
+Detailed informations about design, its goal and usage are described in the
+documentation.
 
-	Ingo
+Tested against 2.6.27-rc5-mm1.
+
+The all-in-one patch (and previous versions) can be found at:
+http://download.systemimager.org/~arighi/linux/patches/io-throttle/
+
+Changelog: (v9 -> v10)
+* fix a bug to correctly throttle small direct-IO writes
+* fix: do not add a new limiting rule if the limit is 0 (unlimited)
+* do not report time values directly in jiffies, always use clock_t
+* remove a spinlock in struct iothrottle (we always hold cgroup_lock() when
+  using it for RCU update, so an additional spinlock is not needed)
+* use page_cgroup functionality provided by memory cgroup controller to charge
+  the right cgroup of asynchronous i/o activity (e.g. pdflush writebacks)
+* code simplification in cgroup_io_throttle()
+* removed a lot of experimental stuff introduced in the previous version
+* update documentation
+
+TODO:
+* Implement a rbtree per request queue; all the requests queued to the I/O
+  subsystem first will go in this rbtree. Then based on cgroup grouping and
+  control policy dispatch the requests and pass them to the elevator associated
+  with the queue. This would allow to provide both bandwidth limiting and
+  proportional bandwidth functionalities using a quite generic approach
+  (suggested by Vivek Goyal)
+
+* Improve fair throttling: distribute the time to sleep among all the tasks of
+  a cgroup that exceeded the I/O limits, depending of the amount of IO activity
+  previously generated in the past by each task (see task_io_accounting)
+
+* Try to reduce the cost of calling cgroup_io_throttle() on every submit_bio();
+  this is not too much expensive, but the call of task_subsys_state() has
+  surely a cost. A possible solution could be to temporarily account I/O in the
+  current task_struct and call cgroup_io_throttle() only on each X MB of I/O.
+  Or on each Y number of I/O requests as well. Better if both X and/or Y can be
+  tuned at runtime by a userspace tool
+
+* Think an alternative design for general purpose usage; special purpose usage
+  right now is restricted to improve I/O performance predictability and
+  evaluate more precise response timings for applications doing I/O. To a large
+  degree the block I/O bandwidth controller should implement a more complex
+  logic to better evaluate real I/O operations cost, depending also on the
+  particular block device profile (i.e. USB stick, optical drive, hard disk,
+  etc.). This would also allow to appropriately account I/O cost for seeky
+  workloads, respect to large stream workloads. Instead of looking at the
+  request stream and try to predict how expensive the I/O cost will be, a
+  totally different approach could be to collect request timings (start time /
+  elapsed time) and based on collected informations, try to estimate the I/O
+  cost and usage
+
+-Andrea
