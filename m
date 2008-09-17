@@ -1,83 +1,334 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbYIQJnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbYIQJsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbYIQJnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 05:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbYIQJnB
+	id S1753962AbYIQJsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 05:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYIQJsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 05:43:01 -0400
-Received: from web26203.mail.ukl.yahoo.com ([217.12.10.240]:28928 "HELO
-	web26203.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751432AbYIQJnA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 05:43:00 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.it;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=rc677wFxujzqrPLoE0HeGIzwzuywSyCavs81RD3aaJC4gBI6V/rET0zV+/q3ZaR7h8SjvqkPtMTGmMs+4HHRf5K46RX5SYICwCEV1M8M9+bZj4ZtFLqE0OnkqE64epSwpezRtL6HSpJ7xUU4Wmdq1BqryPrtefHSvHyYBayR4JY=;
-X-YMail-OSG: ZLI_EOkVM1mP7yrgporWGksbogxtjBF0TVqvXhIxbsNbdda577QekHPS4S0R_c1s3Q--
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Wed, 17 Sep 2008 09:42:58 +0000 (GMT)
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-Subject: [PATCH] Hangcheck-timer TSC source is stable?
-To: linux-kernel@vger.kernel.org
-Cc: joel.becker@oracle.com
+	Wed, 17 Sep 2008 05:48:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:35095 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751244AbYIQJsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 05:48:11 -0400
+Date: Wed, 17 Sep 2008 11:48:04 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: John Ogness <john.ogness@linutronix.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv2 1/1] uio: add automata sercos3 pci card support
+Message-ID: <20080917094802.GA3034@local>
+References: <86d4j4z9xi.fsf@johno-ibook.fn.ogness.net> <86d4j3f9vs.fsf@johno-ibook.fn.ogness.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-78978892-1221644578=:81345"
-Message-ID: <157995.81345.qm@web26203.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86d4j3f9vs.fsf@johno-ibook.fn.ogness.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0-78978892-1221644578=:81345
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, Sep 17, 2008 at 10:35:03AM +0200, John Ogness wrote:
+> This patch adds kernel-side support for the Sercos III PCI card from
+> Automata GmbH. An example of such a card can be found here:
+> 
+> http://www.automataweb.com/en/kat/uid_kategorien/0000119/id_matchcode/PCI_SERC_III/bop/0/print/false/chksum/9b334826704320c91437abc5c8ff48d1/beetools.html
+> 
+> Automata is currently working on getting the userspace-part organized
+> for easy download access and use. At the time of this writing, the
+> userspace-part is not yet available for download.
 
-Hi,=0A=0AThis patch checks the TSC source before initialization.=0A=0ARegar=
-ds Michael=0A=0A__________________________________________________=0ADo You=
- Yahoo!?=0APoco spazio e tanto spam? Yahoo! Mail ti protegge dallo spam e t=
-i da tanto spazio gratuito per i tuoi file e i messaggi =0Ahttp://mail.yaho=
-o.it 
---0-78978892-1221644578=:81345
-Content-Type: application/octet-stream; name="hangcheck-timer-tsc-unstable.pach"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="hangcheck-timer-tsc-unstable.pach"
+Hi John,
+looks quite good. However, there seems to be a problem with shared
+interrupts, see below. Could you please check?
 
-Q2hlY2sgaWYgdGhlIFRTQyBzb3VyY2UgaXMgc3RhYmxlIG90aGVyd2lzZSBm
-YWlsIHJlZ2lzdHJhdGlvbi4KClNpZ25lZC1vZmYtYnk6IE1pY2hhZWwgVHJp
-bWFyY2hpIDx0cmltYXJjaGltaWNoYWVsQHlhaG9vLml0PgoKLS0tCiBkcml2
-ZXJzL2NoYXIvaGFuZ2NoZWNrLXRpbWVyLmMgfCAgIDE1ICsrKysrKysrKysr
-LS0tLQogMSBmaWxlcyBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspLCA0IGRl
-bGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2hhci9oYW5nY2hl
-Y2stdGltZXIuYyBiL2RyaXZlcnMvY2hhci9oYW5nY2hlY2stdGltZXIuYwpp
-bmRleCA3MTJkOWYyLi42YjYxMzg5IDEwMDY0NAotLS0gYS9kcml2ZXJzL2No
-YXIvaGFuZ2NoZWNrLXRpbWVyLmMKKysrIGIvZHJpdmVycy9jaGFyL2hhbmdj
-aGVjay10aW1lci5jCkBAIC0xNzUsMTIgKzE3NSwxOSBAQCBzdGF0aWMgdm9p
-ZCBoYW5nY2hlY2tfZmlyZSh1bnNpZ25lZCBsb25nIGRhdGEpCiAKIHN0YXRp
-YyBpbnQgX19pbml0IGhhbmdjaGVja19pbml0KHZvaWQpCiB7Ci0JcHJpbnRr
-KCJIYW5nY2hlY2s6IHN0YXJ0aW5nIGhhbmdjaGVjayB0aW1lciAlcyAodGlj
-ayBpcyAlZCBzZWNvbmRzLCBtYXJnaW4gaXMgJWQgc2Vjb25kcykuXG4iLAor
-CXByaW50ayhLRVJOX0lORk8gIkhhbmdjaGVjazogc3RhcnRpbmcgaGFuZ2No
-ZWNrIHRpbWVyICVzIgorCQkJICIgKHRpY2sgaXMgJWQgc2Vjb25kcywgbWFy
-Z2luIGlzICVkIHNlY29uZHMpLlxuIiwKIAkgICAgICAgVkVSU0lPTl9TVFIs
-IGhhbmdjaGVja190aWNrLCBoYW5nY2hlY2tfbWFyZ2luKTsKICNpZiBkZWZp
-bmVkIChIQVZFX01PTk9UT05JQykKLQlwcmludGsoIkhhbmdjaGVjazogVXNp
-bmcgbW9ub3RvbmljX2Nsb2NrKCkuXG4iKTsKKwlwcmludGsoS0VSTl9JTkZP
-ICJIYW5nY2hlY2s6IFVzaW5nIG1vbm90b25pY19jbG9jaygpLlxuIik7CiAj
-ZWxzZQotCXByaW50aygiSGFuZ2NoZWNrOiBVc2luZyBnZXRfY3ljbGVzKCku
-XG4iKTsKKwlpZiAoIWNoZWNrX3RzY191bnN0YWJsZSgpKQorCQlwcmludGso
-S0VSTl9JTkZPICJIYW5nY2hlY2s6IFVzaW5nIGdldF9jeWNsZXMoKS5cbiIp
-OworCWVsc2UgeworCQlwcmludGsoS0VSTl9FUlIgIkhhbmRjaGVjazogRmFp
-bGVkIHRvIHJlZ2lzdGVyIgorCQkgICAgICAgIiAoVW5zdGFibGUgVFNDKS5c
-biIpOworCQlyZXR1cm4gLUVOT0RFVjsKKwl9CiAjZW5kaWYgIC8qIEhBVkVf
-TU9OT1RPTklDICovCiAJaGFuZ2NoZWNrX3RzY19tYXJnaW4gPQogCQkodW5z
-aWduZWQgbG9uZyBsb25nKShoYW5nY2hlY2tfbWFyZ2luICsgaGFuZ2NoZWNr
-X3RpY2spOwpAQCAtMTk2LDcgKzIwMyw3IEBAIHN0YXRpYyBpbnQgX19pbml0
-IGhhbmdjaGVja19pbml0KHZvaWQpCiBzdGF0aWMgdm9pZCBfX2V4aXQgaGFu
-Z2NoZWNrX2V4aXQodm9pZCkKIHsKIAlkZWxfdGltZXJfc3luYygmaGFuZ2No
-ZWNrX3RpY2t0b2NrKTsKLSAgICAgICAgcHJpbnRrKCJIYW5nY2hlY2s6IFN0
-b3BwZWQgaGFuZ2NoZWNrIHRpbWVyLlxuIik7CisJcHJpbnRrKEtFUk5fSU5G
-TyAiSGFuZ2NoZWNrOiBTdG9wcGVkIGhhbmdjaGVjayB0aW1lci5cbiIpOwog
-fQogCiBtb2R1bGVfaW5pdChoYW5nY2hlY2tfaW5pdCk7Ci0tIAoxLjUuNC4z
-Cgo=
+Thanks,
+Hans
 
---0-78978892-1221644578=:81345--
+> 
+> I wish to be personally CC'ed on answers/comments posted to the list
+> in response to this posting.
+> 
+> Signed-off-by: John Ogness <john.ogness@linutronix.de>
+> ---
+>  drivers/uio/Kconfig       |   13 ++
+>  drivers/uio/Makefile      |    1 
+>  drivers/uio/uio_sercos3.c |  229 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 243 insertions(+)
+> diff -uprN a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+> --- a/drivers/uio/Kconfig	2008-09-15 15:39:32.000000000 +0200
+> +++ b/drivers/uio/Kconfig	2008-09-16 12:13:24.000000000 +0200
+> @@ -58,4 +58,17 @@ config UIO_SMX
+>  
+>  	  If you compile this as a module, it will be called uio_smx.
+>  
+> +config UIO_SERCOS3
+> +	tristate "Automata Sercos III PCI card driver"
+> +	default n
+> +	help
+> +	  Userspace I/O interface for the Sercos III PCI card from
+> +	  Automata GmbH. The userspace part of this driver will be
+> +	  available for download from the Automata GmbH web site.
+> +
+> +	  Automata GmbH:        http://www.automataweb.com
+> +	  Sercos III interface: http://www.sercos.com
+> +
+> +	  If you compile this as a module, it will be called uio_sercos3.
+> +
+>  endif
+> diff -uprN a/drivers/uio/Makefile b/drivers/uio/Makefile
+> --- a/drivers/uio/Makefile	2008-09-15 15:39:32.000000000 +0200
+> +++ b/drivers/uio/Makefile	2008-09-15 15:20:21.000000000 +0200
+> @@ -3,3 +3,4 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+>  obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+>  obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+>  obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+> +obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+> diff -uprN a/drivers/uio/uio_sercos3.c b/drivers/uio/uio_sercos3.c
+> --- a/drivers/uio/uio_sercos3.c	1970-01-01 01:00:00.000000000 +0100
+> +++ b/drivers/uio/uio_sercos3.c	2008-09-17 09:54:54.000000000 +0200
+> @@ -0,0 +1,229 @@
+> +/* sercos3: UIO driver for the Automata Sercos III PCI card
+> +
+> +   Copyright (C) 2008 Linutronix GmbH
+> +     Author: John Ogness <john.ogness@linutronix.de>
+> +*/
+> +
+> +#include <linux/device.h>
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/uio_driver.h>
+> +#include <linux/io.h>
+> +
+> +/* ID's for SERCOS III PCI card (PLX 9030) */
+> +#define SERCOS_SUB_VENDOR_ID  0x1971
+> +#define SERCOS_SUB_SYSID_3530 0x3530
+> +#define SERCOS_SUB_SYSID_3535 0x3535
+> +#define SERCOS_SUB_SYSID_3780 0x3780
+> +
+> +/* Interrupt Enable Register */
+> +#define IER0_OFFSET 0x08
+> +
+> +/* Interrupt Status Register */
+> +#define ISR0_OFFSET 0x18
+> +
+> +struct sercos3_priv {
+> +	u32 ier0_cache;
+> +	spinlock_t ier0_cache_lock;
+> +};
+> +
+> +/* this function assumes ier0_cache_lock is locked! */
+> +static void sercos3_disable_interrupts(struct uio_info *info,
+> +				       struct sercos3_priv *priv)
+> +{
+> +	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
+> +	u32 tmp = ioread32(ier0);
+> +
+> +	if (tmp) {
+
+Is that needed?
+
+> +		/* store previously enabled interrupts */
+> +		priv->ier0_cache |= tmp;
+
+This doesn't match the comment. Why |= and not a simple assignment?
+
+> +
+> +		/* disable interrupts */
+> +		iowrite32(0, ier0);
+> +	}
+> +}
+> +
+> +/* this function assumes ier0_cache_lock is locked! */
+> +static void sercos3_enable_interrupts(struct uio_info *info,
+> +				      struct sercos3_priv *priv)
+> +{
+> +	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
+> +
+> +	if (priv->ier0_cache) {
+> +		/* restore previously enabled interrupts */
+> +		iowrite32(priv->ier0_cache, ier0);
+> +		priv->ier0_cache = 0;
+> +	}
+> +
+> +}
+> +
+> +static irqreturn_t sercos3_handler(int irq, struct uio_info *info)
+> +{
+> +	struct sercos3_priv *priv = info->priv;
+> +	void __iomem *isr0 = info->mem[3].internal_addr + ISR0_OFFSET;
+> +
+> +	if (!ioread32(isr0))
+> +		return IRQ_NONE;
+
+If that card has an irq status and an irq enable register, you have to
+check both. The status bit could be set, but the irq is not enabled, in
+which case you have to return IRQ_NONE. Should look something like this:
+
+	if (!(ier & isr))
+		return IRQ_NONE;
+
+This assumes the enable and corresponding status bits are in the same
+bit position in the registers.
+
+> +
+> +	spin_lock(&priv->ier0_cache_lock);
+> +	sercos3_disable_interrupts(info, priv);
+> +	spin_unlock(&priv->ier0_cache_lock);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int sercos3_irqcontrol(struct uio_info *info, s32 irq_on)
+> +{
+> +	struct sercos3_priv *priv = info->priv;
+> +
+> +	spin_lock_irq(&priv->ier0_cache_lock);
+> +	if (irq_on)
+> +		sercos3_enable_interrupts(info, priv);
+> +	else
+> +		sercos3_disable_interrupts(info, priv);
+> +	spin_unlock_irq(&priv->ier0_cache_lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static int sercos3_setup_iomem(struct pci_dev *dev, struct uio_info *info,
+> +			       int n, int pci_bar)
+> +{
+> +	info->mem[n].addr = pci_resource_start(dev, pci_bar);
+> +	if (!info->mem[n].addr)
+> +		return -1;
+> +	info->mem[n].internal_addr = ioremap(pci_resource_start(dev, pci_bar),
+> +					     pci_resource_len(dev, pci_bar));
+> +	if (!info->mem[n].internal_addr)
+> +		return -1;
+> +	info->mem[n].size = pci_resource_len(dev, pci_bar);
+> +	info->mem[n].memtype = UIO_MEM_PHYS;
+> +	return 0;
+> +}
+> +
+> +static int __devinit sercos3_pci_probe(struct pci_dev *dev,
+> +				       const struct pci_device_id *id)
+> +{
+> +	struct uio_info *info;
+> +	struct sercos3_priv *priv;
+> +	int i;
+> +
+> +	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
+> +
+> +	priv = kzalloc(sizeof(struct sercos3_priv), GFP_KERNEL);
+> +	if (!priv)
+> +		goto out_free;
+> +
+> +	if (pci_enable_device(dev))
+> +		goto out_free_priv;
+> +
+> +	if (pci_request_regions(dev, "sercos3"))
+> +		goto out_disable;
+> +
+> +	/* we only need PCI BAR's 0, 2, 3, 4, 5 */
+> +	if (sercos3_setup_iomem(dev, info, 0, 0))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 1, 2))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 2, 3))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 3, 4))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 4, 5))
+> +		goto out_unmap;
+> +
+> +	spin_lock_init(&priv->ier0_cache_lock);
+> +	info->priv = priv;
+> +	info->name = "Sercos_III_PCI";
+> +	info->version = "0.0.1";
+> +	info->irq = dev->irq;
+> +	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
+> +	info->handler = sercos3_handler;
+> +	info->irqcontrol = sercos3_irqcontrol;
+> +
+> +	pci_set_drvdata(dev, info);
+> +
+> +	if (uio_register_device(&dev->dev, info))
+> +		goto out_unmap;
+> +
+> +	return 0;
+> +
+> +out_unmap:
+> +	for (i = 0; i < 5; i++) {
+> +		if (info->mem[i].internal_addr)
+> +			iounmap(info->mem[i].internal_addr);
+> +	}
+> +	pci_release_regions(dev);
+> +out_disable:
+> +	pci_disable_device(dev);
+> +out_free_priv:
+> +	kfree(priv);
+> +out_free:
+> +	kfree(info);
+> +	return -ENODEV;
+> +}
+> +
+> +static void sercos3_pci_remove(struct pci_dev *dev)
+> +{
+> +	struct uio_info *info = pci_get_drvdata(dev);
+> +	int i;
+> +
+> +	uio_unregister_device(info);
+> +	pci_release_regions(dev);
+> +	pci_disable_device(dev);
+> +	pci_set_drvdata(dev, NULL);
+> +	for (i = 0; i < 5; i++) {
+> +		if (info->mem[i].internal_addr)
+> +			iounmap(info->mem[i].internal_addr);
+> +	}
+> +	kfree(info->priv);
+> +	kfree(info);
+> +}
+> +
+> +static struct pci_device_id sercos3_pci_ids[] __devinitdata = {
+> +	{
+> +		.vendor =       PCI_VENDOR_ID_PLX,
+> +		.device =       PCI_DEVICE_ID_PLX_9030,
+> +		.subvendor =    SERCOS_SUB_VENDOR_ID,
+> +		.subdevice =    SERCOS_SUB_SYSID_3530,
+> +	},
+> +	{
+> +		.vendor =       PCI_VENDOR_ID_PLX,
+> +		.device =       PCI_DEVICE_ID_PLX_9030,
+> +		.subvendor =    SERCOS_SUB_VENDOR_ID,
+> +		.subdevice =    SERCOS_SUB_SYSID_3535,
+> +	},
+> +	{
+> +		.vendor =       PCI_VENDOR_ID_PLX,
+> +		.device =       PCI_DEVICE_ID_PLX_9030,
+> +		.subvendor =    SERCOS_SUB_VENDOR_ID,
+> +		.subdevice =    SERCOS_SUB_SYSID_3780,
+> +	},
+> +	{ 0, }
+> +};
+> +
+> +static struct pci_driver sercos3_pci_driver = {
+> +	.name = "sercos3",
+> +	.id_table = sercos3_pci_ids,
+> +	.probe = sercos3_pci_probe,
+> +	.remove = sercos3_pci_remove,
+> +};
+> +
+> +static int __init sercos3_init_module(void)
+> +{
+> +	return pci_register_driver(&sercos3_pci_driver);
+> +}
+> +
+> +static void __exit sercos3_exit_module(void)
+> +{
+> +	pci_unregister_driver(&sercos3_pci_driver);
+> +}
+> +
+> +module_init(sercos3_init_module);
+> +module_exit(sercos3_exit_module);
+> +
+> +MODULE_DESCRIPTION("UIO driver for the Automata Sercos III PCI card");
+> +MODULE_AUTHOR("John Ogness <john.ogness@linutronix.de>");
+> +MODULE_LICENSE("GPL v2");
