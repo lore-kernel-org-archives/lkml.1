@@ -1,64 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYIQWbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYIQWf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYIQWbA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 18:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYIQWav
+	id S1755534AbYIQWf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 18:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYIQWfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 18:30:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:53713 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753082AbYIQWau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 18:30:50 -0400
-Message-ID: <48D1851B.70703@goop.org>
-Date: Wed, 17 Sep 2008 15:30:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org> <48D17E75.80807@redhat.com>
-In-Reply-To: <48D17E75.80807@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Sep 2008 18:35:12 -0400
+Received: from flusers.ccur.com ([12.192.68.2]:37204 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753761AbYIQWfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 18:35:10 -0400
+Date: Wed, 17 Sep 2008 18:27:57 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Rientjes <rientjes@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix VMA display mismatch between /proc/pid/{maps,smaps}
+Message-ID: <20080917222757.GA3713@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Jeremy Fitzhardinge wrote:
->> Minor faults are easier; if the page already exists in memory, we should
->> just create mappings to it.  If neighbouring pages are also already
->> present, then we can can cheaply create mappings for them too.
->>
+Fix vma display mismatch between /proc/pid/{maps,smaps}
 
-(Just to clarify an ambiguity here: by "present" I mean "exists in
-memory" not "a present pte".)
+The following commit
 
-> One problem is the accessed bit.  If it's unset, the shadow code
-> cannot make the pte present (since it has to trap in order to set the
-> accessed bit); if it's set, we're lying to the vm.
+    From 4752c369789250eafcd7813e11c8fb689235b0d2
+    From: Matt Mackall <mpm@selenic.com>
+    Date: Mon, 4 Feb 2008 22:29:02 -0800
+    Subject: [PATCH] maps4: simplify interdependence of maps and smaps
 
-So even if the guest pte were present but non-accessed, the shadow pte
-would have to be non-present and you'd end up taking the fault anyway?
+broke /proc/pid/smaps, causing it to display some vmas twice and other
+vmas not at all.  For example:
 
-Hm, that does undermine the benefits.  Does that mean that when the vm
-clears the access bit, you always have to make the shadow non-present? 
-I guess so.  And similarly with dirty and writable shadow.
+    grep .- /proc/1/smaps >/tmp/smaps; diff /proc/1/maps /tmp/smaps
 
-The counter-argument is that something has gone wrong if we start
-populating ptes that aren't going to be used in the near future anyway -
-if they're never used then any effort taken to populate them is wasted. 
-Therefore, setting accessed on them from the outset isn't terribly bad.
+    1  25d24
+    2  < 7fd7e23aa000-7fd7e23ac000 rw-p 7fd7e23aa000 00:00 0 
+    3  28a28
+    4  > ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0  [vsyscall]
 
-(I'm not very convinced by that argument either, and it makes the
-potential for bad side-effects much worse if the apparent RSS of a
-process is multiplied by some factor.)
+The bug has something to do with setting m->version before all the
+seq_printf's have been performed.  show_map was doing this correctly,
+but show_smap was doing this in the middle of its seq_printf sequence.
+This patch arranges things so that the setting of m->version in show_smap
+is also done at the end of its seq_printf sequence.
 
-    J
+Testing: in addition to the above grep test, for each process I summed
+up the 'Rss' fields of /proc/pid/smaps and compared that to the 'VmRSS'
+field of /proc/pid/status.  All matched except for Xorg (which has a
+/dev/mem mapping which Rss accounts for but VmRSS does not).  This result
+gives us some confidence that neither /proc/pid/maps nor /proc/pid/smaps
+are any longer skipping or double-counting vmas.
+
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
+
+Index: 2.6.27-rc6-git4/fs/proc/task_mmu.c
+===================================================================
+--- 2.6.27-rc6-git4.orig/fs/proc/task_mmu.c	2008-09-17 17:53:02.000000000 -0400
++++ 2.6.27-rc6-git4/fs/proc/task_mmu.c	2008-09-17 18:15:40.000000000 -0400
+@@ -198,11 +198,8 @@
+ 	return ret;
+ }
+ 
+-static int show_map(struct seq_file *m, void *v)
++static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
+ {
+-	struct proc_maps_private *priv = m->private;
+-	struct task_struct *task = priv->task;
+-	struct vm_area_struct *vma = v;
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	struct file *file = vma->vm_file;
+ 	int flags = vma->vm_flags;
+@@ -210,9 +207,6 @@
+ 	dev_t dev = 0;
+ 	int len;
+ 
+-	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
+-		return -EACCES;
+-
+ 	if (file) {
+ 		struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 		dev = inode->i_sb->s_dev;
+@@ -257,9 +251,21 @@
+ 		}
+ 	}
+ 	seq_putc(m, '\n');
++}
++
++static int show_map(struct seq_file *m, void *v)
++{
++	struct vm_area_struct *vma = v;
++	struct proc_maps_private *priv = m->private;
++	struct task_struct *task = priv->task;
++
++	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
++		return -EACCES;
++
++	show_map_vma(m, vma);
+ 
+ 	if (m->count < m->size)  /* vma is copied successfully */
+-		m->version = (vma != get_gate_vma(task))? vma->vm_start: 0;
++		m->version = (vma != get_gate_vma(task)) ? vma->vm_start : 0;
+ 	return 0;
+ }
+ 
+@@ -367,9 +373,10 @@
+ 
+ static int show_smap(struct seq_file *m, void *v)
+ {
++	struct proc_maps_private *priv = m->private;
++	struct task_struct *task = priv->task;
+ 	struct vm_area_struct *vma = v;
+ 	struct mem_size_stats mss;
+-	int ret;
+ 	struct mm_walk smaps_walk = {
+ 		.pmd_entry = smaps_pte_range,
+ 		.mm = vma->vm_mm,
+@@ -381,9 +388,10 @@
+ 	if (vma->vm_mm && !is_vm_hugetlb_page(vma))
+ 		walk_page_range(vma->vm_start, vma->vm_end, &smaps_walk);
+ 
+-	ret = show_map(m, v);
+-	if (ret)
+-		return ret;
++	if (maps_protect && !ptrace_may_access(task, PTRACE_MODE_READ))
++		return -EACCES;
++
++	show_map_vma(m, vma);
+ 
+ 	seq_printf(m,
+ 		   "Size:           %8lu kB\n"
+@@ -405,7 +413,10 @@
+ 		   mss.referenced >> 10,
+ 		   mss.swap >> 10);
+ 
+-	return ret;
++	if (m->count < m->size)  /* vma is copied successfully */
++		m->version = (vma != get_gate_vma(task)) ? vma->vm_start : 0;
++
++	return 0;
+ }
+ 
+ static const struct seq_operations proc_pid_smaps_op = {
+
