@@ -1,35 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbYIQPVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbYIQP1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbYIQPVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 11:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYIQPVM
+	id S1754057AbYIQP1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 11:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbYIQP1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 11:21:12 -0400
-Received: from nebensachen.de ([195.34.83.29]:59298 "EHLO mail.nebensachen.de"
+	Wed, 17 Sep 2008 11:27:31 -0400
+Received: from nebensachen.de ([195.34.83.29]:45216 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752628AbYIQPVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 11:21:11 -0400
-X-Hashcash: 1:20:080917:pavel@suse.cz::nYGVs9tUUM0VtiKk:000003lh
-X-Hashcash: 1:20:080917:tj@kernel.org::1NAW1q8zReHl5Fev:00002nUk
-X-Hashcash: 1:20:080917:multinymous@gmail.com::OqDiAEnBU4kjaMRR:00000000000000000000000000000000000000000Yju
-X-Hashcash: 1:20:080917:trenn@suse.de::sfkgcaI0Cdo2BThr:00000RY5
-X-Hashcash: 1:20:080917:linux-kernel@vger.kernel.org::Zh3AtxpgCa3G2quh:0000000000000000000000000000000001gu5
-X-Hashcash: 1:20:080917:linux-ide@vger.kernel.org::EfQWT52ysTQ9TOPH:0000000000000000000000000000000000001IUQ
+	id S1752848AbYIQP1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 11:27:30 -0400
+X-Hashcash: 1:20:080917:htejun@gmail.com::5ge3ZbPVYnbeJWIs:00jAa
+X-Hashcash: 1:20:080917:alan@lxorguk.ukuu.org.uk::jJXO+/H19KrrbSYi:00000000000000000000000000000000000005j//
+X-Hashcash: 1:20:080917:akpm@linux-foundation.org::V/OwbryVDZSz+1mz:0000000000000000000000000000000000009rbm
+X-Hashcash: 1:20:080917:bzolnier@gmail.com::pVlSaL1vi0DW/Axz:0000000000000000000000000000000000000000000NJgM
+X-Hashcash: 1:20:080917:jeff@garzik.org::WdSCvjspVBD5mId6:0058oe
+X-Hashcash: 1:20:080917:randy.dunlap@oracle.com::MuKsAOu4I0ynaxGX:000000000000000000000000000000000000000ffq
+X-Hashcash: 1:20:080917:linux-ide@vger.kernel.org::cXnEYLKK9tGnDxme:00000000000000000000000000000000000010oW
+X-Hashcash: 1:20:080917:linux-kernel@vger.kernel.org::8go+DiCiHFuDVw6x:0000000000000000000000000000000000t/4
 From: Elias Oltmanns <eo@nebensachen.de>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Tejun Heo <tj@kernel.org>, Shem Multinymous <multinymous@gmail.com>,
-       Thomas Renninger <trenn@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: Laptop shock detection and harddisk protection
-References: <48C7FCEE.8060404@kernel.org>
-	<41840b750809110908o54a61f55w7b1b9793abf55634@mail.gmail.com>
-	<48C948A6.3080404@kernel.org> <877i9ipi56.fsf@denkblock.local>
-	<20080817195103.GD4043@ucw.cz>
-Date: Wed, 17 Sep 2008 17:21:01 +0200
-In-Reply-To: <20080817195103.GD4043@ucw.cz> (Pavel Machek's message of "Sun,
-	17 Aug 2008 21:51:03 +0200")
-Message-ID: <87d4j2ol2a.fsf@denkblock.local>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] libata: Implement disk shock protection support
+References: <87wshzplvk.fsf@denkblock.local> <48B913E6.1000104@gmail.com>
+	<87k5dym5t9.fsf@denkblock.local> <48BA638B.2030001@gmail.com>
+	<87ej45mlp3.fsf@denkblock.local> <48BA969C.4060207@gmail.com>
+	<87abetmaap.fsf@denkblock.local> <48BBA8D1.8020604@gmail.com>
+	<87myirly1p.fsf@denkblock.local> <48BC1BB8.2030007@gmail.com>
+	<87fxoh0yil.fsf@denkblock.local> <48BFA528.2040305@gmail.com>
+	<87ej3zrf3o.fsf@denkblock.local> <48C0F2F8.1040308@gmail.com>
+	<87ej3snm3s.fsf@denkblock.local> <48C7DC55.30002@gmail.com>
+	<8763p3ol55.fsf@denkblock.local> <48C82CB1.2070308@gmail.com>
+	<871vzrogpz.fsf@denkblock.local> <48C850AA.2030409@gmail.com>
+	<87k5diq35g.fsf@denkblock.local>
+Date: Wed, 17 Sep 2008 17:26:59 +0200
+Message-ID: <874p4eoksc.fsf@denkblock.local>
 User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -37,41 +45,150 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@suse.cz> wrote:
-> Hi!
+Elias Oltmanns <eo@nebensachen.de> wrote:
+> What about the following patch?
 >
->> Short of a satisfying proposition regarding the questions raised, I just
->> want to add two things that would be nice to solve in the future one way
->> or another and should perhaps be taken into consideration from the
->> beginning:
->> 
->> 1. Disable polling completely when it isn't required: once the hd has
->>    spun down, there is no need to keep polling the sensors at all. Only
->>    when the first request requiring the hd to spin up arrives, the
->>    kernel needs to hold back for a short while to gather enough data
->>    from the sensors, so shock protection is up and running again.
+> From: Elias Oltmanns <eo@nebensachen.de>
+> Subject: [PATCH] libata: Implement disk shock protection support
 >
-> hdparm can already tell if disk is spinning or not. As userland is
-> polling, already, that may be enough?
+> On user request (through sysfs), the IDLE IMMEDIATE command with UNLOAD
+> FEATURE as specified in ATA-7 is issued to the device and processing of
+> the request queue is stopped thereafter until the specified timeout
+> expires or user space asks to resume normal operation. This is supposed
+> to prevent the heads of a hard drive from accidentally crashing onto the
+> platter when a heavy shock is anticipated (like a falling laptop
+> expected to hit the floor). In fact, the whole port stops processing
+> commands until the timeout has expired in order to avoid any resets due
+> to failed commands on another device.
+>
+> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+> ---
 
-Yes, I know it *is* possible, I just think it may not be completely
-trivial to get it right. The only way I can think of, right now, is some
-sort of polling in the hdparm way, i.e. issuing a ATA_CMD_CHK_POWER from
-time to time. The question is how we are to decide when and how often we
-should poll for the current power state of the HD.
-
->
->> 2. Make shock protection interact nicely with suspend operations:
->>    currently, we are out of luck if anything should happen after
->>    processes have been frozen. This is particularly unfortunatel in the
->>    case of s2disk.
->
-> I'd say that s2disk is similar to early boot... no protection there. 
-
-Well, this is true for resume. However, I can't help thinking that we
-may do better than that until the disk spins down, particularly while
-writing the image to disk.
+Apart from addressing the issue with timeouts exceeding the limit of
+30000 msec discussed lately, I have also simplified the crucial
+if-clause in ata_scsi_park_show(). Both changes are given below.
+Assuming that you don't have any objections, I'll just go ahead and
+submit the updated patch series shortly.
 
 Regards,
 
 Elias
+
+> +static ssize_t ata_scsi_park_show(struct device *device,
+> +				  struct device_attribute *attr, char *buf)
+> +{
+> +	struct scsi_device *sdev = to_scsi_device(device);
+> +	struct ata_port *ap;
+> +	struct ata_link *link;
+> +	struct ata_device *dev;
+> +	unsigned long flags;
+> +	unsigned int uninitialized_var(msecs);
+> +	int rc = 0;
+> +
+> +	ap = ata_shost_to_port(sdev->host);
+> +
+> +	spin_lock_irqsave(ap->lock, flags);
+> +	dev = ata_scsi_find_dev(ap, sdev);
+> +	if (!dev) {
+> +		rc = -ENODEV;
+> +		goto unlock;
+> +	}
+> +	if (dev->flags & ATA_DFLAG_NO_UNLOAD) {
+> +		rc = -EOPNOTSUPP;
+> +		goto unlock;
+> +	}
+> +
+> +	link = dev->link;
+> +	if (((ap->pflags & ATA_PFLAG_EH_IN_PROGRESS &&
+> +	      (link->eh_context.i.dev_action[dev->devno] & ATA_EH_PARK ||
+> +	       link->eh_info.dev_action[dev->devno] & ATA_EH_PARK)) ||
+> +	     (ap->pflags & ATA_PFLAG_EH_PENDING &&
+> +	      link->eh_info.dev_action[dev->devno])) &&
+> +	    time_after(dev->unpark_deadline, jiffies))
+
+Changed to:
+
+	if (ap->pflags & ATA_PFLAG_EH_IN_PROGRESS &&
+	    link->eh_context.unloaded_mask & (1 << dev->devno) &&
+	    time_after(dev->unpark_deadline, jiffies))
+
+> +		msecs = jiffies_to_msecs(dev->unpark_deadline - jiffies);
+> +	else
+> +		msecs = 0;
+> +
+> +unlock:
+> +	spin_unlock_irq(ap->lock);
+> +
+> +	return rc ? rc : snprintf(buf, 20, "%u\n", msecs);
+> +}
+> +
+> +static ssize_t ata_scsi_park_store(struct device *device,
+> +				   struct device_attribute *attr,
+> +				   const char *buf, size_t len)
+> +{
+> +	struct scsi_device *sdev = to_scsi_device(device);
+> +	struct ata_port *ap;
+> +	struct ata_device *dev;
+> +	long int input;
+> +	unsigned long flags;
+> +	int rc;
+> +
+> +	rc = strict_strtol(buf, 10, &input);
+> +	if (rc || input < -2 || input > ATA_TMOUT_MAX_PARK)
+> +		return -EINVAL;
+
+Changed to:
+
+	if (rc || input < -2)
+		return -EINVAL;
+	if (input > ATA_TMOUT_MAX_PARK) {
+		rc = -EOVERFLOW;
+		input = ATA_TMOUT_MAX_PARK;
+	}
+
+> +
+> +	ap = ata_shost_to_port(sdev->host);
+> +
+> +	spin_lock_irqsave(ap->lock, flags);
+> +	dev = ata_scsi_find_dev(ap, sdev);
+> +	if (unlikely(!dev)) {
+> +		rc = -ENODEV;
+> +		goto unlock;
+> +	}
+> +	if (dev->class != ATA_DEV_ATA) {
+> +		rc = -EOPNOTSUPP;
+> +		goto unlock;
+> +	}
+> +
+> +	if (input >= 0) {
+> +		if (dev->flags & ATA_DFLAG_NO_UNLOAD) {
+> +			rc = -EOPNOTSUPP;
+> +			goto unlock;
+> +		}
+> +
+> +		dev->unpark_deadline = ata_deadline(jiffies, input);
+> +		dev->link->eh_info.dev_action[dev->devno] |= ATA_EH_PARK;
+> +		ata_port_schedule_eh(ap);
+> +		wake_up_all(&ata_scsi_park_wq);
+> +	} else {
+> +		switch (input) {
+> +		case -1:
+> +			dev->flags &= ~ATA_DFLAG_NO_UNLOAD;
+> +			break;
+> +		case -2:
+> +			dev->flags |= ATA_DFLAG_NO_UNLOAD;
+> +			break;
+> +		}
+> +	}
+> +unlock:
+> +	spin_unlock_irqrestore(ap->lock, flags);
+> +
+> +	return rc ? rc : len;
+> +}
+> +DEVICE_ATTR(unload_heads, S_IRUGO | S_IWUSR,
+> +	    ata_scsi_park_show, ata_scsi_park_store);
+> +EXPORT_SYMBOL_GPL(dev_attr_unload_heads);
+> +
+>  static void ata_scsi_set_sense(struct scsi_cmnd *cmd, u8 sk, u8 asc, u8 ascq)
+>  {
+>  	cmd->result = (DRIVER_SENSE << 24) | SAM_STAT_CHECK_CONDITION;
