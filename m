@@ -1,103 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbYIQUP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbYIQUVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652AbYIQUP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 16:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbYIQUPL
+	id S1754863AbYIQUVR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 16:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbYIQUVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 16:15:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57600 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753761AbYIQUPJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 16:15:09 -0400
-Date: Wed, 17 Sep 2008 13:14:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       mpm@selenic.com, Hugh Dickins <hugh@veritas.com>
-Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
-Message-Id: <20080917131419.e6b7622e.akpm@linux-foundation.org>
-In-Reply-To: <20080914221231.GG27080@wotan.suse.de>
-References: <1221046892.30429.85.camel@twins.programming.kicks-ass.net>
-	<20080910114755.GA9696@elte.hu>
-	<20080910121217.GA16013@elte.hu>
-	<20080910144812.GB18644@wotan.suse.de>
-	<1221058864.30429.291.camel@twins.programming.kicks-ass.net>
-	<20080910152651.GE18644@wotan.suse.de>
-	<20080911082709.GA14378@elte.hu>
-	<20080914073906.GA6184@elte.hu>
-	<20080914004442.4f8e851f.akpm@linux-foundation.org>
-	<20080914080631.GA10720@elte.hu>
-	<20080914221231.GG27080@wotan.suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 17 Sep 2008 16:21:06 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:45077 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752845AbYIQUVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 16:21:05 -0400
+Date: Wed, 17 Sep 2008 15:21:02 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Dean Nelson <dcn@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Alan Mayer <ajm@sgi.com>,
+       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+Message-ID: <20080917202102.GA166524@sgi.com>
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com> <48D1575E.1050306@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D1575E.1050306@zytor.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Sep 2008 00:12:31 +0200
-Nick Piggin <npiggin@suse.de> wrote:
-
-> tiny-shmem calls do_truncate in shmem_file_setup. do_truncate takes i_mutex,
-> and shmem_file_setup is called with mmap_sem held. However i_mutex nests
-> outside mmap_sem.
+On Wed, Sep 17, 2008 at 12:15:42PM -0700, H. Peter Anvin wrote:
+> Dean Nelson wrote:
+> >
+> >    sgi-gru driver
+> >
+> >The GRU is not an actual external device that is connected to an IOAPIC.
+> >The gru is a hardware mechanism that is embedded in the node controller
+> >(UV hub) that directly connects to the cpu socket. Any cpu (with 
+> >permission)
+> >can do direct loads and stores to the gru. Some of these stores will result
+> >in an interrupt being sent back to the cpu that did the store.
+> >
+> >The interrupt vector used for this interrupt is not in an IOAPIC. Instead
+> >it must be loaded into the GRU at boot or driver initialization time.
+> >
 > 
-> Copy the code in shmem.c to avoid this problem.
-> 
+> Could you clarify there: is this one vector number per CPU, or are you 
+> issuing a specific vector number and just varying the CPU number?
 
-It's a bit unfortunate (as in: arse-about) that we end up creating new
-files deep within the mmap code, but I guess we won't be changing that
-in a hurry.
+It is one vector for each cpu.
+
+It is more efficient for software if the vector # is the same for all cpus
+but the software/hardware can support a unique vector for each cpu. This
+assumes, of course, that the driver can determine the irq->vector mapping for
+each cpu.
 
 
-> ---
-> Index: linux-2.6/mm/tiny-shmem.c
-> ===================================================================
-> --- linux-2.6.orig/mm/tiny-shmem.c
-> +++ linux-2.6/mm/tiny-shmem.c
-> @@ -65,31 +65,25 @@ struct file *shmem_file_setup(char *name
->  	if (!dentry)
->  		goto put_memory;
->  
-> +        error = -ENFILE;
-> +        file = get_empty_filp();
-> +        if (!file)
-> +                goto put_dentry;
-> +
->  	error = -ENOSPC;
->  	inode = ramfs_get_inode(root->d_sb, S_IFREG | S_IRWXUGO, 0);
->  	if (!inode)
-> -		goto put_dentry;
-> -
-> -	d_instantiate(dentry, inode);
-> -	error = -ENFILE;
-> -	file = alloc_file(shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-> -			&ramfs_file_operations);
-> -	if (!file)
-> -		goto put_dentry;
-> -
-> -	inode->i_nlink = 0;	/* It is unlinked */
-> -
-> -	/* notify everyone as to the change of file size */
-> -	error = do_truncate(dentry, size, 0, file);
-> -	if (error < 0)
->  		goto close_file;
->  
-> +        d_instantiate(dentry, inode);
-> +        inode->i_size = size;
-> +        inode->i_nlink = 0;     /* It is unlinked */
-> +        init_file(file, shm_mnt, dentry, FMODE_WRITE | FMODE_READ,
-> +                        &ramfs_file_operations);
->  	return file;
->  
->  close_file:
->  	put_filp(file);
-> -	return ERR_PTR(error);
-> -
->  put_dentry:
->  	dput(dentry);
->  put_memory:
+<probably-more-detail-than-you-want>
 
-That's a fairly substantial change.  Was it runtime tested?
+Physically, the system contains a large number of blades. Each blade has
+several processor sockets plus a UV hub (node controller).  There are 2 GRUs
+located in each UV hub.
+
+Each GRU supports multiple users simultaneously using the GRU.
+Each user is assigned a context number (0 .. N-1). If an exception occurs,
+the GRU uses the context number as an index into an array of [vector-apicid] pairs.
+The [vector-apicid] identifies the cpu & vector for the interrupt.
+
+Although supported by hardware, we do not intend to send interrupts
+off-blade.
+
+The array of [vector-apicid] pairs is located in each GRU and must be
+initialized at boot time or when the driver is loaded. There is a
+separate array for each GRU.
+
+When the driver receives the interrupt, the vector number (or IRQ number) is
+used by the driver to determine the GRU that sent the interrupt.
+
+
+The simpliest scheme would be to assign 2 vectors - one for each GRU in the UV hub.
+Vector #0 would be loaded into each "vector" of the  [vector-apicid] array for GRU
+#0; vector #1 would be loaded into the [vector-apicid] array for GRU #1.
+
+The [vector-apicid] arrays on all nodes would be identical as far as vectors are
+concerned. (Apicids would be different and would target blade-local cpus).
+Since interrupts are not sent offnode, the driver can use the vector (irq)
+to uniquely identify the source of the interrupt.
+
+However, we have a lot of flexibilty here. Any scheme that provides the right
+information to the driver is ok. Note that servicing of these interrupts
+is likely to be time critical. We need this path to be as efficient as possible.
+
+
+
+--- jack
+
+
+
+
