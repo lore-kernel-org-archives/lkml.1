@@ -1,85 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYIQKIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYIQKMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbYIQKIv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 06:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYIQKIm
+	id S1754025AbYIQKMD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 06:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYIQKLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 06:08:42 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:59282 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbYIQKIl (ORCPT
+	Wed, 17 Sep 2008 06:11:53 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:44095 "EHLO
+	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbYIQKLw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 06:08:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=viFxRbHFAPDgIJdPPdgwb2Hl37MyD4A2fDczGjf7kKTTChblUZ2Eo+3Tx7m4MmtLOk
-         wQYnjb40qNpo3KCbbZHZOuKinsAtgTj7en2ELIg/QuSw7dgbEh6pD7kkDfmhP3m5BIKa
-         VGx79X+bCX7RjYAOxfFEvstCehPsYD/4fyHzs=
-Message-ID: <48D0D71D.2040100@gmail.com>
-Date: Wed, 17 Sep 2008 12:08:29 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+	Wed, 17 Sep 2008 06:11:52 -0400
+X-BigFish: VPS-50(zz1432R98dR936eQ62a3L1805M936fQ9371Pzz10d3izz5a6ciz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7C4B7-02-R3K-01
+Date: Wed, 17 Sep 2008 12:11:29 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] pci: using printk(KERN_PCI v3
+Message-ID: <20080917101129.GC23138@erda.amd.com>
+References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <1221640067-24389-4-git-send-email-yhlu.kernel@gmail.com> <20080917083506.GA24035@elte.hu> <86802c440809170141s5c206ec9ub1ea077ed923ec20@mail.gmail.com>
 MIME-Version: 1.0
-To: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm 0/5] cgroup: block device i/o controller (v9)
-References: <> <1219853257-11052-1-git-send-email-righi.andrea@gmail.com> <48D0C800.30207@oss.ntt.co.jp>
-In-Reply-To: <48D0C800.30207@oss.ntt.co.jp>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <86802c440809170141s5c206ec9ub1ea077ed923ec20@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 17 Sep 2008 10:11:30.0759 (UTC) FILETIME=[C1434570:01C918AD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takuya Yoshikawa wrote:
-> Hi,
+On 17.09.08 01:41:03, Yinghai Lu wrote:
+> On Wed, Sep 17, 2008 at 1:35 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> >
+> >> -                     printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+> >> +                     printk(KERN_DEBUG KERN_PCI
+> >> +                              "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+> >
+> > i think we should aim to make the common usage of this facility as easy
+> > and short as possible. That means that i think the right line is:
+> >
+> > +                       printk(KERN_PCI
+> > +                                "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+> >
+> > as that is the shortest form. KERN_PCI should imply whatever
+> > common-sense default. It should still make sense to specify KERN_FOO
+> > KERN_PCI, to override that default.
 > 
-> Andrea Righi wrote:
->> TODO:
->>
->> * Try to push down the throttling and implement it directly in the I/O
->>   schedulers, using bio-cgroup (http://people.valinux.co.jp/~ryov/bio-cgroup/)
->>   to keep track of the right cgroup context. This approach could lead to more
->>   memory consumption and increases the number of dirty pages (hard/slow to
->>   reclaim pages) in the system, since dirty-page ratio in memory is not
->>   limited. This could even lead to potential OOM conditions, but these problems
->>   can be resolved directly into the memory cgroup subsystem
->>
->> * Handle I/O generated by kswapd: at the moment there's no control on the I/O
->>   generated by kswapd; try to use the page_cgroup functionality of the memory
->>   cgroup controller to track this kind of I/O and charge the right cgroup when
->>   pages are swapped in/out
-> 
-> Could you explain which cgroup we should charge when swap in or out occurs?
-> Are there any difference between the following cases?
-> 
-> Target page is
-> 1. used as page cache and not mapped to any space
-> 2. used as page cache and mapped to some space
-> 3. not used as page cache and mapped to some space
-> 
-> I do not think it is fair to charge the process for this kind of I/O, am I wrong?
+> vprintk will add default before that like
+> like print(KERN_INFO KERN_PCI ....)
 
-As a generic implementation, when a read/write request is submitted to the
-IO subsystem (i.e. submit_bio()), look at the first page in the struct bio
-and charge the IO cost to the owner of that page. It this makes sense, we
-have to just keep track of all the pages when they're submitted to the IO
-subsystem in this way. Unfortunately, this doesn't seem to work during
-swap_writepage(), but maybe bio-cgroup is able to handle this case.
+What about a pci_dbg() macro similiar to dev_dbg()? Same could be used
+for ACPI, acpi_dbg().
 
--Andrea
+-Robert
+
+> 
+> YH
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
