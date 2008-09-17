@@ -1,101 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbYIQQoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbYIQQrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755263AbYIQQoE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYIQQnw
+	id S1755002AbYIQQrT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYIQQrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:43:52 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:65036 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbYIQQnv (ORCPT
+	Wed, 17 Sep 2008 12:47:07 -0400
+Received: from gv-out-0910.google.com ([216.239.58.191]:22965 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753736AbYIQQrE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:43:51 -0400
+	Wed, 17 Sep 2008 12:47:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=SjwtCihFZDJtr2dHTpqBvUPpoX6gk273snQru7Iafr5sHvB5EW2g3PAjyj6E6Vv/1t
-         IjrmIvRIoYbJZm+KoI1N2I66YidL2OPDAwDnIsVXS8+1/Oyn9fiMTO2f6OG2T7AfTIu+
-         YQdZi12i6blnS0TG3k8U2yoAI1c1Luu3De0cQ=
-Message-ID: <76bd70e30809170943w643c4f1ftb91895bcd59a2da8@mail.gmail.com>
-Date: Wed, 17 Sep 2008 11:43:48 -0500
-From: "Chuck Lever" <chucklever@gmail.com>
-To: "Martin Knoblauch" <knobi@knobisoft.de>
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-Cc: "Peter Staubach" <staubach@redhat.com>,
-       "linux-nfs list" <linux-nfs@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <804604.40886.qm@web32607.mail.mud.yahoo.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=TnA8yIq+6c1+j6g5Z/JOl2lrbUoC6l7jM3KdzDBL7wvAMUv2Idf9L2DHDWNMHUNrqI
+         G+EgxxKImX62VkewzUSR9fpjoMvQkPMT/0+Ahicsclh2jUxH/USEsI4gtbdrdOycLcNu
+         piIvLqyoOvltzsrFr1AR8YIszzCb3JisFTkw0=
+Message-ID: <48D1346C.1020203@gmail.com>
+Date: Wed, 17 Sep 2008 18:46:36 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804604.40886.qm@web32607.mail.mud.yahoo.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
+References: <48CE6A90.1070309@gmail.com> <48CFC601.9050608@embeddedalley.com> <48D0C69D.4090105@gmail.com>
+In-Reply-To: <48D0C69D.4090105@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 11:23 AM, Martin Knoblauch <knobi@knobisoft.de> wrote:
-> ----- Original Message ----
->
->> From: Chuck Lever <chucklever@gmail.com>
->> To: Peter Staubach <staubach@redhat.com>
->> Cc: Martin Knoblauch <knobi@knobisoft.de>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org
->> Sent: Wednesday, September 17, 2008 5:41:15 PM
->> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
->>
->> On Wed, Sep 17, 2008 at 9:06 AM, Peter Staubach wrote:
->> > Martin Knoblauch wrote:
->> >>
->> >> Hi,
->> >>
->> >> the following/attached patch works around a [obscure] problem when an 2.6
->> >> (not sure/caring about 2.4) NFS client accesses an "offline" file on a
->> >> Sun/Solaris-10 NFS server when the underlying filesystem is of type SAM-FS.
->> >> Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux
->> >> problem, but the chance for a short-/mid-term solution from Sun are very
->> >> slim. So, being lazy, I would love to get this patch into Linux. If not, I
->> >> just will have to maintain it for eternity out of tree.
->> >>
->> >> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores
->> >> meta-data and a relatively small amount of data "online" on disk and pushes
->> >> old or infrequently used data to "offline" media like e.g. tape. This is
->> >> completely transparent to the users. If the date for an "offline" file is
->> >> needed, the so called "stager daemon" copies it back from the offline
->> >> medium. All of this works great most of the time. Now, if an Linux NFS
->> >> client tries to read such an offline file, performance drops to "extremely
->> >> slow". After lengthly investigation of tcp-dumps, mount options and
->> >> procedures involving black cats at midnight, we found out that the readahead
->> >> behaviour of the Linux NFS client causes the problem. Basically it seems to
->> >> issue read requests up to 15*rsize to the server. In the case of the
->> >> "offline" files, this behaviour causes heavy competition for the inode lock
->> >> between the NFSD process and the stager daemon on the Solaris server.
->> >>
->> >> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks
->> >> the problem, but a solution will need time. Lots of it.
->> >> - The working solution: disable the client side readahead, or make it
->> >> tunable. The patch does that by introducing a NFS module parameter
->> >> "ra_factor" which can take values between 1 and 15 (default 15) and a
->> >> tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
->> >
->> > Hi.
->> >
->> > I was curious if a design to limit or eliminate read-ahead
->> > activity when the server returns EJUKEBOX was considered?
->> > Unless one can know that the server and client can get into
->> > this situation ahead of time, how would the tunable be used?
->>
->> I tend to agree.  A tunable is probably not a good solution in this case.
->>
->> I would bet that this lock contention issue is a problem in other more
->> common cases, and would merit some careful analysis.
->>
->
->  Are you talking wrt. a Solaris NFS-Server with SAM-FS/QFS as backend filesystem?
+Hi,
 
-I misread your mail, and thought the inode lock contention issue was
-on the client.
+I've found suspend on my desktop defunct in mmotm 2008-09-13-03-09 (opposing to
+2008-09-10-19-39).
 
---
-Chuck Lever
+Dmesg says:
+
+uhci_hcd 0000:00:1d.1: PCI INT B disabled
+pci_legacy_suspend(): usb_hcd_pci_suspend+0x0/0x3e0 returns -16
+pm_op(): pci_pm_suspend+0x0/0xd0 returns -16
+PM: Device 0000:00:1d.0 failed to suspend: error -16
+PM: Some devices failed to suspend
+
+$ ls -l /sys/bus/pci/devices/0000:00:1d.1/usb7/
+-rw-r--r-- 1 root root  4096 17. zář 18.43 authorized
+-rw-r--r-- 1 root root  4096 17. zář 18.43 authorized_default
+-r--r--r-- 1 root root  4096 17. zář 10.51 bcdDevice
+-rw-r--r-- 1 root root  4096 17. zář 10.51 bConfigurationValue
+-r--r--r-- 1 root root  4096 17. zář 10.51 bDeviceClass
+-r--r--r-- 1 root root  4096 17. zář 10.51 bDeviceProtocol
+-r--r--r-- 1 root root  4096 17. zář 10.51 bDeviceSubClass
+-r--r--r-- 1 root root  4096 17. zář 10.51 bmAttributes
+-r--r--r-- 1 root root  4096 17. zář 18.43 bMaxPacketSize0
+-r--r--r-- 1 root root  4096 17. zář 10.51 bMaxPower
+-r--r--r-- 1 root root  4096 17. zář 10.51 bNumConfigurations
+-r--r--r-- 1 root root  4096 17. zář 10.51 bNumInterfaces
+-r--r--r-- 1 root root  4096 17. zář 18.43 busnum
+-r--r--r-- 1 root root  4096 17. zář 10.51 configuration
+-r--r--r-- 1 root root 65553 17. zář 18.43 descriptors
+-r--r--r-- 1 root root  4096 17. zář 18.43 dev
+-r--r--r-- 1 root root  4096 17. zář 10.51 devnum
+lrwxrwxrwx 1 root root     0 17. zář 10.51 driver -> ../../../../bus/usb/drivers/usb
+lrwxrwxrwx 1 root root     0 17. zář 18.43 ep_00 -> usb_endpoint/usbdev7.1_ep00
+-r--r--r-- 1 root root  4096 17. zář 10.51 idProduct
+-r--r--r-- 1 root root  4096 17. zář 10.51 idVendor
+-r--r--r-- 1 root root  4096 17. zář 18.43 manufacturer
+-r--r--r-- 1 root root  4096 17. zář 10.51 maxchild
+drwxr-xr-x 2 root root     0 17. zář 18.43 power
+-r--r--r-- 1 root root  4096 17. zář 18.43 product
+-r--r--r-- 1 root root  4096 17. zář 18.43 quirks
+-r--r--r-- 1 root root  4096 17. zář 10.51 serial
+-r--r--r-- 1 root root  4096 17. zář 10.51 speed
+lrwxrwxrwx 1 root root     0 17. zář 10.51 subsystem -> ../../../../bus/usb
+-rw-r--r-- 1 root root  4096 17. zář 10.51 uevent
+-r--r--r-- 1 root root  4096 17. zář 18.43 urbnum
+drwxr-xr-x 3 root root     0 17. zář 10.51 usb_endpoint
+-r--r--r-- 1 root root  4096 17. zář 10.51 version
+drwxr-xr-x 4 root root     0 17. zář 10.51 7-0:1.0
+
+$ lsusb -s 7:1
+Bus 007 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+
