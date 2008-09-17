@@ -1,101 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbYIQLIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbYIQLmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754800AbYIQLIG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 07:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYIQLGS
+	id S1753457AbYIQLmG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 07:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbYIQLly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 07:06:18 -0400
-Received: from qb-out-0506.google.com ([72.14.204.228]:29149 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbYIQLGQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 07:06:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Ntkao2QD6F5mUPeqiuV564d8yOXygehfP8NADvjVxFCpjJ1jePrvqd0TaKuYnErId9
-         FrZTe9yUNT4ZoxMxJd6RUQ0n1p4VaJHr8sNveW9+FXre7HEqBVRx4MJ+wDiz4/UlJ65K
-         jOpW3ormvyAD/H+G1hgvEg1huUzdobNrRKmEA=
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>
-Cc: agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       baramsori72@gmail.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
-       dave@linux.vnet.ibm.com, Divyesh Shah <dpshah@google.com>,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       Hirokazu Takahashi <taka@valinux.co.jp>, Li Zefan <lizf@cn.fujitsu.com>,
-       Marco Innocenti <m.innocenti@cineca.it>, matt@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       Ryo Tsuruta <ryov@valinux.co.jp>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Andrea Righi <righi.andrea@gmail.com>
-Subject: [PATCH -mm 6/6] export per-task i/o throttling statistics to userspace
-Date: Wed, 17 Sep 2008 13:05:28 +0200
-Message-Id: <1221649528-8519-7-git-send-email-righi.andrea@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Wed, 17 Sep 2008 07:41:54 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37249 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752513AbYIQLlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 07:41:53 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19cnSlzghZcxQrdMWlay3k3jsG9pTP8FRhFDs6fb0
+	2Dy1zVNBt+kzwt
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org
+In-Reply-To: <20080917104044.GC18764@elte.hu>
+References: <SpS7rta8n4.A.mr.ZesyIB@albercik>
+	 <48CAE7A0.8000004@linux-foundation.org>
+	 <1221306287.5213.111.camel@marge.simson.net>
+	 <48CD1D25.9080301@linux-foundation.org>
+	 <1221421907.4597.24.camel@marge.simson.net>
+	 <1221475440.4784.39.camel@marge.simson.net>
+	 <1221568105.5020.17.camel@marge.simson.net>
+	 <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi>
+	 <1221626391.5043.13.camel@marge.simson.net>
+	 <1221627676.5125.3.camel@marge.simson.net> <20080917104044.GC18764@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 17 Sep 2008 13:41:41 +0200
+Message-Id: <1221651701.5102.17.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export the throttling statistics collected for each task through
-/proc/PID/io-throttle-stat:
- - total number of delayed I/O request
- - total amount of time in clock ticks spent to wait for the delayed requests
+On Wed, 2008-09-17 at 12:40 +0200, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > On Wed, 2008-09-17 at 06:40 +0200, Mike Galbraith wrote:
+> > > On Tue, 2008-09-16 at 17:07 +0300, Ilpo Järvinen wrote:
+> > 
+> > > > One additional sanity check could be to rebase security 6f0f0fd4963 on top 
+> > > > of the c142bda458a and then see if bisection among those security commits 
+> > > > on top yields to the the same result... Though I doubt it can change much 
+> > > > because there was not that much relevant non-security things in the merge 
+> > > > in question.
+> > > 
+> > > I'm not a master of git-foo, so that is not an option.  However, a dinky
+> > > bisection c142bda4..847106f very clearly says...
+> > > 
+> > > marge:..kernel/linux-2.6.27.git # git bisect bad
+> > > 6f0f0fd496333777d53daff21a4e3b28c4d03a6d is first bad commit
+> > > commit 6f0f0fd496333777d53daff21a4e3b28c4d03a6d
+> > > Author: James Morris <jmorris@namei.org>
+> > > Date:   Thu Jul 10 17:02:07 2008 +0900
+> > > 
+> > >     security: remove register_security hook
+> > > 
+> > >     The register security hook is no longer required, as the capability
+> > >     module is always registered.  LSMs wishing to stack capability as
+> > >     a secondary module should do so explicitly.
+> > > 
+> > >     Signed-off-by: James Morris <jmorris@namei.org>
+> > >     Acked-by: Stephen Smalley <sds@tycho.nsa.gov>
+> > >     Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > > 
+> > > :040000 040000 0177ef46d305e51e27bfcc4350a40577f8ba8d3d 64b64c10a424df4539653a8ee34f1a2329300931 M      include
+> > > :040000 040000 e318891e514de674fd064f6bfad70d5633b1aff1 0dbb38d5aa7fc3e4b2e09dc65796ce7cd5faeb26 M      security
+> > 
+> > Which is high grade horse-pookey.
+> 
+> perhaps re-test commit 6f0f0fd49 and its parent commit, 93cbace7a0.
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- fs/proc/base.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+Will do.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 63617ca..e53b06c 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -54,6 +54,7 @@
- #include <linux/proc_fs.h>
- #include <linux/stat.h>
- #include <linux/task_io_accounting_ops.h>
-+#include <linux/blk-io-throttle.h>
- #include <linux/init.h>
- #include <linux/capability.h>
- #include <linux/file.h>
-@@ -2459,6 +2460,14 @@ static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
- }
- #endif /* CONFIG_TASK_IO_ACCOUNTING */
- 
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+static int proc_iothrottle_stat(struct task_struct *task, char *buffer)
-+{
-+	return sprintf(buffer, "%llu %llu\n",
-+		get_io_throttle_cnt(task), get_io_throttle_sleep(task));
-+}
-+#endif /* CONFIG_CGROUP_IO_THROTTLE */
-+
- /*
-  * Thread groups
-  */
-@@ -2534,6 +2543,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, tgid_io_accounting),
- #endif
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	INF("io-throttle-stat",	S_IRUGO, iothrottle_stat),
-+#endif
- };
- 
- static int proc_tgid_base_readdir(struct file * filp,
-@@ -2865,6 +2877,9 @@ static const struct pid_entry tid_base_stuff[] = {
- #ifdef CONFIG_TASK_IO_ACCOUNTING
- 	INF("io",	S_IRUGO, tid_io_accounting),
- #endif
-+#ifdef CONFIG_CGROUP_IO_THROTTLE
-+	INF("io-throttle-stat",	S_IRUGO, iothrottle_stat),
-+#endif
- };
- 
- static int proc_tid_base_readdir(struct file * filp,
--- 
-1.5.4.3
+> It looks like a potentially bogus bisection result, but _maybe_ it has 
+> relevance: changes the size of "struct security_operations", which could 
+> have alignment and layout effects on all sorts of kernel variables, 
+> kmalloc sizes, etc.
+
+This may well be a mythical creature infestation for all I know ;-), but
+it's address is somewhere in the 2069f45..847106f block, 316 commits,
+none of which look like they should be the least bit interesting to
+netperf.  I reverted this particular commit in 27.git, got the expected
+result.  Looks like I'll keep poking at it, can't seem to resist.  Grr.
+
+	-Mike
 
