@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbYIQHZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbYIQH3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753085AbYIQHZz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 03:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYIQHZr
+	id S1753814AbYIQH3L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 03:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYIQH25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 03:25:47 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59846 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbYIQHZr (ORCPT
+	Wed, 17 Sep 2008 03:28:57 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:28202 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbYIQH24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 03:25:47 -0400
-Date: Wed, 17 Sep 2008 15:45:11 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org
-Subject: Re: [PATCH -mm] memcg: fix handling of shmem migration
-Message-Id: <20080917154511.683691d1.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080917153826.8efbdc4b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp>
-	<20080917144659.2e363edc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080917145003.fb4d0b95.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080917151951.9a181e7d.nishimura@mxp.nes.nec.co.jp>
-	<20080917153826.8efbdc4b.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Sep 2008 03:28:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NqvXNCk4doz1uhlWXKn0QqNP77NXPwF4BjGOrAdiYFL+Y7c6DB/I4ULkJnRLJoQGEB
+         R/9ezo70CLdqAFXQ5oKQvBocU2gibLraesOZcUFtdciiQsqYqwGKRh0kcNJqZlE6dyM2
+         yNaSzS3wvtzA+35vAz0283KHp0a8wf5k6GAP8=
+Date: Wed, 17 Sep 2008 11:30:59 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] loglevel=pci:8,acpi:8,apic=8 support v5
+Message-ID: <20080917073058.GA3770@x200.localdomain>
+References: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1221635415-14859-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 15:38:26 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 17 Sep 2008 15:19:51 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Wed, Sep 17, 2008 at 12:10:09AM -0700, Yinghai Lu wrote:
+>     KERN_PCI
+>     KERN_ACPI
+> v4: fix some checkpatch error and warning
+> v5: add default with DEFINE_LOGLEVE_SETUP_DEF
+>     KERN_APIC
 > 
-> > Hmm, something like this?
-> > 
-> > ---
-> > @@ -734,6 +734,9 @@ int mem_cgroup_prepare_migration(struct page *page, struct page *newpa
-> >         if (mem_cgroup_subsys.disabled)
-> >                 return 0;
-> > 
-> > +       if (PageSwapBacked(page))
-> > +               SetPageSwapBacked(newpage);
-> > +
-> >         lock_page_cgroup(page);
-> >         pc = page_get_page_cgroup(page);
-> >         if (pc) {
-> > ---
-> > 
-> > Or, adding MEM_CGROUP_CHARGE_TYPE_SHMEM and
-> > 
-> > ---
-> > @@ -740,7 +740,10 @@ int mem_cgroup_prepare_migration(struct page *page, struct page *newp
-> >                 mem = pc->mem_cgroup;
-> >                 css_get(&mem->css);
-> >                 if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
-> > -                       ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
-> > +                       if (page_is_file_cache(page))
-> > +                               ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
-> > +                       else
-> > +                               ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
-> >         }
-> >         unlock_page_cgroup(page);
-> >         if (mem) {
-> > ---
-> > (Of course, mem_cgroup_charge_common should be modified too.)
-> > 
-> like this :) I don't want to change logic in migration.c
-> (and this is special case handling for memcg.)
+> usage:
+> 	in .h to have
+> 		#define KERN_PCI "<pci>"
+> 	in .c to have
+> 		DEFINE_LOGLEVEL_SETUP(pci, KERN_PCI, "pci:");
+> 	then could use
+> 		printk(KERN_DEBUG KERN_PCI fmt, ...);
+> 	and command line
+> 		loglevel=3,pci:8
 > 
-OK.
-I'll rewrite and resend it later.
+> you can add different printk to different files of one subsys if you like
+> not just one susbsys one tag, and don't need to update kernel.h to add more tags
 
-Thanks,
-Daisuke Nishimura.
+I think all of this is overdesigned and stupid.
+
+People expecting that loglevels are exactly right so they can calm messages
+are like security-savvy people who expect all security relevant bugfixes carry
+CVE tag.
+
+grep says there are 50757 printk calls, only 32129 of them carry KERN_ tag.
+
+Oh, and new and improved logs:
+
+	[    0.340326] pci 0000:00:01.0: PME# supported from D0 D3hot D3cold
+	[    0.340326] pci 0000:00:01.0: PME# disabled
+	[    0.340326] <pci>PCI: 0000:00:1a.0 reg 20 io port: [dc00, dc1f]
+	[    0.340413] <pci>PCI: 0000:00:1a.1 reg 20 io port: [e000, e01f]
+	[    0.340549] <pci>PCI: 0000:00:1a.7 reg 10 32bit mmio: [febffc00, febfffff]
+		       ^^^^^^^^^
+
+How this can be an improvement for those who boot with ignore_loglevel,
+I don't know.
