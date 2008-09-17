@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbYIQN3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYIQNgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbYIQN3T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 09:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYIQN3F
+	id S1753565AbYIQNgp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 09:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbYIQNgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 09:29:05 -0400
-Received: from gv-out-0910.google.com ([216.239.58.191]:3876 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbYIQN3D (ORCPT
+	Wed, 17 Sep 2008 09:36:35 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40420 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbYIQNge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 09:29:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rm57pXbekZkx9tfusBNB1iwatEYstdb2XGfn5ce6V7RsyMOOzg8Z53+8KpE9viSwjf
-         TnY40BxHHRNqYGVq9FQFvB/QriKAezzOxoMvggKSXfAVzAbFjKcJrUYTfolC1SFB6dPK
-         R1AD0VljrwsAcnPwQqxPZ4Q4V+4hVCxufep4w=
-Date: Wed, 17 Sep 2008 17:29:04 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: j_kernel@hoblitt.com, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
-	tick_periodic() ???
-Message-ID: <20080917132904.GB7309@lenovo>
-References: <20080917024312.GA23209@hoblitt.com> <20080917071357.GA7455@lenovo> <20080917092058.GB23209@hoblitt.com> <20080917125950.GA7309@lenovo> <20080917131306.GB20626@elte.hu>
-MIME-Version: 1.0
+	Wed, 17 Sep 2008 09:36:34 -0400
+Date: Wed, 17 Sep 2008 16:36:31 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Mike Galbraith <efault@gmx.de>
+cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       kernel-testers@vger.kernel.org
+Subject: Re: [Bug #11308] tbench regression on each kernel release from	2.6.22
+ -&gt; 2.6.28
+In-Reply-To: <1221657111.5511.14.camel@marge.simson.net>
+Message-ID: <Pine.LNX.4.64.0809171629550.1034@wrl-59.cs.helsinki.fi>
+References: <1221306287.5213.111.camel@marge.simson.net> 
+ <48CD1D25.9080301@linux-foundation.org>  <1221421907.4597.24.camel@marge.simson.net>
+  <1221475440.4784.39.camel@marge.simson.net>  <1221568105.5020.17.camel@marge.simson.net>
+  <Pine.LNX.4.64.0809161700020.1034@wrl-59.cs.helsinki.fi> 
+ <1221626391.5043.13.camel@marge.simson.net>  <1221627676.5125.3.camel@marge.simson.net>
+ <20080917104044.GC18764@elte.hu>  <1221651701.5102.17.camel@marge.simson.net>
+ <20080917124943.GA7738@elte.hu> <1221657111.5511.14.camel@marge.simson.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080917131306.GB20626@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Wed, Sep 17, 2008 at 03:13:06PM +0200]
-| 
-| > Evetually nmi_watchdog=2 does work right? Though it's not good that 
-| > we've got 8259 spurious interrupt. Hmm...
-| 
-| well, nmi_watchdog=2 changes the layout of clockevent devices and easily 
-| switches the system into non-highres non-dynticks mode. So it can hide 
-| bugs.
-| 
-| 	Ingo
-| 
+On Wed, 17 Sep 2008, Mike Galbraith wrote:
 
-and it does since we have nmi stuck on lapics. Still investigating.
+> On Wed, 2008-09-17 at 14:49 +0200, Ingo Molnar wrote:
+> 
+> > git log --pretty=format:"%h: %s" 2069f45..847106f | grep -viE \
+> > 'block|alsa|pcmcia|sound|Merge|iosched|blk|DAC960|scsi|s390|paride|pktcdvd|filter|cdrom|drm'
+> > 
+> > gives us:
+> > 
+> >  7daf705: Start using the new '%pS' infrastructure to print symbols
+> >  6f0f0fd: security: remove register_security hook
+> >  93cbace: security: remove dummy module fix
+> >  5915eb5: security: remove dummy module
+> >  b478a9f: security: remove unused sb_get_mnt_opts hook
+> >  32502b8: splice: fix generic_file_splice_read() race with page invalidation
+> >  8b3d356: ramfs: enable splice write
+> >  a144ff0: xen: Avoid allocations causing swap activity on the resume path
+> > 
+> > which really only leaves that security commit your bisection fingered. 
+> > Which _slightly_ raises its likelyhood of being implicated. Structure 
+> > size changes can move two formerly far-apart netperf-relevant symbols on 
+> > the same cacheline, which can start cache ping-pong-ing badly.
+> 
+> I sure hope it's something like ping-pong, it's driving me NUTS.
 
-		- Cyrill -
+How about dividing the problem to smaller blocks then by restoring 
+parts of the change...
+
+
+-- 
+ i.
