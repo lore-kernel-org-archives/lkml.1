@@ -1,394 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbYIQQjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYIQQk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755280AbYIQQjH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbYIQQiy
+	id S1755000AbYIQQk7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYIQQkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:38:54 -0400
-Received: from nebensachen.de ([195.34.83.29]:54540 "EHLO mail.nebensachen.de"
+	Wed, 17 Sep 2008 12:40:49 -0400
+Received: from nebensachen.de ([195.34.83.29]:51906 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbYIQQix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:38:53 -0400
-X-Hashcash: 1:20:080917:bzolnier@gmail.com::4nQH3o3C8DAhwKsi:00000000000000000000000000000000000000000001T9n
-X-Hashcash: 1:20:080917:jeff@garzik.org::quaRbUCm2vWWFxsg:008VSa
-X-Hashcash: 1:20:080917:randy.dunlap@oracle.com::6xNa20hbdjbpodRb:000000000000000000000000000000000000001g01
-X-Hashcash: 1:20:080917:htejun@gmail.com::NWJC6A9TNbGV7fa2:00HzI
-X-Hashcash: 1:20:080917:linux-ide@vger.kernel.org::XQ1at5+PZue2mBvC:0000000000000000000000000000000000003EcF
-X-Hashcash: 1:20:080917:linux-kernel@vger.kernel.org::o4NG8RRzCrKAICYk:0000000000000000000000000000000002p8o
+	id S1752589AbYIQQks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 12:40:48 -0400
+X-Hashcash: 1:20:080917:bzolnier@gmail.com::Q0HTeG2oPLPw6ref:00000000000000000000000000000000000000000003sRa
+X-Hashcash: 1:20:080917:jeff@garzik.org::2abUYi/jomKOUOOV:000fzx
+X-Hashcash: 1:20:080917:randy.dunlap@oracle.com::ZQ5lHEsc79vKVsCi:00000000000000000000000000000000000000G/q0
+X-Hashcash: 1:20:080917:htejun@gmail.com::zRTXcwYmrVacrYlt:01ZRj
+X-Hashcash: 1:20:080917:linux-ide@vger.kernel.org::9gkmMo11lbPpk+tH:0000000000000000000000000000000000003iVs
+X-Hashcash: 1:20:080917:linux-kernel@vger.kernel.org::R3AVR4QSBCJiPscy:0000000000000000000000000000000001Pf8
 From: Elias Oltmanns <eo@nebensachen.de>
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
        Tejun Heo <htejun@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4 v2] ide: Implement disk shock protection support
+Subject: [PATCH 4/4 v2] Add documentation for hard disk shock protection
+	interface
 In-Reply-To: <87d4j2n3dn.fsf@denkblock.local>
-Message-ID: <20080917163144.9870.59732.stgit@denkblock.local>
+Message-ID: <20080917163145.9870.8575.stgit@denkblock.local>
 References: <87d4j2n3dn.fsf@denkblock.local>
 User-Agent: StGIT/0.14.2
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 17 Sep 2008 18:38:37 +0200
+Date: Wed, 17 Sep 2008 18:40:06 +0200
 MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On user request (through sysfs), the IDLE IMMEDIATE command with UNLOAD
-FEATURE as specified in ATA-7 is issued to the device and processing of
-the request queue is stopped thereafter until the specified timeout
-expires or user space asks to resume normal operation. This is supposed
-to prevent the heads of a hard drive from accidentally crashing onto the
-platter when a heavy shock is anticipated (like a falling laptop expected
-to hit the floor). Port resets are deferred whenever a device on that
-port is in the parked state.
+Put some information (and pointers to more) into the kernel's doc tree,
+describing briefly the interface to the kernel's disk head unloading
+facility. Information about how to set up a complete shock protection
+system under GNU/Linux can be found on the web and is referenced
+accordingly.
 
 Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
 ---
 
- drivers/ide/Makefile       |    2 -
- drivers/ide/ide-io.c       |   24 +++++++++
- drivers/ide/ide-iops.c     |   29 ++++++++++-
- drivers/ide/ide-park.c     |  118 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/ide/ide-probe.c    |    5 ++
- drivers/ide/ide-taskfile.c |   11 ++++
- drivers/ide/ide.c          |    1 
- include/linux/ide.h        |   13 +++++
- 8 files changed, 199 insertions(+), 4 deletions(-)
- create mode 100644 drivers/ide/ide-park.c
+ Documentation/laptops/disk-shock-protection.txt |  144 +++++++++++++++++++++++
+ 1 files changed, 144 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/laptops/disk-shock-protection.txt
 
-diff --git a/drivers/ide/Makefile b/drivers/ide/Makefile
-index 0c30adb..ceaf779 100644
---- a/drivers/ide/Makefile
-+++ b/drivers/ide/Makefile
-@@ -5,7 +5,7 @@
- EXTRA_CFLAGS				+= -Idrivers/ide
- 
- ide-core-y += ide.o ide-ioctls.o ide-io.o ide-iops.o ide-lib.o ide-probe.o \
--	      ide-taskfile.o ide-pio-blacklist.o
-+	      ide-taskfile.o ide-park.o ide-pio-blacklist.o
- 
- # core IDE code
- ide-core-$(CONFIG_IDE_TIMINGS)		+= ide-timings.o
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index e205f46..09d10a5 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -672,7 +672,25 @@ EXPORT_SYMBOL_GPL(ide_devset_execute);
- 
- static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
- {
-+	ide_hwif_t *hwif = drive->hwif;
-+	ide_task_t task;
-+	struct ide_taskfile *tf = &task.tf;
-+
-+	memset(&task, 0, sizeof(task));
- 	switch (rq->cmd[0]) {
-+	case REQ_PARK_HEADS:
-+		drive->sleep = *(unsigned long *)rq->special;
-+		drive->dev_flags |= IDE_DFLAG_SLEEPING;
-+		tf->command = ATA_CMD_IDLEIMMEDIATE;
-+		tf->feature = 0x44;
-+		tf->lbal = 0x4c;
-+		tf->lbam = 0x4e;
-+		tf->lbah = 0x55;
-+		task.tf_flags |= IDE_TFLAG_CUSTOM_HANDLER;
-+		break;
-+	case REQ_UNPARK_HEADS:
-+		tf->command = ATA_CMD_CHK_POWER;
-+		break;
- 	case REQ_DEVSET_EXEC:
- 	{
- 		int err, (*setfunc)(ide_drive_t *, int) = rq->special;
-@@ -692,6 +710,10 @@ static ide_startstop_t ide_special_rq(ide_drive_t *drive, struct request *rq)
- 		ide_end_request(drive, 0, 0);
- 		return ide_stopped;
- 	}
-+	task.tf_flags |= IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
-+	task.rq = rq;
-+	hwif->data_phase = task.data_phase = TASKFILE_NO_DATA;
-+	return do_rw_taskfile(drive, &task);
- }
- 
- static void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
-@@ -1008,7 +1030,7 @@ static void ide_do_request (ide_hwgroup_t *hwgroup, int masked_irq)
- 		}
- 		hwgroup->hwif = hwif;
- 		hwgroup->drive = drive;
--		drive->dev_flags &= ~IDE_DFLAG_SLEEPING;
-+		drive->dev_flags &= ~(IDE_DFLAG_SLEEPING | IDE_DFLAG_PARKED);
- 		drive->service_start = jiffies;
- 
- 		if (blk_queue_plugged(drive->queue)) {
-diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
-index 91182eb..7e7a1f0 100644
---- a/drivers/ide/ide-iops.c
-+++ b/drivers/ide/ide-iops.c
-@@ -1079,12 +1079,13 @@ static void pre_reset(ide_drive_t *drive)
- static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
- {
- 	unsigned int unit;
--	unsigned long flags;
-+	unsigned long flags, timeout;
- 	ide_hwif_t *hwif;
- 	ide_hwgroup_t *hwgroup;
- 	struct ide_io_ports *io_ports;
- 	const struct ide_tp_ops *tp_ops;
- 	const struct ide_port_ops *port_ops;
-+	DEFINE_WAIT(wait);
- 
- 	spin_lock_irqsave(&ide_lock, flags);
- 	hwif = HWIF(drive);
-@@ -1111,6 +1112,32 @@ static ide_startstop_t do_reset1 (ide_drive_t *drive, int do_not_try_atapi)
- 		return ide_started;
- 	}
- 
-+	/* We must not disturb devices in the IDE_DFLAG_PARKED state. */
-+	do {
-+		unsigned long now;
-+		int i;
-+
-+		timeout = jiffies;
-+		for (i = 0; i < MAX_DRIVES; i++) {
-+			ide_drive_t *tdrive = &hwif->drives[i];
-+
-+			if (tdrive->dev_flags & IDE_DFLAG_PRESENT &&
-+			    tdrive->dev_flags & IDE_DFLAG_PARKED &&
-+			    time_after(tdrive->sleep, timeout))
-+				timeout = tdrive->sleep;
-+		}
-+
-+		now = jiffies;
-+		if (time_before_eq(timeout, now))
-+			break;
-+
-+		spin_unlock_irqrestore(&ide_lock, flags);
-+		prepare_to_wait(&ide_park_wq, &wait, TASK_UNINTERRUPTIBLE);
-+		timeout = schedule_timeout_uninterruptible(timeout - now);
-+		spin_lock_irqsave(&ide_lock, flags);
-+	} while (timeout);
-+	finish_wait(&ide_park_wq, &wait);
-+
- 	/*
- 	 * First, reset any device state data we were maintaining
- 	 * for any of the drives on this interface.
-diff --git a/drivers/ide/ide-park.c b/drivers/ide/ide-park.c
+diff --git a/Documentation/laptops/disk-shock-protection.txt b/Documentation/laptops/disk-shock-protection.txt
 new file mode 100644
-index 0000000..35fc3ee
+index 0000000..1f93462
 --- /dev/null
-+++ b/drivers/ide/ide-park.c
-@@ -0,0 +1,118 @@
-+#include <linux/kernel.h>
-+#include <linux/ide.h>
-+#include <linux/jiffies.h>
-+#include <linux/blkdev.h>
++++ b/Documentation/laptops/disk-shock-protection.txt
+@@ -0,0 +1,144 @@
++Hard disk shock protection
++==========================
 +
-+DECLARE_WAIT_QUEUE_HEAD(ide_park_wq);
++Author: Elias Oltmanns <eo@nebensachen.de>
++Last modified: 2008-09-16
 +
-+static int issue_park_cmd(ide_drive_t *drive, unsigned long timeout)
-+{
-+	struct request_queue *q = drive->queue;
-+	struct request *rq;
-+	int rc;
 +
-+	timeout += jiffies;
-+	spin_lock_irq(&ide_lock);
-+	if (drive->dev_flags & IDE_DFLAG_PARKED) {
-+		ide_hwgroup_t *hwgroup = drive->hwif->hwgroup;
-+		int reset_timer;
++0. Contents
++-----------
 +
-+		reset_timer = time_before(timeout, drive->sleep);
-+		drive->sleep = timeout;
-+		wake_up_all(&ide_park_wq);
-+		if (reset_timer && hwgroup->sleeping &&
-+		    del_timer(&hwgroup->timer)) {
-+			hwgroup->sleeping = 0;
-+			hwgroup->busy = 0;
-+			__blk_run_queue(q);
-+		}
-+		spin_unlock_irq(&ide_lock);
-+		return 0;
-+	}
-+	spin_unlock_irq(&ide_lock);
++1. Intro
++2. The interface
++3. References
++4. CREDITS
 +
-+	rq = blk_get_request(q, READ, __GFP_WAIT);
-+	rq->cmd[0] = REQ_PARK_HEADS;
-+	rq->cmd_len = 1;
-+	rq->cmd_type = REQ_TYPE_SPECIAL;
-+	rq->special = &timeout;
-+	rc = blk_execute_rq(q, NULL, rq, 1);
-+	if (rc)
-+		goto out;
 +
-+	/*
-+	 * Make sure that *some* command is sent to the drive after the
-+	 * timeout has expired, so power management will be reenabled.
-+	 */
-+	rq = blk_get_request(q, READ, GFP_NOWAIT);
-+	if (unlikely(!rq))
-+		goto out;
++1. Intro
++--------
 +
-+	rq->cmd[0] = REQ_UNPARK_HEADS;
-+	rq->cmd_len = 1;
-+	rq->cmd_type = REQ_TYPE_SPECIAL;
-+	elv_add_request(q, rq, ELEVATOR_INSERT_FRONT, 0);
++ATA/ATAPI-7 specifies the IDLE IMMEDIATE command with unload feature.
++Issuing this command should cause the drive to switch to idle mode and
++unload disk heads. This feature is being used in modern laptops in
++conjunction with accelerometers and appropriate software to implement
++a shock protection facility. The idea is to stop all I/O operations on
++the internal hard drive and park its heads on the ramp when critical
++situations are anticipated. The desire to have such a feature
++available on GNU/Linux systems has been the original motivation to
++implement a generic disk head parking interface in the Linux kernel.
++Please note, however, that other components have to be set up on your
++system in order to get disk shock protection working (see section
++3. References below for pointers to more information about that).
 +
-+out:
-+	return rc;
-+}
 +
-+ssize_t ide_park_show(struct device *dev, struct device_attribute *attr,
-+		      char *buf)
-+{
-+	ide_drive_t *drive = to_ide_device(dev);
-+	unsigned int msecs;
++2. The interface
++----------------
 +
-+	if (drive->dev_flags & IDE_DFLAG_NO_UNLOAD)
-+		return -EOPNOTSUPP;
++For each ATA device the kernel exports the file
++block/*/device/unload_heads in sysfs (here assumed to be mounted under
++/sys). Access to /sys/block/*/device/unload_heads is denied with
++-EOPNOTSUPP if the device does not support the unload feature.
++Otherwise, writing an integer value to file will take the heads of the
++respective drive off the platter and block all I/O operations for the
++specified number of milliseconds. When the timeout expires and no
++further disk head park request has been issued in the meantime, normal
++operation will be resumed. The maximal value accepted for a timeout is
++30000 milliseconds. Exceeding this limit will return -EOVERFLOW, but
++heads will be parked anyway and the timeout will be set to 30 seconds.
++However, you can always change a timeout to any value between 0 and
++30000 by issuing a subsequent head park request before the timeout of
++the previous one has expired. In particular, the total timeout can
++exceed 30 seconds and, more importantly, you can cancel a previously
++set timeout and resume normal operation immediately by specifying a
++timeout of 0. Values below -2 are rejected with -EINVAL (see below for
++the special meaning of -1 and -2). If the timeout specified for a
++recent head park request has not yet expired, reading from
++/sys/block/*/device/unload_heads will report the number of
++milliseconds remaining until normal operation will be resumed;
++otherwise, reading the unload_heads attribute will return 0.
 +
-+	spin_lock_irq(&ide_lock);
-+	if (drive->dev_flags & IDE_DFLAG_PARKED &&
-+	    time_after(drive->sleep, jiffies))
-+		msecs = jiffies_to_msecs(drive->sleep - jiffies);
-+	else
-+		msecs = 0;
-+	spin_unlock_irq(&ide_lock);
++For example, do the following in order to park the heads of drive
++/dev/sda and stop all I/O operations for five seconds:
 +
-+	return snprintf(buf, 20, "%u\n", msecs);
-+}
++# echo 5000 > /sys/block/sda/device/unload_heads
 +
-+ssize_t ide_park_store(struct device *dev, struct device_attribute *attr,
-+		       const char *buf, size_t len)
-+{
-+#define MAX_PARK_TIMEOUT 30000
-+	ide_drive_t *drive = to_ide_device(dev);
-+	long int input;
-+	int rc;
++A simple
 +
-+	rc = strict_strtol(buf, 10, &input);
-+	if (rc || input < -2)
-+		return -EINVAL;
-+	if (input > MAX_PARK_TIMEOUT) {
-+		input = MAX_PARK_TIMEOUT;
-+		rc = -EOVERFLOW;
-+	}
++# cat /sys/block/sda/device/unload_heads
 +
-+	mutex_lock(&ide_setting_mtx);
-+	if (input >= 0) {
-+		if (drive->dev_flags & IDE_DFLAG_NO_UNLOAD)
-+			rc = -EOPNOTSUPP;
-+		else if (input || drive->dev_flags & IDE_DFLAG_PARKED)
-+			issue_park_cmd(drive, msecs_to_jiffies(input));
-+	} else {
-+		if (drive->media == ide_disk)
-+			switch (input) {
-+			case -1:
-+				drive->dev_flags &= ~IDE_DFLAG_NO_UNLOAD;
-+				break;
-+			case -2:
-+				drive->dev_flags |= IDE_DFLAG_NO_UNLOAD;
-+				break;
-+			}
-+		else
-+			rc = -EOPNOTSUPP;
-+	}
-+	mutex_unlock(&ide_setting_mtx);
++will show you how many milliseconds are left before normal operation
++will be resumed.
 +
-+	return rc ? rc : len;
-+}
-diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
-index f5cb55b..e1e0b7d 100644
---- a/drivers/ide/ide-probe.c
-+++ b/drivers/ide/ide-probe.c
-@@ -208,6 +208,8 @@ static inline void do_identify (ide_drive_t *drive, u8 cmd)
- 		drive->ready_stat = 0;
- 		if (ata_id_cdb_intr(id))
- 			drive->atapi_flags |= IDE_AFLAG_DRQ_INTERRUPT;
-+		/* we don't do head unloading on ATAPI devices */
-+		drive->dev_flags |= IDE_DFLAG_NO_UNLOAD;
- 		return;
- 	}
- 
-@@ -223,6 +225,9 @@ static inline void do_identify (ide_drive_t *drive, u8 cmd)
- 
- 	drive->media = ide_disk;
- 
-+	if (!ata_id_has_unload(drive->id))
-+		drive->dev_flags |= IDE_DFLAG_NO_UNLOAD;
++There is a technical detail of this implementation that may cause some
++confusion and should be discussed here. When a head park request has
++been issued to a device successfully, all I/O operations on the
++controller port this device is attached to will be deferred. That is
++to say, any other device that may be connected to the same port will
++be affected too. The only exception is that a subsequent head unload
++request to that other devvice will be executed immediately. Further
++operations on that port will be deferred until the timeout specified
++for either device on the port has expired. As far as PATA (old style
++IDE) configurations are concerned, there can only be two devices
++attached to any single port. In SATA world we have port multipliers
++which means that a user issued head parking request to one device may
++actually result in stopping I/O to a whole bunch of devices. Hwoever,
++since this feature is supposed to be used on laptops and does not seem
++to be very useful in any other environment, there will be mostly one
++device per port. Even if the CD/DVD writer happens to be connected to
++the same port as the hard drive, it generally *should* recover just
++fine from the occasional buffer under-run incurred by a head park
++request to the HD. Actually, when you are using an ide driver rather
++than it's libata counterpart (i.e. your disk is called /dev/hda
++instead of /dev/sda), then parking the heads of drive A will generally
++not affect the mode of operation of drive B on the same port as
++described above. It is only when a port reset is required to recover
++from an exception on drive B that further I/O operations on that drive
++(and the reset itself) will be delayed until drive A is no longer in
++the parked state.
 +
- 	printk(KERN_CONT "%s DISK drive\n", is_cfa ? "CFA" : "ATA");
- 
- 	return;
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index a4c2d91..480c97f 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -152,7 +152,16 @@ static ide_startstop_t task_no_data_intr(ide_drive_t *drive)
- 
- 	if (!custom)
- 		ide_end_drive_cmd(drive, stat, ide_read_error(drive));
--	else if (tf->command == ATA_CMD_SET_MULTI)
-+	else if (tf->command == ATA_CMD_IDLEIMMEDIATE) {
-+		drive->hwif->tp_ops->tf_read(drive, task);
-+		if (tf->lbal != 0xc4) {
-+			printk(KERN_ERR "%s: head unload failed!\n",
-+			       drive->name);
-+			ide_tf_dump(drive->name, tf);
-+		} else
-+			drive->dev_flags |= IDE_DFLAG_PARKED;
-+		ide_end_drive_cmd(drive, stat, ide_read_error(drive));
-+	} else if (tf->command == ATA_CMD_SET_MULTI)
- 		drive->mult_count = drive->mult_req;
- 
- 	return ide_stopped;
-diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
-index 083783e..04f8f13 100644
---- a/drivers/ide/ide.c
-+++ b/drivers/ide/ide.c
-@@ -587,6 +587,7 @@ static struct device_attribute ide_dev_attrs[] = {
- 	__ATTR_RO(model),
- 	__ATTR_RO(firmware),
- 	__ATTR(serial, 0400, serial_show, NULL),
-+	__ATTR(unload_heads, 0644, ide_park_show, ide_park_store),
- 	__ATTR_NULL
- };
- 
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 1b0bf02..ddd8975 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -156,6 +156,8 @@ enum {
-  */
- #define REQ_DRIVE_RESET		0x20
- #define REQ_DEVSET_EXEC		0x21
-+#define REQ_PARK_HEADS		0x22
-+#define REQ_UNPARK_HEADS	0x23
- 
- /*
-  * Check for an interrupt and acknowledge the interrupt status
-@@ -571,6 +573,10 @@ enum {
- 	/* retrying in PIO */
- 	IDE_DFLAG_DMA_PIO_RETRY		= (1 << 25),
- 	IDE_DFLAG_LBA			= (1 << 26),
-+	/* don't unload heads */
-+	IDE_DFLAG_NO_UNLOAD		= (1 << 27),
-+	/* heads unloaded, please don't reset port */
-+	IDE_DFLAG_PARKED		= (1 << 28)
- };
- 
- struct ide_drive_s {
-@@ -1203,6 +1209,13 @@ int ide_check_atapi_device(ide_drive_t *, const char *);
- 
- void ide_init_pc(struct ide_atapi_pc *);
- 
-+/* Disk head parking */
-+extern wait_queue_head_t ide_park_wq;
-+ssize_t ide_park_show(struct device *dev, struct device_attribute *attr,
-+		      char *buf);
-+ssize_t ide_park_store(struct device *dev, struct device_attribute *attr,
-+		       const char *buf, size_t len);
++Finally, there are some hard drives that only comply with an earlier
++version of the ATA standard than ATA-7, but do support the unload
++feature nonetheless. Unfortunately, there is no safe way Linux can
++detect these devices, so you won't be able to write to the
++unload_heads attribute. If you know that your device really does
++support the unload feature (for instance, because the vendor of your
++laptop or the hard drive itself told you so), then you can tell the
++kernel to enable the usage of this feature for that drive by writing
++the special value -1 to the unload_heads attribute:
 +
- /*
-  * Special requests for ide-tape block device strategy routine.
-  *
++# echo -1 > /sys/block/sda/device/unload_heads
++
++will enable the feature for /dev/sda, and giving -2 instead of -1 will
++disable it again.
++
++
++3. References
++-------------
++
++There are several laptops from different vendors featuring shock
++protection capabilities. As manufacturers have refused to support open
++source development of the required software components so far, Linux
++support for shock protection varies considerably between different
++hardware implementations. Ideally, this section should contain a list
++of pointers at different projects aiming at an implementation of shock
++protection on different systeems. Unfortunately, I only know of a
++single project which, although still considered experimental, is fit
++for use. Please feel free to add projects that have been the victims
++of my ignorance.
++
++- http://www.thinkwiki.org/wiki/HDAPS
++  See this page for information about Linux support of the hard disk
++  active protection system as implemented in IBM/Lenovo Thinkpads.
++  (FIXME: The information there will have to be updated once this
++  patch has been approved or the user interface has been agreed upon
++  at least.)
++
++
++4. CREDITS
++----------
++
++This implementation of disk head parking has been inspired by a patch
++originally published by Jon Escombe <lists@dresco.co.uk>. My efforts
++to develop an implementation of this feature that is fit to be merged
++into mainline have been aided by various kernel developers, in
++particular by Tejun Heo and Bartlomiej Zolnierkiewicz.
 
 
