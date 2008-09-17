@@ -1,97 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbYIQRao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYIQRc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbYIQRao (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbYIQRag
+	id S1755209AbYIQRc1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 13:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbYIQRcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 13:30:36 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:35511 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754086AbYIQRaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 13:30:35 -0400
-Date: Wed, 17 Sep 2008 12:30:32 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dean Nelson <dcn@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
-       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
-Message-ID: <20080917173032.GA5674@sgi.com>
-References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com>
+	Wed, 17 Sep 2008 13:32:20 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:40546 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754328AbYIQRcT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 13:32:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=f3R7l6PVLn8bqGl3/xqfSJO9pxrc+p7YXejb/P49vcjT2t+31U6rj80hpTvG8OWrSO
+         0xvqDdZjeOhiuLm/2DALzDFeeg4CFtrwF1IzD1A3eyjmDn8lcRtBsApeJXLa4FZYtMcL
+         5KO7dW5U/SjjebYDLv0qmYfMT0uf3lSIQeCR4=
+Message-ID: <5767b9100809171032g197771dfv5374b7358b9b7210@mail.gmail.com>
+Date: Thu, 18 Sep 2008 01:32:16 +0800
+From: "Conke Hu" <conke.hu@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-arm@vger.kernel.org, ben@simtec.co.uk
+Subject: [PATCH] s3c24xx nand: add command line partition table parsing support
+Cc: "Russell King" <rmk+kernel@arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080916204654.GA3532@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 03:46:54PM -0500, Dean Nelson wrote:
-> On Tue, Sep 16, 2008 at 10:24:48AM +0200, Ingo Molnar wrote:
-> > 
-> > * Dean Nelson <dcn@sgi.com> wrote:
-> > 
-> > > > while i understand the UV_BAU_MESSAGE case (TLB flushes are 
-> > > > special), why does sgi-gru and sgi-xp need to go that deep? They are 
-> > > > drivers, they should be able to make use of an ordinary irq just 
-> > > > like the other 2000 drivers we have do.
-> > > 
-> > > The sgi-gru driver needs to be able to allocate a single irq/vector 
-> > > pair for all CPUs even those that are not currently online. The sgi-xp 
-> > > driver has similar but not as stringent needs.
-> > 
-> > why does it need to allocate a single irq/vector pair? Why is a regular 
-> > interrupt not good?
-> 
-> When you speak of a 'regular interrupt' I assume you are referring to simply
-> the irq number, with the knowledge of what vector and CPU(s) it is mapped to
-> being hidden?
-> 
-> 
->     sgi-gru driver
-> 
-> The GRU is not an actual external device that is connected to an IOAPIC.
-> The gru is a hardware mechanism that is embedded in the node controller
-> (UV hub) that directly connects to the cpu socket. Any cpu (with permission)
-> can do direct loads and stores to the gru. Some of these stores will result
-> in an interrupt being sent back to the cpu that did the store.
-> 
-> The interrupt vector used for this interrupt is not in an IOAPIC. Instead
-> it must be loaded into the GRU at boot or driver initialization time.
-> 
-> The OS needs to route these interrupts back to the GRU driver interrupt
-> handler on the cpu that received the interrupt. Also, this is a performance
-> critical path. There should be no globally shared cachelines involved in the
-> routing.
-> 
-> The actual vector associated with the IRQ does not matter as long as it is
-> a relatively high priority interrupt. The vector does need to be mapped to
-> all of the possible CPUs in the partition. The GRU driver needs to know
-> vector's value, so that it can load it into the GRU.
-> 
->     sgi-xp driver
-> 
-> The sgi-xp driver utilizes the node controller's message queue capability to
-> send messages from one system partition (a single SSI) to another partition.
-> 
-> A message queue can be configured to have the node controller raise an
-> interrupt whenever a message is written into it. This configuration is
-> accomplished by setting up two processor writable MMRs located in the
-> node controller. The vector number and apicid of the targeted CPU need
-> to be written into one of these MMRs. There is no IOAPIC associated with
-> this.
-> 
-> So one thought was that, once insmod'd, sgi-xp would allocate a message queue,
-> allocate an irq/vector pair for a CPU located on the node where the message
-> queue resides, and then set the MMRs with the memory address and length of the
-> message queue and the vector and CPU's apicid. And then repeat, as there are
-> actually two message queues required by this driver.
+Add mtd id and  command line partition table parsing support for
+s3c24xx nand driver.
 
-In addition to the above, the high resolution RTC timers in the UV hardware require that a vector be specified in order to send an interrupt to a specific destination when a timer expires.  The MMR's for these timers require a vector to be or'ed in with other values, including the interrupt's destination.  This is therefore done at run-time.
+Signed-off-by: Conke Hu <conke.hu@gmail.com>
+Signed-off-by: Linke Wang <linke.wang@gmail.com>
+------------------
+diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
+index 556139e..bab7216 100644
+--- a/drivers/mtd/nand/s3c2410.c
++++ b/drivers/mtd/nand/s3c2410.c
+@@ -48,6 +48,8 @@
+ #include <asm/plat-s3c/regs-nand.h>
+ #include <asm/plat-s3c/nand.h>
 
-Like the GRU's vector, this vector is not in an IOAPIC.  This vector would be made available to all cpu's within a partition (SSI) and should be coupled with a per-cpu irq.
++#define S3C_NAND_NAME_LEN 16
++
+ #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
+ static int hardware_ecc = 1;
+ #else
+@@ -60,6 +62,9 @@ static int clock_stop = 1;
+ static const int clock_stop = 0;
+ #endif
 
-This is very similiar to what was available in earlier SGI hardware and used in drivers/char/mmtimer.c.
++#ifdef CONFIG_MTD_PARTITIONS
++static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
++#endif
+
+ /* new oob placement block for use with hardware ecc generation
+  */
+@@ -649,6 +654,15 @@ static int s3c2410_nand_add_partition(struct
+s3c2410_nand_info *info,
+ 				      struct s3c2410_nand_mtd *mtd,
+ 				      struct s3c2410_nand_set *set)
+ {
++#ifdef CONFIG_MTD_CMDLINE_PARTS
++	int nr_parts;
++	struct mtd_partition *partitions;
++
++	nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes, &partitions, 0);
++	if (nr_parts > 0 && partitions != NULL)
++		return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
++#endif
++
+ 	if (set == NULL)
+ 		return add_mtd_device(&mtd->mtd);
+
+@@ -808,6 +822,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+ 	int size;
+ 	int nr_sets;
+ 	int setno;
++	char *name;
+
+ 	pr_debug("s3c2410_nand_probe(%p)\n", pdev);
+
+@@ -875,7 +890,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+
+ 	/* allocate our information */
+
+-	size = nr_sets * sizeof(*info->mtds);
++	size = nr_sets * (sizeof(*info->mtds) + S3C_NAND_NAME_LEN);
+ 	info->mtds = kmalloc(size, GFP_KERNEL);
+ 	if (info->mtds == NULL) {
+ 		dev_err(&pdev->dev, "failed to allocate mtd storage\n");
+@@ -888,10 +903,15 @@ static int s3c24xx_nand_probe(struct
+platform_device *pdev,
+ 	/* initialise all possible chips */
+
+ 	nmtd = info->mtds;
++	name = (char *)(info->mtds + nr_sets);
+
+ 	for (setno = 0; setno < nr_sets; setno++, nmtd++) {
+ 		pr_debug("initialising set %d (%p, info %p)\n", setno, nmtd, info);
+
++		sprintf(name, "s3c_nand%d", setno);
++		nmtd->mtd.name = name;
++		name += S3C_NAND_NAME_LEN;
++
+ 		s3c2410_nand_init_chip(info, nmtd, sets);
+
+ 		nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
