@@ -1,87 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbYIQPlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbYIQPm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbYIQPlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 11:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYIQPlT
+	id S1754904AbYIQPm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 11:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbYIQPmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 11:41:19 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:48943 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754197AbYIQPlS (ORCPT
+	Wed, 17 Sep 2008 11:42:18 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39428 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbYIQPmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 11:41:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=RVLcwdiq4tkuLVJUFyhPq9DzpE9jP0gljQwGSccqtvKBylpk55XXWRwCXUyFDw68ii
-         uVuXhDt7YqypULhe3KDHv1w5ix23YzwiKEQtDm46oYxwVz2qw7lFwzDzBkDZUdhZLf7+
-         Afq83X1RD7OgacUUcSfrvQiaAJLZUpfFDCtCk=
-Message-ID: <76bd70e30809170841x1324ad78xab90982f1a08b741@mail.gmail.com>
-Date: Wed, 17 Sep 2008 10:41:15 -0500
-From: "Chuck Lever" <chucklever@gmail.com>
-To: "Peter Staubach" <staubach@redhat.com>
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-Cc: "Martin Knoblauch" <knobi@knobisoft.de>,
-       "linux-nfs list" <linux-nfs@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <48D10EF4.6050808@redhat.com>
+	Wed, 17 Sep 2008 11:42:17 -0400
+Date: Wed, 17 Sep 2008 11:42:12 -0400 (EDT)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Jeff Dike <jdike@addtoit.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: uml: early panic message do not make it to screen
+Message-ID: <alpine.LNX.1.10.0809171136330.3313@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <997439.5560.qm@web32601.mail.mud.yahoo.com>
-	 <48D10EF4.6050808@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 9:06 AM, Peter Staubach <staubach@redhat.com> wrote:
-> Martin Knoblauch wrote:
->>
->> Hi,
->>
->> the following/attached patch works around a [obscure] problem when an 2.6
->> (not sure/caring about 2.4) NFS client accesses an "offline" file on a
->> Sun/Solaris-10 NFS server when the underlying filesystem is of type SAM-FS.
->> Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux
->> problem, but the chance for a short-/mid-term solution from Sun are very
->> slim. So, being lazy, I would love to get this patch into Linux. If not, I
->> just will have to maintain it for eternity out of tree.
->>
->> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores
->> meta-data and a relatively small amount of data "online" on disk and pushes
->> old or infrequently used data to "offline" media like e.g. tape. This is
->> completely transparent to the users. If the date for an "offline" file is
->> needed, the so called "stager daemon" copies it back from the offline
->> medium. All of this works great most of the time. Now, if an Linux NFS
->> client tries to read such an offline file, performance drops to "extremely
->> slow". After lengthly investigation of tcp-dumps, mount options and
->> procedures involving black cats at midnight, we found out that the readahead
->> behaviour of the Linux NFS client causes the problem. Basically it seems to
->> issue read requests up to 15*rsize to the server. In the case of the
->> "offline" files, this behaviour causes heavy competition for the inode lock
->> between the NFSD process and the stager daemon on the Solaris server.
->>
->> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks
->> the problem, but a solution will need time. Lots of it.
->> - The working solution: disable the client side readahead, or make it
->> tunable. The patch does that by introducing a NFS module parameter
->> "ra_factor" which can take values between 1 and 15 (default 15) and a
->> tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
->
-> Hi.
->
-> I was curious if a design to limit or eliminate read-ahead
-> activity when the server returns EJUKEBOX was considered?
-> Unless one can know that the server and client can get into
-> this situation ahead of time, how would the tunable be used?
+Hi,
 
-I tend to agree.  A tunable is probably not a good solution in this case.
 
-I would bet that this lock contention issue is a problem in other more
-common cases, and would merit some careful analysis.
+I stumbled upon over a strange "Segmentation Fault" with UML that did 
+not want to tell me just what was wrong. At first, it only seemed to 
+happen when I specified the initrd= parameter, but when I compiled with 
+debug info and let gdb loose on it, it became obvious:
 
--- 
-Chuck Lever
+11:33 nuqneh:/lo/Coding/uml > gdb linux
+GNU gdb 6.8-debian
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu"...
+(gdb) r initrd=root.cpio
+Starting program: /lo/Coding/uml/linux initrd=root.cpio
+Core dump limits :
+        soft - 0
+        hard - NONE
+Checking that ptrace can change system call numbers...OK
+Checking syscall emulation patch for ptrace...missing
+Checking for tmpfs mount on /dev/shm...OK
+Checking PROT_EXEC mmap in /dev/shm/...OK
+Checking for the skas3 patch in the host:
+  - /proc/mm...not found: No such file or directory
+  - PTRACE_FAULTINFO...not found
+  - PTRACE_LDT...not found
+UML running in SKAS0 mode
+[New LWP 27237]
+
+Program received signal SIGTERM, Terminated.
+0x00007f506e05c527 in kill () from /lib64/libc.so.6
+(gdb) bt
+#0  0x00007f506e05c527 in kill () from /lib64/libc.so.6
+#1  0x000000006002b8fb in os_dump_core () at arch/um/os-Linux/util.c:92
+#2  0x000000006001b9f5 in panic_exit (self=<value optimized out>, 
+    unused1=<value optimized out>, unused2=<value optimized out>)
+    at arch/um/kernel/um_arch.c:233
+#3  0x00000000600504ff in notifier_call_chain (nl=<value optimized out>, 
+    val=0, v=0x60323da0, nr_to_call=-1, nr_calls=0x0) at kernel/notifier.c:85
+#4  0x0000000060050539 in __atomic_notifier_call_chain (nh=0x0, val=15, 
+    v=0x600293b0, nr_to_call=-1, nr_calls=0x61c21c30) at kernel/notifier.c:174
+#5  0x0000000060050551 in atomic_notifier_call_chain (nh=0x0, val=15, 
+    v=0x600293b0) at kernel/notifier.c:183
+#6  0x0000000060036786 in panic (
+    fmt=0x60232690 "incorrect cpio method used: use -H newc option")
+    at kernel/panic.c:101
+#7  0x0000000060004637 in populate_rootfs () at init/initramfs.c:555
+#8  0x00000000600173ec in do_one_initcall (fn=0x60004590 <populate_rootfs>)
+    at init/main.c:715
+#9  0x000000006000152c in kernel_init (unused=<value optimized out>)
+    at init/main.c:755
+#10 0x00000000600294d7 in run_kernel_thread (fn=0x600014a0 <kernel_init>, 
+    arg=0x0, jmp_ptr=<value optimized out>) at arch/um/os-Linux/process.c:267
+#11 0x0000000060018cc7 in new_thread_handler () at arch/um/kernel/process.c:151
+#12 0x0000000000000000 in ?? ()
+
+
+So I missed out on -H newc when creating the cpio archive; adding
+that, the problem was resolved. But the panic message did not make it
+to my xterm, which I think should be fixed.
+(To reproduce, feed it a non-newc cpio archive.)
+Version used is the most recent (v2.6.27-rc6-99-g45e9c0d).
+
+
+
+thanks,
+Jan
