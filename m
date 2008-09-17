@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756036AbYIQTXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYIQTYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756036AbYIQTXv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYIQTXj
+	id S1755235AbYIQTYO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755938AbYIQTXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:23:39 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:34020 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbYIQTXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:23:39 -0400
-Date: Thu, 18 Sep 2008 04:20:20 +0900
-To: joerg.roedel@amd.com
-Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 18/23] AMD IOMMU: simplify dma_mask_to_pages
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1221670377-19295-19-git-send-email-joerg.roedel@amd.com>
-References: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com>
-	<1221670377-19295-19-git-send-email-joerg.roedel@amd.com>
+	Wed, 17 Sep 2008 15:23:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39968 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755919AbYIQTXm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 15:23:42 -0400
+Date: Wed, 17 Sep 2008 12:22:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Theodore Ts'o" <tytso@MIT.EDU>
+Cc: linux-kernel@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
+       tytso@MIT.EDU, linux-ext4@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 2/4] ext3: truncate block allocated on a failed
+ ext3_write_begin
+Message-Id: <20080917122254.a704eff1.akpm@linux-foundation.org>
+In-Reply-To: <1221319971-29879-2-git-send-email-tytso@mit.edu>
+References: <1221319971-29879-1-git-send-email-tytso@mit.edu>
+	<1221319971-29879-2-git-send-email-tytso@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080918041717S.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 18:52:52 +0200
-Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Sat, 13 Sep 2008 11:32:49 -0400
+"Theodore Ts'o" <tytso@MIT.EDU> wrote:
 
-> The current calculation is very complicated. This patch replaces it with
-> a much simpler version.
+> From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> For blocksize < pagesize we need to remove blocks that got allocated in
+> block_write_begin() if we fail with ENOSPC for later blocks.
+> block_write_begin() internally does this if it allocated page
+> locally. This makes sure we don't have blocks outside inode.i_size
+> during ENOSPC.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> Cc: linux-ext4@vger.kernel.org
 > ---
->  arch/x86/kernel/amd_iommu.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+>  fs/ext3/inode.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> index 507d868..bff22b9 100644
+> --- a/fs/ext3/inode.c
+> +++ b/fs/ext3/inode.c
+> @@ -1178,6 +1178,13 @@ write_begin_failed:
+>  		ext3_journal_stop(handle);
+>  		unlock_page(page);
+>  		page_cache_release(page);
+> +		/*
+> +		 * block_write_begin may have instantiated a few blocks
+> +		 * outside i_size.  Trim these off again. Don't need
+> +		 * i_size_read because we hold i_mutex.
+> +		 */
+> +		if (pos + len > inode->i_size)
+> +			vmtruncate(inode, inode->i_size);
+>  	}
+>  	if (ret == -ENOSPC && ext3_should_retry_alloc(inode->i_sb, &retries))
+>  		goto retry;
 
-I think that you can use iommu_device_max_index() for what
-dma_mask_to_pages does.
+Well we used to do this trimming in core VFS, but Nick broke it.  We
+still do it if the fs doesn't implement ->write_begin().
+
+Should we do this trimming in pagecache_write_begin() in both cases?
