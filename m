@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbYIQM7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbYIQNAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbYIQM7o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 08:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752361AbYIQM7f
+	id S1754314AbYIQNAE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 09:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbYIQM7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 08:59:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59618 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbYIQM7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 08:59:35 -0400
-Date: Wed, 17 Sep 2008 14:59:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
-Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-       Greg KH <greg@kroah.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: Re: [PATCH] gpio_free might sleep, x86 architecture
-Message-ID: <20080917125900.GB18192@elte.hu>
-References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-4-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
+	Wed, 17 Sep 2008 08:59:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:32960 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbYIQM7u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 08:59:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FWbUXaODl4Npex4Q5pUZkWbfHpZ70l1K2YJYXVv46Q/Pl1rhGi7/wPYPBgKfXQGpXp
+         ScUkf7Lc2Rv2lyAe84qAx+I4B2BYVTFxzYkXwP9vdVB+m+WvGwPXh5gOnsE41WpJtsxr
+         wQN8o89iarB74FkEKj3zd7SOdem66mJosAz/M=
+Date: Wed, 17 Sep 2008 16:59:50 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: j_kernel@hoblitt.com
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bugme-new] [Bug 11543] New: kernel panic: softlockup in
+	tick_periodic() ???
+Message-ID: <20080917125950.GA7309@lenovo>
+References: <20080917024312.GA23209@hoblitt.com> <20080917071357.GA7455@lenovo> <20080917092058.GB23209@hoblitt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1221508963-27259-5-git-send-email-ukleinek@informatik.uni-freiburg.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080917092058.GB23209@hoblitt.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[j_kernel@hoblitt.com - Tue, Sep 16, 2008 at 11:20:58PM -1000]
+| On Wed, Sep 17, 2008 at 11:13:57AM +0400, Cyrill Gorcunov wrote:
+| > Joshua, could you please attach ACPI tables dump to the bugzilla entry (~300K)?
+| 
+| Done but I was unable to extract the DSDT table as described in the
+| instructions.
+| 
+| #  acpixtract DSDT < acpidump.asc           
+| Could not open DSDT
+| 
+| Cheers,
+| 
+| -J
+| 
+| --
+| 
 
-* Uwe Kleine-König <ukleinek@informatik.uni-freiburg.de> wrote:
+As far as I can see there is no really issue in ACPI configuration,
+at least on apic side...
 
-> According to the documentation gpio_free should only be called from task
-> context only.  To make this more explicit add a might sleep to all
-> implementations.
-> 
-> This patch changes the gpio_free implementations for the x86
-> architecture.
+Evetually nmi_watchdog=2 does work right? Though it's not
+good that we've got 8259 spurious interrupt. Hmm...
 
-applied to tip/x86/debug, thanks Uwe,
-
-	Ingo
+		- Cyrill -
