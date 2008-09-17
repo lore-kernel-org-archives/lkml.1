@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYIQTFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbYIQTKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbYIQTFq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 15:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYIQTFX
+	id S1754445AbYIQTKL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 15:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYIQTJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 15:05:23 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:58347 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbYIQTFW (ORCPT
+	Wed, 17 Sep 2008 15:09:57 -0400
+Received: from sh.osrg.net ([192.16.179.4]:51688 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752465AbYIQTJ5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 15:05:22 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Dean Nelson <dcn@sgi.com>,
-       Alan Mayer <ajm@sgi.com>, jeremy@goop.org, rusty@rustcorp.com.au,
-       suresh.b.siddha@intel.com, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
-References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu>
-	<48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org>
-	<20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu>
-	<20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu>
-	<20080916204654.GA3532@sgi.com> <20080917173032.GA5674@sgi.com>
-Date: Wed, 17 Sep 2008 11:59:05 -0700
-In-Reply-To: <20080917173032.GA5674@sgi.com> (Dimitri Sivanich's message of
-	"Wed, 17 Sep 2008 12:30:32 -0500")
-Message-ID: <m17i9a61l2.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Dimitri Sivanich <sivanich@sgi.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0005]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 17 Sep 2008 15:09:57 -0400
+Date: Thu, 18 Sep 2008 04:09:45 +0900 (JST)
+Message-Id: <20080918.040945.32654226.ryusuke@osrg.net>
+To: joern@logfs.org
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kihara.seiji@lab.ntt.co.jp,
+       amagai.yoshiji@lab.ntt.co.jp
+Subject: Re: [PATCH 25/27] nilfs2: block cache for garbage collection
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+In-Reply-To: <20080917144146.GD8750@logfs.org>
+References: <1221419304-18572-25-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	<1221419304-18572-26-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
+	<20080917144146.GD8750@logfs.org>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dimitri Sivanich <sivanich@sgi.com> writes:
+On Wed, 17 Sep 2008 16:41:47 +0200, Jörn Engel wrote:
+> On Mon, 15 September 2008 04:08:22 +0900, Ryusuke Konishi wrote:
+> > 
+> > This adds the cache of on-disk blocks to be moved in garbage
+> > collection.  The disk blocks are held with dummy inodes (called
+> > gcinodes), and this file provides lookup function of the dummy inodes,
+> > and their buffer read function.
+> 
+> Nice explanation.  Can you add it to the comment header at the top of
+> the file?  Unlike the GPL preample, it actually helps non-lawyers. ;)
 
-> On Tue, Sep 16, 2008 at 03:46:54PM -0500, Dean Nelson wrote:
->> On Tue, Sep 16, 2008 at 10:24:48AM +0200, Ingo Molnar wrote:
->> > 
->> > * Dean Nelson <dcn@sgi.com> wrote:
->> > 
->> > > > while i understand the UV_BAU_MESSAGE case (TLB flushes are 
->> > > > special), why does sgi-gru and sgi-xp need to go that deep? They are 
->> > > > drivers, they should be able to make use of an ordinary irq just 
->> > > > like the other 2000 drivers we have do.
->> > > 
->> > > The sgi-gru driver needs to be able to allocate a single irq/vector 
->> > > pair for all CPUs even those that are not currently online. The sgi-xp 
->> > > driver has similar but not as stringent needs.
+Well, I see. ;)
 
-I need to look at these patches some more (apologies I got busy).
+> Using dummy inodes is... unusual.  Why can you not use the actual inodes
+> those blocks belong to?
 
-We can not assign a vector to all CPUS.
+Because we have to treat blocks that belong to a same file but have
+different checkpoint numbers.  (NILFS2 keeps up multiple
+checkpoints/snapshots across GC)
 
-We don't have the fields for vector -> irq mapping for cpus that
-are not-online.  So we can only assign to cpus that are online now.
-And latter add the other cpus when they come online.
+Of course, if the standard inode hash is applicable, I prefer it.
+ilookup5 or its variant may be applicable for this.
 
-I have had that oops, it sucks, I don't want to go back.
+If so, the remaining problem would be the lock dependencies as you
+mentioned before.
 
-Eric
+> Or alternatively a single inode that simply
+> covers the complete physical device?
+> 
+> Jörn
 
+NILFS2 writes GC blocks per file like other files, so the per file
+caches (even separate inodes) are convienient for this end.
 
-
+Ryusuke
