@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbYIQKMD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbYIQKMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025AbYIQKMD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 06:12:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYIQKLx
+	id S1754854AbYIQKMf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 06:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYIQKMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 06:11:53 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:44095 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbYIQKLw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 06:11:52 -0400
-X-BigFish: VPS-50(zz1432R98dR936eQ62a3L1805M936fQ9371Pzz10d3izz5a6ciz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7C4B7-02-R3K-01
-Date: Wed, 17 Sep 2008 12:11:29 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] pci: using printk(KERN_PCI v3
-Message-ID: <20080917101129.GC23138@erda.amd.com>
-References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <1221640067-24389-4-git-send-email-yhlu.kernel@gmail.com> <20080917083506.GA24035@elte.hu> <86802c440809170141s5c206ec9ub1ea077ed923ec20@mail.gmail.com>
+	Wed, 17 Sep 2008 06:12:25 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:51141 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460AbYIQKMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 06:12:24 -0400
+Date: Wed, 17 Sep 2008 13:12:02 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, klibc@zytor.com
+Subject: Re: [PATCH] linux/inotify.h: do not include <linux/fcntl.h> in
+	userspace
+Message-ID: <20080917101202.GA5707@cs181140183.pp.htv.fi>
+References: <1221567763-17060-1-git-send-email-kirill@shutemov.name> <20080916125802.GA15951@cs181140183.pp.htv.fi> <20080916130234.GA17082@localhost.localdomain> <48CFBE51.1060200@redhat.com> <20080916160902.GF1400@cs181140183.pp.htv.fi> <20080917093240.GB4984@localhost.localdomain> <20080917100422.GC4984@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <86802c440809170141s5c206ec9ub1ea077ed923ec20@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 17 Sep 2008 10:11:30.0759 (UTC) FILETIME=[C1434570:01C918AD]
+In-Reply-To: <20080917100422.GC4984@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17.09.08 01:41:03, Yinghai Lu wrote:
-> On Wed, Sep 17, 2008 at 1:35 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> >
-> >> -                     printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-> >> +                     printk(KERN_DEBUG KERN_PCI
-> >> +                              "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-> >
-> > i think we should aim to make the common usage of this facility as easy
-> > and short as possible. That means that i think the right line is:
-> >
-> > +                       printk(KERN_PCI
-> > +                                "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
-> >
-> > as that is the shortest form. KERN_PCI should imply whatever
-> > common-sense default. It should still make sense to specify KERN_FOO
-> > KERN_PCI, to override that default.
+On Wed, Sep 17, 2008 at 01:04:23PM +0300, Kirill A. Shutemov wrote:
+> On Wed, Sep 17, 2008 at 12:32:40PM +0300, Kirill A. Shutemov wrote:
+> > On Tue, Sep 16, 2008 at 07:09:02PM +0300, Adrian Bunk wrote:
+> > > On Tue, Sep 16, 2008 at 07:10:25AM -0700, Ulrich Drepper wrote:
+> > > > Kirill A. Shutemov wrote:
+> > > > >> What is the error message?
+> > > > > 
+> > > > > /usr/include/asm-generic/fcntl.h:117: error: redefinition of 'struct
+> > > > > flock'
+> > > > 
+> > > > And?  None of these programs should use <linux/inotify.h>.  There has
+> > > > for the longest time been a <sys/inotify.h> header which doesn't need
+> > > > any kernel headers.  In fact, <linux/inotify.h> should not be exported.
+> > > 
+> > > Even if userspace applications shouldn't use it directly this doesn't 
+> > > sound right:
+> > > 
+> > > We shouldn't force all libc implementations to copy the contents into a 
+> > > private header.
+> > 
+> > glibc and dietlibc provide <sys/inotify.h>. newlib and uclibc don't. klibc
+> > provides <sys/inotify.h> but it depends on <linux/inotify.h>
 > 
-> vprintk will add default before that like
-> like print(KERN_INFO KERN_PCI ....)
-
-What about a pci_dbg() macro similiar to dev_dbg()? Same could be used
-for ACPI, acpi_dbg().
-
--Robert
-
+> Oh.. Sorry. uclibc provides <sys/inotify.h>.
 > 
-> YH
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> So unexporting <linux/inotify.h> breaks only klibc.
+
+klibc is actually doing the right thing.
+
+The userspace kernel headers situation used to be a complete mess, and 
+it is therefore understandable that some libc implementations are 
+currently not using <linux/inotify.h>, but ideally in the long term all 
+libc implementations should use <linux/inotify.h>.
+
+Whether, and if yes when, libc implementations starts using 
+<linux/inotify.h> is not our business, but we have to ensure that it 
+works for the libc implementations that do use it.
+
+cu
+Adrian
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
