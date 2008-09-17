@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYIQQ3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYIQQam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbYIQQ3Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:29:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYIQQ3A
+	id S1755155AbYIQQam (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYIQQae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:29:00 -0400
-Received: from nebensachen.de ([195.34.83.29]:58887 "EHLO mail.nebensachen.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752610AbYIQQ27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:28:59 -0400
-X-Hashcash: 1:20:080917:bzolnier@gmail.com::+Kj1nETp3qOGrFab:00000000000000000000000000000000000000000007bOm
-X-Hashcash: 1:20:080917:jeff@garzik.org::XMe9r+Z/S8UmR/HI:003d0H
-X-Hashcash: 1:20:080917:randy.dunlap@oracle.com::gvpEIDNnu5jsYRO4:000000000000000000000000000000000000008t/5
-X-Hashcash: 1:20:080917:htejun@gmail.com::fApBIwiXXFliNHWq:0AQzS
-X-Hashcash: 1:20:080917:linux-ide@vger.kernel.org::uizMruKGEJBHohxE:0000000000000000000000000000000000004gw2
-X-Hashcash: 1:20:080917:linux-kernel@vger.kernel.org::4Dj6ftATl85NY1dh:0000000000000000000000000000000001D/T
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Tejun Heo <htejun@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Disk shock protection in GNU/Linux
-Date: Wed, 17 Sep 2008 18:28:20 +0200
-Message-ID: <87d4j2n3dn.fsf@denkblock.local>
-User-Agent: Gnus/5.110007 (No Gnus v0.7)
+	Wed, 17 Sep 2008 12:30:34 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:58705 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbYIQQad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 12:30:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XllOUAQCTJFpjBDysYFbU2ZdFFTMnpo5AsqjIzkyZ+KzOLaMwbGNy0FELppuOn+G0B
+         vWcdVq8I/DgLb2FNW51HHOwKOLv1IdyoWB/dMQ9WUNFduItlZtD8ffvO1bPrdcEWHnCh
+         Aza8GuUQiUyXgXN+mY5OBHwZAPDNaz+B8HNMQ=
+Message-ID: <86802c440809170930m21f09879q3aa4edf2a32879f6@mail.gmail.com>
+Date: Wed, 17 Sep 2008 09:30:32 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Frans Pop" <elendil@planet.nl>
+Subject: Re: [PATCH 6/6] x86: add KERN_APIC
+Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200809171408.42244.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1221640067-24389-7-git-send-email-yhlu.kernel@gmail.com>
+	 <20080917083809.GB24035@elte.hu>
+	 <86802c440809170145s317e6ef8xad352e3a306abe45@mail.gmail.com>
+	 <200809171408.42244.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, Sep 17, 2008 at 5:08 AM, Frans Pop <elendil@planet.nl> wrote:
+> Yinghai Lu wrote:
+>> On Wed, Sep 17, 2008 at 1:38 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>> -             printk(KERN_WARNING "APIC calibration not consistent "
+>>>> +             printk(KERN_WARNING KERN_APIC "APIC calibration not
+>>>> consistent "
+>>>
+>>> here too the question arises: what should the semantics of the 'mixing'
+>>> of such subsystem printk tags with the classic priority tags be. I
+>>> think in this particular case we dont want the KERN_APIC tag, as that
+>>> would prevent this failure message to be printed by default. I.e. this
+>>> line should remain:
+>>>
+>>>> -             printk(KERN_WARNING "APIC calibration not consistent "
+>>>
+>>> to make sure this warning always shows up in the logs. Agreed?
+>>
+>> with
+>> DEFINE_LOGLEVEL_SETUP_DEF(apic, KERN_APIC, "apic:", 6);
+>> the KERN_WARNING <5> will be showing up that warning, even without
+>> loglevl=apic:8
+>>
+>> or change that  to
+>> DEFINE_LOGLEVEL_SETUP_DEF(apic, KERN_APIC, "apic:", 7);
+>
+> Are you suggesting that each subsystem define its own default log level?
+> That sounds truly horrible. It would mean that when reading code or
+> adding new messages you'd always have to check what the default loglevel
+> is for a particular subsystem.
 
-thanks to a lot of help from Bart and Tejun, who kept reviewing my
-patches suggested various improvements / fixes, I am now about to post
-the updated patch series. As far as I'm aware, all issues raised have
-been addressed and I'm hoping that this series is now fit to be merged.
-I gather that Bart is prepared queue the ide part of the series (patch
-#3) once the first two patches have been merged. Jeff, assuming that
-Tejun will ACK patch #2, can you accept those patches (#1 and #2) and
-queue them up for 2.6.28?
+could be done.
+SPEW: 8
+???:9
 
-Perhaps, Bart can take care of patch #4 along with the one that actually
-touches the ide subsystem.
+current msg_loglevel is limted to one digital
 
-The short summary of the patch series is the same as before (all patches
-apply to next-20080916):
-
-1. This is a small patch to ata.h in order to provide a simple check for
-   support of the unload feature as indicated in a device's ID.
-2. Here disk head unloading is implemented in the libata subsystem.
-3. The same for ide.
-4. A little bit of documentation.
-
-Thank you very much for your cooperation.
-
-Elias
+YH
