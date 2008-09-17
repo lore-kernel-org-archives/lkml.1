@@ -1,83 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYIQXFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYIQXGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755429AbYIQXFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 19:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYIQXFT
+	id S1755898AbYIQXGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 19:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYIQXGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 19:05:19 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:34369 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752285AbYIQXFR (ORCPT
+	Wed, 17 Sep 2008 19:06:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46442 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753450AbYIQXF7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 19:05:17 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Moore <paul.moore@hp.com>, sds@tycho.nsa.gov, jmorris@namei.org,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, ebiederm@xmission.com,
-       netdev@vger.kernel.org
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	<200809171724.36269.paul.moore@hp.com>
-	<20080917144842.7df59f9e.akpm@linux-foundation.org>
-	<200809171812.59693.paul.moore@hp.com>
-	<20080917152407.76230f0c.akpm@linux-foundation.org>
-Date: Wed, 17 Sep 2008 15:53:42 -0700
-In-Reply-To: <20080917152407.76230f0c.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 17 Sep 2008 15:24:07 -0700")
-Message-ID: <m1wshawfih.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 17 Sep 2008 19:05:59 -0400
+Date: Wed, 17 Sep 2008 16:00:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org, bernhard.weirich@riedel.net
+Subject: Re: [1/1] w1: new driver. DS2431 chip.
+Message-Id: <20080917160007.1fc58f28.akpm@linux-foundation.org>
+In-Reply-To: <20080917154928.GB490@2ka.mipt.ru>
+References: <20080917154928.GB490@2ka.mipt.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Wed, 17 Sep 2008 19:49:29 +0400
+Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-> On Wed, 17 Sep 2008 18:12:59 -0400
-> Paul Moore <paul.moore@hp.com> wrote:
->
->> > We don't even know the extent of the damage yet.  Which distros were
->> > affected? With which versions of which userspace packages?
->> 
->> Can I assume that the "right" thing to do would be to find the problem 
->> and revert whatever change caused the issue, yes?  Or are we happy to 
->> wait and see since the fallout so far has been minimal?
->
-> I don't think a revert is justified after all this time.  afaik I'm the
-> first person to notice the problem, and it's been out there for
-> multiple months.
->
-> However it would be good if we could find some not-completely-stinky
-> way of making the old userspace work.
->
-> otoh, people who are shipping 2.6.25- and 2.6.26-based distros probably
-> wouldn't want such a patch in their kernels anyway.
+> Signed-off-by: Bernhard Weirich <bernhard.weirich@riedel.net>
+> Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
-Disable selinux?
+This was authored by Bernhard, but the way in which it was sent claims
+that it was authored by yourself.  Please add a From: line at the very
+top of the changelog body to indicate authorship.
 
-Get a selinux mystic to update that selinux policy.  I bet it is a one line
-change to each the policy about /proc/net as a symlink.
+> --- linux-2.6.26.1/drivers/w1/w1_family.h	2008-07-18 14:51:32.000000000 +0200
+> +++ linux-2.6.26.5/drivers/w1/w1_family.h	2008-09-16 11:48:30.000000000 +0200
+> @@ -33,6 +33,7 @@
+>  #define W1_THERM_DS1822  	0x22
+>  #define W1_EEPROM_DS2433  	0x23
+>  #define W1_THERM_DS18B20 	0x28
+> +#define W1_EEPROM_DS2431	0x2D
+>  #define W1_FAMILY_DS2760	0x30
+>  
+>  #define MAXNAMELEN		32
+> --- linux-2.6.25.3/drivers/w1/slaves/w1_ds2431.c	1970-01-01 01:00:00.000000000 +0100
+> +++ linux-2.6.26.5/drivers/w1/slaves/w1_ds2431.c	2008-09-17 09:02:13.000000000 +0200
+> @@ -0,0 +1,318 @@
+> +/*
+> + *	w1_DS2431.c - w1 family 2d (DS2431) driver
 
-Although I am puzzled why we don't get the same label as /proc/net as a directory
-had.
+case-insensitive filenames? ;)
 
-Eric
+> + * Copyright (c) 2008 Bernhard Weirich <bernhard.weirich@riedel.net>
+> + *
+> + * Heavily inspired by w1_DS2433 driver from Ben Gardner <bgardner@wabtec.com>
+> + *
+> + * This source code is licensed under the GNU General Public License,
+> + * Version 2. See the file COPYING for more details.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/device.h>
+> +#include <linux/types.h>
+> +#include <linux/delay.h>
+> +
+> +#include "../w1.h"
+> +#include "../w1_int.h"
+> +#include "../w1_family.h"
+> +
+> +#define W1_F2D_EEPROM_SIZE		128
+> +#define W1_F2D_PAGE_COUNT		4
+> +#define W1_F2D_PAGE_BITS		5
+> +#define W1_F2D_PAGE_SIZE		(1<<W1_F2D_PAGE_BITS)
+> +#define W1_F2D_PAGE_MASK		0x1F
+> +
+> +#define W1_F2D_SCRATCH_BITS  3
+> +#define W1_F2D_SCRATCH_SIZE  (1<<W1_F2D_SCRATCH_BITS)
+> +#define W1_F2D_SCRATCH_MASK  (W1_F2D_SCRATCH_SIZE-1)
+> +
+> +#define W1_F2D_READ_EEPROM	0xF0
+> +#define W1_F2D_WRITE_SCRATCH	0x0F
+> +#define W1_F2D_READ_SCRATCH	0xAA
+> +#define W1_F2D_COPY_SCRATCH	0x55
+> +
+> +
+> +#define W1_F2D_TPROG_MS		11
+> +
+> +#define W1_F2D_READ_RETRIES		10
+> +#define W1_F2D_READ_MAXLEN		8
+> +
+> +/**
+> + * Check the file size bounds and adjusts count as needed.
+> + * This would not be needed if the file size didn't reset to 0 after a write.
+> + */
+
+The driver has a number of comments whcih start with /**.  But that
+pattern is specifically used to flag the presence of a kerneldoc-format
+comment.  And these comments are in fact not in kerneldoc form.
+
+> +/**
+> + * Writes to the scratchpad and reads it back for verification.
+> + * Then copies the scratchpad to EEPROM.
+> + * The data must be aligned at W1_F2D_SCRATCH_SIZE bytes and
+> + * must be W1_F2D_SCRATCH_SIZE bytes long.
+> + * The master must be locked.
+> + *
+> + * @param sl	The slave structure
+> + * @param addr	Address for the write
+> + * @param len   length must be <= (W1_F2D_PAGE_SIZE - (addr & W1_F2D_PAGE_MASK))
+> + * @param data	The data to write
+> + * @return	0=Success -1=failure
+> + */
+
+This one looks a bit kerneldoc-like but actually isn't kerneldoc.
+
+
+little fixes:
+
+--- a/drivers/w1/slaves/w1_ds2431.c~w1-new-driver-ds2431-chip-fix
++++ a/drivers/w1/slaves/w1_ds2431.c
+@@ -1,5 +1,5 @@
+ /*
+- *	w1_DS2431.c - w1 family 2d (DS2431) driver
++ * w1_ds2431.c - w1 family 2d (DS2431) driver
+  *
+  * Copyright (c) 2008 Bernhard Weirich <bernhard.weirich@riedel.net>
+  *
+@@ -41,7 +41,7 @@
+ #define W1_F2D_READ_RETRIES		10
+ #define W1_F2D_READ_MAXLEN		8
+ 
+-/**
++/*
+  * Check the file size bounds and adjusts count as needed.
+  * This would not be needed if the file size didn't reset to 0 after a write.
+  */
+@@ -56,7 +56,7 @@ static inline size_t w1_f2d_fix_count(lo
+ 	return count;
+ }
+ 
+-/**
++/*
+  * Read a block from W1 ROM two times and compares the results.
+  * If they are equal they are returned, otherwise the read
+  * is repeated W1_F2D_READ_RETRIES times.
+@@ -88,8 +88,6 @@ static int w1_f2d_readblock(struct w1_sl
+ 
+ 		if (!memcmp(cmp, buf, count))
+ 			return 0;
+-
+-
+ 	} while (--tries);
+ 
+ 	dev_err(&sl->dev, "proof reading failed %d times\n",
+@@ -98,7 +96,6 @@ static int w1_f2d_readblock(struct w1_sl
+ 	return -1;
+ }
+ 
+-
+ static ssize_t w1_f2d_read_bin(struct kobject *kobj,
+ 			       struct bin_attribute *bin_attr,
+ 			       char *buf, loff_t off, size_t count)
+@@ -134,7 +131,7 @@ static ssize_t w1_f2d_read_bin(struct ko
+ 	return count;
+ }
+ 
+-/**
++/*
+  * Writes to the scratchpad and reads it back for verification.
+  * Then copies the scratchpad to EEPROM.
+  * The data must be aligned at W1_F2D_SCRATCH_SIZE bytes and
+@@ -279,10 +276,7 @@ static struct bin_attribute w1_f2d_bin_a
+ 
+ static int w1_f2d_add_slave(struct w1_slave *sl)
+ {
+-	int err;
+-	err = sysfs_create_bin_file(&sl->dev.kobj, &w1_f2d_bin_attr);
+-
+-	return err;
++	return sysfs_create_bin_file(&sl->dev.kobj, &w1_f2d_bin_attr);
+ }
+ 
+ static void w1_f2d_remove_slave(struct w1_slave *sl)
 
