@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbYIQRBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbYIQRCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758045AbYIQRBr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 13:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbYIQQ7e
+	id S1758169AbYIQRCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 13:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbYIQRBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:59:34 -0400
-Received: from ti-out-0910.google.com ([209.85.142.187]:52483 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757532AbYIQQ7c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:59:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=CT7/CEc0+YHrPl9Zkgg6QJtXmoV1ZbNP5vVWmanITZDTB5ypTyoLiOkMow7sVYrqx8
-         qor459DPuAirR5jwNyyT142JRqCe145rsXRnQqyJTTSjPghjFkck4LbTnuPAEAI5y8FN
-         56FYuV5cWCTL2tsgPr0TyNI9mVahjEsmSE8OI=
-Message-ID: <48D13712.1090904@gmail.com>
-Date: Wed, 17 Sep 2008 09:57:54 -0700
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Wed, 17 Sep 2008 13:01:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59374 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757162AbYIQRBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 13:01:34 -0400
 MIME-Version: 1.0
-To: Elias Oltmanns <eo@nebensachen.de>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4 v2] Introduce ata_id_has_unload()
-References: <87d4j2n3dn.fsf@denkblock.local> <20080917163144.9870.90985.stgit@denkblock.local>
-In-Reply-To: <20080917163144.9870.90985.stgit@denkblock.local>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Luming Yu" <luming.yu@gmail.com>
+X-Fcc: ~/Mail/linus
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ia64@vger.kernel.org
+Subject: Re: [RFC PATCH] set TASK_TRACED before arch_ptrace code to fix a race
+In-Reply-To: Luming Yu's message of  Tuesday, 16 September 2008 16:50:24 +0800 <3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
+References: <3877989d0805211947i54bacc7cv619541e9b40824fb@mail.gmail.com>
+	<48450864.6080707@suse.cz>
+	<48455619.6040608@suse.cz>
+	<3877989d0806031916wf11bb2t3847aa630fb39e60@mail.gmail.com>
+	<48465D5C.8000804@suse.cz>
+	<3877989d0806041849vb903aaw221de929e2ab8cb9@mail.gmail.com>
+	<1212664605.15747.16.camel@elijah.suse.cz>
+	<20080627204954.34F8B154231@magilla.localdomain>
+	<3877989d0809082006v496bae4i1c0736f5d55e9b9f@mail.gmail.com>
+	<20080910055504.9A2A41541FE@magilla.localdomain>
+	<3877989d0809160150y385edd59i231aca8b1073ce14@mail.gmail.com>
+X-Shopping-List: (1) Instant flossbag oblivion
+   (2) Linty metronome ashes
+   (3) Self-propelled witches
+   (4) Infamous thunder
+   (5) Precious opinions
+Message-Id: <20080917170122.7797E640A5@pipsqueak.localdomain>
+Date: Wed, 17 Sep 2008 10:01:22 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elias Oltmanns wrote:
-> Add a function to check an ATA device's id for head unload support as
-> specified in ATA-7.
-> 
-> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+So is there or is there not any regression (change) in the kernel's behavior?
 
-Acked-by: Tejun Heo <tj@kernel.org>
+If you are now just talking about strace's own code, then the place for
+that is strace-devel@lists.sourceforge.net, not any kernel lists.
 
--- 
-tejun
+
+Thanks,
+Roland
