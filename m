@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYIQF2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753883AbYIQF3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbYIQF2H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 01:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbYIQF14
+	id S1753883AbYIQF3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 01:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYIQF3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 01:27:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:58827 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817AbYIQF1z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 01:27:55 -0400
-Message-ID: <48D0954D.4070302@manoweb.com>
-Date: Tue, 16 Sep 2008 22:27:41 -0700
-From: Alessio Sangalli <alesan@manoweb.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Ben Nizette <bn@niasdigital.com>, Ben Dooks <ben-linux@fluff.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Driver for tightly coupled memory
-References: <48CEC71F.3000006@manoweb.com> <20080916093513.GF1916@fluff.org.uk> <48CFEF3F.5040901@manoweb.com> <1221604022.3598.4.camel@moss.renham>            <48D03811.9070805@manoweb.com> <24229.1221619342@turing-police.cc.vt.edu>
-In-Reply-To: <24229.1221619342@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 17 Sep 2008 01:29:08 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:57854 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbYIQF3H (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 01:29:07 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: gshan <gshan@alcatel-lucent.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: how to change priority of telnet session
+In-Reply-To: Your message of "Wed, 17 Sep 2008 11:40:31 +0800."
+             <48D07C2F.2040500@alcatel-lucent.com>
+From: Valdis.Kletnieks@vt.edu
+References: <48D07C2F.2040500@alcatel-lucent.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221629343_32017P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19KmrLVmZusIrA3FsbmaWOKt5qwCyk2nXb0x+2
- sJ3juJVbMI074bAUnpikv7QIczp1FNwdzZA44ftSj/ZEu17LOP
- jK3xnA5rQFPFJTmwJslFQ==
+Date: Wed, 17 Sep 2008 01:29:03 -0400
+Message-ID: <32251.1221629343@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
+--==_Exmh_1221629343_32017P
+Content-Type: text/plain; charset=us-ascii
 
-> What sort of hardware/software interface does the TCM provide?  You mentioned
-> that it could be accessed even while main memory is being accessed - what does
-> that look like from the software level?
+On Wed, 17 Sep 2008 11:40:31 +0800, gshan said:
+> Hi All,
+> 
+> I'm using telnetd which was started by xinetd. The current default 
+> priority of telnetd isn't high enough,
 
-Well I should ask the details to the hardware engineers but it's like a
-separate channel than the one used for main memory. It is not cacheable
-either. To the CPU, it just appears to be mapped at some location on the
-addressable space. Accessing this TCM will not have any impact on main
-memory access, so bursts etc won't be interrupted; other than that, TCM
-has double the bandwidth than standard memory - but it's tiny in size,
-something like 8 to 32kB as I mentioned earlier.
+1) That's not a kernel issue, that's a userspace configuration issue, probably
+best asked on a mailing list for administration of whatever distribution of
+Linux you're using.
 
-Hope I was clear enough, feel free to ask me more details if you need
+2) There's a fairly high likelyhood that your real problem isn't that telnet's
+priority is too low, because telnet is a fairly lightweight process and *should*
+behave fairly well unless there's major system tuning issues - and if that's
+the case, there's probably *better* ways to fix the problem.  What problem are
+you trying to solve by changing telnet's priority?
 
-bye
-as
+--==_Exmh_1221629343_32017P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI0JWfcC3lWbTT17ARAlG/AKDuCW3twSoJpPPVt1LUHoGodQTlBgCggZcA
+VaDvof4h5F2nRTMvEFncyxA=
+=Sdy2
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221629343_32017P--
