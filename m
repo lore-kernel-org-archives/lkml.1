@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbYIQQXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbYIQQZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbYIQQXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 12:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbYIQQXH
+	id S1754920AbYIQQZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 12:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYIQQZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 12:23:07 -0400
-Received: from web32607.mail.mud.yahoo.com ([68.142.207.234]:34481 "HELO
-	web32607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753396AbYIQQXG (ORCPT
+	Wed, 17 Sep 2008 12:25:14 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:35654 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbYIQQZL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 12:23:06 -0400
-X-YMail-OSG: r9PPbd0VM1kej7.Mvfq7PEY82hRx1YFowHXf1DZOKCtIejuYwonPQ3uj5XSAbu.UafLG.wlKeZgVSQyQfGBA4OZznaVsgroV_we0DA6Ey5SdQyaFm56lwXJEp0tjeL4-
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
-Date: Wed, 17 Sep 2008 09:23:03 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-To: Chuck Lever <chucklever@gmail.com>, Peter Staubach <staubach@redhat.com>
-Cc: linux-nfs list <linux-nfs@vger.kernel.org>, linux-kernel@vger.kernel.org
+	Wed, 17 Sep 2008 12:25:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=oNiIC9X1K3o6zWwfZvE9lPDd6DsbPF6ZaoyPvYgEQaT4/8vU5OLxHy9pgalFBMDfVh
+         UmauAYFoEchPHW0UaEXIsY1UMR3EkHOU1QjkfMmDlZ8wu+ck/H5nQbn7atWXNhutanbF
+         UGb6LyMUJJP/9hm+s/D+98zkrC2Kb92V5u73A=
+Message-ID: <86802c440809170925i1eac326ciadf4a1d18b86ec10@mail.gmail.com>
+Date: Wed, 17 Sep 2008 09:25:11 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Richter" <robert.richter@amd.com>
+Subject: Re: [PATCH 3/6] pci: using printk(KERN_PCI v3
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080917101129.GC23138@erda.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <804604.40886.qm@web32607.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com>
+	 <1221640067-24389-4-git-send-email-yhlu.kernel@gmail.com>
+	 <20080917083506.GA24035@elte.hu>
+	 <86802c440809170141s5c206ec9ub1ea077ed923ec20@mail.gmail.com>
+	 <20080917101129.GC23138@erda.amd.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
+On Wed, Sep 17, 2008 at 3:11 AM, Robert Richter <robert.richter@amd.com> wrote:
+> On 17.09.08 01:41:03, Yinghai Lu wrote:
+>> On Wed, Sep 17, 2008 at 1:35 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> >
+>> > * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>> >
+>> >> -                     printk(KERN_DEBUG "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+>> >> +                     printk(KERN_DEBUG KERN_PCI
+>> >> +                              "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+>> >
+>> > i think we should aim to make the common usage of this facility as easy
+>> > and short as possible. That means that i think the right line is:
+>> >
+>> > +                       printk(KERN_PCI
+>> > +                                "PCI: %s reg %x 64bit mmio: [%llx, %llx]\n",
+>> >
+>> > as that is the shortest form. KERN_PCI should imply whatever
+>> > common-sense default. It should still make sense to specify KERN_FOO
+>> > KERN_PCI, to override that default.
+>>
+>> vprintk will add default before that like
+>> like print(KERN_INFO KERN_PCI ....)
+>
+> What about a pci_dbg() macro similiar to dev_dbg()? Same could be used
+> for ACPI, acpi_dbg().
+>
 
-> From: Chuck Lever <chucklever@gmail.com>
-> To: Peter Staubach <staubach@redhat.com>
-> Cc: Martin Knoblauch <knobi@knobisoft.de>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org
-> Sent: Wednesday, September 17, 2008 5:41:15 PM
-> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
-> 
-> On Wed, Sep 17, 2008 at 9:06 AM, Peter Staubach wrote:
-> > Martin Knoblauch wrote:
-> >>
-> >> Hi,
-> >>
-> >> the following/attached patch works around a [obscure] problem when an 2.6
-> >> (not sure/caring about 2.4) NFS client accesses an "offline" file on a
-> >> Sun/Solaris-10 NFS server when the underlying filesystem is of type SAM-FS.
-> >> Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux
-> >> problem, but the chance for a short-/mid-term solution from Sun are very
-> >> slim. So, being lazy, I would love to get this patch into Linux. If not, I
-> >> just will have to maintain it for eternity out of tree.
-> >>
-> >> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores
-> >> meta-data and a relatively small amount of data "online" on disk and pushes
-> >> old or infrequently used data to "offline" media like e.g. tape. This is
-> >> completely transparent to the users. If the date for an "offline" file is
-> >> needed, the so called "stager daemon" copies it back from the offline
-> >> medium. All of this works great most of the time. Now, if an Linux NFS
-> >> client tries to read such an offline file, performance drops to "extremely
-> >> slow". After lengthly investigation of tcp-dumps, mount options and
-> >> procedures involving black cats at midnight, we found out that the readahead
-> >> behaviour of the Linux NFS client causes the problem. Basically it seems to
-> >> issue read requests up to 15*rsize to the server. In the case of the
-> >> "offline" files, this behaviour causes heavy competition for the inode lock
-> >> between the NFSD process and the stager daemon on the Solaris server.
-> >>
-> >> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks
-> >> the problem, but a solution will need time. Lots of it.
-> >> - The working solution: disable the client side readahead, or make it
-> >> tunable. The patch does that by introducing a NFS module parameter
-> >> "ra_factor" which can take values between 1 and 15 (default 15) and a
-> >> tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
-> >
-> > Hi.
-> >
-> > I was curious if a design to limit or eliminate read-ahead
-> > activity when the server returns EJUKEBOX was considered?
-> > Unless one can know that the server and client can get into
-> > this situation ahead of time, how would the tunable be used?
-> 
-> I tend to agree.  A tunable is probably not a good solution in this case.
-> 
-> I would bet that this lock contention issue is a problem in other more
-> common cases, and would merit some careful analysis.
-> 
+according to different users ...
 
- Are you talking wrt. a Solaris NFS-Server with SAM-FS/QFS as backend filesystem? We have in a lot of tests not observed any problems when accessing online files with the default readahead setting. The "offline" situation seems unique. As for other NFS Servers, we have never observed any readahead related problems either.
-
- As I already replied elsewhere, teaching the Linux NFS client to do "proper" readahead handling is beyond my knowledge. But I can test. I guess Sun engineering would be delighted if they don't have to fix their stuff :-)
-
-Cheers
-Martin
-
+YH
