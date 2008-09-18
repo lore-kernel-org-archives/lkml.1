@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYIRWXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYIRWY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbYIRWXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 18:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755663AbYIRWXI
+	id S1757330AbYIRWY5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 18:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbYIRWYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 18:23:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:49407 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755527AbYIRWXF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 18:23:05 -0400
-Date: Thu, 18 Sep 2008 18:23:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Justin Mattock <justinmattock@gmail.com>
-cc: Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Chris Snook <csnook@redhat.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Linux-usb <linux-usb@vger.kernel.org>
-Subject: Re: [19.666764] Disabling IRQ #23
-In-Reply-To: <dd18b0c30809172144s75bf684am951159218717972e@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0809181818200.17483-100000@iolanthe.rowland.org>
+	Thu, 18 Sep 2008 18:24:45 -0400
+Received: from hostap.isc.org ([149.20.54.63]:35404 "EHLO hostap.isc.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755018AbYIRWYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 18:24:45 -0400
+Date: Thu, 18 Sep 2008 15:13:10 -0700
+From: Jouni Malinen <j@w1.fi>
+To: David Miller <davem@davemloft.net>
+Cc: j@w1.fi, jouni.malinen@atheros.com, alex.williamson@hp.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking (WEXT events and 64/32 compat)
+Message-ID: <20080918221309.GA22034@hostap.isc.org>
+References: <20080908.204323.04156464.davem@davemloft.net> <20080909040525.GA26151@hostap.isc.org> <20080917191128.GA23239@hostap.isc.org> <20080917.131133.135282530.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080917.131133.135282530.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008, Justin Mattock wrote:
+On Wed, Sep 17, 2008 at 01:11:33PM -0700, David Miller wrote:
+> Moving to a new event with a strictly sized datastructure, instead of
+> one that has variable sized members like pointers and crap which are
+> impossible to compat layer'ify, is indeed my preference.
+> 
+> But in that case, we might as well make nl80211 usable instead.
 
-> Hello,
-> after a bit of
-> searching I located a patch for something
-> that might be similar to this issue:(cant seem to locate the
-> linux-kernel thread).
-> http://www.gossamer-threads.com/lists/linux/kernel/966076
-> I've applied the patches just to see what would happen,
-> As for now I have not seen the Disable irq #23 yet,
-> (usually after a recompile of the kernel, upon reboot this message will appear,
-> this time it didn't). But you never know I'll run the system for a few days
-> and see if it pops up.
+Would you be fine with continuing to use IFLA_WIRELESS for this or
+should we reserve a new identifier for the nl80211 case? I'm assuming
+that the base mechanism would continue to remain as a broadcast
+rtnetlink message and the main difference to WEXT is in defining all
+events as data with fixed size fields instead of C structures.
 
-You are concentrating on the symptom instead of the problem.  The
-symptom is that "Disabling IRQ #23" message -- don't worry about it.  
+IFLA_WIRELESS messages start with two fixed size fields (16-bit len
+and cmd) which would allow us to reserve a new cmd value for nl80211
+messaages and then we could even share the helper functions in
+wireless/wext.c and just replace wireless_send_event() with a new
+function that generates the new event type.
 
-The underlying problem is the "ehci_hcd 0000:00:1d.7: HC died;
-cleaning up" message -- it should _never_ appear.  If you have a 
-reliable way of provoking it then something needs to be fixed.
+As a first porting step, wireless_send_event() could be extended to send
+both messages so that we do not need to modify all drivers to use the
+new mechanism in the beginning (and the old WEXT events would continue
+to be available for anyone who uses 32/32-bit or 64/64-bit
+kernel/userspace).
 
-Alan Stern
+As far as userspace is concerned, I would assume apps would eventually
+start moving to using the new events. As an example, wpa_supplicant has
+support for using either WEXT or nl80211 (though, this is still using
+WEXT for places that nl80211 does not support yet) and I would likely
+leave the WEXT case as-is and modify nl80211 interface to use only the
+new event messages.
 
+-- 
+Jouni Malinen                                            PGP id EFC895FA
