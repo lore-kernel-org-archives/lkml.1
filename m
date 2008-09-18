@@ -1,145 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbYIRPTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbYIRPTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbYIRPTO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbYIRPS5
+	id S1757071AbYIRPTo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbYIRPTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:18:57 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:7763 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018AbYIRPS4 (ORCPT
+	Thu, 18 Sep 2008 11:19:33 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57379 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754631AbYIRPTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:18:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=eDrpJc5qTFrL3nXDNEDHlcXc6LS4FRaqE4GdJX/bnKGpt3fH2zYoTeiNoxPSMoYBir
-         vvKrGltK2sRnNMCgKIgCPxrmDBp5wyWSMDcivMcSrbd6xgJpa4xTBEU5mLSHGt1m2iHQ
-         sLnzvDUwFJOYoHjhee5YT8o1NLBofS875QsAE=
-Message-ID: <48D2715A.6060002@gmail.com>
-Date: Thu, 18 Sep 2008 17:18:50 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>, Ryo Tsuruta <ryov@valinux.co.jp>
-CC: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-References: <20080918.210418.226794540.ryov@valinux.co.jp> <20080918131554.GB20640@redhat.com> <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com>
-In-Reply-To: <20080918150634.GH20640@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Sep 2008 11:19:32 -0400
+X-Sasl-enc: 5G87LsC9gvW4QRL36dPuSR48eb1b77rUjUxZBKCs7Rau 1221751171
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: John Linville <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: [PATCH] rfkill: clarify usage of rfkill_force_state() and rfkill->get_state()
+Date: Thu, 18 Sep 2008 12:19:26 -0300
+Message-Id: <1221751166-9927-1-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20080918145236.GJ1583@khazad-dum.debian.net>
+References: <20080918145236.GJ1583@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Sep 18, 2008 at 04:37:41PM +0200, Andrea Righi wrote:
->> Vivek Goyal wrote:
->>> On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
->>>> Hi All,
->>>>
->>>> I have got excellent results of dm-ioband, that controls the disk I/O
->>>> bandwidth even when it accepts delayed write requests.
->>>>
->>>> In this time, I ran some benchmarks with a high-end storage. The
->>>> reason was to avoid a performance bottleneck due to mechanical factors
->>>> such as seek time.
->>>>
->>>> You can see the details of the benchmarks at:
->>>> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
->>>>
->>> Hi Ryo,
->>>
->>> I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
->>> the notion of process priority in CFQ because now dm-ioband device will
->>> hold the bio and issue these to lower layers later based on which bio's
->>> become ready. Hence actual bio submitting context might be different and
->>> because cfq derives the io_context from current task, it will be broken.
->>>
->>> To mitigate that problem, we probably need to implement Fernando's
->>> suggestion of putting io_context pointer in bio. 
->>>
->>> Have you already done something to solve this issue?
->>>
->>> Secondly, why do we have to create an additional dm-ioband device for 
->>> every device we want to control using rules. This looks little odd
->>> atleast to me. Can't we keep it in line with rest of the controllers
->>> where task grouping takes place using cgroup and rules are specified in
->>> cgroup itself (The way Andrea Righi does for io-throttling patches)?
->>>
->>> To avoid creation of stacking another device (dm-ioband) on top of every
->>> device we want to subject to rules, I was thinking of maintaining an
->>> rb-tree per request queue. Requests will first go into this rb-tree upon
->>> __make_request() and then will filter down to elevator associated with the
->>> queue (if there is one). This will provide us the control of releasing
->>> bio's to elevaor based on policies (proportional weight, max bandwidth
->>> etc) and no need of stacking additional block device.
->>>
->>> I am working on some experimental proof of concept patches. It will take
->>> some time though.
->>>
->>> I was thinking of following.
->>>
->>> - Adopt the Andrea Righi's style of specifying rules for devices and
->>>   group the tasks using cgroups.
->>>
->>> - To begin with, adopt dm-ioband's approach of proportional bandwidth
->>>   controller. It makes sense to me limit the bandwidth usage only in
->>>   case of contention. If there is really a need to limit max bandwidth,
->>>   then probably we can do something to implement additional rules or
->>>   implement some policy switcher where user can decide what kind of
->>>   policies need to be implemented.
->>>
->>> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
->>>   request queue which is controlled by some kind of cgroup rules.
->>>
->>> It would be good to discuss above approach now whether it makes sense or 
->>> not. I think it is kind of fusion of io-throttling and dm-ioband patches
->>> with additional idea of doing io-control just above elevator on the request
->>> queue using an rb-tree.
->> Thanks Vivek. All sounds reasonable to me and I think this is be the right way
->> to proceed.
->>
->> I'll try to design and implement your rb-tree per request-queue idea into my
->> io-throttle controller, maybe we can reuse it also for a more generic solution.
->> Feel free to send me your experimental proof of concept if you want, even if
->> it's not yet complete, I can review it, test and contribute.
-> 
-> Currently I have taken code from bio-cgroup to implement cgroups and to
-> provide functionality to associate a bio to a cgroup. I need this to be
-> able to queue the bio's at right node in the rb-tree and then also to be
-> able to take a decision when is the right time to release few requests.
-> 
-> Right now in crude implementation, I am working on making system boot.
-> Once patches are at least in little bit working shape, I will send it to you
-> to have a look.
-> 
-> Thanks
-> Vivek
+rfkill_force_state() is used to update the rfkill core's idea of what is
+really happening RIGHT NOW to the transmitter hardware in a PUSH model.
 
-I wonder... wouldn't be simpler to just use the memory controller
-to retrieve this information starting from struct page?
+rfkill->get_state() does the same, in a PULL model.
 
-I mean, following this path (in short, obviously using the appropriate
-interfaces for locking and referencing the different objects):
+Neither of them change the real hardware radio state through a call to
+rfkill->toggle_radio() or anything of the sort, so they must deal with the
+real, current state of the hardware.
 
-cgrp = page->page_cgroup->mem_cgroup->css.cgroup
+Change some documentation to make that more clear (I hope).
 
-Once you get the cgrp it's very easy to use the corresponding controller
-structure.
+Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Ivo van Doorn <IvDoorn@gmail.com>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+---
+ Documentation/rfkill.txt |   10 ++++++++++
+ include/linux/rfkill.h   |    3 +++
+ net/rfkill/rfkill.c      |    3 +++
+ 3 files changed, 16 insertions(+), 0 deletions(-)
 
-Actually, this is how I'm doing in cgroup-io-throttle to associate a bio
-to a cgroup. What other functionalities/advantages bio-cgroup provide in
-addition to that?
+diff --git a/Documentation/rfkill.txt b/Documentation/rfkill.txt
+index b65f079..0143f1e 100644
+--- a/Documentation/rfkill.txt
++++ b/Documentation/rfkill.txt
+@@ -461,6 +461,16 @@ mandatory when the device has a hardware rfkill line, or when something else
+ like the firmware could cause its state to be changed without going through the
+ rfkill class.
+ 
++**** ATTENTION ****
++Both the state returned by the rfkill->get_state() hook, and the state
++passed to rfkill_force_state() MUST BE THE REAL, CURRENT STATE OF THE
++HARDWARE TRANSMITTER.  Never use for these functions the "desired" state,
++"user requested" state, or anything of the sort.
++
++Also, be warned that rfkill_force_state() cannot be called from atomic context,
++so interrupt handlers will have to make use of a workqueue to do it.
++**** ATTENTION ****
++
+ Some hardware provides events when its status changes.  In these cases, it is
+ best for the driver to not provide a get_state hook, and instead register the
+ rfkill class *already* with the correct status, and keep it updated using
+diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
+index 4cd64b0..92b9c72 100644
+--- a/include/linux/rfkill.h
++++ b/include/linux/rfkill.h
+@@ -80,6 +80,9 @@ enum rfkill_state {
+  *      may be called from atomic context, should return 0 on success.
+  *      Either this handler OR judicious use of rfkill_force_state() is
+  *      MANDATORY for any driver capable of RFKILL_STATE_HARD_BLOCKED.
++ *      THIS HOOK MUST RETURN THE CURRENT, REAL STATE OF THE HARDWARE
++ *      TRANSMITTER, and not the "desired state", "user requested state"
++ *      or anything of the sort.
+  * @led_trigger: A LED trigger for this button's LED.
+  * @dev: Device structure integrating the switch into device tree.
+  * @node: Used to place switch into list of all switches known to the
+diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
+index f949a48..64a53f1 100644
+--- a/net/rfkill/rfkill.c
++++ b/net/rfkill/rfkill.c
+@@ -333,6 +333,9 @@ EXPORT_SYMBOL_GPL(rfkill_restore_states);
+  * a notification by the firmware/hardware of the current *real*
+  * state of the radio rfkill switch.
+  *
++ * The state passed to this function MUST MATCH THE CURRENT,
++ * REAL HARDWARE STATE OF THE TRANSMITTER.
++ *
+  * Devices which are subject to external changes on their rfkill
+  * state (such as those caused by a hardware rfkill line) MUST
+  * have their driver arrange to call rfkill_force_state() as soon
+-- 
+1.5.6.5
 
-Thanks,
--Andrea
