@@ -1,72 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbYIRRdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYIRReS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbYIRRdR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 13:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbYIRRdI
+	id S1756557AbYIRReS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 13:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbYIRReI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 13:33:08 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:10441 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754080AbYIRRdE (ORCPT
+	Thu, 18 Sep 2008 13:34:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51320 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754236AbYIRReH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 13:33:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=fuaqRnIA5Lnbe3M/eJ02Z7v+jpQ/hwEDRLd7n38rL6+xsuQaLPz8frVmqcJ/LeOtXy
-         uGH9EYpmS2SrkuQHL+RTrguiEJcpVnYo/LK6GvVfAiiK6uRk0R+WAcTOboFA11fZTbkz
-         8ZNGYJw0kb9gFx95YYwqwVXAZNTRcPGLxigoc=
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] rfkill: clarify usage of rfkill_force_state() and rfkill->get_state()
-Date: Thu, 18 Sep 2008 19:32:58 +0200
-User-Agent: KMail/1.9.9
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Larry Finger <Larry.Finger@lwfinger.net>
-References: <20080918145236.GJ1583@khazad-dum.debian.net> <20080918164339.GM1583@khazad-dum.debian.net> <1221756339.9262.86.camel@johannes.berg>
-In-Reply-To: <1221756339.9262.86.camel@johannes.berg>
+	Thu, 18 Sep 2008 13:34:07 -0400
+Date: Thu, 18 Sep 2008 13:34:04 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Theodore Tso <tytso@mit.edu>, gregkh@suse.de
+Subject: [PATCH] script to remove unused modules from config file
+Message-ID: <alpine.DEB.1.10.0809181330410.11972@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809181932.58272.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 September 2008, Johannes Berg wrote:
-> On Thu, 2008-09-18 at 13:43 -0300, Henrique de Moraes Holschuh wrote:
-> 
-> > Now it must do something like this in pseudo-code:
-> > 
-> > 	1. if (the bit is disabled (i.e. SW rfkill is NOT ACTIVE)) {
-> > 		rfkill-SW-status = disabled;
-> > 	   }  else if (the bit is enabled (i.e. SW rfkill is ACTIVE)) {
-> > 		if (tx power off is NOT ACTIVE)
-> > 			rfkill-SW-status = enabled;
-> > 		else
-> > 			rfkill-SW-status = whatever the user asked
-> > 	   }
-> > 
-> > THEN, it should use rfkill-sw-status, along with the hw rfkill line status,
-> > to synthesize the state it must pass to rfkill_force_status().
-> > 
-> > ICK.  Of course, if the driver has another way to implement txpower off that
-> > does not clash with sw rfkill, the above is unneeded.
-> 
-> Why are we not handling soft-rfkill in mac80211 entirely?
 
-Ideal situation would indeed be that mac80211 registers a rfkill structure
-and listens to rfkill events. This would help drivers by only needing to
-register a rfkill structure for state-change events without any need for
-listeners.
+I heard that at KS my script was mentioned, and that I should submit
+it as a patch to be added to the scripts directory. Well here's the patch.
 
-I was considering such a patch some time ago, but needed to figure out
-how to work with the state-override capabilities (HW_BLOCK and SOFT_BLOCK)
-and didn't work on it any further since.
+The way this script works is that you must boot into the kernel that
+you want to clean up the config. Then change into the directory that holds
+the source of the kernel you booted into. Make sure all the modules you
+want are loaded (remember to plug in a USB stick ;-) Then simply run
+this script redirecting the output into another file.
 
-Ivo
+ $ cd ~/kernels/linux.git
+ $ scripts/streamline_config.pl > config-sl
+ $ mv .config config-orig
+ $ mv config-sl .config
+ $ make oldconfig
+
+That's it!
+
+The way this works is that the script reads what modules are loaded by doing
+a lsmod. Then it reads all the Makefiles finding the configurations that
+turn on those modules. Finally it reads the config and disables all modules
+that were not used.
+
+Note, this script does not touch any "y" option, only "m".
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ scripts/streamline_config.pl |  121 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 121 insertions(+)
+
+Index: linux-tip.git/scripts/streamline_config.pl
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-tip.git/scripts/streamline_config.pl	2008-09-17 14:56:52.000000000 -0400
+@@ -0,0 +1,121 @@
++#!/usr/bin/perl -w
++#
++# Copywrite 2005-2008 - Steven Rostedt
++# Licensed under the terms of the GNU GPL License version 2
++#
++#  It's simple enough to figure out how this works.
++#  If not, then you can ask me at rostedt@goodmis.org
++#
++# What it does?
++#
++#   If you have installed a Linux kernel from a distribution
++#   that turns on way too many modules than you need, and
++#   you only want the modules you use, than this program
++#   is perfect for you.
++#
++#   It gives you the ability to turn off all the modules that are
++#   not loaded on your system.
++#
++# Howto:
++#
++#  1. Boot up the kernel that you want to stream line the config on.
++#  2. Change directory to the directory holding the source of the
++#       kernel that you just booted.
++#  3. Copy the configuraton file to this directory as .config
++#  4. Have all your devices that you need modules for connected and
++#      operational (make sure that their corresponding modules are loaded)
++#  5. Run this script redirecting the output to some other file
++#       like config_strip.
++#  6. Back up your old config (if you want too).
++#  7. copy the config_strip file to .config
++#  8. Run "make oldconfig"
++#
++#  Now your kernel is ready to be built with only the modules that
++#  are loaded.
++#
++# Here's what I did with my Debian distribution.
++#
++#    cd /usr/src/linux-2.6.10
++#    cp /boot/config-2.6.10-1-686-smp .config
++#    ~/bin/streamline_config > config_strip
++#    mv .config config_sav
++#    mv config_strip .config
++#    make oldconfig
++#
++my $config = ".config";
++my $linuxpath = ".";
++
++open(CIN,$config) || die "Can't open current config file: $config";
++my @makefiles = `find $linuxpath -name Makefile`;
++
++my %objects;
++my $var;
++my $cont = 0;
++
++foreach my $makefile (@makefiles) {
++	chomp $makefile;
++
++	open(MIN,$makefile) || die "Can't open $makefile";
++	while (<MIN>) {
++		my $catch = 0;
++
++		if ($cont && /(\S.*)$/) {
++			$objs = $1;
++			$catch = 1;
++		}
++		$cont = 0;
++
++		if (/obj-\$\((CONFIG_[^)]*)\)\s*[+:]?=\s*(.*)/) {
++			$var = $1;
++			$objs = $2;
++			$catch = 1;
++		}
++		if ($catch) {
++			if ($objs =~ m,(.*)\\$,) {
++				$objs = $1;
++				$cont = 1;
++			}
++
++			foreach my $obj (split /\s+/,$objs) {
++				$obj =~ s/-/_/g;
++				if ($obj =~ /(.*)\.o$/) {
++					$objects{$1} = $var;
++				}
++			}
++		}
++	}
++	close(MIN);
++}
++
++my %modules;
++
++open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
++while (<LIN>) {
++	next if (/^Module/);  # Skip the first line.
++	if (/^(\S+)/) {
++		$modules{$1} = 1;
++	}
++}
++close (LIN);
++
++my %configs;
++foreach my $module (keys(%modules)) {
++	if (defined($objects{$module})) {
++		$configs{$objects{$module}} = $module;
++	} else {
++		print STDERR "$module config not found!!\n";
++	}
++}
++
++while(<CIN>) {
++	if (/^(CONFIG.*)=m/) {
++		if (defined($configs{$1})) {
++			print;
++		} else {
++			print "# $1 is not set\n";
++		}
++	} else {
++		print;
++	}
++}
++close(CIN);
+
