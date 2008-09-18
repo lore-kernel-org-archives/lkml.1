@@ -1,38 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYIRSVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYIRSWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbYIRSVP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 14:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbYIRSVA
+	id S1756301AbYIRSWA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 14:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbYIRSVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 14:21:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38883 "EHLO
+	Thu, 18 Sep 2008 14:21:52 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38914 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754399AbYIRSVA (ORCPT
+	with ESMTP id S1755436AbYIRSVw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 14:21:00 -0400
-Date: Thu, 18 Sep 2008 20:25:28 +0200
+	Thu, 18 Sep 2008 14:21:52 -0400
+Date: Thu, 18 Sep 2008 20:26:20 +0200
 From: Andi Kleen <andi@firstfloor.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, andi@firstfloor.org,
-       joerg.roedel@amd.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
-Message-ID: <20080918182528.GP25711@one.firstfloor.org>
-References: <20080916134335.GC25711@one.firstfloor.org> <20080917021319O.fujita.tomonori@lab.ntt.co.jp> <20080916175824.GF25711@one.firstfloor.org> <20080917085335F.fujita.tomonori@lab.ntt.co.jp> <20080917104327.GD18764@elte.hu>
+Cc: Pavel Machek <pavel@suse.cz>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] apci: dump slit
+Message-ID: <20080918182620.GQ25711@one.firstfloor.org>
+References: <1221243468-8016-1-git-send-email-yhlu.kernel@gmail.com> <20080912122031.eca8723e.akpm@linux-foundation.org> <86802c440809121229i14727af4nd1416044b06ebb94@mail.gmail.com> <878wtxrrwh.fsf@basil.nowhere.org> <alpine.LFD.1.10.0809122313440.13819@apollo.tec.linutronix.de> <20080914112222.GA3956@ucw.cz> <20080914122618.GD16097@elte.hu> <20080914155928.GB4845@ucw.cz> <20080914160403.GA20082@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080917104327.GD18764@elte.hu>
+In-Reply-To: <20080914160403.GA20082@elte.hu>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> no - any extra layer of robustness is good in such a critical piece of 
+> great! Yinghai, mind reworking the patch in that direction please? I'd 
+> suggest to enable the optional dumping of all things BIOS environment 
+> related, not just the ACPI/SLIT.
 
-robustness would require to handle it everywhere (as in always fall
-back to 24bit DMA bouncing if someone tries a map_* on a < 32bit mapping), 
-but this patch doesn't do that at all.
+Great. I'm preparing the "kernel iasl -d" patch now @)
 
 -Andi
--- 
-ak@linux.intel.com
