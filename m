@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYIRBlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbYIRBoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYIRBlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 21:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYIRBlF
+	id S1755427AbYIRBoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 21:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYIRBoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 21:41:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32978 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753074AbYIRBlC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 21:41:02 -0400
-Date: Wed, 17 Sep 2008 18:40:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] Remove cgroup member from struct page (v3)
-Message-Id: <20080917184008.92b7fc4c.akpm@linux-foundation.org>
-In-Reply-To: <20080917232826.GA19256@balbir.in.ibm.com>
-References: <200809091500.10619.nickpiggin@yahoo.com.au>
-	<20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com>
-	<30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080910012048.GA32752@balbir.in.ibm.com>
-	<1221085260.6781.69.camel@nimitz>
-	<48C84C0A.30902@linux.vnet.ibm.com>
-	<1221087408.6781.73.camel@nimitz>
-	<20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com>
-	<48C878AD.4040404@linux.vnet.ibm.com>
-	<20080911105638.1581db90.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080917232826.GA19256@balbir.in.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 17 Sep 2008 21:44:30 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:58808 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753149AbYIRBo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Sep 2008 21:44:29 -0400
+Message-ID: <48D1B21E.3060509@melbourne.sgi.com>
+Date: Thu, 18 Sep 2008 11:42:54 +1000
+From: Greg Banks <gnb@melbourne.sgi.com>
+Organization: File Serving Technologies ; Silicon Graphics Inc.
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Martin Knoblauch <knobi@knobisoft.de>
+CC: linux-nfs list <linux-nfs@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+References: <997439.5560.qm@web32601.mail.mud.yahoo.com>
+In-Reply-To: <997439.5560.qm@web32601.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 16:28:26 -0700 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Martin Knoblauch wrote:
+> Hi,
+>
+> the following/attached patch works around a [obscure] problem when an 2.6 (not sure/caring about 2.4) NFS client accesses an "offline" file on a Sun/Solaris-10 NFS server when the underlying filesystem is of type SAM-FS. Happens with RHEL4/5 and mainline kernels. Frankly, it is not a Linux problem, but the chance for a short-/mid-term solution from Sun are very slim. So, being lazy, I would love to get this patch into Linux. If not, I just will have to maintain it for eternity out of tree.
+>
+> The problem: SAM-FS is Suns proprietary HSM filesystem. It stores meta-data and a relatively small amount of data "online" on disk and pushes old or infrequently used data to "offline" media like e.g. tape. This is completely transparent to the users. If the date for an "offline" file is needed, the so called "stager daemon" copies it back from the offline medium. All of this works great most of the time. Now, if an Linux NFS client tries to read such an offline file, performance drops to "extremely slow". 
+By "extremely slow" do you mean "tape read speed"?
+> After lengthly investigation of tcp-dumps, mount options and procedures involving black cats at midnight, we found out that the readahead behaviour of the Linux NFS client causes the problem. Basically it seems to issue read requests up to 15*rsize to the server. In the case of the "offline" files, this behaviour causes heavy competition for the inode lock between the NFSD process and the stager daemon on the Solaris server.
+>   
+So, you need to
 
-> 
-> Before trying the sparsemem approach, I tried a radix tree per node,
-> per zone and I seemed to actually get some performance
-> improvement.(1.5% (noise maybe))
-> 
-> But please do see and review (tested on my x86_64 box with unixbench
-> and some other simple tests)
-> 
-> v4..v3
-> 1. Use a radix tree per node, per zone
-> 
-> v3...v2
-> 1. Convert flags to unsigned long
-> 2. Move page_cgroup->lock to a bit spin lock in flags
-> 
-> v2...v1
-> 
-> 1. Fix a small bug, don't call radix_tree_preload_end(), if preload fails
-> 
-> This is a rewrite of a patch I had written long back to remove struct page
-> (I shared the patches with Kamezawa, but never posted them anywhere else).
-> I spent the weekend, cleaning them up for 2.6.27-rc5-mmotm (29 Aug 2008).
-> 
-> I've tested the patches on an x86_64 box, I've run a simple test running
-> under the memory control group and the same test running concurrently under
-> two different groups (and creating pressure within their groups).
-> 
-> Advantages of the patch
-> 
-> 1. It removes the extra pointer in struct page
-> 
-> Disadvantages
-> 
-> 1. Radix tree lookup is not an O(1) operation, once the page is known
->    getting to the page_cgroup (pc) is a little more expensive now.
+a) make your stager daemon do IO more sensibly, and
 
-Why are we doing this?  I can guess, but I'd rather not have to.
+b) apply something like this patch which adds O_NONBLOCK when knfsd does
+reads writes and truncates and translates -EAGAIN into NFS3ERR_JUKEBOX
 
-a) It's slower.
+http://kerneltrap.org/mailarchive/linux-fsdevel/2006/5/5/312567
 
-b) It uses even more memory worst-case.
+and
 
-c) It uses less memory best-case.
+c) make your filesystem IO interposing layer report -EAGAIN when a
+process tries to do IO to an offline region in a file and O_NONBLOCK is
+present.
+> - The real solution: fixing SAM-FS/NFSD interaction. Sun engineering acks the problem, but a solution will need time. Lots of it.
+> - The working solution: disable the client side readahead, or make it tunable. The patch does that by introducing a NFS module parameter "ra_factor" which can take values between 1 and 15 (default 15) and a tunable "/proc/sys/fs/nfs/nfs_ra_factor" with the same range and default.
+>   
+I think having a tunable for client readahead is an excellent idea,
+although not to solve your particular problem.  The SLES10 kernel has a
+patch which does precisely that, perhaps Neil could post it.
 
-someone somewhere decided that (Aa + Bb) / Cc < 1.0.  What are the values
-of A, B and C and where did they come from? ;)
+I don't think there's a lot of point having both a module parameter and
+a sysctl.
 
-(IOW, your changelog is in the category "sucky", along with 90% of the others)
+A maximum of 15 is unwise.  I've found that (at least with the older
+readahead mechanisms in SLES10) a multiple of 4 is required to preserve
+rsize-alignment of READ rpcs to the server, which helps a lot with wide
+RAID backends.  So in SGI we tune client readahead to 16.
+
+Your patch seems to have a bunch of other unrelated stuff mixed in.
+
+-- 
+Greg Banks, P.Engineer, SGI Australian Software Group.
+Be like the squirrel.
+I don't speak for SGI.
+
