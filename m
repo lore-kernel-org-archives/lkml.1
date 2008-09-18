@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbYIRPh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbYIRPiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbYIRPh2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbYIRPhT
+	id S1756702AbYIRPiO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYIRPh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:37:19 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:44403 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754293AbYIRPhR (ORCPT
+	Thu, 18 Sep 2008 11:37:58 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:2501 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752800AbYIRPh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:37:17 -0400
-Message-ID: <48D2758B.1000004@zytor.com>
-Date: Thu, 18 Sep 2008 08:36:43 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 18 Sep 2008 11:37:57 -0400
+X-Greylist: delayed 443 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 11:37:57 EDT
+Date: Thu, 18 Sep 2008 17:30:32 +0200
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Subject: ACPI idea: override max. frequency
+Message-ID: <20080918153032.GU4323@vanheusden.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jason Baron <jbaron@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/6] loglevel=pci:8,acpi:8,apic=8 support v6
-References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <20080917015543.27172da4.akpm@linux-foundation.org> <20080917092732.GB32107@elte.hu> <20080917184618.GB6486@redhat.com> <48D159A7.5080907@zytor.com> <20080918105728.GF20967@elte.hu>
-In-Reply-To: <20080918105728.GF20967@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Reply-By: Wed Sep 17 21:27:26 CEST 2008
+X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
+	key-signing at www.biglumber.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> which is what we really want. If a bootup fails, the user has to repeat 
-> the bootup at least once with a verbosity level increased and with 
-> (hopefully) some sort of log capture facility attached.
-> 
-> So the point would be, if the user specified loglevel=all, we would get 
-> really comprehensive, one-stop-shop output.
-> 
+Hi,
 
-That is true if the bootup fails, but it's fairly common that we get the 
-machine up (at least to the point when we can dmesg), but the user wants 
-to report a problem.  For that case, it's very nice if the dmesg log 
-contains as much information as possible.
+The bios of the motherboard in my pc (a Gigabyte 965G-DS3) says the
+processor can go no faster than 2.133GHz while in reality this is 2.6GHz
+(it is an Intel(R) Core(TM)2 Quad CPU Q9450 @ 2.66GHz). No newer bios is
+available so I was thinking: maybe an override switch can be added?
+Losing 0.5GHz is a bit of a waste.
 
-So I don't think it's clear that pre-filtering is what we want, at all.
 
-	-hpa
+Folkert van Heusden
 
+-- 
+Ever wonder what is out there? Any alien races? Then please support
+the seti@home project: setiathome.ssl.berkeley.edu
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
