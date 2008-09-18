@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbYIRQFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYIRQGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbYIRQFf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYIRQFX
+	id S1755541AbYIRQGV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 12:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYIRQGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:05:23 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:33314 "EHLO havoc.gtf.org"
+	Thu, 18 Sep 2008 12:06:01 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44526 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbYIRQFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:05:22 -0400
-Date: Thu, 18 Sep 2008 12:05:21 -0400
+	id S1754093AbYIRQGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 12:06:00 -0400
+Message-ID: <48D27C63.10204@garzik.org>
+Date: Thu, 18 Sep 2008 12:05:55 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: other netdev updates (was Re: [git patches] new network drivers
-	for net-next)
-Message-ID: <20080918160521.GA24332@havoc.gtf.org>
-References: <20080918160005.GA24281@havoc.gtf.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080918160005.GA24281@havoc.gtf.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jay Cliburn <jacliburn@bellsouth.net>
+CC: Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][CORRECTED] atl2: add atl2 driver
+References: <20080914195610.1fd9dab8@osprey.hogchain.net>
+In-Reply-To: <20080914195610.1fd9dab8@osprey.hogchain.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 12:00:05PM -0400, Jeff Garzik wrote:
+Jay Cliburn wrote:
+> From: Chris Snook <csnook@redhat.com>
 > 
-> Please pull from 'new-drivers' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git new-drivers
+> Driver for Atheros L2 10/100 network device. Includes necessary
+> changes for Kconfig, Makefile, and pci_ids.h.
+> 
+> Signed-off-by: Chris Snook <csnook@redhat.com>
+> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+> ---
+> 
+> Changed "Sighed-off-by" to "Signed-off-by" for Chris' entry.
+> 
+> If this file is too large for vger, the full patch may be obtained from
+> ftp://ftp.hogchain.net/pub/linux/attansic/atlx/0001-atl2-add-atl2-driver.patch
+> 
+>  drivers/net/Kconfig       |   11 +
+>  drivers/net/Makefile      |    1 +
+>  drivers/net/atlx/Makefile |    2 +
+>  drivers/net/atlx/atl2.c   | 3127 +++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/net/atlx/atl2.h   |  530 ++++++++
+>  include/linux/pci_ids.h   |    1 +
+>  6 files changed, 3672 insertions(+), 0 deletions(-)
 
-Also, there is still a net-next batch outstanding to be pulled, which is
-totally unrelated to the recently-rejected fixes push:
-
-http://marc.info/?l=linux-netdev&m=122135907115163&w=2
-
-I will have the updated 2.6.27-rc fixes push to you today.
-
-	Jeff
-
+applied
 
 
