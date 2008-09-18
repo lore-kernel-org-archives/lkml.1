@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbYIRFKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYIRFNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754138AbYIRFKe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 01:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYIRFKP
+	id S1755413AbYIRFNS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 01:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYIRFNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 01:10:15 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:8176 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbYIRFKO (ORCPT
+	Thu, 18 Sep 2008 01:13:06 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57251 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYIRFNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 01:10:14 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
-Date: Wed, 17 Sep 2008 23:10:00 -0600
-User-Agent: KMail/1.9.9
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Rene Herman <rene.herman@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <200809091250.08620.elendil@planet.nl> <200809091140.25597.bjorn.helgaas@hp.com> <48C6C0ED.2000409@keyaccess.nl>
-In-Reply-To: <48C6C0ED.2000409@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 18 Sep 2008 01:13:05 -0400
+Date: Thu, 18 Sep 2008 14:15:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, hugh@veritas.com,
+       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] Remove cgroup member from struct page (v3)
+Message-Id: <20080918141540.5e50f1b6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <48D1DFE0.5010208@linux.vnet.ibm.com>
+References: <200809091500.10619.nickpiggin@yahoo.com.au>
+	<20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com>
+	<30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080910012048.GA32752@balbir.in.ibm.com>
+	<1221085260.6781.69.camel@nimitz>
+	<48C84C0A.30902@linux.vnet.ibm.com>
+	<1221087408.6781.73.camel@nimitz>
+	<20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com>
+	<48C878AD.4040404@linux.vnet.ibm.com>
+	<20080911105638.1581db90.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080917232826.GA19256@balbir.in.ibm.com>
+	<20080917184008.92b7fc4c.akpm@linux-foundation.org>
+	<20080918134304.93985542.kamezawa.hiroyu@jp.fujitsu.com>
+	<48D1DFE0.5010208@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809172310.01580.bjorn.helgaas@hp.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 September 2008 12:31:09 pm Rene Herman wrote:
-> On 09-09-08 19:40, Bjorn Helgaas wrote:
-> 
-> > If the PCI device isn't fully initialized, it doesn't seem right to
-> > check it for resource conflicts.  But I don't know how to tell that.
-> 
-> His pci_resource_start() values are 0. How about just checking for that?
+On Wed, 17 Sep 2008 21:58:08 -0700
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Frans, can you test Rene's patch?  I think it will solve the problem
-you're seeing, and if so, we should put it in for 2.6.27.  But I'd like
-to have your "Tested-by" first.
+> KAMEZAWA Hiroyuki wrote:
 
-(Jesse, Rene's patch just skips the PNP/PCI resource conflict check
-for things with pci_resource_start() == 0.)
+> > BTW, I already have lazy-lru-by-pagevec protocol on my patch(hash version) and
+> > seems to work well. I'm now testing it and will post today if I'm enough lucky.
+> 
+> cool! Please do post what numbers you see as well. I would appreciate if you can
+> try this version and see what sort of performance issues you see.
+> 
+I'll see what happens. your patch is agasint rc6-mmtom ?
+
+BTW, my 8cpu/2socket/Xeon 3.16GHz host is back now. Maybe good for seeing performance.
 
 Thanks,
-  Bjorn
+-Kame
+
