@@ -1,75 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbYIRE7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbYIRFKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754296AbYIRE7f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 00:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbYIRE71
+	id S1754138AbYIRFKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 01:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYIRFKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 00:59:27 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:58383 "EHLO
-	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750710AbYIRE70 (ORCPT
+	Thu, 18 Sep 2008 01:10:15 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:8176 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbYIRFKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 00:59:26 -0400
-Message-ID: <48D1DFE0.5010208@linux.vnet.ibm.com>
-Date: Wed, 17 Sep 2008 21:58:08 -0700
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
+	Thu, 18 Sep 2008 01:10:14 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [bisected][resend] pnp: Huge number of "io resource overlap" messages
+Date: Wed, 17 Sep 2008 23:10:00 -0600
+User-Agent: KMail/1.9.9
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Rene Herman <rene.herman@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <200809091250.08620.elendil@planet.nl> <200809091140.25597.bjorn.helgaas@hp.com> <48C6C0ED.2000409@keyaccess.nl>
+In-Reply-To: <48C6C0ED.2000409@keyaccess.nl>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, hugh@veritas.com,
-       menage@google.com, xemul@openvz.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] Remove cgroup member from struct page (v3)
-References: <200809091500.10619.nickpiggin@yahoo.com.au> <20080909141244.721dfd39.kamezawa.hiroyu@jp.fujitsu.com> <30229398.1220963412858.kamezawa.hiroyu@jp.fujitsu.com> <20080910012048.GA32752@balbir.in.ibm.com> <1221085260.6781.69.camel@nimitz> <48C84C0A.30902@linux.vnet.ibm.com> <1221087408.6781.73.camel@nimitz> <20080911103500.d22d0ea1.kamezawa.hiroyu@jp.fujitsu.com> <48C878AD.4040404@linux.vnet.ibm.com> <20080911105638.1581db90.kamezawa.hiroyu@jp.fujitsu.com> <20080917232826.GA19256@balbir.in.ibm.com> <20080917184008.92b7fc4c.akpm@linux-foundation.org> <20080918134304.93985542.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080918134304.93985542.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809172310.01580.bjorn.helgaas@hp.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 17 Sep 2008 18:40:08 -0700
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->>> Advantages of the patch
->>>
->>> 1. It removes the extra pointer in struct page
->>>
->>> Disadvantages
->>>
->>> 1. Radix tree lookup is not an O(1) operation, once the page is known
->>>    getting to the page_cgroup (pc) is a little more expensive now.
->> Why are we doing this?  I can guess, but I'd rather not have to.
->>
->> a) It's slower.
->>
->> b) It uses even more memory worst-case.
->>
->> c) It uses less memory best-case.
->>
->> someone somewhere decided that (Aa + Bb) / Cc < 1.0.  What are the values
->> of A, B and C and where did they come from? ;)
->>
+On Tuesday 09 September 2008 12:31:09 pm Rene Herman wrote:
+> On 09-09-08 19:40, Bjorn Helgaas wrote:
 > 
-> Balbir, don't you like pre-allocate-page-cgroup-at-boot at all ?
-> I don't like radix-tree for objects which can spread to very vast/sparse area ;)
+> > If the PCI device isn't fully initialized, it doesn't seem right to
+> > check it for resource conflicts.  But I don't know how to tell that.
 > 
+> His pci_resource_start() values are 0. How about just checking for that?
 
-I tried one version, but before trying a pre-allocation version, I wanted to
-spread out the radix-tree and try and the results seemed quite impressive. We
-can still do pre-allocation, but it gets more complicated as we start supporting
-all memory models. I do have a design on paper, but it is much more complex than
-this.
+Frans, can you test Rene's patch?  I think it will solve the problem
+you're seeing, and if so, we should put it in for 2.6.27.  But I'd like
+to have your "Tested-by" first.
 
-> BTW, I already have lazy-lru-by-pagevec protocol on my patch(hash version) and
-> seems to work well. I'm now testing it and will post today if I'm enough lucky.
+(Jesse, Rene's patch just skips the PNP/PCI resource conflict check
+for things with pci_resource_start() == 0.)
 
-cool! Please do post what numbers you see as well. I would appreciate if you can
-try this version and see what sort of performance issues you see.
-
--- 
-	Balbir
+Thanks,
+  Bjorn
