@@ -1,225 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYIRK0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYIRK3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbYIRK0b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 06:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYIRK0U
+	id S1755714AbYIRK3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 06:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbYIRK3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 06:26:20 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:36952 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225AbYIRK0T (ORCPT
+	Thu, 18 Sep 2008 06:29:43 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42478 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751626AbYIRK3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 06:26:19 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: jkosina@suse.cz
-Cc: linux-input@vger.kernel.org, anssi.hannula@gmail.com,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 5/5 #2] HID: convert to dev_* prints
-Date: Thu, 18 Sep 2008 12:23:34 +0200
-Message-Id: <1221733414-26924-5-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1221733414-26924-4-git-send-email-jirislaby@gmail.com>
-References: <1221733414-26924-1-git-send-email-jirislaby@gmail.com>
- <1221733414-26924-2-git-send-email-jirislaby@gmail.com>
- <1221733414-26924-3-git-send-email-jirislaby@gmail.com>
- <1221733414-26924-4-git-send-email-jirislaby@gmail.com>
+	Thu, 18 Sep 2008 06:29:43 -0400
+Date: Thu, 18 Sep 2008 11:29:40 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@openedhand.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: Core support for the WM8400 AudioPlus HiFi
+	CODEC and PMU
+Message-ID: <20080918102940.GA29719@rakim.wolfsonmicro.main>
+References: <20080916094201.GA15271@rakim.wolfsonmicro.main> <1221558194-15505-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20080917192836.ef3545d2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080917192836.ef3545d2.akpm@linux-foundation.org>
+X-Cookie: We are what we are.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we have a real device bound to a driver, we may use struct
-device for printing. Use dev_* functions instead of printks in
-4 drivers.
+On Wed, Sep 17, 2008 at 07:28:36PM -0700, Andrew Morton wrote:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/hid/hid-lg2ff.c |    8 ++++----
- drivers/hid/hid-pl.c    |   11 ++++++-----
- drivers/hid/hid-tmff.c  |   26 ++++++++++++++------------
- drivers/hid/hid-zpff.c  |    6 +++---
- 4 files changed, 27 insertions(+), 24 deletions(-)
+> Various ankle-biting comments, just to show I read it:
 
-diff --git a/drivers/hid/hid-lg2ff.c b/drivers/hid/hid-lg2ff.c
-index b2e9a67..4e6dc6e 100644
---- a/drivers/hid/hid-lg2ff.c
-+++ b/drivers/hid/hid-lg2ff.c
-@@ -71,18 +71,18 @@ int lg2ff_init(struct hid_device *hid)
- 	int error;
- 
- 	if (list_empty(report_list)) {
--		printk(KERN_ERR "hid-lg2ff: no output report found\n");
-+		dev_err(&hid->dev, "no output report found\n");
- 		return -ENODEV;
- 	}
- 
- 	report = list_entry(report_list->next, struct hid_report, list);
- 
- 	if (report->maxfield < 1) {
--		printk(KERN_ERR "hid-lg2ff: output report is empty\n");
-+		dev_err(&hid->dev, "output report is empty\n");
- 		return -ENODEV;
- 	}
- 	if (report->field[0]->report_count < 7) {
--		printk(KERN_ERR "hid-lg2ff: not enough values in the field\n");
-+		dev_err(&hid->dev, "not enough values in the field\n");
- 		return -ENODEV;
- 	}
- 
-@@ -109,7 +109,7 @@ int lg2ff_init(struct hid_device *hid)
- 
- 	usbhid_submit_report(hid, report, USB_DIR_OUT);
- 
--	printk(KERN_INFO "Force feedback for Logitech Rumblepad 2 by "
-+	dev_info(&hid->dev, "Force feedback for Logitech Rumblepad 2 by "
- 	       "Anssi Hannula <anssi.hannula@gmail.com>\n");
- 
- 	return 0;
-diff --git a/drivers/hid/hid-pl.c b/drivers/hid/hid-pl.c
-index b450084..682cac1 100644
---- a/drivers/hid/hid-pl.c
-+++ b/drivers/hid/hid-pl.c
-@@ -90,7 +90,7 @@ static int plff_init(struct hid_device *hid)
- 	   currently unknown. */
- 
- 	if (list_empty(report_list)) {
--		printk(KERN_ERR "hid-plff: no output reports found\n");
-+		dev_err(&hid->dev, "no output reports found\n");
- 		return -ENODEV;
- 	}
- 
-@@ -99,18 +99,19 @@ static int plff_init(struct hid_device *hid)
- 		report_ptr = report_ptr->next;
- 
- 		if (report_ptr == report_list) {
--			printk(KERN_ERR "hid-plff: required output report is missing\n");
-+			dev_err(&hid->dev, "required output report is "
-+					"missing\n");
- 			return -ENODEV;
- 		}
- 
- 		report = list_entry(report_ptr, struct hid_report, list);
- 		if (report->maxfield < 1) {
--			printk(KERN_ERR "hid-plff: no fields in the report\n");
-+			dev_err(&hid->dev, "no fields in the report\n");
- 			return -ENODEV;
- 		}
- 
- 		if (report->field[0]->report_count < 4) {
--			printk(KERN_ERR "hid-plff: not enough values in the field\n");
-+			dev_err(&hid->dev, "not enough values in the field\n");
- 			return -ENODEV;
- 		}
- 
-@@ -136,7 +137,7 @@ static int plff_init(struct hid_device *hid)
- 		usbhid_submit_report(hid, plff->report, USB_DIR_OUT);
- 	}
- 
--	printk(KERN_INFO "hid-plff: Force feedback for PantherLord/GreenAsia "
-+	dev_info(&hid->dev, "Force feedback for PantherLord/GreenAsia "
- 	       "devices by Anssi Hannula <anssi.hannula@gmail.com>\n");
- 
- 	return 0;
-diff --git a/drivers/hid/hid-tmff.c b/drivers/hid/hid-tmff.c
-index be7ebe2..1b7cba0 100644
---- a/drivers/hid/hid-tmff.c
-+++ b/drivers/hid/hid-tmff.c
-@@ -149,27 +149,28 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
- 			switch (field->usage[0].hid) {
- 			case THRUSTMASTER_USAGE_FF:
- 				if (field->report_count < 2) {
--					warn("ignoring FF field with "
--							"report_count < 2");
-+					dev_warn(&hid->dev, "ignoring FF field "
-+						"with report_count < 2\n");
- 					continue;
- 				}
- 
- 				if (field->logical_maximum ==
- 						field->logical_minimum) {
--					warn("ignoring FF field with "
--							"logical_maximum == "
--							"logical_minimum");
-+					dev_warn(&hid->dev, "ignoring FF field "
-+							"with logical_maximum "
-+							"== logical_minimum\n");
- 					continue;
- 				}
- 
- 				if (tmff->report && tmff->report != report) {
--					warn("ignoring FF field in other "
--							"report");
-+					dev_warn(&hid->dev, "ignoring FF field "
-+							"in other report\n");
- 					continue;
- 				}
- 
- 				if (tmff->ff_field && tmff->ff_field != field) {
--					warn("ignoring duplicate FF field");
-+					dev_warn(&hid->dev, "ignoring "
-+							"duplicate FF field\n");
- 					continue;
- 				}
- 
-@@ -182,7 +183,8 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
- 				break;
- 
- 			default:
--				warn("ignoring unknown output usage %08x",
-+				dev_warn(&hid->dev, "ignoring unknown output "
-+						"usage %08x\n",
- 						field->usage[0].hid);
- 				continue;
- 			}
-@@ -190,7 +192,7 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
- 	}
- 
- 	if (!tmff->report) {
--		err("cant find FF field in output reports\n");
-+		dev_err(&hid->dev, "can't find FF field in output reports\n");
- 		error = -ENODEV;
- 		goto fail;
- 	}
-@@ -199,8 +201,8 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
- 	if (error)
- 		goto fail;
- 
--	info("Force feedback for ThrustMaster devices by Zinx Verituse "
--			"<zinx@epicsol.org>");
-+	dev_info(&hid->dev, "force feedback for ThrustMaster devices by Zinx "
-+			"Verituse <zinx@epicsol.org>");
- 	return 0;
- 
- fail:
-diff --git a/drivers/hid/hid-zpff.c b/drivers/hid/hid-zpff.c
-index 9ed04ee..ea82f37 100644
---- a/drivers/hid/hid-zpff.c
-+++ b/drivers/hid/hid-zpff.c
-@@ -73,14 +73,14 @@ static int zpff_init(struct hid_device *hid)
- 	int error;
- 
- 	if (list_empty(report_list)) {
--		printk(KERN_ERR "hid-zpff: no output report found\n");
-+		dev_err(&hid->dev, "no output report found\n");
- 		return -ENODEV;
- 	}
- 
- 	report = list_entry(report_list->next, struct hid_report, list);
- 
- 	if (report->maxfield < 4) {
--		printk(KERN_ERR "hid-zpff: not enough fields in report\n");
-+		dev_err(&hid->dev, "not enough fields in report\n");
- 		return -ENODEV;
- 	}
- 
-@@ -103,7 +103,7 @@ static int zpff_init(struct hid_device *hid)
- 	zpff->report->field[3]->value[0] = 0x00;
- 	usbhid_submit_report(hid, zpff->report, USB_DIR_OUT);
- 
--	printk(KERN_INFO "Force feedback for Zeroplus based devices by "
-+	dev_info(&hid->dev, "force feedback for Zeroplus based devices by "
- 	       "Anssi Hannula <anssi.hannula@gmail.com>\n");
- 
- 	return 0;
--- 
-1.6.0.1
+Thanks.  Liam, I've just pushed out a version of the series fixing the
+issues below.
 
+> > +static struct
+> > +{
+
+> hm, checkpatch chews a couple minutes CPU time then misses this error.
+
+Yeah, it seems to be doing something wildly inefficient.
+
+> static struct {
+> 
+> please.
+
+Done - spot the autogenerated code. :/
+
+> } reg_data[] = {
+
+> would be conventional, too.
+
+Done also.
+
+> > +	wm8400_read(wm8400, reg, 1, &val);
+> > +
+> > +	mutex_unlock(&wm8400->io_lock);
+> > +
+> > +	return val;
+> > +}
+> > +EXPORT_SYMBOL_GPL(wm8400_reg_read);
+
+> Is it just me, or do all the useless newlines there look silly?  sigh.
+
+I doubt it but once you get on to multi-line operations in the middle of
+the lock (which some of the other functions do) I find it much clearer
+so went for consistency.  I can change it if you like, though?
+
+> > +#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
+
+> Is CONFIG_I2C=n worth supporting?  Is anyone likely to test and
+> maintain that combination?
+
+Right now it's silly to build the driver without I2C but once I push in
+the SPI support for the device it's likely that some systems will want
+to use the driver with I2C built out for the space saving.  I do intend
+to support users doing that.
+
+As far as test coverage goes it shouldn't make much difference if I2C is
+built or not when the device is accessed via SPI - the I2C support will
+be built but not run.
+
+> > +struct wm8400 {
+
+...
+
+> > +	u16 reg_cache[WM8400_REGISTER_COUNT];
+
+> Should this be __be16?
+
+No, the cache is stored in CPU format.  In normal operation reads are
+more common than writes.
+
+> This patch adds an amazing 1733 #defines, of which only a few
+> percent are used.  Oh well.
+
+Yeah, we have a program which generates these #defines from data
+extracted from the chip definition.  If it helps rather more (but most
+likely not half) of them will be used once the remaining drivers for the
+chip are pushed.  The current driver only covers a small proportion of
+the functionality of the device.
