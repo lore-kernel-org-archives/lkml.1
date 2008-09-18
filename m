@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbYIRQ6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbYIRRCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756673AbYIRQ6B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYIRQ5v
+	id S1756412AbYIRRCo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 13:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYIRRCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:57:51 -0400
-Received: from mail-gx0-f16.google.com ([209.85.217.16]:53563 "EHLO
-	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753611AbYIRQ5t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:57:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KlIsymCOy08qEUHc+QW3MYDevVTD260r3Shj54MbPeaD/Jo88+27aRHL/vX7GRXc99
-         Hs05xRMZ+TjYpFaweIY5cEKbjrs1A3sJV/YewVncdrtlfWhHTU1htes0pdHhASz0r6Bj
-         eg1FpRzYv2mIsWYLg65iAYiYLFT5noEKLnfJc=
-Message-ID: <dd18b0c30809180957h2c8b7f33md73764b4ae2b890b@mail.gmail.com>
-Date: Thu, 18 Sep 2008 09:57:47 -0700
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [19.666764] Disabling IRQ #23
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>, "Chris Snook" <csnook@redhat.com>,
-       "April Tsui" <aprilla@gmail.com>, Linux-usb <linux-usb@vger.kernel.org>
-In-Reply-To: <200809180209.57943.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 18 Sep 2008 13:02:37 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:33087 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752266AbYIRRCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 13:02:36 -0400
+Date: Fri, 19 Sep 2008 02:02:05 +0900
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com
+Subject: [PATCH] convert swiotlb to use dma_get_mask
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30809101206j3892e3dbpac9c48cfcaf2982f@mail.gmail.com>
-	 <dd18b0c30809171714h23ba6c5wcba2146a9de088f@mail.gmail.com>
-	 <dd18b0c30809172144s75bf684am951159218717972e@mail.gmail.com>
-	 <200809180209.57943.david-b@pacbell.net>
+Message-Id: <20080919020137Q.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 2:09 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 17 September 2008, Justin Mattock wrote:
->> http://www.gossamer-threads.com/lists/linux/kernel/966076
->> I've applied the patches just to see what would happen,
->> As for now I have not seen the Disable irq #23 yet,
->
-> Those two patches should be in Greg's queue for 2.6.27...
->
-> It's also suspicious that EHCI is getting loaded *last* not
-> first.  That's a common distro bug, although as I recall
-> we've always (since first driver versions) been clear that
-> it should be loaded first, before the companion (OHCI or UHCI)
-> driver.  Loading it last causes various confusions and races
-> at the hardware level.
->
-> - Dave
->
+This is against tip/x86/iommu.
 
-I have not tried load ehci_hcd first in /etc/modules,
-but can try. As for the message itself  I've rebooted
-a couple of times without disable irq #23 going off.
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] convert swiotlb to use dma_get_mask
 
+swiotlb can use dma_get_mask() instead of the homegrown function.
 
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ include/linux/dma-mapping.h |    2 +-
+ lib/swiotlb.c               |    6 +-----
+ 2 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index 0dba743..ba9114e 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -65,7 +65,7 @@ static inline int is_buffer_dma_capable(u64 mask, dma_addr_t addr, size_t size)
+ 
+ static inline u64 dma_get_mask(struct device *dev)
+ {
+-	if (dev->dma_mask && *dev->dma_mask)
++	if (dev && dev->dma_mask && *dev->dma_mask)
+ 		return *dev->dma_mask;
+ 	return DMA_32BIT_MASK;
+ }
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 240a67c..f8eebd4 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -276,11 +276,7 @@ cleanup1:
+ static int
+ address_needs_mapping(struct device *hwdev, dma_addr_t addr, size_t size)
+ {
+-	dma_addr_t mask = 0xffffffff;
+-	/* If the device has a mask, use it, otherwise default to 32 bits */
+-	if (hwdev && hwdev->dma_mask)
+-		mask = *hwdev->dma_mask;
+-	return !is_buffer_dma_capable(mask, addr, size);
++	return !is_buffer_dma_capable(dma_get_mask(hwdev), addr, size);
+ }
+ 
+ static int is_swiotlb_buffer(char *addr)
 -- 
-Justin P. Mattock
+1.5.4.2
+
