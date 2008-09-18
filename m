@@ -1,88 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYIRXQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757226AbYIRXRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbYIRXQy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 19:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYIRXQp
+	id S1757226AbYIRXRn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 19:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbYIRXRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 19:16:45 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:14825 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753368AbYIRXQo (ORCPT
+	Thu, 18 Sep 2008 19:17:34 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:44758 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755501AbYIRXRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 19:16:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=L3guH6gGYcWggEcXfuP7+ZyyxmGcPkxK6vp0cedAuwIlYWIqJ8i70XT3Ceu39lmKHh
-         h/k+aYY2ERGUI5EgmFnhpKeiaSP/VDG7lRRmbF922ArVJvncky1IgvRhUYwd+DZMdAQt
-         nqmfaePAEe/OnkX+7lKmilvnAAzDG8ZCJLxHo=
-Message-ID: <28c262360809181616p481f9126p50c9a8c971fbbf9e@mail.gmail.com>
-Date: Fri, 19 Sep 2008 08:16:43 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-Cc: "Christoph Lameter" <cl@linux-foundation.org>,
-       "Martin Bligh" <mbligh@google.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Hugh Dickens" <hugh@veritas.com>,
-       "Linux Memory Management List" <linux-mm@kvack.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Avi Kivity" <avi@qumranet.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>
-In-Reply-To: <48D2D4C7.8080209@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48D142B2.3040607@goop.org>
-	 <33307c790809181411j41a6fc4ev8560a13ed8661ec2@mail.gmail.com>
-	 <48D2C46A.5030702@linux-foundation.org>
-	 <33307c790809181421k52ed6a36h9d4ee40d5799a536@mail.gmail.com>
-	 <48D2C8DD.4040303@linux-foundation.org>
-	 <28c262360809181449v1050c1f7ndf17dadba9fac0bf@mail.gmail.com>
-	 <48D2CEF3.6060308@linux-foundation.org>
-	 <33307c790809181508v2e64c0a4j8f0e93df99673e63@mail.gmail.com>
-	 <48D2D22B.2070408@linux-foundation.org> <48D2D4C7.8080209@redhat.com>
+	Thu, 18 Sep 2008 19:17:33 -0400
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27
+	(rc5, rc6, probably others)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: Steven Noonan <steven@uplinklabs.net>, Ingo Molnar <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>
+In-Reply-To: <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com> (sfid-20080919_011057_085624_6416966D)
+References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
+	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
+	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
+	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
+	 <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
+	 <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com>
+	 <20080918220102.GE7408@tesla>
+	 <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
+	 <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
+	 <43e72e890809181610h3a7729d8s4c8484d97b21932e@mail.gmail.com>
+	 (sfid-20080919_011057_085624_6416966D)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zE7o6hXv06OLEw/g2PnP"
+Date: Fri, 19 Sep 2008 01:16:49 +0200
+Message-Id: <1221779810.23409.0.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 7:23 AM, Chris Snook <csnook@redhat.com> wrote:
-> Christoph Lameter wrote:
->>
->> Martin Bligh wrote:
->>>>
->>>> My patches were only for anonymous pages not for file backed because
->>>> readahead
->>>> is available for file backed mappings.
->>>
->>> Do we populate the PTEs though? I didn't think that was batched, but I
->>> might well be wrong.
->>
->> We do not populate the PTEs and AFAICT PTE population was assumed not to
->> be
->> performance critical since the backing media is comparatively slow.
->>
->
-> Perhaps we should.  In a virtual guest, the backing media is often an
-> emulated IDE device, or something similarly inefficient, such that the
-> bottleneck is the CPU.
 
-In embedded environment, many people use nand-like device as storage.
-Read cost of nand-like device is less than IDE's one.
-Also, Nowaday Embedded stuff would like to use multi-core step by step.
-So, pte population become important more and more.
+--=-zE7o6hXv06OLEw/g2PnP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, 2008-09-18 at 16:10 -0700, Luis R. Rodriguez wrote:
+> On Thu, Sep 18, 2008 at 4:04 PM, Steven Noonan
+> > I always get "1 megabit/sec". It actually measures (at best) to be a
+> > throughput of 8mbits/sec, though the average (due to strange random
+> > packet loss) is about 4mbits/sec. --
+>=20
+> Yeah, iwconfig reports a wrong rate, should be easy to fix but I
+> haven't yet looked at it. If you can fix it it'd be appreciated.
 
-> -- Chris
->
+the rate patch I posted today will fix it. not for .27 though
 
+johannes
 
+--=-zE7o6hXv06OLEw/g2PnP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
--- 
-Kinds regards,
-MinChan Kim
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJI0uFdAAoJEKVg1VMiehFYeB8QAIL4j68uwBueyVRKgyr9pX33
+ka/Kb+6fcey3gp/yq1/pPNrd3kGgGACMC+PJeZd5cq9FnB/dGvL3w8EeDiaS6Kwb
+uelBBSWEWcZ/rDiwY1W6m+nu3zenyKs1MARpYBYA2walmr8ybKnOJn0DVvKSym5U
+tNyIYBKYVqw7c6brerL3IgbocpJL05T3viZGQNZFOiZAponJ/LmJLrNrMUVfe2YD
+EJQhAeDNCJak1DR4blBUxpTj7U0uJVNPJAh4K4oGQn0iJ2IDWbmYOAvMB2K2EluL
+egO12HAG7NiZ6aHb07jIpsZ6FT1R08yQ5LfDylIARcfAn29GaTuHD+AXYnrNmmGi
+LkYc0LDtx1aF5J0X7XWYJxtDzuaW/yldWyfMHynTl7AZhkVIGgwXESSe+PMKUDow
+Ty7HRkNQAjP1fLIrfYuv9bYmvboDvcSa8qhwavIf/3W0KZsEBVTKuKRHGqlXaW2Q
+pM6PmB51qf+V0qqNDjjLVtUJp5DV352giOTVDit53KCU3yD4fbiJzWpHRCXk6tha
+dMJVCrnqrq2nKxtwwyzbfAzX9uG9MA8b29QWCdZvvtA9B43xBJRWOVCVX1NChHm+
+BSsS9o3GgjBkY16TSZ2nwRWY2D9qAW+eB+2Y/w+47j+CtTRj1Bh9q0NsJnpkIx9t
+0IMlf0Cyx3zrhlbnzaQB
+=aGaL
+-----END PGP SIGNATURE-----
+
+--=-zE7o6hXv06OLEw/g2PnP--
+
