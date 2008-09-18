@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYIRXE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYIRXIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbYIRXE7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 19:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbYIRXEt
+	id S1756800AbYIRXIr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 19:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbYIRXIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 19:04:49 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:6489 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501AbYIRXEs (ORCPT
+	Thu, 18 Sep 2008 19:08:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35134 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755221AbYIRXIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 19:04:48 -0400
-Message-ID: <f488382f0809181604l105535bkceecd44c590bc88b@mail.gmail.com>
-Date: Thu, 18 Sep 2008 16:04:47 -0700
-From: "Steven Noonan" <steven@uplinklabs.net>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Luis Rodriguez" <Luis.Rodriguez@atheros.com>
-In-Reply-To: <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 18 Sep 2008 19:08:37 -0400
+Date: Thu, 18 Sep 2008 16:08:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Cc: linux-kernel@vger.kernel.org, "Parag Warudkar" <parag.lkml@gmail.com>
+Subject: Re: mmotm 2008-09-18-14-56 uploaded (olpc_battery build errors)
+Message-Id: <20080918160835.deaa3398.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0809181540480.28355@shark.he.net>
+References: <200809182157.m8ILv0Vi021531@imap1.linux-foundation.org>
+	<Pine.LNX.4.64.0809181540480.28355@shark.he.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
-	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
-	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
-	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
-	 <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
-	 <f488382f0809181449x7343aa7endff066cb5836a73c@mail.gmail.com>
-	 <20080918220102.GE7408@tesla>
-	 <43e72e890809181508w5232a14ewbf2bf18fe90a92d5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 3:08 PM, Luis R. Rodriguez
-<lrodriguez@atheros.com> wrote:
-> On Thu, Sep 18, 2008 at 3:01 PM, Luis R. Rodriguez
->
->>> Which is far more important, I agree. It's annoying to get speeds
->>> <802.11b on my pre-802.11n capable chipset and network. ;)
->
-> Oh and you should at least get some 11n rates, just not aggregation :)
->
->  Luis
->
+On Thu, 18 Sep 2008 15:42:18 -0700 (PDT)
+"Randy.Dunlap" <rdunlap@xenotime.net> wrote:
 
-I always get "1 megabit/sec". It actually measures (at best) to be a
-throughput of 8mbits/sec, though the average (due to strange random
-packet loss) is about 4mbits/sec. -- And that was with aggregation
-re-enabled via your patch. Without, it never exceeds 1mbit/sec
-(actual, not just as indicated by iwconfig.
+> On Thu, 18 Sep 2008, akpm@linux-foundation.org wrote:
+> 
+> > The mm-of-the-moment snapshot 2008-09-18-14-56 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > It contains the following patches against 2.6.27-rc6:
+> 
+> olpc_battery build fails with
+> 
+> mmotm-2008-0918-1456/drivers/power/olpc_battery.c: At top level:
+> mmotm-2008-0918-1456/drivers/power/olpc_battery.c:363: error: unknown field 'owner' specified in initializer
+> mmotm-2008-0918-1456/drivers/power/olpc_battery.c:363: warning: excess elements in struct initializer
+> mmotm-2008-0918-1456/drivers/power/olpc_battery.c:363: warning: (near initialization for 'olpc_bat_eeprom.attr')
+> make[3]: *** [drivers/power/olpc_battery.o] Error 1
+> 
 
-- Steven
+OK, x86-sysfs-kill-owner-field-from-attribute.patch is being a pain. 
+The problem is that it tries to kill all `owner' instances and then
+remove the `owner' field.
+
+But of course new code keeps on turning up doing the wrong thing and
+the build breaks and I hae to keep fixing it.
+
+I'm going to do this:
+
+--- a/include/linux/sysfs.h~x86-sysfs-kill-owner-field-from-attribute-fix-3
++++ a/include/linux/sysfs.h
+@@ -27,9 +27,7 @@ struct module;
+  */
+ struct attribute {
+ 	const char		*name;
+-#ifndef CONFIG_X86
+ 	struct module		*owner;
+-#endif
+ 	mode_t			mode;
+ };
+ 
+
+Parag, once that patch is merged into mainline can you please send a second
+one which cleans up any newly-added occurrences and which also nukes that field.
+
