@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYIRH0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYIRH1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbYIRH0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 03:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbYIRH01
+	id S1756526AbYIRH1s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 03:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYIRH1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 03:26:27 -0400
-Received: from pih-relay08.plus.net ([212.159.14.20]:46644 "EHLO
-	pih-relay08.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbYIRH00 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 03:26:26 -0400
-Message-ID: <48D202A0.5070401@yahoo.com>
-Date: Thu, 18 Sep 2008 08:26:24 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-User-Agent: Thunderbird 2.0.0.16 (Macintosh/20080707)
+	Thu, 18 Sep 2008 03:27:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60842 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752846AbYIRH1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 03:27:39 -0400
+Date: Thu, 18 Sep 2008 09:27:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [GIT PULL] AMD IOMMU fixes for 2.6.27-rc6
+Message-ID: <20080918072725.GA3750@elte.hu>
+References: <20080917142338.GA24392@amd.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: How how latent should non-preemptive scheduling be?
-References: <fa.ERZTl/6uH+mhNoef5fPJKTRjJag@ifi.uio.no> <fa.PtPFzP5kIJVCCov6YCewrh+o4z4@ifi.uio.no> <fa.C6WSm5Rh2Nb+Qho7b0qDOZ9RPV8@ifi.uio.no> <fa.ch6j4qXs/2sFpLkHz5fXrtjTR8c@ifi.uio.no> <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no>
-In-Reply-To: <fa.Jx/Ygtm46CVRawlA6OnfYNn6cN0@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Plusnet-Relay: 93aab519ac05c6aaf005956b5570cc90
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080917142338.GA24392@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Wed, 2008-09-17 at 14:54 -0700, Arjan van de Ven wrote:
->> On Wed, 17 Sep 2008 22:48:55 +0100
->>
->>>> Cause                                                Maximum
->>>>
->> Percentage 
->>
->> Scheduler: waiting for cpu                        208 msec         59.4 %
->>
->>
->> you're rather CPU bound, and your process was woken up but didn't run for over 200 milliseconds..
->> that sounds like a scheduler fairness issue!
-> 
-> Really hard subject. Perfect fairness requires 0 latency - which with a
-> CPU only being able to run one thing at a time is impossible. So what
-> latency ends up being is a measure for the convergence towards fairness.
-> 
-> Anyway - 200ms isn't too weird depending on the circumstances. We start
-> out with a 20ms latency for UP, we then multiply with 1+log2(nr_cpus)
-> which in say a quad core machine ends up with 60ms. That ought to mean
-> that under light load the max latency should not exceed twice that
-> (basically a consequence of the Nyquist-Shannon sampling theorem IIRC).
-> 
-> Now, if you get get under some load (by default: nr_running > 5) the
-> expected latency starts to linearly grow with nr_running.
-> 
->>From what I gather from the reply to this email the machine was not
-> doing much (and after having looked up the original email I see its a
-> eeeeeeeee atom - which is dual cpu iirc, so that yields 40ms default) -
-> so 200 is definately on the high side.
 
-No, it's not an eeeeee atom. It's an eee celeron M (900Mhz) so it's 
-definitely a single CPU with no hyperthreading (and SMP is not enabled 
-in the kernel config either). It has less grunt that the atom and can't 
-do cpu scaling either (although it seems to have C states).
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-The load average is less than 0.5 but obviously I don't know if it is 
-periodically spiking over 5 and then smoothing out.
+> Hi Ingo,
+> 
+> please pull two fixes for possible race conditions in the AMD IOMMU
+> command buffer handling code from
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-2.6.27
+> 
+> These patches should be merged into 2.6.27 because they are important
+> bugfixes. The diff is small enough so I attached it to this email.
 
-> What you can do to investigate this, is use the sched_wakeup tracer from
-> ftrace, that should give a function trace of the highest wakeup latency
-> showing what the kernel is doing.
+pulled these two commits into tip/x86/urgent, thanks Joerg!
 
-Thanks for the hint - I was wondering where to look next.
+> Joerg Roedel (2):
+>       AMD IOMMU: set iommu sunc flag after command queuing
+>       AMD IOMMU: protect comletion wait loop with iommu lock
+
+(FYI, i respun the commits, to fix the s/comletion/completion typo, and 
+to rebase the fixes to -git.)
+
+	Ingo
