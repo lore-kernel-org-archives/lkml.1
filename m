@@ -1,81 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbYIRQjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbYIRQn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755930AbYIRQjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYIRQj1
+	id S1755831AbYIRQn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 12:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYIRQnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:39:27 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:42278 "EHLO
-	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753452AbYIRQj0 (ORCPT
+	Thu, 18 Sep 2008 12:43:46 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54612 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753368AbYIRQnp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:39:26 -0400
-X-BigFish: VPS-42(zz146fK1418M1432R98dR1805M179dR936fQ873fnzz10d3izzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7EGX7-04-BGG-01
-Date: Thu, 18 Sep 2008 18:39:11 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 18/23] AMD IOMMU: simplify dma_mask_to_pages
-Message-ID: <20080918163911.GG24392@amd.com>
-References: <1221670377-19295-19-git-send-email-joerg.roedel@amd.com> <20080918041717S.fujita.tomonori@lab.ntt.co.jp> <20080918073232.GB24392@amd.com> <20080919005651C.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 18 Sep 2008 12:43:45 -0400
+X-Sasl-enc: cqsW/FAB5Y+9RFlt5cOMFmjO7D7bHlpAdSuZroV0oxQE 1221756223
+Date: Thu, 18 Sep 2008 13:43:39 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH] rfkill: clarify usage of rfkill_force_state() and
+	rfkill->get_state()
+Message-ID: <20080918164339.GM1583@khazad-dum.debian.net>
+References: <20080918145236.GJ1583@khazad-dum.debian.net> <1221751166-9927-1-git-send-email-hmh@hmh.eng.br> <200809181724.03723.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080919005651C.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 18 Sep 2008 16:39:11.0897 (UTC) FILETIME=[14650090:01C919AD]
+In-Reply-To: <200809181724.03723.IvDoorn@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 19, 2008 at 12:57:36AM +0900, FUJITA Tomonori wrote:
-> On Thu, 18 Sep 2008 09:32:32 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > On Thu, Sep 18, 2008 at 04:20:20AM +0900, FUJITA Tomonori wrote:
-> > > On Wed, 17 Sep 2008 18:52:52 +0200
-> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > 
-> > > > The current calculation is very complicated. This patch replaces it with
-> > > > a much simpler version.
-> > > > 
-> > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > > ---
-> > > >  arch/x86/kernel/amd_iommu.c |    3 +--
-> > > >  1 files changed, 1 insertions(+), 2 deletions(-)
-> > > 
-> > > I think that you can use iommu_device_max_index() for what
-> > > dma_mask_to_pages does.
+On Thu, 18 Sep 2008, Ivo van Doorn wrote:
+> On Thursday 18 September 2008, Henrique de Moraes Holschuh wrote:
+> > rfkill_force_state() is used to update the rfkill core's idea of what is
+> > really happening RIGHT NOW to the transmitter hardware in a PUSH model.
 > > 
-> > Hmm, in theory yes. But iommu_device_max_index() returns a size in bytes
-> > and not in pages.
+> > rfkill->get_state() does the same, in a PULL model.
+> > 
+> > Neither of them change the real hardware radio state through a call to
+> > rfkill->toggle_radio() or anything of the sort, so they must deal with the
+> > real, current state of the hardware.
+> > 
+> > Change some documentation to make that more clear (I hope).
+> > 
+> > Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> > Cc: Ivo van Doorn <IvDoorn@gmail.com>
 > 
-> It doesn't return a size in bytes. You could use like:
-> 
-> limit = iommu_device_max_index(dom->aperture_size >> PAGE_SHIFT, 0,
-> 				dma_get_mask(dev) >> PAGE_SHIFT);
+> See my other mail I just send out.
 
-Hmm, ok, makes sense if we remove this line too:
+I did, and just replied to it.
 
-	limit = limit < size ? limit : size;
+But only now do I think I realised what you meant:  That even if the driver
+tries to keep set txpower off separate from rfkill, if it uses the hardware
+soft-rfkill bit to implement both, it cannot use that to feed information to
+rfkill_force_state() directly.
 
-This is the logic in iommu_device_max_index().
+Argh.
 
-> Anyway, it's not urgent at all. I'll send a patch for this after your
-> patchset is merged.
+> But I don't quite agree on this change of rfkill event interpretation.
 
-Ok, fine.
+Well, there is no intended change in interpretation, but I don't know how to
+word it in a way that means "the real current hardware state as far as
+rfkill is concerned".
 
-Joerg
+Because suppose it is a driver doing txpower off AND software rfkill using
+the *same* hardware bit (a sigle software rfkill bit).
+
+Now it must do something like this in pseudo-code:
+
+	1. if (the bit is disabled (i.e. SW rfkill is NOT ACTIVE)) {
+		rfkill-SW-status = disabled;
+	   }  else if (the bit is enabled (i.e. SW rfkill is ACTIVE)) {
+		if (tx power off is NOT ACTIVE)
+			rfkill-SW-status = enabled;
+		else
+			rfkill-SW-status = whatever the user asked
+	   }
+
+THEN, it should use rfkill-sw-status, along with the hw rfkill line status,
+to synthesize the state it must pass to rfkill_force_status().
+
+ICK.  Of course, if the driver has another way to implement txpower off that
+does not clash with sw rfkill, the above is unneeded.
+
+How would you put that into words for the rfkill documentation?
 
 -- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
