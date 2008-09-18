@@ -1,64 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYIRBMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYIRBNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbYIRBMI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 21:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYIRBL4
+	id S1755490AbYIRBNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 21:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYIRBNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 21:11:56 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:36662 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbYIRBLz (ORCPT
+	Wed, 17 Sep 2008 21:13:05 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:18801 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752928AbYIRBND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 21:11:55 -0400
-Message-ID: <48D1AA84.3050603@oss.ntt.co.jp>
-Date: Thu, 18 Sep 2008 10:10:28 +0900
-From: Kazuo Ito <ito.kazuo@oss.ntt.co.jp>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+	Wed, 17 Sep 2008 21:13:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=PfxwdHVjPElhdLgG2T6Su1UpdSAZeMh6jekxgZIvu+9aM6eGxstC/a0j7XZ1jfQQ3p
+         3ub6Mk1uqqfVjnFi6JXNNsDNsadWjij3e/PtmwZP18clGckny/1j+gVR013g4RO0rV7H
+         hYjNOGk0tR2woKLto93K+eHoAP6fWmqgkPvx0=
+Message-ID: <5767b9100809171813u7e26d516x12558a178b78f852@mail.gmail.com>
+Date: Thu, 18 Sep 2008 09:13:01 +0800
+From: "Conke Hu" <conke.hu@gmail.com>
+To: Linux-arm-kernel@lists.arm.linux.org.uk, "Ben Dooks" <ben-linux@fluff.org>
+Subject: s3c24xx nand: add command line partition table parsing support (resend)
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-arm@vger.kernel.org
 MIME-Version: 1.0
-To: 7eggert@gmx.de
-CC: dm-devel@redhat.com, jblunck@suse.de, kjamieson@bycast.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dm-snapshot: poor copy-on-write performance due to I/O
- reordering
-References: <bd0gX-4ma-13@gated-at.bofh.it> <E1KfzFv-00041e-8A@be1.7eggert.dyndns.org>
-In-Reply-To: <E1KfzFv-00041e-8A@be1.7eggert.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Add mtd id and  command line partition table parsing support for
+s3c24xx nand driver.
 
-Bodo Eggert wrote:
-> Kazuo Ito <ito.kazuo@oss.ntt.co.jp> wrote:
-> 
->> Write throughput to LVM snapshot origin volume is an order
->> of magnitude slower than those to LV without snapshots or
->> snapshot target volumes, especially in the case of sequential
->> writes with O_SYNC on.
->>
->> The following patch originally written by Kevin Jamieson and
->> Jan Blunck and slightly modified for the current RCs by myself
->> tries to improve the performance by modifying the behaviour
->> of kcopyd, so that it pushes back an I/O job to the head of
->> the job queue instead of the tail as process_jobs() currently
->> does when it has to wait for free pages. This way, write
->> requests aren't shuffled to cause extra seeks.
-> 
-> Did you check for starvation problems, too?
+Signed-off-by: Conke Hu <conke.hu@gmail.com>
+Signed-off-by: Linke Wang <linke.wang@gmail.com>
+------------------
+diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
+index 556139e..bab7216 100644
+--- a/drivers/mtd/nand/s3c2410.c
++++ b/drivers/mtd/nand/s3c2410.c
+@@ -48,6 +48,8 @@
+ #include <asm/plat-s3c/regs-nand.h>
+ #include <asm/plat-s3c/nand.h>
 
-I ran sadc along with the tests and figures like
-%memused, kbbuffers and kbcached didn't change much
-before and after the patch.  And since the buffered I/O
-results didn't deteriorate at least in the cases of
-10 and 100 megabyte sequential writes, I assumed
-there should be plentiful of memory for the kernel
-to use at least in these cases.
++#define S3C_NAND_NAME_LEN 16
++
+ #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
+ static int hardware_ecc = 1;
+ #else
+@@ -60,6 +62,9 @@ static int clock_stop = 1;
+ static const int clock_stop = 0;
+ #endif
 
-Anyway I can send you more detailed info upon your request.
++#ifdef CONFIG_MTD_PARTITIONS
++static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
++#endif
 
-Regards,
+ /* new oob placement block for use with hardware ecc generation
+ */
+@@ -649,6 +654,15 @@ static int s3c2410_nand_add_partition(struct
+s3c2410_nand_info *info,
+                                    struct s3c2410_nand_mtd *mtd,
+                                    struct s3c2410_nand_set *set)
+ {
++#ifdef CONFIG_MTD_CMDLINE_PARTS
++       int nr_parts;
++       struct mtd_partition *partitions;
++
++       nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes,
+&partitions, 0);
++       if (nr_parts > 0 && partitions != NULL)
++               return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
++#endif
++
+      if (set == NULL)
+              return add_mtd_device(&mtd->mtd);
 
-Kazuo Ito, NTT Open Source Software Center
-Phone: +81-3-5860-5125 / FAX: +81-3-5463-5690 / E-mail: ito.kazuo@oss.ntt.co.jp
+@@ -808,6 +822,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+      int size;
+      int nr_sets;
+      int setno;
++       char *name;
+
+      pr_debug("s3c2410_nand_probe(%p)\n", pdev);
+
+@@ -875,7 +890,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
+
+      /* allocate our information */
+
+-       size = nr_sets * sizeof(*info->mtds);
++       size = nr_sets * (sizeof(*info->mtds) + S3C_NAND_NAME_LEN);
+      info->mtds = kmalloc(size, GFP_KERNEL);
+      if (info->mtds == NULL) {
+              dev_err(&pdev->dev, "failed to allocate mtd storage\n");
+@@ -888,10 +903,15 @@ static int s3c24xx_nand_probe(struct
+platform_device *pdev,
+      /* initialise all possible chips */
+
+      nmtd = info->mtds;
++       name = (char *)(info->mtds + nr_sets);
+
+      for (setno = 0; setno < nr_sets; setno++, nmtd++) {
+              pr_debug("initialising set %d (%p, info %p)\n", setno,
+nmtd, info);
+
++               sprintf(name, "s3c_nand%d", setno);
++               nmtd->mtd.name = name;
++               name += S3C_NAND_NAME_LEN;
++
+              s3c2410_nand_init_chip(info, nmtd, sets);
+
+              nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
