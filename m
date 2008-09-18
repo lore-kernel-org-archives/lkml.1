@@ -1,76 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbYIRNvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYIRNxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbYIRNvS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 09:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbYIRNvD
+	id S1756061AbYIRNxo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 09:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbYIRNxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 09:51:03 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:53520 "EHLO
-	smtp-out3.google.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753193AbYIRNvB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 09:51:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=NNrwLaV0Jfoi6QWx0MI8poksYsa6Qa6Gsu1yKwhJNgTd0AhnhUIAW/NRbX4qOB/HP
-	Tg05YQNgOZKSh+Guk8h5Q==
-Subject: Re: [PATCH 2.6.27-rc5 resubmit] Fix itimer/many thread hang.
-From: Frank Mayhar <fmayhar@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-In-Reply-To: <20080918102353.GD20967@elte.hu>
-References: <1221238479.30136.2.camel@bobble.smo.corp.google.com>
-	 <20080914150651.GK12522@elte.hu> <20080914150923.GB26984@elte.hu>
-	 <1221502142.19012.35.camel@bobble.smo.corp.google.com>
-	 <20080916084143.GC17287@elte.hu>
-	 <1221678187.13420.17.camel@bobble.smo.corp.google.com>
-	 <20080918102353.GD20967@elte.hu>
-Content-Type: text/plain
-Organization: Google, Inc.
-Date: Thu, 18 Sep 2008 06:50:01 -0700
-Message-Id: <1221745801.5411.3.camel@bobble.smo.corp.google.com>
+	Thu, 18 Sep 2008 09:53:35 -0400
+Received: from main.gmane.org ([80.91.229.2]:51754 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753051AbYIRNxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 09:53:34 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: ACPI "Soft-off" power button only rebooting system, not powering
+     off
+Date: Thu, 18 Sep 2008 09:53:21 -0400
+Message-ID: <48D25D51.8050701@tmr.com>
+References: <76366b180809162150o51701a1fk209af4e84ffc5674@mail.gmail.com> <20080917101809.GA4771@elf.ucw.cz> <76366b180809170533t6962f3d0qf67278b2e9ff6bd0@mail.gmail.com> <20080918110635.GF27832@elf.ucw.cz> <48D245BF.7060902@earthlink.net> <48D248D4.40103@farnz.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@suse.cz>,
+       Andrew Paprocki <andrew@ishiboo.com>
+X-Gmane-NNTP-Posting-Host: pool-71-245-142-197.albyny.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.16) Gecko/20080716 Fedora/1.1.11-1.fc9 pango-text SeaMonkey/1.1.11
+In-Reply-To: <48D248D4.40103@farnz.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-09-18 at 12:23 +0200, Ingo Molnar wrote:
-> i'd not worry about those 160 bytes - getting this stuff to work fine is 
-> far more important. Details around threading seem to be one of the 
-> slowest converging technological details of Linux.
-
-Okay, the next patch will have this simplification.
-
-> a silly question:
+Simon Farnsworth wrote:
+> Stephen Clark wrote:
+>> Pavel Machek wrote:
+>>> On Wed 2008-09-17 08:33:50, Andrew Paprocki wrote:
+>>>> On Wed, Sep 17, 2008 at 6:18 AM, Pavel Machek <pavel@suse.cz> wrote:
+>>>>> On Wed 2008-09-17 00:50:03, Andrew Paprocki wrote:
+>>>>>> I have an AMD / Award BIOS based system which does not properly shut
+>>>>>> off when I hold down the power button for 4 seconds. The BIOS is
+>>>>>> configured to have "Soft-off" set to "Delay for 4 seconds" which is
+>>>>>> supposed to power the machine off if the button is held that long.
+>>>>>>
+>>>>>> I first thought this could be a BIOS bug, but this *only* appears to
+>>>>>> happen while Linux is running. If the computer is running WinXP, it
+>>>>> Well, so the BIOS is broken. 4second hold should power down the
+>>>>> machine regardless of the operating system.
+>>>> Yes, I agree.. I just find it strange that it works on the BIOS screen
+>>>> as well as in GRUB, but as soon as Linux boots, it no longer works.
+>>>> Since it works under WinXP, there must be some way to get it to work
+>>>> properly from the OS side even it if means working around the bug
+>>>> somehow.
+>>> Try noapic/nolapic/nosmp etc... and ask your vendor to fix the bios ;-).
+>>>
+>> Why do you say it is the BIOS when it shuts down properly from the GRUB
+>> prompt or from in WINXP?
+>>
+> Because it's only the BIOS that can cause this behaviour.
 > 
-> > +#else /* CONFIG_SMP */
-> > +
-> > +/*
-> > + * Allocate the thread_group_cputime structure appropriately for UP kernels
-> > + * and fill in the current values of the fields.  Called from copy_signal()
-> > + * via thread_group_cputime_clone_thread() when adding a second or subsequent
-> > + * thread to a thread group.  Assumes interrupts are enabled when called.
-> > + */
-> > +int thread_group_cputime_alloc(struct task_struct *tsk)
-> > +{
+> When you push the power button, the BIOS is invoked. If you release
+> within 4 seconds, the BIOS sends an ACPI event to the running OS,
+> telling it that the power button has been pushed.
 > 
-> why is there _any_ assymetry needed between UP and SMP? These days we 
-> just write straight code for SMP, and UP is just a single-CPU 
-> special-case of it. _Sometimes_ if it's really worth it we do some UP 
-> special cases but it's the exception, not the rule.
+> If you hold it down for 4 or more seconds, the BIOS is supposed to shut
+> the machine down without the OS knowing what's happening (no ACPI
+> events, just a loss of power). From your problem description, the BIOS
+> is noticing *something* about the way Linux sets things up, and
+> *choosing* to reboot instead of cutting the power.
+> 
+Such as setting a bit to reboot instead of powering off? There are lots of bits 
+down in low memory which one BIOS or another use, so it may be functioning as 
+intended. You might look for an additional option to reboot instead of power 
+down, a feature I think may have been intended for systems without a hardware 
+RESET button.
 
-As far as I know, I still need to handle the SMP per_cpu allocate/free
-differently from the UP kmalloc.  I'll check again, though; if that's no
-longer the case, I'll fix it.
+> GRUB doesn't touch hardware without BIOS help, so is unlikely to change
+> the system state in a way that tickles this BIOS bug; similarly, BIOSes
+> are tested against current Windows versions by vendors, so they'll have
+> hacked it around until it worked there.
+
+This certainly may be a bug (ie. unintended behavior), but it may be a feature 
+which Linux is enabling unintentionally. Having to use the power button on a 
+Linux system would worry me more than having to press the button a second time 
+during reboot.
+
 -- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
