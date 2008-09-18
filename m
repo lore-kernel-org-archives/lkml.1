@@ -1,172 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIRJaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbYIRJc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYIRJaf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 05:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYIRJa1
+	id S1755569AbYIRJc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 05:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbYIRJcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 05:30:27 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:24872 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753501AbYIRJa1 convert rfc822-to-8bit (ORCPT
+	Thu, 18 Sep 2008 05:32:18 -0400
+Received: from web32601.mail.mud.yahoo.com ([68.142.207.228]:48523 "HELO
+	web32616.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1753892AbYIRJcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 05:30:27 -0400
-Message-Id: <48D23BF6.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
-Date: Thu, 18 Sep 2008 10:31:02 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
-Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v3)
-References: <48D21BA3.76E4.0078.0@novell.com>
- <20080918071852.GA7639@elte.hu> <20080918091003.GA3751@elte.hu>
-In-Reply-To: <20080918091003.GA3751@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 18 Sep 2008 05:32:17 -0400
+X-YMail-OSG: bSyGoTkVM1k896lGnh42wMuHcMPmI4TyItSC8Gu7xtbxLctCEOnOPFVgJEEKYBpeATNHO2nvkPxNzhUnq_AtrO7tWiZD5Pkp.Y7W63uE_ZPGy3LY_t7.TmR5EAlIfjqVfd4e1K7TcVfV5mtOaVfg564urQ.MLQ--
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/1096.28 YahooMailWebService/0.7.218.2
+Date: Thu, 18 Sep 2008 02:32:16 -0700 (PDT)
+From: Martin Knoblauch <knobi@knobisoft.de>
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+To: Greg Banks <gnb@melbourne.sgi.com>
+Cc: linux-nfs list <linux-nfs@vger.kernel.org>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <151874.61127.qm@web32601.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Ingo Molnar <mingo@elte.hu> 18.09.08 11:10 >>>
->* Ingo Molnar <mingo@elte.hu> wrote:
->
->> > Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use 
->> > the former in ioremap's phys_addr_valid() check also on 32bit/PAE.
->> > 
->> > Signed-off-by: Jan Beulich <jbeulich@novell.com>
->> 
->> applied to tip/x86/core, thanks Jan.
->
->hm, this commit quickly broke a -tip testsystem. The system booted up 
->fine but had no networking afterwards. (the eth0 interface came up fine 
->but no interrupts were emitted)
->
->i've pushed out the bad tree into tip/tmp.virt_bits.bad. The bad config 
->is attached.
->
->just check out tip/tmp.virt_bits.bad, boot into the kernel and see 
->forcedeth networking break (if you have a box with forcedeth). It's 
->reproducible. I've attached a 'good' and a 'bad' boot log as well.
+----- Original Message ----
 
-I'm really sorry for that, yet another merge oversight (not caught because
-only re-tested on x86-64). Here's a better one.
+> From: Greg Banks <gnb@melbourne.sgi.com>
+> To: Martin Knoblauch <knobi@knobisoft.de>
+> Cc: linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org
+> Sent: Thursday, September 18, 2008 10:45:01 AM
+> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+> 
+> Martin Knoblauch wrote:
+> > ----- Original Message ----
+> >
+> >  
+> >>
+> >> I think having a tunable for client readahead is an excellent idea,
+> >> although not to solve your particular problem.  The SLES10 kernel has a
+> >> patch which does precisely that, perhaps Neil could post it.
+> >>
+> >> I don't think there's a lot of point having both a module parameter and
+> >> a sysctl.
+> >>
+> >>    
+> >
+> >  Actually there is a good reason. The module parameter can be used to set the 
+> new value at load time and never bother again. The sysctl is very convenient 
+> when doing experiments.
+> >  
+> You can set module parameters after module load in
+> /sys/module/$module/parameters.
 
-********************************************************
+ OK, one always learns new stuff :-)
 
-Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
-former in ioremap's phys_addr_valid() check also on 32bit/PAE.
+> >  As Andrew already pointed out, the best solution would be a mount option.
+> Yep.
+> >  But that seems much more involved as my workaround patch.
+> >
+> >  
+> Yep.
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+ Seeing Andrews Mails, it might be less involved that I thought :-) Will have a look.
 
----
- arch/x86/kernel/cpu/common.c |   17 +++++++++++++++--
- arch/x86/mm/ioremap.c        |   17 ++++++++---------
- include/asm-x86/processor.h  |    4 ++--
- 3 files changed, 25 insertions(+), 13 deletions(-)
+> >> A maximum of 15 is unwise.  I've found that (at least with the older
+> >> readahead mechanisms in SLES10) a multiple of 4 is required to preserve
+> >> rsize-alignment of READ rpcs to the server, which helps a lot with wide
+> >> RAID backends.  So in SGI we tune client readahead to 16.
+> >>
+> >>    
+> >
+> >  15 is the value that the Linux NFS client uses., at least since 2.6.3. 
+> It's a silly value.
 
---- linux-tip.orig/arch/x86/kernel/cpu/common.c
-+++ linux-tip/arch/x86/kernel/cpu/common.c
-@@ -439,6 +439,11 @@ void __cpuinit cpu_detect(struct cpuinfo
- 			c->x86_cache_alignment = c->x86_clflush_size;
- 		}
- 	}
-+
-+#ifdef CONFIG_X86_32
-+	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
-+		c->x86_phys_bits = 36;
-+#endif
- }
- 
- static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
-@@ -464,14 +469,18 @@ static void __cpuinit get_cpu_cap(struct
- 		}
- 	}
- 
--#ifdef CONFIG_X86_64
- 	if (c->extended_cpuid_level >= 0x80000008) {
- 		u32 eax = cpuid_eax(0x80000008);
- 
- 		c->x86_virt_bits = (eax >> 8) & 0xff;
- 		c->x86_phys_bits = eax & 0xff;
-+		/* CPUID workaround for Intel 0F33/0F34 CPU */
-+		if (c->x86_vendor == X86_VENDOR_INTEL
-+		    && c->x86 == 0xF && c->x86_model == 0x3
-+		    && (c->x86_mask == 0x3
-+			|| c->x86_mask == 0x4))
-+			c->x86_phys_bits = 36;
- 	}
--#endif
- 
- 	if (c->extended_cpuid_level >= 0x80000007)
- 		c->x86_power = cpuid_edx(0x80000007);
-@@ -519,6 +528,8 @@ static void __init early_identify_cpu(st
- 	c->x86_clflush_size = 64;
- #else
- 	c->x86_clflush_size = 32;
-+	c->x86_phys_bits = 32;
-+	c->x86_virt_bits = 32;
- #endif
- 	c->x86_cache_alignment = c->x86_clflush_size;
- 
-@@ -641,6 +652,8 @@ static void __cpuinit identify_cpu(struc
- #else
- 	c->cpuid_level = -1;	/* CPUID not detected */
- 	c->x86_clflush_size = 32;
-+	c->x86_phys_bits = 32;
-+	c->x86_virt_bits = 32;
- #endif
- 	c->x86_cache_alignment = c->x86_clflush_size;
- 	memset(&c->x86_capability, 0, sizeof c->x86_capability);
---- linux-tip.orig/arch/x86/mm/ioremap.c
-+++ linux-tip/arch/x86/mm/ioremap.c
-@@ -22,13 +22,17 @@
- #include <asm/pgalloc.h>
- #include <asm/pat.h>
- 
--#ifdef CONFIG_X86_64
--
--static inline int phys_addr_valid(unsigned long addr)
-+static inline int phys_addr_valid(resource_size_t addr)
- {
--	return addr < (1UL << boot_cpu_data.x86_phys_bits);
-+#ifdef CONFIG_RESOURCES_64BIT
-+	return !(addr >> boot_cpu_data.x86_phys_bits);
-+#else
-+	return 1;
-+#endif
- }
- 
-+#ifdef CONFIG_X86_64
-+
- unsigned long __phys_addr(unsigned long x)
- {
- 	if (x >= __START_KERNEL_map) {
-@@ -47,11 +51,6 @@ EXPORT_SYMBOL(__phys_addr);
- 
- #else
- 
--static inline int phys_addr_valid(unsigned long addr)
--{
--	return 1;
--}
--
- #ifdef CONFIG_DEBUG_VIRTUAL
- unsigned long __phys_addr(unsigned long x)
- {
---- linux-tip.orig/include/asm-x86/processor.h
-+++ linux-tip/include/asm-x86/processor.h
-@@ -74,9 +74,9 @@ struct cpuinfo_x86 {
- #else
- 	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
- 	int			 x86_tlbsize;
--	__u8			x86_virt_bits;
--	__u8			x86_phys_bits;
- #endif
-+	u8			x86_virt_bits;
-+	u8			x86_phys_bits;
- 	/* CPUID returned core id bits: */
- 	__u8			x86_coreid_bits;
- 	/* Max extended CPUID function supported: */
+ I was not sure whether it was just arbitrary, or caused by some other internal limit. The definition made it look like it was somehow related to RPC_DEF_SLOT.
 
+> > As it is not tunable up to today, the comment seems moot :-)  But it opens the 
+> questions:
+> >
+> > a) should 1 be the minimum, or 0?
+> >  
+> Turning off client RA entirely is potentially useful.
+> > b) can the backing_dev_info.ra_pages field safely be set to something higher 
+> than 15?
+> >  
+> Yes.  Did I mention 16 ?
+
+ You also mentioned that you do that at SGI. So, who knows whatelse there is changed :-) Anyway, thanks for the hint. 
+
+> >  
+> >> Your patch seems to have a bunch of other unrelated stuff mixed in.
+> >>
+> >>    
+> >
+> >  Yeah, someone already pointed out, that the Makefile hunk does not belong 
+> there. But you say "a bunch" - anything else?
+> >  
+> I rapidly scrolled past some stuff about 64bit inodes.
+
+ Ahh. Now I remember... when I implemented the module  parameter, I found that "enable_ino64" lacks a description. Yeah, should be a separate patch.
+
+Cheers
+Martin
 
