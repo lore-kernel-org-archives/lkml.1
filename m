@@ -1,160 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbYIRJ1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIRJaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbYIRJ1l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 05:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYIRJ13
+	id S1755401AbYIRJaf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 05:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYIRJa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 05:27:29 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54843 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbYIRJ11 (ORCPT
+	Thu, 18 Sep 2008 05:30:27 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:24872 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753501AbYIRJa1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 05:27:27 -0400
-Date: Thu, 18 Sep 2008 11:27:13 +0200
-From: Sebastien Dugue <sebastien.dugue@bull.net>
-To: Christoph Raisch <RAISCH@de.ibm.com>
-Cc: gilles.carry@ext.bull.net, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-       jean-pierre.dion@bull.net, linux-kernel <linux-kernel@vger.kernel.org>,
-       Linux-rt <linux-rt-users@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, netdev@vger.kernel.org,
-       Thomas Q Klein <TKLEIN@de.ibm.com>, tinytim@us.ibm.com,
-       Benjamin Herrenschmidt <bherren@au1.ibm.com>
-Subject: Re: [PATCH HACK] powerpc: quick hack to get a functional eHEA with
- hardirq preemption
-Message-ID: <20080918112713.75872c95@bull.net>
-In-Reply-To: <OF39C3BF0F.17B60FAA-ONC12574C8.002AE138-C12574C8.002B6422@de.ibm.com>
-References: <20080915100406.342e027a@bull.net>
-	<OF39C3BF0F.17B60FAA-ONC12574C8.002AE138-C12574C8.002B6422@de.ibm.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+	Thu, 18 Sep 2008 05:30:27 -0400
+Message-Id: <48D23BF6.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 Beta 
+Date: Thu, 18 Sep 2008 10:31:02 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [PATCH] x86: x86_{phys,virt}_bits field also for i386 (v3)
+References: <48D21BA3.76E4.0078.0@novell.com>
+ <20080918071852.GA7639@elte.hu> <20080918091003.GA3751@elte.hu>
+In-Reply-To: <20080918091003.GA3751@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 09:53:54 +0200 Christoph Raisch <RAISCH@de.ibm.com> wrote:
+>>> Ingo Molnar <mingo@elte.hu> 18.09.08 11:10 >>>
+>* Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> > Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use 
+>> > the former in ioremap's phys_addr_valid() check also on 32bit/PAE.
+>> > 
+>> > Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>> 
+>> applied to tip/x86/core, thanks Jan.
+>
+>hm, this commit quickly broke a -tip testsystem. The system booted up 
+>fine but had no networking afterwards. (the eth0 interface came up fine 
+>but no interrupts were emitted)
+>
+>i've pushed out the bad tree into tip/tmp.virt_bits.bad. The bad config 
+>is attached.
+>
+>just check out tip/tmp.virt_bits.bad, boot into the kernel and see 
+>forcedeth networking break (if you have a box with forcedeth). It's 
+>reproducible. I've attached a 'good' and a 'bad' boot log as well.
 
-> 
-> Sebastien Dugue <sebastien.dugue@bull.net> wrote on 15.09.2008 10:04:06:
-> > [PATCH HACK] powerpc: quick hack to get a functional eHEA with
-> > hardirq preemption
-> >
-> > Sebastien Dugue
-> >
-> > to:
-> >
-> > 15.09.2008 10:07
-> >
-> > Cc:
-> >
-> > linux-ppc, linux-kernel, Linux-rt, netdev, Jan-Bernd Themann, Thomas
-> > Q Klein, Christoph Raisch, jean-pierre.dion, gilles.carry, tinytim
-> >
-> >
-> > WARNING: HACK - HACK - HACK
-> > Not-Signed-off-by: Sebastien Dugue <sebastien.dugue@bull.net>
-> > ---
-> > --- a/arch/powerpc/kernel/ibmebus.c
-> > +++ b/arch/powerpc/kernel/ibmebus.c
-> > @@ -41,6 +41,7 @@
-> > -   return request_irq(irq, handler, irq_flags, devname, dev_id);
-> > +   ret = request_irq(irq, handler, irq_flags, devname, dev_id);
-> > +
-> > +   desc = irq_desc + irq;
-> > +   desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-> > +   desc->status |= IRQ_TYPE_EDGE_RISING;
-> > +
-> > +   return ret;
-> This looks a bit like a set_irq_type call.
+I'm really sorry for that, yet another merge oversight (not caught because
+only re-tested on x86-64). Here's a better one.
 
-  Yep.
+********************************************************
 
-> Don't know if this is fully implemented for xics though...
+Make the x86_{phys,virt}_bits common for 32- and 64-bits, and use the
+former in ioremap's phys_addr_valid() check also on 32bit/PAE.
 
-  No, the xics does not implement a set_type() method.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-> >  }
-> >  EXPORT_SYMBOL(ibmebus_request_irq);
-> >
-> > diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-> > index b7b397a..6d366ca 100644
-> > --- a/kernel/irq/chip.c
-> > +++ b/kernel/irq/chip.c
-> > @@ -430,7 +430,7 @@ handle_fasteoi_irq(unsigned int irq, struct
-> > irq_desc *desc)
-> >     action = desc->action;
-> >     if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
-> >                     IRQ_DISABLED)))) {
-> > -      desc->status |= IRQ_PENDING;
-> > +      desc->status |= IRQ_PENDING | IRQ_MASKED;
-> >        if (desc->chip->mask)
-> >           desc->chip->mask(irq);
-> >        goto out;
-> > @@ -439,9 +439,10 @@ handle_fasteoi_irq(unsigned int irq, struct
-> > irq_desc *desc)
-> >     desc->status |= IRQ_INPROGRESS;
-> >     /*
-> >      * In the threaded case we fall back to a mask+eoi sequence:
-> > +    * excepted for edge interrupts which are not masked.
-> >      */
-> >     if (redirect_hardirq(desc)) {
-> > -      if (desc->chip->mask)
-> > +      if (desc->chip->mask && !(desc->status & IRQ_TYPE_EDGE_BOTH))
-> >           desc->chip->mask(irq);
-> >        goto out;
-> >     }
-> > diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> > index 3bffa20..3e39c71 100644
-> > --- a/kernel/irq/manage.c
-> > +++ b/kernel/irq/manage.c
-> > @@ -788,9 +788,12 @@ static void do_hardirq(struct irq_desc *desc)
-> >        thread_simple_irq(desc);
-> >     else if (desc->handle_irq == handle_level_irq)
-> >        thread_level_irq(desc);
-> > -   else if (desc->handle_irq == handle_fasteoi_irq)
-> > -      thread_fasteoi_irq(desc);
-> > -   else if (desc->handle_irq == handle_edge_irq)
-> > +   else if (desc->handle_irq == handle_fasteoi_irq) {
-> > +      if (desc->status & IRQ_TYPE_EDGE_BOTH)
-> > +         thread_edge_irq(desc);
-> > +      else
-> > +         thread_fasteoi_irq(desc);
-> > +   } else if (desc->handle_irq == handle_edge_irq)
-> >        thread_edge_irq(desc);
-> >     else
-> >        thread_do_irq(desc);
-> > --
-> > 1.6.0.1.308.gede4c
-> >
-> According to the specs at some point in the system the HEA IRQs have a edge
-> characteristic.
-> But since PCI-E edge and level can both be forwarded through a message
-> interface
-> (HEA is not PCI-E, it's only connected to the same internal bus, where the
-> PHB resides)
+---
+ arch/x86/kernel/cpu/common.c |   17 +++++++++++++++--
+ arch/x86/mm/ioremap.c        |   17 ++++++++---------
+ include/asm-x86/processor.h  |    4 ++--
+ 3 files changed, 25 insertions(+), 13 deletions(-)
 
-  Good to know, the problem here seems to be that the xics is using the
-fasteoi flow handler, which under unconditionally masks the irq. Will have to
-dig in the genirq stuff a bit more to understand what the differences are
-between -rt and mainline.
+--- linux-tip.orig/arch/x86/kernel/cpu/common.c
++++ linux-tip/arch/x86/kernel/cpu/common.c
+@@ -439,6 +439,11 @@ void __cpuinit cpu_detect(struct cpuinfo
+ 			c->x86_cache_alignment = c->x86_clflush_size;
+ 		}
+ 	}
++
++#ifdef CONFIG_X86_32
++	if (cpu_has(c, X86_FEATURE_PAE) || cpu_has(c, X86_FEATURE_PSE36))
++		c->x86_phys_bits = 36;
++#endif
+ }
+ 
+ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
+@@ -464,14 +469,18 @@ static void __cpuinit get_cpu_cap(struct
+ 		}
+ 	}
+ 
+-#ifdef CONFIG_X86_64
+ 	if (c->extended_cpuid_level >= 0x80000008) {
+ 		u32 eax = cpuid_eax(0x80000008);
+ 
+ 		c->x86_virt_bits = (eax >> 8) & 0xff;
+ 		c->x86_phys_bits = eax & 0xff;
++		/* CPUID workaround for Intel 0F33/0F34 CPU */
++		if (c->x86_vendor == X86_VENDOR_INTEL
++		    && c->x86 == 0xF && c->x86_model == 0x3
++		    && (c->x86_mask == 0x3
++			|| c->x86_mask == 0x4))
++			c->x86_phys_bits = 36;
+ 	}
+-#endif
+ 
+ 	if (c->extended_cpuid_level >= 0x80000007)
+ 		c->x86_power = cpuid_edx(0x80000007);
+@@ -519,6 +528,8 @@ static void __init early_identify_cpu(st
+ 	c->x86_clflush_size = 64;
+ #else
+ 	c->x86_clflush_size = 32;
++	c->x86_phys_bits = 32;
++	c->x86_virt_bits = 32;
+ #endif
+ 	c->x86_cache_alignment = c->x86_clflush_size;
+ 
+@@ -641,6 +652,8 @@ static void __cpuinit identify_cpu(struc
+ #else
+ 	c->cpuid_level = -1;	/* CPUID not detected */
+ 	c->x86_clflush_size = 32;
++	c->x86_phys_bits = 32;
++	c->x86_virt_bits = 32;
+ #endif
+ 	c->x86_cache_alignment = c->x86_clflush_size;
+ 	memset(&c->x86_capability, 0, sizeof c->x86_capability);
+--- linux-tip.orig/arch/x86/mm/ioremap.c
++++ linux-tip/arch/x86/mm/ioremap.c
+@@ -22,13 +22,17 @@
+ #include <asm/pgalloc.h>
+ #include <asm/pat.h>
+ 
+-#ifdef CONFIG_X86_64
+-
+-static inline int phys_addr_valid(unsigned long addr)
++static inline int phys_addr_valid(resource_size_t addr)
+ {
+-	return addr < (1UL << boot_cpu_data.x86_phys_bits);
++#ifdef CONFIG_RESOURCES_64BIT
++	return !(addr >> boot_cpu_data.x86_phys_bits);
++#else
++	return 1;
++#endif
+ }
+ 
++#ifdef CONFIG_X86_64
++
+ unsigned long __phys_addr(unsigned long x)
+ {
+ 	if (x >= __START_KERNEL_map) {
+@@ -47,11 +51,6 @@ EXPORT_SYMBOL(__phys_addr);
+ 
+ #else
+ 
+-static inline int phys_addr_valid(unsigned long addr)
+-{
+-	return 1;
+-}
+-
+ #ifdef CONFIG_DEBUG_VIRTUAL
+ unsigned long __phys_addr(unsigned long x)
+ {
+--- linux-tip.orig/include/asm-x86/processor.h
++++ linux-tip/include/asm-x86/processor.h
+@@ -74,9 +74,9 @@ struct cpuinfo_x86 {
+ #else
+ 	/* Number of 4K pages in DTLB/ITLB combined(in pages): */
+ 	int			 x86_tlbsize;
+-	__u8			x86_virt_bits;
+-	__u8			x86_phys_bits;
+ #endif
++	u8			x86_virt_bits;
++	u8			x86_phys_bits;
+ 	/* CPUID returned core id bits: */
+ 	__u8			x86_coreid_bits;
+ 	/* Max extended CPUID function supported: */
 
-> 
-> Anybody from the xics experts want to comment on this?
 
-  It would be really interresting to know if the eHCA exhibits the same
-problem under -rt as it's the only other user of the ibmebus.
-Unfortunately I don't have the hardware to test.
-
-  Thanks,
-
-  Sebastien.
-
-
-> 
-> 
-> 
-> Gruss / Regards
-> Christoph R.  & Jan-Bernd
-> 
-> 
