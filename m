@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYIRMaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYIRMb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbYIRMaZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 08:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYIRMaJ
+	id S1756061AbYIRMb1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 08:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYIRMbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 08:30:09 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:43263 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbYIRMaH (ORCPT
+	Thu, 18 Sep 2008 08:31:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:54274 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbYIRMbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 08:30:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=heDXKiKmHR3gIM9r6Ag8iEwCIOWHhfccM4cribRF/KiaD407QiFC2g63kPv757b2Zm
-         iG5tM3R2aFY+CNBysgCeN23+0NQSOnREtaYs2vnByo7nvTR8VLnbHCRGg6ub1XZXkvSt
-         OH1opo/AjC/7PjKLB96f9F3A5lpEWRNqoULhQ=
-Message-ID: <48D249D4.8000400@gmail.com>
-Date: Thu, 18 Sep 2008 14:30:12 +0200
-From: evilsocket <evilsocket@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Thu, 18 Sep 2008 08:31:18 -0400
+Message-ID: <1b51b6f80809180531nd8c699lb38dc73d2d7edc7c@mail.gmail.com>
+Date: Thu, 18 Sep 2008 14:31:14 +0200
+From: "Niels de Vos" <niels.devos@wincor-nixdorf.com>
+To: linux-serial@vger.kernel.org
+Subject: [PATCH] serial: set correct baud_base for Oxford Semiconductor Ltd EXSYS EX-41092 Dual 16950 Serial adapter
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Stack buffer size issue
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: d1acd86467e72e49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello to all, i'm trying to develop a kernel module that accepts an 
-ioctl with this structure :
+This card is only useable with other devices (not the same card) after doing
+a setserial /dev/ttyS<n> baud_base 115200. This baud_base should
+be default for this card.
 
-typedef struct{
-    /* [INPUT]  */
-    long   process;
-    unsigned long address;
-   
-    /* [OUTPUT] */   
-    long mm_size;
-}
-mg_query_t;
+This card was the last/only user of pbn_b0_2_1130000, therefore removed.
 
-where :
+Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
 
-process : is the pid of a process .
-address : is the address of a buffer on the stack of that process .
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index c2f2393..f092cf9 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -1089,8 +1089,6 @@ enum pci_board_num_t {
+ 	pbn_b0_2_921600,
+ 	pbn_b0_4_921600,
 
-mm_size : *should* be the return value of the ioctl, indicating the size 
-of that buffer, as an example (userspace test application):
+-	pbn_b0_2_1130000,
+-
+ 	pbn_b0_4_1152000,
 
-char * abuffer[123];
-mg_query_t query;
-   
-query.process = getpid();
-query.address = abuffer;
-   
-if( ioctl( fd, IOCTL_MTABLE_BY_PID, &query ) < 0 ){
-    close(fd);
-    perror( "IOCTL_MTABLE_BY_PID" );
-    return -1;
-}
+ 	pbn_b0_2_1843200,
+@@ -1245,13 +1243,6 @@ static struct pciserial_board pci_boards[]
+__devinitdata = {
+ 		.uart_offset	= 8,
+ 	},
 
-printf( "SIZE : %d\n", query.mm_size );
-
-
-
-This *should* give the output :
-
-SIZE : 123
-
-I'm using the struct task_struct in the kernel module, looping the mmap 
-to find the vm area the address resides in and then to set
-
-mm_size = vm_end - vm_start
-
-But doing so i obtaing only the size of the vm page the buffer resides .
-
-Any hints ?
-
-Thanks in advantage .
+-	[pbn_b0_2_1130000] = {
+-		.flags          = FL_BASE0,
+-		.num_ports      = 2,
+-		.base_baud      = 1130000,
+-		.uart_offset    = 8,
+-	},
+-
+ 	[pbn_b0_4_1152000] = {
+ 		.flags		= FL_BASE0,
+ 		.num_ports	= 4,
+@@ -2292,7 +2283,7 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		 */
+ 	{	PCI_VENDOR_ID_OXSEMI, 0x950a,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+-		pbn_b0_2_1130000 },
++		pbn_b0_2_115200 },
+ 	{	PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_16PCI954,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_b0_4_115200 },
