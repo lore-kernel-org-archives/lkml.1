@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYIRVOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbYIRVUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYIRVOq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 17:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbYIRVOg
+	id S1756647AbYIRVUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 17:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbYIRVUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 17:14:36 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35007 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757110AbYIRVOf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 17:14:35 -0400
-Date: Thu, 18 Sep 2008 17:14:34 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: suspend (uhci_hcd) defunct in mmotm 2008-09-13-03-09
-In-Reply-To: <48D1346C.1020203@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0809181708500.17483-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 18 Sep 2008 17:20:07 -0400
+Received: from waste.org ([66.93.16.53]:35592 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752714AbYIRVUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 17:20:06 -0400
+Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
+From: Matt Mackall <mpm@selenic.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Dave Hansen <haveblue@us.ibm.com>
+In-Reply-To: <48D2ABFD.3040103@goop.org>
+References: <20080910121217.GA16013@elte.hu>
+	 <20080910144812.GB18644@wotan.suse.de>
+	 <1221058864.30429.291.camel@twins.programming.kicks-ass.net>
+	 <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu>
+	 <20080914073906.GA6184@elte.hu>
+	 <20080914004442.4f8e851f.akpm@linux-foundation.org>
+	 <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de>
+	 <20080917131419.e6b7622e.akpm@linux-foundation.org>
+	 <20080918111226.GD29968@elte.hu>  <48D2ABFD.3040103@goop.org>
+Content-Type: text/plain
+Date: Thu, 18 Sep 2008 14:11:50 -0700
+Message-Id: <1221772310.4779.29.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008, Jiri Slaby wrote:
 
-> Hi,
+On Thu, 2008-09-18 at 12:29 -0700, Jeremy Fitzhardinge wrote:
+> Ingo Molnar wrote:
+> > in 7 days that's about 7000 random bootups, 20% of which had TINY_SHMEM 
+> > enabled, half 32-bit, half 64-bit x86. It did not blow up in any way 
+> > that would have prevented the kernel from building its next random 
+> > version from within itself and it did not produce any kernel messages 
+> > with various random kernel debug, compile and boot options.
+> >   
 > 
-> I've found suspend on my desktop defunct in mmotm 2008-09-13-03-09 (opposing to
-> 2008-09-10-19-39).
-> 
-> Dmesg says:
-> 
-> uhci_hcd 0000:00:1d.1: PCI INT B disabled
-> pci_legacy_suspend(): usb_hcd_pci_suspend+0x0/0x3e0 returns -16
-> pm_op(): pci_pm_suspend+0x0/0xd0 returns -16
-> PM: Device 0000:00:1d.0 failed to suspend: error -16
-> PM: Some devices failed to suspend
+> Does anything in that workload actually use shared memory?
 
-The reason for this error is that the root hub wasn't already 
-suspended.  Was there a USB device plugged into that controller?
+[adding Dave]
 
-Two days ago I ran 2.6.27-rc6 plus gregkh-all-2.6.27-rc6.patch from
+For the record, Hugh tracked down the history of this bug and it went
+something like this:
 
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+- I forked shmem.c and trimmed it down, keeping the function in question
+intact
+- Dave Hansen made divergent changes to shmem and tiny-shmem for reasons
+that aren't immediately obvious
+- Al Viro fixed a resultant dput bug
+- Nick fixed a resultant deadlock bug by undoing the divergence
 
-on my laptop, and it suspended with no problem.  Can you try the same 
-kernel?
+As far as Hugh and I can see, there was no reason for the divergent
+change. Really, we should probably re-unify the files to prevent such
+further confusion.
 
-If you still run into problems, post more of the dmesg log (with 
-CONFIG_USB_DEBUG enabled, of course!).
-
-Alan Stern
+-- 
+Mathematics is the supreme nostalgia of our time.
 
