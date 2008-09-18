@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYIRNLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYIRNSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYIRNLj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 09:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYIRNL2
+	id S1755903AbYIRNSk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 09:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbYIRNSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 09:11:28 -0400
-Received: from zombie2.ncsc.mil ([144.51.88.133]:45781 "EHLO zombie2.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbYIRNL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 09:11:27 -0400
-Subject: Re: [Bug #11500] /proc/net bug related to selinux
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Moore <paul.moore@hp.com>,
-       jmorris@namei.org, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <m17i9axv1q.fsf@frodo.ebiederm.org>
-References: <j3zWxt-CgYL.A.WTF.bbsyIB@albercik>
-	 <1221483926.30816.18.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080917125053.1f9ecf37.akpm@linux-foundation.org>
-	 <200809171724.36269.paul.moore@hp.com>
-	 <20080917144842.7df59f9e.akpm@linux-foundation.org>
-	 <m17i9axv1q.fsf@frodo.ebiederm.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 18 Sep 2008 08:38:41 -0400
-Message-Id: <1221741521.24048.17.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Sep 2008 09:18:30 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49964 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753477AbYIRNSa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 09:18:30 -0400
+X-Sasl-enc: LlrTfXlS4ZDYPyZ45EKrqyoChNEuW3yqAaUnJCiCNalk 1221743908
+Date: Thu, 18 Sep 2008 10:18:24 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Michael Buesch <mb@bu3sch.de>, Ivo van Doorn <IvDoorn@gmail.com>
+Subject: Re: [PATCH] rfkill: update LEDs for all state changes
+Message-ID: <20080918131824.GD1583@khazad-dum.debian.net>
+References: <20080917023334.GA1187@khazad-dum.debian.net> <1221682077-21170-1-git-send-email-hmh@hmh.eng.br> <48D16EDB.8090700@lwfinger.net> <20080918124318.GB1583@khazad-dum.debian.net> <48D25311.1010805@lwfinger.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D25311.1010805@lwfinger.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-09-17 at 15:32 -0700, Eric W. Biederman wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On Thu, 18 Sep 2008, Larry Finger wrote:
+> Henrique de Moraes Holschuh wrote:
+> > Curious.  My patch to rfkill WAS tested, and it DOES fix the same issue you
+> > reported (hardware state changes to HARD_BLOCKED do not update the LEDs) in
+> > thinkpad-acpi.  It is also an "obviously correct" patch.
+> > 
+> > What this probably means is that b43 would need a little more rfkill surgery
+> > than what Matthew's patch already did.  I will look over Matthew's patch,
+> > but my guess is that Michael's comments about the need to add some extra
+> > code to b43 to actually synthesize the rfkill state from the separate HW and
+> > SW rfkill input lines are a strong hint of where the problem might be.
 > 
-> > We don't even know the extent of the damage yet.  Which distros were
-> > affected? With which versions of which userspace packages?
-> 
-> This seems to me to be an extremely fragile selinux user space policy.
-> In their code that derives security labels from path names.
-> Why don't we have AppArmor in the kernel again?
+> You must have missed my mail that shows the corrected patch for b43.
+> See http://marc.info/?l=linux-wireless&m=122171448920267&w=2.
 
-I think I explained that one before - in the case of /proc, the only
-stable basis we have for deducing the security properties / protection
-requirements for a given entry is its name, and its name can be reliably
-constructed from the kernel's internal proc_dir_entry tree w/o any
-ambiguity or potential for userspace manipulation (unlike the pathname
-returned by d_path for a normal file).  I'd agree that it isn't optimal,
-but it is what we have.
+Indeed I have.  I will read it now and comment on it.
 
-> Further I don't see how we could have possibly have supported that user space
-> policy.  How can we apply a user space defined label required by the selinux
-> policy to a symlink that did not exist?
-
-I'm not blaming anyone here, or trying to argue that the /proc/net
-changes should be reverted.  What happened here is that a kernel
-interface (/proc/net) changed in a subtle way that had a side effect on
-permission checking, and we tried to hide that change at the time (in
-terms of ensuring that the new /proc/self/net tree would still be
-labeled correctly), and we missed the fact that there would still be a
-new check on the symlink read that wouldn't be covered by existing
-policy.
-
-> Everything here sounds to me like that selinux policy is impossibly brittle.
-> And anything that is that brittle I have no intention in claiming is a bug
-> in proc.
-
-I'm not arguing that this is a bug in proc or in selinux for that
-matter.
-
-I do however think that the mantra that we can't require users to update
-policy for kernel changes is unsupportable in general.  The precise set
-of permission checks on a given operation is not set in stone and it is
-not part of the kernel/userland interface/contract.  Policy isn't
-"userspace"; it governs what userspace can do, and it has to adapt to
-kernel changes.
-
-Users who are willing/able to run the latest kernel on their own w/o
-waiting for a coordinated update of kernel and policy from their
-distribution ought to be able to create a local policy module - it isn't
-rocket science, and they can always fall back on audit2allow if they
-need to do so.
+Thanks for the heads' up :-)
 
 -- 
-Stephen Smalley
-National Security Agency
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
