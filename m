@@ -1,124 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbYIRNhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYIRNmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbYIRNhn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 09:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYIRNhf
+	id S1755401AbYIRNmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 09:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYIRNmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 09:37:35 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:53012 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753164AbYIRNhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 09:37:35 -0400
-Date: Thu, 18 Sep 2008 08:37:33 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Mayer <ajm@sgi.com>,
-       Dimitri Sivanich <sivanich@sgi.com>, jeremy@goop.org,
-       rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
-Message-ID: <20080918133733.GA8830@sgi.com>
-References: <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com> <20080917173032.GA5674@sgi.com> <m17i9a61l2.fsf@frodo.ebiederm.org>
+	Thu, 18 Sep 2008 09:42:12 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34937 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752940AbYIRNmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 09:42:11 -0400
+Date: Thu, 18 Sep 2008 09:41:13 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: j@w1.fi, jouni.malinen@atheros.com, alex.williamson@hp.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking (WEXT events and 64/32 compat)
+Message-ID: <20080918134112.GB4552@tuxdriver.com>
+References: <20080908.204323.04156464.davem@davemloft.net> <20080909040525.GA26151@hostap.isc.org> <20080917191128.GA23239@hostap.isc.org> <20080917.131133.135282530.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m17i9a61l2.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080917.131133.135282530.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 11:59:05AM -0700, Eric W. Biederman wrote:
+On Wed, Sep 17, 2008 at 01:11:33PM -0700, David Miller wrote:
+> From: Jouni Malinen <j@w1.fi>
+> Date: Wed, 17 Sep 2008 12:11:28 -0700
 > 
-> I need to look at these patches some more (apologies I got busy).
-
-Thanks for taking a look.
-
-I've got a not-quite-complete new version of the patchset that addresses
-most of the issues raised by Ingo. At it's heart is the following:
-
-
- arch/x86/kernel/irq.c___(new)_________________________________
-
-#include <linux/irq.h>
-
-static cpumask_t domain_online;
-
-int grab_irq_vector(struct irq_desc *desc, unsigned int vector,
-		   cpumask_t *domain)
-{
-	/* Must be called with vector lock held */
-	int cpu;
-
-	cpus_and(domain_online, *domain, cpu_online_map);
-
-	for_each_cpu_mask_nr(cpu, domain_online) {
-		if (per_cpu(vector_irq, cpu)[vector] != NULL)
-			return -EBUSY;
-	}
-
-	/* Available reserve it */
-	for_each_cpu_mask_nr(cpu, domain_online)
-		per_cpu(vector_irq, cpu)[vector] = desc;
-
-	return vector;
-}
-
-
- arch/x86/kernel/io_apic.c_____________________________________
-
-static int ioapic_grab_irq_vector(struct irq_desc *desc, unsigned int vector,
-				  cpumask_t *domain)
-{
-	/* Must be called with vector lock held */
-	struct irq_cfg *cfg;
-	int ret;
-
-	ret = grab_irq_vector(desc, vector, domain);
-	if (ret == vector) {
-		cfg = irq_cfg(desc->irq);
-		if (cfg->vector) {
-			cfg->move_in_progress = 1;
-			cfg->old_domain = cfg->domain;
-		}
-		cfg->vector = vector;
-		cfg->domain = *domain;
-	}
-	return ret;
-}
-
-I've also restructured the order of the patchset so that the first
-three patches switch vector_irq from an irq # to an irq_desc pointer, 
-replace system_vectors[] usage by a call to grab_irq_vector(), and
-finally replace used_vectors[] usage by a call to grab_irq_vector().
-You may find these three patches meaningful in and of themselves
-since Ingo seemed to indicate that they cleaned up some of the code.
-
-The last patch adds the dynamic allocate of system irq, which, if I'm
-understanding correctly, needs to be reworked so that SGI's UV irq
-needs get satisfied through a variant of MSI. The MSI code isn't
-something I've looked at before.
-
-
-> We can not assign a vector to all CPUS.
+> > Would it be acceptable to ever enable use of IWEVASSOCREQIE /
+> > IWEVSSOCRESPIE in kernel if the workaround were available in new
+> > wpa_supplicant versions? Or should we try to add a new WEXT event
+> > type that uses fixed size for the length field and then replace the old
+> > IWEVCUSTOM with the new type since IWEVCUSTOM does not work with
+> > 64/32-bit case (wpa_supplicant just knows how to avoid processing that
+> > bogus event data)?
 > 
-> We don't have the fields for vector -> irq mapping for cpus that
-> are not-online.  So we can only assign to cpus that are online now.
-> And latter add the other cpus when they come online.
+> Moving to a new event with a strictly sized datastructure, instead of
+> one that has variable sized members like pointers and crap which are
+> impossible to compat layer'ify, is indeed my preference.
 > 
-> I have had that oops, it sucks, I don't want to go back.
+> But in that case, we might as well make nl80211 usable instead.
 
-I reworked the above functions so that grab_irq_vector() enforces
-online CPUS only. (I'm assuming your statements applies to per_cpu
-vector_irq, as well. If not, then grab_irq_vector() could accept a
-cpu_possible_map domain if NON_IRQ_DESC is passed as the desc pointer.)
+This is, of course, my opinion as well.
 
-We'll need to ensure that when a CPU comes online that its vector_irqs
-that need to be set to NON_IRQ_DESC, get set properly by
-__setup_vector_irq().
-
-
-Thanks,
-Dean
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
