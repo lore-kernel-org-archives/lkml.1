@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbYIRQGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYIRQLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755541AbYIRQGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbYIRQGB
+	id S1756831AbYIRQLI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 12:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYIRQK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:06:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44526 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbYIRQGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:06:00 -0400
-Message-ID: <48D27C63.10204@garzik.org>
-Date: Thu, 18 Sep 2008 12:05:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: Chris Snook <csnook@redhat.com>, netdev@vger.kernel.org,
+	Thu, 18 Sep 2008 12:10:56 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:59444 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbYIRQKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 12:10:55 -0400
+From: Timur Tabi <timur@freescale.com>
+To: dan.j.williams@intel.com, haavard.skinnemoen@atmel.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][CORRECTED] atl2: add atl2 driver
-References: <20080914195610.1fd9dab8@osprey.hogchain.net>
-In-Reply-To: <20080914195610.1fd9dab8@osprey.hogchain.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: [PATCH v2] dmatest: properly handle duplicate DMA channels
+Date: Thu, 18 Sep 2008 11:10:17 -0500
+Message-Id: <1221754217-26974-1-git-send-email-timur@freescale.com>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> From: Chris Snook <csnook@redhat.com>
-> 
-> Driver for Atheros L2 10/100 network device. Includes necessary
-> changes for Kconfig, Makefile, and pci_ids.h.
-> 
-> Signed-off-by: Chris Snook <csnook@redhat.com>
-> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-> ---
-> 
-> Changed "Sighed-off-by" to "Signed-off-by" for Chris' entry.
-> 
-> If this file is too large for vger, the full patch may be obtained from
-> ftp://ftp.hogchain.net/pub/linux/attansic/atlx/0001-atl2-add-atl2-driver.patch
-> 
->  drivers/net/Kconfig       |   11 +
->  drivers/net/Makefile      |    1 +
->  drivers/net/atlx/Makefile |    2 +
->  drivers/net/atlx/atl2.c   | 3127 +++++++++++++++++++++++++++++++++++++++++++++
->  drivers/net/atlx/atl2.h   |  530 ++++++++
->  include/linux/pci_ids.h   |    1 +
->  6 files changed, 3672 insertions(+), 0 deletions(-)
+Update the the dmatest driver so that it handles duplicate DMA channels
+properly.
 
-applied
+When a DMA client is notified of an available DMA channel, it must check if it
+has already allocated resources for that channel.  If so, it should return
+DMA_DUP.  This can happen, for example, if a DMA driver calls
+dma_async_device_register() more than once.
 
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+
+Replaced list_for_each_entry_safe() with list_for_each_entry()
+
+ drivers/dma/dmatest.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index a08d197..422500c 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -325,6 +325,11 @@ static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
+ 	struct dmatest_thread	*thread;
+ 	unsigned int		i;
+ 
++	/* Have we already been told about this channel? */
++	list_for_each_entry(dtc, &dmatest_channels, node)
++		if (dtc->chan == chan)
++			return DMA_DUP;
++
+ 	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_ATOMIC);
+ 	if (!dtc) {
+ 		pr_warning("dmatest: No memory for %s\n", chan->dev.bus_id);
+-- 
+1.5.5
 
