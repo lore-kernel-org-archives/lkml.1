@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYIRQLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbYIRQL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756831AbYIRQLI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYIRQK4
+	id S1757043AbYIRQL1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 12:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYIRQLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:10:56 -0400
-Received: from de01egw01.freescale.net ([192.88.165.102]:59444 "EHLO
-	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595AbYIRQKz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:10:55 -0400
-From: Timur Tabi <timur@freescale.com>
-To: dan.j.williams@intel.com, haavard.skinnemoen@atmel.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH v2] dmatest: properly handle duplicate DMA channels
-Date: Thu, 18 Sep 2008 11:10:17 -0500
-Message-Id: <1221754217-26974-1-git-send-email-timur@freescale.com>
-X-Mailer: git-send-email 1.5.5
+	Thu, 18 Sep 2008 12:11:16 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33847 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755570AbYIRQLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 12:11:15 -0400
+Message-ID: <48D27D9F.7090103@garzik.org>
+Date: Thu, 18 Sep 2008 12:11:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Marin Mitov <mitov@issp.bas.bg>
+CC: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH]pci_dma_mapping_error changes
+References: <200809180812.25143.mitov@issp.bas.bg>
+In-Reply-To: <200809180812.25143.mitov@issp.bas.bg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the the dmatest driver so that it handles duplicate DMA channels
-properly.
+Marin Mitov wrote:
+> Make the example code consistent with changed API.
+> 
+> Signed-off-by: Marin Mitov <mitov@ispp.bas.bg>
+> 
+> ===================================================
+> --- a/Documentation/DMA-mapping.txt	2008-09-14 11:34:48.000000000 +0300
+> +++ b/Documentation/DMA-mapping.txt	2008-09-14 11:37:17.000000000 +0300
+> @@ -740,7 +740,7 @@ failure can be determined by:
+>  	dma_addr_t dma_handle;
+>  
+>  	dma_handle = pci_map_single(pdev, addr, size, direction);
+> -	if (pci_dma_mapping_error(dma_handle)) {
+> +	if (pci_dma_mapping_error(pdev, dma_handle)) {
+>  		/*
+>  		 * reduce current DMA mapping usage,
+>  		 * delay and try again later or
 
-When a DMA client is notified of an available DMA channel, it must check if it
-has already allocated resources for that channel.  If so, it should return
-DMA_DUP.  This can happen, for example, if a DMA driver calls
-dma_async_device_register() more than once.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
-
-Replaced list_for_each_entry_safe() with list_for_each_entry()
-
- drivers/dma/dmatest.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index a08d197..422500c 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -325,6 +325,11 @@ static enum dma_state_client dmatest_add_channel(struct dma_chan *chan)
- 	struct dmatest_thread	*thread;
- 	unsigned int		i;
- 
-+	/* Have we already been told about this channel? */
-+	list_for_each_entry(dtc, &dmatest_channels, node)
-+		if (dtc->chan == chan)
-+			return DMA_DUP;
-+
- 	dtc = kmalloc(sizeof(struct dmatest_chan), GFP_ATOMIC);
- 	if (!dtc) {
- 		pr_warning("dmatest: No memory for %s\n", chan->dev.bus_id);
--- 
-1.5.5
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
 
