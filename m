@@ -1,186 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbYIRReS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbYIRRgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557AbYIRReS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 13:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbYIRReI
+	id S1756257AbYIRRgj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 13:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbYIRRgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 13:34:08 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51320 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754236AbYIRReH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 13:34:07 -0400
-Date: Thu, 18 Sep 2008 13:34:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Theodore Tso <tytso@mit.edu>, gregkh@suse.de
-Subject: [PATCH] script to remove unused modules from config file
-Message-ID: <alpine.DEB.1.10.0809181330410.11972@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 18 Sep 2008 13:36:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47317 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754590AbYIRRga (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 13:36:30 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: evilsocket <evilsocket@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Stack buffer size issue
+In-Reply-To: Your message of "Thu, 18 Sep 2008 14:30:12 +0200."
+             <48D249D4.8000400@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <48D249D4.8000400@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1221759388_3536P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 18 Sep 2008 13:36:28 -0400
+Message-ID: <21780.1221759388@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1221759388_3536P
+Content-Type: text/plain; charset=us-ascii
 
-I heard that at KS my script was mentioned, and that I should submit
-it as a patch to be added to the scripts directory. Well here's the patch.
+On Thu, 18 Sep 2008 14:30:12 +0200, evilsocket said:
 
-The way this script works is that you must boot into the kernel that
-you want to clean up the config. Then change into the directory that holds
-the source of the kernel you booted into. Make sure all the modules you
-want are loaded (remember to plug in a USB stick ;-) Then simply run
-this script redirecting the output into another file.
+> char * abuffer[123];
 
- $ cd ~/kernels/linux.git
- $ scripts/streamline_config.pl > config-sl
- $ mv .config config-orig
- $ mv config-sl .config
- $ make oldconfig
+Note that this '123' isn't anything that's known to the kernel, or passed to
+it.
 
-That's it!
+> This *should* give the output :
+> 
+> SIZE : 123
 
-The way this works is that the script reads what modules are loaded by doing
-a lsmod. Then it reads all the Makefiles finding the configurations that
-turn on those modules. Finally it reads the config and disables all modules
-that were not used.
+Why "should' it do so?  The kernel doesn't know or care much about what your
+stack layout is, except if you overflow the provided space.
 
-Note, this script does not touch any "y" option, only "m".
+Minor nit:  'char *abuffer[123];' allocates an array of 123 pointers-to-ints,
+which means it's actually 123*4 or 123*8 bytes in size, depending on the size
+of a pointer (different for 32 and 64 bit programs).  So if you got 123 as
+an answer, that would *still* be wrong...
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- scripts/streamline_config.pl |  121 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 121 insertions(+)
+> I'm using the struct task_struct in the kernel module, looping the mmap 
+> to find the vm area the address resides in and then to set
+> 
+> mm_size = vm_end - vm_start
 
-Index: linux-tip.git/scripts/streamline_config.pl
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-tip.git/scripts/streamline_config.pl	2008-09-17 14:56:52.000000000 -0400
-@@ -0,0 +1,121 @@
-+#!/usr/bin/perl -w
-+#
-+# Copywrite 2005-2008 - Steven Rostedt
-+# Licensed under the terms of the GNU GPL License version 2
-+#
-+#  It's simple enough to figure out how this works.
-+#  If not, then you can ask me at rostedt@goodmis.org
-+#
-+# What it does?
-+#
-+#   If you have installed a Linux kernel from a distribution
-+#   that turns on way too many modules than you need, and
-+#   you only want the modules you use, than this program
-+#   is perfect for you.
-+#
-+#   It gives you the ability to turn off all the modules that are
-+#   not loaded on your system.
-+#
-+# Howto:
-+#
-+#  1. Boot up the kernel that you want to stream line the config on.
-+#  2. Change directory to the directory holding the source of the
-+#       kernel that you just booted.
-+#  3. Copy the configuraton file to this directory as .config
-+#  4. Have all your devices that you need modules for connected and
-+#      operational (make sure that their corresponding modules are loaded)
-+#  5. Run this script redirecting the output to some other file
-+#       like config_strip.
-+#  6. Back up your old config (if you want too).
-+#  7. copy the config_strip file to .config
-+#  8. Run "make oldconfig"
-+#
-+#  Now your kernel is ready to be built with only the modules that
-+#  are loaded.
-+#
-+# Here's what I did with my Debian distribution.
-+#
-+#    cd /usr/src/linux-2.6.10
-+#    cp /boot/config-2.6.10-1-686-smp .config
-+#    ~/bin/streamline_config > config_strip
-+#    mv .config config_sav
-+#    mv config_strip .config
-+#    make oldconfig
-+#
-+my $config = ".config";
-+my $linuxpath = ".";
-+
-+open(CIN,$config) || die "Can't open current config file: $config";
-+my @makefiles = `find $linuxpath -name Makefile`;
-+
-+my %objects;
-+my $var;
-+my $cont = 0;
-+
-+foreach my $makefile (@makefiles) {
-+	chomp $makefile;
-+
-+	open(MIN,$makefile) || die "Can't open $makefile";
-+	while (<MIN>) {
-+		my $catch = 0;
-+
-+		if ($cont && /(\S.*)$/) {
-+			$objs = $1;
-+			$catch = 1;
-+		}
-+		$cont = 0;
-+
-+		if (/obj-\$\((CONFIG_[^)]*)\)\s*[+:]?=\s*(.*)/) {
-+			$var = $1;
-+			$objs = $2;
-+			$catch = 1;
-+		}
-+		if ($catch) {
-+			if ($objs =~ m,(.*)\\$,) {
-+				$objs = $1;
-+				$cont = 1;
-+			}
-+
-+			foreach my $obj (split /\s+/,$objs) {
-+				$obj =~ s/-/_/g;
-+				if ($obj =~ /(.*)\.o$/) {
-+					$objects{$1} = $var;
-+				}
-+			}
-+		}
-+	}
-+	close(MIN);
-+}
-+
-+my %modules;
-+
-+open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
-+while (<LIN>) {
-+	next if (/^Module/);  # Skip the first line.
-+	if (/^(\S+)/) {
-+		$modules{$1} = 1;
-+	}
-+}
-+close (LIN);
-+
-+my %configs;
-+foreach my $module (keys(%modules)) {
-+	if (defined($objects{$module})) {
-+		$configs{$objects{$module}} = $module;
-+	} else {
-+		print STDERR "$module config not found!!\n";
-+	}
-+}
-+
-+while(<CIN>) {
-+	if (/^(CONFIG.*)=m/) {
-+		if (defined($configs{$1})) {
-+			print;
-+		} else {
-+			print "# $1 is not set\n";
-+		}
-+	} else {
-+		print;
-+	}
-+}
-+close(CIN);
+Right.  That's the size of the mm you're looking at. There isn't one mm
+for each variable in your program.
 
+> But doing so i obtaing only the size of the vm page the buffer resides .
+
+That's probably because the struct mm that covers your program stack is only
+one page in size.
+
+Do a 'cat /proc/self/maps', which will show the maps in use for the /bin/cat
+process, and ponder why there's a lot fewer lines than /bin/cat has variables.
+
+--==_Exmh_1221759388_3536P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFI0pGccC3lWbTT17ARAiIQAKCLmfJ2dXDlelpjdrbvQP88jKnZiACfdblT
+ZBC1Np2P1nwSgp3Dq/zHpg4=
+=FvEx
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1221759388_3536P--
