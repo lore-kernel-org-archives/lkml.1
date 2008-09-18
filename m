@@ -1,55 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYIRHBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbYIRHFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbYIRHBT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 03:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYIRHBL
+	id S1755280AbYIRHFF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 03:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYIRHEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 03:01:11 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44246 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbYIRHBK (ORCPT
+	Thu, 18 Sep 2008 03:04:54 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:47419 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751210AbYIRHEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 03:01:10 -0400
-Date: Thu, 18 Sep 2008 15:58:26 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "MinChan Kim" <minchan.kim@gmail.com>
-Subject: Re: Populating multiple ptes at fault time
-Cc: kosaki.motohiro@jp.fujitsu.com, "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Hugh Dickens" <hugh@veritas.com>,
-       "Linux Memory Management List" <linux-mm@kvack.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Avi Kivity" <avi@qumranet.com>
-In-Reply-To: <28c262360809171650g1395bbe2ya4e560851d37760d@mail.gmail.com>
-References: <48D142B2.3040607@goop.org> <28c262360809171650g1395bbe2ya4e560851d37760d@mail.gmail.com>
-Message-Id: <20080920035706.BAD6.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 18 Sep 2008 03:04:53 -0400
+Date: Thu, 18 Sep 2008 12:33:40 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Theodore Ts'o" <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH 2/4] ext3: truncate block allocated on a failed
+	ext3_write_begin
+Message-ID: <20080918070340.GA7042@skywalker>
+References: <1221319971-29879-1-git-send-email-tytso@mit.edu> <1221319971-29879-2-git-send-email-tytso@mit.edu> <20080917122254.a704eff1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080917122254.a704eff1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi, all
+On Wed, Sep 17, 2008 at 12:22:54PM -0700, Andrew Morton wrote:
+> On Sat, 13 Sep 2008 11:32:49 -0400
+> "Theodore Ts'o" <tytso@MIT.EDU> wrote:
 > 
-> I have been thinking about this idea in native.
-> I didn't consider it in minor page fault.
-> As you know, it costs more cheap than major fault.
-> However, the page fault is one of big bottleneck on demand-paging system.
-> I think major fault might be a rather big overhead in many core system.
+> > From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > 
+> > For blocksize < pagesize we need to remove blocks that got allocated in
+> > block_write_begin() if we fail with ENOSPC for later blocks.
+> > block_write_begin() internally does this if it allocated page
+> > locally. This makes sure we don't have blocks outside inode.i_size
+> > during ENOSPC.
+> > 
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> > Cc: linux-ext4@vger.kernel.org
+> > ---
+> >  fs/ext3/inode.c |    7 +++++++
+> >  1 files changed, 7 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> > index 507d868..bff22b9 100644
+> > --- a/fs/ext3/inode.c
+> > +++ b/fs/ext3/inode.c
+> > @@ -1178,6 +1178,13 @@ write_begin_failed:
+> >  		ext3_journal_stop(handle);
+> >  		unlock_page(page);
+> >  		page_cache_release(page);
+> > +		/*
+> > +		 * block_write_begin may have instantiated a few blocks
+> > +		 * outside i_size.  Trim these off again. Don't need
+> > +		 * i_size_read because we hold i_mutex.
+> > +		 */
+> > +		if (pos + len > inode->i_size)
+> > +			vmtruncate(inode, inode->i_size);
+> >  	}
+> >  	if (ret == -ENOSPC && ext3_should_retry_alloc(inode->i_sb, &retries))
+> >  		goto retry;
 > 
-> What do you think about this idea in native ?
-> Do you really think that this idea don't help much in native ?
+> Well we used to do this trimming in core VFS, but Nick broke it.  We
+> still do it if the fs doesn't implement ->write_begin().
+
+We still do it in block_write_begin if the pages are allocated by
+block_write_begin.
 > 
-> If I implement it in native, What kinds of benchmark do I need?
-> Could you recommend any benchmark ?
-
-I guess it is also useful for native.
-Then, if you post patch & benchmark result, I'll review it with presusure.
+> Should we do this trimming in pagecache_write_begin() in both cases?
 
 
+pagecache_write_begin is not used in the write_begin call path for
+ext3/ext4.
+generic_file_buffered_write
+	generic_perform_write
+		ext3_write_begin
+			block_write_begin
 
-
+-aneesh
