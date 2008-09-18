@@ -1,195 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYIRKZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYIRK0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbYIRKZx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 06:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYIRKZl
+	id S1756318AbYIRK0b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 06:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYIRK0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 06:25:41 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:36948 "EHLO
+	Thu, 18 Sep 2008 06:26:20 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:36952 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbYIRKZj (ORCPT
+	with ESMTP id S1754225AbYIRK0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 06:25:39 -0400
+	Thu, 18 Sep 2008 06:26:19 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: jkosina@suse.cz
 Cc: linux-input@vger.kernel.org, anssi.hannula@gmail.com,
        linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 4/5 #2] HID: remove hid-ff
-Date: Thu, 18 Sep 2008 12:23:33 +0200
-Message-Id: <1221733414-26924-4-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH 5/5 #2] HID: convert to dev_* prints
+Date: Thu, 18 Sep 2008 12:23:34 +0200
+Message-Id: <1221733414-26924-5-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1221733414-26924-3-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1221733414-26924-4-git-send-email-jirislaby@gmail.com>
 References: <1221733414-26924-1-git-send-email-jirislaby@gmail.com>
  <1221733414-26924-2-git-send-email-jirislaby@gmail.com>
  <1221733414-26924-3-git-send-email-jirislaby@gmail.com>
+ <1221733414-26924-4-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hid-ff.c now calls only pidff (generic driver), the special ones are now
-in separate drivers. Invoke pidff on all non-special directly.
+Since we have a real device bound to a driver, we may use struct
+device for printing. Use dev_* functions instead of printks in
+4 drivers.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/hid/usbhid/Kconfig    |   13 --------
- drivers/hid/usbhid/Makefile   |    3 --
- drivers/hid/usbhid/hid-core.c |    2 +-
- drivers/hid/usbhid/hid-ff.c   |   69 -----------------------------------------
- include/linux/hid.h           |    9 +-----
- 5 files changed, 2 insertions(+), 94 deletions(-)
- delete mode 100644 drivers/hid/usbhid/hid-ff.c
+ drivers/hid/hid-lg2ff.c |    8 ++++----
+ drivers/hid/hid-pl.c    |   11 ++++++-----
+ drivers/hid/hid-tmff.c  |   26 ++++++++++++++------------
+ drivers/hid/hid-zpff.c  |    6 +++---
+ 4 files changed, 27 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/hid/usbhid/Kconfig b/drivers/hid/usbhid/Kconfig
-index 3cfc076..5d9aa95 100644
---- a/drivers/hid/usbhid/Kconfig
-+++ b/drivers/hid/usbhid/Kconfig
-@@ -24,21 +24,8 @@ config USB_HID
- comment "Input core support is needed for USB HID input layer or HIDBP support"
- 	depends on USB_HID && INPUT=n
+diff --git a/drivers/hid/hid-lg2ff.c b/drivers/hid/hid-lg2ff.c
+index b2e9a67..4e6dc6e 100644
+--- a/drivers/hid/hid-lg2ff.c
++++ b/drivers/hid/hid-lg2ff.c
+@@ -71,18 +71,18 @@ int lg2ff_init(struct hid_device *hid)
+ 	int error;
  
--config HID_FF
--	bool "Force feedback support (EXPERIMENTAL)"
--	depends on USB_HID && EXPERIMENTAL
--	help
--	  Say Y here is you want force feedback support for a few HID devices.
--	  See below for a list of supported devices.
--
--	  See <file:Documentation/input/ff.txt> for a description of the force
--	  feedback API.
--
--	  If unsure, say N.
--
- config HID_PID
- 	bool "PID device support"
--	depends on HID_FF
- 	help
- 	  Say Y here if you have a PID-compliant device and wish to enable force
- 	  feedback for it. Microsoft Sidewinder Force Feedback 2 is one of such
-diff --git a/drivers/hid/usbhid/Makefile b/drivers/hid/usbhid/Makefile
-index 5c460fc..1329ecb 100644
---- a/drivers/hid/usbhid/Makefile
-+++ b/drivers/hid/usbhid/Makefile
-@@ -13,9 +13,6 @@ endif
- ifeq ($(CONFIG_HID_PID),y)
- 	usbhid-objs	+= hid-pidff.o
- endif
--ifeq ($(CONFIG_HID_FF),y)
--	usbhid-objs	+= hid-ff.o
--endif
+ 	if (list_empty(report_list)) {
+-		printk(KERN_ERR "hid-lg2ff: no output report found\n");
++		dev_err(&hid->dev, "no output report found\n");
+ 		return -ENODEV;
+ 	}
  
- obj-$(CONFIG_USB_HID)		+= usbhid.o
- obj-$(CONFIG_USB_KBD)		+= usbkbd.o
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index 4ec10aa..07840df 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -935,7 +935,7 @@ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 	usb_set_intfdata(intf, hid);
- 	hid->ll_driver = &usb_hid_driver;
- 	hid->hid_output_raw_report = usbhid_output_raw_report;
--	hid->ff_init = hid_ff_init;
-+	hid->ff_init = hid_pidff_init;
- #ifdef CONFIG_USB_HIDDEV
- 	hid->hiddev_connect = hiddev_connect;
- 	hid->hiddev_hid_event = hiddev_hid_event;
-diff --git a/drivers/hid/usbhid/hid-ff.c b/drivers/hid/usbhid/hid-ff.c
-deleted file mode 100644
-index eca01a6..0000000
---- a/drivers/hid/usbhid/hid-ff.c
-+++ /dev/null
-@@ -1,69 +0,0 @@
--/*
-- *  Force feedback support for hid devices.
-- *  Not all hid devices use the same protocol. For example, some use PID,
-- *  other use their own proprietary procotol.
-- *
-- *  Copyright (c) 2002-2004 Johann Deneux
-- */
--
--/*
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, write to the Free Software
-- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-- *
-- * Should you need to contact me, the author, you can do so by
-- * e-mail - mail your message to <johann.deneux@it.uu.se>
-- */
--
--#include <linux/input.h>
--
--#undef DEBUG
--#include <linux/usb.h>
--
--#include <linux/hid.h>
--#include "usbhid.h"
--
--/*
-- * This table contains pointers to initializers. To add support for new
-- * devices, you need to add the USB vendor and product ids here.
-- */
--struct hid_ff_initializer {
--	u16 idVendor;
--	u16 idProduct;
--	int (*init)(struct hid_device*);
--};
--
--/*
-- * We try pidff when no other driver is found because PID is the
-- * standards compliant way of implementing force feedback in HID.
-- * pidff_init() will quickly abort if the device doesn't appear to
-- * be a PID device
-- */
--static struct hid_ff_initializer inits[] = {
--	{ 0,	 0,	 hid_pidff_init}  /* Matches anything */
--};
--
--int hid_ff_init(struct hid_device* hid)
--{
--	struct hid_ff_initializer *init;
--	int vendor = le16_to_cpu(hid_to_usb_dev(hid)->descriptor.idVendor);
--	int product = le16_to_cpu(hid_to_usb_dev(hid)->descriptor.idProduct);
--
--	for (init = inits; init->idVendor; init++)
--		if (init->idVendor == vendor && init->idProduct == product)
--			break;
--
--	return init->init(hid);
--}
--EXPORT_SYMBOL_GPL(hid_ff_init);
--
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 6cf0357..eb1844c 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -757,17 +757,10 @@ int usbhid_quirks_init(char **quirks_param);
- void usbhid_quirks_exit(void);
- void usbhid_set_leds(struct hid_device *hid);
+ 	report = list_entry(report_list->next, struct hid_report, list);
  
--#ifdef CONFIG_HID_FF
--int hid_ff_init(struct hid_device *hid);
--
- #ifdef CONFIG_HID_PID
- int hid_pidff_init(struct hid_device *hid);
- #else
--static inline int hid_pidff_init(struct hid_device *hid) { return -ENODEV; }
--#endif
--
--#else
--#define hid_ff_init	NULL
-+#define hid_pidff_init NULL
- #endif
+ 	if (report->maxfield < 1) {
+-		printk(KERN_ERR "hid-lg2ff: output report is empty\n");
++		dev_err(&hid->dev, "output report is empty\n");
+ 		return -ENODEV;
+ 	}
+ 	if (report->field[0]->report_count < 7) {
+-		printk(KERN_ERR "hid-lg2ff: not enough values in the field\n");
++		dev_err(&hid->dev, "not enough values in the field\n");
+ 		return -ENODEV;
+ 	}
  
- #ifdef CONFIG_HID_DEBUG
+@@ -109,7 +109,7 @@ int lg2ff_init(struct hid_device *hid)
+ 
+ 	usbhid_submit_report(hid, report, USB_DIR_OUT);
+ 
+-	printk(KERN_INFO "Force feedback for Logitech Rumblepad 2 by "
++	dev_info(&hid->dev, "Force feedback for Logitech Rumblepad 2 by "
+ 	       "Anssi Hannula <anssi.hannula@gmail.com>\n");
+ 
+ 	return 0;
+diff --git a/drivers/hid/hid-pl.c b/drivers/hid/hid-pl.c
+index b450084..682cac1 100644
+--- a/drivers/hid/hid-pl.c
++++ b/drivers/hid/hid-pl.c
+@@ -90,7 +90,7 @@ static int plff_init(struct hid_device *hid)
+ 	   currently unknown. */
+ 
+ 	if (list_empty(report_list)) {
+-		printk(KERN_ERR "hid-plff: no output reports found\n");
++		dev_err(&hid->dev, "no output reports found\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -99,18 +99,19 @@ static int plff_init(struct hid_device *hid)
+ 		report_ptr = report_ptr->next;
+ 
+ 		if (report_ptr == report_list) {
+-			printk(KERN_ERR "hid-plff: required output report is missing\n");
++			dev_err(&hid->dev, "required output report is "
++					"missing\n");
+ 			return -ENODEV;
+ 		}
+ 
+ 		report = list_entry(report_ptr, struct hid_report, list);
+ 		if (report->maxfield < 1) {
+-			printk(KERN_ERR "hid-plff: no fields in the report\n");
++			dev_err(&hid->dev, "no fields in the report\n");
+ 			return -ENODEV;
+ 		}
+ 
+ 		if (report->field[0]->report_count < 4) {
+-			printk(KERN_ERR "hid-plff: not enough values in the field\n");
++			dev_err(&hid->dev, "not enough values in the field\n");
+ 			return -ENODEV;
+ 		}
+ 
+@@ -136,7 +137,7 @@ static int plff_init(struct hid_device *hid)
+ 		usbhid_submit_report(hid, plff->report, USB_DIR_OUT);
+ 	}
+ 
+-	printk(KERN_INFO "hid-plff: Force feedback for PantherLord/GreenAsia "
++	dev_info(&hid->dev, "Force feedback for PantherLord/GreenAsia "
+ 	       "devices by Anssi Hannula <anssi.hannula@gmail.com>\n");
+ 
+ 	return 0;
+diff --git a/drivers/hid/hid-tmff.c b/drivers/hid/hid-tmff.c
+index be7ebe2..1b7cba0 100644
+--- a/drivers/hid/hid-tmff.c
++++ b/drivers/hid/hid-tmff.c
+@@ -149,27 +149,28 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
+ 			switch (field->usage[0].hid) {
+ 			case THRUSTMASTER_USAGE_FF:
+ 				if (field->report_count < 2) {
+-					warn("ignoring FF field with "
+-							"report_count < 2");
++					dev_warn(&hid->dev, "ignoring FF field "
++						"with report_count < 2\n");
+ 					continue;
+ 				}
+ 
+ 				if (field->logical_maximum ==
+ 						field->logical_minimum) {
+-					warn("ignoring FF field with "
+-							"logical_maximum == "
+-							"logical_minimum");
++					dev_warn(&hid->dev, "ignoring FF field "
++							"with logical_maximum "
++							"== logical_minimum\n");
+ 					continue;
+ 				}
+ 
+ 				if (tmff->report && tmff->report != report) {
+-					warn("ignoring FF field in other "
+-							"report");
++					dev_warn(&hid->dev, "ignoring FF field "
++							"in other report\n");
+ 					continue;
+ 				}
+ 
+ 				if (tmff->ff_field && tmff->ff_field != field) {
+-					warn("ignoring duplicate FF field");
++					dev_warn(&hid->dev, "ignoring "
++							"duplicate FF field\n");
+ 					continue;
+ 				}
+ 
+@@ -182,7 +183,8 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
+ 				break;
+ 
+ 			default:
+-				warn("ignoring unknown output usage %08x",
++				dev_warn(&hid->dev, "ignoring unknown output "
++						"usage %08x\n",
+ 						field->usage[0].hid);
+ 				continue;
+ 			}
+@@ -190,7 +192,7 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
+ 	}
+ 
+ 	if (!tmff->report) {
+-		err("cant find FF field in output reports\n");
++		dev_err(&hid->dev, "can't find FF field in output reports\n");
+ 		error = -ENODEV;
+ 		goto fail;
+ 	}
+@@ -199,8 +201,8 @@ static int tmff_init(struct hid_device *hid, const signed short *ff_bits)
+ 	if (error)
+ 		goto fail;
+ 
+-	info("Force feedback for ThrustMaster devices by Zinx Verituse "
+-			"<zinx@epicsol.org>");
++	dev_info(&hid->dev, "force feedback for ThrustMaster devices by Zinx "
++			"Verituse <zinx@epicsol.org>");
+ 	return 0;
+ 
+ fail:
+diff --git a/drivers/hid/hid-zpff.c b/drivers/hid/hid-zpff.c
+index 9ed04ee..ea82f37 100644
+--- a/drivers/hid/hid-zpff.c
++++ b/drivers/hid/hid-zpff.c
+@@ -73,14 +73,14 @@ static int zpff_init(struct hid_device *hid)
+ 	int error;
+ 
+ 	if (list_empty(report_list)) {
+-		printk(KERN_ERR "hid-zpff: no output report found\n");
++		dev_err(&hid->dev, "no output report found\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	report = list_entry(report_list->next, struct hid_report, list);
+ 
+ 	if (report->maxfield < 4) {
+-		printk(KERN_ERR "hid-zpff: not enough fields in report\n");
++		dev_err(&hid->dev, "not enough fields in report\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -103,7 +103,7 @@ static int zpff_init(struct hid_device *hid)
+ 	zpff->report->field[3]->value[0] = 0x00;
+ 	usbhid_submit_report(hid, zpff->report, USB_DIR_OUT);
+ 
+-	printk(KERN_INFO "Force feedback for Zeroplus based devices by "
++	dev_info(&hid->dev, "force feedback for Zeroplus based devices by "
+ 	       "Anssi Hannula <anssi.hannula@gmail.com>\n");
+ 
+ 	return 0;
 -- 
 1.6.0.1
 
