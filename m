@@ -1,208 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755977AbYIROEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbYIROEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755977AbYIROEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYIROEQ
+	id S1756394AbYIROEr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbYIROEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:04:16 -0400
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:33442 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753368AbYIROEP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:04:15 -0400
-X-BigFish: VPS-39(zz1418M1432R98dR1805M179dR936fQ873fnzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K7E9QE-03-LH0-01
-Date: Thu, 18 Sep 2008 16:03:50 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: joro@8bytes.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
-Message-ID: <20080918140350.GE24392@amd.com>
-References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com> <20080918041104K.fujita.tomonori@lab.ntt.co.jp> <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 18 Sep 2008 10:04:38 -0400
+Received: from www.tglx.de ([62.245.132.106]:54440 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754472AbYIROEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 10:04:37 -0400
+Date: Thu, 18 Sep 2008 16:04:27 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: John Ogness <john.ogness@linutronix.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv3 1/1] uio: add automata sercos3 pci card support
+Message-ID: <20080918140427.GB2991@local>
+References: <86d4j4z9xi.fsf@johno-ibook.fn.ogness.net> <86d4j3f9vs.fsf@johno-ibook.fn.ogness.net> <20080917094802.GA3034@local> <8663ovf439.fsf@johno-ibook.fn.ogness.net> <867i99u684.fsf_-_@johno-ibook.fn.ogness.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080918102931Z.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 18 Sep 2008 14:03:50.0873 (UTC) FILETIME=[60A19C90:01C91997]
+In-Reply-To: <867i99u684.fsf_-_@johno-ibook.fn.ogness.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 10:29:24AM +0900, FUJITA Tomonori wrote:
-> On Wed, 17 Sep 2008 21:28:27 +0200
-> Joerg Roedel <joro@8bytes.org> wrote:
+On Thu, Sep 18, 2008 at 11:57:15AM +0200, John Ogness wrote:
+> Here is a new version of the patch to support the Automata Sercos III
+> PCI card driver. I now check that the IRQ is enabled before accepting
+> the interrupt.
+
+Fine ;-)
+
 > 
-> > On Thu, Sep 18, 2008 at 04:20:18AM +0900, FUJITA Tomonori wrote:
-> > > On Wed, 17 Sep 2008 18:52:37 +0200
-> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
-> > > 
-> > > > The IO/TLB flushing on every unmaping operation is the most expensive
-> > > > part there and not strictly necessary. It is sufficient to do the flush
-> > > > before any entries are reused. This is patch implements lazy IO/TLB
-> > > > flushing which does exactly this.
-> > > > 
-> > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > > > ---
-> > > >  Documentation/kernel-parameters.txt |    5 +++++
-> > > >  arch/x86/kernel/amd_iommu.c         |   26 ++++++++++++++++++++++----
-> > > >  arch/x86/kernel/amd_iommu_init.c    |   10 +++++++++-
-> > > >  include/asm-x86/amd_iommu_types.h   |    9 +++++++++
-> > > >  4 files changed, 45 insertions(+), 5 deletions(-)
-> > > > 
-> > > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > > > index c2e00ee..5f0aefe 100644
-> > > > --- a/Documentation/kernel-parameters.txt
-> > > > +++ b/Documentation/kernel-parameters.txt
-> > > > @@ -284,6 +284,11 @@ and is between 256 and 4096 characters. It is defined in the file
-> > > >  			isolate - enable device isolation (each device, as far
-> > > >  			          as possible, will get its own protection
-> > > >  			          domain)
-> > > > +			unmap_flush - enable flushing of IO/TLB entries when
-> > > > +			              they are unmapped. Otherwise they are
-> > > > +				      flushed before they will be reused, which
-> > > > +				      is a lot of faster
-> > > > +
-> > > 
-> > > Would it be nice to have consistency of IOMMU parameters?
-> > 
-> > True. We should merge common parameters across IOMMUs into the
-> > iommu= parameter some time in the future, I think. It would also be the
-> > place for the IOMMU size parameter.
+> I still use a logical OR to store the enabled interrupts and I've
+> added a second use of a logical OR when restoring the enabled
+> interrupts. I added an explanation of why I do this in comments at the
+> top of the source file.
+
+Good, thanks.
+
 > 
-> Hmm, now is better than the future? I think that now you can add
-> something like 'disable_batching_flush' as a common parameter and
-> change AMD IOMMU to use it.
+> Since I use a logical OR, I also removed the extra checks if the
+> Interrupt Enable Register and ier0_cache are 0.
 
-Ok, I queued the following patch in the AMD IOMMU updates and changed
-this patch to use iommu_fullflush instead. Is this patch ok? It changes
-the behavior of GART to use lazy flushing by default. But I don't think
-that this is a problem.
+Greg, could you please add this v3 of the patch to your tree?
 
-commit 9769771290fddcfc0362c5d30242151d4eb1cc46
-Author: Joerg Roedel <joerg.roedel@amd.com>
-Date:   Thu Sep 18 15:23:43 2008 +0200
+John tested this on a VIA C3 with a test program causing 4000 irqs per
+second, it works fine.
 
-    x86: move GART TLB flushing options to generic code
-    
-    The GART currently implements the iommu=[no]fullflush command line
-    parameters which influence its IO/TLB flushing strategy. This patch
-    makes these parameters generic so that they can be used by the AMD IOMMU
-    too.
-    
-    Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> 
+> Signed-off-by: John Ogness <john.ogness@linutronix.de>
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index c2e00ee..569527e 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -888,6 +888,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 		nomerge
- 		forcesac
- 		soft
-+		fullflush
-+			Flush IO/TLB at every deallocation
-+		nofullflush
-+			Flush IO/TLB only when addresses are reused (default)
- 
- 
- 	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index 72ffb53..42c887b 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -229,8 +229,6 @@ IOMMU (input/output memory management unit)
-   iommu options only relevant to the AMD GART hardware IOMMU:
-     <size>             Set the size of the remapping area in bytes.
-     allowed            Overwrite iommu off workarounds for specific chipsets.
--    fullflush          Flush IOMMU on each allocation (default).
--    nofullflush        Don't use IOMMU fullflush.
-     leak               Turn on simple iommu leak tracing (only when
-                        CONFIG_IOMMU_LEAK is on). Default number of leak pages
-                        is 20.
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 23882c4..6dae123 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -16,6 +16,15 @@ EXPORT_SYMBOL(dma_ops);
- 
- static int iommu_sac_force __read_mostly;
- 
-+/*
-+ * If this is disabled the IOMMU will use an optimized flushing strategy
-+ * of only flushing when an mapping is reused. With it true the GART is
-+ * flushed for every mapping. Problem is that doing the lazy flush seems
-+ * to trigger bugs with some popular PCI cards, in particular 3ware (but
-+ * has been also also seen with Qlogic at least).
-+ */
-+int iommu_fullflush;
-+
- #ifdef CONFIG_IOMMU_DEBUG
- int panic_on_overflow __read_mostly = 1;
- int force_iommu __read_mostly = 1;
-@@ -171,6 +180,10 @@ static __init int iommu_setup(char *p)
- 		}
- 		if (!strncmp(p, "nomerge", 7))
- 			iommu_merge = 0;
-+		if (!strncmp(p, "fullflush", 8))
-+			iommu_fullflush = 1;
-+		if (!strncmp(p, "nofullflush", 11))
-+			iommu_fullflush = 0;
- 		if (!strncmp(p, "forcesac", 8))
- 			iommu_sac_force = 1;
- 		if (!strncmp(p, "allowdac", 8))
-diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
-index 9739d56..508ef47 100644
---- a/arch/x86/kernel/pci-gart_64.c
-+++ b/arch/x86/kernel/pci-gart_64.c
-@@ -45,15 +45,6 @@ static unsigned long iommu_pages;	/* .. and in pages */
- 
- static u32 *iommu_gatt_base;		/* Remapping table */
- 
--/*
-- * If this is disabled the IOMMU will use an optimized flushing strategy
-- * of only flushing when an mapping is reused. With it true the GART is
-- * flushed for every mapping. Problem is that doing the lazy flush seems
-- * to trigger bugs with some popular PCI cards, in particular 3ware (but
-- * has been also also seen with Qlogic at least).
-- */
--int iommu_fullflush = 1;
--
- /* Allocation bitmap for the remapping area: */
- static DEFINE_SPINLOCK(iommu_bitmap_lock);
- /* Guarded by iommu_bitmap_lock: */
-@@ -901,10 +892,6 @@ void __init gart_parse_options(char *p)
- #endif
- 	if (isdigit(*p) && get_option(&p, &arg))
- 		iommu_size = arg;
--	if (!strncmp(p, "fullflush", 8))
--		iommu_fullflush = 1;
--	if (!strncmp(p, "nofullflush", 11))
--		iommu_fullflush = 0;
- 	if (!strncmp(p, "noagp", 5))
- 		no_agp = 1;
- 	if (!strncmp(p, "noaperture", 10))
-diff --git a/include/asm-x86/iommu.h b/include/asm-x86/iommu.h
-index 546ad31..bcebc37 100644
---- a/include/asm-x86/iommu.h
-+++ b/include/asm-x86/iommu.h
-@@ -7,6 +7,7 @@ extern struct dma_mapping_ops nommu_dma_ops;
- extern int force_iommu, no_iommu;
- extern int iommu_detected;
- extern int dmar_disabled;
-+extern int iommu_fullflush;
- 
- extern unsigned long iommu_num_pages(unsigned long addr, unsigned long len);
- 
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
-
+> ---
+>  drivers/uio/Kconfig       |   13 +
+>  drivers/uio/Makefile      |    1 
+>  drivers/uio/uio_sercos3.c |  243 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 257 insertions(+)
+> diff -uprN a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+> --- a/drivers/uio/Kconfig	2008-09-17 10:25:40.000000000 +0200
+> +++ b/drivers/uio/Kconfig	2008-09-16 12:13:24.000000000 +0200
+> @@ -58,4 +58,17 @@ config UIO_SMX
+>  
+>  	  If you compile this as a module, it will be called uio_smx.
+>  
+> +config UIO_SERCOS3
+> +	tristate "Automata Sercos III PCI card driver"
+> +	default n
+> +	help
+> +	  Userspace I/O interface for the Sercos III PCI card from
+> +	  Automata GmbH. The userspace part of this driver will be
+> +	  available for download from the Automata GmbH web site.
+> +
+> +	  Automata GmbH:        http://www.automataweb.com
+> +	  Sercos III interface: http://www.sercos.com
+> +
+> +	  If you compile this as a module, it will be called uio_sercos3.
+> +
+>  endif
+> diff -uprN a/drivers/uio/Makefile b/drivers/uio/Makefile
+> --- a/drivers/uio/Makefile	2008-09-17 10:25:40.000000000 +0200
+> +++ b/drivers/uio/Makefile	2008-09-15 15:20:21.000000000 +0200
+> @@ -3,3 +3,4 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+>  obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+>  obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+>  obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
+> +obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+> diff -uprN a/drivers/uio/uio_sercos3.c b/drivers/uio/uio_sercos3.c
+> --- a/drivers/uio/uio_sercos3.c	1970-01-01 01:00:00.000000000 +0100
+> +++ b/drivers/uio/uio_sercos3.c	2008-09-18 11:49:34.000000000 +0200
+> @@ -0,0 +1,243 @@
+> +/* sercos3: UIO driver for the Automata Sercos III PCI card
+> +
+> +   Copyright (C) 2008 Linutronix GmbH
+> +     Author: John Ogness <john.ogness@linutronix.de>
+> +
+> +   This is a straight-forward UIO driver, where interrupts are disabled
+> +   by the interrupt handler and re-enabled via a write to the UIO device
+> +   by the userspace-part.
+> +
+> +   The only part that may seem odd is the use of a logical OR when
+> +   storing and restoring enabled interrupts. This is done because the
+> +   userspace-part could directly modify the Interrupt Enable Register
+> +   at any time. To reduce possible conflicts, the kernel driver uses
+> +   a logical OR to make more controlled changes (rather than blindly
+> +   overwriting previous values).
+> +
+> +   Race conditions exist if the userspace-part directly modifies the
+> +   Interrupt Enable Register while in operation. The consequences are
+> +   that certain interrupts would fail to be enabled or disabled. For
+> +   this reason, the userspace-part should only directly modify the
+> +   Interrupt Enable Register at the beginning (to get things going).
+> +   The userspace-part can safely disable interrupts at any time using
+> +   a write to the UIO device.
+> +*/
+> +
+> +#include <linux/device.h>
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/uio_driver.h>
+> +#include <linux/io.h>
+> +
+> +/* ID's for SERCOS III PCI card (PLX 9030) */
+> +#define SERCOS_SUB_VENDOR_ID  0x1971
+> +#define SERCOS_SUB_SYSID_3530 0x3530
+> +#define SERCOS_SUB_SYSID_3535 0x3535
+> +#define SERCOS_SUB_SYSID_3780 0x3780
+> +
+> +/* Interrupt Enable Register */
+> +#define IER0_OFFSET 0x08
+> +
+> +/* Interrupt Status Register */
+> +#define ISR0_OFFSET 0x18
+> +
+> +struct sercos3_priv {
+> +	u32 ier0_cache;
+> +	spinlock_t ier0_cache_lock;
+> +};
+> +
+> +/* this function assumes ier0_cache_lock is locked! */
+> +static void sercos3_disable_interrupts(struct uio_info *info,
+> +				       struct sercos3_priv *priv)
+> +{
+> +	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
+> +
+> +	/* add enabled interrupts to cache */
+> +	priv->ier0_cache |= ioread32(ier0);
+> +
+> +	/* disable interrupts */
+> +	iowrite32(0, ier0);
+> +}
+> +
+> +/* this function assumes ier0_cache_lock is locked! */
+> +static void sercos3_enable_interrupts(struct uio_info *info,
+> +				      struct sercos3_priv *priv)
+> +{
+> +	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
+> +
+> +	/* restore previously enabled interrupts */
+> +	iowrite32(ioread32(ier0) | priv->ier0_cache, ier0);
+> +	priv->ier0_cache = 0;
+> +}
+> +
+> +static irqreturn_t sercos3_handler(int irq, struct uio_info *info)
+> +{
+> +	struct sercos3_priv *priv = info->priv;
+> +	void __iomem *isr0 = info->mem[3].internal_addr + ISR0_OFFSET;
+> +	void __iomem *ier0 = info->mem[3].internal_addr + IER0_OFFSET;
+> +
+> +	if (!(ioread32(isr0) & ioread32(ier0)))
+> +		return IRQ_NONE;
+> +
+> +	spin_lock(&priv->ier0_cache_lock);
+> +	sercos3_disable_interrupts(info, priv);
+> +	spin_unlock(&priv->ier0_cache_lock);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int sercos3_irqcontrol(struct uio_info *info, s32 irq_on)
+> +{
+> +	struct sercos3_priv *priv = info->priv;
+> +
+> +	spin_lock_irq(&priv->ier0_cache_lock);
+> +	if (irq_on)
+> +		sercos3_enable_interrupts(info, priv);
+> +	else
+> +		sercos3_disable_interrupts(info, priv);
+> +	spin_unlock_irq(&priv->ier0_cache_lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static int sercos3_setup_iomem(struct pci_dev *dev, struct uio_info *info,
+> +			       int n, int pci_bar)
+> +{
+> +	info->mem[n].addr = pci_resource_start(dev, pci_bar);
+> +	if (!info->mem[n].addr)
+> +		return -1;
+> +	info->mem[n].internal_addr = ioremap(pci_resource_start(dev, pci_bar),
+> +					     pci_resource_len(dev, pci_bar));
+> +	if (!info->mem[n].internal_addr)
+> +		return -1;
+> +	info->mem[n].size = pci_resource_len(dev, pci_bar);
+> +	info->mem[n].memtype = UIO_MEM_PHYS;
+> +	return 0;
+> +}
+> +
+> +static int __devinit sercos3_pci_probe(struct pci_dev *dev,
+> +				       const struct pci_device_id *id)
+> +{
+> +	struct uio_info *info;
+> +	struct sercos3_priv *priv;
+> +	int i;
+> +
+> +	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
+> +
+> +	priv = kzalloc(sizeof(struct sercos3_priv), GFP_KERNEL);
+> +	if (!priv)
+> +		goto out_free;
+> +
+> +	if (pci_enable_device(dev))
+> +		goto out_free_priv;
+> +
+> +	if (pci_request_regions(dev, "sercos3"))
+> +		goto out_disable;
+> +
+> +	/* we only need PCI BAR's 0, 2, 3, 4, 5 */
+> +	if (sercos3_setup_iomem(dev, info, 0, 0))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 1, 2))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 2, 3))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 3, 4))
+> +		goto out_unmap;
+> +	if (sercos3_setup_iomem(dev, info, 4, 5))
+> +		goto out_unmap;
+> +
+> +	spin_lock_init(&priv->ier0_cache_lock);
+> +	info->priv = priv;
+> +	info->name = "Sercos_III_PCI";
+> +	info->version = "0.0.1";
+> +	info->irq = dev->irq;
+> +	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
+> +	info->handler = sercos3_handler;
+> +	info->irqcontrol = sercos3_irqcontrol;
+> +
+> +	pci_set_drvdata(dev, info);
+> +
+> +	if (uio_register_device(&dev->dev, info))
+> +		goto out_unmap;
+> +
+> +	return 0;
+> +
+> +out_unmap:
+> +	for (i = 0; i < 5; i++) {
+> +		if (info->mem[i].internal_addr)
+> +			iounmap(info->mem[i].internal_addr);
+> +	}
+> +	pci_release_regions(dev);
+> +out_disable:
+> +	pci_disable_device(dev);
+> +out_free_priv:
+> +	kfree(priv);
+> +out_free:
+> +	kfree(info);
+> +	return -ENODEV;
+> +}
+> +
+> +static void sercos3_pci_remove(struct pci_dev *dev)
+> +{
+> +	struct uio_info *info = pci_get_drvdata(dev);
+> +	int i;
+> +
+> +	uio_unregister_device(info);
+> +	pci_release_regions(dev);
+> +	pci_disable_device(dev);
+> +	pci_set_drvdata(dev, NULL);
+> +	for (i = 0; i < 5; i++) {
+> +		if (info->mem[i].internal_addr)
+> +			iounmap(info->mem[i].internal_addr);
+> +	}
+> +	kfree(info->priv);
+> +	kfree(info);
+> +}
+> +
+> +static struct pci_device_id sercos3_pci_ids[] __devinitdata = {
+> +	{
+> +		.vendor =       PCI_VENDOR_ID_PLX,
+> +		.device =       PCI_DEVICE_ID_PLX_9030,
+> +		.subvendor =    SERCOS_SUB_VENDOR_ID,
+> +		.subdevice =    SERCOS_SUB_SYSID_3530,
+> +	},
+> +	{
+> +		.vendor =       PCI_VENDOR_ID_PLX,
+> +		.device =       PCI_DEVICE_ID_PLX_9030,
+> +		.subvendor =    SERCOS_SUB_VENDOR_ID,
+> +		.subdevice =    SERCOS_SUB_SYSID_3535,
+> +	},
+> +	{
+> +		.vendor =       PCI_VENDOR_ID_PLX,
+> +		.device =       PCI_DEVICE_ID_PLX_9030,
+> +		.subvendor =    SERCOS_SUB_VENDOR_ID,
+> +		.subdevice =    SERCOS_SUB_SYSID_3780,
+> +	},
+> +	{ 0, }
+> +};
+> +
+> +static struct pci_driver sercos3_pci_driver = {
+> +	.name = "sercos3",
+> +	.id_table = sercos3_pci_ids,
+> +	.probe = sercos3_pci_probe,
+> +	.remove = sercos3_pci_remove,
+> +};
+> +
+> +static int __init sercos3_init_module(void)
+> +{
+> +	return pci_register_driver(&sercos3_pci_driver);
+> +}
+> +
+> +static void __exit sercos3_exit_module(void)
+> +{
+> +	pci_unregister_driver(&sercos3_pci_driver);
+> +}
+> +
+> +module_init(sercos3_init_module);
+> +module_exit(sercos3_exit_module);
+> +
+> +MODULE_DESCRIPTION("UIO driver for the Automata Sercos III PCI card");
+> +MODULE_AUTHOR("John Ogness <john.ogness@linutronix.de>");
+> +MODULE_LICENSE("GPL v2");
