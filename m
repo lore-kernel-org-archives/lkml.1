@@ -1,106 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbYIRKHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYIRKLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755820AbYIRKHk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 06:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbYIRKHc
+	id S1755938AbYIRKLF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 06:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYIRKKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 06:07:32 -0400
-Received: from hobbit.corpit.ru ([81.13.33.150]:20971 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751588AbYIRKHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 06:07:31 -0400
-Message-ID: <48D22847.5020100@msgid.tls.msk.ru>
-Date: Thu, 18 Sep 2008 14:07:03 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
+	Thu, 18 Sep 2008 06:10:55 -0400
+Received: from rs02.intra2net.com ([81.169.173.116]:35466 "EHLO
+	rs02.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbYIRKKy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 06:10:54 -0400
+From: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Organization: Intra2net AG
 To: linux-kernel@vger.kernel.org
-Subject: Re: PARAVIRT_GUEST bug? [was: Stable regression: usb-storage is stuck
- in 2.6.26.5]
-References: <20080913122143.4B13B908E@gandalf.tls.msk.ru> <48CBB626.4050300@msgid.tls.msk.ru> <48CF6A45.3010204@msgid.tls.msk.ru>
-In-Reply-To: <48CF6A45.3010204@msgid.tls.msk.ru>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: RFC: [patch] log fatal signals like SIGSEGV
+Date: Thu, 18 Sep 2008 12:10:39 +0200
+User-Agent: KMail/1.10.1 (Linux/2.6.25.14-108.fc9.i686; KDE/4.1.1; i686; ; )
+References: <200809121502.15264.thomas.jarosch@intra2net.com> <200809161459.17750.thomas.jarosch@intra2net.com> <20080916174202.GA5703@joi>
+In-Reply-To: <20080916174202.GA5703@joi>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200809181210.40336.thomas.jarosch@intra2net.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> Michael Tokarev wrote:
-> 
-> [usb-storage hangs on asus M2NPV-VM (nVidia GeForce 6150/nForce 430)
->  motherboard with latest bios]
-> 
->> Ok, it turned out to be pretty.. interesting.
->>
->> It's not a regression within -stable kernel series.  The problem
->> happens when BOTH are true:
->>
->>   - using latest BIOS for this mobo (1401), AND
->>   - enabling KVM_GUEST in kernel.
->>
->> The only difference in my kernel config between .1 and .5 was
->> to enable KVM_GUEST and KVM_CLOCK, and also I2C_HELPER_AUTO
->> which was added by kernel update.
->>
->> Going with previous BIOS (1201) OR disabling PARAVIRT_GUEST
->> fixes the problem.  I'll try to figure out which config
->> option is at problem here.
-> 
-> After seeing similar situation on another motherboard, I
-> become curious.
-> 
-> Here's the result:  M3A78-EM motherboard (also from Asus),
-> AMD780G/SB700 etc.  Updating to one of the latest bios
-> makes the system unbootable.  Kernel hangs on boot right
-> after displaying
-> 
->  SLUB: Genslabs=12, HWalign=64, Order=0-1, MinObjects=4, CPUs=2, Nodes=1
-> 
-> Reverting to the older BIOS or disabling PARAVIRT_GUEST in kernel
+> It looks much better now. But I don't think it will go in as is.
+> Maybe you can disable it by default and create a sysctl switch?
 
-PARAVIRT it is, not PARAVIRT_GUEST.
+Thinking about it some more, I've added a "signal-log-level" sysctl var
+including documentation. The patch applies nicely to 2.6.26 and 2.6 HEAD.
 
-> fixes this (turning off KVM_GUEST isn't enough), and kernel happily
-> boots further, with next line being
-> 
->  hpet clockevent registered
->  ...
-> 
-> Reportedly, another Asus motherboard (M2N-SLI DELUXE) also hangs
-> with new BIOS and KVM_GUEST optimizations turned on, but not on
-> older BIOS.
-> 
-> So it's quite.. funny.  At least SOME latest BIOSes from Asustec,
-> together with PARAVIRT_GUEST, -- a problem.  Don't do either of
-> those, and it's all ok.
-> 
-> The question is if Asus introduced the same bug in quite.. some
-> of their recent BIOSes, or PARAVIRT_GUEST code is somehow buggy
-> and the bug is exposed by new BIOS code.
+The idea is to default to log level 1 and log fatal signals only.
+Log output should be close to zero during normal system operation.
 
-Two more Asus motherboards expose exactly the same problem.
+There is a bit of a naming clash with "print-fatal-signals", though that
+should be called "debug-fatal-signals" because of all the register dumps etc.
+I don't want to rename it as it would unnecessarily cause issues
+and it's debug-only (Documentation/kernel-parameters.txt) anyway.
 
-M3A-H/HDMI - AMD 780G/SB700, and
-M2N-VM - nVidia MCP67 /  GeForce 7050
+Enjoy.
 
-And from the above, 3 more:
+------------------------------------------------------
+From: Thomas Jarosch <thomas.jarosch@intra2net.com>
 
-M2NPV-VM - nVidia GeForce 6150/nForce 430
-M3A78-EM - AMD780G/SB700
-M2N-SLI DELUXE - nVidia MCP55 (unconfirmed)
+Log signals like SIGSEGV, SIGILL, SIGBUS or SIGFPE to aid tracing
+of obscure problems. Also logs the sender of the signal.
 
-With new BIOSes and with CONFIG_PARAVIRT enabled in kernel,
-system does not boot.  It seems the stalls happens at more
-or less random places, but the place is always the same on
-the same motherboard and different kernels -- f.e. my
-M3A78-EM always stops after "SLUB: " line as shown above,
-be it 32- or 64bits kernel, 2.6.26 or 2.6.26.5.
+The log message looks like this:
+"kernel: signal 9 sent to freezed[2634] uid:100,
+ parent init[1] uid:0 by bash[3168] uid:0, parent sshd[3164] uid:0"
 
-> Any hints on this? ;)
-> 
-> Thanks!
-> 
-> /mjt
+You can control the degree of logging via sysctl: "signal-log-level"
+    0 - Signal logging disabled
+    1 - Log SIGSEGV, SIGILL, SIGBUS and SIGPFE (default)
+    2 - Log SIGKILL and SIGABRT and all signals from log level 1
+    3 or higher: Log all signals
+
+The printing code is based on grsecurity's signal logger.
+
+Signed-off-by: Thomas Jarosch <thomas.jarosch@intra2net.com>
+Signed-off-by: Gerd v. Egidy <gve@intra2net.com>
+
+diff -u -r -p linux-2.6.26.vanilla/kernel/signal.c linux-2.6.26/kernel/signal.c
+--- linux-2.6.26.vanilla/kernel/signal.c	Tue Sep 16 13:45:34 2008
++++ linux-2.6.26/kernel/signal.c	Thu Sep 18 10:43:27 2008
+@@ -796,6 +796,35 @@ static void complete_signal(int sig, str
+ 	return;
+ }
+ 
++int signal_log_level __read_mostly = 1;
++
++static void log_signal(const int sig, const struct task_struct *t)
++{
++	bool log_signal = false;
++
++	if(signal_log_level >= 1 && (sig == SIGSEGV || sig == SIGILL
++			|| sig == SIGBUS || sig == SIGFPE))
++		log_signal = true;
++	else if (signal_log_level >= 2 && (sig == SIGKILL || sig == SIGABRT))
++		log_signal = true;
++	else if (signal_log_level >= 3)
++		log_signal = true;
++
++	if (!log_signal)
++		return;
++
++	if (printk_ratelimit()) {
++		/* Don't lock "tasklist_lock" here as it's already locked by "siglock" */
++		printk(KERN_WARNING "signal %d sent to %.30s[%d] uid:%u, "
++				"parent %.30s[%d] uid:%u by %.30s[%d] uid:%u, "
++				"parent %.30s[%d] uid:%u\n", sig, t->comm,
++				t->pid, t->uid, t->parent->comm, t->parent->pid,
++				t->parent->uid, current->comm, current->pid,
++				current->uid, current->parent->comm,
++				current->parent->pid, current->parent->uid);
++	}
++}
++
+ static inline int legacy_queue(struct sigpending *signals, int sig)
+ {
+ 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
+@@ -810,6 +839,8 @@ static int send_signal(int sig, struct s
+ 	assert_spin_locked(&t->sighand->siglock);
+ 	if (!prepare_signal(sig, t))
+ 		return 0;
++
++	log_signal(sig, t);
+ 
+ 	pending = group ? &t->signal->shared_pending : &t->pending;
+ 	/*
+diff -u -r -p linux-2.6.26.vanilla/kernel/sysctl.c linux-2.6.26/kernel/sysctl.c
+--- linux-2.6.26.vanilla/kernel/sysctl.c	Sun Jul 13 23:51:29 2008
++++ linux-2.6.26/kernel/sysctl.c	Thu Sep 18 10:08:47 2008
+@@ -63,6 +63,7 @@ static int deprecated_sysctl_warning(str
+ /* External variables not in a header file. */
+ extern int C_A_D;
+ extern int print_fatal_signals;
++extern int signal_log_level;
+ extern int sysctl_overcommit_memory;
+ extern int sysctl_overcommit_ratio;
+ extern int sysctl_panic_on_oom;
+@@ -398,6 +428,14 @@ static struct ctl_table kern_table[] = {
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "print-fatal-signals",
+ 		.data		= &print_fatal_signals,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "signal-log-level",
++		.data		= &signal_log_level,
+ 		.maxlen		= sizeof(int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+diff -u -r linux-2.6.26.vanilla/Documentation/sysctl/kernel.txt linux-2.6.26/Documentation/sysctl/kernel.txt
+--- linux-2.6.26.vanilla/Documentation/sysctl/kernel.txt	Sun Jul 13 23:51:29 2008
++++ linux-2.6.26/Documentation/sysctl/kernel.txt	Thu Sep 18 10:50:13 2008
+@@ -47,6 +47,7 @@
+ - rtsig-max
+ - rtsig-nr
+ - sem
++- signal-log-level
+ - sg-big-buff                 [ generic SCSI device (sg) ]
+ - shmall
+ - shmmax                      [ sysv ipc ]
+@@ -349,6 +350,21 @@
+ 
+ ==============================================================
+ 
++signal-log-level: 
++
++Brief logging of signal and sender to aid
++tracing of obsucure problems later on.
++
++  0 - Signal logging disabled
++
++  1 - Log SIGSEGV, SIGILL, SIGBUS and SIGPFE (default)
++
++  2 - Log SIGKILL and SIGABRT and all signals from log level 1
++  
++  3 or higher: Log all signals
++
++==============================================================
++
+ softlockup_thresh:
+ 
+ This value can be used to lower the softlockup tolerance
+
 
