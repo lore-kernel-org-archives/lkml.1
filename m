@@ -1,100 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYIRVZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYIRVbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbYIRVZW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 17:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbYIRVZI
+	id S1756845AbYIRVbZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 17:31:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYIRVbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 17:25:08 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:36005 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753368AbYIRVZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 17:25:07 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: doubled idle count
-References: <87vdwtfxng.fsf@tac.ki.iif.hu> <48D2AD5E.7040602@goop.org>
-Date: Thu, 18 Sep 2008 23:24:44 +0200
-In-Reply-To: <48D2AD5E.7040602@goop.org> (Jeremy Fitzhardinge's message of
-	"Thu, 18 Sep 2008 12:34:54 -0700")
-Message-ID: <871vzhrvtv.fsf@szonett.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 18 Sep 2008 17:31:09 -0400
+Received: from mail-gx0-f16.google.com ([209.85.217.16]:60250 "EHLO
+	mail-gx0-f16.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754236AbYIRVbH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 17:31:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=B4y025QNdF3M2RLp2Z6BJJlOqC5xvOG4ZKbq4SyN6wJwjBLmKf7OkV4Ow65ruVGySL
+         BhtZoQQBMrKJjV1DXnGc3G3tFnsmSt2lQx1XEH+BzZCnSlOx2JdJyuYfQRQExFBODBLC
+         +YeZ4oV2j+cc2MuZxwK5l0MnPO5+p98ZindyA=
+Message-ID: <dd18b0c30809181431j605faffu41d436145fd0d732@mail.gmail.com>
+Date: Thu, 18 Sep 2008 14:31:04 -0700
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
+Cc: "Steven Noonan" <steven@uplinklabs.net>, "Ingo Molnar" <mingo@elte.hu>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
+	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
+	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
+	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
+	 <43e72e890809181344q416b5944w3332ee5a33db048c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
-
-> Ferenc Wagner wrote:
+On Thu, Sep 18, 2008 at 1:44 PM, Luis R. Rodriguez
+<lrodriguez@atheros.com> wrote:
+> On Thu, Sep 18, 2008 at 12:00 PM, Steven Noonan <steven@uplinklabs.net> wrote:
+>> On Thu, Sep 18, 2008 at 11:42 AM, Luis R. Rodriguez
+>> <lrodriguez@atheros.com> wrote:
+>>> On Thu, Sep 18, 2008 at 11:34 AM, Luis R. Rodriguez
+>>>> irqpoll is a monster of evil and that should make your system crawl to
+>>>> its knees. I would advise instead we work with you fixing the the
+>>>> missed interrupts issue upon rmmod.
+>>>
+>>> Also, please provide the output of
+>>>
+>>> cat /proc/interrupts
+>>
+>> Note that the problem necessitating use of irqpoll in the first place
+>> seems to only happen under certain conditions. I am unsure what these
+>> conditions are. Before 'ath9k: connectivity is lost after Group
+>> rekeying is done',
 >
->> After upgrading a Xen virtual machine to Debian's 2.6.26-4 kernel, I
->> noticed that the idle counter doubled its pace on one of the machines:
+> You mean this patch:
 >
-> Sorry, could you be clearer here?  What are we looking at?
-
-Sure, see below:
-
->> service2:~# yes >/dev/null &
->> [1] 32578
-
-Here I made the processor (a single virtual one) fully busy.
-
->> service2:~# grep cpu0 /proc/stat; sleep 1; grep cpu0 /proc/stat
->> cpu0 141208 9113 57273 13379659 61012 0 792 2350 0
->> cpu0 141310 9113 57274 13379659 61012 0 792 2350 0
-
-Above, the difference of the first numbers is 102, which, given that
-USER_HZ=100, means that the CPU spent all its cycles during the sleep
-processing user code (the yes running in the background).
-
->> service2:~# fg
->> yes > /dev/null
->> ^C
-
-Now the CPU is idle again, I killed the yes started above.
-
->> service2:~# grep cpu0 /proc/stat; sleep 1; grep cpu0 /proc/stat
->> cpu0 141952 9113 57277 13383481 61012 0 792 2350 0
->> cpu0 141953 9113 57278 13383681 61012 0 792 2350 0
-
-And here, the difference of the fourth numbers is 200, meaning that
-the processor spent 200% of its time in idle state during this second!
-(If I read the procfs documentation correctly, of course.)
-
-This seems wrong by a factor of two, as there are only 100 "ticks" in
-a second (actually, this kernel is tickless, but USER_HZ=100, as I'm
-running a 686 kernel).
-
->> One out of three machines show this effect, with the exact same kernel
->> and Xen versions (3.2.0, dom0 is Debian's stock Etch 2.6.18 kernel).
->> They aren't hosted by the same machine, though: the misbehaving one is
->> on a different installation with very similar hardware (3 vs 2 GHz).
->> All the guest are paravirtual.
+> [PATCH] ath9k: connectivity is lost after Group rekeying is done
+> http://marc.info/?l=linux-wireless&m=122163541519736&w=2
 >
-> So you're saying that they are identical Xen and guest kernel binaries,
-> but one of three is showing doubled idle time?
-
-Yes.
-
-> That seems unlikely.
-
-I was very much surpised myself, too...  The version numbers surely
-are the same, but the binaries came from different downloads.  I'll
-compare them, and also start another domU next to the misbehaving one.
-
-> The source of that time is from Xen itself, and I think it should be
-> hardware independent, though I guess its possible there's something
-> going on at in the Xen-level timekeeping.
+> So let me get this straight -- you applied this new patch, and haven't
+> tried disabling irqpoll now?
 >
-> That said, I think there's some chance that stolen time may get counted
-> as idle time.  Does the one machine with a different outcome have
-> something else running in another virtual machine (including dom0)?
+>> I had used rmmod/modprobe as my solution to the
+>> issue, which triggered the IRQ issue.
+>
+> Understood, but I also have used this before with ath9k and I got
+> exactly the same results you did -- I just refused to use it again and
+> just try to fix the issues present.
+>
+> ath9k issues tons of interrupts, not sure why irqpoll option would
+> cause latency so bad as the interrupts *are* handled. Not sure
+> *exactly* how irqpoll works but its description mentions using it
+> forces each interrupt handler on the IRQ line to check the interrupt
+> is for it. You have to keep in mind that not only are ath9k interrupts
+> then being sent to the devices on its line but it would seem that all
+> other devices on each line would suffer from the interrupts of the
+> other guys. Why ath9k would be the *only* culprit of causing latency
+> when using irqpoll if the irq line it son is clean? Beats me.
+>
+>> alcarin steven # cat /proc/interrupts
+>>           CPU0       CPU1
+>> 0x0:      63227          0   IO-APIC-edge      hpet
+>> 0x8:          1          0   IO-APIC-edge      rtc0
+>> 0x9:      13080          0   IO-APIC-fasteoi   acpi
+>> 0xe:       8195          0   IO-APIC-edge      ide0
+>> 0xf:          0          0   IO-APIC-edge      ide1
+>> 0x10:         36          0   IO-APIC-fasteoi   uhci_hcd:usb5
+>> 0x11:      10645          0   IO-APIC-fasteoi   ath
+>
+> In this case your 11n Atheros device is on a clean line.
+>
+>> 0x12:         42          0   IO-APIC-fasteoi   uhci_hcd:usb4
+>> 0x17:        919          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+>
+> But it was this interrupt line which had an interrupt not handled.
+>
+> I'm not sure why this would happen. Can't we rule out ath9k then since
+> its on a different interrupt line?
+>
+>> 0x13:      32885          0   IO-APIC-fasteoi   uhci_hcd:usb3,
+>> ata_piix, ohci1394
+>> 0x200100:          1          0   PCI-MSI-edge      eth0
+>> 0x16:        223          0   IO-APIC-fasteoi   HDA Intel
+>> NMI:          0          0   Non-maskable interrupts
+>> LOC:      78087      95718   Local timer interrupts
+>> RES:      11576      16384   Rescheduling interrupts
+>> CAL:       6862       8889   Function call interrupts
+>> TLB:         54         41   TLB shootdowns
+>> TRM:          0          0   Thermal event interrupts
+>> THR:          0          0   Threshold APIC interrupts
+>> SPU:          0          0   Spurious interrupts
+>> ERR:          0
+>
+> Can you try to reproduce the irq not handled again?
+>
+>>>
+>>> and also please do not cross post to all these lists, just use
+>>> linux-wireless or ath9k.
+>>>
+>>
+>> Sorry, but in the past I've posted to linux-wireless, ath9k-devel, and
+>> all the maintainers of ath9k and didn't get a single response (except
+>> a 'me too' from a fellow ath9k user). I didn't just want to hear
+>> crickets this time.
+>
+> Patches speak more than words, but yeah sorry, we should have
+> addressed this there. I've personally have just been busy with
+> tackling aggregation.
+>
+>  Luis
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Yes, both Xen instances run other domUs, and at abount one on both
-consumes significant CPU.  The other domUs are mostly idle, and the
-dom0s too.
+Appologize about that, I'm wondering
+what is or was the main commit that might be causing
+all of these disable irq #'s in usb, wireless, etc..
+just doing a quick search one cant help but to think
+maybe this is something with tick.(but could be wrong);
+
 -- 
-Thanks for taking time,
-Feri.
+Justin P. Mattock
