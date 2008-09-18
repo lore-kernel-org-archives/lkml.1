@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbYIRI6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbYIRI66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608AbYIRI6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 04:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbYIRI6D
+	id S1753553AbYIRI66 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 04:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYIRI6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 04:58:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:21721 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753452AbYIRI6A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 04:58:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ABQOMEfjdAuTF7fUYtf99L2pK5SvnXhbIqAl8/cAL+8aK7pMtOzB0zPfBUXLHRtSFh
-         menZgUfwTxBBAa+8Ro3nhE6NecdRjSPWqPvHSsXt1S7AVTnXsFoDZ1fbGl35YVY41kQ3
-         Q5eS4lt0dUn4+mxMKoJXDiAzfOtmO7jhMWF/8=
-Message-ID: <48D21813.3050905@gmail.com>
-Date: Thu, 18 Sep 2008 10:57:55 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080720)
+	Thu, 18 Sep 2008 04:58:47 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:42084 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753026AbYIRI6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 04:58:46 -0400
+Message-ID: <48D217E7.80702@melbourne.sgi.com>
+Date: Thu, 18 Sep 2008 18:57:11 +1000
+From: Greg Banks <gnb@melbourne.sgi.com>
+Organization: File Serving Technologies ; Silicon Graphics Inc.
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: jkosina@suse.cz
-CC: linux-input@vger.kernel.org, anssi.hannula@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] HID: move pantherlord FF processing
-References: <1221728250-17842-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1221728250-17842-1-git-send-email-jirislaby@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Martin Knoblauch <knobi@knobisoft.de>,
+       linux-nfs list <linux-nfs@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Peter zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+References: <124712.40022.qm@web32602.mail.mud.yahoo.com> <20080918014733.3c9c362e.akpm@linux-foundation.org>
+In-Reply-To: <20080918014733.3c9c362e.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/18/2008 10:57 AM, Jiri Slaby wrote:
-> Move the force feedback processing into a separate module.
+Andrew Morton wrote:
+> On Thu, 18 Sep 2008 01:38:57 -0700 (PDT) Martin Knoblauch <knobi@knobisoft.de> wrote:
+>
+>   
+>>> No.  mount(8) will pass unrecognised options straight down into the
+>>> filesystem driver.
+>>>
+>>>       
+>>  Has that always been the case, or is it a recent change? I have to support RHEL4 userland, which is not really new.
+>>     
+>
+> It's been that way for ever and ever.  It's how all these guys:
+>
+> y:/usr/src/25> grep Opt_ fs/*/super.c|wc
+>     781    2626   33703
+>
+> get handled.
+>   
+NFS was...special...for a long time.
 
-Ignore this, sorry.
+-- 
+Greg Banks, P.Engineer, SGI Australian Software Group.
+Be like the squirrel.
+I don't speak for SGI.
+
