@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbYIRTWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYIRTXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756508AbYIRTWi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbYIRTWb
+	id S1756857AbYIRTXY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbYIRTXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:22:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59478 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752983AbYIRTWa (ORCPT
+	Thu, 18 Sep 2008 15:23:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:32855 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754968AbYIRTXN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:22:30 -0400
-Message-ID: <48D2A973.1050201@zytor.com>
-Date: Thu, 18 Sep 2008 12:18:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 18 Sep 2008 15:23:13 -0400
+Message-ID: <f488382f0809181223n6131290w6c68171c236ac032@mail.gmail.com>
+Date: Thu, 18 Sep 2008 12:23:11 -0700
+From: "Steven Noonan" <steven@uplinklabs.net>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [ath9k-devel] ath9k: massive unexplained latency in 2.6.27 (rc5, rc6, probably others)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
+In-Reply-To: <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
 MIME-Version: 1.0
-To: Dean Nelson <dcn@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Alan Mayer <ajm@sgi.com>, Dimitri Sivanich <sivanich@sgi.com>,
-       jeremy@goop.org, rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
-Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
-References: <20080811165930.GI4524@elte.hu> <48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org> <20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu> <20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu> <20080916204654.GA3532@sgi.com> <20080917173032.GA5674@sgi.com> <m17i9a61l2.fsf@frodo.ebiederm.org> <20080918133733.GA8830@sgi.com>
-In-Reply-To: <20080918133733.GA8830@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f488382f0809181123n55a4979eg1996bbc30fa47d54@mail.gmail.com>
+	 <43e72e890809181134ybbec8fdxcb2a466aa17fe390@mail.gmail.com>
+	 <43e72e890809181142n7738cd99g522e6688e68d11ce@mail.gmail.com>
+	 <f488382f0809181200u9aa03fcv4fc70bd1be7acc71@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dean Nelson wrote:
-> On Wed, Sep 17, 2008 at 11:59:05AM -0700, Eric W. Biederman wrote:
->> I need to look at these patches some more (apologies I got busy).
-> 
-> Thanks for taking a look.
-> 
-> I've got a not-quite-complete new version of the patchset that addresses
-> most of the issues raised by Ingo. At it's heart is the following:
-> 
+On Thu, Sep 18, 2008 at 12:00 PM, Steven Noonan <steven@uplinklabs.net> wrote:
+> On Thu, Sep 18, 2008 at 11:42 AM, Luis R. Rodriguez
+> <lrodriguez@atheros.com> wrote:
+>> On Thu, Sep 18, 2008 at 11:34 AM, Luis R. Rodriguez
+>>> irqpoll is a monster of evil and that should make your system crawl to
+>>> its knees. I would advise instead we work with you fixing the the
+>>> missed interrupts issue upon rmmod.
+>>
+>> Also, please provide the output of
+>>
+>> cat /proc/interrupts
+>
+> Note that the problem necessitating use of irqpoll in the first place
+> seems to only happen under certain conditions. I am unsure what these
+> conditions are. Before 'ath9k: connectivity is lost after Group
+> rekeying is done', I had used rmmod/modprobe as my solution to the
+> issue, which triggered the IRQ issue.
 
-What would seem most intuitive to me would have been, in this case, to
-add this as a new MSI IRQ chip type.  We already have several of those
-(PCI vs HT), and this *should* give you all the hooks you need.
+I wonder if this is related:
 
-	-hpa
-
+alcarin ~ # dmesg | grep GPE
+[    0.166806] ACPI: EC: GPE = 0x17, I/O: command/status = 0x66, data = 0x62
+[  685.409077] ACPI: EC: GPE storm detected, disabling EC GPE
