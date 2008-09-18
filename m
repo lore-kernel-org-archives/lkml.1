@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbYIROHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYIROHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754053AbYIROHD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbYIROGx
+	id S1754708AbYIROHZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbYIROHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:06:53 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:43132 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754219AbYIROGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:06:53 -0400
-Date: Thu, 18 Sep 2008 23:06:30 +0900
-To: mitov@issp.bas.bg
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]pci_dma_mapping_error changes
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200809180812.25143.mitov@issp.bas.bg>
-References: <200809180812.25143.mitov@issp.bas.bg>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 18 Sep 2008 10:07:05 -0400
+Received: from orion2.pixelized.ch ([195.190.190.13]:36609 "EHLO
+	orion.pixelized.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756215AbYIROHD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 10:07:03 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 10:07:02 EDT
+Message-ID: <48D25F4E.4050405@cateee.net>
+Date: Thu, 18 Sep 2008 16:01:50 +0200
+From: "Giacomo A. Catenazzi" <cate@cateee.net>
+User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: diet-kconfig: a script to trim unneeded kconfigs
+References: <s5hbpyny7bl.wl%tiwai@suse.de>
+In-Reply-To: <s5hbpyny7bl.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080918230516T.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Sep 2008 08:12:25 +0300
-Marin Mitov <mitov@issp.bas.bg> wrote:
+Takashi Iwai wrote:
+> Hi,
+> 
+> a topic that just came up in kernel summit is a script to remove
+> unneeded kernel configs automatically to reduce the compile time.
+> Incidentally, I already wrote such a script during the last SUSE hack
+> week a couple of weeks ago, so I'd like to share here, hopefully to
+> give an idea for further improvements.
+> 
+> The script checks the currently loaded modules and trims other
+> CONFIG_XXX=m simply, and tries make oldconfig, and writes out the
+> resultant .config in the current directory after some checks. 
+> You can specify the config file via option,  as default, it reads from
+> /proc/config.gz. 
+> 
+> The script is VERY hackish.  I should have begun with perl or whatever
+> better script language, but I chose bash and co.  So, don't expect
+> much code quality.  I'm no script guy after all :)
 
-> Make the example code consistent with changed API.
+Check my AutoKernConf (http://cateee.net/autokernconf/), it has
+huge (and automatically generated) database about drivers, modules,
+and configuration, and it gives a minimal kernel configuration for the
+most of the hardware hardware.
 
-Thanks,
+It needs a real maintainer and tools for non-hardware drivers
+(fs, net, ...) and special hardware (CPU capabilities,
+architecture specific drivers, etc).
 
-
-> Signed-off-by: Marin Mitov <mitov@ispp.bas.bg>
-
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
 > 
-> ===================================================
-> --- a/Documentation/DMA-mapping.txt	2008-09-14 11:34:48.000000000 +0300
-> +++ b/Documentation/DMA-mapping.txt	2008-09-14 11:37:17.000000000 +0300
-> @@ -740,7 +740,7 @@ failure can be determined by:
->  	dma_addr_t dma_handle;
->  
->  	dma_handle = pci_map_single(pdev, addr, size, direction);
-> -	if (pci_dma_mapping_error(dma_handle)) {
-> +	if (pci_dma_mapping_error(pdev, dma_handle)) {
->  		/*
->  		 * reduce current DMA mapping usage,
->  		 * delay and try again later or
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> Takashi
+> ---
+> 
+> #!/bin/sh
+> 
+> # this magic makes grep and co a lot faster
+> export LANG=C
+> 
+> kroot=
+> subarch=$(uname -i)
+
+-i is wrong (gives "unkwnown" on Debian).
+Check the main Makefile how to extract the architecture from uname.
+
+> 	c)
+> 	    oldconfig="$OPTARG"
+> 	    if [ ! -f "$oldconfig" ]; then
+> 		echo "Cannot find old config $oldconfig"
+> 		exit 1
+> 	    fi
+
+Check also the config-* in /boot
+
+> find_kconfig () {
+>     module=$1
+>     modregex=$(echo $1 | sed -e's/_/[_-]/g')
+> 
+>     grep -E '^[[:space:]]*obj-\$\([A-Za-z0-9_]*\)[[:space:]]*[+:]=.*[[:space:]]'"$modregex"'\.o' $tmpd/makefiles | \
+> 	sed -e's/^.*://g' -e's/^[[:space:]]*obj-\$(\(.*\)).*$/\1/g'
+> }
+
+My python code works better (handle "alias", etc.).
+Anyway I should send some cleanup patches to correct and
+improve some ugly kernel Makefile.
+
+
+ciao
+	cate
