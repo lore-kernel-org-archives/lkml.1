@@ -1,68 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbYIRLp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYIRLwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbYIRLp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 07:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYIRLpV
+	id S1754962AbYIRLwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 07:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbYIRLwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 07:45:21 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:43052 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYIRLpU (ORCPT
+	Thu, 18 Sep 2008 07:52:07 -0400
+Received: from fallback.mail.elte.hu ([157.181.151.13]:45346 "EHLO
+	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYIRLwG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 07:45:20 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-References: <20080917130805.6260ba9c@gondolin.boeblingen.de.ibm.com>
-	<m1r67i61rh.fsf@frodo.ebiederm.org>
-	<20080918090705.6985cced@gondolin.boeblingen.de.ibm.com>
-	<m17i99wz7k.fsf@frodo.ebiederm.org>
-	<20080918125056.03c404e8@gondolin.boeblingen.de.ibm.com>
-Date: Thu, 18 Sep 2008 04:37:34 -0700
-In-Reply-To: <20080918125056.03c404e8@gondolin.boeblingen.de.ibm.com>
-	(Cornelia Huck's message of "Thu, 18 Sep 2008 12:50:56 +0200")
-Message-ID: <m1y71pvg5d.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 18 Sep 2008 07:52:06 -0400
+X-Greylist: delayed 5570 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 07:52:06 EDT
+Date: Thu, 18 Sep 2008 12:06:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add sysctl from printk_tag
+Message-ID: <20080918100621.GA19499@elte.hu>
+References: <1221725137-21947-1-git-send-email-yhlu.kernel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: cornelia.huck@de.ibm.com, linux-kernel@vger.kernel.org, greg@kroah.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Cornelia Huck <cornelia.huck@de.ibm.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0409]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH]sysfs: Don't emit a warning when sysfs_rename_link() fails.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <1221725137-21947-1-git-send-email-yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck <cornelia.huck@de.ibm.com> writes:
 
-> On Thu, 18 Sep 2008 03:00:31 -0700,
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> In the dev_change_name we either do dev_alloc_name
->> which generates a unique device name or __dev_get_by_name
->> which looks to see if we are already using that name.
->
-> Duh, I overlooked that, sorry about the noise.
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-No problem.
+> under /proc/sys/kernel/printk_tag/ will have acpi, apic, dev, pci
 
-> (OTOH, we should get of sysfs_do_create_link() then, since it's an
-> unneed indirection).
+nice!
 
-No objection from me.
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> ---
+>  init/main.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+> 
+> Index: linux-2.6/init/main.c
+> ===================================================================
+> --- linux-2.6.orig/init/main.c
+> +++ linux-2.6/init/main.c
+> @@ -63,6 +63,8 @@
+>  #include <linux/idr.h>
+>  #include <linux/kmemcheck.h>
+>  #include <linux/ftrace.h>
+> +#include <linux/sysctl.h>
+> +#include <linux/proc_fs.h>
+>  
+>  #include <asm/io.h>
+>  #include <asm/bugs.h>
+> @@ -395,6 +397,60 @@ static int __init quiet_kernel(char *str
+>  early_param("debug", debug_kernel);
+>  early_param("quiet", quiet_kernel);
+>  
+> +#ifdef CONFIG_SYSCTL
+> +static struct ctl_table printk_tag_ctl_dir[] = {
+> +        {
+> +                .procname       = "printk_tag",
+> +                .mode           = 0555,
+> +        },
+> +        {0, },
+> +};
+> +
+> +static struct ctl_table printk_tag_ctl_root[] = {
+> +        {
+> +                .ctl_name       = CTL_KERN,
+> +                .procname       = "kernel",
+> +                .mode           = 0555,
+> +                .child          = printk_tag_ctl_dir,
+> +        },
+> +        {0, },
+> +};
+> +
+> +static int __init proc_printk_tag_init(void)
+> +{
+> +        int i;
+> +        struct ctl_table *entry;
+> +        char buf[32];
 
-Eric
+magic constant.
 
+> +		strncpy(buf, tag_level[i].name, len - 1);
+> +                entry->procname = kstrdup(buf, GFP_KERNEL);
+> +		entry->data = &tag_level[i].level;
+> +		entry->maxlen = sizeof(tag_level[i].level);
+> +                entry->mode = 0644;
+> +		entry->proc_handler = proc_dointvec;
+> +                entry++;
+> +        }
+
+hm, whitespace damage in every second line.
+
+	Ingo
