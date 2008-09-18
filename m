@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbYIROqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbYIROq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755578AbYIROqJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbYIROp7
+	id S1754390AbYIROq2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbYIROqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:45:59 -0400
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:56066 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753066AbYIROp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:45:58 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: New IOCTLs
-To: Louis.Rilling@kerlabs.com, Chris Snook <csnook@redhat.com>,
-       linux-kernel@vger.kernel.org,
-       Singaravelan Nallasellan <singaravelann@gmail.com>
-Reply-To: 7eggert@gmx.de
-Date: Thu, 18 Sep 2008 16:54:47 +0200
-References: <bd8Hz-6QR-17@gated-at.bofh.it> <bdbFu-2cb-23@gated-at.bofh.it> <bdjjC-3tt-7@gated-at.bofh.it> <bdnQd-13j-17@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1KgKu7-0003nd-E6@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+	Thu, 18 Sep 2008 10:46:16 -0400
+Received: from smtpeu1.atmel.com ([195.65.72.27]:37605 "EHLO bagnes.atmel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755961AbYIROqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 10:46:14 -0400
+Date: Thu, 18 Sep 2008 16:45:35 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: dmaengine.c: question about device_alloc_chan_resources
+Message-ID: <20080918164535.5e9f77a8@hskinnemo-gx745.norway.atmel.com>
+In-Reply-To: <48D2664D.7040204@freescale.com>
+References: <48D02589.8070601@freescale.com>
+	<e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
+	<ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
+	<20080918162826.3a9d9429@hskinnemo-gx745.norway.atmel.com>
+	<48D2664D.7040204@freescale.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 18 Sep 2008 14:45:29.0571 (UTC) FILETIME=[31F8AB30:01C9199D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
-> On Thu, Sep 18, 2008 at 09:53:51AM +0530, Singaravelan Nallasellan wrote:
-
->> Thank you for your response.
->> 
->> The driver needs to assign an id for each open and create a sysfs
->> entry based on that id and expose some properties.
-
-> What about using configfs? A user could create an id using mkdir in the
-> driver's configfs subsystem, and this would make the driver create the
-> matching sysfs entry.
+Timur Tabi <timur@freescale.com> wrote:
+> Haavard Skinnemoen wrote:
 > 
-> # mkdir /sys/kernel/config/<driver_subsys>/2
-> -> reserve id 2 for the caller, and create /sys/class/xxx/<drivername>/2
+> > Wouldn't it be better if the dmaengine layer made sure it didn't pass
+> > the same channel several times to a client?  
 > 
-> You could even put whatever configuration items inside configfs instead of
-> sysfs.
+> Wouldn't that require it to keep track of which clients have already seen which
+> channels?  It might make more sense, but it's probably easier the current way.
 
-Sounds like simulating file descriptors, with more overhead and less
-functionality, just for having non-atomic access to name->value pairs.
+I guess so. What would be even more simple is to simply prevent other
+clients from taking a channel once someone has acked it, which would be
+perfect for my purposes, but perhaps not everyone else's...
 
-Besides that, we don't yet know the purpose of the IOCTL, and even less about
-the driver. Maybe the user will need to read or write, too, or pass the fd
-to other processes.
+How common is for several clients to use the same channel anyway
+though? Wouldn't you risk stalling the network stack if the md subsystem
+has submitted a large xor operation on the same channel that the
+network stack was about to use?
 
+Haavard
