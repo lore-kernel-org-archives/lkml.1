@@ -1,116 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbYIRBNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbYIRBOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490AbYIRBNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 21:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbYIRBNF
+	id S1755685AbYIRBOY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 21:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYIRBOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 21:13:05 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:18801 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYIRBND (ORCPT
+	Wed, 17 Sep 2008 21:14:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49901 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753082AbYIRBOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 21:13:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=PfxwdHVjPElhdLgG2T6Su1UpdSAZeMh6jekxgZIvu+9aM6eGxstC/a0j7XZ1jfQQ3p
-         3ub6Mk1uqqfVjnFi6JXNNsDNsadWjij3e/PtmwZP18clGckny/1j+gVR013g4RO0rV7H
-         hYjNOGk0tR2woKLto93K+eHoAP6fWmqgkPvx0=
-Message-ID: <5767b9100809171813u7e26d516x12558a178b78f852@mail.gmail.com>
-Date: Thu, 18 Sep 2008 09:13:01 +0800
-From: "Conke Hu" <conke.hu@gmail.com>
-To: Linux-arm-kernel@lists.arm.linux.org.uk, "Ben Dooks" <ben-linux@fluff.org>
-Subject: s3c24xx nand: add command line partition table parsing support (resend)
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-arm@vger.kernel.org
+	Wed, 17 Sep 2008 21:14:15 -0400
+Message-ID: <48D1AA62.6020601@zytor.com>
+Date: Wed, 17 Sep 2008 18:09:54 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jack Steiner <steiner@sgi.com>, Dean Nelson <dcn@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, Alan Mayer <ajm@sgi.com>, jeremy@goop.org,
+       rusty@rustcorp.com.au, suresh.b.siddha@intel.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <Yinghai.lu@amd.com>
+Subject: Re: [RFC 0/4] dynamically allocate arch specific system vectors
+References: <489C6844.9050902@sgi.com> <20080811165930.GI4524@elte.hu>	<48A0737F.9010207@sgi.com> <m1y733mjdh.fsf@frodo.ebiederm.org>	<20080911152304.GA13655@sgi.com> <20080914153522.GJ29290@elte.hu>	<20080915215053.GA11657@sgi.com> <20080916082448.GA17287@elte.hu>	<20080916204654.GA3532@sgi.com> <48D1575E.1050306@zytor.com>	<20080917202102.GA166524@sgi.com> <m1zlm6zafo.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1zlm6zafo.fsf@frodo.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add mtd id and  command line partition table parsing support for
-s3c24xx nand driver.
+Eric W. Biederman wrote:
+>> It is one vector for each cpu.
+>>
+>> It is more efficient for software if the vector # is the same for all cpus
+> Why?  Especially in terms of irq counting that would seem to lead to cache
+> line conflicts.
+> 
+>> but the software/hardware can support a unique vector for each cpu. This
+>> assumes, of course, that the driver can determine the irq->vector mapping for
+>> each cpu.
+> 
+> That sounds like you have a non-standard MSI-X vector.  You certainly have all of
+> the same properties.  At which point create_irq() sounds like what you want.
+> 
+> One irq per cpu, per device.
+> 
+> It is the trend.  Don't worry all of the high performance drivers are doing it.
+> That is the path that will be optimized.
+> 
 
-Signed-off-by: Conke Hu <conke.hu@gmail.com>
-Signed-off-by: Linke Wang <linke.wang@gmail.com>
-------------------
-diff --git a/drivers/mtd/nand/s3c2410.c b/drivers/mtd/nand/s3c2410.c
-index 556139e..bab7216 100644
---- a/drivers/mtd/nand/s3c2410.c
-+++ b/drivers/mtd/nand/s3c2410.c
-@@ -48,6 +48,8 @@
- #include <asm/plat-s3c/regs-nand.h>
- #include <asm/plat-s3c/nand.h>
+In particular, it's just another interrupt type.  We already have quite 
+a few of those, from XT-PIC to the various IOAPIC ones, to MSI and MSI-X.
 
-+#define S3C_NAND_NAME_LEN 16
-+
- #ifdef CONFIG_MTD_NAND_S3C2410_HWECC
- static int hardware_ecc = 1;
- #else
-@@ -60,6 +62,9 @@ static int clock_stop = 1;
- static const int clock_stop = 0;
- #endif
+Just treating these as variants of MSI seems to me to make most sense, too.
 
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *s3c_part_probes[] = {"cmdlinepart", NULL};
-+#endif
+	-hpa
 
- /* new oob placement block for use with hardware ecc generation
- */
-@@ -649,6 +654,15 @@ static int s3c2410_nand_add_partition(struct
-s3c2410_nand_info *info,
-                                    struct s3c2410_nand_mtd *mtd,
-                                    struct s3c2410_nand_set *set)
- {
-+#ifdef CONFIG_MTD_CMDLINE_PARTS
-+       int nr_parts;
-+       struct mtd_partition *partitions;
-+
-+       nr_parts = parse_mtd_partitions(&mtd->mtd, s3c_part_probes,
-&partitions, 0);
-+       if (nr_parts > 0 && partitions != NULL)
-+               return add_mtd_partitions(&mtd->mtd, partitions, nr_parts);
-+#endif
-+
-      if (set == NULL)
-              return add_mtd_device(&mtd->mtd);
-
-@@ -808,6 +822,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
-      int size;
-      int nr_sets;
-      int setno;
-+       char *name;
-
-      pr_debug("s3c2410_nand_probe(%p)\n", pdev);
-
-@@ -875,7 +890,7 @@ static int s3c24xx_nand_probe(struct platform_device *pdev,
-
-      /* allocate our information */
-
--       size = nr_sets * sizeof(*info->mtds);
-+       size = nr_sets * (sizeof(*info->mtds) + S3C_NAND_NAME_LEN);
-      info->mtds = kmalloc(size, GFP_KERNEL);
-      if (info->mtds == NULL) {
-              dev_err(&pdev->dev, "failed to allocate mtd storage\n");
-@@ -888,10 +903,15 @@ static int s3c24xx_nand_probe(struct
-platform_device *pdev,
-      /* initialise all possible chips */
-
-      nmtd = info->mtds;
-+       name = (char *)(info->mtds + nr_sets);
-
-      for (setno = 0; setno < nr_sets; setno++, nmtd++) {
-              pr_debug("initialising set %d (%p, info %p)\n", setno,
-nmtd, info);
-
-+               sprintf(name, "s3c_nand%d", setno);
-+               nmtd->mtd.name = name;
-+               name += S3C_NAND_NAME_LEN;
-+
-              s3c2410_nand_init_chip(info, nmtd, sets);
-
-              nmtd->scan_res = nand_scan_ident(&nmtd->mtd,
