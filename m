@@ -1,177 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbYIRKLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755602AbYIRKN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755938AbYIRKLF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 06:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYIRKKz
+	id S1755602AbYIRKN6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 06:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYIRKNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 06:10:55 -0400
-Received: from rs02.intra2net.com ([81.169.173.116]:35466 "EHLO
-	rs02.intra2net.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYIRKKy (ORCPT
+	Thu, 18 Sep 2008 06:13:51 -0400
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:62573 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbYIRKNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 06:10:54 -0400
-From: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Organization: Intra2net AG
-To: linux-kernel@vger.kernel.org
-Subject: Re: RFC: [patch] log fatal signals like SIGSEGV
-Date: Thu, 18 Sep 2008 12:10:39 +0200
-User-Agent: KMail/1.10.1 (Linux/2.6.25.14-108.fc9.i686; KDE/4.1.1; i686; ; )
-References: <200809121502.15264.thomas.jarosch@intra2net.com> <200809161459.17750.thomas.jarosch@intra2net.com> <20080916174202.GA5703@joi>
-In-Reply-To: <20080916174202.GA5703@joi>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>
+	Thu, 18 Sep 2008 06:13:50 -0400
+X-BigFish: VPS-39(zz1418M1432R98dR1805M179dR936fQ873fnzz10d3izzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K7DZ2R-03-DGF-01
+Date: Thu, 18 Sep 2008 12:13:38 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: joro@8bytes.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 03/23] AMD IOMMU: implement lazy IO/TLB flushing
+Message-ID: <20080918101338.GC24392@amd.com>
+References: <1221670377-19295-4-git-send-email-joerg.roedel@amd.com> <20080918041104K.fujita.tomonori@lab.ntt.co.jp> <20080917192827.GA18515@8bytes.org> <20080918102931Z.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200809181210.40336.thomas.jarosch@intra2net.com>
+In-Reply-To: <20080918102931Z.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 18 Sep 2008 10:13:38.0155 (UTC) FILETIME=[379C1BB0:01C91977]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It looks much better now. But I don't think it will go in as is.
-> Maybe you can disable it by default and create a sysctl switch?
+On Thu, Sep 18, 2008 at 10:29:24AM +0900, FUJITA Tomonori wrote:
+> On Wed, 17 Sep 2008 21:28:27 +0200
+> Joerg Roedel <joro@8bytes.org> wrote:
+> 
+> > On Thu, Sep 18, 2008 at 04:20:18AM +0900, FUJITA Tomonori wrote:
+> > > On Wed, 17 Sep 2008 18:52:37 +0200
+> > > Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > > 
+> > > > The IO/TLB flushing on every unmaping operation is the most expensive
+> > > > part there and not strictly necessary. It is sufficient to do the flush
+> > > > before any entries are reused. This is patch implements lazy IO/TLB
+> > > > flushing which does exactly this.
+> > > > 
+> > > > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> > > > ---
+> > > >  Documentation/kernel-parameters.txt |    5 +++++
+> > > >  arch/x86/kernel/amd_iommu.c         |   26 ++++++++++++++++++++++----
+> > > >  arch/x86/kernel/amd_iommu_init.c    |   10 +++++++++-
+> > > >  include/asm-x86/amd_iommu_types.h   |    9 +++++++++
+> > > >  4 files changed, 45 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> > > > index c2e00ee..5f0aefe 100644
+> > > > --- a/Documentation/kernel-parameters.txt
+> > > > +++ b/Documentation/kernel-parameters.txt
+> > > > @@ -284,6 +284,11 @@ and is between 256 and 4096 characters. It is defined in the file
+> > > >  			isolate - enable device isolation (each device, as far
+> > > >  			          as possible, will get its own protection
+> > > >  			          domain)
+> > > > +			unmap_flush - enable flushing of IO/TLB entries when
+> > > > +			              they are unmapped. Otherwise they are
+> > > > +				      flushed before they will be reused, which
+> > > > +				      is a lot of faster
+> > > > +
+> > > 
+> > > Would it be nice to have consistency of IOMMU parameters?
+> > 
+> > True. We should merge common parameters across IOMMUs into the
+> > iommu= parameter some time in the future, I think. It would also be the
+> > place for the IOMMU size parameter.
+> 
+> Hmm, now is better than the future? I think that now you can add
+> something like 'disable_batching_flush' as a common parameter and
+> change AMD IOMMU to use it.
 
-Thinking about it some more, I've added a "signal-log-level" sysctl var
-including documentation. The patch applies nicely to 2.6.26 and 2.6 HEAD.
+Ok, I introduce a parameter called '[no]fullflush' like the GART already uses.
+We can remove this parameter from gart_parse_options() later then.
 
-The idea is to default to log level 1 and log fatal signals only.
-Log output should be close to zero during normal system operation.
+Joerg
 
-There is a bit of a naming clash with "print-fatal-signals", though that
-should be called "debug-fatal-signals" because of all the register dumps etc.
-I don't want to rename it as it would unnecessarily cause issues
-and it's debug-only (Documentation/kernel-parameters.txt) anyway.
-
-Enjoy.
-
-------------------------------------------------------
-From: Thomas Jarosch <thomas.jarosch@intra2net.com>
-
-Log signals like SIGSEGV, SIGILL, SIGBUS or SIGFPE to aid tracing
-of obscure problems. Also logs the sender of the signal.
-
-The log message looks like this:
-"kernel: signal 9 sent to freezed[2634] uid:100,
- parent init[1] uid:0 by bash[3168] uid:0, parent sshd[3164] uid:0"
-
-You can control the degree of logging via sysctl: "signal-log-level"
-    0 - Signal logging disabled
-    1 - Log SIGSEGV, SIGILL, SIGBUS and SIGPFE (default)
-    2 - Log SIGKILL and SIGABRT and all signals from log level 1
-    3 or higher: Log all signals
-
-The printing code is based on grsecurity's signal logger.
-
-Signed-off-by: Thomas Jarosch <thomas.jarosch@intra2net.com>
-Signed-off-by: Gerd v. Egidy <gve@intra2net.com>
-
-diff -u -r -p linux-2.6.26.vanilla/kernel/signal.c linux-2.6.26/kernel/signal.c
---- linux-2.6.26.vanilla/kernel/signal.c	Tue Sep 16 13:45:34 2008
-+++ linux-2.6.26/kernel/signal.c	Thu Sep 18 10:43:27 2008
-@@ -796,6 +796,35 @@ static void complete_signal(int sig, str
- 	return;
- }
- 
-+int signal_log_level __read_mostly = 1;
-+
-+static void log_signal(const int sig, const struct task_struct *t)
-+{
-+	bool log_signal = false;
-+
-+	if(signal_log_level >= 1 && (sig == SIGSEGV || sig == SIGILL
-+			|| sig == SIGBUS || sig == SIGFPE))
-+		log_signal = true;
-+	else if (signal_log_level >= 2 && (sig == SIGKILL || sig == SIGABRT))
-+		log_signal = true;
-+	else if (signal_log_level >= 3)
-+		log_signal = true;
-+
-+	if (!log_signal)
-+		return;
-+
-+	if (printk_ratelimit()) {
-+		/* Don't lock "tasklist_lock" here as it's already locked by "siglock" */
-+		printk(KERN_WARNING "signal %d sent to %.30s[%d] uid:%u, "
-+				"parent %.30s[%d] uid:%u by %.30s[%d] uid:%u, "
-+				"parent %.30s[%d] uid:%u\n", sig, t->comm,
-+				t->pid, t->uid, t->parent->comm, t->parent->pid,
-+				t->parent->uid, current->comm, current->pid,
-+				current->uid, current->parent->comm,
-+				current->parent->pid, current->parent->uid);
-+	}
-+}
-+
- static inline int legacy_queue(struct sigpending *signals, int sig)
- {
- 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
-@@ -810,6 +839,8 @@ static int send_signal(int sig, struct s
- 	assert_spin_locked(&t->sighand->siglock);
- 	if (!prepare_signal(sig, t))
- 		return 0;
-+
-+	log_signal(sig, t);
- 
- 	pending = group ? &t->signal->shared_pending : &t->pending;
- 	/*
-diff -u -r -p linux-2.6.26.vanilla/kernel/sysctl.c linux-2.6.26/kernel/sysctl.c
---- linux-2.6.26.vanilla/kernel/sysctl.c	Sun Jul 13 23:51:29 2008
-+++ linux-2.6.26/kernel/sysctl.c	Thu Sep 18 10:08:47 2008
-@@ -63,6 +63,7 @@ static int deprecated_sysctl_warning(str
- /* External variables not in a header file. */
- extern int C_A_D;
- extern int print_fatal_signals;
-+extern int signal_log_level;
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
- extern int sysctl_panic_on_oom;
-@@ -398,6 +428,14 @@ static struct ctl_table kern_table[] = {
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "print-fatal-signals",
- 		.data		= &print_fatal_signals,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "signal-log-level",
-+		.data		= &signal_log_level,
- 		.maxlen		= sizeof(int),
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
-diff -u -r linux-2.6.26.vanilla/Documentation/sysctl/kernel.txt linux-2.6.26/Documentation/sysctl/kernel.txt
---- linux-2.6.26.vanilla/Documentation/sysctl/kernel.txt	Sun Jul 13 23:51:29 2008
-+++ linux-2.6.26/Documentation/sysctl/kernel.txt	Thu Sep 18 10:50:13 2008
-@@ -47,6 +47,7 @@
- - rtsig-max
- - rtsig-nr
- - sem
-+- signal-log-level
- - sg-big-buff                 [ generic SCSI device (sg) ]
- - shmall
- - shmmax                      [ sysv ipc ]
-@@ -349,6 +350,21 @@
- 
- ==============================================================
- 
-+signal-log-level: 
-+
-+Brief logging of signal and sender to aid
-+tracing of obsucure problems later on.
-+
-+  0 - Signal logging disabled
-+
-+  1 - Log SIGSEGV, SIGILL, SIGBUS and SIGPFE (default)
-+
-+  2 - Log SIGKILL and SIGABRT and all signals from log level 1
-+  
-+  3 or higher: Log all signals
-+
-+==============================================================
-+
- softlockup_thresh:
- 
- This value can be used to lower the softlockup tolerance
-
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
