@@ -1,83 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYIRSYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYIRSYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757130AbYIRSYP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 14:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYIRSX6
+	id S1757200AbYIRSYz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 14:24:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbYIRSYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 14:23:58 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:33405 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755706AbYIRSX5 (ORCPT
+	Thu, 18 Sep 2008 14:24:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:41066 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755421AbYIRSYo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 14:23:57 -0400
-Subject: [GIT PULL] 2.6.27-rc6 updates for s390
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 18 Sep 2008 11:23:36 -0700
-Message-Id: <1221762216.20657.1.camel@skybook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 18 Sep 2008 14:24:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QKn0lHeY4vtDoa/JyUANbbej7v+GdYabmaI2XgSG644RK/h6wxrabUw+XJ3oo1yhP6
+         rYPb6c3K+g0zsbgfRRb4VkGvupIq8G6ehuBDpVxB90FOH2q8eCgsbIUkCzx0/uxkTlNa
+         aNJlgtuFNGbUQVzySFd8VOTrIcL5Lo9WEyPco=
+Message-ID: <76bd70e30809181124t78c0d574gaed5702095c02921@mail.gmail.com>
+Date: Thu, 18 Sep 2008 13:24:42 -0500
+From: "Chuck Lever" <chucklever@gmail.com>
+To: "Martin Knoblauch" <knobi@knobisoft.de>
+Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Greg Banks" <gnb@melbourne.sgi.com>,
+       "linux-nfs list" <linux-nfs@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Peter zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <688309.69831.qm@web32604.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <688309.69831.qm@web32604.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Sep 18, 2008 at 6:53 AM, Martin Knoblauch <knobi@knobisoft.de> wrote:
+> ----- Original Message ----
+>
+>> From: Andrew Morton <akpm@linux-foundation.org>
+>> To: Martin Knoblauch <knobi@knobisoft.de>
+>> Cc: Greg Banks <gnb@melbourne.sgi.com>; linux-nfs list <linux-nfs@vger.kernel.org>; linux-kernel@vger.kernel.org; Peter zijlstra <a.p.zijlstra@chello.nl>
+>> Sent: Thursday, September 18, 2008 10:47:33 AM
+>> Subject: Re: [RFC][Resend] Make NFS-Client readahead tunable
+>>
+>> On Thu, 18 Sep 2008 01:38:57 -0700 (PDT) Martin Knoblauch
+>> wrote:
+>>
+>> > > No.  mount(8) will pass unrecognised options straight down into the
+>> > > filesystem driver.
+>> > >
+>> >
+>> >  Has that always been the case, or is it a recent change? I have to support
+>> RHEL4 userland, which is not really new.
+>>
+>> It's been that way for ever and ever.  It's how all these guys:
+>>
+>> y:/usr/src/25> grep Opt_ fs/*/super.c|wc
+>>     781    2626   33703
+>>
+>> get handled.
+>
+>  while that seems to be not to complicated, I seem to have a problem passing the mount options to the kernel. They come down as mount data version "6". Apparently mount(8) or mount.nfs(8) are doing the parsing and send down the legacy data block. So, what is the minimum version of mount or mount.nfs that pass the options down unaltered?
 
-please pull from 'for-linus' branch of
+The mount command has passed a string of options to the kernel for
+particular file systems for a while, but the facility for the NFS
+client to parse a string of mount options in the kernel was added only
+recently -- at least 2.6.23 or 2.6.24 is required to support this.
+Before this, the mount command parsed these options.
 
-	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
+For RHEL 4, based on 2.6.9, you are stuck.  It uses a binary structure
+whose fields must match between the kernel and user space.  For RH
+enterprise kernels, the ABI cannot change in a given release, so RH
+wouldn't take a patch to change the data structure that mount uses.
+You would have to maintain such a change yourself, and build your own
+kernels and mount command after each RHEL 4 update is released.
 
-to receive the following bug fixes:
+I agree that a mount option would allow more fine-grained control over
+readahead.  A system wide parameter controlling readahead has always
+been a weakness.  Readahead, as implemented in the VFS, has a
+*per-file descriptor* context, however, which operates automatically
+(and can be tuned at run-time by an application with [mf]advise(2).
 
-Cornelia Huck (1):
-      [S390] cio: Fix driver_data handling for ccwgroup devices.
+As a future feature, this might work in better combination with the
+per-mount bdi changes proposed by Peter to provide maximal flexibility
+without exposing yet another confusing knob that could help some
+workloads but hurt others.
 
-Stefan Weinhuber (1):
-      [S390] cio: fix orb initialization in cio_start_key
-
- drivers/s390/cio/ccwgroup.c |    4 +++-
- drivers/s390/cio/cio.c      |    1 +
- 2 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/s390/cio/ccwgroup.c b/drivers/s390/cio/ccwgroup.c
-index e0ce65f..9a50f24 100644
---- a/drivers/s390/cio/ccwgroup.c
-+++ b/drivers/s390/cio/ccwgroup.c
-@@ -113,7 +113,8 @@ ccwgroup_release (struct device *dev)
- 
- 	for (i = 0; i < gdev->count; i++) {
- 		if (gdev->cdev[i]) {
--			dev_set_drvdata(&gdev->cdev[i]->dev, NULL);
-+			if (dev_get_drvdata(&gdev->cdev[i]->dev) == gdev)
-+				dev_set_drvdata(&gdev->cdev[i]->dev, NULL);
- 			put_device(&gdev->cdev[i]->dev);
- 		}
- 	}
-@@ -296,6 +297,7 @@ error:
- 			if (dev_get_drvdata(&gdev->cdev[i]->dev) == gdev)
- 				dev_set_drvdata(&gdev->cdev[i]->dev, NULL);
- 			put_device(&gdev->cdev[i]->dev);
-+			gdev->cdev[i] = NULL;
- 		}
- 	mutex_unlock(&gdev->reg_mutex);
- 	put_device(&gdev->dev);
-diff --git a/drivers/s390/cio/cio.c b/drivers/s390/cio/cio.c
-index 5954b90..326f4cc 100644
---- a/drivers/s390/cio/cio.c
-+++ b/drivers/s390/cio/cio.c
-@@ -174,6 +174,7 @@ cio_start_key (struct subchannel *sch,	/* subchannel structure */
- 	CIO_TRACE_EVENT(4, sch->dev.bus_id);
- 
- 	orb = &to_io_private(sch)->orb;
-+	memset(orb, 0, sizeof(union orb));
- 	/* sch is always under 2G. */
- 	orb->cmd.intparm = (u32)(addr_t)sch;
- 	orb->cmd.fmt = 1;
-
-
+--
+Chuck Lever
