@@ -1,39 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbYIRPfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbYIRPfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756334AbYIRPfG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:35:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbYIRPe4
+	id S1756742AbYIRPfg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYIRPfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:34:56 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:46676 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754110AbYIRPez (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:34:55 -0400
-Message-ID: <48D27510.3060803@freescale.com>
-Date: Thu, 18 Sep 2008 10:34:40 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Thu, 18 Sep 2008 11:35:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38845 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754219AbYIRPfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 11:35:19 -0400
+Date: Thu, 18 Sep 2008 11:33:10 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, akpm@linux-foundation.org, agk@sourceware.org,
+       subrata@linux.vnet.ibm.com, axboe@kernel.dk,
+       Marco Innocenti <m.innocenti@cineca.it>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
+       ngupta@google.com
+Subject: Re: [RFC][PATCH -mm 1/5] i/o controller documentation
+Message-ID: <20080918153310.GI20640@redhat.com>
+References: <1219853257-11052-2-git-send-email-righi.andrea@gmail.com> <20080918140416.GF20640@redhat.com> <48D26DDF.9080402@gmail.com>
 MIME-Version: 1.0
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-CC: dan.j.williams@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dmatest: properly handle duplicate DMA channels
-References: <1221751279-24936-1-git-send-email-timur@freescale.com> <20080918173258.2640000b@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20080918173258.2640000b@hskinnemo-gx745.norway.atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D26DDF.9080402@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Haavard Skinnemoen wrote:
+On Thu, Sep 18, 2008 at 05:03:59PM +0200, Andrea Righi wrote:
+> Vivek Goyal wrote:
+> > On Wed, Aug 27, 2008 at 06:07:33PM +0200, Andrea Righi wrote:
+> >> Documentation of the block device I/O controller: description, usage,
+> >> advantages and design.
+> >>
+> >> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> >> ---
+> >>  Documentation/controllers/io-throttle.txt |  377 +++++++++++++++++++++++++++++
+> >>  1 files changed, 377 insertions(+), 0 deletions(-)
+> >>  create mode 100644 Documentation/controllers/io-throttle.txt
+> >>
+> >> diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
+> >> new file mode 100644
+> >> index 0000000..09df0af
+> >> --- /dev/null
+> >> +++ b/Documentation/controllers/io-throttle.txt
+> >> @@ -0,0 +1,377 @@
+> >> +
+> >> +               Block device I/O bandwidth controller
+> >> +
+> >> +----------------------------------------------------------------------
+> >> +1. DESCRIPTION
+> >> +
+> >> +This controller allows to limit the I/O bandwidth of specific block devices for
+> >> +specific process containers (cgroups) imposing additional delays on I/O
+> >> +requests for those processes that exceed the limits defined in the control
+> >> +group filesystem.
+> >> +
+> >> +Bandwidth limiting rules offer better control over QoS with respect to priority
+> >> +or weight-based solutions that only give information about applications'
+> >> +relative performance requirements. Nevertheless, priority based solutions are
+> >> +affected by performance bursts, when only low-priority requests are submitted
+> >> +to a general purpose resource dispatcher.
+> >> +
+> >> +The goal of the I/O bandwidth controller is to improve performance
+> >> +predictability from the applications' point of view and provide performance
+> >> +isolation of different control groups sharing the same block devices.
+> >> +
+> >> +NOTE #1: If you're looking for a way to improve the overall throughput of the
+> >> +system probably you should use a different solution.
+> >> +
+> >> +NOTE #2: The current implementation does not guarantee minimum bandwidth
+> >> +levels, the QoS is implemented only slowing down I/O "traffic" that exceeds the
+> >> +limits specified by the user; minimum I/O rate thresholds are supposed to be
+> >> +guaranteed if the user configures a proper I/O bandwidth partitioning of the
+> >> +block devices shared among the different cgroups (theoretically if the sum of
+> >> +all the single limits defined for a block device doesn't exceed the total I/O
+> >> +bandwidth of that device).
+> >> +
+> > 
+> > Hi Andrea,
+> > 
+> > Had a query. What's your use case for capping max bandwidth? I was
+> > wondering will proportional bandwidth not cover it. So if we allocate
+> > weight/share to every cgroup and limit the bandwidth based on shares
+> > only in case of contention. Otherwise applications get to unlimited
+> > bandwidth. Much like what cpu controller does or for that matter dm-ioband
+> > seems to be doing the same thing. Will you not get same kind of QoS here when
+> > comapred to max-bandwidth. The only thing probably missing is what we call
+> > hard limit. When BW is available but you don't want a user to use that
+> > BW, until and unless user has paid for that.
+> 
+> At the beginning my use case was to guarantee a certain level
+> performance _predictability_. That means no more and no less than the
+> specified threshold (should I say this would be useful for the real-time
+> apps? maybe yes).
+> 
 
-> ...though I don't really see why you have to use
-> list_for_entry_safe()...
+Is "no more" harmful for real-time env? Which RT application hates more
+bandwidth than what one asked for? I could understand "no-less" but you
+mentioned in the past that implementing minimum gurantees is lot harder.
 
-You use it in dmatest_remove_channel(), so I figured I'd do the same thing.
+I was thinking that what if we continue to stick to the current policy
+of letting RT requests go first and try to let them use disk bw first.
+cfq first dispatches requests of RT class (based on their priority).
+So in simple implementation, IO controller will simply let all the RT class
+requests to go directly to elevator and then let elevator dispatch these
+requests based on their RT prio. IO-controller will only buffer and control
+requests of non-RT class. This will make sure that we don't break the case of
+existing working RT applications and still be able to divide remaining disk
+BW among other non-RT tasks.
 
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+IMHO, once above simple scheme is working, we can probably extend it to
+provide additional level of controls.
+ 
+Thanks
+Vivek
