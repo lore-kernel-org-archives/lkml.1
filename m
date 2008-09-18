@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbYIRJc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbYIRJh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbYIRJc5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 05:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYIRJcr
+	id S1755296AbYIRJh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 05:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbYIRJht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 05:32:47 -0400
-Received: from atlas.informatik.uni-freiburg.de ([132.230.150.3]:61814 "EHLO
-	atlas.informatik.uni-freiburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753840AbYIRJcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 05:32:46 -0400
-Date: Thu, 18 Sep 2008 11:32:42 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>
+	Thu, 18 Sep 2008 05:37:49 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:41205 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751071AbYIRJht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 05:37:49 -0400
+Subject: Re: mmotm 2008-09-13-03-09 uploaded
+From: Liam Girdwood <lrg@slimlogic.co.uk>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, g.liakhovetski@pengutronix.de,
-       greg@kroah.com, kay.sievers@vrfy.org, rmk+kernel@arm.linux.org.uk
-Subject: Re: [PATCH] gpio_free might sleep, mips architecture
-Message-ID: <20080918093242.GA7627@informatik.uni-freiburg.de>
-Mail-Followup-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <ukleinek@informatik.uni-freiburg.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, david-b@pacbell.net,
-	ralf@linux-mips.org, linux-mips@linux-mips.org,
-	g.liakhovetski@pengutronix.de, greg@kroah.com, kay.sievers@vrfy.org,
-	rmk+kernel@arm.linux.org.uk
-References: <1216884515-12084-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1221508963-27259-1-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-2-git-send-email-ukleinek@informatik.uni-freiburg.de> <1221508963-27259-3-git-send-email-ukleinek@informatik.uni-freiburg.de> <20080917143955.2d3727e5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080917143955.2d3727e5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-Organization: Universitaet Freiburg, Institut f. Informatik
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080918022353.dca4b5c3.akpm@linux-foundation.org>
+References: <200809131011.m8DABTON031878@imap1.linux-foundation.org>
+	 <20080918150115.1aa45123.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080917232648.5b991958.akpm@linux-foundation.org>
+	 <1221727868.6892.66.camel@odin>
+	 <20080918022353.dca4b5c3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 18 Sep 2008 10:37:49 +0100
+Message-Id: <1221730669.6892.69.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Andrew Morton wrote:
-> > diff --git a/include/asm-mips/mach-rc32434/gpio.h b/include/asm-mips/mach-rc32434/gpio.h
-> > index f946f5f..9b4722e 100644
-> > --- a/include/asm-mips/mach-rc32434/gpio.h
-> > +++ b/include/asm-mips/mach-rc32434/gpio.h
-> > @@ -13,6 +13,7 @@
-> >  #ifndef _RC32434_GPIO_H_
-> >  #define _RC32434_GPIO_H_
-> >  
-> > +#include <linux/kernel.h>
-> >  #include <linux/types.h>
-> >  
-> >  struct rb532_gpio_reg {
-> > @@ -88,6 +89,7 @@ static inline int gpio_request(unsigned gpio, const char *label)
-> >  static inline void gpio_free(unsigned gpio)
-> >  {
-> >  	/* Not yet implemented */
-> > +	might_sleep();
-> >  }
-> >  
+On Thu, 2008-09-18 at 02:23 -0700, Andrew Morton wrote:
+> On Thu, 18 Sep 2008 09:51:08 +0100 Liam Girdwood <lrg@slimlogic.co.uk> wrote:
+> > Can I just confirm the repository & branch you are pulling as I've
+> > recently left Wolfson and now work for myself (I will no longer have
+> > guaranteed access to the Wolfson git repositories). I've also moved
+> > regulator development over to kernel.org:-
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git #dev
+> > 
 > 
-> There is no gpio_free() in linux-next's include/asm-mips/mach-rc32434/gpio.h
-This is OK.  This machine type is converted to GPIO lib in linus-next.
-So just drop the two hunks for this file.  (Note, you only dropped the
-addition of might_sleep, but then including linux/kernel.h isn't needed
-either.)
+> Please send that off to Stephen for linux-next inclusion.
 
-Best regards and thanks
-Uwe
+It already is :)
 
--- 
-Uwe Kleine-König
+Liam
 
-exit vi, lesson II:
-: w q ! <CR>
-
-NB: write the current file
