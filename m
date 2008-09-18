@@ -1,119 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYIRT2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbYIRT3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772AbYIRT2h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYIRT2a
+	id S1756990AbYIRT3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYIRT3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:28:30 -0400
-Received: from gw-ca.panasas.com ([66.104.249.162]:6518 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754715AbYIRT23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:28:29 -0400
-X-Greylist: delayed 911 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 15:28:29 EDT
-Message-ID: <48D2A86F.7060606@panasas.com>
-Date: Thu, 18 Sep 2008 14:13:51 -0500
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 3.0a1 (X11/2008050714)
+	Thu, 18 Sep 2008 15:29:01 -0400
+Received: from gw.goop.org ([64.81.55.164]:50170 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755410AbYIRT3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 15:29:00 -0400
+Message-ID: <48D2ABFD.3040103@goop.org>
+Date: Thu, 18 Sep 2008 12:29:01 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Bily <hsssss1111@163.com>
-CC: mal reddy y <malreddy.linux@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: insmod problem
-References: <200809161515454846111@163.com>, <25136850809170119p2ea954ek6ece0c847dfa5823@mail.gmail.com>, <200809171627292035857@163.com>, <48D0BBCA.2070204@gmail.com> <200809180844577188539@163.com>
-In-Reply-To: <200809180844577188539@163.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 18 Sep 2008 19:12:15.0415 (UTC) FILETIME=[7632A470:01C919C2]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, mpm@selenic.com,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: [patch] mm: tiny-shmem fix lor, mmap_sem vs i_mutex
+References: <20080910121217.GA16013@elte.hu> <20080910144812.GB18644@wotan.suse.de> <1221058864.30429.291.camel@twins.programming.kicks-ass.net> <20080910152651.GE18644@wotan.suse.de> <20080911082709.GA14378@elte.hu> <20080914073906.GA6184@elte.hu> <20080914004442.4f8e851f.akpm@linux-foundation.org> <20080914080631.GA10720@elte.hu> <20080914221231.GG27080@wotan.suse.de> <20080917131419.e6b7622e.akpm@linux-foundation.org> <20080918111226.GD29968@elte.hu>
+In-Reply-To: <20080918111226.GD29968@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bily wrote:
-> hi,Benny
->     here is my kernel2.6.26.2 .config file; and both the CONFIG_MODVERSIONS and CONFIG_MODULE_FORCE_LOAD is not set.thanks!~
+Ingo Molnar wrote:
+> in 7 days that's about 7000 random bootups, 20% of which had TINY_SHMEM 
+> enabled, half 32-bit, half 64-bit x86. It did not blow up in any way 
+> that would have prevented the kernel from building its next random 
+> version from within itself and it did not produce any kernel messages 
+> with various random kernel debug, compile and boot options.
+>   
 
-OK.  These should be fine.
+Does anything in that workload actually use shared memory?
 
-This seems to be the culprit:
->> yaffs: unknown relocation: 40
-
-It indicates that apply_relocate() is failing with -ENOEXEC
-where it doesn't know the r_info code "40".
-It could be a problem with your cross-platform linker.
-
-Benny
-
-> 
-> 
-> 
-> Bily
-> 2008-09-18
-> 
-> 
-> 
-> 发件人： Benny Halevy
-> 发送时间： 2008-09-17 21:11:54
-> 收件人： Bily
-> 抄送： mal reddy y; linux-kernel
-> 主题： Re: insmod problem
-> 
-> Can you please provide your .config file?
-> I'm mostly curious about
-> CONFIG_MODVERSIONS
-> CONFIG_MODULE_FORCE_LOAD
-> 
-> Benny
-> 
-> On Sep. 17, 2008, 3:27 -0500, "Bily"  <hsssss1111@163.com > wrote:
->> I am installing the linux kernel 2.6.26.2 to my AT91rm9200;I compile the kernel by using cross compiler  arm-none-eabi-gcc (Sourcery G++ Lite 2008q1-126); and the kernel can run on AT91rm9200 normally;howerver if i want to insert modules into kernel ,it happen the mistake like this:
->>
->> [\u@\h \W]$insmod yaffs.ko
->> yaffs: unknown relocation: 40
->> insmod: cannot insert 'yaffs.ko': invalid module format
->>
->> thanks for help!~
->>
->>
->>
->>
->>
->> Bily
->> 2008-09-17
->>
->>
->>
->> 发件人： mal reddy y
->> 发送时间： 2008-09-17 16:19:52
->> 收件人： Bily
->> 抄送： linux-kernel
->> 主题： Re: insmod problem
->>
->> give clear explanation how you have installed
->>
->> regards,
->> YMR
->>
->> On Tue, Sep 16, 2008 at 12:45 PM, Bily   <hsssss1111@163.com  > wrote:
->>> hi,all;
->>>    I want to insert an module:yaffs.ko into my kernel2.6.26,but i meet this question:
->>>
->>> [\u@\h \W]$insmod yaffs.ko
->>> yaffs: unknown relocation: 40
->>> insmod: cannot insert 'yaffs.ko': invalid module format
->>>
->>> and my busybox version is v1.11.1; may anyone tell me why ?thanks!
->>>
->>>
->>> Bily
->>> 2008-09-13
->>>
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->> N嫥叉靣笡y氊b瞂千v豝�)藓{.n�+壏{睉赙zXФ洝塄}财爖�&j:+v墾�珣赙zZ+€�+zf＂穐殘啳嗃i�z�畐ア�?櫒璀�&�)撷f旟^j谦y呩@A玜囤�
-> 0鹅h�鍜i
+    J
