@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYIROOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYIROVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbYIROOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 10:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYIRON7
+	id S1755570AbYIROVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 10:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbYIROVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 10:13:59 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:12297 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbYIRON6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 10:13:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Lb5fJrHGrNtw/OYCFoB0CLjdWOkLMRXzPg/Mnh52NDIKyd6hN71nYKKI60BXI4aK2u
-         3SMvxdZqBZbC1bajRf3cxXG5yp/Caky0SuZ4Zy8VzYoKnkPlnDIP2msA/TMPLzHSDFHH
-         +sDRKoq83xEHsa2SbeE9RbN7NsG17tko9KDfk=
-Message-ID: <ed82fe3e0809180713v7e7a6115ya4612aa68879e39d@mail.gmail.com>
-Date: Thu, 18 Sep 2008 09:13:56 -0500
-From: "Timur Tabi" <timur@freescale.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Subject: Re: dmaengine.c: question about device_alloc_chan_resources
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Haavard Skinnemoen" <haavard.skinnemoen@atmel.com>
-In-Reply-To: <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
+	Thu, 18 Sep 2008 10:21:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40031 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753701AbYIROVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 10:21:45 -0400
+Date: Thu, 18 Sep 2008 10:04:16 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Paul Menage <menage@google.com>,
+       randy.dunlap@oracle.com, Carl Henrik Lunde <chlunde@ping.uio.no>,
+       Divyesh Shah <dpshah@google.com>, eric.rannaud@gmail.com,
+       fernando@oss.ntt.co.jp, akpm@linux-foundation.org, agk@sourceware.org,
+       subrata@linux.vnet.ibm.com, axboe@kernel.dk,
+       Marco Innocenti <m.innocenti@cineca.it>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, matt@bluehost.com, roberto@unbit.it,
+       ngupta@google.com
+Subject: Re: [RFC][PATCH -mm 1/5] i/o controller documentation
+Message-ID: <20080918140416.GF20640@redhat.com>
+References: <1219853257-11052-2-git-send-email-righi.andrea@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48D02589.8070601@freescale.com>
-	 <e9c3a7c20809171536i189e3816x8572055d932c3c4c@mail.gmail.com>
-X-Google-Sender-Auth: 40f9ba5b8ff115c4
+In-Reply-To: <1219853257-11052-2-git-send-email-righi.andrea@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 17, 2008 at 5:36 PM, Dan Williams <dan.j.williams@intel.com> wrote:
+On Wed, Aug 27, 2008 at 06:07:33PM +0200, Andrea Righi wrote:
+> Documentation of the block device I/O controller: description, usage,
+> advantages and design.
+> 
+> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+> ---
+>  Documentation/controllers/io-throttle.txt |  377 +++++++++++++++++++++++++++++
+>  1 files changed, 377 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/controllers/io-throttle.txt
+> 
+> diff --git a/Documentation/controllers/io-throttle.txt b/Documentation/controllers/io-throttle.txt
+> new file mode 100644
+> index 0000000..09df0af
+> --- /dev/null
+> +++ b/Documentation/controllers/io-throttle.txt
+> @@ -0,0 +1,377 @@
+> +
+> +               Block device I/O bandwidth controller
+> +
+> +----------------------------------------------------------------------
+> +1. DESCRIPTION
+> +
+> +This controller allows to limit the I/O bandwidth of specific block devices for
+> +specific process containers (cgroups) imposing additional delays on I/O
+> +requests for those processes that exceed the limits defined in the control
+> +group filesystem.
+> +
+> +Bandwidth limiting rules offer better control over QoS with respect to priority
+> +or weight-based solutions that only give information about applications'
+> +relative performance requirements. Nevertheless, priority based solutions are
+> +affected by performance bursts, when only low-priority requests are submitted
+> +to a general purpose resource dispatcher.
+> +
+> +The goal of the I/O bandwidth controller is to improve performance
+> +predictability from the applications' point of view and provide performance
+> +isolation of different control groups sharing the same block devices.
+> +
+> +NOTE #1: If you're looking for a way to improve the overall throughput of the
+> +system probably you should use a different solution.
+> +
+> +NOTE #2: The current implementation does not guarantee minimum bandwidth
+> +levels, the QoS is implemented only slowing down I/O "traffic" that exceeds the
+> +limits specified by the user; minimum I/O rate thresholds are supposed to be
+> +guaranteed if the user configures a proper I/O bandwidth partitioning of the
+> +block devices shared among the different cgroups (theoretically if the sum of
+> +all the single limits defined for a block device doesn't exceed the total I/O
+> +bandwidth of that device).
+> +
 
-> I believe the problem is that dmatest is telling the core to take
-> multiple references on a channel.  Take a look at
-> net/core/dev.c:netdev_dma_event and
-> crypto:asynx_tx/async_tx.c:dma_channel_add_remove both of those check
-> to see if they already have a refence to the channel.
+Hi Andrea,
 
-Ok, I see what these functions are doing, and dmatest_add_channel() is
-not doing it.  dmatest_add_channel() should not assume that it will
-only receive one and only one DMA_RESOURCE_AVAILABLE for each channel.
+Had a query. What's your use case for capping max bandwidth? I was
+wondering will proportional bandwidth not cover it. So if we allocate
+weight/share to every cgroup and limit the bandwidth based on shares
+only in case of contention. Otherwise applications get to unlimited
+bandwidth. Much like what cpu controller does or for that matter dm-ioband
+seems to be doing the same thing. Will you not get same kind of QoS here when
+comapred to max-bandwidth. The only thing probably missing is what we call
+hard limit. When BW is available but you don't want a user to use that
+BW, until and unless user has paid for that.
 
-I'll post a patch, if Haavard doesn't do it first.  Thanks for looking
-into this and getting back to me.  I've spent the entire week
-debugging this.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Thanks
+Vivek
