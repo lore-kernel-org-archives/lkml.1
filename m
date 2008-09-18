@@ -1,40 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698AbYIRQSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYIRQV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755698AbYIRQSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbYIRQSD
+	id S1756026AbYIRQV2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 12:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYIRQVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:18:03 -0400
-Received: from smtpeu1.atmel.com ([195.65.72.27]:42388 "EHLO bagnes.atmel.com"
+	Thu, 18 Sep 2008 12:21:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47125 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752789AbYIRQSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:18:01 -0400
-Date: Thu, 18 Sep 2008 18:16:56 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: dan.j.williams@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] dmatest: properly handle duplicate DMA channels
-Message-ID: <20080918181656.6ff00a14@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <1221754217-26974-1-git-send-email-timur@freescale.com>
-References: <1221754217-26974-1-git-send-email-timur@freescale.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 18 Sep 2008 16:16:46.0582 (UTC) FILETIME=[F2863960:01C919A9]
+	id S1753701AbYIRQVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 12:21:20 -0400
+Date: Thu, 18 Sep 2008 12:19:57 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] loglevel=pci:8,acpi:8,apic=8 support v6
+Message-ID: <20080918161957.GC3097@redhat.com>
+References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <20080917015543.27172da4.akpm@linux-foundation.org> <20080917092732.GB32107@elte.hu> <20080917184618.GB6486@redhat.com> <48D159A7.5080907@zytor.com> <20080918105728.GF20967@elte.hu> <48D2758B.1000004@zytor.com> <20080918155041.GB3097@redhat.com> <48D27A7E.8090403@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48D27A7E.8090403@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi <timur@freescale.com> wrote:
-> Update the the dmatest driver so that it handles duplicate DMA channels
-> properly.
-> 
-> When a DMA client is notified of an available DMA channel, it must check if it
-> has already allocated resources for that channel.  If so, it should return
-> DMA_DUP.  This can happen, for example, if a DMA driver calls
-> dma_async_device_register() more than once.
-> 
-> Signed-off-by: Timur Tabi <timur@freescale.com>
+On Thu, Sep 18, 2008 at 08:57:50AM -0700, H. Peter Anvin wrote:
+> Jason Baron wrote:
+>>
+>> if we take this argument to its extreme, then we end up spending all of
+>> our time verifying that the kernel is working correctly and no time
+>> actually doing work. I think 'printk_ratelimit' captures this. Thus, 
+>> the line has to be drawn somewhere. If you want the messages in 'dmesg' 
+>> use,
+>> printk(KERN_DEBUG), and 'grep'. For the rest, I propose pre-filtering, which is
+>> what 'dynamic debug' uses.
+>>
+>
+> Taking any argument to its extreme and you come up with something  
+> ridiculous.
+>
+> One could equally argue that if you have so many debugging messages that  
+> you have to prefilter for performance, you're so bloating your kernel  
+> that you need to stop.
 
-Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+in my testing there was no significant difference between pre-filtering
+vs. not built in. However, there was a measureable affect of having them
+built in vs. not built in.
+
+>
+> I find it highly questionable that it makes sense to put even skipped  
+> messages into hot paths in the production kernel.  Skipped prints are  
+> NOT free, even if they are lot cheaper than actually rendering the 
+> string.
+>
+
+If you feel that way, you simply don't have to turn the single CONFIG_ on.
+Futher, the patchset allows fine-grained control over the modules that
+you would want to enable/disable.
+
+thanks,
+
+-Jason
+
