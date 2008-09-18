@@ -1,43 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbYIRSSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbYIRSVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbYIRSSB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 14:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbYIRSRw
+	id S1756648AbYIRSVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 14:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbYIRSVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 14:17:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51889 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754543AbYIRSRv (ORCPT
+	Thu, 18 Sep 2008 14:21:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38883 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754399AbYIRSVA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 14:17:51 -0400
-Message-ID: <48D29AFB.5070409@linux-foundation.org>
-Date: Thu, 18 Sep 2008 13:16:27 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Chris Snook <csnook@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org> <48D1625C.7000309@redhat.com> <48D17A93.4000803@goop.org>
-In-Reply-To: <48D17A93.4000803@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Sep 2008 14:21:00 -0400
+Date: Thu, 18 Sep 2008 20:25:28 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, andi@firstfloor.org,
+       joerg.roedel@amd.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] fix GART to respect device's dma_mask about virtual mappings
+Message-ID: <20080918182528.GP25711@one.firstfloor.org>
+References: <20080916134335.GC25711@one.firstfloor.org> <20080917021319O.fujita.tomonori@lab.ntt.co.jp> <20080916175824.GF25711@one.firstfloor.org> <20080917085335F.fujita.tomonori@lab.ntt.co.jp> <20080917104327.GD18764@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080917104327.GD18764@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had a patch like that a couple of years back but it was not accepted.
+> no - any extra layer of robustness is good in such a critical piece of 
 
-http://www.kernel.org/pub/linux/kernel/people/christoph/prefault/
+robustness would require to handle it everywhere (as in always fall
+back to 24bit DMA bouncing if someone tries a map_* on a < 32bit mapping), 
+but this patch doesn't do that at all.
 
-http://readlist.com/lists/vger.kernel.org/linux-kernel/14/70942.html
-
-http://www.ussg.iu.edu/hypermail/linux/kernel/0503.1/1292.html
-
-
+-Andi
+-- 
+ak@linux.intel.com
