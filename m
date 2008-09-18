@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYIRW31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYIRWme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbYIRW31 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 18:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYIRW3S
+	id S1756531AbYIRWme (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 18:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbYIRWm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 18:29:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53582 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754828AbYIRW3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 18:29:17 -0400
-Message-ID: <48D2D4C7.8080209@redhat.com>
-Date: Thu, 18 Sep 2008 18:23:03 -0400
-From: Chris Snook <csnook@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 18 Sep 2008 18:42:26 -0400
+Received: from xenotime.net ([66.160.160.81]:52737 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754968AbYIRWm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 18:42:26 -0400
+Date: Thu, 18 Sep 2008 15:42:18 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: linux-kernel@vger.kernel.org
+cc: akpm@linux-foundation.org
+Subject: Re: mmotm 2008-09-18-14-56 uploaded (olpc_battery build errors)
+In-Reply-To: <200809182157.m8ILv0Vi021531@imap1.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0809181540480.28355@shark.he.net>
+References: <200809182157.m8ILv0Vi021531@imap1.linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Martin Bligh <mbligh@google.com>, MinChan Kim <minchan.kim@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org> <48D2A392.6010308@goop.org>	 <33307c790809181352h14f2cf26kc73de75b939177b5@mail.gmail.com>	 <48D2BFB8.6010503@redhat.com>	 <33307c790809181411j41a6fc4ev8560a13ed8661ec2@mail.gmail.com>	 <48D2C46A.5030702@linux-foundation.org>	 <33307c790809181421k52ed6a36h9d4ee40d5799a536@mail.gmail.com>	 <48D2C8DD.4040303@linux-foundation.org>	 <28c262360809181449v1050c1f7ndf17dadba9fac0bf@mail.gmail.com>	 <48D2CEF3.6060308@linux-foundation.org> <33307c790809181508v2e64c0a4j8f0e93df99673e63@mail.gmail.com> <48D2D22B.2070408@linux-foundation.org>
-In-Reply-To: <48D2D22B.2070408@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> Martin Bligh wrote:
->>> My patches were only for anonymous pages not for file backed because readahead
->>> is available for file backed mappings.
->> Do we populate the PTEs though? I didn't think that was batched, but I
->> might well be wrong.
-> 
-> We do not populate the PTEs and AFAICT PTE population was assumed not to be
-> performance critical since the backing media is comparatively slow.
-> 
+On Thu, 18 Sep 2008, akpm@linux-foundation.org wrote:
 
-Perhaps we should.  In a virtual guest, the backing media is often an emulated 
-IDE device, or something similarly inefficient, such that the bottleneck is the CPU.
+> The mm-of-the-moment snapshot 2008-09-18-14-56 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> It contains the following patches against 2.6.27-rc6:
 
--- Chris
+olpc_battery build fails with
+
+mmotm-2008-0918-1456/drivers/power/olpc_battery.c: At top level:
+mmotm-2008-0918-1456/drivers/power/olpc_battery.c:363: error: unknown field 'owner' specified in initializer
+mmotm-2008-0918-1456/drivers/power/olpc_battery.c:363: warning: excess elements in struct initializer
+mmotm-2008-0918-1456/drivers/power/olpc_battery.c:363: warning: (near initialization for 'olpc_bat_eeprom.attr')
+make[3]: *** [drivers/power/olpc_battery.o] Error 1
+
+
+-- 
+~Randy
