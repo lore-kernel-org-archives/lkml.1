@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYIRMts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYIRMy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYIRMts (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 08:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbYIRMti
+	id S1755181AbYIRMy5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 08:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbYIRMyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 08:49:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:11513 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752789AbYIRMth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 08:49:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :message-id:from;
-        b=bIx1/o0r/YBQzZw+wmxsHj9J8HvMMI03fUte9nu8fJjYonS0ogXnv81gURtLjEQGXJ
-         G8+loTTcbtBYC5dEgNcwIFefe9Lkd+xg22IO7+ERA8Dlu2gHdhEt9IV4FODmwpsRupw2
-         MBFFZW4OstHEcgx0+M1RtUP1ysTlQuugsTCBg=
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH] rfkill: update LEDs for all state changes
-Date: Thu, 18 Sep 2008 14:49:31 +0200
-User-Agent: KMail/1.9.9
-Cc: John Linville <linville@tuxdriver.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, Michael Buesch <mb@bu3sch.de>
-References: <20080917023334.GA1187@khazad-dum.debian.net> <1221682077-21170-1-git-send-email-hmh@hmh.eng.br>
-In-Reply-To: <1221682077-21170-1-git-send-email-hmh@hmh.eng.br>
+	Thu, 18 Sep 2008 08:54:49 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:58960 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752773AbYIRMyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 08:54:49 -0400
+X-Greylist: delayed 1715 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 08:54:48 EDT
+From: Ferenc Wagner <wferi@niif.hu>
+To: linux-kernel@vger.kernel.org
+Subject: doubled idle count
+Date: Thu, 18 Sep 2008 14:26:11 +0200
+Message-ID: <87vdwtfxng.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809181449.31495.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 September 2008, Henrique de Moraes Holschuh wrote:
-> The LED state was not being updated by rfkill_force_state(), which will
-> cause regressions in wireless drivers that had old-style rfkill support and
-> are updated to use rfkill_force_state().
-> 
-> The LED state was not being updated when a change was detected through the
-> rfkill->get_state() hook, either.
-> 
-> Move the LED trigger update calls into notify_rfkill_state_change(), where
-> it should have been in the first place.  This takes care of both issues.
-> 
-> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Cc: Ivo van Doorn <IvDoorn@gmail.com>
+Hi,
 
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+After upgrading a Xen virtual machine to Debian's 2.6.26-4 kernel, I
+noticed that the idle counter doubled its pace on one of the machines:
 
-> ---
->  net/rfkill/rfkill.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
-> 
->  John, this one is quite likely something that should be sent for
->  merge in mainline BEFORE 2.6.27 is released.
-> 
->  I am NOT sure it fixes regressions, that depends on whether the drivers
->  using rfkill that are in 2.6.27 had working LED support before rfkill
->  support was added to them.  Unfortunately, it cannot fix the b43
->  regression by itself.
-> 
-> diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
-> index ea0dc04..f949a48 100644
-> --- a/net/rfkill/rfkill.c
-> +++ b/net/rfkill/rfkill.c
-> @@ -125,6 +125,7 @@ static void rfkill_led_trigger_activate(struct led_classdev *led)
->  
->  static void notify_rfkill_state_change(struct rfkill *rfkill)
->  {
-> +	rfkill_led_trigger(rfkill, rfkill->state);
->  	blocking_notifier_call_chain(&rfkill_notifier_list,
->  			RFKILL_STATE_CHANGED,
->  			rfkill);
-> @@ -217,10 +218,8 @@ static int rfkill_toggle_radio(struct rfkill *rfkill,
->  			rfkill->state = state;
->  	}
->  
-> -	if (force || rfkill->state != oldstate) {
-> -		rfkill_led_trigger(rfkill, rfkill->state);
-> +	if (force || rfkill->state != oldstate)
->  		notify_rfkill_state_change(rfkill);
-> -	}
->  
->  	return retval;
->  }
+service2:~# yes >/dev/null &
+[1] 32578
+service2:~# grep cpu0 /proc/stat; sleep 1; grep cpu0 /proc/stat
+cpu0 141208 9113 57273 13379659 61012 0 792 2350 0
+cpu0 141310 9113 57274 13379659 61012 0 792 2350 0
+service2:~# fg
+yes > /dev/null
+^C
+service2:~# grep cpu0 /proc/stat; sleep 1; grep cpu0 /proc/stat
+cpu0 141952 9113 57277 13383481 61012 0 792 2350 0
+cpu0 141953 9113 57278 13383681 61012 0 792 2350 0
 
+One out of three machines show this effect, with the exact same kernel
+and Xen versions (3.2.0, dom0 is Debian's stock Etch 2.6.18 kernel).
+They aren't hosted by the same machine, though: the misbehaving one is
+on a different installation with very similar hardware (3 vs 2 GHz).
+All the guest are paravirtual.
 
+service2:~# cat /proc/cpuinfo 
+processor	: 0
+vendor_id	: GenuineIntel
+cpu family	: 15
+model		: 2
+model name	: Intel(R) Xeon(TM) CPU 3.06GHz
+stepping	: 5
+cpu MHz		: 3056.482
+cache size	: 1024 KB
+physical id	: 0
+siblings	: 1
+core id		: 0
+cpu cores	: 1
+apicid		: 1
+initial apicid	: 1
+fdiv_bug	: no
+hlt_bug		: no
+f00f_bug	: no
+coma_bug	: no
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 2
+wp		: yes
+flags		: fpu de tsc msr pae cx8 cmov pat pse36 clflush dts mmx fxsr sse sse2 ss ht pbe up pebs bts cid xtpr
+bogomips	: 6128.11
+clflush size	: 64
+power management:
+
+I don't know what else would be useful, please ask.
+-- 
+Thanks,
+Feri.
