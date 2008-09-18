@@ -1,61 +1,361 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbYIRHcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbYIRHlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbYIRHcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 03:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYIRHcq
+	id S1755280AbYIRHlb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 03:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYIRHlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 03:32:46 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:61610 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbYIRHcp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 03:32:45 -0400
-X-BigFish: VPS-39(zz1418M1432R98dR1805M179dR936fQ873fnzz10d3izzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0K7DRM9-04-JZU-01
-Date: Thu, 18 Sep 2008 09:32:32 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org
-Subject: Re: [PATCH 18/23] AMD IOMMU: simplify dma_mask_to_pages
-Message-ID: <20080918073232.GB24392@amd.com>
-References: <1221670377-19295-1-git-send-email-joerg.roedel@amd.com> <1221670377-19295-19-git-send-email-joerg.roedel@amd.com> <20080918041717S.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080918041717S.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 18 Sep 2008 07:32:32.0165 (UTC) FILETIME=[B63B1550:01C91960]
+	Thu, 18 Sep 2008 03:41:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59145 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751146AbYIRHlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 03:41:21 -0400
+Date: Thu, 18 Sep 2008 17:41:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for September 18
+Message-Id: <20080918174108.3357c3d2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__18_Sep_2008_17_41_08_+1000_VYo.Pe2fX83FvvgF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 04:20:20AM +0900, FUJITA Tomonori wrote:
-> On Wed, 17 Sep 2008 18:52:52 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > The current calculation is very complicated. This patch replaces it with
-> > a much simpler version.
-> > 
-> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> > ---
-> >  arch/x86/kernel/amd_iommu.c |    3 +--
-> >  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> I think that you can use iommu_device_max_index() for what
-> dma_mask_to_pages does.
+--Signature=_Thu__18_Sep_2008_17_41_08_+1000_VYo.Pe2fX83FvvgF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, in theory yes. But iommu_device_max_index() returns a size in bytes
-and not in pages. So I still need to do the page shift somewhere. This
-eliminates somewhat the benefit in this particular case.
+Hi all,
 
-Joerg
+[I restated the creation of the tree as I made an error in the middle
+that would have left us with a tree that wouldn't build for quite a bit
+of a bisection.  Thus some of the conflicts mentioned below have already
+been fixed.]
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Changes since next-20080916:
 
+New tree: uwb.
+
+Dropped tree: bdev (clashes with the device-mapper tree).
+
+The pxa tree gained a conflict against the arm tree but lost another
+conflict.
+
+The sparc tree gained a conflict against the sparc-current tree (already
+fixed).
+
+The driver-core tree lost a conflict.
+
+The pci tree lost 2 conflicts.
+
+The ide tree lost a conflict.
+
+The kvm tree gained 2 conflicts against the x86 tree as well as an
+extended merge fixup.
+
+The wireless tree gained a conflict against the driver-core tree.
+
+The block tree gained a build fix patch but also lost one.
+
+The bdev tree gained 2 conflicts against the device-mapper tree which
+meant I had to drop the bdev tree for today.
+
+I have also applied the following patches for known problems:
+
+	sparc: qlogicpti fallout from sbus removal
+	fix IXGBE dependencies
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 117 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+CONFLICT (rename/delete): Renamed include/asm-parisc/a.out.h->arch/parisc/i=
+nclude/asm/a.out.h in parisc/master and deleted in HEAD
+$ git rm -f arch/parisc/include/asm/a.out.h
+Merging powerpc/powerpc-next
+Merging 4xx/next
+Merging galak/powerpc-next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/corgi.c
+CONFLICT (content): Merge conflict in arch/arm/mach-pxa/spitz.c
+Applying pxa: LCD_CORGI is currently BROKEN
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in include/asm-x86/statfs.h
+Applying x86: fix arch/x86/kernel/k8.c
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in include/asm-x86/smp.h
+Merging ftrace/auto-ftrace-next
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+CONFLICT (content): Merge conflict in include/asm-x86/pda.h
+CONFLICT (content): Merge conflict in kernel/fork.c
+Merging timers/auto-timers-next
+CONFLICT (delete/modify): arch/x86/kernel/apic_64.c deleted in timers/auto-=
+timers-next and modified in HEAD. Version HEAD of arch/x86/kernel/apic_64.c=
+ left in tree.
+CONFLICT (content): Merge conflict in arch/x86/xen/spinlock.c
+CONFLICT (content): Merge conflict in drivers/pci/probe.c
+CONFLICT (content): Merge conflict in include/linux/pci_ids.h
+$ git rm arch/x86/kernel/apic_64.c
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+CONFLICT (content): Merge conflict in drivers/hid/usbhid/hid-core.c
+Applying HID: fix for warn() removal
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/stable
+CONFLICT (content): Merge conflict in drivers/media/video/Kconfig
+CONFLICT (content): Merge conflict in drivers/media/video/zr364xx.c
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in drivers/misc/acer-wmi.c
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (rename/modify): Merge conflict in include/linux/intel-iommu.h
+CONFLICT (content): Merge conflict in arch/x86/kvm/i8254.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+CONFLICT (content): Merge conflict in include/asm-x86/kvm.h
+CONFLICT (content): Merge conflict in include/asm-x86/msr-index.h
+Applying kvm: fixup merge for intel_iommu.h move
+Merging dlm/next
+Merging scsi/master
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/mac80211_hwsim.c
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+Merging bkl-removal/bkl-removal
+Merging trivial/next
+CONFLICT (content): Merge conflict in Documentation/edac.txt
+CONFLICT (content): Merge conflict in include/linux/securebits.h
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-disk.c
+CONFLICT (content): Merge conflict in drivers/md/dm-mpath.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Applying block: bdev_get_integrity needs to be defined earlier
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in drivers/scsi/qlogicpti.c
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/kernel/process_64.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/traps_64.c
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/reg-for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in drivers/char/tty_io.c
+CONFLICT (content): Merge conflict in drivers/char/vt.c
+CONFLICT (content): Merge conflict in drivers/serial/68328serial.c
+CONFLICT (content): Merge conflict in drivers/serial/8250.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/aircable.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/keyspan_pda.c
+CONFLICT (content): Merge conflict in drivers/usb/serial/safe_serial.c
+CONFLICT (content): Merge conflict in kernel/auditsc.c
+Merging agp/agp-next
+Merging creds/next-creds
+CONFLICT (content): Merge conflict in drivers/net/wan/sbni.c
+CONFLICT (content): Merge conflict in fs/namespace.c
+CONFLICT (content): Merge conflict in fs/nfsd/nfs4recover.c
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_linux.h
+CONFLICT (content): Merge conflict in fs/xfs/xfs_inode.c
+CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.c
+CONFLICT (content): Merge conflict in include/linux/capability.h
+CONFLICT (add/add): Merge conflict in include/linux/cred.h
+CONFLICT (content): Merge conflict in include/linux/security.h
+CONFLICT (content): Merge conflict in kernel/exit.c
+CONFLICT (content): Merge conflict in kernel/fork.c
+CONFLICT (content): Merge conflict in security/commoncap.c
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
+Merging oprofile/auto-oprofile-next
+CONFLICT (content): Merge conflict in arch/x86/oprofile/nmi_int.c
+Merging fastboot/auto-fastboot-next
+CONFLICT (content): Merge conflict in include/linux/init.h
+Merging sparseirq/auto-sparseirq-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/ptrace.c
+CONFLICT (content): Merge conflict in arch/x86/kvm/vmx.h
+CONFLICT (content): Merge conflict in drivers/pci/probe.c
+CONFLICT (content): Merge conflict in include/asm-x86/msr-index.h
+Merging uwb/for-upstream
+$ git checkout -b temp scsi-post-merge/master
+Applying [SCSI] Add helper code so transport classes/driver can control que=
+ueing (v3)
+Applying [SCSI] qla4xxx: return SCSI_MLQUEUE_TARGET_BUSY when driver has de=
+tected session error
+Applying [SCSI] qla2xxx: return SCSI_MLQUEUE_TARGET_BUSY when driver has de=
+tected rport error or race
+Applying [SCSI] libiscsi: Use SCSI_MLQUEUE_TARGET_BUSY
+Applying [SCSI] lpfc: use SCSI_MLQUEUE_TARGET_BUSY when catching the rport =
+transition race
+Applying [SCSI] fc class: unblock target after calling terminate callback (=
+take 2)
+Applying [SCSI] ibmvfc, qla2xxx, lpfc: remove scsi_target_unblock calls in =
+terminate callbacks
+Applying [SCSI] scsi: add transport host byte errors (v3)
+Applying [SCSI] iscsi class, libiscsi and qla4xxx: convert to new transport=
+ host byte values
+Applying [SCSI] fc class: Add support for new transport errors
+Applying [SCSI] qla2xxx: use new host byte transport errors.
+Applying [SCSI] block: separate failfast into multiple bits.
+Applying [SCSI] modify scsi to handle new fail fast flags.
+Applying [SCSI] lpfc 8.2.8 : Add kernel-doc function headers
+Applying [SCSI] lpfc 8.2.8 : Miscellaneous Discovery Fixes
+Applying [SCSI] lpfc 8.2.8 : Update driver for new SLI-3 features
+Applying [SCSI] lpfc 8.2.8 : Miscellaneous Bug Fixes
+Applying [SCSI] lpfc 8.2.8 : Add new FCOE hardware support
+Applying [SCSI] lpfc 8.2.8 : Add support for PCI-EEH permanent disabling
+Applying [SCSI] lpfc 8.2.8 : Update driver to use new Host byte error code =
+DID_TRANSPORT_DISRUPTED
+Applying [SCSI] lpfc 8.2.8 : Add MSI-X support
+Applying [SCSI] lpfc 8.2.8 : update driver version to 8.2.8
+Applying [SCSI] scsi_dh_alua: remove REQ_NOMERGE
+Applying [SCSI] lpfc 8.2.8 v2 : Revert target busy in favor of transport di=
+srupted
+Applying [SCSI] lpfc 8.2.8 v2 : Add sysfs control of target queue depth han=
+dling
+Applying [SCSI] lpfc 8.2.8 v2 : Add statistical reporting control and addit=
+ional fc vendor events
+Applying [SCSI] scsi_error: fix target reset handling
+$ git checkout master
+Applying sparc: qlogicpti fallout from sbus removal
+Applying fix IXGBE dependencies
+
+--Signature=_Thu__18_Sep_2008_17_41_08_+1000_VYo.Pe2fX83FvvgF
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkjSBhQACgkQjjKRsyhoI8yhjQCeNxZX91Xpbwp6m4Fg3DJQcT5C
+l6gAoKCJ0jDUsPkn42vldgn3gpcmb+Mo
+=Vwm7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__18_Sep_2008_17_41_08_+1000_VYo.Pe2fX83FvvgF--
