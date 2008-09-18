@@ -1,33 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYIRCO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYIRC3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYIRCO1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Sep 2008 22:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbYIRCOS
+	id S1754962AbYIRC3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Sep 2008 22:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYIRC2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 17 Sep 2008 22:14:18 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:64203 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYIRCOS (ORCPT
+	Wed, 17 Sep 2008 22:28:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52825 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752879AbYIRC2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Sep 2008 22:14:18 -0400
-Date: Thu, 18 Sep 2008 11:03:53 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: nishimura@mxp.nes.nec.co.jp, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org
-Subject: Re: [PATCH -mm] memcg: fix handling of shmem migration(v2)
-Message-Id: <20080918110353.2c8d0602.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20080917155112.eefd2f8a.akpm@linux-foundation.org>
-References: <20080917133149.b012a1c2.nishimura@mxp.nes.nec.co.jp>
-	<20080917144659.2e363edc.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080917145003.fb4d0b95.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080917151951.9a181e7d.nishimura@mxp.nes.nec.co.jp>
-	<20080917153826.8efbdc4b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080917154511.683691d1.nishimura@mxp.nes.nec.co.jp>
-	<20080917165544.3873bbb2.nishimura@mxp.nes.nec.co.jp>
-	<20080917155112.eefd2f8a.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 17 Sep 2008 22:28:50 -0400
+Date: Wed, 17 Sep 2008 19:28:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@openedhand.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] mfd: Core support for the WM8400 AudioPlus HiFi
+ CODEC and PMU
+Message-Id: <20080917192836.ef3545d2.akpm@linux-foundation.org>
+In-Reply-To: <1221558194-15505-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20080916094201.GA15271@rakim.wolfsonmicro.main>
+	<1221558194-15505-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,91 +29,195 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Sep 2008 15:51:12 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 17 Sep 2008 16:55:44 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > Before this patch, if migrating shmem/tmpfs pages, newpage would be
-> > charged with PAGE_CGROUP_FLAG_FILE set, while oldpage has been charged
-> > without the flag.
-> > 
-> > The problem here is mem_cgroup_move_lists doesn't clear(or set)
-> > the PAGE_CGROUP_FLAG_FILE flag, so pc->flags of the newpage
-> > remains PAGE_CGROUP_FLAG_FILE set even when the pc is moved to
-> > another lru(anon) by mem_cgroup_move_lists. And this leads to
-> > incorrect MEM_CGROUP_ZSTAT.
-> > (In my test, I see an underflow of MEM_CGROUP_ZSTAT(active_file).
-> > As a result, mem_cgroup_calc_reclaim returns very huge number and
-> > causes soft lockup on page reclaim.)
-> > 
-> > I'm not sure if mem_cgroup_move_lists should handle PAGE_CGROUP_FLAG_FILE
-> > or not(I suppose it should be used to move between active <-> inactive,
-> > not anon <-> file), I added MEM_CGROUP_CHARGE_TYPE_SHMEM for precharge
-> > at shmem's page migration.
-> > 
-> > 
-> > ChangeLog: v1->v2
-> > - instead of modifying migrate.c, modify memcontrol.c only.
-> > - add MEM_CGROUP_CHARGE_TYPE_SHMEM.
-> > 
-> > 
-> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > ---
-> >  mm/memcontrol.c |   13 ++++++++++---
-> >  1 files changed, 10 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index 2979d22..ef8812d 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -179,6 +179,7 @@ enum charge_type {
-> >  	MEM_CGROUP_CHARGE_TYPE_CACHE = 0,
-> >  	MEM_CGROUP_CHARGE_TYPE_MAPPED,
-> >  	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
-> > +	MEM_CGROUP_CHARGE_TYPE_SHMEM,	/* used by page migration of shmem */
-> >  };
-> >  
-> >  /*
-> > @@ -579,8 +580,10 @@ static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
-> >  			pc->flags |= PAGE_CGROUP_FLAG_FILE;
-> >  		else
-> >  			pc->flags |= PAGE_CGROUP_FLAG_ACTIVE;
-> > -	} else
-> > +	} else if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
-> >  		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
-> > +	else /* MEM_CGROUP_CHARGE_TYPE_SHMEM */
-> > +		pc->flags = PAGE_CGROUP_FLAG_CACHE | PAGE_CGROUP_FLAG_ACTIVE;
-> >  
-> >  	lock_page_cgroup(page);
-> >  	if (unlikely(page_get_page_cgroup(page))) {
-> > @@ -739,8 +742,12 @@ int mem_cgroup_prepare_migration(struct page *page, struct page *newpage)
-> >  	if (pc) {
-> >  		mem = pc->mem_cgroup;
-> >  		css_get(&mem->css);
-> > -		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
-> > -			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
-> > +		if (pc->flags & PAGE_CGROUP_FLAG_CACHE) {
-> > +			if (page_is_file_cache(page))
-> > +				ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
-> > +			else
-> > +				ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
-> > +		}
-> >  	}
-> >  	unlock_page_cgroup(page);
-> >  	if (mem) {
-> 
-> I queued this as a fix against
-> vmscan-split-lru-lists-into-anon-file-sets.patch.  Was that appropriate?
-> 
-Yes, thanks.
+On Tue, 16 Sep 2008 10:43:13 +0100 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-> If the bug you're fixing here is also present in mainline then I'll
-> need to ask for a tested patch against mainline, please.
+> The WM8400 is a highly integrated audio CODEC and power management unit
+> optimised for use in mobile multimedia applications.  This patch adds
+> core support for the WM8400 to the MFD subsystem.
 > 
-I don't think this bug exist in mainline, where memcg have
-only two ZSTAT(active/inactive) and mem_cgroup_move_lists can handle
-them properly.
+> Both I2C and SPI access are supported by the hardware but currently only
+> I2C access is implemented.  The code is structured to allow SPI support
+> to be slotted in later.
+> 
 
+Various ankle-biting comments, just to show I read it:
 
-Thanks,
-Daisuke Nishimura.
+>
+> ...
+>
+> +#include <linux/bug.h>
+> +#include <linux/i2c.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mfd/wm8400-private.h>
+> +#include <linux/mfd/wm8400-audio.h>
+> +
+> +static struct
+> +{
+
+hm, checkpatch chews a couple minutes CPU time then misses this error.
+
+static struct {
+
+please.
+
+> +	u16  readable;    /* Mask of readable bits */
+> +	u16  writable;    /* Mask of writable bits */
+> +	u16  vol;         /* Mask of volatile bits */
+> +	int  is_codec;    /* Register controlled by codec reset */
+> +	u16  default_val; /* Value on reset */
+> +} reg_data[] =
+> +{
+
+} reg_data[] = {
+
+would be conventional, too.
+
+> +	{ 0xFFFF, 0xFFFF, 0x0000, 0, 0x6172 }, /* R0 */
+> +	{ 0x7000, 0x0000, 0x8000, 0, 0x0000 }, /* R1 */
+> +	{ 0xFF17, 0xFF17, 0x0000, 0, 0x0000 }, /* R2 */
+> +	{ 0xEBF3, 0xEBF3, 0x0000, 1, 0x6000 }, /* R3 */
+> +	{ 0x3CF3, 0x3CF3, 0x0000, 1, 0x0000 }, /* R4  */
+>
+> ...
+>
+> +/**
+> + * wm8400_reg_read - Single register read
+> + *
+> + * @wm8400: Pointer to wm8400 control structure
+> + * @reg:    Register to read
+> + *
+> + * @return  Read value
+> + */
+> +u16 wm8400_reg_read(struct wm8400 *wm8400, u8 reg)
+> +{
+> +	u16 val;
+> +
+> +	mutex_lock(&wm8400->io_lock);
+> +
+> +	wm8400_read(wm8400, reg, 1, &val);
+> +
+> +	mutex_unlock(&wm8400->io_lock);
+> +
+> +	return val;
+> +}
+> +EXPORT_SYMBOL_GPL(wm8400_reg_read);
+
+Is it just me, or do all the useless newlines there look silly?  sigh.
+
+> +int wm8400_block_read(struct wm8400 *wm8400, u8 reg, int count, u16 *data)
+> +{
+> +	int ret;
+> +
+> +	mutex_lock(&wm8400->io_lock);
+> +
+> +	ret = wm8400_read(wm8400, reg, count, data);
+> +
+> +	mutex_unlock(&wm8400->io_lock);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(wm8400_block_read);
+> +
+>
+> ...
+>
+> +static void wm8400_release(struct wm8400 *wm8400)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(wm8400->regulators); i++)
+> +		if (wm8400->regulators[i].name)
+> +			platform_device_unregister(&wm8400->regulators[i]);
+> +}
+> +
+> +#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
+
+Is CONFIG_I2C=n worth supporting?  Is anyone likely to test and
+maintain that combination?
+
+> +static int wm8400_i2c_read(void *io_data, char reg, int count, u16 *dest)
+> +{
+> +	struct i2c_client *i2c = io_data;
+> +	struct i2c_msg xfer[2];
+> +	int ret;
+> +
+> +	/* Write register */
+> +	xfer[0].addr = i2c->addr;
+> +	xfer[0].flags = 0;
+> +	xfer[0].len = 1;
+> +	xfer[0].buf = &reg;
+> +
+> +	/* Read data */
+> +	xfer[1].addr = i2c->addr;
+> +	xfer[1].flags = I2C_M_RD;
+> +	xfer[1].len = count * sizeof(u16);
+> +	xfer[1].buf = (u8 *)dest;
+> +
+> +	ret = i2c_transfer(i2c->adapter, xfer, 2);
+> +	if (ret == 2)
+> +		ret = 0;
+> +	else if (ret >= 0)
+> +		ret = -EIO;
+> +
+> +	return ret;
+> +}
+> +
+> +static int wm8400_i2c_write(void *io_data, char reg, int count, const u16 *src)
+> +{
+> +	struct i2c_client *i2c = io_data;
+> +	u8 *msg;
+> +	int ret;
+> +
+> +	/* We add 1 byte for device register - ideally I2C would gather. */
+> +	msg = kmalloc((count * sizeof(u16)) + 1, GFP_KERNEL);
+> +	if (msg == NULL)
+> +		return -ENOMEM;
+> +
+> +	msg[0] = reg;
+> +	memcpy(&msg[1], src, count * sizeof(u16));
+> +
+> +	ret = i2c_master_send(i2c, msg, (count * sizeof(u16)) + 1);
+> +
+> +	if (ret == (count * 2) + 1)
+> +		ret = 0;
+> +	else if (ret >= 0)
+> +		ret = -EIO;
+> +
+> +	kfree(msg);
+> +
+> +	return ret;
+> +}
+
+Always freaks me out to see read/write methods returning `int' instead
+of `ssize_t'.  i2c weirdness, iirc.
+
+>
+> ...
+>
+> +struct wm8400 {
+> +	struct device *dev;
+> +
+> +	int (*read_dev)(void *data, char reg, int count, u16 *dst);
+> +	int (*write_dev)(void *data, char reg, int count, const u16 *src);
+> +
+> +	struct mutex io_lock;
+> +	void *io_data;
+> +
+> +	u16 reg_cache[WM8400_REGISTER_COUNT];
+
+Should this be __be16?
+
+> +	struct platform_device regulators[6];
+> +};
+> +
+>
+> ...
+>
+> +#define WM8400_LINE_CMP_VTHD_MASK               0x000F  /* LINE_CMP_VTHD - [3:0] */
+> +#define WM8400_LINE_CMP_VTHD_SHIFT                   0  /* LINE_CMP_VTHD - [3:0] */
+> +#define WM8400_LINE_CMP_VTHD_WIDTH                   4  /* LINE_CMP_VTHD - [3:0] */
+> +
+
+This patch adds an amazing 1733 #defines, of which only a few
+percent are used.  Oh well.
+
