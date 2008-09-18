@@ -1,117 +1,32 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbYINHHZ (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 14 Sep 2008 03:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbYINHHK
+	id S1757326AbYISCyi (ORCPT <rfc822;ralf@linux-mips.org>);
+	Thu, 18 Sep 2008 22:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYISCy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 14 Sep 2008 03:07:10 -0400
-Received: from connect-ua-211.dg.net.ua ([213.186.218.211]:44153 "EHLO
-	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750904AbYINHHI (ORCPT
+	Thu, 18 Sep 2008 22:54:29 -0400
+Received: from smtp2.infomaniak.ch ([84.16.68.90]:53159 "EHLO
+	smtp2.infomaniak.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755778AbYISCy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Sep 2008 03:07:08 -0400
-To: linux-kernel@vger.kernel.org
-Subject: =?UTF-8?B?Q29ubmVjdC51YSB8INCX0LzRltC90Lgg0LfQsCDQvtGB0YLQsNC90L3Rlg==?=  =?UTF-8?B?0Lkg0YLQuNC20LTQtdC90Yw=?=
-Date: Sun, 14 Sep 2008 10:07:02 +0300
-From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
-	<donotreply@connect.com.ua>
-Reply-to: Connect <donotreply@connect.com.ua>
-Message-ID: <a5355d10769249723d47ba080ca02559@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+	Thu, 18 Sep 2008 22:54:28 -0400
+X-Greylist: delayed 14875 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Sep 2008 22:54:28 EDT
+Date: Fri, 19 Sep 2008 00:25:13 +0200
+From: UK NATIONAL e-LOTTERY <aonori@infomaniak.ch>
+Subject: Account Expire in 4 Day(s)
+Message-ID: <1221776713-02f8db466319cab52dd0203aa8f080ef@infomaniak.ch>
+X-Mailer: Infomaniak Webmail
+X-Origin-IP: 196.207.0.227
 MIME-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-Type: text/plain; charset=UTF-8
+X-Priority: 3 (Normal)
+Reply-To: uknl-co-ordinator@hotmail.co.uk
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Antivirus: Dr.Web (R) for Mail Servers on smtp2 host
+X-Antivirus-Code: 100000
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753706AbYINHHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757326AbYISCyi@vger.kernel.org>
 
-=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
-=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
-
-=D0=9D=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=
-=D0=B2=D1=96 =D0=BF=D0=BE=D0=B4=D1=96=D1=97 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=
-=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=
-=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=D0=B0=D1=81:
-
-=D0=9D=D0=BE=D0=B2=D0=B8=D0=B9 =D0=BA=D0=BE=D0=BD=D0=BA=D1=83=D1=80=D1=81=
- =C2=AB=D0=97=D0=BD=D0=B0=D0=B9=D0=B4=D0=B8 =D0=B4=D1=80=D1=83=D0=B7=D1=
-=96=D0=B2=C2=BB. =D0=97=D0=B0=D0=B2=D0=B0=D0=BD=D1=82=D0=B0=D0=B6=D1=83=
-=D0=B9 =D1=84=D0=BE=D1=82=D0=BE=D0=B3=D1=80=D0=B0=D1=84=D1=96=D1=97, =D0=
-=B2=D1=96=D0=B4=D0=BC=D1=96=D1=87=D0=B0=D0=B9 =D0=BD=D0=B0 =D0=BD=D0=B8=
-=D1=85 =D0=B4=D1=80=D1=83=D0=B7=D1=96=D0=B2, =D0=BE=D1=82=D1=80=D0=B8=D0=
-=BC=D1=83=D0=B9 =D1=86=D1=96=D0=BD=D0=BD=D1=96 =D0=BF=D1=80=D0=B8=D0=B7=
-=D0=B8. =D0=9F=D0=BE=D0=B4=D1=80=D0=BE=D0=B1=D0=B8=D1=86=D1=96: http://=
-connect.ua/v2/contest?index. =D0=9D=D0=BE=D0=B2=D0=B0 =D1=81=D1=82=D0=BE=
-=D1=80=D1=96=D0=BD=D0=BA=D0=B0 =D0=B4=D1=80=D1=83=D0=B7=D1=96=D0=B2, =D0=
-=B3=D1=80=D1=83=D0=BF=D0=B8 =D0=B4=D1=80=D1=83=D0=B7=D1=96=D0=B2, =D0=BF=
-=D0=BE=D0=BB=D1=96=D0=BF=D1=88=D0=B5=D0=BD=D0=BD=D1=8F =D1=80=D0=BE=D0=B7=
-=D0=B4=D1=96=D0=BB=D1=96=D0=B2 =C2=AB=D1=80=D0=B5=D0=BA=D0=BE=D0=BC=D0=B5=
-=D0=BD=D0=B4=D0=B0=D1=86=D1=96=D1=97=C2=BB, =C2=AB=D0=B0=D1=83=D0=B4=D1=
-=96=D0=BE=C2=BB =D1=82=D0=B0 =C2=AB=D0=BF=D0=BE=D0=B3=D0=BE=D0=B4=D0=B0=
-=C2=BB. =D0=A1=D0=BF=D0=BE=D0=B4=D1=96=D0=B2=D0=B0=D1=8E=D1=81=D1=8F, =D0=
-=B2=D0=B0=D0=BC =D1=81=D0=BF=D0=BE=D0=B4=D0=BE=D0=B1=D0=B0=D1=8E=D1=82=D1=
-=8C=D1=81=D1=8F =D0=BD=D0=BE=D0=B2=D0=B8=D0=B9 =D0=BA=D0=BE=D0=BD=D0=BA=
-=D1=83=D1=80=D1=81 =D1=96 =D0=BD=D0=BE=D0=B2=D0=BE=D0=B2=D0=B2=D0=B5=D0=
-=B4=D0=B5=D0=BD=D0=BD=D1=8F, =D0=B0 =D0=BC=D0=B8 =D0=BF=D1=80=D0=BE=D0=B4=
-=D0=BE=D0=B2=D0=B6=D0=B8=D0=BC=D0=BE =D0=BD=D0=B0=D0=BF=D0=BE=D0=BB=D0=B5=
-=D0=B3=D0=BB=D0=B8=D0=B2=D1=83 =D1=80=D0=BE=D0=B1=D0=BE=D1=82=D1=83 =D0=
-=BD=D0=B0=D0=B4 =D0=BF=D1=80=D0=BE=D0=B5=D0=BA=D1=82=D0=BE=D0=BC. =D0=9A=
-=D0=BE=D0=BD=D0=BD=D0=B5=D0=BA=D1=82 =E2=80=93 =D0=BE=D0=B1'=D1=94=D0=B4=
-=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=80=D0=B0=D1=97=D0=BD=D1=83=
-!
-
-=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
-=D0=B1=D0=BB=D0=BE=D0=BD=D0=B4=D0=B8=D0=BD=D0=BA=D0=B0 =D0=B2 =D1=81=D0=
-=BE=D0=BB=D1=8F=D1=80=D0=B8=D0=B8, 1602 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=
-=BB=D1=8F=D0=B4=D0=B0: http://connect.ua/video/view?id=3D95149
-=D0=91=D0=BE=D0=BB=D1=8C=D1=88=D0=BE=D0=B9 =D0=B0=D0=B4=D1=80=D0=BE=D0=BD=
-=D0=BD=D1=8B=D0=B9 =D0=BA=D0=BE=D0=BB=D0=BB=D0=B0=D0=B9=D0=B4=D0=B5=D1=80=
- (=D0=BF=D1=80=D0=B8=D0=BA=D0=BE=D0=BB=D1=8C=D0=BD=D0=B0=D1=8F =D0=BD=D0=
-=B0=D1=80=D0=B5=D0=B7=D0=BA=D0=B0), 701 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=
-=BB=D1=8F=D0=B4: http://connect.ua/video/view?id=3D94459
-=D0=9C=D0=B8=D0=BB=D0=B0=D1=88=D0=BA=D0=B0..., 688 =D0=BF=D0=B5=D1=80=D0=
-=B5=D0=B3=D0=BB=D1=8F=D0=B4i=D0=B2: http://connect.ua/video/view?id=3D9=
-8251
-=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
-
-
-=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
-=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
-=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
-=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
-=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
-=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
-=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
-=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
-=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
-=D1=82=D1=8C Enter.
-
-
-=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
-=80=D0=B0=D1=97=D0=BD=D1=83!
-=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 Connect.ua
-
--------------------------------
-
-=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
-=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
- =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
-=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
-=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
-=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
-=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
-Connect.ua
-=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
-=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
-=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
-=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
-=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
-=82=D0=B8.
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Account Expire in 4 Day(s)
