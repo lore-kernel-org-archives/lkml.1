@@ -1,58 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYIRPEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbYIRPJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYIRPEe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 11:04:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbYIRPEY
+	id S1755931AbYIRPJa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 11:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYIRPJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 11:04:24 -0400
-Received: from gv-out-0910.google.com ([216.239.58.189]:13522 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755538AbYIRPEX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 11:04:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=v0m4hxCZeXdLrgdaAr2R6gLiHAbuLBu/B4vlVmrbQO2rBNuT913AbImxekL+/By80N
-         2BbdLWgaiZWLongRFiNi6OlRGRsJcjtx12PrqUMZbP0oQyQ9mLTTuPAtxIaKyC86Otk/
-         HGzL27logHVNxa+Wt0YykgWgiDeak4fiJp1/Y=
-Date: Thu, 18 Sep 2008 19:06:25 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: kernel.h: add ARRAY_AND_SIZE() macro to complement
-	ARRAY_SIZE().
-Message-ID: <20080918150624.GA3421@x200.localdomain>
-References: <20080918132447.516309749@fluff.org.uk>
+	Thu, 18 Sep 2008 11:09:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37567 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753892AbYIRPJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 11:09:21 -0400
+Date: Thu, 18 Sep 2008 11:06:34 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+Message-ID: <20080918150634.GH20640@redhat.com>
+References: <20080918.210418.226794540.ryov@valinux.co.jp> <20080918131554.GB20640@redhat.com> <48D267B5.20402@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080918132447.516309749@fluff.org.uk>
+In-Reply-To: <48D267B5.20402@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 02:24:47PM +0100, Ben Dooks wrote:
-> Move the ARRAY_AND_SIZE() macro from arch/arm/mach-pxa/generic.h
-> to a more useful position in include/linux/kernel.h. This macro
-> is very useful to registration functions that take an array and
-> the number of array elements in it as consecutive arguments.
+On Thu, Sep 18, 2008 at 04:37:41PM +0200, Andrea Righi wrote:
+> Vivek Goyal wrote:
+> > On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
+> >> Hi All,
+> >>
+> >> I have got excellent results of dm-ioband, that controls the disk I/O
+> >> bandwidth even when it accepts delayed write requests.
+> >>
+> >> In this time, I ran some benchmarks with a high-end storage. The
+> >> reason was to avoid a performance bottleneck due to mechanical factors
+> >> such as seek time.
+> >>
+> >> You can see the details of the benchmarks at:
+> >> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+> >>
+> > 
+> > Hi Ryo,
+> > 
+> > I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
+> > the notion of process priority in CFQ because now dm-ioband device will
+> > hold the bio and issue these to lower layers later based on which bio's
+> > become ready. Hence actual bio submitting context might be different and
+> > because cfq derives the io_context from current task, it will be broken.
+> > 
+> > To mitigate that problem, we probably need to implement Fernando's
+> > suggestion of putting io_context pointer in bio. 
+> > 
+> > Have you already done something to solve this issue?
+> > 
+> > Secondly, why do we have to create an additional dm-ioband device for 
+> > every device we want to control using rules. This looks little odd
+> > atleast to me. Can't we keep it in line with rest of the controllers
+> > where task grouping takes place using cgroup and rules are specified in
+> > cgroup itself (The way Andrea Righi does for io-throttling patches)?
+> > 
+> > To avoid creation of stacking another device (dm-ioband) on top of every
+> > device we want to subject to rules, I was thinking of maintaining an
+> > rb-tree per request queue. Requests will first go into this rb-tree upon
+> > __make_request() and then will filter down to elevator associated with the
+> > queue (if there is one). This will provide us the control of releasing
+> > bio's to elevaor based on policies (proportional weight, max bandwidth
+> > etc) and no need of stacking additional block device.
+> > 
+> > I am working on some experimental proof of concept patches. It will take
+> > some time though.
+> > 
+> > I was thinking of following.
+> > 
+> > - Adopt the Andrea Righi's style of specifying rules for devices and
+> >   group the tasks using cgroups.
+> > 
+> > - To begin with, adopt dm-ioband's approach of proportional bandwidth
+> >   controller. It makes sense to me limit the bandwidth usage only in
+> >   case of contention. If there is really a need to limit max bandwidth,
+> >   then probably we can do something to implement additional rules or
+> >   implement some policy switcher where user can decide what kind of
+> >   policies need to be implemented.
+> > 
+> > - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
+> >   request queue which is controlled by some kind of cgroup rules.
+> > 
+> > It would be good to discuss above approach now whether it makes sense or 
+> > not. I think it is kind of fusion of io-throttling and dm-ioband patches
+> > with additional idea of doing io-control just above elevator on the request
+> > queue using an rb-tree.
 > 
-> The macro also should ensure that mistakes where the wrong array
-> is used to the ARRAY_SIZE() macro is passed. It also makes it
-> easier to avoid wrapping registration function arguments.
+> Thanks Vivek. All sounds reasonable to me and I think this is be the right way
+> to proceed.
+> 
+> I'll try to design and implement your rb-tree per request-queue idea into my
+> io-throttle controller, maybe we can reuse it also for a more generic solution.
+> Feel free to send me your experimental proof of concept if you want, even if
+> it's not yet complete, I can review it, test and contribute.
 
-> --- linux-2.6.27-rc6-quilt4.orig/include/linux/kernel.h
-> +++ linux-2.6.27-rc6-quilt4/include/linux/kernel.h
-> @@ -43,6 +43,7 @@ extern const char linux_proc_banner[];
->  #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
->  
->  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
-> +#define ARRAY_AND_SIZE(arr) (arr), ARRAY_SIZE(arr)
+Currently I have taken code from bio-cgroup to implement cgroups and to
+provide functionality to associate a bio to a cgroup. I need this to be
+able to queue the bio's at right node in the rb-tree and then also to be
+able to take a decision when is the right time to release few requests.
 
-Just like ARRAY_SIZE, it is misnamed.
+Right now in crude implementation, I am working on making system boot.
+Once patches are at least in little bit working shape, I will send it to you
+to have a look.
 
-And it isn't obvious to what it expands. Hopefully arm people will
-remove it. :-)
+Thanks
+Vivek
