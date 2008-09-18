@@ -1,181 +1,358 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbYIRTyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYIRUIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbYIRTyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbYIRTyR
+	id S1756690AbYIRUIA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 16:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYIRUHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:54:17 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:51174 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbYIRTyQ (ORCPT
+	Thu, 18 Sep 2008 16:07:52 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:32975 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755436AbYIRUHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:54:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Cnab6G1GtIvShgYhHMxwA49zCMxQqYwbI5ka5AVvIORy8vULHR3H0eV6s4NSVTHLUI
-         ukf39qU7qXQX3WiyeWg84+0PThlKxHetRvWBuu5Ct+j+faum/rHCaDhCwY7g3oOTLgte
-         +dbfH1BRkMwJwvVK8reyKeFmETTrvq+Zpzp1M=
-Message-ID: <48D2B1E1.3030700@gmail.com>
-Date: Thu, 18 Sep 2008 21:54:09 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
-       jens.axboe@oracle.com
-Subject: Re: dm-ioband + bio-cgroup benchmarks
-References: <20080918.210418.226794540.ryov@valinux.co.jp> <20080918131554.GB20640@redhat.com> <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com> <48D2715A.6060002@gmail.com> <20080918162010.GJ20640@redhat.com>
-In-Reply-To: <20080918162010.GJ20640@redhat.com>
-X-Enigmail-Version: 0.95.0
+	Thu, 18 Sep 2008 16:07:51 -0400
+Date: Thu, 18 Sep 2008 15:07:44 -0500
+From: scameron@beardog.cca.cpqcorp.net
+To: linux-kernel@vger.kernel.org, mike.miller@hp.com, axboe@kernel.dk
+Cc: scameron@beardog.cca.cpqcorp.net
+Subject: [patch] cciss: Fix cciss SCSI rescan code to better notice device changes.
+Message-ID: <20080918200744.GA24032@beardog.cca.cpqcorp.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Thu, Sep 18, 2008 at 05:18:50PM +0200, Andrea Righi wrote:
->> Vivek Goyal wrote:
->>> On Thu, Sep 18, 2008 at 04:37:41PM +0200, Andrea Righi wrote:
->>>> Vivek Goyal wrote:
->>>>> On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
->>>>>> Hi All,
->>>>>>
->>>>>> I have got excellent results of dm-ioband, that controls the disk I/O
->>>>>> bandwidth even when it accepts delayed write requests.
->>>>>>
->>>>>> In this time, I ran some benchmarks with a high-end storage. The
->>>>>> reason was to avoid a performance bottleneck due to mechanical factors
->>>>>> such as seek time.
->>>>>>
->>>>>> You can see the details of the benchmarks at:
->>>>>> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
->>>>>>
->>>>> Hi Ryo,
->>>>>
->>>>> I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
->>>>> the notion of process priority in CFQ because now dm-ioband device will
->>>>> hold the bio and issue these to lower layers later based on which bio's
->>>>> become ready. Hence actual bio submitting context might be different and
->>>>> because cfq derives the io_context from current task, it will be broken.
->>>>>
->>>>> To mitigate that problem, we probably need to implement Fernando's
->>>>> suggestion of putting io_context pointer in bio. 
->>>>>
->>>>> Have you already done something to solve this issue?
->>>>>
->>>>> Secondly, why do we have to create an additional dm-ioband device for 
->>>>> every device we want to control using rules. This looks little odd
->>>>> atleast to me. Can't we keep it in line with rest of the controllers
->>>>> where task grouping takes place using cgroup and rules are specified in
->>>>> cgroup itself (The way Andrea Righi does for io-throttling patches)?
->>>>>
->>>>> To avoid creation of stacking another device (dm-ioband) on top of every
->>>>> device we want to subject to rules, I was thinking of maintaining an
->>>>> rb-tree per request queue. Requests will first go into this rb-tree upon
->>>>> __make_request() and then will filter down to elevator associated with the
->>>>> queue (if there is one). This will provide us the control of releasing
->>>>> bio's to elevaor based on policies (proportional weight, max bandwidth
->>>>> etc) and no need of stacking additional block device.
->>>>>
->>>>> I am working on some experimental proof of concept patches. It will take
->>>>> some time though.
->>>>>
->>>>> I was thinking of following.
->>>>>
->>>>> - Adopt the Andrea Righi's style of specifying rules for devices and
->>>>>   group the tasks using cgroups.
->>>>>
->>>>> - To begin with, adopt dm-ioband's approach of proportional bandwidth
->>>>>   controller. It makes sense to me limit the bandwidth usage only in
->>>>>   case of contention. If there is really a need to limit max bandwidth,
->>>>>   then probably we can do something to implement additional rules or
->>>>>   implement some policy switcher where user can decide what kind of
->>>>>   policies need to be implemented.
->>>>>
->>>>> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
->>>>>   request queue which is controlled by some kind of cgroup rules.
->>>>>
->>>>> It would be good to discuss above approach now whether it makes sense or 
->>>>> not. I think it is kind of fusion of io-throttling and dm-ioband patches
->>>>> with additional idea of doing io-control just above elevator on the request
->>>>> queue using an rb-tree.
->>>> Thanks Vivek. All sounds reasonable to me and I think this is be the right way
->>>> to proceed.
->>>>
->>>> I'll try to design and implement your rb-tree per request-queue idea into my
->>>> io-throttle controller, maybe we can reuse it also for a more generic solution.
->>>> Feel free to send me your experimental proof of concept if you want, even if
->>>> it's not yet complete, I can review it, test and contribute.
->>> Currently I have taken code from bio-cgroup to implement cgroups and to
->>> provide functionality to associate a bio to a cgroup. I need this to be
->>> able to queue the bio's at right node in the rb-tree and then also to be
->>> able to take a decision when is the right time to release few requests.
->>>
->>> Right now in crude implementation, I am working on making system boot.
->>> Once patches are at least in little bit working shape, I will send it to you
->>> to have a look.
->>>
->>> Thanks
->>> Vivek
->> I wonder... wouldn't be simpler to just use the memory controller
->> to retrieve this information starting from struct page?
->>
->> I mean, following this path (in short, obviously using the appropriate
->> interfaces for locking and referencing the different objects):
->>
->> cgrp = page->page_cgroup->mem_cgroup->css.cgroup
->>
-> 
-> Andrea,
-> 
-> Ok, you are first retrieving cgroup associated page owner and then 
-> retrieving repsective iothrottle state using that
-> cgroup, (cgroup_to_iothrottle). I have yet to dive deeper into cgroup
 
-Correct.
+Fix cciss SCSI rescan code to better notice device changes.
+If you hot-unplug a tape drive, then hot-plug a different
+tape drive into the same slot in a storage enclosure,
+the cciss driver wouldn't notice anything had changed, as
+it was only looking at the LUN address and device type.
+Now it looks at the inquiry page 0x83 device identifier,
+and vendor and model strings as well.
 
-> data structures but does it work if iothrottle and memory controller
-> are mounted on separate hierarchies?
+Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
 
-ehm... I've to check. I usually mount all the controllers into the same
-hierarchy. :P
+---
 
-> bio-cgroup guys are also doing similar thing in the sense retrieving
-> relevant pointer through page and page_cgroup and use that to reach
-> bio_cgroup strucutre. The difference is that they don't retrieve first
-> css object of mem_cgroup instead they directly store the pointer of
-> bio_cgroup in page_cgroup (When page is being charged in memory controller).
-> 
-> While page is being charged, determine the bio_cgroup, associated with
-> the task and store this info in page->page_cgroup->bio_cgroup.
-> 
-> static inline struct bio_cgroup *bio_cgroup_from_task(struct task_struct
-> *p)
-> {
->        return container_of(task_subsys_state(p, bio_cgroup_subsys_id),
->                                struct bio_cgroup, css);
-> }
-> 
-> At any later point, one can look at bio and reach respective bio_cgroup
-> by.
-> 
-> bio->page->page_cgroup->bio_cgroup.
-> 
-> Looks like now we are getting rid of page_cgroup pointer in "struct page"
-> and we shall have to change the implementation accordingly.
+ drivers/block/cciss_scsi.c |  149 +++++++++++++++++++++++++++++----------------
+ drivers/block/cciss_scsi.h |    4 +
+ 2 files changed, 101 insertions(+), 52 deletions(-)
 
-Actually, only page_get_page_cgroup() implementation would change. And
-we don't have to worry about the particular implementation (hash,
-radix_tree, whatever..), in any case bio-cgroup has to simply use the
-opportune interface: page_get_page_cgroup(struct *page).
-
--Andrea
+diff -puN drivers/block/cciss_scsi.c~cciss_fix_hotplug_tape_bug drivers/block/cciss_scsi.c
+--- linux-2.6.27-rc6/drivers/block/cciss_scsi.c~cciss_fix_hotplug_tape_bug	2008-09-18 07:34:58.000000000 -0500
++++ linux-2.6.27-rc6-scameron/drivers/block/cciss_scsi.c	2008-09-18 07:35:13.000000000 -0500
+@@ -365,7 +365,7 @@ struct scsi2map {
+ 
+ static int 
+ cciss_scsi_add_entry(int ctlr, int hostno, 
+-		unsigned char *scsi3addr, int devtype,
++		struct cciss_scsi_dev_t *device,
+ 		struct scsi2map *added, int *nadded)
+ {
+ 	/* assumes hba[ctlr]->scsi_ctlr->lock is held */ 
+@@ -384,12 +384,12 @@ cciss_scsi_add_entry(int ctlr, int hostn
+ 	lun = 0;
+ 	/* Is this device a non-zero lun of a multi-lun device */
+ 	/* byte 4 of the 8-byte LUN addr will contain the logical unit no. */
+-	if (scsi3addr[4] != 0) {
++	if (device->scsi3addr[4] != 0) {
+ 		/* Search through our list and find the device which */
+ 		/* has the same 8 byte LUN address, excepting byte 4. */
+ 		/* Assign the same bus and target for this new LUN. */
+ 		/* Use the logical unit number from the firmware. */
+-		memcpy(addr1, scsi3addr, 8);
++		memcpy(addr1, device->scsi3addr, 8);
+ 		addr1[4] = 0;
+ 		for (i = 0; i < n; i++) {
+ 			sd = &ccissscsi[ctlr].dev[i];
+@@ -399,7 +399,7 @@ cciss_scsi_add_entry(int ctlr, int hostn
+ 			if (memcmp(addr1, addr2, 8) == 0) {
+ 				bus = sd->bus;
+ 				target = sd->target;
+-				lun = scsi3addr[4];
++				lun = device->scsi3addr[4];
+ 				break;
+ 			}
+ 		}
+@@ -420,8 +420,12 @@ cciss_scsi_add_entry(int ctlr, int hostn
+ 	added[*nadded].lun = sd->lun;
+ 	(*nadded)++;
+ 
+-	memcpy(&sd->scsi3addr[0], scsi3addr, 8);
+-	sd->devtype = devtype;
++	memcpy(sd->scsi3addr, device->scsi3addr, 8);
++	memcpy(sd->vendor, device->vendor, sizeof(sd->vendor));
++	memcpy(sd->revision, device->revision, sizeof(sd->revision));
++	memcpy(sd->device_id, device->device_id, sizeof(sd->device_id));
++	sd->devtype = device->devtype;
++
+ 	ccissscsi[ctlr].ndevices++;
+ 
+ 	/* initially, (before registering with scsi layer) we don't 
+@@ -487,6 +491,22 @@ static void fixup_botched_add(int ctlr, 
+ 	CPQ_TAPE_UNLOCK(ctlr, flags);
+ }
+ 
++static int device_is_the_same(struct cciss_scsi_dev_t *dev1,
++	struct cciss_scsi_dev_t *dev2)
++{
++	return dev1->devtype == dev2->devtype &&
++		memcmp(dev1->scsi3addr, dev2->scsi3addr,
++			sizeof(dev1->scsi3addr)) == 0 &&
++		memcmp(dev1->device_id, dev2->device_id,
++			sizeof(dev1->device_id)) == 0 &&
++		memcmp(dev1->vendor, dev2->vendor,
++			sizeof(dev1->vendor)) == 0 &&
++		memcmp(dev1->model, dev2->model,
++			sizeof(dev1->model)) == 0 &&
++		memcmp(dev1->revision, dev2->revision,
++			sizeof(dev1->revision)) == 0;
++}
++
+ static int
+ adjust_cciss_scsi_table(int ctlr, int hostno,
+ 	struct cciss_scsi_dev_t sd[], int nsds)
+@@ -532,7 +552,7 @@ adjust_cciss_scsi_table(int ctlr, int ho
+ 		for (j=0;j<nsds;j++) {
+ 			if (SCSI3ADDR_EQ(sd[j].scsi3addr,
+ 				csd->scsi3addr)) {
+-				if (sd[j].devtype == csd->devtype)
++				if (device_is_the_same(&sd[j], csd))
+ 					found=2;
+ 				else
+ 					found=1;
+@@ -548,22 +568,26 @@ adjust_cciss_scsi_table(int ctlr, int ho
+ 			cciss_scsi_remove_entry(ctlr, hostno, i,
+ 				removed, &nremoved);
+ 			/* remove ^^^, hence i not incremented */
+-		} 
+-		else if (found == 1) { /* device is different kind */
++		} else if (found == 1) { /* device is different in some way */
+ 			changes++;
+-			printk("cciss%d: device c%db%dt%dl%d type changed "
+-				"(device type now %s).\n",
+-				ctlr, hostno, csd->bus, csd->target, csd->lun,
+-					scsi_device_type(csd->devtype));
++			printk("cciss%d: device c%db%dt%dl%d has changed.\n",
++				ctlr, hostno, csd->bus, csd->target, csd->lun);
+ 			cciss_scsi_remove_entry(ctlr, hostno, i,
+ 				removed, &nremoved);
+ 			/* remove ^^^, hence i not incremented */
+-			if (cciss_scsi_add_entry(ctlr, hostno,
+-				&sd[j].scsi3addr[0], sd[j].devtype,
++			if (cciss_scsi_add_entry(ctlr, hostno, &sd[j],
+ 				added, &nadded) != 0)
+ 				/* we just removed one, so add can't fail. */
+ 					BUG();
+ 			csd->devtype = sd[j].devtype;
++			memcpy(csd->device_id, sd[j].device_id,
++				sizeof(csd->device_id));
++			memcpy(csd->vendor, sd[j].vendor,
++				sizeof(csd->vendor));
++			memcpy(csd->model, sd[j].model,
++				sizeof(csd->model));
++			memcpy(csd->revision, sd[j].revision,
++				sizeof(csd->revision));
+ 		} else 		/* device is same as it ever was, */
+ 			i++;	/* so just move along. */
+ 	}
+@@ -577,7 +601,7 @@ adjust_cciss_scsi_table(int ctlr, int ho
+ 			csd = &ccissscsi[ctlr].dev[j];
+ 			if (SCSI3ADDR_EQ(sd[i].scsi3addr,
+ 				csd->scsi3addr)) {
+-				if (sd[i].devtype == csd->devtype)
++				if (device_is_the_same(&sd[i], csd))
+ 					found=2;	/* found device */
+ 				else
+ 					found=1; 	/* found a bug. */
+@@ -586,16 +610,14 @@ adjust_cciss_scsi_table(int ctlr, int ho
+ 		}
+ 		if (!found) {
+ 			changes++;
+-			if (cciss_scsi_add_entry(ctlr, hostno, 
+-
+-				&sd[i].scsi3addr[0], sd[i].devtype,
++			if (cciss_scsi_add_entry(ctlr, hostno, &sd[i],
+ 				added, &nadded) != 0)
+ 				break;
+ 		} else if (found == 1) {
+ 			/* should never happen... */
+ 			changes++;
+-			printk("cciss%d: device unexpectedly changed type\n",
+-				ctlr);
++			printk(KERN_WARNING "cciss%d: device "
++				"unexpectedly changed\n", ctlr);
+ 			/* but if it does happen, we just ignore that device */
+ 		}
+ 	}
+@@ -1012,7 +1034,8 @@ cciss_scsi_interpret_error(CommandList_s
+ 
+ static int
+ cciss_scsi_do_inquiry(ctlr_info_t *c, unsigned char *scsi3addr, 
+-		 unsigned char *buf, unsigned char bufsize)
++	unsigned char page, unsigned char *buf,
++	unsigned char bufsize)
+ {
+ 	int rc;
+ 	CommandList_struct *cp;
+@@ -1032,8 +1055,8 @@ cciss_scsi_do_inquiry(ctlr_info_t *c, un
+ 	ei = cp->err_info; 
+ 
+ 	cdb[0] = CISS_INQUIRY;
+-	cdb[1] = 0;
+-	cdb[2] = 0;
++	cdb[1] = (page != 0);
++	cdb[2] = page;
+ 	cdb[3] = 0;
+ 	cdb[4] = bufsize;
+ 	cdb[5] = 0;
+@@ -1053,6 +1076,25 @@ cciss_scsi_do_inquiry(ctlr_info_t *c, un
+ 	return rc;	
+ }
+ 
++/* Get the device id from inquiry page 0x83 */
++static int cciss_scsi_get_device_id(ctlr_info_t *c, unsigned char *scsi3addr,
++	unsigned char *device_id, int buflen)
++{
++	int rc;
++	unsigned char *buf;
++
++	if (buflen > 16)
++		buflen = 16;
++	buf = kzalloc(64, GFP_KERNEL);
++	if (!buf)
++		return -1;
++	rc = cciss_scsi_do_inquiry(c, scsi3addr, 0x83, buf, 64);
++	if (rc == 0)
++		memcpy(device_id, &buf[8], buflen);
++	kfree(buf);
++	return rc != 0;
++}
++
+ static int
+ cciss_scsi_do_report_phys_luns(ctlr_info_t *c, 
+ 		ReportLunData_struct *buf, int bufsize)
+@@ -1142,25 +1184,21 @@ cciss_update_non_disk_devices(int cntl_n
+ 	ctlr_info_t *c;
+ 	__u32 num_luns=0;
+ 	unsigned char *ch;
+-	/* unsigned char found[CCISS_MAX_SCSI_DEVS_PER_HBA]; */
+-	struct cciss_scsi_dev_t currentsd[CCISS_MAX_SCSI_DEVS_PER_HBA];
++	struct cciss_scsi_dev_t *currentsd, *this_device;
+ 	int ncurrent=0;
+ 	int reportlunsize = sizeof(*ld_buff) + CISS_MAX_PHYS_LUN * 8;
+ 	int i;
+ 
+ 	c = (ctlr_info_t *) hba[cntl_num];	
+ 	ld_buff = kzalloc(reportlunsize, GFP_KERNEL);
+-	if (ld_buff == NULL) {
+-		printk(KERN_ERR "cciss: out of memory\n");
+-		return;
+-	}
+ 	inq_buff = kmalloc(OBDR_TAPE_INQ_SIZE, GFP_KERNEL);
+-        if (inq_buff == NULL) {
+-                printk(KERN_ERR "cciss: out of memory\n");
+-                kfree(ld_buff);
+-                return;
++	currentsd = kzalloc(sizeof(*currentsd) *
++			(CCISS_MAX_SCSI_DEVS_PER_HBA+1), GFP_KERNEL);
++	if (ld_buff == NULL || inq_buff == NULL || currentsd == NULL) {
++		printk(KERN_ERR "cciss: out of memory\n");
++		goto out;
+ 	}
+-
++	this_device = &currentsd[CCISS_MAX_SCSI_DEVS_PER_HBA];
+ 	if (cciss_scsi_do_report_phys_luns(c, ld_buff, reportlunsize) == 0) {
+ 		ch = &ld_buff->LUNListLength[0];
+ 		num_luns = ((ch[0]<<24) | (ch[1]<<16) | (ch[2]<<8) | ch[3]) / 8;
+@@ -1179,23 +1217,34 @@ cciss_update_non_disk_devices(int cntl_n
+ 
+ 
+ 	/* adjust our table of devices */	
+-	for(i=0; i<num_luns; i++)
+-	{
+-		int devtype;
+-
++	for (i = 0; i < num_luns; i++) {
+ 		/* for each physical lun, do an inquiry */
+ 		if (ld_buff->LUN[i][3] & 0xC0) continue;
+ 		memset(inq_buff, 0, OBDR_TAPE_INQ_SIZE);
+ 		memcpy(&scsi3addr[0], &ld_buff->LUN[i][0], 8);
+ 
+-		if (cciss_scsi_do_inquiry(hba[cntl_num], scsi3addr, inq_buff,
+-			(unsigned char) OBDR_TAPE_INQ_SIZE) != 0) {
++		if (cciss_scsi_do_inquiry(hba[cntl_num], scsi3addr, 0, inq_buff,
++			(unsigned char) OBDR_TAPE_INQ_SIZE) != 0)
+ 			/* Inquiry failed (msg printed already) */
+-			devtype = 0; /* so we will skip this device. */
+-		} else /* what kind of device is this? */
+-			devtype = (inq_buff[0] & 0x1f);
++			continue; /* so we will skip this device. */
++
++		this_device->devtype = (inq_buff[0] & 0x1f);
++		this_device->bus = -1;
++		this_device->target = -1;
++		this_device->lun = -1;
++		memcpy(this_device->scsi3addr, scsi3addr, 8);
++		memcpy(this_device->vendor, &inq_buff[8],
++			sizeof(this_device->vendor));
++		memcpy(this_device->model, &inq_buff[16],
++			sizeof(this_device->model));
++		memcpy(this_device->revision, &inq_buff[32],
++			sizeof(this_device->revision));
++		memset(this_device->device_id, 0,
++			sizeof(this_device->device_id));
++		cciss_scsi_get_device_id(hba[cntl_num], scsi3addr,
++			this_device->device_id, sizeof(this_device->device_id));
+ 
+-		switch (devtype)
++		switch (this_device->devtype)
+ 		{
+ 		  case 0x05: /* CD-ROM */ {
+ 
+@@ -1220,15 +1269,10 @@ cciss_update_non_disk_devices(int cntl_n
+ 			if (ncurrent >= CCISS_MAX_SCSI_DEVS_PER_HBA) {
+ 				printk(KERN_INFO "cciss%d: %s ignored, "
+ 					"too many devices.\n", cntl_num,
+-					scsi_device_type(devtype));
++					scsi_device_type(this_device->devtype));
+ 				break;
+ 			}
+-			memcpy(&currentsd[ncurrent].scsi3addr[0], 
+-				&scsi3addr[0], 8);
+-			currentsd[ncurrent].devtype = devtype;
+-			currentsd[ncurrent].bus = -1;
+-			currentsd[ncurrent].target = -1;
+-			currentsd[ncurrent].lun = -1;
++			currentsd[ncurrent] = *this_device;
+ 			ncurrent++;
+ 			break;
+ 		  default: 
+@@ -1240,6 +1284,7 @@ cciss_update_non_disk_devices(int cntl_n
+ out:
+ 	kfree(inq_buff);
+ 	kfree(ld_buff);
++	kfree(currentsd);
+ 	return;
+ }
+ 
+diff -puN drivers/block/cciss_scsi.h~cciss_fix_hotplug_tape_bug drivers/block/cciss_scsi.h
+--- linux-2.6.27-rc6/drivers/block/cciss_scsi.h~cciss_fix_hotplug_tape_bug	2008-09-18 07:35:00.000000000 -0500
++++ linux-2.6.27-rc6-scameron/drivers/block/cciss_scsi.h	2008-09-18 07:35:13.000000000 -0500
+@@ -66,6 +66,10 @@ struct cciss_scsi_dev_t {
+ 	int devtype;
+ 	int bus, target, lun;		/* as presented to the OS */
+ 	unsigned char scsi3addr[8];	/* as presented to the HW */
++	unsigned char device_id[16];	/* from inquiry pg. 0x83 */
++	unsigned char vendor[8];	/* bytes 8-15 of inquiry data */
++	unsigned char model[16];	/* bytes 16-31 of inquiry data */
++	unsigned char revision[4];	/* bytes 32-35 of inquiry data */
+ };
+ 
+ struct cciss_scsi_hba_t {
+_
