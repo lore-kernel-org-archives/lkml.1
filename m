@@ -1,67 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYIRQV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYIRQY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbYIRQV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 12:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbYIRQVV
+	id S1755990AbYIRQY0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 12:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYIRQYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 12:21:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47125 "EHLO mx1.redhat.com"
+	Thu, 18 Sep 2008 12:24:18 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43054 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753701AbYIRQVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 12:21:20 -0400
-Date: Thu, 18 Sep 2008 12:19:57 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/6] loglevel=pci:8,acpi:8,apic=8 support v6
-Message-ID: <20080918161957.GC3097@redhat.com>
-References: <1221640067-24389-1-git-send-email-yhlu.kernel@gmail.com> <20080917015543.27172da4.akpm@linux-foundation.org> <20080917092732.GB32107@elte.hu> <20080917184618.GB6486@redhat.com> <48D159A7.5080907@zytor.com> <20080918105728.GF20967@elte.hu> <48D2758B.1000004@zytor.com> <20080918155041.GB3097@redhat.com> <48D27A7E.8090403@zytor.com>
+	id S1752773AbYIRQYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Sep 2008 12:24:17 -0400
+Date: Thu, 18 Sep 2008 12:20:10 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org,
+       jens.axboe@oracle.com
+Subject: Re: dm-ioband + bio-cgroup benchmarks
+Message-ID: <20080918162010.GJ20640@redhat.com>
+References: <20080918.210418.226794540.ryov@valinux.co.jp> <20080918131554.GB20640@redhat.com> <48D267B5.20402@gmail.com> <20080918150634.GH20640@redhat.com> <48D2715A.6060002@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48D27A7E.8090403@zytor.com>
+In-Reply-To: <48D2715A.6060002@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 18, 2008 at 08:57:50AM -0700, H. Peter Anvin wrote:
-> Jason Baron wrote:
->>
->> if we take this argument to its extreme, then we end up spending all of
->> our time verifying that the kernel is working correctly and no time
->> actually doing work. I think 'printk_ratelimit' captures this. Thus, 
->> the line has to be drawn somewhere. If you want the messages in 'dmesg' 
->> use,
->> printk(KERN_DEBUG), and 'grep'. For the rest, I propose pre-filtering, which is
->> what 'dynamic debug' uses.
->>
->
-> Taking any argument to its extreme and you come up with something  
-> ridiculous.
->
-> One could equally argue that if you have so many debugging messages that  
-> you have to prefilter for performance, you're so bloating your kernel  
-> that you need to stop.
+On Thu, Sep 18, 2008 at 05:18:50PM +0200, Andrea Righi wrote:
+> Vivek Goyal wrote:
+> > On Thu, Sep 18, 2008 at 04:37:41PM +0200, Andrea Righi wrote:
+> >> Vivek Goyal wrote:
+> >>> On Thu, Sep 18, 2008 at 09:04:18PM +0900, Ryo Tsuruta wrote:
+> >>>> Hi All,
+> >>>>
+> >>>> I have got excellent results of dm-ioband, that controls the disk I/O
+> >>>> bandwidth even when it accepts delayed write requests.
+> >>>>
+> >>>> In this time, I ran some benchmarks with a high-end storage. The
+> >>>> reason was to avoid a performance bottleneck due to mechanical factors
+> >>>> such as seek time.
+> >>>>
+> >>>> You can see the details of the benchmarks at:
+> >>>> http://people.valinux.co.jp/~ryov/dm-ioband/hps/
+> >>>>
+> >>> Hi Ryo,
+> >>>
+> >>> I had a query about dm-ioband patches. IIUC, dm-ioband patches will break
+> >>> the notion of process priority in CFQ because now dm-ioband device will
+> >>> hold the bio and issue these to lower layers later based on which bio's
+> >>> become ready. Hence actual bio submitting context might be different and
+> >>> because cfq derives the io_context from current task, it will be broken.
+> >>>
+> >>> To mitigate that problem, we probably need to implement Fernando's
+> >>> suggestion of putting io_context pointer in bio. 
+> >>>
+> >>> Have you already done something to solve this issue?
+> >>>
+> >>> Secondly, why do we have to create an additional dm-ioband device for 
+> >>> every device we want to control using rules. This looks little odd
+> >>> atleast to me. Can't we keep it in line with rest of the controllers
+> >>> where task grouping takes place using cgroup and rules are specified in
+> >>> cgroup itself (The way Andrea Righi does for io-throttling patches)?
+> >>>
+> >>> To avoid creation of stacking another device (dm-ioband) on top of every
+> >>> device we want to subject to rules, I was thinking of maintaining an
+> >>> rb-tree per request queue. Requests will first go into this rb-tree upon
+> >>> __make_request() and then will filter down to elevator associated with the
+> >>> queue (if there is one). This will provide us the control of releasing
+> >>> bio's to elevaor based on policies (proportional weight, max bandwidth
+> >>> etc) and no need of stacking additional block device.
+> >>>
+> >>> I am working on some experimental proof of concept patches. It will take
+> >>> some time though.
+> >>>
+> >>> I was thinking of following.
+> >>>
+> >>> - Adopt the Andrea Righi's style of specifying rules for devices and
+> >>>   group the tasks using cgroups.
+> >>>
+> >>> - To begin with, adopt dm-ioband's approach of proportional bandwidth
+> >>>   controller. It makes sense to me limit the bandwidth usage only in
+> >>>   case of contention. If there is really a need to limit max bandwidth,
+> >>>   then probably we can do something to implement additional rules or
+> >>>   implement some policy switcher where user can decide what kind of
+> >>>   policies need to be implemented.
+> >>>
+> >>> - Get rid of dm-ioband and instead buffer requests on an rb-tree on every
+> >>>   request queue which is controlled by some kind of cgroup rules.
+> >>>
+> >>> It would be good to discuss above approach now whether it makes sense or 
+> >>> not. I think it is kind of fusion of io-throttling and dm-ioband patches
+> >>> with additional idea of doing io-control just above elevator on the request
+> >>> queue using an rb-tree.
+> >> Thanks Vivek. All sounds reasonable to me and I think this is be the right way
+> >> to proceed.
+> >>
+> >> I'll try to design and implement your rb-tree per request-queue idea into my
+> >> io-throttle controller, maybe we can reuse it also for a more generic solution.
+> >> Feel free to send me your experimental proof of concept if you want, even if
+> >> it's not yet complete, I can review it, test and contribute.
+> > 
+> > Currently I have taken code from bio-cgroup to implement cgroups and to
+> > provide functionality to associate a bio to a cgroup. I need this to be
+> > able to queue the bio's at right node in the rb-tree and then also to be
+> > able to take a decision when is the right time to release few requests.
+> > 
+> > Right now in crude implementation, I am working on making system boot.
+> > Once patches are at least in little bit working shape, I will send it to you
+> > to have a look.
+> > 
+> > Thanks
+> > Vivek
+> 
+> I wonder... wouldn't be simpler to just use the memory controller
+> to retrieve this information starting from struct page?
+> 
+> I mean, following this path (in short, obviously using the appropriate
+> interfaces for locking and referencing the different objects):
+> 
+> cgrp = page->page_cgroup->mem_cgroup->css.cgroup
+> 
 
-in my testing there was no significant difference between pre-filtering
-vs. not built in. However, there was a measureable affect of having them
-built in vs. not built in.
+Andrea,
 
->
-> I find it highly questionable that it makes sense to put even skipped  
-> messages into hot paths in the production kernel.  Skipped prints are  
-> NOT free, even if they are lot cheaper than actually rendering the 
-> string.
->
+Ok, you are first retrieving cgroup associated page owner and then 
+retrieving repsective iothrottle state using that
+cgroup, (cgroup_to_iothrottle). I have yet to dive deeper into cgroup
+data structures but does it work if iothrottle and memory controller
+are mounted on separate hierarchies?
 
-If you feel that way, you simply don't have to turn the single CONFIG_ on.
-Futher, the patchset allows fine-grained control over the modules that
-you would want to enable/disable.
+bio-cgroup guys are also doing similar thing in the sense retrieving
+relevant pointer through page and page_cgroup and use that to reach
+bio_cgroup strucutre. The difference is that they don't retrieve first
+css object of mem_cgroup instead they directly store the pointer of
+bio_cgroup in page_cgroup (When page is being charged in memory controller).
 
-thanks,
+While page is being charged, determine the bio_cgroup, associated with
+the task and store this info in page->page_cgroup->bio_cgroup.
 
--Jason
+static inline struct bio_cgroup *bio_cgroup_from_task(struct task_struct
+*p)
+{
+       return container_of(task_subsys_state(p, bio_cgroup_subsys_id),
+                               struct bio_cgroup, css);
+}
 
+At any later point, one can look at bio and reach respective bio_cgroup
+by.
+
+bio->page->page_cgroup->bio_cgroup.
+
+Looks like now we are getting rid of page_cgroup pointer in "struct page"
+and we shall have to change the implementation accordingly.
+
+Thanks
+Vivek
