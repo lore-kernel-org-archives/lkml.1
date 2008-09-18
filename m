@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbYIRXy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbYIRX4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757318AbYIRXy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 19:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbYIRXxs
+	id S1757416AbYIRX4h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 19:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYIRX42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 19:53:48 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:63767 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756776AbYIRXxq (ORCPT
+	Thu, 18 Sep 2008 19:56:28 -0400
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:60991 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755835AbYIRX41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 19:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=l6HpRy7OkLkbguvoQwLuQcWtIcxHPMjGLXnsSnY682itRlWbOnTtNWGks6r0cRpT8u
-         YfeDq3Fpjek33oC5xj0O1TiOFy9m2uohPCAZVA2Y3oG67N5ZM3hOyNgSKZBZxiE8l2+F
-         If4T1JSTuyBzkOOxwEjXR9z87pG4E/eSyt0Hc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Elias Oltmanns <eo@nebensachen.de>
-Subject: Re: [PATCH 4/4 v2] Add documentation for hard disk shock protection interface
-Date: Thu, 18 Sep 2008 16:28:33 -0700
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <87d4j2n3dn.fsf@denkblock.local> <20080917163145.9870.8575.stgit@denkblock.local>
-In-Reply-To: <20080917163145.9870.8575.stgit@denkblock.local>
+	Thu, 18 Sep 2008 19:56:27 -0400
+Message-ID: <48D2EA6B.9090504@linux.vnet.ibm.com>
+Date: Thu, 18 Sep 2008 16:55:23 -0700
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080725)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, skumar@linux.vnet.ibm.com, yamamoto@valinux.co.jp,
+       menage@google.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control
+ (v4)
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <20080918135430.e2979ab1.akpm@linux-foundation.org>
+In-Reply-To: <20080918135430.e2979ab1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200809181628.34569.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 September 2008 09:40:06 Elias Oltmanns wrote:
-> Put some information (and pointers to more) into the kernel's doc tree,
-> describing briefly the interface to the kernel's disk head unloading
-> facility. Information about how to set up a complete shock protection
-> system under GNU/Linux can be found on the web and is referenced
-> accordingly.
+Andrew Morton wrote:
+> On Wed, 14 May 2008 18:39:51 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Signed-off-by: Elias Oltmanns <eo@nebensachen.de>
+>> This patch adds support for accounting and control of virtual address space
+>> limits.
+>
 
-applied
+[snip]
+
+> 
+> could you plese take a look at today's mmotm and see what needs to be
+> done to salvage it?  Most of the code you were altering got moved into
+> arch/x86/kernel/ds.c and got changed rather a lot.
+
+I'll take a look tonight and see what needs to be done
+
+-- 
+	Balbir
