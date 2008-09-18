@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYIRTkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbYIRTwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbYIRTkG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Sep 2008 15:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbYIRTj4
+	id S1756541AbYIRTwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Sep 2008 15:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbYIRTwF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 18 Sep 2008 15:39:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34383 "EHLO
+	Thu, 18 Sep 2008 15:52:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39106 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754293AbYIRTjz (ORCPT
+	by vger.kernel.org with ESMTP id S1755047AbYIRTwE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Sep 2008 15:39:55 -0400
-Message-ID: <48D2AE6C.7060507@linux-foundation.org>
-Date: Thu, 18 Sep 2008 14:39:24 -0500
-From: Christoph Lameter <cl@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.16 (Windows/20080708)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Chris Snook <csnook@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Hugh Dickens <hugh@veritas.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, "Martin J. Bligh" <mbligh@google.com>
-Subject: Re: Populating multiple ptes at fault time
-References: <48D142B2.3040607@goop.org> <48D1625C.7000309@redhat.com> <48D17A93.4000803@goop.org> <48D29AFB.5070409@linux-foundation.org> <48D2A392.6010308@goop.org>
-In-Reply-To: <48D2A392.6010308@goop.org>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 18 Sep 2008 15:52:04 -0400
+Date: Thu, 18 Sep 2008 12:51:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] printk: Print cpuid along with the timestamp with
+ CONFIG_PRINTK_TIME
+Message-Id: <20080918125123.1a76978f.akpm@linux-foundation.org>
+In-Reply-To: <20080918193720.GA21915@localdomain>
+References: <20080918193720.GA21915@localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Thanks, that was exactly what I was hoping to see.  I didn't see any
-> definitive statements against the patch set, other than a concern that
-> it could make things worse.  Was the upshot that no consensus was
-> reached about how to detect when its beneficial to preallocate anonymous
-> pages?
+On Thu, 18 Sep 2008 12:37:20 -0700
+Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 
-There were multiple discussions on the subject. The consensus was that it was
-difficult to generalize this and it would only work on special loads. Plus it
-would add some overhead to the general case.
+> I found it useful to have the cpuid of the printing cpu along with the
+> timestamp -- especially while debugging hangs during bootups.
+> 
+> I don't know why this hasn't been implemened in the kernel yet, and
+> cannot think of a strong reason not to have it.  Yes, the cpuid prefix will
+> take 5 more characters per line,  but having  the cpuid info is worth it,
+> I think.
+> 
+> Thanks,
+> Kiran
+> 
+> ---
+> 
+> 
+> Add cpuid information to printk if CONFIG_PRINTK_TIME is enabled.
+> This information is useful to debug hangs and bootup issues.
+> 
+> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> 
+> Index: linux-git/kernel/printk.c
+> ===================================================================
+> --- linux-git.orig/kernel/printk.c	2008-09-16 15:37:48.000000000 -0700
+> +++ linux-git/kernel/printk.c	2008-09-18 12:27:10.489662938 -0700
+> @@ -739,9 +739,10 @@ asmlinkage int vprintk(const char *fmt, 
+>  
+>  				t = cpu_clock(printk_cpu);
+>  				nanosec_rem = do_div(t, 1000000000);
+> -				tlen = sprintf(tbuf, "[%5lu.%06lu] ",
+> +				tlen = sprintf(tbuf, "[%5lu.%06lu:%d] ",
+>  						(unsigned long) t,
+> -						nanosec_rem / 1000);
+> +						nanosec_rem / 1000,
+> +						printk_cpu);
+>  
+>  				for (tp = tbuf; tp < tbuf + tlen; tp++)
+>  					emit_log_char(*tp);
 
-> Christoph (and others): do you think vm changes in the last 4 years
-> would have changed the outcome of these results?
+Yes, I guess it could be useful sometimes.  otoh anyone who is down at
+that level of detail and is using printk to debug something can add
+their own %d/smp_processor_id().
 
-Seems that the code today is similar. So it would still work.
+Your patch illogically ties the cpu-id-printing feature to the
+printk.time feature.  I guess that's liveable with, but
+Documentation/kernel-parameters.txt should be updated.
+
+Anyone who was parsing that output might get a shock, but that's
+liveable with too.  Probably their parser will continue to work anwyay.
+
+
+I don't know whether the usefulness of this feature outweighs its
+various costs.  Input is sought.
